@@ -1,0 +1,717 @@
+diff --git a/NumStability/Algorithms.lean b/NumStability/Algorithms.lean
+index babcd06fc03c7e454e26840a6acc026a607d4ce1..5f05fddaeb52e8ffd83bcb29f94ab3f81b0e44f0 100644
+--- a/NumStability/Algorithms.lean
++++ b/NumStability/Algorithms.lean
+@@ -98,11 +98,9 @@ import NumStability.Algorithms.HighamChapter15ConvergenceProse
+ import NumStability.Algorithms.HighamChapter15RectTermination
+ import NumStability.Algorithms.HighamChapter5ComplexAlgorithm51
+ import NumStability.Algorithms.HighamChapter8
+-import NumStability.Algorithms.HighamChapter8FanInClosure
+ import NumStability.Algorithms.HighamChapters1To9SourceClosure
+ import NumStability.Algorithms.HighamLemma88Entrywise
+ import NumStability.Algorithms.Horner
+-import NumStability.Algorithms.IterativeRefinement
+ import NumStability.Algorithms.KahanAbsolute
+ import NumStability.Algorithms.LinearSystems
+ import NumStability.Algorithms.LinearSystems.LeastSquares
+@@ -166,7 +164,6 @@ import NumStability.Algorithms.PNormPowerMethodGeneralP
+ import NumStability.Algorithms.PNormPowerMethodRect
+ import NumStability.Algorithms.PriestAccuracy
+ import NumStability.Algorithms.PriestDefectBounded
+-import NumStability.Algorithms.PriestFiniteFormat
+ import NumStability.Algorithms.Quadrature
+ import NumStability.Algorithms.RandNLA
+ import NumStability.Algorithms.RankOneUpdate
+@@ -238,8 +235,6 @@ import NumStability.Algorithms.TestMatrices.Higham28ToeplitzGeneral
+ import NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum
+ import NumStability.Algorithms.TestMatrices.UpperTriangularStress
+ import NumStability.Algorithms.TreeDotProduct
+-import NumStability.Algorithms.TriangularArbitraryOrder
+-import NumStability.Algorithms.TriangularNoGuard
+ import NumStability.Algorithms.Underdetermined.Higham21
+ import NumStability.Algorithms.Underdetermined.UnderdeterminedSolve
+ import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+diff --git a/NumStability/Analysis.lean b/NumStability/Analysis.lean
+index f6ce84ebf9902ce4095b15eb90bcc91987a7be74..f954f25d7872f184f692c76c77b0f5025d3e2154 100644
+--- a/NumStability/Analysis.lean
++++ b/NumStability/Analysis.lean
+@@ -1,3 +1,4 @@
++import NumStability.Algorithms.LinearSystems.CramersRule.Core
+ import NumStability.Analysis.Accumulation
+ import NumStability.Analysis.AccuracyTests
+ import NumStability.Analysis.AlternativeNumberSystems
+@@ -14,19 +15,25 @@ import NumStability.Analysis.ComplexSqrt
+ import NumStability.Analysis.ConditionEstimatorLowerBound
+ import NumStability.Analysis.Conditioning
+ import NumStability.Analysis.Counting
+-import NumStability.Analysis.CramersRule
+ import NumStability.Analysis.CStarMatrixBridge
+ import NumStability.Analysis.CStarMatrixExpectation
+ import NumStability.Analysis.CStarMatrixTrace
+ import NumStability.Analysis.DoubleRounding
+ import NumStability.Analysis.Equidistribution
+-import NumStability.Analysis.Error
++import NumStability.Analysis.Error.Measures.All
++import NumStability.Analysis.Error.RoundingProducts.All
++import NumStability.Analysis.Error.RoundingProducts.Core
+ import NumStability.Analysis.FiniteProbability
+ import NumStability.Analysis.FirstOrder
+ import NumStability.Analysis.FirstOrderFramework
+ import NumStability.Analysis.FloatingPointArithmetic
++import NumStability.Analysis.FloatingPointArithmetic.DoubleRounding.All
++import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.All
++import NumStability.Analysis.FloatingPointArithmetic.MidpointRounding.All
++import NumStability.Analysis.FloatingPointArithmetic.MidpointRounding.DecimalTieExamples
++import NumStability.Analysis.FloatingPointArithmetic.TrigonometricCancellation.All
++import NumStability.Analysis.FloatingPointArithmetic.TrigonometricCancellation.Core
+ import NumStability.Analysis.ForwardError
+-import NumStability.Analysis.FusedMultiplyAdd
+ import NumStability.Analysis.HenriciSharpConstantExact
+ import NumStability.Analysis.Heron
+ import NumStability.Analysis.HighamChapter2ElementaryFunctions
+@@ -51,7 +58,6 @@ import NumStability.Analysis.MatrixPowersLaszlo
+ import NumStability.Analysis.MatrixPowersLp185Primary
+ import NumStability.Analysis.MatrixPowersSpijkerClosure
+ import NumStability.Analysis.MatrixSpectral
+-import NumStability.Analysis.Midpoint
+ import NumStability.Analysis.Monotonicity
+ import NumStability.Analysis.MullerRecurrence
+ import NumStability.Analysis.NearInteger
+@@ -79,25 +85,41 @@ import NumStability.Analysis.Problem2_27
+ import NumStability.Analysis.Problem2_3
+ import NumStability.Analysis.Problem2_5
+ import NumStability.Analysis.Problem2_6
+-import NumStability.Analysis.ProblemDependentStability
++import NumStability.Analysis.ProblemDependentStability.All
++import NumStability.Analysis.ProblemDependentStability.HessenbergDeterminant
+ import NumStability.Analysis.PseudospectralLowerBound
+ import NumStability.Analysis.Quadratic
+ import NumStability.Analysis.RelativePrecision
+ import NumStability.Analysis.Rounding
+-import NumStability.Analysis.RoundingProductBounds
+ import NumStability.Analysis.SampleVariance
+ import NumStability.Analysis.SemiconvergentRealSpectrumComplete
+ import NumStability.Analysis.SemiconvergentSpectral
+ import NumStability.Analysis.SingularValues
+ import NumStability.Analysis.Stability
+ import NumStability.Analysis.StatisticalRounding
++import NumStability.Analysis.Statistics.SampleVariance.All
+ import NumStability.Analysis.SubtractionFold
+ import NumStability.Analysis.Summation
+ import NumStability.Analysis.SylvesterSchurExistence
+ import NumStability.Analysis.TieRules
+-import NumStability.Analysis.TrigCancellation
+ import NumStability.Analysis.VectorNorms
++import NumStability.FloatingPoint.FusedMultiplyAdd.Core
++import NumStability.FloatingPoint.FusedMultiplyAdd.DotProductCounts
++import NumStability.Source.Higham.Chapter01.Problem01.RelativeError.All
++import NumStability.Source.Higham.Chapter01.Problem03.CancellationRewrites.Algebra
++import NumStability.Source.Higham.Chapter01.Problem09.CramersRule.ForwardError
++import NumStability.Source.Higham.Chapter01.Section03.ErrorSources.All
++import NumStability.Source.Higham.Chapter01.Section07.Cancellation.All
++import NumStability.Source.Higham.Chapter01.Section07.TrigonometricCancellation.Example
++import NumStability.Source.Higham.Chapter01.Section10.CramersRule.PrintedComparison
++import NumStability.Source.Higham.Chapter01.Section16.ProblemDependentStability.ExactExample
++import NumStability.Source.Higham.Chapter01.Section16.ProblemDependentStability.Table13IeeeSingle
+ import NumStability.Source.Higham.Chapter01.Section17
++import NumStability.Source.Higham.Chapter02.Problem08.MidpointRounding.Counterexample
++import NumStability.Source.Higham.Chapter02.Problem26.ExactProduct.Discrepancy
++import NumStability.Source.Higham.Chapter02.Section04.NoGuardModel.All
++import NumStability.Source.Higham.Chapter02.Section06.FusedMultiplyAdd.DotProductCount
++import NumStability.Source.Higham.Chapter03.Problem02.ProductBounds.PositiveFactors
+ import NumStability.Source.Higham.Chapter06
+ import NumStability.Source.Higham.Chapter17.Equation22
+ 
+diff --git a/NumStability/Core.lean b/NumStability/Core.lean
+index 8d8503602107502e59e85fe9cab19baf9a02243b..bd9d40c083c3c96a98c725f0d3b7423a61e934b7 100644
+--- a/NumStability/Core.lean
++++ b/NumStability/Core.lean
+@@ -1,5 +1,6 @@
+-import NumStability.Analysis.Error
++import NumStability.Analysis.Error.Measures.All
+ import NumStability.Analysis.FirstOrderFramework
++import NumStability.Analysis.FloatingPointArithmetic.ErrorModels.All
+ import NumStability.Analysis.Rounding
+ import NumStability.Analysis.Stability
+ import NumStability.FloatingPoint.Model
+diff --git a/NumStability/FloatingPoint.lean b/NumStability/FloatingPoint.lean
+index e223890b569d7b1a054d9e02a39c3b5cf60073de..5601ecd6c9ab618d81a9b56df7562e206247d45e 100644
+--- a/NumStability/FloatingPoint.lean
++++ b/NumStability/FloatingPoint.lean
+@@ -1,3 +1,4 @@
++import NumStability.FloatingPoint.FusedMultiplyAdd.All
+ import NumStability.FloatingPoint.IEEE
+ import NumStability.FloatingPoint.Model
+ import NumStability.FloatingPoint.OperationLaws
+diff --git a/NumStabilityTest.lean b/NumStabilityTest.lean
+index ebb860c68120c5d32dccead88575e88bafcafc8a..9771c0c107775ab0915e6ccd5031c7444deb5818 100644
+--- a/NumStabilityTest.lean
++++ b/NumStabilityTest.lean
+@@ -525,8 +525,8 @@ import NumStabilityTest.Reorganization.W01.Canonical.IeeeExceptions
+ import NumStabilityTest.Reorganization.W01.Canonical.IeeeOperations
+ import NumStabilityTest.Reorganization.W01.Canonical.IeeeValue
+ import NumStabilityTest.Reorganization.W01.Canonical.NearestRoundingError
+-import NumStabilityTest.Reorganization.W01.Canonical.RoundToEvenLocalError
+ import NumStabilityTest.Reorganization.W01.Canonical.Rounding
++import NumStabilityTest.Reorganization.W01.Canonical.RoundToEvenLocalError
+ import NumStabilityTest.Reorganization.W01.Canonical.StandardModel
+ import NumStabilityTest.Reorganization.W01.Chapter01.CancellationOfRoundingErrors
+ import NumStabilityTest.Reorganization.W01.Chapter01.IncreasingPrecision
+@@ -539,6 +539,7 @@ import NumStabilityTest.Reorganization.W01.Compatibility.CancellationOfRoundingE
+ import NumStabilityTest.Reorganization.W01.Compatibility.FloatingPointArithmetic
+ import NumStabilityTest.Reorganization.W01.Compatibility.IncreasingPrecision
+ import NumStabilityTest.Reorganization.W01.Compatibility.InstabilityWithoutCancellation
++import NumStabilityTest.Reorganization.W02
+ import NumStabilityTest.Worker.Ch09.Layers1To5
+ import NumStabilityTest.Worker.Ch09.WaveA
+ import NumStabilityTest.Worker.Ch09.WaveB
+diff --git a/docs/architecture/COMPATIBILITY.md b/docs/architecture/COMPATIBILITY.md
+index dfc26cceeb0d14ab268774bf4651cfcb0c2d1df8..667f19f67c6af070ae5b8537e81d50146b93ca7c 100644
+--- a/docs/architecture/COMPATIBILITY.md
++++ b/docs/architecture/COMPATIBILITY.md
+@@ -8,6 +8,18 @@ the table remains an import-only forwarding module.
+ 
+ | Historical path | Canonical path |
+ | --- | --- |
++| `NumStability.Algorithms.HighamChapter8FanInClosure` | `NumStability.Source.Higham.Chapter08.Equation15.GlobalEnvelopeCounterexample.RawCube` |
++| `NumStability.Algorithms.IterativeRefinement` | `NumStability.Algorithms.LinearSystems.IterativeRefinement.Core`, `NumStability.Source.Higham.Chapter12.IterativeRefinement.Chapter12Bounds`, and `NumStability.Source.Higham.Chapter12.IterativeRefinement.LegacyChapter11Surface` |
++| `NumStability.Algorithms.PriestFiniteFormat` | `NumStability.Algorithms.Summation.Compensated.Priest.FiniteFormat` and `NumStability.Source.Higham.Chapter04.Algorithm03.Priest.SourceAssumptions` |
++| `NumStability.Algorithms.TriangularArbitraryOrder` | `NumStability.Algorithms.Summation.Tree.ArbitraryOrderError.PivotNormalized` and `NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.ArbitraryOrder` |
++| `NumStability.Algorithms.TriangularNoGuard` | `NumStability.Algorithms.LinearSystems.Triangular.ErrorAnalysis.NoGuardBackward`, `NumStability.Algorithms.LinearSystems.Triangular.ErrorAnalysis.NoGuardForward`, `NumStability.Source.Higham.Chapter08.Problem01.NoGuardSubstitution.BackwardSubstitution`, and `NumStability.Source.Higham.Chapter08.Problem01.NoGuardSubstitution.ForwardSubstitution` |
++| `NumStability.Analysis.CramersRule` | `NumStability.Algorithms.LinearSystems.CramersRule.Core`, `NumStability.Source.Higham.Chapter01.Problem09.CramersRule.ForwardError`, and `NumStability.Source.Higham.Chapter01.Section10.CramersRule.PrintedComparison` |
++| `NumStability.Analysis.Error` | `NumStability.Analysis.Error.Measures.AccuracyPrecision`, `NumStability.Analysis.Error.Measures.Componentwise`, `NumStability.Analysis.Error.Measures.ScalarDefinitions`, `NumStability.Analysis.Error.Measures.ScalarProperties`, `NumStability.Analysis.Error.Measures.ScalarWitnesses`, `NumStability.Analysis.FloatingPointArithmetic.ErrorModels.Additive`, `NumStability.Analysis.FloatingPointArithmetic.ErrorModels.AdditiveProperties`, `NumStability.Analysis.FloatingPointArithmetic.ErrorModels.NoGuardBasic`, `NumStability.Analysis.FloatingPointArithmetic.ErrorModels.NoGuardModel`, `NumStability.Source.Higham.Chapter01.Problem01.RelativeError.Bounds`, `NumStability.Source.Higham.Chapter01.Section03.ErrorSources.Core`, `NumStability.Source.Higham.Chapter01.Section07.Cancellation.Basic`, and `NumStability.Source.Higham.Chapter02.Section04.NoGuardModel.BinaryT3Example` |
++| `NumStability.Analysis.FusedMultiplyAdd` | `NumStability.FloatingPoint.FusedMultiplyAdd.Core`, `NumStability.FloatingPoint.FusedMultiplyAdd.DotProductCounts`, `NumStability.Source.Higham.Chapter02.Problem26.ExactProduct.Discrepancy`, and `NumStability.Source.Higham.Chapter02.Section06.FusedMultiplyAdd.DotProductCount` |
++| `NumStability.Analysis.Midpoint` | `NumStability.Analysis.FloatingPointArithmetic.MidpointRounding.DecimalTieExamples` and `NumStability.Source.Higham.Chapter02.Problem08.MidpointRounding.Counterexample` |
++| `NumStability.Analysis.ProblemDependentStability` | `NumStability.Analysis.ProblemDependentStability.HessenbergDeterminant`, `NumStability.Source.Higham.Chapter01.Section16.ProblemDependentStability.ExactExample`, and `NumStability.Source.Higham.Chapter01.Section16.ProblemDependentStability.Table13IeeeSingle` |
++| `NumStability.Analysis.RoundingProductBounds` | `NumStability.Analysis.Error.RoundingProducts.Core` and `NumStability.Source.Higham.Chapter03.Problem02.ProductBounds.PositiveFactors` |
++| `NumStability.Analysis.TrigCancellation` | `NumStability.Analysis.FloatingPointArithmetic.TrigonometricCancellation.Core`, `NumStability.Source.Higham.Chapter01.Problem03.CancellationRewrites.Algebra`, and `NumStability.Source.Higham.Chapter01.Section07.TrigonometricCancellation.Example` |
+ | `NumStability.Higham` | `NumStability.Source.Higham` |
+ | `NumStability.Higham.Chapter02.Problem04` | `NumStability.Source.Higham.Chapter02.Problem04` |
+ | `NumStability.Higham.Chapter02.Problem07` | `NumStability.Source.Higham.Chapter02.Problem07` |
+@@ -223,12 +235,12 @@ the table remains an import-only forwarding module.
+ | `NumStability.Algorithms.LeastSquares.Higham20GeneralWedin` | `NumStability.Algorithms.LeastSquares.Higham20Lemma20_12`, `NumStability.Analysis.Perturbation.LeastSquares.Wedin`, and `NumStability.Source.Higham.Chapter20.Examples.GeneralRank` |
+ | `NumStability.Algorithms.LeastSquares.Higham20Lemma20_11` | `NumStability.Algorithms.LeastSquares.LSPerturbation`, `NumStability.Algorithms.Underdetermined.UnderdeterminedSpec`, `NumStability.Analysis.SingularValues.WeylMirsky`, and `NumStability.Source.Higham.Chapter20.Lemma11` |
+ | `NumStability.Algorithms.LeastSquares.Higham20Lemma20_12` | `NumStability.Algorithms.LeastSquares.LSPerturbation`, `NumStability.Algorithms.Underdetermined.UnderdeterminedSpec`, `NumStability.Analysis.Perturbation.LeastSquares.Projection`, and `NumStability.Source.Higham.Chapter20.Lemma12` |
+-| `NumStability.Algorithms.LeastSquares.Higham20MGSStability` | `NumStability.Algorithms.HighamChapter8`, `NumStability.Algorithms.LeastSquares.LSQRSolve`, `NumStability.Algorithms.QR.Higham19`, `NumStability.Algorithms.QR.Higham19Alg12MGSRepair`, `NumStability.Algorithms.QR.Higham19Alg12MGSRounded`, and `NumStability.Source.Higham.Chapter20.Problem05.MGSStability` |
++| `NumStability.Algorithms.LeastSquares.Higham20MGSStability` | `NumStability.Algorithms.LeastSquares.LSQRSolve`, `NumStability.Algorithms.QR.Higham19`, `NumStability.Algorithms.QR.Higham19Alg12MGSRepair`, `NumStability.Algorithms.QR.Higham19Alg12MGSRounded`, and `NumStability.Source.Higham.Chapter20.Problem05.MGSStability` |
+ | `NumStability.Algorithms.LeastSquares.Higham20MPProse` | `NumStability.Algorithms.LeastSquares.Higham20Lemma20_11`, `NumStability.Algorithms.LeastSquares.LSQRSolve`, and `NumStability.Source.Higham.Chapter20.Prose.MoorePenrose` |
+ | `NumStability.Algorithms.LeastSquares.Higham20MinimumNormBackwardError` | `NumStability.Algorithms.LeastSquares.Higham20WeightedLimit`, `NumStability.Analysis.Perturbation.LeastSquares.MinimumNorm`, and `NumStability.Source.Higham.Chapter20.MinimumNormBackwardError` |
+ | `NumStability.Algorithms.LeastSquares.Higham20NormalEquationsNorms` | `NumStability.Algorithms.LeastSquares.Higham20Equations`, `NumStability.Algorithms.LeastSquares.Higham20Remaining`, `NumStability.Analysis.Perturbation.LeastSquares.NormalEquations`, and `NumStability.Source.Higham.Chapter20.NormalEquations` |
+ | `NumStability.Algorithms.LeastSquares.Higham20Problem20_3` | `NumStability.Algorithms.LeastSquares.Higham20MPProse`, and `NumStability.Source.Higham.Chapter20.Problem03` |
+-| `NumStability.Algorithms.LeastSquares.Higham20Prose` | `NumStability.Algorithms.LeastSquares.LSQRSolve`, `NumStability.Algorithms.Underdetermined.Higham21ProjectorNorm`, `NumStability.Analysis.HighamChapter7`, `NumStability.Analysis.Perturbation.LeastSquares.Conditioning`, and `NumStability.Source.Higham.Chapter20.Prose` |
++| `NumStability.Algorithms.LeastSquares.Higham20Prose` | `NumStability.Algorithms.LeastSquares.LSQRSolve`, `NumStability.Algorithms.Underdetermined.Higham21ProjectorNorm`, `NumStability.Analysis.Perturbation.LeastSquares.Conditioning`, and `NumStability.Source.Higham.Chapter20.Prose` |
+ | `NumStability.Algorithms.LeastSquares.Higham20QuantitativeProse` | `NumStability.Algorithms.LeastSquares.Higham20Prose`, and `NumStability.Source.Higham.Chapter20.Prose.Quantitative` |
+ | `NumStability.Algorithms.LeastSquares.Higham20Refinement` | `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.LeastSquares.Higham20Equations`, `NumStability.Algorithms.LinearSystems.LeastSquares.Refinement`, `NumStability.Analysis.Perturbation.LeastSquares.Basic`, and `NumStability.Source.Higham.Chapter20.Theorem04.Refinement` |
+ | `NumStability.Algorithms.LeastSquares.Higham20Remaining` | `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.HighamChapter10`, `NumStability.Algorithms.LeastSquares.LSE`, `NumStability.Algorithms.LeastSquares.LSNormalEquations`, and `NumStability.Source.Higham.Chapter20.Remaining` |
+@@ -253,7 +265,7 @@ the table remains an import-only forwarding module.
+ | `NumStability.Algorithms.LeastSquares.Higham20ZeroDeltaB` | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_3`, `NumStability.Algorithms.QR.Higham19Labels`, `NumStability.Algorithms.Underdetermined.UnderdeterminedSolve`, and `NumStability.Source.Higham.Chapter20.Theorem03.ZeroDeltaB` |
+ | `NumStability.Algorithms.LeastSquares.LSE` | `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Algebra.Order.BigOperators.Group.Finset`, `Mathlib.Data.Fin.Tuple.Sort`, `Mathlib.Data.Real.Basic`, `Mathlib.LinearAlgebra.Dual.Lemmas`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.LeastSquares.LSQRSolve`, `NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic`, `NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR`, `NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT`, `NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar`, `NumStability.Algorithms.QR.Higham19`, `NumStability.Algorithms.QR.Higham19Thm6ColPivot`, `NumStability.Algorithms.QR.Higham19Thm6CoxHigham`, `NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete`, `NumStability.Algorithms.QR.Higham19Thm6ElementwisePackaged`, `NumStability.Algorithms.QR.Higham19Thm6RowSpecific`, `NumStability.Algorithms.Underdetermined.UnderdeterminedSpec`, `NumStability.Analysis.Perturbation.LeastSquares.Equality.MixedStability`, `NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation`, `NumStability.Analysis.Perturbation.LeastSquares.Equality.RowwiseBackwardError`, and `NumStability.Source.Higham.Chapter20.Theorem08.LSE` |
+ | `NumStability.Algorithms.LeastSquares.LSNormalEquations` | `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Algebra.Order.BigOperators.Group.Finset`, `Mathlib.Data.Real.Basic`, `Mathlib.Tactic.FinCases`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.NormNum`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.Cholesky.CholeskySolve`, `NumStability.Algorithms.Cholesky.CholeskySpec`, `NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations`, `NumStability.Algorithms.MatMul`, `NumStability.Analysis.MatrixAlgebra`, `NumStability.Analysis.Perturbation.LeastSquares.NormalEquations`, `NumStability.Analysis.PerturbationTheory`, `NumStability.Analysis.Rounding`, and `NumStability.FloatingPoint.Model` |
+-| `NumStability.Algorithms.LeastSquares.LSPerturbation` | `Mathlib.Data.Real.Basic`, `NumStability.Analysis.HighamChapter7`, `NumStability.Analysis.MatrixAlgebra`, `NumStability.Analysis.MatrixSpectral`, `NumStability.Analysis.Perturbation.LeastSquares.Basic`, `NumStability.Analysis.Perturbation.LeastSquares.Wedin`, `NumStability.Analysis.SingularValues.Realification`, and `NumStability.Source.Higham.Chapter20.Lemma11.Support` |
++| `NumStability.Algorithms.LeastSquares.LSPerturbation` | `Mathlib.Data.Real.Basic`, `NumStability.Analysis.MatrixAlgebra`, `NumStability.Analysis.MatrixSpectral`, `NumStability.Analysis.Perturbation.LeastSquares.Basic`, `NumStability.Analysis.Perturbation.LeastSquares.Wedin`, `NumStability.Analysis.SingularValues.Realification`, and `NumStability.Source.Higham.Chapter20.Lemma11.Support` |
+ | `NumStability.Algorithms.LeastSquares.LSQRSolve` | `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Algebra.Order.BigOperators.Group.Finset`, `Mathlib.Analysis.Matrix.Spectrum`, `Mathlib.Data.Real.Basic`, `Mathlib.LinearAlgebra.Matrix.Rank`, `Mathlib.Tactic.FieldSimp`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.LeastSquares.LSPerturbation`, `NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem`, `NumStability.Algorithms.LinearSystems.LeastSquares.Basic`, `NumStability.Algorithms.LinearSystems.LeastSquares.GramBasis`, `NumStability.Algorithms.LinearSystems.LeastSquares.MGS`, `NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations`, `NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve`, `NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry`, `NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR`, `NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport`, `NumStability.Algorithms.LinearSystems.QR.QRSolve`, `NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution`, `NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution`, `NumStability.Algorithms.LinearSystems.Triangular.InverseBounds`, `NumStability.Algorithms.RandNLA.LowRankApprox`, `NumStability.Analysis.MatrixAlgebra`, `NumStability.Analysis.Perturbation.LeastSquares.AugmentedSystem`, `NumStability.Analysis.Perturbation.LeastSquares.BackwardError`, `NumStability.Analysis.Perturbation.LeastSquares.Basic`, `NumStability.Analysis.Perturbation.LeastSquares.GramBasis`, `NumStability.Analysis.Perturbation.LeastSquares.NormalEquations`, `NumStability.Analysis.Perturbation.LeastSquares.Normwise`, `NumStability.Analysis.PerturbationTheory`, `NumStability.Analysis.SingularValues.Realification`, and `NumStability.Source.Higham.Chapter20.Theorem03.QRSolve` |
+ | `NumStability.Algorithms.LeastSquares.Higham20SourceAliases` | `NumStability.Source.Higham.Chapter20.Equation32`, `NumStability.Source.Higham.Chapter20.Lemma06`, and `NumStability.Source.Higham.Chapter20.Theorem01` |
+ | `NumStability.Algorithms.Underdetermined.Higham21Condition` | `NumStability.Source.Higham.Chapter21.RowScalingInvariance` |
+diff --git a/docs/architecture/layout-exceptions.json b/docs/architecture/layout-exceptions.json
+index b5df09563f2cd6b3ed4a8c29aaaf8329a82a2b9c..9959ea47732bbf516b0ed6d72fe88a75d0e164b7 100644
+--- a/docs/architecture/layout-exceptions.json
++++ b/docs/architecture/layout-exceptions.json
+@@ -58,6 +58,7 @@
+     "NumStability.Source.Higham.Chapter01.Section17": "NumStability.Source.Higham.Chapter01.Section17.",
+     "NumStability.Source.Higham.Chapter02": "NumStability.Source.Higham.Chapter02.",
+     "NumStability.Source.Higham.Chapter02.Section07": "NumStability.Source.Higham.Chapter02.Section07.",
++    "NumStability.Source.Higham.Chapter03": "NumStability.Source.Higham.Chapter03.",
+     "NumStability.Source.Higham.Chapter04": "NumStability.Source.Higham.Chapter04.",
+     "NumStability.Source.Higham.Chapter04.Algorithm02": "NumStability.Source.Higham.Chapter04.Algorithm02.",
+     "NumStability.Source.Higham.Chapter04.Equation07": "NumStability.Source.Higham.Chapter04.Equation07.",
+@@ -84,6 +85,7 @@
+       "NumStability.Source.Higham.Chapter06.Problem10",
+       "NumStability.Source.Higham.Chapter06.Theorem04"
+     ],
++    "NumStability.Source.Higham.Chapter07": "NumStability.Source.Higham.Chapter07.",
+     "NumStability.Source.Higham.Chapter08": "NumStability.Source.Higham.Chapter08.",
+     "NumStability.Source.Higham.Chapter10": "NumStability.Source.Higham.Chapter10.",
+     "NumStability.Source.Higham.Chapter11": "NumStability.Source.Higham.Chapter11.",
+@@ -222,6 +224,7 @@
+   "legacy": {
+     "declaration_bearing_umbrellas": [
+       "NumStability.Analysis.FloatingPointArithmetic",
++      "NumStability.Source.Higham.Chapter12.IterativeRefinement",
+       "NumStability.Source.Higham.Chapter13.Equation23",
+       "NumStability.Source.Higham.Chapter13.Equation25",
+       "NumStability.Source.Higham.Chapter13.Table01",
+@@ -262,33 +265,26 @@
+       "NumStability.Algorithms.Cholesky.CholeskySpec",
+       "NumStability.Algorithms.Cholesky.Higham10Problem10_3",
+       "NumStability.Algorithms.CondEstimation",
+-      "NumStability.Algorithms.DotProduct",
+       "NumStability.Algorithms.GaussJordan",
+       "NumStability.Algorithms.GaussJordanPivoting",
+       "NumStability.Algorithms.HighamChapter15BoydScalar",
+       "NumStability.Algorithms.HighamChapter15BoydSourceClosure",
+       "NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative",
+       "NumStability.Algorithms.HighamChapter15BoydUniqueness",
+-      "NumStability.Algorithms.HighamChapter8FanInClosure",
+       "NumStability.Algorithms.HighamLemma88Entrywise",
+-      "NumStability.Algorithms.IterativeRefinement",
+       "NumStability.Algorithms.LU.Doolittle",
+-      "NumStability.Algorithms.LU.GaussianElimination",
+-      "NumStability.Algorithms.LU.GrowthFactor",
+       "NumStability.Algorithms.LU.Higham15Problem15_4",
+       "NumStability.Algorithms.LU.Higham15Problem15_6Closure",
+       "NumStability.Algorithms.LU.Higham15Problem15_6Operational",
+-      "NumStability.Algorithms.LU.LUSolve",
+-      "NumStability.Algorithms.LU.SpecialMatrices",
+-      "NumStability.Algorithms.LU.Tridiagonal",
+-      "NumStability.Algorithms.LU.TridiagonalCond",
+       "NumStability.Algorithms.LU.TridiagonalCondCh15",
+       "NumStability.Algorithms.LU.TridiagonalCondCh15Closure",
+       "NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure",
+-      "NumStability.Algorithms.LU.TridiagonalRecurrence",
+-      "NumStability.Algorithms.MMatrix",
+-      "NumStability.Algorithms.MatMul",
+-      "NumStability.Algorithms.MatVec",
++      "NumStability.Algorithms.LinearSystems.IterativeRefinement.Core",
++      "NumStability.Algorithms.LinearSystems.LU.Doolittle.BackwardError",
++      "NumStability.Algorithms.LinearSystems.LU.Doolittle.Basic",
++      "NumStability.Algorithms.LinearSystems.LU.Doolittle.Budgets",
++      "NumStability.Algorithms.LinearSystems.LU.Doolittle.Certificates",
++      "NumStability.Algorithms.LinearSystems.LU.Doolittle.RoundedEntries",
+       "NumStability.Algorithms.MatrixPowers",
+       "NumStability.Algorithms.MatrixPowersComplex",
+       "NumStability.Algorithms.MatrixPowersJordan",
+@@ -297,8 +293,6 @@
+       "NumStability.Algorithms.MatrixPowersPseudospectral",
+       "NumStability.Algorithms.MatrixPowersPseudospectralCriterion",
+       "NumStability.Algorithms.MatrixPowersSpectral",
+-      "NumStability.Algorithms.Norm2",
+-      "NumStability.Algorithms.OuterProduct",
+       "NumStability.Algorithms.PNormPowerMethodRect",
+       "NumStability.Algorithms.QR.GivensMatrixStep",
+       "NumStability.Algorithms.QR.GivensQR",
+@@ -365,6 +359,7 @@
+       "NumStability.Algorithms.StationaryIterationRounded",
+       "NumStability.Algorithms.StationaryIterationSemiconvergent",
+       "NumStability.Algorithms.StationaryIterationSemiconvergentExistence",
++      "NumStability.Algorithms.Summation.Tree.ArbitraryOrderError.PivotNormalized",
+       "NumStability.Algorithms.Sylvester.Higham16",
+       "NumStability.Algorithms.Sylvester.Higham16AutoCondition",
+       "NumStability.Algorithms.Sylvester.Higham16Eq9Assembly",
+@@ -401,7 +396,6 @@
+       "NumStability.Algorithms.TestMatrices.Higham28PascalTotalPositivity",
+       "NumStability.Algorithms.TestMatrices.Higham28StewartRawFiber",
+       "NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum",
+-      "NumStability.Algorithms.TriangularArbitraryOrder",
+       "NumStability.Algorithms.Underdetermined.Higham21Attainability",
+       "NumStability.Algorithms.Underdetermined.Higham21Eq21_11Uniform",
+       "NumStability.Algorithms.Underdetermined.Higham21Eq21_8",
+@@ -417,9 +411,7 @@
+       "NumStability.Algorithms.Underdetermined.Higham21SNERemainderBounds",
+       "NumStability.Algorithms.Underdetermined.UnderdeterminedSolve",
+       "NumStability.Algorithms.Underdetermined.UnderdeterminedSpec",
+-      "NumStability.Analysis.ConditionEstimatorLowerBound",
+       "NumStability.Analysis.InverseOpNorm2",
+-      "NumStability.Analysis.MatrixConcentration",
+       "NumStability.Analysis.MatrixPowersBaiDemmelGu",
+       "NumStability.Analysis.MatrixPowersGautschi",
+       "NumStability.Analysis.MatrixPowersHenriciNormal",
+@@ -428,26 +420,27 @@
+       "NumStability.Analysis.MatrixPowersLp185Primary",
+       "NumStability.Analysis.MatrixPowersSpijkerClosure",
+       "NumStability.Analysis.MatrixPowersSpijkerRational",
+-      "NumStability.Analysis.MatrixSpectral",
+       "NumStability.Analysis.PseudospectralLowerBound",
+       "NumStability.Analysis.PseudospectralPowerBound",
+       "NumStability.Analysis.PseudospectralResolvent",
+-      "NumStability.Analysis.SemiconvergentBlockFormExists",
+-      "NumStability.Analysis.SemiconvergentExistenceComplete",
+-      "NumStability.Analysis.SemiconvergentExistenceFull",
+-      "NumStability.Analysis.SemiconvergentExistenceGaps",
+-      "NumStability.Analysis.SemiconvergentLimitGeneral",
+-      "NumStability.Analysis.SemiconvergentRealSpectrumComplete",
+-      "NumStability.Analysis.SemiconvergentSpectral",
+       "NumStability.Analysis.SpijkerProjectionIntegral",
+       "NumStability.Analysis.SylvesterSchurExistence",
+-      "NumStability.FloatingPoint.Model"
++      "NumStability.FloatingPoint.Model",
++      "NumStability.Source.Higham.Chapter08.Equation15.GlobalEnvelopeCounterexample.RawCube",
++      "NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.ArbitraryOrder",
++      "NumStability.Source.Higham.Chapter12.IterativeRefinement.Chapter12Bounds",
++      "NumStability.Source.Higham.Chapter12.IterativeRefinement.LegacyChapter11Surface"
+     ],
+     "mixed_modules": [
++      "NumStability.Algorithms.HighamChapter8",
+       "NumStability.Analysis.CancellationOfRoundingErrors",
++      "NumStability.Analysis.DoubleRounding",
+       "NumStability.Analysis.FloatingPointArithmetic",
++      "NumStability.Analysis.HighamChapter7",
++      "NumStability.Analysis.HighamChapter7Rectangular",
+       "NumStability.Analysis.IncreasingPrecision",
+-      "NumStability.Analysis.InstabilityWithoutCancellation"
++      "NumStability.Analysis.InstabilityWithoutCancellation",
++      "NumStability.Analysis.SampleVariance"
+     ],
+     "noncanonical_modules": [
+       "NumStability.Algorithms.Ch10ActualSourceClosure",
+@@ -530,7 +523,6 @@
+       "NumStability.Algorithms.HighamChapter15RectTermination",
+       "NumStability.Algorithms.HighamChapter5ComplexAlgorithm51",
+       "NumStability.Algorithms.HighamChapter8",
+-      "NumStability.Algorithms.HighamChapter8FanInClosure",
+       "NumStability.Algorithms.HighamChapters1To9SourceClosure",
+       "NumStability.Algorithms.LU.Higham15Problem15_4",
+       "NumStability.Algorithms.LU.Higham15Problem15_6",
+@@ -691,6 +683,7 @@
+       "NumStability.Analysis.Problem2_3",
+       "NumStability.Analysis.Problem2_5",
+       "NumStability.Analysis.Problem2_6",
++      "NumStability.Source.Higham.Chapter06.Theorem05.DistanceToSingularity.Chapter07Equation26",
+       "NumStability.Source.Higham.Chapter09.Theorem914Actual",
+       "NumStability.Source.Higham.Chapter09.Theorem914DiagDominant",
+       "NumStability.Source.Higham.Chapter09.Theorem914Primitive",
+@@ -725,11 +718,10 @@
+       "NumStability.Source.Higham.Chapter11.Higham11RookSourceClosure",
+       "NumStability.Source.Higham.Chapter11.Higham11SkewActualSelector",
+       "NumStability.Source.Higham.Chapter11.Higham11SkewExactTrace",
+-      "NumStability.Source.Higham.Chapter11.Higham11SkewSourceCorrection"
++      "NumStability.Source.Higham.Chapter11.Higham11SkewSourceCorrection",
++      "NumStability.Source.Higham.Chapter12.IterativeRefinement.Chapter12Bounds"
+     ],
+     "unclassified_modules": [
+-      "NumStability.Algorithms.AitkenDenominator",
+-      "NumStability.Algorithms.BlockDotProduct",
+       "NumStability.Algorithms.Ch10ActualSourceClosure",
+       "NumStability.Algorithms.Ch10Ch14Lemma66Op2Bridge",
+       "NumStability.Algorithms.Ch10ComplexPositiveDefiniteSourceClosure",
+@@ -801,14 +793,9 @@
+       "NumStability.Algorithms.Cholesky.Higham10Problem10_3",
+       "NumStability.Algorithms.Cholesky.HighamMathiasFirstBreakdown",
+       "NumStability.Algorithms.Cholesky.HighamMathiasSource",
+-      "NumStability.Algorithms.ComplexBackwardError",
+       "NumStability.Algorithms.CondEstimation",
+-      "NumStability.Algorithms.ContinuedFraction",
+-      "NumStability.Algorithms.DotProduct",
+-      "NumStability.Algorithms.ExtendedPrecisionDotProduct",
+       "NumStability.Algorithms.GaussJordan",
+       "NumStability.Algorithms.GaussJordanPivoting",
+-      "NumStability.Algorithms.GridPoints",
+       "NumStability.Algorithms.Higham5FastPolynomialEvaluation",
+       "NumStability.Algorithms.Higham5PatersonStockmeyer",
+       "NumStability.Algorithms.Higham726Rump",
+@@ -826,34 +813,17 @@
+       "NumStability.Algorithms.HighamChapter15ConvergenceProse",
+       "NumStability.Algorithms.HighamChapter15RectTermination",
+       "NumStability.Algorithms.HighamChapter5ComplexAlgorithm51",
+-      "NumStability.Algorithms.HighamChapter8",
+-      "NumStability.Algorithms.HighamChapter8FanInClosure",
+       "NumStability.Algorithms.HighamChapters1To9SourceClosure",
+       "NumStability.Algorithms.HighamLemma88Entrywise",
+       "NumStability.Algorithms.Horner",
+-      "NumStability.Algorithms.IterativeRefinement",
+       "NumStability.Algorithms.KahanAbsolute",
+-      "NumStability.Algorithms.LU.Doolittle",
+-      "NumStability.Algorithms.LU.GaussianElimination",
+-      "NumStability.Algorithms.LU.GrowthFactor",
+       "NumStability.Algorithms.LU.Higham15Problem15_4",
+       "NumStability.Algorithms.LU.Higham15Problem15_6",
+       "NumStability.Algorithms.LU.Higham15Problem15_6Closure",
+       "NumStability.Algorithms.LU.Higham15Problem15_6Operational",
+-      "NumStability.Algorithms.LU.LUSolve",
+-      "NumStability.Algorithms.LU.SpecialMatrices",
+-      "NumStability.Algorithms.LU.Tridiagonal",
+-      "NumStability.Algorithms.LU.TridiagonalCond",
+       "NumStability.Algorithms.LU.TridiagonalCondCh15",
+       "NumStability.Algorithms.LU.TridiagonalCondCh15Closure",
+       "NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure",
+-      "NumStability.Algorithms.LU.TridiagonalRecurrence",
+-      "NumStability.Algorithms.LogExpProduct",
+-      "NumStability.Algorithms.MMatrix",
+-      "NumStability.Algorithms.MatMul",
+-      "NumStability.Algorithms.MatMulBackwardError",
+-      "NumStability.Algorithms.MatSeqProduct",
+-      "NumStability.Algorithms.MatVec",
+       "NumStability.Algorithms.MatrixInversion",
+       "NumStability.Algorithms.MatrixInversionMethod2BInstance",
+       "NumStability.Algorithms.MatrixPowers",
+@@ -864,17 +834,10 @@
+       "NumStability.Algorithms.MatrixPowersPseudospectral",
+       "NumStability.Algorithms.MatrixPowersPseudospectralCriterion",
+       "NumStability.Algorithms.MatrixPowersSpectral",
+-      "NumStability.Algorithms.NeumaierCompensatedFiniteFormat",
+-      "NumStability.Algorithms.Norm2",
+       "NumStability.Algorithms.OrderingExamples",
+-      "NumStability.Algorithms.OuterProduct",
+       "NumStability.Algorithms.PNormPowerMethod",
+       "NumStability.Algorithms.PNormPowerMethodGeneralP",
+       "NumStability.Algorithms.PNormPowerMethodRect",
+-      "NumStability.Algorithms.PriestAccuracy",
+-      "NumStability.Algorithms.PriestDefectBounded",
+-      "NumStability.Algorithms.PriestFiniteFormat",
+-      "NumStability.Algorithms.Quadrature",
+       "NumStability.Algorithms.RandNLA",
+       "NumStability.Algorithms.RandNLA.ElementwiseSampling",
+       "NumStability.Algorithms.RandNLA.ElementwiseSpectral",
+@@ -893,8 +856,6 @@
+       "NumStability.Algorithms.RandNLA.UniformRowSamplingComposition",
+       "NumStability.Algorithms.RandNLA.UniformRowSamplingFP",
+       "NumStability.Algorithms.RandNLA.UniformRowSamplingMGF",
+-      "NumStability.Algorithms.RankOneUpdate",
+-      "NumStability.Algorithms.SquareDifference",
+       "NumStability.Algorithms.StationaryIteration",
+       "NumStability.Algorithms.StationaryIterationDrazin",
+       "NumStability.Algorithms.StationaryIterationRounded",
+@@ -1000,9 +961,6 @@
+       "NumStability.Algorithms.TestMatrices.Higham28ToeplitzCondition",
+       "NumStability.Algorithms.TestMatrices.Higham28ToeplitzGeneral",
+       "NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum",
+-      "NumStability.Algorithms.TreeDotProduct",
+-      "NumStability.Algorithms.TriangularArbitraryOrder",
+-      "NumStability.Algorithms.TriangularNoGuard",
+       "NumStability.Algorithms.Underdetermined.Higham21",
+       "NumStability.Algorithms.Underdetermined.Higham21Attainability",
+       "NumStability.Algorithms.Underdetermined.Higham21Eq21_11Uniform",
+@@ -1035,43 +993,26 @@
+       "NumStability.Algorithms.WilkinsonAttainability",
+       "NumStability.Analysis.Accumulation",
+       "NumStability.Analysis.AccuracyTests",
+-      "NumStability.Analysis.AlternativeNumberSystems",
+-      "NumStability.Analysis.BeneficialRounding",
+       "NumStability.Analysis.BergerGeneral",
+       "NumStability.Analysis.BergerInequality",
+       "NumStability.Analysis.BergerResolvent",
+-      "NumStability.Analysis.BrentBaseOptimality",
+       "NumStability.Analysis.CStarMatrixBridge",
+       "NumStability.Analysis.CStarMatrixExpectation",
+       "NumStability.Analysis.CStarMatrixTrace",
+       "NumStability.Analysis.CalculatorWords",
+-      "NumStability.Analysis.Chopping",
+-      "NumStability.Analysis.ComplexArithmetic",
+-      "NumStability.Analysis.ComplexSqrt",
+-      "NumStability.Analysis.ConditionEstimatorLowerBound",
+       "NumStability.Analysis.Counting",
+-      "NumStability.Analysis.CramersRule",
+-      "NumStability.Analysis.DoubleRounding",
+       "NumStability.Analysis.DunfordResidue",
+-      "NumStability.Analysis.Error",
+-      "NumStability.Analysis.FiniteProbability",
+-      "NumStability.Analysis.FirstOrderFramework",
+-      "NumStability.Analysis.FusedMultiplyAdd",
+       "NumStability.Analysis.HenriciExtremal",
+       "NumStability.Analysis.HenriciSharpConstant",
+       "NumStability.Analysis.HenriciSharpConstantExact",
+-      "NumStability.Analysis.Heron",
+       "NumStability.Analysis.HighamChapter2ElementaryFunctions",
+       "NumStability.Analysis.HighamChapter2FmaDiscriminant",
+       "NumStability.Analysis.HighamChapter2GradualUnderflowExact",
+       "NumStability.Analysis.HighamChapter2Lindemann",
+       "NumStability.Analysis.HighamChapter2Tablemaker",
+-      "NumStability.Analysis.HighamChapter7",
+-      "NumStability.Analysis.HighamChapter7Rectangular",
+       "NumStability.Analysis.InverseOpNorm2",
+       "NumStability.Analysis.JordanNormalForm",
+       "NumStability.Analysis.LiebTrace",
+-      "NumStability.Analysis.MatrixConcentration",
+       "NumStability.Analysis.MatrixPowersBaiDemmelGu",
+       "NumStability.Analysis.MatrixPowersBaiDemmelGuDistance",
+       "NumStability.Analysis.MatrixPowersBinomialBound",
+@@ -1087,13 +1028,9 @@
+       "NumStability.Analysis.MatrixPowersSpijkerPlanar",
+       "NumStability.Analysis.MatrixPowersSpijkerPlanarAnalysis",
+       "NumStability.Analysis.MatrixPowersSpijkerRational",
+-      "NumStability.Analysis.MatrixSpectral",
+-      "NumStability.Analysis.Midpoint",
+-      "NumStability.Analysis.Monotonicity",
+       "NumStability.Analysis.MullerRecurrence",
+       "NumStability.Analysis.NearInteger",
+       "NumStability.Analysis.NilpotentJordanChain",
+-      "NumStability.Analysis.Nonassociativity",
+       "NumStability.Analysis.NumericalRadius",
+       "NumStability.Analysis.OperatorLog",
+       "NumStability.Analysis.Problem2_10",
+@@ -1113,32 +1050,16 @@
+       "NumStability.Analysis.Problem2_3",
+       "NumStability.Analysis.Problem2_5",
+       "NumStability.Analysis.Problem2_6",
+-      "NumStability.Analysis.ProblemDependentStability",
+       "NumStability.Analysis.PseudospectralLowerBound",
+       "NumStability.Analysis.PseudospectralPowerBound",
+       "NumStability.Analysis.PseudospectralResolvent",
+-      "NumStability.Analysis.Quadratic",
+       "NumStability.Analysis.RealInvariantSubspace",
+       "NumStability.Analysis.RealQuasiSchur",
+       "NumStability.Analysis.RealSchurTriangulation",
+-      "NumStability.Analysis.RelativePrecision",
+       "NumStability.Analysis.ResolventFunctionalCalculus",
+-      "NumStability.Analysis.RoundingProductBounds",
+-      "NumStability.Analysis.SampleVariance",
+       "NumStability.Analysis.SchurTriangulation",
+-      "NumStability.Analysis.SemiconvergentBlockFormExists",
+-      "NumStability.Analysis.SemiconvergentExistenceComplete",
+-      "NumStability.Analysis.SemiconvergentExistenceFull",
+-      "NumStability.Analysis.SemiconvergentExistenceGaps",
+-      "NumStability.Analysis.SemiconvergentLimitGeneral",
+-      "NumStability.Analysis.SemiconvergentRealSpectrumComplete",
+-      "NumStability.Analysis.SemiconvergentSpectral",
+       "NumStability.Analysis.SpijkerProjectionIntegral",
+-      "NumStability.Analysis.Stability",
+-      "NumStability.Analysis.StatisticalRounding",
+-      "NumStability.Analysis.SylvesterSchurExistence",
+-      "NumStability.Analysis.TieRules",
+-      "NumStability.Analysis.TrigCancellation"
++      "NumStability.Analysis.SylvesterSchurExistence"
+     ],
+     "unsorted_aggregate_imports": []
+   },
+diff --git a/docs/architecture/tiers.json b/docs/architecture/tiers.json
+index e2a0a60d91dbcc468547d50477329ed592dbc516..c338f18e168579a8a4a20a5adbfc2b31af2249cb 100644
+--- a/docs/architecture/tiers.json
++++ b/docs/architecture/tiers.json
+@@ -130,6 +130,81 @@
+     "NumStability.Source.Higham.Chapter28.Equation02.RatioDiscrepancy": "source",
+     "NumStability.Source.Higham.CrossChapter": "aggregate",
+     "NumStability.Source.Higham.CrossChapter.LUSolverWeights": "aggregate",
++    "NumStability.Algorithms.AitkenDenominator": "reusable",
++    "NumStability.Algorithms.BlockDotProduct": "reusable",
++    "NumStability.Algorithms.ComplexBackwardError": "reusable",
++    "NumStability.Algorithms.ContinuedFraction": "reusable",
++    "NumStability.Algorithms.DotProduct": "reusable",
++    "NumStability.Algorithms.ExtendedPrecisionDotProduct": "reusable",
++    "NumStability.Algorithms.GridPoints": "reusable",
++    "NumStability.Algorithms.HighamChapter8": "mixed",
++    "NumStability.Algorithms.HighamChapter8FanInClosure": "compatibility",
++    "NumStability.Algorithms.IterativeRefinement": "compatibility",
++    "NumStability.Algorithms.LogExpProduct": "reusable",
++    "NumStability.Algorithms.LU.Doolittle": "reusable",
++    "NumStability.Algorithms.LU.GaussianElimination": "reusable",
++    "NumStability.Algorithms.LU.GrowthFactor": "reusable",
++    "NumStability.Algorithms.LU.LUSolve": "reusable",
++    "NumStability.Algorithms.LU.SpecialMatrices": "reusable",
++    "NumStability.Algorithms.LU.Tridiagonal": "reusable",
++    "NumStability.Algorithms.LU.TridiagonalCond": "reusable",
++    "NumStability.Algorithms.LU.TridiagonalRecurrence": "reusable",
++    "NumStability.Algorithms.MatMul": "reusable",
++    "NumStability.Algorithms.MatMulBackwardError": "reusable",
++    "NumStability.Algorithms.MatSeqProduct": "reusable",
++    "NumStability.Algorithms.MatVec": "reusable",
++    "NumStability.Algorithms.MMatrix": "reusable",
++    "NumStability.Algorithms.NeumaierCompensatedFiniteFormat": "reusable",
++    "NumStability.Algorithms.Norm2": "reusable",
++    "NumStability.Algorithms.OuterProduct": "reusable",
++    "NumStability.Algorithms.PriestAccuracy": "reusable",
++    "NumStability.Algorithms.PriestDefectBounded": "reusable",
++    "NumStability.Algorithms.PriestFiniteFormat": "compatibility",
++    "NumStability.Algorithms.Quadrature": "reusable",
++    "NumStability.Algorithms.RankOneUpdate": "reusable",
++    "NumStability.Algorithms.SquareDifference": "reusable",
++    "NumStability.Algorithms.TreeDotProduct": "reusable",
++    "NumStability.Algorithms.TriangularArbitraryOrder": "compatibility",
++    "NumStability.Algorithms.TriangularNoGuard": "compatibility",
++    "NumStability.Analysis.AlternativeNumberSystems": "reusable",
++    "NumStability.Analysis.BeneficialRounding": "reusable",
++    "NumStability.Analysis.BrentBaseOptimality": "reusable",
++    "NumStability.Analysis.Chopping": "reusable",
++    "NumStability.Analysis.ComplexArithmetic": "reusable",
++    "NumStability.Analysis.ComplexSqrt": "reusable",
++    "NumStability.Analysis.ConditionEstimatorLowerBound": "reusable",
++    "NumStability.Analysis.CramersRule": "compatibility",
++    "NumStability.Analysis.DoubleRounding": "mixed",
++    "NumStability.Analysis.Error": "compatibility",
++    "NumStability.Analysis.FiniteProbability": "reusable",
++    "NumStability.Analysis.FirstOrderFramework": "reusable",
++    "NumStability.Analysis.FusedMultiplyAdd": "compatibility",
++    "NumStability.Analysis.Heron": "reusable",
++    "NumStability.Analysis.HighamChapter7": "mixed",
++    "NumStability.Analysis.HighamChapter7Rectangular": "mixed",
++    "NumStability.Analysis.MatrixConcentration": "reusable",
++    "NumStability.Analysis.MatrixSpectral": "reusable",
++    "NumStability.Analysis.Midpoint": "compatibility",
++    "NumStability.Analysis.Monotonicity": "reusable",
++    "NumStability.Analysis.Nonassociativity": "reusable",
++    "NumStability.Analysis.ProblemDependentStability": "compatibility",
++    "NumStability.Analysis.Quadratic": "reusable",
++    "NumStability.Analysis.RelativePrecision": "reusable",
++    "NumStability.Analysis.RoundingProductBounds": "compatibility",
++    "NumStability.Analysis.SampleVariance": "mixed",
++    "NumStability.Analysis.SemiconvergentBlockFormExists": "reusable",
++    "NumStability.Analysis.SemiconvergentExistenceComplete": "reusable",
++    "NumStability.Analysis.SemiconvergentExistenceFull": "reusable",
++    "NumStability.Analysis.SemiconvergentExistenceGaps": "reusable",
++    "NumStability.Analysis.SemiconvergentLimitGeneral": "reusable",
++    "NumStability.Analysis.SemiconvergentRealSpectrumComplete": "reusable",
++    "NumStability.Analysis.SemiconvergentSpectral": "reusable",
++    "NumStability.Analysis.Stability": "reusable",
++    "NumStability.Analysis.StatisticalRounding": "reusable",
++    "NumStability.Analysis.TieRules": "reusable",
++    "NumStability.Analysis.TrigCancellation": "compatibility",
++    "NumStability.Source.Higham.Chapter03": "aggregate",
++    "NumStability.Source.Higham.Chapter07": "aggregate",
+     "NumStability.Algorithms.Arithmetic.DotProduct.NoGuard": "aggregate",
+     "NumStability.Algorithms.Arithmetic.DotProduct.NoGuard.Core": "reusable",
+     "NumStability.Algorithms.Arithmetic.DotProduct.NoGuard.Tree": "reusable",
+@@ -580,6 +655,66 @@
+     "NumStability.Analysis.Problem2_7": "compatibility"
+   },
+   "prefixes": [
++    {
++      "prefix": "NumStability.Algorithms.LinearSystems.CramersRule",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Algorithms.LinearSystems.IterativeRefinement",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Algorithms.LinearSystems.LU.Doolittle",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Algorithms.Summation.Compensated.Neumaier",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Algorithms.Summation.Compensated.Priest",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Algorithms.Summation.Tree.ArbitraryOrderError",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Analysis.Conditioning.LinearSystems",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Analysis.Error.Measures",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Analysis.Error.RoundingProducts",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Analysis.FloatingPointArithmetic.DoubleRounding",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Analysis.FloatingPointArithmetic.ErrorModels",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Analysis.FloatingPointArithmetic.MidpointRounding",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Analysis.FloatingPointArithmetic.TrigonometricCancellation",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Analysis.ProblemDependentStability",
++      "tier": "reusable"
++    },
++    {
++      "prefix": "NumStability.Analysis.Statistics.SampleVariance",
++      "tier": "reusable"
++    },
+     {
+       "prefix": "NumStability.Source",
+       "tier": "source"

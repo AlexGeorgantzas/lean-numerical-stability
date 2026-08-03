@@ -765,7 +765,9 @@
     "status": "retired"
   },
   "schema_version": 1,
-  "shared_request_ids": [],
+  "shared_request_ids": [
+    "R0001"
+  ],
   "status": "retired",
   "wave_id": "W02"
 }

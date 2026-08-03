@@ -1,0 +1,74 @@
+{
+  "blocks": [
+    "W12"
+  ],
+  "created_at": "2026-08-03T01:29:29Z",
+  "depends_on": [
+    "M02"
+  ],
+  "lane_id": "remote-lane",
+  "patch": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/requests/R0002.patch",
+    "sha256": "2D94995267828E7DFEC0DEC49D8A612AF119C4024CB1EA825A2111D1AEECD1BC"
+  },
+  "paths": [
+    "NumStability/Algorithms.lean",
+    "NumStability/Analysis.lean",
+    "NumStabilityTest.lean",
+    "docs/architecture/COMPATIBILITY.md",
+    "docs/architecture/layout-exceptions.json",
+    "docs/architecture/tiers.json"
+  ],
+  "phase_id": "repository-reorganization-2026-08",
+  "preimage_blobs": [
+    {
+      "blob_oid": "5f05fddaeb52e8ffd83bcb29f94ab3f81b0e44f0",
+      "path": "NumStability/Algorithms.lean"
+    },
+    {
+      "blob_oid": "f954f25d7872f184f692c76c77b0f5025d3e2154",
+      "path": "NumStability/Analysis.lean"
+    },
+    {
+      "blob_oid": "9771c0c107775ab0915e6ccd5031c7444deb5818",
+      "path": "NumStabilityTest.lean"
+    },
+    {
+      "blob_oid": "667f19f67c6af070ae5b8537e81d50146b93ca7c",
+      "path": "docs/architecture/COMPATIBILITY.md"
+    },
+    {
+      "blob_oid": "9959ea47732bbf516b0ed6d72fe88a75d0e164b7",
+      "path": "docs/architecture/layout-exceptions.json"
+    },
+    {
+      "blob_oid": "c338f18e168579a8a4a20a5adbfc2b31af2249cb",
+      "path": "docs/architecture/tiers.json"
+    }
+  ],
+  "rationale": "Retroactively register the exact integrator-owned shared-file delta requested by Claude's W12 delivery packet and applied at C0004 after W02 acceptance.",
+  "record_kind": "shared_file_request",
+  "request_id": "R0002",
+  "requester_id": "claude-remote",
+  "resolution": {
+    "checkpoint_id": "C0004",
+    "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+    "reason": "Applied during W12 integration and accepted by the green C0004 checkpoint.",
+    "resolved_at": "2026-08-03T01:29:29Z",
+    "resolved_by": "primary-human",
+    "validation_evidence": [
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      }
+    ]
+  },
+  "schema_version": 1,
+  "status": "applied",
+  "superseded_by": null,
+  "supersedes": null,
+  "target_base_sha": "bb80c95a4625e07535dacdda12d246ee1a5795b3",
+  "target_checkpoint_id": "C0003",
+  "valid_through_checkpoint_id": "C0003",
+  "wave_id": "W12"
+}

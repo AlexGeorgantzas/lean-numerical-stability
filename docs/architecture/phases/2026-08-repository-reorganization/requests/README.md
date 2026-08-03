@@ -6,4 +6,7 @@ hash-pinned `Rxxxx.patch` here for every requested shared change. A request is
 valid only through its target checkpoint and must become applied, rejected,
 withdrawn, expired, or superseded when that checkpoint changes.
 
-There are no active shared-file requests at checkpoint C0001.
+There are no active shared-file requests at checkpoint C0004. R0001 and R0002
+are terminal applied records that retroactively register the exact, hash-pinned
+integrator-owned deltas accepted at C0003 for W02 and at C0004 for W12,
+respectively.
