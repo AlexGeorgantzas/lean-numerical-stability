@@ -123,16 +123,26 @@ integrator-owned W02 file.
 Do not edit W06 as part of W05 acceptance.  The thirteen direct W06-to-W05
 imports and their eventual canonical actions are:
 
-- Keep the historical `Higham16` import for
-  `Higham16Minimizers`, `Higham16Spectrum`, and `Higham16VecNorm`; each uses
-  declarations pinned by the private closure.
-- Defer reviewed retargets for `Higham16Eq9Assembly`,
-  `Higham16NormEstimator`, and `Higham16VecPermutationNotes`, which currently
-  import `Higham16` but do not require its private closure.
-- Retarget `Higham16LyapunovSigmaMin`, `Higham16PerturbationSigmaMin`, and
-  `Higham16PsiSigmaMin` from `Analysis.InverseOpNorm2` to
+- Keep the historical `Higham16` import for `Higham16Eq9Assembly`,
+  `Higham16Minimizers`, `Higham16Spectrum`, and `Higham16VecNorm`; each has a
+  typed dependency on declarations pinned by the private closure.  In
+  particular, `Higham16Eq9Assembly` has three body edges to retained
+  `frobNormRect_sylvesterResidualRect_schur_transform`.
+- Retarget `Higham16NormEstimator` from `Higham16` to
+  `Algorithms.MatrixEquations.Sylvester.Conditioning.PracticalErrorBounds` and
+  retarget `Higham16VecPermutationNotes` to
+  `Algorithms.MatrixEquations.Sylvester.Equation.Vectorization` when W06 owns
+  those files.
+- Retarget `Higham16LyapunovSigmaMin` and `Higham16PsiSigmaMin` from
+  `Analysis.InverseOpNorm2` to
   `Algorithms.MatrixEquations.Sylvester.Conditioning.SingularValue` when W06
   owns those files.
+- In `Higham16PerturbationSigmaMin`, replace the old `InverseOpNorm2` import
+  with both
+  `Algorithms.MatrixEquations.Sylvester.Conditioning.SingularValue` and
+  `Algorithms.Sylvester.Higham16`.  Its singular-value API is canonical, but
+  it also has a body edge to the retained theorem
+  `frobNormRect_sylvesterResidualRect_le_of_schur_transform`.
 - Retarget `Higham16Spectrum`'s reusable real-Schur use to
   `Analysis.LinearOperators.Schur.Real.QuasiTriangular.API` while retaining
   its separate historical `Higham16` need.
@@ -153,8 +163,12 @@ aggregate importing all 92 modules listed in `TEST_MATRIX.tsv`, and import it
 from `NumStabilityTest.lean`.
 
 Add all W05 canonical production modules to the correct entries in
-`docs/architecture/tiers.json`; remove superseded layout debts for the ten
-historical owners and register any temporary aggregate-only debt in
+`docs/architecture/tiers.json`.  Classify the nine import-only historical
+facades as `compatibility` and remove their resolved layout debts.  Do not
+classify declaration-bearing `Higham16` as compatibility: retain reviewed
+`unclassified_modules` and `noncanonical_modules` debt for its 138-declaration
+private reverse closure, while removing only its now-resolved missing-module-
+docstring debt.  Register any temporary aggregate-only debt in
 `docs/architecture/layout-exceptions.json`.  Update
 `docs/architecture/COMPATIBILITY.md` with the one-to-many mappings in
 `DECLARATION_ROUTES.tsv`.  Finally verify that `NumStability.lean`,

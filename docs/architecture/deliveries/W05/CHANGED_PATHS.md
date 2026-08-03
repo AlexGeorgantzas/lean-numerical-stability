@@ -15,8 +15,8 @@ tip yields the same path/status inventory.
 | Added canonical-only tests | 79 |
 | Added old-path-only tests | 10 |
 | Added focused tests | 3 |
-| Added delivery evidence | 10 |
-| **Total** | **191** |
+| Added delivery evidence | 12 |
+| **Total** | **193** |
 
 B0005 scope result: **0 unowned paths; 0 forbidden paths**.
 
@@ -228,15 +228,17 @@ owners; `A` denotes a path below an authorized destination prefix.
 - `A` `NumStabilityTest/Reorganization/W05/Focused/Schur.lean`
 - `A` `NumStabilityTest/Reorganization/W05/Focused/Sylvester.lean`
 
-## Added delivery evidence (10)
+## Added delivery evidence (12)
 
 - `A` `docs/architecture/deliveries/W05/CHANGED_PATHS.md`
 - `A` `docs/architecture/deliveries/W05/CHECK_SCOPE.py`
 - `A` `docs/architecture/deliveries/W05/DECLARATION_ROUTES.tsv`
+- `A` `docs/architecture/deliveries/W05/DELIVERY.md`
 - `A` `docs/architecture/deliveries/W05/GENERATE_MIGRATION.py`
 - `A` `docs/architecture/deliveries/W05/INTEGRATOR_REQUESTS.md`
 - `A` `docs/architecture/deliveries/W05/PRIVATE_CLOSURE.md`
 - `A` `docs/architecture/deliveries/W05/PRIVATE_CLOSURE.tsv`
 - `A` `docs/architecture/deliveries/W05/PRIVATE_CLOSURE_PLAN.py`
+- `A` `docs/architecture/deliveries/W05/PROJECTION.md`
 - `A` `docs/architecture/deliveries/W05/ROUTING.md`
 - `A` `docs/architecture/deliveries/W05/TEST_MATRIX.tsv`
