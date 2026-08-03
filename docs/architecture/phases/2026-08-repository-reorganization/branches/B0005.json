@@ -5,9 +5,15 @@
   "branch_id": "B0005",
   "branch_name": "codex/reorg-2026-08-w05-ch16-ch18",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "23883bb9e477a2645ce76213687c73584651c077",
+    "report": {
+      "path": "docs/architecture/deliveries/W05/DELIVERY.md",
+      "sha256": "5CFDD1461C34315B933B4829DC0FAE087BB6E7F8C368D444B781A1D12426D910"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/W05/CHANGED_PATHS.md",
+      "sha256": "19ACBD7C075D2EB900D67E3951103CCC922E1B5EFE1646ABBC8BA807EA82C447"
+    }
   },
   "destination_prefixes": [
     {
@@ -467,6 +473,6 @@
   },
   "schema_version": 1,
   "shared_request_ids": [],
-  "status": "active",
+  "status": "delivered",
   "wave_id": "W05"
 }

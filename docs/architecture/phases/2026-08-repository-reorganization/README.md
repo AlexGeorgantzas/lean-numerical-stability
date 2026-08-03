@@ -3,11 +3,11 @@
 Status: **ACTIVE**. Checkpoint C0004 at
 `b56f609f3bf66b5d7d0b677567cce82fee0c275b` is accepted and green. M01, M02,
 and M12 are accepted; M03 and M05 are ready; and B0001, B0002, and B0003 are
-retired. B0004/W03 and B0005/W05 are activated from C0004 with active frozen
+retired. B0004/W03 and B0005/W05 have delivered from C0004 with active frozen
 projections P0005 and P0006. Their recorded worker branches and worktrees were
 created cleanly from the exact C0004 code SHA after the planned activation
-record passed CI. Both branch records are now active; the accepted checkpoint
-remains C0004.
+record passed CI. Both branch records are now delivered and await joint
+integration; the accepted checkpoint remains C0004.
 
 This is the current repository-wide operating contract. It supersedes the
 four-lane packets as an instruction source; those packets remain historical
@@ -38,7 +38,7 @@ evidence for the bounded work they completed.
   accepted at C0004 and retired, while
   [`P0004`](projections/P0004.json) is its retired immutable projection
   evidence. [`B0004`](branches/B0004.json) and
-  [`B0005`](branches/B0005.json) are the active W03 and W05 transports, with
+  [`B0005`](branches/B0005.json) are the delivered W03 and W05 transports, with
   active C0004 projections [`P0005`](projections/P0005.json) and
   [`P0006`](projections/P0006.json). No prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates

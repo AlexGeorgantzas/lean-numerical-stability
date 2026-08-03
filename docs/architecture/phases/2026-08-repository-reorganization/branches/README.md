@@ -12,7 +12,7 @@ C0002. [`B0002`](B0002.json) is retired after acceptance at C0003: W02 delivery
 `bb80c95a4625e07535dacdda12d246ee1a5795b3`, and its remote ref was deleted at
 `2026-08-02T23:32:59Z` after the C0003 control record was published green.
 
-Two phase branches are active from the exact C0004 code commit. The planned
+Two phase branches have delivered from the exact C0004 code commit. The planned
 control commit `50dcbbc9cf871b7b0aadf262140c0758c354d7fc` passed
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30781486823)
 before either branch name or worktree was created:
@@ -20,20 +20,23 @@ before either branch name or worktree was created:
 - [`B0004`](B0004.json): W03, branch
   `codex/reorg-2026-08-w03-cholesky-ch10`, 26 exact historical owners and 34
   exact vacant destination/evidence prefixes, sole operator `claude-local`,
-  projection P0005, active worktree
+  projection P0005, delivery
+  `a36ea332cb8e19ed4f6985d1a22e8e356c5dc9ce` from worktree
   `C:\Users\qed_s\higham-worktrees\reorg-w03-claude`;
 - [`B0005`](B0005.json): W05, branch
   `codex/reorg-2026-08-w05-ch16-ch18`, 10 exact historical owners and 16 exact
   vacant destination/evidence prefixes, sole operator `codex-local`,
-  projection P0006, active worktree
+  projection P0006, delivery
+  `23883bb9e477a2645ce76213687c73584651c077` from worktree
   `C:\Users\qed_s\higham-worktrees\reorg-w05-codex`.
 
 The two records have zero owner overlap, destination overlap, direct imports,
 or typed signature/body edges. Their only common direct downstream importer is
 the integrator-owned `NumStability/Algorithms.lean` aggregate. The independent
 hash-pinned reviews are [`B0004-overlap-review.md`](B0004-overlap-review.md)
-and [`B0005-overlap-review.md`](B0005-overlap-review.md). Both records have
-empty shared-request lists and null delivery/integration fields.
+and [`B0005-overlap-review.md`](B0005-overlap-review.md). Both records retain
+empty shared-request lists and null integration fields while their exact
+delivery reports and scope evidence await joint integration at C0005.
 
 The final retired branch is:
 

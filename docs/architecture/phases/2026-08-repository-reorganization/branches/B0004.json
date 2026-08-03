@@ -5,9 +5,15 @@
   "branch_id": "B0004",
   "branch_name": "codex/reorg-2026-08-w03-cholesky-ch10",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "a36ea332cb8e19ed4f6985d1a22e8e356c5dc9ce",
+    "report": {
+      "path": "docs/architecture/deliveries/W03/DELIVERY.md",
+      "sha256": "425518128788F7B8BDA2F85577D18123A3F6FDA8B0841ECD047623D7DA2672C9"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/W03/CHANGED_PATHS.md",
+      "sha256": "CAA6B512EB0A5E42A773F895C3A8A4530E84809878E38C4940E7BD35AA8CC1B7"
+    }
   },
   "destination_prefixes": [
     {
@@ -671,6 +677,6 @@
   },
   "schema_version": 1,
   "shared_request_ids": [],
-  "status": "active",
+  "status": "delivered",
   "wave_id": "W03"
 }
