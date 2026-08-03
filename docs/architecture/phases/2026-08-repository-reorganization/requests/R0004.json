@@ -156,15 +156,20 @@
   "request_id": "R0004",
   "requester_id": "codex-local",
   "resolution": {
-    "checkpoint_id": null,
-    "commit_sha": null,
-    "reason": null,
-    "resolved_at": null,
-    "resolved_by": null,
-    "validation_evidence": []
+    "checkpoint_id": "C0005",
+    "commit_sha": "240c0d041781385a647fbec461d6863537e562cb",
+    "reason": "Applied during W05 integration and accepted by the green C0005 checkpoint.",
+    "resolved_at": "2026-08-03T15:09:38Z",
+    "resolved_by": "primary-human",
+    "validation_evidence": [
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0005-gates.md",
+        "sha256": "77EFB59865FD48C07B67911FA6083922201C68EE07E43E889D0ACB1079EAA903"
+      }
+    ]
   },
   "schema_version": 1,
-  "status": "active",
+  "status": "applied",
   "superseded_by": null,
   "supersedes": null,
   "target_base_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",

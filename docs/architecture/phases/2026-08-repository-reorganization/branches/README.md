@@ -12,8 +12,10 @@ C0002. [`B0002`](B0002.json) is retired after acceptance at C0003: W02 delivery
 `bb80c95a4625e07535dacdda12d246ee1a5795b3`, and its remote ref was deleted at
 `2026-08-02T23:32:59Z` after the C0003 control record was published green.
 
-Two phase branches have delivered from the exact C0004 code commit. The planned
-control commit `50dcbbc9cf871b7b0aadf262140c0758c354d7fc` passed
+Two phase branches were implemented from the exact C0004 code commit and are
+accepted at C0005 code commit `240c0d041781385a647fbec461d6863537e562cb`
+through separate true merges. The planned control commit
+`50dcbbc9cf871b7b0aadf262140c0758c354d7fc` passed
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30781486823)
 before either branch name or worktree was created:
 
@@ -34,10 +36,12 @@ The two records have zero owner overlap, destination overlap, direct imports,
 or typed signature/body edges. Their only common direct downstream importer is
 the integrator-owned `NumStability/Algorithms.lean` aggregate. The independent
 hash-pinned reviews are [`B0004-overlap-review.md`](B0004-overlap-review.md)
-and [`B0005-overlap-review.md`](B0005-overlap-review.md). Both records retain
-null integration fields while their exact delivery reports and scope evidence
-await joint integration at C0005. B0004 links active R0003 and B0005 links
-active R0004; both patches are independently based on C0004.
+and [`B0005-overlap-review.md`](B0005-overlap-review.md). B0004 links applied
+R0003 and B0005 links applied R0004; both patches remain independently based
+on C0004. Their exact delivery tips are ancestors of C0005, P0005 and P0006
+passed against the same integrated candidate, and both records now have
+retirement due. The two remote refs remain present until this acceptance-control
+commit passes CI; local worktrees and branches are not retirement targets.
 
 The final retired branch is:
 

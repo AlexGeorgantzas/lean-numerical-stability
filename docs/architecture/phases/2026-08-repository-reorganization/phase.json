@@ -112,7 +112,7 @@
     }
   },
   "created_at": "2026-08-01T10:41:11Z",
-  "current_checkpoint_id": "C0004",
+  "current_checkpoint_id": "C0005",
   "milestones": [
     {
       "acceptance_gate_ids": [
@@ -184,12 +184,12 @@
         "scope",
         "strict_source"
       ],
-      "accepted_checkpoint_id": null,
+      "accepted_checkpoint_id": "C0005",
       "depends_on": [
         "M02"
       ],
       "milestone_id": "M03",
-      "status": "ready",
+      "status": "accepted",
       "superseded_by": null,
       "unblocks": [
         "W04",
@@ -218,7 +218,7 @@
         "M03"
       ],
       "milestone_id": "M04",
-      "status": "planned",
+      "status": "ready",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -239,12 +239,12 @@
         "scope",
         "strict_source"
       ],
-      "accepted_checkpoint_id": null,
+      "accepted_checkpoint_id": "C0005",
       "depends_on": [
         "M02"
       ],
       "milestone_id": "M05",
-      "status": "ready",
+      "status": "accepted",
       "superseded_by": null,
       "unblocks": [
         "W06"
@@ -272,7 +272,7 @@
         "M05"
       ],
       "milestone_id": "M06",
-      "status": "planned",
+      "status": "ready",
       "superseded_by": null,
       "unblocks": [
         "W07",
@@ -327,7 +327,7 @@
         "M03"
       ],
       "milestone_id": "M08",
-      "status": "planned",
+      "status": "ready",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [

@@ -540,9 +540,9 @@
     }
   ],
   "integration": {
-    "accepted_checkpoint_id": null,
-    "accepted_sha": null,
-    "method": null
+    "accepted_checkpoint_id": "C0005",
+    "accepted_sha": "240c0d041781385a647fbec461d6863537e562cb",
+    "method": "merge"
   },
   "lane_id": "local-lane",
   "operator_ids": [
@@ -673,12 +673,12 @@
     "retired_at": null,
     "retired_by": null,
     "rule": "delivery_ancestor_of_green_checkpoint",
-    "status": "not_due"
+    "status": "due"
   },
   "schema_version": 1,
   "shared_request_ids": [
     "R0003"
   ],
-  "status": "delivered",
+  "status": "accepted",
   "wave_id": "W03"
 }

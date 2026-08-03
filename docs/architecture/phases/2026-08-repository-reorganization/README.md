@@ -1,14 +1,13 @@
 # Repository reorganization phase: August 2026
 
-Status: **ACTIVE**. Checkpoint C0004 at
-`b56f609f3bf66b5d7d0b677567cce82fee0c275b` is accepted and green. M01, M02,
-and M12 are accepted; M03 and M05 are ready; and B0001, B0002, and B0003 are
-retired. B0004/W03 and B0005/W05 have delivered from C0004 with active frozen
-projections P0005 and P0006. Their recorded worker branches and worktrees were
-created cleanly from the exact C0004 code SHA after the planned activation
-record passed CI. Both branch records are now delivered and await joint
-integration. Their independently C0004-based shared requests R0003 and R0004
-are active and hash-pinned; the accepted checkpoint remains C0004.
+Status: **ACTIVE**. Checkpoint C0005 accepts green code commit
+`240c0d041781385a647fbec461d6863537e562cb`. M01, M02, M03, M05, and M12 are
+accepted; M04, M06, and M08 are ready but not activated; and repository-wide
+completion remains incomplete. B0004/W03 and B0005/W05 were integrated by
+separate true merges and are accepted at C0005 with retirement due after this
+acceptance-control state passes Lean CI. P0005 and P0006 are retired immutable
+projection evidence. Their independently C0004-based shared requests R0003
+and R0004 are applied at C0005.
 
 This is the current repository-wide operating contract. It supersedes the
 four-lane packets as an instruction source; those packets remain historical
@@ -27,10 +26,12 @@ evidence for the bounded work they completed.
   [`C0001.json`](checkpoints/C0001.json) is the pre-W01 branch checkpoint;
   [`C0002.json`](checkpoints/C0002.json) records W01 acceptance; and
   [`C0003.json`](checkpoints/C0003.json) records W02 acceptance.
-  [`C0004.json`](checkpoints/C0004.json), its
-  [`green gates`](checkpoints/C0004-gates.md), and its
-  [`fresh combined baseline`](baselines/C0004-combined.json) define the current
-  W12-accepted checkpoint.
+  [`C0004.json`](checkpoints/C0004.json) records W12 acceptance. The current
+  [`C0005.json`](checkpoints/C0005.json), its
+  [`green gates`](checkpoints/C0005-gates.md),
+  [`fresh combined baseline`](baselines/C0005-combined.json), and
+  [`inventory`](checkpoints/C0005-inventory.tsv) define the joint W03/W05
+  checkpoint.
 - The [`branch`](branches/README.md),
   [`projection`](projections/README.md), and
   [`shared-request`](requests/README.md) registries define live transport and
@@ -39,9 +40,9 @@ evidence for the bounded work they completed.
   accepted at C0004 and retired, while
   [`P0004`](projections/P0004.json) is its retired immutable projection
   evidence. [`B0004`](branches/B0004.json) and
-  [`B0005`](branches/B0005.json) are the delivered W03 and W05 transports, with
-  active C0004 projections [`P0005`](projections/P0005.json) and
-  [`P0006`](projections/P0006.json), with active shared requests
+  [`B0005`](branches/B0005.json) are accepted W03 and W05 transports at C0005,
+  with retired projections [`P0005`](projections/P0005.json) and
+  [`P0006`](projections/P0006.json), and applied shared requests
   [`R0003`](requests/R0003.json) and [`R0004`](requests/R0004.json).
   No prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
@@ -170,6 +171,14 @@ canonical, strict-source, full-build, full-test, and frozen-projection gates.
 B0003's remote branch was retired after the C0004 control record passed CI, and
 the deletion is recorded in its registry entry. Workers must not copy or edit
 registry files on their delivery branches.
+
+W03 delivery `a36ea332cb8e19ed4f6985d1a22e8e356c5dc9ce` and W05 delivery
+`23883bb9e477a2645ce76213687c73584651c077` are ancestors of accepted C0005
+code commit `240c0d041781385a647fbec461d6863537e562cb` through separate true merges.
+The integrator applied hash-pinned R0003 and R0004, replayed P0005 and P0006
+against one full integrated graph, and passed every combined static, focused,
+full-build, full-test, and strict-source gate. Their remote refs remain
+recoverable only until the C0005 acceptance-control commit itself passes CI.
 
 ## Classification warning
 
