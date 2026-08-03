@@ -12,7 +12,11 @@ The projection records are:
   [`W02.tsv`](../selectors/W02.tsv);
 - [`P0003`](P0003.json), the superseded C0002 projection for W12; and
 - [`P0004`](P0004.json), the retired W12 projection selected by
-  [`W12.tsv`](../selectors/W12.tsv).
+  [`W12.tsv`](../selectors/W12.tsv);
+- [`P0005`](P0005.json), the active C0004 W03 projection selected by
+  [`W03.tsv`](../selectors/W03.tsv); and
+- [`P0006`](P0006.json), the active C0004 W05 projection selected by
+  [`W05.tsv`](../selectors/W05.tsv).
 
 P0004 is tied to the C0003 combined baseline generated at code commit
 `bb80c95a4625e07535dacdda12d246ee1a5795b3`. Its baseline JSON has SHA-256
@@ -20,6 +24,18 @@ P0004 is tied to the C0003 combined baseline generated at code commit
 The P0004 projection graph is byte-identical to P0003's deterministic gzip
 stream and has SHA-256
 `892C767A3A72F288283F95B89A06F48B7020C80C61BF9449948C6B4A34F81BFA`.
+
+P0005 and P0006 are independently derived from the hash-verified C0004
+combined format-2 graph at code commit
+`b56f609f3bf66b5d7d0b677567cce82fee0c275b`. The C0004 baseline JSON has
+SHA-256
+`CCF7ACAE1D9306C03D79495B548E598C9A3132DC99A98C4212219A453CB27FA8`.
+P0005 freezes 1,034 declarations, 8,056 signature edges, 11,608 body/proof
+edges, and 11,932 union edges at SHA-256
+`7B5A07528409CCCDC8B45F94B8F5FC977A2749601F8ED2D6B18D161CD27838B7`.
+P0006 freezes 921 declarations (121 definitions and 800 theorems), 8,562
+signature edges, 6,894 body/proof edges, and 11,020 union edges at SHA-256
+`6A15BC343C895BCE66A92B09EC333300CA842BEC249DDF2DC723D0832098FFB5`.
 
 A worker generates one full format-2 candidate under the shared Lean mutex,
 then invokes `tools/architecture/check_phase_projection.py` with every sorted
@@ -33,5 +49,8 @@ strict-source, full-build, and full-test acceptance gates at C0004.
 
 Active projections are replaced whenever their base checkpoint or ownership
 contract changes. A terminal branch keeps its retired projection as immutable
-evidence; only live branches may reference active projections. No projection
-is currently active; a future branch must create a new projection from C0004.
+evidence; only live branches may reference active projections. P0005 and P0006
+remain active while B0004 and B0005 are planned, active, or delivered. The
+worker branches deliberately begin at the C0004 code SHA and read these later
+control records from `origin/main`; activation commits are never copied into a
+worker branch.

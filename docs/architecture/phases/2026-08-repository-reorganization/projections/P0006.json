@@ -1,0 +1,66 @@
+{
+  "base_checkpoint_id": "C0004",
+  "checker": {
+    "arguments": [
+      "--allow-module=NumStability.Algorithms.Sylvester.Higham16",
+      "--allow-module=NumStability.Algorithms.Sylvester.Higham16Lyapunov",
+      "--allow-module=NumStability.Algorithms.Sylvester.Higham16Psi",
+      "--allow-module=NumStability.Algorithms.Sylvester.SylvesterBackward",
+      "--allow-module=NumStability.Algorithms.Sylvester.SylvesterPerturbation",
+      "--allow-module=NumStability.Algorithms.Sylvester.SylvesterSpec",
+      "--allow-module=NumStability.Analysis.InverseOpNorm2",
+      "--allow-module=NumStability.Analysis.RealInvariantSubspace",
+      "--allow-module=NumStability.Analysis.RealQuasiSchur",
+      "--allow-module=NumStability.Analysis.SchurTriangulation",
+      "--allow-prefix=NumStability.Algorithms.MatrixEquations.Sylvester.BackwardError.",
+      "--allow-prefix=NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.",
+      "--allow-prefix=NumStability.Algorithms.MatrixEquations.Sylvester.Equation.",
+      "--allow-prefix=NumStability.Algorithms.MatrixEquations.Sylvester.GeneralizedEquations.",
+      "--allow-prefix=NumStability.Algorithms.MatrixEquations.Sylvester.Perturbation.",
+      "--allow-prefix=NumStability.Analysis.LinearOperators.Schur.",
+      "--allow-prefix=NumStability.Analysis.SingularValues.InverseBounds.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter16.Section02.RealSchurDecomposition.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter16.Section05.GeneralizedMatrixEquations.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter18.Section01.SchurDecomposition.",
+      "--candidate=<candidate-format2.tsv>",
+      "--projection-sha256=6A15BC343C895BCE66A92B09EC333300CA842BEC249DDF2DC723D0832098FFB5",
+      "--projection=docs/architecture/phases/2026-08-repository-reorganization/projections/P0006.tsv.gz"
+    ],
+    "artifact": {
+      "path": "tools/architecture/check_phase_projection.py",
+      "sha256": "29691CD63DB83A156247EA2C627407F4E90D127128A945B5AF97D014E11AB443"
+    }
+  },
+  "combined_baseline": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/baselines/C0004-combined.json",
+    "sha256": "CCF7ACAE1D9306C03D79495B548E598C9A3132DC99A98C4212219A453CB27FA8"
+  },
+  "expected_counts": {
+    "body_edges": 6894,
+    "declarations": 921,
+    "signature_edges": 8562,
+    "union_edges": 11020
+  },
+  "phase_id": "repository-reorganization-2026-08",
+  "projection_graph": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/projections/P0006.tsv.gz",
+    "sha256": "6A15BC343C895BCE66A92B09EC333300CA842BEC249DDF2DC723D0832098FFB5"
+  },
+  "projection_id": "P0006",
+  "record_kind": "baseline_projection",
+  "schema_version": 1,
+  "selector": {
+    "artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/selectors/W05.tsv",
+      "sha256": "19865961584C60D54FF5D054541D32E698F69545465BFDD869D11CC6B4A8CAEF"
+    },
+    "kind": "module_path_tsv"
+  },
+  "status": "active",
+  "superseded_by": null,
+  "wave_id": "W05"
+}

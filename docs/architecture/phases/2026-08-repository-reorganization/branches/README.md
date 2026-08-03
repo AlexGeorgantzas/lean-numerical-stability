@@ -12,7 +12,29 @@ C0002. [`B0002`](B0002.json) is retired after acceptance at C0003: W02 delivery
 `bb80c95a4625e07535dacdda12d246ee1a5795b3`, and its remote ref was deleted at
 `2026-08-02T23:32:59Z` after the C0003 control record was published green.
 
-No phase branch remains live or awaits retirement. The final retired branch is:
+Two phase branches are planned from the exact C0004 code commit. Their branch
+names and worktrees must not be created until this planned-control commit is
+green:
+
+- [`B0004`](B0004.json): W03, branch
+  `codex/reorg-2026-08-w03-cholesky-ch10`, 26 exact historical owners and 34
+  exact vacant destination/evidence prefixes, sole operator `claude-local`,
+  projection P0005, planned worktree
+  `C:\Users\qed_s\higham-worktrees\reorg-w03-claude`;
+- [`B0005`](B0005.json): W05, branch
+  `codex/reorg-2026-08-w05-ch16-ch18`, 10 exact historical owners and 16 exact
+  vacant destination/evidence prefixes, sole operator `codex-local`,
+  projection P0006, planned worktree
+  `C:\Users\qed_s\higham-worktrees\reorg-w05-codex`.
+
+The two records have zero owner overlap, destination overlap, direct imports,
+or typed signature/body edges. Their only common direct downstream importer is
+the integrator-owned `NumStability/Algorithms.lean` aggregate. The independent
+hash-pinned reviews are [`B0004-overlap-review.md`](B0004-overlap-review.md)
+and [`B0005-overlap-review.md`](B0005-overlap-review.md). Both records have
+empty shared-request lists and null delivery/integration fields.
+
+The final retired branch is:
 
 - [`B0003`](B0003.json): W12, branch
   `codex/reorg-2026-08-w12-ch01-ch02-ch05`, 42 exact owners and 65 destination
@@ -34,3 +56,8 @@ those pairs to accepted W02 canonical leaves, preserved the reviewed C0003
 imports, updated the shared wiring, and passed every global gate. After the
 C0004 control commit became green, B0003 was deleted remotely and recorded
 retired.
+
+After the planned activation record is green, the integrator creates both
+worker branches from the C0004 code SHA--not from the later control commit--and
+then advances B0004 and B0005 from `planned` to `active` in a second green
+control commit.

@@ -1,0 +1,676 @@
+{
+  "base_checkpoint_id": "C0004",
+  "base_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+  "baseline_projection_id": "P0005",
+  "branch_id": "B0004",
+  "branch_name": "codex/reorg-2026-08-w03-cholesky-ch10",
+  "delivery": {
+    "commit_sha": null,
+    "report": null,
+    "scope_evidence": null
+  },
+  "destination_prefixes": [
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/ErrorAnalysis/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/Factorization/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/Perturbation/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/PositiveSemidefinite/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/RoundedFactorization/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/Solve/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/LinearSystems/LU/NonsymmetricPositiveDefinite/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/LinearSystems/SymmetricIndefinite/ErrorAnalysis/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/LinearSystems/SymmetricIndefinite/Pivoting/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Analysis/MatrixNorms/EntrywiseAbsolute/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Analysis/MatrixNorms/SpectralExtrema/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter06/Lemma06/OperatorTwoNormBound/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Equation07/AbsoluteFactorNorm/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Equation29/Mathias/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Equation30/ComplexPositiveDefinite/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Lemma11/PivotSequenceStability/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Lemma13/KahanSharpness/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Problem01/PositiveSemidefiniteEntries/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Problem03/ArbitraryEvaluationOrder/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Problem04/UnpivotedGrowth/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Problem08/LeadingMinorsCounterexample/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Section01/Factorization/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Section02/ErrorAnalysis/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Section03/PositiveSemidefinite/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Section04/PositiveDefiniteSymmetricPart/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem06/RoundedCholesky/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem07/FailureVacuity/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem08/ComponentwisePerturbation/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem08/NormwiseDiscrepancy/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter11/Theorem07/TridiagonalTwoByTwoResidual/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter14/Section03/ResidualOperatorTwoNorm/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Reorganization/W03/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/deliveries/W03/"
+    }
+  ],
+  "forbidden_paths": [
+    {
+      "match": "exact",
+      "path": ".github/workflows/lean_action_ci.yml"
+    },
+    {
+      "match": "exact",
+      "path": "ARCHITECTURE.md"
+    },
+    {
+      "match": "exact",
+      "path": "CONTRIBUTING.md"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch14Cor147SourceDomainConstructor.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch14GaussJordanSPDCorollary.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch15DixonClosure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/HighamChapters1To9SourceClosure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LeastSquares/Higham20Remaining.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LeastSquares/LSNormalEquations.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/LU.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/SymmetricIndefinite.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/SymmetricIndefinite/Aasen.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/SymmetricIndefinite/BlockLDLT.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Underdetermined/UnderdeterminedSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/All.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/MatrixNorms.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/Perturbation/LeastSquares/NormalEquations.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Core.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/FloatingPoint.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Higham.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter04/Algorithm03/SourceClosure/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter06.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter07/Corollary06/Equilibration/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter07/Equation25/SourceEndpoint/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter07/Equation26/ComponentwiseDistance/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter07/Equation26/RumpCycle/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter08/Equation10/ColumnPivotedQR/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter08/Equation14/FanInProduct/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter08/Section03/BidiagonalComparison/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter08/Section04/FanInAsymptotics/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter09/Theorem15/Barrlund/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter09/Theorem15/Sun/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Lemma11.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Lemma13.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem06.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem07.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem08.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem14.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter11.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter11/Problems.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter11/Section01/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter11/Section01/CompletePivoting.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter11/Section01/PartialPivoting.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter11/Section01/RookPivoting.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter11/Section01/Tridiagonal.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter11/Section02/Aasen.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter11/Section03/SkewSymmetric.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter13/Lemma09.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter14.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter19/Sensitivity.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Equations.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/NormalEquations.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Remaining.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStabilityTest.lean"
+    },
+    {
+      "match": "exact",
+      "path": "README.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/README.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/COMPATIBILITY.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/MIGRATION.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/NAMING.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/layout-exceptions.json"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/README.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/phase.json"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/scope.tsv"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/semantic-review.tsv"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/unclassified-queue.tsv"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/phases/README.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/tiers.json"
+    },
+    {
+      "match": "exact",
+      "path": "lake-manifest.json"
+    },
+    {
+      "match": "exact",
+      "path": "lakefile.toml"
+    },
+    {
+      "match": "exact",
+      "path": "lean-toolchain"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Import/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Reorganization/W01/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Reorganization/W02/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Reorganization/W05/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Reorganization/W12/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Worker/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/deliveries/W01/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/deliveries/W02/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/deliveries/W05/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/deliveries/W12/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/baselines/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/branches/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/projections/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/requests/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/selectors/"
+    },
+    {
+      "match": "prefix",
+      "path": "tools/architecture/"
+    }
+  ],
+  "integration": {
+    "accepted_checkpoint_id": null,
+    "accepted_sha": null,
+    "method": null
+  },
+  "lane_id": "local-lane",
+  "operator_ids": [
+    "claude-local"
+  ],
+  "owned_paths": [
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch10ActualSourceClosure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch10Ch14Lemma66Op2Bridge.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch10ComplexPositiveDefiniteSourceClosure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch10KahanSharpness.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch10KahanSharpnessSource.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch10Lemma1011Source.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch10PivotedPSDSourceClosure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch10Theorem107FailureVacuity.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch10Theorem108Componentwise.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Ch10Theorem108Source.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/CholeskyDemmel.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/CholeskyFl.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/CholeskyIndefinite.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/CholeskyNonsym.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/CholeskyPSD.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/CholeskyPerturbation.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/CholeskySolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/CholeskySpec.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham1014Equation1022.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham1014SourceError.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham1014SourceSuccess.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham1029Source.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham10Problem10_3.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/HighamMathiasFirstBreakdown.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/HighamMathiasSource.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/HighamChapter10.lean"
+    }
+  ],
+  "owner_id": "primary-human",
+  "phase_id": "repository-reorganization-2026-08",
+  "record_kind": "phase_branch",
+  "refresh": {
+    "decision": "current",
+    "evidence": [
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/branches/B0004-overlap-review.md",
+        "sha256": "D4257B721E6DE5EACA0A5D21036CA83A04A3315F9744DCE74043FD57F92E9653"
+      }
+    ],
+    "reviewed_checkpoint_id": "C0004"
+  },
+  "retirement": {
+    "ancestry_checkpoint_id": null,
+    "remote_ref": "refs/heads/codex/reorg-2026-08-w03-cholesky-ch10",
+    "retired_at": null,
+    "retired_by": null,
+    "rule": "delivery_ancestor_of_green_checkpoint",
+    "status": "not_due"
+  },
+  "schema_version": 1,
+  "shared_request_ids": [],
+  "status": "planned",
+  "wave_id": "W03"
+}

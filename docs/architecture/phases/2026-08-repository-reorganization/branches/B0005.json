@@ -1,0 +1,472 @@
+{
+  "base_checkpoint_id": "C0004",
+  "base_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+  "baseline_projection_id": "P0006",
+  "branch_id": "B0005",
+  "branch_name": "codex/reorg-2026-08-w05-ch16-ch18",
+  "delivery": {
+    "commit_sha": null,
+    "report": null,
+    "scope_evidence": null
+  },
+  "destination_prefixes": [
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/BackwardError/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Conditioning/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Equation/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/GeneralizedEquations/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Perturbation/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Analysis/LinearOperators/Schur/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Analysis/SingularValues/InverseBounds/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter16/Section01/SylvesterEquation/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter16/Section02/RealSchurDecomposition/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter16/Section02/SylvesterAndLyapunovBackwardError/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter16/Section03/PerturbationAndConditioning/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter16/Section04/PracticalErrorBounds/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter16/Section05/GeneralizedMatrixEquations/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStability/Source/Higham/Chapter18/Section01/SchurDecomposition/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Reorganization/W05/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/deliveries/W05/"
+    }
+  ],
+  "forbidden_paths": [
+    {
+      "match": "exact",
+      "path": ".github/workflows/lean_action_ci.yml"
+    },
+    {
+      "match": "exact",
+      "path": "ARCHITECTURE.md"
+    },
+    {
+      "match": "exact",
+      "path": "CONTRIBUTING.md"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/MatrixEquations.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/BackwardError.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Conditioning.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Equation.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/GeneralizedEquations.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Perturbation.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/Higham16Eq9Assembly.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/Higham16LyapunovSigmaMin.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/Higham16Minimizers.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/Higham16NormEstimator.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/Higham16PerturbationSigmaMin.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/Higham16PsiSigmaMin.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/Higham16Spectrum.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/Higham16VecNorm.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/Higham16VecPermutationNotes.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/All.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/LinearOperators/Schur.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/MatrixPowersHenrici.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/MatrixPowersSchur.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/SemiconvergentExistenceFull.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/SingularValues.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/SingularValues/InverseBounds.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/SylvesterSchurExistence.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Core.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/FloatingPoint.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Higham.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter16.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter16/Section01.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter16/Section02.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter16/Section03.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter16/Section04.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter16/Section05.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter18.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter18/Section01.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStabilityTest.lean"
+    },
+    {
+      "match": "exact",
+      "path": "README.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/README.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/COMPATIBILITY.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/MIGRATION.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/NAMING.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/layout-exceptions.json"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/README.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/phase.json"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/scope.tsv"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/semantic-review.tsv"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/unclassified-queue.tsv"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/phases/README.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/tiers.json"
+    },
+    {
+      "match": "exact",
+      "path": "lake-manifest.json"
+    },
+    {
+      "match": "exact",
+      "path": "lakefile.toml"
+    },
+    {
+      "match": "exact",
+      "path": "lean-toolchain"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Import/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Reorganization/W01/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Reorganization/W02/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Reorganization/W03/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Reorganization/W12/"
+    },
+    {
+      "match": "prefix",
+      "path": "NumStabilityTest/Worker/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/deliveries/W01/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/deliveries/W02/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/deliveries/W03/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/deliveries/W12/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/baselines/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/branches/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/projections/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/requests/"
+    },
+    {
+      "match": "prefix",
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/selectors/"
+    },
+    {
+      "match": "prefix",
+      "path": "tools/architecture/"
+    }
+  ],
+  "integration": {
+    "accepted_checkpoint_id": null,
+    "accepted_sha": null,
+    "method": null
+  },
+  "lane_id": "local-lane",
+  "operator_ids": [
+    "codex-local"
+  ],
+  "owned_paths": [
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/Higham16.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/Higham16Lyapunov.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/Higham16Psi.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/SylvesterBackward.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/SylvesterPerturbation.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester/SylvesterSpec.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/InverseOpNorm2.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/RealInvariantSubspace.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/RealQuasiSchur.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/SchurTriangulation.lean"
+    }
+  ],
+  "owner_id": "primary-human",
+  "phase_id": "repository-reorganization-2026-08",
+  "record_kind": "phase_branch",
+  "refresh": {
+    "decision": "current",
+    "evidence": [
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/branches/B0005-overlap-review.md",
+        "sha256": "35820EAE4FDFE39F3F68506C732C2BB5146248900086A6E8681E9FC1F7DB3AE3"
+      }
+    ],
+    "reviewed_checkpoint_id": "C0004"
+  },
+  "retirement": {
+    "ancestry_checkpoint_id": null,
+    "remote_ref": "refs/heads/codex/reorg-2026-08-w05-ch16-ch18",
+    "retired_at": null,
+    "retired_by": null,
+    "rule": "delivery_ancestor_of_green_checkpoint",
+    "status": "not_due"
+  },
+  "schema_version": 1,
+  "shared_request_ids": [],
+  "status": "planned",
+  "wave_id": "W05"
+}

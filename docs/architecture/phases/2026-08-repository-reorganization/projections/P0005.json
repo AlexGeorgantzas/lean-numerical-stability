@@ -1,0 +1,100 @@
+{
+  "base_checkpoint_id": "C0004",
+  "checker": {
+    "arguments": [
+      "--allow-module=NumStability.Algorithms.Ch10ActualSourceClosure",
+      "--allow-module=NumStability.Algorithms.Ch10Ch14Lemma66Op2Bridge",
+      "--allow-module=NumStability.Algorithms.Ch10ComplexPositiveDefiniteSourceClosure",
+      "--allow-module=NumStability.Algorithms.Ch10KahanSharpness",
+      "--allow-module=NumStability.Algorithms.Ch10KahanSharpnessSource",
+      "--allow-module=NumStability.Algorithms.Ch10Lemma1011Source",
+      "--allow-module=NumStability.Algorithms.Ch10PivotedPSDSourceClosure",
+      "--allow-module=NumStability.Algorithms.Ch10Theorem107FailureVacuity",
+      "--allow-module=NumStability.Algorithms.Ch10Theorem108Componentwise",
+      "--allow-module=NumStability.Algorithms.Ch10Theorem108Source",
+      "--allow-module=NumStability.Algorithms.Cholesky.CholeskyDemmel",
+      "--allow-module=NumStability.Algorithms.Cholesky.CholeskyFl",
+      "--allow-module=NumStability.Algorithms.Cholesky.CholeskyIndefinite",
+      "--allow-module=NumStability.Algorithms.Cholesky.CholeskyNonsym",
+      "--allow-module=NumStability.Algorithms.Cholesky.CholeskyPSD",
+      "--allow-module=NumStability.Algorithms.Cholesky.CholeskyPerturbation",
+      "--allow-module=NumStability.Algorithms.Cholesky.CholeskySolve",
+      "--allow-module=NumStability.Algorithms.Cholesky.CholeskySpec",
+      "--allow-module=NumStability.Algorithms.Cholesky.Higham1014Equation1022",
+      "--allow-module=NumStability.Algorithms.Cholesky.Higham1014SourceError",
+      "--allow-module=NumStability.Algorithms.Cholesky.Higham1014SourceSuccess",
+      "--allow-module=NumStability.Algorithms.Cholesky.Higham1029Source",
+      "--allow-module=NumStability.Algorithms.Cholesky.Higham10Problem10_3",
+      "--allow-module=NumStability.Algorithms.Cholesky.HighamMathiasFirstBreakdown",
+      "--allow-module=NumStability.Algorithms.Cholesky.HighamMathiasSource",
+      "--allow-module=NumStability.Algorithms.HighamChapter10",
+      "--allow-prefix=NumStability.Algorithms.LinearSystems.Cholesky.ErrorAnalysis.",
+      "--allow-prefix=NumStability.Algorithms.LinearSystems.Cholesky.Factorization.",
+      "--allow-prefix=NumStability.Algorithms.LinearSystems.Cholesky.Perturbation.",
+      "--allow-prefix=NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.",
+      "--allow-prefix=NumStability.Algorithms.LinearSystems.Cholesky.RoundedFactorization.",
+      "--allow-prefix=NumStability.Algorithms.LinearSystems.Cholesky.Solve.",
+      "--allow-prefix=NumStability.Algorithms.LinearSystems.LU.NonsymmetricPositiveDefinite.",
+      "--allow-prefix=NumStability.Algorithms.LinearSystems.SymmetricIndefinite.ErrorAnalysis.",
+      "--allow-prefix=NumStability.Algorithms.LinearSystems.SymmetricIndefinite.Pivoting.",
+      "--allow-prefix=NumStability.Analysis.MatrixNorms.EntrywiseAbsolute.",
+      "--allow-prefix=NumStability.Analysis.MatrixNorms.SpectralExtrema.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter06.Lemma06.OperatorTwoNormBound.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Equation07.AbsoluteFactorNorm.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Equation29.Mathias.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Equation30.ComplexPositiveDefinite.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Lemma11.PivotSequenceStability.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Problem01.PositiveSemidefiniteEntries.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Problem03.ArbitraryEvaluationOrder.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Problem04.UnpivotedGrowth.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Problem08.LeadingMinorsCounterexample.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Section01.Factorization.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Section02.ErrorAnalysis.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Theorem06.RoundedCholesky.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Theorem07.FailureVacuity.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Theorem08.ComponentwisePerturbation.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Theorem08.NormwiseDiscrepancy.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter11.Theorem07.TridiagonalTwoByTwoResidual.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter14.Section03.ResidualOperatorTwoNorm.",
+      "--candidate=<candidate-format2.tsv>",
+      "--projection-sha256=7B5A07528409CCCDC8B45F94B8F5FC977A2749601F8ED2D6B18D161CD27838B7",
+      "--projection=docs/architecture/phases/2026-08-repository-reorganization/projections/P0005.tsv.gz"
+    ],
+    "artifact": {
+      "path": "tools/architecture/check_phase_projection.py",
+      "sha256": "29691CD63DB83A156247EA2C627407F4E90D127128A945B5AF97D014E11AB443"
+    }
+  },
+  "combined_baseline": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/baselines/C0004-combined.json",
+    "sha256": "CCF7ACAE1D9306C03D79495B548E598C9A3132DC99A98C4212219A453CB27FA8"
+  },
+  "expected_counts": {
+    "body_edges": 11608,
+    "declarations": 1034,
+    "signature_edges": 8056,
+    "union_edges": 11932
+  },
+  "phase_id": "repository-reorganization-2026-08",
+  "projection_graph": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/projections/P0005.tsv.gz",
+    "sha256": "7B5A07528409CCCDC8B45F94B8F5FC977A2749601F8ED2D6B18D161CD27838B7"
+  },
+  "projection_id": "P0005",
+  "record_kind": "baseline_projection",
+  "schema_version": 1,
+  "selector": {
+    "artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/selectors/W03.tsv",
+      "sha256": "3BD8827FD306E748AC4150AFC7881FD229BFF10096BDF0C70E9BDDCDBFA36430"
+    },
+    "kind": "module_path_tsv"
+  },
+  "status": "active",
+  "superseded_by": null,
+  "wave_id": "W03"
+}

@@ -2,9 +2,11 @@
 
 Status: **ACTIVE**. Checkpoint C0004 at
 `b56f609f3bf66b5d7d0b677567cce82fee0c275b` is accepted and green. M01, M02,
-and M12 are accepted; B0001, B0002, and B0003 are retired; and P0004 is
-retired as immutable W12 evidence. No branch or delivered handoff remains
-live. W03 and W05 are unblocked but do not yet have branch records.
+and M12 are accepted; M03 and M05 are ready; and B0001, B0002, and B0003 are
+retired. B0004/W03 and B0005/W05 are planned from C0004 with active frozen
+projections P0005 and P0006. Their recorded worker branches and worktrees are
+created only after this planned activation record passes CI; the accepted
+checkpoint remains C0004.
 
 This is the current repository-wide operating contract. It supersedes the
 four-lane packets as an instruction source; those packets remain historical
@@ -34,7 +36,10 @@ evidence for the bounded work they completed.
   [`P0002`](projections/P0002.json). [`B0003`](branches/B0003.json) records W12
   accepted at C0004 and retired, while
   [`P0004`](projections/P0004.json) is its retired immutable projection
-  evidence. No prose packet overrides these records.
+  evidence. [`B0004`](branches/B0004.json) and
+  [`B0005`](branches/B0005.json) are the planned W03 and W05 transports, with
+  active C0004 projections [`P0005`](projections/P0005.json) and
+  [`P0006`](projections/P0006.json). No prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
   the complete phase state;
   [`check_phase_projection.py`](../../../../tools/architecture/check_phase_projection.py)
