@@ -16,7 +16,11 @@ The projection records are:
 - [`P0005`](P0005.json), the retired C0004 W03 projection selected by
   [`W03.tsv`](../selectors/W03.tsv); and
 - [`P0006`](P0006.json), the retired C0004 W05 projection selected by
-  [`W05.tsv`](../selectors/W05.tsv).
+  [`W05.tsv`](../selectors/W05.tsv);
+- [`P0007`](P0007.json), the active C0005 W06 projection selected by
+  [`W06.tsv`](../selectors/W06.tsv); and
+- [`P0008`](P0008.json), the active C0005 W08 projection selected by
+  [`W08.tsv`](../selectors/W08.tsv).
 
 P0004 is tied to the C0003 combined baseline generated at code commit
 `bb80c95a4625e07535dacdda12d246ee1a5795b3`. Its baseline JSON has SHA-256
@@ -36,6 +40,16 @@ edges, and 11,932 union edges at SHA-256
 P0006 freezes 921 declarations (121 definitions and 800 theorems), 8,562
 signature edges, 6,894 body/proof edges, and 11,020 union edges at SHA-256
 `6A15BC343C895BCE66A92B09EC333300CA842BEC249DDF2DC723D0832098FFB5`.
+
+P0007 and P0008 are independently derived from the hash-verified C0005 raw
+format-2 graph with SHA-256
+`1DA19910927D41F4B45266ABA3F5E1A1F165637F7E984F8A19E15DA4FBB4A8D0`.
+P0007 freezes 3,512 W06 declarations, 15,044 signature edges, 16,341
+body/proof edges, and 22,079 union edges at SHA-256
+`E1C2787CC0D0D8A08E016932CEBC1831FAD6929BF22FA757D12BFC49F8ADCF39`.
+P0008 freezes 2,179 W08 declarations, 9,266 signature edges, 15,315 body/proof
+edges, and 16,573 union edges at SHA-256
+`032F33236618FD21D318344A80F8E5EA02F18CCA533C4E183BD61945E6D77D74`.
 
 At C0005 the integrator replayed both exact recorded argument vectors against
 one full integrated format-2 candidate with SHA-256
@@ -58,7 +72,9 @@ strict-source, full-build, and full-test acceptance gates at C0004.
 Active projections are replaced whenever their base checkpoint or ownership
 contract changes. A terminal branch keeps its retired projection as immutable
 evidence; only live branches may reference active projections. P0005 and P0006
-are retired with B0004 and B0005 accepted at C0005. No phase projection is
-currently active. The worker branches deliberately began at the C0004 code SHA
-and read later control records from `origin/main`; activation commits were
-never copied into a worker branch.
+are retired with B0004 and B0005 accepted at C0005. P0007 and P0008 are active
+for planned B0006/W06 and B0007/W08, respectively. The earlier W03/W05 worker
+branches deliberately began at the C0004 code SHA and read later control
+records from `origin/main`; activation commits were never copied into a worker
+branch. The W06/W08 remote refs will likewise begin at the exact C0005 code SHA
+only after their planned control commit is green.
