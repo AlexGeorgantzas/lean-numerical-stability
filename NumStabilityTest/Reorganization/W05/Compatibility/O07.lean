@@ -1,0 +1,6 @@
+import NumStability.Analysis.InverseOpNorm2
+
+#check NumStability.lyapunovInverseOpBound_of_sigmaMin
+#check NumStability.finitePSD_gram
+#check NumStability.lamMin_mul_vecNorm2Sq_le_matMulVec
+#check NumStability.rayleigh_lower_bound_of_le_finiteHermitianEigenvalues

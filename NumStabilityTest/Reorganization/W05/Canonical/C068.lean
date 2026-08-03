@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation26
+
+#check NumStability.H16_eq16_26_SepLowerBound_diagonal_of_entrywise_abs_ge

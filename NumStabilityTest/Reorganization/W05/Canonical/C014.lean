@@ -1,0 +1,3 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Diagonal
+
+#check NumStability.existsUnique_isSylvesterSolutionRect_diagonal

@@ -1,0 +1,3 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.SchurCoordinates
+
+#check NumStability.rectMatMul_schur_coords_cancel

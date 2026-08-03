@@ -1,0 +1,6 @@
+import NumStability.Algorithms.Sylvester.Higham16Psi
+
+#check NumStability.SylvesterInverseOpBound
+#check NumStability.sylvesterOp_diagonal_apply
+#check NumStability.H16_eq16_23_frobNorm_le_alpha_mul_tripleNorm
+#check NumStability.H16_eq16_24_SylvesterInverseOpBound

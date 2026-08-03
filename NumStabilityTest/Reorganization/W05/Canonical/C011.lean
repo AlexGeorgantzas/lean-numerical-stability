@@ -1,0 +1,3 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.StructuredSylvester
+
+#check NumStability.SylvesterInverseOpBound
