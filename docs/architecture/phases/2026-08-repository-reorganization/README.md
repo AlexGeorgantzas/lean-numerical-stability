@@ -2,10 +2,9 @@
 
 Status: **ACTIVE**. Checkpoint C0004 at
 `b56f609f3bf66b5d7d0b677567cce82fee0c275b` is accepted and green. M01, M02,
-and M12 are accepted; B0001 and B0002 are retired; B0003 is accepted with
-retirement due; and P0004 is retired as immutable W12 evidence. No delivered
-handoff remains live. W03 and W05 are unblocked but do not yet have branch
-records.
+and M12 are accepted; B0001, B0002, and B0003 are retired; and P0004 is
+retired as immutable W12 evidence. No branch or delivered handoff remains
+live. W03 and W05 are unblocked but do not yet have branch records.
 
 This is the current repository-wide operating contract. It supersedes the
 four-lane packets as an instruction source; those packets remain historical
@@ -33,7 +32,7 @@ evidence for the bounded work they completed.
   [`shared-request`](requests/README.md) registries define live transport and
   handoffs. [`B0002`](branches/B0002.json) records retired W02 with retired
   [`P0002`](projections/P0002.json). [`B0003`](branches/B0003.json) records W12
-  accepted at C0004 with retirement due, while
+  accepted at C0004 and retired, while
   [`P0004`](projections/P0004.json) is its retired immutable projection
   evidence. No prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
@@ -159,9 +158,9 @@ B0002 records the integration and the remote branch's retirement. W12 delivery
 `380d3cba83bb9e3704232720f371f28cbbc673da` is an ancestor of accepted C0004.
 The integrator reconciled its recorded 17-import delta against W02 before the
 canonical, strict-source, full-build, full-test, and frozen-projection gates.
-B0003 remains recoverable only until the C0004 control record is green, after
-which its remote branch is retired and the deletion recorded. Workers must not
-copy or edit registry files on their delivery branches.
+B0003's remote branch was retired after the C0004 control record passed CI, and
+the deletion is recorded in its registry entry. Workers must not copy or edit
+registry files on their delivery branches.
 
 ## Classification warning
 

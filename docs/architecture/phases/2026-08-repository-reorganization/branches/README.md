@@ -12,14 +12,14 @@ C0002. [`B0002`](B0002.json) is retired after acceptance at C0003: W02 delivery
 `bb80c95a4625e07535dacdda12d246ee1a5795b3`, and its remote ref was deleted at
 `2026-08-02T23:32:59Z` after the C0003 control record was published green.
 
-The only branch awaiting retirement is:
+No phase branch remains live or awaits retirement. The final retired branch is:
 
 - [`B0003`](B0003.json): W12, branch
   `codex/reorg-2026-08-w12-ch01-ch02-ch05`, 42 exact owners and 65 destination
   roots from C0002. Delivery
   `380d3cba83bb9e3704232720f371f28cbbc673da` is an ancestor of accepted C0004
-  commit `b56f609f3bf66b5d7d0b677567cce82fee0c275b`. The branch remains recoverable
-  with retirement due until the C0004 acceptance-control commit is green.
+  commit `b56f609f3bf66b5d7d0b677567cce82fee0c275b`. Its remote ref was deleted at
+  `2026-08-03T01:04:19Z` after the C0004 acceptance-control commit passed CI.
 
 Workers may change only the exact owned paths and vacant destination roots in
 their record. Focused tests and delivery evidence must stay below the recorded
@@ -31,5 +31,6 @@ W02 was integrated before W12. The C0003 refresh recorded seven import-only
 same-path overlaps and preserved the delivered branch's 17 direct W12-to-W02
 dependency pairs for integrator reconciliation. The C0004 integration rewrote
 those pairs to accepted W02 canonical leaves, preserved the reviewed C0003
-imports, updated the shared wiring, and passed every global gate. Once the
-C0004 control commit is green, B0003 is deleted remotely and recorded retired.
+imports, updated the shared wiring, and passed every global gate. After the
+C0004 control commit became green, B0003 was deleted remotely and recorded
+retired.

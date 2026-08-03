@@ -625,15 +625,15 @@
     "reviewed_checkpoint_id": "C0003"
   },
   "retirement": {
-    "ancestry_checkpoint_id": null,
+    "ancestry_checkpoint_id": "C0004",
     "remote_ref": "refs/heads/codex/reorg-2026-08-w12-ch01-ch02-ch05",
-    "retired_at": null,
-    "retired_by": null,
+    "retired_at": "2026-08-03T01:04:19Z",
+    "retired_by": "primary-human",
     "rule": "delivery_ancestor_of_green_checkpoint",
-    "status": "due"
+    "status": "retired"
   },
   "schema_version": 1,
   "shared_request_ids": [],
-  "status": "accepted",
+  "status": "retired",
   "wave_id": "W12"
 }
