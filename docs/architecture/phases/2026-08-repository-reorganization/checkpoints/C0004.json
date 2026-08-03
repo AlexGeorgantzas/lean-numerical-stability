@@ -1,0 +1,204 @@
+{
+  "accepted_at": "2026-08-03T00:51:53Z",
+  "accepted_by": "primary-human",
+  "checkpoint_id": "C0004",
+  "combined_baseline": {
+    "artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/baselines/C0004-combined.json",
+      "sha256": "CCF7ACAE1D9306C03D79495B548E598C9A3132DC99A98C4212219A453CB27FA8"
+    },
+    "format_version": 2,
+    "generation_command": "python tools/architecture/generate_baseline.py --output-dir docs/architecture/phases/2026-08-repository-reorganization/baselines --name C0004-combined --keep-dependency-tsv benchmark-results/C0004-combined.tsv",
+    "summary_artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/baselines/C0004-combined.md",
+      "sha256": "DF8ECF3C38BBFA3880468A0AC6E184B54F2390D966A7A3A24A28832CFE78FB8A"
+    }
+  },
+  "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+  "gates": [
+    {
+      "command": "GitHub Lean CI 30774901719: contract and architecture/source-graph step",
+      "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      },
+      "executor_id": "github-actions",
+      "gate_id": "architecture",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "PowerShell: enumerate the 67 modules under NumStabilityTest/Reorganization/W12/Canonical and lake build @canonicalModules",
+      "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "canonical_import",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/generate_baseline.py --output-dir docs/architecture/phases/2026-08-repository-reorganization/baselines --name C0004-combined --keep-dependency-tsv benchmark-results/C0004-combined.tsv",
+      "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "combined_baseline",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/check_compatibility.py",
+      "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "compatibility",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "lake build NumStabilityTest.Reorganization.W12",
+      "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "focused_build",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "GitHub Lean CI 30774901719: lake build NumStability NumStabilityTest",
+      "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      },
+      "executor_id": "github-actions",
+      "gate_id": "full_build",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "lake test",
+      "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "full_tests",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/check_layout.py",
+      "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "layout",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "PowerShell: enumerate the 42 modules under NumStabilityTest/Reorganization/W12/Compatibility and lake build @compatibilityModules",
+      "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "old_import",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/check_provenance.py",
+      "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "provenance",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --name-only e6ef0107e..380d3cba8 plus B0003 CHANGED_PATHS.md and integrator shared-path audit",
+      "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "scope",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/generate_baseline.py --skip-declarations --strict-source --output-dir benchmark-results/w12-code-static-final2 --name source",
+      "commit_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-gates.md",
+        "sha256": "DDE2F1612F3CA9C660140BA99826E5A51A346060994401E6AF2775F5258B0757"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "strict_source",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    }
+  ],
+  "inventory": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0004-inventory.tsv",
+    "sha256": "26706ADEF2B255BD929572C8EC325E7B1A5F79906929A23DBEC26093D657B463"
+  },
+  "metrics": {
+    "declaration_bearing_umbrellas": 14,
+    "missing_module_docstrings": 190,
+    "mixed_modules": 9,
+    "noncanonical_modules": 265,
+    "production_modules": 1669,
+    "unclassified_modules": 319,
+    "unsorted_aggregate_imports": 0
+  },
+  "milestones_satisfied": [
+    "M01",
+    "M02",
+    "M12"
+  ],
+  "parent_checkpoint_id": "C0003",
+  "phase_id": "repository-reorganization-2026-08",
+  "record_kind": "phase_checkpoint",
+  "schema_version": 1,
+  "unblocks": [
+    "W02",
+    "W03",
+    "W05",
+    "W12"
+  ]
+}

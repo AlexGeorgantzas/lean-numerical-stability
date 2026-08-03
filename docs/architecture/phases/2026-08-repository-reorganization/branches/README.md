@@ -7,19 +7,19 @@ replaced by prose-only status messages.
 
 [`B0001`](B0001.json) is retired: W01 delivery
 `d30fecc70a1d2066e2d147b79d9e6b9d743a21e5` is an ancestor of green checkpoint
-C0002. [`B0002`](B0002.json) is accepted at C0003: W02 delivery
+C0002. [`B0002`](B0002.json) is retired after acceptance at C0003: W02 delivery
 `799d781971eed851cd90152c0d9acb0e828f9341` is an ancestor of checkpoint commit
-`bb80c95a4625e07535dacdda12d246ee1a5795b3`; retirement of its remote ref is due
-after the C0003 control record is published green.
+`bb80c95a4625e07535dacdda12d246ee1a5795b3`, and its remote ref was deleted at
+`2026-08-02T23:32:59Z` after the C0003 control record was published green.
 
-The sole live handoff is:
+The only branch awaiting retirement is:
 
 - [`B0003`](B0003.json): W12, branch
   `codex/reorg-2026-08-w12-ch01-ch02-ch05`, 42 exact owners and 65 destination
   roots from C0002. Delivery
-  `380d3cba83bb9e3704232720f371f28cbbc673da` is recorded, and the branch is
-  retained on C0002 under the hash-pinned C0003 `validated_no_overlap` review
-  and active P0004 projection.
+  `380d3cba83bb9e3704232720f371f28cbbc673da` is an ancestor of accepted C0004
+  commit `b56f609f3bf66b5d7d0b677567cce82fee0c275b`. The branch remains recoverable
+  with retirement due until the C0004 acceptance-control commit is green.
 
 Workers may change only the exact owned paths and vacant destination roots in
 their record. Focused tests and delivery evidence must stay below the recorded
@@ -27,8 +27,9 @@ wave prefixes; phase controls, global aggregates, root tests, and architecture
 manifests are forbidden. Workers never edit the registry or mark their own
 delivery accepted.
 
-W02 is integrated before W12. The C0003 refresh records seven import-only
-same-path overlaps and preserves the delivered branch's 17 direct W12-to-W02
-dependency pairs for integrator reconciliation. The integrator rewrites those
-pairs to accepted W02 canonical leaves, preserves the reviewed C0003 imports,
-updates the shared wiring, and reruns every global gate before accepting C0004.
+W02 was integrated before W12. The C0003 refresh recorded seven import-only
+same-path overlaps and preserved the delivered branch's 17 direct W12-to-W02
+dependency pairs for integrator reconciliation. The C0004 integration rewrote
+those pairs to accepted W02 canonical leaves, preserved the reviewed C0003
+imports, updated the shared wiring, and passed every global gate. Once the
+C0004 control commit is green, B0003 is deleted remotely and recorded retired.

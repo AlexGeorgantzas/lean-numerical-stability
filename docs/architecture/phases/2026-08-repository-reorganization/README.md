@@ -1,10 +1,11 @@
 # Repository reorganization phase: August 2026
 
-Status: **ACTIVE**. Checkpoint C0003 at
-`bb80c95a4625e07535dacdda12d246ee1a5795b3` is accepted and green. M01 and
-M02 are accepted; B0001/P0001 are retired; B0002 is accepted with retirement
-due; and B0003/P0004 is the sole live delivered handoff. W03 and W05 are
-unblocked but do not yet have branch records.
+Status: **ACTIVE**. Checkpoint C0004 at
+`b56f609f3bf66b5d7d0b677567cce82fee0c275b` is accepted and green. M01, M02,
+and M12 are accepted; B0001 and B0002 are retired; B0003 is accepted with
+retirement due; and P0004 is retired as immutable W12 evidence. No delivered
+handoff remains live. W03 and W05 are unblocked but do not yet have branch
+records.
 
 This is the current repository-wide operating contract. It supersedes the
 four-lane packets as an instruction source; those packets remain historical
@@ -20,20 +21,21 @@ evidence for the bounded work they completed.
   [`semantic-review.tsv`](semantic-review.tsv) records suggestions that are not
   safe to apply mechanically.
 - [`C0000.json`](checkpoints/C0000.json) defines the accepted origin;
-  [`C0001.json`](checkpoints/C0001.json) is the pre-W01 branch checkpoint; and
+  [`C0001.json`](checkpoints/C0001.json) is the pre-W01 branch checkpoint;
   [`C0002.json`](checkpoints/C0002.json) records W01 acceptance; and
-  [`C0003.json`](checkpoints/C0003.json), its
-  [`green gates`](checkpoints/C0003-gates.md), and its
-  [`fresh combined baseline`](baselines/C0003-combined.json) define the current
-  W02-accepted checkpoint.
+  [`C0003.json`](checkpoints/C0003.json) records W02 acceptance.
+  [`C0004.json`](checkpoints/C0004.json), its
+  [`green gates`](checkpoints/C0004-gates.md), and its
+  [`fresh combined baseline`](baselines/C0004-combined.json) define the current
+  W12-accepted checkpoint.
 - The [`branch`](branches/README.md),
   [`projection`](projections/README.md), and
   [`shared-request`](requests/README.md) registries define live transport and
-  handoffs. [`B0002`](branches/B0002.json) records accepted W02 and retired
-  [`P0002`](projections/P0002.json). The sole live delivered record is
-  [`B0003`](branches/B0003.json) with
-  [`W12`](selectors/W12.tsv)/[`P0004`](projections/P0004.json). No prose packet
-  overrides these records.
+  handoffs. [`B0002`](branches/B0002.json) records retired W02 with retired
+  [`P0002`](projections/P0002.json). [`B0003`](branches/B0003.json) records W12
+  accepted at C0004 with retirement due, while
+  [`P0004`](projections/P0004.json) is its retired immutable projection
+  evidence. No prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
   the complete phase state;
   [`check_phase_projection.py`](../../../../tools/architecture/check_phase_projection.py)
@@ -153,12 +155,13 @@ remote branch is retired under the ancestry rule.
 
 W02 and W12 were both implemented from the exact C0002 commit. W02 delivery
 `799d781971eed851cd90152c0d9acb0e828f9341` is an ancestor of accepted C0003;
-B0002 records the integration and is due for remote-branch retirement. W12
-delivery `380d3cba83bb9e3704232720f371f28cbbc673da` remains based on C0002 but has
-been refreshed against C0003 through P0004. It must now be integrated with the
-recorded 17-import delta before W12's canonical, strict-source, full-build, and
-full-test gates. Workers must not copy or edit registry files on their delivery
-branches.
+B0002 records the integration and the remote branch's retirement. W12 delivery
+`380d3cba83bb9e3704232720f371f28cbbc673da` is an ancestor of accepted C0004.
+The integrator reconciled its recorded 17-import delta against W02 before the
+canonical, strict-source, full-build, full-test, and frozen-projection gates.
+B0003 remains recoverable only until the C0004 control record is green, after
+which its remote branch is retired and the deletion recorded. Workers must not
+copy or edit registry files on their delivery branches.
 
 ## Classification warning
 
