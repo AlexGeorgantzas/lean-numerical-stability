@@ -62,7 +62,7 @@
 --
 -- No `sorry`/`admit`/`axiom`/`native_decide`/proof-disabling option is used.
 
-import NumStability.Analysis.RealQuasiSchur
+import NumStability.Analysis.LinearOperators.Schur.Real.QuasiTriangular.API
 import NumStability.Analysis.SemiconvergentBlockFormExists
 
 /-!

@@ -2,6 +2,7 @@ import NumStability.Source.Higham.Chapter14.Discrepancies
 import NumStability.Source.Higham.Chapter14.Problem13
 import NumStability.Source.Higham.Chapter14.Problem14
 import NumStability.Source.Higham.Chapter14.Problem15
+import NumStability.Source.Higham.Chapter14.Section03.ResidualOperatorTwoNorm
 import NumStability.Source.Higham.Chapter14.Section05
 
 /-!

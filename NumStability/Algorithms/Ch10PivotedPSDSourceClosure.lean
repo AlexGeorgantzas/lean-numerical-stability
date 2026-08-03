@@ -1,4 +1,5 @@
-import NumStability.Algorithms.Ch10Lemma1011Source
+import NumStability.Algorithms.HighamChapter10
+import NumStability.Source.Higham.Chapter10.Lemma11.PivotSequenceStability.SourceClosure
 import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.ActualRun
 
 /-!

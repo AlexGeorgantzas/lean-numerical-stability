@@ -35,8 +35,9 @@ or typed signature/body edges. Their only common direct downstream importer is
 the integrator-owned `NumStability/Algorithms.lean` aggregate. The independent
 hash-pinned reviews are [`B0004-overlap-review.md`](B0004-overlap-review.md)
 and [`B0005-overlap-review.md`](B0005-overlap-review.md). Both records retain
-empty shared-request lists and null integration fields while their exact
-delivery reports and scope evidence await joint integration at C0005.
+null integration fields while their exact delivery reports and scope evidence
+await joint integration at C0005. B0004 links active R0003 and B0005 links
+active R0004; both patches are independently based on C0004.
 
 The final retired branch is:
 

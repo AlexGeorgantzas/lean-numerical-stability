@@ -1,6 +1,7 @@
-import NumStability.Algorithms.Cholesky.Higham1014SourceSuccess
 import NumStability.Source.Higham.Chapter09.DoolittleClosure
+import NumStability.Source.Higham.Chapter10.Theorem07
 import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SourceError
+import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SourceSuccess
 
 /-!
 # Higham1014SourceError (compatibility module)

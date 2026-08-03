@@ -1,4 +1,5 @@
-import NumStability.Algorithms.HighamChapter10
+import NumStability.Algorithms.LinearSystems.Cholesky.ErrorAnalysis.Demmel
+import NumStability.Analysis.MatrixNorms.SpectralExtrema.Basic
 import NumStability.Algorithms.Summation.Compensated.FiniteFormat
 import NumStability.Analysis.FirstOrder.AsymptoticFamilies
 import NumStability.Analysis.Conditioning.LinearSystems.InversePerturbation
@@ -10,6 +11,7 @@ import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.
 import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part02
 import NumStability.Source.Higham.Chapter08.Section04.FanInAsymptotics.Basic
 import NumStability.Source.Higham.Chapter09.DoolittleClosure
+import NumStability.Source.Higham.Chapter09.Section11
 import NumStability.Source.Higham.Chapter19.Theorem06.ColumnPivot
 
 /-!

@@ -1,5 +1,6 @@
-import NumStability.Algorithms.Ch10KahanSharpness
+import NumStability.Algorithms.HighamChapter10
 import NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.GramFamily
+import NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.Limit
 
 /-!
 # Ch10KahanSharpnessSource (compatibility module)

@@ -1,4 +1,5 @@
 import NumStability.Analysis.LinearOperators.Basic
+import NumStability.Analysis.LinearOperators.Schur
 import NumStability.Analysis.LinearOperators.Triangularization
 
 /-!

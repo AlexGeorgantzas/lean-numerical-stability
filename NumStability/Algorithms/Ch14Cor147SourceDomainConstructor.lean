@@ -5,7 +5,7 @@
 
 import NumStability.Algorithms.Ch14Cor147FinalDivisionFamilyClosure
 import NumStability.Source.Higham.Chapter09.Theorem99Closure
-import NumStability.Algorithms.Cholesky.CholeskyPerturbation
+import NumStability.Algorithms.LinearSystems.Cholesky.Perturbation.Basic
 
 namespace NumStability.Ch14Ext
 

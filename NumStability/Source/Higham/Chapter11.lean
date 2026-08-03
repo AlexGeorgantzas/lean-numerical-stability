@@ -64,6 +64,7 @@ import NumStability.Source.Higham.Chapter11.Section01.Tridiagonal
 import NumStability.Source.Higham.Chapter11.Section02.Aasen
 import NumStability.Source.Higham.Chapter11.Section03.SkewSymmetric
 import NumStability.Source.Higham.Chapter11.Theorem07
+import NumStability.Source.Higham.Chapter11.Theorem07.TridiagonalTwoByTwoResidual
 import NumStability.Source.Higham.Chapter11.TwoByTwoSchurStep
 
 /-!

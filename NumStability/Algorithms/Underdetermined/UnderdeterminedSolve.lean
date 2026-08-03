@@ -22,8 +22,8 @@ import NumStability.Analysis.Rounding
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Analysis.Conditioning.LinearSystems.InversePerturbation
-import NumStability.Algorithms.Cholesky.CholeskySpec
-import NumStability.Algorithms.Cholesky.CholeskySolve
+import NumStability.Algorithms.LinearSystems.Cholesky.Factorization.Spec
+import NumStability.Algorithms.LinearSystems.Cholesky.Solve.Basic
 import NumStability.Source.Higham.Chapter19.Core
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic

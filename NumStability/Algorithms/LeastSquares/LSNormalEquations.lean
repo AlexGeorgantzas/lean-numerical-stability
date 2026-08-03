@@ -5,7 +5,7 @@ import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
-import NumStability.Algorithms.Cholesky.CholeskySolve
+import NumStability.Algorithms.LinearSystems.Cholesky.Solve.Basic
 import NumStability.Algorithms.Cholesky.CholeskySpec
 import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.MatMul

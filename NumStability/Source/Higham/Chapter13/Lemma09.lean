@@ -13,6 +13,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.Cholesky.CholeskySpec
+import NumStability.Algorithms.LinearSystems.Cholesky.Factorization.Spec
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite
 import NumStability.Analysis.MatrixAlgebra

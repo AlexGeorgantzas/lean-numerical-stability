@@ -1,5 +1,5 @@
-import NumStability.Algorithms.Cholesky.CholeskyIndefinite
-import NumStability.Algorithms.HighamChapter10
+import NumStability.Algorithms.LinearSystems.SymmetricIndefinite.ErrorAnalysis.BlockLDLT
+import NumStability.Algorithms.LinearSystems.SymmetricIndefinite.Pivoting.Basic
 
 /-!
 # Higham Chapter 11: CompletePivoting

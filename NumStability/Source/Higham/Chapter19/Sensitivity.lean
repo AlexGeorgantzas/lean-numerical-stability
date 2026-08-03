@@ -9,7 +9,7 @@
 -- does not disguise that step as an assumption of a theorem named "closed".
 
 import Mathlib.LinearAlgebra.Matrix.Block
-import NumStability.Algorithms.Cholesky.CholeskyPerturbation
+import NumStability.Algorithms.LinearSystems.Cholesky.Perturbation.Basic
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 
 /-! Canonical Higham Chapter 19 QR sensitivity source module. -/

@@ -1,4 +1,3 @@
-import NumStability.Algorithms.HighamChapter10
 import NumStability.Algorithms.Summation.Compensated.FiniteFormat
 import NumStability.Analysis.FirstOrder.AsymptoticFamilies
 import NumStability.Source.Higham.Chapter09.DoolittleClosure

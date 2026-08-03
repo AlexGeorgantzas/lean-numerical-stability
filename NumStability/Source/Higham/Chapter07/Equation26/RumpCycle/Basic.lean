@@ -5,7 +5,6 @@ import Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff
 import Mathlib.LinearAlgebra.Matrix.ToLinearEquiv
 import Mathlib.Logic.Equiv.Fin.Rotate
-import NumStability.Algorithms.HighamChapter10
 import NumStability.Algorithms.Summation.Compensated.FiniteFormat
 import NumStability.Analysis.FirstOrder.AsymptoticFamilies
 import NumStability.Source.Higham.Chapter07.Equation26.ComponentwiseDistance.Basic

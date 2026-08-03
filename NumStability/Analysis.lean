@@ -76,6 +76,8 @@ import NumStability.Analysis.ProblemDependentStability.All
 import NumStability.Analysis.ProblemDependentStability.HessenbergDeterminant
 import NumStability.Analysis.PseudospectralLowerBound
 import NumStability.Analysis.Quadratic
+import NumStability.Analysis.RealInvariantSubspace
+import NumStability.Analysis.RealQuasiSchur
 import NumStability.Analysis.RelativePrecision
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.SampleVariance

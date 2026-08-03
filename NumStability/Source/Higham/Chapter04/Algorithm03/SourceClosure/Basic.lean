@@ -1,4 +1,3 @@
-import NumStability.Algorithms.HighamChapter10
 import NumStability.Algorithms.Summation.Compensated.Priest.FiniteFormat
 import NumStability.Source.Higham.Chapter04.Algorithm03.Priest.SourceAssumptions
 import NumStability.Algorithms.Summation.Compensated.FiniteFormat

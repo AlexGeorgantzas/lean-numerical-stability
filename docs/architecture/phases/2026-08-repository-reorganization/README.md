@@ -7,7 +7,8 @@ retired. B0004/W03 and B0005/W05 have delivered from C0004 with active frozen
 projections P0005 and P0006. Their recorded worker branches and worktrees were
 created cleanly from the exact C0004 code SHA after the planned activation
 record passed CI. Both branch records are now delivered and await joint
-integration; the accepted checkpoint remains C0004.
+integration. Their independently C0004-based shared requests R0003 and R0004
+are active and hash-pinned; the accepted checkpoint remains C0004.
 
 This is the current repository-wide operating contract. It supersedes the
 four-lane packets as an instruction source; those packets remain historical
@@ -40,7 +41,9 @@ evidence for the bounded work they completed.
   evidence. [`B0004`](branches/B0004.json) and
   [`B0005`](branches/B0005.json) are the delivered W03 and W05 transports, with
   active C0004 projections [`P0005`](projections/P0005.json) and
-  [`P0006`](projections/P0006.json). No prose packet overrides these records.
+  [`P0006`](projections/P0006.json), with active shared requests
+  [`R0003`](requests/R0003.json) and [`R0004`](requests/R0004.json).
+  No prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
   the complete phase state;
   [`check_phase_projection.py`](../../../../tools/architecture/check_phase_projection.py)

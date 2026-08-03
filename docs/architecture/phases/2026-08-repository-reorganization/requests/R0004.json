@@ -1,0 +1,174 @@
+{
+  "blocks": [
+    "W05"
+  ],
+  "created_at": "2026-08-03T11:53:20Z",
+  "depends_on": [
+    "M02"
+  ],
+  "lane_id": "local-lane",
+  "patch": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/requests/R0004.patch",
+    "sha256": "65064084E1F5B53F4C6CD8C59802D9B443DFB05A5BCCA4682544E4AA74F710CC"
+  },
+  "paths": [
+    "NumStability/Algorithms.lean",
+    "NumStability/Algorithms/MatrixEquations.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/BackwardError.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/Conditioning.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/Equation.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/GeneralizedEquations.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/Perturbation.lean",
+    "NumStability/Algorithms/Sylvester.lean",
+    "NumStability/Analysis/LinearOperators.lean",
+    "NumStability/Analysis/LinearOperators/Schur.lean",
+    "NumStability/Analysis/SingularValues.lean",
+    "NumStability/Analysis/SingularValues/InverseBounds.lean",
+    "NumStability/Source/Higham.lean",
+    "NumStability/Source/Higham/Chapter16.lean",
+    "NumStability/Source/Higham/Chapter16/Section01.lean",
+    "NumStability/Source/Higham/Chapter16/Section02.lean",
+    "NumStability/Source/Higham/Chapter16/Section03.lean",
+    "NumStability/Source/Higham/Chapter16/Section04.lean",
+    "NumStability/Source/Higham/Chapter16/Section05.lean",
+    "NumStability/Source/Higham/Chapter18.lean",
+    "NumStability/Source/Higham/Chapter18/Section01.lean",
+    "NumStabilityTest.lean",
+    "NumStabilityTest/Reorganization/W05.lean",
+    "docs/architecture/COMPATIBILITY.md",
+    "docs/architecture/layout-exceptions.json",
+    "docs/architecture/tiers.json"
+  ],
+  "phase_id": "repository-reorganization-2026-08",
+  "preimage_blobs": [
+    {
+      "blob_oid": "c74478cf6d5844816216611b4585830a3739526b",
+      "path": "NumStability/Algorithms.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/BackwardError.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Conditioning.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Equation.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/GeneralizedEquations.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Perturbation.lean"
+    },
+    {
+      "blob_oid": "d5093c830129f2d41085c95bd5afaa498dc4d47b",
+      "path": "NumStability/Algorithms/Sylvester.lean"
+    },
+    {
+      "blob_oid": "9e239b726b48409e00fe73cca4aca511fc38d0ed",
+      "path": "NumStability/Analysis/LinearOperators.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/Schur.lean"
+    },
+    {
+      "blob_oid": "6639a03f3776d8c75bce1bef6f9fbfbfde7ec01a",
+      "path": "NumStability/Analysis/SingularValues.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/SingularValues/InverseBounds.lean"
+    },
+    {
+      "blob_oid": "6cfd986a631ea624a477868ec7e10c109663b8e4",
+      "path": "NumStability/Source/Higham.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Section01.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Section02.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Section03.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Section04.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Section05.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter18.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter18/Section01.lean"
+    },
+    {
+      "blob_oid": "cf049c5d7d96d87d936d7078765c18cf3b23e73c",
+      "path": "NumStabilityTest.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/W05.lean"
+    },
+    {
+      "blob_oid": "03c6fd1a5770e8bcdc3be4399fa13699ff0e1763",
+      "path": "docs/architecture/COMPATIBILITY.md"
+    },
+    {
+      "blob_oid": "c9a93664f03520122d96da75eae0294a9d2eb18d",
+      "path": "docs/architecture/layout-exceptions.json"
+    },
+    {
+      "blob_oid": "ec21ea903e7c3036f0c534eb3645124acd65dd9d",
+      "path": "docs/architecture/tiers.json"
+    }
+  ],
+  "rationale": "Apply W05's exact integrator-owned aggregate, manifest, compatibility, root-test, and discovery wiring against C0004.",
+  "record_kind": "shared_file_request",
+  "request_id": "R0004",
+  "requester_id": "codex-local",
+  "resolution": {
+    "checkpoint_id": null,
+    "commit_sha": null,
+    "reason": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "validation_evidence": []
+  },
+  "schema_version": 1,
+  "status": "active",
+  "superseded_by": null,
+  "supersedes": null,
+  "target_base_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+  "target_checkpoint_id": "C0004",
+  "valid_through_checkpoint_id": "C0004",
+  "wave_id": "W05"
+}

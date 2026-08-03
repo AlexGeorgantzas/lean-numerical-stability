@@ -26,7 +26,8 @@ bridge; an exact finite Weyl envelope is proved below instead.  Remaining gaps
 are listed at the end of the file.
 -/
 import NumStability.Algorithms.GaussJordan
-import NumStability.Algorithms.HighamChapter10
+import NumStability.Analysis.MatrixNorms.EntrywiseAbsolute.Basic
+import NumStability.Source.Higham.Chapter10.Equation07.AbsoluteFactorNorm.Endpoints
 import NumStability.Source.Higham.Chapter14.Problem15
 
 namespace NumStability.Ch14Ext

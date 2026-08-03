@@ -1,4 +1,11 @@
+import NumStability.Algorithms.Cholesky.CholeskyFl
 import NumStability.Algorithms.HighamChapter10
+import NumStability.Algorithms.LinearSystems.Cholesky.ErrorAnalysis.Certificates
+import NumStability.Algorithms.LinearSystems.Cholesky.Factorization.Spec
+import NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.ScaledStage
+import NumStability.Algorithms.LinearSystems.Cholesky.RoundedFactorization.Basic
+import NumStability.Analysis.MatrixNorms.EntrywiseAbsolute.Basic
+import NumStability.Analysis.MatrixNorms.SpectralExtrema.Basic
 
 namespace NumStability
 

@@ -14,5 +14,3 @@ re-stated so consumers reaching an identifier transitively through
 this path still see the same surface.
 -/
 
-open scoped BigOperators
-

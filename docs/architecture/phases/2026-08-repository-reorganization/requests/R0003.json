@@ -1,0 +1,274 @@
+{
+  "blocks": [
+    "W03"
+  ],
+  "created_at": "2026-08-03T11:53:20Z",
+  "depends_on": [
+    "M02"
+  ],
+  "lane_id": "local-lane",
+  "patch": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/requests/R0003.patch",
+    "sha256": "8AABF97189D3788AA6D6FA79A03810500507A46E9F5CE78091E71D862BB93476"
+  },
+  "paths": [
+    "NumStability/Algorithms.lean",
+    "NumStability/Algorithms/LinearSystems.lean",
+    "NumStability/Algorithms/LinearSystems/Cholesky.lean",
+    "NumStability/Algorithms/LinearSystems/Cholesky/ErrorAnalysis.lean",
+    "NumStability/Algorithms/LinearSystems/Cholesky/Factorization.lean",
+    "NumStability/Algorithms/LinearSystems/Cholesky/Perturbation.lean",
+    "NumStability/Algorithms/LinearSystems/Cholesky/PositiveSemidefinite.lean",
+    "NumStability/Algorithms/LinearSystems/Cholesky/RoundedFactorization.lean",
+    "NumStability/Algorithms/LinearSystems/Cholesky/Solve.lean",
+    "NumStability/Algorithms/LinearSystems/LU.lean",
+    "NumStability/Algorithms/LinearSystems/LU/NonsymmetricPositiveDefinite.lean",
+    "NumStability/Algorithms/LinearSystems/SymmetricIndefinite.lean",
+    "NumStability/Algorithms/LinearSystems/SymmetricIndefinite/ErrorAnalysis.lean",
+    "NumStability/Algorithms/LinearSystems/SymmetricIndefinite/Pivoting.lean",
+    "NumStability/Analysis/MatrixNorms.lean",
+    "NumStability/Analysis/MatrixNorms/EntrywiseAbsolute.lean",
+    "NumStability/Analysis/MatrixNorms/SpectralExtrema.lean",
+    "NumStability/Source/Higham/Chapter06.lean",
+    "NumStability/Source/Higham/Chapter06/Lemma06/OperatorTwoNormBound.lean",
+    "NumStability/Source/Higham/Chapter10.lean",
+    "NumStability/Source/Higham/Chapter10/Equation07/AbsoluteFactorNorm.lean",
+    "NumStability/Source/Higham/Chapter10/Equation29/Mathias.lean",
+    "NumStability/Source/Higham/Chapter10/Equation30/ComplexPositiveDefinite.lean",
+    "NumStability/Source/Higham/Chapter10/Lemma11/PivotSequenceStability.lean",
+    "NumStability/Source/Higham/Chapter10/Lemma13/KahanSharpness.lean",
+    "NumStability/Source/Higham/Chapter10/Problem01/PositiveSemidefiniteEntries.lean",
+    "NumStability/Source/Higham/Chapter10/Problem03/ArbitraryEvaluationOrder.lean",
+    "NumStability/Source/Higham/Chapter10/Problem04/UnpivotedGrowth.lean",
+    "NumStability/Source/Higham/Chapter10/Problem08/LeadingMinorsCounterexample.lean",
+    "NumStability/Source/Higham/Chapter10/Section01/Factorization.lean",
+    "NumStability/Source/Higham/Chapter10/Section02/ErrorAnalysis.lean",
+    "NumStability/Source/Higham/Chapter10/Section03/PositiveSemidefinite.lean",
+    "NumStability/Source/Higham/Chapter10/Section04/PositiveDefiniteSymmetricPart.lean",
+    "NumStability/Source/Higham/Chapter10/Theorem06/RoundedCholesky.lean",
+    "NumStability/Source/Higham/Chapter10/Theorem07/FailureVacuity.lean",
+    "NumStability/Source/Higham/Chapter10/Theorem08/ComponentwisePerturbation.lean",
+    "NumStability/Source/Higham/Chapter10/Theorem08/NormwiseDiscrepancy.lean",
+    "NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD.lean",
+    "NumStability/Source/Higham/Chapter11.lean",
+    "NumStability/Source/Higham/Chapter11/Theorem07/TridiagonalTwoByTwoResidual.lean",
+    "NumStability/Source/Higham/Chapter14.lean",
+    "NumStability/Source/Higham/Chapter14/Section03/ResidualOperatorTwoNorm.lean",
+    "NumStabilityTest.lean",
+    "NumStabilityTest/Reorganization/W03.lean",
+    "docs/architecture/COMPATIBILITY.md",
+    "docs/architecture/layout-exceptions.json",
+    "docs/architecture/tiers.json"
+  ],
+  "phase_id": "repository-reorganization-2026-08",
+  "preimage_blobs": [
+    {
+      "blob_oid": "c74478cf6d5844816216611b4585830a3739526b",
+      "path": "NumStability/Algorithms.lean"
+    },
+    {
+      "blob_oid": "fe7f4330db21d025f25141adaf5a6604f6e50159",
+      "path": "NumStability/Algorithms/LinearSystems.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/ErrorAnalysis.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/Factorization.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/Perturbation.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/PositiveSemidefinite.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/RoundedFactorization.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/Solve.lean"
+    },
+    {
+      "blob_oid": "efd4cdb6724193ee67198690de5829524524d8a7",
+      "path": "NumStability/Algorithms/LinearSystems/LU.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/LinearSystems/LU/NonsymmetricPositiveDefinite.lean"
+    },
+    {
+      "blob_oid": "b948db282e786cd901c11b038440215dff6eb7c7",
+      "path": "NumStability/Algorithms/LinearSystems/SymmetricIndefinite.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/LinearSystems/SymmetricIndefinite/ErrorAnalysis.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/LinearSystems/SymmetricIndefinite/Pivoting.lean"
+    },
+    {
+      "blob_oid": "d46ab86ae4c6e84ffc7634abfd8becc0ff73d363",
+      "path": "NumStability/Analysis/MatrixNorms.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/MatrixNorms/EntrywiseAbsolute.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/MatrixNorms/SpectralExtrema.lean"
+    },
+    {
+      "blob_oid": "16f47a819b6273b8fb82b26ecbde599af67f2b21",
+      "path": "NumStability/Source/Higham/Chapter06.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter06/Lemma06/OperatorTwoNormBound.lean"
+    },
+    {
+      "blob_oid": "954ebae2a5ffb6f61ef5c12a9f94b157c828fcf9",
+      "path": "NumStability/Source/Higham/Chapter10.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Equation07/AbsoluteFactorNorm.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Equation29/Mathias.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Equation30/ComplexPositiveDefinite.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Lemma11/PivotSequenceStability.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Lemma13/KahanSharpness.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Problem01/PositiveSemidefiniteEntries.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Problem03/ArbitraryEvaluationOrder.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Problem04/UnpivotedGrowth.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Problem08/LeadingMinorsCounterexample.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Section01/Factorization.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Section02/ErrorAnalysis.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Section03/PositiveSemidefinite.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Section04/PositiveDefiniteSymmetricPart.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Theorem06/RoundedCholesky.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Theorem07/FailureVacuity.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Theorem08/ComponentwisePerturbation.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Theorem08/NormwiseDiscrepancy.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD.lean"
+    },
+    {
+      "blob_oid": "6dbc17aee67e4b87b6efea6f7eb0e64265fedf3a",
+      "path": "NumStability/Source/Higham/Chapter11.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter11/Theorem07/TridiagonalTwoByTwoResidual.lean"
+    },
+    {
+      "blob_oid": "af4148cb65b59b266d30ae5f1ba66a6cea1ddfda",
+      "path": "NumStability/Source/Higham/Chapter14.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section03/ResidualOperatorTwoNorm.lean"
+    },
+    {
+      "blob_oid": "cf049c5d7d96d87d936d7078765c18cf3b23e73c",
+      "path": "NumStabilityTest.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/W03.lean"
+    },
+    {
+      "blob_oid": "03c6fd1a5770e8bcdc3be4399fa13699ff0e1763",
+      "path": "docs/architecture/COMPATIBILITY.md"
+    },
+    {
+      "blob_oid": "c9a93664f03520122d96da75eae0294a9d2eb18d",
+      "path": "docs/architecture/layout-exceptions.json"
+    },
+    {
+      "blob_oid": "ec21ea903e7c3036f0c534eb3645124acd65dd9d",
+      "path": "docs/architecture/tiers.json"
+    }
+  ],
+  "rationale": "Apply W03's exact integrator-owned aggregate, manifest, compatibility, root-test, and discovery wiring against C0004.",
+  "record_kind": "shared_file_request",
+  "request_id": "R0003",
+  "requester_id": "claude-local",
+  "resolution": {
+    "checkpoint_id": null,
+    "commit_sha": null,
+    "reason": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "validation_evidence": []
+  },
+  "schema_version": 1,
+  "status": "active",
+  "superseded_by": null,
+  "supersedes": null,
+  "target_base_sha": "b56f609f3bf66b5d7d0b677567cce82fee0c275b",
+  "target_checkpoint_id": "C0004",
+  "valid_through_checkpoint_id": "C0004",
+  "wave_id": "W03"
+}

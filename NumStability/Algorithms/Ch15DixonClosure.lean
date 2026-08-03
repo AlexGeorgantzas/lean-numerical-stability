@@ -6,7 +6,8 @@ See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
 
-import NumStability.Algorithms.HighamChapter10
+import NumStability.Analysis.MatrixNorms.EntrywiseAbsolute.Basic
+import NumStability.Analysis.MatrixNorms.SpectralExtrema.Basic
 import NumStability.Algorithms.Ch15CondEstimators
 import NumStability.Algorithms.Ch15DixonProbability
 import NumStability.Algorithms.TestMatrices.Higham28OrthogonalCoordinates

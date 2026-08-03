@@ -1,5 +1,6 @@
 import NumStability.Algorithms.Cholesky.CholeskyFl
-import NumStability.Algorithms.Cholesky.CholeskySpec
+import NumStability.Algorithms.LinearSystems.Cholesky.Factorization.Spec
+import NumStability.Algorithms.LinearSystems.Cholesky.RoundedFactorization.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution

@@ -1,4 +1,6 @@
-import NumStability.Algorithms.Cholesky.HighamMathiasFirstBreakdown
+import NumStability.Algorithms.Cholesky.Higham1029Source
+import NumStability.Source.Higham.Chapter09.DoolittleClosure
+import NumStability.Source.Higham.Chapter10.Equation29.Mathias.FirstBreakdown
 import NumStability.Source.Higham.Chapter10.Equation29.Mathias.SourceIngredients
 
 /-!

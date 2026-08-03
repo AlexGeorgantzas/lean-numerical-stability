@@ -2,6 +2,7 @@ import NumStability.Source.Higham.Chapter06.Asides
 import NumStability.Source.Higham.Chapter06.BlockAntidiagonalNorm
 import NumStability.Source.Higham.Chapter06.Equation02
 import NumStability.Source.Higham.Chapter06.Lemma06
+import NumStability.Source.Higham.Chapter06.Lemma06.OperatorTwoNormBound
 import NumStability.Source.Higham.Chapter06.Norms
 import NumStability.Source.Higham.Chapter06.Theorem05.DistanceToSingularity.All
 
