@@ -1,61 +1,25 @@
 import NumStability.Algorithms.Cholesky.Higham1014SourceSuccess
 import NumStability.Source.Higham.Chapter09.DoolittleClosure
+import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SourceError
 
-namespace NumStability
+/-!
+# Higham1014SourceError (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.Cholesky.Higham1014SourceError`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
 
 open scoped BigOperators
 
-/-!
-# Higham Theorem 10.14: literal displays (10.23) and (10.24)
-
-After the first `r` stages of Algorithm 10.2, the book denotes by
-`Ahat^(r+1)` the trailing matrix left by the rounded inner-product updates.
-Here that matrix is an actual executor: every trailing entry is evaluated by
-the sequential rounded multiply/subtract fold used by `fl_cholesky`.
-
-The resulting definitions make (10.23) an exact identity and prove (10.24)
-with the printed `gamma_(r+1)` constant.  No residual or error matrix is
-supplied as a certificate by the caller.
--/
-
-/-- The literal trailing matrix after `r` completed Cholesky stages.
-
-Only the trailing principal block is retained.  Its entries are computed by
-the same sequential rounded multiply/subtract fold as Algorithm 10.2. -/
-noncomputable def higham10_14_sourceTrailing (fp : FPModel) {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (r : ℕ) (hr : r ≤ n) :
-    Fin n → Fin n → ℝ :=
-  fun i j =>
-    if r ≤ i.val ∧ r ≤ j.val then
-      fl_cholSubFold fp r
-        (fun k => fl_cholesky fp n A (Fin.castLE hr k) i)
-        (fun k => fl_cholesky fp n A (Fin.castLE hr k) j)
-        (A i j)
-    else 0
-
-/-- The actual perturbation in display (10.23), determined by the rounded
-factor and literal trailing executor rather than postulated by a caller. -/
-noncomputable def higham10_14_sourceError (fp : FPModel) {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (r : ℕ) (hr : r ≤ n) :
-    Fin n → Fin n → ℝ :=
-  fun i j =>
-    (∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
-      fl_choleskyTrunc fp n A r k j) +
-      higham10_14_sourceTrailing fp A r hr i j - A i j
-
-/-- The source's rectangular `r × n` computed factor, without the zero-row
-square padding used by `fl_choleskyTrunc`. -/
-noncomputable def higham10_14_sourceFactorRows (fp : FPModel) {r s : ℕ}
-    (A : Fin (r + s) → Fin (r + s) → ℝ) : Fin r → Fin (r + s) → ℝ :=
-  fun k j => fl_cholesky fp (r + s) A (Fin.castAdd s k) j
-
-/-- The nonzero `s × (r+s)` row block of `Ahat^(r+1)`.  Its first `r`
-columns are zero, so its operator norm is exactly the norm of the trailing
-`s × s` Schur block printed in Theorem 10.14. -/
-noncomputable def higham10_14_sourceTrailingRows (fp : FPModel) {r s : ℕ}
-    (A : Fin (r + s) → Fin (r + s) → ℝ) : Fin s → Fin (r + s) → ℝ :=
-  fun i j => higham10_14_sourceTrailing fp A r (Nat.le_add_right r s)
-    (Fin.natAdd r i) j
+namespace NumStability
 
 /-- A matrix obtained by padding a rectangular block with `r` zero rows has
 the same rectangular operator bound as that block. -/
@@ -292,16 +256,6 @@ theorem higham10_25_rank_sensitive_bridge {r s : ℕ} (hr0 : 0 < r)
   intro x
   exact le_trans (hEop x)
     (mul_le_mul_of_nonneg_right hcEfinal (vecNorm2_nonneg x))
-
-/-- Display (10.23): `A + E = Rhatᵀ Rhat + Ahat^(r+1)`. -/
-theorem higham10_14_equation_10_23 (fp : FPModel) {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (r : ℕ) (hr : r ≤ n) (i j : Fin n) :
-    A i j + higham10_14_sourceError fp A r hr i j =
-      (∑ k : Fin n, fl_choleskyTrunc fp n A r k i *
-        fl_choleskyTrunc fp n A r k j) +
-        higham10_14_sourceTrailing fp A r hr i j := by
-  simp only [higham10_14_sourceError]
-  ring
 
 /-- On a computed column, truncation does not change the entrywise absolute
 Gram mass. -/

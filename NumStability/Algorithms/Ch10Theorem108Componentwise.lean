@@ -1,3 +1,5 @@
+import NumStability.Algorithms.Cholesky.CholeskySpec
+import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
 import NumStability.Source.Higham.Chapter09.Problems
 import NumStability.Source.Higham.Chapter09.Section01
 import NumStability.Source.Higham.Chapter09.Section02
@@ -8,38 +10,28 @@ import NumStability.Source.Higham.Chapter09.Section06
 import NumStability.Source.Higham.Chapter09.Section08
 import NumStability.Source.Higham.Chapter09.Section10
 import NumStability.Source.Higham.Chapter09.Section11
-import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
-import NumStability.Algorithms.Cholesky.CholeskySpec
+import NumStability.Source.Higham.Chapter10.Theorem08.ComponentwisePerturbation.Resolvent
 
-namespace NumStability
+/-!
+# Ch10Theorem108Componentwise (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.Ch10Theorem108Componentwise`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
 
 open scoped BigOperators
 
 noncomputable section
 
-/-!
-# Higham Theorem 10.8: componentwise resolvent bridge
-
-This file closes the non-circular algebraic core of the second clause of
-Theorem 10.8.  If an upper-triangular normalized factor `S` with positive
-diagonal satisfies
-
-`Sᵀ S = I - G`,
-
-then, for `C = |G|` and `rho(C) < 1`,
-
-`|I - S| <= triu(C (I - C)⁻¹)`.
-
-The proof uses the exact identity `T - S = T G` for `T = S⁻ᵀ`.  Triangularity
-and positivity give the entrywise inequality
-
-`|T| <= I + |T| C`.
-
-The canonical nonnegative resolvent therefore yields
-`|T| <= (I - C)⁻¹`; substituting this back into `T - S = T G` gives the
-printed upper-triangular envelope.  No copy of the desired conclusion occurs
-among the hypotheses.
--/
+namespace NumStability
 
 private theorem higham10_8_one_sub_le_recip_sub_abs
     {s t : ℝ} (hs : 0 < s) (ht : t = 1 / s) :
@@ -294,35 +286,6 @@ theorem higham10_8_normalized_componentwise_resolvent {n : ℕ}
     have hSzero := hSupper i j hji
     have hne : i ≠ j := Fin.ne_of_val_ne (by omega)
     simp [higham9_15_triuPart, hij, idMatrix, hne, hSzero]
-
-/-- The normalized perturbation matrix printed in Theorem 10.8:
-`Gtilde = Rhat⁻ᵀ DeltaA Rhat⁻¹`. -/
-noncomputable def higham10_8_Gtilde {n : ℕ}
-    (RhatInv DeltaA : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  rectMatMul (finiteTranspose RhatInv) (rectMatMul DeltaA RhatInv)
-
-/-- The matrix appearing before `|Rhat|` in the printed componentwise bound. -/
-noncomputable def higham10_8_componentwiseEnvelope {n : ℕ}
-    (Gtilde : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
-  higham9_15_triuPart
-    (rectMatMul (absMatrix n Gtilde)
-      (nonsingInv n (matSub_id n (absMatrix n Gtilde))))
-
-/-- Congruence by an arbitrary real matrix preserves symmetry. -/
-theorem higham10_8_Gtilde_symmetric {n : ℕ}
-    (RhatInv DeltaA : Fin n → Fin n → ℝ)
-    (hDeltaSym : IsSymmetricFiniteMatrix DeltaA) :
-    IsSymmetricFiniteMatrix (higham10_8_Gtilde RhatInv DeltaA) := by
-  intro i j
-  unfold higham10_8_Gtilde rectMatMul finiteTranspose
-  simp_rw [Finset.mul_sum]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro k _
-  apply Finset.sum_congr rfl
-  intro l _
-  rw [hDeltaSym l k]
-  ring
 
 /-- Source-shaped, non-circular componentwise endpoint for Theorem 10.8.
 
@@ -605,6 +568,6 @@ theorem higham10_8_componentwise_source_nonsingInv {n : ℕ}
   exact higham10_8_componentwise_source hn A R Rhat
     (nonsingInv n Rhat) DeltaA hR hRhat hInv hrho
 
-end
-
 end NumStability
+
+end
