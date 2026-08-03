@@ -1,0 +1,10 @@
+import NumStability.Algorithms.Sylvester.SylvesterSpec
+
+#check NumStability.IsBackwardError
+#check NumStability.SepLowerBound
+#check NumStability.IsSymmetric
+#check NumStability.H16_eq16_10_IsBackwardError
+#check NumStability.H16_eq16_11_residual_decomposition
+#check NumStability.H16_eq16_12_residual_bound
+#check NumStability.H16_eq16_21_IsLyapunovBackwardError
+#check NumStability.H16_LyapunovDefinition_lyapunovOp

@@ -1,0 +1,5 @@
+import NumStability.Analysis.SchurTriangulation
+
+#check NumStability.SchurAux.conj_embed_succ_succ
+#check NumStability.SchurAux.conj_eigenvector_col_zero
+#check NumStability.schur_triangulation

@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter16.Section05.GeneralizedMatrixEquations.Equation31
+
+#check NumStability.H16_eq16_31_IsGeneralizedSylvesterPairSolution

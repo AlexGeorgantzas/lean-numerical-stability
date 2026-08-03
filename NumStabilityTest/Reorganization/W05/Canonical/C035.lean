@@ -1,0 +1,3 @@
+import NumStability.Analysis.LinearOperators.Schur.Real.QuasiTriangular.Deflation
+
+#check NumStability.RealQuasiSchurAux.conj_entry_eq_dotProduct

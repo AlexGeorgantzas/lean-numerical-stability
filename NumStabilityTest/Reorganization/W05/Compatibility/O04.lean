@@ -1,0 +1,10 @@
+import NumStability.Algorithms.Sylvester.SylvesterBackward
+
+#check NumStability.exists_lyapunovOptimalPerturbations
+#check NumStability.IsSVD
+#check NumStability.H16_eq16_13_IsSVD
+#check NumStability.H16_eq16_14_15_backward_error_lower_sq
+#check NumStability.H16_eq16_16_xiSq
+#check NumStability.H16_eq16_17_18_xiSq_amplification_bound
+#check NumStability.H16_eq16_17_19_amplification_factor_bound
+#check NumStability.H16_eq16_21_exists_lyapunovOptimalPerturbations

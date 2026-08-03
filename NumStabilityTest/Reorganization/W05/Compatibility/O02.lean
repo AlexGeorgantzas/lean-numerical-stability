@@ -1,0 +1,7 @@
+import NumStability.Algorithms.Sylvester.Higham16Lyapunov
+
+#check NumStability.LyapunovInverseOpBound
+#check NumStability.lyapunovOp_diagonal_apply
+#check NumStability.H16_eq16_26_SepLowerBound_lyapunov_diagonal_of_entrywise_abs_ge
+#check NumStability.H16_eq16_27_LyapunovInverseOpBound
+#check NumStability.H16_eq16_28_lyapunov_aposteriori_bound_diagonal

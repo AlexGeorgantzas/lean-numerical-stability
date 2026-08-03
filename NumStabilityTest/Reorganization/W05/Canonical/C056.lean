@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation13
+
+#check NumStability.H16_eq16_13_IsSVD

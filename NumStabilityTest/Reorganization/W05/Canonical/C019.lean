@@ -1,0 +1,3 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.GeneralizedEquations.All
+
+#check NumStability.IsGeneralizedSylvesterAXB_CXD_Solution

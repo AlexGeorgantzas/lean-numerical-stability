@@ -1,0 +1,10 @@
+import NumStability.Analysis.RealQuasiSchur
+
+#check NumStability.IsRealQuasiUpperTriangular
+#check NumStability.HasRealQuasiSchurTwoBlockSpectral
+#check NumStability.RealQuasiSchurAux.embedBlock
+#check NumStability.RealQuasiSchurAux.conj_entry_eq_dotProduct
+#check NumStability.RealQuasiSchurAux.exists_orthogonal_conj_quasiUpperTriangular
+#check NumStability.RealQuasiSchurAux.eq_zero_of_mem_span_pair_orthogonal_cols_dot_eq_zero
+#check NumStability.RealQuasiSchurAux.finSumFinEquiv_splitEquiv_val
+#check NumStability.RealQuasiSchurAux.conj_embedBlock_eq
