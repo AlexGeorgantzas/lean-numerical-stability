@@ -1,6 +1,9 @@
+import NumStability.Source.Higham.Chapter08.Equation10.ColumnPivotedQR.Basic
 import NumStability.Source.Higham.Chapter08.Equation14.FanInExecutor.All
+import NumStability.Source.Higham.Chapter08.Equation14.FanInProduct.Basic
 import NumStability.Source.Higham.Chapter08.Equation15.GlobalEnvelopeCounterexample.All
 import NumStability.Source.Higham.Chapter08.Lemma08.CorrectedCondition.All
+import NumStability.Source.Higham.Chapter08.Lemma08.Entrywise.Basic
 import NumStability.Source.Higham.Chapter08.Lemma08Discrepancy
 import NumStability.Source.Higham.Chapter08.Problem01.NoGuardSubstitution.All
 import NumStability.Source.Higham.Chapter08.Problem02.ComparisonMatrixWitness.All
@@ -13,7 +16,9 @@ import NumStability.Source.Higham.Chapter08.Problem08.SingleEntrySingularity.All
 import NumStability.Source.Higham.Chapter08.Problem09.KahanSingularValues.All
 import NumStability.Source.Higham.Chapter08.Section01.BackwardErrorAnalysis.All
 import NumStability.Source.Higham.Chapter08.Section02.ForwardErrorAnalysis.All
+import NumStability.Source.Higham.Chapter08.Section03.BidiagonalComparison.Basic
 import NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.All
+import NumStability.Source.Higham.Chapter08.Section04.FanInAsymptotics.Basic
 import NumStability.Source.Higham.Chapter08.Section04.FanInCore.All
 
 /-!

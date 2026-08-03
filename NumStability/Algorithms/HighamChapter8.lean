@@ -17,6 +17,7 @@ import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem09E
 import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem04
 import NumStability.Source.Higham.Chapter08.Equation14.FanInExecutor.Executor
 import NumStability.Source.Higham.Chapter08.Lemma08.CorrectedCondition.RowDominance
+import NumStability.Source.Higham.Chapter08.Lemma08.Entrywise.Basic
 import NumStability.Source.Higham.Chapter08.Problem01.NoGuardSubstitution.Aliases
 import NumStability.Source.Higham.Chapter08.Problem02.ComparisonMatrixWitness.RatioWitness
 import NumStability.Source.Higham.Chapter08.Problem03.UnitTriangularSubstitution.Bound

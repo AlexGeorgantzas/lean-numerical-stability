@@ -540,6 +540,7 @@ import NumStabilityTest.Reorganization.W01.Compatibility.FloatingPointArithmetic
 import NumStabilityTest.Reorganization.W01.Compatibility.IncreasingPrecision
 import NumStabilityTest.Reorganization.W01.Compatibility.InstabilityWithoutCancellation
 import NumStabilityTest.Reorganization.W02
+import NumStabilityTest.Reorganization.W12
 import NumStabilityTest.Worker.Ch09.Layers1To5
 import NumStabilityTest.Worker.Ch09.WaveA
 import NumStabilityTest.Worker.Ch09.WaveB

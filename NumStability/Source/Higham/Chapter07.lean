@@ -1,5 +1,9 @@
+import NumStability.Source.Higham.Chapter07.Corollary06.Equilibration.Basic
 import NumStability.Source.Higham.Chapter07.Corollary06.LinearSystemsConditioning.All
 import NumStability.Source.Higham.Chapter07.Equation25.InverseConditioning.All
+import NumStability.Source.Higham.Chapter07.Equation25.SourceEndpoint.Basic
+import NumStability.Source.Higham.Chapter07.Equation26.ComponentwiseDistance.Basic
+import NumStability.Source.Higham.Chapter07.Equation26.RumpCycle.Basic
 import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.All
 
 /-!

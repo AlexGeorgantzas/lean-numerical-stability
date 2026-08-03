@@ -3,7 +3,7 @@
 -- Terminal source-discrepancy certificate for the reversed row-dominance
 -- inequality printed immediately before Higham Chapter 8, Lemma 8.8.
 
-import NumStability.Algorithms.HighamLemma88Entrywise
+import NumStability.Source.Higham.Chapter08.Lemma08.Entrywise.Basic
 
 namespace NumStability
 

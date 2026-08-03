@@ -8,6 +8,25 @@ the table remains an import-only forwarding module.
 
 | Historical path | Canonical path |
 | --- | --- |
+| `NumStability.Algorithms.Ch5LejaProducer` | `NumStability.Algorithms.Horner`, `NumStability.Source.Higham.Chapter05.Problem04.LejaOrdering.Basic` |
+| `NumStability.Algorithms.Ch5NewtonForm` | `NumStability.Algorithms.Horner`, `NumStability.Analysis.Rounding`, `NumStability.FloatingPoint.Model`, `NumStability.Source.Higham.Chapter05.Section03.NewtonEvaluation.Basic` |
+| `NumStability.Algorithms.HighamLemma88Entrywise` | `NumStability.Source.Higham.Chapter08.Lemma08.Entrywise.Basic` |
+| `NumStability.Algorithms.OrderingExamples` | `NumStability.Algorithms.Summation.Insertion.ActiveList`, `NumStability.Algorithms.Summation.Recursive.Core`, `NumStability.Algorithms.Summation.Tree.Core`, `NumStability.Source.Higham.Chapter04.Equation05.OrderingExamples.Basic` |
+| `NumStability.Analysis.Accumulation` | `NumStability.Analysis.FloatingPointArithmetic.Format`, `NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError`, `NumStability.Analysis.Rounding`, `NumStability.Source.Higham.Chapter01.Problem05.CompensatedLogarithm.Basic`, `NumStability.Source.Higham.Chapter01.Section11.Accumulation.Basic` |
+| `NumStability.Analysis.CalculatorWords` | `NumStability.Source.Higham.Chapter01.Problem06.CalculatorWords.Basic` |
+| `NumStability.Analysis.Counting` | `NumStability.Analysis.FloatingPointArithmetic`, `NumStability.Source.Higham.Chapter02.Problem01.FloatingPointCounts.Basic` |
+| `NumStability.Analysis.HighamChapter2GradualUnderflowExact` | `NumStability.Analysis.FloatingPointArithmetic`, `NumStability.Source.Higham.Chapter02.Problem19.GradualUnderflowExactness.Basic` |
+| `NumStability.Analysis.HighamChapter2Tablemaker` | `NumStability.Analysis.FloatingPointArithmetic`, `NumStability.Source.Higham.Chapter02.Section10.Tablemaker.FiniteSeparation.Basic` |
+| `NumStability.Analysis.MullerRecurrence` | `NumStability.Source.Higham.Chapter01.Problem08.MullerRecurrence.Basic` |
+| `NumStability.Analysis.NearInteger` | `NumStability.Source.Higham.Chapter01.Problem02.NearIntegerTable.Basic` |
+| `NumStability.Analysis.Problem2_15_16` | `NumStability.Analysis.FloatingPointArithmetic`, `NumStability.Source.Higham.Chapter02.Problems15And16.SpecialValueProbes.Basic` |
+| `NumStability.Analysis.Problem2_18` | `NumStability.Source.Higham.Chapter02.Problem18.ExactSubtractionCounterexample.Basic` |
+| `NumStability.Analysis.Problem2_19` | `NumStability.Source.Higham.Chapter02.Problem20.SquareRootIdentities.Basic` |
+| `NumStability.Analysis.Problem2_23` | `NumStability.Analysis.FloatingPointArithmetic`, `NumStability.Source.Higham.Chapter02.Problem24.GuardDigitCancellation.Basic` |
+| `NumStability.Analysis.Problem2_25` | `NumStability.Source.Higham.Chapter02.Problem27.KahanDeterminant.Basic` |
+| `NumStability.Analysis.Problem2_26` | `NumStability.Analysis.Problem2_14`, `NumStability.Source.Higham.Chapter02.Section06.ReciprocalIteration.Basic` |
+| `NumStability.Analysis.Problem2_5` | `NumStability.Analysis.FloatingPointArithmetic`, `NumStability.Source.Higham.Chapter02.Problem05.BinaryOneTenth.Basic` |
+| `NumStability.Analysis.Problem2_6` | `NumStability.Analysis.FloatingPointArithmetic`, `NumStability.Source.Higham.Chapter02.Problem06.IntegerRepresentability.Basic` |
 | `NumStability.Algorithms.HighamChapter8FanInClosure` | `NumStability.Source.Higham.Chapter08.Equation15.GlobalEnvelopeCounterexample.RawCube` |
 | `NumStability.Algorithms.IterativeRefinement` | `NumStability.Algorithms.LinearSystems.IterativeRefinement.Core`, `NumStability.Source.Higham.Chapter12.IterativeRefinement.Chapter12Bounds`, and `NumStability.Source.Higham.Chapter12.IterativeRefinement.LegacyChapter11Surface` |
 | `NumStability.Algorithms.PriestFiniteFormat` | `NumStability.Algorithms.Summation.Compensated.Priest.FiniteFormat` and `NumStability.Source.Higham.Chapter04.Algorithm03.Priest.SourceAssumptions` |
