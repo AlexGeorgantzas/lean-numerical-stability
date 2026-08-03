@@ -216,9 +216,9 @@ omit every newly added canonical module, test and evidence file.
 | status | path | sha256 (16) |
 | --- | --- | --- |
 | `A` | `docs/architecture/deliveries/W03/CHANGED_PATHS.md` | `(self)` |
-| `A` | `docs/architecture/deliveries/W03/DELIVERY.md` | `3E6DFF1FECC6314F` |
-| `A` | `docs/architecture/deliveries/W03/INTEGRATOR_REQUESTS.md` | `43D0B3CEA36EEDF6` |
-| `A` | `docs/architecture/deliveries/W03/PROJECTION.md` | `20B9B23E7B036510` |
+| `A` | `docs/architecture/deliveries/W03/DELIVERY.md` | `425518128788F7B8` |
+| `A` | `docs/architecture/deliveries/W03/INTEGRATOR_REQUESTS.md` | `5399ECD11D0ED396` |
+| `A` | `docs/architecture/deliveries/W03/PROJECTION.md` | `50A42668C41479FF` |
 | `A` | `docs/architecture/deliveries/W03/RETENTION.tsv` | `315E5A3620520CDA` |
 | `A` | `docs/architecture/deliveries/W03/ROUTING.md` | `3AD11BFB9C86C27E` |
 | `A` | `docs/architecture/deliveries/W03/ROUTING.tsv` | `41F685D95EB4FB28` |

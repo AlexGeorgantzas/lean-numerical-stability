@@ -55,13 +55,20 @@ exit 0
 
 | requirement | evidence |
 | --- | --- |
-| all 1,034 selected declarations preserved | `selected_declarations: ?`, no `missing declaration` |
-| signature edges preserved | `signature_edges: ?` against `expected_counts` 8056 |
-| body/proof edges preserved | `body_edges: ?` against `expected_counts` 11608 |
+| all 1,034 selected declarations preserved | `selected_declarations: 1034`, no `missing declaration` |
+| signature edges preserved | `signature_edges: 8056` against `expected_counts` 8056 |
+| body/proof edges preserved | `body_edges: 11608` against `expected_counts` 11608 |
+| union of typed incident edges preserved | 8,056 signature + 11,608 body resolve to `union_edges` 11,932 distinct source→target pairs, matching `P0005`'s `expected_counts` |
 | no kind drift | no `kind drift` diagnostics |
 | no visibility drift | no `visibility drift` diagnostics |
 | every owner inside the allowed set | no `owner not allowed` diagnostics |
-| declarations actually moved | `relocated_declarations: ?` of 1,034 |
+| declarations actually moved | `relocated_declarations: 806` of 1,034 |
 
 The comparison is exact set equality on typed incident edges, not a count, so passing
 means the frozen graph and the candidate agree edge for edge.
+
+`P0005`'s `expected_counts` record `declarations` 1034, `signature_edges` 8056,
+`body_edges` 11608 and `union_edges` 11932. The checker reports the two typed edge
+counts directly; the union is the number of distinct source→target pairs once a pair
+carrying both a signature and a body edge is counted once, which is why it is smaller
+than the sum.

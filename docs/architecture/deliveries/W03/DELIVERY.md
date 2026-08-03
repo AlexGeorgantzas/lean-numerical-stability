@@ -45,7 +45,7 @@ such; the other 10 are pure import shims. None is falsely labelled.
 
 | # | gate | result |
 | --- | --- | --- |
-| 1 | B0004 scope audit | passed — 26/26 owned paths, 33/34 destination prefixes, **0 forbidden paths**, 0 unclassified |
+| 1 | B0004 scope audit | passed — 26/26 owned paths, 34/34 destination prefixes (32 production, plus `NumStabilityTest/Reorganization/W03/` and `docs/architecture/deliveries/W03/`), **0 forbidden paths**, 0 unclassified |
 | 2 | canonical-only builds | passed — 61 canonical-only test modules, each importing exactly one canonical module |
 | 3 | old-path-only builds | passed — 26 old-path test modules, each importing only a historical path |
 | 4 | focused W03/family builds | passed — covered by the 87 single-import test modules |
@@ -58,7 +58,7 @@ such; the other 10 are pure import shims. None is falsely labelled.
 | 11 | strict-source format-2 generation | exit 0, zero cycles, zero reusable-to-source reachability |
 | 12 | full format-2 candidate from the worker tree | `benchmark-results/W03-candidate.tsv`, sha256 `088BD0413F728B18…` |
 | 13 | `P0005` replay with recorded arguments | **`phase projection contract passed`**, exit 0 |
-| 14 | declaration and edge preservation | `selected_declarations: ?`, `relocated_declarations: ?`, signature ? + body ? |
+| 14 | declaration and edge preservation | `selected_declarations: 1034`, `relocated_declarations: 806`, `signature_edges: 8056` + `body_edges: 11608`, `union_edges: 11932` |
 
 Every Lean operation ran under the phase build mutex `lean-reorganization-2026-08`
 recorded in `phase.json`; acquisition waited 19 minutes for the concurrent W05

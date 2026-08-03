@@ -35,13 +35,25 @@ error: NumStability.Source.Higham.Chapter10 misses 17 canonical descendant(s): N
 error: NumStability.Source.Higham.Chapter14 misses 1 canonical descendant(s): NumStability.Source.Higham.Chapter14.Section03.ResidualOperatorTwoNorm.Bridge Lean modules: 1730 unclassified modules: 337 mixed modules: 9 modules missing module docs: 180 legacy naming exceptions: 265 declaration-bearing umbrellas: 17 unsorted aggregate imports: 0
 ```
 
-## 2. Retarget the 34 non-owner C0004 consumers
+## 2. Retarget the 34 non-owner C0004 production consumers
 
 `B0004-overlap-review.md` assigns this to integration: "Retarget the 34 non-owner
 C0004 files that directly import W03 historical owners only during integration,
 after reviewing which canonical leaf each consumer needs." W03 leaves all of them
-untouched and all historical paths compiling. The direct importers measured in the
-worker tree are:
+untouched and all historical paths compiling.
+
+The inventory below lists **36 paths**, which is *not* 36 production consumers. It is
+the 34 production consumers the overlap review counts, plus two paths that are not
+production modules and are therefore outside that count:
+
+- `NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares.CanonicalDependencies`
+  — a compatibility import test under `NumStabilityTest/Import/`, which B0004 lists as
+  a forbidden prefix for W03;
+- `examples.LibraryLookup` — an example, not part of the `NumStability` library.
+
+Both still import a W03 historical owner and so still resolve through the retained
+compatibility facades, but neither is one of the 34 production files the retargeting
+obligation covers. The full measured inventory is:
 
 - `NumStability.Algorithms`
 - `NumStability.Algorithms.Ch14Cor147SourceDomainConstructor`
