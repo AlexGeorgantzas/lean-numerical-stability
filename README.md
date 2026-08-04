@@ -222,9 +222,9 @@ with compatibility and provenance checked separately.
 
 The repository-reorganization phase remains in progress. C0006 accepts W06 and
 W08, so M06 and M08 are accepted; M04, M07, M09, and M11 are ready but have not
-been activated. The W06 and W08 remote delivery refs remain temporarily present
-until the C0006 acceptance-control commit passes Lean CI, after which the phase
-contract requires their exact-SHA retirement. The
+been activated. After the C0006 acceptance-control commit passed Lean CI, the
+two exact W06/W08 remote delivery refs were retired at
+`2026-08-04T13:33:21Z`; local worker branches and worktrees remain preserved. The
 [`active phase registry`](docs/architecture/phases/2026-08-repository-reorganization/README.md)
 is the authoritative status record.
 

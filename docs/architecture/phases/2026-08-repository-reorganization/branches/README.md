@@ -9,21 +9,21 @@ Two disjoint remote-lane branches were implemented from exact C0005 code commit
 `240c0d041781385a647fbec461d6863537e562cb` and accepted through separate true
 merges at C0006 code commit `a32095e6e50189f7dcc39312bb4c6a36f421fab5`.
 Their remote refs were initialized at the C0005 SHA only after the planned
-control state passed Lean CI and remain live pending retirement after the
-C0006 acceptance-control commit passes Lean CI:
+control state passed Lean CI and were deleted only after the C0006
+acceptance-control commit passed Lean CI:
 
 - [`B0006`](B0006.json): W06, branch
   `codex/reorg-2026-08-w06-ch16-ch18-remaining`, 67 exact historical owners,
   49 reviewed production destinations plus test and delivery prefixes, sole
   operator `codex-remote`, retired projection P0007, and immutable delivery
   `436b38cbda2e06cf5c9ea3343f0bc6fe428f0b97`, with applied shared request
-  R0005 and retirement due;
+  R0005, now retired;
 - [`B0007`](B0007.json): W08, branch
   `codex/reorg-2026-08-w08-matrix-inversion-ch14`, 42 exact historical owners,
   42 reviewed production destinations plus test and delivery prefixes, sole
   operator `claude-remote`, retired projection P0008, and immutable delivery
   `664d5d495975a05d74cd4c0c09f9207aff8cdd77`, with applied shared request
-  R0006 and retirement due.
+  R0006, now retired.
 
 Their hash-pinned reviews are
 [`B0006-overlap-review.md`](B0006-overlap-review.md) and
@@ -31,9 +31,10 @@ Their hash-pinned reviews are
 destination, direct-import, signature-edge, and body-edge overlap. Their sole
 common direct downstream importer is the integrator-owned
 `NumStability/Algorithms.lean`. C0006 is current, M06/M08 are accepted, and
-M04/M07/M09/M11 are ready but not activated. Local worker branches and
-worktrees are preserved. Only the two exact remote delivery refs become
-retirement targets after the C0006 acceptance-control commit is green.
+M04/M07/M09/M11 are ready but not activated. The two exact remote delivery refs
+were deleted atomically with expected-SHA leases at `2026-08-04T13:33:21Z` by
+`primary-human`. Local worker branches and worktrees are preserved and were
+never retirement targets.
 
 [`B0001`](B0001.json) is retired: W01 delivery
 `d30fecc70a1d2066e2d147b79d9e6b9d743a21e5` is an ancestor of green checkpoint

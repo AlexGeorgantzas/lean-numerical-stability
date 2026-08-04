@@ -82,10 +82,9 @@ Active projections are replaced whenever their base checkpoint or ownership
 contract changes. A terminal branch keeps its retired projection as immutable
 evidence; only live branches may reference active projections. P0005 and P0006
 are retired with B0004 and B0005 accepted at C0005. P0007 and P0008 are retired
-with B0006/W06 and B0007/W08 accepted at C0006; the branch records have
-retirement due until the acceptance-control commit becomes green. The earlier W03/W05 worker
+with B0006/W06 and B0007/W08 accepted and retired at C0006. The earlier W03/W05 worker
 branches deliberately began at the C0004 code SHA and read later control
 records from `origin/main`; activation commits were never copied into a worker
 branch. The W06/W08 remote refs likewise began at the exact C0005 code SHA only
-after their planned control commit became green, and remain live pending the
-C0006 retirement gate.
+after their planned control commit became green and were deleted only after the
+C0006 acceptance-control commit became green.

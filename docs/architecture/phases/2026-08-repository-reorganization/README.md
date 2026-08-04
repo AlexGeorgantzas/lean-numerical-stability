@@ -8,9 +8,9 @@ completion remains incomplete. B0006/W06 delivery
 `664d5d495975a05d74cd4c0c09f9207aff8cdd77` were integrated by separate true
 merges and accepted at C0006. Their frozen projections P0007 and P0008 are
 retired immutable evidence, and their independently C0005-based shared
-requests R0005 and R0006 are applied at C0006. B0006 and B0007 have retirement
-due; their exact remote refs remain live pending deletion only after the C0006
-acceptance-control commit passes Lean CI. Local worker branches and worktrees
+requests R0005 and R0006 are applied at C0006. B0006 and B0007 are retired;
+their exact remote refs were deleted at `2026-08-04T13:33:21Z` after the C0006
+acceptance-control commit passed Lean CI. Local worker branches and worktrees
 remain preserved. M04/W04, M07/W07, M09/W09, and M11/W11 are not activated.
 B0004/W03 and B0005/W05 were accepted at C0005 and retired after that
 acceptance-control state passed Lean CI. P0005 and P0006 are retired immutable
@@ -55,8 +55,7 @@ evidence for the bounded work they completed.
   [`P0006`](projections/P0006.json), and applied shared requests
   [`R0003`](requests/R0003.json) and [`R0004`](requests/R0004.json).
   [`B0006`](branches/B0006.json) and [`B0007`](branches/B0007.json) are the
-  accepted, disjoint C0005 transports for W06 and W08, with retirement due
-  after the C0006 acceptance-control state becomes green. Their retired frozen
+  accepted and retired, disjoint C0005 transports for W06 and W08. Their retired frozen
   projections are [`P0007`](projections/P0007.json) and
   [`P0008`](projections/P0008.json), selected by
   [`W06.tsv`](selectors/W06.tsv) and [`W08.tsv`](selectors/W08.tsv); their
@@ -205,10 +204,10 @@ W06 delivery `436b38cbda2e06cf5c9ea3343f0bc6fe428f0b97` and W08 delivery
 code commit `a32095e6e50189f7dcc39312bb4c6a36f421fab5` through separate true merges.
 The integrator applied hash-pinned R0005 and R0006, replayed P0007 and P0008
 against one full integrated graph, and passed the combined static, focused,
-full-build, full-test, and strict-source gates. Both branch records have
-retirement due. Their exact remote refs remain live until the C0006
-acceptance-control commit passes Lean CI; local worktrees and branches remain
-preserved and are not retirement targets.
+full-build, full-test, and strict-source gates. After the C0006
+acceptance-control commit passed Lean CI, both exact remote refs were deleted at
+`2026-08-04T13:33:21Z` by `primary-human`; local worktrees and branches remain
+preserved and were never retirement targets.
 
 ## Classification warning
 
