@@ -1,131 +1,27 @@
--- Algorithms/Ch14Method2CWhole.lean
---
--- Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed.,
--- Chapter 14 (Matrix Inversion), §14.2.2 "Block Methods", **Lemma 14.3**
--- (p. 266-267): the computed inverse `X̂` from Method 2C (the block
--- triangular-inverse variant used by LAPACK's xTRTRI) satisfies the left
--- residual bound  |X̂L − I| ≤ cₙu|X̂||L|.
---
--- Method 2C (Higham p. 266):
---   for j = N : −1 : 1
---     Xⱼⱼ = Lⱼⱼ⁻¹                              (by Method 2)
---     Xⱼ₊₁:N,ⱼ = Xⱼ₊₁:N,ⱼ₊₁:N · Lⱼ₊₁:N,ⱼ        (block product T = X̂₂₂·L₂₁)
---     Solve Xⱼ₊₁:N,ⱼ · Lⱼⱼ = −Xⱼ₊₁:N,ⱼ          (by back substitution)
---   end
---
--- WAVE 2 supplied the *2-block per-step* residual (Higham's "It suffices to
--- verify the inequality with j = 1", the analogue of (14.14) for Method 2C):
--- `ch14ext_method2C_block_left_residual` (Ch14Method2C.lean) assembles the four
--- block residuals of the partition `L = [[L₁₁,0],[L₂₁,L₂₂]]` into
---   |X̂L − I| ≤ C·|X̂||L|
--- from (a) a Method-2 left residual on the leading block L₁₁, (b) a left
--- residual on the trailing block L₂₂, and (c) the DERIVED (FP first-principles,
--- matmul + back-substitution) off-diagonal residual.
---
--- THIS FILE lifts that per-step result to the WHOLE MATRIX / general N-block
--- case, exactly by the outer block induction Higham describes ("relabel each
--- block column as the first block column of a trailing submatrix; induct on the
--- number of blocks").  Concretely:
---   * `ch14ext_method2CInv fp bs L` is the block Method 2C inverse for an
---     arbitrary block partition `bs : List ℕ` (block sizes, `bs.sum = n`),
---     built by peeling the leading block, inverting it by the concrete Method 2
---     loop `ch14ext_method2Inv` (Lemma 14.1, Ch14Method2Loop.lean), recursing
---     Method 2C on the trailing submatrix, and forming the off-diagonal block
---     by the wave-2 matmul + back-substitution step.
---   * `ch14ext_method2CInv_left_residual` proves, by induction on the block
---     list, the full flat `Fin bs.sum` left residual, using the wave-2 2-block
---     core `ch14ext_method2C_block_left_residual` as the induction STEP (leading
---     block `h11` from Lemma 14.1, trailing block `h22` from the induction
---     hypothesis, off-diagonal derived inside the step).
---   * `ch14ext_method2C_whole_left_residual` and its `_normwise` companion state
---     the closed whole-matrix Lemma 14.3 with an explicit, DERIVED constant
---     `cₙ = γ_{n+2} + 2γ_n + γ_n²`.
---
--- Nothing is assumed at the residual level: every diagonal-block, off-diagonal,
--- and constant fact is discharged from the FP rounding model or from the
--- already-derived wave-1/wave-2 lemmas.  The printed `cₙu` is DERIVED into the
--- conclusion.
-
 import NumStability.Algorithms.Ch14Method2C
 import NumStability.Algorithms.Ch14Method2Loop
+import NumStability.Source.Higham.Chapter14.Section02.TriangularInversion.Method2C.Method2CWhole
 
-namespace NumStability.Ch14Ext
+/-!
+# Ch14Method2CWhole (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.Ch14Method2CWhole`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
 
 open scoped BigOperators
 
--- ============================================================
--- §14.2.2  The block Method 2C inverse for a general block partition
--- ============================================================
+namespace NumStability
 
-/-- **Method 2C block triangular inverse (Higham §14.2.2), general N-block
-    form.**
-
-    `ch14ext_method2CInv fp bs L` is the matrix `X` computed by Method 2C on the
-    lower triangular `L : Fin bs.sum → Fin bs.sum → ℝ`, where `bs : List ℕ` is
-    the list of block sizes (so `n = bs.sum` and the number of blocks is
-    `bs.length`).  The recursion is Higham's outer block loop:
-
-    * `[]` (empty partition, `Fin 0`): the (vacuous) empty matrix.
-    * `b :: rest`: peel the leading `b × b` block `L₁₁`; invert it by the
-      concrete Method 2 loop `ch14ext_method2Inv` (Lemma 14.1); recurse Method 2C
-      on the trailing `(bs.sum − b) × (bs.sum − b)` submatrix `ch14ext_blk22`;
-      form the off-diagonal `(2,1)` block by the wave-2 matmul +
-      back-substitution step inside `ch14ext_method2CBlockInverse`.
-
-    Because `(b :: rest).sum` is definitionally `b + rest.sum`, the assembled
-    `Fin (b + rest.sum)` matrix has exactly the ambient index type, so the
-    recursion needs no index casts. -/
-noncomputable def ch14ext_method2CInv (fp : FPModel) :
-    (bs : List ℕ) → (L : Fin bs.sum → Fin bs.sum → ℝ) → Fin bs.sum → Fin bs.sum → ℝ
-  | [], L => L
-  | (b :: rest), L =>
-      ch14ext_method2CBlockInverse fp b rest.sum L
-        (ch14ext_method2Inv b fp (ch14ext_blk11 b rest.sum L))
-        (ch14ext_method2CInv fp rest (ch14ext_blk22 b rest.sum L))
-
-/-- Defining equation of the block Method 2C inverse at a nonempty partition:
-    leading block by Method 2, trailing block by the Method 2C recursion, and
-    the off-diagonal assembled by `ch14ext_method2CBlockInverse`. -/
-lemma ch14ext_method2CInv_cons (fp : FPModel) (b : ℕ) (rest : List ℕ)
-    (L : Fin (b + rest.sum) → Fin (b + rest.sum) → ℝ) :
-    ch14ext_method2CInv fp (b :: rest) L
-      = ch14ext_method2CBlockInverse fp b rest.sum L
-          (ch14ext_method2Inv b fp (ch14ext_blk11 b rest.sum L))
-          (ch14ext_method2CInv fp rest (ch14ext_blk22 b rest.sum L)) := rfl
-
--- ============================================================
--- Block structural facts (lower-triangular shape, nonzero diagonal) inherited
--- by the diagonal sub-blocks from the ambient matrix.
--- ============================================================
-
-/-- The leading `(1,1)` block of a matrix with nonzero diagonal has nonzero
-    diagonal. -/
-lemma ch14ext_m2c_blk11_diag (b m : ℕ) (L : Fin (b + m) → Fin (b + m) → ℝ)
-    (hdiag : ∀ i : Fin (b + m), L i i ≠ 0) :
-    ∀ a : Fin b, ch14ext_blk11 b m L a a ≠ 0 := fun _ => hdiag _
-
-/-- The leading `(1,1)` block of a lower triangular matrix is lower triangular. -/
-lemma ch14ext_m2c_blk11_lt (b m : ℕ) (L : Fin (b + m) → Fin (b + m) → ℝ)
-    (hLT : ∀ i j : Fin (b + m), j.val > i.val → L i j = 0) :
-    ∀ i j : Fin b, j.val > i.val → ch14ext_blk11 b m L i j = 0 := by
-  intro i j h; apply hLT; simpa [ch14ext_blk11, Fin.val_castAdd] using h
-
-/-- The trailing `(2,2)` block of a matrix with nonzero diagonal has nonzero
-    diagonal. -/
-lemma ch14ext_m2c_blk22_diag (b m : ℕ) (L : Fin (b + m) → Fin (b + m) → ℝ)
-    (hdiag : ∀ i : Fin (b + m), L i i ≠ 0) :
-    ∀ a : Fin m, ch14ext_blk22 b m L a a ≠ 0 := fun _ => hdiag _
-
-/-- The trailing `(2,2)` block of a lower triangular matrix is lower
-    triangular. -/
-lemma ch14ext_m2c_blk22_lt (b m : ℕ) (L : Fin (b + m) → Fin (b + m) → ℝ)
-    (hLT : ∀ i j : Fin (b + m), j.val > i.val → L i j = 0) :
-    ∀ i j : Fin m, j.val > i.val → ch14ext_blk22 b m L i j = 0 := by
-  intro i j h; apply hLT; simp only [Fin.val_natAdd]; omega
-
--- ============================================================
--- §14.2.2  Lemma 14.3 — whole-matrix left residual by outer block induction
--- ============================================================
+namespace Ch14Ext
 
 /-- **Lemma 14.3 (Higham §14.2.2, p. 266-267) — whole-matrix / general N-block
     left residual for Method 2C, componentwise, uniform constant `C`.**
@@ -230,24 +126,6 @@ theorem ch14ext_method2CInv_left_residual (fp : FPModel) (N : ℕ) (C : ℝ)
         (ch14ext_method2CInv fp rest (ch14ext_blk22 b m L)) C
         hdiag hLT hval_step hCoff h11 h22 i j
 
--- ============================================================
--- §14.2.2  Lemma 14.3, closed whole-matrix form with explicit constant
--- ============================================================
-
-/-- The explicit whole-matrix Lemma 14.3 constant `cₙ = γ_{n+2} + 2γ_n + γ_n²`
-    (an order-`n` multiple of `u`, matching Higham's `cₙu`). -/
-noncomputable def ch14ext_m2c_const (fp : FPModel) (n : ℕ) : ℝ :=
-  gamma fp (n + 2) + gamma fp n + gamma fp n + gamma fp n * gamma fp n
-
-lemma ch14ext_m2c_const_nonneg (fp : FPModel) (n : ℕ) (hval : gammaValid fp (n + 2)) :
-    0 ≤ ch14ext_m2c_const fp n := by
-  have hn : gammaValid fp n := gammaValid_mono fp (by omega) hval
-  have h1 : 0 ≤ gamma fp (n + 2) := gamma_nonneg fp hval
-  have h2 : 0 ≤ gamma fp n := gamma_nonneg fp hn
-  have := mul_nonneg h2 h2
-  unfold ch14ext_m2c_const
-  linarith
-
 /-- **Lemma 14.3 (Higham §14.2.2, p. 266-267), closed whole-matrix
     componentwise form.**
 
@@ -294,4 +172,5 @@ theorem ch14ext_method2C_whole_left_residual_normwise (fp : FPModel) (bs : List 
     (ch14ext_m2c_const_nonneg fp bs.sum hval)
     (ch14ext_method2C_whole_left_residual fp bs L hval hdiag hLT)
 
-end NumStability.Ch14Ext
+end Ch14Ext
+end NumStability

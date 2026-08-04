@@ -1,45 +1,30 @@
--- Algorithms/Ch14Cor146UniformInverseBridge.lean
---
--- Derive the uniform inverse regularity used by Corollary 14.6 from the
--- operational LU/GJE family and its positive-pivot Cholesky factor.
-
-import NumStability.Algorithms.Ch14GJEFinalDivisionClosure
 import NumStability.Algorithms.Ch14Corollary147SourceClosure
+import NumStability.Algorithms.Ch14GJEFinalDivisionClosure
 import NumStability.Source.Higham.Chapter07.Corollary06.LinearSystemsConditioning.Results
+import NumStability.Source.Higham.Chapter14.Corollary06.SPD.UniformInverseBridge
 
-namespace NumStability.Ch14Ext
+/-!
+# Ch14Cor146UniformInverseBridge (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.Ch14Cor146UniformInverseBridge`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
 
 open Filter Asymptotics
 open scoped BigOperators Topology
 open NumStability
 
-/-! ## Uniform inverse regularity from the computed factors -/
+namespace NumStability
 
-/-- Continuity of the finite-dimensional matrix inverse turns convergence to
-a nonsingular fixed matrix into entrywise `O(1)` control of the repository's
-canonical inverse. -/
-theorem ch14ext_nonsingInv_family_isBigOOne_of_tendsto
-    {I : Type*} {l : Filter I} {n : Nat}
-    {A : Fin n -> Fin n -> Real}
-    {B : I -> Fin n -> Fin n -> Real}
-    (hB : Tendsto B l (nhds A))
-    (hdet : Matrix.det (Matrix.of A : Matrix (Fin n) (Fin n) Real) ≠ 0) :
-    MatrixFamilyIsBigOOne l (fun t => nonsingInv n (B t)) := by
-  have hBmat : Tendsto
-      (fun t => (B t : Matrix (Fin n) (Fin n) Real)) l
-      (nhds (A : Matrix (Fin n) (Fin n) Real)) := hB
-  have hinvMat :=
-    (continuousAt_matrix_inv (A : Matrix (Fin n) (Fin n) Real)
-      (by
-        simpa using
-          (NormedRing.inverse_continuousAt
-            (Units.mk0
-              (Matrix.det (A : Matrix (Fin n) (Fin n) Real)) hdet)))).tendsto.comp hBmat
-  have hinv : Tendsto (fun t => nonsingInv n (B t)) l
-      (nhds (nonsingInv n A)) := by
-    simpa only [nonsingInv] using hinvMat
-  intro i j
-  exact ((tendsto_pi_nhds.mp ((tendsto_pi_nhds.mp hinv) i)) j).isBigO_one Real
+namespace Ch14Ext
 
 /-- The inverse regularity required by the Corollary 14.6 family endpoint is
 not an independent conclusion-shaped hypothesis.  It follows from:
@@ -129,8 +114,6 @@ theorem ch14ext_cor146_uniformInverseRegularity_of_finalizedGJE
       perturbed_inverse_family_isBigO_one := hPerturbedInv_one
       perturbation_family_isBigO_u := hPerturbation }
 
-/-! ## Constructor for the literal finalized Corollary 14.6 endpoint -/
-
 /-- Build a `Ch14Cor146FinalizedRunFamily` without accepting its bundled
 `uniform_inverse` field.  The field is derived by
 `ch14ext_cor146_uniformInverseRegularity_of_finalizedGJE` from the actual
@@ -188,4 +171,5 @@ noncomputable def ch14ext_cor146FinalizedRunFamily_of_computedFactors
         simpa only [R] using hRinv t) source_inverse
   }
 
-end NumStability.Ch14Ext
+end Ch14Ext
+end NumStability
