@@ -1,0 +1,5 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AttainedMinima.All
+import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds.All
+
+#check NumStability.add_then_scale_coeff_le_gamma
+#check NumStability.SepLowerBound_lyapunov_of_sigmaMin

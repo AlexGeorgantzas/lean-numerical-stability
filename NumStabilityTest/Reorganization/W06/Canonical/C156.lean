@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.Laszlo
+
+#check NumStability.higham18_laszlo_nearest_normal_frobSq

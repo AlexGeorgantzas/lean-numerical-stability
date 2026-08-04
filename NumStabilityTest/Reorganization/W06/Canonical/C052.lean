@@ -1,0 +1,3 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.BaiDemmelGu.DistanceToInstability
+
+#check NumStability.complexMatrixEuclideanLin_conj_apply

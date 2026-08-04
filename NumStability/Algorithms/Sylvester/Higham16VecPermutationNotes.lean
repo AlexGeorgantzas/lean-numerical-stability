@@ -1,9 +1,19 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Vectorization
+import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.VectorizationIdentities.KroneckerPermutation
+import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.VectorizationNotes.Notes
+
+/-!
+# Algorithms.Sylvester.Higham16VecPermutationNotes
+
+Historical declaration-bearing facade. Genuine-private and ambient-context retention closure remains here with its original identity.
+-/
+
 -- Algorithms/Sylvester/Higham16VecPermutationNotes.lean
 --
 -- The two explicit vec-permutation identities recorded in the notes after
 -- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., (16.27).
 
-import NumStability.Algorithms.Sylvester.Higham16
+
 
 namespace NumStability
 
@@ -27,39 +37,39 @@ private theorem higham16_sum_swap_indicator
     simp [hneq]
   · simp
 
-/-- The matrix unit `e_i e_j^T` used in Higham's explicit formula for the
-    vec-permutation matrix. -/
-def higham16MatrixUnit (n : Nat) (i j : Fin n) :
-    Matrix (Fin n) (Fin n) Real :=
-  fun a b => if a = i ∧ b = j then 1 else 0
 
-/-- Higham, 2nd ed., p. 317, notes following (16.27):
-    `Pi = sum_{i,j} (e_i e_j^T) kron (e_j e_i^T)`.
 
-    The product index is the one used by Mathlib's column-stacking `vec`.
-    Thus the right-hand side has its unique nonzero in row `(a,b)` at column
-    `(b,a)`, exactly as `vecTransposePermutation` does. -/
-theorem higham16_vecTransposePermutation_explicit_sum (n : Nat) :
-    vecTransposePermutation n =
-      ∑ i : Fin n, ∑ j : Fin n,
-        Matrix.kronecker (higham16MatrixUnit n i j)
-          (higham16MatrixUnit n j i) := by
-  ext p q
-  classical
-  simp only [vecTransposePermutation, higham16MatrixUnit, Matrix.kronecker,
-    Matrix.kroneckerMap, Matrix.sum_apply, Matrix.of_apply]
-  rw [Finset.sum_eq_single p.1]
-  · rw [Finset.sum_eq_single p.2]
-    · by_cases h1 : q.1 = p.2 <;> by_cases h2 : q.2 = p.1 <;>
-        simp [Prod.ext_iff, h1, h2]
-    · intro j _ hj
-      simp [Ne.symm hj]
-    · simp
-  · intro i _ hi
-    apply Finset.sum_eq_zero
-    intro j _
-    simp [Ne.symm hi]
-  · simp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Higham, 2nd ed., p. 317, notes following (16.27):
     `(A kron B) Pi = Pi (B kron A)`.
@@ -78,9 +88,9 @@ theorem higham16_kronecker_mul_vecTransposePermutation (n : Nat)
   rw [higham16_sum_swap_indicator]
   simp [mul_comm]
 
-/-- Source-facing alias for Higham's explicit sum formula for `Pi`. -/
-alias H16_notes_vecTransposePermutation_explicit_sum :=
-  higham16_vecTransposePermutation_explicit_sum
+
+
+
 
 /-- Source-facing alias for Higham's Kronecker/vec-permutation commutation
     identity. -/

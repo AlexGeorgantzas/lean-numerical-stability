@@ -1,0 +1,3 @@
+import NumStability.Analysis.LinearOperators.Schur.Real.Triangularization.SplitCharpoly
+
+#check NumStability.RealSchurAux.charpoly_conj_orthogonal

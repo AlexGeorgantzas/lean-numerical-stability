@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Sylvester.Higham16SpectrumMinimizers
+
+#check NumStability.H16_eq16_29_sylvester_practical_error_bound_fl_of_realQuasiSchur_strictBlockMap

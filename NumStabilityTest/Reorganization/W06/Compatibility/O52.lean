@@ -1,0 +1,3 @@
+import NumStability.Analysis.MatrixPowersLp185Primary
+
+#check NumStability.higham_eq_18_5_primary_lp_jordan

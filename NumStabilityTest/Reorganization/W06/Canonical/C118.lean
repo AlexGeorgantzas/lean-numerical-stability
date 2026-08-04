@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.QuasiQuasiSylvester
+
+#check NumStability.Wave16.H16_eq16_6_quasiquasi_sylvesterQQBlockPivots_transport

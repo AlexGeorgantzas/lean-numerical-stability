@@ -1,0 +1,3 @@
+import NumStability.Analysis.CStarMatrixExpectation
+
+#check NumStability.FiniteProbability.cstarMatrixTrace_expectationCStarMatrix

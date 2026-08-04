@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Sylvester.Higham16NormEstimator
+
+#check NumStability.NormEstimator.H16_eq16_29_sylvester_practical_error_bound_with_norm1_estimator

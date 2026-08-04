@@ -1,0 +1,9 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.All
+import NumStability.Analysis.LinearOperators.MatrixPowers.Kreiss.All
+import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.All
+import NumStability.Analysis.LinearOperators.NumericalRadius.Berger.All
+
+#check NumStability.A_charpoly_factors_schur
+#check NumStability.KreissResolventBound
+#check NumStability.RationalOrderCertificate
+#check NumStability.l2_norm_matrix_pow_le

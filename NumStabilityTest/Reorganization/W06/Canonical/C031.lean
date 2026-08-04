@@ -1,0 +1,3 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.TriangularBartelsStewart.ResidualAssembly
+
+#check NumStability.Wave14.frobNormRect_eq_of_orthogonal_similarity

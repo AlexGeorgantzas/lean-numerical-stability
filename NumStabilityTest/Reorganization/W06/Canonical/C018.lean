@@ -1,0 +1,3 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.ComplexSchur.VectorizedSolvability
+
+#check NumStability.existsUnique_isSylvesterSolutionRect_of_sylvesterVecCoeff_det_ne_zero

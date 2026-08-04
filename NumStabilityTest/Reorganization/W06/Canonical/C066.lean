@@ -1,0 +1,3 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalMatrices
+
+#check NumStability.schurFactor_normal_of_normal

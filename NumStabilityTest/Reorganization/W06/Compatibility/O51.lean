@@ -1,0 +1,3 @@
+import NumStability.Analysis.MatrixPowersLaszlo
+
+#check NumStability.blockMass_le_strictUpperSq

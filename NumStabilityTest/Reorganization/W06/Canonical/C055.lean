@@ -1,0 +1,3 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.Complex
+
+#check NumStability.complexMatrixInfNorm_add_le

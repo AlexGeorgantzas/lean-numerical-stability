@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.HessenbergSchur
+
+#check NumStability.H16_eq16_6_exists_HessenbergGEPPUTrace_growthFactorEntry_le_card_sylvesterTriangularShiftedCoeff_of_det_ne_zero

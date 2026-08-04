@@ -1,3 +1,13 @@
+import Mathlib.Analysis.CStarAlgebra.Matrix
+import NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.Schur
+import NumStability.Analysis.LinearOperators.Schur.Complex.Triangulation
+
+/-!
+# Analysis.MatrixPowersSchur
+
+Historical declaration-bearing facade. Genuine-private and ambient-context retention closure remains here with its original identity.
+-/
+
 /-
 Analysis/MatrixPowersSchur.lean
 
@@ -55,8 +65,8 @@ diagonal of the Schur factor `T`; this equals `maxᵢ |λᵢ|` by definition of 
 Pi sup-norm (`Matrix.l2_opNorm_diagonal` / `Pi.norm_def`).
 -/
 
-import Mathlib.Analysis.CStarAlgebra.Matrix
-import NumStability.Analysis.SchurTriangulation
+
+
 
 open scoped Matrix.Norms.L2Operator BigOperators Matrix
 
@@ -74,46 +84,46 @@ hence `Aᵏ = U Tᵏ Uᴴ`.  With `T = D + N` (diagonal-plus-strictly-upper) thi
 `Aᵏ = U (D + N)ᵏ Uᴴ`.
 -/
 
-/-- If `U` is unitary and `Uᴴ A U = T`, then `A = U T Uᴴ`.  (Solve the Schur
-relation for `A` using `U Uᴴ = 1`.)  Higham §18.1, Schur form `A = Q T Qᴴ`. -/
-theorem eq_unitary_conj_of_schur {A U T : Matrix (Fin n) (Fin n) ℂ}
-    (hU : U ∈ Matrix.unitaryGroup (Fin n) ℂ) (hT : Uᴴ * A * U = T) :
-    A = U * T * Uᴴ := by
-  have hUUH : U * Uᴴ = 1 := by
-    have := hU.2
-    rwa [Matrix.star_eq_conjTranspose] at this
-  have hUHU : Uᴴ * U = 1 := by
-    have := hU.1
-    rwa [Matrix.star_eq_conjTranspose] at this
-  calc A = (U * Uᴴ) * A * (U * Uᴴ) := by rw [hUUH, Matrix.one_mul, Matrix.mul_one]
-    _ = U * (Uᴴ * A * U) * Uᴴ := by
-          simp only [Matrix.mul_assoc]
-    _ = U * T * Uᴴ := by rw [hT]
 
-/-- **Unitary conjugation of powers.**  If `U` is unitary and `Uᴴ A U = T`, then
-`Aᵏ = U Tᵏ Uᴴ` for every `k`.  This is the Jordan-free (Schur) analogue of the
-per-block power expansion Higham uses after (18.1); combined with
-`schur_triangulation` it expresses every power of `A` through a *triangular*
-factor.  Higham §18.1. -/
-theorem pow_eq_unitary_conj {A U T : Matrix (Fin n) (Fin n) ℂ}
-    (hU : U ∈ Matrix.unitaryGroup (Fin n) ℂ) (hT : Uᴴ * A * U = T) (k : ℕ) :
-    A ^ k = U * T ^ k * Uᴴ := by
-  have hUHU : Uᴴ * U = 1 := by
-    have := hU.1
-    rwa [Matrix.star_eq_conjTranspose] at this
-  have hUUH : U * Uᴴ = 1 := by
-    have := hU.2
-    rwa [Matrix.star_eq_conjTranspose] at this
-  have hA : A = U * T * Uᴴ := eq_unitary_conj_of_schur hU hT
-  induction k with
-  | zero => rw [pow_zero, pow_zero, Matrix.mul_one, hUUH]
-  | succ m ih =>
-    rw [pow_succ, ih, pow_succ, hA]
-    -- (U Tᵐ Uᴴ) * (U T Uᴴ) = U Tᵐ⁺¹ Uᴴ
-    calc U * T ^ m * Uᴴ * (U * T * Uᴴ)
-        = U * T ^ m * (Uᴴ * U) * T * Uᴴ := by simp only [Matrix.mul_assoc]
-      _ = U * (T ^ m * T) * Uᴴ := by rw [hUHU, Matrix.mul_one]; simp only [Matrix.mul_assoc]
-      _ = U * T ^ (m + 1) * Uᴴ := by rw [← pow_succ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-!
 ### Nilpotency of the strictly-upper-triangular Schur factor  (Higham §18.1)
@@ -126,43 +136,43 @@ Jordan form.  The proof is the "band-shifting" estimate: each matrix product wit
 products no entry survives inside an `n × n` matrix.
 -/
 
-/-- Band-shifting bound.  If `N i j = 0` for all `j ≤ i` (strictly upper
-triangular), then `(Nᵐ) i j = 0` whenever `j < i + m`.  The nonzero band of the
-`m`-th power starts at the `m`-th super-diagonal. -/
-theorem strictUpper_pow_apply_eq_zero {N : Matrix (Fin n) (Fin n) ℂ}
-    (hN : ∀ i j : Fin n, (j : ℕ) ≤ (i : ℕ) → N i j = 0) (m : ℕ) :
-    ∀ i j : Fin n, (j : ℕ) < (i : ℕ) + m → (N ^ m) i j = 0 := by
-  induction m with
-  | zero =>
-    intro i j hji
-    simp only [Nat.add_zero] at hji
-    -- `N^0 = 1`; `j < i` forces `i ≠ j`, so the identity entry is `0`.
-    have hij : i ≠ j := fun h => by rw [h] at hji; exact absurd hji (lt_irrefl _)
-    rw [pow_zero, Matrix.one_apply_ne hij]
-  | succ p ih =>
-    intro i j hji
-    rw [pow_succ, Matrix.mul_apply]
-    refine Finset.sum_eq_zero fun k _ => ?_
-    -- either N^p i k = 0 (if k < i + p) or N k j = 0 (if j ≤ k)
-    by_cases hk : (k : ℕ) < (i : ℕ) + p
-    · rw [ih i k hk, zero_mul]
-    · -- k ≥ i + p, and j < i + (p+1), so j ≤ i + p ≤ k
-      have hle : (i : ℕ) + p ≤ (k : ℕ) := Nat.not_lt.mp hk
-      have hjk : (j : ℕ) ≤ (k : ℕ) := by omega
-      rw [hN k j hjk, mul_zero]
 
-/-- **Nilpotency of a strictly upper-triangular matrix.**  If `N i j = 0` for all
-`j ≤ i` then `Nⁿ = 0`.  Hence the Schur factor `N` of
-`schur_triangulation_diag_add_strictUpper` is nilpotent, so `(D + N)ᵏ` is a
-finite sum.  Higham §18.1 (the finite Jordan-block / nilpotent expansion). -/
-theorem strictUpper_pow_eq_zero {N : Matrix (Fin n) (Fin n) ℂ}
-    (hN : ∀ i j : Fin n, (j : ℕ) ≤ (i : ℕ) → N i j = 0) :
-    N ^ n = 0 := by
-  ext i j
-  rw [Matrix.zero_apply]
-  refine strictUpper_pow_apply_eq_zero hN n i j ?_
-  have hjn : (j : ℕ) < n := j.2
-  omega
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-!
 ### A normal upper-triangular matrix is diagonal  (Schur input to the identity)

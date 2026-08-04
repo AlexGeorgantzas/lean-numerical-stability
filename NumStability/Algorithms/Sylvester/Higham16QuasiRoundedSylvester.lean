@@ -1,3 +1,13 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart.QuasiTriangularSylvester
+import NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSolve
+import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.QuasiRoundedSylvester
+
+/-!
+# Algorithms.Sylvester.Higham16QuasiRoundedSylvester
+
+Historical declaration-bearing facade. Genuine-private and ambient-context retention closure remains here with its original identity.
+-/
+
 -- Algorithms/Sylvester/Higham16QuasiRoundedSylvester.lean
 --
 -- Higham, "Accuracy and Stability of Numerical Algorithms", 2nd ed.,
@@ -58,7 +68,7 @@
 --   two-column ordering with diagonal blocks of size up to 4 and remains
 --   open (see the engine file header).
 
-import NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSolve
+
 
 namespace NumStability
 
@@ -70,141 +80,141 @@ open scoped BigOperators
 -- The transported per-entry elimination fill-in budget
 -- ============================================================
 
-/-- Higham, 2nd ed., Chapter 9.3, Theorem 9.3, specialized as required by
-    Chapter 16.2, p. 308: the per-entry GE elimination fill-in budget of the
-    quasi-triangular Bartels-Stewart solve, read on the column-stacking
-    product index.  It is the engine budget `quasiGrowthTerm` of the
-    reordered `nm x nm` system transported through the Bartels-Stewart
-    index equivalence: nonzero only at the bottom-right position of a
-    marked shifted 2 x 2 diagonal block, where it equals the `n = 2` GE
-    fill-in `|R_{i+1,i}| |R_{i,i+1}| / |R_ii - S_kk|` of that block.  This
-    is the `|L^||U^|`-shaped part of the unconditional (16.7) budget; the
-    per-block growth certificates collapse it into `rho |P|`. -/
-noncomputable def sylvesterQuasiGrowthTerm (m n : Nat) (dblR : Fin m → Bool)
-    (R : RMatFn m m) (S : RMatFn n n) (p q : Prod (Fin n) (Fin m)) : Real :=
-  quasiGrowthTerm (n * m) (sylvesterQuasiPairing m n dblR)
-    (Wave14.sylvesterSchurBackSubCoeff m n R S)
-    (Wave14.sylvesterBackSubIndexEquiv m n p)
-    (Wave14.sylvesterBackSubIndexEquiv m n q)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- ============================================================
 -- Transport of the engine hypotheses through the index equivalence
 -- ============================================================
 
-/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7): entries of the
-    reordered vec/Kronecker coefficient at least two positions below the
-    diagonal vanish; this is the first engine zero pattern of the block
-    upper-triangular reordered system for a quasi-triangular/triangular
-    Schur pair. -/
-theorem sylvesterQuasiSchurBackSubCoeff_below_subdiag_zero (m n : Nat)
-    (R : RMatFn m m) (S : RMatFn n n) (dblR : Fin m → Bool)
-    (hR : IsQuasiUpperTriangularFn m R dblR) (hS : IsUpperTriangularFn n S) :
-    ∀ a c : Fin (n * m), c.val + 1 < a.val →
-      Wave14.sylvesterSchurBackSubCoeff m n R S a c = 0 := by
-  intro a c hlt
-  exact sylvesterQuasiSchurBackSubCoeff_eq_zero m n R S dblR hR hS a c
-    (by omega) (fun h => absurd h (by omega))
 
-/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7): first
-    subdiagonal entries of the reordered vec/Kronecker coefficient vanish
-    off the marked 2 x 2 blocks; this is the second engine zero pattern of
-    the block upper-triangular reordered system. -/
-theorem sylvesterQuasiSchurBackSubCoeff_subdiag_zero (m n : Nat)
-    (R : RMatFn m m) (S : RMatFn n n) (dblR : Fin m → Bool)
-    (hR : IsQuasiUpperTriangularFn m R dblR) (hS : IsUpperTriangularFn n S) :
-    ∀ a c : Fin (n * m), c.val + 1 = a.val →
-      sylvesterQuasiPairing m n dblR c = false →
-      Wave14.sylvesterSchurBackSubCoeff m n R S a c = 0 := by
-  intro a c heq hdbl
-  exact sylvesterQuasiSchurBackSubCoeff_eq_zero m n R S dblR hR hS a c
-    (by omega) (fun _ => hdbl)
 
-/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7): combined
-    marked-block zero pattern for the reordered vec/Kronecker coefficient.
-    Entries strictly below the marked `1 x 1`/`2 x 2` block diagonal vanish. -/
-theorem sylvesterQuasiSchurBackSubCoeff_below_markedBlock_zero (m n : Nat)
-    (R : RMatFn m m) (S : RMatFn n n) (dblR : Fin m → Bool)
-    (hR : IsQuasiUpperTriangularFn m R dblR) (hS : IsUpperTriangularFn n S) :
-    ∀ a c : Fin (n * m),
-      c.val + 1 < a.val ∨
-        (c.val + 1 = a.val ∧ sylvesterQuasiPairing m n dblR c = false) →
-      Wave14.sylvesterSchurBackSubCoeff m n R S a c = 0 := by
-  intro a c h
-  rcases h with hfar | ⟨hadj, hpair⟩
-  · exact sylvesterQuasiSchurBackSubCoeff_below_subdiag_zero
-      m n R S dblR hR hS a c hfar
-  · exact sylvesterQuasiSchurBackSubCoeff_subdiag_zero
-      m n R S dblR hR hS a c hadj hpair
 
-/-- Higham, 2nd ed., Chapter 16.1-16.2, equations (16.3), (16.6)-(16.7):
-    transport of the diagonal-separation certificate.  If `R_ii ≠ S_kk` on
-    every row `i` of `R` that is not the bottom row of a marked 2 x 2 block
-    — the scalar pivots and the block first pivots of the quasi-triangular
-    substitution (16.6) — then every non-bottom-row diagonal entry
-    `R_ii - S_kk` of the reordered coefficient is nonzero, which is the
-    engine's pivot hypothesis. -/
-theorem sylvesterQuasiSchurBackSubCoeff_pivot_ne_zero (m n : Nat)
-    (R : RMatFn m m) (S : RMatFn n n) (dblR : Fin m → Bool)
-    (hsep : ∀ (i : Fin m) (k : Fin n),
-      ¬(0 < i.val ∧ dblR ⟨i.val - 1, by omega⟩ = true) → R i i ≠ S k k) :
-    ∀ a : Fin (n * m),
-      ¬(0 < a.val ∧
-        sylvesterQuasiPairing m n dblR ⟨a.val - 1, by omega⟩ = true) →
-      Wave14.sylvesterSchurBackSubCoeff m n R S a a ≠ 0 := by
-  intro a hnot
-  have hfac := sylvesterQuasiPairing_notSecond_decode m n dblR a hnot
-  rw [Wave14.sylvesterSchurBackSubCoeff_diag]
-  exact sub_ne_zero_of_ne (hsep _ _ hfac)
 
-/-- Higham, 2nd ed., Chapter 16.2, p. 308, equation (16.6): transport of
-    the per-block computed-second-pivot certificate.  If every marked
-    shifted 2 x 2 block `[[R_ii - S_kk, R_{i,i+1}], [R_{i+1,i},
-    R_{i+1,i+1} - S_kk]]` of the substitution (16.6) has nonzero computed
-    second pivot, then so does every marked 2 x 2 diagonal block of the
-    reordered coefficient, which is the engine's completion certificate for
-    the `fl_solve2x2` kernel. -/
-theorem sylvesterQuasiSchurBackSubCoeff_secondPivot_ne_zero (fp : FPModel)
-    (m n : Nat) (R : RMatFn m m) (S : RMatFn n n) (dblR : Fin m → Bool)
-    (hpiv : ∀ (i i' : Fin m) (k : Fin n), i'.val = i.val + 1 →
-      dblR i = true →
-      flSolve2x2SecondPivot fp (R i i - S k k) (R i i') (R i' i)
-        (R i' i' - S k k) ≠ 0) :
-    ∀ a b' : Fin (n * m), b'.val = a.val + 1 →
-      sylvesterQuasiPairing m n dblR a = true →
-      flSolve2x2SecondPivot fp
-        (Wave14.sylvesterSchurBackSubCoeff m n R S a a)
-        (Wave14.sylvesterSchurBackSubCoeff m n R S a b')
-        (Wave14.sylvesterSchurBackSubCoeff m n R S b' a)
-        (Wave14.sylvesterSchurBackSubCoeff m n R S b' b') ≠ 0 := by
-  intro a b' hb' hd
-  obtain ⟨k, i, i', hii', hdbl, h11, h12, h21, h22⟩ :=
-    sylvesterQuasiPairing_block_decode m n dblR R S a b' hb' hd
-  rw [h11, h12, h21, h22]
-  exact hpiv i i' k hii' hdbl
 
-/-- Higham, 2nd ed., Chapter 9.3 and Chapter 16.2, p. 308: transport of the
-    per-block growth certificate.  If every marked shifted 2 x 2 block of
-    the substitution (16.6) satisfies the componentwise growth condition
-    `|R_{i,i+1}| |R_{i+1,i}| <= rho |R_ii - S_kk| |R_{i+1,i+1} - S_kk|`,
-    then every marked 2 x 2 diagonal block of the reordered coefficient
-    satisfies the engine's growth hypothesis, which collapses the GE
-    fill-in into the fully componentwise `(1+rho)` budget. -/
-theorem sylvesterQuasiSchurBackSubCoeff_growth (m n : Nat)
-    (R : RMatFn m m) (S : RMatFn n n) (dblR : Fin m → Bool) (ρ : Real)
-    (hgrow : ∀ (i i' : Fin m) (k : Fin n), i'.val = i.val + 1 →
-      dblR i = true →
-      |R i i'| * |R i' i| ≤ ρ * (|R i i - S k k| * |R i' i' - S k k|)) :
-    ∀ a b' : Fin (n * m), b'.val = a.val + 1 →
-      sylvesterQuasiPairing m n dblR a = true →
-      |Wave14.sylvesterSchurBackSubCoeff m n R S a b'| *
-          |Wave14.sylvesterSchurBackSubCoeff m n R S b' a| ≤
-        ρ * (|Wave14.sylvesterSchurBackSubCoeff m n R S a a| *
-          |Wave14.sylvesterSchurBackSubCoeff m n R S b' b'|) := by
-  intro a b' hb' hd
-  obtain ⟨k, i, i', hii', hdbl, h11, h12, h21, h22⟩ :=
-    sylvesterQuasiPairing_block_decode m n dblR R S a b' hb' hd
-  rw [h11, h12, h21, h22]
-  exact hgrow i i' k hii' hdbl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- ============================================================
 -- (16.7): rounded block-substitution backward error
@@ -738,89 +748,89 @@ theorem sylvesterVecCoeff_quasiTriangular_blockBackSub_componentwise_error_and_r
 -- Source-numbered aliases
 -- ============================================================
 
-/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.7),
-    quasi-triangular (real Schur) variant: source-numbered alias for the
-    induced product-index adjacent-pair marking used by the rounded
-    quasi-triangular block substitution. -/
-alias H16_eq16_6_quasi_sylvesterQuasiPairing_isQuasiBlockPairing :=
-  sylvesterQuasiPairing_isQuasiBlockPairing
 
-/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.7),
-    quasi-triangular (real Schur) variant: source-numbered alias for decoding
-    a marked product-index block into the corresponding `2 x 2` diagonal block
-    of the reordered vec/Kronecker coefficient. -/
-alias H16_eq16_6_quasi_sylvesterQuasiPairing_block_decode :=
-  sylvesterQuasiPairing_block_decode
 
-/-- Higham, 2nd ed., Chapter 16.1, equation (16.2),
-    quasi-triangular (real Schur) variant: source-numbered alias for the
-    same-column off-diagonal entries of the vec/Kronecker Sylvester
-    coefficient used when decoding marked `2 x 2` product-index blocks. -/
-alias H16_eq16_2_quasi_sylvesterVecCoeff_same_col_apply :=
-  sylvesterVecCoeff_same_col_apply
 
-/-- Higham, 2nd ed., Chapter 16.2, equations (16.6)-(16.7),
-    quasi-triangular (real Schur) variant: source-numbered alias for
-    transporting the non-bottom-row condition through the Bartels-Stewart
-    product-index order. -/
-alias H16_eq16_6_quasi_sylvesterQuasiPairing_notSecond_decode :=
-  sylvesterQuasiPairing_notSecond_decode
 
-/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
-    quasi-triangular (real Schur) variant: source-numbered alias for the
-    generic zero theorem of the reordered vec/Kronecker coefficient below the
-    marked block diagonal. -/
-alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_eq_zero :=
-  sylvesterQuasiSchurBackSubCoeff_eq_zero
 
-/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
-    quasi-triangular (real Schur) variant: source-numbered alias for the
-    below-subdiagonal zero pattern of the reordered vec/Kronecker coefficient
-    used by the rounded block substitution. -/
-alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_below_subdiag_zero :=
-  sylvesterQuasiSchurBackSubCoeff_below_subdiag_zero
 
-/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
-    quasi-triangular (real Schur) variant: source-numbered alias for the
-    off-block first-subdiagonal zero pattern of the reordered vec/Kronecker
-    coefficient used by the rounded block substitution. -/
-alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_subdiag_zero :=
-  sylvesterQuasiSchurBackSubCoeff_subdiag_zero
 
-/-- Higham, 2nd ed., Chapter 16.2, equations (16.4)-(16.7),
-    quasi-triangular (real Schur) variant: source-numbered alias for the
-    combined zero pattern below the marked block diagonal of the reordered
-    vec/Kronecker coefficient. -/
-alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_below_markedBlock_zero :=
-  sylvesterQuasiSchurBackSubCoeff_below_markedBlock_zero
 
-/-- Higham, 2nd ed., Chapter 16.2, equation (16.6),
-    quasi-triangular (real Schur) variant: source-numbered alias for transport
-    of the scalar and first-block-pivot separation certificate to the reordered
-    coefficient. -/
-alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_pivot_ne_zero :=
-  sylvesterQuasiSchurBackSubCoeff_pivot_ne_zero
 
-/-- Higham, 2nd ed., Chapter 16.2, equation (16.6),
-    quasi-triangular (real Schur) variant: source-numbered alias for transport
-    of the computed second-pivot certificate for each marked shifted `2 x 2`
-    block. -/
-alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_secondPivot_ne_zero :=
-  sylvesterQuasiSchurBackSubCoeff_secondPivot_ne_zero
 
-/-- Higham, 2nd ed., Chapter 16.2, equation (16.6), with Chapter 9.3 growth
-    control: source-numbered alias for transport of the marked-block growth
-    certificate that collapses the explicit GE fill-in into the componentwise
-    `(1 + rho)` budget. -/
-alias H16_eq16_6_quasi_sylvesterQuasiSchurBackSubCoeff_growth :=
-  sylvesterQuasiSchurBackSubCoeff_growth
 
-/-- Higham, 2nd ed., Chapter 16.2, p. 308, equation (16.6),
-    quasi-triangular (real Schur) variant: source-numbered alias for the
-    vectorized/matrix bookkeeping of the computed rounded quasi-triangular
-    Schur solve. -/
-alias H16_eq16_6_quasi_vec_flSylvesterQuasiSchurBlockBackSubSolve :=
-  vec_flSylvesterQuasiSchurBlockBackSubSolve
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Higham, 2nd ed., Chapter 16.2, pp. 307-308, equation (16.7),
     quasi-triangular (real Schur) variant: source-numbered alias for the

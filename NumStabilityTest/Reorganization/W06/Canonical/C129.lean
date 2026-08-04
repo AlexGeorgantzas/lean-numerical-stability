@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.All
+
+#check NumStability.H16_eq16_23_sylvester_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge

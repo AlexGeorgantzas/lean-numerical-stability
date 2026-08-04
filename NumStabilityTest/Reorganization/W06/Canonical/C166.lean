@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.PseudospectralLowerBound
+
+#check NumStability.alignedShift

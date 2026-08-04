@@ -1,0 +1,3 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds.Lyapunov
+
+#check NumStability.SepLowerBound_lyapunov_of_sigmaMin

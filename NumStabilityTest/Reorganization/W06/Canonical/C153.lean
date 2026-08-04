@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.HenriciImprovedConstant
+
+#check NumStability.henriciSharpConst

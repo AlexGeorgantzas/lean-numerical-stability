@@ -1,0 +1,3 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.VectorizationIdentities.All
+
+#check NumStability.higham16MatrixUnit

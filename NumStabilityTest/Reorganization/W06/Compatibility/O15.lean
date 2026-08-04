@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Sylvester.Higham16Minimizers
+
+#check NumStability.H16_eq16_15_exists_sylvesterBackwardError_minimizer_of_svdOptimalPerturbations

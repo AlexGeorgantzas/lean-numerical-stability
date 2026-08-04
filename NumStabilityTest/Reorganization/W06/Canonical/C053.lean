@@ -1,0 +1,3 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.BaiDemmelGu.StabilityRadius
+
+#check NumStability.baiDemmelGuAlpha

@@ -1,0 +1,3 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.DepartureFromNormality
+
+#check NumStability.A_charpoly_factors_schur
