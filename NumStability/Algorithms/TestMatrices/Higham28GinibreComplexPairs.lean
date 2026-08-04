@@ -1,71 +1,32 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import NumStability.Algorithms.TestMatrices.Higham28GinibreRoots
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibreComplexPairs
 
-/-! # Higham Chapter 28: real roots and conjugate pairs
+/-!
+# Higham28GinibreComplexPairs (compatibility module)
 
-This module partitions the complex characteristic roots of a real matrix,
-with algebraic multiplicity, into real roots and the two open half-planes.
-Complex conjugation preserves the complete root multiset and exchanges the
-upper and lower parts.  Consequently the real-root count plus twice the
-upper-half-plane count is the matrix dimension.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreComplexPairs`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
+
+noncomputable section
 
 namespace NumStability
 
 open MeasureTheory Polynomial
-open scoped ComplexConjugate
 
-noncomputable section
+open scoped ComplexConjugate
 
 local instance ginibreComplexPairsMeasurableSpace (n : ℕ) :
     MeasurableSpace (GinibreRawMatrix n) :=
   MeasurableSpace.pi
-
-/-- Number of characteristic roots in the open upper half-plane, counted
-with algebraic multiplicity. -/
-def complexUpperEigenvalueCount (n : ℕ) (A : GinibreRawMatrix n) : ℕ :=
-  ((complexMatrixCharpoly A).roots.filter fun z => 0 < z.im).card
-
-/-- Mapping the complex characteristic polynomial of a real matrix through
-complex conjugation leaves the polynomial unchanged. -/
-theorem map_complexMatrixCharpoly_conj {n : ℕ} (A : GinibreRawMatrix n) :
-    (complexMatrixCharpoly A).map Complex.conjAe.toRingEquiv.toRingHom =
-      complexMatrixCharpoly A := by
-  rw [complexMatrixCharpoly, Polynomial.map_map]
-  congr 1
-  ext x
-  simp [Complex.conjAe_coe]
-
-/-- The complete complex root multiset of a real characteristic polynomial
-is invariant under conjugation.  Since this is a multiset equality, it
-retains algebraic multiplicities. -/
-theorem roots_complexMatrixCharpoly_map_conj {n : ℕ}
-    (A : GinibreRawMatrix n) :
-    (complexMatrixCharpoly A).roots.map (starRingEnd ℂ) =
-      (complexMatrixCharpoly A).roots := by
-  have h := (IsAlgClosed.splits (complexMatrixCharpoly A)).roots_map_of_injective
-    Complex.conjAe.toRingEquiv.injective
-  rw [show (starRingEnd ℂ) = Complex.conjAe.toRingEquiv.toRingHom by ext; rfl,
-    map_complexMatrixCharpoly_conj A] at h
-  exact h.symm
-
-/-- Conjugate roots occur with exactly equal algebraic multiplicity. -/
-theorem complexMatrixCharpoly_rootMultiplicity_conj
-    {n : ℕ} (A : GinibreRawMatrix n) (z : ℂ) :
-    (complexMatrixCharpoly A).roots.count ((starRingEnd ℂ) z) =
-      (complexMatrixCharpoly A).roots.count z := by
-  classical
-  have hcount := Multiset.count_map_eq_count'
-    (starRingEnd ℂ) (complexMatrixCharpoly A).roots
-    Complex.conjAe.toRingEquiv.injective z
-  rw [roots_complexMatrixCharpoly_map_conj A] at hcount
-  exact hcount
 
 private theorem card_partition_by_im (s : Multiset ℂ) :
     s.card =
@@ -95,20 +56,6 @@ private theorem card_filter_im_neg_eq_pos_of_map_conj
       simp only [Multiset.filter_map, Function.comp_apply]
     _ = (s.filter fun z => 0 < z.im).card := by
       simp only [Multiset.card_map, Complex.conj_im, neg_lt_zero]
-
-/-- The roots of the complexified characteristic polynomial on the real axis
-are exactly the roots of the original real characteristic polynomial. -/
-theorem card_filter_im_eq_zero_complexMatrixCharpoly
-    {n : ℕ} (A : GinibreRawMatrix n) :
-    ((complexMatrixCharpoly A).roots.filter fun z => z.im = 0).card =
-      realEigenvalueCount n A := by
-  classical
-  have hf := Polynomial.filter_roots_map_range_eq_map_roots
-    Complex.ofRealHom.injective (Matrix.charpoly (Matrix.of A))
-  have hc := congrArg Multiset.card hf
-  rw [show (Matrix.charpoly (Matrix.of A)).map Complex.ofRealHom =
-      complexMatrixCharpoly A by rfl, Multiset.card_map] at hc
-  simpa only [mem_range_complexOfReal_iff] using hc
 
 /-- Every nonreal characteristic root belongs to one conjugate pair.  This
 identity counts every root with its algebraic multiplicity. -/
@@ -173,5 +120,6 @@ theorem integrable_complexUpperEigenvalueCount (n : ℕ) :
   rw [Real.norm_eq_abs, abs_of_nonneg (Nat.cast_nonneg _)]
   exact_mod_cast complexUpperEigenvalueCount_le n A
 
-end
 end NumStability
+
+end

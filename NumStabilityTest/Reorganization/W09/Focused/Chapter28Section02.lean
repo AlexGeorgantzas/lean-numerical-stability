@@ -1,0 +1,48 @@
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Asymptotics.Asymptotics
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.Ginibre
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreAbsoluteDetRecurrence
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreCharacteristicProduct
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreCorollary31Factor
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreDeterminantMoment
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreExpectationGlue
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreFiniteFormula
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreGaussianBridge
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreRecurrence
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreSignedExpectation
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.Moments
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibreIncidence
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibrePlaneIncidence
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibreSignedIncidenceAlgebra
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibreTruncatedIncidence
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibreAtlas
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibreComplexPairs
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibreDimensionTwo
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibreOrthogonalFiber
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibrePlaneChart
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibrePlaneSylvester
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.ProbabilityLaw.GinibreJointDensity
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.ProbabilityLaw.GinibreMeasure
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.ProbabilityLaw.GinibreTraceDensity
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.ProbabilityLaw.Probability
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.RootMeasurability.GinibreMultiplicity
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.RootMeasurability.GinibreRoots
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreParity
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedConclusion
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedGaussian
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedIncidence
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedKernel
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedRank
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedRankTransfer
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedScalar
+
+/-!
+# Chapter 28 Section02: exact source correspondence
+
+Imports only the `Section02` source modules. The wave brief asks for exact
+Chapter 28 source correspondence, so each printed locus must be resolvable
+from its own modules without the historical facade.
+-/
+#check @NumStability.ginibreMatrixSq
+#check @NumStability.unitEquivFinOne
+#check @NumStability.ginibreSwapIndex
+#check @NumStability.momentPolynomial

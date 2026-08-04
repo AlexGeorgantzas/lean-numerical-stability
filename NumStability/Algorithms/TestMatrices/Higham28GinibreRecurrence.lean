@@ -1,29 +1,26 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
-import NumStability.Algorithms.TestMatrices.Higham28GinibreIntegral
 import Mathlib.Analysis.Analytic.Binomial
+import NumStability.Algorithms.TestMatrices.Higham28GinibreIntegral
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreRecurrence
 
-/-! # Higham Chapter 28: scalar Ginibre recurrence and the one-dimensional case
+/-!
+# Higham28GinibreRecurrence (compatibility module)
 
-The finite real-Ginibre closed form contains the scalar hypergeometric factor
-`₂F₁ 1 (-1 / 2) n (1 / 2)`.  Its defining series admits an elementary
-two-step telescope.  This file proves that telescope, the resulting recurrence
-for `realGinibreExpectedCountClosedForm`, and the genuine finite-expectation
-formula in dimension one.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreRecurrence`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
 
-The recurrence here is entirely about the proposed scalar closed form.  It
-does not assume, and should not be confused with, a recurrence for the random
-matrix expectation itself.
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
 
 namespace NumStability
 
 open Filter Asymptotics Polynomial MeasureTheory ProbabilityTheory
+
 open scoped ENNReal BigOperators
 
 local instance (n : ℕ) : MeasurableSpace (RSqMat n) := MeasurableSpace.pi
@@ -82,60 +79,6 @@ theorem realGinibreExpectedCountClosedForm_one :
   have hs2 : Real.sqrt 2 ≠ 0 := by positivity
   field_simp
   norm_num
-
-/-- Shifting the lower hypergeometric parameter by two multiplies each scalar
-series coefficient by an explicit rational factor. -/
-theorem ginibreHypergeometricTerm_shift_two (m k : ℕ) (hm : 0 < m) :
-    ginibreHypergeometricTerm (m + 2) k =
-      ginibreHypergeometricTerm m k *
-        ((m : ℝ) * (m + 1) /
-          (((m : ℝ) + k) * ((m : ℝ) + k + 1))) := by
-  induction k with
-  | zero =>
-      rw [ginibreHypergeometricTerm_zero,
-        ginibreHypergeometricTerm_zero]
-      have hm0 : (m : ℝ) ≠ 0 := by exact_mod_cast hm.ne'
-      have hm1 : (m : ℝ) + 1 ≠ 0 := by positivity
-      field_simp
-      ring
-  | succ k ih =>
-      rw [ginibreHypergeometricTerm_succ,
-        ginibreHypergeometricTerm_succ, ih]
-      have hm0 : (m : ℝ) ≠ 0 := by exact_mod_cast hm.ne'
-      have hm1 : (m : ℝ) + 1 ≠ 0 := by positivity
-      have hmk : (m : ℝ) + k ≠ 0 := by positivity
-      have hmks : (m : ℝ) + k + 1 ≠ 0 := by positivity
-      have hmks2 : (m : ℝ) + k + 2 ≠ 0 := by positivity
-      norm_num only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat] at *
-      field_simp
-      ring
-
-/-- The certificate whose consecutive difference is the shifted-series
-coefficient difference. -/
-noncomputable def ginibreHypergeometricTelescopeTerm (m k : ℕ) : ℝ :=
-  (((2 : ℝ) * k - 1) / ((m : ℝ) + k)) *
-    ginibreHypergeometricTerm m k
-
-/-- Termwise telescoping identity behind the two-step hypergeometric
-recurrence. -/
-theorem ginibreHypergeometricTerm_shift_two_telescope
-    (m k : ℕ) (hm : 0 < m) :
-    (((m : ℝ) + 1 / 2) * ((m : ℝ) + 3 / 2) /
-        ((m : ℝ) * ((m : ℝ) + 1))) *
-          ginibreHypergeometricTerm (m + 2) k -
-        ginibreHypergeometricTerm m k =
-      ginibreHypergeometricTelescopeTerm m (k + 1) -
-        ginibreHypergeometricTelescopeTerm m k := by
-  rw [ginibreHypergeometricTerm_shift_two m k hm]
-  unfold ginibreHypergeometricTelescopeTerm
-  rw [ginibreHypergeometricTerm_succ]
-  have hm0 : (m : ℝ) ≠ 0 := by exact_mod_cast hm.ne'
-  have hm1 : (m : ℝ) + 1 ≠ 0 := by positivity
-  have hmk : (m : ℝ) + k ≠ 0 := by positivity
-  have hmks : (m : ℝ) + k + 1 ≠ 0 := by positivity
-  norm_num only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat] at *
-  field_simp
-  ring
 
 /-- Absolute summability of the scalar hypergeometric series for every
 positive lower parameter. -/
@@ -335,16 +278,6 @@ theorem realGinibreExpectedCountClosedForm_shift_two
         (Real.Gamma ((m : ℝ) + 1 / 2) /
           Real.Gamma ((m : ℝ) + 1)) := by
       rw [mul_assoc, hratio1]
-
-/-- Every real `1 × 1` matrix has exactly one algebraic real eigenvalue. -/
-theorem realEigenvalueCount_one (A : RSqMat 1) :
-    realEigenvalueCount 1 A = 1 := by
-  unfold realEigenvalueCount
-  rw [show Matrix.charpoly A = Polynomial.X - Polynomial.C (A 0 0) by
-    rw [Matrix.charpoly]
-    simp]
-  rw [Polynomial.roots_X_sub_C]
-  simp
 
 /-- The standard real-Ginibre expected real-eigenvalue count is exactly one
 in dimension one. -/

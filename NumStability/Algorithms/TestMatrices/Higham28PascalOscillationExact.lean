@@ -1,9 +1,25 @@
-import NumStability.Algorithms.TestMatrices.Higham28PascalOscillationCore
 import NumStability.Algorithms.TestMatrices.Higham28PascalDualFlag
+import NumStability.Algorithms.TestMatrices.Higham28PascalOscillationCore
+
+/-!
+# Higham28PascalOscillationExact (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28PascalOscillationExact`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
 
 namespace NumStability
 
 open scoped BigOperators
+
 open Set
 
 /-- Every zero-compatible sign completion of the rank-`i` Pascal eigenvector

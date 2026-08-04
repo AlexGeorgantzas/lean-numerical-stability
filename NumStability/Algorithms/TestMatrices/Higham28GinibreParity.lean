@@ -1,28 +1,25 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import NumStability.Algorithms.TestMatrices.Higham28GinibreRecurrence
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreParity
 
-/-! # Higham Chapter 28: the finite real-Ginibre parity formula
+/-!
+# Higham28GinibreParity (compatibility module)
 
-The scalar hypergeometric closed form has a two-step recurrence, so its even
-and odd subsequences are determined by their first terms.  This file evaluates
-the remaining two-dimensional base term from the binomial series for
-`(1 + x)^(3/2)` and iterates the recurrence into finite Gamma sums.  The final
-parity theorems contain no hypergeometric function.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreParity`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
 
-These are identities for `realGinibreExpectedCountClosedForm`.  Identifying
-that scalar closed form with the random-matrix expectation in every dimension
-still requires the separate finite-expectation producer.
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
 
 namespace NumStability
 
 open Filter Asymptotics Polynomial MeasureTheory ProbabilityTheory
+
 open scoped ENNReal BigOperators
 
 private theorem hasSum_real_binomialSeries
@@ -166,11 +163,6 @@ theorem realGinibreExpectedCountClosedForm_two :
   rw [sqrt_two_div_pi_mul_sqrt_pi]
   rw [mul_sub, mul_one, sqrt_two_mul_one_half_rpow_three_halves]
   ring
-
-/-- The explicit Gamma increment in the two-step parity recurrence. -/
-noncomputable def realGinibreParityIncrement (m : ℕ) : ℝ :=
-  Real.sqrt (2 / Real.pi) *
-    (Real.Gamma ((m : ℝ) + 1 / 2) / Real.Gamma ((m : ℝ) + 1))
 
 @[simp]
 theorem realGinibreParityIncrement_zero :

@@ -1,34 +1,31 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import Mathlib.MeasureTheory.Constructions.HaarToSphere
 import Mathlib.MeasureTheory.Function.JacobianOneDim
 import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 import Mathlib.MeasureTheory.Measure.Lebesgue.VolumeOfBalls
 import Mathlib.Probability.Distributions.Beta
 
-/-! # Higham Chapter 28: the affine projective-chart integral
+/-!
+# Higham28GinibreProjectiveIntegral (compatibility module)
 
-The affine real-eigenvector chart contributes the radial weight
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreProjectiveIntegral`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
 
-`(1 + ∑ i, y i ^ 2) ^ (-(n + 1) / 2)`.
-
-This file evaluates its integral over `ℝⁿ` without assumptions.  The proof
-uses the radial integration formula for additive Haar measure, the
-substitution `t = r²`, and the Möbius substitution `u = t / (1 + t)` that
-turns the remaining integral into a beta integral.
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
+
+noncomputable section
 
 namespace NumStability
 
 open MeasureTheory ProbabilityTheory Set Filter
-open scoped ENNReal BigOperators
 
-noncomputable section
+open scoped ENNReal BigOperators
 
 private lemma integral_betaKernel {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
     (∫ x : ℝ in Ioo 0 1, x ^ (a - 1) * (1 - x) ^ (b - 1)) =
@@ -303,5 +300,6 @@ theorem integral_ginibreProjectiveWeight (n : ℕ) :
       · exact Finset.sum_nonneg fun i hi => sq_nonneg ‖y i‖
     _ = _ := h
 
-end
 end NumStability
+
+end

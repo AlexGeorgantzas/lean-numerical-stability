@@ -1,35 +1,41 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedRankTransfer
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibreTruncatedIncidence
 
-/-! # Higham Chapter 28: truncated signed incidence
+/-!
+# Higham28GinibreTruncatedIncidence (compatibility module)
 
-This file applies the signed eigenline-incidence formula only to marked real
-roots below a fixed external spectral threshold.  It is the inner incidence
-step in the two-root real-Ginibre calculation.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreTruncatedIncidence`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
+
+noncomputable section
 
 namespace NumStability
 
 open Matrix MeasureTheory ProbabilityTheory Set Filter
-open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Frobenius
 
-noncomputable section
+open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Frobenius
 
 private local instance ginibreTruncatedMeasurableSpaceRSqMat (n : ℕ) :
     MeasurableSpace (RSqMat n) := MeasurableSpace.pi
+
 private local instance ginibreTruncatedMeasureSpaceRSqMat (n : ℕ) :
     MeasureSpace (RSqMat n) := {
   toMeasurableSpace := MeasurableSpace.pi
   volume := realGinibreLebesgueMeasure n }
+
 private local instance ginibreTruncatedStandardBorelNuisance (n : ℕ) :
     StandardBorelSpace (GinibreIncidenceNuisance n) :=
   StandardBorelSpace.prod
+
 private local instance ginibreTruncatedStandardBorelCoordinates (n : ℕ) :
     StandardBorelSpace (GinibreIncidenceCoordinates n) :=
   StandardBorelSpace.prod
@@ -42,31 +48,6 @@ theorem measurableSet_ginibreIncidenceRankPieceBelow_image
   (measurableSet_ginibreIncidenceRankPieceBelow m k x).image_of_measurable_injOn
     measurable_ginibreIncidenceChart
     ((injOn_ginibreIncidenceChart_rankPiece m k).mono inter_subset_left)
-
-/-- Truncated rank sheets partition the regular incidence set below the
-external threshold. -/
-theorem iUnion_ginibreIncidenceRankPieceBelow (m : ℕ) (x : ℝ) :
-    (⋃ k : Fin (m + 2), ginibreIncidenceRankPieceBelow m k x) =
-      ginibreIncidenceRegularSet m ∩
-        {q | ginibreIncidenceEigenvalue q < x} := by
-  ext q
-  constructor
-  · intro hq
-    rcases Set.mem_iUnion.1 hq with ⟨k, hk⟩
-    exact ⟨hk.1.1, hk.2⟩
-  · rintro ⟨hreg, hlt⟩
-    rw [← iUnion_ginibreIncidenceRankPiece] at hreg
-    rcases Set.mem_iUnion.1 hreg with ⟨k, hk⟩
-    exact Set.mem_iUnion.2 ⟨k, ⟨hk, hlt⟩⟩
-
-/-- Truncated rank sheets remain pairwise disjoint. -/
-theorem pairwiseDisjoint_ginibreIncidenceRankPieceBelow (m : ℕ) (x : ℝ) :
-    Pairwise (fun i j : Fin (m + 2) =>
-      Disjoint (ginibreIncidenceRankPieceBelow m i x)
-        (ginibreIncidenceRankPieceBelow m j x)) := by
-  intro i j hij
-  exact (pairwiseDisjoint_ginibreIncidenceRankPiece m hij).mono
-    inter_subset_left inter_subset_left
 
 /-- A signed truncated incidence transfer.  The alternating number of real
 roots below `x` becomes the signed deflated determinant, integrated over
@@ -309,6 +290,6 @@ theorem integrableOn_ginibreSignedIncidenceBelow
   · exact Or.inl ⟨hreg, hq⟩
   · exact Or.inr hreg
 
-end
-
 end NumStability
+
+end

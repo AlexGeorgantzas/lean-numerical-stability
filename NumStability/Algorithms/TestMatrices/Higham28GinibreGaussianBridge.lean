@@ -1,41 +1,38 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
-import NumStability.Algorithms.TestMatrices.Higham28GinibreDeterminantIntegral
 import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+import NumStability.Algorithms.TestMatrices.Higham28GinibreDeterminantIntegral
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreGaussianBridge
 
-/-! # Higham Chapter 28: the Gaussian incidence integral is the expectation
+/-!
+# Higham28GinibreGaussianBridge (compatibility module)
 
-This file supplies the normalization bridge between the affine incidence
-coordinates and the matrix coordinates used to define the real-Ginibre law.
-The coordinate map is bundled as a continuous linear equivalence.  Pulling
-standard matrix Lebesgue measure back along that equivalence gives an additive
-Haar measure on incidence coordinates whose pushforward is exactly
-`realGinibreLebesgueMeasure`.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreGaussianBridge`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
 
-Consequently, the unconditional Gaussian incidence integral proved in
-`Higham28GinibreDeterminantIntegral` is exactly the nonnegative real-Ginibre
-expected real-eigenvalue count.  The further orthogonal eigenvector-coordinate
-reduction to an expectation of `|det (A₀ - λI)|` is separate.
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
+
+noncomputable section
 
 namespace NumStability
 
 open MeasureTheory ProbabilityTheory Set Filter
-open scoped ENNReal BigOperators
 
-noncomputable section
+open scoped ENNReal BigOperators
 
 private local instance ginibreGaussianBridgeMeasurableSpaceRSqMat (n : ℕ) :
     MeasurableSpace (RSqMat n) := MeasurableSpace.pi
+
 private local instance ginibreGaussianBridgeStandardBorelNuisance (n : ℕ) :
     StandardBorelSpace (GinibreIncidenceNuisance n) :=
   StandardBorelSpace.prod
+
 private local instance ginibreGaussianBridgeStandardBorelCoordinates (n : ℕ) :
     StandardBorelSpace (GinibreIncidenceCoordinates n) :=
   StandardBorelSpace.prod
@@ -45,78 +42,6 @@ private instance matrixVolume_isAddHaarMeasure (n : ℕ) :
   toIsFiniteMeasureOnCompacts := inferInstance
   toIsAddLeftInvariant := inferInstance
   toIsOpenPosMeasure := inferInstance
-
-/-- Extract the four affine blocks from a matrix whose last row and column
-are distinguished by `ginibreBlockIndexEquiv`. -/
-def ginibreFinMatrixCoordinates {n : ℕ}
-    (A : GinibreRawMatrix (n + 1)) : GinibreIncidenceCoordinates n :=
-  let M : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ :=
-    Matrix.reindex (ginibreBlockIndexEquiv n).symm
-      (ginibreBlockIndexEquiv n).symm (Matrix.of A)
-  (((fun i j => M (Sum.inl i) (Sum.inl j),
-      fun j => M (Sum.inr ()) (Sum.inl j)),
-    M (Sum.inr ()) (Sum.inr ())),
-    fun i => M (Sum.inl i) (Sum.inr ()))
-
-/-- Reassembling affine matrix coordinates and extracting them again are
-inverse linear operations. -/
-noncomputable def ginibreCoordinatesLinearEquiv (n : ℕ) :
-    GinibreIncidenceCoordinates n ≃ₗ[ℝ] GinibreRawMatrix (n + 1) where
-  toFun := ginibreCoordinatesFinMatrix
-  invFun := ginibreFinMatrixCoordinates
-  left_inv p := by
-    rcases p with ⟨⟨⟨B, w⟩, b⟩, v⟩
-    simp [ginibreFinMatrixCoordinates, ginibreCoordinatesFinMatrix,
-      ginibreCoordinatesMatrix, Matrix.reindex]
-  right_inv A := by
-    ext i j
-    let ii := (ginibreBlockIndexEquiv n).symm i
-    let jj := (ginibreBlockIndexEquiv n).symm j
-    have hi : ginibreBlockIndexEquiv n ii = i :=
-      (ginibreBlockIndexEquiv n).apply_symm_apply i
-    have hj : ginibreBlockIndexEquiv n jj = j :=
-      (ginibreBlockIndexEquiv n).apply_symm_apply j
-    change Matrix.fromBlocks _ _ _ _ ii jj = A i j
-    rcases ii with ii | ii <;> rcases jj with jj | jj
-    all_goals simp [ginibreFinMatrixCoordinates, Matrix.reindex] at hi hj ⊢
-    all_goals simp_all
-  map_add' p q := by
-    ext i j
-    change ginibreCoordinatesMatrix (p + q)
-        ((ginibreBlockIndexEquiv n).symm i)
-        ((ginibreBlockIndexEquiv n).symm j) =
-      ginibreCoordinatesMatrix p ((ginibreBlockIndexEquiv n).symm i)
-          ((ginibreBlockIndexEquiv n).symm j) +
-        ginibreCoordinatesMatrix q ((ginibreBlockIndexEquiv n).symm i)
-          ((ginibreBlockIndexEquiv n).symm j)
-    generalize (ginibreBlockIndexEquiv n).symm i = ii
-    generalize (ginibreBlockIndexEquiv n).symm j = jj
-    rcases ii with ii | ii <;> rcases jj with jj | jj
-    all_goals simp [ginibreCoordinatesMatrix]
-  map_smul' c p := by
-    ext i j
-    change ginibreCoordinatesMatrix (c • p)
-        ((ginibreBlockIndexEquiv n).symm i)
-        ((ginibreBlockIndexEquiv n).symm j) =
-      c * ginibreCoordinatesMatrix p ((ginibreBlockIndexEquiv n).symm i)
-        ((ginibreBlockIndexEquiv n).symm j)
-    generalize (ginibreBlockIndexEquiv n).symm i = ii
-    generalize (ginibreBlockIndexEquiv n).symm j = jj
-    rcases ii with ii | ii <;> rcases jj with jj | jj
-    all_goals simp [ginibreCoordinatesMatrix]
-
-/-- The affine block assembly equivalence, with its automatic
-finite-dimensional continuity. -/
-noncomputable def ginibreCoordinatesContinuousLinearEquiv (n : ℕ) :
-    GinibreIncidenceCoordinates n ≃L[ℝ] GinibreRawMatrix (n + 1) :=
-  (ginibreCoordinatesLinearEquiv n).toContinuousLinearEquiv
-
-/-- Standard matrix Lebesgue measure pulled back to affine incidence
-coordinates. -/
-noncomputable def ginibreIncidenceLebesgueMeasure (n : ℕ) :
-    Measure (GinibreIncidenceCoordinates n) :=
-  Measure.map (ginibreCoordinatesContinuousLinearEquiv n).symm
-    (volume : Measure (GinibreRawMatrix (n + 1)))
 
 local instance ginibreIncidenceLebesgueMeasure_isAddHaarMeasure (n : ℕ) :
     (ginibreIncidenceLebesgueMeasure n).IsAddHaarMeasure := by
@@ -203,5 +128,6 @@ theorem lintegral_ginibreIncidence_gaussian_eq_expected (n : ℕ) :
     (ginibreIncidenceLebesgueMeasure n)]
   exact lintegral_ginibreCoordinate_rootCount_density_eq_expected n
 
-end
 end NumStability
+
+end

@@ -1,37 +1,30 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
-import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedRank
 import NumStability.Algorithms.TestMatrices.Higham28GinibreComplexPairs
+import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedRank
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreSignedExpectation
 
-/-! # Higham Chapter 28: signed count expectations
+/-!
+# Higham28GinibreSignedExpectation (compatibility module)
 
-This file packages the alternating one-root and two-root counts as integrable
-real-Ginibre observables.  The finite combinatorial identity then decomposes
-the genuine expected root count into the two signed expectations used by the
-iterated-incidence proof.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreSignedExpectation`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
+
+noncomputable section
 
 namespace NumStability
 
 open MeasureTheory ProbabilityTheory
 
-noncomputable section
-
 private local instance ginibreSignedExpectationMeasurableSpace (n : ℕ) :
     MeasurableSpace (RSqMat n) := MeasurableSpace.pi
-
-/-- Alternating one-root observable on an `n × n` matrix. -/
-def ginibreAlternatingEigenvalueCount (n : ℕ) (A : RSqMat n) : ℝ :=
-  ginibreAlternatingCount (realEigenvalueCount n A)
-
-/-- Alternating ordered-pair observable on an `n × n` matrix. -/
-def ginibreAlternatingPairEigenvalueCount (n : ℕ) (A : RSqMat n) : ℝ :=
-  ginibreAlternatingPairCount (realEigenvalueCount n A)
 
 /-- Expected alternating one-root count. -/
 def expectedGinibreAlternatingCount (n : ℕ) : ℝ :=
@@ -54,39 +47,6 @@ theorem measurable_ginibreAlternatingPairEigenvalueCount (n : ℕ) :
   exact (measurable_of_countable
     (fun r : ℕ => ginibreAlternatingPairCount r)).comp
       (measurable_realEigenvalueCount n)
-
-/-- A crude sharp-enough bound for the alternating one-root sum. -/
-theorem abs_ginibreAlternatingCount_le (r : ℕ) :
-    |ginibreAlternatingCount r| ≤ (r : ℝ) := by
-  unfold ginibreAlternatingCount
-  calc
-    |∑ j ∈ Finset.range r, (-1 : ℝ) ^ j| ≤
-        ∑ j ∈ Finset.range r, |(-1 : ℝ) ^ j| :=
-      Finset.abs_sum_le_sum_abs _ _
-    _ = (r : ℝ) := by simp
-
-/-- The alternating ordered-pair sum is bounded by the square of the number
-of roots. -/
-theorem abs_ginibreAlternatingPairCount_le_sq (r : ℕ) :
-    |ginibreAlternatingPairCount r| ≤ (r : ℝ) ^ 2 := by
-  unfold ginibreAlternatingPairCount
-  calc
-    |∑ j ∈ Finset.range r,
-        ∑ i ∈ Finset.range j, (-1 : ℝ) ^ (i + j)| ≤
-        ∑ j ∈ Finset.range r,
-          |∑ i ∈ Finset.range j, (-1 : ℝ) ^ (i + j)| :=
-      Finset.abs_sum_le_sum_abs _ _
-    _ ≤ ∑ _j ∈ Finset.range r, (r : ℝ) := by
-      apply Finset.sum_le_sum
-      intro j hj
-      calc
-        |∑ i ∈ Finset.range j, (-1 : ℝ) ^ (i + j)| ≤
-            ∑ i ∈ Finset.range j, |(-1 : ℝ) ^ (i + j)| :=
-          Finset.abs_sum_le_sum_abs _ _
-        _ = (j : ℝ) := by simp
-        _ ≤ (r : ℝ) := by
-          exact_mod_cast (Nat.le_of_lt (Finset.mem_range.1 hj))
-    _ = (r : ℝ) ^ 2 := by simp [pow_two]
 
 theorem integrable_ginibreAlternatingEigenvalueCount (n : ℕ) :
     Integrable (ginibreAlternatingEigenvalueCount n)
@@ -139,24 +99,6 @@ theorem expectedRealEigenvalueCount_eq_alternating_sub_two_pairs
     (integrable_ginibreAlternatingEigenvalueCount n)
     ((integrable_ginibreAlternatingPairEigenvalueCount n).const_mul 2),
     integral_const_mul]
-
-/-! ## The one-root signed term is deterministic -/
-
-theorem ginibreAlternatingCount_add_two (r : ℕ) :
-    ginibreAlternatingCount (r + 2) = ginibreAlternatingCount r := by
-  unfold ginibreAlternatingCount
-  rw [show r + 2 = (r + 1) + 1 by omega,
-    Finset.sum_range_succ, Finset.sum_range_succ, pow_succ]
-  ring
-
-theorem ginibreAlternatingCount_add_two_mul (r c : ℕ) :
-    ginibreAlternatingCount (r + 2 * c) = ginibreAlternatingCount r := by
-  induction c with
-  | zero => simp
-  | succ c ih =>
-      rw [Nat.mul_succ]
-      rw [show r + (2 * c + 2) = (r + 2 * c) + 2 by omega,
-        ginibreAlternatingCount_add_two, ih]
 
 /-- Because nonreal roots occur in conjugate pairs, the alternating one-root
 observable depends only on the matrix dimension. -/
@@ -222,6 +164,6 @@ theorem expectedRealEigenvalueCount_shift_eq_neg_two_mul_pair_shift
     expectedGinibreAlternatingCount_add_two]
   ring
 
-end
-
 end NumStability
+
+end
