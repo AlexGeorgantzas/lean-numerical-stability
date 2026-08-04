@@ -346,13 +346,22 @@ the table remains an import-only forwarding module.
 | `NumStability.Algorithms.Cholesky.Higham10Problem10_3` | `NumStability.Algorithms.Summation.Tree.ArbitraryOrderError.PivotNormalized`, `NumStability.Source.Higham.Chapter08.Section03.TriangularSystems.ArbitraryOrder`, `NumStability.Source.Higham.Chapter10.Problem03.ArbitraryEvaluationOrder.Basic` |
 | `NumStability.Algorithms.Cholesky.HighamMathiasFirstBreakdown` | `NumStability.Algorithms.Cholesky.Higham1029Source`, `NumStability.Source.Higham.Chapter09.DoolittleClosure`, `NumStability.Source.Higham.Chapter10.Equation29.Mathias.FirstBreakdown` |
 
-The nine W05 import-only historical paths are intentionally not promoted to
-the compatibility tier at C0005. The active preservation contract requires
-`NumStability.Algorithms.Sylvester` to retain its historical discovery imports
-and freezes 13 W06-to-W05 imports until W06 owns those consumers. Promoting the
-paths earlier would make the compatibility gate reject that required state.
-They remain reviewed legacy paths and are scheduled for compatibility-tier
-promotion when W06 applies the recorded canonical retargets.
+The nine W05 import-only historical paths remain intentionally outside the
+compatibility tier at C0006. W06 retargeted every accepted consumer authorized
+by its delivery, but the integration contract still requires
+`NumStability.Algorithms.Sylvester` to retain the W05 historical discovery
+imports. Promoting those paths would make the compatibility gate reject that
+required production aggregate.
+
+The 44 W06 and 24 W08 pure historical shims are also reviewed, declaration-free
+facades rather than compatibility-tier modules at C0006. The global historical
+discovery aggregates and frozen W09/W11 consumers still import some of these
+paths. The compatibility checker deliberately forbids production imports of a
+compatibility-tier path, so promotion must wait for the owning future waves to
+retarget those consumers and for a later integrator checkpoint to remove the
+remaining historical discovery imports. Their exact declaration routing and
+retention evidence is recorded in the W06 and W08 delivery ledgers; all old
+paths and every canonical destination have isolated tests in this checkpoint.
 
 The single-target chapter rows above are exact one-to-one forwarders. The
 canonical chapter aggregates are discovery entry points, not wrapper targets:

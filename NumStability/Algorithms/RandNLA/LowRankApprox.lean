@@ -4,7 +4,9 @@ import Mathlib.Analysis.InnerProductSpace.Subspace
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 import Mathlib.Analysis.Matrix.PosDef
 import NumStability.Analysis.MatrixSpectral
-import NumStability.Algorithms.MatrixInversion
+import NumStability.Algorithms.MatrixInversion.LUFactors.ErrorAnalysis.MatrixInversion
+import NumStability.Algorithms.MatrixInversion.LUFactors.Methods.MatrixInversion
+import NumStability.Algorithms.MatrixInversion.Residuals.MatrixInversion
 import NumStability.Algorithms.LU.Doolittle
 import NumStability.Algorithms.LinearSystems.LU.Doolittle.Basic
 import NumStability.Algorithms.LinearSystems.LU.Doolittle.Certificates

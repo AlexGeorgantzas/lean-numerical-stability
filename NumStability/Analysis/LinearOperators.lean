@@ -1,4 +1,8 @@
 import NumStability.Analysis.LinearOperators.Basic
+import NumStability.Analysis.LinearOperators.Jordan
+import NumStability.Analysis.LinearOperators.MatrixPowers
+import NumStability.Analysis.LinearOperators.NumericalRadius
+import NumStability.Analysis.LinearOperators.Pseudospectra
 import NumStability.Analysis.LinearOperators.Schur
 import NumStability.Analysis.LinearOperators.Triangularization
 

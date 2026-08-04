@@ -1,4 +1,4 @@
-import NumStability.Algorithms.Ch14Corollary147Closure
+import NumStability.Source.Higham.Chapter14.Corollary07.DiagonalDominance.Closure
 import NumStability.Analysis.MatrixNorms.EntrywiseMaximum
 
 namespace NumStability

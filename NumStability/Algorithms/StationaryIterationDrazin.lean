@@ -40,7 +40,7 @@ import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Analysis.SpecificLimits.Basic
 import Mathlib.Topology.Algebra.InfiniteSum.Real
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Algorithms.MatrixPowers
+import NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.RealDiagonal
 import NumStability.Algorithms.StationaryIteration
 import NumStability.Algorithms.StationaryIterationSemiconvergent
 

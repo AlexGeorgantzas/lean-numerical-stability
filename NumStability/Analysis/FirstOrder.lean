@@ -1,5 +1,6 @@
 import NumStability.Analysis.FirstOrder.AsymptoticFamilies
 import NumStability.Analysis.FirstOrder.FixedPrecision
+import NumStability.Analysis.FirstOrder.MatrixFamilies
 
 /-!
 # First-order analysis

@@ -1,4 +1,5 @@
 import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.All
+import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.VectorizationIdentities
 
 /-!
 # Algorithms MatrixEquations Sylvester Equation

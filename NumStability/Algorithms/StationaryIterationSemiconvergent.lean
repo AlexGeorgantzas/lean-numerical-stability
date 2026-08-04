@@ -21,7 +21,7 @@ import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Analysis.SpecificLimits.Basic
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Algorithms.MatrixPowers
+import NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.RealDiagonal
 import NumStability.Algorithms.StationaryIteration
 
 namespace NumStability

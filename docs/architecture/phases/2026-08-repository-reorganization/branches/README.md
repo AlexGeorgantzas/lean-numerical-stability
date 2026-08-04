@@ -14,12 +14,14 @@ live pending joint integration:
   `codex/reorg-2026-08-w06-ch16-ch18-remaining`, 67 exact historical owners,
   49 reviewed production destinations plus test and delivery prefixes, sole
   operator `codex-remote`, active projection P0007, and immutable delivery
-  `436b38cbda2e06cf5c9ea3343f0bc6fe428f0b97`;
+  `436b38cbda2e06cf5c9ea3343f0bc6fe428f0b97`, with active shared request
+  R0005;
 - [`B0007`](B0007.json): W08, branch
   `codex/reorg-2026-08-w08-matrix-inversion-ch14`, 42 exact historical owners,
   42 reviewed production destinations plus test and delivery prefixes, sole
   operator `claude-remote`, active projection P0008, and immutable delivery
-  `664d5d495975a05d74cd4c0c09f9207aff8cdd77`.
+  `664d5d495975a05d74cd4c0c09f9207aff8cdd77`, with active shared request
+  R0006.
 
 Their hash-pinned reviews are
 [`B0006-overlap-review.md`](B0006-overlap-review.md) and

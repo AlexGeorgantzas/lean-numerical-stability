@@ -1,0 +1,1493 @@
+diff --git a/NumStability/Algorithms.lean b/NumStability/Algorithms.lean
+index 3b36a704f4c398a4d3a919b26851b29d9321dcb3..09084557e6b387e6c4fe2fb9a6194ae9426b0769 100644
+--- a/NumStability/Algorithms.lean
++++ b/NumStability/Algorithms.lean
+@@ -1,3 +0,0 @@
+--- Algorithms.lean
+--- Re-exports all modules in the NumStability.Algorithms submodule.
+-
+@@ -151,0 +149 @@ import NumStability.Algorithms.Norm2
++import NumStability.Algorithms.NormEstimation
+@@ -306,0 +305,4 @@ import NumStability.Source.Higham.Chapter28
++-- Algorithms.lean
++-- Re-exports all modules in the NumStability.Algorithms submodule.
++
++
+diff --git a/NumStability/Algorithms/MatrixEquations/Sylvester.lean b/NumStability/Algorithms/MatrixEquations/Sylvester.lean
+index e82213ea84244881b612a363b000cd557da88e51..b0cbfa74d292bf3101d3598c65ef68da88c7b882 100644
+--- a/NumStability/Algorithms/MatrixEquations/Sylvester.lean
++++ b/NumStability/Algorithms/MatrixEquations/Sylvester.lean
+@@ -5,0 +6 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.Perturbation
++import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers
+diff --git a/NumStability/Algorithms/MatrixEquations/Sylvester/Conditioning.lean b/NumStability/Algorithms/MatrixEquations/Sylvester/Conditioning.lean
+index a0242e269afd4dca042aeb97322c2d37da84b295..0f04cd4756c94f1644d65d48b5f60483d1d706a4 100644
+--- a/NumStability/Algorithms/MatrixEquations/Sylvester/Conditioning.lean
++++ b/NumStability/Algorithms/MatrixEquations/Sylvester/Conditioning.lean
+@@ -1,0 +2,4 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.All
++import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AttainedMinima
++import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AutomaticBounds
++import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.PracticalEstimator
++import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds
+diff --git a/NumStability/Algorithms/MatrixEquations/Sylvester/Equation.lean b/NumStability/Algorithms/MatrixEquations/Sylvester/Equation.lean
+index e6c54ef206310a589b9864559659cc41404e8c31..a4ada963cde0b0a13aee738385a1198cb34fc251 100644
+--- a/NumStability/Algorithms/MatrixEquations/Sylvester/Equation.lean
++++ b/NumStability/Algorithms/MatrixEquations/Sylvester/Equation.lean
+@@ -1,0 +2 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.All
++import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.VectorizationIdentities
+diff --git a/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers.lean b/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..32da5078665701c71ec6e184dd76529886241a7e
+--- /dev/null
++++ b/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers.lean
+@@ -0,0 +1,11 @@
++import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.ComplexSchur
++import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.HessenbergSchur
++import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.PivotedSmallBlocks
++import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart
++import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.TriangularBartelsStewart
++
++/-!
++# NumStability.Algorithms.MatrixEquations.Sylvester.Solvers
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/ComplexSchur.lean b/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/ComplexSchur.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..720de18659e218a85550ad43d355367a91b411eb
+--- /dev/null
++++ b/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/ComplexSchur.lean
+@@ -0,0 +1,7 @@
++import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.ComplexSchur.All
++
++/-!
++# NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.ComplexSchur
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/HessenbergSchur.lean b/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/HessenbergSchur.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..24b38f1c24e9ad7dd9459c63c45496841f357ae7
+--- /dev/null
++++ b/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/HessenbergSchur.lean
+@@ -0,0 +1,7 @@
++import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.HessenbergSchur.All
++
++/-!
++# NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.HessenbergSchur
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/PivotedSmallBlocks.lean b/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/PivotedSmallBlocks.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..f99a22724b3d4f7a282bac4688d87f4b45defd34
+--- /dev/null
++++ b/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/PivotedSmallBlocks.lean
+@@ -0,0 +1,7 @@
++import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.PivotedSmallBlocks.All
++
++/-!
++# NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.PivotedSmallBlocks
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/QuasiTriangularBartelsStewart.lean b/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/QuasiTriangularBartelsStewart.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..33c680daf881f889618f54b7d04fbd734bae6dc8
+--- /dev/null
++++ b/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/QuasiTriangularBartelsStewart.lean
+@@ -0,0 +1,7 @@
++import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart.All
++
++/-!
++# NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/TriangularBartelsStewart.lean b/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/TriangularBartelsStewart.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..bc9a61f24697740b9b820f993ed894c598613fc7
+--- /dev/null
++++ b/NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/TriangularBartelsStewart.lean
+@@ -0,0 +1,7 @@
++import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.TriangularBartelsStewart.All
++
++/-!
++# NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.TriangularBartelsStewart
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Algorithms/MatrixPowers/ComputedIteration.lean b/NumStability/Algorithms/MatrixPowers/ComputedIteration.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..3165b78c3a952ce2836c99eb594ea27f703b5d22
+--- /dev/null
++++ b/NumStability/Algorithms/MatrixPowers/ComputedIteration.lean
+@@ -0,0 +1,7 @@
++import NumStability.Algorithms.MatrixPowers.ComputedIteration.All
++
++/-!
++# NumStability.Algorithms.MatrixPowers.ComputedIteration
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Algorithms/NormEstimation.lean b/NumStability/Algorithms/NormEstimation.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..4b0177b71c16ef1b56f43a34bb8d1b1fa705a0c2
+--- /dev/null
++++ b/NumStability/Algorithms/NormEstimation.lean
+@@ -0,0 +1,7 @@
++import NumStability.Algorithms.NormEstimation.OneNorm
++
++/-!
++# NumStability.Algorithms.NormEstimation
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Algorithms/NormEstimation/OneNorm.lean b/NumStability/Algorithms/NormEstimation/OneNorm.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..715cac09c35ae272f4027b549fd1d2992563e564
+--- /dev/null
++++ b/NumStability/Algorithms/NormEstimation/OneNorm.lean
+@@ -0,0 +1,7 @@
++import NumStability.Algorithms.NormEstimation.OneNorm.All
++
++/-!
++# NumStability.Algorithms.NormEstimation.OneNorm
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Algorithms/Sylvester.lean b/NumStability/Algorithms/Sylvester.lean
+index 3ebd63ec7740be45ebb8452c604999ad35bb5833..67a7d50ec8719ada03bd78a513ac2efb64c7e4d4 100644
+--- a/NumStability/Algorithms/Sylvester.lean
++++ b/NumStability/Algorithms/Sylvester.lean
+@@ -2,0 +3,4 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.All
++import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AttainedMinima
++import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AutomaticBounds
++import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.PracticalEstimator
++import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds
+@@ -3,0 +8 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.All
++import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.VectorizationIdentities
+@@ -5,0 +11,2 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.Perturbation.All
++import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers
++import NumStability.Algorithms.NormEstimation.OneNorm
+@@ -33,0 +41,2 @@ import NumStability.Algorithms.Sylvester.SylvesterSpec
++import NumStability.Source.Higham.Chapter16.Problem02
++import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation
+@@ -34,0 +44 @@ import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.All
++import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart
+@@ -35,0 +46 @@ import NumStability.Source.Higham.Chapter16.Section02.RealSchurDecomposition.All
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError
+@@ -36,0 +48 @@ import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwa
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning
+@@ -37,0 +50 @@ import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditionin
++import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds
+diff --git a/NumStability/Analysis.lean b/NumStability/Analysis.lean
+index e092306d7af94df74e9d64b8a7a9d03599b63644..ed9f5e68241e7757c8fa098958a1d65bf03e8cd4 100644
+--- a/NumStability/Analysis.lean
++++ b/NumStability/Analysis.lean
+@@ -14,0 +15 @@ import NumStability.Analysis.Conditioning
++import NumStability.Analysis.CStarMatrices
+@@ -35,0 +37 @@ import NumStability.Analysis.ForwardError
++import NumStability.Analysis.FunctionalCalculus
+@@ -50,0 +53 @@ import NumStability.Analysis.MatrixConcentration
++import NumStability.Analysis.MatrixInequalities
+@@ -80,0 +84 @@ import NumStability.Analysis.RealQuasiSchur
++import NumStability.Analysis.RealSchurTriangulation
+@@ -83,0 +88 @@ import NumStability.Analysis.SampleVariance
++import NumStability.Analysis.SchurTriangulation
+diff --git a/NumStability/Analysis/CStarMatrices.lean b/NumStability/Analysis/CStarMatrices.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..69d53cd254b6c27db218f2ecca833ae0c1792c89
+--- /dev/null
++++ b/NumStability/Analysis/CStarMatrices.lean
+@@ -0,0 +1,9 @@
++import NumStability.Analysis.CStarMatrices.Basic
++import NumStability.Analysis.CStarMatrices.Expectation
++import NumStability.Analysis.CStarMatrices.Trace
++
++/-!
++# NumStability.Analysis.CStarMatrices
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/CStarMatrices/Basic.lean b/NumStability/Analysis/CStarMatrices/Basic.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..059593e3f6b4b2cb9e97877a5eda4f207bf2024e
+--- /dev/null
++++ b/NumStability/Analysis/CStarMatrices/Basic.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.CStarMatrices.Basic.All
++
++/-!
++# NumStability.Analysis.CStarMatrices.Basic
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/CStarMatrices/Expectation.lean b/NumStability/Analysis/CStarMatrices/Expectation.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..1aa6ac045c2d96eabaa47aeb1f00463d4283a69e
+--- /dev/null
++++ b/NumStability/Analysis/CStarMatrices/Expectation.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.CStarMatrices.Expectation.All
++
++/-!
++# NumStability.Analysis.CStarMatrices.Expectation
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/CStarMatrices/Trace.lean b/NumStability/Analysis/CStarMatrices/Trace.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..0d5fb52e664ac67bebd1ad6d8554b143cf0490cd
+--- /dev/null
++++ b/NumStability/Analysis/CStarMatrices/Trace.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.CStarMatrices.Trace.All
++
++/-!
++# NumStability.Analysis.CStarMatrices.Trace
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/FunctionalCalculus.lean b/NumStability/Analysis/FunctionalCalculus.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..768ff14dd0ddee0c4a8d552a01bf305aed8cf7e0
+--- /dev/null
++++ b/NumStability/Analysis/FunctionalCalculus.lean
+@@ -0,0 +1,8 @@
++import NumStability.Analysis.FunctionalCalculus.OperatorLog
++import NumStability.Analysis.FunctionalCalculus.Resolvent
++
++/-!
++# NumStability.Analysis.FunctionalCalculus
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/FunctionalCalculus/OperatorLog.lean b/NumStability/Analysis/FunctionalCalculus/OperatorLog.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..f6956df16c5877e39679d3031caf36771b9e2403
+--- /dev/null
++++ b/NumStability/Analysis/FunctionalCalculus/OperatorLog.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.FunctionalCalculus.OperatorLog.All
++
++/-!
++# NumStability.Analysis.FunctionalCalculus.OperatorLog
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/FunctionalCalculus/Resolvent.lean b/NumStability/Analysis/FunctionalCalculus/Resolvent.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..349d9b5ee866343f7216b88bd73d9928aade82f4
+--- /dev/null
++++ b/NumStability/Analysis/FunctionalCalculus/Resolvent.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.FunctionalCalculus.Resolvent.All
++
++/-!
++# NumStability.Analysis.FunctionalCalculus.Resolvent
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators.lean b/NumStability/Analysis/LinearOperators.lean
+index b1208ce6e4790923cf2fb3f2e493b982a2f1f712..61e8607d130892b0b452534a0b7fce6f775550c9 100644
+--- a/NumStability/Analysis/LinearOperators.lean
++++ b/NumStability/Analysis/LinearOperators.lean
+@@ -1,0 +2,4 @@ import NumStability.Analysis.LinearOperators.Basic
++import NumStability.Analysis.LinearOperators.Jordan
++import NumStability.Analysis.LinearOperators.MatrixPowers
++import NumStability.Analysis.LinearOperators.NumericalRadius
++import NumStability.Analysis.LinearOperators.Pseudospectra
+diff --git a/NumStability/Analysis/LinearOperators/Jordan.lean b/NumStability/Analysis/LinearOperators/Jordan.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..9f32116475a350e9a34e95aeb5aa08b8b62b5234
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/Jordan.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.Jordan.NormalForm
++
++/-!
++# NumStability.Analysis.LinearOperators.Jordan
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/Jordan/NormalForm.lean b/NumStability/Analysis/LinearOperators/Jordan/NormalForm.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..3383c2af216856d99ebc0dd38d44ba29be45a1f2
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/Jordan/NormalForm.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.Jordan.NormalForm.All
++
++/-!
++# NumStability.Analysis.LinearOperators.Jordan.NormalForm
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers.lean b/NumStability/Analysis/LinearOperators/MatrixPowers.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..150813acac886074d4d876a8cd450722078f9f71
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers.lean
+@@ -0,0 +1,15 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.BaiDemmelGu
++import NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds
++import NumStability.Analysis.LinearOperators.MatrixPowers.Gautschi
++import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici
++import NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling
++import NumStability.Analysis.LinearOperators.MatrixPowers.Kreiss
++import NumStability.Analysis.LinearOperators.MatrixPowers.Laszlo
++import NumStability.Analysis.LinearOperators.MatrixPowers.LpBounds
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/BaiDemmelGu.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/BaiDemmelGu.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b862ed9aec682ccd9bbf87775773a02621ef63a
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/BaiDemmelGu.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.BaiDemmelGu.All
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.BaiDemmelGu
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..81d40ac49f81ddfc9a2e6189f1ccea08494c9ea9
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.All
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Gautschi.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Gautschi.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..0dbc52c5c03a6b7dd5c6bd32cd18b0560d225de1
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Gautschi.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Gautschi.All
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.Gautschi
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..6c73515079213a5ab765266b4d7ff32bd9e67518
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Henrici.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.All
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.Henrici
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/JordanScaling.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/JordanScaling.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..ef6d2dd7ed5f9db6674b7eff6f969f747ab661ec
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/JordanScaling.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.All
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Kreiss.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Kreiss.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..d6948c7bdc0d659bc8aa13c6fbca7c01dd53fa84
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Kreiss.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Kreiss.All
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.Kreiss
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Laszlo.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Laszlo.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..30a9665dc0af635126070e7d899edf34ff78c0e0
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Laszlo.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Laszlo.All
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.Laszlo
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/LpBounds.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/LpBounds.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..d93eb4ca9fa3ac775ae7055f7a368b541ac101cb
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/LpBounds.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.LpBounds.All
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.LpBounds
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker.lean b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..9733855264d833ab2f0eb29f3d3499278f239b0d
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/MatrixPowers/Spijker.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.All
++
++/-!
++# NumStability.Analysis.LinearOperators.MatrixPowers.Spijker
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/NumericalRadius.lean b/NumStability/Analysis/LinearOperators/NumericalRadius.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..ed21da7afd24f2b012378eb1d6ac1beb9adf80d7
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/NumericalRadius.lean
+@@ -0,0 +1,8 @@
++import NumStability.Analysis.LinearOperators.NumericalRadius.Berger
++import NumStability.Analysis.LinearOperators.NumericalRadius.Core
++
++/-!
++# NumStability.Analysis.LinearOperators.NumericalRadius
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/NumericalRadius/Berger.lean b/NumStability/Analysis/LinearOperators/NumericalRadius/Berger.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..c81dbede01d1bdfc86795dac3dfe41cbf1ba07d1
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/NumericalRadius/Berger.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.NumericalRadius.Berger.All
++
++/-!
++# NumStability.Analysis.LinearOperators.NumericalRadius.Berger
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/NumericalRadius/Core.lean b/NumStability/Analysis/LinearOperators/NumericalRadius/Core.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..d4728f7d3c2566a2aefea45a59f3f6596e7c2a35
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/NumericalRadius/Core.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.NumericalRadius.Core.All
++
++/-!
++# NumStability.Analysis.LinearOperators.NumericalRadius.Core
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/Pseudospectra.lean b/NumStability/Analysis/LinearOperators/Pseudospectra.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..c041fd04bdf9558a2fa4c4b38a1deeb0aae404e9
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/Pseudospectra.lean
+@@ -0,0 +1,9 @@
++import NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation
++import NumStability.Analysis.LinearOperators.Pseudospectra.PowerBounds
++import NumStability.Analysis.LinearOperators.Pseudospectra.Resolvent
++
++/-!
++# NumStability.Analysis.LinearOperators.Pseudospectra
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/Pseudospectra/Perturbation.lean b/NumStability/Analysis/LinearOperators/Pseudospectra/Perturbation.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..072be019fda730aec8b29597c0dda3e01055274f
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/Pseudospectra/Perturbation.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation.All
++
++/-!
++# NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/Pseudospectra/PowerBounds.lean b/NumStability/Analysis/LinearOperators/Pseudospectra/PowerBounds.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..126f8cc57b997c348f7827ab651345229234b295
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/Pseudospectra/PowerBounds.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.Pseudospectra.PowerBounds.All
++
++/-!
++# NumStability.Analysis.LinearOperators.Pseudospectra.PowerBounds
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/Pseudospectra/Resolvent.lean b/NumStability/Analysis/LinearOperators/Pseudospectra/Resolvent.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..1f79fc408ddffda65a6158a205bd83af209bf850
+--- /dev/null
++++ b/NumStability/Analysis/LinearOperators/Pseudospectra/Resolvent.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.LinearOperators.Pseudospectra.Resolvent.All
++
++/-!
++# NumStability.Analysis.LinearOperators.Pseudospectra.Resolvent
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/LinearOperators/Schur.lean b/NumStability/Analysis/LinearOperators/Schur.lean
+index c53a2becf973d0918b9ef2bbcefbda8a3b66cba1..92a4285fecc6e35514ae7da64fd87a83f80fd4cb 100644
+--- a/NumStability/Analysis/LinearOperators/Schur.lean
++++ b/NumStability/Analysis/LinearOperators/Schur.lean
+@@ -1,0 +2 @@ import NumStability.Analysis.LinearOperators.Schur.All
++import NumStability.Analysis.LinearOperators.Schur.Real
+diff --git a/NumStability/Analysis/MatrixInequalities.lean b/NumStability/Analysis/MatrixInequalities.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..883f123682908be06dd127b08b2d9f88db9896b3
+--- /dev/null
++++ b/NumStability/Analysis/MatrixInequalities.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.MatrixInequalities.LiebTrace
++
++/-!
++# NumStability.Analysis.MatrixInequalities
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Analysis/MatrixInequalities/LiebTrace.lean b/NumStability/Analysis/MatrixInequalities/LiebTrace.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..afc2606e2bbf16f4fed1c7d3c72f7123cdbf5bda
+--- /dev/null
++++ b/NumStability/Analysis/MatrixInequalities/LiebTrace.lean
+@@ -0,0 +1,7 @@
++import NumStability.Analysis.MatrixInequalities.LiebTrace.All
++
++/-!
++# NumStability.Analysis.MatrixInequalities.LiebTrace
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter16.lean b/NumStability/Source/Higham/Chapter16.lean
+index 37a703ee33b6cce357eb39f759e47aaf4ad42a0d..012340e9cd7aca2181508e2b0c09811421048142 100644
+--- a/NumStability/Source/Higham/Chapter16.lean
++++ b/NumStability/Source/Higham/Chapter16.lean
+@@ -0,0 +1 @@
++import NumStability.Source.Higham.Chapter16.Problem02
+diff --git a/NumStability/Source/Higham/Chapter16/Problem02.lean b/NumStability/Source/Higham/Chapter16/Problem02.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..1a2a97a1c772146506f92c37465f5070528a3a34
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter16/Problem02.lean
+@@ -0,0 +1,7 @@
++import NumStability.Source.Higham.Chapter16.Problem02.LyapunovIntegral
++
++/-!
++# NumStability.Source.Higham.Chapter16.Problem02
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter16/Problem02/LyapunovIntegral.lean b/NumStability/Source/Higham/Chapter16/Problem02/LyapunovIntegral.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..468a3767fb57d2485536d3422c660d7a845f0f1b
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter16/Problem02/LyapunovIntegral.lean
+@@ -0,0 +1,7 @@
++import NumStability.Source.Higham.Chapter16.Problem02.LyapunovIntegral.All
++
++/-!
++# NumStability.Source.Higham.Chapter16.Problem02.LyapunovIntegral
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter16/Section01.lean b/NumStability/Source/Higham/Chapter16/Section01.lean
+index 5444684d5599b6ba3e47a1328dab75411cda7fd0..436d1dc7be401b39d801c5997b345106eb7bc6cb 100644
+--- a/NumStability/Source/Higham/Chapter16/Section01.lean
++++ b/NumStability/Source/Higham/Chapter16/Section01.lean
+@@ -1 +1 @@
+-import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.All
++import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation
+diff --git a/NumStability/Source/Higham/Chapter16/Section01/SylvesterEquation.lean b/NumStability/Source/Higham/Chapter16/Section01/SylvesterEquation.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..95f62b0732c8237fff4a9e16523e80ee75af61aa
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter16/Section01/SylvesterEquation.lean
+@@ -0,0 +1,9 @@
++import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.All
++import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.ComplexSolvability
++import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.VectorizationNotes
++
++/-!
++# NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter16/Section02.lean b/NumStability/Source/Higham/Chapter16/Section02.lean
+index ffb5e6ae95d23993478b7d77bab36a847b37dfeb..9b2867c555b4b32cb19dc3d9b84778b44a5108c8 100644
+--- a/NumStability/Source/Higham/Chapter16/Section02.lean
++++ b/NumStability/Source/Higham/Chapter16/Section02.lean
+@@ -0,0 +1 @@
++import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart
+@@ -2 +3 @@ import NumStability.Source.Higham.Chapter16.Section02.RealSchurDecomposition.All
+-import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.All
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError
+diff --git a/NumStability/Source/Higham/Chapter16/Section02/BartelsStewart.lean b/NumStability/Source/Higham/Chapter16/Section02/BartelsStewart.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..c9727d818c35decef381c56dee20f224331c4475
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter16/Section02/BartelsStewart.lean
+@@ -0,0 +1,8 @@
++import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equation09
++import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08
++
++/-!
++# NumStability.Source.Higham.Chapter16.Section02.BartelsStewart
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter16/Section02/BartelsStewart/Equation09.lean b/NumStability/Source/Higham/Chapter16/Section02/BartelsStewart/Equation09.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..323b977056e09c26ecb3d2b88e2eae4a6153e160
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter16/Section02/BartelsStewart/Equation09.lean
+@@ -0,0 +1,7 @@
++import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equation09.All
++
++/-!
++# NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equation09
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter16/Section02/BartelsStewart/Equations04To08.lean b/NumStability/Source/Higham/Chapter16/Section02/BartelsStewart/Equations04To08.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..d641d569d8303d55c6060c014e496d702591df08
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter16/Section02/BartelsStewart/Equations04To08.lean
+@@ -0,0 +1,7 @@
++import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.All
++
++/-!
++# NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter16/Section02/SylvesterAndLyapunovBackwardError.lean b/NumStability/Source/Higham/Chapter16/Section02/SylvesterAndLyapunovBackwardError.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..48ad19a1befc7df13281cd51c2c5a9bf0f18c8a0
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter16/Section02/SylvesterAndLyapunovBackwardError.lean
+@@ -0,0 +1,8 @@
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.All
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.AttainedMinima
++
++/-!
++# NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter16/Section03.lean b/NumStability/Source/Higham/Chapter16/Section03.lean
+index 21f4e6df1e18de9c9be64fc9a4189a8b95f15ba2..e949ebb611c382c42550cad2ecf220debe5a953a 100644
+--- a/NumStability/Source/Higham/Chapter16/Section03.lean
++++ b/NumStability/Source/Higham/Chapter16/Section03.lean
+@@ -1 +1 @@
+-import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.All
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning
+diff --git a/NumStability/Source/Higham/Chapter16/Section03/PerturbationAndConditioning.lean b/NumStability/Source/Higham/Chapter16/Section03/PerturbationAndConditioning.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..d5665b342fb6df9d4dd4f910de8d8e26f683c162
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter16/Section03/PerturbationAndConditioning.lean
+@@ -0,0 +1,10 @@
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.All
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AttainedSeparation
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AutomaticBounds
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries
++
++/-!
++# NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter16/Section04.lean b/NumStability/Source/Higham/Chapter16/Section04.lean
+index 631f2a891c0b6240c616d5a4b270be76159ee057..229c081cdd0c4ae6e7ecb502d855dcbe37602002 100644
+--- a/NumStability/Source/Higham/Chapter16/Section04.lean
++++ b/NumStability/Source/Higham/Chapter16/Section04.lean
+@@ -1 +1 @@
+-import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.All
++import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds
+diff --git a/NumStability/Source/Higham/Chapter16/Section04/PracticalErrorBounds.lean b/NumStability/Source/Higham/Chapter16/Section04/PracticalErrorBounds.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..24ad5bbd40acf0455f2e6d1d45d6a2a15cf6a299
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter16/Section04/PracticalErrorBounds.lean
+@@ -0,0 +1,9 @@
++import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.All
++import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.Equation29Extensions
++import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.NormEstimator
++
++/-!
++# NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter18.lean b/NumStability/Source/Higham/Chapter18.lean
+index c6119e493b20f92338bb236d6dfd69e1c6665d2e..f2bbe404631cdeb262a1a3779ef8972a7a5369be 100644
+--- a/NumStability/Source/Higham/Chapter18.lean
++++ b/NumStability/Source/Higham/Chapter18.lean
+@@ -1,0 +2 @@ import NumStability.Source.Higham.Chapter18.Section01
++import NumStability.Source.Higham.Chapter18.Section02
+diff --git a/NumStability/Source/Higham/Chapter18/Section01.lean b/NumStability/Source/Higham/Chapter18/Section01.lean
+index 34f9f79666f34e929196db7ba637f4558fb29c1b..6741228872d66dbe31b354e1288566caaa52e081 100644
+--- a/NumStability/Source/Higham/Chapter18/Section01.lean
++++ b/NumStability/Source/Higham/Chapter18/Section01.lean
+@@ -0,0 +1 @@
++import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds
+diff --git a/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds.lean b/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..d501df6fe98313c3f90a7c1252157f54aa8d25f4
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds.lean
+@@ -0,0 +1,8 @@
++import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05
++import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds
++
++/-!
++# NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/Equations04And05.lean b/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/Equations04And05.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..84e604f4b0f0b9e61c9cfbed5edd5e2ec318fd8e
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/Equations04And05.lean
+@@ -0,0 +1,7 @@
++import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05.All
++
++/-!
++# NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds.lean b/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..9bce88846ad7a04d88cc5c4d8bfa1e8b5c7f1ae9
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds.lean
+@@ -0,0 +1,7 @@
++import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.All
++
++/-!
++# NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter18/Section02.lean b/NumStability/Source/Higham/Chapter18/Section02.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..de4e97281030a877e3c94139b2f37f44baa9a753
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter18/Section02.lean
+@@ -0,0 +1,7 @@
++import NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers
++
++/-!
++# NumStability.Source.Higham.Chapter18.Section02
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers.lean b/NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..53e6a9a33ab8f9a23f8c6ba0852eac5d91ec892a
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers.lean
+@@ -0,0 +1,8 @@
++import NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14
++import NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02
++
++/-!
++# NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers/Equations08To14.lean b/NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers/Equations08To14.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..444381f3c8d5ae3923aad60f5a10fa07bb30d3ca
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers/Equations08To14.lean
+@@ -0,0 +1,7 @@
++import NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.All
++
++/-!
++# NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers/Theorems01And02.lean b/NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers/Theorems01And02.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..24f5c08fa461936336b1480f795faf6e7b268beb
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers/Theorems01And02.lean
+@@ -0,0 +1,7 @@
++import NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.All
++
++/-!
++# NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02
++
++Declaration-free W06 discovery aggregate.
++-/
+diff --git a/NumStabilityTest.lean b/NumStabilityTest.lean
+index 4dee2d8bf47c00957f51b2fb2dd06fd5b9dacea0..2a59dc9a4f2c91399bda5b5073343092408b4af6 100644
+--- a/NumStabilityTest.lean
++++ b/NumStabilityTest.lean
+@@ -544,0 +545 @@ import NumStabilityTest.Reorganization.W05
++import NumStabilityTest.Reorganization.W06
+diff --git a/NumStabilityTest/Reorganization/W06.lean b/NumStabilityTest/Reorganization/W06.lean
+new file mode 100644
+index 0000000000000000000000000000000000000000..ed1c753f288bfcef63b580844c19051bc6403e7a
+--- /dev/null
++++ b/NumStabilityTest/Reorganization/W06.lean
+@@ -0,0 +1,263 @@
++import NumStabilityTest.Reorganization.W06.Canonical.C001
++import NumStabilityTest.Reorganization.W06.Canonical.C002
++import NumStabilityTest.Reorganization.W06.Canonical.C003
++import NumStabilityTest.Reorganization.W06.Canonical.C004
++import NumStabilityTest.Reorganization.W06.Canonical.C005
++import NumStabilityTest.Reorganization.W06.Canonical.C006
++import NumStabilityTest.Reorganization.W06.Canonical.C007
++import NumStabilityTest.Reorganization.W06.Canonical.C008
++import NumStabilityTest.Reorganization.W06.Canonical.C009
++import NumStabilityTest.Reorganization.W06.Canonical.C010
++import NumStabilityTest.Reorganization.W06.Canonical.C011
++import NumStabilityTest.Reorganization.W06.Canonical.C012
++import NumStabilityTest.Reorganization.W06.Canonical.C013
++import NumStabilityTest.Reorganization.W06.Canonical.C014
++import NumStabilityTest.Reorganization.W06.Canonical.C015
++import NumStabilityTest.Reorganization.W06.Canonical.C016
++import NumStabilityTest.Reorganization.W06.Canonical.C017
++import NumStabilityTest.Reorganization.W06.Canonical.C018
++import NumStabilityTest.Reorganization.W06.Canonical.C019
++import NumStabilityTest.Reorganization.W06.Canonical.C020
++import NumStabilityTest.Reorganization.W06.Canonical.C021
++import NumStabilityTest.Reorganization.W06.Canonical.C022
++import NumStabilityTest.Reorganization.W06.Canonical.C023
++import NumStabilityTest.Reorganization.W06.Canonical.C024
++import NumStabilityTest.Reorganization.W06.Canonical.C025
++import NumStabilityTest.Reorganization.W06.Canonical.C026
++import NumStabilityTest.Reorganization.W06.Canonical.C027
++import NumStabilityTest.Reorganization.W06.Canonical.C028
++import NumStabilityTest.Reorganization.W06.Canonical.C029
++import NumStabilityTest.Reorganization.W06.Canonical.C030
++import NumStabilityTest.Reorganization.W06.Canonical.C031
++import NumStabilityTest.Reorganization.W06.Canonical.C032
++import NumStabilityTest.Reorganization.W06.Canonical.C033
++import NumStabilityTest.Reorganization.W06.Canonical.C034
++import NumStabilityTest.Reorganization.W06.Canonical.C035
++import NumStabilityTest.Reorganization.W06.Canonical.C036
++import NumStabilityTest.Reorganization.W06.Canonical.C037
++import NumStabilityTest.Reorganization.W06.Canonical.C038
++import NumStabilityTest.Reorganization.W06.Canonical.C039
++import NumStabilityTest.Reorganization.W06.Canonical.C040
++import NumStabilityTest.Reorganization.W06.Canonical.C041
++import NumStabilityTest.Reorganization.W06.Canonical.C042
++import NumStabilityTest.Reorganization.W06.Canonical.C043
++import NumStabilityTest.Reorganization.W06.Canonical.C044
++import NumStabilityTest.Reorganization.W06.Canonical.C045
++import NumStabilityTest.Reorganization.W06.Canonical.C046
++import NumStabilityTest.Reorganization.W06.Canonical.C047
++import NumStabilityTest.Reorganization.W06.Canonical.C048
++import NumStabilityTest.Reorganization.W06.Canonical.C049
++import NumStabilityTest.Reorganization.W06.Canonical.C050
++import NumStabilityTest.Reorganization.W06.Canonical.C051
++import NumStabilityTest.Reorganization.W06.Canonical.C052
++import NumStabilityTest.Reorganization.W06.Canonical.C053
++import NumStabilityTest.Reorganization.W06.Canonical.C054
++import NumStabilityTest.Reorganization.W06.Canonical.C055
++import NumStabilityTest.Reorganization.W06.Canonical.C056
++import NumStabilityTest.Reorganization.W06.Canonical.C057
++import NumStabilityTest.Reorganization.W06.Canonical.C058
++import NumStabilityTest.Reorganization.W06.Canonical.C059
++import NumStabilityTest.Reorganization.W06.Canonical.C060
++import NumStabilityTest.Reorganization.W06.Canonical.C061
++import NumStabilityTest.Reorganization.W06.Canonical.C062
++import NumStabilityTest.Reorganization.W06.Canonical.C063
++import NumStabilityTest.Reorganization.W06.Canonical.C064
++import NumStabilityTest.Reorganization.W06.Canonical.C065
++import NumStabilityTest.Reorganization.W06.Canonical.C066
++import NumStabilityTest.Reorganization.W06.Canonical.C067
++import NumStabilityTest.Reorganization.W06.Canonical.C068
++import NumStabilityTest.Reorganization.W06.Canonical.C069
++import NumStabilityTest.Reorganization.W06.Canonical.C070
++import NumStabilityTest.Reorganization.W06.Canonical.C071
++import NumStabilityTest.Reorganization.W06.Canonical.C072
++import NumStabilityTest.Reorganization.W06.Canonical.C073
++import NumStabilityTest.Reorganization.W06.Canonical.C074
++import NumStabilityTest.Reorganization.W06.Canonical.C075
++import NumStabilityTest.Reorganization.W06.Canonical.C076
++import NumStabilityTest.Reorganization.W06.Canonical.C077
++import NumStabilityTest.Reorganization.W06.Canonical.C078
++import NumStabilityTest.Reorganization.W06.Canonical.C079
++import NumStabilityTest.Reorganization.W06.Canonical.C080
++import NumStabilityTest.Reorganization.W06.Canonical.C081
++import NumStabilityTest.Reorganization.W06.Canonical.C082
++import NumStabilityTest.Reorganization.W06.Canonical.C083
++import NumStabilityTest.Reorganization.W06.Canonical.C084
++import NumStabilityTest.Reorganization.W06.Canonical.C085
++import NumStabilityTest.Reorganization.W06.Canonical.C086
++import NumStabilityTest.Reorganization.W06.Canonical.C087
++import NumStabilityTest.Reorganization.W06.Canonical.C088
++import NumStabilityTest.Reorganization.W06.Canonical.C089
++import NumStabilityTest.Reorganization.W06.Canonical.C090
++import NumStabilityTest.Reorganization.W06.Canonical.C091
++import NumStabilityTest.Reorganization.W06.Canonical.C092
++import NumStabilityTest.Reorganization.W06.Canonical.C093
++import NumStabilityTest.Reorganization.W06.Canonical.C094
++import NumStabilityTest.Reorganization.W06.Canonical.C095
++import NumStabilityTest.Reorganization.W06.Canonical.C096
++import NumStabilityTest.Reorganization.W06.Canonical.C097
++import NumStabilityTest.Reorganization.W06.Canonical.C098
++import NumStabilityTest.Reorganization.W06.Canonical.C099
++import NumStabilityTest.Reorganization.W06.Canonical.C100
++import NumStabilityTest.Reorganization.W06.Canonical.C101
++import NumStabilityTest.Reorganization.W06.Canonical.C102
++import NumStabilityTest.Reorganization.W06.Canonical.C103
++import NumStabilityTest.Reorganization.W06.Canonical.C104
++import NumStabilityTest.Reorganization.W06.Canonical.C105
++import NumStabilityTest.Reorganization.W06.Canonical.C106
++import NumStabilityTest.Reorganization.W06.Canonical.C107
++import NumStabilityTest.Reorganization.W06.Canonical.C108
++import NumStabilityTest.Reorganization.W06.Canonical.C109
++import NumStabilityTest.Reorganization.W06.Canonical.C110
++import NumStabilityTest.Reorganization.W06.Canonical.C111
++import NumStabilityTest.Reorganization.W06.Canonical.C112
++import NumStabilityTest.Reorganization.W06.Canonical.C113
++import NumStabilityTest.Reorganization.W06.Canonical.C114
++import NumStabilityTest.Reorganization.W06.Canonical.C115
++import NumStabilityTest.Reorganization.W06.Canonical.C116
++import NumStabilityTest.Reorganization.W06.Canonical.C117
++import NumStabilityTest.Reorganization.W06.Canonical.C118
++import NumStabilityTest.Reorganization.W06.Canonical.C119
++import NumStabilityTest.Reorganization.W06.Canonical.C120
++import NumStabilityTest.Reorganization.W06.Canonical.C121
++import NumStabilityTest.Reorganization.W06.Canonical.C122
++import NumStabilityTest.Reorganization.W06.Canonical.C123
++import NumStabilityTest.Reorganization.W06.Canonical.C124
++import NumStabilityTest.Reorganization.W06.Canonical.C125
++import NumStabilityTest.Reorganization.W06.Canonical.C126
++import NumStabilityTest.Reorganization.W06.Canonical.C127
++import NumStabilityTest.Reorganization.W06.Canonical.C128
++import NumStabilityTest.Reorganization.W06.Canonical.C129
++import NumStabilityTest.Reorganization.W06.Canonical.C130
++import NumStabilityTest.Reorganization.W06.Canonical.C131
++import NumStabilityTest.Reorganization.W06.Canonical.C132
++import NumStabilityTest.Reorganization.W06.Canonical.C133
++import NumStabilityTest.Reorganization.W06.Canonical.C134
++import NumStabilityTest.Reorganization.W06.Canonical.C135
++import NumStabilityTest.Reorganization.W06.Canonical.C136
++import NumStabilityTest.Reorganization.W06.Canonical.C137
++import NumStabilityTest.Reorganization.W06.Canonical.C138
++import NumStabilityTest.Reorganization.W06.Canonical.C139
++import NumStabilityTest.Reorganization.W06.Canonical.C140
++import NumStabilityTest.Reorganization.W06.Canonical.C141
++import NumStabilityTest.Reorganization.W06.Canonical.C142
++import NumStabilityTest.Reorganization.W06.Canonical.C143
++import NumStabilityTest.Reorganization.W06.Canonical.C144
++import NumStabilityTest.Reorganization.W06.Canonical.C145
++import NumStabilityTest.Reorganization.W06.Canonical.C146
++import NumStabilityTest.Reorganization.W06.Canonical.C147
++import NumStabilityTest.Reorganization.W06.Canonical.C148
++import NumStabilityTest.Reorganization.W06.Canonical.C149
++import NumStabilityTest.Reorganization.W06.Canonical.C150
++import NumStabilityTest.Reorganization.W06.Canonical.C151
++import NumStabilityTest.Reorganization.W06.Canonical.C152
++import NumStabilityTest.Reorganization.W06.Canonical.C153
++import NumStabilityTest.Reorganization.W06.Canonical.C154
++import NumStabilityTest.Reorganization.W06.Canonical.C155
++import NumStabilityTest.Reorganization.W06.Canonical.C156
++import NumStabilityTest.Reorganization.W06.Canonical.C157
++import NumStabilityTest.Reorganization.W06.Canonical.C158
++import NumStabilityTest.Reorganization.W06.Canonical.C159
++import NumStabilityTest.Reorganization.W06.Canonical.C160
++import NumStabilityTest.Reorganization.W06.Canonical.C161
++import NumStabilityTest.Reorganization.W06.Canonical.C162
++import NumStabilityTest.Reorganization.W06.Canonical.C163
++import NumStabilityTest.Reorganization.W06.Canonical.C164
++import NumStabilityTest.Reorganization.W06.Canonical.C165
++import NumStabilityTest.Reorganization.W06.Canonical.C166
++import NumStabilityTest.Reorganization.W06.Canonical.C167
++import NumStabilityTest.Reorganization.W06.Canonical.C168
++import NumStabilityTest.Reorganization.W06.Canonical.C169
++import NumStabilityTest.Reorganization.W06.Canonical.C170
++import NumStabilityTest.Reorganization.W06.Canonical.C171
++import NumStabilityTest.Reorganization.W06.Canonical.C172
++import NumStabilityTest.Reorganization.W06.Canonical.C173
++import NumStabilityTest.Reorganization.W06.Canonical.C174
++import NumStabilityTest.Reorganization.W06.Canonical.C175
++import NumStabilityTest.Reorganization.W06.Canonical.C176
++import NumStabilityTest.Reorganization.W06.Compatibility.O01
++import NumStabilityTest.Reorganization.W06.Compatibility.O02
++import NumStabilityTest.Reorganization.W06.Compatibility.O03
++import NumStabilityTest.Reorganization.W06.Compatibility.O04
++import NumStabilityTest.Reorganization.W06.Compatibility.O05
++import NumStabilityTest.Reorganization.W06.Compatibility.O06
++import NumStabilityTest.Reorganization.W06.Compatibility.O07
++import NumStabilityTest.Reorganization.W06.Compatibility.O08
++import NumStabilityTest.Reorganization.W06.Compatibility.O09
++import NumStabilityTest.Reorganization.W06.Compatibility.O10
++import NumStabilityTest.Reorganization.W06.Compatibility.O11
++import NumStabilityTest.Reorganization.W06.Compatibility.O12
++import NumStabilityTest.Reorganization.W06.Compatibility.O13
++import NumStabilityTest.Reorganization.W06.Compatibility.O14
++import NumStabilityTest.Reorganization.W06.Compatibility.O15
++import NumStabilityTest.Reorganization.W06.Compatibility.O16
++import NumStabilityTest.Reorganization.W06.Compatibility.O17
++import NumStabilityTest.Reorganization.W06.Compatibility.O18
++import NumStabilityTest.Reorganization.W06.Compatibility.O19
++import NumStabilityTest.Reorganization.W06.Compatibility.O20
++import NumStabilityTest.Reorganization.W06.Compatibility.O21
++import NumStabilityTest.Reorganization.W06.Compatibility.O22
++import NumStabilityTest.Reorganization.W06.Compatibility.O23
++import NumStabilityTest.Reorganization.W06.Compatibility.O24
++import NumStabilityTest.Reorganization.W06.Compatibility.O25
++import NumStabilityTest.Reorganization.W06.Compatibility.O26
++import NumStabilityTest.Reorganization.W06.Compatibility.O27
++import NumStabilityTest.Reorganization.W06.Compatibility.O28
++import NumStabilityTest.Reorganization.W06.Compatibility.O29
++import NumStabilityTest.Reorganization.W06.Compatibility.O30
++import NumStabilityTest.Reorganization.W06.Compatibility.O31
++import NumStabilityTest.Reorganization.W06.Compatibility.O32
++import NumStabilityTest.Reorganization.W06.Compatibility.O33
++import NumStabilityTest.Reorganization.W06.Compatibility.O34
++import NumStabilityTest.Reorganization.W06.Compatibility.O35
++import NumStabilityTest.Reorganization.W06.Compatibility.O36
++import NumStabilityTest.Reorganization.W06.Compatibility.O37
++import NumStabilityTest.Reorganization.W06.Compatibility.O38
++import NumStabilityTest.Reorganization.W06.Compatibility.O39
++import NumStabilityTest.Reorganization.W06.Compatibility.O40
++import NumStabilityTest.Reorganization.W06.Compatibility.O41
++import NumStabilityTest.Reorganization.W06.Compatibility.O42
++import NumStabilityTest.Reorganization.W06.Compatibility.O43
++import NumStabilityTest.Reorganization.W06.Compatibility.O44
++import NumStabilityTest.Reorganization.W06.Compatibility.O45
++import NumStabilityTest.Reorganization.W06.Compatibility.O46
++import NumStabilityTest.Reorganization.W06.Compatibility.O47
++import NumStabilityTest.Reorganization.W06.Compatibility.O48
++import NumStabilityTest.Reorganization.W06.Compatibility.O49
++import NumStabilityTest.Reorganization.W06.Compatibility.O50
++import NumStabilityTest.Reorganization.W06.Compatibility.O51
++import NumStabilityTest.Reorganization.W06.Compatibility.O52
++import NumStabilityTest.Reorganization.W06.Compatibility.O53
++import NumStabilityTest.Reorganization.W06.Compatibility.O54
++import NumStabilityTest.Reorganization.W06.Compatibility.O55
++import NumStabilityTest.Reorganization.W06.Compatibility.O56
++import NumStabilityTest.Reorganization.W06.Compatibility.O57
++import NumStabilityTest.Reorganization.W06.Compatibility.O58
++import NumStabilityTest.Reorganization.W06.Compatibility.O59
++import NumStabilityTest.Reorganization.W06.Compatibility.O60
++import NumStabilityTest.Reorganization.W06.Compatibility.O61
++import NumStabilityTest.Reorganization.W06.Compatibility.O62
++import NumStabilityTest.Reorganization.W06.Compatibility.O63
++import NumStabilityTest.Reorganization.W06.Compatibility.O64
++import NumStabilityTest.Reorganization.W06.Compatibility.O65
++import NumStabilityTest.Reorganization.W06.Compatibility.O66
++import NumStabilityTest.Reorganization.W06.Compatibility.O67
++import NumStabilityTest.Reorganization.W06.Focused.BergerHenriciKreissSpijker
++import NumStabilityTest.Reorganization.W06.Focused.Chapter16Source
++import NumStabilityTest.Reorganization.W06.Focused.EstimatorAndSeparation
++import NumStabilityTest.Reorganization.W06.Focused.JordanAndSchur
++import NumStabilityTest.Reorganization.W06.Focused.ProtectedAcceptedAPIs
++import NumStabilityTest.Reorganization.W06.Focused.ProtectedW02APIs
++import NumStabilityTest.Reorganization.W06.Focused.ProtectedW02Consumers
++import NumStabilityTest.Reorganization.W06.Focused.ProtectedW07
++import NumStabilityTest.Reorganization.W06.Focused.ProtectedW09
++import NumStabilityTest.Reorganization.W06.Focused.ProtectedW11
++import NumStabilityTest.Reorganization.W06.Focused.PseudospectralResolvent
++import NumStabilityTest.Reorganization.W06.Focused.RetainedHigham16Bridges
++import NumStabilityTest.Reorganization.W06.Focused.SylvesterConditioning
++import NumStabilityTest.Reorganization.W06.Focused.SylvesterSolvers
++
++/-!
++# NumStabilityTest.Reorganization.W06
++
++Integrated discovery aggregate for all 257 W06 reorganization tests.
++-/
+diff --git a/docs/architecture/COMPATIBILITY.md b/docs/architecture/COMPATIBILITY.md
+index 66168cb3dc3eff5db38cb2a900bceb5d84bd239b..bae92d8c68947915a70ff4f79cac54aa53126b2f 100644
+--- a/docs/architecture/COMPATIBILITY.md
++++ b/docs/architecture/COMPATIBILITY.md
+@@ -349,7 +349,8 @@ the table remains an import-only forwarding module.
+-The nine W05 import-only historical paths are intentionally not promoted to
+-the compatibility tier at C0005. The active preservation contract requires
+-`NumStability.Algorithms.Sylvester` to retain its historical discovery imports
+-and freezes 13 W06-to-W05 imports until W06 owns those consumers. Promoting the
+-paths earlier would make the compatibility gate reject that required state.
+-They remain reviewed legacy paths and are scheduled for compatibility-tier
+-promotion when W06 applies the recorded canonical retargets.
++The nine W05 import-only historical paths remain intentionally outside the
++compatibility tier during W06 integration. W06 retargets every accepted
++consumer authorized by its delivery, but `NumStability.Algorithms.Sylvester`
++must retain the historical W05 discovery imports. The 44 W06 pure historical
++shims are likewise reviewed declaration-free facades rather than
++compatibility-tier modules while global discovery aggregates and frozen
++W09/W11 consumers still import them. Their exact routes and old/canonical tests
++are recorded in the W06 delivery evidence.
+diff --git a/docs/architecture/layout-exceptions.json b/docs/architecture/layout-exceptions.json
+index e1d0920050f6b59c0a681509c5dbda5ebc2e0bbc..b84b25e83b09db4cf97ca2ab6a50f343941f72f0 100644
+--- a/docs/architecture/layout-exceptions.json
++++ b/docs/architecture/layout-exceptions.json
+@@ -297,2 +296,0 @@
+-      "NumStability.Algorithms.Ch14GJEActualDoolittleAdapter",
+-      "NumStability.Algorithms.Ch14GJESourceAccumulationBridge",
+@@ -300,0 +299,2 @@
++      "NumStability.Algorithms.Ch14GJEActualDoolittleAdapter",
++      "NumStability.Algorithms.Ch14GJESourceAccumulationBridge",
+@@ -316,0 +317,6 @@
++      "NumStability.Algorithms.LinearSystems.IterativeRefinement.Core",
++      "NumStability.Algorithms.LinearSystems.LU.Doolittle.BackwardError",
++      "NumStability.Algorithms.LinearSystems.LU.Doolittle.Basic",
++      "NumStability.Algorithms.LinearSystems.LU.Doolittle.Budgets",
++      "NumStability.Algorithms.LinearSystems.LU.Doolittle.Certificates",
++      "NumStability.Algorithms.LinearSystems.LU.Doolittle.RoundedEntries",
+@@ -324,14 +329,0 @@
+-      "NumStability.Algorithms.LinearSystems.IterativeRefinement.Core",
+-      "NumStability.Algorithms.LinearSystems.LU.Doolittle.BackwardError",
+-      "NumStability.Algorithms.LinearSystems.LU.Doolittle.Basic",
+-      "NumStability.Algorithms.LinearSystems.LU.Doolittle.Budgets",
+-      "NumStability.Algorithms.LinearSystems.LU.Doolittle.Certificates",
+-      "NumStability.Algorithms.LinearSystems.LU.Doolittle.RoundedEntries",
+-      "NumStability.Algorithms.MatrixPowers",
+-      "NumStability.Algorithms.MatrixPowersComplex",
+-      "NumStability.Algorithms.MatrixPowersJordan",
+-      "NumStability.Algorithms.MatrixPowersLp",
+-      "NumStability.Algorithms.MatrixPowersLpJordan",
+-      "NumStability.Algorithms.MatrixPowersPseudospectral",
+-      "NumStability.Algorithms.MatrixPowersPseudospectralCriterion",
+-      "NumStability.Algorithms.MatrixPowersSpectral",
+@@ -405,20 +396,0 @@
+-      "NumStability.Algorithms.Sylvester.Higham16AutoCondition",
+-      "NumStability.Algorithms.Sylvester.Higham16Eq9Assembly",
+-      "NumStability.Algorithms.Sylvester.Higham16Eq9EndToEnd",
+-      "NumStability.Algorithms.Sylvester.Higham16HessenbergRounded",
+-      "NumStability.Algorithms.Sylvester.Higham16HessenbergSchur",
+-      "NumStability.Algorithms.Sylvester.Higham16LyapunovSigmaMin",
+-      "NumStability.Algorithms.Sylvester.Higham16Minimizers",
+-      "NumStability.Algorithms.Sylvester.Higham16NormEstimator",
+-      "NumStability.Algorithms.Sylvester.Higham16PerturbationSigmaMin",
+-      "NumStability.Algorithms.Sylvester.Higham16PsiSigmaMin",
+-      "NumStability.Algorithms.Sylvester.Higham16QuasiQuasiRounded",
+-      "NumStability.Algorithms.Sylvester.Higham16QuasiQuasiSylvester",
+-      "NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSolve",
+-      "NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSylvester",
+-      "NumStability.Algorithms.Sylvester.Higham16RoundedExecutor",
+-      "NumStability.Algorithms.Sylvester.Higham16RoundedTriangular",
+-      "NumStability.Algorithms.Sylvester.Higham16Spectrum",
+-      "NumStability.Algorithms.Sylvester.Higham16SpectrumMinimizers",
+-      "NumStability.Algorithms.Sylvester.Higham16VecNorm",
+-      "NumStability.Algorithms.Sylvester.Higham16VecPermutationNotes",
+@@ -450,13 +421,0 @@
+-      "NumStability.Analysis.MatrixPowersBaiDemmelGu",
+-      "NumStability.Analysis.MatrixPowersGautschi",
+-      "NumStability.Analysis.MatrixPowersHenriciNormal",
+-      "NumStability.Analysis.MatrixPowersKreissSpijker",
+-      "NumStability.Analysis.MatrixPowersLaszlo",
+-      "NumStability.Analysis.MatrixPowersLp185Primary",
+-      "NumStability.Analysis.MatrixPowersSpijkerClosure",
+-      "NumStability.Analysis.MatrixPowersSpijkerRational",
+-      "NumStability.Analysis.PseudospectralLowerBound",
+-      "NumStability.Analysis.PseudospectralPowerBound",
+-      "NumStability.Analysis.PseudospectralResolvent",
+-      "NumStability.Analysis.SpijkerProjectionIntegral",
+-      "NumStability.Analysis.SylvesterSchurExistence",
+@@ -500,0 +460,5 @@
++      "NumStability.Algorithms.Ch14GaussJordanAccumulation",
++      "NumStability.Algorithms.Ch14GaussJordanQConstruction",
++      "NumStability.Algorithms.Ch14GaussJordanSourceClosure",
++      "NumStability.Algorithms.Ch14GaussJordanSPDCorollary",
++      "NumStability.Algorithms.Ch14GaussJordanStep",
+@@ -508,5 +471,0 @@
+-      "NumStability.Algorithms.Ch14GaussJordanAccumulation",
+-      "NumStability.Algorithms.Ch14GaussJordanQConstruction",
+-      "NumStability.Algorithms.Ch14GaussJordanSPDCorollary",
+-      "NumStability.Algorithms.Ch14GaussJordanSourceClosure",
+-      "NumStability.Algorithms.Ch14GaussJordanStep",
+@@ -553,0 +513,3 @@
++      "NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport",
++      "NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport",
++      "NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport",
+@@ -560,3 +521,0 @@
+-      "NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport",
+-      "NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport",
+-      "NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport",
+@@ -686,0 +646 @@
++      "NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge",
+@@ -692,0 +653 @@
++      "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge",
+diff --git a/docs/architecture/tiers.json b/docs/architecture/tiers.json
+index be3753f00f4ced58118705241b91ef0fe6c6b58d..d822886b5cd0d8e530c8766a1c5080021eb164a2 100644
+--- a/docs/architecture/tiers.json
++++ b/docs/architecture/tiers.json
+@@ -807 +807,245 @@
+-    "NumStability.Source.Higham.Chapter18.Section01.SchurDecomposition.All": "aggregate"
++    "NumStability.Source.Higham.Chapter18.Section01.SchurDecomposition.All": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AttainedMinima.BackwardError": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AttainedMinima.Separation": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AutomaticBounds.GramPositivity": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.PracticalEstimator.OneNorm": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds.Lyapunov": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds.StructuredSylvester": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds.SylvesterPerturbation": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds.Vectorized": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Equation.VectorizationIdentities.KroneckerPermutation": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.ComplexSchur.Existence": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.ComplexSchur.SpectralSolvability": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.ComplexSchur.VectorizedSolvability": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.PivotedSmallBlocks.CompletePivot": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart.BlockTraversal": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart.Executor": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart.QuasiQuasiSolve": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart.QuasiTriangularSolve": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart.QuasiTriangularSylvester": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart.SmallSystemRounding": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.TriangularBartelsStewart.EndToEnd": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.TriangularBartelsStewart.ResidualAssembly": "reusable",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.TriangularBartelsStewart.RoundedSolve": "reusable",
++    "NumStability.Algorithms.MatrixPowers.ComputedIteration.Model": "reusable",
++    "NumStability.Algorithms.NormEstimation.OneNorm.GeneralIndex": "reusable",
++    "NumStability.Analysis.CStarMatrices.Basic.RealMatrixBridge": "reusable",
++    "NumStability.Analysis.CStarMatrices.Expectation.Finite": "reusable",
++    "NumStability.Analysis.CStarMatrices.Trace.Basic": "reusable",
++    "NumStability.Analysis.FunctionalCalculus.OperatorLog.Monotonicity": "reusable",
++    "NumStability.Analysis.FunctionalCalculus.Resolvent.Analyticity": "reusable",
++    "NumStability.Analysis.FunctionalCalculus.Resolvent.DunfordResidue": "reusable",
++    "NumStability.Analysis.LinearOperators.Jordan.NormalForm.NilpotentChains": "reusable",
++    "NumStability.Analysis.LinearOperators.Jordan.NormalForm.PrimaryDecomposition": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.BaiDemmelGu.DistanceToInstability": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.BaiDemmelGu.StabilityRadius": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.Complex": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.Real": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.Schur": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.SpectralRadius": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Gautschi.Bounds": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.BinomialPowerBound": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.DepartureFromNormality": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.Extremal": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.ImprovedConstant": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.NormalMatrices": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.SharpConstant": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.Complex": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.RealDiagonal": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.RealJordan": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Kreiss.ResolventBound": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Laszlo.NearestNormal": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.LpBounds.ComplexDiagonal": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.LpBounds.ComplexJordan": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarAlgebra": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarAnalysis": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.ProjectionIntegral": "reusable",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.Rational": "reusable",
++    "NumStability.Analysis.LinearOperators.NumericalRadius.Berger.Hermitian": "reusable",
++    "NumStability.Analysis.LinearOperators.NumericalRadius.Berger.PowerTwo": "reusable",
++    "NumStability.Analysis.LinearOperators.NumericalRadius.Core.Basic": "reusable",
++    "NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation.ConvergenceCriterion": "reusable",
++    "NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation.Definitions": "reusable",
++    "NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation.LowerBounds": "reusable",
++    "NumStability.Analysis.LinearOperators.Pseudospectra.PowerBounds.Contour": "reusable",
++    "NumStability.Analysis.LinearOperators.Pseudospectra.Resolvent.LowerBounds": "reusable",
++    "NumStability.Analysis.LinearOperators.Schur.Real.Triangularization.SplitCharpoly": "reusable",
++    "NumStability.Analysis.MatrixInequalities.LiebTrace.Concavity": "reusable",
++    "NumStability.Source.Higham.Chapter16.Problem02.LyapunovIntegral.Results": "source",
++    "NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.ComplexSolvability.SchurFactors": "source",
++    "NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.ComplexSolvability.SpectralCriterion": "source",
++    "NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.ComplexSolvability.Vectorized": "source",
++    "NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.VectorizationNotes.Notes": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equation09.Assembly": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equation09.EndToEnd": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.HessenbergRounded": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.HessenbergSchur": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.PivotedSmallBlocks": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.QuasiQuasiSylvester": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.QuasiRoundedSylvester": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.RoundedExecutor": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.RoundedTriangular": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.Spectrum": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.Vectorized": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.AttainedMinima.Equations15And21": "source",
++    "NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AttainedSeparation.Equation26": "source",
++    "NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.Lyapunov": "source",
++    "NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.StructuredSylvester": "source",
++    "NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.SylvesterPerturbation": "source",
++    "NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.Vectorized": "source",
++    "NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.Equation29Extensions.Minimizers": "source",
++    "NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.Equation29Extensions.Spectrum": "source",
++    "NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.Equation29Extensions.Vectorized": "source",
++    "NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.NormEstimator.Equation29": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05.Equation05Primary": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05.LpDiagonal": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05.LpJordan": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05.RealDiagonal": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05.RealJordan": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.BaiDemmelGu": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.Gautschi": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.Kreiss": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.Laszlo": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerKreiss": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.ComplexSimilarity": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.ComputedIteration": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.PowerBound": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.ComplexJordan": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.PseudospectralCriterion": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.PseudospectralPackaging": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.RealCases": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.RealJordan": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.SpectralCriterion": "source",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.QuasiQuasiRounded": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.BaiDemmelGuDistance": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.BergerHermitian": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.HenriciDeparture": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.HenriciExtremal": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.HenriciImprovedConstant": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.HenriciSharpConstant": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.NumericalRadius": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerProjectionIntegral": "source",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.SpijkerRational": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.DunfordResidue": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.PseudospectralLowerBound": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.PseudospectralRadius": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.ResolventCalculus": "source",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.ResolventLowerBound": "source",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AttainedMinima.All": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AutomaticBounds.All": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.PracticalEstimator.All": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds.All": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Equation.VectorizationIdentities.All": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.ComplexSchur.All": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.HessenbergSchur.All": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.PivotedSmallBlocks.All": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart.All": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.TriangularBartelsStewart.All": "aggregate",
++    "NumStability.Algorithms.MatrixPowers.ComputedIteration.All": "aggregate",
++    "NumStability.Algorithms.NormEstimation.OneNorm.All": "aggregate",
++    "NumStability.Analysis.CStarMatrices.Basic.All": "aggregate",
++    "NumStability.Analysis.CStarMatrices.Expectation.All": "aggregate",
++    "NumStability.Analysis.CStarMatrices.Trace.All": "aggregate",
++    "NumStability.Analysis.FunctionalCalculus.OperatorLog.All": "aggregate",
++    "NumStability.Analysis.FunctionalCalculus.Resolvent.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.Jordan.NormalForm.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.BaiDemmelGu.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Gautschi.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Kreiss.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Laszlo.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.LpBounds.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.NumericalRadius.Berger.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.NumericalRadius.Core.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.Pseudospectra.PowerBounds.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.Pseudospectra.Resolvent.All": "aggregate",
++    "NumStability.Analysis.LinearOperators.Schur.Real.Triangularization.All": "aggregate",
++    "NumStability.Analysis.MatrixInequalities.LiebTrace.All": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Problem02.LyapunovIntegral.All": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.ComplexSolvability.All": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.VectorizationNotes.All": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equation09.All": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.All": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.AttainedMinima.All": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AttainedSeparation.All": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AutomaticBounds.All": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.All": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.Equation29Extensions.All": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.NormEstimator.All": "aggregate",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05.All": "aggregate",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.All": "aggregate",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14.All": "aggregate",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.All": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AttainedMinima": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AutomaticBounds": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.PracticalEstimator": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Equation.VectorizationIdentities": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.ComplexSchur": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.HessenbergSchur": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.PivotedSmallBlocks": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.TriangularBartelsStewart": "aggregate",
++    "NumStability.Algorithms.MatrixPowers.ComputedIteration": "aggregate",
++    "NumStability.Algorithms.NormEstimation.OneNorm": "aggregate",
++    "NumStability.Analysis.CStarMatrices.Basic": "aggregate",
++    "NumStability.Analysis.CStarMatrices.Expectation": "aggregate",
++    "NumStability.Analysis.CStarMatrices.Trace": "aggregate",
++    "NumStability.Analysis.FunctionalCalculus.OperatorLog": "aggregate",
++    "NumStability.Analysis.FunctionalCalculus.Resolvent": "aggregate",
++    "NumStability.Analysis.LinearOperators.Jordan.NormalForm": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.BaiDemmelGu": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Gautschi": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Henrici": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Kreiss": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Laszlo": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.LpBounds": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker": "aggregate",
++    "NumStability.Analysis.LinearOperators.NumericalRadius.Berger": "aggregate",
++    "NumStability.Analysis.LinearOperators.NumericalRadius.Core": "aggregate",
++    "NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation": "aggregate",
++    "NumStability.Analysis.LinearOperators.Pseudospectra.PowerBounds": "aggregate",
++    "NumStability.Analysis.LinearOperators.Pseudospectra.Resolvent": "aggregate",
++    "NumStability.Analysis.LinearOperators.Schur.Real.Triangularization": "aggregate",
++    "NumStability.Analysis.MatrixInequalities.LiebTrace": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Problem02.LyapunovIntegral": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.ComplexSolvability": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.VectorizationNotes": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equation09": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.AttainedMinima": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AttainedSeparation": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AutomaticBounds": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.Equation29Extensions": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.NormEstimator": "aggregate",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.Equations04And05": "aggregate",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds": "aggregate",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Equations08To14": "aggregate",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02": "aggregate",
++    "NumStability.Algorithms.MatrixEquations.Sylvester.Solvers": "aggregate",
++    "NumStability.Algorithms.NormEstimation": "aggregate",
++    "NumStability.Analysis.CStarMatrices": "aggregate",
++    "NumStability.Analysis.FunctionalCalculus": "aggregate",
++    "NumStability.Analysis.LinearOperators.Jordan": "aggregate",
++    "NumStability.Analysis.LinearOperators.MatrixPowers": "aggregate",
++    "NumStability.Analysis.LinearOperators.NumericalRadius": "aggregate",
++    "NumStability.Analysis.LinearOperators.Pseudospectra": "aggregate",
++    "NumStability.Analysis.LinearOperators.Schur.Real": "aggregate",
++    "NumStability.Analysis.MatrixInequalities": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Problem02": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section02.BartelsStewart": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning": "aggregate",
++    "NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds": "aggregate",
++    "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds": "aggregate",
++    "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers": "aggregate",
++    "NumStability.Source.Higham.Chapter18.Section02": "aggregate"

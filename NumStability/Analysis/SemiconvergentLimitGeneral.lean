@@ -47,7 +47,8 @@
 -- 2nd ed., §17.4, eqs (17.22)/(17.25); Householder `[106, Lem 6.9]`.
 
 import NumStability.Analysis.SemiconvergentExistenceComplete
-import NumStability.Algorithms.MatrixPowersSpectral
+import NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.SpectralRadius
+import NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.RealDiagonal
 
 /-!
 # General limits of semiconvergent matrix powers
@@ -795,4 +796,3 @@ theorem matPow_G_tendsto_oneEigenProjector_of_convergence {n : ℕ} (G : Fin n �
 -- option is used.
 
 end NumStability
-

@@ -1,4 +1,4 @@
-import NumStability.Algorithms.MatrixInversion
+import NumStability.Source.Higham.Chapter14.Problem11.HadamardCondition.MatrixInversion
 
 namespace NumStability
 

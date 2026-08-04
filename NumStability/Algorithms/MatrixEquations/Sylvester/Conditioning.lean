@@ -1,4 +1,8 @@
 import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.All
+import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AttainedMinima
+import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AutomaticBounds
+import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.PracticalEstimator
+import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds
 
 /-!
 # Algorithms MatrixEquations Sylvester Conditioning

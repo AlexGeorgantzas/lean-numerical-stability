@@ -1,4 +1,5 @@
 import NumStability.Source.Higham.Chapter18.Section01
+import NumStability.Source.Higham.Chapter18.Section02
 
 /-!
 # Source Higham Chapter18

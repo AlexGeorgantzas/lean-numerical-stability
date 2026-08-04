@@ -135,6 +135,9 @@ import NumStability.Algorithms.MatMul
 import NumStability.Algorithms.MatMulBackwardError
 import NumStability.Algorithms.MatrixEquations
 import NumStability.Algorithms.MatrixInversion
+import NumStability.Algorithms.MatrixInversion.LUFactors
+import NumStability.Algorithms.MatrixInversion.Residuals
+import NumStability.Algorithms.MatrixInversion.Triangular
 import NumStability.Algorithms.MatrixInversionMethod2BInstance
 import NumStability.Algorithms.MatrixPowers
 import NumStability.Algorithms.MatrixPowersComplex
@@ -149,6 +152,7 @@ import NumStability.Algorithms.MatVec
 import NumStability.Algorithms.MMatrix
 import NumStability.Algorithms.NeumaierCompensatedFiniteFormat
 import NumStability.Algorithms.Norm2
+import NumStability.Algorithms.NormEstimation
 import NumStability.Algorithms.OuterProduct
 import NumStability.Algorithms.PNormPowerMethod
 import NumStability.Algorithms.PNormPowerMethodGeneralP

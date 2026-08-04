@@ -1,0 +1,404 @@
+{
+  "blocks": [
+    "W06"
+  ],
+  "created_at": "2026-08-04T07:50:23Z",
+  "depends_on": [
+    "M05"
+  ],
+  "lane_id": "remote-lane",
+  "patch": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/requests/R0005.patch",
+    "sha256": "C7F94237B46745BFAC501780D806499431CECBFBDBFA7B70798E801716115D42"
+  },
+  "paths": [
+    "NumStability/Algorithms.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/Conditioning.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/Equation.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/ComplexSchur.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/HessenbergSchur.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/PivotedSmallBlocks.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/QuasiTriangularBartelsStewart.lean",
+    "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/TriangularBartelsStewart.lean",
+    "NumStability/Algorithms/MatrixPowers/ComputedIteration.lean",
+    "NumStability/Algorithms/NormEstimation.lean",
+    "NumStability/Algorithms/NormEstimation/OneNorm.lean",
+    "NumStability/Algorithms/Sylvester.lean",
+    "NumStability/Analysis.lean",
+    "NumStability/Analysis/CStarMatrices.lean",
+    "NumStability/Analysis/CStarMatrices/Basic.lean",
+    "NumStability/Analysis/CStarMatrices/Expectation.lean",
+    "NumStability/Analysis/CStarMatrices/Trace.lean",
+    "NumStability/Analysis/FunctionalCalculus.lean",
+    "NumStability/Analysis/FunctionalCalculus/OperatorLog.lean",
+    "NumStability/Analysis/FunctionalCalculus/Resolvent.lean",
+    "NumStability/Analysis/LinearOperators.lean",
+    "NumStability/Analysis/LinearOperators/Jordan.lean",
+    "NumStability/Analysis/LinearOperators/Jordan/NormalForm.lean",
+    "NumStability/Analysis/LinearOperators/MatrixPowers.lean",
+    "NumStability/Analysis/LinearOperators/MatrixPowers/BaiDemmelGu.lean",
+    "NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds.lean",
+    "NumStability/Analysis/LinearOperators/MatrixPowers/Gautschi.lean",
+    "NumStability/Analysis/LinearOperators/MatrixPowers/Henrici.lean",
+    "NumStability/Analysis/LinearOperators/MatrixPowers/JordanScaling.lean",
+    "NumStability/Analysis/LinearOperators/MatrixPowers/Kreiss.lean",
+    "NumStability/Analysis/LinearOperators/MatrixPowers/Laszlo.lean",
+    "NumStability/Analysis/LinearOperators/MatrixPowers/LpBounds.lean",
+    "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker.lean",
+    "NumStability/Analysis/LinearOperators/NumericalRadius.lean",
+    "NumStability/Analysis/LinearOperators/NumericalRadius/Berger.lean",
+    "NumStability/Analysis/LinearOperators/NumericalRadius/Core.lean",
+    "NumStability/Analysis/LinearOperators/Pseudospectra.lean",
+    "NumStability/Analysis/LinearOperators/Pseudospectra/Perturbation.lean",
+    "NumStability/Analysis/LinearOperators/Pseudospectra/PowerBounds.lean",
+    "NumStability/Analysis/LinearOperators/Pseudospectra/Resolvent.lean",
+    "NumStability/Analysis/LinearOperators/Schur.lean",
+    "NumStability/Analysis/MatrixInequalities.lean",
+    "NumStability/Analysis/MatrixInequalities/LiebTrace.lean",
+    "NumStability/Source/Higham/Chapter16.lean",
+    "NumStability/Source/Higham/Chapter16/Problem02.lean",
+    "NumStability/Source/Higham/Chapter16/Problem02/LyapunovIntegral.lean",
+    "NumStability/Source/Higham/Chapter16/Section01.lean",
+    "NumStability/Source/Higham/Chapter16/Section01/SylvesterEquation.lean",
+    "NumStability/Source/Higham/Chapter16/Section02.lean",
+    "NumStability/Source/Higham/Chapter16/Section02/BartelsStewart.lean",
+    "NumStability/Source/Higham/Chapter16/Section02/BartelsStewart/Equation09.lean",
+    "NumStability/Source/Higham/Chapter16/Section02/BartelsStewart/Equations04To08.lean",
+    "NumStability/Source/Higham/Chapter16/Section02/SylvesterAndLyapunovBackwardError.lean",
+    "NumStability/Source/Higham/Chapter16/Section03.lean",
+    "NumStability/Source/Higham/Chapter16/Section03/PerturbationAndConditioning.lean",
+    "NumStability/Source/Higham/Chapter16/Section04.lean",
+    "NumStability/Source/Higham/Chapter16/Section04/PracticalErrorBounds.lean",
+    "NumStability/Source/Higham/Chapter18.lean",
+    "NumStability/Source/Higham/Chapter18/Section01.lean",
+    "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds.lean",
+    "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/Equations04And05.lean",
+    "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds.lean",
+    "NumStability/Source/Higham/Chapter18/Section02.lean",
+    "NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers.lean",
+    "NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers/Equations08To14.lean",
+    "NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers/Theorems01And02.lean",
+    "NumStabilityTest.lean",
+    "NumStabilityTest/Reorganization/W06.lean",
+    "docs/architecture/COMPATIBILITY.md",
+    "docs/architecture/layout-exceptions.json",
+    "docs/architecture/tiers.json"
+  ],
+  "phase_id": "repository-reorganization-2026-08",
+  "preimage_blobs": [
+    {
+      "blob_oid": "3b36a704f4c398a4d3a919b26851b29d9321dcb3",
+      "path": "NumStability/Algorithms.lean"
+    },
+    {
+      "blob_oid": "e82213ea84244881b612a363b000cd557da88e51",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester.lean"
+    },
+    {
+      "blob_oid": "a0242e269afd4dca042aeb97322c2d37da84b295",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Conditioning.lean"
+    },
+    {
+      "blob_oid": "e6c54ef206310a589b9864559659cc41404e8c31",
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Equation.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/ComplexSchur.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/HessenbergSchur.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/PivotedSmallBlocks.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/QuasiTriangularBartelsStewart.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixEquations/Sylvester/Solvers/TriangularBartelsStewart.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixPowers/ComputedIteration.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/NormEstimation.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/NormEstimation/OneNorm.lean"
+    },
+    {
+      "blob_oid": "3ebd63ec7740be45ebb8452c604999ad35bb5833",
+      "path": "NumStability/Algorithms/Sylvester.lean"
+    },
+    {
+      "blob_oid": "e092306d7af94df74e9d64b8a7a9d03599b63644",
+      "path": "NumStability/Analysis.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/CStarMatrices.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/CStarMatrices/Basic.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/CStarMatrices/Expectation.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/CStarMatrices/Trace.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/FunctionalCalculus.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/FunctionalCalculus/OperatorLog.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/FunctionalCalculus/Resolvent.lean"
+    },
+    {
+      "blob_oid": "b1208ce6e4790923cf2fb3f2e493b982a2f1f712",
+      "path": "NumStability/Analysis/LinearOperators.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/Jordan.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/Jordan/NormalForm.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/BaiDemmelGu.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/ExactNormBounds.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Gautschi.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Henrici.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/JordanScaling.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Kreiss.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Laszlo.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/LpBounds.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/MatrixPowers/Spijker.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/NumericalRadius.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/NumericalRadius/Berger.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/NumericalRadius/Core.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/Pseudospectra.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/Pseudospectra/Perturbation.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/Pseudospectra/PowerBounds.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/LinearOperators/Pseudospectra/Resolvent.lean"
+    },
+    {
+      "blob_oid": "c53a2becf973d0918b9ef2bbcefbda8a3b66cba1",
+      "path": "NumStability/Analysis/LinearOperators/Schur.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/MatrixInequalities.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/MatrixInequalities/LiebTrace.lean"
+    },
+    {
+      "blob_oid": "37a703ee33b6cce357eb39f759e47aaf4ad42a0d",
+      "path": "NumStability/Source/Higham/Chapter16.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Problem02.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Problem02/LyapunovIntegral.lean"
+    },
+    {
+      "blob_oid": "5444684d5599b6ba3e47a1328dab75411cda7fd0",
+      "path": "NumStability/Source/Higham/Chapter16/Section01.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Section01/SylvesterEquation.lean"
+    },
+    {
+      "blob_oid": "ffb5e6ae95d23993478b7d77bab36a847b37dfeb",
+      "path": "NumStability/Source/Higham/Chapter16/Section02.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Section02/BartelsStewart.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Section02/BartelsStewart/Equation09.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Section02/BartelsStewart/Equations04To08.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Section02/SylvesterAndLyapunovBackwardError.lean"
+    },
+    {
+      "blob_oid": "21f4e6df1e18de9c9be64fc9a4189a8b95f15ba2",
+      "path": "NumStability/Source/Higham/Chapter16/Section03.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Section03/PerturbationAndConditioning.lean"
+    },
+    {
+      "blob_oid": "631f2a891c0b6240c616d5a4b270be76159ee057",
+      "path": "NumStability/Source/Higham/Chapter16/Section04.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter16/Section04/PracticalErrorBounds.lean"
+    },
+    {
+      "blob_oid": "c6119e493b20f92338bb236d6dfd69e1c6665d2e",
+      "path": "NumStability/Source/Higham/Chapter18.lean"
+    },
+    {
+      "blob_oid": "34f9f79666f34e929196db7ba637f4558fb29c1b",
+      "path": "NumStability/Source/Higham/Chapter18/Section01.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/Equations04And05.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter18/Section01/MatrixPowerBounds/NamedBounds.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter18/Section02.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers/Equations08To14.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter18/Section02/FinitePrecisionPowers/Theorems01And02.lean"
+    },
+    {
+      "blob_oid": "4dee2d8bf47c00957f51b2fb2dd06fd5b9dacea0",
+      "path": "NumStabilityTest.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/W06.lean"
+    },
+    {
+      "blob_oid": "66168cb3dc3eff5db38cb2a900bceb5d84bd239b",
+      "path": "docs/architecture/COMPATIBILITY.md"
+    },
+    {
+      "blob_oid": "e1d0920050f6b59c0a681509c5dbda5ebc2e0bbc",
+      "path": "docs/architecture/layout-exceptions.json"
+    },
+    {
+      "blob_oid": "be3753f00f4ced58118705241b91ef0fe6c6b58d",
+      "path": "docs/architecture/tiers.json"
+    }
+  ],
+  "rationale": "Apply W06's exact integrator-owned aggregate, classification, root-test, and discovery wiring independently against C0005. Nonshared C0005-pinned integration evidence covers ten accepted-consumer retargets and the three import-only W07 refresh paths; those paths are intentionally outside this shared patch. Fifteen nested umbrellas under retired B0005 destination prefixes are preserved as exact W05/W06 integration-overlap paths because schema version 1 forbids registering them as shared without rewriting the immutable historical B0005 scope. Exact integration-overlap evidence: docs/architecture/phases/2026-08-repository-reorganization/requests/R0005-overlap-review.md, SHA-256 D9E473313CF6B5F5C654AAE947146CDB14AFEABF3E8E02FC2232A3F33081B36E.",
+  "record_kind": "shared_file_request",
+  "request_id": "R0005",
+  "requester_id": "codex-remote",
+  "resolution": {
+    "checkpoint_id": null,
+    "commit_sha": null,
+    "reason": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "validation_evidence": []
+  },
+  "schema_version": 1,
+  "status": "active",
+  "superseded_by": null,
+  "supersedes": null,
+  "target_base_sha": "240c0d041781385a647fbec461d6863537e562cb",
+  "target_checkpoint_id": "C0005",
+  "valid_through_checkpoint_id": "C0005",
+  "wave_id": "W06"
+}

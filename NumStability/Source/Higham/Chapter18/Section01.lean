@@ -1,3 +1,4 @@
+import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds
 import NumStability.Source.Higham.Chapter18.Section01.SchurDecomposition.All
 
 /-!

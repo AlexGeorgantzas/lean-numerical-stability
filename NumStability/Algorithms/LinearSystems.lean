@@ -1,5 +1,6 @@
 import NumStability.Algorithms.LinearSystems.Cholesky
 import NumStability.Algorithms.LinearSystems.CramersRule.All
+import NumStability.Algorithms.LinearSystems.GaussJordan
 import NumStability.Algorithms.LinearSystems.IterativeRefinement.All
 import NumStability.Algorithms.LinearSystems.LeastSquares
 import NumStability.Algorithms.LinearSystems.LU

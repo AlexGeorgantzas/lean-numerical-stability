@@ -1,4 +1,5 @@
 import NumStability.Analysis.LinearOperators.Schur.All
+import NumStability.Analysis.LinearOperators.Schur.Real
 
 /-!
 # Analysis LinearOperators Schur

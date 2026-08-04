@@ -1,4 +1,4 @@
-import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.All
+import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation
 
 /-!
 # Source Higham Chapter16 Section01

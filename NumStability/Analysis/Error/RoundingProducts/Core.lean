@@ -2,7 +2,7 @@ import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 import Mathlib.Algebra.Order.Ring.Pow
 import Mathlib.Analysis.Complex.ExponentialBounds
 import Mathlib.Analysis.SpecialFunctions.Log.Deriv
-import NumStability.Analysis.LiebTrace
+import NumStability.Analysis.MatrixInequalities.LiebTrace.Concavity
 import NumStability.Analysis.Rounding
 
 -- Analysis/RoundingProductBounds.lean

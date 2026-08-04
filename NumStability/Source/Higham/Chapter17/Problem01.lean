@@ -1,6 +1,6 @@
 import Mathlib.Analysis.SpecificLimits.Basic
 import Mathlib.Topology.Algebra.InfiniteSum.Real
-import NumStability.Algorithms.MatrixPowersSpectral
+import NumStability.Analysis.LinearOperators.MatrixPowers.ExactNormBounds.SpectralRadius
 
 /-!
 # Higham Chapter 17, Problem 17.1

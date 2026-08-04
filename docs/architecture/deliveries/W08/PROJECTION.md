@@ -52,16 +52,20 @@ exit 0
 
 ## What this proves
 
+Integrator correction: the immutable worker report left four display-only
+placeholders in this table. The control-tree copy below records the exact,
+hash-verified P0008 replay counts; the worker commit remains unchanged.
+
 | requirement | evidence |
 | --- | --- |
-| all 2,179 selected declarations preserved | `selected_declarations: ?`, no `missing declaration` |
-| signature edges | `signature_edges: ?` against `expected_counts` 9266 |
-| body/proof edges | `body_edges: ?` against `expected_counts` 15315 |
+| all 2,179 selected declarations preserved | `selected_declarations: 2179`, no `missing declaration` |
+| signature edges | `signature_edges: 9266` against `expected_counts` 9266 |
+| body/proof edges | `body_edges: 15315` against `expected_counts` 15315 |
 | union edges | `expected_counts` 16573; the checker reports the two typed counts and the union is the distinct source-to-target pair count, so it is smaller than their sum |
 | no kind drift | no `kind drift` diagnostics |
 | no visibility drift | no `visibility drift` diagnostics |
 | every owner inside the allowed set | no `owner not allowed` diagnostics |
-| declarations actually moved | `relocated_declarations: ?` of 2,179 |
+| declarations actually moved | `relocated_declarations: 1994` of 2,179 |
 
 The comparison is exact set equality on typed incident edges, not a count, so
 passing means the frozen graph and the candidate agree edge for edge.

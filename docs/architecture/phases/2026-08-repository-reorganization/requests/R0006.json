@@ -1,0 +1,419 @@
+{
+  "blocks": [
+    "W08"
+  ],
+  "created_at": "2026-08-04T07:50:23Z",
+  "depends_on": [
+    "M03"
+  ],
+  "lane_id": "remote-lane",
+  "patch": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/requests/R0006.patch",
+    "sha256": "54693108C1627E5DA067B16A520D009EFCCEEE2A2D81930B756CD5A69B6D9504"
+  },
+  "paths": [
+    "NumStability/Algorithms.lean",
+    "NumStability/Algorithms/LinearSystems.lean",
+    "NumStability/Algorithms/LinearSystems/GaussJordan.lean",
+    "NumStability/Algorithms/LinearSystems/GaussJordan/ErrorAnalysis.lean",
+    "NumStability/Algorithms/MatrixInversion/LUFactors.lean",
+    "NumStability/Algorithms/MatrixInversion/LUFactors/ErrorAnalysis.lean",
+    "NumStability/Algorithms/MatrixInversion/LUFactors/Methods.lean",
+    "NumStability/Algorithms/MatrixInversion/Residuals.lean",
+    "NumStability/Algorithms/MatrixInversion/Triangular.lean",
+    "NumStability/Algorithms/MatrixInversion/Triangular/ErrorAnalysis.lean",
+    "NumStability/Algorithms/MatrixInversion/Triangular/Specifications.lean",
+    "NumStability/Analysis.lean",
+    "NumStability/Analysis/Error/MatrixProducts.lean",
+    "NumStability/Analysis/Error/MatrixProducts/Contracts.lean",
+    "NumStability/Analysis/Error/MatrixProducts/EvaluationTrees.lean",
+    "NumStability/Analysis/FirstOrder.lean",
+    "NumStability/Analysis/FirstOrder/MatrixFamilies.lean",
+    "NumStability/Source/Higham/Chapter14.lean",
+    "NumStability/Source/Higham/Chapter14/Algorithm04.lean",
+    "NumStability/Source/Higham/Chapter14/Algorithm04/Accumulation.lean",
+    "NumStability/Source/Higham/Chapter14/Algorithm04/Execution.lean",
+    "NumStability/Source/Higham/Chapter14/Algorithm04/Pivoting.lean",
+    "NumStability/Source/Higham/Chapter14/Algorithm04/SecondStage.lean",
+    "NumStability/Source/Higham/Chapter14/Corollary06.lean",
+    "NumStability/Source/Higham/Chapter14/Corollary06/SPD.lean",
+    "NumStability/Source/Higham/Chapter14/Corollary07.lean",
+    "NumStability/Source/Higham/Chapter14/Corollary07/DiagonalDominance.lean",
+    "NumStability/Source/Higham/Chapter14/Equation34.lean",
+    "NumStability/Source/Higham/Chapter14/Equation34/DeterminantFromLU.lean",
+    "NumStability/Source/Higham/Chapter14/Equation35.lean",
+    "NumStability/Source/Higham/Chapter14/Equation35/HymanBlockFactorization.lean",
+    "NumStability/Source/Higham/Chapter14/Equation36.lean",
+    "NumStability/Source/Higham/Chapter14/Equation36/HymanDeterminant.lean",
+    "NumStability/Source/Higham/Chapter14/Problem02.lean",
+    "NumStability/Source/Higham/Chapter14/Problem02/TriangularInversion.lean",
+    "NumStability/Source/Higham/Chapter14/Problem03.lean",
+    "NumStability/Source/Higham/Chapter14/Problem03/ResidualComparison.lean",
+    "NumStability/Source/Higham/Chapter14/Problem04.lean",
+    "NumStability/Source/Higham/Chapter14/Problem04/ResidualCounterexample.lean",
+    "NumStability/Source/Higham/Chapter14/Problem05.lean",
+    "NumStability/Source/Higham/Chapter14/Problem05/InverseBasedSolve.lean",
+    "NumStability/Source/Higham/Chapter14/Problem07.lean",
+    "NumStability/Source/Higham/Chapter14/Problem07/OnesVector.lean",
+    "NumStability/Source/Higham/Chapter14/Problem08.lean",
+    "NumStability/Source/Higham/Chapter14/Problem08/ComplexInverseRealBlock.lean",
+    "NumStability/Source/Higham/Chapter14/Problem10.lean",
+    "NumStability/Source/Higham/Chapter14/Problem10/EntryPerturbation.lean",
+    "NumStability/Source/Higham/Chapter14/Problem11.lean",
+    "NumStability/Source/Higham/Chapter14/Problem11/HadamardCondition.lean",
+    "NumStability/Source/Higham/Chapter14/Problem12.lean",
+    "NumStability/Source/Higham/Chapter14/Problem12/HadamardExamples.lean",
+    "NumStability/Source/Higham/Chapter14/Problem13/GEJBound.lean",
+    "NumStability/Source/Higham/Chapter14/Problem14/HymanDeterminant.lean",
+    "NumStability/Source/Higham/Chapter14/Problem15/DeterminantPerturbation.lean",
+    "NumStability/Source/Higham/Chapter14/Section01.lean",
+    "NumStability/Source/Higham/Chapter14/Section01/InverseErrorAnalysis.lean",
+    "NumStability/Source/Higham/Chapter14/Section01/ProductErrorNotation.lean",
+    "NumStability/Source/Higham/Chapter14/Section02.lean",
+    "NumStability/Source/Higham/Chapter14/Section02/TriangularInversion.lean",
+    "NumStability/Source/Higham/Chapter14/Section02/TriangularInversion/Method1.lean",
+    "NumStability/Source/Higham/Chapter14/Section02/TriangularInversion/Method1B.lean",
+    "NumStability/Source/Higham/Chapter14/Section02/TriangularInversion/Method2.lean",
+    "NumStability/Source/Higham/Chapter14/Section02/TriangularInversion/Method2B.lean",
+    "NumStability/Source/Higham/Chapter14/Section02/TriangularInversion/Method2C.lean",
+    "NumStability/Source/Higham/Chapter14/Section03.lean",
+    "NumStability/Source/Higham/Chapter14/Section03/LUFactorInversion.lean",
+    "NumStability/Source/Higham/Chapter14/Section03/LUFactorInversion/MethodB.lean",
+    "NumStability/Source/Higham/Chapter14/Section03/LUFactorInversion/MethodC.lean",
+    "NumStability/Source/Higham/Chapter14/Section03/LUFactorInversion/MethodD.lean",
+    "NumStability/Source/Higham/Chapter14/Theorem05.lean",
+    "NumStability/Source/Higham/Chapter14/Theorem05/ForwardError.lean",
+    "NumStabilityTest.lean",
+    "NumStabilityTest/Reorganization/W08.lean",
+    "docs/architecture/COMPATIBILITY.md",
+    "docs/architecture/layout-exceptions.json",
+    "docs/architecture/tiers.json"
+  ],
+  "phase_id": "repository-reorganization-2026-08",
+  "preimage_blobs": [
+    {
+      "blob_oid": "3b36a704f4c398a4d3a919b26851b29d9321dcb3",
+      "path": "NumStability/Algorithms.lean"
+    },
+    {
+      "blob_oid": "a356c513dc8af39a9d319dfeb1651adc108f3485",
+      "path": "NumStability/Algorithms/LinearSystems.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/LinearSystems/GaussJordan.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/LinearSystems/GaussJordan/ErrorAnalysis.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixInversion/LUFactors.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixInversion/LUFactors/ErrorAnalysis.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixInversion/LUFactors/Methods.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixInversion/Residuals.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixInversion/Triangular.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixInversion/Triangular/ErrorAnalysis.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/MatrixInversion/Triangular/Specifications.lean"
+    },
+    {
+      "blob_oid": "e092306d7af94df74e9d64b8a7a9d03599b63644",
+      "path": "NumStability/Analysis.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/Error/MatrixProducts.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/Error/MatrixProducts/Contracts.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/Error/MatrixProducts/EvaluationTrees.lean"
+    },
+    {
+      "blob_oid": "b4e6c54cc2f76c368c533700f8c199d4029a99e3",
+      "path": "NumStability/Analysis/FirstOrder.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Analysis/FirstOrder/MatrixFamilies.lean"
+    },
+    {
+      "blob_oid": "e766103f6dfc0317c402e573d8afbec0fe7c0e27",
+      "path": "NumStability/Source/Higham/Chapter14.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Algorithm04.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Algorithm04/Accumulation.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Algorithm04/Execution.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Algorithm04/Pivoting.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Algorithm04/SecondStage.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Corollary06.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Corollary06/SPD.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Corollary07.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Corollary07/DiagonalDominance.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Equation34.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Equation34/DeterminantFromLU.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Equation35.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Equation35/HymanBlockFactorization.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Equation36.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Equation36/HymanDeterminant.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem02.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem02/TriangularInversion.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem03.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem03/ResidualComparison.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem04.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem04/ResidualCounterexample.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem05.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem05/InverseBasedSolve.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem07.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem07/OnesVector.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem08.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem08/ComplexInverseRealBlock.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem10.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem10/EntryPerturbation.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem11.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem11/HadamardCondition.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem12.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem12/HadamardExamples.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem13/GEJBound.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem14/HymanDeterminant.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Problem15/DeterminantPerturbation.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section01.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section01/InverseErrorAnalysis.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section01/ProductErrorNotation.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section02.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section02/TriangularInversion.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section02/TriangularInversion/Method1.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section02/TriangularInversion/Method1B.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section02/TriangularInversion/Method2.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section02/TriangularInversion/Method2B.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section02/TriangularInversion/Method2C.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section03.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section03/LUFactorInversion.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section03/LUFactorInversion/MethodB.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section03/LUFactorInversion/MethodC.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Section03/LUFactorInversion/MethodD.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Theorem05.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter14/Theorem05/ForwardError.lean"
+    },
+    {
+      "blob_oid": "4dee2d8bf47c00957f51b2fb2dd06fd5b9dacea0",
+      "path": "NumStabilityTest.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/W08.lean"
+    },
+    {
+      "blob_oid": "66168cb3dc3eff5db38cb2a900bceb5d84bd239b",
+      "path": "docs/architecture/COMPATIBILITY.md"
+    },
+    {
+      "blob_oid": "e1d0920050f6b59c0a681509c5dbda5ebc2e0bbc",
+      "path": "docs/architecture/layout-exceptions.json"
+    },
+    {
+      "blob_oid": "be3753f00f4ced58118705241b91ef0fe6c6b58d",
+      "path": "docs/architecture/tiers.json"
+    }
+  ],
+  "rationale": "Apply W08's exact integrator-owned aggregate, classification, root-test, and discovery wiring independently against C0005. Nonshared C0005-pinned integration evidence covers five accepted-consumer retargets and the import-only W11 LowRankApprox refresh; those paths are intentionally outside this shared patch. Exact integration-overlap evidence: docs/architecture/phases/2026-08-repository-reorganization/requests/R0006-overlap-review.md, SHA-256 2DED3DDF1FAD384BFBBB0935CE70F45213E6802169CBF1CF1FA5C392706B8468.",
+  "record_kind": "shared_file_request",
+  "request_id": "R0006",
+  "requester_id": "claude-remote",
+  "resolution": {
+    "checkpoint_id": null,
+    "commit_sha": null,
+    "reason": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "validation_evidence": []
+  },
+  "schema_version": 1,
+  "status": "active",
+  "superseded_by": null,
+  "supersedes": null,
+  "target_base_sha": "240c0d041781385a647fbec461d6863537e562cb",
+  "target_checkpoint_id": "C0005",
+  "valid_through_checkpoint_id": "C0005",
+  "wave_id": "W08"
+}

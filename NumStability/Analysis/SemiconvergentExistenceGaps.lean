@@ -51,7 +51,7 @@ import Mathlib.Analysis.Normed.Module.HahnBanach
 import Mathlib.Analysis.RCLike.Basic
 import Mathlib.LinearAlgebra.Eigenspace.Triangularizable
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Algorithms.MatrixPowersJordan
+import NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.RealJordan
 
 /-!
 # Spectral ingredients for semiconvergent existence

@@ -16,7 +16,7 @@ import Mathlib.Tactic.Ring
 import Mathlib.Tactic.FieldSimp
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Conditioning.LinearSystems.SubordinatePerturbation
-import NumStability.Algorithms.MatrixPowers
+import NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.RealDiagonal
 
 namespace NumStability
 

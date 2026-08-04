@@ -1,4 +1,4 @@
-import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.All
+import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds
 
 /-!
 # Source Higham Chapter16 Section04

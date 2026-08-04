@@ -12,11 +12,13 @@ import NumStability.Analysis.ComplexArithmetic
 import NumStability.Analysis.ComplexSqrt
 import NumStability.Analysis.ConditionEstimatorLowerBound
 import NumStability.Analysis.Conditioning
+import NumStability.Analysis.CStarMatrices
 import NumStability.Analysis.CStarMatrixBridge
 import NumStability.Analysis.CStarMatrixExpectation
 import NumStability.Analysis.CStarMatrixTrace
 import NumStability.Analysis.DoubleRounding
 import NumStability.Analysis.Equidistribution
+import NumStability.Analysis.Error.MatrixProducts
 import NumStability.Analysis.Error.Measures.All
 import NumStability.Analysis.Error.RoundingProducts.All
 import NumStability.Analysis.Error.RoundingProducts.Core
@@ -33,6 +35,7 @@ import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
 import NumStability.Analysis.FloatingPointArithmetic.TrigonometricCancellation.All
 import NumStability.Analysis.FloatingPointArithmetic.TrigonometricCancellation.Core
 import NumStability.Analysis.ForwardError
+import NumStability.Analysis.FunctionalCalculus
 import NumStability.Analysis.HenriciSharpConstantExact
 import NumStability.Analysis.Heron
 import NumStability.Analysis.HighamChapter2ElementaryFunctions
@@ -48,6 +51,7 @@ import NumStability.Analysis.LiebTrace
 import NumStability.Analysis.LinearOperators
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixConcentration
+import NumStability.Analysis.MatrixInequalities
 import NumStability.Analysis.MatrixNorms
 import NumStability.Analysis.MatrixPowersBinomialBound
 import NumStability.Analysis.MatrixPowersGautschi
@@ -78,9 +82,11 @@ import NumStability.Analysis.PseudospectralLowerBound
 import NumStability.Analysis.Quadratic
 import NumStability.Analysis.RealInvariantSubspace
 import NumStability.Analysis.RealQuasiSchur
+import NumStability.Analysis.RealSchurTriangulation
 import NumStability.Analysis.RelativePrecision
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.SampleVariance
+import NumStability.Analysis.SchurTriangulation
 import NumStability.Analysis.SemiconvergentRealSpectrumComplete
 import NumStability.Analysis.SemiconvergentSpectral
 import NumStability.Analysis.SingularValues

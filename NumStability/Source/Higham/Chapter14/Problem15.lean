@@ -2,7 +2,8 @@
 SPDX-License-Identifier: MIT
 -/
 
-import NumStability.Algorithms.MatrixInversion
+import NumStability.Source.Higham.Chapter14.Problem13
+import NumStability.Source.Higham.Chapter14.Problem15.DeterminantPerturbation.MatrixInversion
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.SingularValues.Realification
 import NumStability.Analysis.SingularValues.WeylMirsky

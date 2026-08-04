@@ -7,7 +7,8 @@ incomplete. B0006/W06 delivery
 `436b38cbda2e06cf5c9ea3343f0bc6fe428f0b97` and B0007/W08 delivery
 `664d5d495975a05d74cd4c0c09f9207aff8cdd77` are recorded as delivered from
 C0005, while frozen projections P0007 and P0008 remain active pending joint
-integration. Their exact remote refs remain live; local worker branches and
+integration. Independently C0005-based shared requests R0005 and R0006 are
+active with null resolutions. Their exact remote refs remain live; local worker branches and
 worktrees are preserved. M04/W04 is not activated. B0004/W03 and B0005/W05 were
 integrated by separate true merges, accepted at C0005, and retired after the
 acceptance-control state passed Lean CI. P0005 and P0006 are retired immutable projection evidence.
@@ -54,7 +55,9 @@ evidence for the bounded work they completed.
   delivered, disjoint C0005 transports for W06 and W08. Their active frozen
   projections remain [`P0007`](projections/P0007.json) and
   [`P0008`](projections/P0008.json), selected by
-  [`W06.tsv`](selectors/W06.tsv) and [`W08.tsv`](selectors/W08.tsv).
+  [`W06.tsv`](selectors/W06.tsv) and [`W08.tsv`](selectors/W08.tsv);
+  their active shared requests are [`R0005`](requests/R0005.json) and
+  [`R0006`](requests/R0006.json).
   No prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
   the complete phase state;

@@ -14,7 +14,7 @@ import NumStability.Analysis.Rounding
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.DotProduct
-import NumStability.Algorithms.MatrixInversion
+import NumStability.Source.Higham.Chapter14.Problem14.HymanDeterminant.MatrixInversion
 
 /-!
 # Higham Chapter 14, Problem 14.14: Hyman's method

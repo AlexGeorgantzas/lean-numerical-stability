@@ -7,9 +7,6 @@ import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.OuterProduct
-import NumStability.Analysis.CStarMatrixBridge
-import NumStability.Analysis.CStarMatrixExpectation
-import NumStability.Analysis.CStarMatrixTrace
 import NumStability.Analysis.Error.Measures.ScalarDefinitions
 import NumStability.Analysis.FiniteProbability
 import NumStability.Analysis.FloatingPointArithmetic.Format
@@ -17,10 +14,8 @@ import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
 import NumStability.Analysis.FloatingPointArithmetic.RoundToEvenLocalError
 import NumStability.Analysis.FloatingPointArithmetic.Rounding
 import NumStability.Analysis.ForwardError
-import NumStability.Analysis.LiebTrace
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixSpectral
-import NumStability.Analysis.OperatorLog
 import NumStability.Analysis.PerturbationTheory
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.Stability

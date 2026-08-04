@@ -3,7 +3,6 @@ import Mathlib.Algebra.Order.Ring.Pow
 import Mathlib.Analysis.Complex.ExponentialBounds
 import Mathlib.Analysis.SpecialFunctions.Log.Deriv
 import NumStability.Analysis.Error.RoundingProducts.Core
-import NumStability.Analysis.LiebTrace
 import NumStability.Analysis.Rounding
 
 -- Analysis/RoundingProductBounds.lean

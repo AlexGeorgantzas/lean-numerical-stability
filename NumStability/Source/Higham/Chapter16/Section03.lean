@@ -1,4 +1,4 @@
-import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.All
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning
 
 /-!
 # Source Higham Chapter16 Section03

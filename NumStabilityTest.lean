@@ -542,6 +542,8 @@ import NumStabilityTest.Reorganization.W01.Compatibility.InstabilityWithoutCance
 import NumStabilityTest.Reorganization.W02
 import NumStabilityTest.Reorganization.W03
 import NumStabilityTest.Reorganization.W05
+import NumStabilityTest.Reorganization.W06
+import NumStabilityTest.Reorganization.W08
 import NumStabilityTest.Reorganization.W12
 import NumStabilityTest.Worker.Ch09.Layers1To5
 import NumStabilityTest.Worker.Ch09.WaveA

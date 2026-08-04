@@ -77,7 +77,7 @@
 -- §16.2 (16.4).
 
 import NumStability.Analysis.SemiconvergentExistenceComplete
-import NumStability.Analysis.RealSchurTriangulation
+import NumStability.Analysis.LinearOperators.Schur.Real.Triangularization.SplitCharpoly
 
 /-!
 # Complete semiconvergence for real spectrum
