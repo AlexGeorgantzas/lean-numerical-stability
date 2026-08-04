@@ -11,9 +11,9 @@ retired immutable evidence, and their independently C0005-based shared
 requests R0005 and R0006 are applied at C0006. B0006 and B0007 are retired;
 their exact remote refs were deleted at `2026-08-04T13:33:21Z` after the C0006
 acceptance-control commit passed Lean CI. Local worker branches and worktrees
-remain preserved. M04/W04, M09/W09, and M11/W11 now have planned C0006
-activation records; their refs and local worktrees remain absent until the
-planned-control commit passes Lean CI. M07/W07 remains ready and unactivated.
+remain preserved. M04/W04, M09/W09, and M11/W11 now have active C0006
+activation records and exact C0006-based worker refs. M07/W07 remains ready
+and unactivated.
 B0004/W03 and B0005/W05 were accepted at C0005 and retired after that
 acceptance-control state passed Lean CI. P0005 and P0006 are retired immutable
 projection evidence, and their independently C0004-based shared requests R0003
@@ -63,7 +63,7 @@ evidence for the bounded work they completed.
   [`W06.tsv`](selectors/W06.tsv) and [`W08.tsv`](selectors/W08.tsv); their
   applied shared requests are [`R0005`](requests/R0005.json) and
   [`R0006`](requests/R0006.json).
-  Planned [`B0008`](branches/B0008.json), [`B0009`](branches/B0009.json), and
+  Active [`B0008`](branches/B0008.json), [`B0009`](branches/B0009.json), and
   [`B0010`](branches/B0010.json) are the mutually disjoint C0006 transports for
   W04, W09, and W11. Their active frozen projections are
   [`P0009`](projections/P0009.json), [`P0010`](projections/P0010.json), and
@@ -218,14 +218,15 @@ acceptance-control commit passed Lean CI, both exact remote refs were deleted at
 `2026-08-04T13:33:21Z` by `primary-human`; local worktrees and branches remain
 preserved and were never retirement targets.
 
-W04, W09, and W11 have separate planned branch records based on exact C0006
-code SHA `a32095e6e50189f7dcc39312bb4c6a36f421fab5`. Their selectors, projections,
+W04, W09, and W11 have separate active branch records based on exact C0006 code
+SHA `a32095e6e50189f7dcc39312bb4c6a36f421fab5`. Their selectors, projections,
 private-closure floors, semantic routing, vacant destinations, and zero
-cross-wave import/typed-edge proof are hash-pinned before any ref is created.
-W04 is remote-only. The W09 and W11 worktree paths remain absent. The three
-worker refs will be initialized from the code SHA, never from a later control
-commit, only after this planned-control state passes Lean CI. W07 is not part
-of this activation.
+cross-wave import/typed-edge proof were hash-pinned before any ref was created.
+Planned-control commit `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5`
+passed [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30920452203).
+W04 is remote-only; W09 and W11 have separate clean local worktrees. All three
+worker refs began at the code SHA, never at a later control commit. W07 is not
+part of this activation.
 
 ## Classification warning
 
