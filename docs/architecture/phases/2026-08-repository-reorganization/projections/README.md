@@ -72,8 +72,9 @@ strict-source, full-build, and full-test acceptance gates at C0004.
 Active projections are replaced whenever their base checkpoint or ownership
 contract changes. A terminal branch keeps its retired projection as immutable
 evidence; only live branches may reference active projections. P0005 and P0006
-are retired with B0004 and B0005 accepted at C0005. P0007 and P0008 are active
-for active B0006/W06 and B0007/W08, respectively. The earlier W03/W05 worker
+are retired with B0004 and B0005 accepted at C0005. P0007 and P0008 remain
+active for delivered-but-not-yet-accepted B0006/W06 and B0007/W08,
+respectively. The earlier W03/W05 worker
 branches deliberately began at the C0004 code SHA and read later control
 records from `origin/main`; activation commits were never copied into a worker
 branch. The W06/W08 remote refs likewise began at the exact C0005 code SHA only

@@ -5,9 +5,15 @@
   "branch_id": "B0007",
   "branch_name": "codex/reorg-2026-08-w08-matrix-inversion-ch14",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "664d5d495975a05d74cd4c0c09f9207aff8cdd77",
+    "report": {
+      "path": "docs/architecture/deliveries/W08/DELIVERY.md",
+      "sha256": "45411C386032DC17657E3B707D84CB9FC6AF2096896BA46B996770CD6177E48C"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/W08/CHANGED_PATHS.md",
+      "sha256": "95C14B432F6CA2605500D04DF1DB7E659D56AA2D666F64687B8E49FAFCA645B4"
+    }
   },
   "destination_prefixes": [
     {
@@ -2987,6 +2993,6 @@
   },
   "schema_version": 1,
   "shared_request_ids": [],
-  "status": "active",
+  "status": "delivered",
   "wave_id": "W08"
 }
