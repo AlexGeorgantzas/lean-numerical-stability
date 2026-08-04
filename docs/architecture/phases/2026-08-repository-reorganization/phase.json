@@ -565,6 +565,10 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Algorithms/LinearSystems/SymmetricIndefinite.lean"
     },
     {

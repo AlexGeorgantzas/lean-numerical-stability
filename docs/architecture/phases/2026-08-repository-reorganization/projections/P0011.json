@@ -1,0 +1,93 @@
+{
+  "base_checkpoint_id": "C0006",
+  "checker": {
+    "arguments": [
+      "--allow-module=NumStability.Algorithms.RandNLA",
+      "--allow-module=NumStability.Algorithms.RandNLA.ElementwiseSampling",
+      "--allow-module=NumStability.Algorithms.RandNLA.ElementwiseSpectral",
+      "--allow-module=NumStability.Algorithms.RandNLA.ElementwiseTraceMGF",
+      "--allow-module=NumStability.Algorithms.RandNLA.HitCountConcentration",
+      "--allow-module=NumStability.Algorithms.RandNLA.LeastSquaresSketch",
+      "--allow-module=NumStability.Algorithms.RandNLA.LowRankApprox",
+      "--allow-module=NumStability.Algorithms.RandNLA.Preconditioning",
+      "--allow-module=NumStability.Algorithms.RandNLA.RowSampling",
+      "--allow-module=NumStability.Algorithms.RandNLA.RowSamplingGram",
+      "--allow-module=NumStability.Algorithms.RandNLA.RowSamplingLeverage",
+      "--allow-module=NumStability.Algorithms.RandNLA.RowSamplingLeverageComputedBasis",
+      "--allow-module=NumStability.Algorithms.RandNLA.RowSamplingLeverageMGF",
+      "--allow-module=NumStability.Algorithms.RandNLA.RowSamplingTraceMGF",
+      "--allow-module=NumStability.Algorithms.RandNLA.UniformRowSampling",
+      "--allow-module=NumStability.Algorithms.RandNLA.UniformRowSamplingComposition",
+      "--allow-module=NumStability.Algorithms.RandNLA.UniformRowSamplingFP",
+      "--allow-module=NumStability.Algorithms.RandNLA.UniformRowSamplingMGF",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.Concentration.HitCounts.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.Concentration.SpectralTransfer.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.Concentration.TraceMGF.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.LeastSquaresSketching.FloatingPoint.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.LeastSquaresSketching.Objectives.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.LeastSquaresSketching.RowSampling.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.LeastSquaresSketching.SolverTransfer.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.LeastSquaresSketching.SubspaceEmbeddings.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.ColumnSketches.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.FloatingPoint.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.Norms.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.Projectors.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.RankFactorizations.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.SVD.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.CountSketch.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.ExactTransforms.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.FloatingPoint.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.Orthogonal.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.SRHT.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.Elementwise.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.LeverageScore.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.RowNorm.",
+      "--allow-prefix=NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.UniformRows.",
+      "--allow-prefix=NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01.ElementwiseSampling.",
+      "--allow-prefix=NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm02.RowSampling.",
+      "--allow-prefix=NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.",
+      "--allow-prefix=NumStability.Source.DrineasMahoney.RandNLA2016.Equation02.SpectralApproximation.",
+      "--allow-prefix=NumStability.Source.DrineasMahoney.RandNLA2016.Equation04.RowSamplingProbability.",
+      "--allow-prefix=NumStability.Source.DrineasMahoney.RandNLA2016.Equation05.GramApproximation.",
+      "--allow-prefix=NumStability.Source.DrineasMahoney.RandNLA2016.Equation06.LeverageProbability.",
+      "--allow-prefix=NumStability.Source.DrineasMahoney.RandNLA2016.Equation07.SubspaceEmbedding.",
+      "--allow-prefix=NumStability.Source.DrineasMahoney.RandNLA2016.Equation08.LeastSquaresSketch.",
+      "--allow-prefix=NumStability.Source.DrineasMahoney.RandNLA2016.Equation09.LowRankApproximation.",
+      "--candidate=<candidate-format2.tsv>",
+      "--projection-sha256=0A13EF31C40C997E2A692AC595E96DD3416BA603C6EC4ED47AB60765E6EBB3E2",
+      "--projection=docs/architecture/phases/2026-08-repository-reorganization/projections/P0011.tsv.gz"
+    ],
+    "artifact": {
+      "path": "tools/architecture/check_phase_projection.py",
+      "sha256": "29691CD63DB83A156247EA2C627407F4E90D127128A945B5AF97D014E11AB443"
+    }
+  },
+  "combined_baseline": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/baselines/C0006-combined.json",
+    "sha256": "E9207AA896EAA547E791FB1CECAC7A6B4E6344E8DC8E15D2EF2372FF90570625"
+  },
+  "expected_counts": {
+    "body_edges": 26201,
+    "declarations": 3354,
+    "signature_edges": 19096,
+    "union_edges": 28652
+  },
+  "phase_id": "repository-reorganization-2026-08",
+  "projection_graph": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/projections/P0011.tsv.gz",
+    "sha256": "0A13EF31C40C997E2A692AC595E96DD3416BA603C6EC4ED47AB60765E6EBB3E2"
+  },
+  "projection_id": "P0011",
+  "record_kind": "baseline_projection",
+  "schema_version": 1,
+  "selector": {
+    "artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/selectors/W11.tsv",
+      "sha256": "24E3BD565946AECFDBAB9D2D21BF1201B86ECD16197F892E1B62A30162D9EE00"
+    },
+    "kind": "module_path_tsv"
+  },
+  "status": "active",
+  "superseded_by": null,
+  "wave_id": "W11"
+}

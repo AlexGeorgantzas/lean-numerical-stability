@@ -42,3 +42,7 @@ hash-pinned C0006 gate record. After the C0006 acceptance-control commit passed
 Lean CI, the related B0006/B0007 remote refs were deleted atomically with exact
 expected-SHA leases at `2026-08-04T13:33:21Z`; request resolution alone did not
 authorize early branch deletion.
+
+B0008/W04, B0009/W09, and B0010/W11 are planned from C0006 with
+`shared_request_ids: []`. No shared request is active, and no activation
+record pre-authorizes a worker to edit an integrator-owned path.

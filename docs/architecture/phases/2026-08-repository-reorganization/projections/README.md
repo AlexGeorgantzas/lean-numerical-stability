@@ -20,7 +20,13 @@ The projection records are:
 - [`P0007`](P0007.json), the retired C0005 W06 projection selected by
   [`W06.tsv`](../selectors/W06.tsv); and
 - [`P0008`](P0008.json), the retired C0005 W08 projection selected by
-  [`W08.tsv`](../selectors/W08.tsv).
+  [`W08.tsv`](../selectors/W08.tsv);
+- [`P0009`](P0009.json), the active C0006 W04 projection selected by
+  [`W04.tsv`](../selectors/W04.tsv);
+- [`P0010`](P0010.json), the active C0006 W09 projection selected by
+  [`W09.tsv`](../selectors/W09.tsv); and
+- [`P0011`](P0011.json), the active C0006 W11 projection selected by
+  [`W11.tsv`](../selectors/W11.tsv).
 
 P0004 is tied to the C0003 combined baseline generated at code commit
 `bb80c95a4625e07535dacdda12d246ee1a5795b3`. Its baseline JSON has SHA-256
@@ -50,6 +56,17 @@ body/proof edges, and 22,079 union edges at SHA-256
 P0008 freezes 2,179 W08 declarations, 9,266 signature edges, 15,315 body/proof
 edges, and 16,573 union edges at SHA-256
 `032F33236618FD21D318344A80F8E5EA02F18CCA533C4E183BD61945E6D77D74`.
+
+P0009, P0010, and P0011 are independently derived from the hash-verified C0006
+raw graph above. P0009 freezes 1,238 W04 declarations, 5,684 signature edges,
+10,044 body/proof edges, and 10,624 union edges at SHA-256
+`EAA15F18127E7B77F8AF442760590687B66A8860485590F2EB13D57E3A6F3814`.
+P0010 freezes 1,865 W09 declarations, 3,639 signature edges, 7,414 body/proof
+edges, and 7,721 union edges at SHA-256
+`2F01FAA44AF7984DAA3769512E879DEB4C1EF328130EF24E93E712C9602E1F71`.
+P0011 freezes 3,354 W11 declarations, 19,096 signature edges, 26,201 body/proof
+edges, and 28,652 union edges at SHA-256
+`0A13EF31C40C997E2A692AC595E96DD3416BA603C6EC4ED47AB60765E6EBB3E2`.
 
 At C0005 the integrator replayed both exact recorded argument vectors against
 one full integrated format-2 candidate with SHA-256
@@ -87,4 +104,6 @@ branches deliberately began at the C0004 code SHA and read later control
 records from `origin/main`; activation commits were never copied into a worker
 branch. The W06/W08 remote refs likewise began at the exact C0005 code SHA only
 after their planned control commit became green and were deleted only after the
-C0006 acceptance-control commit became green.
+C0006 acceptance-control commit became green. P0009, P0010, and P0011 are
+active while B0008, B0009, and B0010 are planned; their worker refs will begin
+at the exact C0006 code SHA only after the planned-control commit becomes green.
