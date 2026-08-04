@@ -1,3 +1,11 @@
+import NumStability.Analysis.MatrixPowersSpijkerPlanarAnalysis
+
+/-!
+# Analysis.MatrixPowersSpijkerClosure
+
+Historical declaration-bearing facade. Genuine-private and ambient-context retention closure remains here with its original identity.
+-/
+
 /-
 # Unconditional finite-dimensional Kreiss endpoints
 
@@ -6,7 +14,7 @@ theorem from `MatrixPowersSpijkerPlanarAnalysis` to the interface results in
 `MatrixPowersKreissSpijker`.
 -/
 
-import NumStability.Analysis.MatrixPowersSpijkerPlanarAnalysis
+
 
 namespace NumStability
 

@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.HenriciDeparture
+
+#check NumStability.A_charpoly_factors_schur

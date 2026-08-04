@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Sylvester.Higham16Eq9Assembly
+
+#check NumStability.Wave14.H16_eq16_5_9_frobNormRect_orthogonal_conjugation_eq

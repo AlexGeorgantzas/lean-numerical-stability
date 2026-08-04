@@ -1,0 +1,3 @@
+import NumStability.Analysis.SylvesterSchurExistence
+
+#check NumStability.H16_eq16_2_complexSylvesterVecCoeff

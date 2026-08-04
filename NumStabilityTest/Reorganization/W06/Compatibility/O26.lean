@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Sylvester.Higham16RoundedTriangular
+
+#check NumStability.Wave14.H16_eq16_7_sylvesterVecCoeff_schurTriangular_backSub_backward_error

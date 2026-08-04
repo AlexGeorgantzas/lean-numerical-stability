@@ -1,0 +1,3 @@
+import NumStability.Analysis.MatrixPowersHenriciNormal
+
+#check NumStability.normal_iff_strictUpper_eq_zero_unconditional

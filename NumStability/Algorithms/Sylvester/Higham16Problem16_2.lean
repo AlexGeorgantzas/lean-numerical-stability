@@ -1,17 +1,34 @@
+import Mathlib.Analysis.CStarAlgebra.CStarMatrix
+import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Analysis.Matrix.Hermitian
+import Mathlib.Analysis.Normed.Algebra.GelfandFormula
+import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+import Mathlib.Analysis.SpecialFunctions.Exponential
+import Mathlib.LinearAlgebra.Matrix.PosDef
+import Mathlib.MeasureTheory.Integral.ExpDecay
+import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+import NumStability.Source.Higham.Chapter16.Problem02.LyapunovIntegral.Results
+
+/-!
+# Algorithms.Sylvester.Higham16Problem16_2
+
+Historical declaration-bearing facade. Genuine-private and ambient-context retention closure remains here with its original identity.
+-/
+
 -- Algorithms/Sylvester/Higham16Problem16_2.lean
 --
 -- Higham, 2nd ed., Problem 16.2: the exponential-integral representation
 -- for Sylvester equations and the positive-definite Lyapunov corollary.
 
-import Mathlib.Analysis.CStarAlgebra.CStarMatrix
-import Mathlib.Analysis.Normed.Algebra.MatrixExponential
-import Mathlib.Analysis.Normed.Algebra.GelfandFormula
-import Mathlib.Analysis.SpecialFunctions.Exponential
-import Mathlib.Analysis.Calculus.MeanValue
-import Mathlib.MeasureTheory.Integral.ExpDecay
-import Mathlib.MeasureTheory.Integral.IntegralEqImproper
-import Mathlib.LinearAlgebra.Matrix.PosDef
-import Mathlib.Analysis.Matrix.Hermitian
+
+
+
+
+
+
+
+
+
 
 namespace NumStability
 
@@ -25,53 +42,53 @@ section SylvesterIntegral
 
 variable {n : Nat}
 
-abbrev Higham16CMatrix (n : Nat) := CStarMatrix (Fin n) (Fin n) Complex
 
-/-- The integrand `exp(t A) C exp(t B)` in Higham's Problem 16.2.
 
-The theorem is stated over complex matrices; the printed real theorem is the
-real-entry special case.  Using `CStarMatrix` supplies a canonical Banach
-algebra norm without choosing an arbitrary norm on Mathlib's bare `Matrix`
-type. -/
-noncomputable def higham16Problem16_2Kernel
-    (A B C : Higham16CMatrix n) (t : Real) : Higham16CMatrix n :=
-  exp (t • A) * C * exp (t • B)
 
-/-- Higham's candidate `- integral_0^infinity exp(t A) C exp(t B) dt`. -/
-noncomputable def higham16Problem16_2Integral
-    (A B C : Higham16CMatrix n) : Higham16CMatrix n :=
-  -∫ t in Ioi (0 : Real), higham16Problem16_2Kernel A B C t
 
-/-- Precise form of the phrase in Problem 16.2 that the exponential integral
-"exists for all C".  Bochner integrability is required for every matrix right
-hand side. -/
-def Higham16ExponentialProductIntegrable
-    (A B : Higham16CMatrix n) : Prop :=
-  ∀ C : Higham16CMatrix n,
-    IntegrableOn (higham16Problem16_2Kernel A B C) (Ioi (0 : Real))
 
-/-- Differential identity from the hint to Problem 16.2, in the form used by
-the fundamental theorem of calculus. -/
-theorem higham16_problem16_2_kernel_hasDerivAt
-    (A B C : Higham16CMatrix n) (t : Real) :
-    HasDerivAt (higham16Problem16_2Kernel A B C)
-      (A * higham16Problem16_2Kernel A B C t +
-        higham16Problem16_2Kernel A B C t * B) t := by
-  have hA := hasDerivAt_exp_smul_const' A t
-  have hB := hasDerivAt_exp_smul_const B t
-  simpa only [higham16Problem16_2Kernel, mul_assoc] using
-    (hA.mul_const C).mul hB
 
-/-- The same differential identity factored through the Sylvester right-hand
-side.  This is the form used for uniqueness of a homogeneous solution. -/
-theorem higham16_problem16_2_kernel_hasDerivAt_factored
-    (A B C : Higham16CMatrix n) (t : Real) :
-    HasDerivAt (higham16Problem16_2Kernel A B C)
-      (exp (t • A) * (A * C + C * B) * exp (t • B)) t := by
-  have hA := hasDerivAt_exp_smul_const A t
-  have hB := hasDerivAt_exp_smul_const' B t
-  simpa only [higham16Problem16_2Kernel, mul_assoc, mul_add, add_mul] using
-    (hA.mul_const C).mul hB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem higham16_problem16_2_kernel_deriv_integrableOn
     (A B C : Higham16CMatrix n)
@@ -211,10 +228,10 @@ finite prefix), and the exponential series gives quantitative decay.
 
 noncomputable section
 
-/-- A square complex matrix is Hurwitz when every point of its genuine
-Banach-algebra spectrum has strictly negative real part. -/
-def Higham16Hurwitz (A : Higham16CMatrix n) : Prop :=
-  ∀ z ∈ spectrum Complex A, z.re < 0
+
+
+
+
 
 private lemma higham16_normSq_add_real (z : Complex) (s : Real) :
     Complex.normSq (z + (s : Complex)) =
@@ -504,16 +521,16 @@ theorem higham16_exponentialProductIntegrable_of_hurwitz
   exact higham16_kernel_integrable_of_exp_decay A B C
     hKA hKB hAlphaA hAlphaB hDecayA hDecayB
 
-/-- Taking adjoints preserves the Hurwitz condition: the spectrum is complex
-conjugated and hence real parts are unchanged. -/
-theorem Higham16Hurwitz.star {A : Higham16CMatrix n}
-    (hA : Higham16Hurwitz A) : Higham16Hurwitz (star A) := by
-  intro z hz
-  rw [spectrum.map_star] at hz
-  have hzA : starRingEnd Complex z ∈ spectrum Complex A := by
-    simpa only [Set.mem_star] using hz
-  have hre := hA (starRingEnd Complex z) hzA
-  simpa using hre
+
+
+
+
+
+
+
+
+
+
 
 /-- Problem 16.2 under its literal spectral premise: no integrability or decay
 assumption remains in the public theorem. -/

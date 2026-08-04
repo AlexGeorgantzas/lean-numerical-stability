@@ -1,3 +1,14 @@
+import Mathlib.Analysis.Normed.Algebra.Spectrum
+import Mathlib.Analysis.SpecificLimits.Normed
+import NumStability.Algorithms.MatrixPowersPseudospectralCriterion
+import NumStability.Analysis.LinearOperators.Pseudospectra.Resolvent.LowerBounds
+
+/-!
+# Analysis.PseudospectralResolvent
+
+Historical declaration-bearing facade. Genuine-private and ambient-context retention closure remains here with its original identity.
+-/
+
 -- Analysis/PseudospectralResolvent.lean
 --
 -- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed.,
@@ -42,9 +53,9 @@
 -- All statements are over `[NormedRing A] [NormedAlgebra 𝕜 A] [CompleteSpace A]`
 -- and hold verbatim for Higham's ‖·‖₂ on complex matrices.
 
-import NumStability.Algorithms.MatrixPowersPseudospectralCriterion
-import Mathlib.Analysis.Normed.Algebra.Spectrum
-import Mathlib.Analysis.SpecificLimits.Normed
+
+
+
 
 namespace NumStability
 
@@ -57,90 +68,90 @@ variable {𝕜 A : Type*} [NontriviallyNormedField 𝕜] [NormedRing A]
 
 local notation "↑ₐ" => algebraMap 𝕜 A
 
-omit [CompleteSpace A] in
-/-- **Resolvent factorisation** (Higham §18.2, the algebra behind (18.8) and
-    the resolvent characterisation of Λ_ε, 2nd ed. p. 346).
 
-    For any `z` in the resolvent set of `a` and any scalar `w`,
-    `↑ₐw − a = (↑ₐz − a)·(1 − (z − w)•R(z))`, where `R(z) = resolvent a z`.
-    This is the identity `w·1 − a = (z·1 − a) − (z − w)·1` post-multiplied by
-    the resolvent; it is the single algebraic fact from which every
-    resolvent-norm lower bound follows. -/
-theorem resolvent_factor (a : A) (w z : 𝕜) (hz : z ∈ resolventSet 𝕜 a) :
-    ↑ₐ w - a = (↑ₐ z - a) * (1 - (z - w) • resolvent a z) := by
-  have hunit : (↑ₐ z - a) * resolvent a z = 1 := by
-    unfold resolvent
-    exact Ring.mul_inverse_cancel _ hz
-  rw [mul_sub, mul_one, mul_smul_comm, hunit]
-  rw [sub_smul, Algebra.algebraMap_eq_smul_one z, Algebra.algebraMap_eq_smul_one w]
-  abel
 
-/-- **Resolvent-norm lower bound — ingredient (1) of (18.8), unconditional.**
-    (Higham §18.2, 2nd ed. p. 346, and the standard resolvent estimate.)
 
-    If `w` is in the spectrum of `a` and `z` is in the resolvent set, then
-    `1 ≤ ‖z − w‖ · ‖R(z)‖`.  In words: the resolvent norm blows up at least
-    like `1/dist(z, spectrum)` as `z` approaches the spectrum.  This is the
-    always-true half of Higham's 2-norm identity
-    `‖(zI − A)⁻¹‖₂ = 1/σ_min(zI − A)` (equality needs normality/SVD, which the
-    lower bound below does NOT); it is exactly the estimate that makes the
-    ε-pseudospectrum `{z : ‖R(z)‖ ≥ ε⁻¹}` a genuine neighbourhood of σ(A).
 
-    Proof.  If instead `‖z − w‖·‖R(z)‖ < 1` then `‖(z − w)•R(z)‖ < 1`, so
-    `1 − (z − w)•R(z)` is a unit (`isUnit_one_sub_of_norm_lt_one`); by
-    `resolvent_factor` the product `↑ₐw − a` is then a unit, contradicting
-    `w ∈ spectrum`. -/
-theorem spectrum_one_le_dist_mul_norm_resolvent (a : A) (w z : 𝕜)
-    (hw : w ∈ spectrum 𝕜 a) (hz : z ∈ resolventSet 𝕜 a) :
-    1 ≤ ‖z - w‖ * ‖resolvent a z‖ := by
-  by_contra hcon
-  push_neg at hcon
-  have hnorm : ‖(z - w) • resolvent a z‖ < 1 := by
-    rw [norm_smul]; exact hcon
-  have hu2 : IsUnit (1 - (z - w) • resolvent a z) :=
-    isUnit_one_sub_of_norm_lt_one hnorm
-  have hwunit : IsUnit (↑ₐ w - a) := by
-    rw [resolvent_factor a w z hz]; exact hz.mul hu2
-  exact hw hwunit
 
-/-- **Resolvent-norm lower bound, quotient form:** `1/‖z − w‖ ≤ ‖R(z)‖`
-    for a spectral point `w ≠ z` and a resolvent point `z`
-    (Higham §18.2, 2nd ed. p. 346).  Immediate from
-    `spectrum_one_le_dist_mul_norm_resolvent`. -/
-theorem spectrum_one_div_dist_le_norm_resolvent (a : A) (w z : 𝕜)
-    (hw : w ∈ spectrum 𝕜 a) (hz : z ∈ resolventSet 𝕜 a) (hne : z ≠ w) :
-    1 / ‖z - w‖ ≤ ‖resolvent a z‖ := by
-  have hpos : 0 < ‖z - w‖ := by
-    rw [norm_pos_iff, sub_ne_zero]; exact hne
-  rw [div_le_iff₀ hpos, mul_comm]
-  exact spectrum_one_le_dist_mul_norm_resolvent a w z hw hz
 
-/-- **Resolvent-norm lower bound, `dist` form:** `1 ≤ dist z w · ‖R(z)‖`
-    (Higham §18.2, 2nd ed. p. 346).  The metric restatement of
-    `spectrum_one_le_dist_mul_norm_resolvent`. -/
-theorem spectrum_one_le_dist_mul_norm_resolvent' (a : A) (w z : 𝕜)
-    (hw : w ∈ spectrum 𝕜 a) (hz : z ∈ resolventSet 𝕜 a) :
-    1 ≤ dist z w * ‖resolvent a z‖ := by
-  rw [dist_eq_norm]
-  exact spectrum_one_le_dist_mul_norm_resolvent a w z hw hz
 
-/-- **The spectrum keeps its distance from a resolvent point, quantitatively.**
-    (Higham §18.2, 2nd ed. p. 346 — the neighbourhood property of Λ_ε.)
 
-    For a nonzero resolvent `R(z)` and any spectral point `w`,
-    `1/‖R(z)‖ ≤ dist z w`.  Equivalently every point `z` with
-    `‖R(z)‖ < ε⁻¹` lies at distance `> ε` from the spectrum, so the
-    resolvent-norm ε-pseudospectrum `{z : ‖R(z)‖ ≥ ε⁻¹}` contains an
-    ε-neighbourhood boundary of σ(A).  Immediate from
-    `spectrum_one_le_dist_mul_norm_resolvent'`. -/
-theorem dist_ge_one_div_norm_resolvent (a : A) (w z : 𝕜)
-    (hw : w ∈ spectrum 𝕜 a) (hz : z ∈ resolventSet 𝕜 a)
-    (hR : resolvent a z ≠ 0) :
-    1 / ‖resolvent a z‖ ≤ dist z w := by
-  have hRpos : 0 < ‖resolvent a z‖ := by rw [norm_pos_iff]; exact hR
-  rw [div_le_iff₀ hRpos]
-  have h := spectrum_one_le_dist_mul_norm_resolvent' a w z hw hz
-  linarith [h]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end ResolventNorm
 

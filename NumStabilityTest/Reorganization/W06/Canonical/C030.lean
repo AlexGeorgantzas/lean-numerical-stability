@@ -1,0 +1,3 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.TriangularBartelsStewart.EndToEnd
+
+#check NumStability.Wave14.flBartelsStewartSchurSolve

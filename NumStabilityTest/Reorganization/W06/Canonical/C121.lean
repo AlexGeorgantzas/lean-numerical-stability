@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.RoundedTriangular
+
+#check NumStability.Wave14.H16_eq16_7_sylvesterVecCoeff_schurTriangular_backSub_backward_error

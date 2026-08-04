@@ -1,0 +1,3 @@
+import NumStability.Analysis.MatrixPowersSpijkerPlanarAnalysis
+
+#check NumStability.RationalOrderCertificate.arcLength_le

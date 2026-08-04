@@ -1,0 +1,3 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.Laszlo.NearestNormal
+
+#check NumStability.blockMass_le_strictUpperSq

@@ -1,0 +1,3 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.BinomialPowerBound
+
+#check NumStability.norm_diag_schur_eq_rho

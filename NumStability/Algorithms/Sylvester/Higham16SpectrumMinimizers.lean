@@ -1,11 +1,20 @@
+import NumStability.Algorithms.Sylvester.Higham16Minimizers
+import NumStability.Algorithms.Sylvester.Higham16Spectrum
+
+/-!
+# Algorithms.Sylvester.Higham16SpectrumMinimizers
+
+Historical declaration-bearing facade. Genuine-private and ambient-context retention closure remains here with its original identity.
+-/
+
 -- Algorithms/Sylvester/Higham16SpectrumMinimizers.lean
 --
 -- Floating-point computed-residual adapters for the supplied Schur endpoint
 -- families in `Higham16Spectrum.lean`, using the residual model from
 -- `Higham16Minimizers.lean`.
 
-import NumStability.Algorithms.Sylvester.Higham16Spectrum
-import NumStability.Algorithms.Sylvester.Higham16Minimizers
+
+
 
 namespace NumStability
 

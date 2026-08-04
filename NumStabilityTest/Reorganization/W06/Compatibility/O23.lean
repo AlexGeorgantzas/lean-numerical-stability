@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSolve
+
+#check NumStability.Wave15.IsQuasiBlockPairing

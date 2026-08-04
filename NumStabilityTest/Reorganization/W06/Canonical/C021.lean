@@ -1,0 +1,3 @@
+import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.PivotedSmallBlocks.CompletePivot
+
+#check NumStability.Wave16.Higham16CompletePivotPartitionPlan

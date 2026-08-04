@@ -1,3 +1,18 @@
+import Mathlib.Analysis.CStarAlgebra.Matrix
+import Mathlib.Analysis.Complex.Polynomial.Basic
+import Mathlib.Analysis.InnerProductSpace.LinearMap
+import Mathlib.Analysis.InnerProductSpace.Rayleigh
+import Mathlib.Data.Real.Pointwise
+import Mathlib.FieldTheory.IsAlgClosed.Basic
+import NumStability.Analysis.LinearOperators.NumericalRadius.Berger.PowerTwo
+import NumStability.Analysis.NumericalRadius
+
+/-!
+# Analysis.BergerResolvent
+
+Historical declaration-bearing facade. Genuine-private and ambient-context retention closure remains here with its original identity.
+-/
+
 /-
 Analysis/BergerResolvent.lean
 
@@ -89,13 +104,13 @@ computation) — a finite but genuinely longer algebraic identity than the two-t
 into a hypothesis.
 -/
 
-import Mathlib.Analysis.InnerProductSpace.Rayleigh
-import Mathlib.Analysis.InnerProductSpace.LinearMap
-import Mathlib.Analysis.CStarAlgebra.Matrix
-import Mathlib.Data.Real.Pointwise
-import Mathlib.FieldTheory.IsAlgClosed.Basic
-import Mathlib.Analysis.Complex.Polynomial.Basic
-import NumStability.Analysis.NumericalRadius
+
+
+
+
+
+
+
 
 open scoped Matrix.Norms.L2Operator InnerProductSpace
 open RCLike ComplexConjugate
@@ -112,19 +127,19 @@ local notation "𝔼" => EuclideanSpace ℂ (Fin n)
 ### Scaling homogeneity of the numerical radius (Berger–Kato ingredient (i))
 -/
 
-/-- **Scaling homogeneity (operator form).** `r(c·T) = ‖c‖·r(T)` for `c : ℂ`.
 
-Higham §18.1, p. 345: the numerical radius is absolutely homogeneous,
-`r(cA) = |c|·r(A)`.  This is the normalization ingredient of the Berger–Kato
-programme (WLOG `r(A) = 1`).  Since `⟪(c•T)x,x⟫ = c̄·⟪Tx,x⟫` has norm
-`‖c‖·‖⟪Tx,x⟫‖`, the defining supremum family scales by the nonnegative factor
-`‖c‖`, and `Real.mul_iSup_of_nonneg` pushes the constant through the `⨆`. -/
-theorem numericalRadiusCLM_smul (c : ℂ) (T : 𝔼 →L[ℂ] 𝔼) :
-    numericalRadiusCLM (c • T) = ‖c‖ * numericalRadiusCLM T := by
-  rw [numericalRadiusCLM, numericalRadiusCLM, Real.mul_iSup_of_nonneg (norm_nonneg c)]
-  refine congrArg _ (funext fun x => ?_)
-  have hxx : ((c • T) x) = c • (T x) := ContinuousLinearMap.smul_apply c T x
-  rw [hxx, inner_smul_left, norm_mul, RCLike.norm_conj, mul_div_assoc]
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-!
 ### The `k = 2` positivity core lemma
@@ -320,14 +335,14 @@ theorem numericalRadiusCLM_pow_two_le (T : 𝔼 →L[ℂ] 𝔼) :
     rw [inv_mul_le_iff₀ hr2pos, mul_one] at hB2le1
     exact hB2le1
 
-/-- **Scaling homogeneity (matrix form).** `r(c·A) = ‖c‖·r(A)` for a complex
-matrix `A` and `c : ℂ`.
 
-Higham §18.1, p. 345.  Transports `numericalRadiusCLM_smul` through the
-`ℂ`-linear star-algebra map `Matrix.toEuclideanCLM` (`map_smul`). -/
-theorem numericalRadius_smul (c : ℂ) (A : Matrix (Fin n) (Fin n) ℂ) :
-    numericalRadius (c • A) = ‖c‖ * numericalRadius A := by
-  rw [numericalRadius, numericalRadius, map_smul, numericalRadiusCLM_smul]
+
+
+
+
+
+
+
 
 /-- **Berger's power inequality at `k = 2`, GENERAL matrices, UNCONDITIONAL.**
 `r(A²) ≤ r(A)²` for every complex `n × n` matrix `A`.
@@ -405,48 +420,3 @@ the resolvent `(I − zA)⁻¹`.  The following identity is the exact computatio
 route rests on — and it pins down precisely why the *naive* form of the route
 cannot reach the numerical radius.
 -/
-
-/-- **Exact resolvent real-part identity (invertibility-free form).**
-For every operator `T` on `ℂⁿ` and every vector `w`,
-`2·Re⟪w, w − T w⟫ − ‖w − T w‖² = ‖w‖² − ‖T w‖²`.
-
-Higham §18.1–§18.2 (the real part of the resolvent quadratic form).  Setting
-`x = w − T w = (I − T) w` (so `w = (I − T)⁻¹ x` when `I − T` is invertible) turns
-the left-hand side into `2·Re⟪(I − T)⁻¹ x, x⟫ − ‖x‖²`, the quantity whose sign the
-Berger–Kato route inspects.  The identity holds with NO invertibility hypothesis,
-by pure inner-product expansion. -/
-theorem two_re_inner_sub_apply_sub_normSq (T : 𝔼 →L[ℂ] 𝔼) (w : 𝔼) :
-    2 * re (inner ℂ w (w - T w) : ℂ) - ‖w - T w‖ ^ 2 = ‖w‖ ^ 2 - ‖T w‖ ^ 2 := by
-  have hnorm : ‖w - T w‖ ^ 2
-      = ‖w‖ ^ 2 - 2 * re (inner ℂ w (T w) : ℂ) + ‖T w‖ ^ 2 := norm_sub_sq w (T w)
-  have hre : re (inner ℂ w (w - T w) : ℂ) = ‖w‖ ^ 2 - re (inner ℂ w (T w) : ℂ) := by
-    rw [inner_sub_right, map_sub, inner_self_eq_norm_sq]
-  rw [hre, hnorm]; ring
-
-/-- **Evidenced obstruction: resolvent positivity ⇔ operator-norm contraction.**
-The Berger–Kato positive-real-part condition
-`‖(I − T) w‖² ≤ 2·Re⟪w, (I − T) w⟫` for all `w` (equivalently, after
-`x = (I − T) w`, `Re⟪(I − T)⁻¹ x, x⟫ ≥ ½‖x‖²` for all `x`) is **equivalent to**
-`‖T w‖ ≤ ‖w‖` for all `w`, i.e. to `‖T‖ ≤ 1`.
-
-Higham §18.1, p. 345.  This makes precise why the *naive* resolvent-positivity
-route cannot reach the numerical radius: the positivity of the real part of the
-resolvent power series `(I − zA)⁻¹ = Σ zⁿ Aⁿ` measures the **operator norm**, so
-a Carathéodory/Herglotz coefficient bound built on it yields only the (trivial)
-submultiplicativity `‖A^k‖ ≤ ‖A‖^k`, never Berger `r(A^k) ≤ r(A)^k`.  Genuine
-numerical-radius control requires the non-analytic `ρ = 2` unitary-dilation
-criterion (dilation machinery absent from Mathlib) — which is exactly why the
-`k = 2` result above is instead obtained by the elementary rotation/parallelogram
-positivity `norm_apply_sq_add_norm_inner_sq_le`, not by this resolvent route. -/
-theorem resolvent_positive_iff_opContraction (T : 𝔼 →L[ℂ] 𝔼) :
-    (∀ w : 𝔼, ‖w - T w‖ ^ 2 ≤ 2 * re (inner ℂ w (w - T w) : ℂ))
-      ↔ ∀ w : 𝔼, ‖T w‖ ≤ ‖w‖ := by
-  have hiff : ∀ w : 𝔼, ‖T w‖ ≤ ‖w‖ ↔ ‖T w‖ ^ 2 ≤ ‖w‖ ^ 2 := fun w =>
-    (pow_le_pow_iff_left₀ (norm_nonneg _) (norm_nonneg _) (by norm_num)).symm
-  constructor
-  · intro h w
-    have hid := two_re_inner_sub_apply_sub_normSq T w
-    rw [hiff w]; linarith [h w]
-  · intro h w
-    have hid := two_re_inner_sub_apply_sub_normSq T w
-    have := (hiff w).1 (h w); linarith

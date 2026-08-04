@@ -1,3 +1,13 @@
+import Mathlib.Analysis.CStarAlgebra.Matrix
+import NumStability.Analysis.LinearOperators.MatrixPowers.Henrici.BinomialPowerBound
+import NumStability.Analysis.MatrixPowersSchur
+
+/-!
+# Analysis.MatrixPowersBinomialBound
+
+Historical declaration-bearing facade. Genuine-private and ambient-context retention closure remains here with its original identity.
+-/
+
 /-
 Analysis/MatrixPowersBinomialBound.lean
 
@@ -56,8 +66,8 @@ the sum `(D+N)ᵏ = Σ_{i=0}^k P k i` truncates at `n - 1`; submultiplicativity
 bounds `‖P k i‖ ≤ C(k,i) ‖D‖^{k-i} ‖N‖ⁱ`.
 -/
 
-import Mathlib.Analysis.CStarAlgebra.Matrix
-import NumStability.Analysis.MatrixPowersSchur
+
+
 
 open scoped Matrix.Norms.L2Operator BigOperators Matrix
 
@@ -136,33 +146,33 @@ theorem norm_pow_eq_norm_schur_pow [Nonempty (Fin n)]
 ### `‖D‖₂ = ρ(A)` and the geometric bound
 -/
 
-/-- `‖diagonal d‖₂ = ‖d‖∞ = maxᵢ |dᵢ| = ρ(A)`, the spectral radius read off the
-diagonal Schur factor.  Higham §18.1 (`ρ(A) = maxᵢ |λᵢ|`); `l2_opNorm_diagonal`. -/
-theorem norm_diag_schur_eq_rho (d : Fin n → ℂ) :
-    ‖(Matrix.diagonal d : Matrix (Fin n) (Fin n) ℂ)‖ = ‖d‖ :=
-  Matrix.l2_opNorm_diagonal d
 
-/-- **(c) Crude geometric bound.**  For any square matrices `D`, `N`,
-`‖(D + N)ᵏ‖₂ ≤ (‖D‖₂ + ‖N‖₂)ᵏ`, by induction using submultiplicativity
-(`l2_opNorm_mul`) and the triangle inequality.  With the Schur split this is
-`‖Aᵏ‖₂ ≤ (ρ(A) + Δ₂(A))ᵏ`, Higham's coarse bound preceding (18.7). -/
-theorem opNorm_pow_le_geometric (D N : Matrix (Fin n) (Fin n) ℂ) (k : ℕ) :
-    ‖(D + N) ^ k‖ ≤ (‖D‖ + ‖N‖) ^ k := by
-  induction k with
-  | zero =>
-    rw [pow_zero,
-      show (1 : Matrix (Fin n) (Fin n) ℂ)
-        = Matrix.diagonal (fun _ => (1 : ℂ)) from Matrix.diagonal_one.symm,
-      Matrix.l2_opNorm_diagonal]
-    rcases isEmpty_or_nonempty (Fin n) with h | h
-    · simp [Pi.norm_def]
-    · rw [Pi.norm_def, Finset.sup_const Finset.univ_nonempty]; simp
-  | succ m ih =>
-    have hDN : ‖D + N‖ ≤ ‖D‖ + ‖N‖ := norm_add_le D N
-    rw [pow_succ, pow_succ]
-    calc ‖(D + N) ^ m * (D + N)‖
-        ≤ ‖(D + N) ^ m‖ * ‖D + N‖ := Matrix.l2_opNorm_mul _ _
-      _ ≤ (‖D‖ + ‖N‖) ^ m * (‖D‖ + ‖N‖) := by gcongr
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-!
 ### N-degree decomposition of `(D + N)ᵏ`  (the honest route to the truncation)
@@ -405,19 +415,19 @@ binomial theorem.  This is the "untruncated" fallback form of (18.7): every term
 of the truncated sum is `≥ 0`, so the truncated bound is no larger than this.
 -/
 
-/-- The untruncated binomial identity in `ℝ`:
-`Σ_{i=0}^{k} C(k,i) ‖D‖^{k-i} ‖N‖ⁱ = (‖D‖ + ‖N‖)ᵏ`.  (`add_pow` / `Commute.add_pow`.) -/
-theorem sum_binomial_eq_geometric (D N : Matrix (Fin n) (Fin n) ℂ) (k : ℕ) :
-    ∑ i ∈ Finset.range (k + 1), (Nat.choose k i : ℝ) * ‖D‖ ^ (k - i) * ‖N‖ ^ i
-      = (‖D‖ + ‖N‖) ^ k := by
-  rw [add_pow, ← Finset.sum_range_reflect]
-  refine Finset.sum_congr rfl fun i hi => ?_
-  rw [Finset.mem_range] at hi
-  have hidx : k + 1 - 1 - i = k - i := by omega
-  rw [hidx]
-  have h1 : k - (k - i) = i := by omega
-  rw [h1, Nat.choose_symm (by omega : i ≤ k)]
-  ring
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /-!

@@ -1,0 +1,3 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.RealDiagonal
+
+#check NumStability.JordanFormSpec

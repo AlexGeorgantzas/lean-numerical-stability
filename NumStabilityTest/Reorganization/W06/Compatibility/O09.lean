@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Sylvester.Higham16AutoCondition
+
+#check NumStability.Wave17.H16_eq16_23_sylvester_first_order_bound_of_no_common_complex_right_eigenvalue

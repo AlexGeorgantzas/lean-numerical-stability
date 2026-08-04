@@ -1,0 +1,3 @@
+import NumStability.Analysis.RealSchurTriangulation
+
+#check NumStability.RealSchurAux.charpoly_conj_orthogonal

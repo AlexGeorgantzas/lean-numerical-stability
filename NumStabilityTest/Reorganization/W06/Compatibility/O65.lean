@@ -1,0 +1,3 @@
+import NumStability.Analysis.ResolventFunctionalCalculus
+
+#check NumStability.exists_bound_pow_smul_resolvent_on_sphere

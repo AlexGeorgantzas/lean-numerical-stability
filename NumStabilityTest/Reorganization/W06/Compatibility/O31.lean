@@ -1,0 +1,3 @@
+import NumStability.Analysis.BergerGeneral
+
+#check NumStability.norm_pow_le_two_mul_numericalRadius_pow

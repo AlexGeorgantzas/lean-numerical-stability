@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.RealJordan
+
+#check NumStability.higham_18_1_real_jordan_fl_tendsto

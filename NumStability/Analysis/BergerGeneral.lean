@@ -1,3 +1,21 @@
+import Mathlib.Algebra.BigOperators.Intervals
+import Mathlib.Algebra.Field.GeomSum
+import Mathlib.Analysis.CStarAlgebra.Matrix
+import Mathlib.Analysis.Complex.Polynomial.Basic
+import Mathlib.Analysis.InnerProductSpace.LinearMap
+import Mathlib.Analysis.InnerProductSpace.Rayleigh
+import Mathlib.Analysis.SpecialFunctions.Complex.Circle
+import Mathlib.FieldTheory.IsAlgClosed.Basic
+import Mathlib.RingTheory.RootsOfUnity.Complex
+import NumStability.Analysis.BergerResolvent
+import NumStability.Analysis.NumericalRadius
+
+/-!
+# Analysis.BergerGeneral
+
+Historical declaration-bearing facade. Genuine-private and ambient-context retention closure remains here with its original identity.
+-/
+
 /-
 Analysis/BergerGeneral.lean
 
@@ -68,17 +86,17 @@ Nothing is smuggled: `numericalRadius_pow_le` has no side hypothesis on `A` or
 `k`; the conclusion is the printed §18.1 inequality at full strength.
 -/
 
-import Mathlib.Analysis.InnerProductSpace.Rayleigh
-import Mathlib.Analysis.InnerProductSpace.LinearMap
-import Mathlib.Analysis.CStarAlgebra.Matrix
-import Mathlib.Analysis.SpecialFunctions.Complex.Circle
-import Mathlib.RingTheory.RootsOfUnity.Complex
-import Mathlib.Algebra.Field.GeomSum
-import Mathlib.Algebra.BigOperators.Intervals
-import Mathlib.FieldTheory.IsAlgClosed.Basic
-import Mathlib.Analysis.Complex.Polynomial.Basic
-import NumStability.Analysis.NumericalRadius
-import NumStability.Analysis.BergerResolvent
+
+
+
+
+
+
+
+
+
+
+
 
 open scoped Matrix.Norms.L2Operator InnerProductSpace BigOperators
 open RCLike ComplexConjugate Finset
