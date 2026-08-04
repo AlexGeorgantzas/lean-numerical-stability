@@ -112,7 +112,7 @@
     }
   },
   "created_at": "2026-08-01T10:41:11Z",
-  "current_checkpoint_id": "C0005",
+  "current_checkpoint_id": "C0006",
   "milestones": [
     {
       "acceptance_gate_ids": [
@@ -267,12 +267,12 @@
         "scope",
         "strict_source"
       ],
-      "accepted_checkpoint_id": null,
+      "accepted_checkpoint_id": "C0006",
       "depends_on": [
         "M05"
       ],
       "milestone_id": "M06",
-      "status": "ready",
+      "status": "accepted",
       "superseded_by": null,
       "unblocks": [
         "W07",
@@ -301,7 +301,7 @@
         "M06"
       ],
       "milestone_id": "M07",
-      "status": "planned",
+      "status": "ready",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -322,12 +322,12 @@
         "scope",
         "strict_source"
       ],
-      "accepted_checkpoint_id": null,
+      "accepted_checkpoint_id": "C0006",
       "depends_on": [
         "M03"
       ],
       "milestone_id": "M08",
-      "status": "ready",
+      "status": "accepted",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -354,7 +354,7 @@
         "M06"
       ],
       "milestone_id": "M09",
-      "status": "planned",
+      "status": "ready",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -408,7 +408,7 @@
         "M08"
       ],
       "milestone_id": "M11",
-      "status": "planned",
+      "status": "ready",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -493,10 +493,6 @@
   "semantic_review": {
     "path": "docs/architecture/phases/2026-08-repository-reorganization/semantic-review.tsv",
     "sha256": "6FFB7E953BD569F9D8417CF9A6E510566B969E77F89587EED36223A6EEF4EB2F"
-  },
-  "unclassified_queue": {
-    "path": "docs/architecture/phases/2026-08-repository-reorganization/unclassified-queue.tsv",
-    "sha256": "7BFB7CD56234BF94E21929026CE07FD2852A1E6B168D5FE4DAF03F1B48E2B043"
   },
   "shared_paths": [
     {
@@ -1389,5 +1385,9 @@
     }
   ],
   "status": "active",
-  "title": "Repository-wide semantic reorganization, August 2026"
+  "title": "Repository-wide semantic reorganization, August 2026",
+  "unclassified_queue": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/unclassified-queue.tsv",
+    "sha256": "7BFB7CD56234BF94E21929026CE07FD2852A1E6B168D5FE4DAF03F1B48E2B043"
+  }
 }

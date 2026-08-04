@@ -5,32 +5,35 @@ the current accepted checkpoint and use an active lane baseline projection.
 Delivery, integration, ancestry, and retirement fields are updated rather than
 replaced by prose-only status messages.
 
-Two disjoint remote-lane branches have delivered from exact C0005 code commit
-`240c0d041781385a647fbec461d6863537e562cb`. Their remote refs were initialized
-at that exact SHA only after the planned control state passed Lean CI and remain
-live pending joint integration:
+Two disjoint remote-lane branches were implemented from exact C0005 code commit
+`240c0d041781385a647fbec461d6863537e562cb` and accepted through separate true
+merges at C0006 code commit `a32095e6e50189f7dcc39312bb4c6a36f421fab5`.
+Their remote refs were initialized at the C0005 SHA only after the planned
+control state passed Lean CI and remain live pending retirement after the
+C0006 acceptance-control commit passes Lean CI:
 
 - [`B0006`](B0006.json): W06, branch
   `codex/reorg-2026-08-w06-ch16-ch18-remaining`, 67 exact historical owners,
   49 reviewed production destinations plus test and delivery prefixes, sole
-  operator `codex-remote`, active projection P0007, and immutable delivery
-  `436b38cbda2e06cf5c9ea3343f0bc6fe428f0b97`, with active shared request
-  R0005;
+  operator `codex-remote`, retired projection P0007, and immutable delivery
+  `436b38cbda2e06cf5c9ea3343f0bc6fe428f0b97`, with applied shared request
+  R0005 and retirement due;
 - [`B0007`](B0007.json): W08, branch
   `codex/reorg-2026-08-w08-matrix-inversion-ch14`, 42 exact historical owners,
   42 reviewed production destinations plus test and delivery prefixes, sole
-  operator `claude-remote`, active projection P0008, and immutable delivery
-  `664d5d495975a05d74cd4c0c09f9207aff8cdd77`, with active shared request
-  R0006.
+  operator `claude-remote`, retired projection P0008, and immutable delivery
+  `664d5d495975a05d74cd4c0c09f9207aff8cdd77`, with applied shared request
+  R0006 and retirement due.
 
 Their hash-pinned reviews are
 [`B0006-overlap-review.md`](B0006-overlap-review.md) and
 [`B0007-overlap-review.md`](B0007-overlap-review.md). They prove zero owner,
 destination, direct-import, signature-edge, and body-edge overlap. Their sole
 common direct downstream importer is the integrator-owned
-`NumStability/Algorithms.lean`. C0005 remains current and M06/M08 remain ready;
-neither delivery is accepted yet. Local worker branches and worktrees are
-preserved.
+`NumStability/Algorithms.lean`. C0006 is current, M06/M08 are accepted, and
+M04/M07/M09/M11 are ready but not activated. Local worker branches and
+worktrees are preserved. Only the two exact remote delivery refs become
+retirement targets after the C0006 acceptance-control commit is green.
 
 [`B0001`](B0001.json) is retired: W01 delivery
 `d30fecc70a1d2066e2d147b79d9e6b9d743a21e5` is an ancestor of green checkpoint

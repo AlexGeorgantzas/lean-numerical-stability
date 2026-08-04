@@ -17,9 +17,9 @@ The projection records are:
   [`W03.tsv`](../selectors/W03.tsv); and
 - [`P0006`](P0006.json), the retired C0004 W05 projection selected by
   [`W05.tsv`](../selectors/W05.tsv);
-- [`P0007`](P0007.json), the active C0005 W06 projection selected by
+- [`P0007`](P0007.json), the retired C0005 W06 projection selected by
   [`W06.tsv`](../selectors/W06.tsv); and
-- [`P0008`](P0008.json), the active C0005 W08 projection selected by
+- [`P0008`](P0008.json), the retired C0005 W08 projection selected by
   [`W08.tsv`](../selectors/W08.tsv).
 
 P0004 is tied to the C0003 combined baseline generated at code commit
@@ -59,6 +59,15 @@ signature edges, 11,608 body/proof edges, and 11,932 union edges. P0006 passed
 with 921 selected and 783 relocated declarations, 8,562 signature edges,
 6,894 body/proof edges, and 11,020 union edges.
 
+At C0006 the integrator replayed P0007 and P0008 against the same full
+integrated format-2 candidate with SHA-256
+`3BFEFF5663DA3FB5327B9D3AB22806654C9A79A48E1DDFE3C6E2E79073F9DE11`.
+P0007 passed with 3,512 selected, 2,737 relocated, and 775 retained
+declarations, 15,044 signature edges, 16,341 body/proof edges, and 22,079 union
+edges. P0008 passed with 2,179 selected, 1,994 relocated, and 185 retained
+declarations, 9,266 signature edges, 15,315 body/proof edges, and 16,573 union
+edges.
+
 A worker generates one full format-2 candidate under the shared Lean mutex,
 then invokes `tools/architecture/check_phase_projection.py` with every sorted
 argument in its projection JSON. The candidate placeholder is replaced by the
@@ -72,10 +81,11 @@ strict-source, full-build, and full-test acceptance gates at C0004.
 Active projections are replaced whenever their base checkpoint or ownership
 contract changes. A terminal branch keeps its retired projection as immutable
 evidence; only live branches may reference active projections. P0005 and P0006
-are retired with B0004 and B0005 accepted at C0005. P0007 and P0008 remain
-active for delivered-but-not-yet-accepted B0006/W06 and B0007/W08,
-respectively. The earlier W03/W05 worker
+are retired with B0004 and B0005 accepted at C0005. P0007 and P0008 are retired
+with B0006/W06 and B0007/W08 accepted at C0006; the branch records have
+retirement due until the acceptance-control commit becomes green. The earlier W03/W05 worker
 branches deliberately began at the C0004 code SHA and read later control
 records from `origin/main`; activation commits were never copied into a worker
 branch. The W06/W08 remote refs likewise began at the exact C0005 code SHA only
-after their planned control commit became green.
+after their planned control commit became green, and remain live pending the
+C0006 retirement gate.

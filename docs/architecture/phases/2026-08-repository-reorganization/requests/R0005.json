@@ -386,15 +386,20 @@
   "request_id": "R0005",
   "requester_id": "codex-remote",
   "resolution": {
-    "checkpoint_id": null,
-    "commit_sha": null,
-    "reason": null,
-    "resolved_at": null,
-    "resolved_by": null,
-    "validation_evidence": []
+    "checkpoint_id": "C0006",
+    "commit_sha": "a32095e6e50189f7dcc39312bb4c6a36f421fab5",
+    "reason": "Applied during W06 integration and accepted by the green C0006 checkpoint.",
+    "resolved_at": "2026-08-04T13:15:16Z",
+    "resolved_by": "primary-human",
+    "validation_evidence": [
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0006-gates.md",
+        "sha256": "A48970FE90FB3B1B27343745698BC55B32259CA59D0DBBF8C8355619D56452C0"
+      }
+    ]
   },
   "schema_version": 1,
-  "status": "active",
+  "status": "applied",
   "superseded_by": null,
   "supersedes": null,
   "target_base_sha": "240c0d041781385a647fbec461d6863537e562cb",

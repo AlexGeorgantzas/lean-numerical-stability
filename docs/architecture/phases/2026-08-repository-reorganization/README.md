@@ -1,20 +1,22 @@
 # Repository reorganization phase: August 2026
 
-Status: **ACTIVE**. Checkpoint C0005 accepts green code commit
-`240c0d041781385a647fbec461d6863537e562cb`. M01, M02, M03, M05, and M12 are
-accepted; M04, M06, and M08 are ready; and repository-wide completion remains
-incomplete. B0006/W06 delivery
+Status: **ACTIVE**. Checkpoint C0006 accepts green code commit
+`a32095e6e50189f7dcc39312bb4c6a36f421fab5`. M01, M02, M03, M05, M06, M08,
+and M12 are accepted; M04, M07, M09, and M11 are ready; and repository-wide
+completion remains incomplete. B0006/W06 delivery
 `436b38cbda2e06cf5c9ea3343f0bc6fe428f0b97` and B0007/W08 delivery
-`664d5d495975a05d74cd4c0c09f9207aff8cdd77` are recorded as delivered from
-C0005, while frozen projections P0007 and P0008 remain active pending joint
-integration. Independently C0005-based shared requests R0005 and R0006 are
-active with null resolutions. Their exact remote refs remain live; local worker branches and
-worktrees are preserved. M04/W04 is not activated. B0004/W03 and B0005/W05 were
-integrated by separate true merges, accepted at C0005, and retired after the
-acceptance-control state passed Lean CI. P0005 and P0006 are retired immutable projection evidence.
-Their independently C0004-based shared requests R0003 and R0004 are applied at
-C0005. The two remote delivery refs are absent; local branches and worktrees
-remain preserved.
+`664d5d495975a05d74cd4c0c09f9207aff8cdd77` were integrated by separate true
+merges and accepted at C0006. Their frozen projections P0007 and P0008 are
+retired immutable evidence, and their independently C0005-based shared
+requests R0005 and R0006 are applied at C0006. B0006 and B0007 have retirement
+due; their exact remote refs remain live pending deletion only after the C0006
+acceptance-control commit passes Lean CI. Local worker branches and worktrees
+remain preserved. M04/W04, M07/W07, M09/W09, and M11/W11 are not activated.
+B0004/W03 and B0005/W05 were accepted at C0005 and retired after that
+acceptance-control state passed Lean CI. P0005 and P0006 are retired immutable
+projection evidence, and their independently C0004-based shared requests R0003
+and R0004 are applied at C0005. The W03/W05 remote delivery refs are absent;
+their local branches and worktrees remain preserved.
 
 This is the current repository-wide operating contract. It supersedes the
 four-lane packets as an instruction source; those packets remain historical
@@ -33,11 +35,12 @@ evidence for the bounded work they completed.
   [`C0001.json`](checkpoints/C0001.json) is the pre-W01 branch checkpoint;
   [`C0002.json`](checkpoints/C0002.json) records W01 acceptance; and
   [`C0003.json`](checkpoints/C0003.json) records W02 acceptance.
-  [`C0004.json`](checkpoints/C0004.json) records W12 acceptance. The current
-  [`C0005.json`](checkpoints/C0005.json), its
-  [`green gates`](checkpoints/C0005-gates.md),
-  [`fresh combined baseline`](baselines/C0005-combined.json), and
-  [`inventory`](checkpoints/C0005-inventory.tsv) define the joint W03/W05
+  [`C0004.json`](checkpoints/C0004.json) records W12 acceptance, and
+  [`C0005.json`](checkpoints/C0005.json) records joint W03/W05 acceptance. The
+  current [`C0006.json`](checkpoints/C0006.json), its
+  [`green gates`](checkpoints/C0006-gates.md),
+  [`fresh combined baseline`](baselines/C0006-combined.json), and
+  [`inventory`](checkpoints/C0006-inventory.tsv) define the joint W06/W08
   checkpoint.
 - The [`branch`](branches/README.md),
   [`projection`](projections/README.md), and
@@ -52,11 +55,12 @@ evidence for the bounded work they completed.
   [`P0006`](projections/P0006.json), and applied shared requests
   [`R0003`](requests/R0003.json) and [`R0004`](requests/R0004.json).
   [`B0006`](branches/B0006.json) and [`B0007`](branches/B0007.json) are the
-  delivered, disjoint C0005 transports for W06 and W08. Their active frozen
-  projections remain [`P0007`](projections/P0007.json) and
+  accepted, disjoint C0005 transports for W06 and W08, with retirement due
+  after the C0006 acceptance-control state becomes green. Their retired frozen
+  projections are [`P0007`](projections/P0007.json) and
   [`P0008`](projections/P0008.json), selected by
-  [`W06.tsv`](selectors/W06.tsv) and [`W08.tsv`](selectors/W08.tsv);
-  their active shared requests are [`R0005`](requests/R0005.json) and
+  [`W06.tsv`](selectors/W06.tsv) and [`W08.tsv`](selectors/W08.tsv); their
+  applied shared requests are [`R0005`](requests/R0005.json) and
   [`R0006`](requests/R0006.json).
   No prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
@@ -195,6 +199,16 @@ full-build, full-test, and strict-source gate. After the C0005
 acceptance-control commit passed CI, both exact remote refs were deleted at
 `2026-08-03T15:23:25Z` by `primary-human`; local worktrees and branches were
 preserved.
+
+W06 delivery `436b38cbda2e06cf5c9ea3343f0bc6fe428f0b97` and W08 delivery
+`664d5d495975a05d74cd4c0c09f9207aff8cdd77` are ancestors of accepted C0006
+code commit `a32095e6e50189f7dcc39312bb4c6a36f421fab5` through separate true merges.
+The integrator applied hash-pinned R0005 and R0006, replayed P0007 and P0008
+against one full integrated graph, and passed the combined static, focused,
+full-build, full-test, and strict-source gates. Both branch records have
+retirement due. Their exact remote refs remain live until the C0006
+acceptance-control commit passes Lean CI; local worktrees and branches remain
+preserved and are not retirement targets.
 
 ## Classification warning
 

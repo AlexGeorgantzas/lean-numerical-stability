@@ -14,8 +14,8 @@ C0004 for W12, respectively.
 | --- | --- | --- | --- | --- | --- | ---: | --- | --- |
 | [`R0003`](R0003.json) | W03 | `claude-local` / `local-lane` | applied | C0004 / `b56f609f3bf66b5d7d0b677567cce82fee0c275b` | C0004 | 47 | `8AABF97189D3788AA6D6FA79A03810500507A46E9F5CE78091E71D862BB93476` | W03 |
 | [`R0004`](R0004.json) | W05 | `codex-local` / `local-lane` | applied | C0004 / `b56f609f3bf66b5d7d0b677567cce82fee0c275b` | C0004 | 27 | `65064084E1F5B53F4C6CD8C59802D9B443DFB05A5BCCA4682544E4AA74F710CC` | W05 |
-| [`R0005`](R0005.json) | W06 | `codex-remote` / `remote-lane` | active | C0005 / `240c0d041781385a647fbec461d6863537e562cb` | C0005 | 73 | `DC47E2E040CAC42D27492487B69AD26376E1310FCC6552371540DB3238020122` | W06 |
-| [`R0006`](R0006.json) | W08 | `claude-remote` / `remote-lane` | active | C0005 / `240c0d041781385a647fbec461d6863537e562cb` | C0005 | 76 | `1C332596EB78B580087ADE4486B4B94C342D616CAC9AD68CF3EE1EDB1DE2C233` | W08 |
+| [`R0005`](R0005.json) | W06 | `codex-remote` / `remote-lane` | applied | C0005 / `240c0d041781385a647fbec461d6863537e562cb` | C0005 | 73 | `C7F94237B46745BFAC501780D806499431CECBFBDBFA7B70798E801716115D42` | W06 |
+| [`R0006`](R0006.json) | W08 | `claude-remote` / `remote-lane` | applied | C0005 / `240c0d041781385a647fbec461d6863537e562cb` | C0005 | 76 | `54693108C1627E5DA067B16A520D009EFCCEEE2A2D81930B756CD5A69B6D9504` | W08 |
 
 Both patches are independently based on C0004 and apply cleanly to a fresh
 C0004 index. They are phase-control artifacts on main and were intentionally
@@ -34,3 +34,10 @@ correctly rejects reclassifying those historical destination paths as shared.
 The independently hash-pinned overlap ledgers are
 [`R0005-overlap-review.md`](R0005-overlap-review.md) and
 [`R0006-overlap-review.md`](R0006-overlap-review.md).
+
+R0005 and R0006 were applied in green code commit
+`a32095e6e50189f7dcc39312bb4c6a36f421fab5` and resolved at C0006 at
+`2026-08-04T13:15:16Z` by `primary-human`. Their validation evidence is the
+hash-pinned C0006 gate record. The related B0006/B0007 remote refs remain live
+until the C0006 acceptance-control commit passes Lean CI; request resolution
+does not itself authorize early branch deletion.
