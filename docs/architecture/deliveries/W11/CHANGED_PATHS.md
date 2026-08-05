@@ -13,8 +13,8 @@ produce the same path/status inventory.
 | Added canonical-only tests | 37 |
 | Added old-path-only tests | 18 |
 | Added focused tests | 21 |
-| Added delivery evidence | 10 |
-| **Total** | **141** |
+| Added delivery evidence | 15 |
+| **Total** | **146** |
 
 B0010 scope result: **0 unowned paths; 0 forbidden paths**.
 
@@ -170,15 +170,20 @@ one of B0010's reviewed destination, W11-test, or delivery-evidence prefixes.
 - `A` `NumStabilityTest/Reorganization/W11/Focused/TraceMGFConcentration.lean`
 - `A` `NumStabilityTest/Reorganization/W11/Focused/UniformRowSampling.lean`
 
-## Added delivery evidence (10)
+## Added delivery evidence (15)
 
 - `A` `docs/architecture/deliveries/W11/CHANGED_PATHS.md`
 - `A` `docs/architecture/deliveries/W11/CHECK_PROJECTION.py`
 - `A` `docs/architecture/deliveries/W11/CHECK_SCOPE.py`
 - `A` `docs/architecture/deliveries/W11/CHECK_STATIC.py`
 - `A` `docs/architecture/deliveries/W11/DECLARATION_ROUTES.tsv`
+- `A` `docs/architecture/deliveries/W11/DELIVERY.md`
 - `A` `docs/architecture/deliveries/W11/GENERATE_MIGRATION.py`
+- `A` `docs/architecture/deliveries/W11/INTEGRATOR_REQUESTS.md`
+- `A` `docs/architecture/deliveries/W11/PRIVATE_CLOSURE.md`
 - `A` `docs/architecture/deliveries/W11/PRIVATE_CLOSURE.tsv`
+- `A` `docs/architecture/deliveries/W11/PROJECTION.md`
 - `A` `docs/architecture/deliveries/W11/RETENTION.tsv`
 - `A` `docs/architecture/deliveries/W11/ROUTE_SUMMARY.json`
+- `A` `docs/architecture/deliveries/W11/ROUTING.md`
 - `A` `docs/architecture/deliveries/W11/TEST_MATRIX.tsv`
