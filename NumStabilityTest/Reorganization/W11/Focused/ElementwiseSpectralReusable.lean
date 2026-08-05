@@ -1,0 +1,7 @@
+import NumStability.Algorithms.RandomizedLinearAlgebra.Concentration.SpectralTransfer.Elementwise
+
+/-!
+# W11 ElementwiseSpectralReusable test
+-/
+
+#check @NumStability.FiniteProbability.expectationReal_vecNorm2_le_prod_expectationReal_vecNorm2_sub_of_expectation_eq_zero

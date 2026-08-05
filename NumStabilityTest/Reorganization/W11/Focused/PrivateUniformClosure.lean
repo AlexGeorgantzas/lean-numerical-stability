@@ -1,0 +1,11 @@
+import NumStability.Algorithms.RandNLA.Preconditioning
+import NumStability.Algorithms.RandNLA.UniformRowSampling
+import NumStability.Algorithms.RandNLA.UniformRowSamplingComposition
+import NumStability.Algorithms.RandNLA.UniformRowSamplingFP
+
+/-!
+# W11 PrivateUniformClosure test
+-/
+
+#check @NumStability.uniformRowTraceProbMass_marginal_two_ne
+#check @NumStability.countSketchUniformRowTraceProbability_eventProb_uniformRowSampleGram_two_sided_finiteLoewnerLe_ge_one_sub_square_inv_add_delta

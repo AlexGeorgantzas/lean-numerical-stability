@@ -1,0 +1,11 @@
+{
+  "canonical_modules": 37,
+  "commands": 3086,
+  "declarations": 3354,
+  "focused_tests": 21,
+  "old_path_tests": 18,
+  "retained": 225,
+  "reusable": 2322,
+  "source": 807,
+  "tests": 76
+}

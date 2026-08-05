@@ -1,0 +1,7 @@
+import NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.Preconditioning
+
+/-!
+# W11 NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.Preconditioning test
+-/
+
+#check @NumStability.rademacherTraceProbability_eventProb_abs_sum_mul_sign_le_ge_one_sub_two_mul_exp_neg_sq_div

@@ -1,0 +1,9 @@
+import NumStability.Algorithms.RandNLA.ElementwiseSpectral
+import NumStability.Algorithms.RandNLA.HitCountConcentration
+
+/-!
+# W11 PrivateHitCountClosure test
+-/
+
+#check @NumStability.sqMagTraceProbMass_marginal_two_ne
+#check @NumStability.sqMagTraceProbability_eventProb_forall_fl_vecNorm2_rectMatMulVec_elementwiseTraceResidual_le_ge_one_sub_sum

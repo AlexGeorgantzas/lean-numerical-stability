@@ -1,0 +1,8 @@
+import NumStability.Source.DrineasMahoney.RandNLA2016.Equation09.LowRankApproximation.Endpoints
+
+/-!
+# W11 LowRankMatrixInversionRetarget test
+-/
+
+#check @NumStability.rightSketchCrossGram_inverse_entry_abs_error_le_of_methodA_lu_budget
+#check @NumStability.nonsingInv_entry_abs_sub_computed_inverse_le_of_perturbed_inverse_component_budget

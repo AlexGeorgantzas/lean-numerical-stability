@@ -1,0 +1,7 @@
+import NumStability.Source.DrineasMahoney.RandNLA2016.Equation07.SubspaceEmbedding.ComputedBasis
+
+/-!
+# W11 NumStability.Source.DrineasMahoney.RandNLA2016.Equation07.SubspaceEmbedding.ComputedBasis test
+-/
+
+#check @NumStability.leverageTraceProbability_eventProb_factoredInputSampleGram_two_sided_finiteLoewnerLe_ge_one_sub_delta_of_sample_budget
