@@ -1,0 +1,74 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, exact finite-vector paraphrase, and minimal algebraic assumptions",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The computed residual equals the exact residual plus the residual-computation error.",
+    "The next stored iterate equals the old iterate plus the computed correction and update-rounding error.",
+    "No nonsingularity assumption is needed for this exact identity."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P03 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P03 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P03/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p03_t1_one_step_residual_identity {n : \u2115} (A : Fin n \u2192 Fin n \u2192 \u211d) (x d \u0394x b rHat \u0394r y : Fin n \u2192 \u211d) (hres : \u2200 i, rHat i = b i - p03MatVec A x i + \u0394r i) (hupdate : \u2200 i, y i = x i + d i + \u0394x i) : \u2200 i, p03MatVec A y i - b i = \u0394r i + p03MatVec A d i - rHat i + p03MatVec A \u0394x i",
+    "namespace": "HighamBench",
+    "plain_language": "The new residual after one rounded refinement update is exactly the sum of the residual-computation, correction-solve, and update-rounding terms.",
+    "target_file": "paper_bencmark/highambench/tasks/P03/T1/Target.lean",
+    "theorem_name": "p03_t1_one_step_residual_identity"
+  },
+  "informal_proof": "Expand the updated iterate inside A, then replace the computed residual by the exact residual plus its computation error and collect terms.",
+  "informal_statement": "Equation (4.1), component by component.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P03",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P03_ACCELERATING THE SOLUTION OF LINEAR SYSTEMS BYITERATIVE REFINEMENT IN THREE PRECISIONS.pdf",
+    "sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc"
+  },
+  "paper_version": "published journal version; volume 40, issue 2, 2018, printed pages A817-A847",
+  "result_form_tag": "EQ",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.forward_error_step_identity"
+    ],
+    "note": "The library theorem has the same one-step matrix expansion with a different error orientation and packaging; it does not state P03 equation (4.1) under the P03 neutral names."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p03MatVec"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equation (4.1)",
+      "pdf_page": 8,
+      "printed_page": "A824",
+      "role": "exact one-step residual identity",
+      "section": "4. Normwise backward error analysis"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P03-T1",
+  "tier": "T1",
+  "tier_label": "direct use",
+  "tier_rationale": "The close frozen-library result is NumStability.forward_error_step_identity in NumStability/Algorithms/IterativeRefinement.lean. P03-T1 needs only an orientation change, unfolding of the P03 matrix-vector notation, and linear algebraic normalization.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P03/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p03_t1_one_step_residual_identity"
+  }
+}

@@ -27,9 +27,11 @@ from typing import Any, Iterable, Mapping
 try:
     from .common import BenchmarkToolError, read_json, sha256_file, write_json
     from .hashes import load_manifest, verify_manifest
+    from .task_tags import validate_task_source_tags
 except ImportError:  # Direct script execution.
     from common import BenchmarkToolError, read_json, sha256_file, write_json  # type: ignore
     from hashes import load_manifest, verify_manifest  # type: ignore
+    from task_tags import validate_task_source_tags  # type: ignore
 
 
 # A release manifest must cover the complete benchmark tree.  These entries are
@@ -43,7 +45,6 @@ REQUIRED_RUNTIME_RELEASE_FILES = {
     "metadata/packages_olean.json",
     "metadata/packages_runtime.json",
     "metadata/run_order.json",
-    "shared/HighamBench/Definitions.lean",
     "tools/codex_isolated.py",
     "tools/__init__.py",
     "tools/analyze.py",
@@ -56,8 +57,10 @@ REQUIRED_RUNTIME_RELEASE_FILES = {
     "tools/preflight.py",
     "tools/render_report.py",
     "tools/result_set.py",
+    "tools/refresh_snapshot.py",
     "tools/run_matrix.py",
     "tools/runner.py",
+    "tools/task_tags.py",
     "tools/validator.py",
     "tools/tests/__init__.py",
     "tools/tests/test_analyze.py",
@@ -67,8 +70,10 @@ REQUIRED_RUNTIME_RELEASE_FILES = {
     "tools/tests/test_preflight.py",
     "tools/tests/test_render_report.py",
     "tools/tests/test_result_set.py",
+    "tools/tests/test_refresh_snapshot.py",
     "tools/tests/test_run_matrix.py",
     "tools/tests/test_runner.py",
+    "tools/tests/test_task_tags.py",
     "tools/tests/test_validator.py",
 }
 RELEASE_MANIFEST_RELATIVE = "metadata/release_files.json"
@@ -229,6 +234,7 @@ def required_release_files(manifest: Mapping[str, Any]) -> set[str]:
     """Return runtime files plus every paper/task file named by the manifest."""
 
     required = set(REQUIRED_RUNTIME_RELEASE_FILES)
+    required.update(relative for relative, _entry, _scope in _controlled_shared_entries(manifest))
     for paper in _manifest_papers(manifest):
         required.add(f"tasks/{paper['paper_id']}/paper.json")
     for paper, target in _available_manifest_targets(manifest):
@@ -244,6 +250,75 @@ def required_release_files(manifest: Mapping[str, Any]) -> set[str]:
             }
         )
     return required
+
+
+def _benchmark_relative_path(value: Any, label: str) -> str:
+    declared = PurePosixPath(_nonempty_string(value, label))
+    if declared.is_absolute() or ".." in declared.parts:
+        raise BenchmarkToolError(f"{label} is not a safe benchmark path")
+    project_prefix = PurePosixPath("paper_bencmark/highambench")
+    try:
+        declared = declared.relative_to(project_prefix)
+    except ValueError:
+        pass
+    return declared.as_posix()
+
+
+def _controlled_shared_entries(
+    manifest: Mapping[str, Any],
+) -> list[tuple[str, Mapping[str, Any], tuple[str, ...]]]:
+    raw_entries = manifest.get("controlled_shared_files")
+    if not isinstance(raw_entries, list) or not raw_entries:
+        raise BenchmarkToolError("benchmark manifest has no controlled_shared_files")
+    known_papers = {str(paper["paper_id"]) for paper in _manifest_papers(manifest)}
+    entries: list[tuple[str, Mapping[str, Any], tuple[str, ...]]] = []
+    seen: set[str] = set()
+    for index, value in enumerate(raw_entries):
+        entry = _mapping(value, f"manifest controlled_shared_files[{index}]")
+        relative = _benchmark_relative_path(
+            entry.get("path"), f"manifest controlled_shared_files[{index}].path"
+        )
+        path = PurePosixPath(relative)
+        if (
+            len(path.parts) < 3
+            or path.parts[:2] != ("shared", "HighamBench")
+            or path.suffix != ".lean"
+        ):
+            raise BenchmarkToolError(
+                f"controlled shared file must be below shared/HighamBench: {relative}"
+            )
+        if relative in seen:
+            raise BenchmarkToolError(f"controlled shared file is repeated: {relative}")
+        seen.add(relative)
+        _sha256_value(entry.get("sha256"), f"controlled shared file {relative} SHA-256")
+        raw_scope = entry.get("paper_ids")
+        if (
+            not isinstance(raw_scope, list)
+            or not raw_scope
+            or any(not isinstance(paper_id, str) for paper_id in raw_scope)
+            or len(set(raw_scope)) != len(raw_scope)
+        ):
+            raise BenchmarkToolError(
+                f"controlled shared file {relative} must have unique paper_ids"
+            )
+        scope = tuple(raw_scope)
+        unknown = sorted(set(scope) - known_papers)
+        if unknown:
+            raise BenchmarkToolError(
+                f"controlled shared file {relative} names unknown papers: {', '.join(unknown)}"
+            )
+        entries.append((relative, entry, scope))
+    return entries
+
+
+def _shared_sources_for_paper(
+    manifest: Mapping[str, Any], paper_id: str
+) -> list[str]:
+    return [
+        relative
+        for relative, _entry, scope in _controlled_shared_entries(manifest)
+        if paper_id in scope
+    ]
 
 
 def _declared_benchmark_path(value: Any, expected: str, label: str) -> str:
@@ -307,6 +382,12 @@ def load_task_catalog(
                 raise BenchmarkToolError(
                     f"{task_id} task record {field}={task.get(field)!r}, expected {expected!r}"
                 )
+        tag_record = validate_task_source_tags(task, label=task_id)
+        if tag_record["measurement_ready"] is not True:
+            raise BenchmarkToolError(
+                f"{task_id} is still under construction; create a measurement-ready "
+                "snapshot before starting benchmark runs"
+            )
         task_source = _mapping(task.get("paper_source"), f"{task_id}.paper_source")
         if task_source.get("sha256") != paper_sha256:
             raise BenchmarkToolError(f"{task_id} paper SHA-256 disagrees across metadata")
@@ -326,6 +407,18 @@ def load_task_catalog(
         _declared_benchmark_path(
             lean_target.get("file"), target_file, f"manifest target {task_id} file"
         )
+        raw_shared = lean_target.get("shared_files")
+        if not isinstance(raw_shared, list) or not raw_shared:
+            raise BenchmarkToolError(f"manifest target {task_id} has no shared_files")
+        declared_shared = [
+            _benchmark_relative_path(value, f"manifest target {task_id} shared_files")
+            for value in raw_shared
+        ]
+        expected_shared = _shared_sources_for_paper(manifest, paper_id)
+        if declared_shared != expected_shared:
+            raise BenchmarkToolError(
+                f"manifest target {task_id} shared_files disagrees with its paper scope"
+            )
         required_declaration = f"{namespace}.{theorem_name}"
         validation = _mapping(task.get("validation"), f"{task_id}.validation")
         if validation.get("required_declaration") != required_declaration:
@@ -455,6 +548,12 @@ def _release_tree_files(root: Path) -> set[str]:
     return files
 
 
+def evaluation_release_tree_files(root: Path) -> set[str]:
+    """Return the exact manifest-covered evaluation tree."""
+
+    return _release_tree_files(root)
+
+
 def _verify_release_manifest(root: Path, raw_path: Path | None) -> dict[str, Any]:
     path = (raw_path or (root / RELEASE_MANIFEST_RELATIVE)).resolve()
     if path != (root / RELEASE_MANIFEST_RELATIVE).resolve():
@@ -464,7 +563,7 @@ def _verify_release_manifest(root: Path, raw_path: Path | None) -> dict[str, Any
     _require_file(path, "global release manifest")
     release = load_manifest(path)
     listed = {entry["path"] for entry in release["files"]}
-    actual = _release_tree_files(root)
+    actual = evaluation_release_tree_files(root)
     benchmark_manifest = _mapping(
         read_json(root / "metadata" / "manifest.json"), "benchmark manifest"
     )
@@ -1082,23 +1181,69 @@ def verify_frozen_run_environment(
     actual_prompt = _require_file(root / "agent_prompt.md", "agent prompt")
     if sha256_file(actual_prompt) != prompt_digest:
         raise BenchmarkToolError("agent prompt does not match frozen SHA-256")
-    shared_source = _require_file(
-        root / "shared" / "HighamBench" / "Definitions.lean", "shared source"
+    shared_entries = _controlled_shared_entries(manifest)
+    expected_shared_sources = {
+        PurePosixPath(relative).relative_to("shared").as_posix(): entry["sha256"]
+        for relative, entry, _scope in shared_entries
+    }
+    frozen_shared_sources = _mapping(
+        lean.get("shared_sources"), "environment.lean.shared_sources"
     )
-    shared_olean = _require_file(
-        args.shared_olean_root / "HighamBench" / "Definitions.olean", "shared olean"
+    if dict(frozen_shared_sources) != expected_shared_sources:
+        raise BenchmarkToolError(
+            "frozen shared source hashes disagree with the controlled shared manifest"
+        )
+    for relative, expected in expected_shared_sources.items():
+        shared_source = _require_file(root / "shared" / relative, f"shared source {relative}")
+        if sha256_file(shared_source) != expected:
+            raise BenchmarkToolError(f"shared source {relative} does not match frozen SHA-256")
+
+    paper_ids = [str(paper["paper_id"]) for paper in _manifest_papers(manifest)]
+    frozen_shared_bundles = _mapping(
+        lean.get("shared_olean_bundles"),
+        "environment.lean.shared_olean_bundles",
     )
-    if sha256_file(shared_source) != lean.get("shared_definitions_sha256"):
-        raise BenchmarkToolError("shared source does not match frozen SHA-256")
-    if sha256_file(shared_olean) != lean.get("shared_definitions_olean_sha256"):
-        raise BenchmarkToolError("shared olean does not match frozen SHA-256")
+    if set(frozen_shared_bundles) != set(paper_ids):
+        raise BenchmarkToolError(
+            "frozen shared olean bundles do not exactly cover the manifest papers"
+        )
+    expected_shared_olean_files: set[str] = set()
+    for paper_id in paper_ids:
+        bundle = _mapping(
+            frozen_shared_bundles[paper_id], f"shared olean bundle {paper_id}"
+        )
+        expected_modules = {
+            PurePosixPath(relative)
+            .relative_to("shared")
+            .with_suffix(".olean")
+            .as_posix()
+            for relative, _entry, scope in shared_entries
+            if paper_id in scope
+        }
+        if set(bundle) != expected_modules:
+            raise BenchmarkToolError(
+                f"shared olean bundle {paper_id} does not match its paper-scoped sources"
+            )
+        for relative, raw_digest in bundle.items():
+            expected = _sha256_value(
+                raw_digest, f"shared olean {paper_id}/{relative} SHA-256"
+            )
+            shared_olean = _require_file(
+                args.shared_olean_root / paper_id / relative,
+                f"shared olean {paper_id}/{relative}",
+            )
+            if sha256_file(shared_olean) != expected:
+                raise BenchmarkToolError(
+                    f"shared olean {paper_id}/{relative} does not match frozen SHA-256"
+                )
+            expected_shared_olean_files.add(f"{paper_id}/{relative}")
     shared_files: set[str] = set()
     for path in args.shared_olean_root.resolve().rglob("*"):
         if path.is_symlink():
             raise BenchmarkToolError(f"shared olean root contains a symlink: {path}")
         if path.is_file():
             shared_files.add(path.relative_to(args.shared_olean_root.resolve()).as_posix())
-    if shared_files != {"HighamBench/Definitions.olean"}:
+    if shared_files != expected_shared_olean_files:
         raise BenchmarkToolError(
             f"shared olean root is not exact; found importable files {sorted(shared_files)}"
         )
@@ -1204,6 +1349,8 @@ def verify_frozen_run_environment(
             "numstability_commit": expected_numstability,
             "compiled_files_verified": compiled_check["verified"],
             "source_files_verified": source_check["verified"],
+            "shared_source_files_verified": len(expected_shared_sources),
+            "shared_olean_files_verified": len(expected_shared_olean_files),
         },
         "host_class": host_check,
         "limits": {"wall_clock_seconds": wall_limit, "total_model_tokens": token_limit},
@@ -1463,6 +1610,7 @@ def runner_command(args: argparse.Namespace, assignment: dict[str, Any], attempt
     tier = task["tier"]
     condition = assignment["condition"]
     target_declaration = task["required_declaration"]
+    task_shared_olean_root = args.shared_olean_root.resolve() / paper_id
     common_adapter = [
         sys.executable,
         str(root / "tools" / "codex_isolated.py"),
@@ -1489,7 +1637,7 @@ def runner_command(args: argparse.Namespace, assignment: dict[str, Any], attempt
         "--packages-root",
         str(args.packages_runtime_root.resolve()),
         "--shared-olean-root",
-        str(args.shared_olean_root.resolve()),
+        str(task_shared_olean_root),
         "--library-source",
         str(args.library_source.resolve()),
         "--library-root-file",
@@ -1515,7 +1663,7 @@ def runner_command(args: argparse.Namespace, assignment: dict[str, Any], attempt
         "--packages-root",
         str(args.packages_runtime_root.resolve()),
         "--shared-olean-root",
-        str(args.shared_olean_root.resolve()),
+        str(task_shared_olean_root),
         "--library-source",
         str(args.library_source.resolve()),
         "--library-root-file",

@@ -1,45 +1,8 @@
 {
-  "schema_version": "highambench-task-0.2",
-  "task_id": "P02-T2",
-  "paper_id": "P02",
-  "tier": "T2",
-  "tier_label": "combine",
-  "classification_frozen_before_runs": true,
-  "paper_version": "journal version; volume 26, issue 6, 2005, printed pages 1955-1988",
-  "paper_source": {
-    "local_path": "paper_bencmark/reference_papers/ACCURATE SUM AND DOT PRODUCT.pdf",
-    "sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d"
-  },
-  "source_locations": [
-    {
-      "role": "bound for the total magnitude of TwoSum low components",
-      "section": "4. Summation",
-      "anchor": "Lemma 4.2, equations (4.4)-(4.6)",
-      "pdf_pages": [10, 11],
-      "printed_pages": [1964, 1965]
-    },
-    {
-      "role": "Sum2 absolute forward-error bound",
-      "section": "4. Summation",
-      "anchor": "Proposition 4.5, equation (4.8)",
-      "pdf_page": 11,
-      "printed_page": 1965
-    },
-    {
-      "role": "paper proof of the Sum2 bound",
-      "section": "4. Summation",
-      "anchor": "equations (4.10)-(4.12)",
-      "pdf_pages": [12, 13],
-      "printed_pages": [1966, 1967]
-    }
-  ],
-  "context_file": "paper_bencmark/highambench/tasks/P02/T2/context.md",
-  "formal_statement": {
-    "namespace": "HighamBench",
-    "theorem_name": "p02_t2_sum2_error_bound",
-    "target_file": "paper_bencmark/highambench/tasks/P02/T2/Target.lean",
-    "lean_header": "theorem p02_t2_sum2_error_bound\n    (fp : ErrorFreeAddModel) (n : ℕ) (v : Fin (n + 1) → ℝ)\n    (hvalid : GammaValid fp.u (n + 1)) :\n    |sum2 fp v - ∑ i : Fin (n + 1), v i| ≤\n      fp.u * |∑ i : Fin (n + 1), v i| +\n        (gamma fp.u n) ^ 2 * ∑ i : Fin (n + 1), |v i|",
-    "plain_language": "Sum2 has absolute error at most u times the exact-sum magnitude plus gamma(u,N-1) squared times the input absolute mass."
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, concise proof synthesis, and exact-gamma formalization",
+    "performed_by": "Codex"
   },
   "assumptions": [
     "The input has paper length N=n+1.",
@@ -48,30 +11,32 @@
     "N*u<1, written GammaValid u (n+1).",
     "The abstract addition contract covers the paper's addition-underflow case; multiplication is not used."
   ],
-  "informal_statement": "For a nonempty input vector, Algorithm 4.4 (Sum2) satisfies |res-s| <= u|s| + gamma(u,N-1)^2 sum_i |v_i|.",
-  "informal_proof": "Combine Lemma 4.2's low-component budget, the ordinary recursive-summation bound for those lows, VecSum exact preservation, the final rounded-addition model, and the gamma inequality (1+u)gamma_(N-2) <= gamma_(N-1).",
-  "tier_rationale": "The result combines several reusable facts with the paper-specific cancellation in equation (4.12). NumStability has generic summation, final-rounding, and exact-prefix ingredients, but no single Sum2 theorem or exact shared target.",
-  "shared_symbols": [
-    "ErrorFreeAddModel",
-    "GammaValid",
-    "gamma",
-    "sum2"
-  ],
+  "author_label": "Proposition 4.5",
+  "classification_frozen_before_runs": false,
   "conditions": {
-    "N": "The fixed statement and shared files are present; no NumStability artifact is present.",
-    "L": "The identical fixed statement and shared files are present; the frozen NumStability library is also present."
+    "L": "The identical fixed statement and shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and shared files are present; no NumStability artifact is present."
   },
+  "context_file": "paper_bencmark/highambench/tasks/P02/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p02_t2_sum2_error_bound\n    (fp : ErrorFreeAddModel) (n : \u2115) (v : Fin (n + 1) \u2192 \u211d)\n    (hvalid : GammaValid fp.u (n + 1)) :\n    |sum2 fp v - \u2211 i : Fin (n + 1), v i| \u2264\n      fp.u * |\u2211 i : Fin (n + 1), v i| +\n        (gamma fp.u n) ^ 2 * \u2211 i : Fin (n + 1), |v i|",
+    "namespace": "HighamBench",
+    "plain_language": "Sum2 has absolute error at most u times the exact-sum magnitude plus gamma(u,N-1) squared times the input absolute mass.",
+    "target_file": "paper_bencmark/highambench/tasks/P02/T2/Target.lean",
+    "theorem_name": "p02_t2_sum2_error_bound"
+  },
+  "informal_proof": "Combine Lemma 4.2's low-component budget, the ordinary recursive-summation bound for those lows, VecSum exact preservation, the final rounded-addition model, and the gamma inequality (1+u)gamma_(N-2) <= gamma_(N-1).",
+  "informal_statement": "For a nonempty input vector, Algorithm 4.4 (Sum2) satisfies |res-s| <= u|s| + gamma(u,N-1)^2 sum_i |v_i|.",
   "limits": {
-    "wall_clock_seconds": 900,
-    "total_model_tokens": 120000
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
   },
-  "validation": {
-    "mode": "shared automatic validator",
-    "required_declaration": "HighamBench.p02_t2_sum2_error_bound",
-    "controlled_target_file": "paper_bencmark/highambench/tasks/P02/T2/Target.lean",
-    "reject_statement_changes": true,
-    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true
+  "paper_id": "P02",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/ACCURATE SUM AND DOT PRODUCT.pdf",
+    "sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d"
   },
+  "paper_version": "journal version; volume 26, issue 6, 2005, printed pages 1955-1988",
   "review_record_not_for_run_prompt": {
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
@@ -83,9 +48,60 @@
     ],
     "note": "The separate proof ingredients are nearby, but the library has neither this Sum2 execution surface nor the exact proposition."
   },
-  "annotation": {
-    "performed_by": "Codex",
-    "kind": "source selection, tier label, concise proof synthesis, and exact-gamma formalization",
-    "added_mathematical_proof_not_in_paper": false
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "ErrorFreeAddModel",
+    "GammaValid",
+    "gamma",
+    "sum2"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Lemma 4.2, equations (4.4)-(4.6)",
+      "pdf_pages": [
+        10,
+        11
+      ],
+      "printed_pages": [
+        1964,
+        1965
+      ],
+      "role": "bound for the total magnitude of TwoSum low components",
+      "section": "4. Summation"
+    },
+    {
+      "anchor": "Proposition 4.5, equation (4.8)",
+      "pdf_page": 11,
+      "printed_page": 1965,
+      "role": "Sum2 absolute forward-error bound",
+      "section": "4. Summation"
+    },
+    {
+      "anchor": "equations (4.10)-(4.12)",
+      "pdf_pages": [
+        12,
+        13
+      ],
+      "printed_pages": [
+        1966,
+        1967
+      ],
+      "role": "paper proof of the Sum2 bound",
+      "section": "4. Summation"
+    }
+  ],
+  "source_tags": [
+    "PROP"
+  ],
+  "task_id": "P02-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The result combines several reusable facts with the paper-specific cancellation in equation (4.12). NumStability has generic summation, final-rounding, and exact-prefix ingredients, but no single Sum2 theorem or exact shared target.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P02/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p02_t2_sum2_error_bound"
   }
 }

@@ -1,0 +1,119 @@
+{
+  "annotation": {
+    "method": "Codex read the complete local paper, surveyed all definitions, lemmas, theorems, derived stability conclusions, and the row-pivoting counterexample, rejected externally delegated or asymptotic-only candidates, searched the frozen mathlib and NumStability baselines, visually checked every selected source page, and compiled private N/L proofs before accepting the targets.",
+    "not_human_reviewer": true,
+    "performed_by": "Codex",
+    "reason": "The project owner assigned the P08 source selection and benchmark annotation to Codex."
+  },
+  "authors": [
+    "Robert D. Skeel"
+  ],
+  "benchmark_specification": {
+    "local_path": "paper_bencmark/scratch_pad/HighamBench_Simple_Two_Condition_Specification.pdf",
+    "name": "HighamBench Simple Two-Condition Specification",
+    "sha256": "25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8",
+    "version": "0.2"
+  },
+  "classification_frozen_before_runs": false,
+  "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
+  "included_tasks": [
+    "P08-T1",
+    "P08-T2",
+    "P08-T3"
+  ],
+  "paper_id": "P08",
+  "paper_version": "published journal version; volume 35, issue 151, July 1980, printed pages 817-832",
+  "publication": {
+    "doi": null,
+    "issue": 151,
+    "journal": "Mathematics of Computation",
+    "printed_pages": "817-832",
+    "publication_date": "1980-07",
+    "volume": 35,
+    "year": 1980
+  },
+  "rejected_candidates": [
+    {
+      "candidate": "the three stability definitions in section 2",
+      "reason": "These introduce backward-error measures and stability terminology rather than proving finite conclusions."
+    },
+    {
+      "candidate": "Theorem 2.1",
+      "reason": "The result is explicitly attributed to Oettli and Prager (1964), and its proof is delegated to prior work."
+    },
+    {
+      "candidate": "Theorems 2.2 and 2.3",
+      "reason": "Their existential perturbation constructions depend on continuity across poles, infima, absolute norms, and explicit matrix inverses. The selected tasks retain the paper's later iterative-refinement contributions with more direct finite source anchors."
+    },
+    {
+      "candidate": "the basic Gaussian-elimination error estimate and equation (3.1)",
+      "reason": "The basic estimate is taken from Skeel (1979); equation (3.1) is background used by the new refinement analysis."
+    },
+    {
+      "candidate": "Lemma 4.1",
+      "reason": "Its printed constants depend on the externally supplied Gaussian-elimination estimate and several anonymous dimension-dependent matrices. T3 isolates the exact recurrence and induction step that Lemma 4.1 feeds."
+    },
+    {
+      "candidate": "Theorem 4.4",
+      "reason": "The theorem is a direct substitution of Lemma 4.3 into Lemma 4.2 and contains many anonymous constants; T2 and T3 preserve those two mathematically distinct ingredients exactly."
+    },
+    {
+      "candidate": "the limiting bounds following Theorem 4.4",
+      "reason": "These use informal limits and anonymous constants; the finite recurrence certificate in T3 avoids an unstated convergence formalization."
+    },
+    {
+      "candidate": "the Jankowski-Wozniakowski comparison in section 4",
+      "reason": "The displayed bounds are explicitly derived from external theorems in Jankowski and Wozniakowski (1977)."
+    },
+    {
+      "candidate": "Theorem 5.1 and its one-iteration corollary",
+      "reason": "The full formulas combine anonymous constants, asymptotic interpretation, and Theorems 2.2 and 4.4. The selected Lemma 4.2 and Lemma 4.3 tasks retain the exact finite iterative-refinement ingredients without encoding O(u^2)."
+    },
+    {
+      "candidate": "section 6 row-pivoting counterexample and comparison",
+      "reason": "The counterexample text is partially degraded in the supplied scan and the surrounding row-pivoting bounds are stated as straightforward modifications rather than separately proved results."
+    },
+    {
+      "candidate": "the unlabelled introductory one-refinement identity on printed page 825",
+      "reason": "It is a faithful finite identity after exposing the solve perturbation, but the closest IterativeRefinement theorem is not present in the frozen condition-L object bundle. It therefore cannot honestly serve as the direct-use target; Lemma 4.2 supplies an exact frozen-bundle-compatible T1 instead."
+    }
+  ],
+  "result_survey": {
+    "T1": {
+      "available": true,
+      "decision": "Use the forward-error half of Lemma 4.2 in expanded finite-sum form.",
+      "task_id": "P08-T1",
+      "theorem_name": "p08_t1_lemma_4_2_forward_error_bound"
+    },
+    "T2": {
+      "available": true,
+      "decision": "Use the residual-image half of Lemma 4.2, which combines inverse action, matrix additivity, and two componentwise bounds.",
+      "task_id": "P08-T2",
+      "theorem_name": "p08_t2_lemma_4_2_residual_bound"
+    },
+    "T3": {
+      "available": true,
+      "decision": "Use Lemma 4.3's signed affine recurrence and induction as an exact finite matrix-geometric bound.",
+      "task_id": "P08-T3",
+      "theorem_name": "p08_t3_componentwise_affine_recurrence"
+    }
+  },
+  "schema_version": "highambench-paper-0.2",
+  "selection_policy": [
+    "Use a finite claim made and proved in this paper.",
+    "Reject definitions, experiments, vague asymptotics, and claims whose proof is mainly delegated elsewhere.",
+    "Prefer exact displayed bounds, identities, and the finite recurrence behind an induction.",
+    "Keep the fixed Lean setting condition-neutral and paper-scoped.",
+    "Assign tiers only after verified frozen-library searches."
+  ],
+  "short_name": "Skeel (1980)",
+  "source": {
+    "lawful_source_locator": "https://www.jstor.org/stable/2006197",
+    "local_path": "paper_bencmark/reference_papers/P08_Skeel-IterativeRefinementImplies-1980.pdf",
+    "page_map": "PDF page 1 is a JSTOR cover; PDF page 2 is printed page 817 and PDF page 17 is printed page 832.",
+    "pdf_pages": 17,
+    "rights_note": "The local JSTOR copy was supplied for benchmark construction. Permission to redistribute the full PDF is not asserted.",
+    "sha256": "f520066b46331dcbf25e51345c5ff5ffffe8fcad573d7f46e68834f83b3a2c54"
+  },
+  "title": "Iterative Refinement Implies Numerical Stability for Gaussian Elimination"
+}

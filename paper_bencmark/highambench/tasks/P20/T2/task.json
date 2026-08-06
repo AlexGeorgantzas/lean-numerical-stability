@@ -1,0 +1,76 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, tier label, and exact formal comparison of the two single-word underflow contributions",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The scaling threshold theta is at least one.",
+    "The accumulation underflow scale Gmin is nonnegative and no larger than the input underflow scale gmin."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P20 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P20 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P20/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p20_t2_accumulation_underflow_le_input {m n q : Nat} (theta gmin Gmin : Real) (A : Fin m -> Fin n -> Real) (B : Fin n -> Fin q -> Real) (htheta : 1 <= theta) (hGmin : 0 <= Gmin) (hGg : Gmin <= gmin) : p20SingleAccumUnderflowBound theta Gmin A B <= p20SingleInputUnderflowBound theta gmin A B",
+    "namespace": "HighamBench",
+    "plain_language": "When theta is at least one and Gmin is no larger than gmin, the accumulation-underflow contribution in (3.26) is no larger than the input-underflow contribution.",
+    "target_file": "paper_bencmark/highambench/tasks/P20/T2/Target.lean",
+    "theorem_name": "p20_t2_accumulation_underflow_le_input"
+  },
+  "informal_proof": "Since theta inverse lies in [0,1], theta inverse squared times Gmin is at most theta inverse times Gmin, which is at most theta inverse times gmin. Multiply by the common nonnegative factor 4 n squared times the two matrix infinity norms.",
+  "informal_statement": "The exact comparison between the two underflow terms stated immediately after the simplified single-word bound (3.26).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P20",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P20_ERROR ANALYSIS OF MATRIX MULTIPLICATION WITHNARROW RANGE FLOATING-POINT ARITHMETIC.pdf",
+    "sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2"
+  },
+  "paper_version": "SIAM Journal on Scientific Computing 47(4), B785-B800, published 2025-07-01",
+  "result_form_tag": "CMP",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.infNormRect_nonneg"
+    ],
+    "note": "The frozen MatrixAlgebra module supplies nonnegativity of the exact rectangular infinity norm. It has no narrow-range MMA envelope or comparison between input and accumulation underflow terms."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p20InfNormRect",
+    "p20SingleInputUnderflowBound",
+    "p20SingleAccumUnderflowBound"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equation (3.26) and following theta^{-2} Gmin <= theta^{-1} gmin comparison",
+      "pdf_page": 7,
+      "printed_page": "B791",
+      "role": "single-word input- versus accumulation-underflow envelope comparison",
+      "section": "3.2. Summary and discussion"
+    }
+  ],
+  "source_tags": [
+    "EQN",
+    "TXT"
+  ],
+  "task_id": "P20-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The L proof uses NumStability.infNormRect_nonneg from frozen NumStability/Analysis/MatrixAlgebra.lean, but must combine it with the paper-specific theta inverse comparison, two different underflow scales, the n-squared coefficient, and the full normwise envelopes.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P20/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p20_t2_accumulation_underflow_le_input"
+  }
+}

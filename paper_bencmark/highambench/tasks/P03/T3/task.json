@@ -1,0 +1,91 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, paper-scoped resolvent model, and exact componentwise synthesis",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "Equation (5.2)'s componentwise base residual bound holds.",
+    "The correction magnitude satisfies the Neumann inequality derived before equation (5.4).",
+    "Under equation (5.6), M\u2081 is an entrywise nonnegative inverse action for I-P."
+  ],
+  "author_label": "Theorem 5.1",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P03 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P03 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P03/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p03_t3_componentwise_residual_recurrence {n : \u2115} (us u gammaR : \u211d) (M1 P : Fin n \u2192 Fin n \u2192 \u211d) ... : \u2200 i, |newResidual i| \u2264 us * |oldResidual i| + (1+us) * (M1 |oldResidual|)_i + ...",
+    "namespace": "HighamBench",
+    "plain_language": "A nonnegative M-matrix inverse resolves the correction inequality and yields Theorem 5.1's componentwise residual recurrence.",
+    "target_file": "paper_bencmark/highambench/tasks/P03/T3/Target.lean",
+    "theorem_name": "p03_t3_componentwise_residual_recurrence"
+  },
+  "informal_proof": "Subtract the P-action from the correction inequality, premultiply by the nonnegative inverse M\u2081, use its inverse-action identity, distribute M\u2081 over the old residual and data terms, and substitute the result into equation (5.2).",
+  "informal_statement": "The exact W\u1d62 and y\u1d62 componentwise recurrence of Theorem 5.1 with the matrix products packaged as P and M\u2081.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P03",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P03_ACCELERATING THE SOLUTION OF LINEAR SYSTEMS BYITERATIVE REFINEMENT IN THREE PRECISIONS.pdf",
+    "sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc"
+  },
+  "paper_version": "published journal version; volume 40, issue 2, 2018, printed pages A817-A847",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.correction_neumann_inequality",
+      "NumStability.nonneg_resolvent_infNormVec_bound",
+      "NumStability.refinement_backward_error_sigma"
+    ],
+    "note": "No frozen declaration states the three-precision componentwise Theorem 5.1 recurrence or connects its Z\u2081, M\u2081, W\u1d62, and y\u1d62 quantities.",
+    "searched_locations": [
+      "NumStability/Algorithms/IterativeRefinement.lean",
+      "NumStability/Analysis/PerturbationTheory.lean",
+      "Mathlib/LinearAlgebra/Matrix",
+      "Mathlib/Analysis"
+    ]
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p03MatVec",
+    "p03VecAbs",
+    "P03ResolventInverse"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equations (5.2)-(5.6) and Theorem 5.1",
+      "pdf_page": 10,
+      "printed_page": "A826",
+      "role": "componentwise base inequality, M-matrix resolvent, and theorem assumptions",
+      "section": "5. Componentwise backward error analysis"
+    },
+    {
+      "anchor": "continuation of Theorem 5.1 and equation (5.7)",
+      "pdf_page": 11,
+      "printed_page": "A827",
+      "role": "W\u1d62 and y\u1d62 conclusion and norm interpretation",
+      "section": "5. Componentwise backward error analysis"
+    }
+  ],
+  "source_tags": [
+    "THM"
+  ],
+  "task_id": "P03-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "The closest reusable results are NumStability.correction_neumann_inequality, NumStability.nonneg_resolvent_infNormVec_bound, and NumStability.refinement_backward_error_sigma in NumStability/Algorithms/IterativeRefinement.lean. The frozen library has no P03 three-precision Z\u2081/M\u2081 model, no exact componentwise inverse-action bridge, and no theorem assembling W\u1d62 and y\u1d62. The searched NumStability iterative-refinement and perturbation modules plus mathlib matrix/norm directories therefore leave a new paper-specific model and connection proof.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P03/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p03_t3_componentwise_residual_recurrence"
+  }
+}

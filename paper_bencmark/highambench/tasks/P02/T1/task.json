@@ -1,38 +1,8 @@
 {
-  "schema_version": "highambench-task-0.2",
-  "task_id": "P02-T1",
-  "paper_id": "P02",
-  "tier": "T1",
-  "tier_label": "direct use",
-  "classification_frozen_before_runs": true,
-  "paper_version": "journal version; volume 26, issue 6, 2005, printed pages 1955-1988",
-  "paper_source": {
-    "local_path": "paper_bencmark/reference_papers/ACCURATE SUM AND DOT PRODUCT.pdf",
-    "sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d"
-  },
-  "source_locations": [
-    {
-      "role": "local error-free TwoSum identity",
-      "section": "3. Error-free transformations",
-      "anchor": "Theorem 3.4, equation (3.2)",
-      "pdf_page": 8,
-      "printed_page": 1962
-    },
-    {
-      "role": "VecSum exact-sum invariant",
-      "section": "4. Summation",
-      "anchor": "equation (4.7)(i) and Algorithm 4.3",
-      "pdf_page": 11,
-      "printed_page": 1965
-    }
-  ],
-  "context_file": "paper_bencmark/highambench/tasks/P02/T1/context.md",
-  "formal_statement": {
-    "namespace": "HighamBench",
-    "theorem_name": "p02_t1_vecSum_preserves_sum",
-    "target_file": "paper_bencmark/highambench/tasks/P02/T1/Target.lean",
-    "lean_header": "theorem p02_t1_vecSum_preserves_sum\n    (fp : ErrorFreeAddModel) (n : ℕ) (v : Fin (n + 1) → ℝ) :\n    ∑ i : Fin (n + 1), vecSum fp v i = ∑ i : Fin (n + 1), v i",
-    "plain_language": "One error-free VecSum pass preserves the exact total of every nonempty input vector."
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, concise paraphrase, and nonempty Fin indexing",
+    "performed_by": "Codex"
   },
   "assumptions": [
     "The input has paper length N=n+1, so it is nonempty.",
@@ -40,28 +10,32 @@
     "The high and low TwoSum components add exactly to the two real inputs.",
     "The additional standard-model and residual-bound fields are part of the common P02 interface but are not needed by T1."
   ],
-  "informal_statement": "The exact sum of the vector returned by Algorithm 4.3 (VecSum) equals the exact sum of its input.",
-  "informal_proof": "At every cascade step, TwoSum replaces two values by high and low components with the same exact total. Iterating that identity leaves the saved lows plus the final high equal to the original sum.",
-  "tier_rationale": "This is the loop-level form of one local error-free identity. NumStability has closely analogous compensated-prefix exactness theorems, so the intended library-side work is chiefly finding and adapting that invariant.",
-  "shared_symbols": [
-    "ErrorFreeAddModel",
-    "vecSum"
-  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
   "conditions": {
-    "N": "The fixed statement and shared files are present; no NumStability artifact is present.",
-    "L": "The identical fixed statement and shared files are present; the frozen NumStability library is also present."
+    "L": "The identical fixed statement and shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and shared files are present; no NumStability artifact is present."
   },
+  "context_file": "paper_bencmark/highambench/tasks/P02/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p02_t1_vecSum_preserves_sum\n    (fp : ErrorFreeAddModel) (n : \u2115) (v : Fin (n + 1) \u2192 \u211d) :\n    \u2211 i : Fin (n + 1), vecSum fp v i = \u2211 i : Fin (n + 1), v i",
+    "namespace": "HighamBench",
+    "plain_language": "One error-free VecSum pass preserves the exact total of every nonempty input vector.",
+    "target_file": "paper_bencmark/highambench/tasks/P02/T1/Target.lean",
+    "theorem_name": "p02_t1_vecSum_preserves_sum"
+  },
+  "informal_proof": "At every cascade step, TwoSum replaces two values by high and low components with the same exact total. Iterating that identity leaves the saved lows plus the final high equal to the original sum.",
+  "informal_statement": "The exact sum of the vector returned by Algorithm 4.3 (VecSum) equals the exact sum of its input.",
   "limits": {
-    "wall_clock_seconds": 900,
-    "total_model_tokens": 120000
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
   },
-  "validation": {
-    "mode": "shared automatic validator",
-    "required_declaration": "HighamBench.p02_t1_vecSum_preserves_sum",
-    "controlled_target_file": "paper_bencmark/highambench/tasks/P02/T1/Target.lean",
-    "reject_statement_changes": true,
-    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true
+  "paper_id": "P02",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/ACCURATE SUM AND DOT PRODUCT.pdf",
+    "sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d"
   },
+  "paper_version": "journal version; volume 26, issue 6, 2005, printed pages 1955-1988",
   "review_record_not_for_run_prompt": {
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
@@ -71,9 +45,39 @@
     ],
     "note": "The library has the same kind of exact compensated-prefix invariant, but not this shared VecSum declaration or exact target."
   },
-  "annotation": {
-    "performed_by": "Codex",
-    "kind": "source selection, tier label, concise paraphrase, and nonempty Fin indexing",
-    "added_mathematical_proof_not_in_paper": false
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "ErrorFreeAddModel",
+    "vecSum"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Theorem 3.4, equation (3.2)",
+      "pdf_page": 8,
+      "printed_page": 1962,
+      "role": "local error-free TwoSum identity",
+      "section": "3. Error-free transformations"
+    },
+    {
+      "anchor": "equation (4.7)(i) and Algorithm 4.3",
+      "pdf_page": 11,
+      "printed_page": 1965,
+      "role": "VecSum exact-sum invariant",
+      "section": "4. Summation"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P02-T1",
+  "tier": "T1",
+  "tier_label": "direct use",
+  "tier_rationale": "This is the loop-level form of one local error-free identity. NumStability has closely analogous compensated-prefix exactness theorems, so the intended library-side work is chiefly finding and adapting that invariant.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P02/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p02_t1_vecSum_preserves_sum"
   }
 }

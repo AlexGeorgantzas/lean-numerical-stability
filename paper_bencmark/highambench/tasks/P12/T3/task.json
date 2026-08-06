@@ -1,0 +1,83 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and finite-certificate composition of Lemma 4",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The three TwoProduct calls give the stated exact two-term product decompositions.",
+    "The FastTwoSum merge trace has representable exact subtraction results.",
+    "The merge remainder plus the fourth product error is representable and nearest-rounded."
+  ],
+  "author_label": "Lemma 4",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P12 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P12 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P12/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p12_t3_three_product_exact (representable : Real -> Prop) (x1 x2 x3 : Real) (tr : P12ThreeProductTrace) ... : tr.s1 + tr.s2 + tr.s3 = x1*x2*x3",
+    "namespace": "HighamBench",
+    "plain_language": "The certified FourSumThreeProduct expansion, FastTwoSum middle-term merge, and exact final addition produce three values summing exactly to the product of the three inputs.",
+    "target_file": "paper_bencmark/highambench/tasks/P12/T3/Target.lean",
+    "theorem_name": "p12_t3_three_product_exact"
+  },
+  "informal_proof": "Prove both FastTwoSum subtractions and the final addition exact by nearest-rounding representability. Derive s2+r=a2+a3, regroup the three returned terms into the four exact product terms, and collapse the three TwoProduct identities.",
+  "informal_statement": "Lemma 4, equation (18), in exact certificate form.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P12",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P12_A note on Dekker\u2019s FastTwoSum algorithm.pdf",
+    "sha256": "0569d969cebaabe42de69fef10fa91002af12d62149af7485d0712414b53c2a1"
+  },
+  "paper_version": "published journal version; volume 145, issue 2, 2020, printed pages 383-403; corrected open-access publication 2021",
+  "result_form_tag": "EQ",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.FloatingPointFormat.nearestRoundingIn_eq_self_of_mem",
+      "NumStability.FloatingPointFormat.nearestRoundingIn_minimal"
+    ],
+    "note": "All 24 modules in metadata/library_olean.json were searched. They provide only local nearest-rounding adapters, no ThreeProduct model or theorem, and no completed four-to-three error-free composition. The source-only compensated FastTwoSum module is not mounted."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p12Nearest",
+    "P12ThreeProductTrace"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Lemma 4 and equation (18)",
+      "pdf_page": 14,
+      "printed_page": "396",
+      "role": "ThreeProduct algorithm and exact three-term product identity",
+      "section": "4.2 Error-free transformation - ThreeProduct"
+    },
+    {
+      "anchor": "FastTwoSum merge and exact final-add conclusion in the proof of Lemma 4",
+      "pdf_page": 15,
+      "printed_page": "397",
+      "role": "middle-error merge and reduction from four product terms to three",
+      "section": "4.2 Error-free transformation - ThreeProduct"
+    }
+  ],
+  "source_tags": [
+    "LEM"
+  ],
+  "task_id": "P12-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "The mounted nearest-rounding declarations discharge only local exact-operation certificates. The proof must newly compose three exact product decompositions, a certified FastTwoSum merge, and a final exact addition into Lemma 4's complete three-term product identity; no such connection exists in the frozen object baseline.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P12/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p12_t3_three_product_exact"
+  }
+}

@@ -218,20 +218,20 @@ class ValidatorTests(unittest.TestCase):
         )
 
     def test_candidate_cannot_shadow_controlled_shared_module(self) -> None:
-        controlled = self.task / "shared" / "HighamBench" / "Definitions.lean"
+        controlled = self.task / "shared" / "HighamBench" / "Core.lean"
         controlled.parent.mkdir(parents=True)
         controlled.write_text(
             "namespace HighamBench\ndef protectedValue : Nat := 1\nend HighamBench\n",
             encoding="utf-8",
         )
         write_json(self.manifest_path, create_manifest(self.task))
-        forged = self.workspace / "HighamBench" / "Definitions.lean"
+        forged = self.workspace / "HighamBench" / "Core.lean"
         forged.parent.mkdir()
         forged.write_text(
             "namespace HighamBench\ndef protectedValue : Nat := 0\nend HighamBench\n",
             encoding="utf-8",
         )
-        self.write_submission("import HighamBench.Definitions\n" + SIGNATURE)
+        self.write_submission("import HighamBench.Core\n" + SIGNATURE)
         result = validate(self.config())
         self.assertEqual(result["failure_code"], "RULE_VIOLATION", result)
         collisions = [
@@ -241,7 +241,7 @@ class ValidatorTests(unittest.TestCase):
         ]
         self.assertEqual(
             [finding["module"] for finding in collisions],
-            ["HighamBench.Definitions"],
+            ["HighamBench.Core"],
         )
 
     def test_condition_l_cannot_forge_numstability_module_ownership(self) -> None:

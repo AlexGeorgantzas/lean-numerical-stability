@@ -1,0 +1,77 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and exact finite affine-recurrence formalization of Lemma 4.3",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The residual recurrence is q_(m+1)=B*q_m+d_m.",
+    "The propagation matrix B is componentwise nonnegative.",
+    "Every source term satisfies abs(d_m)<=s, with s nonnegative."
+  ],
+  "author_label": "Lemma 4.3",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P08 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P08 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P08/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p08_t3_componentwise_affine_recurrence {n : Nat} (B : Fin n -> Fin n -> Real) (q d : Nat -> Fin n -> Real) ... : forall m i, abs (q (m+1) i) <= p08MatVec (p08MatPow B (m+1)) (abs (q 0)) i + sum k in range (m+1), p08MatVec (p08MatPow B k) s i",
+    "namespace": "HighamBench",
+    "plain_language": "A nonnegative componentwise affine residual recurrence is bounded by the exact finite matrix-geometric propagation of its initial value and source budget.",
+    "target_file": "paper_bencmark/highambench/tasks/P08/T3/Target.lean",
+    "theorem_name": "p08_t3_componentwise_affine_recurrence"
+  },
+  "informal_proof": "First turn the signed recurrence into an absolute componentwise inequality. Build its nonnegative affine envelope, prove domination by induction, and separately unroll the envelope into the displayed matrix-power sum.",
+  "informal_statement": "The finite induction certificate at the core of Lemma 4.3's all-iteration residual bound.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P08",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P08_Skeel-IterativeRefinementImplies-1980.pdf",
+    "sha256": "f520066b46331dcbf25e51345c5ff5ffffe8fcad573d7f46e68834f83b3a2c54"
+  },
+  "paper_version": "published journal version; volume 35, issue 151, July 1980, printed pages 817-832",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.abs_matMulVec_le"
+    ],
+    "note": "The frozen baseline supplies only the one-step absolute matrix-action inequality. It has no theorem connecting a signed time-indexed residual recurrence to this componentwise finite matrix-geometric envelope."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p08MatVec",
+    "p08MatMul",
+    "p08MatPow",
+    "p08AffineEnvelope"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Lemma 4.3 and the recurrence displayed in its proof",
+      "pdf_page": 12,
+      "printed_page": "827",
+      "role": "finite componentwise residual recurrence and induction bound",
+      "section": "4. Error Bounds"
+    }
+  ],
+  "source_tags": [
+    "LEM"
+  ],
+  "task_id": "P08-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "NumStability.abs_matMulVec_le supplies a useful one-step adapter, but the L proof must newly construct the nonnegative affine envelope, prove absolute-value domination for every iterate, and derive the exact finite matrix-power sum.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P08/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p08_t3_componentwise_affine_recurrence"
+  }
+}

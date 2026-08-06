@@ -1,0 +1,81 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, tier label, and exact finite-restart strengthening of Theorem 6.3",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The dimension factor and both unit-roundoff parameters are nonnegative.",
+    "The mixed-precision factor Lambda = c*uLow*kappaF(A) is strictly less than one.",
+    "At each restart, backward error contracts by Lambda whenever it remains above the high-precision backward floor.",
+    "At each restart, forward error contracts by Lambda whenever it remains above the high-precision forward floor.",
+    "Ainv is supplied as the inverse representative used to form the Frobenius condition-number factor."
+  ],
+  "author_label": "Theorem 6.3",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P16 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P16 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P16/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p16_t3_mixed_precision_geometric_convergence {n : Nat} (A Ainv : P16Matrix n) (c uLow uHigh : Real) (backwardError forwardError : Nat -> Real) ... : 0 <= p16BackwardFloor c uHigh and 0 <= p16ForwardFloor c uHigh A Ainv and forall i, p16MixedContraction c uLow A Ainv ^ i <= 1 and ...",
+    "namespace": "HighamBench",
+    "plain_language": "For every finite run of consecutive above-floor restarts, the mixed-precision backward and forward errors are bounded by Lambda to the number of restarts times their initial values.",
+    "target_file": "paper_bencmark/highambench/tasks/P16/T3/Target.lean",
+    "theorem_name": "p16_t3_mixed_precision_geometric_convergence"
+  },
+  "informal_proof": "Prove the Frobenius condition factor, contraction factor, and attainable floors are nonnegative. Use Lambda < 1 to bound every power by one, then induct on the restart count and apply the conditional contraction at the final step.",
+  "informal_statement": "Exact finite interpretation of Theorem 6.3's claim that mixed-precision restarted GMRES contracts by Lambda until it reaches the high-precision attainable floors.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P16",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P16_A modular framework for the backward error analysis of GMRES.pdf",
+    "sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a"
+  },
+  "paper_version": "published open-access journal version; IMA Journal of Numerical Analysis 46(4), 2026, printed pages 1939-1993",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.frobNorm_nonneg"
+    ],
+    "note": "The frozen baseline can certify nonnegativity of the Frobenius condition factor, but searches of all 24 mounted modules found no GMRES, restarted-GMRES, mixed-precision convergence, or conditional geometric-until-floor theorem."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P16Matrix",
+    "p16FrobNorm",
+    "p16ConditionNumberF",
+    "p16MixedContraction",
+    "p16BackwardFloor",
+    "p16ForwardFloor"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Theorem 6.3, contraction condition (6.17) and attainable error floors (6.18)",
+      "pdf_page": 40,
+      "printed_page": "1978",
+      "role": "mixed-precision restarted-GMRES convergence statement",
+      "section": "6.3 Mixed precision restarted GMRES"
+    }
+  ],
+  "source_tags": [
+    "THM"
+  ],
+  "task_id": "P16-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "The frozen library contributes only the primitive Frobenius nonnegativity used for the condition factor. The task adds the paper-specific mixed-precision floors, conditional restart semantics, and a finite Lambda-power induction absent from every mounted module.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P16/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p16_t3_mixed_precision_geometric_convergence"
+  }
+}

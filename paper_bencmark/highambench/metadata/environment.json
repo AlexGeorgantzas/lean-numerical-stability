@@ -1,84 +1,188 @@
 {
-  "schema_version": "0.1.0",
-  "kind": "highambench-environment-record",
-  "environment_id": "highambench-p01-p02-0eb2caca70acb6c8",
-  "environment_bundle_sha256": "0eb2caca70acb6c88052e5b0a079d3fc724babd47bb30ef1e092b53d7bb9de37",
-  "environment_bundle_definition": "SHA-256 of UTF-8 canonical JSON with sorted keys and compact separators over an object containing the complete config and environment records, after removing environment_id and environment_bundle_sha256 from their top-level/frozen locations.",
-  "release_manifest": "paper_bencmark/highambench/metadata/release_files.json",
-  "release_manifest_sha256": "5e6f25d1a066e914647cc4dbe531157211726c6ab15465b533eb42625dae7568",
-  "lean": {
-    "version": "4.29.0-rc3",
-    "commit": "5d86aa4032284a5242470e95fbe25f1ff506763d",
-    "binary_sha256": "3e0d0d3d801675359f2d4cf9815bfdb417b20b92fdd9d48b3b14c95bbae28bbf",
-    "mathlib_commit": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b",
-    "numstability_commit": "45813a95dacf577461bae13f033af0dbc985a225",
-    "numstability_source_manifest": "paper_bencmark/highambench/metadata/library_source.json",
-    "numstability_source_manifest_sha256": "8b52061f0fafc283acd2363267ebbee2f9c6eb97360c596723b95b27515c7828",
-    "numstability_compiled_manifest": "paper_bencmark/highambench/metadata/library_olean.json",
-    "numstability_compiled_manifest_sha256": "bbea1e90bc11605bd3c14b28dc39bf49b7bcb64ab5cf2306841f65b803a6ae2a",
-    "compiled_environment_summary": "paper_bencmark/highambench/metadata/packages_olean.json",
-    "compiled_environment_summary_sha256": "ae361f8e83f4e65745249c1b7ce415fe91024b32cbe935be34402598ac1f7844",
-    "shared_definitions_sha256": "a38c8441b28dc9b3806f08394fb4d2d55bbe7171b72f97ab6781c8b8ac6e4861",
-    "shared_definitions_olean_sha256": "5e71d7b12e7d4648013600fa0f257c1eb8bfdfd7c32ea2710595df4f2672e851"
-  },
   "agent": {
-    "id": "codex-cli",
-    "version": "0.146.0-alpha.3.1",
     "binary_sha256": "ae77c5e73db36d15c131381c5d620278abed999650867a7490b13384e1f5842d",
-    "model": "gpt-5.6-terra",
-    "reasoning_effort": "medium",
-    "prompt_sha256": "118749427c471f95f41206473934caab32b194f75317aa2cc950a836ff33a7ee",
-    "fresh_mode": [
-      "codex exec --ephemeral",
-      "a new temporary CODEX_HOME for every attempt",
-      "user configuration and project rules ignored"
-    ],
     "disabled_capabilities": [
       "web and browser tools",
       "apps and plugins",
       "multi-agent work",
       "memory",
       "image generation"
-    ]
+    ],
+    "fresh_mode": [
+      "codex exec --ephemeral",
+      "a new temporary CODEX_HOME for every attempt",
+      "user configuration and project rules ignored"
+    ],
+    "id": "codex-cli",
+    "model": "gpt-5.6-terra",
+    "prompt_sha256": "5c99c5e5812f4b3c5dc2be4e673f8baff5ad96b5babfbbe9b0b5a9a81e593758",
+    "reasoning_effort": "medium",
+    "version": "0.146.0-alpha.3.1"
   },
-  "isolation": {
-    "kind": "bubblewrap namespace; not an OCI container",
-    "container_image_digest": null,
-    "filesystem_adapter_sha256": "d42b09a39a30cd7c03b313a929bc2c472f1327a69ceaeee334de6897cd6e1094",
-    "lean_adapter_sha256": "aae24febc4bf42802919c027bf6edb1c409903376ae0c37d9d0294d855d895ca",
-    "offline_shell_source_sha256": "2a15af726576647926f639745fb0eb5dbda9ecb0cb9680ded1e1138e1e49fd32",
-    "offline_shell_binary_sha256": "a43df72964e86027ed3c2e66ab4aceda7d02896b6cc2db6befa107d79bb4171c",
-    "runner_sha256": "dd32ade7b548d070793389589fff9d62b3dd55f943bbaf7ede0ab06736bb64c7",
-    "validator_sha256": "2842f43cab220363ba3b6bb66004e3023d15c3eba5a8a6ddbb048aa2507808cb",
-    "dependency_audit_sha256": "0f19d8c9e1a2e6c17f22f0ab38425d0351e4d6cf65c0b03165e06ecb9d718be7",
-    "bubblewrap_binary_sha256": "d78807229d616606e339c5988392b9e0ab4a6a6998fa51e4590837f426a12fca",
-    "bubblewrap_version": "bubblewrap 0.6.1",
-    "network_boundary": "Model-generated shell commands inherit a kernel rule that rejects socket operations and records every denied request. The Codex control process keeps only the provider connection needed for the model. Model web, app, plugin, and search capabilities are disabled.",
-    "condition_n": "NumStability source, compiled files, names, documentation, indexes, and caches are absent. Each complete staged task is scanned and a real import probe must fail before the agent starts.",
-    "condition_l": "Only the frozen NumStability source tree and exact pruned compiled Lean tree are added as read-only mounts.",
-    "package_runtime": "Both conditions receive the same exact pruned package view: Mathlib source and the .olean, .olean.server, .olean.private, and .ir files Lean needs. Git data, traces, hashes, indexes, and other package files are absent.",
-    "gold_proof_policy": "The private construction proofs and source PDFs are never mounted in an evaluated attempt."
-  },
-  "runtime": {
-    "python": {
-      "version": "3.10.12",
-      "binary_sha256": "d6bca2b84e73c7775a0dd5e6a76899cfe4ee62863d7c8f88513811d1fda23f49"
-    },
-    "packages_runtime_manifest": "paper_bencmark/highambench/metadata/packages_runtime.json",
-    "packages_runtime_manifest_sha256": "a2ee0563bc731aa3dba22ed7af0e9bd1322c8c06b51cd9d01bd573282d9c8c31"
-  },
+  "benchmark_id": "highambench-0.2-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20",
+  "environment_bundle_definition": "SHA-256 of UTF-8 canonical JSON with sorted keys and compact separators over an object containing the complete config and environment records, after removing environment_id and environment_bundle_sha256 from their top-level/frozen locations.",
+  "environment_bundle_sha256": "6e1e14aadc2da617c11acdda0a79bf50e54de3a4e4b5d355d3737315bda320fa",
+  "environment_id": "highambench-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20-6e1e14aadc2da617",
   "host_class": {
     "kernel": "Linux 6.17.0-35-generic x86_64",
-    "virtualization": "LXC",
-    "processor": "AMD EPYC 9554 64-Core Processor",
     "online_logical_cpus": 4,
+    "processor": "AMD EPYC 9554 64-Core Processor",
+    "virtualization": "LXC",
     "visible_memory_bytes": 1216761819136
   },
+  "isolation": {
+    "bubblewrap_binary_sha256": "d78807229d616606e339c5988392b9e0ab4a6a6998fa51e4590837f426a12fca",
+    "bubblewrap_version": "bubblewrap 0.6.1",
+    "condition_l": "Only the frozen NumStability source tree and exact pruned compiled Lean tree are added as read-only mounts.",
+    "condition_n": "NumStability source, compiled files, names, documentation, indexes, and caches are absent. Each complete staged task is scanned and a real import probe must fail before the agent starts.",
+    "container_image_digest": null,
+    "dependency_audit_sha256": "0f19d8c9e1a2e6c17f22f0ab38425d0351e4d6cf65c0b03165e06ecb9d718be7",
+    "filesystem_adapter_sha256": "d42b09a39a30cd7c03b313a929bc2c472f1327a69ceaeee334de6897cd6e1094",
+    "gold_proof_policy": "The private construction proofs and source PDFs are never mounted in an evaluated attempt.",
+    "kind": "bubblewrap namespace; not an OCI container",
+    "lean_adapter_sha256": "aae24febc4bf42802919c027bf6edb1c409903376ae0c37d9d0294d855d895ca",
+    "network_boundary": "Model-generated shell commands inherit a kernel rule that rejects socket operations and records every denied request. The Codex control process keeps only the provider connection needed for the model. Model web, app, plugin, and search capabilities are disabled.",
+    "offline_shell_binary_sha256": "a43df72964e86027ed3c2e66ab4aceda7d02896b6cc2db6befa107d79bb4171c",
+    "offline_shell_source_sha256": "2a15af726576647926f639745fb0eb5dbda9ecb0cb9680ded1e1138e1e49fd32",
+    "package_runtime": "Both conditions receive the same exact pruned package view: Mathlib source and the .olean, .olean.server, .olean.private, and .ir files Lean needs. Git data, traces, hashes, indexes, and other package files are absent.",
+    "runner_sha256": "dd32ade7b548d070793389589fff9d62b3dd55f943bbaf7ede0ab06736bb64c7",
+    "validator_sha256": "2842f43cab220363ba3b6bb66004e3023d15c3eba5a8a6ddbb048aa2507808cb"
+  },
+  "kind": "highambench-environment-record",
   "known_reference_protocol_deviations": [
     "The Codex backend has no demonstrated fixed random-seed input, so rep-01, rep-02, and rep-03 are repetition IDs only.",
     "There is no frozen OCI container image; fresh bubblewrap namespaces are used instead.",
     "The read-only host folders /usr, /bin, /lib, /lib64, and /etc are not one completely fingerprinted operating-system image.",
     "Exact provider token totals arrive at turn completion and may include a small amount generated after the first valid proof. First-valid wall time is still recorded at validator acceptance.",
     "The model control process needs its provider connection even though model-accessible shell and web networking are disabled."
-  ]
+  ],
+  "lean": {
+    "binary_sha256": "3e0d0d3d801675359f2d4cf9815bfdb417b20b92fdd9d48b3b14c95bbae28bbf",
+    "commit": "5d86aa4032284a5242470e95fbe25f1ff506763d",
+    "compiled_environment_summary": "paper_bencmark/highambench/metadata/packages_olean.json",
+    "compiled_environment_summary_sha256": "ae361f8e83f4e65745249c1b7ce415fe91024b32cbe935be34402598ac1f7844",
+    "mathlib_commit": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b",
+    "numstability_commit": "45813a95dacf577461bae13f033af0dbc985a225",
+    "numstability_compiled_manifest": "paper_bencmark/highambench/metadata/library_olean.json",
+    "numstability_compiled_manifest_sha256": "bbea1e90bc11605bd3c14b28dc39bf49b7bcb64ab5cf2306841f65b803a6ae2a",
+    "numstability_source_manifest": "paper_bencmark/highambench/metadata/library_source.json",
+    "numstability_source_manifest_sha256": "8b52061f0fafc283acd2363267ebbee2f9c6eb97360c596723b95b27515c7828",
+    "shared_olean_bundles": {
+      "P01": {
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P01Definitions.olean": "3d7c8e8630d10c51aeb13ba8b7e132013d3002f38dd9aa51bc69beb2ac81b887"
+      },
+      "P02": {
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P02Definitions.olean": "14c6ea7fa9187a1f9b52cd0562239fb723aa2ad2a7ee269ee764800ed84524b8"
+      },
+      "P03": {
+        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
+        "HighamBench/P03Definitions.olean": "bb86b0cdccc9c5f21f8b49f1b8c5c539040201c9746c7f0f86e5a5afc5340aea"
+      },
+      "P04": {
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P04Definitions.olean": "1af88bdb44b34f638fc30def61b95ef2aeb126b292d4b4226ea9440296343bcc"
+      },
+      "P05": {
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P05Definitions.olean": "3513f86b56ce8e445df12470f371fd34f34fb0c02e48473273def1f3bdd7e64d"
+      },
+      "P06": {
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P06Definitions.olean": "e2a8d931e905db04793a2a4ffd92e2b31a79a088d9ba9b0349fa118e139581ab"
+      },
+      "P07": {
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P07Definitions.olean": "3811b36eccddae23ce9553466d85b4193271d926dc4e00bf5a0a7c1df944fd11"
+      },
+      "P08": {
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P08Definitions.olean": "c385c1967070fbe1c0220e809069631ee3dbb7769a4908a5b515795d255c6421"
+      },
+      "P09": {
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P09Definitions.olean": "ece9140516dfb9433218391eaf9d5d6a576bd6402d31c4b07a94af603e2a47bc"
+      },
+      "P10": {
+        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
+        "HighamBench/P10Definitions.olean": "22d5ed0145eb1674bacf1db7bac5b07c005b5729021221ea244f3cef2718d11d"
+      },
+      "P11": {
+        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
+        "HighamBench/P11Definitions.olean": "afc97a2af3aaf86f0550f6e59c5e4369fd9f1725cb09f958f11bfbd393f36b6d"
+      },
+      "P12": {
+        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
+        "HighamBench/P12Definitions.olean": "7d5fc2d8e3688b415056fbf179a58545ef1c76f1b4835dc3fa076758bb5966a0"
+      },
+      "P13": {
+        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
+        "HighamBench/P13Definitions.olean": "3b83e8d078b287f4ffbc43de2e6213dae39e384e31997f86b6ed442d0680756e"
+      },
+      "P14": {
+        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
+        "HighamBench/P14Definitions.olean": "b8fd085be252b34d0adf7e993d82d7c2939cc79a66be72bc86b77746b85c67f5"
+      },
+      "P15": {
+        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
+        "HighamBench/P15Definitions.olean": "c864037d50faafacbc73d8484abedc5e11ac79fe56a5d967b7773f1d10e6243a"
+      },
+      "P16": {
+        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
+        "HighamBench/P16Definitions.olean": "935dec65ecca53ed91e27c94cc77614b5877e33920d4054ae7205a891774a2c5"
+      },
+      "P17": {
+        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
+        "HighamBench/P17Definitions.olean": "6a48be1a4f075ba24d0bb41544a82ab1548823b3532baada85ed9f81062ac6f8"
+      },
+      "P18": {
+        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
+        "HighamBench/P18Definitions.olean": "3d87e945e5834658c97c1e91c4c0205b638fc748550a122ee69611b01fe3bc24"
+      },
+      "P19": {
+        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
+        "HighamBench/P19Definitions.olean": "27f1dd635cd505b7e593867e49f2bbeff29a10ca1fad1cb00ba1dd2e33260a9f"
+      },
+      "P20": {
+        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
+        "HighamBench/P20Definitions.olean": "fb5b88e2ef4b899d4ab972eccf4e607a79786dada948916f7958d1b71632d82e"
+      }
+    },
+    "shared_sources": {
+      "HighamBench/Core.lean": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a",
+      "HighamBench/P01Definitions.lean": "f84e0fcd73a73392e539081c1ab832e76c71902085eaae4614d305d138ca7a29",
+      "HighamBench/P02Definitions.lean": "803efe47eb37140c04ed8dad9fcdfe8470d0527aaedf9c60ff9333441ad5136b",
+      "HighamBench/P03Definitions.lean": "25e5b0fc93004b684254c879d71dd789e3a2153c4517d5cfabdc617d84ead38a",
+      "HighamBench/P04Definitions.lean": "646a34423a78acdd51a626a6a78611c4ccb557188f7b25c1d324f0722c6c5ad9",
+      "HighamBench/P05Definitions.lean": "8e8bb59f7812723c6db2adb54ee7c79a133ed8463c2c76b8a3fff363c77d12b7",
+      "HighamBench/P06Definitions.lean": "80ab87e3785b274488c63c1e88e3895907493e271a0e0963907f8d8538bd6ae5",
+      "HighamBench/P07Definitions.lean": "456801a246d914d7d5bd4fdb8c43f735ab409ae3d697f68cc9220f80637de59c",
+      "HighamBench/P08Definitions.lean": "00378095eeb77b9b2386b0319478cf06e31ed9fe90b7dd554ce1a7a5749f7cc5",
+      "HighamBench/P09Definitions.lean": "28fd535f9728fdd6d98dac6045ee7922d4ec547751d099e73a7ade8e7ed5da6d",
+      "HighamBench/P10Definitions.lean": "fe10c0868a161a26b4cd39e18b9dd21121fff955cca9888d7b854960cae02671",
+      "HighamBench/P11Definitions.lean": "d30af6550e76d4083f8958fd38563533a67d33dbfaf20349679d355a37a5e8f1",
+      "HighamBench/P12Definitions.lean": "d6677c1c7ca6220986f35a297ea87792323e45c21d808d3c9206e0a70502cad3",
+      "HighamBench/P13Definitions.lean": "40860706d1e57483371a24c086ae83428c7201c855efae5dbe20ad76d95f4913",
+      "HighamBench/P14Definitions.lean": "43b0cbc4a33c3556b173455522d5436a89cad4f3e98e66dcd072f22bcdc779f2",
+      "HighamBench/P15Definitions.lean": "831dce905ad8a08bb52f5b55ebad349c09ac26a06168d6ca22eb022d2cf91792",
+      "HighamBench/P16Definitions.lean": "7f2630cf2406121b98d74782c2533349ff41d913e9e16dac3c230974b7f572ec",
+      "HighamBench/P17Definitions.lean": "e14850408c10ac1811546bbbf928e1493f9bd87b566c23ecd7aa46d670c8ec29",
+      "HighamBench/P18Definitions.lean": "e8076948865057c148e1531349eca646c2cbb158637d394c47a28ec84a12cfb2",
+      "HighamBench/P19Definitions.lean": "5f2109bae7fa37ed222b56d3bd9ba97eadcf30ffe7f073d6f8dc75f36c896e13",
+      "HighamBench/P20Definitions.lean": "5b94f6f4eac02fe552a60504a7d4c1efb1d8dbe27826e3c608c83a495fbb8c2b"
+    },
+    "version": "4.29.0-rc3"
+  },
+  "release_manifest": "paper_bencmark/highambench/metadata/release_files.json",
+  "release_manifest_sha256": "8ad431add093107ff6582ce6f12378bfaf04589680a627fe4d18bdbec5bc7c60",
+  "runtime": {
+    "packages_runtime_manifest": "paper_bencmark/highambench/metadata/packages_runtime.json",
+    "packages_runtime_manifest_sha256": "a2ee0563bc731aa3dba22ed7af0e9bd1322c8c06b51cd9d01bd573282d9c8c31",
+    "python": {
+      "binary_sha256": "d6bca2b84e73c7775a0dd5e6a76899cfe4ee62863d7c8f88513811d1fda23f49",
+      "version": "3.10.12"
+    }
+  },
+  "schema_version": "0.1.0"
 }

@@ -1,0 +1,76 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, tier label, and exact finite unrolling of the recursive Sylvester error recurrence behind equation (20)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The Sylvester separation sep is positive.",
+    "At every level below the chosen finite depth, the error obeys the paper's displayed affine recurrence."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P10 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P10 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P10/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p10_t3_recursive_sylvester_error_unroll {n depth : Nat} (A B C R : P10Matrix n) (sep epsilon mu : Real) (hsep : 0 < sep) (err : Nat -> Real) (hstep : forall k, k < depth -> err (k+1) <= p10SylvesterGrowth A B sep * err k + p10SylvesterForcing A B C R sep epsilon mu) : err depth <= (p10SylvesterGrowth A B sep)^depth * err 0 + p10SylvesterForcing A B C R sep epsilon mu * (sum k in Finset.range depth, (p10SylvesterGrowth A B sep)^k)",
+    "namespace": "HighamBench",
+    "plain_language": "The recursive Sylvester error after any finite depth is bounded by the amplified initial error plus the forcing budget times a finite geometric sum.",
+    "target_file": "paper_bencmark/highambench/tasks/P10/T3/Target.lean",
+    "theorem_name": "p10_t3_recursive_sylvester_error_unroll"
+  },
+  "informal_proof": "Use nonnegativity of the Frobenius norms and positivity of sep to prove that the recurrence multiplier is nonnegative. Induct on the depth, multiply the induction hypothesis by that multiplier, apply the next recurrence step, and prove the finite geometric-sum identity by a second induction.",
+  "informal_statement": "The exact finite geometric unrolling of the Sylvester error recurrence displayed immediately before equation (20).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P10",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P10_Fast linear algebra is stable.pdf",
+    "sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269"
+  },
+  "paper_version": "published journal version; volume 108, 2007, printed pages 59-91",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.frobNorm_nonneg"
+    ],
+    "note": "The frozen NumStability object baseline contains Frobenius nonnegativity but no affine-recurrence or finite geometric-unrolling theorem. The complete mounted scope searched was the 24 modules recorded in metadata/library_olean.json, including NumStability/Analysis/MatrixAlgebra.lean; broader source-only declarations were not counted as available."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P10Matrix",
+    "p10FrobNorm",
+    "p10SylvesterGrowth",
+    "p10SylvesterForcing"
+  ],
+  "source_locations": [
+    {
+      "anchor": "affine recurrence immediately before equation (20), followed by its asymptotic solution",
+      "pdf_page": 28,
+      "printed_page": "86",
+      "role": "recursive Sylvester forward-error amplification and forcing budget",
+      "section": "6.3 Solving the (generalized) Sylvester equation"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P10-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "NumStability.frobNorm_nonneg in NumStability/Analysis/MatrixAlgebra.lean supplies only nonnegativity needed for the recurrence multiplier. The proof must newly derive the finite geometric-sum identity and inductive affine-recurrence unrolling; searches across every module in the frozen metadata/library_olean.json found no mounted declaration providing that connection.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P10/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p10_t3_recursive_sylvester_error_unroll"
+  }
+}

@@ -1,4 +1,5 @@
 {
+  "record_status": "superseded_construction_snapshot",
   "schema_version": "0.2.0",
   "kind": "highambench-fixed-target-elaboration-evidence",
   "paper_id": "P02",

@@ -1,4 +1,4 @@
-# Implementation plan for the P01--P02 pilot
+# Implementation plan for the current construction corpus
 
 ## 1. Read and classify before writing code
 
@@ -16,6 +16,12 @@ The selection rule was:
    exact bound with all assumptions shown.
 5. Do not choose a theorem whose exact fixed Lean statement already exists in
    mathlib or NumStability.
+
+Every selected task also receives a source-presentation tag under the policy in
+`../TASK_SOURCE_TAGS.md`. The tag records how the paper presents the selected
+result; it is independent of the T1/T2/T3 library-relationship tier. Every
+paper entry uses the same validator and construction-state rules. Tasks remain
+editable until the complete corpus is made measurement-ready.
 
 For P01 this produced one target for every tier:
 
@@ -46,7 +52,7 @@ Theorem 3.4 was not selected because its central exactness proof is delegated
 to earlier work. Relative-error corollaries, experiments, operation counts,
 and the larger underflow/error-estimator branches were also not selected.
 
-## 2. Freeze the meaning of each statement
+## 2. Record the meaning of each statement
 
 The shared definitions must be usable without importing NumStability. They must
 provide only the small setting required by the targets:
@@ -77,10 +83,16 @@ The fixed target declarations are:
 - `p02_t2_sum2_error_bound`;
 - `p02_t3_dotK_error_bound`.
 
-Their fixed files are under `tasks/P01/` and `tasks/P02/`, with one `Target.lean`
-per tier. Shared definitions are in `shared/HighamBench/Definitions.lean`.
+Their current files are under `tasks/P01/` and `tasks/P02/`, with one `Target.lean`
+per tier. Definitions used by both papers are in `shared/HighamBench/Core.lean`.
+The extra definitions for each paper are in `P01Definitions.lean` and
+`P02Definitions.lean`. A staged task receives the core and only its own paper's
+definition file. Trusted compiled objects use the same split: the runner mounts
+`shared_olean/P0X/` for paper `P0X`, never the parent directory that contains
+other papers' bundles.
 Every target must compile in clean N and L before the expanded package is
-refrozen; target and controlled-file hashes are then recorded in the manifest.
+resnapshotted; target and controlled-file hashes are then regenerated from the
+manifest for the whole corpus.
 
 ## 3. Keep the statement neutral between conditions
 
@@ -204,7 +216,8 @@ replace them. A status changes to `pass` only when saved evidence supports it.
 
 ## 10. Completion checklist
 
-- [x] Exactly P01 and P02, and no other papers, are in the manifest.
+- [x] The current manifest contains P01 and P02; the construction corpus may
+  grow before measurement.
 - [x] T1, T2, and T3 are selected for both papers before evaluation.
 - [x] Source and specification PDFs are hashed.
 - [x] Lean, mathlib, and NumStability source versions are frozen.
@@ -212,11 +225,13 @@ replace them. A status changes to `pass` only when saved evidence supports it.
 - [x] Pair order is fixed by a repeatable rule.
 - [ ] Two review records cover all six tasks against current evidence.
 - [x] All six final fixed Lean statements compile in both clean conditions.
-- [x] Exact controlled task hashes and the expanded construction-package hash are frozen.
+- [x] Exact controlled task hashes and the construction-package hash describe
+  the current regenerable construction snapshot.
 - [x] N is rechecked to contain no NumStability artifact for every task.
 - [ ] L dependency checking finds real declarations in all six private L construction proofs.
 - [x] Agent, model, prompt, tools, and machine class are frozen.
 - [x] The lack of a backend seed and OCI image is recorded as an observational limitation.
-- [ ] Two final independent review records pass against the frozen evidence.
+- [ ] Two final independent review records pass for every task against one
+  measurement-ready snapshot.
 - [ ] All 36 isolated runs are complete.
 - [ ] Raw logs, result tables, and the final plain-language PDF report are built.

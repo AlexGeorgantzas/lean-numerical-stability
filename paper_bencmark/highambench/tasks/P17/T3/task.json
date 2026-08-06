@@ -1,0 +1,78 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and exact finite-probability assembly from Theorem 4.3",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The variance budget and failure parameter lambda are strictly positive.",
+    "The summation condition factor is nonnegative.",
+    "The centered random component has second moment at most the variance budget.",
+    "The deterministic limited-precision remainder is bounded by the bias radius."
+  ],
+  "author_label": "Theorem 4.3",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P17 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P17 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P17/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p17_t3_variance_plus_bias_probability_bound {Omega} [Fintype Omega] (P : P17FiniteProbability Omega) (centered : Omega -> Real) (bias varianceBudget biasRadius kappa lambda : Real) ... : 1-lambda <= p17EventProb P {omega | abs (kappa*(centered omega+bias)) <= kappa*(sqrt (varianceBudget/lambda)+biasRadius)}",
+    "namespace": "HighamBench",
+    "plain_language": "With probability at least one minus lambda, a condition-scaled centered error plus bounded deterministic bias lies within the Chebyshev radius plus the bias radius.",
+    "target_file": "paper_bencmark/highambench/tasks/P17/T3/Target.lean",
+    "theorem_name": "p17_t3_variance_plus_bias_probability_bound"
+  },
+  "informal_proof": "Apply finite Chebyshev to the centered term at radius sqrt(varianceBudget/lambda), use the second-moment hypothesis to bound the tail by lambda, then use event monotonicity, triangle inequality, the bias bound, and nonnegative scaling by kappa.",
+  "informal_statement": "Exact reusable finite-probability core of Theorem 4.3's variance-based recursive-summation bound.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P17",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P17_PROBABILISTIC ERROR ANALYSIS OF LIMITED-PRECISIONSTOCHASTIC ROUNDING.pdf",
+    "sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d"
+  },
+  "paper_version": "published journal version; SIAM Journal on Scientific Computing 47(5), 2025, pages B1227-B1249",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.FiniteProbability.eventProb_abs_sub_le_ge_one_sub_of_second_moment",
+      "NumStability.FiniteProbability.eventProb_mono"
+    ],
+    "note": "The frozen library supplies finite Chebyshev and event monotonicity, but not P17's limited-precision bias remainder or condition-scaled probability event."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P17FiniteProbability",
+    "p17EventProb",
+    "p17Expectation"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Theorem 4.3 equation (4.11), centered bound (4.12), and deterministic remainder bound (4.10)",
+      "pdf_page": 15,
+      "printed_page": "B1241",
+      "role": "variance-based high-probability summation error conclusion",
+      "section": "4.1 Recursive summation"
+    }
+  ],
+  "source_tags": [
+    "THM"
+  ],
+  "task_id": "P17-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "The L proof uses the frozen finite Chebyshev theorem and event monotonicity, then adds P17's centered-plus-bias decomposition, exact square-root radius calculation, deterministic remainder, and condition-number scaling absent from the mounted library.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P17/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p17_t3_variance_plus_bias_probability_bound"
+  }
+}

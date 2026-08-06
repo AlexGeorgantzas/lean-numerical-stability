@@ -1,0 +1,113 @@
+{
+  "annotation": {
+    "method": "Codex read the complete local paper, surveyed both CGS algorithms, the corrected theorem, condition-number remark, counterexamples, reorthogonalization discussion, and the full appendix proof, rejected delegated, incorrect, experimental, heuristic, and asymptotic-only candidates, searched the frozen mathlib and mounted NumStability object baselines, visually checked every selected source page, and compiled private N/L proofs before accepting the targets.",
+    "not_human_reviewer": true,
+    "performed_by": "Codex",
+    "reason": "The project owner assigned the P11 source selection and benchmark annotation to Codex."
+  },
+  "authors": [
+    "Alicja Smoktunowicz",
+    "Jesse L. Barlow",
+    "Julien Langou"
+  ],
+  "benchmark_specification": {
+    "local_path": "paper_bencmark/scratch_pad/HighamBench_Simple_Two_Condition_Specification.pdf",
+    "name": "HighamBench Simple Two-Condition Specification",
+    "sha256": "25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8",
+    "version": "0.2"
+  },
+  "classification_frozen_before_runs": false,
+  "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
+  "included_tasks": [
+    "P11-T1",
+    "P11-T2",
+    "P11-T3"
+  ],
+  "paper_id": "P11",
+  "paper_version": "published journal version; volume 105, issue 2, 2006, printed pages 299-313",
+  "publication": {
+    "doi": "10.1007/s00211-006-0042-1",
+    "issue": 2,
+    "journal": "Numerische Mathematik",
+    "printed_pages": "299-313",
+    "publication_date": "2006-11-03",
+    "volume": 105,
+    "year": 2006
+  },
+  "rejected_candidates": [
+    {
+      "candidate": "Algorithm 1 (CGS-S), Algorithm 2 (CGS-P), and the floating-point model",
+      "reason": "These are definitions and assumptions. The paper's contribution is the corrected analysis of CGS-P, not the pseudocode or IEEE model in isolation."
+    },
+    {
+      "candidate": "Lemma 1 quoted from Giraud et al.",
+      "reason": "The paper explicitly states that this lemma is incorrect for Algorithm 1, so it cannot serve as a valid target."
+    },
+    {
+      "candidate": "Theorem 1 equations (3)-(8) in their literal printed form",
+      "reason": "Most conclusions are stated only to first order with O(epsilon squared). T1 retains an exact finite action bound, T2 the exact algebraic identity, and T3 a finite-budget completion of the main orthogonality conclusion."
+    },
+    {
+      "candidate": "Remark 1 and equations (9)-(10)",
+      "reason": "The condition-number conversion relies on Weyl monotonicity, pseudoinverses, and O(epsilon squared) bookkeeping and is secondary to the corrected Gram-Schmidt result."
+    },
+    {
+      "candidate": "Examples 1-2 and Tables 1-2",
+      "reason": "The MATLAB counterexamples and measured errors are empirical evidence, not finite proof targets."
+    },
+    {
+      "candidate": "Remark 2 on CGS-P breakdown",
+      "reason": "This is a qualitative possibility outside Theorem 1's assumptions rather than a quantified finite result."
+    },
+    {
+      "candidate": "the CGS2 and CGS-K reorthogonalization discussion",
+      "reason": "The section presents algorithmic implications, parameter choices, and heuristics; it does not prove a new self-contained finite theorem."
+    },
+    {
+      "candidate": "Lemma 2 and equations (11)-(15)",
+      "reason": "The local diagonal and projection bounds retain first-order O notation and mainly set up the appendix induction; the selected tasks capture the exact reusable core and main consequence."
+    },
+    {
+      "candidate": "the induction estimates (17)-(24)",
+      "reason": "These are long intermediate first-order bounds with paper-specific constants. The residual action in (16) is the clean direct tier, while the final defect identity and bound provide stronger higher-tier targets."
+    }
+  ],
+  "result_survey": {
+    "T1": {
+      "available": true,
+      "decision": "Use equation (16)'s first-column residual-action estimate under a Frobenius certificate, which the frozen library proves directly.",
+      "task_id": "P11-T1",
+      "theorem_name": "p11_t1_first_column_residual_action"
+    },
+    "T2": {
+      "available": true,
+      "decision": "Use the exact inverse-conjugated orthogonality-defect identity displayed in the appendix proof of Theorem 1(7).",
+      "task_id": "P11-T2",
+      "theorem_name": "p11_t2_orthogonality_defect_identity"
+    },
+    "T3": {
+      "available": true,
+      "decision": "Use Theorem 1(7) as an exact finite-budget bound requiring a new derivation and multi-term norm propagation beyond the frozen adapters.",
+      "task_id": "P11-T3",
+      "theorem_name": "p11_t3_orthogonality_defect_bound"
+    }
+  },
+  "schema_version": "highambench-paper-0.2",
+  "selection_policy": [
+    "Use correct finite claims proved in this paper and exact algebraic cores of its first-order analysis.",
+    "Reject the explicitly incorrect cited lemma, experiments, heuristics, definitions, and literal O-notation-only formulas.",
+    "Replace asymptotic second-order bookkeeping with explicit finite perturbation budgets.",
+    "Keep the fixed Lean setting condition-neutral and paper-scoped.",
+    "Assign tiers only after checking the mounted frozen object baseline, not broader source-only Gram-Schmidt modules."
+  ],
+  "short_name": "Smoktunowicz, Barlow, and Langou (2006)",
+  "source": {
+    "lawful_source_locator": "https://doi.org/10.1007/s00211-006-0042-1",
+    "local_path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram\u2013Schmidt.pdf",
+    "page_map": "PDF pages 1-15 are printed pages 299-313 respectively.",
+    "pdf_pages": 15,
+    "rights_note": "The local journal copy was supplied for benchmark construction. Permission to redistribute the full PDF is not asserted.",
+    "sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5"
+  },
+  "title": "A note on the error analysis of classical Gram\u2013Schmidt"
+}

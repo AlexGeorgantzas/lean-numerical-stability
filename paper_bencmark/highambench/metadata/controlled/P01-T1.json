@@ -1,19 +1,24 @@
 {
   "files": [
     {
-      "bytes": 1761,
+      "bytes": 1771,
       "path": "agent_prompt.md",
-      "sha256": "118749427c471f95f41206473934caab32b194f75317aa2cc950a836ff33a7ee"
+      "sha256": "5c99c5e5812f4b3c5dc2be4e673f8baff5ad96b5babfbbe9b0b5a9a81e593758"
     },
     {
-      "bytes": 7631,
-      "path": "shared/HighamBench/Definitions.lean",
-      "sha256": "a38c8441b28dc9b3806f08394fb4d2d55bbe7171b72f97ab6781c8b8ac6e4861"
+      "bytes": 1328,
+      "path": "shared/HighamBench/Core.lean",
+      "sha256": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a"
     },
     {
-      "bytes": 465,
+      "bytes": 2031,
+      "path": "shared/HighamBench/P01Definitions.lean",
+      "sha256": "f84e0fcd73a73392e539081c1ab832e76c71902085eaae4614d305d138ca7a29"
+    },
+    {
+      "bytes": 468,
       "path": "tasks/P01/T1/Target.lean",
-      "sha256": "11a966a96916675045f6965f323e5233f87eb80e2c92aada13a567c9ef677c33"
+      "sha256": "ee6bd516f8c592936e1f9b0b9d54049579ba7aee7714cdb871b230332e0f1d19"
     },
     {
       "bytes": 2999,

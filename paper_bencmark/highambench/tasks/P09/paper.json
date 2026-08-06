@@ -1,0 +1,111 @@
+{
+  "annotation": {
+    "method": "Codex read the complete local paper, surveyed its matrix factorization, one- and multidimensional error theorems, proofs, experiment, and concluding backward-error interpretation, rejected delegated, asymptotic-only, experimental, or redundant candidates, searched the frozen mathlib and mounted NumStability object baselines, visually checked every selected source page, and compiled private N/L proofs before accepting the targets.",
+    "not_human_reviewer": true,
+    "performed_by": "Codex",
+    "reason": "The project owner assigned the P09 source selection and benchmark annotation to Codex."
+  },
+  "authors": [
+    "George U. Ramos"
+  ],
+  "benchmark_specification": {
+    "local_path": "paper_bencmark/scratch_pad/HighamBench_Simple_Two_Condition_Specification.pdf",
+    "name": "HighamBench Simple Two-Condition Specification",
+    "sha256": "25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8",
+    "version": "0.2"
+  },
+  "classification_frozen_before_runs": false,
+  "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
+  "included_tasks": [
+    "P09-T1",
+    "P09-T2",
+    "P09-T3"
+  ],
+  "paper_id": "P09",
+  "paper_version": "published journal version; volume 25, issue 116, October 1971, printed pages 757-768",
+  "publication": {
+    "doi": "10.1090/S0025-5718-1971-0300488-0",
+    "issue": 116,
+    "journal": "Mathematics of Computation",
+    "printed_pages": "757-768",
+    "publication_date": "1971-10",
+    "volume": 25,
+    "year": 1971
+  },
+  "rejected_candidates": [
+    {
+      "candidate": "equations (1.1), (2.1), and the FFT factorization (2.2)",
+      "reason": "These define the transform and quote a standard matrix factorization from earlier FFT literature rather than establish Ramos's new error conclusions."
+    },
+    {
+      "candidate": "floating-point models (3.1) and (3.2)",
+      "reason": "The addition and multiplication models are explicitly attributed to Wilkinson and serve as assumptions for the paper's analysis."
+    },
+    {
+      "candidate": "the complete first-order formula in Theorem 1(a)",
+      "reason": "Its literal formalization would require a full floating FFT implementation, trigonometric evaluation error, generic theta variables, and asymptotic O(epsilon squared) semantics. T1 retains the exact finite norm bridge used for part (b), while T2 and T3 capture the paper's exact structural conclusions."
+    },
+    {
+      "candidate": "the direct-transformation error matrix (3.3) and bounds (3.4)-(3.5)",
+      "reason": "These are long intermediate first-order expansions used to establish local FFT-factor budgets and retain O(epsilon squared) terms; they are not the paper's final finite conclusions."
+    },
+    {
+      "candidate": "the radix-2 and radix-4 special constants in Theorem 1",
+      "reason": "They are algebraic substitutions into K(N,gamma) rather than independent results, and the full statement still carries the same asymptotic floating-point model."
+    },
+    {
+      "candidate": "equations (3.7) and (3.8)",
+      "reason": "These are local block and diagonal error estimates with O(epsilon squared) terms; T3 instead preserves how such local budgets accumulate across an arbitrary finite collection of transforms."
+    },
+    {
+      "candidate": "Theorem 2(b)",
+      "reason": "The maximum-error conclusion is obtained immediately from Theorem 2(a) by the same max/RMS bridge already isolated as T1, so selecting it would duplicate both mathematical content and tier mechanism."
+    },
+    {
+      "candidate": "Table 1 and the experimental comparison",
+      "reason": "Measured FORTRAN results and claims about pessimism of the bounds are empirical rather than finite proof targets."
+    },
+    {
+      "candidate": "the input-rounding extension on printed page 768",
+      "reason": "The extra forward-error term is a short concluding observation; the neighboring fictional-input construction is the stronger and more distinctive backward-error result selected as T2."
+    }
+  ],
+  "result_survey": {
+    "T1": {
+      "available": true,
+      "decision": "Use the exact maximum-versus-RMS inequality displayed in the proof of Theorem 1(b).",
+      "task_id": "P09-T1",
+      "theorem_name": "p09_t1_max_error_le_sqrt_card_mul_rms"
+    },
+    "T2": {
+      "available": true,
+      "decision": "Use the final fictional-input backward-error construction for the positively scaled orthogonal real-equivalent Fourier action.",
+      "task_id": "P09-T2",
+      "theorem_name": "p09_t2_scaled_orthogonal_backward_error"
+    },
+    "T3": {
+      "available": true,
+      "decision": "Use Theorem 2(a)'s multidimensional telescoping bound with every O(epsilon squared) contribution exposed as an explicit finite remainder.",
+      "task_id": "P09-T3",
+      "theorem_name": "p09_t3_multidimensional_rms_error_budget"
+    }
+  },
+  "schema_version": "highambench-paper-0.2",
+  "selection_policy": [
+    "Use finite claims made and proved in this paper.",
+    "Reject definitions, experiments, delegated background, and formulas whose literal content is only vague asymptotics.",
+    "Expose O(epsilon squared) contributions as explicit finite remainder hypotheses when retaining the paper's exact accumulation argument.",
+    "Keep the fixed Lean setting condition-neutral and paper-scoped.",
+    "Assign tiers only after checking the mounted frozen object baseline, not merely the broader source tree."
+  ],
+  "short_name": "Ramos (1971)",
+  "source": {
+    "lawful_source_locator": "https://doi.org/10.1090/S0025-5718-1971-0300488-0",
+    "local_path": "paper_bencmark/reference_papers/P09_Roundoff Error Analysis of the Fast Fourier Transform.pdf",
+    "page_map": "PDF pages 1-12 are printed pages 757-768 respectively.",
+    "pdf_pages": 12,
+    "rights_note": "The local journal copy was supplied for benchmark construction. Permission to redistribute the full PDF is not asserted.",
+    "sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758"
+  },
+  "title": "Roundoff Error Analysis of the Fast Fourier Transform"
+}

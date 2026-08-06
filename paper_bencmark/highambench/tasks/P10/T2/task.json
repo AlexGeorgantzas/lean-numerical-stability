@@ -1,0 +1,74 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, tier label, and exact finite completion of the first-order product-error propagation rule in equation (8)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P10 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P10 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P10/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p10_t2_product_error_with_cross_term {n : Nat} (A dA B dB E : P10Matrix n) : p10FrobNorm (p10ProductErrorExpansion n A dA B dB E) <= p10FrobNorm E + p10FrobNorm A * p10FrobNorm dB + p10FrobNorm dA * p10FrobNorm B + p10FrobNorm dA * p10FrobNorm dB",
+    "namespace": "HighamBench",
+    "plain_language": "The exact product-error expansion is bounded by the local error, the two inherited first-order terms, and the explicit inherited-error cross term.",
+    "target_file": "paper_bencmark/highambench/tasks/P10/T2/Target.lean",
+    "theorem_name": "p10_t2_product_error_with_cross_term"
+  },
+  "informal_proof": "Expand the exact four-term error expression, apply the Frobenius triangle inequality three times, and apply Frobenius submultiplicativity to each matrix product.",
+  "informal_statement": "Equation (8)'s local and inherited product-error terms with the suppressed second-order cross term made explicit in an exact finite bound.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P10",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P10_Fast linear algebra is stable.pdf",
+    "sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269"
+  },
+  "paper_version": "published journal version; volume 108, 2007, printed pages 59-91",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.frobNorm_add_le",
+      "NumStability.frobNorm_matMul_le"
+    ],
+    "note": "The frozen MatrixAlgebra object supplies binary Frobenius addition and product bounds, but no declaration states the four-term finite completion of Demmel-Dumitriu-Holtz equation (8) or exposes its inherited-error cross term."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P10Matrix",
+    "p10MatMul",
+    "p10FrobNorm",
+    "p10ProductErrorExpansion"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equation (8), the three-term first-order product-error rule",
+      "pdf_page": 8,
+      "printed_page": "66",
+      "role": "local matrix-multiplication error and propagation of both inherited input errors",
+      "section": "3.1 Recursive triangular matrix inversion"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P10-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The L proof repeatedly combines NumStability.frobNorm_add_le and NumStability.frobNorm_matMul_le from NumStability/Analysis/MatrixAlgebra.lean, then performs paper-specific reassociation to retain all four exact terms. No one frozen theorem gives this completed error budget.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P10/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p10_t2_product_error_with_cross_term"
+  }
+}

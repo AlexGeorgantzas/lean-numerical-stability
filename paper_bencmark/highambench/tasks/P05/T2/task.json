@@ -1,0 +1,84 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, zero-based row adapter, and finite square-matrix formalization",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The unit roundoff u is nonnegative.",
+    "The Doolittle local residual estimates (4.3a)-(4.3b) have already been established for the computed square factors.",
+    "The componentwise majorant is |L||U|."
+  ],
+  "author_label": "Theorem 4.2",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P05 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P05 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P05/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p05_t2_square_lu_backward_error {n : Nat} ... : exists DeltaA, LU=A+DeltaA and |DeltaA_ij| <= i*u*(|L||U|)_ij and |DeltaA_ij| <= (n-1)*u*(|L||U|)_ij",
+    "namespace": "HighamBench",
+    "plain_language": "The square Doolittle residuals assemble into the exact LU backward error with both the sharp rowwise and uniform (n-1)u bounds.",
+    "target_file": "paper_bencmark/highambench/tasks/P05/T2/Target.lean",
+    "theorem_name": "p05_t2_square_lu_backward_error"
+  },
+  "informal_proof": "Set DeltaA=LU-A, retain the local rowwise bounds, and use i<=n-1 together with nonnegativity of |L||U| to obtain the uniform estimate.",
+  "informal_statement": "The square-case sharpening of Theorem 4.2 and equation (4.2).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P05",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P05_IMPROVED BACKWARD ERROR BOUNDS FOR LU ANDCHOLESKY FACTORIZATIONS.pdf",
+    "sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6"
+  },
+  "paper_version": "published journal version; volume 35, issue 2, 2014, printed pages 684-698",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.Finset.sum_abs_mul",
+      "NumStability.matSeqProd_nonneg",
+      "NumStability.matSeqProd_componentwise_perturbation_bound"
+    ],
+    "note": "The frozen library has absolute-product and general matrix-product ingredients, but no Gaussian-elimination result with P05's unconditional rowwise coefficients or the sharp square (n-1)u conclusion."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p05MatMul",
+    "p05AbsMatMul"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Theorem 4.2 and equation (4.2)",
+      "pdf_page": 10,
+      "printed_page": "693",
+      "role": "LU backward-error equation and sharp square rowwise/global bounds",
+      "section": "4.2. An improved backward error bound for LU factorization"
+    },
+    {
+      "anchor": "equations (4.3a)-(4.3b) and the final coefficient comparison",
+      "pdf_page": 11,
+      "printed_page": "694",
+      "role": "local Doolittle residual estimates used by the target",
+      "section": "4.2. An improved backward error bound for LU factorization"
+    }
+  ],
+  "source_tags": [
+    "THM"
+  ],
+  "task_id": "P05-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The target combines P05's local Doolittle residual family, a finite-index perturbation assembly, nonnegativity of the componentwise absolute product, and the exact row-index comparison. The frozen library supplies separate absolute matrix-product ingredients but no declaration states the combined sharp result.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P05/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p05_t2_square_lu_backward_error"
+  }
+}

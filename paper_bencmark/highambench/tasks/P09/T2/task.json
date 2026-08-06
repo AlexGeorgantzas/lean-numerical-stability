@@ -1,0 +1,82 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and scaled-orthogonal real-equivalent formalization of the final backward-error construction",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The real-equivalent normalized Fourier action is orthogonal.",
+    "The unnormalized transform scale is positive."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P09 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P09 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P09/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p09_t2_scaled_orthogonal_backward_error {n : Nat} (Q : Fin n -> Fin n -> Real) (e : Fin n -> Real) (s : Real) (hs : 0 < s) (hQ : p09Orthogonal Q) : exists delta, p09MatVec (p09ScaleMatrix s Q) delta = e and p09VecNorm2 delta = p09VecNorm2 e / s and p09Max delta <= p09VecNorm2 delta",
+    "namespace": "HighamBench",
+    "plain_language": "Every output error of a positively scaled orthogonal transform is exactly the transform of a fictional input perturbation with the expected norm scaling.",
+    "target_file": "paper_bencmark/highambench/tasks/P09/T2/Target.lean",
+    "theorem_name": "p09_t2_scaled_orthogonal_backward_error"
+  },
+  "informal_proof": "Choose delta as one over the scale times the transpose action on the output error. Orthogonality gives exact recovery and preserves the Euclidean norm; scalar homogeneity and the infinity-versus-Euclidean bound give the two certificates.",
+  "informal_statement": "The exact fictional-input backward-error certificate stated in the paper's conclusion, for the normalized real-equivalent Fourier action.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P09",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P09_Roundoff Error Analysis of the Fast Fourier Transform.pdf",
+    "sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758"
+  },
+  "paper_version": "published journal version; volume 25, issue 116, October 1971, printed pages 757-768",
+  "result_form_tag": "EX",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.matMulVec_of_isRightInverse",
+      "NumStability.vecNorm2_smul",
+      "NumStability.vecNorm2_orthogonal",
+      "NumStability.infNormVec_le_vecNorm2"
+    ],
+    "note": "The frozen baseline supplies the inverse-action, orthogonal-isometry, homogeneity, and max/Euclidean pieces separately, but no declaration constructs Ramos's scaled backward perturbation."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p09MatVec",
+    "p09Transpose",
+    "p09ScaleMatrix",
+    "p09Orthogonal",
+    "p09VecNorm2",
+    "p09Max"
+  ],
+  "source_locations": [
+    {
+      "anchor": "prose assertion e = T delta and the two following unnumbered bounds",
+      "pdf_page": 12,
+      "printed_page": "768",
+      "role": "fictional input perturbation and its norm certificates",
+      "section": "6. Conclusion"
+    }
+  ],
+  "source_tags": [
+    "TXT",
+    "UNL"
+  ],
+  "task_id": "P09-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The L proof combines NumStability.matMulVec_of_isRightInverse, NumStability.vecNorm2_smul, NumStability.vecNorm2_orthogonal, and NumStability.infNormVec_le_vecNorm2 from NumStability/Analysis/MatrixAlgebra.lean with the paper-specific scaled-transpose construction.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P09/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p09_t2_scaled_orthogonal_backward_error"
+  }
+}

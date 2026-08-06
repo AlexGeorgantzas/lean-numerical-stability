@@ -14,12 +14,13 @@ if str(TOOLS) not in sys.path:
 from check_construction import (  # noqa: E402
     check_one,
     construction_specs,
+    local_helper_sources,
     make_parser,
     resolve_environment,
     run_checks,
 )
 from hashes import create_manifest  # noqa: E402
-from common import BenchmarkToolError  # noqa: E402
+from common import BenchmarkToolError, sha256_file  # noqa: E402
 
 
 class ConstructionCheckTests(unittest.TestCase):
@@ -47,9 +48,15 @@ class ConstructionCheckTests(unittest.TestCase):
                 f"# test {filename}\n", encoding="utf-8"
             )
         (self.benchmark / "agent_prompt.md").write_text("prompt\n", encoding="utf-8")
-        shared = self.benchmark / "shared" / "HighamBench" / "Definitions.lean"
-        shared.parent.mkdir(parents=True)
-        shared.write_text("namespace HighamBench\nend HighamBench\n", encoding="utf-8")
+        shared_root = self.benchmark / "shared" / "HighamBench"
+        shared_root.mkdir(parents=True)
+        (shared_root / "Core.lean").write_text(
+            "namespace HighamBench\nend HighamBench\n", encoding="utf-8"
+        )
+        for paper_id in ("P01", "P02"):
+            (shared_root / f"{paper_id}Definitions.lean").write_text(
+                "import HighamBench.Core\n", encoding="utf-8"
+            )
 
         self.target_names = {
             "P01-T1": "p01_t1_pairwise_nonnegative",
@@ -62,6 +69,26 @@ class ConstructionCheckTests(unittest.TestCase):
         metadata = self.benchmark / "metadata"
         metadata.mkdir()
         central_manifest = {
+            "controlled_shared_files": [
+                {
+                    "path": "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+                    "paper_ids": ["P01", "P02"],
+                    "sha256": sha256_file(shared_root / "Core.lean"),
+                },
+                *[
+                    {
+                        "path": (
+                            "paper_bencmark/highambench/shared/HighamBench/"
+                            f"{paper_id}Definitions.lean"
+                        ),
+                        "paper_ids": [paper_id],
+                        "sha256": sha256_file(
+                            shared_root / f"{paper_id}Definitions.lean"
+                        ),
+                    }
+                    for paper_id in ("P01", "P02")
+                ],
+            ],
             "papers": [
                 {
                     "paper_id": paper_id,
@@ -118,7 +145,8 @@ class ConstructionCheckTests(unittest.TestCase):
                 self.benchmark,
                 requested=[
                     "agent_prompt.md",
-                    "shared/HighamBench/Definitions.lean",
+                    "shared/HighamBench/Core.lean",
+                    f"shared/HighamBench/{spec.paper_id}Definitions.lean",
                     f"tasks/{spec.paper_id}/{spec.tier}/Target.lean",
                     f"tasks/{spec.paper_id}/{spec.tier}/context.md",
                 ],
@@ -129,8 +157,11 @@ class ConstructionCheckTests(unittest.TestCase):
             )
             if spec.paper_id == "P01":
                 for condition in ("N", "L"):
+                    proof = target.replace("sorry", "trivial")
+                    if spec.tier in ("T1", "T2"):
+                        proof = f"import Common{condition}\n" + proof
                     (private_paper / f"{spec.tier}_{condition}.lean").write_text(
-                        target.replace("sorry", "trivial"), encoding="utf-8"
+                        proof, encoding="utf-8"
                     )
 
         self.toolchain = self.root / "toolchain"
@@ -155,9 +186,34 @@ class ConstructionCheckTests(unittest.TestCase):
         compiled = self.library_olean / "NumStability" / "Example.olean"
         compiled.parent.mkdir(parents=True)
         compiled.write_bytes(b"test compiled library")
-        shared_compiled = self.shared_olean / "HighamBench" / "Definitions.olean"
-        shared_compiled.parent.mkdir(parents=True)
-        shared_compiled.write_bytes(b"test shared olean")
+        for paper_id in ("P01", "P02"):
+            shared_compiled_root = self.shared_olean / paper_id / "HighamBench"
+            shared_compiled_root.mkdir(parents=True)
+            for name in ("Core", f"{paper_id}Definitions"):
+                (shared_compiled_root / f"{name}.olean").write_bytes(
+                    f"test shared olean {paper_id} {name}".encode("utf-8")
+                )
+        (metadata / "environment.json").write_text(
+            json.dumps(
+                {
+                    "lean": {
+                        "shared_olean_bundles": {
+                            paper_id: {
+                                f"HighamBench/{name}.olean": sha256_file(
+                                    self.shared_olean
+                                    / paper_id
+                                    / "HighamBench"
+                                    / f"{name}.olean"
+                                )
+                                for name in ("Core", f"{paper_id}Definitions")
+                            }
+                            for paper_id in ("P01", "P02")
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
         mathlib_source = self.packages / "mathlib" / "Mathlib.lean"
         mathlib_source.parent.mkdir(parents=True)
         mathlib_source.write_text("-- test Mathlib source\n", encoding="utf-8")
@@ -307,7 +363,7 @@ class ConstructionCheckTests(unittest.TestCase):
             "filesystem_scan": {
                 "root": ".",
                 "markers": ["NumStability", "numStability", "lean-fp-analysis"],
-                "regular_file_count": 4,
+                "regular_file_count": 5,
                 "directory_count": 4,
                 "symlink_count": 0,
                 "content_limit_bytes": 4 * 1024 * 1024,
@@ -320,7 +376,7 @@ class ConstructionCheckTests(unittest.TestCase):
             },
         }
 
-    def test_p01_selector_keeps_exact_six_proof_matrix_and_helpers(self) -> None:
+    def test_paper_selector_and_import_driven_helpers_use_generic_rules(self) -> None:
         specs = construction_specs(self.benchmark, paper_ids=["P01"])
         self.assertEqual(
             [(item.task_id, item.condition) for item in specs],
@@ -333,9 +389,16 @@ class ConstructionCheckTests(unittest.TestCase):
                 ("P01-T3", "L"),
             ],
         )
-        self.assertEqual(sum(item.helper_filename is not None for item in specs), 4)
+        helpers = {
+            (item.task_id, item.condition): local_helper_sources(
+                self.private_gold / item.paper_id,
+                self.private_gold / item.paper_id / item.gold_filename,
+            )
+            for item in specs
+        }
+        self.assertEqual(sum(bool(value) for value in helpers.values()), 4)
         self.assertTrue(
-            all(item.helper_filename is None for item in specs if item.tier == "T3")
+            all(not value for (task_id, _condition), value in helpers.items() if task_id.endswith("-T3"))
         )
 
     def test_manifest_discovery_includes_p02_task_specific_theorems(self) -> None:
@@ -359,8 +422,6 @@ class ConstructionCheckTests(unittest.TestCase):
                 spec.canonical_relative,
                 f"tasks/{spec.paper_id}/{spec.tier}/Target.lean",
             )
-        p02_specs = [item for item in specs if item.paper_id == "P02"]
-        self.assertTrue(all(item.helper_filename is None for item in p02_specs))
 
     def test_p02_spec_drives_validator_paths_with_synthetic_unit_source(self) -> None:
         spec = next(
@@ -533,7 +594,18 @@ class ConstructionCheckTests(unittest.TestCase):
         )
         self.assertTrue(basis["shared_olean"]["condition_n_absence_scan"]["ok"])
         self.assertRegex(basis["executables"]["python"]["version"], r"^\d+\.\d+\.\d+$")
-        self.assertEqual(basis["shared_olean"]["exact_file_count"], 1)
+        self.assertEqual(basis["shared_olean"]["exact_file_count"], 4)
+        self.assertEqual(
+            set(basis["shared_olean"]["bundles"]),
+            {"P01", "P02"},
+        )
+        self.assertEqual(
+            set(basis["shared_olean"]["bundles"]["P01"]),
+            {
+                "HighamBench/Core.olean",
+                "HighamBench/P01Definitions.olean",
+            },
+        )
         n_checks = [
             item["n_preflight"] for item in evidence["results"] if item["condition"] == "N"
         ]
@@ -557,6 +629,10 @@ class ConstructionCheckTests(unittest.TestCase):
         for config in validation_configs:
             for command in (config.compile_command, config.audit_command):
                 assert command is not None
+                self.assertEqual(
+                    command[command.index("--shared-olean-root") + 1],
+                    str(self.shared_olean / "P01"),
+                )
                 if config.condition == "N":
                     self.assertNotIn("--library-source", command)
                     self.assertNotIn("--library-root-file", command)

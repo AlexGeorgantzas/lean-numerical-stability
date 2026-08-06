@@ -1,4 +1,5 @@
 {
+  "record_status": "superseded_construction_snapshot",
   "schema_version": "highambench-review-0.2",
   "review_id": "P02-formal-interface-and-protocol-review-2",
   "reviewer": {
@@ -7,13 +8,13 @@
     "focus": "Lean interface neutrality, controlled hashes, N/L elaboration, condition-N isolation, runner/checker coverage, and release-state honesty",
     "independence_note": "This pass inspected the Lean targets, shared definitions, controlled manifests, isolated build and preflight evidence, and generalized tools independently of P02_reviewer_1.json."
   },
-  "review_date": "2026-07-28",
+  "review_date": "2026-07-31",
   "overall_status": "pass for fixed public interfaces and protocol wiring; release blocked on complete private construction validation",
   "fixed_environment": {
-    "environment_id": "highambench-p01-p02-0eb2caca70acb6c8",
-    "environment_bundle_sha256": "0eb2caca70acb6c88052e5b0a079d3fc724babd47bb30ef1e092b53d7bb9de37",
-    "release_manifest_sha256": "5e6f25d1a066e914647cc4dbe531157211726c6ab15465b533eb42625dae7568",
-    "release_file_count": 60,
+    "environment_id": "highambench-p01-p02-b58f00936eb21bfe",
+    "environment_bundle_sha256": "b58f00936eb21bfed7911489f0af956ee310e6e6e4f00efff434077890c4f5cf",
+    "release_manifest_sha256": "df8fa6cab9eb3456637fa2565d807da49cdd1f868713937e294920d956e400b8",
+    "release_file_count": 62,
     "shared_source_sha256": "a38c8441b28dc9b3806f08394fb4d2d55bbe7171b72f97ab6781c8b8ac6e4861",
     "shared_olean_sha256": "5e71d7b12e7d4648013600fa0f257c1eb8bfdfd7c32ea2710595df4f2672e851"
   },
@@ -21,19 +22,19 @@
     "P02-T1": {
       "target_sha256": "433a0639bd3bd9ff39cd187dbab957e27996f5117c02a717402dae4213d47a41",
       "context_sha256": "659663dae08a0e30b713ae22f0b1f01f79272bca63cb6d939d23aea934ddbb44",
-      "task_json_sha256": "59220adb7cea6fcca1c690b29c8964e2915528fd0d418e4b40bcc7a6a88128bd",
+      "task_json_sha256": "87e30517ab9028b067fc4510ed60af061985bc6974fc5c423650202c6a8dbd9a",
       "controlled_manifest_sha256": "acccf329956e3098b656c668384979b31faed114a7c7d637652892686f3f3aae"
     },
     "P02-T2": {
       "target_sha256": "28e1ba2efb227a2d435c4939643bad09b199440695528346770ff319df6d17a4",
       "context_sha256": "911b9a11f59ec96a7d3ac22fe009509a72e8026a56f5216aaf43b6239ef1a6ea",
-      "task_json_sha256": "69acbea0978a9a164dad9f8f43a554e980b10c81db62594ab0ab202b95212e45",
+      "task_json_sha256": "c3eeadf212f5935236a06bcef873aba1ad496e0cc3f42e766b0339b3a830ed9e",
       "controlled_manifest_sha256": "85cbff622df076a53ab9200bde109cbe9da96ff33f837cb2280679e2676bae7b"
     },
     "P02-T3": {
       "target_sha256": "d1e0f8186e63c672549dd3b8a3d25c3d684ea5787f37db954708190e224e2373",
       "context_sha256": "ad1fe84bb536ceace88a5edd24bacf48669f4e3431c2684ed1d976451d3c061f",
-      "task_json_sha256": "f00e0f9db3f253e0c583e9c56868671dad64468c474f82f3a5860ba49de4d669",
+      "task_json_sha256": "c266c6fb1ae7fd722ba9b87daf24b92b12eb1d1765e394a8dc721135969ae5a4",
       "controlled_manifest_sha256": "e2c085f171b4ceecd7a604bd09c9dbc4ae89a71c68c84a1a9db0e3bfb08be4b6"
     }
   },
@@ -42,12 +43,13 @@
     "target_elaboration": "pass: all three P02 targets compiled unchanged in isolated N and L; all three P01 targets were also recompiled after the shared-file extension",
     "condition_n_preflight": "pass: each complete four-file P02 staging had zero marker/symlink leaks and a reliable failed NumStability import probe; P01 was rescanned as a shared-setting regression",
     "controlled_manifests": "pass: all six controlled task manifests verify",
-    "release_inventory": "pass: the exact 60-file evaluation package includes all six tasks and no third paper",
+    "release_inventory": "pass: the exact 62-file evaluation package includes all six tasks, the tag validator and its tests, and no third paper",
     "environment_identity": "pass: the bundle digest and ordered p01-p02 environment prefix were recomputed",
+    "task_source_tags": "pass: all six task records use schema highambench-task-0.3, the fixed seven-tag vocabulary, consistent author labels, and source-location evidence",
     "runner_matrix": "pass: manifest-driven routing enforces 6 tasks x 3 repetitions x 2 conditions = 36 runs",
-    "construction_checker": "pass for wiring: full scope discovers 12 N/L proof checks and fails explicitly while P02 gold is absent; --paper-id P01 retains the historical six-check path",
+    "construction_checker": "superseded snapshot note: the checker has since been replaced by one manifest-wide default and import-driven helper discovery shared by every paper ID",
     "p01_shared_regression": "pass: all six existing P01 private N/L proofs passed fresh hidden validation against the final minimized shared file; evidence SHA-256 7ef882227d94a126e948bbef68993d329b1405f16ef22f4796efcd2487843454",
-    "tool_tests": "pass: 96 of 96 Python tool tests passed",
+    "tool_tests": "pass: 102 of 102 Python tool tests passed",
     "additional_reachability": "P02-T1 has an independently compiled complete no-sorry proof against the current shared olean; source SHA-256 58982edf6f4bc04a2a5a062a08d2ec7f1e925802fc305b65b608790a2f4773ab"
   },
   "release_blockers": [

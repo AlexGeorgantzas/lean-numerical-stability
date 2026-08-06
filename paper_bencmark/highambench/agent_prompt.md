@@ -4,8 +4,8 @@ You are given an informal statement, a short paper-proof explanation, a fixed
 Lean theorem, and shared Lean definitions.  Your only job is to construct a
 Lean proof of the fixed theorem.
 
-The complete context and fixed target are appended below.  Read-only copies of
-them and `HighamBench/Definitions.lean` are also below the `task/` directory;
+The complete context and fixed target are appended below. Read-only copies of
+them and the task's shared Lean files are also below the `task/` directory;
 use `find task -type f` if you want their paths.  Create a new file named
 `Submission.lean` in the workspace root.  Copy the import, namespace, theorem
 name, arguments, assumptions, and conclusion from the fixed target exactly.
@@ -18,7 +18,8 @@ input-plus-output tokens, with cached input counted as input.  Stop as soon as
 
 Rules:
 
-- Do not change `Target.lean`, `context.md`, or `HighamBench/Definitions.lean`.
+- Do not change `Target.lean`, `context.md`, or any file below
+  `task/shared/HighamBench/`.
 - Do not use `sorry`, `admit`, `sorryAx`, a new `axiom` or `constant`, `unsafe`,
   `opaque`, or any device that avoids Lean's proof checker.
 - Do not import a hidden answer or any file outside the mounted workspace and

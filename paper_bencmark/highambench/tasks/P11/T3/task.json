@@ -1,0 +1,90 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, tier label, and exact finite-budget completion of Theorem 1(7)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The computed factors satisfy QR=A+DeltaA and Rinv is a right inverse of R.",
+    "The normal-equation residual, A, DeltaA, and Rinv obey the four stated nonnegative Frobenius budgets."
+  ],
+  "author_label": "Theorem 1",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P11 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P11 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P11/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p11_t3_orthogonality_defect_bound {n : Nat} (A dA Q R Rinv : P11Matrix n) (e a d rho : Real) ... : p11FrobNorm (p11OrthogonalityDefect Q) <= rho^2 * (e + 2*a*d + d^2)",
+    "namespace": "HighamBench",
+    "plain_language": "The loss of orthogonality is bounded by the squared inverse-factor budget times the normal-equation residual and the two first-order plus one quadratic factorization-error contributions.",
+    "target_file": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
+    "theorem_name": "p11_t3_orthogonality_defect_bound"
+  },
+  "informal_proof": "First derive the exact inverse-conjugated identity from QR=A+DeltaA. Bound each of A-transpose DeltaA, DeltaA-transpose A, and DeltaA-transpose DeltaA by Frobenius submultiplicativity, collect the four inner terms by repeated triangle inequalities, and apply two more product bounds for Rinv-transpose and Rinv.",
+  "informal_statement": "Theorem 1(7)'s orthogonality estimate with its first- and second-order contributions represented by explicit finite budgets.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P11",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram\u2013Schmidt.pdf",
+    "sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5"
+  },
+  "paper_version": "published journal version; volume 105, issue 2, 2006, printed pages 299-313",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.frobNorm_matMul_le",
+      "NumStability.frobNorm_sub_le",
+      "NumStability.frobNorm_transpose",
+      "NumStability.matMul_assoc",
+      "NumStability.matTranspose_matMul"
+    ],
+    "note": "All 24 modules in metadata/library_olean.json were searched. The mounted MatrixAlgebra object has the required local norm and algebra adapters, but no Gram-Schmidt model, no theorem deriving the exact defect identity, and no completed finite-budget version of Theorem 1(7). The broader source-only GramSchmidt modules are absent from the frozen object manifest and were not counted."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P11Matrix",
+    "p11MatMul",
+    "p11Transpose",
+    "p11FrobNorm",
+    "p11OrthogonalityDefect",
+    "p11NormalEquationResidual",
+    "p11DefectCore"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Theorem 1, inequality (7)",
+      "pdf_page": 4,
+      "printed_page": "302",
+      "role": "stated loss-of-orthogonality bound",
+      "section": "Theorem 1"
+    },
+    {
+      "anchor": "unnumbered exact identity and following norm estimate deriving (7)",
+      "pdf_page": 14,
+      "printed_page": "312",
+      "role": "proof decomposition into normal-equation and factorization-error terms",
+      "section": "Appendix: Proof of Theorem 1"
+    }
+  ],
+  "source_tags": [
+    "THM"
+  ],
+  "task_id": "P11-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "NumStability.frobNorm_matMul_le, NumStability.frobNorm_sub_le, NumStability.frobNorm_transpose, NumStability.matMul_assoc, and NumStability.matTranspose_matMul in NumStability/Analysis/MatrixAlgebra.lean supply only local adapters. The proof must newly derive the residual-to-defect identity and propagate four budgets through a double inverse conjugation; no such result exists in any of the 24 mounted modules recorded by metadata/library_olean.json.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p11_t3_orthogonality_defect_bound"
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, tier label, and exact finite-gamma strengthening of the paper's first-order summation passage",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The summation model satisfies the standard relative-error rule for addition and exact addition to zero.",
+    "The exact gamma denominator for n-1 additions is positive.",
+    "All terms are nonnegative and their exact sum is nonzero."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P14 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P14 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P14/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p14_t1_positive_recursive_sum_relative_error (fp : StandardAddModel) (n : Nat) (w : Fin n -> Real) ... : |recursiveSum ... - sum w| / |sum w| <= gamma fp.u (n-1)",
+    "namespace": "HighamBench",
+    "plain_language": "Recursive summation of a nonnegative nonzero family has relative error at most gamma for n-1 rounded additions.",
+    "target_file": "paper_bencmark/highambench/tasks/P14/T1/Target.lean",
+    "theorem_name": "p14_t1_positive_recursive_sum_relative_error"
+  },
+  "informal_proof": "Use the exact backward-error representation for recursive summation, take absolute values, and use nonnegativity to identify the sum of magnitudes with the exact sum.",
+  "informal_statement": "Exact finite-gamma form of the positive exponential-summation stage used to derive equation (3.3).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P14",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P14_Accurately computing the log-sum-exp and softmax functions.pdf",
+    "sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd"
+  },
+  "paper_version": "published journal version; IMA Journal of Numerical Analysis 41(4), 2021, printed pages 2311-2330",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": true,
+    "nearby_numstability_declarations": [
+      "NumStability.recursiveSum_relError_le_gamma_of_oneSigned",
+      "NumStability.recursiveSum_forward_error_bound_oneSigned"
+    ],
+    "note": "The mounted one-signed recursive-summation theorem reaches the target after the paper-scoped model adapter and the nonnegative-to-one-signed identification."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "StandardAddModel",
+    "GammaValid",
+    "gamma",
+    "recursiveSum"
+  ],
+  "source_locations": [
+    {
+      "anchor": "positive exponential sum and unnumbered recursive-summation bounds preceding equations (3.2)-(3.3)",
+      "pdf_page": 7,
+      "printed_page": "2317",
+      "role": "positive recursive-summation error stage",
+      "section": "3. Basic algorithms and error analysis"
+    }
+  ],
+  "source_tags": [
+    "UNL"
+  ],
+  "task_id": "P14-T1",
+  "tier": "T1",
+  "tier_label": "direct",
+  "tier_rationale": "The frozen library already exposes the exact one-signed recursive-summation relative-error theorem; only the P14 model adapter and nonnegative specialization are needed.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P14/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p14_t1_positive_recursive_sum_relative_error"
+  }
+}

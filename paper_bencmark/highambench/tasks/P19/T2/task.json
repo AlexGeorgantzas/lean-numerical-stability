@@ -1,0 +1,79 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, tier label, and exact finite-vector realization of the four-source xi aggregate in equation (3.8)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The weights alpha, beta, and lambda are nonnegative.",
+    "Each of the four error-vector norms is bounded by its corresponding source magnitude."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P19 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P19 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P19/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p19_t2_modular_four_source_error_bound {n : Nat} (alpha beta lambda epsilonC epsilonB ug epsilonX : Real) (computationError rhsError gmresError solutionError : Fin n -> Real) (halpha : 0 <= alpha) (hbeta : 0 <= beta) (hlambda : 0 <= lambda) (hcomputation : p19VecNorm2 computationError <= epsilonC) (hrhs : p19VecNorm2 rhsError <= epsilonB) (hgmres : p19VecNorm2 gmresError <= ug) (hsolution : p19VecNorm2 solutionError <= epsilonX) : p19VecNorm2 (p19ModularError alpha beta lambda computationError rhsError gmresError solutionError) <= p19ModularEnvelope alpha beta lambda epsilonC epsilonB ug epsilonX",
+    "namespace": "HighamBench",
+    "plain_language": "A four-source modular error vector has norm bounded by the exact weighted xi envelope from equation (3.8).",
+    "target_file": "paper_bencmark/highambench/tasks/P19/T2/Target.lean",
+    "theorem_name": "p19_t2_modular_four_source_error_bound"
+  },
+  "informal_proof": "Apply Euclidean homogeneity to each weighted source, use its supplied norm bound, and combine the four contributions with three applications of the triangle inequality.",
+  "informal_statement": "An exact finite-vector certificate for the four weighted terms collected in xi in the modular forward-error bound (3.8).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P19",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P19_Mixed precision strategies for preconditioned GMRES- a comprehensive analysis.pdf",
+    "sha256": "67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad"
+  },
+  "paper_version": "HAL preprint hal-05071696v2, submitted 2026-05-19; IMA Journal of Numerical Analysis, in press, article pages 1-46",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.vecNorm2_add_le",
+      "NumStability.vecNorm2_smul"
+    ],
+    "note": "The frozen MatrixAlgebra module supplies triangle inequality and homogeneity. It does not contain the paper's alpha/beta/lambda four-source model or its xi aggregation."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p19VecNorm2Sq",
+    "p19VecNorm2",
+    "p19Add",
+    "p19Scale",
+    "p19ModularError",
+    "p19ModularEnvelope"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equation (3.8), definition xi = alpha epsilon_c + beta epsilon_b + beta u_g + lambda epsilon_x",
+      "pdf_page": 9,
+      "printed_page": "8",
+      "role": "four-source modular attainable-error aggregate",
+      "section": "3.1. Improved modular framework"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P19-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The L proof combines NumStability.vecNorm2_add_le and NumStability.vecNorm2_smul from frozen NumStability/Analysis/MatrixAlgebra.lean, then supplies the P19-specific four-source association, nonnegative coefficient normalization, individual source bounds, and xi assembly.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P19/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p19_t2_modular_four_source_error_bound"
+  }
+}

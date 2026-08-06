@@ -1,0 +1,111 @@
+{
+  "annotation": {
+    "method": "Codex read the complete 23-page local paper, surveyed every section, definition, labeled result, bound analysis, experiment, conclusion, and reference, visually checked all three selected source pages, searched all 24 frozen mounted object modules, and compiled private N/L proofs before accepting the targets.",
+    "not_human_reviewer": true,
+    "performed_by": "Codex",
+    "reason": "The project owner assigned the P17 source selection and benchmark annotation to Codex."
+  },
+  "authors": [
+    "El-Mehdi El Arar",
+    "Massimiliano Fasi",
+    "Silviu-Ioan Filip",
+    "Mantas Mikaitis"
+  ],
+  "benchmark_specification": {
+    "local_path": "paper_bencmark/scratch_pad/HighamBench_Simple_Two_Condition_Specification.pdf",
+    "name": "HighamBench Simple Two-Condition Specification",
+    "sha256": "25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8",
+    "version": "0.2"
+  },
+  "classification_frozen_before_runs": false,
+  "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
+  "included_tasks": [
+    "P17-T1",
+    "P17-T2",
+    "P17-T3"
+  ],
+  "paper_id": "P17",
+  "paper_version": "published journal version; SIAM Journal on Scientific Computing 47(5), 2025, pages B1227-B1249",
+  "publication": {
+    "doi": "10.1137/24M1681458",
+    "issue": 5,
+    "journal": "SIAM Journal on Scientific Computing",
+    "online_publication_date": "2025-10-13",
+    "printed_pages": "B1227-B1249",
+    "publication_date": "2025-10-13",
+    "volume": 47,
+    "year": 2025
+  },
+  "rejected_candidates": [
+    {
+      "candidate": "Definitions 2.2, 2.5, 2.7, and 2.9 and the floating-point model in Section 2",
+      "reason": "These are definitions or recalled preliminaries rather than results proved in this paper."
+    },
+    {
+      "candidate": "Lemma 2.1, Propositions 2.3-2.4, and Lemma 2.6",
+      "reason": "These probability facts are recalled from the literature. T3 instead formalizes their paper-specific use in Theorem 4.3."
+    },
+    {
+      "candidate": "Lemma 3.2 and equation (3.3)",
+      "reason": "The conditional-bias identity is central, but a faithful standalone target would require a full conditional-expectation model for the SR implementation. Theorem 3.6 exposes its reusable finite product consequence."
+    },
+    {
+      "candidate": "Lemma 3.9's power-set expansion",
+      "reason": "This is a technical algebraic lemma subordinate to the centered decomposition in Lemma 3.10 and less representative of stochastic-rounding error analysis."
+    },
+    {
+      "candidate": "Lemma 3.10 in full",
+      "reason": "Its full conditional mean-independence statement and power-set remainder require a considerably larger probability filtration interface. T3 retains the exact second-moment-plus-remainder assembly used downstream."
+    },
+    {
+      "candidate": "Theorems 4.2, 4.4, 4.5, and 4.6",
+      "reason": "Theorem 4.2 uses an externally delegated martingale construction, while the inner-product results repeat the same bias and probability pattern with one multiplication error. Theorems 4.1 and 4.3 provide the clean summation progression."
+    },
+    {
+      "candidate": "Remark 5.1 random-bit rule and the experiments in Section 6",
+      "reason": "The random-bit choice is explicitly presented as a rule of thumb derived from asymptotic comparison, and the experiments are empirical rather than universally quantified formal results."
+    },
+    {
+      "candidate": "future extension to backward error analysis in Section 7",
+      "reason": "The paper states this as future work, not a completed result."
+    }
+  ],
+  "result_survey": {
+    "T1": {
+      "available": true,
+      "decision": "Use the deterministic one-atom specialization of Theorem 3.6's finite product envelope.",
+      "task_id": "P17-T1",
+      "theorem_name": "p17_t1_product_bias_envelope"
+    },
+    "T2": {
+      "available": true,
+      "decision": "Use the coefficientwise condition-number step that turns the expected suffix-product envelope into Theorem 4.1's summation-bias bound.",
+      "task_id": "P17-T2",
+      "theorem_name": "p17_t2_recursive_sum_bias_condition_bound"
+    },
+    "T3": {
+      "available": true,
+      "decision": "Use the exact finite-probability second-moment-plus-bias assembly in the proof of Theorem 4.3.",
+      "task_id": "P17-T3",
+      "theorem_name": "p17_t3_variance_plus_bias_probability_bound"
+    }
+  },
+  "schema_version": "highambench-paper-0.2",
+  "selection_policy": [
+    "Use results proved in this paper rather than recalled probability facts, empirical plots, or future-work claims.",
+    "Expose finite products, finite summation conditioning, and finite probability with paper-scoped definitions.",
+    "Use exact finite inequalities rather than asymptotic big-O comparisons.",
+    "Keep every public definition free of NumStability imports.",
+    "Assign tiers only from the 24 modules in metadata/library_olean.json."
+  ],
+  "short_name": "El Arar et al. (2025)",
+  "source": {
+    "lawful_source_locator": "https://doi.org/10.1137/24M1681458",
+    "local_path": "paper_bencmark/reference_papers/P17_PROBABILISTIC ERROR ANALYSIS OF LIMITED-PRECISIONSTOCHASTIC ROUNDING.pdf",
+    "page_map": "PDF pages 1-23 are journal pages B1227-B1249 respectively.",
+    "pdf_pages": 23,
+    "rights_note": "The local article copy states SIAM copyright and prohibits unauthorized reproduction. Release only bibliographic metadata, locators, hashes, and concise benchmark-author paraphrases unless redistribution permission is confirmed.",
+    "sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d"
+  },
+  "title": "Probabilistic Error Analysis of Limited-Precision Stochastic Rounding"
+}

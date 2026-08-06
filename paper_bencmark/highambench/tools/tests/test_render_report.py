@@ -57,27 +57,32 @@ class ReportFixture:
         prompt_path = self.root / "agent_prompt.md"
         prompt_path.parent.mkdir(parents=True, exist_ok=True)
         prompt_path.write_bytes(prompt)
-        shared = b"""namespace HighamBench
+        shared_core = b"""namespace HighamBench
 structure StandardAddModel where
-  u : Real
-structure NoGuardAddModel where
   u : Real
 def gamma := 0
 def GammaValid := True
-def pairwiseSum := 0
 def recursiveSum := 0
+end HighamBench
+"""
+        shared_p01 = b"""import HighamBench.Core
+namespace HighamBench
+structure NoGuardAddModel where
+  u : Real
+def pairwiseSum := 0
 def noGuardRecursiveRunningBudget := 0
 end HighamBench
 """
-        shared_path = self.root / "shared" / "HighamBench" / "Definitions.lean"
-        shared_path.parent.mkdir(parents=True, exist_ok=True)
-        shared_path.write_bytes(shared)
+        shared_path = self.root / "shared" / "HighamBench"
+        shared_path.mkdir(parents=True, exist_ok=True)
+        (shared_path / "Core.lean").write_bytes(shared_core)
+        (shared_path / "P01Definitions.lean").write_bytes(shared_p01)
 
         targets: list[dict] = []
         task_ids = ["P01-T1", "P01-T2", "P01-T3"]
         for tier, task_id in zip(("T1", "T2", "T3"), task_ids):
             target_bytes = (
-                "import HighamBench.Definitions\n"
+                "import HighamBench.P01Definitions\n"
                 f"theorem p01_{tier.lower()}_test : True := by trivial\n"
             ).encode()
             target_path = self.root / "tasks" / "P01" / tier / "Target.lean"
@@ -104,6 +109,13 @@ end HighamBench
                         "declaration": f"p01_{tier.lower()}_test",
                         "file": f"paper_bencmark/highambench/tasks/P01/{tier}/Target.lean",
                         "controlled_file_sha256": digest_bytes(target_bytes),
+                        "shared_files": [
+                            "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+                            (
+                                "paper_bencmark/highambench/shared/HighamBench/"
+                                "P01Definitions.lean"
+                            ),
+                        ],
                     },
                 }
             )
@@ -153,9 +165,18 @@ end HighamBench
             },
             "controlled_shared_files": [
                 {
-                    "path": "paper_bencmark/highambench/shared/HighamBench/Definitions.lean",
-                    "sha256": digest_bytes(shared),
-                }
+                    "path": "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+                    "paper_ids": ["P01"],
+                    "sha256": digest_bytes(shared_core),
+                },
+                {
+                    "path": (
+                        "paper_bencmark/highambench/shared/HighamBench/"
+                        "P01Definitions.lean"
+                    ),
+                    "paper_ids": ["P01"],
+                    "sha256": digest_bytes(shared_p01),
+                },
             ],
             "papers": [
                 {
@@ -294,7 +315,8 @@ end HighamBench
 
         bundle_sha = "e" * 64
         environment_id = "highambench-p01-" + bundle_sha[:16]
-        shared_olean_sha = "7" * 64
+        shared_core_olean_sha = "7" * 64
+        shared_p01_olean_sha = "6" * 64
         lean_binary_sha = "8" * 64
         bubblewrap_sha = "9" * 64
         python_binary_sha = "f" * 64
@@ -379,7 +401,16 @@ end HighamBench
                 "binary_sha256": lean_binary_sha,
                 "mathlib_commit": "c" * 40,
                 "numstability_commit": "d" * 40,
-                "shared_definitions_olean_sha256": shared_olean_sha,
+                "shared_sources": {
+                    "HighamBench/Core.lean": digest_bytes(shared_core),
+                    "HighamBench/P01Definitions.lean": digest_bytes(shared_p01),
+                },
+                "shared_olean_bundles": {
+                    "P01": {
+                        "HighamBench/Core.olean": shared_core_olean_sha,
+                        "HighamBench/P01Definitions.olean": shared_p01_olean_sha,
+                    }
+                },
                 "numstability_source_manifest": (
                     "paper_bencmark/highambench/metadata/library_source.json"
                 ),
@@ -418,7 +449,19 @@ end HighamBench
             self.root / "metadata" / "evidence" / "exact_target_search.json",
             {
                 "fixed_surface_hashes": {
-                    "shared_definitions": {"sha256": digest_bytes(shared)},
+                    "shared_files": [
+                        {
+                            "path": "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+                            "sha256": digest_bytes(shared_core),
+                        },
+                        {
+                            "path": (
+                                "paper_bencmark/highambench/shared/HighamBench/"
+                                "P01Definitions.lean"
+                            ),
+                            "sha256": digest_bytes(shared_p01),
+                        },
+                    ],
                     **{
                         target["task_id"]: {
                             "sha256": target["lean_target"]["controlled_file_sha256"]
@@ -468,9 +511,13 @@ end HighamBench
                     "bubblewrap": {"path": "/bin/bwrap", "sha256": bubblewrap_sha},
                 },
                 "shared_olean": {
-                    "relative_file": "HighamBench/Definitions.olean",
-                    "sha256": shared_olean_sha,
-                    "exact_file_count": 1,
+                    "bundles": {
+                        "P01": {
+                            "HighamBench/Core.olean": shared_core_olean_sha,
+                            "HighamBench/P01Definitions.olean": shared_p01_olean_sha,
+                        }
+                    },
+                    "exact_file_count": 2,
                 },
                 "numstability_source": {
                     "path": "metadata/library_source.json",
@@ -528,15 +575,15 @@ end HighamBench
                             ),
                             "controlled_files_verified_after_staging": {
                                 "ok": True,
-                                "verified": 4,
-                                "expected": 4,
+                                "verified": 5,
+                                "expected": 5,
                                 "missing": [],
                                 "changed": [],
                             },
                             "filesystem_scan": {
                                 "root": ".",
                                 "markers": ["NumStability", "numStability"],
-                                "regular_file_count": 4,
+                                "regular_file_count": 5,
                                 "directory_count": 3,
                                 "symlink_count": 0,
                             },

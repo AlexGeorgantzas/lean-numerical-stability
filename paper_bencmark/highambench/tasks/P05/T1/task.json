@@ -1,0 +1,74 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, residual-source indexing adapter, and exact coefficient formalization",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The unit roundoff u is nonnegative.",
+    "With Lean's k equal to the number of product terms, the preceding summation analysis bounds the scalar residual by (k+1)*u times the absolute-value sum of the computed result, c, and those terms.",
+    "The nested Option index is only a finite disjoint union of those three source families."
+  ],
+  "author_label": "Lemma 4.1",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P05 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P05 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P05/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p05_t1_uniform_backward_coefficients {k : Nat} (u computed c : Real) (products : Fin k -> Real) ... : exists theta0 thetaC thetaP, uniform (k+1)*u bounds and computed*(1+theta0)=c*(1+thetaC)-sum products_i*(1+thetaP_i)",
+    "namespace": "HighamBench",
+    "plain_language": "A residual bounded by (k+1)*u times the magnitudes of all sources can be distributed among exact sign-aligned source coefficients, each bounded by (k+1)*u.",
+    "target_file": "paper_bencmark/highambench/tasks/P05/T1/Target.lean",
+    "theorem_name": "p05_t1_uniform_backward_coefficients"
+  },
+  "informal_proof": "Distribute the scalar residual over the sources in proportion to their magnitudes, using their signs. If their absolute-value sum is zero, the residual is zero and all coefficients can be zero.",
+  "informal_statement": "The exact uniform-coefficient conversion used in Lemma 4.1 after its scalar residual estimate.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P05",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P05_IMPROVED BACKWARD ERROR BOUNDS FOR LU ANDCHOLESKY FACTORIZATIONS.pdf",
+    "sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6"
+  },
+  "paper_version": "published journal version; volume 35, issue 2, 2014, printed pages 684-698",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.exists_summation_source_coefficients_of_abs_le_mul_sum_abs"
+    ],
+    "note": "The frozen declaration directly supplies the generic sign-aligned residual distribution. A small paper-specific adapter assigns its coefficients to the computed result, c, and the signed product terms in Lemma 4.1."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p05CoefficientSource"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Lemma 4.1 and its sign-aligned coefficient construction",
+      "pdf_page": 10,
+      "printed_page": "693",
+      "role": "uniform componentwise coefficients for the computed subtraction/division expression",
+      "section": "4.1. An improved version of Higham's Lemma 8.4"
+    }
+  ],
+  "source_tags": [
+    "LEM"
+  ],
+  "task_id": "P05-T1",
+  "tier": "T1",
+  "tier_label": "direct use",
+  "tier_rationale": "NumStability.exists_summation_source_coefficients_of_abs_le_mul_sum_abs in NumStability/Analysis/Summation/ErrorBounds.lean closes the mathematical core directly after the finite disjoint-union and sign adapters.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P05/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p05_t1_uniform_backward_coefficients"
+  }
+}

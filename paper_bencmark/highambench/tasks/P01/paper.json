@@ -1,64 +1,64 @@
 {
-  "schema_version": "highambench-paper-0.2",
-  "paper_id": "P01",
-  "short_name": "Higham (1993)",
-  "title": "The Accuracy of Floating Point Summation",
+  "annotation": {
+    "method": "Codex read the complete local paper, checked every numbered displayed result relevant to summation error, fixed the three labels before proof testing, and recorded exact PDF-page, printed-page, section, and equation anchors.",
+    "performed_by": "Codex",
+    "reason": "The benchmark specification calls for human review. The project owner asked Codex to perform that review for this entry."
+  },
   "authors": [
     "Nicholas J. Higham"
   ],
-  "publication": {
-    "journal": "SIAM Journal on Scientific Computing",
-    "volume": 14,
-    "issue": 4,
-    "year": 1993,
-    "printed_pages": "783-799",
-    "doi": "10.1137/0914050"
-  },
-  "paper_version": "journal version; volume 14, issue 4, July 1993, printed pages 783-799",
-  "source": {
-    "local_path": "paper_bencmark/reference_papers/THE ACCURACY OF FLOATING POINT SUMMATION.pdf",
-    "sha256": "d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7",
-    "pdf_pages": 17,
-    "page_map": "PDF page 1 is printed page 783; add 782 to a PDF page number to get the printed page number.",
-    "lawful_source_locator": "https://doi.org/10.1137/0914050",
-    "rights_note": "The local PDF was supplied for benchmark construction and shows a SIAM redistribution notice. The benchmark should publish its locator, hash, and short paraphrases unless redistribution permission is confirmed."
-  },
   "benchmark_specification": {
-    "name": "HighamBench Simple Two-Condition Specification",
-    "version": "0.2",
     "local_path": "paper_bencmark/scratch_pad/HighamBench_Simple_Two_Condition_Specification.pdf",
-    "sha256": "25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8"
+    "name": "HighamBench Simple Two-Condition Specification",
+    "sha256": "25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8",
+    "version": "0.2"
   },
-  "annotation": {
-    "performed_by": "Codex",
-    "reason": "The benchmark specification calls for human review. The project owner asked Codex to perform that review for this entry.",
-    "method": "Codex read the complete local paper, checked every numbered displayed result relevant to summation error, fixed the three labels before proof testing, and recorded exact PDF-page, printed-page, section, and equation anchors."
-  },
-  "result_survey": {
-    "T1": {
-      "available": true,
-      "task_id": "P01-T1",
-      "theorem_name": "p01_t1_pairwise_nonnegative",
-      "decision": "Use the pairwise summation error bound in equation (3.6), specialized to nonnegative inputs using the paper's observation on printed page 785."
-    },
-    "T2": {
-      "available": true,
-      "task_id": "P01-T2",
-      "theorem_name": "p01_t2_pairwise_vs_recursive_bounds",
-      "decision": "Combine the recursive bound (2.6), the pairwise bound (3.6), and the paper's comparison of their coefficients."
-    },
-    "T3": {
-      "available": true,
-      "task_id": "P01-T3",
-      "theorem_name": "p01_t3_noGuard_recursive_running_error_bound",
-      "decision": "Formalize the no-guard recursive-summation running-error bound in equations (5.2) and (5.3), using the addition model in (5.1). The right side uses actual computed prefix sums and is not supplied by an accumulated theorem in NumStability."
-    }
-  },
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
+  "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
   "included_tasks": [
     "P01-T1",
     "P01-T2",
     "P01-T3"
   ],
-  "excluded_papers": "All papers other than P01 are intentionally outside this release."
+  "paper_id": "P01",
+  "paper_version": "journal version; volume 14, issue 4, July 1993, printed pages 783-799",
+  "publication": {
+    "doi": "10.1137/0914050",
+    "issue": 4,
+    "journal": "SIAM Journal on Scientific Computing",
+    "printed_pages": "783-799",
+    "volume": 14,
+    "year": 1993
+  },
+  "result_survey": {
+    "T1": {
+      "available": true,
+      "decision": "Use the pairwise summation error bound in equation (3.6), specialized to nonnegative inputs using the paper's observation on printed page 785.",
+      "task_id": "P01-T1",
+      "theorem_name": "p01_t1_pairwise_nonnegative"
+    },
+    "T2": {
+      "available": true,
+      "decision": "Combine the recursive bound (2.6), the pairwise bound (3.6), and the paper's comparison of their coefficients.",
+      "task_id": "P01-T2",
+      "theorem_name": "p01_t2_pairwise_vs_recursive_bounds"
+    },
+    "T3": {
+      "available": true,
+      "decision": "Formalize the no-guard recursive-summation running-error bound in equations (5.2) and (5.3), using the addition model in (5.1). The right side uses actual computed prefix sums and is not supplied by an accumulated theorem in NumStability.",
+      "task_id": "P01-T3",
+      "theorem_name": "p01_t3_noGuard_recursive_running_error_bound"
+    }
+  },
+  "schema_version": "highambench-paper-0.2",
+  "short_name": "Higham (1993)",
+  "source": {
+    "lawful_source_locator": "https://doi.org/10.1137/0914050",
+    "local_path": "paper_bencmark/reference_papers/THE ACCURACY OF FLOATING POINT SUMMATION.pdf",
+    "page_map": "PDF page 1 is printed page 783; add 782 to a PDF page number to get the printed page number.",
+    "pdf_pages": 17,
+    "rights_note": "The local PDF was supplied for benchmark construction and shows a SIAM redistribution notice. The benchmark should publish its locator, hash, and short paraphrases unless redistribution permission is confirmed.",
+    "sha256": "d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7"
+  },
+  "title": "The Accuracy of Floating Point Summation"
 }

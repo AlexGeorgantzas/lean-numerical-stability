@@ -1,0 +1,92 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and exact finite normwise form of Lemma 4.2 equations (4.14)-(4.15)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The computed residual and update satisfy the exact operation equations corresponding to (4.1) and (4.2).",
+    "The correction residual satisfies the bound (4.14).",
+    "The residual-computation and update errors satisfy their finite Euclidean bounds.",
+    "The current iterate norm is at most the next iterate norm, as assumed in Lemma 4.2.",
+    "The residual and update accuracy parameters epsilonR and epsilonU are nonnegative."
+  ],
+  "author_label": "Lemma 4.2",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P16 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P16 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P16/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p16_t2_restarted_residual_recurrence {n : Nat} (A : P16Matrix n) (b x correction xNext rhat deltaR deltaX : P16Vector n) (epsilonR epsilonU w omega : Real) ... : p16VecNorm (p16Residual A b xNext) <= w * p16VecNorm (p16Residual A b x) + (epsilonR + epsilonU + omega) * (p16VecNorm b + p16FrobNorm A * p16VecNorm xNext)",
+    "namespace": "HighamBench",
+    "plain_language": "The correction residual and the finite errors in residual computation and update combine into the exact next-residual recurrence underlying Lemma 4.2.",
+    "target_file": "paper_bencmark/highambench/tasks/P16/T2/Target.lean",
+    "theorem_name": "p16_t2_restarted_residual_recurrence"
+  },
+  "informal_proof": "Use the exact identity b-A*xNext = (rhat-A*correction)-deltaR-A*deltaX, apply Euclidean triangle inequality twice and the Frobenius action bound, replace ||x|| by ||xNext||, and collect coefficients exactly.",
+  "informal_statement": "Exact finite version of Lemma 4.2's backward residual recurrence before the paper drops second-order terms.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P16",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P16_A modular framework for the backward error analysis of GMRES.pdf",
+    "sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a"
+  },
+  "paper_version": "published open-access journal version; IMA Journal of Numerical Analysis 46(4), 2026, printed pages 1939-1993",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.frobNorm_nonneg",
+      "NumStability.vecNorm2_nonneg",
+      "NumStability.vecNorm2_add_le",
+      "NumStability.vecNorm2_neg",
+      "NumStability.vecNorm2_matMulVec_le_frobNorm_mul"
+    ],
+    "note": "The frozen library supplies the individual norm rules, but searches of all 24 mounted modules found no iterative-refinement or GMRES residual recurrence and no analogue of Lemma 4.2."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P16Matrix",
+    "P16Vector",
+    "p16MatVec",
+    "p16FrobNorm",
+    "p16VecNorm",
+    "p16Residual"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Lemma 4.2, correction residual (4.14) and next-residual recurrence (4.15)",
+      "pdf_page": 19,
+      "printed_page": "1957",
+      "role": "one-step backward-error recurrence",
+      "section": "4.1 The modular algorithm, error model, and error analysis"
+    },
+    {
+      "anchor": "exact iterative-refinement identity (4.18)",
+      "pdf_page": 20,
+      "printed_page": "1958",
+      "role": "finite residual composition used before norm bounds",
+      "section": "4.1 The modular algorithm, error model, and error analysis"
+    }
+  ],
+  "source_tags": [
+    "LEM"
+  ],
+  "task_id": "P16-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The L proof combines frozen Frobenius nonnegativity, Euclidean triangle/negation, and matrix-action bounds with the paper-specific residual/update equations and exact coefficient collection.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P16/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p16_t2_restarted_residual_recurrence"
+  }
+}

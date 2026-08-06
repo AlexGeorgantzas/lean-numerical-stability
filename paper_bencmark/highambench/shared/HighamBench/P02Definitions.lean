@@ -1,114 +1,27 @@
-import Mathlib.Algebra.BigOperators.Fin
-import Mathlib.Data.Real.Basic
-import Mathlib.Tactic
+import HighamBench.Core
 
 /-!
-# HighamBench shared setting
+# HighamBench P02 definitions
 
-This file is deliberately independent of the evaluated library.  It contains
-only the small amount of notation needed to state the P01 and P02 tasks in
-both benchmark conditions.
+This file contains only the error-free transformations and algorithms needed
+for P02, the Ogita--Rump--Oishi paper on accurate sums and dot products.
 -/
 
 namespace HighamBench
 
 open scoped BigOperators
 
-/-- The part of the usual floating-point model needed for ordinary summation. -/
-structure StandardAddModel where
-  u : ℝ
-  u_nonneg : 0 ≤ u
-  fl_add : ℝ → ℝ → ℝ
-  fl_add_zero : ∀ x : ℝ, fl_add 0 x = x
-  model_add :
-    ∀ x y : ℝ, ∃ δ : ℝ,
-      |δ| ≤ u ∧
-      fl_add x y = (x + y) * (1 + δ)
-
-/-- The weaker addition rule used when the arithmetic has no guard digit. -/
-structure NoGuardAddModel where
-  u : ℝ
-  u_pos : 0 < u
-  fl_add : ℝ → ℝ → ℝ
-  model_add :
-    ∀ x y : ℝ, ∃ α β : ℝ,
-      |α| ≤ u ∧
-      |β| ≤ u ∧
-      fl_add x y = x * (1 + α) + y * (1 + β)
-
-/-- Higham's accumulated-error number `γₙ = n*u/(1-n*u)`. -/
-noncomputable def gamma (u : ℝ) (n : ℕ) : ℝ :=
-  ((n : ℝ) * u) / (1 - (n : ℝ) * u)
-
-/-- The denominator in `gamma u n` is positive. -/
-def GammaValid (u : ℝ) (n : ℕ) : Prop :=
-  (n : ℝ) * u < 1
-
-/-- Embed an index into the left half of a vector of length `2^(r+1)`. -/
-def leftIndex (r : ℕ) (i : Fin (2 ^ r)) : Fin (2 ^ (r + 1)) :=
-  ⟨i.val, by
-    have hi := i.isLt
-    simp [pow_succ]
-    omega⟩
-
-/-- Embed an index into the right half of a vector of length `2^(r+1)`. -/
-def rightIndex (r : ℕ) (i : Fin (2 ^ r)) : Fin (2 ^ (r + 1)) :=
-  ⟨i.val + 2 ^ r, by
-    have hi := i.isLt
-    simp [pow_succ]
-    omega⟩
-
-/-- Balanced pairwise summation of exactly `2^r` inputs. -/
-noncomputable def pairwiseSum (flAdd : ℝ → ℝ → ℝ) :
-    (r : ℕ) → (Fin (2 ^ r) → ℝ) → ℝ
-  | 0, v => v ⟨0, by norm_num⟩
-  | r + 1, v =>
-      flAdd
-        (pairwiseSum flAdd r (fun i => v (leftIndex r i)))
-        (pairwiseSum flAdd r (fun i => v (rightIndex r i)))
-
-/-- Left-to-right recursive summation, with a one-element sum kept exact. -/
-noncomputable def recursiveSum (flAdd : ℝ → ℝ → ℝ) :
-    (n : ℕ) → (Fin n → ℝ) → ℝ
-  | 0, _ => 0
-  | n + 1, v =>
-      if h : n = 0 then
-        v ⟨0, by omega⟩
-      else
-        flAdd
-          (recursiveSum flAdd n (fun i => v i.castSucc))
-          (v (Fin.last n))
-
-/-- The right side of Higham (1993), equation (5.3), without the leading `u`.
-
-For inputs `x₁, ..., xₙ`, this is
-
-`(|Ŝ₁| + |x₂|) + ... + (|Ŝₙ₋₁| + |xₙ|)`,
-
-where `Ŝₖ` is the computed recursive sum of the first `k` inputs. The
-recursive definition follows the same last-step split as `recursiveSum`. -/
-noncomputable def noGuardRecursiveRunningBudget (fp : NoGuardAddModel) :
-    (n : ℕ) → (Fin n → ℝ) → ℝ
-  | 0, _ => 0
-  | n + 1, v =>
-      if n = 0 then
-        0
-      else
-        noGuardRecursiveRunningBudget fp n (fun i => v i.castSucc) +
-          |recursiveSum fp.fl_add n (fun i => v i.castSucc)| +
-          |v (Fin.last n)|
-
 /-! ## Ogita--Rump--Oishi error-free transformations
 
 The P02 tasks use only the mathematical contracts of `TwoSum` and
 `TwoProduct` that the paper establishes before analyzing `VecSum`, `Sum2`, and
-`DotK`.  Keeping those contracts abstract avoids building IEEE-754 machinery
+`DotK`. Keeping those contracts abstract avoids building IEEE-754 machinery
 into the fixed statements and gives conditions N and L the same small model.
 -/
 
 /-- A standard rounded-addition model equipped with an error-free `TwoSum`.
 
-The first component is the rounded sum.  The two components add to the exact
+The first component is the rounded sum. The two components add to the exact
 real sum, and the low component obeys the residual estimate used in Lemma 4.2
 of Ogita--Rump--Oishi (2005). -/
 structure ErrorFreeAddModel extends StandardAddModel where
@@ -139,7 +52,7 @@ noncomputable def twoSumCorrection (fp : ErrorFreeAddModel) {n : ℕ}
     (v ⟨i.val + 1, Nat.succ_lt_succ i.isLt⟩)).2
 
 /-- Algorithm 4.3 (`VecSum`): the `n` emitted low components followed by the
-final high component.  The input and output both have length `n+1`. -/
+final high component. The input and output both have length `n+1`. -/
 noncomputable def vecSum (fp : ErrorFreeAddModel) {n : ℕ}
     (v : Fin (n + 1) → ℝ) : Fin (n + 1) → ℝ :=
   Fin.lastCases
@@ -167,7 +80,7 @@ noncomputable def sum2 (fp : ErrorFreeAddModel) {n : ℕ}
 /-- The no-multiplication-underflow contract used for the P02 `DotK` task.
 
 The two product components add exactly to `a*b`, and the low component is at
-most unit roundoff times the exact product.  This is the minimal part of
+most unit roundoff times the exact product. This is the minimal part of
 Theorem 3.4 needed for the transformed-vector absolute-mass estimate. -/
 structure ErrorFreeDotModel extends ErrorFreeAddModel where
   twoProduct : ℝ → ℝ → ℝ × ℝ

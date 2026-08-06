@@ -1,0 +1,82 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and finite matrix formalization of the exact displayed identity used to derive Theorem 1(7)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The computed factors satisfy QR=A+DeltaA.",
+    "Rinv is a certified right inverse of R."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P11 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P11 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P11/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p11_t2_orthogonality_defect_identity {n : Nat} (A dA Q R Rinv : P11Matrix n) (hQR : p11MatMul n Q R = A + dA) (hInv : p11MatMul n R Rinv = p11Identity n) : p11OrthogonalityDefect Q = p11MatMul n (p11MatMul n (p11Transpose Rinv) (p11DefectCore A dA R)) Rinv",
+    "namespace": "HighamBench",
+    "plain_language": "The loss-of-orthogonality matrix is exactly the inverse-transpose conjugation of the normal-equation residual minus the three perturbation-product terms.",
+    "target_file": "paper_bencmark/highambench/tasks/P11/T2/Target.lean",
+    "theorem_name": "p11_t2_orthogonality_defect_identity"
+  },
+  "informal_proof": "Use the right inverse to rewrite Q as (A+DeltaA)Rinv and the identity as Rinv-transpose times R-transpose R times Rinv. Expand the two transposes and collect the normal-equation and perturbation terms in the paper's displayed order.",
+  "informal_statement": "The exact inverse-conjugated orthogonality-defect identity displayed in the proof of Theorem 1(7).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P11",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram\u2013Schmidt.pdf",
+    "sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5"
+  },
+  "paper_version": "published journal version; volume 105, issue 2, 2006, printed pages 299-313",
+  "result_form_tag": "EQ",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.matMul_assoc",
+      "NumStability.matMul_id_right",
+      "NumStability.matTranspose_matMul",
+      "NumStability.matTranspose_id"
+    ],
+    "note": "The frozen MatrixAlgebra object supplies multiplication, identity, associativity, and transpose adapters, but no declaration derives the paper's residual-to-orthogonality identity from QR=A+DeltaA and an inverse certificate."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P11Matrix",
+    "p11MatMul",
+    "p11Transpose",
+    "p11Identity",
+    "p11OrthogonalityDefect",
+    "p11NormalEquationResidual",
+    "p11DefectCore"
+  ],
+  "source_locations": [
+    {
+      "anchor": "unnumbered two-line displayed identity beginning I-Q_k^T Q_k",
+      "pdf_page": 14,
+      "printed_page": "312",
+      "role": "exact residual-to-orthogonality-defect identity",
+      "section": "Appendix: Proof of Theorem 1"
+    }
+  ],
+  "source_tags": [
+    "UNL"
+  ],
+  "task_id": "P11-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The L proof combines NumStability.matMul_assoc, NumStability.matMul_id_right, NumStability.matTranspose_matMul, and NumStability.matTranspose_id from NumStability/Analysis/MatrixAlgebra.lean with the paper-specific substitution QR=A+DeltaA and noncommutative expansion. No one frozen declaration states the completed identity.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P11/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p11_t2_orthogonality_defect_identity"
+  }
+}

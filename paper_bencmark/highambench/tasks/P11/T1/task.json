@@ -1,0 +1,75 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and Frobenius-certified finite specialization of equation (16)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The perturbation matrix has Frobenius norm at most epsilon."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P11 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P11 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P11/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p11_t1_first_column_residual_action {n : Nat} (G : P11Matrix n) (a : Fin n -> Real) (epsilon : Real) (hG : p11FrobNorm G <= epsilon) : p11VecNorm (p11MatVec G a) <= epsilon * p11VecNorm a",
+    "namespace": "HighamBench",
+    "plain_language": "A first-column residual represented as a small matrix acting on the input is bounded by epsilon times the input Euclidean norm.",
+    "target_file": "paper_bencmark/highambench/tasks/P11/T1/Target.lean",
+    "theorem_name": "p11_t1_first_column_residual_action"
+  },
+  "informal_proof": "Apply the frozen rectangular matrix-vector Frobenius estimate and multiply the supplied norm bound for G by the nonnegative vector norm.",
+  "informal_statement": "Equation (16)'s first-column factorization-residual action bound, with the perturbation certified in Frobenius norm.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P11",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram\u2013Schmidt.pdf",
+    "sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5"
+  },
+  "paper_version": "published journal version; volume 105, issue 2, 2006, printed pages 299-313",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": true,
+    "nearby_numstability_declarations": [
+      "NumStability.vecNorm2_rectMatMulVec_le_frobNormRect_mul"
+    ],
+    "note": "NumStability.vecNorm2_rectMatMulVec_le_frobNormRect_mul in NumStability/Analysis/MatrixAlgebra.lean directly supplies the matrix-action estimate; only the supplied bound on G and nonnegativity of the vector norm remain."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P11Matrix",
+    "p11FrobNorm",
+    "p11VecNorm",
+    "p11MatVec"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equation (16)",
+      "pdf_page": 10,
+      "printed_page": "308",
+      "role": "first-column residual as a small matrix action and its norm estimate",
+      "section": "Appendix: Proof of Theorem 1"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P11-T1",
+  "tier": "T1",
+  "tier_label": "direct use",
+  "tier_rationale": "NumStability.vecNorm2_rectMatMulVec_le_frobNormRect_mul in NumStability/Analysis/MatrixAlgebra.lean is the close frozen theorem; the L proof only bridges the paper-scoped norms and applies the hypothesis p11FrobNorm G <= epsilon.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P11/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p11_t1_first_column_residual_action"
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and exact first-order product-expansion formalization",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "P is a finite sequence of exact square transformations and E is the corresponding sequence of local perturbations.",
+    "The scalar t marks every occurrence of a local perturbation.",
+    "No orthogonality assumption is needed for this purely algebraic expansion; the paper uses it only in the subsequent norm estimates."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P06 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P06 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P06/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p06_t3_householder_product_first_order_expansion {m : Nat} (t : Real) (P E : Nat -> Fin m -> Fin m -> Real) (b : Fin m -> Real) : forall r i, perturbedState r i = exactState r i + t * firstOrderState r i + t^2 * higherOrderState r i",
+    "namespace": "HighamBench",
+    "plain_language": "A product of transformations P_j+tE_j is exactly its unperturbed state plus t times all single-error insertions plus t squared times an explicit higher-order remainder.",
+    "target_file": "paper_bencmark/highambench/tasks/P06/T3/Target.lean",
+    "theorem_name": "p06_t3_householder_product_first_order_expansion"
+  },
+  "informal_proof": "Induct on the sequence length. Distribute the newest factor P_r+tE_r over the induction hypothesis, collect the terms with zero and one E factors, and identify the remaining terms with the recursive higher-order state.",
+  "informal_statement": "An exact finite version of the first-order product expansion and O(u^2) remainder in equations (4.8)-(4.9).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P06",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P06_PROBABILISTIC ROUNDING ERROR ANALYSIS OFHOUSEHOLDER QR FACTORIZATION.pdf",
+    "sha256": "c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79"
+  },
+  "paper_version": "published journal version; volume 44, issue 3, 2023, printed pages 1146-1163",
+  "result_form_tag": "EQ",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.rectMatMulVec_mat_add",
+      "NumStability.rectMatMulVec_add",
+      "NumStability.rectMatMulVec_smul",
+      "NumStability.matSeqProd_mixed_normwise_perturbation_bound"
+    ],
+    "note": "The frozen MatrixAlgebra module has the required linearity and generic product-bound ingredients, but no exact theorem decomposes a finite perturbed transformation sequence into its single-insertion coefficient and an explicit order-at-least-two remainder. Searches also covered the non-frozen NumStability/Algorithms/QR/HouseholderQRSupport.lean, whose geometric accumulation results are not present in the frozen L bundle and do not state this expansion."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p06ExactState",
+    "p06FirstOrderState",
+    "p06HigherOrderState",
+    "p06PerturbedState"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equations (4.8)-(4.9) in the proof of Lemma 4.2",
+      "pdf_page": 7,
+      "printed_page": "1152",
+      "role": "first-order expansion of the perturbed transformation product and the single-perturbation insertion matrices",
+      "section": "4. Application of a sequence of Householder matrices"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P06-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "The closest compiled facts are NumStability.rectMatMulVec_mat_add, NumStability.rectMatMulVec_add, NumStability.rectMatMulVec_smul, and NumStability.matSeqProd_mixed_normwise_perturbation_bound in NumStability/Analysis/MatrixAlgebra.lean. They do not provide P06's exact first-order coefficient or explicit higher-order state, so the target requires new paper-scoped sequence models and a full induction. The frozen object inventory was searched completely for Householder and sequence-expansion modules; only MatrixAlgebra.olean is relevant.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P06/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p06_t3_householder_product_first_order_expansion"
+  }
+}

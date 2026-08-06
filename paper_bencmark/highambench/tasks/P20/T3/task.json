@@ -1,0 +1,96 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, tier label, exact multiword narrow-range gap, and strengthened equality and strictness comparison",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The input unit roundoff and both underflow scales are nonnegative.",
+    "The scaling threshold theta is positive."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P20 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P20 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P20/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p20_t3_multiword_narrow_range_gap {m n q p : Nat} (u U theta gmin Gmin : Real) (A : Fin m -> Fin n -> Real) (B : Fin n -> Fin q -> Real) ... : rangeFree <= narrowRange and narrowRange = rangeFree + inputUnderflow + accumUnderflow and (narrowRange = rangeFree iff inputUnderflow = 0 and accumUnderflow = 0) and ((0 < inputUnderflow or 0 < accumUnderflow) -> rangeFree < narrowRange)",
+    "namespace": "HighamBench",
+    "plain_language": "The multiword narrow-range envelope (4.32) is the range-free envelope (4.33) plus exactly two nonnegative underflow contributions, with exact equality and strictness criteria.",
+    "target_file": "paper_bencmark/highambench/tasks/P20/T3/Target.lean",
+    "theorem_name": "p20_t3_multiword_narrow_range_gap"
+  },
+  "informal_proof": "Expand the two paper-scoped coefficients. Their exact difference is the sum of the input and accumulation underflow terms. Rectangular infinity norms and both coefficients are nonnegative, giving the weak comparison; a sum of two nonnegative terms vanishes exactly when both vanish, and is positive when either is positive.",
+  "informal_statement": "An exact strengthened certificate for the comparison of the multiword bounds (4.32) and (4.33).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P20",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P20_ERROR ANALYSIS OF MATRIX MULTIPLICATION WITHNARROW RANGE FLOATING-POINT ARITHMETIC.pdf",
+    "sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2"
+  },
+  "paper_version": "SIAM Journal on Scientific Computing 47(4), B785-B800, published 2025-07-01",
+  "result_form_tag": "CMP",
+  "review_record_not_for_run_prompt": {
+    "absence_search": {
+      "patterns": [
+        "narrow range",
+        "multiword",
+        "underflow",
+        "matrix scaling"
+      ],
+      "result": "The frozen library contains general additive-underflow witnesses and matrix norms, but no narrow-range matrix-multiplication analysis, scaled multiword decomposition, or equations (4.32)-(4.33) envelope comparison.",
+      "scope": "all Lean source files corresponding to the 24 frozen .olean modules in metadata/library_olean.json"
+    },
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.infNormRect_nonneg"
+    ],
+    "note": "The closest frozen fact only establishes norm nonnegativity; all multiword coefficients, cross-envelope identities, and equality/strictness connections are P20-specific."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p20InfNormRect",
+    "p20MultiRangeFreeCoefficient",
+    "p20MultiInputUnderflowCoefficient",
+    "p20MultiAccumUnderflowCoefficient",
+    "p20MultiNarrowCoefficient",
+    "p20NormwiseEnvelope"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equation (4.32), multiword narrow-range bound",
+      "pdf_page": 11,
+      "printed_page": "B795",
+      "role": "range-free terms plus input- and accumulation-underflow contributions",
+      "section": "4.2. Summary and discussion"
+    },
+    {
+      "anchor": "equation (4.33) and preceding comparison sentence",
+      "pdf_page": 11,
+      "printed_page": "B795",
+      "role": "multiword bound without range limitations",
+      "section": "4.2. Summary and discussion"
+    }
+  ],
+  "source_tags": [
+    "EQN",
+    "TXT"
+  ],
+  "task_id": "P20-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "The L proof uses only NumStability.infNormRect_nonneg from the frozen MatrixAlgebra module. It must introduce all P20-specific single- and multiword narrow-range coefficients, connect (4.32) to (4.33), establish the exact normwise gap, and add equality and strictness certificates absent from all 24 frozen modules.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P20/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p20_t3_multiword_narrow_range_gap"
+  }
+}

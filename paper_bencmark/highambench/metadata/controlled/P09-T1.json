@@ -1,0 +1,32 @@
+{
+  "files": [
+    {
+      "bytes": 1771,
+      "path": "agent_prompt.md",
+      "sha256": "5c99c5e5812f4b3c5dc2be4e673f8baff5ad96b5babfbbe9b0b5a9a81e593758"
+    },
+    {
+      "bytes": 1328,
+      "path": "shared/HighamBench/Core.lean",
+      "sha256": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a"
+    },
+    {
+      "bytes": 2102,
+      "path": "shared/HighamBench/P09Definitions.lean",
+      "sha256": "28fd535f9728fdd6d98dac6045ee7922d4ec547751d099e73a7ade8e7ed5da6d"
+    },
+    {
+      "bytes": 320,
+      "path": "tasks/P09/T1/Target.lean",
+      "sha256": "b03593f5fdfd9c0eedb5ab88bfc5c86b371d2b941ea63942e6e1511fff220bea"
+    },
+    {
+      "bytes": 684,
+      "path": "tasks/P09/T1/context.md",
+      "sha256": "07df9bc96a9e8472a4d10084714cd2fb9157290c3aee8a5b6fc7acf9e2294b68"
+    }
+  ],
+  "kind": "highambench-controlled-files",
+  "label": "P09-T1-controlled",
+  "schema_version": 1
+}

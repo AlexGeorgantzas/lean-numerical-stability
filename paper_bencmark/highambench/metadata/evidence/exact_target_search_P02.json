@@ -15,21 +15,27 @@
     "method": "Search all Lean source for the exact target and shared declaration names, then inspect every plausible error-free-transform, compensated-summation, extended-dot-product, recursive-summation, final-rounding, and gamma declaration semantically. Text matching alone was not treated as proof of absence or duplication."
   },
   "fixed_surface_hashes": {
-    "shared_definitions": {
-      "path": "paper_bencmark/highambench/shared/HighamBench/Definitions.lean",
-      "sha256": "a38c8441b28dc9b3806f08394fb4d2d55bbe7171b72f97ab6781c8b8ac6e4861"
-    },
+    "shared_files": [
+      {
+        "path": "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+        "sha256": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a"
+      },
+      {
+        "path": "paper_bencmark/highambench/shared/HighamBench/P02Definitions.lean",
+        "sha256": "803efe47eb37140c04ed8dad9fcdfe8470d0527aaedf9c60ff9333441ad5136b"
+      }
+    ],
     "P02-T1": {
       "path": "paper_bencmark/highambench/tasks/P02/T1/Target.lean",
-      "sha256": "433a0639bd3bd9ff39cd187dbab957e27996f5117c02a717402dae4213d47a41"
+      "sha256": "6ae5ba2b7579c90c03fadb3ef191a155a78eb84f008d7736fedfeec489ef9e0e"
     },
     "P02-T2": {
       "path": "paper_bencmark/highambench/tasks/P02/T2/Target.lean",
-      "sha256": "28e1ba2efb227a2d435c4939643bad09b199440695528346770ff319df6d17a4"
+      "sha256": "6869f7e5200080eb138266e3d9671b6c6f323b987996c748a25f497564fe4903"
     },
     "P02-T3": {
       "path": "paper_bencmark/highambench/tasks/P02/T3/Target.lean",
-      "sha256": "d1e0f8186e63c672549dd3b8a3d25c3d684ea5787f37db954708190e224e2373"
+      "sha256": "4da16107e718b289c13ed7398a2af4b9f4b5fca48c09eaa6ec7aa5a9563e3452"
     }
   },
   "recorded_searches": [

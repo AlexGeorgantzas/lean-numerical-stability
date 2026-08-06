@@ -35,6 +35,23 @@ def _executable(path: Path, text: str) -> None:
 
 
 def _write_two_paper_task_records(root: Path) -> list[str]:
+    shared_files = [
+        {
+            "path": "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+            "paper_ids": ["P01", "P02"],
+            "sha256": "6" * 64,
+        },
+        {
+            "path": "paper_bencmark/highambench/shared/HighamBench/P01Definitions.lean",
+            "paper_ids": ["P01"],
+            "sha256": "7" * 64,
+        },
+        {
+            "path": "paper_bencmark/highambench/shared/HighamBench/P02Definitions.lean",
+            "paper_ids": ["P02"],
+            "sha256": "8" * 64,
+        },
+    ]
     papers = []
     task_ids: list[str] = []
     for paper_id, paper_sha256 in (
@@ -58,9 +75,14 @@ def _write_two_paper_task_records(root: Path) -> list[str]:
             write_json(
                 target_dir / "task.json",
                 {
+                    "schema_version": "highambench-task-0.3",
                     "task_id": task_id,
                     "paper_id": paper_id,
                     "tier": tier,
+                    "source_tags": ["EQN"],
+                    "author_label": None,
+                    "classification_frozen_before_runs": True,
+                    "source_locations": [{"anchor": "equation (1.1)"}],
                     "paper_source": {"sha256": paper_sha256},
                     "context_file": (
                         f"paper_bencmark/highambench/tasks/{paper_id}/{tier}/context.md"
@@ -87,6 +109,13 @@ def _write_two_paper_task_records(root: Path) -> list[str]:
                     "lean_target": {
                         "declaration": theorem_name,
                         "file": declared_target,
+                        "shared_files": [
+                            "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+                            (
+                                "paper_bencmark/highambench/shared/HighamBench/"
+                                f"{paper_id}Definitions.lean"
+                            ),
+                        ],
                     },
                 }
             )
@@ -112,6 +141,7 @@ def _write_two_paper_task_records(root: Path) -> list[str]:
         {
             "benchmark_id": "two-paper-fixture",
             "corpus": {"paper_count": 2, "paper_ids": ["P01", "P02"]},
+            "controlled_shared_files": shared_files,
             "papers": papers,
         },
     )
@@ -135,10 +165,35 @@ class FrozenEnvironmentFixture:
         self._make_files()
 
     def _make_files(self) -> None:
+        shared_source_root = self.root / "shared" / "HighamBench"
+        shared_source_root.mkdir(parents=True)
+        (shared_source_root / "Core.lean").write_text(
+            "namespace HighamBench\nend HighamBench\n", encoding="utf-8"
+        )
+        (shared_source_root / "P01Definitions.lean").write_text(
+            "import HighamBench.Core\n", encoding="utf-8"
+        )
         benchmark_manifest = {
             "schema_version": "0.1.0",
             "benchmark_id": "test-benchmark",
             "corpus": {"paper_count": 1, "paper_ids": ["P01"]},
+            "controlled_shared_files": [
+                {
+                    "path": "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+                    "paper_ids": ["P01"],
+                    "sha256": sha256_file(shared_source_root / "Core.lean"),
+                },
+                {
+                    "path": (
+                        "paper_bencmark/highambench/shared/HighamBench/"
+                        "P01Definitions.lean"
+                    ),
+                    "paper_ids": ["P01"],
+                    "sha256": sha256_file(
+                        shared_source_root / "P01Definitions.lean"
+                    ),
+                },
+            ],
             "papers": [
                 {
                     "paper_id": "P01",
@@ -151,6 +206,13 @@ class FrozenEnvironmentFixture:
                             "lean_target": {
                                 "declaration": "p01_t1_fixture",
                                 "file": "paper_bencmark/highambench/tasks/P01/T1/Target.lean",
+                                "shared_files": [
+                                    "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+                                    (
+                                        "paper_bencmark/highambench/shared/HighamBench/"
+                                        "P01Definitions.lean"
+                                    ),
+                                ],
                             },
                         }
                     ],
@@ -195,8 +257,13 @@ class FrozenEnvironmentFixture:
         )
         (self.library_olean / "NumStability").mkdir(parents=True)
         (self.library_olean / "NumStability" / "Basic.olean").write_bytes(b"ns")
-        (self.shared_olean / "HighamBench").mkdir(parents=True)
-        (self.shared_olean / "HighamBench" / "Definitions.olean").write_bytes(b"shared-olean")
+        (self.shared_olean / "P01" / "HighamBench").mkdir(parents=True)
+        (self.shared_olean / "P01" / "HighamBench" / "Core.olean").write_bytes(
+            b"shared-core"
+        )
+        (self.shared_olean / "P01" / "HighamBench" / "P01Definitions.olean").write_bytes(
+            b"shared-p01"
+        )
         self.offline_shell.write_bytes(b"offline")
         self.auth.write_text("{}\n", encoding="utf-8")
 
@@ -207,8 +274,6 @@ class FrozenEnvironmentFixture:
             path.parent.mkdir(parents=True, exist_ok=True)
             if relative == "agent_prompt.md":
                 path.write_text("prove the target\n", encoding="utf-8")
-            elif relative == "shared/HighamBench/Definitions.lean":
-                path.write_text("namespace HighamBench\nend HighamBench\n", encoding="utf-8")
             else:
                 path.write_text(f"fixture {relative}\n", encoding="utf-8")
 
@@ -224,9 +289,14 @@ class FrozenEnvironmentFixture:
         write_json(
             self.root / "tasks" / "P01" / "T1" / "task.json",
             {
+                "schema_version": "highambench-task-0.3",
                 "task_id": "P01-T1",
                 "paper_id": "P01",
                 "tier": "T1",
+                "source_tags": ["EQN"],
+                "author_label": None,
+                "classification_frozen_before_runs": True,
+                "source_locations": [{"anchor": "equation (1.1)"}],
                 "paper_source": {"sha256": P01_PAPER_SHA256},
                 "context_file": "paper_bencmark/highambench/tasks/P01/T1/context.md",
                 "formal_statement": {
@@ -353,12 +423,33 @@ class FrozenEnvironmentFixture:
                 "numstability_compiled_manifest_sha256": library_sha,
                 "compiled_environment_summary": frozen["compiled_environment_summary"],
                 "compiled_environment_summary_sha256": packages_sha,
-                "shared_definitions_sha256": sha256_file(
-                    self.root / "shared" / "HighamBench" / "Definitions.lean"
-                ),
-                "shared_definitions_olean_sha256": sha256_file(
-                    self.shared_olean / "HighamBench" / "Definitions.olean"
-                ),
+                "shared_sources": {
+                    "HighamBench/Core.lean": sha256_file(
+                        self.root / "shared" / "HighamBench" / "Core.lean"
+                    ),
+                    "HighamBench/P01Definitions.lean": sha256_file(
+                        self.root
+                        / "shared"
+                        / "HighamBench"
+                        / "P01Definitions.lean"
+                    ),
+                },
+                "shared_olean_bundles": {
+                    "P01": {
+                        "HighamBench/Core.olean": sha256_file(
+                            self.shared_olean
+                            / "P01"
+                            / "HighamBench"
+                            / "Core.olean"
+                        ),
+                        "HighamBench/P01Definitions.olean": sha256_file(
+                            self.shared_olean
+                            / "P01"
+                            / "HighamBench"
+                            / "P01Definitions.olean"
+                        ),
+                    }
+                },
             },
             "agent": {
                 "id": "codex-cli",
@@ -550,6 +641,14 @@ class RunMatrixTests(unittest.TestCase):
             self.assertTrue(
                 all(original_value not in nested for nested in nested_commands)
             )
+            p02_shared_bundle = str((fixture.shared_olean / "P02").resolve())
+            p01_shared_bundle = str((fixture.shared_olean / "P01").resolve())
+            self.assertTrue(
+                all(p02_shared_bundle in nested for nested in nested_commands)
+            )
+            self.assertTrue(
+                all(p01_shared_bundle not in nested for nested in nested_commands)
+            )
             self.assertTrue(command_args.token_control_verified)
             self.assertIn("--token-enforced", command)
             self.assertEqual(command[command.index("--paper-id") + 1], "P02")
@@ -614,6 +713,17 @@ class RunMatrixTests(unittest.TestCase):
         (tree / "alias").symlink_to("missing")
         with self.assertRaisesRegex(Exception, "broken or external symlink"):
             run_matrix.exact_tree_digest(tree)
+
+    def test_task_catalog_rejects_construction_state_before_runs(self) -> None:
+        root = self.base / "benchmark"
+        _write_two_paper_task_records(root)
+        task_path = root / "tasks" / "P01" / "T1" / "task.json"
+        task = read_json(task_path)
+        task["classification_frozen_before_runs"] = False
+        write_json(task_path, task)
+        manifest = read_json(root / "metadata" / "manifest.json")
+        with self.assertRaisesRegex(Exception, "still under construction"):
+            run_matrix.load_task_catalog(root, manifest)
 
     def test_run_matrix_keeps_unique_startup_incident_in_rebuilt_jsonl(self) -> None:
         root = self.base / "benchmark"

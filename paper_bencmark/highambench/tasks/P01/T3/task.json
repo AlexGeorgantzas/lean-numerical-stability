@@ -1,45 +1,8 @@
 {
-  "schema_version": "highambench-task-0.2",
-  "task_id": "P01-T3",
-  "paper_id": "P01",
-  "tier": "T3",
-  "tier_label": "extend",
-  "classification_frozen_before_runs": true,
-  "paper_version": "journal version; volume 14, issue 4, July 1993, printed pages 783-799",
-  "paper_source": {
-    "local_path": "paper_bencmark/reference_papers/THE ACCURACY OF FLOATING POINT SUMMATION.pdf",
-    "sha256": "d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7"
-  },
-  "source_locations": [
-    {
-      "role": "no-guard addition model",
-      "section": "5. No Guard Digit Model",
-      "equation": "(5.1)",
-      "pdf_page": 11,
-      "printed_page": 793
-    },
-    {
-      "role": "recursive-summation error as accumulated local errors",
-      "section": "5. No Guard Digit Model",
-      "equation": "(5.2)",
-      "pdf_page": 11,
-      "printed_page": 793
-    },
-    {
-      "role": "computed-prefix running-error bound",
-      "section": "5. No Guard Digit Model",
-      "equation": "(5.3)",
-      "pdf_page": 11,
-      "printed_page": 793
-    }
-  ],
-  "context_file": "paper_bencmark/highambench/tasks/P01/T3/context.md",
-  "formal_statement": {
-    "namespace": "HighamBench",
-    "theorem_name": "p01_t3_noGuard_recursive_running_error_bound",
-    "target_file": "paper_bencmark/highambench/tasks/P01/T3/Target.lean",
-    "lean_header": "theorem p01_t3_noGuard_recursive_running_error_bound\n    (fp : NoGuardAddModel) (n : ℕ) (v : Fin n → ℝ) :\n    |recursiveSum fp.fl_add n v - ∑ i : Fin n, v i| ≤\n      fp.u * noGuardRecursiveRunningBudget fp n v",
-    "plain_language": "The no-guard recursive-summation error is at most u times the sum of the computed-prefix and new-input sizes from steps 2 through n."
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, concise paraphrase, and formal indexing of the printed running budget",
+    "performed_by": "Codex"
   },
   "assumptions": [
     "The input is any finite list of real numbers.",
@@ -48,30 +11,33 @@
     "u is positive.",
     "Overflow, underflow, and other exceptional machine behavior are outside the mathematical model."
   ],
-  "informal_statement": "Under the no-guard rule, the recursive-summation error is bounded by u times the sum over steps k=2 through n of the size of the computed previous sum plus the size of the new input.",
-  "paper_proof_status": "Equations (5.2) and (5.3) print the accumulated local-error identity and its absolute-value bound.",
-  "informal_proof": "Induct over the inputs. At each later addition, equation (5.1) makes the new error equal to the old error plus S_hat*alpha and x*beta. Bound those two new terms by u*|S_hat| and u*|x| and add them to the earlier running budget.",
-  "tier_rationale": "The right side uses actual computed prefix sums. NumStability has no accumulated no-guard recursive running-budget theorem. Condition L has useful pieces, including a one-step no-guard identity and a generic local-error recurrence scaffold, but a proof still needs new no-guard state, indexing, witness, and budget bridges or a fresh full induction.",
-  "shared_symbols": [
-    "NoGuardAddModel",
-    "recursiveSum",
-    "noGuardRecursiveRunningBudget"
-  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
   "conditions": {
-    "N": "The fixed statement and shared files are present; no NumStability artifact is present.",
-    "L": "The identical fixed statement and shared files are present; the frozen NumStability library is also present."
+    "L": "The identical fixed statement and shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and shared files are present; no NumStability artifact is present."
   },
+  "context_file": "paper_bencmark/highambench/tasks/P01/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p01_t3_noGuard_recursive_running_error_bound\n    (fp : NoGuardAddModel) (n : \u2115) (v : Fin n \u2192 \u211d) :\n    |recursiveSum fp.fl_add n v - \u2211 i : Fin n, v i| \u2264\n      fp.u * noGuardRecursiveRunningBudget fp n v",
+    "namespace": "HighamBench",
+    "plain_language": "The no-guard recursive-summation error is at most u times the sum of the computed-prefix and new-input sizes from steps 2 through n.",
+    "target_file": "paper_bencmark/highambench/tasks/P01/T3/Target.lean",
+    "theorem_name": "p01_t3_noGuard_recursive_running_error_bound"
+  },
+  "informal_proof": "Induct over the inputs. At each later addition, equation (5.1) makes the new error equal to the old error plus S_hat*alpha and x*beta. Bound those two new terms by u*|S_hat| and u*|x| and add them to the earlier running budget.",
+  "informal_statement": "Under the no-guard rule, the recursive-summation error is bounded by u times the sum over steps k=2 through n of the size of the computed previous sum plus the size of the new input.",
   "limits": {
-    "wall_clock_seconds": 900,
-    "total_model_tokens": 120000
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
   },
-  "validation": {
-    "mode": "shared automatic validator",
-    "required_declaration": "HighamBench.p01_t3_noGuard_recursive_running_error_bound",
-    "controlled_target_file": "paper_bencmark/highambench/tasks/P01/T3/Target.lean",
-    "reject_statement_changes": true,
-    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true
+  "paper_id": "P01",
+  "paper_proof_status": "Equations (5.2) and (5.3) print the accumulated local-error identity and its absolute-value bound.",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/THE ACCURACY OF FLOATING POINT SUMMATION.pdf",
+    "sha256": "d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7"
   },
+  "paper_version": "journal version; volume 14, issue 4, July 1993, printed pages 783-799",
   "review_record_not_for_run_prompt": {
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
@@ -84,9 +50,47 @@
     ],
     "note": "The standard-model running theorem cannot be applied to the weaker no-guard model. The generic local-error recurrence can organize an accumulation, but the library still lacks the no-guard recursive state, witnesses, index bridge, and exact computed-prefix budget required by equation (5.3)."
   },
-  "annotation": {
-    "performed_by": "Codex",
-    "kind": "source selection, tier label, concise paraphrase, and formal indexing of the printed running budget",
-    "added_mathematical_proof_not_in_paper": false
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "NoGuardAddModel",
+    "recursiveSum",
+    "noGuardRecursiveRunningBudget"
+  ],
+  "source_locations": [
+    {
+      "equation": "(5.1)",
+      "pdf_page": 11,
+      "printed_page": 793,
+      "role": "no-guard addition model",
+      "section": "5. No Guard Digit Model"
+    },
+    {
+      "equation": "(5.2)",
+      "pdf_page": 11,
+      "printed_page": 793,
+      "role": "recursive-summation error as accumulated local errors",
+      "section": "5. No Guard Digit Model"
+    },
+    {
+      "equation": "(5.3)",
+      "pdf_page": 11,
+      "printed_page": 793,
+      "role": "computed-prefix running-error bound",
+      "section": "5. No Guard Digit Model"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P01-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "The right side uses actual computed prefix sums. NumStability has no accumulated no-guard recursive running-budget theorem. Condition L has useful pieces, including a one-step no-guard identity and a generic local-error recurrence scaffold, but a proof still needs new no-guard state, indexing, witness, and budget bridges or a fresh full induction.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P01/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p01_t3_noGuard_recursive_running_error_bound"
   }
 }

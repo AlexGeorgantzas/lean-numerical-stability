@@ -1,0 +1,78 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and exact finite perturbation form of Lemma 3.1 equation (3.2)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The truncation threshold, scale beta, and rounding coefficient gammaC are nonnegative.",
+    "The low-rank approximation differs from A by truncError with Frobenius norm at most epsilon times beta.",
+    "The computed factorized matrix-vector product has a backward perturbation of Frobenius norm at most gammaC times the norm of the low-rank approximation."
+  ],
+  "author_label": "Lemma 3.1",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P15 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P15 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P15/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p15_t2_low_rank_matvec_backward_error {n : Nat} (A Atilde truncError roundingError : P15Matrix n) ... : exists totalError, computed = p15MatVec (A + totalError) v and p15FrobNorm totalError <= gammaC * p15FrobNorm A + epsilon * (1 + gammaC) * beta",
+    "namespace": "HighamBench",
+    "plain_language": "A low-rank truncation perturbation and the rounded low-rank matrix-vector backward perturbation combine into one perturbation of A with the exact finite radius in equation (3.2).",
+    "target_file": "paper_bencmark/highambench/tasks/P15/T2/Target.lean",
+    "theorem_name": "p15_t2_low_rank_matvec_backward_error"
+  },
+  "informal_proof": "Choose totalError as truncError plus roundingError. Reassociate the computed matrix action, use the Frobenius triangle inequality twice, bound the norm of Atilde by the norms of A and truncError, and collect the epsilon-gamma cross term.",
+  "informal_statement": "The exact finite backward-error conclusion of Lemma 3.1, equation (3.2), before replacing the epsilon-gamma product by O(u epsilon).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P15",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P15_Solving block low-rank linear systems by LU factorization is numerically stable.pdf",
+    "sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7"
+  },
+  "paper_version": "published journal version; IMA Journal of Numerical Analysis 42(2), 2022, printed pages 951-980",
+  "result_form_tag": "EX",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.frobNorm_add_le",
+      "NumStability.frobNorm_nonneg"
+    ],
+    "note": "The frozen library supplies Frobenius triangle and nonnegativity facts, but no low-rank truncation-plus-rounding backward-error constructor or Lemma 3.1 analogue."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P15Matrix",
+    "P15Vector",
+    "p15MatVec",
+    "p15FrobNorm"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Lemma 3.1, especially equation (3.2) and the final replacement Atilde = A + E",
+      "pdf_page": 6,
+      "printed_page": "956",
+      "role": "combined low-rank truncation and floating-point backward error",
+      "section": "3.1 LR matrix times vector or full matrix"
+    }
+  ],
+  "source_tags": [
+    "LEM"
+  ],
+  "task_id": "P15-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The L proof combines NumStability.frobNorm_add_le and NumStability.frobNorm_nonneg from NumStability/Analysis/MatrixAlgebra.lean with the paper-specific total-error witness, reassociation of the computed action, and exact collection of epsilon * gammaC * beta.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P15/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p15_t2_low_rank_matvec_backward_error"
+  }
+}

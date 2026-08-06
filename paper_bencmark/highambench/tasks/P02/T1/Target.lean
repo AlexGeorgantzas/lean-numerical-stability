@@ -1,4 +1,4 @@
-import HighamBench.Definitions
+import HighamBench.P02Definitions
 
 namespace HighamBench
 

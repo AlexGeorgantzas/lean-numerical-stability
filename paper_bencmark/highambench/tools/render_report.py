@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Build the detailed, standalone HighamBench P01 construction report.
+"""Build a detailed, standalone HighamBench construction report.
 
 The short table renderer in ``analyze.py`` is useful for machine-facing result
-artifacts.  This program builds the longer report requested for the one-paper
-pilot.  It deliberately refuses a partial or stale analysis: the report is an
-end product, not a way to make an unfinished matrix look complete.
+artifacts. This program builds the longer report for every paper and task in
+the current manifest. It deliberately refuses a partial or stale analysis: the
+report is an end product, not a way to make an unfinished matrix look complete.
 """
 
 from __future__ import annotations
@@ -74,7 +74,7 @@ class ReportInputs:
     environment: Mapping[str, Any]
     manifest: Mapping[str, Any]
     run_order: Mapping[str, Any]
-    paper: Mapping[str, Any]
+    papers: tuple[Mapping[str, Any], ...]
     tasks: tuple[Mapping[str, Any], ...]
     evidence: Mapping[str, Mapping[str, Any]]
     construction_check: Mapping[str, Any]
@@ -216,7 +216,7 @@ def _resolve_construction_check(
     kind = library_probe.get("kind")
     if kind == check_kind:
         # A direct record is accepted here, but the same complete verification
-        # basis and six-result checks are still required below.
+        # basis and complete manifest-result checks are still required below.
         return library_probe
     if kind != pointer_kind:
         raise ReportError(
@@ -252,21 +252,48 @@ def _resolve_construction_check(
     return check
 
 
-def _task_records(manifest: Mapping[str, Any]) -> tuple[str, list[Mapping[str, Any]]]:
+def _task_records(
+    manifest: Mapping[str, Any],
+) -> tuple[list[str], list[tuple[str, Mapping[str, Any]]]]:
     papers = manifest.get("papers")
-    if not isinstance(papers, list) or len(papers) != 1 or not isinstance(papers[0], Mapping):
-        raise ReportError("the P01 report requires exactly one paper in the manifest")
-    paper_id = papers[0].get("paper_id")
-    if not isinstance(paper_id, str) or not paper_id:
-        raise ReportError("the sole manifest paper has no paper_id")
-    targets = papers[0].get("targets")
-    if not isinstance(targets, list) or not all(isinstance(item, Mapping) for item in targets):
-        raise ReportError("the sole manifest paper has no usable target list")
-    tiers = {item.get("tier") for item in targets}
-    task_ids = {item.get("task_id") for item in targets}
-    if len(targets) != 3 or tiers != {"T1", "T2", "T3"} or len(task_ids) != 3:
-        raise ReportError("the one-paper report requires one distinct T1, T2, and T3 task")
-    return paper_id, list(targets)
+    if not isinstance(papers, list) or not papers or not all(
+        isinstance(paper, Mapping) for paper in papers
+    ):
+        raise ReportError("the report requires a nonempty manifest paper list")
+    paper_ids: list[str] = []
+    task_records: list[tuple[str, Mapping[str, Any]]] = []
+    seen_tasks: set[Any] = set()
+    for paper in papers:
+        assert isinstance(paper, Mapping)
+        paper_id = paper.get("paper_id")
+        if not isinstance(paper_id, str) or not paper_id or paper_id in paper_ids:
+            raise ReportError("manifest paper IDs must be distinct and nonempty")
+        paper_ids.append(paper_id)
+        targets = paper.get("targets")
+        if not isinstance(targets, list) or not targets or not all(
+            isinstance(item, Mapping) for item in targets
+        ):
+            raise ReportError(f"manifest paper {paper_id} has no usable target list")
+        seen_tiers: set[Any] = set()
+        for target in targets:
+            assert isinstance(target, Mapping)
+            if target.get("availability") != "available":
+                continue
+            tier = target.get("tier")
+            task_id = target.get("task_id")
+            if (
+                not isinstance(tier, str)
+                or task_id != f"{paper_id}-{tier}"
+                or task_id in seen_tasks
+                or tier in seen_tiers
+            ):
+                raise ReportError(f"manifest has an invalid or repeated task for {paper_id}")
+            seen_tiers.add(tier)
+            seen_tasks.add(task_id)
+            task_records.append((paper_id, target))
+    if not task_records:
+        raise ReportError("the manifest has no available tasks")
+    return paper_ids, task_records
 
 
 def load_report_inputs(benchmark_root: Path, analysis_path: Path) -> ReportInputs:
@@ -342,22 +369,34 @@ def load_report_inputs(benchmark_root: Path, analysis_path: Path) -> ReportInput
         packages_runtime_path, "pruned package-runtime manifest"
     )
 
-    paper_id, manifest_targets = _task_records(manifest)
-    paper = _object(root / "tasks" / paper_id / "paper.json", "paper metadata")
+    paper_ids, manifest_tasks = _task_records(manifest)
+    papers = tuple(
+        _object(root / "tasks" / paper_id / "paper.json", f"{paper_id} paper metadata")
+        for paper_id in paper_ids
+    )
     tasks: list[Mapping[str, Any]] = []
-    for target in sorted(manifest_targets, key=lambda item: str(item.get("tier"))):
+    for paper_id, target in manifest_tasks:
         tier = target.get("tier")
-        task = _object(root / "tasks" / paper_id / str(tier) / "task.json", f"{tier} task metadata")
-        if task.get("task_id") != target.get("task_id") or task.get("tier") != tier:
-            raise ReportError(f"{tier} task metadata disagrees with the manifest")
+        task_id = target.get("task_id")
+        task = _object(
+            root / "tasks" / paper_id / str(tier) / "task.json",
+            f"{task_id} task metadata",
+        )
+        if (
+            task.get("task_id") != task_id
+            or task.get("paper_id") != paper_id
+            or task.get("tier") != tier
+        ):
+            raise ReportError(f"{task_id} task metadata disagrees with the manifest")
         tasks.append(task)
 
     evidence_dir = metadata / "evidence"
     evidence_paths = sorted(evidence_dir.glob("*.json")) if evidence_dir.is_dir() else []
     evidence = {path.stem: _object(path, f"construction evidence {path.name}") for path in evidence_paths}
-    for required in ("library_dependency_probe", "exact_target_search"):
-        if required not in evidence:
-            raise ReportError(f"missing required construction evidence: {required}.json")
+    if "library_dependency_probe" not in evidence:
+        raise ReportError("missing required construction evidence: library_dependency_probe.json")
+    if not any(name.startswith("exact_target_search") for name in evidence):
+        raise ReportError("missing exact-target-search construction evidence")
     construction_check = _resolve_construction_check(
         root,
         evidence_dir,
@@ -368,12 +407,29 @@ def load_report_inputs(benchmark_root: Path, analysis_path: Path) -> ReportInput
     review_paths = sorted(review_dir.glob("*.json")) if review_dir.is_dir() else []
     if len(review_paths) < 2:
         raise ReportError("at least two independent review records are required")
-    reviews = tuple(_object(path, f"review record {path.name}") for path in review_paths)
+    all_reviews = tuple(_object(path, f"review record {path.name}") for path in review_paths)
+    reviews = tuple(
+        review
+        for review in all_reviews
+        if review.get("record_status") in (None, "current_final")
+    )
+    if len(reviews) < 2:
+        raise ReportError(
+            "at least two current final review records are required; construction snapshots do not count"
+        )
 
-    shared_path = root / "shared" / "HighamBench" / "Definitions.lean"
-    if not shared_path.is_file():
-        raise ReportError(f"missing controlled shared Lean file: {shared_path}")
-    shared_source = shared_path.read_text(encoding="utf-8")
+    raw_shared_entries = manifest.get("controlled_shared_files")
+    if not isinstance(raw_shared_entries, list) or not raw_shared_entries:
+        raise ReportError("manifest has no controlled shared Lean files")
+    shared_sources: list[str] = []
+    for index, raw_entry in enumerate(raw_shared_entries):
+        if not isinstance(raw_entry, Mapping):
+            raise ReportError(f"controlled shared Lean entry {index} is invalid")
+        shared_path = _find_repository_file(
+            root, raw_entry.get("path"), f"controlled shared Lean file {index}"
+        )
+        shared_sources.append(shared_path.read_text(encoding="utf-8"))
+    shared_source = "\n".join(shared_sources)
 
     result = ReportInputs(
         benchmark_root=root,
@@ -381,7 +437,7 @@ def load_report_inputs(benchmark_root: Path, analysis_path: Path) -> ReportInput
         environment=environment,
         manifest=manifest,
         run_order=run_order,
-        paper=paper,
+        papers=papers,
         tasks=tuple(tasks),
         evidence=evidence,
         construction_check=construction_check,
@@ -713,39 +769,81 @@ def _identity_matches_manifest(
 
 
 def _validate_construction(inputs: ReportInputs) -> None:
-    target_search = inputs.evidence["exact_target_search"]
-    search_conclusion = target_search.get("overall_conclusion")
-    search_findings = target_search.get("task_findings")
-    search_hashes = target_search.get("fixed_surface_hashes")
-    if (
-        not isinstance(search_conclusion, Mapping)
-        or search_conclusion.get("all_three_exact_targets_absent") is not True
-        or search_conclusion.get("all_three_semantic_duplicates_absent") is not True
-        or search_conclusion.get("tier_labels_supported_by_library_surface") is not True
-        or not isinstance(search_findings, list)
-        or len(search_findings) != 3
-        or {item.get("task_id") for item in search_findings if isinstance(item, Mapping)}
-        != {task.get("task_id") for task in inputs.tasks}
-        or not all(
-            isinstance(item, Mapping)
-            and item.get("exact_duplicate_found") is False
+    search_records = [
+        record
+        for name, record in inputs.evidence.items()
+        if name.startswith("exact_target_search")
+    ]
+    all_findings: list[Mapping[str, Any]] = []
+    recorded_hashes: dict[str, Any] = {}
+    raw_manifest_shared = inputs.manifest.get("controlled_shared_files")
+    if not isinstance(raw_manifest_shared, list):
+        raise ReportError("manifest has no controlled shared Lean files")
+    manifest_shared: dict[str, Mapping[str, Any]] = {}
+    for raw_entry in raw_manifest_shared:
+        if not isinstance(raw_entry, Mapping) or not isinstance(raw_entry.get("path"), str):
+            raise ReportError("manifest has an invalid controlled shared Lean entry")
+        manifest_shared[str(raw_entry["path"])] = raw_entry
+    for search in search_records:
+        conclusion = search.get("overall_conclusion")
+        findings = search.get("task_findings")
+        hashes = search.get("fixed_surface_hashes")
+        if (
+            not isinstance(conclusion, Mapping)
+            or conclusion.get("tier_labels_supported_by_library_surface") is not True
+            or any(
+                value is not True
+                for key, value in conclusion.items()
+                if key.endswith("exact_targets_absent")
+                or key.endswith("semantic_duplicates_absent")
+            )
+            or not isinstance(findings, list)
+            or not findings
+            or not all(isinstance(item, Mapping) for item in findings)
+            or not isinstance(hashes, Mapping)
+        ):
+            raise ReportError("an exact-target-search record is incomplete or failed")
+        if not all(
+            item.get("exact_duplicate_found") is False
             and item.get("semantic_duplicate_found") is False
-            for item in search_findings
-        )
-    ):
-        raise ReportError("the exact and semantic target-absence search is incomplete or failed")
-    if not isinstance(search_hashes, Mapping):
-        raise ReportError("the target-absence search has no fixed-surface hashes")
-    manifest_shared = inputs.manifest.get("controlled_shared_files", [{}])[0]
-    recorded_shared = search_hashes.get("shared_definitions")
-    if (
-        not isinstance(recorded_shared, Mapping)
-        or recorded_shared.get("sha256") != manifest_shared.get("sha256")
-    ):
-        raise ReportError("the target-absence search used a stale shared Lean surface")
+            for item in findings
+        ):
+            raise ReportError("an exact or semantic target duplicate was found")
+        finding_papers = {
+            str(item.get("task_id", "")).split("-", 1)[0]
+            for item in findings
+        }
+        expected_shared = {
+            path: entry.get("sha256")
+            for path, entry in manifest_shared.items()
+            if isinstance(entry.get("paper_ids"), list)
+            and finding_papers.intersection(str(value) for value in entry["paper_ids"])
+        }
+        recorded_shared = hashes.get("shared_files")
+        if not isinstance(recorded_shared, list) or any(
+            not isinstance(item, Mapping) for item in recorded_shared
+        ):
+            raise ReportError("a target-absence search used a stale shared Lean surface")
+        recorded_shared_map = {
+            str(item.get("path")): item.get("sha256") for item in recorded_shared
+        }
+        if recorded_shared_map != expected_shared:
+            raise ReportError("a target-absence search used a stale shared Lean surface")
+        all_findings.extend(findings)
+        for key, value in hashes.items():
+            if key == "shared_files":
+                continue
+            if key in recorded_hashes:
+                raise ReportError(f"target-absence searches repeat {key}")
+            recorded_hashes[key] = value
+
+    expected_task_ids = {task.get("task_id") for task in inputs.tasks}
+    finding_ids = [item.get("task_id") for item in all_findings]
+    if set(finding_ids) != expected_task_ids or len(finding_ids) != len(set(finding_ids)):
+        raise ReportError("the target-absence searches do not cover every task exactly once")
     manifest_targets = {item.get("task_id"): item for item in _manifest_targets(inputs)}
     for task_id, target in manifest_targets.items():
-        recorded = search_hashes.get(task_id)
+        recorded = recorded_hashes.get(str(task_id))
         lean_target = target.get("lean_target")
         if (
             not isinstance(recorded, Mapping)
@@ -757,20 +855,22 @@ def _validate_construction(inputs: ReportInputs) -> None:
     check = inputs.construction_check
     summary = check.get("summary")
     results = check.get("results")
+    task_count = len(inputs.tasks)
+    proof_count = task_count * 2
     if (
         check.get("kind") != "highambench-private-construction-check"
         or check.get("pass") is not True
         or not isinstance(summary, Mapping)
-        or summary.get("expected") != 6
-        or summary.get("checked") != 6
-        or summary.get("passed") != 6
-        or summary.get("condition_n_passed") != 3
-        or summary.get("condition_l_passed") != 3
+        or summary.get("expected") != proof_count
+        or summary.get("checked") != proof_count
+        or summary.get("passed") != proof_count
+        or summary.get("condition_n_passed") != task_count
+        or summary.get("condition_l_passed") != task_count
         or not isinstance(results, list)
-        or len(results) != 6
+        or len(results) != proof_count
         or not all(isinstance(result, Mapping) for result in results)
     ):
-        raise ReportError("the six-proof private construction check is incomplete or failed")
+        raise ReportError("the private construction check is incomplete or failed")
 
     construction_isolation = check.get("isolation")
     if (
@@ -933,12 +1033,19 @@ def _validate_construction(inputs: ReportInputs) -> None:
         raise ReportError("construction evidence did not use the exact pruned package mount")
 
     shared_olean = basis.get("shared_olean")
+    environment_bundles = lean_environment.get("shared_olean_bundles")
+    expected_shared_olean_count = (
+        sum(len(bundle) for bundle in environment_bundles.values())
+        if isinstance(environment_bundles, Mapping)
+        and all(isinstance(bundle, Mapping) for bundle in environment_bundles.values())
+        else -1
+    )
     if (
         not isinstance(shared_olean, Mapping)
-        or shared_olean.get("relative_file") != "HighamBench/Definitions.olean"
-        or shared_olean.get("exact_file_count") != 1
-        or shared_olean.get("sha256")
-        != lean_environment.get("shared_definitions_olean_sha256")
+        or not isinstance(shared_olean.get("bundles"), Mapping)
+        or dict(shared_olean["bundles"])
+        != dict(environment_bundles or {})
+        or shared_olean.get("exact_file_count") != expected_shared_olean_count
     ):
         raise ReportError("construction evidence used a stale or non-minimal shared Lean tree")
 
@@ -1072,18 +1179,13 @@ def _validate_construction(inputs: ReportInputs) -> None:
         ):
             raise ReportError(f"{label} does not record real NumStability library use")
 
-    required_shared_text = (
-        "structure StandardAddModel",
-        "structure NoGuardAddModel",
-        "def gamma",
-        "def GammaValid",
-        "def pairwiseSum",
-        "def recursiveSum",
-        "def noGuardRecursiveRunningBudget",
-    )
-    missing = [text for text in required_shared_text if text not in inputs.shared_source]
-    if missing:
-        raise ReportError("the shared Lean setting is missing: " + ", ".join(missing))
+    if not inputs.shared_source.strip() or "namespace HighamBench" not in inputs.shared_source:
+        raise ReportError("the controlled shared Lean setting is empty or has the wrong namespace")
+    if any(
+        line.strip().startswith("import NumStability")
+        for line in inputs.shared_source.splitlines()
+    ):
+        raise ReportError("the controlled shared Lean setting imports NumStability")
 
 
 def _validate_hashes_and_reviews(inputs: ReportInputs) -> None:
@@ -1094,30 +1196,37 @@ def _validate_hashes_and_reviews(inputs: ReportInputs) -> None:
     }
     if None in benchmark_ids or len(benchmark_ids) != 1:
         raise ReportError("benchmark_id disagrees across final metadata")
-    if inputs.paper.get("paper_id") != _task_records(inputs.manifest)[0]:
+    manifest_paper_ids, _manifest_task_records = _task_records(inputs.manifest)
+    if [paper.get("paper_id") for paper in inputs.papers] != manifest_paper_ids:
         raise ReportError("paper metadata disagrees with the manifest")
-    if inputs.paper.get("classification_frozen_before_runs") is not True or any(
+    if any(
+        paper.get("classification_frozen_before_runs") is not True
+        for paper in inputs.papers
+    ) or any(
         task.get("classification_frozen_before_runs") is not True for task in inputs.tasks
     ):
-        raise ReportError("T1/T2/T3 classifications were not recorded as frozen before runs")
+        raise ReportError("task classifications are not measurement-ready")
 
-    manifest_paper = inputs.manifest["papers"][0]
-    manifest_source = manifest_paper.get("source")
-    paper_source = inputs.paper.get("source")
-    if not isinstance(manifest_source, Mapping) or not isinstance(paper_source, Mapping):
-        raise ReportError("paper source metadata is missing")
-    if manifest_source.get("sha256") != paper_source.get("sha256") or not _hex_digest(
-        manifest_source.get("sha256")
-    ):
-        raise ReportError("paper SHA-256 disagrees across final metadata")
+    manifest_papers = inputs.manifest["papers"]
     manifest_spec = inputs.manifest.get("specification")
-    paper_spec = inputs.paper.get("benchmark_specification")
-    if not isinstance(manifest_spec, Mapping) or not isinstance(paper_spec, Mapping):
+    if not isinstance(manifest_spec, Mapping):
         raise ReportError("benchmark specification metadata is missing")
-    if manifest_spec.get("sha256") != paper_spec.get("sha256") or not _hex_digest(
-        manifest_spec.get("sha256")
-    ):
-        raise ReportError("specification SHA-256 disagrees across final metadata")
+    for manifest_paper, paper in zip(manifest_papers, inputs.papers):
+        manifest_source = manifest_paper.get("source")
+        paper_source = paper.get("source")
+        paper_spec = paper.get("benchmark_specification")
+        if not isinstance(manifest_source, Mapping) or not isinstance(paper_source, Mapping):
+            raise ReportError(f"{paper.get('paper_id')} paper source metadata is missing")
+        if manifest_source.get("sha256") != paper_source.get("sha256") or not _hex_digest(
+            manifest_source.get("sha256")
+        ):
+            raise ReportError(f"{paper.get('paper_id')} paper SHA-256 disagrees")
+        if not isinstance(paper_spec, Mapping):
+            raise ReportError(f"{paper.get('paper_id')} specification metadata is missing")
+        if manifest_spec.get("sha256") != paper_spec.get("sha256") or not _hex_digest(
+            manifest_spec.get("sha256")
+        ):
+            raise ReportError(f"{paper.get('paper_id')} specification SHA-256 disagrees")
 
     frozen = inputs.config.get("frozen_environment")
     if not isinstance(frozen, Mapping):
@@ -1128,8 +1237,9 @@ def _validate_hashes_and_reviews(inputs: ReportInputs) -> None:
         "environment_bundle_sha256"
     ) or not _hex_digest(inputs.environment.get("environment_bundle_sha256")):
         raise ReportError("environment bundle SHA-256 is missing or inconsistent")
+    corpus_slug = "-".join(paper_id.lower() for paper_id in manifest_paper_ids)
     if frozen.get("environment_id") != (
-        "highambench-p01-" + str(frozen.get("environment_bundle_sha256"))[:16]
+        f"highambench-{corpus_slug}-" + str(frozen.get("environment_bundle_sha256"))[:16]
     ):
         raise ReportError("environment_id is not derived from the frozen environment bundle")
     prompt_path = inputs.benchmark_root / "agent_prompt.md"
@@ -1138,17 +1248,23 @@ def _validate_hashes_and_reviews(inputs: ReportInputs) -> None:
     _require_sha_match(prompt_path, frozen.get("prompt_sha256"), "fixed agent prompt")
 
     shared_entries = inputs.manifest.get("controlled_shared_files")
-    if not isinstance(shared_entries, list) or len(shared_entries) != 1 or not isinstance(
-        shared_entries[0], Mapping
-    ):
-        raise ReportError("manifest must bind the one controlled shared Lean file")
-    shared_path = _find_repository_file(
-        inputs.benchmark_root, shared_entries[0].get("path"), "controlled shared Lean file"
-    )
-    _require_sha_match(shared_path, shared_entries[0].get("sha256"), "controlled shared Lean file")
+    if not isinstance(shared_entries, list) or not shared_entries:
+        raise ReportError("manifest must bind controlled shared Lean files")
+    for index, shared_entry in enumerate(shared_entries):
+        if not isinstance(shared_entry, Mapping):
+            raise ReportError(f"controlled shared Lean entry {index} is invalid")
+        shared_path = _find_repository_file(
+            inputs.benchmark_root,
+            shared_entry.get("path"),
+            f"controlled shared Lean file {index}",
+        )
+        _require_sha_match(
+            shared_path,
+            shared_entry.get("sha256"),
+            f"controlled shared Lean file {index}",
+        )
 
-    _, manifest_targets = _task_records(inputs.manifest)
-    for target in manifest_targets:
+    for _paper_id, target in _manifest_task_records:
         lean_target = target.get("lean_target")
         if not isinstance(lean_target, Mapping):
             raise ReportError(f"manifest task {target.get('task_id')} has no Lean target binding")
@@ -1164,6 +1280,7 @@ def _validate_hashes_and_reviews(inputs: ReportInputs) -> None:
         )
 
     task_ids = {task.get("task_id") for task in inputs.tasks}
+    review_coverage = {task_id: 0 for task_id in task_ids}
     review_ids: set[Any] = set()
     unfinished_words = (
         "preliminary",
@@ -1184,13 +1301,16 @@ def _validate_hashes_and_reviews(inputs: ReportInputs) -> None:
         ):
             raise ReportError(f"review {review_id} is not final: {overall_status!r}")
         task_reviews = review.get("task_reviews")
-        if not isinstance(task_reviews, list) or {
+        covered = {
             item.get("task_id") for item in task_reviews if isinstance(item, Mapping)
-        } != task_ids:
-            raise ReportError(f"review {review_id} does not cover all three tasks")
+        } if isinstance(task_reviews, list) else set()
+        if not covered or not covered.issubset(task_ids) or len(covered) != len(task_reviews):
+            raise ReportError(f"review {review_id} has invalid task coverage")
         for task_review in task_reviews:
             assert isinstance(task_review, Mapping)
-            outcome = task_review.get("review_outcome")
+            task_id = task_review.get("task_id")
+            review_coverage[task_id] += 1
+            outcome = task_review.get("review_outcome", task_review.get("outcome"))
             if not isinstance(outcome, str) or not outcome or any(
                 word in outcome.lower() for word in unfinished_words
             ):
@@ -1200,11 +1320,22 @@ def _validate_hashes_and_reviews(inputs: ReportInputs) -> None:
             checks = task_review.get("checks")
             if isinstance(checks, Mapping):
                 for name, record in checks.items():
-                    status = record.get("status") if isinstance(record, Mapping) else None
+                    status = (
+                        record.get("status")
+                        if isinstance(record, Mapping)
+                        else "pass" if isinstance(record, str) and record.lower().startswith("pass") else None
+                    )
                     if status != "pass":
                         raise ReportError(
                             f"review {review_id} check {task_review.get('task_id')}/{name} is not a final pass"
                         )
+    missing_reviews = sorted(
+        str(task_id) for task_id, count in review_coverage.items() if count < 2
+    )
+    if missing_reviews:
+        raise ReportError(
+            "each task requires two final review passes; missing: " + ", ".join(missing_reviews)
+        )
 
 
 def _validate_freeze_link(inputs: ReportInputs, result_check: Mapping[str, Any]) -> None:
@@ -1507,16 +1638,18 @@ def validate_report_inputs(inputs: ReportInputs) -> None:
     _check_matrix_coverage(
         inputs, selected_runs, condition_rows, task_rows, pair_rows, task_pair_rows
     )
+    paper_count = len(inputs.papers)
+    informative_bootstrap = paper_count > 1
     for row in (*pair_rows, *task_pair_rows):
         bootstrap = row.get("bootstrap")
         if (
             not isinstance(bootstrap, Mapping)
-            or bootstrap.get("paper_count") != 1
-            or bootstrap.get("informative") is not False
-            or not bootstrap.get("note")
+            or bootstrap.get("paper_count") != paper_count
+            or bootstrap.get("informative") is not informative_bootstrap
+            or (paper_count == 1 and not bootstrap.get("note"))
         ):
             raise ReportError(
-                "incomplete analysis: every one-paper paired row must carry the uninformative bootstrap warning"
+                "incomplete analysis: paired bootstrap metadata disagrees with the paper corpus"
             )
 
     deviations = inputs.environment.get("known_reference_protocol_deviations")
@@ -1665,7 +1798,7 @@ def _longtable(
 
 
 def _manifest_targets(inputs: ReportInputs) -> list[Mapping[str, Any]]:
-    return list(inputs.manifest["papers"][0]["targets"])
+    return [target for _paper_id, target in _task_records(inputs.manifest)[1]]
 
 
 def _condition_values(row: Mapping[str, Any], observational: bool) -> tuple[Any, ...]:
@@ -1715,8 +1848,13 @@ def render_report(inputs: ReportInputs) -> str:
     selected_runs = [
         run for run in analysis["per_run_results"] if run.get("run_id") in selected_ids
     ]
-    paper = inputs.manifest["papers"][0]
-    source = paper["source"]
+    manifest_papers = list(inputs.manifest["papers"])
+    paper_records = {str(paper["paper_id"]): paper for paper in inputs.papers}
+    paper_count = len(manifest_papers)
+    task_count = len(inputs.tasks)
+    repetitions = inputs.config.get("repetitions", [])
+    pair_count = task_count * len(repetitions)
+    run_count = pair_count * 2
     specification = inputs.manifest["specification"]
     frozen = inputs.config["frozen_environment"]
     environment = inputs.environment
@@ -1740,7 +1878,7 @@ def render_report(inputs: ReportInputs) -> str:
         r"\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}",
         r"\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false}",
         r"\sloppy",
-        r"\title{HighamBench P01: Construction and Measurement Report}",
+        r"\title{HighamBench: Construction and Measurement Report}",
         r"\author{Benchmark construction and annotation performed by Codex at the project owner's request}",
         r"\date{}",
         r"\begin{document}",
@@ -1764,11 +1902,23 @@ def render_report(inputs: ReportInputs) -> str:
         [
             r"\section{What was built}",
             "A benchmark is a fixed test used to compare two setups. This benchmark asks whether access to the NumStability library, meaning a reusable collection of Lean definitions and proofs, helps one proof-making agent finish the same Lean tasks. An agent is a program that asks a language model to do the work and can use allowed local tools. A language model is the text-producing service behind the agent. Lean is a language whose checker verifies each proof step.",
-            "This release contains exactly one paper and no other papers: "
-            + latex_escape(paper.get("citation", {}).get("author", inputs.paper.get("authors", ["--"])[0]))
-            + ", ``"
-            + latex_escape(paper.get("citation", {}).get("title", inputs.paper.get("title")))
-            + ".'' The journal version is fixed before all runs. A theorem is a mathematical claim together with a proof. A task is one fixed theorem statement plus the short paper context needed to understand it. N is the setup with no NumStability files. L is the otherwise matching setup with NumStability available.",
+            "This measurement snapshot contains "
+            + latex_escape(paper_count)
+            + " paper(s) and "
+            + latex_escape(task_count)
+            + " task(s): "
+            + "; ".join(
+                latex_escape(paper.get("paper_id"))
+                + ", ``"
+                + latex_escape(
+                    paper.get("citation", {}).get(
+                        "title", paper_records[str(paper["paper_id"])].get("title")
+                    )
+                )
+                + ".''"
+                for paper in manifest_papers
+            )
+            + " Each paper version is fixed for this measurement snapshot. A theorem is a mathematical claim together with a proof. A task is one fixed theorem statement plus the short paper context needed to understand it. N is the setup with no NumStability files. L is the otherwise matching setup with NumStability available.",
             "Observational means the results describe this exact pilot but do not satisfy every rule needed for an official score.",
             "Codex performed the requested source labeling and both recorded review passes. In this sentence, labeling means choosing the paper result, recording its exact location, and assigning its difficulty type before measurement. The private construction proofs were used only to check that each task was possible. They were never shown during a measured run.",
             r"\subsection{Source identity and fixed fingerprints}",
@@ -1776,7 +1926,13 @@ def render_report(inputs: ReportInputs) -> str:
         ]
     )
     hash_rows: list[Sequence[str]] = [
-        ("Paper PDF", _hash_tex(source.get("sha256")), latex_escape(source.get("local_path"))),
+        (
+            "Paper PDF " + latex_escape(paper.get("paper_id")),
+            _hash_tex(paper.get("source", {}).get("sha256")),
+            latex_escape(paper.get("source", {}).get("local_path")),
+        )
+        for paper in manifest_papers
+    ] + [
         (
             "Benchmark specification PDF",
             _hash_tex(specification.get("sha256")),
@@ -1850,9 +2006,16 @@ def render_report(inputs: ReportInputs) -> str:
             size="footnotesize",
         )
     )
-    rights_note = source.get("rights_note")
-    if rights_note:
-        lines.append("Source-copy note: " + latex_escape(rights_note))
+    for paper in manifest_papers:
+        source = paper.get("source", {})
+        rights_note = source.get("rights_note") if isinstance(source, Mapping) else None
+        if rights_note:
+            lines.append(
+                "Source-copy note for "
+                + latex_escape(paper.get("paper_id"))
+                + ": "
+                + latex_escape(rights_note)
+            )
 
     lines.extend(
         [
@@ -1911,7 +2074,6 @@ def render_report(inputs: ReportInputs) -> str:
             ]
         )
 
-    target_search = inputs.evidence["exact_target_search"]
     lines.extend(
         [
             r"\subsection{Search for already existing complete results}",
@@ -1919,15 +2081,18 @@ def render_report(inputs: ReportInputs) -> str:
         ]
     )
     search_rows: list[Sequence[str]] = []
-    for finding in target_search.get("task_findings", []):
-        search_rows.append(
-            (
-                latex_escape(finding.get("task_id")),
-                "no" if finding.get("exact_duplicate_found") is False else "yes",
-                "no" if finding.get("semantic_duplicate_found") is False else "yes",
-                latex_escape(finding.get("tier_assessment")),
+    for evidence_name, target_search in sorted(inputs.evidence.items()):
+        if not evidence_name.startswith("exact_target_search"):
+            continue
+        for finding in target_search.get("task_findings", []):
+            search_rows.append(
+                (
+                    latex_escape(finding.get("task_id")),
+                    "no" if finding.get("exact_duplicate_found") is False else "yes",
+                    "no" if finding.get("semantic_duplicate_found") is False else "yes",
+                    latex_escape(finding.get("tier_assessment")),
+                )
             )
-        )
     lines.extend(
         _longtable(
             "Duplicate search and final tier check",
@@ -1942,13 +2107,7 @@ def render_report(inputs: ReportInputs) -> str:
         [
             r"\section{The exact shared Lean setting}",
             "Both conditions receive the same small, library-neutral setting. Library-neutral means that its names and statements do not mention NumStability. This prevents the theorem wording itself from favoring condition L.",
-            r"\begin{itemize}",
-            r"\item \texttt{StandardAddModel} stores the rounding size $u$, proves that $u$ is not negative, gives the rounded-add operation, says adding from zero returns the input, and gives the usual one-error rule for each addition.",
-            r"\item \texttt{NoGuardAddModel} stores the weaker no-guard rule. A guard digit is an extra internal digit that makes addition safer. Without it, the two input terms may receive separate small errors.",
-            r"\item \texttt{gamma} is the exact number $n u/(1-nu)$ used to collect repeated small errors. \texttt{GammaValid} says its denominator, meaning the bottom part of the fraction, is positive.",
-            r"\item \texttt{pairwiseSum} adds a power-of-two input in a balanced tree. \texttt{recursiveSum} adds from left to right and keeps a one-item sum exact.",
-            r"\item \texttt{noGuardRecursiveRunningBudget} is the finite sum on the right of paper equation (5.3), without its leading $u$. It includes the actual computed earlier sums.",
-            r"\end{itemize}",
+            "The shared file contains exactly the neutral models, algorithms, and notation needed by the tasks in the current manifest. When another paper needs an additional neutral definition, this file and every affected fingerprint are regenerated for the whole corpus.",
             "The next listing records the complete controlled shared file. ASCII is the small basic computer character set. For dependable PDF building only, symbols outside ASCII are written as words such as Real, Nat, and alpha. The file fingerprint above is the exact byte record; a byte is one stored unit of file data.",
             r"\begin{lstlisting}",
             _ascii_lean(inputs.shared_source),
@@ -2368,7 +2527,7 @@ def render_report(inputs: ReportInputs) -> str:
         [
             r"\subsection{Matched N/L changes}",
             "A pair contains the N and L attempt for the same task and repetition. Every change below is L minus N. A positive pass change favors L. A negative time or token change means L used less. The reported center for time and tokens is the median of the within-pair changes, not the difference between two unrelated medians. The abbreviation pp means percentage points, the direct difference between two percentages.",
-            "A 95 percent range is meant to show uncertainty. Here it is made by a bootstrap, which means repeatedly drawing whole papers from the paper set and recalculating the result. Because this set has one paper, the warning after the table is essential.",
+            "A 95 percent range is meant to show uncertainty. Here it is made by a bootstrap, which means repeatedly drawing whole papers from the paper set and recalculating the result.",
         ]
     )
     pair_result_rows: list[Sequence[str]] = []
@@ -2417,13 +2576,14 @@ def render_report(inputs: ReportInputs) -> str:
             size="footnotesize",
         )
     )
-    lines.extend(
-        [
-            r"\begin{center}",
-            r"\fcolorbox{red!70!black}{yellow!12}{\parbox{0.92\linewidth}{\textbf{One-paper warning.} A bootstrap is repeated resampling used to make an uncertainty range. This report resamples whole papers, but there is only one paper. It therefore chooses the same paper again and again. The resulting 95\% range is degenerate, meaning it has no useful information about how results vary across papers. It is shown only as an arithmetic check and must not be read as broad certainty.}}",
-            r"\end{center}",
-        ]
-    )
+    if paper_count == 1:
+        lines.extend(
+            [
+                r"\begin{center}",
+                r"\fcolorbox{red!70!black}{yellow!12}{\parbox{0.92\linewidth}{\textbf{One-paper warning.} A bootstrap is repeated resampling used to make an uncertainty range. This report resamples whole papers, but there is only one paper. It therefore chooses the same paper again and again. The resulting 95\% range is degenerate, meaning it has no useful information about how results vary across papers. It is shown only as an arithmetic check and must not be read as broad certainty.}}",
+                r"\end{center}",
+            ]
+        )
 
     lines.extend(
         [
@@ -2493,24 +2653,26 @@ def render_report(inputs: ReportInputs) -> str:
         ]
     )
     file_rows = [
-        ("shared/HighamBench/Definitions.lean", "The exact library-neutral Lean setting."),
-        ("tasks/P01/T1, T2, T3", "The three fixed targets, paper context, and task records."),
+        ("shared/HighamBench/Core.lean", "Definitions genuinely shared by several papers."),
+        ("shared/HighamBench/P*Definitions.lean", "The extra definitions exposed only to one paper."),
+        ("tasks/P*/T*/", "Every manifest task's target, paper context, and task record."),
         ("metadata/manifest.json", "Paper, source anchors, task bindings, and hashes."),
         ("metadata/config.json", "Versions, conditions, repetitions, and limits."),
         ("metadata/environment.json", "Machine, tools, isolation, and known deviations."),
-        ("metadata/run_order.json", "The fixed N/L order for all nine pairs."),
+        ("metadata/run_order.json", f"The fixed N/L order for all {pair_count} pairs."),
         ("metadata/release_files.json", "The fingerprints of the complete evaluation package."),
         ("metadata/library_source.json", "The exact NumStability source-file list."),
         ("metadata/library_olean.json", "The exact pruned NumStability compiled-file list."),
         ("metadata/packages_olean.json", "Fingerprints for compiled Lean and package trees."),
         ("metadata/packages_runtime.json", "The exact pruned package files exposed inside a run."),
         ("metadata/evidence/", "Real N-absence and L-library-use construction checks."),
-        ("metadata/reviews/", "The two independent Codex review records."),
+        ("metadata/reviews/", "The independent review records for every task."),
         ("tools/codex_isolated.py", "Starts one fresh restricted Codex attempt."),
         ("tools/offline_shell.c", "Installs the no-socket kernel rule for model shell commands."),
         ("tools/lean_isolated.py", "Runs Lean with exactly the files allowed by N or L."),
         ("tools/preflight.py", "Scans each complete staged N task and tests the forbidden import."),
-        ("tools/run_matrix.py", "Runs the 18 assignments in their frozen order."),
+        ("tools/refresh_snapshot.py", "Regenerates metadata uniformly for every manifest paper."),
+        ("tools/run_matrix.py", f"Runs the {run_count} assignments in their fixed order."),
         ("tools/runner.py", "Records one attempt, its time, tokens, and validation result."),
         ("tools/validator.py", "Checks statement identity, forbidden shortcuts, compilation, and dependencies."),
         ("tools/result_set.py", "Rejects a missing, repeated, mismatched, or out-of-order final matrix."),
@@ -2569,12 +2731,12 @@ def render_report(inputs: ReportInputs) -> str:
             r"\begin{lstlisting}",
             "python3 paper_bencmark/highambench/tools/render_report.py \\",
             "  --analysis paper_bencmark/scratch_pad/highambench_results/analysis/summary.json \\",
-            "  --output-tex paper_bencmark/scratch_pad/HighamBench_P01_Report.tex \\",
+            "  --output-tex paper_bencmark/scratch_pad/HighamBench_Report.tex \\",
             "  --compile-pdf",
             r"\end{lstlisting}",
-            "The report builder rereads the final metadata, evidence, reviews, and analysis. It also requires the nearby frozen-run check, checks its fingerprint against the accepted result set, verifies the release files, and compares the construction tools, Python executable, pruned package view, and pruned NumStability library with those frozen identities. It refuses missing runs, stale records, damaged network evidence, failed token-control evidence, failed construction checks, missing task summaries, or a missing one-paper warning. This prevents an incomplete measurement from becoming a polished report by accident.",
+            "The report builder rereads the final metadata, evidence, reviews, and analysis. It also requires the nearby frozen-run check, checks its fingerprint against the accepted result set, verifies the release files, and compares the construction tools, Python executable, pruned package view, and pruned NumStability library with those fixed identities. It refuses missing runs, stale records, damaged network evidence, failed token-control evidence, failed construction checks, or missing task summaries. This prevents an incomplete measurement from becoming a polished report by accident.",
             r"\section{Final scope statement}",
-            "This implementation completes one benchmark entry for one fixed paper, with one T1, one T2, and one T3 theorem. It measures proof completion under N and L; it does not measure how well an agent translates unrestricted paper prose into Lean because the statements are fixed before each run. It also cannot support a claim about numerical-analysis papers in general. The correct result label for the present setup is: ",
+            "This measurement snapshot contains " + latex_escape(paper_count) + " paper(s) and " + latex_escape(task_count) + " fixed task(s). It measures proof completion under N and L; it does not measure how well an agent translates unrestricted paper prose into Lean because the statements are fixed before each run. The correct result label for the present setup is: ",
             (r"\textbf{observational pilot, not an official HighamBench score.}" if observational else r"\textbf{official HighamBench reference score.}"),
             "Recorded benchmark ID: " + _inline_code(benchmark_id) + ".",
             r"\end{document}",

@@ -6,10 +6,11 @@ released task package in each fresh temporary workspace and copies the matching
 private proof to ``Submission.lean``.  The private source directory is never
 mounted by either the benchmark agent adapter or the isolated Lean adapter.
 
-The task matrix and theorem names come from ``metadata/manifest.json``.  P01's
-T1 and T2 construction proofs import one private helper module; that helper is
-copied as source and compiled afresh inside the isolated Lean adapter, so no
-private ``.olean`` file is reused.  Every submission then goes through the
+The task matrix and theorem names come from ``metadata/manifest.json``. Any
+private helper modules imported by a proof are discovered from that paper's
+private source directory, copied as source, and compiled afresh inside the
+isolated Lean adapter. No paper ID or tier receives a special helper rule, and
+no private ``.olean`` file is reused. Every submission then goes through the
 normal hidden validator, including its isolated compilation and transitive
 dependency audit.
 """
@@ -22,6 +23,7 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 import platform
+import re
 import shutil
 import sys
 from typing import Any, Callable
@@ -37,7 +39,7 @@ try:
     )
     from .hashes import load_manifest, stage_manifest_files, verify_manifest
     from .preflight import run_preflight
-    from .validator import ValidationConfig, validate
+    from .validator import ValidationConfig, extract_imports, validate
 except ImportError:  # Direct script execution.
     from common import (  # type: ignore
         BenchmarkToolError,
@@ -49,14 +51,11 @@ except ImportError:  # Direct script execution.
     )
     from hashes import load_manifest, stage_manifest_files, verify_manifest  # type: ignore
     from preflight import run_preflight  # type: ignore
-    from validator import ValidationConfig, validate  # type: ignore
+    from validator import ValidationConfig, extract_imports, validate  # type: ignore
 
 
-P01_HELPERS = {
-    "N": ("CommonN.lean", "CommonN", "HighamBench.GoldN.gammaValid_mono"),
-    "L": ("CommonL.lean", "CommonL", "HighamBench.GoldL.standardProxy_u"),
-}
 CENTRAL_MANIFEST_RELATIVE = Path("metadata/manifest.json")
+GOLD_PROOF_FILENAME_RE = re.compile(r"^T[0-9]+_[NL]\.lean$")
 
 CONSTRUCTION_TOOL_RELATIVES = (
     "tools/check_construction.py",
@@ -89,9 +88,6 @@ class ConstructionSpec:
     target_theorem: str
     canonical_relative: str
     gold_filename: str
-    helper_filename: str | None
-    helper_module: str | None
-    helper_target: str | None
 
 
 @dataclass(frozen=True)
@@ -158,17 +154,6 @@ def _canonical_target_relative(
             f"{expected.as_posix()}: {target_file}"
         )
     return expected.as_posix()
-
-
-def _helper_for(
-    paper_id: str, tier: str, condition: str
-) -> tuple[str, str, str] | None:
-    # Helpers are private proof implementation details, not benchmark metadata.
-    # Preserve the established P01 construction layout while allowing later
-    # papers to use self-contained proofs by default.
-    if paper_id == "P01" and tier in ("T1", "T2"):
-        return P01_HELPERS[condition]
-    return None
 
 
 def construction_specs(
@@ -269,7 +254,6 @@ def construction_specs(
                 declaration if "." in declaration else f"HighamBench.{declaration}"
             )
             for condition in ("N", "L"):
-                helper = _helper_for(paper_id, tier, condition)
                 specs.append(
                     ConstructionSpec(
                         task_id=task_id,
@@ -279,9 +263,6 @@ def construction_specs(
                         target_theorem=target_theorem,
                         canonical_relative=canonical_relative,
                         gold_filename=f"{tier}_{condition}.lean",
-                        helper_filename=helper[0] if helper else None,
-                        helper_module=helper[1] if helper else None,
-                        helper_target=helper[2] if helper else None,
                     )
                 )
 
@@ -324,7 +305,7 @@ def _required_file(path: Path, label: str) -> Path:
 def _private_gold_root(
     private_gold_root: Path, selected_paper_ids: tuple[str, ...]
 ) -> Path:
-    """Normalize a private-gold root, retaining direct-P01 compatibility."""
+    """Normalize either the shared private root or one selected paper directory."""
 
     root = _required_directory(private_gold_root, "private gold root")
     if len(selected_paper_ids) == 1 and root.name == selected_paper_ids[0]:
@@ -335,6 +316,72 @@ def _private_gold_root(
             "single paper is selected"
         )
     return root
+
+
+def _helper_module(relative: Path) -> str:
+    return ".".join(relative.with_suffix("").parts)
+
+
+def local_helper_sources(private_paper_root: Path, gold_path: Path) -> tuple[Path, ...]:
+    """Return the imported local-helper closure in dependency-first order.
+
+    A helper is any imported module whose matching ``.lean`` source exists
+    below the same paper's private directory. Other private proof files may not
+    be used as helpers. This convention is identical for every paper and tier.
+    """
+
+    root = private_paper_root.resolve()
+    gold = _required_file(gold_path, "private construction proof")
+    try:
+        gold.relative_to(root)
+    except ValueError as error:
+        raise BenchmarkToolError("private proof is outside its paper directory") from error
+
+    module_sources: dict[str, Path] = {}
+    for source in sorted(root.rglob("*.lean")):
+        if source.is_symlink():
+            raise BenchmarkToolError(f"private helper source may not be a symlink: {source}")
+        relative = source.relative_to(root)
+        module = _helper_module(relative)
+        if module in module_sources:
+            raise BenchmarkToolError(f"duplicate private helper module {module}")
+        module_sources[module] = source
+
+    ordered: list[Path] = []
+    complete: set[str] = set()
+    active: set[str] = set()
+
+    def visit(module: str) -> None:
+        source = module_sources.get(module)
+        if source is None or source == gold:
+            return
+        if module in complete:
+            return
+        if module in active:
+            raise BenchmarkToolError(f"cyclic private helper imports include {module}")
+        relative = source.relative_to(root)
+        if GOLD_PROOF_FILENAME_RE.fullmatch(relative.name):
+            raise BenchmarkToolError(
+                f"private proof {gold.name} may not import another proof file: {relative}"
+            )
+        active.add(module)
+        try:
+            imports = extract_imports(source.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError) as error:
+            raise BenchmarkToolError(f"cannot read private helper {relative}: {error}") from error
+        for imported in imports:
+            visit(imported)
+        active.remove(module)
+        complete.add(module)
+        ordered.append(relative)
+
+    try:
+        gold_imports = extract_imports(gold.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError) as error:
+        raise BenchmarkToolError(f"cannot read private proof {gold}: {error}") from error
+    for imported in gold_imports:
+        visit(imported)
+    return tuple(ordered)
 
 
 def _task_ids(specs: Iterable[ConstructionSpec]) -> tuple[str, ...]:
@@ -372,11 +419,7 @@ def resolve_environment(args: argparse.Namespace) -> ConstructionEnvironment:
     benchmark_root = _required_directory(args.benchmark_root, "benchmark root")
     project_root = _required_directory(args.project_root, "project root")
     all_specs = construction_specs(benchmark_root)
-    # ``measure_validation.py`` predates the selector and is intentionally a
-    # P01-only historical measurement.  Namespaces produced by this module's
-    # parser always have ``paper_id``; a caller without the attribute keeps the
-    # old P01 scope instead of silently expanding that frozen measurement.
-    selected_arg = getattr(args, "paper_id", ("P01",))
+    selected_arg = getattr(args, "paper_id", None)
     manifest_paper_ids = _paper_ids(all_specs)
     if not selected_arg:
         selected_paper_ids = manifest_paper_ids
@@ -445,7 +488,6 @@ def resolve_environment(args: argparse.Namespace) -> ConstructionEnvironment:
     )
 
     missing_material: list[str] = []
-    checked_helpers: set[tuple[str, str]] = set()
     for spec in specs:
         _required_file(
             benchmark_root / "metadata" / "controlled" / f"{spec.task_id}.json",
@@ -456,17 +498,6 @@ def resolve_environment(args: argparse.Namespace) -> ConstructionEnvironment:
             missing_material.append(
                 f"{spec.task_id}/{spec.condition} proof ({gold_path})"
             )
-        if spec.helper_filename is not None:
-            helper_key = (spec.paper_id, spec.helper_filename)
-            if helper_key not in checked_helpers:
-                checked_helpers.add(helper_key)
-                helper_path = (
-                    private_gold_root / spec.paper_id / spec.helper_filename
-                )
-                if helper_path.is_symlink() or not helper_path.is_file():
-                    missing_material.append(
-                        f"{spec.paper_id}/{spec.condition} helper ({helper_path})"
-                    )
     if missing_material:
         raise BenchmarkToolError(
             "private construction material is missing for manifest-available "
@@ -643,13 +674,100 @@ def verification_basis(environment: ConstructionEnvironment) -> dict[str, Any]:
             f"{packages_absence_scan['matches'][:8]}"
         )
 
-    shared_files = _exact_regular_files(environment.shared_olean_root)
-    if shared_files != {"HighamBench/Definitions.olean"}:
+    environment_path = _required_file(
+        environment.benchmark_root / "metadata" / "environment.json",
+        "benchmark environment record",
+    )
+    try:
+        environment_record = json.loads(environment_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise BenchmarkToolError(f"benchmark environment record is invalid JSON: {error}") from error
+    lean_record = _manifest_mapping(
+        _manifest_mapping(environment_record, "benchmark environment record").get("lean"),
+        "benchmark environment Lean record",
+    )
+    frozen_shared_bundles = _manifest_mapping(
+        lean_record.get("shared_olean_bundles"), "benchmark shared olean bundles"
+    )
+    if set(frozen_shared_bundles) != set(environment.manifest_paper_ids):
         raise BenchmarkToolError(
-            "shared olean root must contain exactly HighamBench/Definitions.olean"
+            "benchmark shared olean bundles do not exactly cover the manifest papers"
         )
-    shared_olean = environment.shared_olean_root / "HighamBench" / "Definitions.olean"
-
+    try:
+        central_record = json.loads(environment.central_manifest.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise BenchmarkToolError(f"central benchmark manifest is invalid JSON: {error}") from error
+    central_mapping = _manifest_mapping(central_record, "central benchmark manifest")
+    expected_modules_by_paper = {
+        paper_id: set() for paper_id in environment.manifest_paper_ids
+    }
+    for index, raw_entry in enumerate(
+        _manifest_list(
+            central_mapping.get("controlled_shared_files"),
+            "central manifest controlled_shared_files",
+        )
+    ):
+        entry = _manifest_mapping(raw_entry, f"controlled shared file {index}")
+        path = _manifest_string(entry.get("path"), f"controlled shared file {index} path")
+        prefix = "paper_bencmark/highambench/shared/"
+        if path.startswith(prefix):
+            module_source = path[len(prefix) :]
+        elif path.startswith("shared/"):
+            module_source = path[len("shared/") :]
+        else:
+            raise BenchmarkToolError(f"invalid controlled shared path: {path}")
+        if not module_source.startswith("HighamBench/") or not module_source.endswith(".lean"):
+            raise BenchmarkToolError(f"invalid controlled shared module: {path}")
+        module_olean = module_source[:-5] + ".olean"
+        for paper_id in _manifest_list(
+            entry.get("paper_ids"), f"controlled shared file {path} paper_ids"
+        ):
+            if paper_id not in expected_modules_by_paper:
+                raise BenchmarkToolError(
+                    f"controlled shared file {path} names unknown paper {paper_id}"
+                )
+            expected_modules_by_paper[str(paper_id)].add(module_olean)
+    expected_shared_files: set[str] = set()
+    shared_olean_bundles: dict[str, dict[str, str]] = {}
+    for paper_id in environment.manifest_paper_ids:
+        raw_bundle = _manifest_mapping(
+            frozen_shared_bundles[paper_id], f"benchmark shared olean bundle {paper_id}"
+        )
+        if not raw_bundle or any(
+            not isinstance(relative, str)
+            or not relative.startswith("HighamBench/")
+            or not relative.endswith(".olean")
+            for relative in raw_bundle
+        ):
+            raise BenchmarkToolError(
+                f"benchmark shared olean bundle {paper_id} names invalid modules"
+            )
+        if set(raw_bundle) != expected_modules_by_paper[paper_id]:
+            raise BenchmarkToolError(
+                f"benchmark shared olean bundle {paper_id} disagrees with its paper scope"
+            )
+        bundle_hashes: dict[str, str] = {}
+        for relative, expected in raw_bundle.items():
+            if not isinstance(expected, str) or re.fullmatch(r"[0-9a-f]{64}", expected) is None:
+                raise BenchmarkToolError(
+                    f"invalid frozen SHA-256 for shared olean {paper_id}/{relative}"
+                )
+            bundled_relative = f"{paper_id}/{relative}"
+            expected_shared_files.add(bundled_relative)
+            actual = sha256_file(environment.shared_olean_root / bundled_relative)
+            if actual != expected:
+                raise BenchmarkToolError(
+                    f"shared olean {paper_id}/{relative} has the wrong SHA-256"
+                )
+            bundle_hashes[relative] = actual
+        shared_olean_bundles[paper_id] = bundle_hashes
+    shared_files = _exact_regular_files(environment.shared_olean_root)
+    if shared_files != expected_shared_files:
+        raise BenchmarkToolError(
+            "shared olean root does not exactly match environment metadata "
+            f"(extra={sorted(shared_files - expected_shared_files)}, "
+            f"missing={sorted(expected_shared_files - shared_files)})"
+        )
     tool_hashes: dict[str, str] = {}
     for relative in CONSTRUCTION_TOOL_RELATIVES:
         path = _required_file(
@@ -671,12 +789,11 @@ def verification_basis(environment: ConstructionEnvironment) -> dict[str, Any]:
             },
         },
         "shared_olean": {
-            "relative_file": "HighamBench/Definitions.olean",
-            "sha256": sha256_file(shared_olean),
-            "exact_file_count": 1,
+            "bundles": shared_olean_bundles,
+            "exact_file_count": len(expected_shared_files),
             "condition_n_absence_scan": _binary_marker_scan(
                 environment.shared_olean_root,
-                {"HighamBench/Definitions.olean"},
+                expected_shared_files,
             ),
         },
         "numstability_source": source_identity,
@@ -710,6 +827,7 @@ def isolated_lean_command(
     *,
     action: str,
     condition: str,
+    paper_id: str,
     workspace: str | Path,
     source: str | Path,
     submission_module: str | None = None,
@@ -734,7 +852,7 @@ def isolated_lean_command(
         "--packages-root",
         str(environment.packages_root),
         "--shared-olean-root",
-        str(environment.shared_olean_root),
+        str(environment.shared_olean_root / paper_id),
         "--shared-root-relative",
         environment.shared_root_relative,
         "--bwrap",
@@ -921,6 +1039,7 @@ def check_one(
     )
     private_paper_root = environment.private_gold_root / spec.paper_id
     gold_path = private_paper_root / spec.gold_filename
+    helper_relatives = local_helper_sources(private_paper_root, gold_path)
     manifest = load_manifest(manifest_path)
 
     with temporary_directory(
@@ -934,6 +1053,7 @@ def check_one(
                 environment,
                 action="probe",
                 condition="N",
+                paper_id=spec.paper_id,
                 workspace="{workspace}",
                 source="{probe}",
             )
@@ -957,7 +1077,7 @@ def check_one(
                     ],
                     "manifest_sha256": sha256_file(manifest_path),
                     "gold_source_sha256": sha256_file(gold_path),
-                    "helper": None,
+                    "helpers": [],
                     "condition_n_library_arguments_omitted": True,
                     "n_preflight": n_preflight,
                     "validation": None,
@@ -968,30 +1088,28 @@ def check_one(
         submission = workspace / "Submission.lean"
         shutil.copy2(gold_path, submission)
 
-        helper_build: dict[str, Any] | None = None
-        helper_digest: str | None = None
+        helper_records: list[dict[str, Any]] = []
         local_sources: list[str] = []
-        if spec.helper_filename is not None:
-            assert spec.helper_module is not None and spec.helper_target is not None
-            helper_source = private_paper_root / spec.helper_filename
-            staged_helper = workspace / spec.helper_filename
+        for helper_relative in helper_relatives:
+            helper_source = private_paper_root / helper_relative
+            staged_helper = workspace / helper_relative
+            staged_helper.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(helper_source, staged_helper)
             helper_digest = sha256_file(staged_helper)
-            local_sources.append(spec.helper_filename)
+            helper_name = helper_relative.as_posix()
+            helper_module = _helper_module(helper_relative)
+            local_sources.append(helper_name)
 
-            # The adapter's audit action first performs an explicit `lean -o`.
-            # We use it here to create the helper olean inside the same N/L
-            # namespace that will later compile the submission.  The audit of
-            # the helper is an additional check; the normal submission audit
-            # still runs below through the validator.
+            # Build every imported helper from source in the same isolated
+            # condition as the proof. The submission's normal dependency audit
+            # below checks the complete transitive proof dependency graph.
             helper_command = isolated_lean_command(
                 environment,
-                action="build-audit",
+                action="olean",
                 condition=spec.condition,
+                paper_id=spec.paper_id,
                 workspace=workspace,
                 source=staged_helper,
-                submission_module=spec.helper_module,
-                target_theorem=spec.helper_target,
             )
             completed = command_runner(
                 helper_command,
@@ -1002,6 +1120,13 @@ def check_one(
             helper_build = _helper_build_summary(
                 completed, olean_created=helper_olean.is_file()
             )
+            helper_record = {
+                "path": helper_name,
+                "module": helper_module,
+                "source_sha256": helper_digest,
+                "build": helper_build,
+            }
+            helper_records.append(helper_record)
             if (
                 completed.get("system_error") is not None
                 or completed.get("timed_out")
@@ -1018,11 +1143,7 @@ def check_one(
                     "reasons": ["the private helper failed its isolated fresh build"],
                     "manifest_sha256": sha256_file(manifest_path),
                     "gold_source_sha256": sha256_file(gold_path),
-                    "helper": {
-                        "module": spec.helper_module,
-                        "source_sha256": helper_digest,
-                        "build": helper_build,
-                    },
+                    "helpers": helper_records,
                     "condition_n_library_arguments_omitted": spec.condition == "N",
                     "n_preflight": n_preflight,
                     "validation": None,
@@ -1032,6 +1153,7 @@ def check_one(
             environment,
             action="olean",
             condition=spec.condition,
+            paper_id=spec.paper_id,
             workspace="{workspace}",
             source="{checked_submission}",
         )
@@ -1039,6 +1161,7 @@ def check_one(
             environment,
             action="audit",
             condition=spec.condition,
+            paper_id=spec.paper_id,
             workspace="{workspace}",
             source="{checked_submission}",
             submission_module="{submission_module}",
@@ -1079,15 +1202,7 @@ def check_one(
             "reasons": reasons,
             "manifest_sha256": sha256_file(manifest_path),
             "gold_source_sha256": sha256_file(gold_path),
-            "helper": (
-                None
-                if spec.helper_filename is None
-                else {
-                    "module": spec.helper_module,
-                    "source_sha256": helper_digest,
-                    "build": helper_build,
-                }
-            ),
+            "helpers": helper_records,
             "condition_n_library_arguments_omitted": spec.condition == "N",
             "n_preflight": n_preflight,
             "validation": summary,

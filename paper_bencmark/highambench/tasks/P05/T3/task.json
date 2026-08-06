@@ -1,0 +1,85 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, zero-based coefficient adapter, and Cholesky symmetry formalization",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The unit roundoff u is nonnegative.",
+    "A is symmetric.",
+    "The local estimates obtained from Lemmas 4.1 and 4.3 hold on the computed upper triangle."
+  ],
+  "author_label": "Theorem 4.4",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P05 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P05 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P05/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p05_t3_cholesky_backward_error {n : Nat} ... : exists DeltaA, R^T R=A+DeltaA and |DeltaA_ij| <= (i+1)*u*(|R^T||R|)_ij and |DeltaA_ij| <= (n+1)*u*(|R^T||R|)_ij",
+    "namespace": "HighamBench",
+    "plain_language": "The upper-triangle Cholesky residual estimates extend by symmetry to the full displayed rowwise bound and its uniform (n+1)u consequence.",
+    "target_file": "paper_bencmark/highambench/tasks/P05/T3/Target.lean",
+    "theorem_name": "p05_t3_cholesky_backward_error"
+  },
+  "informal_proof": "Show that R^T R and |R^T||R| are symmetric. Use the upper-triangle estimate directly when i<=j and its transposed copy otherwise, loosen the smaller row factor, then use i+1<=n+1.",
+  "informal_statement": "The symmetry completion and two componentwise estimates in Theorem 4.4 and equation (4.4).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P05",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P05_IMPROVED BACKWARD ERROR BOUNDS FOR LU ANDCHOLESKY FACTORIZATIONS.pdf",
+    "sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6"
+  },
+  "paper_version": "published journal version; volume 35, issue 2, 2014, printed pages 684-698",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.matTranspose_matMul",
+      "NumStability.matTranspose_involutive",
+      "NumStability.matSeqProd_componentwise_perturbation_bound"
+    ],
+    "note": "The frozen matrix algebra proves generic transpose/product identities, but it has no Cholesky execution theorem or result extending P05's local upper-triangle coefficients to the exact diag((i+1)u) and (n+1)u bounds."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p05MatMul",
+    "p05Transpose",
+    "p05AbsMatMul"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Theorem 4.4 statement",
+      "pdf_page": 11,
+      "printed_page": "694",
+      "role": "Cholesky backward-error theorem setup",
+      "section": "4.3. An improved backward error bound for Cholesky factorization"
+    },
+    {
+      "anchor": "equation (4.4), equations (4.5a)-(4.5b), and the closing symmetry sentence",
+      "pdf_page": 12,
+      "printed_page": "695",
+      "role": "full componentwise bounds and their symmetry proof",
+      "section": "4.3. An improved backward error bound for Cholesky factorization"
+    }
+  ],
+  "source_tags": [
+    "THM"
+  ],
+  "task_id": "P05-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "The frozen library supplies transpose-of-product algebra only. The target still requires a new paper-specific bridge from Cholesky's upper-triangle local estimates to a full symmetric perturbation with the exact rowwise and global coefficients.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P05/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p05_t3_cholesky_backward_error"
+  }
+}

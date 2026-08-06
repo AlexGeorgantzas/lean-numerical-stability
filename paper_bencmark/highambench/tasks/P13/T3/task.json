@@ -1,0 +1,85 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, tier label, and exact finite-certificate strengthening of Theorem 4.1",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "Numerator and denominator term errors satisfy separate componentwise relative bounds with nonnegative radii.",
+    "The exact numerator and denominator are nonzero.",
+    "The denominator radius times its condition number is strictly less than one."
+  ],
+  "author_label": "Theorem 4.1",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P13 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P13 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P13/T3/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p13_t3_barycentric_forward_bound {n : Nat} (coeff f deltaNum deltaDen : Fin n -> Real) (epsilonNum epsilonDen : Real) ... : relativeError computed exact <= (epsilonNum*condNum + epsilonDen*condDen)/(1-epsilonDen*condDen)",
+    "namespace": "HighamBench",
+    "plain_language": "Separately bounded componentwise errors in the barycentric numerator and denominator give an exact forward-error bound with Higham's two condition-number terms and a finite denominator-safety correction.",
+    "target_file": "paper_bencmark/highambench/tasks/P13/T3/Target.lean",
+    "theorem_name": "p13_t3_barycentric_forward_bound"
+  },
+  "informal_proof": "Apply the generic summation perturbation theorem to the numerator and denominator, use reverse triangle inequality to lower-bound the computed denominator, expand the quotient difference exactly, and combine the two cancellation terms.",
+  "informal_statement": "Exact finite-certificate counterpart of Theorem 4.1, equations (4.2)-(4.3), based on the perturbed quotient displayed immediately before the theorem.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P13",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P13_The numerical stability of barycentric Lagrange interpolation.pdf",
+    "sha256": "9ebf8adb699f96c82ccbb153dd6ca592c64475a8bc3e0703a50cb659b012c520"
+  },
+  "paper_version": "published journal version; IMA Journal of Numerical Analysis 24(4), October 2004, printed pages 547-556",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.summationComponentwisePerturbation_rel_error_le_condition"
+    ],
+    "note": "The mounted object bounds one perturbed finite sum. No mounted theorem composes two such bounds through a quotient, establishes computed-denominator safety, or proves the exact finite correction corresponding to Theorem 4.1's O(u^2) term."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p13InterpolationValue",
+    "p13Condition",
+    "p13BarycentricValue",
+    "p13BarycentricComputed",
+    "p13TermPerturbation"
+  ],
+  "source_locations": [
+    {
+      "anchor": "exact perturbed numerator/denominator expression preceding Theorem 4.1",
+      "pdf_page": 5,
+      "printed_page": "551",
+      "role": "finite quotient error model",
+      "section": "4. Barycentric formula"
+    },
+    {
+      "anchor": "Theorem 4.1 and equations (4.2)-(4.3)",
+      "pdf_page": 6,
+      "printed_page": "552",
+      "role": "two condition-number forward-error terms",
+      "section": "4. Barycentric formula"
+    }
+  ],
+  "source_tags": [
+    "THM"
+  ],
+  "task_id": "P13-T3",
+  "tier": "T3",
+  "tier_label": "extend",
+  "tier_rationale": "The mounted library supplies only the two independent finite-sum perturbation estimates. The proof newly composes them through the barycentric quotient, proves the computed denominator remains nonzero, and derives the exact finite correction whose first-order form is Theorem 4.1.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P13/T3/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p13_t3_barycentric_forward_bound"
+  }
+}

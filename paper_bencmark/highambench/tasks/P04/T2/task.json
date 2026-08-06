@@ -1,0 +1,76 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, exact scalar coefficient assembly, and componentwise notation adapter",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "Both input conversion errors are componentwise bounded by uLow times the corresponding input magnitude.",
+    "The block-FMA product error is bounded by the equation (3.5) coefficient applied to the converted inputs.",
+    "The two gamma denominators are positive and all three unit roundoffs are nonnegative."
+  ],
+  "author_label": "Theorem 3.2",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P04 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P04 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P04/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p04_t2_mixed_input_product_bound (uLow uFma u : \u211d) (q n : \u2115) (a b \u0394a \u0394b e computed : \u211d) ... : |computed-a*b| \u2264 (2*uLow+uLow^2+p04BlockFmaCoeff uFma u q n*(1+uLow)^2)*|a|*|b|",
+    "namespace": "HighamBench",
+    "plain_language": "Low-precision conversion of both inputs and the block-FMA product error combine to exactly the coefficient in Theorem 3.2.",
+    "target_file": "paper_bencmark/highambench/tasks/P04/T2/Target.lean",
+    "theorem_name": "p04_t2_mixed_input_product_bound"
+  },
+  "informal_proof": "Expand the product of the two perturbed inputs, bound its three conversion-error terms, bound each converted input by (1+uLow) times its original magnitude, and add the block-FMA error.",
+  "informal_statement": "The scalar entrywise core of Theorem 3.2 and equation (3.6).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P04",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P04_MIXED PRECISION BLOCK FUSED MULTIPLY-ADD- ERRORANALYSIS AND APPLICATION TO GPU TENSOR CORES.pdf",
+    "sha256": "7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862"
+  },
+  "paper_version": "published journal version; volume 42, issue 3, 2020, printed pages C124-C141",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.gamma_nonneg",
+      "NumStability.matMul_error_bound",
+      "NumStability.abs_subtract_perturbed_error_le_eps"
+    ],
+    "note": "The library has standard matrix-product and gamma/error ingredients, but no block-FMA model with two input-conversion errors or Theorem 3.2's mixed coefficient."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p04BlockFmaCoeff"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Theorem 3.2 and equation (3.6)",
+      "pdf_page": 7,
+      "printed_page": "C130",
+      "role": "componentwise mixed-input matrix-product bound",
+      "section": "3.2. Rounding error analysis"
+    }
+  ],
+  "source_tags": [
+    "THM"
+  ],
+  "task_id": "P04-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "NumStability.gamma_nonneg and the standard product/error results in NumStability/Analysis/Rounding.lean, NumStability/Algorithms/MatMul.lean, and NumStability/Analysis/Error.lean supply separate ingredients. The target must combine two input conversions with the P04 block-FMA coefficient and collect the exact (1+uLow)^2 factor.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P04/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p04_t2_mixed_input_product_bound"
+  }
+}

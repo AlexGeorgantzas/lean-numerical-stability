@@ -1,0 +1,75 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": true,
+    "kind": "source selection, tier label, and exact finite-vector realization of the scaling interval in equation (3.4a)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The vector is nonempty and has positive infinity norm.",
+    "The scaling factor is nonnegative and satisfies the exact lower and upper inequalities in (3.4a)."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P20 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P20 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P20/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p20_t1_scaled_row_range {n : Nat} (x : Fin n -> Real) (lambda theta : Real) (hn : 0 < n) (hlambda : 0 <= lambda) (hnorm : 0 < p20InfNormVec x) (hlower : theta / (2 * p20InfNormVec x) < lambda) (hupper : lambda <= theta / p20InfNormVec x) : (forall i, abs (p20ScaleVec lambda x i) <= theta) and exists i, theta / 2 < abs (p20ScaleVec lambda x i)",
+    "namespace": "HighamBench",
+    "plain_language": "Under the row-scaling interval (3.4a), all scaled coefficients are at most theta and at least one is strictly larger than theta/2.",
+    "target_file": "paper_bencmark/highambench/tasks/P20/T1/Target.lean",
+    "theorem_name": "p20_t1_scaled_row_range"
+  },
+  "informal_proof": "Use the coordinate bound by the finite infinity norm for the upper inequality and a coordinate attaining that norm for the strict lower inequality, then multiply the two source scaling inequalities by the positive norm.",
+  "informal_statement": "The exact finite-vector maximum-coefficient consequence of the scaling interval (3.4a).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P20",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P20_ERROR ANALYSIS OF MATRIX MULTIPLICATION WITHNARROW RANGE FLOATING-POINT ARITHMETIC.pdf",
+    "sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2"
+  },
+  "paper_version": "SIAM Journal on Scientific Computing 47(4), B785-B800, published 2025-07-01",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.abs_le_infNormVec",
+      "NumStability.infNormVec_exists_abs_eq"
+    ],
+    "note": "The frozen MatrixAlgebra module supplies both exact finite infinity-norm facts. It does not contain the paper's theta/lambda scaling interval or the joint open-closed coefficient range."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p20InfNormVec",
+    "p20ScaleVec"
+  ],
+  "source_locations": [
+    {
+      "anchor": "equation (3.4a), row scaling interval",
+      "pdf_page": 5,
+      "printed_page": "B789",
+      "role": "upper and lower scaling-factor bounds that place the scaled row maximum in (theta/2, theta]",
+      "section": "3.1. Analysis"
+    }
+  ],
+  "source_tags": [
+    "EQN"
+  ],
+  "task_id": "P20-T1",
+  "tier": "T1",
+  "tier_label": "direct",
+  "tier_rationale": "The L proof directly unfolds p20InfNormVec and applies NumStability.abs_le_infNormVec and NumStability.infNormVec_exists_abs_eq from frozen NumStability/Analysis/MatrixAlgebra.lean; only the paper's scalar scaling inequalities remain.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P20/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p20_t1_scaled_row_range"
+  }
+}

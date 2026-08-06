@@ -1,0 +1,72 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and finite Frobenius-norm formalization of the first norm property in Section 2.1",
+    "performed_by": "Codex"
+  },
+  "assumptions": [],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P15 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P15 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P15/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p15_t1_frobenius_submultiplicative {n : Nat} (A B : P15Matrix n) : p15FrobNorm (p15MatMul A B) <= p15FrobNorm A * p15FrobNorm B",
+    "namespace": "HighamBench",
+    "plain_language": "The Frobenius norm of a finite matrix product is at most the product of the two Frobenius norms.",
+    "target_file": "paper_bencmark/highambench/tasks/P15/T1/Target.lean",
+    "theorem_name": "p15_t1_frobenius_submultiplicative"
+  },
+  "informal_proof": "Identify the paper-scoped finite product and Frobenius norm with the native matrix product and Frobenius norm, then apply Frobenius submultiplicativity.",
+  "informal_statement": "The first Frobenius-norm property listed in Section 2.1 and used throughout the paper's normwise analysis.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P15",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P15_Solving block low-rank linear systems by LU factorization is numerically stable.pdf",
+    "sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7"
+  },
+  "paper_version": "published journal version; IMA Journal of Numerical Analysis 42(2), 2022, printed pages 951-980",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": true,
+    "exact_target_found_in_numstability_baseline": true,
+    "nearby_numstability_declarations": [
+      "NumStability.frobNorm_matMul_le"
+    ],
+    "note": "NumStability.Analysis.MatrixAlgebra exposes the identical function-shaped finite Frobenius product inequality; only the P15 notation bridge is required."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P15Matrix",
+    "p15MatMul",
+    "p15FrobNorm"
+  ],
+  "source_locations": [
+    {
+      "anchor": "prose listing the Frobenius norm's first useful property, ||AB|| <= ||A|| ||B||",
+      "pdf_page": 3,
+      "printed_page": "953",
+      "role": "submultiplicative norm step used throughout the analysis",
+      "section": "2.1 Block low-rank matrices"
+    }
+  ],
+  "source_tags": [
+    "TXT"
+  ],
+  "task_id": "P15-T1",
+  "tier": "T1",
+  "tier_label": "direct",
+  "tier_rationale": "The close frozen-library theorem is NumStability.frobNorm_matMul_le in NumStability/Analysis/MatrixAlgebra.lean. The L proof only identifies p15MatMul and p15FrobNorm with that theorem's notation.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P15/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p15_t1_frobenius_submultiplicative"
+  }
+}

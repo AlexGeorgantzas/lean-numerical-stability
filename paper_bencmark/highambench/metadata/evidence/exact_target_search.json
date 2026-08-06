@@ -17,21 +17,27 @@
     "method": "Search every Lean source file for the exact target names, the shared-only names, and domain-specific words. Then inspect every plausible NumStability declaration by source and compare its assumptions, algorithm, and conclusion with the fixed target. Text search alone was not treated as a semantic proof."
   },
   "fixed_surface_hashes": {
-    "shared_definitions": {
-      "path": "paper_bencmark/highambench/shared/HighamBench/Definitions.lean",
-      "sha256": "5350985da64d27b8f7f77a275ffdda773b37c15e9f0c504a164edd3b5ede19d7"
-    },
+    "shared_files": [
+      {
+        "path": "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+        "sha256": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a"
+      },
+      {
+        "path": "paper_bencmark/highambench/shared/HighamBench/P01Definitions.lean",
+        "sha256": "f84e0fcd73a73392e539081c1ab832e76c71902085eaae4614d305d138ca7a29"
+      }
+    ],
     "P01-T1": {
       "path": "paper_bencmark/highambench/tasks/P01/T1/Target.lean",
-      "sha256": "11a966a96916675045f6965f323e5233f87eb80e2c92aada13a567c9ef677c33"
+      "sha256": "ee6bd516f8c592936e1f9b0b9d54049579ba7aee7714cdb871b230332e0f1d19"
     },
     "P01-T2": {
       "path": "paper_bencmark/highambench/tasks/P01/T2/Target.lean",
-      "sha256": "9e21ce9099bf6d68cf794b72e3dddc9c0b2f7f538a32a4a8697f547657552505"
+      "sha256": "8707d7e8b3965c9c6d5c1354116c7cf04471bc0c5b0635b4287729455f79e49f"
     },
     "P01-T3": {
       "path": "paper_bencmark/highambench/tasks/P01/T3/Target.lean",
-      "sha256": "5f2b7112d090c066ade9b11c1f24f363ad6e6e04c6dce5bc804a981441c8a95d"
+      "sha256": "e5badc1d71efe1d99f4d211edb7eff96ceb893628641ed140494f380de284cda"
     }
   },
   "recorded_searches": [

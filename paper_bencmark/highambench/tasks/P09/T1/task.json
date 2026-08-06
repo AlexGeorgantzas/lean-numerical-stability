@@ -1,0 +1,74 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and finite real-vector formalization of the norm bridge in Theorem 1(b)",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The error vector has a positive finite number of coordinates."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P09 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P09 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P09/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p09_t1_max_error_le_sqrt_card_mul_rms {n : Nat} (hn : 0 < n) (e : Fin n -> Real) : p09Max e <= sqrt n * p09Rms e",
+    "namespace": "HighamBench",
+    "plain_language": "The maximum coordinate error is at most square-root-of-dimension times the RMS error.",
+    "target_file": "paper_bencmark/highambench/tasks/P09/T1/Target.lean",
+    "theorem_name": "p09_t1_max_error_le_sqrt_card_mul_rms"
+  },
+  "informal_proof": "Apply the frozen finite-vector infinity-versus-Euclidean norm theorem, then unfold RMS and cancel the positive square root of the dimension.",
+  "informal_statement": "The exact maximum-versus-RMS inequality used to prove Theorem 1(b).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P09",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P09_Roundoff Error Analysis of the Fast Fourier Transform.pdf",
+    "sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758"
+  },
+  "paper_version": "published journal version; volume 25, issue 116, October 1971, printed pages 757-768",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": true,
+    "nearby_numstability_declarations": [
+      "NumStability.infNormVec_le_vecNorm2"
+    ],
+    "note": "The frozen MatrixAlgebra object gives the unnormalized inequality directly; only the paper's RMS normalization remains."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p09VecNorm2",
+    "p09Rms",
+    "p09Max"
+  ],
+  "source_locations": [
+    {
+      "anchor": "unnumbered max-versus-RMS inequality in the proof of Theorem 1(b)",
+      "pdf_page": 7,
+      "printed_page": "763",
+      "role": "exact norm conversion from RMS error to maximum error",
+      "section": "3. Roundoff Errors in the Fast Fourier Transform"
+    }
+  ],
+  "source_tags": [
+    "UNL"
+  ],
+  "task_id": "P09-T1",
+  "tier": "T1",
+  "tier_label": "direct use",
+  "tier_rationale": "NumStability.infNormVec_le_vecNorm2 in NumStability/Analysis/MatrixAlgebra.lean gives the core inequality directly; the only additional step is cancellation in Ramos's RMS normalization.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P09/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p09_t1_max_error_le_sqrt_card_mul_rms"
+  }
+}

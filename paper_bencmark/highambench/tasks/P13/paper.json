@@ -1,0 +1,126 @@
+{
+  "annotation": {
+    "method": "Codex read the complete local paper, surveyed the definition, two lemmas, two theorems, one corollary, all displayed derivations, numerical experiments, conclusion, and references, visually checked the selected source pages, searched all 24 frozen mounted object modules, and compiled private N/L proofs before accepting the targets.",
+    "not_human_reviewer": true,
+    "performed_by": "Codex",
+    "reason": "The project owner assigned the P13 source selection and benchmark annotation to Codex."
+  },
+  "authors": [
+    "Nicholas J. Higham"
+  ],
+  "benchmark_specification": {
+    "local_path": "paper_bencmark/scratch_pad/HighamBench_Simple_Two_Condition_Specification.pdf",
+    "name": "HighamBench Simple Two-Condition Specification",
+    "sha256": "25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8",
+    "version": "0.2"
+  },
+  "classification_frozen_before_runs": false,
+  "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
+  "included_tasks": [
+    "P13-T1",
+    "P13-T2",
+    "P13-T3"
+  ],
+  "paper_id": "P13",
+  "paper_version": "published journal version; IMA Journal of Numerical Analysis 24(4), October 2004, printed pages 547-556",
+  "publication": {
+    "doi": "10.1093/imanum/24.4.547",
+    "issue": 4,
+    "issue_date": "2004-10",
+    "journal": "IMA Journal of Numerical Analysis",
+    "printed_pages": "547-556",
+    "publication_date": "2004-10-01",
+    "volume": 24,
+    "year": 2004
+  },
+  "rejected_candidates": [
+    {
+      "candidate": "Lagrange representation (2.1) and Definition 2.1",
+      "reason": "Equation (2.1) is setup and Definition 2.1 is a limit/supremum definition. Lemma 2.2 supplies the closed form and its proved perturbation consequences."
+    },
+    {
+      "candidate": "the equality-attainment clause in the proof of Lemma 2.2",
+      "reason": "The extremizing sign choice is useful but secondary; T1 and T2 retain both the lower bound and the operational perturbation inequality."
+    },
+    {
+      "candidate": "modified Lagrange formulae (3.1)-(3.3)",
+      "reason": "These are definitions of the evaluation formula, weights, gamma notation, and relative-error counters rather than standalone proved results."
+    },
+    {
+      "candidate": "Lemma 3.1 on computed weights and the product ell(x)",
+      "reason": "This operation-count lemma is tied to a full floating-point implementation trace. The selected targets isolate the paper's condition-number core and the central barycentric cancellation phenomenon."
+    },
+    {
+      "candidate": "Theorem 3.2 and forward bound (3.4) for the modified Lagrange formula",
+      "reason": "This is a strong backward-stability result, but a faithful target would require modeling weight construction, products, divisions, and summation simultaneously. The frozen mounted objects only cover generic finite-sum stages, making the theorem a weaker fit than the chosen tier sequence."
+    },
+    {
+      "candidate": "discussion of non-floating interpolation nodes on printed page 551",
+      "reason": "This is qualitative perturbation interpretation rather than a quantified theorem."
+    },
+    {
+      "candidate": "second barycentric formula (4.1) and the perturbed quotient derivation",
+      "reason": "Equation (4.1) is a formula definition. Its perturbed quotient is retained as the certificate surface for T3 rather than selected alone as an equality target."
+    },
+    {
+      "candidate": "Corollary 4.2 and the Lebesgue-constant bound (4.4)",
+      "reason": "It weakens Theorem 4.1 by replacing cond(x,n,1) with the Lebesgue constant. T3 preserves the sharper two-condition-number structure."
+    },
+    {
+      "candidate": "Chebyshev and equally-spaced Lebesgue-constant growth statements",
+      "reason": "The paper cites external approximation-theory sources for these results rather than proving them here."
+    },
+    {
+      "candidate": "weight rescaling commentary and explicit Chebyshev-weight remarks",
+      "reason": "These are implementation observations or delegated known formulas, not proved source results."
+    },
+    {
+      "candidate": "Section 5 experiments and Figures 1-4",
+      "reason": "The MATLAB experiments illustrate sharpness and ordering sensitivity but are empirical observations, not general mathematical targets."
+    },
+    {
+      "candidate": "Section 6 conclusions and Newton-form discussion",
+      "reason": "These summarize prior results and identify open analysis directions rather than add fixed proved statements."
+    }
+  ],
+  "result_survey": {
+    "T1": {
+      "available": true,
+      "decision": "Use the lower-bound clause of Lemma 2.2, which directly matches the frozen generic summation condition-number theorem.",
+      "task_id": "P13-T1",
+      "theorem_name": "p13_t1_condition_ge_one"
+    },
+    "T2": {
+      "available": true,
+      "decision": "Use Lemma 2.2's componentwise perturbation inequality, translating data errors through the fixed Lagrange coefficients.",
+      "task_id": "P13-T2",
+      "theorem_name": "p13_t2_data_perturbation_bound"
+    },
+    "T3": {
+      "available": true,
+      "decision": "Use an exact finite-certificate form of Theorem 4.1's two cancellation terms, with the denominator correction that completes its first-order O(u^2) presentation.",
+      "task_id": "P13-T3",
+      "theorem_name": "p13_t3_barycentric_forward_bound"
+    }
+  },
+  "schema_version": "highambench-paper-0.2",
+  "selection_policy": [
+    "Use results proved in this paper rather than definitions, empirical figures, or results delegated to cited approximation-theory sources.",
+    "Preserve the fixed-node, fixed-evaluation-point interpretation and componentwise perturbations in the data.",
+    "Represent the second barycentric formula as its exact numerator/denominator finite certificate.",
+    "Disclose the exact finite denominator correction in T3 as benchmark-author mathematics beyond the paper's displayed first-order theorem.",
+    "Keep every public definition paper-scoped and free of NumStability imports.",
+    "Assign tiers only from the 24 modules in metadata/library_olean.json."
+  ],
+  "short_name": "Higham (2004)",
+  "source": {
+    "lawful_source_locator": "https://doi.org/10.1093/imanum/24.4.547",
+    "license": "Copyright Institute of Mathematics and its Applications 2004; all rights reserved",
+    "local_path": "paper_bencmark/reference_papers/P13_The numerical stability of barycentric Lagrange interpolation.pdf",
+    "page_map": "PDF pages 1-10 are printed pages 547-556 respectively.",
+    "pdf_pages": 10,
+    "rights_note": "The local published article states that all rights are reserved; the benchmark records only paraphrases, locations, and formal restatements.",
+    "sha256": "9ebf8adb699f96c82ccbb153dd6ca592c64475a8bc3e0703a50cb659b012c520"
+  },
+  "title": "The numerical stability of barycentric Lagrange interpolation"
+}

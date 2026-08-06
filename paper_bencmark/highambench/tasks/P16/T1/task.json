@@ -1,0 +1,79 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and exact perturbation-to-residual form of the Section 2 normwise backward-error definition",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The supplied computed vector solves the linear system perturbed by deltaA and deltaB exactly."
+  ],
+  "author_label": null,
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P16 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P16 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P16/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p16_t1_perturbed_solve_residual_bound {n : Nat} (A deltaA : P16Matrix n) (b deltaB x : P16Vector n) (hsolve : p16MatVec (A + deltaA) x = b + deltaB) : p16VecNorm (p16Residual A b x) <= p16FrobNorm deltaA * p16VecNorm x + p16VecNorm deltaB",
+    "namespace": "HighamBench",
+    "plain_language": "The residual of an exactly perturbed solve is bounded by the Frobenius matrix perturbation acting on the solution plus the right-hand-side perturbation.",
+    "target_file": "paper_bencmark/highambench/tasks/P16/T1/Target.lean",
+    "theorem_name": "p16_t1_perturbed_solve_residual_bound"
+  },
+  "informal_proof": "Rearrange the perturbed solve into b-Ax = deltaA*x-deltaB, apply Euclidean triangle inequality, and bound the matrix action by the Frobenius norm.",
+  "informal_statement": "The exact residual implication behind the perturbation and normalized-residual forms of the normwise backward error in Section 2.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P16",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P16_A modular framework for the backward error analysis of GMRES.pdf",
+    "sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a"
+  },
+  "paper_version": "published open-access journal version; IMA Journal of Numerical Analysis 46(4), 2026, printed pages 1939-1993",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.vecNorm2_add_le",
+      "NumStability.vecNorm2_neg",
+      "NumStability.vecNorm2_matMulVec_le_frobNorm_mul"
+    ],
+    "note": "The frozen MatrixAlgebra module supplies the exact Euclidean triangle, negation, and Frobenius action rules. It has no single theorem with P16's two-sided linear-system perturbation surface."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "P16Matrix",
+    "P16Vector",
+    "p16MatVec",
+    "p16FrobNorm",
+    "p16VecNorm",
+    "p16Residual"
+  ],
+  "source_locations": [
+    {
+      "anchor": "normwise backward-error perturbation definition and normalized-residual identity",
+      "pdf_page": 4,
+      "printed_page": "1942",
+      "role": "exact perturbation-to-residual bridge",
+      "section": "2. Notations"
+    }
+  ],
+  "source_tags": [
+    "TXT"
+  ],
+  "task_id": "P16-T1",
+  "tier": "T1",
+  "tier_label": "direct",
+  "tier_rationale": "The L proof directly composes NumStability.vecNorm2_add_le, NumStability.vecNorm2_neg, and NumStability.vecNorm2_matMulVec_le_frobNorm_mul after the elementary perturbed-solve rearrangement.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P16/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p16_t1_perturbed_solve_residual_bound"
+  }
+}

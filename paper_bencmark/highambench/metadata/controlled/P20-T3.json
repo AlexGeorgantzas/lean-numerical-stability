@@ -1,0 +1,32 @@
+{
+  "files": [
+    {
+      "bytes": 1771,
+      "path": "agent_prompt.md",
+      "sha256": "5c99c5e5812f4b3c5dc2be4e673f8baff5ad96b5babfbbe9b0b5a9a81e593758"
+    },
+    {
+      "bytes": 1328,
+      "path": "shared/HighamBench/Core.lean",
+      "sha256": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a"
+    },
+    {
+      "bytes": 2759,
+      "path": "shared/HighamBench/P20Definitions.lean",
+      "sha256": "5b94f6f4eac02fe552a60504a7d4c1efb1d8dbe27826e3c608c83a495fbb8c2b"
+    },
+    {
+      "bytes": 1268,
+      "path": "tasks/P20/T3/Target.lean",
+      "sha256": "05bc9bca28d9ea01d058bdcce95013cf05f56f374563f3214ddfd12c71f042ad"
+    },
+    {
+      "bytes": 774,
+      "path": "tasks/P20/T3/context.md",
+      "sha256": "1e994d9d81fb1db4ff68e292de1e9693560bb0b9e9cf9eb52d39bf8e9cd04ef0"
+    }
+  ],
+  "kind": "highambench-controlled-files",
+  "label": "P20-T3-controlled",
+  "schema_version": 1
+}

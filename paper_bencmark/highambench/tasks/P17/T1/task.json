@@ -1,0 +1,80 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and deterministic one-atom specialization of Theorem 3.6",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The truncation radius B is between zero and one.",
+    "Every finite relative-error factor has magnitude at most B."
+  ],
+  "author_label": "Theorem 3.6",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P17 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P17 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P17/T1/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p17_t1_product_bias_envelope (n : Nat) (B : Real) (hB0 : 0 <= B) (hB1 : B <= 1) (delta : Fin n -> Real) (hdelta : forall i, abs (delta i) <= B) : (1-B)^n <= product i, (1+delta i) and product i, (1+delta i) <= (1+B)^n",
+    "namespace": "HighamBench",
+    "plain_language": "A finite product of relative-error factors bounded by B lies between the lower and upper binomial envelopes from Theorem 3.6.",
+    "target_file": "paper_bencmark/highambench/tasks/P17/T1/Target.lean",
+    "theorem_name": "p17_t1_product_bias_envelope"
+  },
+  "informal_proof": "Each factor lies between 1-B and 1+B. Since B is at most one, the lower factors are nonnegative, so monotonicity of finite products gives both bounds.",
+  "informal_statement": "The deterministic one-atom specialization of Theorem 3.6's expectation envelope for accumulated limited-precision stochastic-rounding errors.",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P17",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P17_PROBABILISTIC ERROR ANALYSIS OF LIMITED-PRECISIONSTOCHASTIC ROUNDING.pdf",
+    "sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d"
+  },
+  "paper_version": "published journal version; SIAM Journal on Scientific Computing 47(5), 2025, pages B1227-B1249",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": true,
+    "nearby_numstability_declarations": [
+      "NumStability.prod_one_add_delta_bounds"
+    ],
+    "note": "The frozen RoundingProductBounds module contains the same finite product envelope; the L proof is a direct application after paper-scoped renaming."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p17Gamma"
+  ],
+  "source_locations": [
+    {
+      "anchor": "Theorem 3.6 product expectation envelope",
+      "pdf_page": 9,
+      "printed_page": "B1235",
+      "role": "finite accumulated-error product bound",
+      "section": "3. Properties of limited-precision stochastic rounding"
+    },
+    {
+      "anchor": "completion of the induction proof and Remark 3.7 specialization",
+      "pdf_page": 10,
+      "printed_page": "B1236",
+      "role": "roundoff-radius instantiation",
+      "section": "3. Properties of limited-precision stochastic rounding"
+    }
+  ],
+  "source_tags": [
+    "THM"
+  ],
+  "task_id": "P17-T1",
+  "tier": "T1",
+  "tier_label": "direct",
+  "tier_rationale": "The frozen theorem NumStability.prod_one_add_delta_bounds has the same product surface and conclusion. The L proof only supplies the paper-scoped names and hypotheses.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P17/T1/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p17_t1_product_bias_envelope"
+  }
+}

@@ -1,4 +1,5 @@
 {
+  "record_status": "superseded_construction_snapshot",
   "schema_version": "highambench-review-0.2",
   "review_id": "P02-source-and-mathematics-review-1",
   "reviewer": {
@@ -7,7 +8,7 @@
     "focus": "paper meaning, source anchors, assumptions, algorithm indexing, tier assignment, and frozen-library overlap",
     "independence_note": "This pass independently read the complete paper and specification, checked the numbered formulas and Lean definitions, and searched the frozen source trees. It did not treat the formal-interface review as evidence."
   },
-  "review_date": "2026-07-28",
+  "review_date": "2026-07-31",
   "overall_status": "pass for source selection, mathematical fidelity, and tier labels; private construction validation remains pending",
   "review_basis": {
     "specification": {
@@ -32,8 +33,11 @@
     {
       "task_id": "P02-T1",
       "tier": "T1",
+      "source_tags": ["EQN"],
+      "author_label": null,
       "source_result": "Algorithm 4.3 and equation (4.7)(i), supported by Theorem 3.4 equation (3.2)",
       "checks": {
+        "source_presentation_tag": "pass: EQN describes the selected equation (4.7)(i); Theorem 3.4 is supporting material, not the selected task result",
         "paper_match": "pass: vecSum emits N-1 lows and one final high whose exact total is unchanged",
         "indexing": "pass: N=n+1 and Fin n corrections match the nonempty paper vector",
         "tier": "pass: close compensated-prefix exactness results exist, but the exact fixed VecSum target does not"
@@ -43,8 +47,11 @@
     {
       "task_id": "P02-T2",
       "tier": "T2",
+      "source_tags": ["PROP"],
+      "author_label": "Proposition 4.5",
       "source_result": "Proposition 4.5, equation (4.8)",
       "checks": {
+        "source_presentation_tag": "pass: the paper explicitly labels the selected result Proposition 4.5",
         "paper_match": "pass: the target is u|s| + gamma_(N-1)^2 S under N*u<1",
         "assumptions": "pass: GammaValid fp.u (n+1) is exactly the paper guard and no nonzero-sum premise is needed",
         "tier": "pass: exact transformation, recursive summation, final rounding, and gamma facts must be combined"
@@ -54,8 +61,11 @@
     {
       "task_id": "P02-T3",
       "tier": "T3",
+      "source_tags": ["PROP"],
+      "author_label": "Proposition 5.11",
       "source_result": "Algorithm 5.10, equation (5.10), and Proposition 5.11 without multiplication underflow",
       "checks": {
+        "source_presentation_tag": "pass: the paper explicitly labels the selected result Proposition 5.11",
         "paper_match": "pass: the coefficient, exponent K, 4N-2 index, K>=3, and 8*N*u<=1 guard are exact",
         "algorithm": "pass: the shared transform has length 2N in paper order and dotK calls SumK with K-1",
         "branch_selection": "pass: the absolute no-multiplication-underflow branch needs neither d!=0 nor eta",

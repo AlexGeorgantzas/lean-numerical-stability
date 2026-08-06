@@ -1,11 +1,12 @@
-# HighamBench P01--P02 pilot
+# HighamBench construction corpus
 
 This directory contains a two-paper benchmark for testing whether access to the
 NumStability Lean library helps an agent finish fixed Lean proofs. A fixed proof
 means that the theorem statement is chosen before a run and the agent may change
 only the proof.
 
-This pilot contains exactly P01 and P02. No other candidate paper is included:
+The current construction corpus contains P01 and P02. It is not the final
+corpus and may grow before measurements begin:
 
 > Nicholas J. Higham, "The Accuracy of Floating Point Summation," *SIAM Journal
 > on Scientific Computing* 14(4), 783--799, July 1993.
@@ -23,14 +24,44 @@ copying long passages from the paper.
 
 Both papers support all three task types in the HighamBench 0.2 specification.
 
-| Task | Type | Chosen result | Exact paper location |
-| --- | --- | --- | --- |
-| `P01-T1` | T1, direct use | Pairwise summation bound for nonnegative inputs | Equation (3.6), journal p. 788 / PDF p. 6; nonnegative observation after (2.6), journal p. 785 / PDF p. 3 |
-| `P01-T2` | T2, combine | Pairwise and recursive bounds, including the comparison of their bound factors | Equation (2.6), journal p. 785 / PDF p. 3; equation (3.6) and the following comparison, journal p. 788 / PDF p. 6 |
-| `P01-T3` | T3, extend | Recursive-summation running-error bound under the no-guard-digit model | Equations (5.1), (5.2), and (5.3), journal p. 793 / PDF p. 11 |
-| `P02-T1` | T1, direct use | `VecSum` preserves the exact sum | Equation (4.7)(i) and Algorithm 4.3, journal p. 1965 / PDF p. 11 |
-| `P02-T2` | T2, combine | `Sum2` doubled-working-precision absolute-error bound | Proposition 4.5, equation (4.8), journal p. 1965 / PDF p. 11; proof on journal pp. 1966--1967 / PDF pp. 12--13 |
-| `P02-T3` | T3, extend | Optimized `DotK` K-fold absolute-error bound without multiplication underflow | Algorithm 5.10, journal p. 1977 / PDF p. 23; equation (5.10) and Proposition 5.11, journal p. 1978 / PDF p. 24 |
+## One construction workflow for every paper
+
+P01, P02, and every later P0X entry use the same task schema, source-tag rules,
+construction checker, run-order rule, report builder, and hash refresh command.
+No paper ID is special-cased by an operational script.
+
+The Lean setting is also uniform without making all papers share all
+definitions. `shared/HighamBench/Core.lean` contains only definitions used by
+more than one paper. `P01Definitions.lean` and `P02Definitions.lean` contain
+only their own paper's extra models and algorithms. Each controlled task
+contains the core plus its own paper file. Each trusted compiled bundle follows
+the same rule, so a P01 run cannot import the P02 module and a P02 run cannot
+import the P01 module.
+
+While the corpus is being built, every paper and task has
+`classification_frozen_before_runs` set to `false`. This means its metadata may
+be reviewed and corrected. The selected P01 and P02 results and their Lean
+statements have not been changed.
+
+After any paper or task edit, refresh all derived metadata with:
+
+```text
+python3 paper_bencmark/highambench/tools/refresh_snapshot.py \
+  --benchmark-root paper_bencmark/highambench --phase construction
+```
+
+Only after the complete corpus, proofs, and reviews are ready should the same
+command be run with `--phase measurement-ready`. The benchmark runner rejects
+construction-state tasks, so a partial corpus cannot be measured accidentally.
+
+| Task | Type | Source tag | Chosen result | Exact paper location |
+| --- | --- | --- | --- | --- |
+| `P01-T1` | T1, direct use | `EQN+TXT` | Pairwise summation bound for nonnegative inputs | Equation (3.6), journal p. 788 / PDF p. 6; nonnegative observation after (2.6), journal p. 785 / PDF p. 3 |
+| `P01-T2` | T2, combine | `EQN+TXT` | Pairwise and recursive bounds, including the comparison of their bound factors | Equation (2.6), journal p. 785 / PDF p. 3; equation (3.6) and the following comparison, journal p. 788 / PDF p. 6 |
+| `P01-T3` | T3, extend | `EQN` | Recursive-summation running-error bound under the no-guard-digit model | Equations (5.1), (5.2), and (5.3), journal p. 793 / PDF p. 11 |
+| `P02-T1` | T1, direct use | `EQN` | `VecSum` preserves the exact sum | Equation (4.7)(i) and Algorithm 4.3, journal p. 1965 / PDF p. 11 |
+| `P02-T2` | T2, combine | `PROP` | `Sum2` doubled-working-precision absolute-error bound | Proposition 4.5, equation (4.8), journal p. 1965 / PDF p. 11; proof on journal pp. 1966--1967 / PDF pp. 12--13 |
+| `P02-T3` | T3, extend | `PROP` | Optimized `DotK` K-fold absolute-error bound without multiplication underflow | Algorithm 5.10, journal p. 1977 / PDF p. 23; equation (5.10) and Proposition 5.11, journal p. 1978 / PDF p. 24 |
 
 T1 is close to one existing NumStability theorem. T2 needs several existing
 results and extra arithmetic. T3 formalizes equation (5.3), whose right side
@@ -64,8 +95,8 @@ underflow-unit and rounded-division model that the selected claim does not need.
 - `L` means the frozen NumStability source and compiled files are available for
   local use and local search.
 
-Both conditions use the same fixed statement, source material, shared task
-definitions, Lean version, mathlib revision, agent prompt, tools, time limit,
+Both conditions for a task use the same fixed statement, source material,
+paper-scoped task definitions, Lean version, mathlib revision, agent prompt, tools, time limit,
 token limit, and machine class. Each attempt starts in a new bubblewrap
 namespace, meaning a fresh restricted view of files and processes, and a new
 conversation. Model-generated shell commands cannot create network sockets.
@@ -112,6 +143,15 @@ seeds.
 
 ## Files
 
+- `../TASK_SOURCE_TAGS.md` defines the mandatory source-presentation tags for
+  every task. `../AGENTS.md` makes that policy persistent across Codex
+  sessions, and `tools/task_tags.py` checks every current task record.
+- `tools/refresh_snapshot.py` regenerates task-controlled manifests, run order,
+  release hashes, planned counts, and environment identity for every manifest
+  paper using one rule.
+- `shared/HighamBench/Core.lean` is the small cross-paper core.
+  `shared/HighamBench/P*Definitions.lean` files add only one paper's models and
+  algorithms. Manifest scopes and separate compiled bundles keep them isolated.
 - `IMPLEMENTATION_PLAN.md` explains the construction decisions and the checks
   required before measured runs.
 - `metadata/manifest.json` records exactly two papers, their hashes, the
@@ -119,17 +159,17 @@ seeds.
 - `metadata/config.json` freezes the environment and run limits.
 - `metadata/run_order.json` fixes the order of N and L for every paired
   repetition.
-- `metadata/reviews/reviewer_1.json` and `reviewer_2.json` are the historical
-  P01 reviews.
-- `metadata/reviews/P02_reviewer_1.json` and `P02_reviewer_2.json` are the two
-  current Codex review passes for the new paper entry.
+- `metadata/reviews/` contains construction-stage review records. They are
+  evidence from earlier snapshots, not final immutable approvals; final review
+  records must be regenerated for every task before measurement.
 
 The review files distinguish completed checks from pending checks. A pending
-check is not a pass. The expanded shared setting and all six public target
-skeletons have been rebuilt in both isolated conditions, and condition N was
-rescanned after complete controlled staging. The six P01 private N/L proofs
-also passed fresh hidden validation against the expanded shared file; that
-regression record is `metadata/evidence/construction_validation_P01_shared_regression.json`.
+check is not a pass. All six public target skeletons have been rebuilt in both
+isolated conditions with their paper-specific source and compiled bundles.
+Negative import probes also confirmed that each paper's other module is absent.
+The six P01 private N/L proofs passed fresh hidden validation against the P01
+bundle; that current partial-corpus record is
+`metadata/evidence/construction_validation_P01_paper_modules.json`.
 Fresh private construction proofs for P02 and a complete twelve-proof,
 six-task construction record are still required before release. The complete
 measured matrix is also still required.

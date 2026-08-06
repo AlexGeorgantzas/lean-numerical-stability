@@ -1,0 +1,84 @@
+{
+  "annotation": {
+    "added_mathematical_proof_not_in_paper": false,
+    "kind": "source selection, tier label, and exact coefficientwise form of Theorem 4.1",
+    "performed_by": "Codex"
+  },
+  "assumptions": [
+    "The exact sum is nonzero, so the relative condition number is defined.",
+    "Every effective expected suffix-product factor differs from one by at most gamma."
+  ],
+  "author_label": "Theorem 4.1",
+  "classification_frozen_before_runs": false,
+  "conditions": {
+    "L": "The identical fixed statement and P17 shared files are present; the frozen NumStability library is also present.",
+    "N": "The fixed statement and P17 shared files are present; no NumStability artifact is present."
+  },
+  "context_file": "paper_bencmark/highambench/tasks/P17/T2/context.md",
+  "formal_statement": {
+    "lean_header": "theorem p17_t2_recursive_sum_bias_condition_bound {n : Nat} (a factor : Fin n -> Real) (gamma : Real) (hsum : p17ExactSum a != 0) (hfactor : forall i, abs (factor i - 1) <= gamma) : abs (p17EffectiveExpectedSum a factor - p17ExactSum a) / abs (p17ExactSum a) <= gamma * p17SummationCondition a",
+    "namespace": "HighamBench",
+    "plain_language": "Coefficientwise bounds on expected suffix-product factors imply the summation-bias bound gamma times the summation condition number.",
+    "target_file": "paper_bencmark/highambench/tasks/P17/T2/Target.lean",
+    "theorem_name": "p17_t2_recursive_sum_bias_condition_bound"
+  },
+  "informal_proof": "Rewrite each effective term as the original input plus a componentwise perturbation a_i(factor_i-1), bound that perturbation by gamma times |a_i|, apply the summation condition-number theorem, and divide by the nonzero exact sum.",
+  "informal_statement": "Exact coefficientwise condition-number step in the proof of Theorem 4.1, before instantiating gamma with gamma_{n-1}(u_{p+r}).",
+  "limits": {
+    "total_model_tokens": 120000,
+    "wall_clock_seconds": 900
+  },
+  "paper_id": "P17",
+  "paper_source": {
+    "local_path": "paper_bencmark/reference_papers/P17_PROBABILISTIC ERROR ANALYSIS OF LIMITED-PRECISIONSTOCHASTIC ROUNDING.pdf",
+    "sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d"
+  },
+  "paper_version": "published journal version; SIAM Journal on Scientific Computing 47(5), 2025, pages B1227-B1249",
+  "result_form_tag": "BND",
+  "review_record_not_for_run_prompt": {
+    "exact_target_found_in_mathlib": false,
+    "exact_target_found_in_numstability_baseline": false,
+    "nearby_numstability_declarations": [
+      "NumStability.SummationComponentwisePerturbation",
+      "NumStability.summationComponentwisePerturbation_rel_error_le_condition",
+      "NumStability.summationConditionNumber"
+    ],
+    "note": "The frozen summation module supplies the complete componentwise condition-number step but not the P17 effective expected suffix-product interpretation."
+  },
+  "schema_version": "highambench-task-0.3",
+  "shared_symbols": [
+    "p17ExactSum",
+    "p17SummationCondition",
+    "p17EffectiveExpectedSum"
+  ],
+  "source_locations": [
+    {
+      "anchor": "recursive-sum product representation (4.4), condition number (4.2), and Theorem 4.1 equation (4.6)",
+      "pdf_page": 13,
+      "printed_page": "B1239",
+      "role": "summation bias conclusion",
+      "section": "4.1 Recursive summation"
+    },
+    {
+      "anchor": "proof of Theorem 4.1 using Theorem 3.6 and triangle inequality",
+      "pdf_page": 14,
+      "printed_page": "B1240",
+      "role": "coefficientwise-to-condition-number derivation",
+      "section": "4.1 Recursive summation"
+    }
+  ],
+  "source_tags": [
+    "THM"
+  ],
+  "task_id": "P17-T2",
+  "tier": "T2",
+  "tier_label": "combine",
+  "tier_rationale": "The L proof combines the frozen componentwise summation perturbation theorem and condition-number definition with P17's effective expected suffix-product factors and their paper-specific envelope.",
+  "validation": {
+    "controlled_target_file": "paper_bencmark/highambench/tasks/P17/T2/Target.lean",
+    "mode": "shared automatic validator",
+    "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
+    "reject_statement_changes": true,
+    "required_declaration": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
+  }
+}
