@@ -1,5 +1,6 @@
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
-import NumStability.Algorithms.RandNLA.LowRankApprox
+import NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.ColumnSketches.Core
+import NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.RankFactorizations.Core
 
 /-!
 # GramSchmidtPolar

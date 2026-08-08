@@ -16,6 +16,9 @@ C0004 for W12, respectively.
 | [`R0004`](R0004.json) | W05 | `codex-local` / `local-lane` | applied | C0004 / `b56f609f3bf66b5d7d0b677567cce82fee0c275b` | C0004 | 27 | `65064084E1F5B53F4C6CD8C59802D9B443DFB05A5BCCA4682544E4AA74F710CC` | W05 |
 | [`R0005`](R0005.json) | W06 | `codex-remote` / `remote-lane` | applied | C0005 / `240c0d041781385a647fbec461d6863537e562cb` | C0005 | 73 | `C7F94237B46745BFAC501780D806499431CECBFBDBFA7B70798E801716115D42` | W06 |
 | [`R0006`](R0006.json) | W08 | `claude-remote` / `remote-lane` | applied | C0005 / `240c0d041781385a647fbec461d6863537e562cb` | C0005 | 76 | `54693108C1627E5DA067B16A520D009EFCCEEE2A2D81930B756CD5A69B6D9504` | W08 |
+| [`R0007`](R0007.json) | W04 | `codex-remote` / `remote-lane` | active | C0006 / `a32095e6e50189f7dcc39312bb4c6a36f421fab5` | C0006 | 8 | `5EB1ACF5C24D51ACB7F2FD6A258E8D53A2EFEBE09E77116539B4D85DE0D8114C` | W04 |
+| [`R0008`](R0008.json) | W09 | `claude-local` / `local-lane` | active | C0006 / `a32095e6e50189f7dcc39312bb4c6a36f421fab5` | C0006 | 6 | `BB602D4C854416DDA7F6FC7D69445093A53F496931718C34461BE476A32BF3AC` | W09 |
+| [`R0009`](R0009.json) | W11 | `codex-local` / `local-lane` | active | C0006 / `a32095e6e50189f7dcc39312bb4c6a36f421fab5` | C0006 | 7 | `E98E798A177831802DA9F36B1753EA1D31BDE707F17F0DF55E63D6DC6B4CDB68` | W11 |
 
 Both patches are independently based on C0004 and apply cleanly to a fresh
 C0004 index. They are phase-control artifacts on main and were intentionally
@@ -43,8 +46,15 @@ Lean CI, the related B0006/B0007 remote refs were deleted atomically with exact
 expected-SHA leases at `2026-08-04T13:33:21Z`; request resolution alone did not
 authorize early branch deletion.
 
-B0008/W04, B0009/W09, and B0010/W11 are delivered from C0006 with
-`shared_request_ids: []`; delivery intake does not itself create a formal
-shared-request record. No shared request is active, and no delivery record
-pre-authorizes a worker to edit an integrator-owned path. Integrator-owned
-reconciliation described by the immutable delivery packets remains pending.
+B0008/W04, B0009/W09, and B0010/W11 are delivered from C0006 and link active,
+independently C0006-based requests R0007, R0008, and R0009. Their patches were
+validated separately against disposable C0006 indexes. All three intersect on
+the root test aggregate, tier manifest, and layout exceptions; R0007 and R0009
+also intersect on the accepted least-squares Equality consumer. Those shared
+postimages were reconciled as deliberate unions rather than sequential patch
+applications. The hash-pinned ledgers are
+[`R0007-overlap-review.md`](R0007-overlap-review.md),
+[`R0008-overlap-review.md`](R0008-overlap-review.md), and
+[`R0009-overlap-review.md`](R0009-overlap-review.md). The requests remain
+active, and C0006 remains current, until the combined integration code passes
+all gates and is accepted at a new checkpoint.

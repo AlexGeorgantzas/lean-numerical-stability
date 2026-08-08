@@ -1273,11 +1273,27 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Theorem04.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStabilityTest.lean"
     },
     {
       "match": "exact",
       "path": "NumStabilityTest/Reorganization/W03.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStabilityTest/Reorganization/W04.lean"
     },
     {
       "match": "exact",
@@ -1290,6 +1306,14 @@
     {
       "match": "exact",
       "path": "NumStabilityTest/Reorganization/W08.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStabilityTest/Reorganization/W09.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStabilityTest/Reorganization/W11.lean"
     },
     {
       "match": "exact",

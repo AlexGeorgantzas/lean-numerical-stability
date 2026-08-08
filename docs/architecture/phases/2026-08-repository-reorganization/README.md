@@ -15,9 +15,11 @@ remain preserved. B0008/W04, B0009/W09, and B0010/W11 have delivered exact
 C0006-based worker refs at `12bd75d4d25b2d98344d26b0dc0b016f1e2f1814`,
 `69ee6cf790d1f3826075f33ea4907c9a4b5a637a`, and
 `580c0298a47a533725e034c32c7702a7436fa6ed`, respectively. Their delivery
-packets are hash-pinned on `main`, but none is accepted or integrated yet.
-C0006 remains current; M04, M09, and M11 remain ready, and M07/W07 remains
-ready and unactivated.
+packets are hash-pinned on `main`, and their tips have entered the pending
+combined integration state through separate true merges. Active shared
+requests R0007, R0008, and R0009 record the independently C0006-based
+integrator-owned deltas. None is accepted yet: C0006 remains current; M04,
+M09, and M11 remain ready, and M07/W07 remains ready and unactivated.
 B0004/W03 and B0005/W05 were accepted at C0005 and retired after that
 acceptance-control state passed Lean CI. P0005 and P0006 are retired immutable
 projection evidence, and their independently C0004-based shared requests R0003
@@ -73,7 +75,9 @@ evidence for the bounded work they completed.
   [`P0009`](projections/P0009.json), [`P0010`](projections/P0010.json), and
   [`P0011`](projections/P0011.json), selected by
   [`W04.tsv`](selectors/W04.tsv), [`W09.tsv`](selectors/W09.tsv), and
-  [`W11.tsv`](selectors/W11.tsv). No shared request is active.
+  [`W11.tsv`](selectors/W11.tsv). Active shared requests
+  [`R0007`](requests/R0007.json), [`R0008`](requests/R0008.json), and
+  [`R0009`](requests/R0009.json) remain pending acceptance.
   No prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
   the complete phase state;
@@ -229,8 +233,10 @@ are `12bd75d4d25b2d98344d26b0dc0b016f1e2f1814`,
 `580c0298a47a533725e034c32c7702a7436fa6ed`. Their selectors, projections,
 private-closure floors, semantic routing, vacant destinations, and zero
 cross-wave import/typed-edge proof were hash-pinned before any ref was created;
-the delivery reports and scope evidence are now hash-pinned on `main` while
-integration and acceptance remain pending.
+the delivery reports and scope evidence are now hash-pinned on `main`. The
+three delivery tips have entered the pending combined integration state
+through separate true merges, with active C0006-based shared requests R0007,
+R0008, and R0009; acceptance remains pending.
 Planned-control commit `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5`
 passed [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30920452203).
 W04 is remote-only; W09 and W11 have separate clean local worktrees. All three

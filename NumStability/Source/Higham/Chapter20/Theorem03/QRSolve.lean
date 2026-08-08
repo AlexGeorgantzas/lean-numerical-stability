@@ -24,7 +24,7 @@ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
-import NumStability.Algorithms.RandNLA.LowRankApprox
+import NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.ColumnSketches.Core
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixNorms.Basic
 import NumStability.Analysis.MatrixSpectral

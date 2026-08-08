@@ -7484,7 +7484,9 @@
     "status": "not_due"
   },
   "schema_version": 1,
-  "shared_request_ids": [],
+  "shared_request_ids": [
+    "R0008"
+  ],
   "status": "delivered",
   "wave_id": "W09"
 }

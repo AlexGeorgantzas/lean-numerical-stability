@@ -10,8 +10,9 @@ Three mutually disjoint branches have delivered from exact C0006 code commit
 `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5` passed
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30920452203)
 before their refs or local worktrees were created. Their immutable delivery
-tips and hash-pinned packet evidence are recorded below; none is integrated or
-accepted yet:
+tips and hash-pinned packet evidence are recorded below. All three tips have
+been incorporated through separate true merges into the pending combined
+integration state, but none is accepted yet:
 
 - [`B0008`](B0008.json): W04 remote-lane branch
   `codex/reorg-2026-08-w04-ch21-underdetermined`, 29 exact historical owners,
@@ -32,7 +33,10 @@ accepted yet:
   `580c0298a47a533725e034c32c7702a7436fa6ed`, and clean delivery worktree
   `C:\Users\qed_s\higham-worktrees\reorg-w11-codex`.
 
-Their projections P0009, P0010, and P0011 remain active pending integration.
+Their projections P0009, P0010, and P0011 remain active pending acceptance.
+The records link active, independently C0006-based shared requests R0007,
+R0008, and R0009; integration fields remain null until the combined code state
+passes every gate and is accepted at a new checkpoint.
 Independent hash-pinned
 reviews [`B0008-overlap-review.md`](B0008-overlap-review.md),
 [`B0009-overlap-review.md`](B0009-overlap-review.md), and
@@ -71,7 +75,7 @@ Their hash-pinned reviews are
 destination, direct-import, signature-edge, and body-edge overlap. Their sole
 common direct downstream importer is the integrator-owned
 `NumStability/Algorithms.lean`. C0006 is current, M06/M08 are accepted, and
-M04/M09/M11 are active and M07 is ready but unactivated. The two exact remote delivery refs
+M04/M09/M11 are ready while M07 is ready but unactivated. The two exact remote delivery refs
 were deleted atomically with expected-SHA leases at `2026-08-04T13:33:21Z` by
 `primary-human`. Local worker branches and worktrees are preserved and were
 never retirement targets.

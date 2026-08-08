@@ -1,5 +1,5 @@
 import Mathlib.Data.Real.Basic
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Pseudoinverse.UnderdeterminedSpec
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixSpectral
 import NumStability.Analysis.SingularValues.Basic

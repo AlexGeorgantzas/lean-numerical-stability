@@ -19,8 +19,8 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamAssembly
 import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
-import NumStability.Algorithms.RandNLA.LowRankApprox
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+import NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.RankFactorizations.Core
+import NumStability.Source.Higham.Chapter21.Equation04.Pseudoinverse
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.SingularValues.Basic

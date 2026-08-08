@@ -1,0 +1,79 @@
+{
+  "blocks": [
+    "W04"
+  ],
+  "created_at": "2026-08-08T15:32:48Z",
+  "depends_on": [
+    "M03"
+  ],
+  "lane_id": "remote-lane",
+  "patch": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/requests/R0007.patch",
+    "sha256": "5EB1ACF5C24D51ACB7F2FD6A258E8D53A2EFEBE09E77116539B4D85DE0D8114C"
+  },
+  "paths": [
+    "NumStability/Algorithms/LinearSystems.lean",
+    "NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean",
+    "NumStability/Source/Higham/Chapter21.lean",
+    "NumStability/Source/Higham/Chapter21/Theorem04.lean",
+    "NumStabilityTest.lean",
+    "NumStabilityTest/Reorganization/W04.lean",
+    "docs/architecture/layout-exceptions.json",
+    "docs/architecture/tiers.json"
+  ],
+  "phase_id": "repository-reorganization-2026-08",
+  "preimage_blobs": [
+    {
+      "blob_oid": "4dab89cea7a294bfcc8acc4a6defd603753884c4",
+      "path": "NumStability/Algorithms/LinearSystems.lean"
+    },
+    {
+      "blob_oid": "d2ab6d9ea8689c3fd9fd0e2b134856e9484c149a",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean"
+    },
+    {
+      "blob_oid": "534390571c73c0fbf14c43fdd6c7bbaa80f98fd6",
+      "path": "NumStability/Source/Higham/Chapter21.lean"
+    },
+    {
+      "blob_oid": "f7fae606cc180dfc7b7e6fc56118a00aa2aac6b7",
+      "path": "NumStability/Source/Higham/Chapter21/Theorem04.lean"
+    },
+    {
+      "blob_oid": "b65fb6f2fe4ef2d48807482d15d7ad185f2e1a75",
+      "path": "NumStabilityTest.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/W04.lean"
+    },
+    {
+      "blob_oid": "83ee2ce93549039fda4b8c527483f85c16bf9518",
+      "path": "docs/architecture/layout-exceptions.json"
+    },
+    {
+      "blob_oid": "c8cb8ceda62e4db2211d0323989982dc9d40bce8",
+      "path": "docs/architecture/tiers.json"
+    }
+  ],
+  "rationale": "Apply W04's exact 67 aggregate imports, 84 tier entries, 124-test root, reviewed layout delta, and shared Equality consumer retarget independently against C0006. The Wedin accepted-consumer retarget remains outside this shared patch. Exact integration-overlap evidence: docs/architecture/phases/2026-08-repository-reorganization/requests/R0007-overlap-review.md, SHA-256 596E8B563238224D3526D33DDA9E86A0A3E98014CEDD456C50BA6CD14F094D0A.",
+  "record_kind": "shared_file_request",
+  "request_id": "R0007",
+  "requester_id": "codex-remote",
+  "resolution": {
+    "checkpoint_id": null,
+    "commit_sha": null,
+    "reason": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "validation_evidence": []
+  },
+  "schema_version": 1,
+  "status": "active",
+  "superseded_by": null,
+  "supersedes": null,
+  "target_base_sha": "a32095e6e50189f7dcc39312bb4c6a36f421fab5",
+  "target_checkpoint_id": "C0006",
+  "valid_through_checkpoint_id": "C0006",
+  "wave_id": "W04"
+}

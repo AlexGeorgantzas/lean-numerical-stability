@@ -8,7 +8,8 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem
 import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
-import NumStability.Algorithms.RandNLA.LowRankApprox
+import NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.ColumnSketches.Core
+import NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.RankFactorizations.Core
 import NumStability.Analysis.MatrixAlgebra
 
 namespace NumStability

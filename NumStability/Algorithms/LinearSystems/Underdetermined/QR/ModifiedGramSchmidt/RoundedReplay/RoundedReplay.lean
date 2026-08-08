@@ -52,7 +52,6 @@ import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifi
 import NumStability.Algorithms.LinearSystems.Underdetermined.QR.ModifiedGramSchmidt.CorrectedRecurrence.Core
 import NumStability.Algorithms.MatMul
 import NumStability.Algorithms.MatVec
-import NumStability.Algorithms.RandNLA.Preconditioning
 import NumStability.Algorithms.RankOneUpdate
 import NumStability.Algorithms.TestMatrices.UpperTriangularStress
 import NumStability.Analysis.Asymptotics.Bounds

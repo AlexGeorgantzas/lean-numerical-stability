@@ -11,7 +11,8 @@ import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
 import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
 import NumStability.Algorithms.QR.Higham19Thm6ElementwisePackaged
 import NumStability.Algorithms.QR.Higham19Thm6RowSpecific
-import NumStability.Algorithms.RandNLA.LowRankApprox
+import NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.ColumnSketches.Core
+import NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.RankFactorizations.Core
 import NumStability.Algorithms.Underdetermined.Higham21ProjectorNorm
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSolve
 import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
