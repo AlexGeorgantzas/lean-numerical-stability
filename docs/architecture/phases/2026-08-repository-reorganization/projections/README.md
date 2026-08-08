@@ -116,10 +116,10 @@ records from `origin/main`; activation commits were never copied into a worker
 branch. The W06/W08 remote refs likewise began at the exact C0005 code SHA only
 after their planned control commit became green and were deleted only after the
 C0006 acceptance-control commit became green. P0009, P0010, and P0011 are
-retired with B0008/W04, B0009/W09, and B0010/W11 accepted at C0007. The branch
-records have retirement due until the C0007 acceptance-control commit becomes
-green, and their exact remote refs remain live pending that gate. Their worker
-refs began at the exact C0006 code SHA only after
+retired with B0008/W04, B0009/W09, and B0010/W11 accepted and retired at C0007.
+Their exact remote refs were deleted atomically with exact expected-SHA leases
+at `2026-08-08T22:05:06Z` by `primary-human` after the C0007 acceptance-control
+commit became green. Their worker refs began at the exact C0006 code SHA only after
 planned-control commit
 `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5` passed Lean CI; the activation
 commits remain absent from every worker branch.

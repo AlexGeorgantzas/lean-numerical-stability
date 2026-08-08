@@ -13,8 +13,7 @@ Planned-control commit
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30920452203)
 before their refs or local worktrees were created. Their immutable delivery
 tips and hash-pinned packet evidence are recorded below. All three records are
-accepted with retirement due until the C0007 acceptance-control commit passes
-Lean CI:
+accepted and retired after the C0007 acceptance-control commit passed Lean CI:
 
 - [`B0008`](B0008.json): W04 remote-lane branch
   `codex/reorg-2026-08-w04-ch21-underdetermined`, 29 exact historical owners,
@@ -26,14 +25,14 @@ Lean CI:
   `codex/reorg-2026-08-w09-test-matrices-ch28`, 72 exact historical owners,
   30 reviewed production destinations plus W09 test/delivery prefixes, sole
   operator `claude-local`, immutable delivery
-  `69ee6cf790d1f3826075f33ea4907c9a4b5a637a`, and clean delivery worktree
-  `C:\Users\qed_s\higham-worktrees\reorg-w09-claude`;
+  `69ee6cf790d1f3826075f33ea4907c9a4b5a637a`; its named delivery worktree
+  `C:\Users\qed_s\higham-worktrees\reorg-w09-claude` was removed at retirement;
 - [`B0010`](B0010.json): W11 local-lane branch
   `codex/reorg-2026-08-w11-randnla`, 18 exact historical owners, 33 reviewed
   production destinations plus W11 test/delivery prefixes, sole operator
   `codex-local`, immutable delivery
-  `580c0298a47a533725e034c32c7702a7436fa6ed`, and clean delivery worktree
-  `C:\Users\qed_s\higham-worktrees\reorg-w11-codex`.
+  `580c0298a47a533725e034c32c7702a7436fa6ed`; its named delivery worktree
+  `C:\Users\qed_s\higham-worktrees\reorg-w11-codex` was removed at retirement.
 
 Their projections P0009, P0010, and P0011 are retired immutable evidence. The
 records link applied, independently C0006-based shared requests R0007, R0008,
@@ -48,8 +47,13 @@ downstream aggregate. The additional W04/W11 downstream consumer
 `NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean` is
 also integrator-owned and forbidden to both workers. C0007 is current; M04,
 M09, and M11 are accepted, while M07 and M10 are ready and unactivated. The
-three exact remote delivery refs and the clean W09/W11 worktrees remain present
-until the C0007 acceptance-control Lean CI gate; W04 remains remote-only.
+three exact remote delivery refs were deleted atomically with exact expected-SHA
+leases at `2026-08-08T22:05:06Z` by `primary-human` after the C0007
+acceptance-control commit passed Lean CI. W04 never had a local worktree. The
+ignored W09/W11 delivery artifacts were archived under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0007-W09-W11-20260808`;
+their named worktrees were removed, and their local branches remain preserved
+at the immutable delivery tips.
 
 Two disjoint remote-lane branches were implemented from exact C0005 code commit
 `240c0d041781385a647fbec461d6863537e562cb` and accepted through separate true

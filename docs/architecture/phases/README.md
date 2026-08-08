@@ -7,10 +7,15 @@ It has precedence over dated migration packets and historical handoffs.
 Its current accepted checkpoint is C0007 at code commit
 `9eb534a06db267203c2b9b88227edd44fc64f5db`. M03, M04, M05, M06, M08, M09,
 and M11 are accepted; M07 and M10 remain ready and unactivated. B0008/W04,
-B0009/W09, and B0010/W11 are accepted at C0007 with retirement due;
-P0009/P0010/P0011 are retired and R0007/R0008/R0009 are applied. Their three
-exact remote refs and the clean W09/W11 delivery worktrees remain present until
-the C0007 acceptance-control commit passes Lean CI; W04 remains remote-only.
+B0009/W09, and B0010/W11 are accepted at C0007 and retired;
+P0009/P0010/P0011 are retired and R0007/R0008/R0009 are applied. After the
+C0007 acceptance-control commit passed Lean CI, their three exact remote refs
+were deleted atomically with exact expected-SHA leases at
+`2026-08-08T22:05:06Z` by `primary-human`. W04 never had a local worktree. The
+ignored W09/W11 delivery artifacts were archived under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0007-W09-W11-20260808`;
+their named worktrees were removed, and their local branches remain preserved
+at the immutable delivery tips.
 B0006/W06 and B0007/W08 are accepted at C0006 and retired; their exact remote
 refs were deleted at `2026-08-04T13:33:21Z` after the C0006 acceptance-control
 commit passed Lean CI, while local branches and worktrees remain preserved.

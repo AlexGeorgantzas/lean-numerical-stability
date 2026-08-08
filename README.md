@@ -224,9 +224,14 @@ with compatibility and provenance checked separately.
 The repository-reorganization phase remains in progress. C0007 accepts W04,
 W09, and W11, so M04, M09, and M11 are accepted; M07 remains ready and
 unactivated, and M10 is now ready but has not been activated. B0008, B0009, and
-B0010 are accepted with retirement due. Their three exact remote delivery refs
-and the clean W09/W11 delivery worktrees remain present until the C0007
-acceptance-control commit passes Lean CI; W04 remains remote-only. The
+B0010 are accepted and retired. After the C0007 acceptance-control commit
+passed Lean CI, their three exact remote delivery refs were deleted atomically
+with exact expected-SHA leases at `2026-08-08T22:05:06Z` by `primary-human`.
+W04 never had a local worktree. The ignored W09/W11 delivery artifacts were
+archived under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0007-W09-W11-20260808`;
+their named worktrees were removed, and their local branches remain preserved
+at the immutable delivery tips. The
 [`active phase registry`](docs/architecture/phases/2026-08-repository-reorganization/README.md)
 is the authoritative status record.
 

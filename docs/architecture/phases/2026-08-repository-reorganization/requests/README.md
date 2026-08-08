@@ -58,7 +58,8 @@ applications. The hash-pinned ledgers are
 [`R0009-overlap-review.md`](R0009-overlap-review.md). The requests were applied
 in green code commit `9eb534a06db267203c2b9b88227edd44fc64f5db` and resolved
 at C0007 at `2026-08-08T21:26:00Z` by `primary-human`. Their validation evidence
-is the hash-pinned C0007 gate record. B0008, B0009, and B0010 are accepted with
-retirement due; their exact remote refs remain live until the C0007
-acceptance-control commit passes Lean CI. Request resolution does not itself
+is the hash-pinned C0007 gate record. B0008, B0009, and B0010 are accepted and
+retired. After the C0007 acceptance-control commit passed Lean CI, their exact
+remote refs were deleted atomically with exact expected-SHA leases at
+`2026-08-08T22:05:06Z` by `primary-human`. Request resolution did not itself
 authorize early branch deletion.

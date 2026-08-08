@@ -18,9 +18,13 @@ remain preserved. B0008/W04 delivery
 separate true merges. Their frozen projections P0009, P0010, and P0011 are
 retired immutable evidence, and their independently C0006-based requests
 R0007, R0008, and R0009 are applied at C0007. B0008, B0009, and B0010 are
-accepted with retirement due; their exact remote refs and the clean W09/W11
-delivery worktrees remain present pending the C0007 acceptance-control Lean CI
-gate. W04 had no local worktree. M07/W07 and M10/W10 are not activated.
+accepted and retired. After the C0007 acceptance-control commit passed Lean CI,
+their three exact remote refs were deleted atomically with exact expected-SHA
+leases at `2026-08-08T22:05:06Z` by `primary-human`. W04 never had a local
+worktree. The ignored W09/W11 delivery artifacts were archived under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0007-W09-W11-20260808`;
+their named worktrees were removed, and their local branches remain preserved
+at the immutable delivery tips. M07/W07 and M10/W10 are not activated.
 B0004/W03 and B0005/W05 were accepted at C0005 and retired after that
 acceptance-control state passed Lean CI. P0005 and P0006 are retired immutable
 projection evidence, and their independently C0004-based shared requests R0003
@@ -71,10 +75,10 @@ evidence for the bounded work they completed.
   [`W06.tsv`](selectors/W06.tsv) and [`W08.tsv`](selectors/W08.tsv); their
   applied shared requests are [`R0005`](requests/R0005.json) and
   [`R0006`](requests/R0006.json).
-  Accepted [`B0008`](branches/B0008.json), [`B0009`](branches/B0009.json), and
-  [`B0010`](branches/B0010.json) are the mutually disjoint C0006 transports for
-  W04, W09, and W11, with retirement due after the C0007 acceptance-control
-  state becomes green. Their retired frozen projections are
+  [`B0008`](branches/B0008.json), [`B0009`](branches/B0009.json), and
+  [`B0010`](branches/B0010.json) are the accepted and retired, mutually
+  disjoint C0006 transports for W04, W09, and W11. Their retired frozen
+  projections are
   [`P0009`](projections/P0009.json), [`P0010`](projections/P0010.json), and
   [`P0011`](projections/P0011.json), selected by
   [`W04.tsv`](selectors/W04.tsv), [`W09.tsv`](selectors/W09.tsv), and
@@ -237,13 +241,17 @@ code commit `9eb534a06db267203c2b9b88227edd44fc64f5db` through separate true mer
 The integrator applied hash-pinned R0007, R0008, and R0009, replayed P0009,
 P0010, and P0011 against one full integrated graph, and passed the combined
 static, focused, full-build, full-test, and strict-source gates. All three
-branch records have retirement due. Their exact remote refs remain live until
-the C0007 acceptance-control commit passes Lean CI.
+branch records are retired. After the C0007 acceptance-control commit passed
+Lean CI, their exact remote refs were deleted atomically with exact expected-SHA
+leases at `2026-08-08T22:05:06Z` by `primary-human`. W04 never had a local
+worktree. The ignored W09/W11 delivery artifacts were archived under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0007-W09-W11-20260808`;
+their named worktrees were removed, and their local branches remain preserved
+at the immutable delivery tips.
 Planned-control commit `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5`
 passed [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30920452203).
-W04 is remote-only; W09 and W11 retain their clean local delivery worktrees
-until that gate. All three worker refs began at the code SHA, never at a later
-control commit. W07 and W10 are not activated.
+All three worker refs began at the code SHA, never at a later control commit.
+W07 and W10 are not activated.
 
 ## Classification warning
 
