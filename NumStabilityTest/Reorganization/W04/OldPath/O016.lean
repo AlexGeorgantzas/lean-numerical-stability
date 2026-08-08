@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Underdetermined.Higham21QRFoundations
+
+#check NumStability.higham21_eq21_1_3_all_solutions_inverse_coordinates_of_full_row_rank_exact_qr

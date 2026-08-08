@@ -1,35 +1,44 @@
+import NumStability.Algorithms.Underdetermined.Higham21RankStability
+import NumStability.Source.Higham.Chapter21.Equation06.Perturbation
+
+/-!
+# Algorithms.Underdetermined.Higham21Perturbation
+
+Historical W04 compatibility facade retaining the exact private reverse closure.
+-/
+
 -- Algorithms/Underdetermined/Higham21Perturbation.lean
 --
 -- The arbitrary-absolute-norm first-order and finite-error forms of
 -- Higham's Theorem 21.1.
 
-import NumStability.Algorithms.Underdetermined.Higham21RankStability
+
 
 namespace NumStability
 
 open scoped BigOperators Matrix.Norms.Frobenius
 
-/-- Higham, 2nd ed., Chapter 21, Theorem 21.1, equation (21.6):
-    the source null-space majorant
-    `|I - A^+ A| E^T |(A^+)^T x|`, where `x = A^+ b`. -/
-noncomputable def higham21Theorem21_1NullspaceMajorant {m n : Nat}
-    (A E : Fin m -> Fin n -> Real) (b : Fin m -> Real) :
-    Fin n -> Real :=
-  let Aplus := undetAplusOfGramNonsingInv A
-  let x := rectMatMulVec Aplus b
-  let z := rectTransposeMulVec Aplus x
-  lsAugmentedEq20_7LeftMajorant Aplus A
-    (lsComponentwiseTransposeMajorant E z)
 
-/-- Higham, 2nd ed., Chapter 21, Theorem 21.1, equation (21.6):
-    the source data majorant `|A^+| (f + E|x|)`, where `x = A^+ b`. -/
-noncomputable def higham21Theorem21_1DataMajorant {m n : Nat}
-    (A E : Fin m -> Fin n -> Real) (b f : Fin m -> Real) :
-    Fin n -> Real :=
-  let Aplus := undetAplusOfGramNonsingInv A
-  let x := rectMatMulVec Aplus b
-  lsAugmentedEq20_8LeftMajorant Aplus
-    (lsComponentwiseDataMajorant E f x)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem higham21_rectTransposeMulVec_abs_le_scaled_majorant
     {m n : Nat}
@@ -118,38 +127,38 @@ private theorem higham21_scaled_data_majorant
   intro i _
   ring
 
-/-- The null-space majorant in Theorem 21.1 is componentwise nonnegative. -/
-theorem higham21Theorem21_1NullspaceMajorant_nonneg {m n : Nat}
-    (A E : Fin m -> Fin n -> Real) (b : Fin m -> Real)
-    (hE : forall i j, 0 <= E i j) :
-    forall j, 0 <= higham21Theorem21_1NullspaceMajorant A E b j := by
-  intro j
-  simp only [higham21Theorem21_1NullspaceMajorant,
-    lsAugmentedEq20_7LeftMajorant, rectMatMulVec, absMatrixRect,
-    lsComponentwiseTransposeMajorant]
-  apply Finset.sum_nonneg
-  intro k _
-  apply mul_nonneg (abs_nonneg _)
-  apply Finset.sum_nonneg
-  intro i _
-  exact mul_nonneg (hE i k) (abs_nonneg _)
 
-/-- The data majorant in Theorem 21.1 is componentwise nonnegative. -/
-theorem higham21Theorem21_1DataMajorant_nonneg {m n : Nat}
-    (A E : Fin m -> Fin n -> Real) (b f : Fin m -> Real)
-    (hE : forall i j, 0 <= E i j) (hf : forall i, 0 <= f i) :
-    forall j, 0 <= higham21Theorem21_1DataMajorant A E b f j := by
-  intro j
-  simp only [higham21Theorem21_1DataMajorant,
-    lsAugmentedEq20_8LeftMajorant, lsComponentwiseDataMajorant,
-    rectMatMulVec, absMatrixRect, absVec]
-  apply Finset.sum_nonneg
-  intro i _
-  apply mul_nonneg (abs_nonneg _)
-  apply add_nonneg (hf i)
-  apply Finset.sum_nonneg
-  intro k _
-  exact mul_nonneg (hE i k) (abs_nonneg _)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Higham, 2nd ed., Chapter 21, Theorem 21.1, equations (21.6)-(21.7):
     the first-order vector is bounded componentwise by `eps` times the sum of

@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter21.Equation01.UnderdeterminedSolve
+
+#check NumStability.higham21_eq21_1_qr_transpose_block_mulVec

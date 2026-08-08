@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter21.Theorem04.GivensQMethod.Core
+
+#check NumStability.Higham21GivensQMethodRowwiseCoefficient

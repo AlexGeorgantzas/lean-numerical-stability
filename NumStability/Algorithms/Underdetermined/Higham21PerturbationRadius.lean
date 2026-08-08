@@ -1,106 +1,118 @@
+import NumStability.Algorithms.LinearSystems.Underdetermined.Conditioning.Componentwise.Radius
+import NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.Componentwise.Radius
+import NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.FixedRadius.Radius
+import NumStability.Algorithms.Underdetermined.Higham21Perturbation
+import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.Radius
+
+/-!
+# Algorithms.Underdetermined.Higham21PerturbationRadius
+
+Historical W04 compatibility facade retaining the exact private reverse closure.
+-/
+
 -- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 21.
 -- A derived fixed-radius neighborhood for Theorem 21.1 and equation (21.6).
 
-import NumStability.Algorithms.Underdetermined.Higham21Perturbation
+
 
 namespace NumStability
 
 open scoped BigOperators Matrix.Norms.Frobenius
 
-/-- The exact Euclidean operator norm of a real rectangular matrix, routed
-    through the operator norm of its complexification.  The real/complex
-    bridge in `Analysis/SingularValues/Realification.lean` shows that this is
-    also the sharp radius for the repository predicate `rectOpNorm2Le`. -/
-noncomputable def higham21RectOpNorm2 {m n : Nat}
-    (A : Fin m -> Fin n -> Real) : Real :=
-  complexMatrixOp2 (realRectToCMatrix A)
 
-theorem higham21RectOpNorm2_nonneg {m n : Nat}
-    (A : Fin m -> Fin n -> Real) :
-    0 <= higham21RectOpNorm2 A := by
-  exact complexMatrixOp2_nonneg _
 
-/-- The exact rectangular condition-number product associated with a supplied
-    pseudoinverse.  For the Moore--Penrose inverse this is Higham's
-    `kappa_2(A) = ||A||_2 ||A^+||_2`. -/
-noncomputable def higham21RectKappa2With {m n : Nat}
-    (A : Fin m -> Fin n -> Real)
-    (Aplus : Fin n -> Fin m -> Real) : Real :=
-  higham21RectOpNorm2 A * higham21RectOpNorm2 Aplus
 
-theorem higham21RectKappa2With_nonneg {m n : Nat}
-    (A : Fin m -> Fin n -> Real)
-    (Aplus : Fin n -> Fin m -> Real) :
-    0 <= higham21RectKappa2With A Aplus := by
-  exact mul_nonneg (higham21RectOpNorm2_nonneg A)
-    (higham21RectOpNorm2_nonneg Aplus)
 
-/-- The exact rectangular norm is an admissible vector-action certificate. -/
-theorem higham21_rectOpNorm2Le_exact {m n : Nat}
-    (A : Fin m -> Fin n -> Real) :
-    rectOpNorm2Le A (higham21RectOpNorm2 A) := by
-  exact rectOpNorm2Le_of_complexMatrixOp2_realRectToCMatrix_le A le_rfl
 
-/-- Conversely, every nonnegative vector-action certificate bounds the exact
-    rectangular operator norm. -/
-theorem higham21RectOpNorm2_le_of_rectOpNorm2Le {m n : Nat}
-    (A : Fin m -> Fin n -> Real) {c : Real}
-    (hc : 0 <= c) (hA : rectOpNorm2Le A c) :
-    higham21RectOpNorm2 A <= c := by
-  exact complexMatrixOp2_realRectToCMatrix_le_of_rectOpNorm2Le A hc hA
 
-/-- A fixed Gram-perturbation envelope for directions satisfying `abs D <= E`.
-    The quadratic part is frozen at unit radius, so every smaller signed
-    perturbation has a Gram perturbation bounded by `abs t` times this table. -/
-noncomputable def higham21PerturbationGramEnvelope {m n : Nat}
-    (A E : Fin m -> Fin n -> Real) : Fin m -> Fin m -> Real :=
-  undetGramPerturbationComponentBudget A E 1
 
-/-- Chapter 7 sensitivity of the fixed Gram envelope. -/
-noncomputable def higham21PerturbationGramSensitivity {m n : Nat}
-    (A E : Fin m -> Fin n -> Real) : Real :=
-  infNorm
-    (ch7InverseFirstProductSensitivity m (undetGramNonsingInv A)
-      (higham21PerturbationGramEnvelope A E))
 
-/-- A positive radius that simultaneously controls a supplied operator bound
-    `q` for `A^+ D` and the fixed Gram-envelope sensitivity.  The factor two
-    leaves a half-radius margin for both contractions. -/
-noncomputable def higham21PerturbationRadius {m n : Nat}
-    (A E : Fin m -> Fin n -> Real) (q : Real) : Real :=
-  1 /
-    (2 *
-      (1 + max q (higham21PerturbationGramSensitivity A E)))
 
-/-- A direction-independent inverse bound once the Gram contraction is at
-    most `1/2`. -/
-noncomputable def higham21PerturbationGramInverseBound {m n : Nat}
-    (A : Fin m -> Fin n -> Real) : Real :=
-  Real.sqrt ((m : Real) * (m : Real)) *
-    (((m : Real) * 2) * infNorm (undetGramNonsingInv A))
 
-/-- A pointwise envelope induced by row 2-norm bounds. -/
-def higham21PerturbationEntryEnvelopeOfRow {m n : Nat}
-    (r : Fin m -> Real) : Fin m -> Fin n -> Real :=
-  fun i _ => r i
 
-/-- A canonical finite operator envelope for one perturbation direction. -/
-noncomputable def higham21PerturbationDirectionProductBound {m n : Nat}
-    (A D : Fin m -> Fin n -> Real) : Real :=
-  frobNorm
-    (rectMatMul (undetAplusOfGramNonsingInv A) D)
 
-/-- The single-direction radius obtained without any caller-supplied norm
-    constant. -/
-noncomputable def higham21PerturbationDirectionRadius {m n : Nat}
-    (A D E : Fin m -> Fin n -> Real) : Real :=
-  higham21PerturbationRadius A E
-    (higham21PerturbationDirectionProductBound A D)
 
-theorem higham21PerturbationGramSensitivity_nonneg {m n : Nat}
-    (A E : Fin m -> Fin n -> Real) :
-    0 <= higham21PerturbationGramSensitivity A E :=
-  infNorm_nonneg _
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 private theorem higham21PerturbationRadius_mul_max_le_half {m n : Nat}
     (A E : Fin m -> Fin n -> Real) (q : Real) (hq : 0 <= q) :
@@ -119,34 +131,34 @@ private theorem higham21PerturbationRadius_mul_max_le_half {m n : Nat}
   change (1 / (2 * (1 + M))) * M <= (1 / 2 : Real)
   simpa [div_eq_mul_inv, mul_comm] using hfrac
 
-/-- The derived radius is strictly positive for every nonnegative operator
-    envelope. -/
-theorem higham21PerturbationRadius_pos {m n : Nat}
-    (A E : Fin m -> Fin n -> Real) (q : Real) (hq : 0 <= q) :
-    0 < higham21PerturbationRadius A E q := by
-  let s : Real := higham21PerturbationGramSensitivity A E
-  let M : Real := max q s
-  have hM : 0 <= M := by
-    exact hq.trans (le_max_left q s)
-  have hden : 0 < 2 * (1 + M) :=
-    mul_pos (by norm_num) (by linarith)
-  change 0 < 1 / (2 * (1 + M))
-  exact one_div_pos.mpr hden
 
-/-- The derived radius lies inside the unit neighborhood used to freeze the
-    quadratic Gram envelope. -/
-theorem higham21PerturbationRadius_le_one {m n : Nat}
-    (A E : Fin m -> Fin n -> Real) (q : Real) (hq : 0 <= q) :
-    higham21PerturbationRadius A E q <= 1 := by
-  let s : Real := higham21PerturbationGramSensitivity A E
-  let M : Real := max q s
-  have hM : 0 <= M := by
-    exact hq.trans (le_max_left q s)
-  have hden : 0 < 2 * (1 + M) :=
-    mul_pos (by norm_num) (by linarith)
-  change 1 / (2 * (1 + M)) <= 1
-  apply (div_le_iff₀ hden).2
-  nlinarith
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- At the derived radius the printed pseudoinverse-product envelope is at
     most one half. -/
@@ -180,99 +192,99 @@ theorem higham21PerturbationRadius_mul_gramSensitivity_le_half {m n : Nat}
     _ <= (1 / 2 : Real) :=
       higham21PerturbationRadius_mul_max_le_half A E q hq
 
-theorem higham21PerturbationGramInverseBound_nonneg {m n : Nat}
-    (A : Fin m -> Fin n -> Real) :
-    0 <= higham21PerturbationGramInverseBound A := by
-  exact mul_nonneg (Real.sqrt_nonneg _)
-    (mul_nonneg
-      (mul_nonneg (by exact_mod_cast Nat.zero_le m) (by norm_num))
-      (infNorm_nonneg _))
 
-/-- The canonical Frobenius product bound is an operator-2 certificate. -/
-theorem higham21PerturbationDirectionProduct_rectOpNorm2Le {m n : Nat}
-    (A D : Fin m -> Fin n -> Real) :
-    rectOpNorm2Le
-      (rectMatMul (undetAplusOfGramNonsingInv A) D)
-      (higham21PerturbationDirectionProductBound A D) := by
-  exact
-    rectOpNorm2Le_of_opNorm2Le_square _
-      (opNorm2Le_of_frobNorm_self _)
 
-theorem higham21PerturbationDirectionRadius_pos {m n : Nat}
-    (A D E : Fin m -> Fin n -> Real) :
-    0 < higham21PerturbationDirectionRadius A D E := by
-  simpa [higham21PerturbationDirectionRadius] using
-    higham21PerturbationRadius_pos A E
-      (higham21PerturbationDirectionProductBound A D)
-      (frobNorm_nonneg _)
 
-/-- Monotonicity of the componentwise Gram budget in its scalar quadratic
-    radius. -/
-theorem higham21_undetGramPerturbationComponentBudget_mono {m n : Nat}
-    (A E : Fin m -> Fin n -> Real) {r s : Real}
-    (hE : forall i j, 0 <= E i j) (hrs : r <= s) :
-    forall i j,
-      undetGramPerturbationComponentBudget A E r i j <=
-        undetGramPerturbationComponentBudget A E s i j := by
-  intro i j
-  unfold undetGramPerturbationComponentBudget
-  apply Finset.sum_le_sum
-  intro k _
-  have hquad : r * (E i k * E j k) <= s * (E i k * E j k) :=
-    mul_le_mul_of_nonneg_right hrs (mul_nonneg (hE i k) (hE j k))
-  exact add_le_add le_rfl (by simpa [mul_assoc] using hquad)
 
-/-- Scalar multiplication scales a rectangular operator-2 certificate by the
-    absolute value of the scalar. -/
-theorem higham21_rectOpNorm2Le_const_mul_abs {m n : Nat}
-    (M : Fin m -> Fin n -> Real) (a c : Real)
-    (hM : rectOpNorm2Le M c) :
-    rectOpNorm2Le (fun i j => a * M i j) (abs a * c) := by
-  intro x
-  have haction :
-      rectMatMulVec (fun i j => a * M i j) x =
-        fun i => a * rectMatMulVec M x i := by
-    ext i
-    unfold rectMatMulVec
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro j _
-    ring
-  calc
-    vecNorm2 (rectMatMulVec (fun i j => a * M i j) x) =
-        abs a * vecNorm2 (rectMatMulVec M x) := by
-      rw [haction, vecNorm2_smul]
-    _ <= abs a * (c * vecNorm2 x) :=
-      mul_le_mul_of_nonneg_left (hM x) (abs_nonneg a)
-    _ = (abs a * c) * vecNorm2 x := by ring
 
-/-- Scaling a direction scales its canonical pseudoinverse product
-    certificate. -/
-theorem higham21_scaled_pseudoinverse_product_rectOpNorm2Le {m n : Nat}
-    (A D : Fin m -> Fin n -> Real) (t q : Real)
-    (hProduct :
-      rectOpNorm2Le
-        (rectMatMul (undetAplusOfGramNonsingInv A) D) q) :
-    rectOpNorm2Le
-      (rectMatMul (undetAplusOfGramNonsingInv A)
-        (fun i j => t * D i j))
-      (abs t * q) := by
-  have hscaled :=
-    higham21_rectOpNorm2Le_const_mul_abs
-      (rectMatMul (undetAplusOfGramNonsingInv A) D) t q hProduct
-  have hmul :
-      rectMatMul (undetAplusOfGramNonsingInv A)
-          (fun i j => t * D i j) =
-        fun i j =>
-          t * rectMatMul (undetAplusOfGramNonsingInv A) D i j := by
-    ext i j
-    unfold rectMatMul
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro k _
-    ring
-  rw [hmul]
-  exact hscaled
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Inside the derived radius, the printed contraction
     `norm (A^+ (t D)) < 1` follows from a fixed operator envelope for
@@ -482,60 +494,60 @@ theorem higham21_theorem21_1_fixed_radius_certificates_of_direction_envelope
       hm hdet (frobNorm_nonneg _) hE hD
       (higham21PerturbationDirectionProduct_rectOpNorm2Le A D))
 
-/-- Composition of operator envelopes gives the fixed product envelope used
-    by the family-radius API. -/
-theorem higham21_theorem21_1_product_rectOpNorm2Le_of_operator_envelopes
-    {m n : Nat} (A D : Fin m -> Fin n -> Real) (p d : Real)
-    (hp : 0 <= p)
-    (hAplus :
-      rectOpNorm2Le (undetAplusOfGramNonsingInv A) p)
-    (hD : rectOpNorm2Le D d) :
-    rectOpNorm2Le
-      (rectMatMul (undetAplusOfGramNonsingInv A) D) (p * d) :=
-  rectOpNorm2Le_rectMatMul
-    (undetAplusOfGramNonsingInv A) D hp hAplus hD
 
-/-- An entrywise direction envelope plus an operator certificate for that
-    envelope supplies the product certificate required by the family API. -/
-theorem higham21_theorem21_1_product_rectOpNorm2Le_of_entrywise_operator_envelopes
-    {m n : Nat} (A D E : Fin m -> Fin n -> Real) (p e : Real)
-    (hp : 0 <= p)
-    (hAplus :
-      rectOpNorm2Le (undetAplusOfGramNonsingInv A) p)
-    (hEop : rectOpNorm2Le E e)
-    (hD : forall i j, abs (D i j) <= E i j) :
-    rectOpNorm2Le
-      (rectMatMul (undetAplusOfGramNonsingInv A) D) (p * e) := by
-  have hDone : forall i j, abs (D i j) <= (1 : Real) * E i j := by
-    intro i j
-    simpa using hD i j
-  have hDop : rectOpNorm2Le D ((1 : Real) * e) :=
-    higham21_rectOpNorm2Le_of_componentwise_data_bound
-      D E (eps := (1 : Real)) (e := e) (by norm_num) hDone hEop
-  exact higham21_theorem21_1_product_rectOpNorm2Le_of_operator_envelopes
-    A D p e hp hAplus (by simpa using hDop)
 
-theorem higham21PerturbationEntryEnvelopeOfRow_nonneg {m n : Nat}
-    (r : Fin m -> Real) (hr : forall i, 0 <= r i) :
-    forall i j, 0 <= higham21PerturbationEntryEnvelopeOfRow
-      (n := n) r i j := by
-  intro i j
-  exact hr i
 
-/-- A row 2-norm envelope induces the pointwise envelope used in the Gram
-    budget. -/
-theorem higham21_abs_entry_le_entryEnvelopeOfRow {m n : Nat}
-    (D : Fin m -> Fin n -> Real) (r : Fin m -> Real)
-    (hrow : forall i, rectRowNorm2 D i <= r i) :
-    forall i j, abs (D i j) <=
-      higham21PerturbationEntryEnvelopeOfRow r i j := by
-  intro i j
-  calc
-    abs (D i j) <= rectRowNorm2 D i := by
-      simpa [rectRowNorm2] using
-        (abs_coord_le_vecNorm2 (fun k : Fin n => D i k) j)
-    _ <= r i := hrow i
-    _ = higham21PerturbationEntryEnvelopeOfRow r i j := rfl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- One fixed entrywise and pseudoinverse-product envelope controls every
     member of a perturbation family.  This is the adapter for downstream
@@ -614,15 +626,15 @@ theorem higham21_theorem21_1_fixed_radius_certificates_of_family_row_envelope
         (D a) r (hrow a))
       hProduct
 
-/-- A nonzero right-hand side forces a positive row dimension. -/
-theorem higham21_row_dimension_pos_of_rhs_ne_zero {m : Nat}
-    (b : Fin m -> Real) (hb : Not (b = 0)) : 0 < m := by
-  by_contra hm
-  have hm0 : m = 0 := Nat.eq_zero_of_not_pos hm
-  subst m
-  apply hb
-  funext i
-  exact Fin.elim0 i
+
+
+
+
+
+
+
+
+
 
 /-- The finite relative Theorem 21.1 bound with its perturbed determinant and
     Gram-inverse hypotheses derived from the normalized direction itself. -/

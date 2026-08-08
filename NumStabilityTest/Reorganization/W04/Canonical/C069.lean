@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter21.Theorem03.NormwiseBackwardError.UnderdeterminedSolve
+
+#check NumStability.UndetNormwiseBackwardErrorFeasible.nonzeroFormulaRHS_le_costF_of_sigma_zero

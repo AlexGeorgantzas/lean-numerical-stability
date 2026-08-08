@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Underdetermined.Higham21Equation21_11Scalar
+
+#check NumStability.higham21_eq21_11_computed_qhat_relative_forward_error_quadratic_scalar

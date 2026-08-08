@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter21.Theorem04.HouseholderQMethod.UnderdeterminedSolve
+
+#check NumStability.Higham21QMethodComputedGammaIndex_le_roundedGammaIndex

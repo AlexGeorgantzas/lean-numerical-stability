@@ -1,0 +1,9 @@
+import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
+import NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation
+import NumStability.Source.Higham.Chapter20.Lemma11
+import NumStability.Source.Higham.Chapter20.Theorem08
+
+#check NumStability.LSENullIntersectionTrivial
+#check NumStability.higham20_lemma20_11_pseudoinverse_op2_le_recip_rankSingular
+#check NumStability.theorem20_8MaxRelativePerturbation
+#check NumStability.theorem20_8_gram_APplus_constraint_annihilates_of_AP_transpose_constraint

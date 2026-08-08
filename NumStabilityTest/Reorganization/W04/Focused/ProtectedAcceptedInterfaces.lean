@@ -1,0 +1,9 @@
+import NumStability.Algorithms.LinearSystems.Cholesky.Factorization.Spec
+import NumStability.Algorithms.LinearSystems.Cholesky.Solve.Basic
+import NumStability.Algorithms.RankOneUpdate
+import NumStability.Analysis.Conditioning.LinearSystems.InversePerturbation
+
+#check NumStability.CholeskyFactSpec
+#check NumStability.cholesky_solve_backward_error
+#check NumStability.problem7_1_neumann_componentwise_inequality_bound
+#check NumStability.rankOneUpdateExact

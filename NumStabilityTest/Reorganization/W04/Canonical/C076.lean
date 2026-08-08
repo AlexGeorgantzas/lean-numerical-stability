@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.ActualOutput
+
+#check NumStability.higham21_sne_dual_majorant_le_cond2
