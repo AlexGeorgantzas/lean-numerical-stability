@@ -11,9 +11,13 @@ retired immutable evidence, and their independently C0005-based shared
 requests R0005 and R0006 are applied at C0006. B0006 and B0007 are retired;
 their exact remote refs were deleted at `2026-08-04T13:33:21Z` after the C0006
 acceptance-control commit passed Lean CI. Local worker branches and worktrees
-remain preserved. M04/W04, M09/W09, and M11/W11 now have active C0006
-activation records and exact C0006-based worker refs. M07/W07 remains ready
-and unactivated.
+remain preserved. B0008/W04, B0009/W09, and B0010/W11 have delivered exact
+C0006-based worker refs at `12bd75d4d25b2d98344d26b0dc0b016f1e2f1814`,
+`69ee6cf790d1f3826075f33ea4907c9a4b5a637a`, and
+`580c0298a47a533725e034c32c7702a7436fa6ed`, respectively. Their delivery
+packets are hash-pinned on `main`, but none is accepted or integrated yet.
+C0006 remains current; M04, M09, and M11 remain ready, and M07/W07 remains
+ready and unactivated.
 B0004/W03 and B0005/W05 were accepted at C0005 and retired after that
 acceptance-control state passed Lean CI. P0005 and P0006 are retired immutable
 projection evidence, and their independently C0004-based shared requests R0003
@@ -63,9 +67,9 @@ evidence for the bounded work they completed.
   [`W06.tsv`](selectors/W06.tsv) and [`W08.tsv`](selectors/W08.tsv); their
   applied shared requests are [`R0005`](requests/R0005.json) and
   [`R0006`](requests/R0006.json).
-  Active [`B0008`](branches/B0008.json), [`B0009`](branches/B0009.json), and
+  Delivered [`B0008`](branches/B0008.json), [`B0009`](branches/B0009.json), and
   [`B0010`](branches/B0010.json) are the mutually disjoint C0006 transports for
-  W04, W09, and W11. Their active frozen projections are
+  W04, W09, and W11. Their still-active frozen projections are
   [`P0009`](projections/P0009.json), [`P0010`](projections/P0010.json), and
   [`P0011`](projections/P0011.json), selected by
   [`W04.tsv`](selectors/W04.tsv), [`W09.tsv`](selectors/W09.tsv), and
@@ -218,10 +222,15 @@ acceptance-control commit passed Lean CI, both exact remote refs were deleted at
 `2026-08-04T13:33:21Z` by `primary-human`; local worktrees and branches remain
 preserved and were never retirement targets.
 
-W04, W09, and W11 have separate active branch records based on exact C0006 code
-SHA `a32095e6e50189f7dcc39312bb4c6a36f421fab5`. Their selectors, projections,
+W04, W09, and W11 have separate delivered branch records based on exact C0006
+code SHA `a32095e6e50189f7dcc39312bb4c6a36f421fab5`. Their immutable delivery tips
+are `12bd75d4d25b2d98344d26b0dc0b016f1e2f1814`,
+`69ee6cf790d1f3826075f33ea4907c9a4b5a637a`, and
+`580c0298a47a533725e034c32c7702a7436fa6ed`. Their selectors, projections,
 private-closure floors, semantic routing, vacant destinations, and zero
-cross-wave import/typed-edge proof were hash-pinned before any ref was created.
+cross-wave import/typed-edge proof were hash-pinned before any ref was created;
+the delivery reports and scope evidence are now hash-pinned on `main` while
+integration and acceptance remain pending.
 Planned-control commit `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5`
 passed [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30920452203).
 W04 is remote-only; W09 and W11 have separate clean local worktrees. All three

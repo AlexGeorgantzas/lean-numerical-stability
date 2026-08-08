@@ -1,0 +1,27 @@
+phase	gate	command	jobs	mutex	exit	seconds	result	notes
+baseline	owner_baseline	lake build <29 B0008 owners>	3153	Local\lean-reorganization-2026-08	0	2294.269	pass	C0006 source baseline
+development	focused_preflight	lake build <10 focused tests>	3258	Local\lean-reorganization-2026-08	1	1571.313	corrected	one test referenced a nonexistent name; source migration was unchanged
+tests	focused_final	lake build <10 focused tests>	3258	Local\lean-reorganization-2026-08	0	27.950	pass	corrected test identifier
+tests	canonical_only	lake build <84 canonical tests>	3289	Local\lean-reorganization-2026-08	0	332.038	pass	every canonical destination isolated
+tests	old_path_only	lake build <29 old-path tests>	3265	Local\lean-reorganization-2026-08	0	721.437	pass	one isolated test per owner
+tests	matrix_before_retarget_test	lake build <123 W04 tests>	3378	Local\lean-reorganization-2026-08	0	5.012	pass	superseded by final 124-test matrix
+tests	integrator_retarget	lake build NumStabilityTest.Reorganization.W04.Focused.IntegratorCanonicalRetarget	3140	Local\lean-reorganization-2026-08	0	306.865	pass	shared consumer canonical endpoint
+tests	all_w04_final	lake build <124 TEST_MATRIX.tsv targets>	3379	Local\lean-reorganization-2026-08	0	8.260	pass	84 canonical + 29 old-path + 11 focused
+audit	generator_check	python -B docs/architecture/deliveries/W04/GENERATE_MIGRATION.py --check		Local\lean-reorganization-2026-08	0	62.200	pass	final generator and tree: 84 canonical modules; 29 facades; 124 tests; 1238 routes
+audit	static	python -B docs/architecture/deliveries/W04/CHECK_STATIC.py		-	0	15.883	pass	final tree: zero cycles and zero W04 reusable-to-Source reachability
+audit	scope_pre_evidence	python -B docs/architecture/deliveries/W04/CHECK_SCOPE.py		-	0	0.583	pass	252 paths before generated CHANGED_PATHS.md
+audit	scope_with_evidence	python -B docs/architecture/deliveries/W04/CHECK_SCOPE.py		-	0	0.900	pass	253 paths; 29 owners; 224 destination paths; zero violations
+audit	committed_tip_scope	python -B docs/architecture/deliveries/W04/CHECK_SCOPE.py --check-changed-paths		-	0	0.693	pass	first clean delivery commit; repeated after final evidence commit
+repository	compatibility	python -B tools/architecture/check_compatibility.py		-	0	17.361	pass	337 forwarding modules; 685 canonical targets
+repository	provenance	python -B tools/architecture/check_provenance.py		-	0	0.614	pass	199 Apache-marked files; 5 evidenced upstream modules
+repository	layout	python -B tools/architecture/check_layout.py		-	1	122.031	integrator_required	NONZERO: root/aggregate/tier/ratchet wiring is forbidden to W04
+repository	library	lake build NumStability	5871	Local\lean-reorganization-2026-08	0	6552.111	pass	cold full-library build
+repository	library_and_tests_cold	lake build NumStability NumStabilityTest	7903	Local\lean-reorganization-2026-08	0	5769.100	pass	cold combined build; UI output was truncated
+repository	library_and_tests_exact_replay	lake build NumStability NumStabilityTest	7903	Local\lean-reorganization-2026-08	0	105.474	pass	warm replay retained exact Lake summary
+repository	lake_test	lake test	7901	Local\lean-reorganization-2026-08	0	7.085	pass	warm repository test target
+source	strict_source	python -B tools/architecture/generate_baseline.py --skip-declarations --strict-source		Local\lean-reorganization-2026-08	2	18.543	integrator_required	NONZERO: 56 paths; all through the one forbidden Wedin import
+source	nonstrict_source_inventory	python -B tools/architecture/generate_baseline.py --skip-declarations		Local\lean-reorganization-2026-08	0	18.000	pass	2326 modules; zero unresolved imports; zero cycles
+projection	candidate	python -B tools/architecture/generate_baseline.py --keep-dependency-tsv benchmark-results/W04-candidate.tsv	5871	Local\lean-reorganization-2026-08	0	144.843	pass	56903 declarations; 649259 typed edges
+projection	candidate_pin_reproduction	python -B tools/architecture/generate_baseline.py --keep-dependency-tsv benchmark-results/W04-candidate.tsv	5871	Local\lean-reorganization-2026-08	0	169.423	pass	exact same 116512944-byte candidate SHA after checker pinning
+projection	p0009_replay	python -B docs/architecture/deliveries/W04/CHECK_PROJECTION.py		Local\lean-reorganization-2026-08	0	4.800	pass	internal checker 3.237 seconds; candidate and closure pins enforced; exact projection
+projection	deterministic_summary_replay	python -B tools/architecture/generate_baseline.py --dependency-tsv benchmark-results/W04-candidate.tsv		Local\lean-reorganization-2026-08	0	22.896	pass	JSON and Markdown byte-identical

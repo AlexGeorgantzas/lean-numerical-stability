@@ -104,8 +104,9 @@ branches deliberately began at the C0004 code SHA and read later control
 records from `origin/main`; activation commits were never copied into a worker
 branch. The W06/W08 remote refs likewise began at the exact C0005 code SHA only
 after their planned control commit became green and were deleted only after the
-C0006 acceptance-control commit became green. P0009, P0010, and P0011 are
-active with B0008, B0009, and B0010. Their worker refs began at the exact C0006
-code SHA only after planned-control commit
+C0006 acceptance-control commit became green. P0009, P0010, and P0011 remain
+active while B0008, B0009, and B0010 are delivered but not yet integrated or
+accepted. Their worker refs began at the exact C0006 code SHA only after
+planned-control commit
 `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5` passed Lean CI; the activation
 commits are absent from every worker branch.

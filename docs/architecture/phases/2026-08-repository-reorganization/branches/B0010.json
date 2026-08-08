@@ -5,9 +5,15 @@
   "branch_id": "B0010",
   "branch_name": "codex/reorg-2026-08-w11-randnla",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "580c0298a47a533725e034c32c7702a7436fa6ed",
+    "report": {
+      "path": "docs/architecture/deliveries/W11/DELIVERY.md",
+      "sha256": "EF880B7592C25536EA19478C8272C39B893F25EE7E188CFC727BF19E10D070BC"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/W11/CHANGED_PATHS.md",
+      "sha256": "979F32569550EC085D67575D153F88904C89DD1933ABDAB787C17C1629C2CFFD"
+    }
   },
   "destination_prefixes": [
     {
@@ -7479,6 +7485,6 @@
   },
   "schema_version": 1,
   "shared_request_ids": [],
-  "status": "active",
+  "status": "delivered",
   "wave_id": "W11"
 }

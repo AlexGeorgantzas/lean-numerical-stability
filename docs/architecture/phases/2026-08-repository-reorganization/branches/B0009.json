@@ -5,9 +5,15 @@
   "branch_id": "B0009",
   "branch_name": "codex/reorg-2026-08-w09-test-matrices-ch28",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "69ee6cf790d1f3826075f33ea4907c9a4b5a637a",
+    "report": {
+      "path": "docs/architecture/deliveries/W09/DELIVERY.md",
+      "sha256": "CC1540B0DE714CD865C3E2A832C5B8444F7C7306E841E234DC1E4D6BBC0A4BAC"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/W09/CHANGED_PATHS.md",
+      "sha256": "4BCFA14D31F714EE9D92CF16A6D47ECF28F895CC6AB602775CD6C644D16A46EA"
+    }
   },
   "destination_prefixes": [
     {
@@ -7479,6 +7485,6 @@
   },
   "schema_version": 1,
   "shared_request_ids": [],
-  "status": "active",
+  "status": "delivered",
   "wave_id": "W09"
 }

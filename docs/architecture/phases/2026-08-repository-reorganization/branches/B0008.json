@@ -5,9 +5,15 @@
   "branch_id": "B0008",
   "branch_name": "codex/reorg-2026-08-w04-ch21-underdetermined",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "12bd75d4d25b2d98344d26b0dc0b016f1e2f1814",
+    "report": {
+      "path": "docs/architecture/deliveries/W04/DELIVERY.md",
+      "sha256": "41244D9CC64C01A4A17F25C28BD23535CB30E26596073E3D0455CCF7CB4FA8B5"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/W04/CHANGED_PATHS.md",
+      "sha256": "ED7B338696542165B3E144F8F81CABBD4FACD1F3A3C38CF5F8A269B0D5ABB9DC"
+    }
   },
   "destination_prefixes": [
     {
@@ -7479,6 +7485,6 @@
   },
   "schema_version": 1,
   "shared_request_ids": [],
-  "status": "active",
+  "status": "delivered",
   "wave_id": "W04"
 }

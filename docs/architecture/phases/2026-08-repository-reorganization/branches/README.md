@@ -5,28 +5,35 @@ the current accepted checkpoint and use an active lane baseline projection.
 Delivery, integration, ancestry, and retirement fields are updated rather than
 replaced by prose-only status messages.
 
-Three mutually disjoint branches are active from exact C0006 code commit
+Three mutually disjoint branches have delivered from exact C0006 code commit
 `a32095e6e50189f7dcc39312bb4c6a36f421fab5`. Planned-control commit
 `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5` passed
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30920452203)
-before their refs or local worktrees were created:
+before their refs or local worktrees were created. Their immutable delivery
+tips and hash-pinned packet evidence are recorded below; none is integrated or
+accepted yet:
 
 - [`B0008`](B0008.json): W04 remote-lane branch
   `codex/reorg-2026-08-w04-ch21-underdetermined`, 29 exact historical owners,
   42 reviewed production destinations plus W04 test/delivery prefixes, and
-  sole operator `codex-remote`; no local W04 worktree is authorized;
+  sole operator `codex-remote`, immutable delivery
+  `12bd75d4d25b2d98344d26b0dc0b016f1e2f1814`; no local W04 worktree is
+  authorized;
 - [`B0009`](B0009.json): W09 local-lane branch
   `codex/reorg-2026-08-w09-test-matrices-ch28`, 72 exact historical owners,
   30 reviewed production destinations plus W09 test/delivery prefixes, sole
-  operator `claude-local`, and active worktree
+  operator `claude-local`, immutable delivery
+  `69ee6cf790d1f3826075f33ea4907c9a4b5a637a`, and clean delivery worktree
   `C:\Users\qed_s\higham-worktrees\reorg-w09-claude`;
 - [`B0010`](B0010.json): W11 local-lane branch
   `codex/reorg-2026-08-w11-randnla`, 18 exact historical owners, 33 reviewed
   production destinations plus W11 test/delivery prefixes, sole operator
-  `codex-local`, and active worktree
+  `codex-local`, immutable delivery
+  `580c0298a47a533725e034c32c7702a7436fa6ed`, and clean delivery worktree
   `C:\Users\qed_s\higham-worktrees\reorg-w11-codex`.
 
-Their active projections are P0009, P0010, and P0011. Independent hash-pinned
+Their projections P0009, P0010, and P0011 remain active pending integration.
+Independent hash-pinned
 reviews [`B0008-overlap-review.md`](B0008-overlap-review.md),
 [`B0009-overlap-review.md`](B0009-overlap-review.md), and
 [`B0010-overlap-review.md`](B0010-overlap-review.md) prove zero owner,
@@ -35,8 +42,8 @@ directions. `NumStability/Algorithms.lean` is their integrator-owned common
 downstream aggregate. The additional W04/W11 downstream consumer
 `NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean` is
 also integrator-owned and forbidden to both workers. C0006 remains current;
-M04, M09, and M11 remain ready while active, and M07 remains ready and
-unactivated.
+M04, M09, and M11 remain ready while delivered but unaccepted, and M07 remains
+ready and unactivated.
 
 Two disjoint remote-lane branches were implemented from exact C0005 code commit
 `240c0d041781385a647fbec461d6863537e562cb` and accepted through separate true
