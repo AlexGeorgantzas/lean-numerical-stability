@@ -21,11 +21,11 @@ The projection records are:
   [`W06.tsv`](../selectors/W06.tsv); and
 - [`P0008`](P0008.json), the retired C0005 W08 projection selected by
   [`W08.tsv`](../selectors/W08.tsv);
-- [`P0009`](P0009.json), the active C0006 W04 projection selected by
+- [`P0009`](P0009.json), the retired C0006 W04 projection selected by
   [`W04.tsv`](../selectors/W04.tsv);
-- [`P0010`](P0010.json), the active C0006 W09 projection selected by
+- [`P0010`](P0010.json), the retired C0006 W09 projection selected by
   [`W09.tsv`](../selectors/W09.tsv); and
-- [`P0011`](P0011.json), the active C0006 W11 projection selected by
+- [`P0011`](P0011.json), the retired C0006 W11 projection selected by
   [`W11.tsv`](../selectors/W11.tsv).
 
 P0004 is tied to the C0003 combined baseline generated at code commit
@@ -85,6 +85,17 @@ edges. P0008 passed with 2,179 selected, 1,994 relocated, and 185 retained
 declarations, 9,266 signature edges, 15,315 body/proof edges, and 16,573 union
 edges.
 
+At C0007 the integrator replayed P0009, P0010, and P0011 against the same full
+integrated format-2 candidate with SHA-256
+`80AE3FBB3948104C60FF7EA80E899CC11CE542D0A772EA087375C00EB0ED9ED3`.
+P0009 passed with 1,238 selected, 1,018 relocated, and 220 retained
+declarations, 5,684 signature edges, 10,044 body/proof edges, and 10,624 union
+edges. P0010 passed with 1,865 selected, 1,295 relocated, and 570 retained
+declarations, 3,639 signature edges, 7,414 body/proof edges, and 7,721 union
+edges. P0011 passed with 3,354 selected, 3,129 relocated, and 225 retained
+declarations, 19,096 signature edges, 26,201 body/proof edges, and 28,652 union
+edges.
+
 A worker generates one full format-2 candidate under the shared Lean mutex,
 then invokes `tools/architecture/check_phase_projection.py` with every sorted
 argument in its projection JSON. The candidate placeholder is replaced by the
@@ -104,12 +115,11 @@ branches deliberately began at the C0004 code SHA and read later control
 records from `origin/main`; activation commits were never copied into a worker
 branch. The W06/W08 remote refs likewise began at the exact C0005 code SHA only
 after their planned control commit became green and were deleted only after the
-C0006 acceptance-control commit became green. P0009, P0010, and P0011 remain
-active while B0008, B0009, and B0010 are delivered and merged into the pending
-candidate but not yet accepted. Their worker refs began at the exact C0006 code SHA only after
+C0006 acceptance-control commit became green. P0009, P0010, and P0011 are
+retired with B0008/W04, B0009/W09, and B0010/W11 accepted at C0007. The branch
+records have retirement due until the C0007 acceptance-control commit becomes
+green, and their exact remote refs remain live pending that gate. Their worker
+refs began at the exact C0006 code SHA only after
 planned-control commit
 `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5` passed Lean CI; the activation
-commits are absent from every worker branch. Their immutable delivery tips
-have since entered the pending combined integration state through separate
-true merges. P0009, P0010, and P0011 stay active until that state passes the
-shared replay and acceptance gates.
+commits remain absent from every worker branch.

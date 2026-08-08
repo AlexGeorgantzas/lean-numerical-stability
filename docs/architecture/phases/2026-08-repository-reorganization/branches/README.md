@@ -5,14 +5,16 @@ the current accepted checkpoint and use an active lane baseline projection.
 Delivery, integration, ancestry, and retirement fields are updated rather than
 replaced by prose-only status messages.
 
-Three mutually disjoint branches have delivered from exact C0006 code commit
-`a32095e6e50189f7dcc39312bb4c6a36f421fab5`. Planned-control commit
+Three mutually disjoint branches were implemented from exact C0006 code commit
+`a32095e6e50189f7dcc39312bb4c6a36f421fab5` and accepted through separate true
+merges at C0007 code commit `9eb534a06db267203c2b9b88227edd44fc64f5db`.
+Planned-control commit
 `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5` passed
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30920452203)
 before their refs or local worktrees were created. Their immutable delivery
-tips and hash-pinned packet evidence are recorded below. All three tips have
-been incorporated through separate true merges into the pending combined
-integration state, but none is accepted yet:
+tips and hash-pinned packet evidence are recorded below. All three records are
+accepted with retirement due until the C0007 acceptance-control commit passes
+Lean CI:
 
 - [`B0008`](B0008.json): W04 remote-lane branch
   `codex/reorg-2026-08-w04-ch21-underdetermined`, 29 exact historical owners,
@@ -33,10 +35,9 @@ integration state, but none is accepted yet:
   `580c0298a47a533725e034c32c7702a7436fa6ed`, and clean delivery worktree
   `C:\Users\qed_s\higham-worktrees\reorg-w11-codex`.
 
-Their projections P0009, P0010, and P0011 remain active pending acceptance.
-The records link active, independently C0006-based shared requests R0007,
-R0008, and R0009; integration fields remain null until the combined code state
-passes every gate and is accepted at a new checkpoint.
+Their projections P0009, P0010, and P0011 are retired immutable evidence. The
+records link applied, independently C0006-based shared requests R0007, R0008,
+and R0009, and their integration fields identify C0007 and its green code SHA.
 Independent hash-pinned
 reviews [`B0008-overlap-review.md`](B0008-overlap-review.md),
 [`B0009-overlap-review.md`](B0009-overlap-review.md), and
@@ -45,9 +46,10 @@ destination, direct-import, signature-edge, and body/proof-edge overlap in all
 directions. `NumStability/Algorithms.lean` is their integrator-owned common
 downstream aggregate. The additional W04/W11 downstream consumer
 `NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean` is
-also integrator-owned and forbidden to both workers. C0006 remains current;
-M04, M09, and M11 remain ready while delivered but unaccepted, and M07 remains
-ready and unactivated.
+also integrator-owned and forbidden to both workers. C0007 is current; M04,
+M09, and M11 are accepted, while M07 and M10 are ready and unactivated. The
+three exact remote delivery refs and the clean W09/W11 worktrees remain present
+until the C0007 acceptance-control Lean CI gate; W04 remains remote-only.
 
 Two disjoint remote-lane branches were implemented from exact C0005 code commit
 `240c0d041781385a647fbec461d6863537e562cb` and accepted through separate true
@@ -74,8 +76,8 @@ Their hash-pinned reviews are
 [`B0007-overlap-review.md`](B0007-overlap-review.md). They prove zero owner,
 destination, direct-import, signature-edge, and body-edge overlap. Their sole
 common direct downstream importer is the integrator-owned
-`NumStability/Algorithms.lean`. C0006 is current, M06/M08 are accepted, and
-M04/M09/M11 are ready while M07 is ready but unactivated. The two exact remote delivery refs
+`NumStability/Algorithms.lean`. C0007 is current, M06/M08 remain accepted, and
+M04/M09/M11 are accepted while M07/M10 are ready but unactivated. The two exact remote delivery refs
 were deleted atomically with expected-SHA leases at `2026-08-04T13:33:21Z` by
 `primary-human`. Local worker branches and worktrees are preserved and were
 never retirement targets.

@@ -52,15 +52,20 @@
   "request_id": "R0008",
   "requester_id": "claude-local",
   "resolution": {
-    "checkpoint_id": null,
-    "commit_sha": null,
-    "reason": null,
-    "resolved_at": null,
-    "resolved_by": null,
-    "validation_evidence": []
+    "checkpoint_id": "C0007",
+    "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+    "reason": "Applied during W09 integration and accepted by the green C0007 checkpoint.",
+    "resolved_at": "2026-08-08T21:26:00Z",
+    "resolved_by": "primary-human",
+    "validation_evidence": [
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      }
+    ]
   },
   "schema_version": 1,
-  "status": "active",
+  "status": "applied",
   "superseded_by": null,
   "supersedes": null,
   "target_base_sha": "a32095e6e50189f7dcc39312bb4c6a36f421fab5",

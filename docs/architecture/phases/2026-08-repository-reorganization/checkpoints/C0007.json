@@ -1,0 +1,216 @@
+{
+  "accepted_at": "2026-08-08T21:26:00Z",
+  "accepted_by": "primary-human",
+  "checkpoint_id": "C0007",
+  "combined_baseline": {
+    "artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/baselines/C0007-combined.json",
+      "sha256": "D9372A79DA159CEB50757F6581F650957D2868E738E41C0D5F892C121623CADD"
+    },
+    "format_version": 2,
+    "generation_command": "python tools/architecture/generate_baseline.py --output-dir docs/architecture/phases/2026-08-repository-reorganization/baselines --name C0007-combined --keep-dependency-tsv benchmark-results/C0007-combined.tsv",
+    "summary_artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization/baselines/C0007-combined.md",
+      "sha256": "A9C897F4E2EDCDE3B3CAFE5D297B11A05E5D20BA5CC2AF3BD746C90D02F5D3AC"
+    }
+  },
+  "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+  "gates": [
+    {
+      "command": "GitHub Lean CI 31276982723: contract and architecture/source-graph step",
+      "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      },
+      "executor_id": "github-actions",
+      "gate_id": "architecture",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "PowerShell: enumerate and lake build the 214 W04, W09, and W11 canonical-only test modules",
+      "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "canonical_import",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/generate_baseline.py --output-dir docs/architecture/phases/2026-08-repository-reorganization/baselines --name C0007-combined --keep-dependency-tsv benchmark-results/C0007-combined.tsv",
+      "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "combined_baseline",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/check_compatibility.py",
+      "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "compatibility",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "PowerShell: enumerate and lake build the 58 W04, W09, and W11 focused and protected test modules",
+      "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "focused_build",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "GitHub Lean CI 31276982723: lake build NumStability NumStabilityTest",
+      "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      },
+      "executor_id": "github-actions",
+      "gate_id": "full_build",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "lake test",
+      "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "full_tests",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/check_layout.py",
+      "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "layout",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "PowerShell: enumerate and lake build the 119 W04, W09, and W11 old-path-only test modules",
+      "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "old_import",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/check_provenance.py",
+      "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "provenance",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --name-status for C0006..W04, C0006..W09, C0006..W11, B0008/B0009/B0010 audits, R0007/R0008/R0009 replay, and 77b268c2166eca392c92affff60f11234addcc11..9eb534a06db267203c2b9b88227edd44fc64f5db ledger",
+      "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "scope",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/generate_baseline.py --skip-declarations --strict-source --output-dir benchmark-results/C0007-strict-source --name source",
+      "commit_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-gates.md",
+        "sha256": "FD53B43E6D31EBDD2B4A2F62E3324E30747B2AE3E8DAA8D80333DD02B597054F"
+      },
+      "executor_id": "codex-local",
+      "gate_id": "strict_source",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    }
+  ],
+  "inventory": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0007-inventory.tsv",
+    "sha256": "56B08C666F4461BE2B425E12B2E250ACFCD4604A43F793A066AA086091365196"
+  },
+  "metrics": {
+    "declaration_bearing_umbrellas": 21,
+    "missing_module_docstrings": 91,
+    "mixed_modules": 9,
+    "noncanonical_modules": 266,
+    "production_modules": 2456,
+    "unclassified_modules": 309,
+    "unsorted_aggregate_imports": 0
+  },
+  "milestones_satisfied": [
+    "M01",
+    "M02",
+    "M03",
+    "M04",
+    "M05",
+    "M06",
+    "M08",
+    "M09",
+    "M11",
+    "M12"
+  ],
+  "parent_checkpoint_id": "C0006",
+  "phase_id": "repository-reorganization-2026-08",
+  "record_kind": "phase_checkpoint",
+  "schema_version": 1,
+  "unblocks": [
+    "W02",
+    "W03",
+    "W04",
+    "W05",
+    "W06",
+    "W07",
+    "W08",
+    "W09",
+    "W12"
+  ]
+}
