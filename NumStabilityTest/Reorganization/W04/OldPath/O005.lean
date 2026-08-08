@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Underdetermined.Higham21Eq21_9
+
+#check NumStability.higham21Eq21_9DataTerm

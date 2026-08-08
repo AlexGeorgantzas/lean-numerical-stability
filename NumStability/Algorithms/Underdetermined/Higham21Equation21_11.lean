@@ -1,22 +1,31 @@
+import NumStability.Algorithms.Underdetermined.Higham21RankStability
+import NumStability.Source.Higham.Chapter21.Equation11.Equation
+
+/-!
+# Algorithms.Underdetermined.Higham21Equation21_11
+
+Historical W04 compatibility facade retaining the exact private reverse closure.
+-/
+
 -- Higham, Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 21.
 -- The explicit quadratic remainder in equation (21.11).
 
-import NumStability.Algorithms.Underdetermined.Higham21RankStability
+
 
 namespace NumStability
 
 set_option maxHeartbeats 1200000
 
-/-- The explicit finite coefficient multiplying the squared perturbation
-    radius in equation (21.11).  The normalized direction `D` is independent
-    of the scalar radius; the final argument supplies the local neighborhood
-    and the corresponding perturbed Gram inverse bound. -/
-noncomputable def higham21Eq21_11QuadraticCoefficient {m n : Nat}
-    (A D : Fin m -> Fin n -> Real) (b : Fin m -> Real) (eta : Real) : Real :=
-  higham21Eq21_7FixedRadiusCoefficient A D b (0 : Fin m -> Real)
-    (undetGramNonsingInv A) eta
-    (frobNorm
-      (undetGramNonsingInv (higham21Eq21_7ScaledMatrix A D eta)))
+
+
+
+
+
+
+
+
+
+
 
 /-- The source-facing Q-method certificate can be chosen with a nonsingular
     perturbed Gram matrix.  This preserves the sharper perturbation produced

@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter21.Equation11.Forward
+
+#check NumStability.higham21_eq21_11_sne_computed_relative_forward_error

@@ -1,10 +1,3 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQApply
 import NumStability.Algorithms.Underdetermined.Higham21Attainability
 import NumStability.Algorithms.Underdetermined.Higham21Eq21_11Uniform
@@ -37,9 +30,7 @@ import NumStability.Source.Higham.Chapter21.Theorem03
 import NumStability.Source.Higham.Chapter21.Theorem04
 
 /-!
-# Historical Higham Chapter 21 aggregate
+# Algorithms.Underdetermined.Higham21
 
-Broad compatibility and discovery surface for the repository's Chapter 21
-formalization. New code should prefer the canonical source aggregate or the
-narrowest reusable algorithm module it needs.
+Import-only historical compatibility facade for the W04 migration.
 -/

@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.EnvelopeTransfer
+
+#check NumStability.higham21_sne_actual_output_error_of_split_factorwise_transfer

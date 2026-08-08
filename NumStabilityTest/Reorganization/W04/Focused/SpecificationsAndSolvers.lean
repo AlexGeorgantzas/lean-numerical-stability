@@ -1,0 +1,11 @@
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Pseudoinverse.UnderdeterminedSpec
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.UnderdeterminedSolve
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.UnderdeterminedSpec
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifications.UnderdeterminedSolve
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifications.UnderdeterminedSpec
+
+#check NumStability.MinNormSolution
+#check NumStability.RectMinNormSolution.exists_transpose_witness
+#check NumStability.RectMoorePenrosePseudoinverse
+#check NumStability.higham21_qr_transpose_system_eq
+#check NumStability.rectMinNormSolution_zero_of_rhs_zero

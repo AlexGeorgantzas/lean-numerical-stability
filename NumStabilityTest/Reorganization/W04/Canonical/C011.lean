@@ -1,0 +1,3 @@
+import NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.Componentwise.UnderdeterminedSolve
+
+#check NumStability.higham21_ch7_first_product_infNorm_le_of_componentwise_le

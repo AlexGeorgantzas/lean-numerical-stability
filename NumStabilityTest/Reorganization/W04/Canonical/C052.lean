@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter21.Equation10.UnderdeterminedSolve
+
+#check NumStability.Higham21QActionGrowthCoefficient

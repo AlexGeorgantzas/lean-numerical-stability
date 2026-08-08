@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter21.Equation01.QRFoundations
+
+#check NumStability.higham21_eq21_1_computed_top_R_det_ne_zero_of_full_row_rank_domain

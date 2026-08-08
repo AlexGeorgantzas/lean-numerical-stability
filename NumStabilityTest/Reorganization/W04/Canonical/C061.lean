@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter21.Equation11.UniformClosure
+
+#check NumStability.higham21Eq21_11UniformAbsoluteCoefficient

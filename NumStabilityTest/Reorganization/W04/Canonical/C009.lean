@@ -1,0 +1,3 @@
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifications.UnderdeterminedSpec
+
+#check NumStability.MinNormSolution

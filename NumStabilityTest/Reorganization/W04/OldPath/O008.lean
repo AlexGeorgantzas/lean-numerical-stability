@@ -1,0 +1,3 @@
+import NumStability.Algorithms.Underdetermined.Higham21Givens
+
+#check NumStability.Higham21GivensQMethodRowwiseCoefficient

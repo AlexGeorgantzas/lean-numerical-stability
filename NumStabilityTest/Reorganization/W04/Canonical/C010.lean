@@ -1,0 +1,3 @@
+import NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.Componentwise.Radius
+
+#check NumStability.higham21PerturbationEntryEnvelopeOfRow

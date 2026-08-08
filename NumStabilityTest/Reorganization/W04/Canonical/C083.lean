@@ -1,0 +1,3 @@
+import NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.Uniform
+
+#check NumStability.higham21SNEHouseholderThetaUnitRoundoffCoefficient
