@@ -1,43 +1,29 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import NumStability.Algorithms.TestMatrices.Higham28GinibreMeasure
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.ProbabilityLaw.GinibreJointDensity
 
-/-! # Higham Chapter 28: Ginibre--Gaussian joint density
+/-!
+# Higham28GinibreJointDensity (compatibility module)
 
-This file records the ordinary-integral density conversion for an independent
-real-Ginibre matrix and standard Gaussian scalar.  The statement is
-unconditional, using the standard zero convention for nonintegrable Bochner
-integrals.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreJointDensity`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
+
+noncomputable section
 
 namespace NumStability
 
 open MeasureTheory ProbabilityTheory
 
-noncomputable section
-
 private local instance ginibreJointDensityMeasurableSpaceRSqMat (n : ℕ) :
     MeasurableSpace (RSqMat n) := MeasurableSpace.pi
-
-/-- Integrability of the finite standard-Gaussian vector density. -/
-theorem integrable_standardGaussianVectorDensity (n : ℕ) :
-    Integrable (fun z : Fin n → ℝ =>
-      ∏ i : Fin n, gaussianPDFReal 0 1 (z i)) :=
-  Integrable.fintype_prod (fun _ : Fin n =>
-    integrable_gaussianPDFReal 0 1)
-
-/-- The product density of a finite standard-Gaussian vector has ordinary
-Lebesgue integral one. -/
-theorem integral_standardGaussianVectorDensity_eq_one (n : ℕ) :
-    (∫ z : Fin n → ℝ,
-      ∏ i : Fin n, gaussianPDFReal 0 1 (z i)) = 1 := by
-  rw [integral_fintype_prod_volume_eq_prod]
-  simp [integral_gaussianPDFReal_eq_one]
 
 /-- Convert an integral under the independent real-Ginibre and standard
 Gaussian laws into the corresponding density-weighted product-Lebesgue
@@ -70,6 +56,6 @@ theorem integral_realGinibre_prod_gaussian_eq_jointDensity
   · filter_upwards with p
     exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top gaussianPDF_lt_top
 
-end
-
 end NumStability
+
+end

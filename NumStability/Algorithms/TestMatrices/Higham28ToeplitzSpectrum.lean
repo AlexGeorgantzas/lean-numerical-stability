@@ -1,18 +1,27 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import NumStability.Algorithms.TestMatrices.Higham28ToeplitzGeneral
+
+/-!
+# Higham28ToeplitzSpectrum (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
+
+noncomputable section
 
 namespace NumStability
 
 open scoped BigOperators ComplexConjugate
-open Matrix Polynomial
 
-noncomputable section
+open Matrix Polynomial
 
 private noncomputable def complexToeplitzSineMatrix (n : ℕ) :
     Matrix (Fin n) (Fin n) ℂ :=
@@ -366,6 +375,6 @@ theorem tridiagonalToeplitz_p522_roots_charpoly_of_product_zero
     Polynomial.roots_pow, Polynomial.roots_X_sub_C,
     Multiset.nsmul_singleton]
 
-end
-
 end NumStability
+
+end

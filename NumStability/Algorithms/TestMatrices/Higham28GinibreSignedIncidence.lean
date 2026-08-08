@@ -1,39 +1,43 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
+import NumStability.Algorithms.TestMatrices.Higham28GinibreJointDensity
 import NumStability.Algorithms.TestMatrices.Higham28GinibreOrthogonalFiber
 import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedExpectation
-import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedRankTransfer
-import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedKernel
 import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedIncidenceAlgebra
-import NumStability.Algorithms.TestMatrices.Higham28GinibreJointDensity
+import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedKernel
+import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedRankTransfer
 import NumStability.Algorithms.TestMatrices.Higham28GinibreTruncatedIncidence
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedIncidence
 
-/-! # Higham Chapter 28: the signed two-incidence transfer
+/-!
+# Higham28GinibreSignedIncidence (compatibility module)
 
-This file applies the real-eigenline incidence area formula twice, retaining
-the parity of each marked root.  The two absolute Jacobians thereby become
-signed characteristic determinants.  Orthogonal block coordinates then
-leave the ordered two-Gaussian characteristic-product kernel.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreSignedIncidence`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
+
+noncomputable section
 
 namespace NumStability
 
 open Matrix MeasureTheory ProbabilityTheory Set Filter
-open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Frobenius
 
-noncomputable section
+open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Frobenius
 
 private local instance ginibreSignedIncidenceMeasurableSpaceRSqMat (n : ℕ) :
     MeasurableSpace (RSqMat n) := MeasurableSpace.pi
+
 private local instance ginibreSignedIncidenceMeasureSpaceRSqMat (n : ℕ) :
     MeasureSpace (RSqMat n) := {
   toMeasurableSpace := MeasurableSpace.pi
   volume := realGinibreLebesgueMeasure n }
+
 private local instance ginibreSignedIncidenceSigmaFiniteRSqMat (n : ℕ) :
     SigmaFinite (volume : Measure (RSqMat n)) := by
   change SigmaFinite (Measure.pi (fun _ : Fin n =>
@@ -43,6 +47,7 @@ private local instance ginibreSignedIncidenceSigmaFiniteRSqMat (n : ℕ) :
 private local instance ginibreSignedIncidenceStandardBorelNuisance (n : ℕ) :
     StandardBorelSpace (GinibreIncidenceNuisance n) :=
   StandardBorelSpace.prod
+
 private local instance ginibreSignedIncidenceStandardBorelCoordinates (n : ℕ) :
     StandardBorelSpace (GinibreIncidenceCoordinates n) :=
   StandardBorelSpace.prod
@@ -58,21 +63,6 @@ private theorem ginibreIncidenceLebesgueMeasure_eq_signedVolume (n : ℕ) :
     ginibreIncidenceLebesgueMeasure n =
       (volume : Measure (GinibreIncidenceCoordinates n)) := by
   exact ginibreIncidenceLebesgueMeasure_eq_volume n
-
-/-- The signed deflated determinant differs from the incidence derivative
-determinant only by the dimension parity. -/
-theorem det_ginibreIncidenceDeflatedShift_eq_negOnePow_mul_derivativeDet
-    {n : ℕ} (q : GinibreIncidenceCoordinates n) :
-    (ginibreIncidenceDeflatedBlock q -
-        ginibreIncidenceEigenvalue q • (1 : RSqMat n)).det =
-      (-1 : ℝ) ^ n * (ginibreIncidenceDerivativeLinearMap q).det := by
-  rw [ginibreIncidenceDerivativeLinearMap_det]
-  have hneg : ginibreIncidenceDeflatedBlock q -
-      ginibreIncidenceEigenvalue q • (1 : RSqMat n) =
-      -(ginibreIncidenceTangentMatrix q) := by
-    ext i j
-    simp [ginibreIncidenceTangentMatrix]
-  rw [hneg, Matrix.det_neg, Fintype.card_fin]
 
 /-- Ordinary coordinate-density bridge for the alternating ordered-pair
 observable. -/
@@ -360,24 +350,12 @@ theorem integrable_ginibreSignedIncidence
   have hall := hreg.union hcomp
   simpa only [union_compl_self, integrableOn_univ] using hall
 
-/-! ## Product-density and nuisance-coordinate bookkeeping -/
-
 /-- The one-root signed moment left after the first incidence transfer. -/
 def ginibreSignedOneRootMoment (n : ℕ) : ℝ :=
   ∫ p : RSqMat n × ℝ,
     (p.1 - p.2 • (1 : RSqMat n)).det *
       ginibreAlternatingCount (realEigenvalueBelowCount p)
     ∂(realGinibreMeasure n).prod (gaussianReal 0 1)
-
-/-- Characteristic-polynomial form of the alternating number of roots below
-the marked scalar. -/
-def ginibreAlternatingBelowCharpoly (P : Polynomial ℝ) (x : ℝ) : ℝ :=
-  ginibreAlternatingCount ((P.roots.filter fun z => z < x).card)
-
-theorem ginibreAlternatingBelowCharpoly_charpoly (n : ℕ)
-    (A : RSqMat n) (x : ℝ) :
-    ginibreAlternatingBelowCharpoly (Matrix.charpoly (Matrix.of A)) x =
-      ginibreAlternatingCount (realEigenvalueBelowCount (A, x)) := rfl
 
 /-- Reorder `((C,z),x)` as `(z,(C,x))`. -/
 def ginibreNuisanceReorder (n : ℕ) :
@@ -478,8 +456,6 @@ theorem integral_ginibreSignedNuisance_eq_oneRootMoment (n : ℕ) :
       filter_upwards with p
       simp [G]
       ring
-
-/-! ## The first signed incidence transfer -/
 
 /-- Applying the signed incidence formula once converts the alternating pair
 expectation in dimension `n+1` into the signed one-root moment in dimension
@@ -590,8 +566,6 @@ theorem expectedGinibreAlternatingPairCount_succ_eq_factor_mul_oneRootMoment
       rw [show J = ginibreSignedOneRootMoment n by
         simpa [J] using integral_ginibreSignedNuisance_eq_oneRootMoment n]
 
-/-! ## The second signed incidence transfer -/
-
 /-- The signed two-root slice at a fixed external spectral parameter `x`. -/
 def ginibreSignedTwoRootSlice (m : ℕ) (x : ℝ) : ℝ :=
   ∫ p : RSqMat m × ℝ,
@@ -601,40 +575,6 @@ def ginibreSignedTwoRootSlice (m : ℕ) (x : ℝ) : ℝ :=
         (p.1 - x • (1 : RSqMat m)).det
     else 0
     ∂(realGinibreMeasure m).prod (gaussianReal 0 1)
-
-/-- Polynomial weight which simultaneously imposes `u < x` and evaluates
-the full shifted determinant after the second incidence factorization. -/
-def ginibreTruncatedExternalShiftWeight (m : ℕ) (x : ℝ)
-    (P : Polynomial ℝ) (u : ℝ) : ℝ :=
-  if u < x then (u - x) * ((-1 : ℝ) ^ m * P.eval x) else 0
-
-theorem ginibreTruncatedExternalShiftWeight_charpoly
-    (m : ℕ) (x : ℝ) (A : RSqMat m) (u : ℝ) :
-    ginibreTruncatedExternalShiftWeight m x
-        (Matrix.charpoly (Matrix.of A)) u =
-      if u < x then
-        (u - x) * (A - x • (1 : RSqMat m)).det else 0 := by
-  unfold ginibreTruncatedExternalShiftWeight
-  by_cases hux : u < x
-  · rw [if_pos hux, if_pos hux,
-      det_sub_smul_one_eq_neg_one_pow_mul_charpoly_eval]
-  · rw [if_neg hux, if_neg hux]
-
-theorem ginibreTruncatedExternalShiftWeight_incidence
-    {m : ℕ} (q : GinibreIncidenceCoordinates m) (x : ℝ) :
-    ginibreTruncatedExternalShiftWeight m x
-        (Matrix.charpoly (Matrix.of (ginibreIncidenceDeflatedBlock q)))
-        (ginibreIncidenceEigenvalue q) =
-      if ginibreIncidenceEigenvalue q < x then
-        ((show RSqMat (m + 1) from
-          ginibreCoordinatesFinMatrix (ginibreIncidenceChart q)) -
-            x • (1 : RSqMat (m + 1))).det
-      else 0 := by
-  rw [ginibreTruncatedExternalShiftWeight_charpoly]
-  by_cases hux : ginibreIncidenceEigenvalue q < x
-  · rw [if_pos hux, if_pos hux,
-      det_ginibreIncidenceFull_sub_externalShift]
-  · rw [if_neg hux, if_neg hux]
 
 /-- Matrix-only coordinate-density bridge for an arbitrary observable. -/
 theorem integral_realGinibre_eq_incidenceCoordinateDensity
@@ -932,6 +872,6 @@ theorem integral_realGinibre_det_mul_alternatingBelow_eq_factor_mul_slice
         simpa [J, H] using
           integral_ginibreSignedTwoRootNuisance_eq_slice m x]
 
-end
-
 end NumStability
+
+end

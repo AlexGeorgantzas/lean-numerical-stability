@@ -1,22 +1,25 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import NumStability.Algorithms.TestMatrices.Higham28
+import NumStability.Source.Higham.Chapter28.Section04.Pascal.Pascal
 
-/-! # Higham Chapter 28: the Pascal cube root of the identity
+/-!
+# Higham28Pascal (compatibility module)
 
-This module formalizes the matrix returned by MATLAB's `pascal(n,2)` as the
-clockwise rotation of Higham's signed Pascal involution, with the prescribed
-parity sign, and proves the printed all-orders identity `T³ = I`.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28Pascal`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
 
 namespace NumStability
 
 open scoped BigOperators
+
 open Polynomial
 
 /-- The polynomial form of the alternating binomial convolution needed for
@@ -130,19 +133,6 @@ private theorem rotatedPascalChooseSum
       ring
     _ = Nat.choose j (N - i) := h
 
-/-- The clockwise rotation of Higham's signed Pascal involution, before the
-parity correction used by `pascal(n,2)`. -/
-noncomputable def rotatedSignedPascal (n : ℕ) : RSqMat n :=
-  fun i j => signedPascal n (Fin.rev j) i
-
-@[simp]
-theorem rotatedSignedPascal_apply {n : ℕ} (i j : Fin n) :
-    rotatedSignedPascal n i j =
-      (-1 : ℝ) ^ i.val * Nat.choose (n - 1 - j.val) i.val := by
-  simp only [rotatedSignedPascal, signedPascal, Fin.rev]
-  have hsub : n - (j.val + 1) = n - 1 - j.val := by omega
-  rw [hsub]
-
 /-- Exact entry formula for the square of the rotated signed Pascal matrix. -/
 theorem rotatedSignedPascal_square_apply
     {n : ℕ} (i j : Fin n) :
@@ -231,30 +221,6 @@ theorem rotatedSignedPascal_cube (n : ℕ) :
       · have hrev : Fin.rev j ≠ Fin.rev i :=
           Fin.rev_injective.ne (Ne.symm hij)
         simp [hij, hrev]
-
-/-- Higham, 2nd ed., Section 28.4, pp. 520-521: `pascal(n,2)` is obtained by
-rotating the signed Pascal involution clockwise and multiplying by `-1` when
-`n` is even.  The parity factor `(-1)^(n+1)` expresses exactly that rule. -/
-noncomputable def pascalIdentityCubeRootCandidate (n : ℕ) : RSqMat n :=
-  fun i j => (-1 : ℝ) ^ (n + 1) * signedPascal n (Fin.rev j) i
-
-/-- Closed entry formula for the rotated signed-Pascal candidate. -/
-@[simp]
-theorem pascalIdentityCubeRootCandidate_apply
-    {n : ℕ} (i j : Fin n) :
-    pascalIdentityCubeRootCandidate n i j =
-      (-1 : ℝ) ^ (n + 1 + i.val) *
-        Nat.choose (n - 1 - j.val) i.val := by
-  simp only [pascalIdentityCubeRootCandidate, signedPascal, Fin.rev]
-  have hsub : n - (j.val + 1) = n - 1 - j.val := by omega
-  rw [hsub, pow_add]
-  ring
-
-theorem pascalIdentityCubeRootCandidate_eq_smul (n : ℕ) :
-    pascalIdentityCubeRootCandidate n =
-      (-1 : ℝ) ^ (n + 1) • rotatedSignedPascal n := by
-  ext i j
-  rfl
 
 /-- Higham's rotated signed-Pascal matrix is a cube root of the identity for
 every order, including the empty order. -/

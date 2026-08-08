@@ -1,13 +1,31 @@
+import Mathlib.LinearAlgebra.Matrix.Charpoly.Minpoly
 import NumStability.Algorithms.TestMatrices.Higham28Contracts
 import NumStability.Analysis.JordanNormalForm
-import Mathlib.LinearAlgebra.Matrix.Charpoly.Minpoly
+import NumStability.Analysis.TestMatrices.Companion.Companion
+import NumStability.Source.Higham.Chapter28.Section06.Companion.Companion
+
+/-!
+# Higham28Companion (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28Companion`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
+
+noncomputable section
 
 namespace NumStability
 
 open scoped BigOperators ComplexConjugate
-open Matrix Module Polynomial
 
-noncomputable section
+open Matrix Module Polynomial
 
 /-- The reverse standard-basis vector used by the companion Krylov proof. -/
 private noncomputable def companionCyclicSeed (n : ℕ) (hn : 0 < n) : Fin n → ℂ :=
@@ -115,29 +133,6 @@ theorem companionCharacteristicFormula_aeval_transpose
   have hcol := congrFun hkill i
   simpa [Matrix.mulVec_single_one, A] using hcol
 
-/-- The source polynomial is monic of exactly the matrix order. -/
-theorem companionCharacteristicFormula_monic
-    (n : ℕ) (a : ℕ → ℂ) :
-    (companionCharacteristicFormula n a).Monic := by
-  apply Polynomial.monic_of_natDegree_le_of_coeff_eq_one n
-  · rw [Polynomial.natDegree_le_iff_coeff_eq_zero]
-    intro N hN
-    rw [companionCharacteristicFormula_coeff]
-    simp [ne_of_gt hN, not_lt_of_ge hN.le]
-  · rw [companionCharacteristicFormula_coeff]
-    simp
-
-theorem companionCharacteristicFormula_natDegree
-    (n : ℕ) (a : ℕ → ℂ) :
-    (companionCharacteristicFormula n a).natDegree = n := by
-  apply le_antisymm
-  · exact (Polynomial.natDegree_le_iff_coeff_eq_zero.mpr fun N hN => by
-      rw [companionCharacteristicFormula_coeff]
-      simp [ne_of_gt hN, not_lt_of_ge hN.le])
-  · apply Polynomial.le_natDegree_of_ne_zero
-    rw [companionCharacteristicFormula_coeff]
-    simp
-
 /-- The explicit companion Krylov basis forces the minimal polynomial to
 have full degree. -/
 private theorem companion_transpose_minpoly_natDegree_ge
@@ -224,12 +219,6 @@ theorem companionMatrix_charpoly
     _ = q := hchar_eq_q
     _ = companionCharacteristicFormula n a := hc_eq_q.symm
 
-/-- The source's `compan(poly(A))`: build a companion matrix from the
-nonleading coefficients of a matrix characteristic polynomial. -/
-noncomputable def companionOfMatrix
-    {n : ℕ} (M : Matrix (Fin n) (Fin n) ℂ) : Matrix (Fin n) (Fin n) ℂ :=
-  companionMatrix n (fun k => -M.charpoly.coeff k)
-
 /-- Higham, p. 523: `compan(poly(A))` has exactly the same characteristic
 polynomial, hence the same eigenvalues with algebraic multiplicity. -/
 theorem companionOfMatrix_charpoly
@@ -256,52 +245,6 @@ theorem companionOfMatrix_charpoly
       simp
       omega
 
-/-- Similarity preserves matrix rank. -/
-theorem Matrix.IsSimilar.rank_eq
-    {n : Type*} [Fintype n] [DecidableEq n]
-    {A B : Matrix n n ℂ} (h : Matrix.IsSimilar A B) :
-    A.rank = B.rank := by
-  obtain ⟨P, hP⟩ := h
-  have hPdet : IsUnit (P : Matrix n n ℂ).det := by
-    have hunit : IsUnit (P : Matrix n n ℂ) := P.isUnit
-    rw [Matrix.isUnit_iff_isUnit_det] at hunit
-    exact hunit
-  have hPidet : IsUnit (↑P⁻¹ : Matrix n n ℂ).det := by
-    have hunit : IsUnit (↑P⁻¹ : Matrix n n ℂ) := P⁻¹.isUnit
-    rw [Matrix.isUnit_iff_isUnit_det] at hunit
-    exact hunit
-  calc
-    A.rank = ((↑P⁻¹ : Matrix n n ℂ) * A).rank := by
-      symm
-      exact Matrix.rank_mul_eq_right_of_isUnit_det
-        (↑P⁻¹ : Matrix n n ℂ) A hPidet
-    _ = ((↑P⁻¹ : Matrix n n ℂ) * A * (↑P : Matrix n n ℂ)).rank := by
-      symm
-      exact Matrix.rank_mul_eq_left_of_isUnit_det
-        (↑P : Matrix n n ℂ) ((↑P⁻¹ : Matrix n n ℂ) * A) hPdet
-    _ = B.rank := congrArg Matrix.rank hP
-
-/-- Similarity preserves the scalar-shift ranks used in Higham's
-nonderogatoriness characterization. -/
-theorem Matrix.IsSimilar.rank_sub_scalar_eq
-    {n : Type*} [Fintype n] [DecidableEq n]
-    {A B : Matrix n n ℂ} (h : Matrix.IsSimilar A B) (lambda : ℂ) :
-    (A - lambda • (1 : Matrix n n ℂ)).rank =
-      (B - lambda • (1 : Matrix n n ℂ)).rank := by
-  have hs := (Matrix.IsSimilar.add_scalar (-lambda) h).rank_eq
-  have hAeq : A - lambda • (1 : Matrix n n ℂ) =
-      (-lambda) • (1 : Matrix n n ℂ) + A := by
-    ext i j
-    simp [Matrix.sub_apply, Matrix.add_apply, Matrix.smul_apply]
-    ring
-  have hBeq : B - lambda • (1 : Matrix n n ℂ) =
-      (-lambda) • (1 : Matrix n n ℂ) + B := by
-    ext i j
-    simp [Matrix.sub_apply, Matrix.add_apply, Matrix.smul_apply]
-    ring
-  rw [hAeq, hBeq]
-  exact hs
-
 /-- Higham, p. 523: every matrix similar to a companion matrix inherits the
 rank-form nonderogatoriness bound. -/
 theorem isSimilar_companion_rank_sub_scalar_ge
@@ -312,30 +255,6 @@ theorem isSimilar_companion_rank_sub_scalar_ge
   rw [h.rank_sub_scalar_eq lambda]
   exact companionMatrix_sub_scalar_rank_ge n a lambda
 
-/-- A concrete order-two counterexample to the source's printed complex
-normality characterization: `a₀=a₁=1` gives a real symmetric (hence normal)
-companion although the higher coefficient is nonzero. -/
-def companionOrderTwoNormalCounterexampleCoefficients : ℕ → ℂ :=
-  fun k => if k = 0 ∨ k = 1 then 1 else 0
-
-theorem companionOrderTwoNormalCounterexample_coeff_one :
-    companionOrderTwoNormalCounterexampleCoefficients 1 = 1 := by
-  simp [companionOrderTwoNormalCounterexampleCoefficients]
-
-theorem companionOrderTwoNormalCounterexample_isSelfAdjoint :
-    IsSelfAdjoint
-      (companionMatrix 2 companionOrderTwoNormalCounterexampleCoefficients) := by
-  rw [isSelfAdjoint_iff]
-  ext i j
-  fin_cases i <;> fin_cases j <;>
-    norm_num [companionMatrix, companionOrderTwoNormalCounterexampleCoefficients,
-      Matrix.conjTranspose_apply]
-
-theorem companionOrderTwoNormalCounterexample_isStarNormal :
-    IsStarNormal
-      (companionMatrix 2 companionOrderTwoNormalCounterexampleCoefficients) :=
-  companionOrderTwoNormalCounterexample_isSelfAdjoint.isStarNormal
+end NumStability
 
 end
-
-end NumStability

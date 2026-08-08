@@ -1,96 +1,26 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import NumStability.Algorithms.TestMatrices.Higham28GinibreAtlas
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.RootMeasurability.GinibreMultiplicity
 
-/-! # Higham Chapter 28: incidence multiplicity equals real-root count
+/-!
+# Higham28GinibreMultiplicity (compatibility module)
 
-Away from the two Haar-null exceptional events proved by the incidence and
-atlas modules, every real characteristic root has a unique regular affine
-preimage.  Its number of roots lying strictly below it gives an explicit
-finite rank label.  This module proves that the number of occupied rank sheets
-is exactly the real characteristic-root count, including algebraic
-multiplicity. -/
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreMultiplicity`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
+
+noncomputable section
 
 namespace NumStability
 
 open MeasureTheory Set
-
-noncomputable section
-
-theorem ginibre_normalized_eigenpair
-    {n : ℕ} (A : Matrix (Fin n ⊕ Unit) (Fin n ⊕ Unit) ℝ)
-    (v : Fin n ⊕ Unit → ℝ) (l : ℝ)
-    (heig : A.mulVec v = l • v) (hlast : v (Sum.inr ()) ≠ 0) :
-    let y : Fin n → ℝ := fun i => v (Sum.inl i) / v (Sum.inr ())
-    A.mulVec (ginibreAffineEigenvector y) =
-      l • ginibreAffineEigenvector y := by
-  dsimp only
-  let c := v (Sum.inr ())
-  have hc : c ≠ 0 := hlast
-  have haff : ginibreAffineEigenvector (fun i => v (Sum.inl i) / c) =
-      c⁻¹ • v := by
-    funext i
-    rcases i with i | i
-    · simp [ginibreAffineEigenvector, div_eq_inv_mul]
-    · rcases i with ⟨⟩
-      simp [ginibreAffineEigenvector, c, hc]
-  rw [haff, Matrix.mulVec_smul, heig]
-  ext i
-  simp [Pi.smul_apply]
-  ring
-
-theorem exists_regular_incidence_preimage_of_root
-    {n : ℕ} (p : GinibreIncidenceCoordinates n) (l : ℝ)
-    (hboundary : p ∉ ginibreAffineBoundaryEigenpairSet n)
-    (hcritical : p ∉
-      ginibreIncidenceChart '' (ginibreIncidenceRegularSet n)ᶜ)
-    (hroot : (ginibreCoordinatesMatrix p).charpoly.IsRoot l) :
-    ∃ q : GinibreIncidenceCoordinates n,
-      q ∈ ginibreIncidenceRegularSet n ∧
-      ginibreIncidenceChart q = p ∧
-      ginibreIncidenceEigenvalue q = l := by
-  have hhas : Module.End.HasEigenvalue
-      (Matrix.toLin' (ginibreCoordinatesMatrix p)) l := by
-    rw [Module.End.hasEigenvalue_iff_isRoot_charpoly,
-      Matrix.charpoly_toLin']
-    exact hroot
-  obtain ⟨v, hv⟩ := hhas.exists_hasEigenvector
-  have hv_ne : v ≠ 0 := hv.2
-  have heig : (ginibreCoordinatesMatrix p).mulVec v = l • v := by
-    simpa [Matrix.toLin'_apply] using hv.apply_eq_smul
-  have hlast : v (Sum.inr ()) ≠ 0 := by
-    intro hz
-    apply hboundary
-    exact ⟨v, l, hv_ne, heig, hz⟩
-  let y : Fin n → ℝ := fun i => v (Sum.inl i) / v (Sum.inr ())
-  let q : GinibreIncidenceCoordinates n := (p.1, y)
-  have heig' : (ginibreCoordinatesMatrix p).mulVec
-      (ginibreAffineEigenvector y) = l • ginibreAffineEigenvector y :=
-    ginibre_normalized_eigenpair (ginibreCoordinatesMatrix p) v l heig hlast
-  have hlam : ginibreIncidenceEigenvalue q = l :=
-    ginibreIncidenceEigenvalue_eq_of_affine_eigenpair p y l heig'
-  have hchart : ginibreIncidenceChart q = p := by
-    apply (ginibreIncidenceChart_fiber_iff_affine_eigenpair p y).2
-    rw [hlam]
-    exact heig'
-  have hreg : q ∈ ginibreIncidenceRegularSet n := by
-    by_contra hq
-    apply hcritical
-    exact ⟨q, hq, hchart⟩
-  exact ⟨q, hreg, hchart, hlam⟩
-
-/-- Number of regular affine-chart sheets above a matrix coordinate point,
-after splitting the chart by real-root rank. -/
-noncomputable def ginibreRegularFiberMultiplicity (n : ℕ)
-    (p : GinibreIncidenceCoordinates n) : ℕ := by
-  classical
-  exact ∑ k : Fin (n + 2),
-    if p ∈ ginibreIncidenceChart '' ginibreIncidenceRankPiece n k then 1 else 0
 
 theorem ginibreRegularFiberMultiplicity_eq_realEigenvalueCount
     {n : ℕ} (p : GinibreIncidenceCoordinates n)
@@ -186,5 +116,6 @@ theorem ginibreRegularFiberMultiplicity_eq_realEigenvalueCount
       simpa [R] using Multiset.toFinset_card_of_nodup hnodup
     _ = realEigenvalueCount (n + 1) (ginibreCoordinatesFinMatrix p) := rfl
 
-end
 end NumStability
+
+end

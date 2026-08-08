@@ -1,31 +1,28 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
+import Mathlib.MeasureTheory.Measure.Prod
 import NumStability.Algorithms.TestMatrices.Higham28Probability
 import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
-import Mathlib.MeasureTheory.Measure.Prod
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreDeterminantMoment
 
-/-! # Higham Chapter 28: the Ginibre absolute characteristic moment
+/-!
+# Higham28GinibreDeterminantMoment (compatibility module)
 
-The eigenvalue-inflation reduction naturally introduces
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreDeterminantMoment`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
 
-`Dₙ = 𝔼_{Gₙ,λ} |det (Gₙ - λ I)|`,
-
-where `Gₙ` is a standard real-Ginibre matrix and `λ` is an independent
-standard real Gaussian.  This file defines that sequence, verifies its first
-two values without assumptions, and records the exact dimension-shift of the
-normalizing factor in the inflation formula.
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
+
+noncomputable section
 
 namespace NumStability
 
 open MeasureTheory ProbabilityTheory
-
-noncomputable section
 
 local instance ginibreDeterminantMomentMeasurableSpace (n : ℕ) :
     MeasurableSpace (RSqMat n) := MeasurableSpace.pi
@@ -42,49 +39,6 @@ noncomputable def realGinibreAbsoluteCharacteristicMoment (n : ℕ) : ℝ :=
   ∫ p : RSqMat n × ℝ,
     |(p.1 - p.2 • (1 : RSqMat n)).det|
     ∂(realGinibreMeasure n).prod (gaussianReal 0 1)
-
-/-- The scalar normalization multiplying `Dₙ₋₁` in the classical
-eigenvalue-inflation determinant integral for an `n × n` matrix. -/
-noncomputable def ginibreCorollary31Factor (n : ℕ) : ℝ :=
-  Real.sqrt Real.pi /
-    (Real.rpow 2 (((n : ℝ) - 1) / 2) * Real.Gamma ((n : ℝ) / 2))
-
-/-- The explicit scalar increment that a two-step recurrence for `Dₘ` must
-produce after the eigenvalue-inflation normalization is removed.  This is a
-coefficient definition, not an assertion that the determinant moments obey
-the recurrence. -/
-noncomputable def ginibreAbsoluteCharacteristicMomentIncrement (m : ℕ) : ℝ :=
-  Real.rpow 2 ((3 - (m : ℝ)) / 2) *
-    Real.Gamma ((m : ℝ) - 1 / 2) /
-      (Real.sqrt Real.pi * Real.Gamma ((m : ℝ) / 2))
-
-/-- Raising the ambient matrix dimension by two divides the inflation
-normalization by the old dimension. -/
-theorem ginibreCorollary31Factor_shift_two (m : ℕ) (hm : 0 < m) :
-    ginibreCorollary31Factor m =
-      (m : ℝ) * ginibreCorollary31Factor (m + 2) := by
-  have hmR : (0 : ℝ) < m := by exact_mod_cast hm
-  have hmhalf : (m : ℝ) / 2 ≠ 0 := by positivity
-  have hpow : Real.rpow 2 ((((m + 2 : ℕ) : ℝ) - 1) / 2) =
-      2 * Real.rpow 2 (((m : ℝ) - 1) / 2) := by
-    rw [show (((m + 2 : ℕ) : ℝ) - 1) / 2 =
-      ((m : ℝ) - 1) / 2 + 1 by norm_num; ring]
-    change (2 : ℝ) ^ (((m : ℝ) - 1) / 2 + 1) =
-      2 * (2 : ℝ) ^ (((m : ℝ) - 1) / 2)
-    rw [Real.rpow_add (by norm_num : (0 : ℝ) < 2), Real.rpow_one]
-    ring
-  have hgamma : Real.Gamma (((m + 2 : ℕ) : ℝ) / 2) =
-      ((m : ℝ) / 2) * Real.Gamma ((m : ℝ) / 2) := by
-    rw [show (((m + 2 : ℕ) : ℝ) / 2) = (m : ℝ) / 2 + 1 by
-      norm_num; ring]
-    rw [Real.Gamma_add_one hmhalf]
-  unfold ginibreCorollary31Factor
-  rw [hpow, hgamma]
-  have hG : Real.Gamma ((m : ℝ) / 2) ≠ 0 :=
-    ne_of_gt (Real.Gamma_pos_of_pos (div_pos hmR (by norm_num)))
-  have hp : Real.rpow 2 (((m : ℝ) - 1) / 2) ≠ 0 :=
-    ne_of_gt (Real.rpow_pos_of_pos (by norm_num) _)
-  field_simp
 
 /-- The only entry of a standard `1 × 1` real-Ginibre matrix has the
 standard real Gaussian law. -/
@@ -158,5 +112,6 @@ theorem realGinibreAbsoluteCharacteristicMoment_one :
               simpa [μ, F] using realGinibreMeasure_one_prod_map_entry]
     _ = 2 / Real.sqrt Real.pi := integral_abs_standardGaussian_difference
 
-end
 end NumStability
+
+end

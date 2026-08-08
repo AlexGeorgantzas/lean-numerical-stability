@@ -1,38 +1,30 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
-import NumStability.Algorithms.TestMatrices.Higham28GinibreMultiplicity
 import Mathlib.Analysis.Polynomial.Basic
 import Mathlib.FieldTheory.IsRealClosed.Basic
+import NumStability.Algorithms.TestMatrices.Higham28GinibreMultiplicity
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedRank
 
-/-! # Higham Chapter 28: signed root-rank decomposition
+/-!
+# Higham28GinibreSignedRank (compatibility module)
 
-This file retains the parity of the rank of a distinguished real root.  The
-finite alternating-rank identity replaces the unsigned root count by one- and
-two-root signed sums.  The polynomial results below identify the rank sign
-with the sign of the deflated characteristic determinant, allowing an
-incidence Jacobian's absolute value to be removed at regular points.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreSignedRank`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
+
+noncomputable section
 
 namespace NumStability
 
 open Filter MeasureTheory ProbabilityTheory Set
+
 open scoped BigOperators ENNReal
-
-noncomputable section
-
-/-- Alternating sum over the occupied root ranks `0, ..., r-1`. -/
-def ginibreAlternatingCount (r : ℕ) : ℝ :=
-  ∑ j ∈ Finset.range r, (-1 : ℝ) ^ j
-
-/-- Alternating sum over ordered pairs of occupied root ranks. -/
-def ginibreAlternatingPairCount (r : ℕ) : ℝ :=
-  ∑ j ∈ Finset.range r,
-    ∑ i ∈ Finset.range j, (-1 : ℝ) ^ (i + j)
 
 private theorem two_mul_alternating_range (r : ℕ) :
     2 * (∑ i ∈ Finset.range r, (-1 : ℝ) ^ i) =
@@ -86,8 +78,6 @@ theorem natCast_eq_alternating_sub_two_pairs (r : ℕ) :
       exact one_eq_rankSign_sub_pairPrefix j
     _ = _ := by
       rw [Finset.sum_sub_distrib, Finset.mul_sum]
-
-/-! ## The sign of a real polynomial between its roots -/
 
 private theorem Polynomial.eval_pos_of_monic_of_roots_eq_zero
     {P : Polynomial ℝ} (hmonic : P.Monic) (hroots : P.roots = 0)
@@ -282,8 +272,6 @@ theorem Polynomial.negOnePow_card_roots_lt_mul_abs_eval
             _ = (r - x) * ((-1 : ℝ) ^ Q.natDegree * Q.eval x) := by
               rw [ihQ]
 
-/-! ## Removing the incidence Jacobian's absolute value -/
-
 /-- At a regular incidence point, the parity of the marked root's rank is
 exactly the sign of the deflated characteristic determinant. -/
 theorem neg_one_pow_rootRank_mul_abs_det
@@ -430,5 +418,6 @@ theorem lintegral_ginibreIncidence_rankPiece_eq_image
     (fun q hq => (hasFDerivAt_ginibreIncidenceChart q).hasFDerivWithinAt)
     (injOn_ginibreIncidenceChart_rankPiece m k) g).symm
 
-end
 end NumStability
+
+end

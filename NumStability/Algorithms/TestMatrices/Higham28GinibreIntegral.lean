@@ -1,28 +1,27 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import NumStability.Algorithms.TestMatrices.Higham28GinibreMultiplicity
 
-/-! # Higham Chapter 28: unconditional Ginibre incidence integral
+/-!
+# Higham28GinibreIntegral (compatibility module)
 
-The finite rank-sheet decomposition of the regular incidence chart is
-measurable.  Combining its change-of-variables identity with the null affine
-boundary and critical-value events proves that regular incidence multiplicity
-agrees almost everywhere with the full algebraic real-eigenvalue count.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreIntegral`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
 
-The final theorem is the exact nonnegative integral identity needed before
-specializing the integrand to the real-Ginibre Gaussian density. -/
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
+
+noncomputable section
 
 namespace NumStability
 
 open MeasureTheory MeasureTheory.Measure Set
-open scoped ENNReal BigOperators
 
-noncomputable section
+open scoped ENNReal BigOperators
 
 local instance (n : ℕ) :
     StandardBorelSpace (GinibreIncidenceNuisance n) :=
@@ -115,5 +114,6 @@ theorem lintegral_ginibreIncidence_regular_eq_rootCount
     with p hp
   rw [hp]
 
-end
 end NumStability
+
+end

@@ -1,29 +1,27 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import NumStability.Algorithms.TestMatrices.Higham28GinibreIntegral
 
-/-! # Higham Chapter 28: Gaussian Ginibre determinant integral
+/-!
+# Higham28GinibreDeterminantIntegral (compatibility module)
 
-This file specializes the unconditional incidence-area identity to the
-standard real-Ginibre density.  The regular-set restriction disappears:
-outside the regular set the incidence Jacobian determinant is zero.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreDeterminantIntegral`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
 
-The result is the exact determinant-integral reduction preceding the
-remaining analytic evaluation.  It does not assume a finite-dimensional
-expectation formula or a recurrence for that expectation.
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
+
+noncomputable section
 
 namespace NumStability
 
 open MeasureTheory ProbabilityTheory Set
-open scoped ENNReal BigOperators
 
-noncomputable section
+open scoped ENNReal BigOperators
 
 /-- The Gaussian-weighted real-root count in matrix coordinates is exactly
 the unrestricted incidence integral of the absolute deflated characteristic
@@ -66,5 +64,6 @@ theorem lintegral_ginibreIncidence_gaussian_eq_rootCount
     rw [habs]
     simp
 
-end
 end NumStability
+
+end

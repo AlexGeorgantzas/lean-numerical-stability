@@ -1,139 +1,30 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import NumStability.Algorithms.TestMatrices.Higham28GinibreSignedRank
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedRankTransfer
 
-/-! # Higham Chapter 28: signed rank-transfer helpers
+/-!
+# Higham28GinibreSignedRankTransfer (compatibility module)
 
-This file supplies the finite rank identities used by the iterated signed
-incidence argument.  Besides collapsing a finite signed sheet sum, it records
-that the rank of a marked root is the number of roots of its deflated block
-below the mark.  A truncated rank sheet then parametrizes exactly the roots
-below an externally fixed threshold, away from the existing exceptional
-sets.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreSignedRankTransfer`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
+
+noncomputable section
 
 namespace NumStability
 
 open MeasureTheory Set
+
 open scoped BigOperators
 
-noncomputable section
-
 local instance (p : Prop) : Decidable p := Classical.propDecidable p
-
-/-- A finite signed prefix indexed by `Fin M` is the alternating count of the
-prefix.  The weak bound is convenient when the ambient finite type has no
-unused endpoint. -/
-theorem sum_fin_ite_lt_eq_ginibreAlternatingCount
-    (M r : ℕ) (hr : r ≤ M) :
-    (∑ k : Fin M, if k.val < r then (-1 : ℝ) ^ k.val else 0) =
-      ginibreAlternatingCount r := by
-  change (∑ k : Fin M,
-    (fun j : ℕ => if j < r then (-1 : ℝ) ^ j else 0) k) = _
-  rw [Fin.sum_univ_eq_sum_range
-    (fun j : ℕ => if j < r then (-1 : ℝ) ^ j else 0) M]
-  unfold ginibreAlternatingCount
-  calc
-    (∑ j ∈ Finset.range M, if j < r then (-1 : ℝ) ^ j else 0) =
-        ∑ j ∈ Finset.range r,
-          if j < r then (-1 : ℝ) ^ j else 0 := by
-      symm
-      apply Finset.sum_subset (Finset.range_mono hr)
-      intro k hkM hkr
-      simp only [Finset.mem_range] at hkM hkr
-      simp [hkr]
-    _ = ∑ j ∈ Finset.range r, (-1 : ℝ) ^ j := by
-      apply Finset.sum_congr rfl
-      intro j hj
-      simp only [Finset.mem_range] at hj
-      simp [hj]
-
-/-- The ordered-pair alternating count is the signed sum of the one-root
-alternating prefixes at the second root. -/
-theorem ginibreAlternatingPairCount_eq_sum_rankPrefixes (r : ℕ) :
-    ginibreAlternatingPairCount r =
-      ∑ j ∈ Finset.range r,
-        (-1 : ℝ) ^ j * ginibreAlternatingCount j := by
-  unfold ginibreAlternatingPairCount ginibreAlternatingCount
-  apply Finset.sum_congr rfl
-  intro j hj
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro i hi
-  rw [pow_add]
-  ring
-
-/-- Finite-sheet version of the preceding pair-prefix identity. -/
-theorem sum_fin_ite_lt_eq_ginibreAlternatingPairCount
-    (M r : ℕ) (hr : r ≤ M) :
-    (∑ k : Fin M, if k.val < r then
-        (-1 : ℝ) ^ k.val * ginibreAlternatingCount k.val else 0) =
-      ginibreAlternatingPairCount r := by
-  change (∑ k : Fin M,
-    (fun j : ℕ => if j < r then
-      (-1 : ℝ) ^ j * ginibreAlternatingCount j else 0) k) = _
-  rw [Fin.sum_univ_eq_sum_range
-    (fun j : ℕ => if j < r then
-      (-1 : ℝ) ^ j * ginibreAlternatingCount j else 0) M]
-  rw [ginibreAlternatingPairCount_eq_sum_rankPrefixes]
-  calc
-    (∑ j ∈ Finset.range M,
-        if j < r then
-          (-1 : ℝ) ^ j * ginibreAlternatingCount j else 0) =
-        ∑ j ∈ Finset.range r,
-          if j < r then
-            (-1 : ℝ) ^ j * ginibreAlternatingCount j else 0 := by
-      symm
-      apply Finset.sum_subset (Finset.range_mono hr)
-      intro k hkM hkr
-      simp only [Finset.mem_range] at hkM hkr
-      simp [hkr]
-    _ = ∑ j ∈ Finset.range r,
-        (-1 : ℝ) ^ j * ginibreAlternatingCount j := by
-      apply Finset.sum_congr rfl
-      intro j hj
-      simp only [Finset.mem_range] at hj
-      simp [hj]
-
-/-- The rank of the marked root in the full incidence matrix is already the
-number of real roots of the deflated block strictly below that mark.  No
-regularity hypothesis is needed. -/
-theorem ginibreIncidenceRootRank_eq_deflatedBelowCount
-    {m : ℕ} (q : GinibreIncidenceCoordinates m) :
-    ginibreIncidenceRootRank q =
-      realEigenvalueBelowCount
-        (ginibreIncidenceDeflatedBlock q, ginibreIncidenceEigenvalue q) := by
-  let D : RSqMat m := ginibreIncidenceDeflatedBlock q
-  let l : ℝ := ginibreIncidenceEigenvalue q
-  let P : Polynomial ℝ := D.charpoly
-  have hPne : P ≠ 0 := (Matrix.charpoly_monic D).ne_zero
-  have hlinear :
-      (Polynomial.X - Polynomial.C l : Polynomial ℝ) ≠ 0 :=
-    Polynomial.X_sub_C_ne_zero l
-  have hfullRoots :
-      (ginibreIncidenceMatrix q).charpoly.roots = P.roots + {l} := by
-    rw [ginibreIncidenceMatrix_charpoly_factor]
-    change (D.charpoly * (Polynomial.X - Polynomial.C l)).roots = _
-    rw [Polynomial.roots_mul (mul_ne_zero hPne hlinear),
-      Polynomial.roots_X_sub_C]
-  unfold ginibreIncidenceRootRank realEigenvalueBelowCount
-  rw [ginibreCoordinatesFinMatrix_charpoly,
-    ginibreCoordinatesMatrix_chart, hfullRoots,
-    Multiset.filter_add, Multiset.card_add,
-    Multiset.filter_singleton, if_neg (lt_irrefl l)]
-  rfl
-
-/-- The part of the `k`th regular incidence sheet whose marked root lies
-strictly below an external threshold. -/
-def ginibreIncidenceRankPieceBelow (m : ℕ) (k : Fin (m + 2)) (x : ℝ) :
-    Set (GinibreIncidenceCoordinates m) :=
-  ginibreIncidenceRankPiece m k ∩
-    {q | ginibreIncidenceEigenvalue q < x}
 
 theorem measurableSet_ginibreIncidenceRankPieceBelow
     (m : ℕ) (k : Fin (m + 2)) (x : ℝ) :
@@ -315,5 +206,6 @@ theorem sum_ginibreIncidenceRankPieceBelow_image_sign_eq_alternatingCount
     (ginibreCoordinatesFinMatrix p, x)
   omega
 
-end
 end NumStability
+
+end

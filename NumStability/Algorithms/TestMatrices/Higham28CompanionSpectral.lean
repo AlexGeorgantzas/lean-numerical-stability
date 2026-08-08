@@ -1,18 +1,29 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
 import NumStability.Algorithms.TestMatrices.Higham28Companion
+import NumStability.Analysis.TestMatrices.Companion.CompanionSpectral
+import NumStability.Source.Higham.Chapter28.Section06.Companion.CompanionSpectral
+
+/-!
+# Higham28CompanionSpectral (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28CompanionSpectral`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
+
+noncomputable section
 
 namespace NumStability
 
 open scoped BigOperators ComplexConjugate
-open Matrix Module Polynomial
 
-noncomputable section
+open Matrix Module Polynomial
 
 private noncomputable def companionReverseCoefficients
     (n : ℕ) (a : ℕ → ℂ) : Fin n → ℂ :=
@@ -551,19 +562,6 @@ theorem companion_conjTranspose_mul_self_charpoly
           C ((‖a 0‖ ^ 2 : ℝ) : ℂ)) := by
       rw [companionExceptionalCore_charpoly]
 
-/-- The canonical squared singular values of an order-at-least-two companion:
-the Hermitian eigenvalues of `CᴴC`. -/
-noncomputable def companionSquaredSingularValues
-    (m : ℕ) (a : ℕ → ℂ) : Fin (m + 2) → ℝ :=
-  (Matrix.isHermitian_conjTranspose_mul_self
-    (companionMatrix (m + 2) a)).eigenvalues
-
-theorem companionSquaredSingularValues_nonneg
-    (m : ℕ) (a : ℕ → ℂ) (i : Fin (m + 2)) :
-    0 ≤ companionSquaredSingularValues m a i := by
-  exact Matrix.eigenvalues_conjTranspose_mul_self_nonneg
-    (companionMatrix (m + 2) a) i
-
 /-- Every canonical squared singular value is `1` or obeys the two-root
 quadratic printed by Higham. -/
 theorem companionSquaredSingularValues_eq_one_or_exceptional
@@ -592,73 +590,6 @@ theorem companionSquaredSingularValues_eq_one_or_exceptional
   simpa [C, G] using
     companion_conjTranspose_mul_self_eigenvalue_eq_one_or_exceptional
       m a (companionSquaredSingularValues m a i : ℂ) v hv heig
-
-noncomputable def companionExceptionalDiscriminant
-    (m : ℕ) (a : ℕ → ℂ) : ℝ :=
-  companionSingularAlpha (m + 2) a ^ 2 - 4 * ‖a 0‖ ^ 2
-
-noncomputable def companionExceptionalSquaredSingularValuePlus
-    (m : ℕ) (a : ℕ → ℂ) : ℝ :=
-  (companionSingularAlpha (m + 2) a +
-    Real.sqrt (companionExceptionalDiscriminant m a)) / 2
-
-noncomputable def companionExceptionalSquaredSingularValueMinus
-    (m : ℕ) (a : ℕ → ℂ) : ℝ :=
-  (companionSingularAlpha (m + 2) a -
-    Real.sqrt (companionExceptionalDiscriminant m a)) / 2
-
-theorem companionExceptionalDiscriminant_nonneg
-    (m : ℕ) (a : ℕ → ℂ) :
-    0 ≤ companionExceptionalDiscriminant m a := by
-  have hmem : 0 ∈ Finset.range (m + 2) := by simp
-  have hsum : ‖a 0‖ ^ 2 ≤
-      ∑ k ∈ Finset.range (m + 2), ‖a k‖ ^ 2 := by
-    exact Finset.single_le_sum (fun k hk => sq_nonneg ‖a k‖) hmem
-  have halpha : 1 + ‖a 0‖ ^ 2 ≤ companionSingularAlpha (m + 2) a := by
-    unfold companionSingularAlpha
-    linarith
-  have hq : 0 ≤ ‖a 0‖ ^ 2 := sq_nonneg _
-  unfold companionExceptionalDiscriminant
-  nlinarith [sq_nonneg (‖a 0‖ ^ 2 - 1)]
-
-theorem companionExceptionalSquaredSingularValuePlus_isRoot
-    (m : ℕ) (a : ℕ → ℂ) :
-    companionExceptionalSquaredSingularValuePlus m a ^ 2 -
-        companionSingularAlpha (m + 2) a *
-          companionExceptionalSquaredSingularValuePlus m a + ‖a 0‖ ^ 2 = 0 := by
-  have hsqrt := Real.sq_sqrt (companionExceptionalDiscriminant_nonneg m a)
-  unfold companionExceptionalSquaredSingularValuePlus
-  unfold companionExceptionalDiscriminant at hsqrt ⊢
-  nlinarith
-
-theorem companionExceptionalSquaredSingularValueMinus_isRoot
-    (m : ℕ) (a : ℕ → ℂ) :
-    companionExceptionalSquaredSingularValueMinus m a ^ 2 -
-        companionSingularAlpha (m + 2) a *
-          companionExceptionalSquaredSingularValueMinus m a + ‖a 0‖ ^ 2 = 0 := by
-  have hsqrt := Real.sq_sqrt (companionExceptionalDiscriminant_nonneg m a)
-  unfold companionExceptionalSquaredSingularValueMinus
-  unfold companionExceptionalDiscriminant at hsqrt ⊢
-  nlinarith
-
-theorem companionExceptionalSquaredSingularValues_sum
-    (m : ℕ) (a : ℕ → ℂ) :
-    companionExceptionalSquaredSingularValuePlus m a +
-        companionExceptionalSquaredSingularValueMinus m a =
-      companionSingularAlpha (m + 2) a := by
-  unfold companionExceptionalSquaredSingularValuePlus
-    companionExceptionalSquaredSingularValueMinus
-  ring
-
-theorem companionExceptionalSquaredSingularValues_mul
-    (m : ℕ) (a : ℕ → ℂ) :
-    companionExceptionalSquaredSingularValuePlus m a *
-        companionExceptionalSquaredSingularValueMinus m a = ‖a 0‖ ^ 2 := by
-  have hsqrt := Real.sq_sqrt (companionExceptionalDiscriminant_nonneg m a)
-  unfold companionExceptionalSquaredSingularValuePlus
-    companionExceptionalSquaredSingularValueMinus
-  unfold companionExceptionalDiscriminant at hsqrt ⊢
-  nlinarith
 
 private theorem companion_two_sub_alpha_le_exceptional_sqrt
     (m : ℕ) (a : ℕ → ℂ) :
@@ -724,36 +655,6 @@ private theorem companion_alpha_sub_two_le_exceptional_sqrt
           (companionSingularAlpha (m + 2) a ^ 2 - 4 * ‖a 0‖ ^ 2) +
         (companionSingularAlpha (m + 2) a - 2))]
 
-theorem companionExceptionalSquaredSingularValueMinus_nonneg
-    (m : ℕ) (a : ℕ → ℂ) :
-    0 ≤ companionExceptionalSquaredSingularValueMinus m a := by
-  have hq : 0 ≤ ‖a 0‖ ^ 2 := sq_nonneg _
-  have halpha : 0 ≤ companionSingularAlpha (m + 2) a := by
-    unfold companionSingularAlpha
-    positivity
-  have hr0 :
-      0 ≤ Real.sqrt (companionExceptionalDiscriminant m a) :=
-    Real.sqrt_nonneg _
-  have hr2 := Real.sq_sqrt (companionExceptionalDiscriminant_nonneg m a)
-  unfold companionExceptionalDiscriminant at hr0 hr2
-  have hrle :
-      Real.sqrt
-          (companionSingularAlpha (m + 2) a ^ 2 - 4 * ‖a 0‖ ^ 2) ≤
-        companionSingularAlpha (m + 2) a := by
-    have hsquare :
-        Real.sqrt
-              (companionSingularAlpha (m + 2) a ^ 2 - 4 * ‖a 0‖ ^ 2) ^ 2 ≤
-          companionSingularAlpha (m + 2) a ^ 2 := by
-      rw [hr2]
-      nlinarith
-    nlinarith [sq_nonneg
-      (Real.sqrt
-          (companionSingularAlpha (m + 2) a ^ 2 - 4 * ‖a 0‖ ^ 2) +
-        companionSingularAlpha (m + 2) a)]
-  unfold companionExceptionalSquaredSingularValueMinus
-  unfold companionExceptionalDiscriminant
-  exact div_nonneg (sub_nonneg.mpr hrle) (by norm_num)
-
 theorem companionExceptionalSquaredSingularValueMinus_le_one
     (m : ℕ) (a : ℕ → ℂ) :
     companionExceptionalSquaredSingularValueMinus m a ≤ 1 := by
@@ -769,39 +670,6 @@ theorem one_le_companionExceptionalSquaredSingularValuePlus
   unfold companionExceptionalSquaredSingularValuePlus
   rw [le_div_iff₀ (by norm_num : (0 : ℝ) < 2)]
   linarith
-
-theorem companionExceptionalSquaredSingularValueMinus_le_plus
-    (m : ℕ) (a : ℕ → ℂ) :
-    companionExceptionalSquaredSingularValueMinus m a ≤
-      companionExceptionalSquaredSingularValuePlus m a := by
-  have hsqrt :
-      0 ≤ Real.sqrt (companionExceptionalDiscriminant m a) :=
-    Real.sqrt_nonneg _
-  unfold companionExceptionalSquaredSingularValueMinus
-    companionExceptionalSquaredSingularValuePlus
-  linarith
-
-/-- The exceptional quadratic is exactly the product of Higham's two
-displayed linear factors. -/
-theorem companionExceptionalQuadratic_eq_mul
-    (m : ℕ) (a : ℕ → ℂ) :
-    X ^ 2 - C (companionSingularAlpha (m + 2) a : ℂ) * X +
-        C ((‖a 0‖ ^ 2 : ℝ) : ℂ) =
-      (X - C (companionExceptionalSquaredSingularValuePlus m a : ℂ)) *
-        (X - C (companionExceptionalSquaredSingularValueMinus m a : ℂ)) := by
-  have hsum :
-      (companionExceptionalSquaredSingularValuePlus m a : ℂ) +
-          companionExceptionalSquaredSingularValueMinus m a =
-        (companionSingularAlpha (m + 2) a : ℂ) := by
-    exact_mod_cast companionExceptionalSquaredSingularValues_sum m a
-  have hmul :
-      (companionExceptionalSquaredSingularValuePlus m a : ℂ) *
-          companionExceptionalSquaredSingularValueMinus m a =
-        ((‖a 0‖ ^ 2 : ℝ) : ℂ) := by
-    exact_mod_cast companionExceptionalSquaredSingularValues_mul m a
-  rw [← hsum, ← hmul]
-  rw [Polynomial.C_add, Polynomial.C_mul]
-  ring
 
 /-- Exact linear-factor form of the companion Gram characteristic
 polynomial. -/
@@ -976,12 +844,6 @@ theorem companionSquaredSingularValues_eq_one_or_eq_plus_or_eq_minus
   · exact Or.inl (by linarith)
   · exact Or.inr (by linarith)
 
-/-- Singular values themselves, obtained as the nonnegative square roots of
-the canonical Gram eigenvalues. -/
-noncomputable def companionSingularValues
-    (m : ℕ) (a : ℕ → ℂ) (i : Fin (m + 2)) : ℝ :=
-  Real.sqrt (companionSquaredSingularValues m a i)
-
 /-- Exact singular-value multiset corresponding to the squared-value
 factorization: `m` unit singular values and the two displayed exceptional
 square roots, with degeneracies preserved. -/
@@ -1017,42 +879,6 @@ theorem companionSingularValues_eq_one_or_eq_exceptional
   · right
     right
     simp [companionSingularValues, h]
-
-/-- Exact order-two correction to the false normality characterization on
-Higham p. 523. At order two, normality permits a nonzero higher coefficient:
-the complete condition is `|a₀|²=1` together with
-`conj(a₁) a₀ = a₁`. -/
-theorem companion_orderTwo_isStarNormal_iff (a : ℕ → ℂ) :
-    IsStarNormal (companionMatrix 2 a) ↔
-      star (a 0) * a 0 = 1 ∧ star (a 1) * a 0 = a 1 := by
-  rw [isStarNormal_iff]
-  change
-    (companionMatrix 2 a).conjTranspose * companionMatrix 2 a =
-        companionMatrix 2 a * (companionMatrix 2 a).conjTranspose ↔ _
-  constructor
-  · intro h
-    constructor
-    · have h11 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 1 1) h
-      simpa [companionMatrix, Matrix.mul_apply, Matrix.conjTranspose_apply] using h11
-    · have h01 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 0 1) h
-      simpa [companionMatrix, Matrix.mul_apply, Matrix.conjTranspose_apply] using h01
-  · rintro ⟨h0, h1⟩
-    have h0' : a 0 * star (a 0) = 1 := by simpa [mul_comm] using h0
-    have h1star := congrArg star h1
-    simp only [star_mul, star_star] at h1star
-    ext i j
-    fin_cases i <;> fin_cases j
-    · simp [companionMatrix, Matrix.mul_apply, Matrix.conjTranspose_apply]
-      change star (a 1) * a 1 + 1 =
-        a 1 * star (a 1) + a 0 * star (a 0)
-      rw [h0']
-      ring
-    · simpa [companionMatrix, Matrix.mul_apply,
-        Matrix.conjTranspose_apply] using h1
-    · simpa [companionMatrix, Matrix.mul_apply,
-        Matrix.conjTranspose_apply] using h1star
-    · simpa [companionMatrix, Matrix.mul_apply,
-        Matrix.conjTranspose_apply] using h0
 
 private theorem companion_normal_higher_a0_unit (m : ℕ) (a : ℕ → ℂ)
     (h : (companionMatrix (m + 3) a).conjTranspose * companionMatrix (m + 3) a =
@@ -1213,6 +1039,6 @@ theorem companion_orderAtLeastThree_isStarNormal_iff
       mul_eq_one_comm.mp hleft
     rw [hleft, hright]
 
-end
-
 end NumStability
+
+end

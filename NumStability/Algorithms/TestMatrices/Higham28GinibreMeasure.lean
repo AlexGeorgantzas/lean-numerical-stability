@@ -1,64 +1,27 @@
-/-
-Copyright (c) 2026 QED. All rights reserved.
-Released under Apache 2.0 license as described in LICENSES/Apache-2.0.txt.
-SPDX-License-Identifier: Apache-2.0
-See LICENSES/Apache-2.0.txt.
-Authors: QED
--/
-import NumStability.Algorithms.TestMatrices.Higham28Ginibre
 import Mathlib.MeasureTheory.Integral.Pi
+import NumStability.Algorithms.TestMatrices.Higham28Ginibre
+import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.ProbabilityLaw.GinibreMeasure
 
-/-! # Higham Chapter 28: the finite real-Ginibre joint density
+/-!
+# Higham28GinibreMeasure (compatibility module)
 
-This file proves the unconditional measure-theoretic input to the finite
-real-Ginibre eigenvalue calculation.  The iid Gaussian matrix law is exactly
-the finite-product Lebesgue measure weighted by the product Gaussian density.
-In particular, the Gaussian and Lebesgue matrix measures have the same null
-sets, and the expected real-eigenvalue count is a density-weighted Lebesgue
-integral.
+Historical path, retained so existing imports of `NumStability.Algorithms.TestMatrices.Higham28GinibreMeasure`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
 
-The Kac--Rice/coarea evaluation of that integral is a separate geometric
-step; it is not assumed here.
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
 -/
-
-open MeasureTheory
-open scoped ENNReal
 
 noncomputable section
 
-/-- A finite product of integrable nonnegative real densities is the density
-of the corresponding finite product measure. -/
-theorem MeasureTheory.Measure.pi_withDensity_ofReal
-    {ι : Type*} [Fintype ι]
-    {α : ι → Type*} [∀ i, MeasurableSpace (α i)]
-    (μ : ∀ i, Measure (α i)) [∀ i, SigmaFinite (μ i)]
-    (f : ∀ i, α i → ℝ)
-    (hf : ∀ i, Integrable (f i) (μ i))
-    (hf0 : ∀ i x, 0 ≤ f i x) :
-    Measure.pi (fun i => (μ i).withDensity (fun x => ENNReal.ofReal (f i x))) =
-      (Measure.pi μ).withDensity
-        (fun x => ENNReal.ofReal (∏ i, f i (x i))) := by
-  refine Measure.pi_eq fun s hs => ?_
-  have hrect : MeasurableSet (Set.pi Set.univ s) :=
-    MeasurableSet.univ_pi fun i => hs i
-  rw [withDensity_apply _ hrect]
-  have hprod_nonneg : ∀ x : ∀ i, α i, 0 ≤ ∏ i, f i (x i) := by
-    intro x
-    exact Finset.prod_nonneg fun i _ => hf0 i (x i)
-  have hprod_int : Integrable (fun x : ∀ i, α i => ∏ i, f i (x i))
-      (Measure.pi μ) :=
-    Integrable.fintype_prod_dep hf
-  rw [← ofReal_integral_eq_lintegral_ofReal
-    hprod_int.restrict (ae_of_all _ hprod_nonneg)]
-  rw [Measure.restrict_pi_pi]
-  rw [integral_fintype_prod_eq_prod]
-  simp_rw [withDensity_apply _ (hs _)]
-  rw [ENNReal.ofReal_prod_of_nonneg
-    (fun i _ => integral_nonneg (hf0 i))]
-  congr 1
-  funext i
-  rw [← ofReal_integral_eq_lintegral_ofReal
-    (hf i).restrict (ae_of_all _ (hf0 i))]
+open MeasureTheory
+
+open scoped ENNReal
 
 namespace NumStability
 
@@ -71,24 +34,10 @@ local instance (n : ℕ) : MeasurableSpace (RSqMat n) := MeasurableSpace.pi
 noncomputable def realGinibreLebesgueMeasure (n : ℕ) : Measure (RSqMat n) :=
   Measure.pi (fun _ : Fin n => Measure.pi (fun _ : Fin n => volume))
 
-/-- The ordinary real-valued standard-Gaussian joint density of an `n × n`
-matrix with respect to `realGinibreLebesgueMeasure`. -/
-noncomputable def realGinibreDensityReal (n : ℕ) (A : RSqMat n) : ℝ :=
-  ∏ i : Fin n, ∏ j : Fin n, gaussianPDFReal 0 1 (A i j)
-
 theorem measurable_realGinibreDensityReal (n : ℕ) :
     Measurable (realGinibreDensityReal n) := by
   unfold realGinibreDensityReal
   fun_prop
-
-theorem realGinibreDensityReal_pos (n : ℕ) (A : RSqMat n) :
-    0 < realGinibreDensityReal n A := by
-  unfold realGinibreDensityReal
-  apply Finset.prod_pos
-  intro i _
-  apply Finset.prod_pos
-  intro j _
-  exact gaussianPDFReal_pos 0 1 (A i j) (by norm_num)
 
 theorem integrable_realGinibreDensityReal (n : ℕ) :
     Integrable (realGinibreDensityReal n) (realGinibreLebesgueMeasure n) := by
@@ -188,3 +137,5 @@ theorem expectedRealEigenvalueCount_eq_lebesgue (n : ℕ) :
       simp [smul_eq_mul]
 
 end NumStability
+
+end
