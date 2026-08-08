@@ -21,6 +21,9 @@ PROJECTION_SHA = "EAA15F18127E7B77F8AF442760590687B66A8860485590F2EB13D57E3A6F38
 SELECTOR_SHA = "92446B8EBF571733212239DBD471A377EA889FC2A7061F1500DE7B03DB96518F"
 COMBINED_JSON_SHA = "E9207AA896EAA547E791FB1CECAC7A6B4E6344E8DC8E15D2EF2372FF90570625"
 OVERLAP_SHA = "B285FBD180581D715A208652B713D2A2B85C622F609C2BE3926D7339B133F4C9"
+CANDIDATE_SHA = "6CA03A2F9F38963AA3DF0D40DC3F3A5ECF57A878F93BA4C9732F7DA3904E47D4"
+CANDIDATE_BYTES = 116512944
+PRIVATE_CLOSURE_SHA = "B55744FBEA898C63D34F7D4F81F7C75C65AF69DC5EDAFA359AAF023095FC4AB7"
 
 
 def sha256(path: Path) -> str:
@@ -58,6 +61,13 @@ def main() -> int:
     candidate = args.candidate.resolve()
     if not candidate.is_file():
         raise RuntimeError(f"candidate does not exist: {candidate}")
+    require_hash(candidate, CANDIDATE_SHA)
+    if candidate.stat().st_size != CANDIDATE_BYTES:
+        raise RuntimeError(
+            f"candidate size differs: {candidate.stat().st_size} != {CANDIDATE_BYTES}"
+        )
+    closure = Path(__file__).resolve().parent / "PRIVATE_CLOSURE.tsv"
+    require_hash(closure, PRIVATE_CLOSURE_SHA)
     phase = control / "docs/architecture/phases/2026-08-repository-reorganization"
     record_path = phase / "projections/P0009.json"
     record = json.loads(record_path.read_text(encoding="utf-8"))
@@ -174,8 +184,9 @@ def main() -> int:
         "selector_sha256": SELECTOR_SHA,
         "combined_json_sha256": COMBINED_JSON_SHA,
         "overlap_review_sha256": OVERLAP_SHA,
-        "candidate_sha256": sha256(candidate),
-        "candidate_bytes": candidate.stat().st_size,
+        "candidate_sha256": CANDIDATE_SHA,
+        "candidate_bytes": CANDIDATE_BYTES,
+        "private_closure_sha256": PRIVATE_CLOSURE_SHA,
         "checker_argument_count": len(recorded),
         "selected_declarations": 1238,
         "relocated_declarations": 1018,

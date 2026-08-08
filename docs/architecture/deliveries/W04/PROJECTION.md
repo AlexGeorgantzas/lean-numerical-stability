@@ -5,7 +5,7 @@ tree under `Local\lean-reorganization-2026-08`.  The active P0009 checker
 argument vector was replayed from the read-only control worktree, changing
 only `--candidate=<candidate-format2.tsv>` to the absolute candidate path.
 
-## Pinned artifacts
+## Recorded hashes
 
 | Artifact | SHA-256 |
 | --- | --- |
@@ -20,19 +20,28 @@ only `--candidate=<candidate-format2.tsv>` to the absolute candidate path.
 | candidate Markdown | `63AFA0A2DF05BE2B2C54BFDB40060C14EAF2279ECF0B93DC010D8FE44F37B5BE` |
 | private-closure TSV | `B55744FBEA898C63D34F7D4F81F7C75C65AF69DC5EDAFA359AAF023095FC4AB7` |
 
+`CHECK_PROJECTION.py` verifies the five active control hashes (checker,
+projection, selector, combined baseline, and overlap review), the derived
+candidate hash and byte size, and the private-closure hash.  The raw C0006
+graph and the two candidate summaries are recorded generation/replay evidence;
+they are not additional inputs to the P0009 checker.
+
 The candidate is 116,512,944 bytes.  Its source scan covered 2,326 Lean
 modules with zero unresolved project imports and zero import cycles.  The
 declaration extractor scanned 56,903 declarations and 649,259 typed edge
 rows.  Candidate generation built 5,871 jobs and exited 0 in 144.843 seconds.
+After candidate/closure pinning was added to the checker, a second extraction
+reproduced the identical TSV SHA and byte size; the strengthened replay exited
+0 in 4.800 seconds (3.237 seconds inside the phase checker).
 
 ## Exact replay
 
 P0009 contains 74 recorded checker arguments: 29 exact historical modules,
 42 reviewed destination prefixes, the candidate placeholder, the pinned
 projection hash, and the projection path.  `CHECK_PROJECTION.py` preserves
-their order and content, substitutes only the placeholder, verifies every
-pinned artifact hash, and then independently fixes all 40 private declarations
-to their original modules.
+their order and content, substitutes only the placeholder, verifies the
+control/candidate/private-closure hashes described above, and then
+independently fixes all 40 private declarations to their original modules.
 
 ```text
 phase projection contract passed
@@ -86,3 +95,8 @@ NumStability.Analysis.Perturbation.LeastSquares.Wedin
 removes all 56 paths.  W04 may not edit that accepted consumer.  The local
 W04 destination graph itself is clean; no Source reachability or projection
 mismatch is waived.
+
+The ignored `benchmark-results/W04-*` extraction outputs are deliberately
+removed after their hashes and sizes are recorded so that the delivered
+worktree contains no generated artifact.  The committed generator and checker
+reproduce and verify the exact candidate.

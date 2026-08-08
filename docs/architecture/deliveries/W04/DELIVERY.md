@@ -116,6 +116,15 @@ size, exact output, and deterministic summary hashes.  `GATE_RESULTS.tsv`
 records commands, actual jobs, timings, exits, and the two integrator-required
 global-gate outcomes.
 
+Every `lake` command, migration extraction, strict/source baseline generation,
+format-2 candidate generation, and candidate-summary replay held the named
+Windows mutex `Local\lean-reorganization-2026-08` from immediately before the
+command until after its exit.  `GATE_RESULTS.tsv` records that mutex on every
+applicable row.  The two required repository-global commands are explicitly
+nonzero on the worker branch: layout exits 1 and strict-source exits 2 with 56
+paths.  Both depend only on forbidden integrator-owned or accepted-consumer
+changes listed in `INTEGRATOR_REQUESTS.md`; neither is represented as green.
+
 ## Scope and handoff
 
 `CHANGED_PATHS.md` is generated from
