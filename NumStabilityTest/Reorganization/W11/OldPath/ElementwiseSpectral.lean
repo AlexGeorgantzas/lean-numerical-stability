@@ -1,0 +1,8 @@
+import NumStability.Algorithms.RandNLA.ElementwiseSpectral
+
+/-!
+# W11 ElementwiseSpectral test
+-/
+
+#check @NumStability.FiniteProbability.expectationReal_vecNorm2_le_prod_expectationReal_vecNorm2_sub_of_expectation_eq_zero
+#check @NumStability.FiniteProbability.expectationReal_vecNorm2_mean_le_expectationReal_vecNorm2
