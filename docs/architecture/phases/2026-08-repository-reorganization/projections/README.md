@@ -26,7 +26,11 @@ The projection records are:
 - [`P0010`](P0010.json), the retired C0006 W09 projection selected by
   [`W09.tsv`](../selectors/W09.tsv); and
 - [`P0011`](P0011.json), the retired C0006 W11 projection selected by
-  [`W11.tsv`](../selectors/W11.tsv).
+  [`W11.tsv`](../selectors/W11.tsv);
+- [`P0012`](P0012.json), the active C0007 W07 projection selected by
+  [`W07.tsv`](../selectors/W07.tsv); and
+- [`P0013`](P0013.json), the active C0007 W10 projection selected by
+  [`W10.tsv`](../selectors/W10.tsv).
 
 P0004 is tied to the C0003 combined baseline generated at code commit
 `bb80c95a4625e07535dacdda12d246ee1a5795b3`. Its baseline JSON has SHA-256
@@ -67,6 +71,18 @@ edges, and 7,721 union edges at SHA-256
 P0011 freezes 3,354 W11 declarations, 19,096 signature edges, 26,201 body/proof
 edges, and 28,652 union edges at SHA-256
 `0A13EF31C40C997E2A692AC595E96DD3416BA603C6EC4ED47AB60765E6EBB3E2`.
+
+P0012 and P0013 are independently derived from the hash-verified C0007 raw
+format-2 graph with SHA-256
+`80AE3FBB3948104C60FF7EA80E899CC11CE542D0A772EA087375C00EB0ED9ED3`.
+P0012 freezes 252 W07 declarations, 800 signature edges, 1,400 body/proof
+edges, and 1,474 union edges at deterministic gzip SHA-256
+`9B683940DE4C94D17E48E200D1F10594EB26614CFD2AEF2BCB036F667BB5159C`.
+P0013 freezes 1,029 W10 declarations, 2,394 signature edges, 4,844 body/proof
+edges, and 5,075 union edges at deterministic gzip SHA-256
+`B61F64FC0C2CEF8DF22DDA78C5F28BB8D6B64FC1B57392AA36A2E187F3396ABA`.
+They are active evidence for planned B0011/B0012; no worker ref exists until
+planned-control CI is green.
 
 At C0005 the integrator replayed both exact recorded argument vectors against
 one full integrated format-2 candidate with SHA-256
@@ -123,3 +139,9 @@ commit became green. Their worker refs began at the exact C0006 code SHA only af
 planned-control commit
 `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5` passed Lean CI; the activation
 commits remain absent from every worker branch.
+
+P0012 and P0013 remain active while B0011/W07 and B0012/W10 are planned from
+the exact C0007 code SHA. The projection records are control evidence on
+`main`; they are never copied into worker history. Their deterministic streams
+must be replayed against each immutable delivery candidate and later against
+the same integrated candidate before the next checkpoint can be accepted.

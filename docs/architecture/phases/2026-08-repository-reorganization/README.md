@@ -2,8 +2,9 @@
 
 Status: **ACTIVE**. Checkpoint C0007 accepts green code commit
 `9eb534a06db267203c2b9b88227edd44fc64f5db`. M01, M02, M03, M04, M05, M06,
-M08, M09, M11, and M12 are accepted; M07 and M10 are ready and unactivated;
-and repository-wide completion remains incomplete. B0006/W06 delivery
+M08, M09, M11, and M12 are accepted; M07 and M10 are ready with planned
+C0007-based transports B0011/W07 and B0012/W10, but remain unactivated; and
+repository-wide completion remains incomplete. B0006/W06 delivery
 `436b38cbda2e06cf5c9ea3343f0bc6fe428f0b97` and B0007/W08 delivery
 `664d5d495975a05d74cd4c0c09f9207aff8cdd77` were integrated by separate true
 merges and accepted at C0006. Their frozen projections P0007 and P0008 are
@@ -24,7 +25,10 @@ leases at `2026-08-08T22:05:06Z` by `primary-human`. W04 never had a local
 worktree. The ignored W09/W11 delivery artifacts were archived under
 `C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0007-W09-W11-20260808`;
 their named worktrees were removed, and their local branches remain preserved
-at the immutable delivery tips. M07/W07 and M10/W10 are not activated.
+at the immutable delivery tips. Planned B0011/W07 and B0012/W10 freeze
+disjoint C0007 ownership, reviewed destinations, and active P0012/P0013
+projections. Their worker refs and the W07 worktree remain absent until this
+planned-control state passes Lean CI; no local W10 worktree is authorized.
 B0004/W03 and B0005/W05 were accepted at C0005 and retired after that
 acceptance-control state passed Lean CI. P0005 and P0006 are retired immutable
 projection evidence, and their independently C0004-based shared requests R0003
@@ -86,6 +90,15 @@ evidence for the bounded work they completed.
   [`R0007`](requests/R0007.json), [`R0008`](requests/R0008.json), and
   [`R0009`](requests/R0009.json) record the integrator-owned deltas accepted at
   C0007.
+  Planned [`B0011`](branches/B0011.json) and
+  [`B0012`](branches/B0012.json) are the disjoint C0007 transports for W07 and
+  W10. Their active frozen projections are
+  [`P0012`](projections/P0012.json) and
+  [`P0013`](projections/P0013.json), selected by
+  [`W07.tsv`](selectors/W07.tsv) and [`W10.tsv`](selectors/W10.tsv). Both
+  records have null delivery/integration fields, no shared request, and
+  retirement `not_due`; neither worker may start before active-control CI is
+  green.
   No prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
   the complete phase state;
@@ -251,7 +264,13 @@ at the immutable delivery tips.
 Planned-control commit `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5`
 passed [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/30920452203).
 All three worker refs began at the code SHA, never at a later control commit.
-W07 and W10 are not activated.
+W07 and W10 now have planned B0011/B0012 control records and active frozen
+P0012/P0013 projections. The planned state creates no branch or worktree: both
+worker refs, and the sole authorized local W07 worktree at
+`C:\Users\qed_s\higham-worktrees\reorg-w07-codex`, remain absent pending green
+planned-control Lean CI. W10 is remote-only and has no authorized local
+worktree. Both worker refs must begin at exact C0007 code SHA
+`9eb534a06db267203c2b9b88227edd44fc64f5db`, never at a later control commit.
 
 ## Classification warning
 

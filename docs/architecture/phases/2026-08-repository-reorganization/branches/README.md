@@ -5,6 +5,33 @@ the current accepted checkpoint and use an active lane baseline projection.
 Delivery, integration, ancestry, and retirement fields are updated rather than
 replaced by prose-only status messages.
 
+Two mutually disjoint transports are planned from exact C0007 code commit
+`9eb534a06db267203c2b9b88227edd44fc64f5db`. Their refs do not yet exist and
+workers must not start until the planned-control commit passes Lean CI, both
+refs are initialized at that exact code SHA, the records are changed to
+`active`, and the active-control commit also passes Lean CI:
+
+- [`B0011`](B0011.json): W07 local-lane branch
+  `codex/reorg-2026-08-w07-stationary-ch17`, five exact historical owners, 34
+  reviewed production destinations plus W07 test/delivery prefixes, owner
+  `primary-human`, and sole operator `codex-local`. Its only authorized local
+  worktree is
+  `C:\Users\qed_s\higham-worktrees\reorg-w07-codex`;
+- [`B0012`](B0012.json): W10 remote-lane branch
+  `codex/reorg-2026-08-w10-norm-estimation-ch15`, 27 exact historical owners,
+  43 reviewed production destinations plus W10 test/delivery prefixes, owner
+  `remote-human`, and sole operator `claude-remote`. No local W10 worktree is
+  authorized.
+
+Both records have null delivery and integration fields, empty
+`shared_request_ids`, and retirement `not_due`. Their independent hash-pinned
+reviews [`B0011-overlap-review.md`](B0011-overlap-review.md) and
+[`B0012-overlap-review.md`](B0012-overlap-review.md) reproduce the C0007
+selectors/projections and prove zero owner, destination, direct-import,
+signature-edge, and body/proof-edge overlap in either direction. Their sole
+common direct production consumer is the integrator-owned
+`NumStability/Algorithms.lean`.
+
 Three mutually disjoint branches were implemented from exact C0006 code commit
 `a32095e6e50189f7dcc39312bb4c6a36f421fab5` and accepted through separate true
 merges at C0007 code commit `9eb534a06db267203c2b9b88227edd44fc64f5db`.
