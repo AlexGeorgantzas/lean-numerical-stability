@@ -81,8 +81,12 @@ edges, and 1,474 union edges at deterministic gzip SHA-256
 P0013 freezes 1,029 W10 declarations, 2,394 signature edges, 4,844 body/proof
 edges, and 5,075 union edges at deterministic gzip SHA-256
 `B61F64FC0C2CEF8DF22DDA78C5F28BB8D6B64FC1B57392AA36A2E187F3396ABA`.
-They are active evidence for planned B0011/B0012; no worker ref exists until
-planned-control CI is green.
+They are active evidence for active B0011/B0012. Both worker refs were
+initialized at exact C0007 code SHA
+`9eb534a06db267203c2b9b88227edd44fc64f5db` only after planned-control commit
+`ac3bc1063c7d9aa1c7a0c12a85337c858b6f9200` passed
+[Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31300495624);
+workers remain launch-gated until active-control CI is green.
 
 At C0005 the integrator replayed both exact recorded argument vectors against
 one full integrated format-2 candidate with SHA-256
@@ -140,7 +144,7 @@ planned-control commit
 `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5` passed Lean CI; the activation
 commits remain absent from every worker branch.
 
-P0012 and P0013 remain active while B0011/W07 and B0012/W10 are planned from
+P0012 and P0013 remain active while B0011/W07 and B0012/W10 are active from
 the exact C0007 code SHA. The projection records are control evidence on
 `main`; they are never copied into worker history. Their deterministic streams
 must be replayed against each immutable delivery candidate and later against

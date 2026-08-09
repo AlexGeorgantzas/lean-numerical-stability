@@ -5,11 +5,14 @@ the current accepted checkpoint and use an active lane baseline projection.
 Delivery, integration, ancestry, and retirement fields are updated rather than
 replaced by prose-only status messages.
 
-Two mutually disjoint transports are planned from exact C0007 code commit
-`9eb534a06db267203c2b9b88227edd44fc64f5db`. Their refs do not yet exist and
-workers must not start until the planned-control commit passes Lean CI, both
-refs are initialized at that exact code SHA, the records are changed to
-`active`, and the active-control commit also passes Lean CI:
+Two mutually disjoint transports are active from exact C0007 code commit
+`9eb534a06db267203c2b9b88227edd44fc64f5db`. Planned-control commit
+`ac3bc1063c7d9aa1c7a0c12a85337c858b6f9200` passed
+[Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31300495624)
+before both remote refs were initialized at that exact code SHA and the sole
+authorized local W07 worktree was created clean at the same SHA. W10 remains
+remote-only with no local worktree. Workers must not start until the
+active-control commit also passes Lean CI:
 
 - [`B0011`](B0011.json): W07 local-lane branch
   `codex/reorg-2026-08-w07-stationary-ch17`, five exact historical owners, 34
