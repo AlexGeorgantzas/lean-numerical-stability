@@ -164,9 +164,14 @@ deferred rather than converted into arbitrary propositions.
   references are listed separately in the audit instead of inflating the
   exact-label graph.
 
-The **RandNLA case study**
-([`NumStability/Algorithms/RandNLA/`](NumStability/Algorithms/RandNLA), 17 modules)
-formalizes the meta-algorithms of Drineas and Mahoney's CACM survey
+The **RandNLA case study** is split into 19 reusable modules under
+[`NumStability/Algorithms/RandomizedLinearAlgebra/`](NumStability/Algorithms/RandomizedLinearAlgebra)
+and 18 exact source-correspondence modules under
+[`NumStability/Source/DrineasMahoney/RandNLA2016/`](NumStability/Source/DrineasMahoney/RandNLA2016).
+The historical 17-module
+[`NumStability/Algorithms/RandNLA/`](NumStability/Algorithms/RandNLA) surface
+remains available as a compatibility facade. Together they formalize the
+meta-algorithms of Drineas and Mahoney's CACM survey
 ["RandNLA: Randomized Numerical Linear Algebra"](https://dl.acm.org/doi/10.1145/2842602)
 — row/elementwise/leverage-score sampling, matrix concentration, low-rank
 approximation, and least-squares preconditioning.
