@@ -15,8 +15,9 @@ Historical path, retained so existing imports of `NumStability.Algorithms.Chapte
 keep resolving. Most of its declarations moved unchanged to the
 canonical modules imported above.
 
-The declarations still defined below are private declarations and
-their users. Lean mangles a private name to
+The declarations still defined below are private declarations and their users,
+together with two full-graph re-entry declarations whose frozen typed edges
+cross an integrator-owned accepted consumer. Lean mangles a private name to
 `_private.<module>.<n>.<name>`, so relocating one renames it and
 breaks the frozen declaration graph; anything referring to one must
 therefore stay with it. This module is a declaration-bearing facade,
@@ -28,6 +29,32 @@ namespace NumStability
 namespace Higham15
 
 open scoped BigOperators
+
+/-- **Algorithm 15.4 estimate is a lower bound on κ₁** (Higham §15.3 + §15.1,
+    eq. (15.1)).
+
+    Running the LAPACK 1-norm estimator on `B` and scaling by `‖A‖₁` never
+    exceeds `‖A‖₁·‖B‖₁ = κ₁(A)` (when `B = A⁻¹`).  Re-export of
+    `condOneNumber_ge_scaled_estimator` under a Chapter-15 label. -/
+theorem H15_Algorithm15_4_scaled_le_kappaOne {n : ℕ} (hn : 0 < n)
+    (A B : Fin n → Fin n → ℝ) :
+    oneNorm A * H15_Algorithm15_4_gamma hn B ≤ H15_kappaOne A B :=
+  condOneNumber_ge_scaled_estimator hn A B
+
+/-- **LAPACK estimate under-estimates the textbook κ₁(A)** (Higham §15.3 +
+    §15.1, eq. (15.1)) — the headline Chapter-15 condition-estimation result.
+
+    For invertible `A` with supplied inverse `B` (`A * B = 1`), the scaled
+    LAPACK 1-norm estimate is a genuine lower bound on `‖A‖₁·‖A⁻¹‖₁`.
+    Re-export of `lapack_condEstimate_le_kappaOne`. -/
+theorem H15_Algorithm15_4_condEstimate_le_kappaOne {n : ℕ} (hn : 0 < n)
+    (A B : Fin n → Fin n → ℝ)
+    (h : (Matrix.of A : Matrix (Fin n) (Fin n) ℝ) *
+         (Matrix.of B : Matrix (Fin n) (Fin n) ℝ) = 1) :
+    oneNorm A * H15_Algorithm15_4_gamma hn B ≤
+      oneNorm A *
+        oneNorm (fun i j => (Matrix.of A : Matrix (Fin n) (Fin n) ℝ)⁻¹ i j) :=
+  lapack_condEstimate_le_kappaOne hn A B h
 
 /-- **Algorithm 15.4 — lower-bound guarantee** (Higham §15.3, Algorithm 15.4,
     p. 293): `γ ≤ ‖A‖₁`.

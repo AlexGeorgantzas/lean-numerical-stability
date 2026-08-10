@@ -1,3 +1,4 @@
+import NumStability.Algorithms.Chapter15CondEst
 import NumStability.Algorithms.NormEstimation.OneNorm.FiniteIndex.Basic
 import NumStability.Algorithms.NormEstimation.OneNorm.LAPACK.Basic
 import NumStability.Algorithms.NormEstimation.OneNorm.LINPACK.Basic

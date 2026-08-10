@@ -11,7 +11,6 @@ import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon.Algebra.CondEstimators
 import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon.PowerBounds.CondEstimators
-import NumStability.Analysis.ConditionEstimatorLowerBound
 import NumStability.Analysis.MatrixAlgebra
 
 /-!

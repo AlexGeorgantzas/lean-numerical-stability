@@ -8,6 +8,4 @@ scope, so the relocated declarations are shown to stand on the canonical
 surface alone.
 -/
 
-#check @NumStability.Higham15.H15_Algorithm15_4_condEstimate_le_kappaOne
 #check @NumStability.Higham15.H15_Algorithm15_4_gamma
-#check @NumStability.Higham15.H15_Algorithm15_4_scaled_le_kappaOne

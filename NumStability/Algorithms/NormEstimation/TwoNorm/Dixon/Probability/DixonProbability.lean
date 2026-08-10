@@ -12,7 +12,6 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.TestMatrices.Higham28OrthogonalCoordinates
-import NumStability.Analysis.ConditionEstimatorLowerBound
 import NumStability.Analysis.MatrixAlgebra
 
 /-!

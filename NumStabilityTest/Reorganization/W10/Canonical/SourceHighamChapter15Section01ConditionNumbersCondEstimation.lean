@@ -3,9 +3,8 @@ import NumStability.Source.Higham.Chapter15.Section01.ConditionNumbers.CondEstim
 /-!
 # Canonical: `NumStability.Source.Higham.Chapter15.Section01.ConditionNumbers.CondEstimation`
 
-Imports only the canonical destination, with no compatibility module in
-scope, so the relocated declarations are shown to stand on the canonical
-surface alone.
+Imports only the reviewed Source correspondence wrapper, with no historical
+facade in scope, and confirms its reusable norm identities remain discoverable.
 -/
 
 #check @NumStability.cond_norm_identity

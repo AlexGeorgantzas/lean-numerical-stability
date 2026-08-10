@@ -10,21 +10,20 @@ import NumStability.Algorithms.NormEstimation.OneNorm.FiniteIndex.Basic
 import NumStability.Algorithms.NormEstimation.OneNorm.LAPACK.Basic
 import NumStability.Algorithms.NormEstimation.OneNorm.PowerMethod.CondEstimation
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Source.Higham.Chapter15.Section01.ConditionNumbers.CondEstimation
 
 /-!
-# CondEstimation (compatibility module)
+# CondEstimation (reusable retained core)
 
-Historical path, retained so existing imports of `NumStability.Algorithms.CondEstimation`
-keep resolving. Most of its declarations moved unchanged to the
-canonical modules imported above.
+This source-neutral condition-estimation core remains canonical in place. Most
+declarations moved unchanged to narrower reusable modules imported above;
+existing imports of `NumStability.Algorithms.CondEstimation` keep resolving.
 
-The declarations still defined below are private declarations and
-their users. Lean mangles a private name to
+The declarations still defined below are private declarations and their users.
+Lean mangles a private name to
 `_private.<module>.<n>.<name>`, so relocating one renames it and
 breaks the frozen declaration graph; anything referring to one must
-therefore stay with it. This module is a declaration-bearing facade,
-not a pure import shim.
+therefore stay with it. All imports and retained declarations are reusable;
+book-specific correspondence lives under `NumStability.Source.Higham`.
 -/
 
 namespace NumStability

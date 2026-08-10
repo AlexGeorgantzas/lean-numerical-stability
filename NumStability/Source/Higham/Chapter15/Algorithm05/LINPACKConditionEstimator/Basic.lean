@@ -10,7 +10,6 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.NormEstimation.OneNorm.LINPACK.Basic
-import NumStability.Analysis.ConditionEstimatorLowerBound
 import NumStability.Analysis.MatrixAlgebra
 
 /-!

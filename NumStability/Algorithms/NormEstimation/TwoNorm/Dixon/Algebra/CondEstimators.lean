@@ -9,7 +9,6 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LU.GrowthFactor
-import NumStability.Analysis.ConditionEstimatorLowerBound
 import NumStability.Analysis.MatrixAlgebra
 
 /-!

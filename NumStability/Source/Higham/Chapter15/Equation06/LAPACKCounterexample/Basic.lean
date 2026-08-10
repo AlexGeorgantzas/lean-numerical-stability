@@ -10,7 +10,6 @@ import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.NormEstimation.OneNorm.FiniteIndex.Basic
 import NumStability.Algorithms.NormEstimation.OneNorm.LAPACK.Basic
 import NumStability.Algorithms.NormEstimation.OneNorm.PowerMethod.CondEstimation
-import NumStability.Analysis.ConditionEstimatorLowerBound
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Source.Higham.Chapter15.Algorithm04.LAPACKNormEstimator.Basic
 

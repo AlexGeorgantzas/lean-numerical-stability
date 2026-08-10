@@ -2,7 +2,7 @@ owner_module	declarations	retained	relocated	private	pinned	retention_reason
 NumStability.Algorithms.Ch15CondEstimators	25	7	18	4	7	private reverse closure only
 NumStability.Algorithms.Ch15DixonClosure	16	0	16	0	0	private reverse closure only
 NumStability.Algorithms.Ch15DixonProbability	18	0	18	0	0	private reverse closure only
-NumStability.Algorithms.Chapter15CondEst	28	3	25	0	3	private reverse closure only
+NumStability.Algorithms.Chapter15CondEst	28	5	23	0	3	private reverse closure plus 2 full-graph re-entry hazards
 NumStability.Algorithms.CondEstimation	37	6	31	4	6	private reverse closure only
 NumStability.Algorithms.HighamChapter15BoydBridges	65	0	65	0	0	private reverse closure only
 NumStability.Algorithms.HighamChapter15BoydConcreteLemma3	64	6	58	3	6	private reverse closure only
