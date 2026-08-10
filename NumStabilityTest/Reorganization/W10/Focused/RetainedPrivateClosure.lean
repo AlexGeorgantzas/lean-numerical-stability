@@ -1,0 +1,74 @@
+import NumStability.Algorithms.Ch15CondEstimators
+import NumStability.Algorithms.Chapter15CondEst
+import NumStability.Algorithms.CondEstimation
+import NumStability.Algorithms.HighamChapter15BoydConcreteLemma3
+import NumStability.Algorithms.HighamChapter15BoydScalar
+import NumStability.Algorithms.HighamChapter15BoydSourceClosure
+import NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative
+import NumStability.Algorithms.HighamChapter15RectTermination
+import NumStability.Algorithms.LU.Higham15Problem15_6
+import NumStability.Algorithms.LU.Higham15Problem15_6Closure
+import NumStability.Algorithms.LU.Higham15Problem15_6Operational
+import NumStability.Algorithms.LU.TridiagonalCondCh15Closure
+import NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure
+
+/-!
+# Retained private reverse closure
+
+The public members of the frozen private
+reverse closure, checked through the facades that still declare them. Names are
+drawn only from the owners imported here, so every one is in scope.
+-/
+
+#check @NumStability.Ch15.IsBoydConcreteSourceStrongLocalMaximum.hasActualSecondDerivativeGap
+#check @NumStability.Ch15.boydConstrainedLagrangianFirst_hasDerivAt
+#check @NumStability.Ch15.boydConstrainedLagrangianFirst_hasDerivAt_rowwise_source_domain
+#check @NumStability.Ch15.boydConstrainedLagrangianLine_hasDerivAt
+#check @NumStability.Ch15.boydConstrainedSecondVariation_is_second_derivative
+#check @NumStability.Ch15.boydConstrainedSecondVariation_is_second_derivative_rowwise_source_domain
+#check @NumStability.Ch15.boydScalar_basis_mem_carrier
+#check @NumStability.Ch15.boydScalar_carrier_eq_basis
+#check @NumStability.Ch15.boydScalar_xnext_basis_eq
+#check @NumStability.Ch15.boydScalar_xnext_basis_nonneg
+#check @NumStability.Ch15.boydScalar_xseq_basis_eq
+#check @NumStability.Ch15.boydScalar_zof_basis_nonneg
+#check @NumStability.Ch15.higham15_boyd_global_of_nonnegative_irreducibleGram_all_dimensions
+#check @NumStability.Ch15.higham15_boyd_global_scalar
+#check @NumStability.Ch15.higham15_boyd_source_linear_of_strongLocalMaximum_subsequentialLimit
+#check @NumStability.Ch15.linpackD_isPlusMinusOne
+#check @NumStability.Ch15.linpackY_infNorm_le_infNorm_inv
+#check @NumStability.Ch15.linpackY_infNorm_le_infNorm_inv_nonsingular
+#check @NumStability.Ch15.rect_general_boyd_concrete_source_local_linear
+#check @NumStability.Ch15.rect_general_boyd_concrete_source_local_linear_uniform
+#check @NumStability.Ch15Closure.H15_Theorem15_7_of_absLU_eq
+#check @NumStability.Ch15Closure.H15_Theorem15_8_of_rowDiagDominant
+#check @NumStability.Ch15IkebeClosure.H15_Theorem15_9_of_irreducible_rightInverse
+#check @NumStability.Higham15.H15_Algorithm15_4_exact_ratio_witness
+#check @NumStability.Higham15.H15_Algorithm15_4_lower_bound
+#check @NumStability.Higham15.H15_Algorithm15_4_ratio_witness
+#check @NumStability.Higham15Problem15_6.H15_Problem15_6_of_irreducible_rightInverse
+#check @NumStability.Higham15Problem15_6.H15_Problem15_6_operational_of_irreducible_rightInverse
+#check @NumStability.Higham15Problem15_6.absInvMul_correct
+#check @NumStability.Higham15Problem15_6.backward_column_scaled
+#check @NumStability.Higham15Problem15_6.backward_row_scaled
+#check @NumStability.Higham15Problem15_6.forward_column_scaled
+#check @NumStability.Higham15Problem15_6.forward_row_scaled
+#check @NumStability.Higham15Problem15_6.infNorm_correct
+#check @NumStability.Higham15Problem15_6.lower_factorization
+#check @NumStability.Higham15Problem15_6.p_correct
+#check @NumStability.Higham15Problem15_6.problem15_6_absInvMulOperational_correct
+#check @NumStability.Higham15Problem15_6.problem15_6_infNormOperational_correct
+#check @NumStability.Higham15Problem15_6.qResidual_ne
+#check @NumStability.Higham15Problem15_6.qResidual_scaled
+#check @NumStability.Higham15Problem15_6.q_correct
+#check @NumStability.Higham15Problem15_6.tridiag_mulVec_entry
+#check @NumStability.Higham15Problem15_6.tridiag_vecMul_entry
+#check @NumStability.Higham15Problem15_6.upper_factorization
+#check @NumStability.Higham15Problem15_6.x_correct
+#check @NumStability.Higham15Problem15_6.yResidual_ne
+#check @NumStability.Higham15Problem15_6.yResidual_scaled
+#check @NumStability.Higham15Problem15_6.y_correct
+#check @NumStability.RectPNormPair.higham15_rectangular_infinity_counterexample_stops_at_four
+#check @NumStability.RectPNormPair.higham15_rectangular_infinity_n_plus_one_source_discrepancy
+#check @NumStability.lapackNormEstimator_lower_bound
+#check @NumStability.oneNormPowerMethod_lower_bound

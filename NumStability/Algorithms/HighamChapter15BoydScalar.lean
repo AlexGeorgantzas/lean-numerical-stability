@@ -1,15 +1,26 @@
--- Algorithms/HighamChapter15BoydScalar.lean
---
--- Scalar-domain completion of Boyd's global convergence theorem.  The
--- nonlinear Perron argument used in dimensions at least two assumes
--- `Nontrivial (Fin n)`, which is false for `n = 1`; the scalar case is instead
--- closed directly from the literal Algorithm 15.1 update.
-
 import NumStability.Algorithms.HighamChapter15BoydUniqueness
 
-namespace NumStability.Ch15
+/-!
+# HighamChapter15BoydScalar (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.HighamChapter15BoydScalar`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
+
+namespace NumStability
+
+namespace Ch15
 
 open scoped BigOperators Topology
+
 open Filter
 
 private noncomputable def scalarBasis : Fin 1 → ℝ := basisVec (0 : Fin 1)
@@ -220,4 +231,5 @@ theorem higham15_boyd_global_of_nonnegative_irreducibleGram_all_dimensions
     exact higham15_boyd_global_of_nonnegative_irreducibleGram
       hn hpq A hA hGram x0 hx0
 
-end NumStability.Ch15
+end Ch15
+end NumStability

@@ -1,44 +1,27 @@
--- Algorithms/LU/TridiagonalCondCh15Closure.lean
---
--- Honest closures of the Chapter-15 tridiagonal condition-number theorems,
--- Higham, "Accuracy and Stability of Numerical Algorithms", 2nd ed., §15.6
--- (pp. 299-300).
---
--- The wrappers in `TridiagonalCondCh15` (`H15_Theorem15_7`, `H15_Theorem15_8`)
--- discharge their conclusions from hypotheses that are *target-equivalent to the
--- crux* rather than from Higham's printed hypotheses:
---   * `H15_Theorem15_7` assumes `hSignCoherent` (all inverse-factor products
---     `U⁻¹_{ik} L⁻¹_{kj}` are nonnegative), which is essentially the conclusion.
---   * `H15_Theorem15_8` assumes `hRowSumBound`
---     (`∑ₗ∑ₖ |U⁻¹_{ik}||U_{kl}| ≤ 2n−1`), the structural crux.
---
--- This IMPORT-ONLY module re-exposes the two theorems from the PRINTED
--- hypotheses, DERIVING the crux:
---
---   * `H15_Theorem15_8_of_rowDiagDominant` — FULL closure of Theorem 15.8 from
---     row diagonal dominance of `A` (with `A = LU` bidiagonal, nonzero pivots,
---     and `U⁻¹` given by the explicit bidiagonal-inverse product formula).
---     Row dominance of `A` propagates through the LU recurrence to give
---     `|U_{i,i+1}| ≤ |U_{ii}|` (i.e. `IsDiagDominantUpper U`), from which the
---     `(2n−1)` row-sum bound is derived via `unit_bidiag_row_sum_bound`.
---
--- The private helper lemmas from `TridiagonalRecurrence` that establish the
--- row-dominance propagation (`tridiag_LU_super_eq`, `tridiag_LU_sub_eq`,
--- `tridiag_LU_diag_rel`, `row_diag_dom_offdiag_le`, `row_diag_dom_two_offdiag_le`,
--- `tridiag_rowDom_U_super_le_diag`) are `private`, so their proofs are reproduced
--- here (prefixed `c15_`) to make the derivation self-contained.
-
 import NumStability.Algorithms.LU.TridiagonalCondCh15
 
-namespace NumStability.Ch15Closure
+/-!
+# TridiagonalCondCh15Closure (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.LU.TridiagonalCondCh15Closure`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
+
+namespace NumStability
+
+namespace Ch15Closure
 
 open scoped BigOperators
-open NumStability
 
--- ============================================================
--- Row-dominance propagation helpers (reproduced from the
--- `private` lemmas in `TridiagonalRecurrence`)
--- ============================================================
+open NumStability
 
 /-- For bidiagonal `LU = A`, the super-diagonal of `U` equals that of `A`. -/
 private theorem c15_LU_super_eq {n : ℕ}
@@ -283,10 +266,6 @@ private theorem c15_bidiag_U_isDiagDominantUpper {n : ℕ}
   · rw [hStruct.U_upper_bidiag i j (by omega), abs_zero]
     exact abs_nonneg _
 
--- ============================================================
--- Bidiagonal-inverse magnitude bound and the (2n−1) row-sum bound
--- ============================================================
-
 /-- For an upper-bidiagonal `U` with `IsDiagDominantUpper`, every explicit
     inverse entry is bounded: `|U⁻¹_{ik}| ≤ 1/|U_{kk}|` for `i ≤ k`.
     The product `∏_{i≤p<k} |e_p|/|u_p|` of superdiagonal-to-pivot ratios is
@@ -380,10 +359,6 @@ private theorem c15_bidiag_rowSum_bound {n : ℕ} (hn : 0 < n)
         exact hconv k l
     _ ≤ 2 * (n : ℝ) - 1 := hbound
 
--- ============================================================
--- §15.6  Theorem 15.8 — honest closure from row diagonal dominance
--- ============================================================
-
 /-- **Theorem 15.8** (Higham §15.6, p. 300) — HONEST closure.
 
     "Suppose the nonsingular, row diagonally dominant tridiagonal matrix
@@ -422,10 +397,6 @@ theorem H15_Theorem15_8_of_rowDiagDominant (n : ℕ) (hn : 0 < n)
     hStruct.U_upper_bidiag hDD hU_inv_ut hU_inv_eq
   exact NumStability.Ch15.H15_Theorem15_8 n hn A L U A_inv L_inv U_inv y hy
     hLU hLInv hAInv hRowSum
-
--- ============================================================
--- §15.6  Theorem 15.7 — honest closure from |L||U| = |A|
--- ============================================================
 
 /-- If every pairwise product `f k * f l` is nonnegative (i.e. all `f k` share a
     common sign), then `|∑ f| = ∑ |f|`.  This is the common-sign generalisation
@@ -738,4 +709,5 @@ theorem H15_Theorem15_7_of_absLU_eq {n : ℕ}
         (c15_abs_sum_of_pairwise_nonneg (fun k => U_inv i k * L_inv k j) hpair).symm
     _ = |A_inv i j| := by rw [hA_inv_eq]
 
-end NumStability.Ch15Closure
+end Ch15Closure
+end NumStability
