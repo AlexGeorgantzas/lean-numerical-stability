@@ -72,6 +72,12 @@
 
 import NumStability.Algorithms.StationaryIterationSemiconvergent
 
+/-!
+# NumStability.Algorithms.StationaryIterationSemiconvergentExistence
+
+W07 classify/document-only semiconvergent block-form existence surface. B0011 does not authorize declaration relocation from this owner; its final classification is requested from the integrator.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

@@ -9,6 +9,12 @@ import NumStability.Algorithms.MatVec
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 
+/-!
+# NumStability.Algorithms.StationaryIterationRounded
+
+W07 classify/document-only rounded stationary-execution and Chapter 17 error-bound surface. B0011 does not authorize declaration relocation from this owner; its final classification is requested from the integrator.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

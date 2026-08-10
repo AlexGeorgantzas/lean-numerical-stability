@@ -44,6 +44,12 @@ import NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.RealDiag
 import NumStability.Algorithms.StationaryIteration
 import NumStability.Algorithms.StationaryIterationSemiconvergent
 
+/-!
+# NumStability.Algorithms.StationaryIterationDrazin
+
+W07 classify/document-only Drazin and numbered Chapter 17 surface. B0011 does not authorize declaration relocation from this owner; its final mixed/reusable/source classification is requested from the integrator.
+-/
+
 namespace NumStability
 
 open scoped BigOperators

@@ -1,0 +1,8 @@
+import NumStability.Analysis.SemiconvergentBlockFormExists
+
+/-!
+# W07 AcceptedSemiconvergentConsumer test
+-/
+
+#check @NumStability.semiconvergent_block_form_exists_of_triangular_complement
+#check @NumStability.matPow_G_tendsto_oneEigenProjector_of_triangular_complement_diag_conv

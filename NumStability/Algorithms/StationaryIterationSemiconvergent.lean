@@ -24,6 +24,12 @@ import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.LinearOperators.MatrixPowers.JordanScaling.RealDiagonal
 import NumStability.Algorithms.StationaryIteration
 
+/-!
+# NumStability.Algorithms.StationaryIterationSemiconvergent
+
+W07 classify/document-only semiconvergence and projector surface. B0011 does not authorize declaration relocation from this owner; its final classification is requested from the integrator.
+-/
+
 namespace NumStability
 
 open scoped BigOperators
