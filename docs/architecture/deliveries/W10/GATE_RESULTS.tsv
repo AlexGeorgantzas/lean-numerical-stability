@@ -1,0 +1,22 @@
+gate	state	exit	result
+lake build NumStability	worker branch	0	PASS: 6,097 jobs
+lake build NumStability NumStabilityTest	worker branch	0	PASS: 8,523 jobs
+lake build 96 canonical-only test modules	worker branch	0	PASS: included in exact 135-module matrix
+lake build 27 old-path-only test modules	worker branch	0	PASS: included in exact 135-module matrix
+lake build 12 focused test modules	worker branch	0	PASS: included in exact 135-module matrix
+lake build exact TEST_MATRIX.tsv roster	worker branch	0	PASS: 135 modules
+lake test	worker branch	0	PASS: 6,544 jobs in 2,539.6 seconds
+generate_baseline.py full format-2 candidate	worker branch	0	PASS: 56,903 declarations; 649,259 typed edges; TSV 749CC6B1888CF99BA5A44AC74A55A51A1DC23FD2EC7BE11D533F0E34BE128E61
+CHECK_PROJECTION.py	worker branch + active control	0	PASS: exact 73 arguments; 1,029 selected; 895 relocated; 134 retained; 2,394/4,844/5,075 edges
+CHECK_STATIC.py	worker branch	0	PASS: physical routes, 132-member floor, 134 retention, 135 tests, zero cycles and forbidden reachability
+CHECK_SCOPE.py --check-changed-paths	worker branch + active control	0	PASS: 274 paths (247 added, 27 modified), 27/27 owners, zero forbidden
+CHECK_INTEGRATOR_PATCH.py	C0007 + R0011 + worker overlay	0	PASS: exact 14 paths, deterministic bytes, forward/reverse replay
+CHECK_INTEGRATOR_PATCH.py --full	C0007 + R0011 + worker overlay	0	PASS: layout, compatibility, provenance, strict-source, zero forbidden reachability
+check_compatibility.py	worker branch	0	PASS: 337 forwarding modules, 685 canonical targets
+check_provenance.py	worker branch	0	PASS: 137 Apache-marked production files, 5 evidenced upstream modules
+generate_baseline.py --skip-declarations --strict-source	worker branch	0	PASS: all four forbidden edge/reachability counts zero
+check_layout.py	worker branch	1	INTEGRATOR_REQUIRED: classification, discovery, and test-root paths are forbidden to the worker and supplied by R0011
+check_layout.py	C0007 + R0011 + worker overlay	0	PASS: 2,559 modules; 282 unclassified; 35 mixed; 77 missing docs; 268 noncanonical; 21 umbrellas; zero unsorted
+git diff --check	worker branch	0	PASS
+added Lean placeholder/axiom audit	worker branch	0	PASS: zero sorry, admit, top-level axiom, or top-level constant commands
+tracked generated-artifact audit	worker branch	0	PASS: zero .lake, benchmark-results, olean, ilean, object, binary, cache, or bytecode paths

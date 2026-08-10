@@ -1,0 +1,28 @@
+owner_module	declarations	retained	relocated	private	pinned	retention_reason
+NumStability.Algorithms.Ch15CondEstimators	25	7	18	4	7	private reverse closure only
+NumStability.Algorithms.Ch15DixonClosure	16	0	16	0	0	private reverse closure only
+NumStability.Algorithms.Ch15DixonProbability	18	0	18	0	0	private reverse closure only
+NumStability.Algorithms.Chapter15CondEst	28	5	23	0	3	private reverse closure plus 2 full-graph re-entry hazards
+NumStability.Algorithms.CondEstimation	37	6	31	4	6	private reverse closure only
+NumStability.Algorithms.HighamChapter15BoydBridges	65	0	65	0	0	private reverse closure only
+NumStability.Algorithms.HighamChapter15BoydConcreteLemma3	64	6	58	3	6	private reverse closure only
+NumStability.Algorithms.HighamChapter15BoydLocalStability	22	0	22	0	0	private reverse closure only
+NumStability.Algorithms.HighamChapter15BoydRowwiseDomain	22	0	22	0	0	private reverse closure only
+NumStability.Algorithms.HighamChapter15BoydScalar	9	9	0	1	9	private reverse closure only
+NumStability.Algorithms.HighamChapter15BoydSourceClosure	7	4	3	0	4	private reverse closure only
+NumStability.Algorithms.HighamChapter15BoydSourceDomain	12	0	12	0	0	private reverse closure only
+NumStability.Algorithms.HighamChapter15BoydSourceLocal	82	0	82	0	0	private reverse closure only
+NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative	4	4	0	2	4	private reverse closure only
+NumStability.Algorithms.HighamChapter15BoydUniqueness	24	0	24	0	0	private reverse closure only
+NumStability.Algorithms.HighamChapter15ConvergenceProse	34	0	34	0	0	private reverse closure only
+NumStability.Algorithms.HighamChapter15RectTermination	55	45	10	43	45	private reverse closure only
+NumStability.Algorithms.LU.Higham15Problem15_4	14	0	14	0	0	private reverse closure only
+NumStability.Algorithms.LU.Higham15Problem15_6	42	5	37	3	5	private reverse closure only
+NumStability.Algorithms.LU.Higham15Problem15_6Closure	57	17	40	0	17	private reverse closure only
+NumStability.Algorithms.LU.Higham15Problem15_6Operational	125	3	122	0	3	private reverse closure only
+NumStability.Algorithms.LU.TridiagonalCondCh15	3	0	3	0	0	private reverse closure only
+NumStability.Algorithms.LU.TridiagonalCondCh15Closure	21	21	0	19	21	private reverse closure only
+NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure	2	2	0	1	2	private reverse closure only
+NumStability.Algorithms.PNormPowerMethod	132	0	132	0	0	private reverse closure only
+NumStability.Algorithms.PNormPowerMethodGeneralP	37	0	37	0	0	private reverse closure only
+NumStability.Algorithms.PNormPowerMethodRect	72	0	72	0	0	private reverse closure only

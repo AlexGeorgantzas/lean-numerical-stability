@@ -10,11 +10,12 @@ R0001 and R0002 are terminal applied records that retroactively register the
 exact, hash-pinned integrator-owned deltas accepted at C0003 for W02 and at
 C0004 for W12, respectively.
 
-Active B0011/W07 and B0012/W10 have empty `shared_request_ids`; no C0007-based
-W07 or W10 request exists yet. Workers must keep global aggregates, test roots,
-tier/layout manifests, phase controls, CI, and accepted consumers untouched.
-Any required delta is reported in delivery evidence and then independently
-created and hash-pinned here by the integration authority against C0007.
+Delivered B0011/W07 and B0012/W10 have empty `shared_request_ids`; delivery
+intake does not itself create a formal C0007-based W07 or W10 request. Workers
+kept global aggregates, test roots, tier/layout manifests, phase controls, CI,
+and accepted consumers untouched. Required deltas are reported in immutable
+delivery evidence and remain to be independently created and hash-pinned here
+by the integration authority against C0007.
 
 | Request | Wave | Requester / lane | Status | Target | Valid through | Paths | Patch SHA-256 | Blocks |
 | --- | --- | --- | --- | --- | --- | ---: | --- | --- |

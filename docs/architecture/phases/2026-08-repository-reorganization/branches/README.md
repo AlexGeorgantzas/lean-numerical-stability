@@ -5,29 +5,34 @@ the current accepted checkpoint and use an active lane baseline projection.
 Delivery, integration, ancestry, and retirement fields are updated rather than
 replaced by prose-only status messages.
 
-Two mutually disjoint transports are active from exact C0007 code commit
+Two mutually disjoint transports have delivered from exact C0007 code commit
 `9eb534a06db267203c2b9b88227edd44fc64f5db`. Planned-control commit
 `ac3bc1063c7d9aa1c7a0c12a85337c858b6f9200` passed
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31300495624)
 before both remote refs were initialized at that exact code SHA and the sole
 authorized local W07 worktree was created clean at the same SHA. W10 remains
-remote-only with no local worktree. Workers must not start until the
-active-control commit also passes Lean CI:
+remote-only with no local worktree. Active-control commit
+`cb5fa161bcf6827c7d15e61df9dd9ded34f39327` passed
+[Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31300899785)
+before work began. Their immutable delivery tips and hash-pinned packet
+evidence are recorded below; neither is integrated or accepted yet:
 
 - [`B0011`](B0011.json): W07 local-lane branch
   `codex/reorg-2026-08-w07-stationary-ch17`, five exact historical owners, 34
   reviewed production destinations plus W07 test/delivery prefixes, owner
-  `primary-human`, and sole operator `codex-local`. Its only authorized local
-  worktree is
-  `C:\Users\qed_s\higham-worktrees\reorg-w07-codex`;
+  `primary-human`, sole operator `codex-local`, and immutable delivery
+  `176c72838828795b89f4aa822479010c7860c8e5`. Its only authorized local
+  worktree is `C:\Users\qed_s\higham-worktrees\reorg-w07-codex`;
 - [`B0012`](B0012.json): W10 remote-lane branch
   `codex/reorg-2026-08-w10-norm-estimation-ch15`, 27 exact historical owners,
   43 reviewed production destinations plus W10 test/delivery prefixes, owner
-  `remote-human`, and sole operator `claude-remote`. No local W10 worktree is
+  `remote-human`, sole operator `claude-remote`, and immutable delivery
+  `9e7604cbdbd2314bc4bf38bcd9e342c3accfb1d6`. No local W10 worktree is
   authorized.
 
-Both records have null delivery and integration fields, empty
-`shared_request_ids`, and retirement `not_due`. Their independent hash-pinned
+Both records have hash-pinned delivery fields, null integration fields, empty
+`shared_request_ids`, and retirement `not_due`; P0012 and P0013 remain active
+pending integration. Their independent hash-pinned
 reviews [`B0011-overlap-review.md`](B0011-overlap-review.md) and
 [`B0012-overlap-review.md`](B0012-overlap-review.md) reproduce the C0007
 selectors/projections and prove zero owner, destination, direct-import,

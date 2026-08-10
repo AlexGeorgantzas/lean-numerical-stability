@@ -1,0 +1,113 @@
+# W07 changed paths
+
+Base: `9eb534a06db267203c2b9b88227edd44fc64f5db`
+
+Branch: `codex/reorg-2026-08-w07-stationary-ch17`
+
+Total: **103** (`A` 98, `M` 5).
+
+Every path below is either an exact B0011 owner or a new file below an exact B0011 destination, test, or delivery prefix.
+
+- `A` `NumStability/Algorithms/LinearSystems/Iterative/Stationary/Convergence/Singular/FixedSubspaces.lean`
+- `A` `NumStability/Algorithms/LinearSystems/Iterative/Stationary/ErrorAnalysis/Forward/ComplementDecomposition.lean`
+- `A` `NumStability/Algorithms/LinearSystems/Iterative/Stationary/ErrorAnalysis/Local/OneStep.lean`
+- `A` `NumStability/Algorithms/LinearSystems/Iterative/Stationary/ErrorAnalysis/Residual/Identities.lean`
+- `A` `NumStability/Algorithms/LinearSystems/Iterative/Stationary/Execution/Computed/Model.lean`
+- `A` `NumStability/Algorithms/LinearSystems/Iterative/Stationary/Projectors/Drazin/Algebra.lean`
+- `A` `NumStability/Algorithms/LinearSystems/Iterative/Stationary/Recurrences/Affine/Unrolling.lean`
+- `A` `NumStability/Algorithms/LinearSystems/Iterative/Stationary/Splittings/Core/Definitions.lean`
+- `A` `NumStability/Algorithms/LinearSystems/Iterative/Stationary/Splittings/Scaling/Diagonal.lean`
+- `M` `NumStability/Algorithms/StationaryIteration.lean`
+- `M` `NumStability/Algorithms/StationaryIterationDrazin.lean`
+- `M` `NumStability/Algorithms/StationaryIterationRounded.lean`
+- `M` `NumStability/Algorithms/StationaryIterationSemiconvergent.lean`
+- `M` `NumStability/Algorithms/StationaryIterationSemiconvergentExistence.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation01/ComputedIteration/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation02/LocalError/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation03/ComputedRecurrence/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation04/FixedPoint/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation05/ErrorExpansion/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation06/ComponentwiseForward/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation07/NormwiseGrowth/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation08/NormwiseForward/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation09/ComponentwiseGrowth/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation10/LocalErrorSimplification/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation12/PartialSumBound/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation13/ComponentwiseForward/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation15/NormwiseForward/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation16/Jacobi/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation17/SOR/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation18/ResidualRecurrence/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation19/ResidualBound/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation20/ResidualSigma/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation21/SingularIteration/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation27/SingularErrorSplit/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation28/SingularErrorSplit/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation29/SingularSource/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Equation33/StoppingTests/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Section02/ScaleIndependence/Results.lean`
+- `A` `NumStability/Source/Higham/Chapter17/Section04/PrintedConclusions/Results.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C001.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C002.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C003.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C004.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C005.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C006.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C007.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C008.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C009.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C010.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C011.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C012.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C013.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C014.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C015.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C016.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C017.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C018.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C019.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C020.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C021.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C022.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C023.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C024.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C025.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C026.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C027.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C028.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C029.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C030.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C031.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C032.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C033.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Canonical/C034.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Focused/AcceptedChapter17Consumers.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Focused/AcceptedSemiconvergentConsumer.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Focused/Chapter17Boundary.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Focused/Drazin.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Focused/PrivateRetention.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Focused/ProtectedW06.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Focused/ReusableIteration.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Focused/RoundedExecution.lean`
+- `A` `NumStabilityTest/Reorganization/W07/Focused/SemiconvergenceProjector.lean`
+- `A` `NumStabilityTest/Reorganization/W07/OldPath/StationaryIteration.lean`
+- `A` `NumStabilityTest/Reorganization/W07/OldPath/StationaryIterationDrazin.lean`
+- `A` `NumStabilityTest/Reorganization/W07/OldPath/StationaryIterationRounded.lean`
+- `A` `NumStabilityTest/Reorganization/W07/OldPath/StationaryIterationSemiconvergent.lean`
+- `A` `NumStabilityTest/Reorganization/W07/OldPath/StationaryIterationSemiconvergentExistence.lean`
+- `A` `docs/architecture/deliveries/W07/CHANGED_PATHS.md`
+- `A` `docs/architecture/deliveries/W07/CHECK_INTEGRATOR_PATCH.py`
+- `A` `docs/architecture/deliveries/W07/CHECK_PROJECTION.py`
+- `A` `docs/architecture/deliveries/W07/CHECK_SCOPE.py`
+- `A` `docs/architecture/deliveries/W07/CHECK_STATIC.py`
+- `A` `docs/architecture/deliveries/W07/DECLARATION_ROUTES.tsv`
+- `A` `docs/architecture/deliveries/W07/DELIVERY.md`
+- `A` `docs/architecture/deliveries/W07/GENERATE_MIGRATION.py`
+- `A` `docs/architecture/deliveries/W07/INTEGRATOR_REQUESTS.md`
+- `A` `docs/architecture/deliveries/W07/PRIVATE_CLOSURE.md`
+- `A` `docs/architecture/deliveries/W07/PRIVATE_CLOSURE.tsv`
+- `A` `docs/architecture/deliveries/W07/PROJECTION.md`
+- `A` `docs/architecture/deliveries/W07/RETENTION.tsv`
+- `A` `docs/architecture/deliveries/W07/ROUTE_SUMMARY.json`
+- `A` `docs/architecture/deliveries/W07/ROUTING.md`
+- `A` `docs/architecture/deliveries/W07/TEST_MATRIX.tsv`

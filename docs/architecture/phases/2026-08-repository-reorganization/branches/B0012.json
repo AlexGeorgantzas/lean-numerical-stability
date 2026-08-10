@@ -5,9 +5,15 @@
   "branch_id": "B0012",
   "branch_name": "codex/reorg-2026-08-w10-norm-estimation-ch15",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "9e7604cbdbd2314bc4bf38bcd9e342c3accfb1d6",
+    "report": {
+      "path": "docs/architecture/deliveries/W10/DELIVERY.md",
+      "sha256": "77A26056500F8BFDC08952BEF6E59431F133806CD84ADF8BC68DA3ABBCBF46E4"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/W10/CHANGED_PATHS.md",
+      "sha256": "D652787C04240E87C3C1212AD11F3A9934ACD9A40A2B5431959B86F26041C182"
+    }
   },
   "destination_prefixes": [
     {
@@ -8527,6 +8533,6 @@
   },
   "schema_version": 1,
   "shared_request_ids": [],
-  "status": "active",
+  "status": "delivered",
   "wave_id": "W10"
 }
