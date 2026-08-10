@@ -1,0 +1,21 @@
+gate	state	exit	result
+lake build NumStability	worker branch	0	PASS
+lake build NumStability NumStabilityTest	worker branch	0	PASS
+lake build 96 canonical-only test modules	worker branch	0	PASS
+lake build 27 old-path-only test modules	worker branch	0	PASS
+lake build 12 focused test modules	worker branch	0	PASS
+lake test	worker branch	0	PASS
+full format-2 candidate	worker branch	0	PASS
+P0013 replay	worker branch	0	PASS
+check_compatibility.py	worker branch	0	PASS
+check_provenance.py	worker branch	0	PASS
+check_layout.py	worker branch	1	FAIL
+generate_baseline --strict-source	worker branch	2	FAIL
+check_layout.py	with integrator patch	0	PASS
+generate_baseline --strict-source	with integrator patch	0	PASS
+check_compatibility.py	with integrator patch	0	PASS
+check_provenance.py	with integrator patch	0	PASS
+deterministic routing + private closure	worker branch	0	PASS
+import cycle check (cycles.py)	worker branch	0	PASS
+staged emit verification (verify_emit.py)	worker branch	0	PASS
+B0012 scope guard (apply.py)	worker branch	0	PASS

@@ -1,28 +1,29 @@
--- Algorithms/HighamChapter15BoydSourceClosure.lean
---
--- Final PDF-facing closure of Boyd's local and global Chapter 15 results.
--- The local theorem keeps the nondegenerate-curvature correction explicit and
--- uses the precise composition domain: below p = 2, a zero coordinate of A*x
--- is admitted when it comes from an identically zero row.
-
-import NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative
 import NumStability.Algorithms.HighamChapter15BoydScalar
+import NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative
+import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.BoydCompletion
 
-namespace NumStability.Ch15
+/-!
+# HighamChapter15BoydSourceClosure (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.HighamChapter15BoydSourceClosure`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
+
+namespace NumStability
+
+namespace Ch15
 
 open Filter Function Set
-open scoped BigOperators Topology
 
-/-- Audit-facing correction of Higham's phrase "strong local maximum with no
-zero components".  It records all and only the data used by the corrected
-Boyd proof: stationary normalized data, a uniform negative constrained-Hessian
-gap, nonzero coordinates of the limiting vector, and the exact inner
-composition smoothness domain. -/
-def IsBoydConcreteSourceStrongLocalMaximum {m n : Nat} (p : Real)
-    (A : Fin m -> Fin n -> Real) (x : Fin n -> Real) : Prop :=
-  IsBoydConcreteStrongLocalMaximum p A x /\
-    (forall j : Fin n, x j ≠ 0) /\
-    IsBoydInnerRowwiseSmoothDomain p A x
+open scoped BigOperators Topology
 
 /-- The audit-facing strong-maximum predicate supplies an actual second
 derivative with a uniform negative tangent gap.  The derivative facts are
@@ -46,63 +47,6 @@ theorem IsBoydConcreteSourceStrongLocalMaximum.hasActualSecondDerivativeGap
     boydConstrainedSecondVariation_is_second_derivative_rowwise_source_domain
       hp A x h hxcoord hsmooth
   exact ⟨hfirst, hsecond, hgap h⟩
-
-/-- A concrete `p < 2` source-domain witness with a genuine zero coordinate
-of `A*x`: the second row is identically zero and is therefore harmless. -/
-theorem boyd_inner_rowwise_domain_zero_row_example :
-    IsBoydInnerRowwiseSmoothDomain ((3 : Real) / 2)
-      (fun i : Fin 2 => fun _j : Fin 1 => if i = 0 then 1 else 0)
-      (fun _j : Fin 1 => 1) := by
-  right
-  intro i
-  fin_cases i
-  · left
-    simp [boydRectActionCLM_apply]
-  · right
-    intro j
-    simp
-
-/-- The complete corrected strong-local-maximum predicate is nonvacuous on
-the genuinely enlarged `p < 2` source domain: the second row is identically
-zero, while the one-dimensional active problem has a normalized stationary
-point and a vacuous tangent space. -/
-theorem boyd_concrete_source_strongLocalMaximum_zero_row_example :
-    IsBoydConcreteSourceStrongLocalMaximum ((3 : Real) / 2)
-      (fun i : Fin 2 => fun _j : Fin 1 => if i = 0 then 1 else 0)
-      (fun _j : Fin 1 => 1) := by
-  let A : Fin 2 -> Fin 1 -> Real :=
-    fun i _j => if i = 0 then 1 else 0
-  let x : Fin 1 -> Real := fun _j => 1
-  have hsmooth : IsBoydInnerRowwiseSmoothDomain ((3 : Real) / 2) A x := by
-    simpa [A, x] using boyd_inner_rowwise_domain_zero_row_example
-  have hunit : realLpPowerSum ((3 : Real) / 2) x = 1 := by
-    simp [realLpPowerSum, x]
-  have hS : 0 < realLpPowerSum ((3 : Real) / 2)
-      (boydRectActionCLM A x) := by
-    norm_num [realLpPowerSum, boydRectActionCLM_apply, A, x]
-  have hstationary : forall j : Fin 1,
-      (∑ i : Fin 2, A i j *
-        (|boydRectActionCLM A x i| ^ (((3 : Real) / 2) - 2) *
-          boydRectActionCLM A x i)) =
-        realLpPowerSum ((3 : Real) / 2) (boydRectActionCLM A x) *
-          (|x j| ^ (((3 : Real) / 2) - 2) * x j) := by
-    intro j
-    fin_cases j
-    norm_num [realLpPowerSum, boydRectActionCLM_apply, A, x]
-  have hnondeg : IsBoydConcreteNondegenerate ((3 : Real) / 2) A x := by
-    refine ⟨1, by norm_num, ?_⟩
-    intro h htangent
-    have hzero : h (0 : Fin 1) = 0 := by
-      simpa [boydWeightedPair, x] using htangent
-    have hh : h = 0 := by
-      funext j
-      have hj : j = (0 : Fin 1) := Subsingleton.elim _ _
-      subst j
-      exact hzero
-    simp [hh, boydConstrainedSecondVariation, boydWeightedPair]
-  change IsBoydConcreteSourceStrongLocalMaximum ((3 : Real) / 2) A x
-  exact ⟨⟨⟨hunit, hS, hstationary⟩, hnondeg⟩,
-    (by intro j; simp [x]), hsmooth⟩
 
 /-- Uniform local-linear theorem for the literal rectangular Boyd update on
 the corrected source domain.  Fixedness, the actual Frechet derivative, and
@@ -250,4 +194,5 @@ theorem higham15_boyd_source_linear_of_strongLocalMaximum_subsequentialLimit
   · exact tendsto_rectPNormPair_xseq_of_tail
       (RectPNormPair.general hn hpq A) x0 x (phi r) hconvTail
 
-end NumStability.Ch15
+end Ch15
+end NumStability

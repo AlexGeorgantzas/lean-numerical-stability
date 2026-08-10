@@ -1,16 +1,26 @@
--- Algorithms/HighamChapter15BoydSourceSecondDerivative.lean
---
--- The constrained second variation used in Boyd's local convergence proof is
--- an actual second derivative on the exact composition domain of the literal
--- rectangular update.  In the nonsmooth range, a vanishing coordinate of
--- `A x` is allowed only when the corresponding row of `A` is identically
--- zero; that row then contributes the constant-zero function.
-
 import NumStability.Algorithms.HighamChapter15BoydRowwiseDomain
 
-namespace NumStability.Ch15
+/-!
+# HighamChapter15BoydSourceSecondDerivative (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
+
+namespace NumStability
+
+namespace Ch15
 
 open Filter Function Set
+
 open scoped BigOperators Topology
 
 private theorem hasDerivAt_gradientFactor_affine_of_two_le
@@ -138,4 +148,5 @@ theorem boydConstrainedSecondVariation_is_second_derivative_rowwise_source_domai
     boydConstrainedLagrangianFirst_hasDerivAt_rowwise_source_domain
       A x h hxcoord hsmooth⟩
 
-end NumStability.Ch15
+end Ch15
+end NumStability

@@ -1,0 +1,32 @@
+import NumStability.Algorithms.HighamChapter15BoydRowwiseDomain
+
+/-!
+# Old path: `NumStability.Algorithms.HighamChapter15BoydRowwiseDomain`
+
+Imports only the historical module. Every public declaration the owner
+had at C0007 still resolves through the compatibility module, so no
+consumer that used this import path can have been broken by the split.
+-/
+
+#check @NumStability.Ch15.IsBoydInnerRowwiseSmoothDomain
+#check @NumStability.Ch15.IsBoydRowwiseCompositionSmooth
+#check @NumStability.Ch15.boydRectActionCLM_apply_eq_zero_of_row_zero
+#check @NumStability.Ch15.boydRectInnerNormalMap
+#check @NumStability.Ch15.boydRectInnerNormalMap_coordinateFactor_eq_zero_of_row_zero
+#check @NumStability.Ch15.boydRectInnerNormalMap_line_hasDerivAt_of_rowwise
+#check @NumStability.Ch15.boydRectNormalMap
+#check @NumStability.Ch15.boydRectNormalMap_line_hasDerivAt_of_rowwise
+#check @NumStability.Ch15.boydSmoothRectDerivative_apply_directional_chain_of_rowwise_lt_two
+#check @NumStability.Ch15.boydSmoothRectDerivative_apply_eq_inv_projectedLemma3B_of_rowwise_lt_two
+#check @NumStability.Ch15.boydSmoothRectUpdate_hasFDerivAt_of_rowwise_lt_two
+#check @NumStability.Ch15.differentiableAt_boydRectInnerNormalMap_of_rowwise
+#check @NumStability.Ch15.differentiableAt_boydRectNormalMap_of_rowwise
+#check @NumStability.Ch15.fderiv_boydRectInnerNormalMap_apply_of_rowwise
+#check @NumStability.Ch15.fderiv_boydRectNormalMap_apply_of_rowwise
+#check @NumStability.Ch15.holderConjugate_two_le_right_of_left_le_two
+#check @NumStability.Ch15.rect_general_fderiv_xnext_apply_eq_inv_projectedLemma3B_of_rowwise_lt_two
+#check @NumStability.Ch15.rect_general_fderiv_xnext_apply_eq_inv_projectedLemma3B_rowwise_source_domain
+#check @NumStability.Ch15.rect_general_fderiv_xnext_eq_boydSmoothRectDerivative_of_rowwise_lt_two
+#check @NumStability.Ch15.rect_general_fderiv_xnext_eq_boydSmoothRectDerivative_rowwise_source_domain
+#check @NumStability.Ch15.rect_general_xnext_hasFDerivAt_boyd_of_rowwise_lt_two
+#check @NumStability.Ch15.rect_general_xnext_hasFDerivAt_boyd_rowwise_source_domain

@@ -1,18 +1,26 @@
--- Algorithms/LU/TridiagonalCondCh15IkebeClosure.lean
---
--- Source-hypothesis closure of Higham, Theorem 15.9 (Ikebe): the inverse of
--- an irreducible tridiagonal matrix is rank one on each of its two triangles.
---
--- Unlike `Ch15.H15_Theorem15_9`, the endpoint below does not assume an LU
--- factorization or formulas for entries of bidiagonal inverses.  Its only
--- algebraic inputs are the printed tridiagonal irreducibility hypothesis and
--- an actual right-inverse certificate for the displayed inverse matrix.
-
 import NumStability.Algorithms.LU.TridiagonalCondCh15
 
-namespace NumStability.Ch15IkebeClosure
+/-!
+# TridiagonalCondCh15IkebeClosure (compatibility module)
+
+Historical path, retained so existing imports of `NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure`
+keep resolving. Most of its declarations moved unchanged to the
+canonical modules imported above.
+
+The declarations still defined below are private declarations and
+their users. Lean mangles a private name to
+`_private.<module>.<n>.<name>`, so relocating one renames it and
+breaks the frozen declaration graph; anything referring to one must
+therefore stay with it. This module is a declaration-bearing facade,
+not a pure import shim.
+-/
+
+namespace NumStability
+
+namespace Ch15IkebeClosure
 
 open scoped BigOperators
+
 open NumStability
 
 /-- If a square matrix has a nonzero first superdiagonal and no entries above
@@ -267,4 +275,5 @@ theorem H15_Theorem15_9_of_irreducible_rightInverse {n : ℕ} (hn : 0 < n)
   have h := hqp j i hji
   simpa [AinvT, mul_comm] using h
 
-end NumStability.Ch15IkebeClosure
+end Ch15IkebeClosure
+end NumStability
