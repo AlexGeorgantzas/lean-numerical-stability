@@ -15,12 +15,14 @@ and both clean named worker worktrees were removed without force. Local branch
 refs remain preserved at the immutable delivery tips. This successor has
 precedence over dated migration packets and historical handoffs.
 
-The next planned pair is B0003/R11 (QR and Chapter 19) with B0004/R12
-(Chapter 13 equations and Table 01), both rooted at exact C0001 code
+The active pair is B0003/R11 (QR and Chapter 19) with B0004/R12 (Chapter 13
+equations and Table 01), both rooted at exact C0001 code
 `117aa2bb7e61f41e1531a78452f9f7f6cd5b0771`. Their fresh selectors,
 format-2 projections, routes, private closure, test plans, and same-preimage
-shared-request union are frozen in the active successor. Refs and worktrees are
-created only after the planned-control commit is green.
+shared-request union are frozen in the active successor. Planned-control commit
+`c48d241532ad3dee12f4107a5e8875c7054159be` passed Lean CI run 31546978830
+(job 93961477202) before both exact refs and clean named worktrees were created
+and activated.
 
 The immutable predecessor
 [`2026-08 repository reorganization`](2026-08-repository-reorganization/README.md)

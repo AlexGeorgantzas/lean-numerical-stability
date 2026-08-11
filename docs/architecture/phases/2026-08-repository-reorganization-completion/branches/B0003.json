@@ -10707,6 +10707,10 @@
         "sha256": "9C08C0DB55B749FF28CD1DE249E8EC6D4884A53FD72BB9E31B34277EF8602090"
       },
       {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R11-R12-activation.md",
+        "sha256": "DAE1DA51B76C260C4EAF76791128719BD30BF600D416B4FFB2BCA54FE22F01F8"
+      },
+      {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R11-R12-operator-authorization.md",
         "sha256": "E6CBEFC8E640603A8FB176268301A34727D777120B3ED3386517403A4A8DCB5D"
       },
@@ -10741,6 +10745,6 @@
   "shared_request_ids": [
     "R0003"
   ],
-  "status": "planned",
+  "status": "active",
   "wave_id": "R11"
 }
