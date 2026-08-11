@@ -1,0 +1,62 @@
+test_class	target	purpose
+canonical_only	NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.BlockForm.Existence	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.BlockForm.ProjectorLimit	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.Execution.RoundedCertificates	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.Projectors.FixedRange	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.Limits.General	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.Limits.RealSpectrum	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.PrimarySplitting	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.QuasiTriangularBlockForm	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.TriangularBlockForm	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter17.Results.Equation08.GeometricSummability	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter17.Results.Equation12.AttainedPartialSumBound	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter17.Results.Equation15.UniformForwardBound	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter17.Results.Equation16.JacobiForwardBound	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter17.Results.Equation17.SORForwardBound	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter17.Results.Equation20.DiagonalizableBounds	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter17.Results.Equation20.ResidualSigmaEnvelope	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter17.Results.Equation27.SingularErrorSplit	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter17.Results.Equation29.SingularBounds	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter17.Results.Section01.RoundedExecution	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter17.Results.Section04.DrazinConsequences	compile exact canonical destination without historical owner import
+focused	NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.BlockForm.Existence	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.BlockForm.ProjectorLimit	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.Execution.RoundedCertificates	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.Projectors.FixedRange	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.Limits.General	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.Limits.RealSpectrum	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.PrimarySplitting	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.QuasiTriangularBlockForm	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.TriangularBlockForm	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter17.Results.Equation08.GeometricSummability	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter17.Results.Equation12.AttainedPartialSumBound	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter17.Results.Equation15.UniformForwardBound	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter17.Results.Equation16.JacobiForwardBound	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter17.Results.Equation17.SORForwardBound	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter17.Results.Equation20.DiagonalizableBounds	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter17.Results.Equation20.ResidualSigmaEnvelope	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter17.Results.Equation27.SingularErrorSplit	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter17.Results.Equation29.SingularBounds	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter17.Results.Section01.RoundedExecution	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter17.Results.Section04.DrazinConsequences	exercise frozen declaration route and private-normalized closure
+old_only	NumStability.Algorithms.StationaryIteration	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.StationaryIterationDrazin	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.StationaryIterationRounded	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.StationaryIterationSemiconvergent	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.StationaryIterationSemiconvergentExistence	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Analysis.SemiconvergentBlockFormExists	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Analysis.SemiconvergentExistenceComplete	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Analysis.SemiconvergentExistenceFull	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Analysis.SemiconvergentLimitGeneral	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Analysis.SemiconvergentRealSpectrumComplete	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Source.Higham.Chapter17.Equation08	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Source.Higham.Chapter17.Equation12	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Source.Higham.Chapter17.Equation15	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Source.Higham.Chapter17.Equation16	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Source.Higham.Chapter17.Equation17	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Source.Higham.Chapter17.Equation20	compile historical import-only wrapper and preserved public surface
+protected_consumer	NumStability.Algorithms	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.StationaryIterationSeries	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter17	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter17.Equation22	compile hash-pinned integrator-owned consumer postimage

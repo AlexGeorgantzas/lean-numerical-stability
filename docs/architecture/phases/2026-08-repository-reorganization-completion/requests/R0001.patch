@@ -1,0 +1,129 @@
+diff --git a/NumStability/Algorithms.lean b/NumStability/Algorithms.lean
+--- a/NumStability/Algorithms.lean
++++ b/NumStability/Algorithms.lean
+@@ -92,6 +92,7 @@
+ import NumStability.Algorithms.LinearSystems
+ import NumStability.Algorithms.LinearSystems.Cholesky.Perturbation
+ import NumStability.Algorithms.LinearSystems.Cholesky.Solve
++import NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.All
+ import NumStability.Algorithms.LinearSystems.LeastSquares
+ import NumStability.Algorithms.LinearSystems.LU.BlockLU
+ import NumStability.Algorithms.LinearSystems.QR.GivensMatrixStep
+@@ -163,11 +164,6 @@
+ import NumStability.Algorithms.RandNLA
+ import NumStability.Algorithms.RankOneUpdate
+ import NumStability.Algorithms.SquareDifference
+-import NumStability.Algorithms.StationaryIteration
+-import NumStability.Algorithms.StationaryIterationDrazin
+-import NumStability.Algorithms.StationaryIterationRounded
+-import NumStability.Algorithms.StationaryIterationSemiconvergent
+-import NumStability.Algorithms.StationaryIterationSemiconvergentExistence
+ import NumStability.Algorithms.Summation
+ import NumStability.Algorithms.Sylvester
+ import NumStability.Algorithms.TestMatrices.Higham28
+@@ -244,6 +240,7 @@
+ import NumStability.Analysis.HenriciSharpConstantExact
+ import NumStability.Analysis.InverseOpNorm2
+ import NumStability.Analysis.JordanNormalForm
++import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.All
+ import NumStability.Analysis.MatrixPowersBaiDemmelGu
+ import NumStability.Analysis.MatrixPowersBaiDemmelGuDistance
+ import NumStability.Analysis.MatrixPowersBinomialBound
+@@ -270,12 +267,7 @@
+ import NumStability.Analysis.RealSchurTriangulation
+ import NumStability.Analysis.ResolventFunctionalCalculus
+ import NumStability.Analysis.SchurTriangulation
+-import NumStability.Analysis.SemiconvergentBlockFormExists
+-import NumStability.Analysis.SemiconvergentExistenceComplete
+-import NumStability.Analysis.SemiconvergentExistenceFull
+ import NumStability.Analysis.SemiconvergentExistenceGaps
+-import NumStability.Analysis.SemiconvergentLimitGeneral
+-import NumStability.Analysis.SemiconvergentRealSpectrumComplete
+ import NumStability.Analysis.SemiconvergentSpectral
+ import NumStability.Analysis.SylvesterSchurExistence
+ import NumStability.Source.Higham.Chapter04
+@@ -299,6 +291,7 @@
+ import NumStability.Source.Higham.Chapter14
+ import NumStability.Source.Higham.Chapter14.Section03.ResidualOperatorTwoNorm
+ import NumStability.Source.Higham.Chapter17
++import NumStability.Source.Higham.Chapter17.Results.All
+ import NumStability.Source.Higham.Chapter19
+ import NumStability.Source.Higham.Chapter20
+ import NumStability.Source.Higham.Chapter22
+diff --git a/NumStability/Algorithms/StationaryIterationSeries.lean b/NumStability/Algorithms/StationaryIterationSeries.lean
+--- a/NumStability/Algorithms/StationaryIterationSeries.lean
++++ b/NumStability/Algorithms/StationaryIterationSeries.lean
+@@ -1,10 +1,5 @@
+-import NumStability.Source.Higham.Chapter17.Equation08
+-import NumStability.Source.Higham.Chapter17.Equation12
+-import NumStability.Source.Higham.Chapter17.Equation15
+-import NumStability.Source.Higham.Chapter17.Equation16
+-import NumStability.Source.Higham.Chapter17.Equation17
+-import NumStability.Source.Higham.Chapter17.Equation20
+ import NumStability.Source.Higham.Chapter17.Problem01
++import NumStability.Source.Higham.Chapter17.Results.Series
+
+ /-!
+ # Historical stationary-iteration series import
+diff --git a/NumStability/Analysis.lean b/NumStability/Analysis.lean
+--- a/NumStability/Analysis.lean
++++ b/NumStability/Analysis.lean
+@@ -49,6 +49,7 @@
+ import NumStability.Analysis.LeadingDigits
+ import NumStability.Analysis.LiebTrace
+ import NumStability.Analysis.LinearOperators
++import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.All
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.MatrixConcentration
+ import NumStability.Analysis.MatrixInequalities
+@@ -87,7 +88,6 @@
+ import NumStability.Analysis.Rounding
+ import NumStability.Analysis.SampleVariance
+ import NumStability.Analysis.SchurTriangulation
+-import NumStability.Analysis.SemiconvergentRealSpectrumComplete
+ import NumStability.Analysis.SemiconvergentSpectral
+ import NumStability.Analysis.SingularValues
+ import NumStability.Analysis.Stability
+diff --git a/NumStability/Source/Higham/Chapter17.lean b/NumStability/Source/Higham/Chapter17.lean
+--- a/NumStability/Source/Higham/Chapter17.lean
++++ b/NumStability/Source/Higham/Chapter17.lean
+@@ -5,22 +5,16 @@
+ import NumStability.Source.Higham.Chapter17.Equation05.ErrorExpansion.Results
+ import NumStability.Source.Higham.Chapter17.Equation06.ComponentwiseForward.Results
+ import NumStability.Source.Higham.Chapter17.Equation07.NormwiseGrowth.Results
+-import NumStability.Source.Higham.Chapter17.Equation08
+ import NumStability.Source.Higham.Chapter17.Equation08.NormwiseForward.Results
+ import NumStability.Source.Higham.Chapter17.Equation09.ComponentwiseGrowth.Results
+ import NumStability.Source.Higham.Chapter17.Equation10.LocalErrorSimplification.Results
+-import NumStability.Source.Higham.Chapter17.Equation12
+ import NumStability.Source.Higham.Chapter17.Equation12.PartialSumBound.Results
+ import NumStability.Source.Higham.Chapter17.Equation13.ComponentwiseForward.Results
+-import NumStability.Source.Higham.Chapter17.Equation15
+ import NumStability.Source.Higham.Chapter17.Equation15.NormwiseForward.Results
+-import NumStability.Source.Higham.Chapter17.Equation16
+ import NumStability.Source.Higham.Chapter17.Equation16.Jacobi.Results
+-import NumStability.Source.Higham.Chapter17.Equation17
+ import NumStability.Source.Higham.Chapter17.Equation17.SOR.Results
+ import NumStability.Source.Higham.Chapter17.Equation18.ResidualRecurrence.Results
+ import NumStability.Source.Higham.Chapter17.Equation19.ResidualBound.Results
+-import NumStability.Source.Higham.Chapter17.Equation20
+ import NumStability.Source.Higham.Chapter17.Equation20.ResidualSigma.Results
+ import NumStability.Source.Higham.Chapter17.Equation21.SingularIteration.Results
+ import NumStability.Source.Higham.Chapter17.Equation22
+@@ -29,6 +23,7 @@
+ import NumStability.Source.Higham.Chapter17.Equation29.SingularSource.Results
+ import NumStability.Source.Higham.Chapter17.Equation33.StoppingTests.Results
+ import NumStability.Source.Higham.Chapter17.Problem01
++import NumStability.Source.Higham.Chapter17.Results.All
+ import NumStability.Source.Higham.Chapter17.Section02.ScaleIndependence.Results
+ import NumStability.Source.Higham.Chapter17.Section04.PrintedConclusions.Results
+
+diff --git a/NumStability/Source/Higham/Chapter17/Equation22.lean b/NumStability/Source/Higham/Chapter17/Equation22.lean
+--- a/NumStability/Source/Higham/Chapter17/Equation22.lean
++++ b/NumStability/Source/Higham/Chapter17/Equation22.lean
+@@ -1,4 +1,4 @@
+-import NumStability.Analysis.SemiconvergentLimitGeneral
++import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.Limits.General
+
+ /-!
+ # Higham Chapter 17, Equation 17.22

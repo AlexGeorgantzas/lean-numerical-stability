@@ -1,0 +1,169 @@
+{
+  "accepted_at": "2026-08-11T09:20:00Z",
+  "accepted_by": "primary-human",
+  "checkpoint_id": "C0000",
+  "combined_baseline": {
+    "artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0000-combined.json",
+      "sha256": "2EA9D8C24D3E4D3EEA6B3A135FE195946BB8659C7E5FBF9452DADD89D1726A2F"
+    },
+    "format_version": 2,
+    "generation_command": "reuse byte-exact accepted C0008 format-2 baseline at identical C0000 code SHA",
+    "summary_artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0000-combined.md",
+      "sha256": "4A5B66823D07FBDAE0AD15F3C182035BCBF75F98D58F2856F05E80905AA6F9C6"
+    }
+  },
+  "commit_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+  "gates": [
+    {
+      "command": "python tools/architecture/check_phase.py --phase-dir docs/architecture/phases/2026-08-repository-reorganization",
+      "commit_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0000-gates.md",
+        "sha256": "139264A94A32B82686CF02244CDE9AA3E15528BD4506B072D60D2E33A14D4EE0"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "architecture",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "verify immutable C0008 format-2 baseline and raw graph hashes",
+      "commit_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0000-gates.md",
+        "sha256": "139264A94A32B82686CF02244CDE9AA3E15528BD4506B072D60D2E33A14D4EE0"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "combined_baseline",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/check_compatibility.py",
+      "commit_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0000-gates.md",
+        "sha256": "139264A94A32B82686CF02244CDE9AA3E15528BD4506B072D60D2E33A14D4EE0"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "compatibility",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "GitHub Lean CI 31463301557: lake build NumStability NumStabilityTest",
+      "commit_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0000-gates.md",
+        "sha256": "139264A94A32B82686CF02244CDE9AA3E15528BD4506B072D60D2E33A14D4EE0"
+      },
+      "executor_id": "github-actions",
+      "gate_id": "full_build",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "GitHub Lean CI 31463301557: lake test",
+      "commit_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0000-gates.md",
+        "sha256": "139264A94A32B82686CF02244CDE9AA3E15528BD4506B072D60D2E33A14D4EE0"
+      },
+      "executor_id": "github-actions",
+      "gate_id": "full_tests",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/check_layout.py",
+      "commit_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0000-gates.md",
+        "sha256": "139264A94A32B82686CF02244CDE9AA3E15528BD4506B072D60D2E33A14D4EE0"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "layout",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "verify 467 debt rows plus 15 reviewed W90 outliers and protected MatrixAlgebra decision",
+      "commit_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0000-gates.md",
+        "sha256": "139264A94A32B82686CF02244CDE9AA3E15528BD4506B072D60D2E33A14D4EE0"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "outlier_review",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "python tools/architecture/check_provenance.py",
+      "commit_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0000-gates.md",
+        "sha256": "139264A94A32B82686CF02244CDE9AA3E15528BD4506B072D60D2E33A14D4EE0"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "provenance",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "verify all 2,593 C0008 inventory rows and blob OIDs",
+      "commit_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0000-gates.md",
+        "sha256": "139264A94A32B82686CF02244CDE9AA3E15528BD4506B072D60D2E33A14D4EE0"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "scope",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "C0008 strict-source baseline gate",
+      "commit_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0000-gates.md",
+        "sha256": "139264A94A32B82686CF02244CDE9AA3E15528BD4506B072D60D2E33A14D4EE0"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "strict_source",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    }
+  ],
+  "inventory": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0000-inventory.tsv",
+    "sha256": "05C2DFB3F1A99F928E90DB3E3EA0C2277320DD3985C476ACB1D529762410776F"
+  },
+  "metrics": {
+    "declaration_bearing_umbrellas": 27,
+    "missing_module_docstrings": 72,
+    "mixed_modules": 45,
+    "noncanonical_modules": 268,
+    "production_modules": 2593,
+    "unclassified_modules": 277,
+    "unsorted_aggregate_imports": 0
+  },
+  "milestones_satisfied": [],
+  "parent_checkpoint_id": null,
+  "phase_id": "repository-reorganization-completion-2026-08",
+  "record_kind": "phase_checkpoint",
+  "schema_version": 1,
+  "unblocks": []
+}

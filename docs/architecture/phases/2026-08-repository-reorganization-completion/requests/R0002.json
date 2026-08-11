@@ -1,0 +1,72 @@
+{
+  "blocks": [
+    "R02"
+  ],
+  "created_at": "2026-08-11T09:20:00Z",
+  "depends_on": [],
+  "lane_id": "claude-lane",
+  "patch": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0002.patch",
+    "sha256": "53CFC3ACAC6C3C49D708E97688B8206530860C91CB70A190CE7DC6E4C819835D"
+  },
+  "paths": [
+    "NumStability/Algorithms.lean",
+    "NumStability/Algorithms/NormEstimation/PNorm/All.lean",
+    "NumStability/Algorithms/NormEstimation/PNorm/Rectangular/RectangularTermination.lean",
+    "NumStability/Source/Higham/Chapter15.lean",
+    "NumStability/Source/Higham/Chapter15/Lemma02/PNormPowerMethod/PNormRectangular.lean",
+    "NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/ConvergenceStatements.lean",
+    "NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/RectangularTermination.lean"
+  ],
+  "phase_id": "repository-reorganization-completion-2026-08",
+  "preimage_blobs": [
+    {
+      "blob_oid": "f59bed9a5a837256bc6b4822eb27116ebd9cc617",
+      "path": "NumStability/Algorithms.lean"
+    },
+    {
+      "blob_oid": "4eda7a200ae121a3c7994d4ab87a4c372a41c7ba",
+      "path": "NumStability/Algorithms/NormEstimation/PNorm/All.lean"
+    },
+    {
+      "blob_oid": "4b414e0eb93182cc7d689d9581a70e0d69651319",
+      "path": "NumStability/Algorithms/NormEstimation/PNorm/Rectangular/RectangularTermination.lean"
+    },
+    {
+      "blob_oid": "5b6cc8970bede9149d899a48f32be663f6daeefd",
+      "path": "NumStability/Source/Higham/Chapter15.lean"
+    },
+    {
+      "blob_oid": "70f68de272fb9c8197bb62354be29aaadc994392",
+      "path": "NumStability/Source/Higham/Chapter15/Lemma02/PNormPowerMethod/PNormRectangular.lean"
+    },
+    {
+      "blob_oid": "dd968f7c98891b48a8253db4c060f605538e4f28",
+      "path": "NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/ConvergenceStatements.lean"
+    },
+    {
+      "blob_oid": "d6d736df901bfe9891b57852e3b36213c17b8988",
+      "path": "NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/RectangularTermination.lean"
+    }
+  ],
+  "rationale": "Hash-pinned R02 shared-consumer postimages independently defined against C0000. Postimage manifest SHA-256 3C2E64B3421D23BBF99749E4637D83F97794A18020E67700548A54754FE3FF6E; reviewed union SHA-256 67AFB0F6FBADBB33B5755E9300972A7F4431EB22330F1366D1165EFBCC3FB163; exact union patch SHA-256 E73A8D881DD51CCE710CCB1B4C30320DFE0E6B666F6FC8C0A3E9C167588957E6; union review SHA-256 620CFDEFA27F49655D0F399A56461DD60B7D8BCB2169BF1E2C84B515A46F7DF5. Integration authority applies only after worker delivery validation.",
+  "record_kind": "shared_file_request",
+  "request_id": "R0002",
+  "requester_id": "claude-local",
+  "resolution": {
+    "checkpoint_id": null,
+    "commit_sha": null,
+    "reason": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "validation_evidence": []
+  },
+  "schema_version": 1,
+  "status": "active",
+  "superseded_by": null,
+  "supersedes": null,
+  "target_base_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+  "target_checkpoint_id": "C0000",
+  "valid_through_checkpoint_id": "C0000",
+  "wave_id": "R02"
+}

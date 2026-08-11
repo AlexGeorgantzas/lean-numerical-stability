@@ -1,0 +1,64 @@
+test_class	target	purpose
+canonical_only	NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Rectangular	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Square	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter15.Algorithm04.LAPACKNormEstimator.ConditionEstimate.Bounds	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter15.Algorithm05.LINPACKConditionEstimator.InverseNormBound.TriangularSolve	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.Recurrences.ArrayExecution	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.Recurrences.EntryFormulas	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.Recurrences.FactorizationAndNorm	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter15.Section02.Boyd.EndpointTermination.InfinityCounterexample.Trace	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter15.Section02.Boyd.GlobalConvergence.ScalarCase.Iteration	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.ConstrainedLagrangian.Differentiation	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.SecondDerivative.Rowwise	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.StrongLocalMaximum.Convergence	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter15.Section06.TridiagonalLUConditionBounds.ExactBounds	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter15.Theorem09.Ikebe.IrreducibleRightInverse.RankOneStructure	compile exact canonical destination without historical owner import
+focused	NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Rectangular	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Square	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter15.Algorithm04.LAPACKNormEstimator.ConditionEstimate.Bounds	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter15.Algorithm05.LINPACKConditionEstimator.InverseNormBound.TriangularSolve	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.Recurrences.ArrayExecution	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.Recurrences.EntryFormulas	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.Recurrences.FactorizationAndNorm	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter15.Section02.Boyd.EndpointTermination.InfinityCounterexample.Trace	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter15.Section02.Boyd.GlobalConvergence.ScalarCase.Iteration	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.ConstrainedLagrangian.Differentiation	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.SecondDerivative.Rowwise	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.StrongLocalMaximum.Convergence	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter15.Section06.TridiagonalLUConditionBounds.ExactBounds	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter15.Theorem09.Ikebe.IrreducibleRightInverse.RankOneStructure	exercise frozen declaration route and private-normalized closure
+old_only	NumStability.Algorithms.Ch15CondEstimators	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.Ch15DixonClosure	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.Ch15DixonProbability	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.Chapter15CondEst	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.HighamChapter15BoydBridges	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.HighamChapter15BoydConcreteLemma3	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.HighamChapter15BoydLocalStability	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.HighamChapter15BoydRowwiseDomain	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.HighamChapter15BoydScalar	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.HighamChapter15BoydSourceClosure	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.HighamChapter15BoydSourceDomain	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.HighamChapter15BoydSourceLocal	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.HighamChapter15BoydUniqueness	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.HighamChapter15ConvergenceProse	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.HighamChapter15RectTermination	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.LU.Higham15Problem15_4	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.LU.Higham15Problem15_6	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.LU.Higham15Problem15_6Closure	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.LU.Higham15Problem15_6Operational	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.LU.TridiagonalCondCh15	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.LU.TridiagonalCondCh15Closure	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.NormEstimation.PNorm.Endpoints.ConvergenceStatements	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.NormEstimation.PNorm.Endpoints.PNormRectangular	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.PNormPowerMethod	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.PNormPowerMethodGeneralP	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.PNormPowerMethodRect	compile historical import-only wrapper and preserved public surface
+protected_consumer	NumStability.Algorithms	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.NormEstimation.PNorm.All	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.NormEstimation.PNorm.Rectangular.RectangularTermination	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter15	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter15.Lemma02.PNormPowerMethod.PNormRectangular	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter15.Section02.Boyd.EndpointTermination.ConvergenceStatements	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter15.Section02.Boyd.EndpointTermination.RectangularTermination	compile hash-pinned integrator-owned consumer postimage

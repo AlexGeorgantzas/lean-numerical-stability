@@ -1,0 +1,63 @@
+{
+  "base_checkpoint_id": "C0000",
+  "checker": {
+    "arguments": [
+      "--allow-module=NumStability.Algorithms.StationaryIteration",
+      "--allow-module=NumStability.Algorithms.StationaryIterationDrazin",
+      "--allow-module=NumStability.Algorithms.StationaryIterationRounded",
+      "--allow-module=NumStability.Algorithms.StationaryIterationSemiconvergent",
+      "--allow-module=NumStability.Algorithms.StationaryIterationSemiconvergentExistence",
+      "--allow-module=NumStability.Analysis.SemiconvergentBlockFormExists",
+      "--allow-module=NumStability.Analysis.SemiconvergentExistenceComplete",
+      "--allow-module=NumStability.Analysis.SemiconvergentExistenceFull",
+      "--allow-module=NumStability.Analysis.SemiconvergentLimitGeneral",
+      "--allow-module=NumStability.Analysis.SemiconvergentRealSpectrumComplete",
+      "--allow-module=NumStability.Source.Higham.Chapter17.Equation08",
+      "--allow-module=NumStability.Source.Higham.Chapter17.Equation12",
+      "--allow-module=NumStability.Source.Higham.Chapter17.Equation15",
+      "--allow-module=NumStability.Source.Higham.Chapter17.Equation16",
+      "--allow-module=NumStability.Source.Higham.Chapter17.Equation17",
+      "--allow-module=NumStability.Source.Higham.Chapter17.Equation20",
+      "--allow-prefix=NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.",
+      "--allow-prefix=NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter17.Results.",
+      "--candidate=<candidate-format2.tsv>",
+      "--private-map-sha256=0063E4B0E9C1DAD56F0CCD0A5B9D3897D6F18BEF860482AEB609B83DF6CD4F4A",
+      "--private-map=docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0001-private-normalization.tsv",
+      "--projection-sha256=DB8ACB22219D5C0C51E3F8F8D5296170FDF92C8C1166C0FDB2598EF6E11728D2",
+      "--projection=docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0001.tsv.gz"
+    ],
+    "artifact": {
+      "path": "tools/architecture/check_completion_phase_projection.py",
+      "sha256": "0F32935ED1EFDD2BD4D6A4C346F3E8300C86DB1D4A3551A17165479226109220"
+    }
+  },
+  "combined_baseline": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0000-combined.json",
+    "sha256": "2EA9D8C24D3E4D3EEA6B3A135FE195946BB8659C7E5FBF9452DADD89D1726A2F"
+  },
+  "expected_counts": {
+    "body_edges": 1341,
+    "declarations": 243,
+    "signature_edges": 693,
+    "union_edges": 1422
+  },
+  "phase_id": "repository-reorganization-completion-2026-08",
+  "projection_graph": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0001.tsv.gz",
+    "sha256": "DB8ACB22219D5C0C51E3F8F8D5296170FDF92C8C1166C0FDB2598EF6E11728D2"
+  },
+  "projection_id": "P0001",
+  "record_kind": "baseline_projection",
+  "schema_version": 1,
+  "selector": {
+    "artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/selectors/R01.tsv",
+      "sha256": "6D839B9008474CD9CBECEF5EE35FE347B91FD50541F8E347AA8648FF55EF81EB"
+    },
+    "kind": "module_path_tsv"
+  },
+  "status": "active",
+  "superseded_by": null,
+  "wave_id": "R01"
+}

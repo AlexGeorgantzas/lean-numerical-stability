@@ -1,0 +1,62 @@
+{
+  "blocks": [
+    "R01"
+  ],
+  "created_at": "2026-08-11T09:20:00Z",
+  "depends_on": [],
+  "lane_id": "codex-lane",
+  "patch": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0001.patch",
+    "sha256": "E5A8F2C07CFE899B3F6B9C486989A92FF94CE99E16EF104278D52BADD0B8FA8C"
+  },
+  "paths": [
+    "NumStability/Algorithms.lean",
+    "NumStability/Algorithms/StationaryIterationSeries.lean",
+    "NumStability/Analysis.lean",
+    "NumStability/Source/Higham/Chapter17.lean",
+    "NumStability/Source/Higham/Chapter17/Equation22.lean"
+  ],
+  "phase_id": "repository-reorganization-completion-2026-08",
+  "preimage_blobs": [
+    {
+      "blob_oid": "f59bed9a5a837256bc6b4822eb27116ebd9cc617",
+      "path": "NumStability/Algorithms.lean"
+    },
+    {
+      "blob_oid": "75e055fc909672d3d9d49f14c4db5c817c824f4b",
+      "path": "NumStability/Algorithms/StationaryIterationSeries.lean"
+    },
+    {
+      "blob_oid": "dafee55fca91c338b759afda792b7d92a4a1b5da",
+      "path": "NumStability/Analysis.lean"
+    },
+    {
+      "blob_oid": "796c9ee6659b36052ba6da675e343169b560c297",
+      "path": "NumStability/Source/Higham/Chapter17.lean"
+    },
+    {
+      "blob_oid": "79e1597764ab583db621ea6ffe58354f7b2046e1",
+      "path": "NumStability/Source/Higham/Chapter17/Equation22.lean"
+    }
+  ],
+  "rationale": "Hash-pinned R01 shared-consumer postimages independently defined against C0000. Postimage manifest SHA-256 C19BCD0823E2A6279E54DEF210F37D11DBFB7C6D06A5507B74E851CFB97CDA5E; reviewed union SHA-256 67AFB0F6FBADBB33B5755E9300972A7F4431EB22330F1366D1165EFBCC3FB163; exact union patch SHA-256 E73A8D881DD51CCE710CCB1B4C30320DFE0E6B666F6FC8C0A3E9C167588957E6; union review SHA-256 620CFDEFA27F49655D0F399A56461DD60B7D8BCB2169BF1E2C84B515A46F7DF5. Integration authority applies only after worker delivery validation.",
+  "record_kind": "shared_file_request",
+  "request_id": "R0001",
+  "requester_id": "codex-local",
+  "resolution": {
+    "checkpoint_id": null,
+    "commit_sha": null,
+    "reason": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "validation_evidence": []
+  },
+  "schema_version": 1,
+  "status": "active",
+  "superseded_by": null,
+  "supersedes": null,
+  "target_base_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+  "target_checkpoint_id": "C0000",
+  "valid_through_checkpoint_id": "C0000",
+  "wave_id": "R01"
+}

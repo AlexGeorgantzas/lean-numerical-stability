@@ -1,10 +1,15 @@
 # Reorganization phases
 
 The active operating contract is the
-[`2026-08 repository reorganization`](2026-08-repository-reorganization/README.md).
-It has precedence over dated migration packets and historical handoffs.
+[`2026-08 repository reorganization completion`](2026-08-repository-reorganization-completion/README.md),
+selected by [`active-phase.json`](active-phase.json). It is rooted at C0000 on
+accepted predecessor code commit
+`b1b18772d80185ec08f49c818919558645c330a1` and has precedence over dated
+migration packets and historical handoffs.
 
-Its current accepted checkpoint is C0008 at code commit
+The immutable predecessor
+[`2026-08 repository reorganization`](2026-08-repository-reorganization/README.md)
+remains the historical record. Its final accepted checkpoint is C0008 at code commit
 `b1b18772d80185ec08f49c818919558645c330a1`. M01 through M12 are accepted;
 M90 is ready but remains unactivated, and repository-wide completion remains
 incomplete. B0011/W07 and B0012/W10 were delivered from exact C0007 at

@@ -1,0 +1,6 @@
+module	frozen_suggestion	current_review_status	required_correction
+NumStability.Algorithms.Cholesky.CholeskyPSD	reusable	semantic_review_required	review source-numbered declarations before tiering or split source correspondence
+NumStability.Algorithms.GaussJordanPivoting	reusable	confirmed_source	map Higham Chapter 14 Algorithm 4 under Source.Higham.Chapter14
+NumStability.Algorithms.Higham726Rump	source_at_Chapter72	confirmed_bad_route	review canonical Chapter 7 Equation 26 destination; Chapter72 is invalid
+NumStability.Algorithms.RandNLA.ElementwiseSpectral	reusable	semantic_review_required	review equation/source-named declarations before tiering or split source correspondence
+NumStability.Algorithms.RandNLA.LowRankApprox	reusable	semantic_review_required	review 193 equation/source-named declarations before tiering or split source correspondence

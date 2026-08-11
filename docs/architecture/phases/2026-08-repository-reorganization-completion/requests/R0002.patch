@@ -1,0 +1,184 @@
+diff --git a/NumStability/Algorithms.lean b/NumStability/Algorithms.lean
+--- a/NumStability/Algorithms.lean
++++ b/NumStability/Algorithms.lean
+@@ -48,12 +48,8 @@
+ import NumStability.Algorithms.Ch14Problem142Families
+ import NumStability.Algorithms.Ch14Problem142Method2B
+ import NumStability.Algorithms.Ch14ProductErrorNotation
+-import NumStability.Algorithms.Ch15CondEstimators
+-import NumStability.Algorithms.Ch15DixonClosure
+-import NumStability.Algorithms.Ch15DixonProbability
+ import NumStability.Algorithms.Ch5DerivativeError
+ import NumStability.Algorithms.Ch5SourceClosure
+-import NumStability.Algorithms.Chapter15CondEst
+ import NumStability.Algorithms.Cholesky.CholeskyDemmel
+ import NumStability.Algorithms.Cholesky.CholeskyFl
+ import NumStability.Algorithms.Cholesky.CholeskyNonsym
+@@ -76,14 +72,6 @@
+ import NumStability.Algorithms.Higham5PatersonStockmeyer
+ import NumStability.Algorithms.Higham726Rump
+ import NumStability.Algorithms.HighamChapter10
+-import NumStability.Algorithms.HighamChapter15BoydBridges
+-import NumStability.Algorithms.HighamChapter15BoydConcreteLemma3
+-import NumStability.Algorithms.HighamChapter15BoydLocalStability
+-import NumStability.Algorithms.HighamChapter15BoydSourceClosure
+-import NumStability.Algorithms.HighamChapter15BoydSourceLocal
+-import NumStability.Algorithms.HighamChapter15BoydUniqueness
+-import NumStability.Algorithms.HighamChapter15ConvergenceProse
+-import NumStability.Algorithms.HighamChapter15RectTermination
+ import NumStability.Algorithms.HighamChapter5ComplexAlgorithm51
+ import NumStability.Algorithms.HighamChapter8
+ import NumStability.Algorithms.HighamChapters1To9SourceClosure
+@@ -120,16 +108,10 @@
+ import NumStability.Algorithms.LU.Doolittle
+ import NumStability.Algorithms.LU.GaussianElimination
+ import NumStability.Algorithms.LU.GrowthFactor
+-import NumStability.Algorithms.LU.Higham15Problem15_4
+-import NumStability.Algorithms.LU.Higham15Problem15_6Closure
+-import NumStability.Algorithms.LU.Higham15Problem15_6Operational
+ import NumStability.Algorithms.LU.LUSolve
+ import NumStability.Algorithms.LU.SpecialMatrices
+ import NumStability.Algorithms.LU.Tridiagonal
+ import NumStability.Algorithms.LU.TridiagonalCond
+-import NumStability.Algorithms.LU.TridiagonalCondCh15
+-import NumStability.Algorithms.LU.TridiagonalCondCh15Closure
+-import NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure
+ import NumStability.Algorithms.LU.TridiagonalRecurrence
+ import NumStability.Algorithms.MatMul
+ import NumStability.Algorithms.MatMulBackwardError
+@@ -154,9 +136,6 @@
+ import NumStability.Algorithms.Norm2
+ import NumStability.Algorithms.NormEstimation
+ import NumStability.Algorithms.OuterProduct
+-import NumStability.Algorithms.PNormPowerMethod
+-import NumStability.Algorithms.PNormPowerMethodGeneralP
+-import NumStability.Algorithms.PNormPowerMethodRect
+ import NumStability.Algorithms.PriestAccuracy
+ import NumStability.Algorithms.PriestDefectBounded
+ import NumStability.Algorithms.Quadrature
+@@ -298,6 +277,7 @@
+ import NumStability.Source.Higham.Chapter13.DemmelSharpMultiplier
+ import NumStability.Source.Higham.Chapter14
+ import NumStability.Source.Higham.Chapter14.Section03.ResidualOperatorTwoNorm
++import NumStability.Source.Higham.Chapter15
+ import NumStability.Source.Higham.Chapter17
+ import NumStability.Source.Higham.Chapter19
+ import NumStability.Source.Higham.Chapter20
+diff --git a/NumStability/Algorithms/NormEstimation/PNorm/All.lean b/NumStability/Algorithms/NormEstimation/PNorm/All.lean
+--- a/NumStability/Algorithms/NormEstimation/PNorm/All.lean
++++ b/NumStability/Algorithms/NormEstimation/PNorm/All.lean
+@@ -7,8 +7,8 @@
+ import NumStability.Algorithms.NormEstimation.PNorm.Duality.ConvergenceStatements
+ import NumStability.Algorithms.NormEstimation.PNorm.Duality.PNormGeneral
+ import NumStability.Algorithms.NormEstimation.PNorm.Duality.PNormPowerMethod
+-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.ConvergenceStatements
+-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.PNormRectangular
++import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Rectangular
++import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Square
+ import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.BoydConcrete
+ import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.BoydInterface
+ import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.PNormGeneral
+diff --git a/NumStability/Algorithms/NormEstimation/PNorm/Rectangular/RectangularTermination.lean b/NumStability/Algorithms/NormEstimation/PNorm/Rectangular/RectangularTermination.lean
+--- a/NumStability/Algorithms/NormEstimation/PNorm/Rectangular/RectangularTermination.lean
++++ b/NumStability/Algorithms/NormEstimation/PNorm/Rectangular/RectangularTermination.lean
+@@ -17,7 +17,7 @@
+ import NumStability.Algorithms.LU.GrowthFactor
+ import NumStability.Algorithms.NormEstimation.OneNorm.FiniteIndex.Basic
+ import NumStability.Algorithms.NormEstimation.OneNorm.PowerMethod.CondEstimation
+-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.PNormRectangular
++import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Rectangular
+ import NumStability.Algorithms.NormEstimation.PNorm.Rectangular.PNormRectangular
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.MatrixNorms.Lp
+diff --git a/NumStability/Source/Higham/Chapter15.lean b/NumStability/Source/Higham/Chapter15.lean
+--- a/NumStability/Source/Higham/Chapter15.lean
++++ b/NumStability/Source/Higham/Chapter15.lean
+@@ -3,7 +3,9 @@
+ import NumStability.Source.Higham.Chapter15.Algorithm01.PNormPowerMethod.PNormRectangular
+ import NumStability.Source.Higham.Chapter15.Algorithm03.OneNormPowerMethod.Basic
+ import NumStability.Source.Higham.Chapter15.Algorithm04.LAPACKNormEstimator.Basic
++import NumStability.Source.Higham.Chapter15.Algorithm04.LAPACKNormEstimator.ConditionEstimate.Bounds
+ import NumStability.Source.Higham.Chapter15.Algorithm05.LINPACKConditionEstimator.Basic
++import NumStability.Source.Higham.Chapter15.Algorithm05.LINPACKConditionEstimator.InverseNormBound.TriangularSolve
+ import NumStability.Source.Higham.Chapter15.Equation02.Subgradient.PNormGeneral
+ import NumStability.Source.Higham.Chapter15.Equation02.Subgradient.PNormPowerMethod
+ import NumStability.Source.Higham.Chapter15.Equation03.GradientQuotient.ConvergenceStatements
+@@ -18,6 +20,9 @@
+ import NumStability.Source.Higham.Chapter15.Lemma02.PNormPowerMethod.PNormPowerMethod
+ import NumStability.Source.Higham.Chapter15.Lemma02.PNormPowerMethod.PNormRectangular
+ import NumStability.Source.Higham.Chapter15.Problem04.LUConditionBounds.Basic
++import NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.Recurrences.ArrayExecution
++import NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.Recurrences.EntryFormulas
++import NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.Recurrences.FactorizationAndNorm
+ import NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.TridiagonalInverse
+ import NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.TridiagonalInverseCompletion
+ import NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.TridiagonalInverseRuns
+@@ -28,23 +33,30 @@
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.Corrections.BoydLocalStability
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.Corrections.ConvergenceStatements
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.EndpointTermination.ConvergenceStatements
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.EndpointTermination.InfinityCounterexample.Trace
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.EndpointTermination.RectangularTermination
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.GlobalConvergence.BoydInterface
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.GlobalConvergence.BoydUniqueness
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.GlobalConvergence.ConvergenceStatements
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.GlobalConvergence.ScalarCase.Iteration
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.BoydConcrete
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.BoydInterface
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.BoydLocal
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.BoydLocalStability
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.ConstrainedLagrangian.Differentiation
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.BoydCompletion
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.BoydConcrete
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.BoydDomain
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.BoydLocal
+ import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.BoydRowwise
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.SecondDerivative.Rowwise
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.StrongLocalMaximum.Convergence
++import NumStability.Source.Higham.Chapter15.Section06.TridiagonalLUConditionBounds.ExactBounds
+ import NumStability.Source.Higham.Chapter15.Theorem06.Dixon.Basic
+ import NumStability.Source.Higham.Chapter15.Theorem07.TridiagonalLU.Basic
+ import NumStability.Source.Higham.Chapter15.Theorem08.TridiagonalDiagonalDominance.Basic
+ import NumStability.Source.Higham.Chapter15.Theorem09.Ikebe.Basic
++import NumStability.Source.Higham.Chapter15.Theorem09.Ikebe.IrreducibleRightInverse.RankOneStructure
+
+ /-!
+ # Higham Chapter 15 source correspondence
+diff --git a/NumStability/Source/Higham/Chapter15/Lemma02/PNormPowerMethod/PNormRectangular.lean b/NumStability/Source/Higham/Chapter15/Lemma02/PNormPowerMethod/PNormRectangular.lean
+--- a/NumStability/Source/Higham/Chapter15/Lemma02/PNormPowerMethod/PNormRectangular.lean
++++ b/NumStability/Source/Higham/Chapter15/Lemma02/PNormPowerMethod/PNormRectangular.lean
+@@ -12,7 +12,7 @@
+ import Mathlib.Tactic.Ring
+ import NumStability.Algorithms.LU.GrowthFactor
+ import NumStability.Algorithms.NormEstimation.OneNorm.PowerMethod.CondEstimation
+-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.PNormRectangular
++import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Rectangular
+ import NumStability.Algorithms.NormEstimation.PNorm.Rectangular.PNormRectangular
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.MatrixNorms.Lp
+diff --git a/NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/ConvergenceStatements.lean b/NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/ConvergenceStatements.lean
+--- a/NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/ConvergenceStatements.lean
++++ b/NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/ConvergenceStatements.lean
+@@ -18,7 +18,7 @@
+ import NumStability.Algorithms.NormEstimation.OneNorm.FiniteIndex.Basic
+ import NumStability.Algorithms.NormEstimation.OneNorm.PowerMethod.CondEstimation
+ import NumStability.Algorithms.NormEstimation.OneNorm.PowerMethod.PNormPowerMethod
+-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.ConvergenceStatements
++import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Square
+ import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.PNormPowerMethod
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.MatrixNorms.Lp
+diff --git a/NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/RectangularTermination.lean b/NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/RectangularTermination.lean
+--- a/NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/RectangularTermination.lean
++++ b/NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/RectangularTermination.lean
+@@ -17,8 +17,8 @@
+ import NumStability.Algorithms.LU.GrowthFactor
+ import NumStability.Algorithms.NormEstimation.OneNorm.FiniteIndex.Basic
+ import NumStability.Algorithms.NormEstimation.OneNorm.PowerMethod.CondEstimation
+-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.ConvergenceStatements
+-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.PNormRectangular
++import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Rectangular
++import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Square
+ import NumStability.Algorithms.NormEstimation.PNorm.Rectangular.PNormRectangular
+ import NumStability.Algorithms.NormEstimation.PNorm.Rectangular.RectangularTermination
+ import NumStability.Analysis.MatrixAlgebra

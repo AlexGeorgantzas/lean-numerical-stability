@@ -33,9 +33,9 @@ except ModuleNotFoundError:  # Support import as tools.architecture.check_phase.
 
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PHASE_DIR = Path(
-    "docs/architecture/phases/2026-08-repository-reorganization"
-)
+PHASES_ROOT = Path("docs/architecture/phases")
+ACTIVE_PHASE_POINTER = PHASES_ROOT / "active-phase.json"
+LEGACY_DEFAULT_PHASE_DIR = PHASES_ROOT / "2026-08-repository-reorganization"
 
 SCHEMA_VERSION = 1
 SHA1_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -2540,7 +2540,7 @@ def run_self_test() -> int:
             metadata, path_raw = entry.split(b"\t", 1)
             blobs[path_raw.decode()] = metadata.decode().split()[2]
 
-        phase_rel = DEFAULT_PHASE_DIR
+        phase_rel = LEGACY_DEFAULT_PHASE_DIR
         phase_dir = root / phase_rel
         for name in (
             "baselines",
@@ -3012,11 +3012,16 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser.add_argument(
         "--phase-dir",
         type=Path,
-        default=DEFAULT_PHASE_DIR,
+        default=None,
         help=(
             "phase contract directory, absolute or repository-relative "
-            f"(default: {DEFAULT_PHASE_DIR.as_posix()})"
+            f"(default: path named by {ACTIVE_PHASE_POINTER.as_posix()})"
         ),
+    )
+    parser.add_argument(
+        "--all-phases",
+        action="store_true",
+        help="validate every retained phase directory and the active-phase pointer",
     )
     parser.add_argument(
         "--self-test",
@@ -3026,11 +3031,116 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def active_phase_dir() -> tuple[Path | None, list[str]]:
+    """Resolve and validate the repository's explicit active-phase pointer."""
+
+    pointer_path = ROOT / ACTIVE_PHASE_POINTER
+    errors: list[str] = []
+    if not pointer_path.is_file():
+        if (ROOT / LEGACY_DEFAULT_PHASE_DIR).is_dir():
+            errors.append(
+                f"missing active-phase pointer: {ACTIVE_PHASE_POINTER.as_posix()}"
+            )
+        return None, errors
+    try:
+        pointer = json.loads(
+            pointer_path.read_text(encoding="utf-8"),
+            object_pairs_hook=duplicate_safe_object,
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError, DuplicateKeyError) as error:
+        return None, [f"cannot read active-phase pointer: {error}"]
+    required = {"schema_version", "record_kind", "phase_id", "path"}
+    if not isinstance(pointer, dict):
+        return None, ["active-phase pointer must be a JSON object"]
+    missing = sorted(required - set(pointer))
+    unexpected = sorted(set(pointer) - required)
+    if missing:
+        errors.append("active-phase pointer missing key(s): " + ", ".join(missing))
+    if unexpected:
+        errors.append(
+            "active-phase pointer has unexpected key(s): " + ", ".join(unexpected)
+        )
+    if pointer.get("schema_version") != 1:
+        errors.append("active-phase pointer schema_version must be 1")
+    if pointer.get("record_kind") != "active_reorganization_phase":
+        errors.append(
+            "active-phase pointer record_kind must be 'active_reorganization_phase'"
+        )
+    phase_id = pointer.get("phase_id")
+    if not isinstance(phase_id, str) or not ID_RE.fullmatch(phase_id):
+        errors.append("active-phase pointer phase_id must be a stable slug")
+    relative = pointer.get("path")
+    if not isinstance(relative, str) or not is_repo_path(relative):
+        errors.append("active-phase pointer path must be a repository-relative directory")
+        return None, errors
+    phase_dir = (ROOT / relative).resolve()
+    phases_root = (ROOT / PHASES_ROOT).resolve()
+    try:
+        phase_dir.relative_to(phases_root)
+    except ValueError:
+        errors.append("active-phase pointer escapes docs/architecture/phases")
+        return None, errors
+    phase_path = phase_dir / "phase.json"
+    if not phase_path.is_file():
+        errors.append(f"active-phase pointer target lacks phase.json: {relative}")
+        return phase_dir, errors
+    try:
+        phase = json.loads(
+            phase_path.read_text(encoding="utf-8"),
+            object_pairs_hook=duplicate_safe_object,
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError, DuplicateKeyError) as error:
+        errors.append(f"cannot read active phase.json: {error}")
+    else:
+        if not isinstance(phase, dict) or phase.get("phase_id") != phase_id:
+            errors.append("active-phase pointer phase_id differs from target phase.json")
+    return phase_dir, errors
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(sys.argv[1:] if argv is None else argv)
     if args.self_test:
         return run_self_test()
-    phase_dir = args.phase_dir if args.phase_dir.is_absolute() else ROOT / args.phase_dir
+    if args.phase_dir is not None and args.all_phases:
+        print("error: --phase-dir and --all-phases are mutually exclusive", file=sys.stderr)
+        return 2
+
+    active_dir, pointer_errors = active_phase_dir()
+    if pointer_errors and args.phase_dir is None:
+        for error in pointer_errors:
+            print(f"phase contract malformed: {error}", file=sys.stderr)
+        return 2
+
+    if args.all_phases:
+        phase_root = ROOT / PHASES_ROOT
+        phase_dirs = sorted(
+            path for path in phase_root.iterdir()
+            if path.is_dir() and (path / "phase.json").is_file()
+        )
+        if not phase_dirs:
+            print("phase contract malformed: no retained phase directories found", file=sys.stderr)
+            return 2
+        exit_code = 0
+        for phase_dir in phase_dirs:
+            validator = PhaseValidator(ROOT, phase_dir)
+            problems = validator.validate()
+            if problems.ok:
+                marker = " [active]" if active_dir == phase_dir.resolve() else ""
+                print(validator.summary() + marker)
+                continue
+            print(f"phase validation failed: {phase_dir.relative_to(ROOT).as_posix()}", file=sys.stderr)
+            problems.render()
+            exit_code = max(exit_code, 2 if problems.format_errors else 1)
+        return exit_code
+
+    phase_dir = args.phase_dir
+    if phase_dir is None:
+        if active_dir is None:
+            print("phase contract malformed: active phase could not be resolved", file=sys.stderr)
+            return 2
+        phase_dir = active_dir
+    elif not phase_dir.is_absolute():
+        phase_dir = ROOT / phase_dir
     validator = PhaseValidator(ROOT, phase_dir)
     problems = validator.validate()
     if problems.ok:
