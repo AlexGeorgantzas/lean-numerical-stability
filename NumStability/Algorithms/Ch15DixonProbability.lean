@@ -5,11 +5,10 @@ import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon.Probability.DixonPro
 import NumStability.Algorithms.TestMatrices.Higham28OrthogonalCoordinates
 
 /-!
-# Ch15DixonProbability (compatibility module)
+# Ch15DixonProbability (compatibility wrapper)
 
-Import-only module retained so existing imports of `NumStability.Algorithms.Ch15DixonProbability`
-keep resolving. Every declaration moved unchanged to the canonical
-modules imported above. The module's own original imports are
-re-stated so consumers reaching an identifier transitively through
-this path still see the same surface.
+Declaration-free reviewed owner. Its imports are normalized to the exact
+canonical and source targets that now hold the material it used to reach
+through historical paths, and the historical path itself is retained so
+existing imports of `NumStability.Algorithms.Ch15DixonProbability` keep resolving. This module declares nothing.
 -/

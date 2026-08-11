@@ -1,0 +1,18 @@
+gate	state	exit	result	minutes	jobs	errors
+lake_lib	worker branch	0	PASS	3	182	0
+lake_libtest	worker branch	0	PASS	1	2355	0
+tests_canonical	worker branch	0	PASS	0	28	0
+tests_old	worker branch	0	PASS	1	45	0
+tests_focused	worker branch	0	PASS	0	28	0
+tests_consumer	worker branch	0	PASS	0	156	0
+lake_test	worker branch	0	PASS	0	2353	0
+check_layout	worker branch	1	FAIL	2	0	3
+check_compatibility	worker branch	0	PASS	0	0	0
+check_provenance	worker branch	0	PASS	0	0	0
+strict_source	worker branch	0	PASS	1	0	0
+candidate	worker branch	0	PASS	1	0	0
+replay	worker branch	0	PASS	0	0	0
+scope guard (apply.py)	worker branch	0	PASS			-
+import cycles (cycles)	worker branch	0	PASS			-
+static suite (statics.py)	worker branch	1	FAIL (pre-authorised)			-
+postimage reach 5->0	worker branch	0	PASS			-
