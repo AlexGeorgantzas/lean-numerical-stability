@@ -102,7 +102,7 @@
     }
   },
   "created_at": "2026-08-11T09:20:00Z",
-  "current_checkpoint_id": "C0000",
+  "current_checkpoint_id": "C0001",
   "milestones": [
     {
       "acceptance_gate_ids": [
@@ -118,10 +118,10 @@
         "scope",
         "strict_source"
       ],
-      "accepted_checkpoint_id": null,
+      "accepted_checkpoint_id": "C0001",
       "depends_on": [],
       "milestone_id": "M01",
-      "status": "ready",
+      "status": "accepted",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -142,10 +142,10 @@
         "scope",
         "strict_source"
       ],
-      "accepted_checkpoint_id": null,
+      "accepted_checkpoint_id": "C0001",
       "depends_on": [],
       "milestone_id": "M02",
-      "status": "ready",
+      "status": "accepted",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [

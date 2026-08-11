@@ -44,15 +44,20 @@
   "request_id": "R0001",
   "requester_id": "codex-local",
   "resolution": {
-    "checkpoint_id": null,
-    "commit_sha": null,
-    "reason": null,
-    "resolved_at": null,
-    "resolved_by": null,
-    "validation_evidence": []
+    "checkpoint_id": "C0001",
+    "commit_sha": "117aa2bb7e61f41e1531a78452f9f7f6cd5b0771",
+    "reason": "Applied as the independently replayed and reviewed R0001/R0002 shared-file union after both immutable delivery merges.",
+    "resolved_at": "2026-08-11T22:14:28Z",
+    "resolved_by": "primary-human",
+    "validation_evidence": [
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0001-R0002-union-review.md",
+        "sha256": "620CFDEFA27F49655D0F399A56461DD60B7D8BCB2169BF1E2C84B515A46F7DF5"
+      }
+    ]
   },
   "schema_version": 1,
-  "status": "active",
+  "status": "applied",
   "superseded_by": null,
   "supersedes": null,
   "target_base_sha": "b1b18772d80185ec08f49c818919558645c330a1",

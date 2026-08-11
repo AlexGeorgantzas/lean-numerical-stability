@@ -15,7 +15,7 @@ history. When two documents disagree, use the precedence order below.
    reviewed tier and forwarding-path contracts.
 5. [`architecture/PROVENANCE.md`](architecture/PROVENANCE.md) defines the
    per-file licensing and upstream-attribution policy.
-6. [`architecture/phases/2026-08-repository-reorganization/`](architecture/phases/2026-08-repository-reorganization/README.md)
+6. [`architecture/phases/2026-08-repository-reorganization-completion/`](architecture/phases/2026-08-repository-reorganization-completion/README.md)
    is the active repository-wide scope, authority, wave, checkpoint, and branch
    contract. Dated worker packets do not override it.
 

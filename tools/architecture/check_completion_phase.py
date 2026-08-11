@@ -39,10 +39,63 @@ ACTIVE_POINTER = Path("docs/architecture/phases/active-phase.json")
 PHASE_ID = "repository-reorganization-completion-2026-08"
 PREDECESSOR_PHASE_ID = "repository-reorganization-2026-08"
 CODE_SHA = "b1b18772d80185ec08f49c818919558645c330a1"
+INTEGRATED_CODE_SHA = "117aa2bb7e61f41e1531a78452f9f7f6cd5b0771"
+R01_MERGE_SHA = "b5966cdc88d136936e6566010cd4113b81f20711"
+R02_MERGE_SHA = "52632d28f0c78438d883bde337700f330895159a"
+R01_MERGE_PARENTS = (
+    "f98f0c8598b7834cb9a80567bc57053e9befa66a",
+    "0bdf03a383377c8c6da89d85393e56fca8c00ccd",
+)
+R02_MERGE_PARENTS = (
+    R01_MERGE_SHA,
+    "f790c8413412177bb74f47fee74bb12c48c11155",
+)
 BUILD_LOCK = "lean-reorganization-2026-08"
 CHECKPOINT_ID = "C0000"
 SUCCESSOR_CHECKPOINT_ID = "C0001"
 MATRIX_ALGEBRA = "NumStability/Analysis/MatrixAlgebra.lean"
+
+SUCCESSOR_METRICS = {
+    "production_modules": 2631,
+    "unclassified_modules": 277,
+    "mixed_modules": 9,
+    "missing_module_docstrings": 72,
+    "noncanonical_modules": 244,
+    "declaration_bearing_umbrellas": 21,
+    "unsorted_aggregate_imports": 0,
+}
+SUCCESSOR_MILESTONES = ["M01", "M02"]
+SUCCESSOR_GATE_IDS = {
+    "architecture",
+    "canonical_import",
+    "combined_baseline",
+    "compatibility",
+    "focused_build",
+    "full_build",
+    "full_tests",
+    "layout",
+    "old_import",
+    "provenance",
+    "scope",
+    "strict_source",
+}
+REQUEST_RESOLUTION_EVIDENCE = {
+    "R0001": (
+        "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+        "requests/R0001-R0002-union-review.md",
+        "620CFDEFA27F49655D0F399A56461DD60B7D8BCB2169BF1E2C84B515A46F7DF5",
+    ),
+    "R0002": (
+        "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+        "requests/R0001-R0002-union-review.md",
+        "620CFDEFA27F49655D0F399A56461DD60B7D8BCB2169BF1E2C84B515A46F7DF5",
+    ),
+    "R0002T": (
+        "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+        "reviews/R01-R0002T-test-root-union.md",
+        "B223E12C8B9571A41488F6ED0A3A180B2AA91C3870774081CE66073B7EBEB487",
+    ),
+}
 
 SCOPE_HEADER = (
     "module",
@@ -60,6 +113,9 @@ SELECTOR_HEADER = ("module", "path")
 DELIVERY_SCOPE_HEADER = ("status", "path")
 SHA1_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9A-Fa-f]{64}$")
+RFC3339_RE = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$"
+)
 IMPORT_RE = re.compile(
     r"(?m)^[ \t]*(?:(?:public|private|meta)\s+)*import[ \t]+([A-Za-z0-9_'.]+)"
 )
@@ -670,27 +726,7 @@ class CompletionValidator:
                 f"expected {expected!r}",
             )
         if self.current_checkpoint_id == SUCCESSOR_CHECKPOINT_ID:
-            successor_path = self.phase_dir / "checkpoints/C0001.json"
-            successor = self.read_json(successor_path, self.relative(successor_path))
-            if successor is not None:
-                for key, expected in {
-                    "schema_version": 1,
-                    "record_kind": "phase_checkpoint",
-                    "phase_id": PHASE_ID,
-                    "checkpoint_id": SUCCESSOR_CHECKPOINT_ID,
-                    "parent_checkpoint_id": CHECKPOINT_ID,
-                }.items():
-                    self.problems.require(
-                        successor.get(key) == expected,
-                        f"checkpoints/C0001.json.{key}",
-                        f"expected {expected!r}",
-                    )
-                commit = successor.get("commit_sha")
-                self.problems.require(
-                    isinstance(commit, str) and SHA1_RE.fullmatch(commit) is not None,
-                    "checkpoints/C0001.json.commit_sha",
-                    "expected an exact 40-character commit SHA",
-                )
+            self.validate_successor_checkpoint()
         inventory_ref = self.artifact(
             checkpoint.get("inventory"), "checkpoints/C0000.json.inventory"
         )
@@ -821,6 +857,212 @@ class CompletionValidator:
                 if token not in compact:
                     self.problems.add(self.relative(accounting), f"missing accounting token {token!r}")
 
+    def validate_successor_checkpoint(self) -> None:
+        context = "checkpoints/C0001.json"
+        path = self.phase_dir / "checkpoints/C0001.json"
+        checkpoint = self.read_json(path, self.relative(path))
+        if checkpoint is None:
+            return
+        for key, expected in {
+            "schema_version": 1,
+            "record_kind": "phase_checkpoint",
+            "phase_id": PHASE_ID,
+            "checkpoint_id": SUCCESSOR_CHECKPOINT_ID,
+            "parent_checkpoint_id": CHECKPOINT_ID,
+            "commit_sha": INTEGRATED_CODE_SHA,
+            "accepted_by": "primary-human",
+            "milestones_satisfied": SUCCESSOR_MILESTONES,
+            "unblocks": [],
+            "metrics": SUCCESSOR_METRICS,
+        }.items():
+            self.problems.require(
+                checkpoint.get(key) == expected,
+                f"{context}.{key}",
+                f"expected {expected!r}, found {checkpoint.get(key)!r}",
+            )
+        accepted_at = checkpoint.get("accepted_at")
+        self.problems.require(
+            isinstance(accepted_at, str)
+            and RFC3339_RE.fullmatch(accepted_at) is not None,
+            f"{context}.accepted_at",
+            "expected an RFC3339 timestamp with timezone",
+        )
+
+        inventory = self.artifact(checkpoint.get("inventory"), f"{context}.inventory")
+        expected_inventory = self.relative(
+            self.phase_dir / "checkpoints/C0001-inventory.tsv"
+        )
+        if inventory is not None:
+            self.problems.require(
+                inventory.path == expected_inventory,
+                f"{context}.inventory.path",
+                f"expected {expected_inventory}",
+            )
+            _, rows = self.read_tsv(
+                self.root / inventory.path,
+                inventory.path,
+                SCOPE_HEADER,
+            )
+            self.problems.require(
+                len(rows) == SUCCESSOR_METRICS["production_modules"],
+                inventory.path,
+                "row count must equal the exact C0001 production-module metric",
+            )
+            paths = [row.get("path", "") for row in rows]
+            self.problems.require(
+                len(paths) == len(set(paths)),
+                inventory.path,
+                "C0001 inventory paths must be unique",
+            )
+
+        baseline = checkpoint.get("combined_baseline")
+        if not isinstance(baseline, dict):
+            self.problems.add(f"{context}.combined_baseline", "expected an object")
+        else:
+            self.problems.require(
+                baseline.get("format_version") == 2,
+                f"{context}.combined_baseline.format_version",
+                "expected exact format version 2",
+            )
+            artifact = self.artifact(
+                baseline.get("artifact"),
+                f"{context}.combined_baseline.artifact",
+            )
+            summary = self.artifact(
+                baseline.get("summary_artifact"),
+                f"{context}.combined_baseline.summary_artifact",
+            )
+            expected_artifact = self.relative(
+                self.phase_dir / "baselines/C0001-combined.json"
+            )
+            expected_summary = self.relative(
+                self.phase_dir / "baselines/C0001-combined.md"
+            )
+            if artifact is not None:
+                self.problems.require(
+                    artifact.path == expected_artifact,
+                    f"{context}.combined_baseline.artifact.path",
+                    f"expected {expected_artifact}",
+                )
+                document = self.read_json(
+                    self.root / artifact.path,
+                    f"{context}.combined_baseline.artifact",
+                )
+                metadata = document.get("metadata") if document is not None else None
+                self.problems.require(
+                    isinstance(metadata, dict)
+                    and metadata.get("commit") == INTEGRATED_CODE_SHA
+                    and metadata.get("library_source_clean") is True
+                    and metadata.get("library_source_dirty_paths") == [],
+                    f"{context}.combined_baseline.artifact.metadata",
+                    "must record the exact clean integrated code commit",
+                )
+            if summary is not None:
+                self.problems.require(
+                    summary.path == expected_summary,
+                    f"{context}.combined_baseline.summary_artifact.path",
+                    f"expected {expected_summary}",
+                )
+            self.problems.require(
+                isinstance(baseline.get("generation_command"), str)
+                and bool(baseline.get("generation_command", "").strip()),
+                f"{context}.combined_baseline.generation_command",
+                "must record a nonempty generation command",
+            )
+
+        gates = checkpoint.get("gates")
+        if not isinstance(gates, list):
+            self.problems.add(f"{context}.gates", "expected a list")
+        else:
+            gate_ids = [
+                gate.get("gate_id")
+                for gate in gates
+                if isinstance(gate, dict)
+            ]
+            self.problems.require(
+                len(gate_ids) == len(gates)
+                and len(gate_ids) == len(set(gate_ids))
+                and set(gate_ids) == SUCCESSOR_GATE_IDS,
+                f"{context}.gates",
+                "must contain every and only the 12 exact C0001 acceptance gates",
+            )
+            expected_evidence = self.relative(
+                self.phase_dir / "checkpoints/C0001-gates.md"
+            )
+            for index, gate in enumerate(gates):
+                if not isinstance(gate, dict):
+                    self.problems.add(f"{context}.gates[{index}]", "expected an object")
+                    continue
+                gate_id = gate.get("gate_id")
+                gate_context = f"{context}.gates[{gate_id or index}]"
+                self.problems.require(
+                    gate.get("status") == "PASS"
+                    and gate.get("commit_sha") == INTEGRATED_CODE_SHA,
+                    gate_context,
+                    "must record PASS at the exact integrated code commit",
+                )
+                evidence = self.artifact(
+                    gate.get("evidence"), f"{gate_context}.evidence"
+                )
+                if evidence is not None:
+                    self.problems.require(
+                        evidence.path == expected_evidence,
+                        f"{gate_context}.evidence.path",
+                        f"expected {expected_evidence}",
+                    )
+
+        milestones = self.phase.get("milestones")
+        milestone_map = {
+            item.get("milestone_id"): item
+            for item in milestones
+            if isinstance(item, dict) and isinstance(item.get("milestone_id"), str)
+        } if isinstance(milestones, list) else {}
+        for milestone_id in SUCCESSOR_MILESTONES:
+            milestone = milestone_map.get(milestone_id)
+            self.problems.require(
+                isinstance(milestone, dict)
+                and milestone.get("status") == "accepted"
+                and milestone.get("accepted_checkpoint_id")
+                == SUCCESSOR_CHECKPOINT_ID,
+                f"phase.json.milestones[{milestone_id}]",
+                "must be accepted at exact checkpoint C0001",
+            )
+        self.validate_successor_history()
+
+    def validate_successor_history(self) -> None:
+        for commit, parents, label in (
+            (R01_MERGE_SHA, R01_MERGE_PARENTS, "R01 merge"),
+            (R02_MERGE_SHA, R02_MERGE_PARENTS, "R02 merge"),
+        ):
+            process = self.git(
+                "rev-list", "--parents", "-n", "1", commit, check=False
+            )
+            actual = process.stdout.strip().split()
+            expected = [commit, *parents]
+            self.problems.require(
+                process.returncode == 0 and actual == expected,
+                f"C0001 {label} ancestry",
+                f"expected exact commit/parent vector {expected}, found {actual}",
+            )
+        for ancestor, label in (
+            (R01_MERGE_SHA, "R01 merge"),
+            (R02_MERGE_SHA, "R02 merge"),
+            (BRANCH_FACTS["B0001"]["delivery_sha"], "R01 delivery"),
+            (BRANCH_FACTS["B0002"]["delivery_sha"], "R02 delivery"),
+        ):
+            ancestry = self.git(
+                "merge-base",
+                "--is-ancestor",
+                ancestor,
+                INTEGRATED_CODE_SHA,
+                check=False,
+            )
+            self.problems.require(
+                ancestry.returncode == 0,
+                f"C0001 {label} ancestry",
+                f"{ancestor} must be an ancestor of exact integrated code {INTEGRATED_CODE_SHA}",
+            )
+
     def validate_branches(self) -> None:
         base_paths = self.git_tree_paths(CODE_SHA)
         scope_rules = [PathRule(path, "exact") for path in self.scope_by_path]
@@ -935,6 +1177,7 @@ class CompletionValidator:
                     f"{branch_id}.delivery",
                     "planned/active state requires an empty delivery record",
                 )
+            self.validate_branch_lifecycle(branch_id, branch, facts, status)
             evidence = branch.get("refresh", {}).get("evidence") if isinstance(branch.get("refresh"), dict) else None
             if not isinstance(evidence, list):
                 self.problems.add(f"{branch_id}.refresh.evidence", "expected hash-pinned evidence list")
@@ -995,6 +1238,95 @@ class CompletionValidator:
                             "B0001/B0002 ownership",
                             f"equal-or-ancestor collision {one.path} / {two.path}",
                         )
+
+    def validate_branch_lifecycle(
+        self,
+        branch_id: str,
+        branch: dict[str, Any],
+        facts: dict[str, Any],
+        status: Any,
+    ) -> None:
+        integration = branch.get("integration")
+        remote_ref = f"refs/heads/{facts['branch']}"
+        if self.current_checkpoint_id == CHECKPOINT_ID:
+            self.problems.require(
+                integration
+                == {
+                    "method": None,
+                    "accepted_checkpoint_id": None,
+                    "accepted_sha": None,
+                },
+                f"{branch_id}.integration",
+                "C0000 delivery state requires an exact empty integration record",
+            )
+            expected_retirement = {
+                "remote_ref": remote_ref,
+                "rule": "delivery_ancestor_of_green_checkpoint",
+                "status": "not_due",
+                "retired_at": None,
+                "retired_by": None,
+                "ancestry_checkpoint_id": None,
+            }
+            self.problems.require(
+                branch.get("retirement") == expected_retirement,
+                f"{branch_id}.retirement",
+                f"expected exact C0000 retirement state {expected_retirement!r}",
+            )
+            return
+
+        expected_integration = {
+            "method": "merge",
+            "accepted_checkpoint_id": SUCCESSOR_CHECKPOINT_ID,
+            "accepted_sha": INTEGRATED_CODE_SHA,
+        }
+        self.problems.require(
+            integration == expected_integration,
+            f"{branch_id}.integration",
+            f"expected exact true-merge integration record {expected_integration!r}",
+        )
+        retirement = branch.get("retirement")
+        if not isinstance(retirement, dict):
+            self.problems.add(f"{branch_id}.retirement", "expected an object")
+            return
+        exact_common = {
+            "remote_ref": remote_ref,
+            "rule": "delivery_ancestor_of_green_checkpoint",
+        }
+        for key, expected in exact_common.items():
+            self.problems.require(
+                retirement.get(key) == expected,
+                f"{branch_id}.retirement.{key}",
+                f"expected {expected!r}",
+            )
+        if status == "accepted":
+            expected = {
+                **exact_common,
+                "status": "due",
+                "retired_at": None,
+                "retired_by": None,
+                "ancestry_checkpoint_id": None,
+            }
+            self.problems.require(
+                retirement == expected,
+                f"{branch_id}.retirement",
+                f"accepted branch must have exact due retirement state {expected!r}",
+            )
+        elif status == "retired":
+            self.problems.require(
+                retirement.get("status") == "retired"
+                and retirement.get("retired_by") == "primary-human"
+                and retirement.get("ancestry_checkpoint_id")
+                == SUCCESSOR_CHECKPOINT_ID,
+                f"{branch_id}.retirement",
+                "retired branch must be retired by primary-human against exact C0001 ancestry",
+            )
+            retired_at = retirement.get("retired_at")
+            self.problems.require(
+                isinstance(retired_at, str)
+                and RFC3339_RE.fullmatch(retired_at) is not None,
+                f"{branch_id}.retirement.retired_at",
+                "expected an RFC3339 retirement timestamp with timezone",
+            )
 
     def git_tree_paths(self, revision: str) -> list[str]:
         try:
@@ -1645,6 +1977,7 @@ class CompletionValidator:
                     f"{request_id}.rationale",
                     f"must hash-pin {post_name} at SHA-256 {post_digest}",
                 )
+            self.validate_request_lifecycle(request_id, request)
         expected_links = {
             "B0001": ["R0001"],
             "B0002": ["R0002", "R0002T"],
@@ -1760,6 +2093,85 @@ class CompletionValidator:
                             f"{request_id}.rationale",
                             f"must hash-pin {label} SHA-256 {digest}",
                         )
+
+    def validate_request_lifecycle(
+        self, request_id: str, request: dict[str, Any]
+    ) -> None:
+        context = f"{request_id}.resolution"
+        resolution = request.get("resolution")
+        empty = {
+            "checkpoint_id": None,
+            "commit_sha": None,
+            "reason": None,
+            "resolved_at": None,
+            "resolved_by": None,
+            "validation_evidence": [],
+        }
+        if self.current_checkpoint_id == CHECKPOINT_ID:
+            self.problems.require(
+                resolution == empty,
+                context,
+                f"active C0000 request requires exact empty resolution {empty!r}",
+            )
+            return
+        if not isinstance(resolution, dict):
+            self.problems.add(context, "expected an object")
+            return
+        self.problems.require(
+            set(resolution) == set(empty),
+            context,
+            f"expected exactly the resolution keys {sorted(empty)}",
+        )
+        for key, expected in {
+            "checkpoint_id": SUCCESSOR_CHECKPOINT_ID,
+            "commit_sha": INTEGRATED_CODE_SHA,
+            "resolved_by": "primary-human",
+        }.items():
+            self.problems.require(
+                resolution.get(key) == expected,
+                f"{context}.{key}",
+                f"expected {expected!r}, found {resolution.get(key)!r}",
+            )
+        reason = resolution.get("reason")
+        self.problems.require(
+            isinstance(reason, str) and bool(reason.strip()),
+            f"{context}.reason",
+            "applied request requires a nonempty reason",
+        )
+        resolved_at = resolution.get("resolved_at")
+        self.problems.require(
+            isinstance(resolved_at, str)
+            and RFC3339_RE.fullmatch(resolved_at) is not None,
+            f"{context}.resolved_at",
+            "expected an RFC3339 resolution timestamp with timezone",
+        )
+        evidence = resolution.get("validation_evidence")
+        artifacts: list[Artifact] = []
+        if not isinstance(evidence, list) or not evidence:
+            self.problems.add(
+                f"{context}.validation_evidence",
+                "applied request requires nonempty hash-pinned validation evidence",
+            )
+        else:
+            for index, item in enumerate(evidence):
+                artifact = self.artifact(
+                    item, f"{context}.validation_evidence[{index}]"
+                )
+                if artifact is not None:
+                    artifacts.append(artifact)
+        expected_path, expected_digest = REQUEST_RESOLUTION_EVIDENCE[request_id]
+        matches = [
+            artifact
+            for artifact in artifacts
+            if artifact.path == expected_path
+            and artifact.sha256 == expected_digest
+        ]
+        self.problems.require(
+            len(matches) == 1,
+            f"{context}.validation_evidence",
+            "must contain exactly one immutable acceptance pin "
+            f"{expected_path} at SHA-256 {expected_digest}",
+        )
 
     def validate_postimage_rows(
         self,
@@ -2247,6 +2659,26 @@ def run_self_test() -> int:
         and BRANCH_FACTS["B0002"]["changed_paths"] == 145,
         "self-test",
         "immutable delivery-scope counts drifted",
+    )
+    problems.require(
+        R01_MERGE_PARENTS[1] == BRANCH_FACTS["B0001"]["delivery_sha"]
+        and R02_MERGE_PARENTS
+        == (R01_MERGE_SHA, BRANCH_FACTS["B0002"]["delivery_sha"]),
+        "self-test",
+        "exact merge-parent pins drifted from immutable deliveries",
+    )
+    problems.require(
+        len(SUCCESSOR_GATE_IDS) == 12
+        and SUCCESSOR_METRICS["production_modules"] == 2631
+        and SUCCESSOR_MILESTONES == ["M01", "M02"],
+        "self-test",
+        "exact C0001 checkpoint contract drifted",
+    )
+    problems.require(
+        RFC3339_RE.fullmatch("2026-08-11T22:00:00Z") is not None
+        and RFC3339_RE.fullmatch("2026-08-11") is None,
+        "self-test",
+        "RFC3339 lifecycle timestamp matcher drifted",
     )
     with tempfile.TemporaryDirectory(prefix="completion-validator-self-test-") as directory:
         tsv = Path(directory) / "sample.tsv"

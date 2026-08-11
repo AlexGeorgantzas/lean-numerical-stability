@@ -4,8 +4,8 @@ This is the executable migration sequence for NumStability.  A gate is complete
 only when its stated evidence is checked into the repository or recorded by CI.
 
 The active repository-wide operating contract is
-[`phases/2026-08-repository-reorganization/`](phases/2026-08-repository-reorganization/README.md).
-It freezes the complete 1,390-module inventory at accepted checkpoint C0000,
+[`phases/2026-08-repository-reorganization-completion/`](phases/2026-08-repository-reorganization-completion/README.md).
+Its current C0001 checkpoint freezes the complete 2,631-module inventory,
 assigns every current debt row to a lane and dependency wave, distinguishes
 bounded-phase from repository-wide completion, and records branch, baseline,
 shared-request, build-lock, and checkpoint lifecycle rules. Validate it with

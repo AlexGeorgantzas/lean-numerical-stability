@@ -4,8 +4,11 @@ The active operating contract is the
 [`2026-08 repository reorganization completion`](2026-08-repository-reorganization-completion/README.md),
 selected by [`active-phase.json`](active-phase.json). It is rooted at C0000 on
 accepted predecessor code commit
-`b1b18772d80185ec08f49c818919558645c330a1` and has precedence over dated
-migration packets and historical handoffs.
+`b1b18772d80185ec08f49c818919558645c330a1`; its current checkpoint is C0001
+at green code commit `117aa2bb7e61f41e1531a78452f9f7f6cd5b0771`. C0001 accepts R01/R02 and
+leaves their branch retirement due until the acceptance-control commit is
+green. This successor has precedence over dated migration packets and
+historical handoffs.
 
 The immutable predecessor
 [`2026-08 repository reorganization`](2026-08-repository-reorganization/README.md)
