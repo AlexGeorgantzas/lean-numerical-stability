@@ -5,9 +5,15 @@
   "branch_id": "B0002",
   "branch_name": "codex/reorg-completion-2026-08-r02-norm-estimation-ch15",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "f790c8413412177bb74f47fee74bb12c48c11155",
+    "report": {
+      "path": "docs/architecture/deliveries/R02/DELIVERY.md",
+      "sha256": "C8889350AE3E11CA4A951037D46BC1C9D3FD9F30A777C433EEADB8930E66A6AE"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R02-intake-scope.tsv",
+      "sha256": "801759184E6F986D009F84E84164FD1DA06FA2B3BFC1BDD30A2982FD509132E0"
+    }
   },
   "destination_prefixes": [
     {
@@ -10539,6 +10545,18 @@
         "sha256": "3C2E64B3421D23BBF99749E4637D83F97794A18020E67700548A54754FE3FF6E"
       },
       {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0002T-postimages.tsv",
+        "sha256": "07DDFDD572A06455F0B193B9FB0A85636BC443B35808DFAA409C750F95456AF3"
+      },
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0002T.patch",
+        "sha256": "93EE50B01F5D517C813B82BE5A0B8885DFBE981FB1029EB5AD634A9875DB83F9"
+      },
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R01-R0002T-test-root-union.md",
+        "sha256": "B223E12C8B9571A41488F6ED0A3A180B2AA91C3870774081CE66073B7EBEB487"
+      },
+      {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/milestone-dag.tsv",
         "sha256": "A0FD576D8A887F216F648C2096965A327DAE22AE8ABAE56321FBB4D33DB67341"
       },
@@ -10559,8 +10577,9 @@
   },
   "schema_version": 1,
   "shared_request_ids": [
-    "R0002"
+    "R0002",
+    "R0002T"
   ],
-  "status": "active",
+  "status": "delivered",
   "wave_id": "R02"
 }

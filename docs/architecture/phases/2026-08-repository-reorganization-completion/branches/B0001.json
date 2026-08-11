@@ -5,9 +5,15 @@
   "branch_id": "B0001",
   "branch_name": "codex/reorg-completion-2026-08-r01-stationary-semiconvergence",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "0bdf03a383377c8c6da89d85393e56fca8c00ccd",
+    "report": {
+      "path": "docs/architecture/deliveries/R01/DELIVERY.md",
+      "sha256": "BD5CB4ED6A2C8CEDFAD35DEE491E65EA41A0DCD70181B533B0AD3534F91815B2"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/R01/CHANGED_PATHS.md",
+      "sha256": "84AF04D86C4924295BA7E984F9DB69CD83E095FDE9E45713272F1CAA574D1E27"
+    }
   },
   "destination_prefixes": [
     {
@@ -10539,6 +10545,10 @@
         "sha256": "E73A8D881DD51CCE710CCB1B4C30320DFE0E6B666F6FC8C0A3E9C167588957E6"
       },
       {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R01-R0002T-test-root-union.md",
+        "sha256": "B223E12C8B9571A41488F6ED0A3A180B2AA91C3870774081CE66073B7EBEB487"
+      },
+      {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/milestone-dag.tsv",
         "sha256": "A0FD576D8A887F216F648C2096965A327DAE22AE8ABAE56321FBB4D33DB67341"
       },
@@ -10561,6 +10571,6 @@
   "shared_request_ids": [
     "R0001"
   ],
-  "status": "active",
+  "status": "delivered",
   "wave_id": "R01"
 }

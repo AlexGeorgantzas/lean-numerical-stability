@@ -17,8 +17,8 @@ import Mathlib.Topology.Sequences
 import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.NormEstimation.OneNorm.FiniteIndex.Basic
 import NumStability.Algorithms.NormEstimation.OneNorm.PowerMethod.CondEstimation
-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.ConvergenceStatements
-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.PNormRectangular
+import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Rectangular
+import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Square
 import NumStability.Algorithms.NormEstimation.PNorm.Rectangular.PNormRectangular
 import NumStability.Algorithms.NormEstimation.PNorm.Rectangular.RectangularTermination
 import NumStability.Analysis.MatrixAlgebra

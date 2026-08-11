@@ -49,6 +49,7 @@ import NumStability.Analysis.InverseOpNorm2
 import NumStability.Analysis.LeadingDigits
 import NumStability.Analysis.LiebTrace
 import NumStability.Analysis.LinearOperators
+import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.All
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixConcentration
 import NumStability.Analysis.MatrixInequalities
@@ -87,7 +88,6 @@ import NumStability.Analysis.RelativePrecision
 import NumStability.Analysis.Rounding
 import NumStability.Analysis.SampleVariance
 import NumStability.Analysis.SchurTriangulation
-import NumStability.Analysis.SemiconvergentRealSpectrumComplete
 import NumStability.Analysis.SemiconvergentSpectral
 import NumStability.Analysis.SingularValues
 import NumStability.Analysis.Stability

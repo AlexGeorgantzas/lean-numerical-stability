@@ -519,6 +519,9 @@ import NumStabilityTest.Import.SummationTreeChain
 import NumStabilityTest.Import.Sylvester
 import NumStabilityTest.Import.TriangularCanonical
 import NumStabilityTest.Import.TriangularMigration
+import NumStabilityTest.Import.TridiagonalCondCanonical
+import NumStabilityTest.Reorganization.R01
+import NumStabilityTest.Reorganization.R02
 import NumStabilityTest.Reorganization.W01.Canonical.ExactSubtraction
 import NumStabilityTest.Reorganization.W01.Canonical.Format
 import NumStabilityTest.Reorganization.W01.Canonical.IeeeExceptions

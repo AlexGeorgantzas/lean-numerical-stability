@@ -3,7 +3,7 @@
 
 This checker is deliberately independent of ``check_phase.py``.  The generic
 phase checker validates the reusable phase schema; this file enforces the
-one-off, exact activation contract for the completion successor.  It uses only
+one-off, exact activation-to-C0001 contract for the completion successor.  It uses only
 the Python standard library and disposable Git indexes rooted at C0000 to
 materialize and hash-check the independently requested and reviewed-union
 postimages.
@@ -41,6 +41,7 @@ PREDECESSOR_PHASE_ID = "repository-reorganization-2026-08"
 CODE_SHA = "b1b18772d80185ec08f49c818919558645c330a1"
 BUILD_LOCK = "lean-reorganization-2026-08"
 CHECKPOINT_ID = "C0000"
+SUCCESSOR_CHECKPOINT_ID = "C0001"
 MATRIX_ALGEBRA = "NumStability/Analysis/MatrixAlgebra.lean"
 
 SCOPE_HEADER = (
@@ -56,6 +57,7 @@ SCOPE_HEADER = (
     "rationale",
 )
 SELECTOR_HEADER = ("module", "path")
+DELIVERY_SCOPE_HEADER = ("status", "path")
 SHA1_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9A-Fa-f]{64}$")
 IMPORT_RE = re.compile(
@@ -65,6 +67,11 @@ DEFERRED_RE = re.compile(
     r"\b(?:tbd|todo|pending|unreviewed|undecided|worker decides|decide later|later)\b",
     re.IGNORECASE,
 )
+GENERATED_PARTS = frozenset({".lake", "__pycache__", ".DS_Store"})
+GENERATED_SUFFIXES = frozenset(
+    {".olean", ".ilean", ".pyc", ".pyo", ".aux", ".log", ".out"}
+)
+GENERATED_PREFIXES = ("benchmark-results/",)
 
 
 R01_PATHS = frozenset(
@@ -151,6 +158,9 @@ SHARED_CONSUMERS = frozenset(
     | R02_CONSUMERS
     | {"NumStability/Source/Higham/Chapter15.lean"}
 )
+R0002T_PATHS = frozenset(
+    {"NumStabilityTest.lean", "NumStabilityTest/Reorganization/R02.lean"}
+)
 
 BRANCH_FACTS = {
     "B0001": {
@@ -164,6 +174,12 @@ BRANCH_FACTS = {
         "private": 10,
         "declaration_free": 0,
         "consumers": R01_CONSUMERS,
+        "delivery_sha": "0bdf03a383377c8c6da89d85393e56fca8c00ccd",
+        "changed_paths": 98,
+        "delivery_report": "docs/architecture/deliveries/R01/DELIVERY.md",
+        "delivery_report_sha256": "BD5CB4ED6A2C8CEDFAD35DEE491E65EA41A0DCD70181B533B0AD3534F91815B2",
+        "scope_evidence": "docs/architecture/deliveries/R01/CHANGED_PATHS.md",
+        "scope_evidence_sha256": "84AF04D86C4924295BA7E984F9DB69CD83E095FDE9E45713272F1CAA574D1E27",
     },
     "B0002": {
         "wave": "R02",
@@ -176,6 +192,15 @@ BRANCH_FACTS = {
         "private": 76,
         "declaration_free": 14,
         "consumers": R02_CONSUMERS,
+        "delivery_sha": "f790c8413412177bb74f47fee74bb12c48c11155",
+        "changed_paths": 145,
+        "delivery_report": "docs/architecture/deliveries/R02/DELIVERY.md",
+        "delivery_report_sha256": "C8889350AE3E11CA4A951037D46BC1C9D3FD9F30A777C433EEADB8930E66A6AE",
+        "scope_evidence": (
+            "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+            "reviews/R02-intake-scope.tsv"
+        ),
+        "scope_evidence_sha256": "801759184E6F986D009F84E84164FD1DA06FA2B3BFC1BDD30A2982FD509132E0",
     },
 }
 
@@ -219,6 +244,12 @@ class PathRule:
             return is_equal_or_child(left, right) or is_equal_or_child(right, left)
         prefix, exact = (self, other) if self.match == "prefix" else (other, self)
         return is_equal_or_child(exact.folded, prefix.folded)
+
+    def matches(self, path: str) -> bool:
+        folded = normalize_path(path).casefold()
+        return folded == self.folded if self.match == "exact" else is_equal_or_child(
+            folded, self.folded
+        )
 
 
 class Problems:
@@ -344,6 +375,7 @@ class CompletionValidator:
         self.branch_records: dict[str, dict[str, Any]] = {}
         self.branch_evidence: dict[str, list[Artifact]] = defaultdict(list)
         self.requests: dict[str, dict[str, Any]] = {}
+        self.current_checkpoint_id = CHECKPOINT_ID
 
     def relative(self, path: Path) -> str:
         try:
@@ -513,7 +545,6 @@ class CompletionValidator:
             "record_kind": "reorganization_phase",
             "phase_id": PHASE_ID,
             "origin_checkpoint_id": CHECKPOINT_ID,
-            "current_checkpoint_id": CHECKPOINT_ID,
             "status": "active",
         }
         for key, expected in exact.items():
@@ -522,6 +553,14 @@ class CompletionValidator:
                 f"phase.json.{key}",
                 f"expected {expected!r}, found {phase.get(key)!r}",
             )
+        current = phase.get("current_checkpoint_id")
+        self.problems.require(
+            current in {CHECKPOINT_ID, SUCCESSOR_CHECKPOINT_ID},
+            "phase.json.current_checkpoint_id",
+            f"expected {CHECKPOINT_ID} or {SUCCESSOR_CHECKPOINT_ID}, found {current!r}",
+        )
+        if current in {CHECKPOINT_ID, SUCCESSOR_CHECKPOINT_ID}:
+            self.current_checkpoint_id = current
         base = phase.get("base_policy")
         if not isinstance(base, dict):
             self.problems.add("phase.json.base_policy", "expected an object")
@@ -630,6 +669,28 @@ class CompletionValidator:
                 f"checkpoints/C0000.json.{key}",
                 f"expected {expected!r}",
             )
+        if self.current_checkpoint_id == SUCCESSOR_CHECKPOINT_ID:
+            successor_path = self.phase_dir / "checkpoints/C0001.json"
+            successor = self.read_json(successor_path, self.relative(successor_path))
+            if successor is not None:
+                for key, expected in {
+                    "schema_version": 1,
+                    "record_kind": "phase_checkpoint",
+                    "phase_id": PHASE_ID,
+                    "checkpoint_id": SUCCESSOR_CHECKPOINT_ID,
+                    "parent_checkpoint_id": CHECKPOINT_ID,
+                }.items():
+                    self.problems.require(
+                        successor.get(key) == expected,
+                        f"checkpoints/C0001.json.{key}",
+                        f"expected {expected!r}",
+                    )
+                commit = successor.get("commit_sha")
+                self.problems.require(
+                    isinstance(commit, str) and SHA1_RE.fullmatch(commit) is not None,
+                    "checkpoints/C0001.json.commit_sha",
+                    "expected an exact 40-character commit SHA",
+                )
         inventory_ref = self.artifact(
             checkpoint.get("inventory"), "checkpoints/C0000.json.inventory"
         )
@@ -796,10 +857,16 @@ class CompletionValidator:
                 f"expected exactly [{facts['operator']!r}]",
             )
             status = branch.get("status")
+            allowed_statuses = (
+                {"delivered"}
+                if self.current_checkpoint_id == CHECKPOINT_ID
+                else {"accepted", "retired"}
+            )
             self.problems.require(
-                status in {"planned", "active"},
+                status in allowed_statuses,
                 f"{branch_id}.status",
-                "must be planned or active during activation control",
+                f"must be one of {sorted(allowed_statuses)} while current checkpoint is "
+                f"{self.current_checkpoint_id}",
             )
             if isinstance(status, str):
                 statuses.add(status)
@@ -832,6 +899,42 @@ class CompletionValidator:
                 f"{branch_id}.forbidden_paths",
                 f"must protect exact {MATRIX_ALGEBRA}",
             )
+            delivery = branch.get("delivery")
+            delivery_required = status in {"delivered", "accepted", "retired"}
+            if not isinstance(delivery, dict):
+                self.problems.add(f"{branch_id}.delivery", "expected an object")
+            elif delivery_required:
+                self.problems.require(
+                    delivery.get("commit_sha") == facts["delivery_sha"],
+                    f"{branch_id}.delivery.commit_sha",
+                    f"expected immutable delivery {facts['delivery_sha']}",
+                )
+                report = self.artifact(delivery.get("report"), f"{branch_id}.delivery.report")
+                scope_evidence = self.artifact(
+                    delivery.get("scope_evidence"), f"{branch_id}.delivery.scope_evidence"
+                )
+                for artifact, key in (
+                    (report, "delivery_report"),
+                    (scope_evidence, "scope_evidence"),
+                ):
+                    if artifact is not None:
+                        self.problems.require(
+                            artifact.path == facts[key]
+                            and artifact.sha256 == facts[f"{key}_sha256"],
+                            f"{branch_id}.delivery.{key}",
+                            f"must exactly hash-pin {facts[key]} at "
+                            f"{facts[f'{key}_sha256']}",
+                        )
+                self.validate_delivery_scope(
+                    branch_id, facts, owned, destinations, forbidden
+                )
+            else:
+                self.problems.require(
+                    delivery
+                    == {"commit_sha": None, "report": None, "scope_evidence": None},
+                    f"{branch_id}.delivery",
+                    "planned/active state requires an empty delivery record",
+                )
             evidence = branch.get("refresh", {}).get("evidence") if isinstance(branch.get("refresh"), dict) else None
             if not isinstance(evidence, list):
                 self.problems.add(f"{branch_id}.refresh.evidence", "expected hash-pinned evidence list")
@@ -880,7 +983,7 @@ class CompletionValidator:
             live_rules[branch_id] = owned + destinations
         self.problems.require(
             len(statuses) <= 1,
-            "branch activation state",
+            "branch pair state",
             f"B0001/B0002 must transition together, found statuses {sorted(statuses)}",
         )
         if set(live_rules) == set(BRANCH_FACTS):
@@ -900,6 +1003,147 @@ class CompletionValidator:
             self.problems.add("git tree", str(error))
             return []
         return [normalize_path(line) for line in output.splitlines() if line]
+
+    def validate_delivery_scope(
+        self,
+        branch_id: str,
+        facts: dict[str, Any],
+        owned: list[PathRule],
+        destinations: list[PathRule],
+        forbidden: list[PathRule],
+    ) -> None:
+        delivery_sha = facts["delivery_sha"]
+        ancestry = self.git(
+            "merge-base", "--is-ancestor", CODE_SHA, delivery_sha, check=False
+        )
+        self.problems.require(
+            ancestry.returncode == 0,
+            f"{branch_id}.delivery",
+            f"immutable delivery {delivery_sha} must descend from {CODE_SHA}",
+        )
+        try:
+            output = self.git(
+                "diff",
+                "--name-status",
+                "--no-renames",
+                f"{CODE_SHA}..{delivery_sha}",
+            ).stdout
+        except RuntimeError as error:
+            self.problems.add(f"{branch_id}.delivery scope", str(error))
+            return
+        rows: list[tuple[str, str]] = []
+        for index, line in enumerate(output.splitlines(), 1):
+            fields = line.split("\t")
+            if len(fields) != 2 or fields[0] not in {"A", "M", "D"}:
+                self.problems.add(
+                    f"{branch_id}.delivery scope[{index}]",
+                    f"malformed no-renames name-status row {line!r}",
+                )
+                continue
+            rows.append((fields[0], normalize_path(fields[1])))
+        self.problems.require(
+            len(rows) == facts["changed_paths"],
+            f"{branch_id}.delivery scope",
+            f"expected {facts['changed_paths']} actual paths, found {len(rows)}",
+        )
+        self.problems.require(
+            len({path for _, path in rows}) == len(rows),
+            f"{branch_id}.delivery scope",
+            "actual diff contains duplicate paths",
+        )
+        authorized = owned + destinations
+        for status, path in rows:
+            context = f"{branch_id}.delivery scope[{path}]"
+            if not any(rule.matches(path) for rule in authorized):
+                self.problems.add(context, "path is outside owner/destination authority")
+            if any(rule.matches(path) for rule in forbidden):
+                self.problems.add(context, "path is forbidden")
+            if any(rule.matches(path) for rule in self.shared_rules):
+                self.problems.add(context, "path is integrator-shared")
+            parts = set(PurePosixPath(path).parts)
+            if (
+                parts & GENERATED_PARTS
+                or PurePosixPath(path).suffix in GENERATED_SUFFIXES
+                or path.startswith(GENERATED_PREFIXES)
+            ):
+                self.problems.add(context, "path is prohibited generated output")
+            if status == "D":
+                self.problems.add(context, "delivery may not delete a scoped path")
+
+        evidence_path = self.root / facts["scope_evidence"]
+        if branch_id == "B0001":
+            try:
+                evidence_text = evidence_path.read_text(encoding="utf-8")
+            except OSError as error:
+                self.problems.add(f"{branch_id}.delivery.scope_evidence", str(error))
+            else:
+                evidence_rows = re.findall(
+                    r"(?m)^- `([AMD])` `([^`]+)`$", evidence_text
+                )
+                self.problems.require(
+                    Counter(evidence_rows) == Counter(rows),
+                    f"{branch_id}.delivery.scope_evidence",
+                    "worker CHANGED_PATHS ledger must exactly equal the 98-row diff",
+                )
+        else:
+            _, evidence_rows = self.read_tsv(
+                evidence_path,
+                self.relative(evidence_path),
+                DELIVERY_SCOPE_HEADER,
+            )
+            parsed = [(row.get("status", ""), row.get("path", "")) for row in evidence_rows]
+            self.problems.require(
+                parsed == rows,
+                f"{branch_id}.delivery.scope_evidence",
+                "primary-human intake ledger must exactly equal the ordered 145-row diff",
+            )
+            categories = Counter()
+            for status, path in rows:
+                if path in R02_PATHS:
+                    categories["owners"] += 1
+                    if status != "M":
+                        self.problems.add(path, "R02 owner must be modified")
+                elif path.startswith("NumStabilityTest/Reorganization/R02/"):
+                    categories["tests"] += 1
+                elif path.startswith("docs/architecture/deliveries/R02/"):
+                    categories["evidence"] += 1
+                else:
+                    categories["destinations"] += 1
+                if path not in R02_PATHS and status != "A":
+                    self.problems.add(path, "R02 non-owner delivery path must be added")
+            expected = Counter(
+                {"owners": 28, "destinations": 14, "tests": 63, "evidence": 40}
+            )
+            self.problems.require(
+                categories == expected,
+                f"{branch_id}.delivery scope classes",
+                f"expected {dict(expected)}, found {dict(categories)}",
+            )
+            audit_path = self.phase_dir / "reviews/R02-intake-audit.md"
+            try:
+                audit = audit_path.read_text(encoding="utf-8")
+            except OSError as error:
+                self.problems.add(self.relative(audit_path), str(error))
+            else:
+                ledger_digest = sha256_path(evidence_path)
+                for token in (
+                    delivery_sha,
+                    ledger_digest,
+                    "113",
+                    "145",
+                    "28 owners",
+                    "14 destinations",
+                    "63",
+                    "40",
+                    "zero paths outside",
+                    "142 relocated",
+                    "123-row",
+                    "P0002 replay records PASS",
+                ):
+                    if token.casefold() not in audit.casefold():
+                        self.problems.add(
+                            self.relative(audit_path), f"missing intake token {token!r}"
+                        )
 
     def evidence_for(self, branch_id: str, filename: str) -> Artifact | None:
         expected = self.relative(self.phase_dir / "branches" / filename)
@@ -1132,6 +1376,11 @@ class CompletionValidator:
         return None
 
     def validate_projections(self) -> None:
+        expected_status = (
+            "active"
+            if self.current_checkpoint_id == CHECKPOINT_ID
+            else "retired"
+        )
         for branch_id, facts in BRANCH_FACTS.items():
             projection_id = facts["projection"]
             path = self.phase_dir / f"projections/{projection_id}.json"
@@ -1145,7 +1394,7 @@ class CompletionValidator:
                 "projection_id": projection_id,
                 "wave_id": facts["wave"],
                 "base_checkpoint_id": CHECKPOINT_ID,
-                "status": "active",
+                "status": expected_status,
             }.items():
                 self.problems.require(
                     projection.get(key) == expected,
@@ -1285,7 +1534,17 @@ class CompletionValidator:
 
     def validate_requests_and_postimages(self) -> None:
         request_dir = self.phase_dir / "requests"
-        for request_id, branch_id in (("R0001", "B0001"), ("R0002", "B0002")):
+        expected_status = (
+            "active"
+            if self.current_checkpoint_id == CHECKPOINT_ID
+            else "applied"
+        )
+        request_specs = [
+            ("R0001", "B0001"),
+            ("R0002", "B0002"),
+            ("R0002T", "B0002"),
+        ]
+        for request_id, branch_id in request_specs:
             path = request_dir / f"{request_id}.json"
             request = self.read_json(path, self.relative(path))
             if request is None:
@@ -1299,11 +1558,13 @@ class CompletionValidator:
                 "request_id": request_id,
                 "lane_id": facts["lane"],
                 "wave_id": facts["wave"],
-                "requester_id": facts["operator"],
+                "requester_id": (
+                    "primary-human" if request_id == "R0002T" else facts["operator"]
+                ),
                 "target_checkpoint_id": CHECKPOINT_ID,
                 "target_base_sha": CODE_SHA,
                 "valid_through_checkpoint_id": CHECKPOINT_ID,
-                "status": "active",
+                "status": expected_status,
             }.items():
                 self.problems.require(
                     request.get(key) == expected,
@@ -1314,9 +1575,17 @@ class CompletionValidator:
             if paths != sorted(set(paths)):
                 self.problems.add(f"{request_id}.paths", "paths must be sorted and unique")
             self.problems.require(
-                facts["consumers"] <= set(paths),
+                (
+                    set(paths) == R0002T_PATHS
+                    if request_id == "R0002T"
+                    else facts["consumers"] <= set(paths)
+                ),
                 f"{request_id}.paths",
-                "must include every required clean consumer postimage",
+                (
+                    f"must equal exact supplemental paths {sorted(R0002T_PATHS)}"
+                    if request_id == "R0002T"
+                    else "must include every required clean consumer postimage"
+                ),
             )
             preimages = request.get("preimage_blobs") if isinstance(request.get("preimage_blobs"), list) else []
             parsed_preimages: dict[str, str | None] = {}
@@ -1376,14 +1645,23 @@ class CompletionValidator:
                     f"{request_id}.rationale",
                     f"must hash-pin {post_name} at SHA-256 {post_digest}",
                 )
+        expected_links = {
+            "B0001": ["R0001"],
+            "B0002": ["R0002", "R0002T"],
+        }
+        for branch_id, expected in expected_links.items():
             branch = self.branch_records.get(branch_id, {})
-            linked = branch.get("shared_request_ids") if isinstance(branch.get("shared_request_ids"), list) else []
-            self.problems.require(
-                linked == [request_id],
-                f"{branch_id}.shared_request_ids",
-                f"expected exactly {request_id}",
+            linked = (
+                branch.get("shared_request_ids")
+                if isinstance(branch.get("shared_request_ids"), list)
+                else []
             )
-        if set(self.requests) == {"R0001", "R0002"}:
+            self.problems.require(
+                linked == expected,
+                f"{branch_id}.shared_request_ids",
+                f"expected exactly {expected}",
+            )
+        if {"R0001", "R0002"} <= set(self.requests):
             first, second = self.requests["R0001"], self.requests["R0002"]
             first_pre = {item["path"]: item["blob_oid"] for item in first.get("preimage_blobs", []) if isinstance(item, dict) and "path" in item and "blob_oid" in item}
             second_pre = {item["path"]: item["blob_oid"] for item in second.get("preimage_blobs", []) if isinstance(item, dict) and "path" in item and "blob_oid" in item}
@@ -1469,7 +1747,8 @@ class CompletionValidator:
                     )
             union_manifest_digest = sha256_path(union_path) if union_path.is_file() else ""
             review_digest = sha256_path(review_path) if review_path.is_file() else ""
-            for request_id, request in self.requests.items():
+            for request_id in ("R0001", "R0002"):
+                request = self.requests[request_id]
                 rationale = str(request.get("rationale", "")).upper()
                 for digest, label in (
                     (union_manifest_digest, "union postimages"),
@@ -1956,11 +2235,19 @@ def run_self_test() -> int:
     distant = PathRule("NumStability/B", "prefix")
     problems.require(exact.intersects(same), "self-test", "casefold exact collision missed")
     problems.require(exact.intersects(prefix), "self-test", "exact/prefix collision missed")
+    problems.require(exact.matches("NumStability/A.lean"), "self-test", "exact path match missed")
+    problems.require(prefix.matches("NumStability/A.lean"), "self-test", "prefix path match missed")
     problems.require(not exact.intersects(distant), "self-test", "false path collision")
     problems.require(len(R01_PATHS) == 16, "self-test", "R01 constant drift")
     problems.require(len(R02_PATHS) == 28, "self-test", "R02 constant drift")
     problems.require(len(SHARED_CONSUMERS) == 11, "self-test", "shared consumer constant drift")
     problems.require(R01_PATHS.isdisjoint(R02_PATHS), "self-test", "selector constants overlap")
+    problems.require(
+        BRANCH_FACTS["B0001"]["changed_paths"] == 98
+        and BRANCH_FACTS["B0002"]["changed_paths"] == 145,
+        "self-test",
+        "immutable delivery-scope counts drifted",
+    )
     with tempfile.TemporaryDirectory(prefix="completion-validator-self-test-") as directory:
         tsv = Path(directory) / "sample.tsv"
         tsv.write_text("module\tpath\nA\tA.lean\n", encoding="utf-8", newline="\n")
@@ -2037,8 +2324,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         return 1
     print(
-        "completion phase passed: C0000 root, 2,593-row freeze, 492-row scope, "
-        "R01/R02 activation evidence, projections, routes, private closure, tests, "
+        f"completion phase passed: {validator.current_checkpoint_id} control state, "
+        "C0000-pinned 2,593-row freeze, 492-row scope, exact R01/R02 98/145-path "
+        "delivery evidence, projections, routes, private closure, tests, "
         "overlap proofs, postimages, reviewed union, and milestone DAG"
     )
     return 0

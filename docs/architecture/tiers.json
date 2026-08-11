@@ -53,15 +53,15 @@
     "NumStability.Algorithms.Ch14SchulzRectangular": "compatibility",
     "NumStability.Algorithms.Ch14SchulzSpectralConvergence": "compatibility",
     "NumStability.Algorithms.Ch14SourceCorrections": "compatibility",
-    "NumStability.Algorithms.Ch15CondEstimators": "mixed",
-    "NumStability.Algorithms.Ch15DixonClosure": "mixed",
-    "NumStability.Algorithms.Ch15DixonProbability": "mixed",
+    "NumStability.Algorithms.Ch15CondEstimators": "compatibility",
+    "NumStability.Algorithms.Ch15DixonClosure": "compatibility",
+    "NumStability.Algorithms.Ch15DixonProbability": "compatibility",
     "NumStability.Algorithms.Ch4KahanFiniteFamily": "compatibility",
     "NumStability.Algorithms.Ch5LejaProducer": "compatibility",
     "NumStability.Algorithms.Ch5NewtonForm": "compatibility",
     "NumStability.Algorithms.Chapter06Lemma66": "compatibility",
     "NumStability.Algorithms.Chapter14Problem1415Weyl": "compatibility",
-    "NumStability.Algorithms.Chapter15CondEst": "mixed",
+    "NumStability.Algorithms.Chapter15CondEst": "compatibility",
     "NumStability.Algorithms.Cholesky.Aasen118ReducedCh11Closure": "compatibility",
     "NumStability.Algorithms.Cholesky.AasenAdjacentPivotOperationalMiddleCh11": "compatibility",
     "NumStability.Algorithms.Cholesky.AasenAdjacentPivotResidualDomainCh11Discrepancy": "compatibility",
@@ -169,19 +169,19 @@
     "NumStability.Algorithms.HighamChapter12Ch9SolverBridge": "compatibility",
     "NumStability.Algorithms.HighamChapter12OmegaDiscontinuity": "compatibility",
     "NumStability.Algorithms.HighamChapter12Problem12_2": "compatibility",
-    "NumStability.Algorithms.HighamChapter15BoydBridges": "mixed",
-    "NumStability.Algorithms.HighamChapter15BoydConcreteLemma3": "mixed",
-    "NumStability.Algorithms.HighamChapter15BoydLocalStability": "mixed",
-    "NumStability.Algorithms.HighamChapter15BoydRowwiseDomain": "mixed",
-    "NumStability.Algorithms.HighamChapter15BoydScalar": "mixed",
-    "NumStability.Algorithms.HighamChapter15BoydSourceClosure": "mixed",
-    "NumStability.Algorithms.HighamChapter15BoydSourceDomain": "mixed",
-    "NumStability.Algorithms.HighamChapter15BoydSourceLocal": "mixed",
-    "NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative": "mixed",
-    "NumStability.Algorithms.HighamChapter15BoydUniqueness": "mixed",
+    "NumStability.Algorithms.HighamChapter15BoydBridges": "compatibility",
+    "NumStability.Algorithms.HighamChapter15BoydConcreteLemma3": "compatibility",
+    "NumStability.Algorithms.HighamChapter15BoydLocalStability": "compatibility",
+    "NumStability.Algorithms.HighamChapter15BoydRowwiseDomain": "compatibility",
+    "NumStability.Algorithms.HighamChapter15BoydScalar": "compatibility",
+    "NumStability.Algorithms.HighamChapter15BoydSourceClosure": "compatibility",
+    "NumStability.Algorithms.HighamChapter15BoydSourceDomain": "compatibility",
+    "NumStability.Algorithms.HighamChapter15BoydSourceLocal": "compatibility",
+    "NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative": "compatibility",
+    "NumStability.Algorithms.HighamChapter15BoydUniqueness": "compatibility",
     "NumStability.Algorithms.HighamChapter15Ch7PracticalBoundBridge": "compatibility",
-    "NumStability.Algorithms.HighamChapter15ConvergenceProse": "mixed",
-    "NumStability.Algorithms.HighamChapter15RectTermination": "mixed",
+    "NumStability.Algorithms.HighamChapter15ConvergenceProse": "compatibility",
+    "NumStability.Algorithms.HighamChapter15RectTermination": "compatibility",
     "NumStability.Algorithms.HighamChapter3NoGuardDotBridge": "compatibility",
     "NumStability.Algorithms.HighamChapter4KaoWangScope": "compatibility",
     "NumStability.Algorithms.HighamChapter8": "mixed",
@@ -272,6 +272,7 @@
     "NumStability.Algorithms.LinearSystems.Iterative.Stationary.Execution.Computed.Model": "reusable",
     "NumStability.Algorithms.LinearSystems.Iterative.Stationary.Projectors.Drazin.Algebra": "reusable",
     "NumStability.Algorithms.LinearSystems.Iterative.Stationary.Recurrences.Affine.Unrolling": "reusable",
+    "NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.All": "aggregate",
     "NumStability.Algorithms.LinearSystems.Iterative.Stationary.Splittings.Core.Definitions": "reusable",
     "NumStability.Algorithms.LinearSystems.Iterative.Stationary.Splittings.Scaling.Diagonal": "reusable",
     "NumStability.Algorithms.LinearSystems.LeastSquares": "aggregate",
@@ -372,17 +373,17 @@
     "NumStability.Algorithms.LU.GaussianElimination": "reusable",
     "NumStability.Algorithms.LU.GrowthFactor": "reusable",
     "NumStability.Algorithms.LU.Higham13DemmelSharpMultiplier": "compatibility",
-    "NumStability.Algorithms.LU.Higham15Problem15_4": "mixed",
-    "NumStability.Algorithms.LU.Higham15Problem15_6": "mixed",
-    "NumStability.Algorithms.LU.Higham15Problem15_6Closure": "mixed",
-    "NumStability.Algorithms.LU.Higham15Problem15_6Operational": "mixed",
+    "NumStability.Algorithms.LU.Higham15Problem15_4": "compatibility",
+    "NumStability.Algorithms.LU.Higham15Problem15_6": "compatibility",
+    "NumStability.Algorithms.LU.Higham15Problem15_6Closure": "compatibility",
+    "NumStability.Algorithms.LU.Higham15Problem15_6Operational": "compatibility",
     "NumStability.Algorithms.LU.LUSolve": "reusable",
     "NumStability.Algorithms.LU.SpecialMatrices": "reusable",
     "NumStability.Algorithms.LU.Tridiagonal": "reusable",
     "NumStability.Algorithms.LU.TridiagonalCond": "reusable",
-    "NumStability.Algorithms.LU.TridiagonalCondCh15": "mixed",
-    "NumStability.Algorithms.LU.TridiagonalCondCh15Closure": "mixed",
-    "NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure": "mixed",
+    "NumStability.Algorithms.LU.TridiagonalCondCh15": "compatibility",
+    "NumStability.Algorithms.LU.TridiagonalCondCh15Closure": "compatibility",
+    "NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure": "compatibility",
     "NumStability.Algorithms.LU.TridiagonalRecurrence": "reusable",
     "NumStability.Algorithms.MatMul": "reusable",
     "NumStability.Algorithms.MatMulBackwardError": "reusable",
@@ -490,6 +491,8 @@
     "NumStability.Algorithms.NormEstimation.PNorm": "aggregate",
     "NumStability.Algorithms.NormEstimation.PNorm.All": "aggregate",
     "NumStability.Algorithms.NormEstimation.PNorm.Boyd": "aggregate",
+    "NumStability.Algorithms.NormEstimation.PNorm.Endpoints.ConvergenceStatements": "compatibility",
+    "NumStability.Algorithms.NormEstimation.PNorm.Endpoints.PNormRectangular": "compatibility",
     "NumStability.Algorithms.NormEstimation.TwoNorm": "aggregate",
     "NumStability.Algorithms.NormEstimation.TwoNorm.All": "aggregate",
     "NumStability.Algorithms.NormEstimation.TwoNorm.Dixon": "aggregate",
@@ -497,9 +500,9 @@
     "NumStability.Algorithms.OuterProduct": "reusable",
     "NumStability.Algorithms.PairwiseSum": "compatibility",
     "NumStability.Algorithms.PlusMinusSum": "compatibility",
-    "NumStability.Algorithms.PNormPowerMethod": "mixed",
-    "NumStability.Algorithms.PNormPowerMethodGeneralP": "mixed",
-    "NumStability.Algorithms.PNormPowerMethodRect": "mixed",
+    "NumStability.Algorithms.PNormPowerMethod": "compatibility",
+    "NumStability.Algorithms.PNormPowerMethodGeneralP": "compatibility",
+    "NumStability.Algorithms.PNormPowerMethodRect": "compatibility",
     "NumStability.Algorithms.PolynomialEvaluation.ElementaryErrorBounds": "reusable",
     "NumStability.Algorithms.PolynomialEvaluation.MatrixNorms": "reusable",
     "NumStability.Algorithms.PolynomialEvaluation.RootProduct": "reusable",
@@ -591,11 +594,11 @@
     "NumStability.Algorithms.SoftwareIssues.Higham27": "compatibility",
     "NumStability.Algorithms.SoftwareIssues.Higham27Pythag": "compatibility",
     "NumStability.Algorithms.SquareDifference": "reusable",
-    "NumStability.Algorithms.StationaryIteration": "mixed",
-    "NumStability.Algorithms.StationaryIterationDrazin": "mixed",
-    "NumStability.Algorithms.StationaryIterationRounded": "mixed",
-    "NumStability.Algorithms.StationaryIterationSemiconvergent": "mixed",
-    "NumStability.Algorithms.StationaryIterationSemiconvergentExistence": "mixed",
+    "NumStability.Algorithms.StationaryIteration": "compatibility",
+    "NumStability.Algorithms.StationaryIterationDrazin": "compatibility",
+    "NumStability.Algorithms.StationaryIterationRounded": "compatibility",
+    "NumStability.Algorithms.StationaryIterationSemiconvergent": "compatibility",
+    "NumStability.Algorithms.StationaryIterationSemiconvergentExistence": "compatibility",
     "NumStability.Algorithms.StationaryIterationSeries": "compatibility",
     "NumStability.Algorithms.Summation": "aggregate",
     "NumStability.Algorithms.Summation.Accumulator": "reusable",
@@ -788,6 +791,7 @@
     "NumStability.Analysis.LinearOperators.MatrixPowers.LpBounds.All": "aggregate",
     "NumStability.Analysis.LinearOperators.MatrixPowers.LpBounds.ComplexDiagonal": "reusable",
     "NumStability.Analysis.LinearOperators.MatrixPowers.LpBounds.ComplexJordan": "reusable",
+    "NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.All": "aggregate",
     "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker": "aggregate",
     "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.All": "aggregate",
     "NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.KreissBridge": "reusable",
@@ -907,12 +911,12 @@
     "NumStability.Analysis.Rounding": "reusable",
     "NumStability.Analysis.RoundingProductBounds": "compatibility",
     "NumStability.Analysis.SampleVariance": "mixed",
-    "NumStability.Analysis.SemiconvergentBlockFormExists": "mixed",
-    "NumStability.Analysis.SemiconvergentExistenceComplete": "mixed",
-    "NumStability.Analysis.SemiconvergentExistenceFull": "mixed",
+    "NumStability.Analysis.SemiconvergentBlockFormExists": "compatibility",
+    "NumStability.Analysis.SemiconvergentExistenceComplete": "compatibility",
+    "NumStability.Analysis.SemiconvergentExistenceFull": "compatibility",
     "NumStability.Analysis.SemiconvergentExistenceGaps": "reusable",
-    "NumStability.Analysis.SemiconvergentLimitGeneral": "mixed",
-    "NumStability.Analysis.SemiconvergentRealSpectrumComplete": "mixed",
+    "NumStability.Analysis.SemiconvergentLimitGeneral": "compatibility",
+    "NumStability.Analysis.SemiconvergentRealSpectrumComplete": "compatibility",
     "NumStability.Analysis.SemiconvergentSpectral": "reusable",
     "NumStability.Analysis.SingularValues": "aggregate",
     "NumStability.Analysis.SingularValues.Basic": "reusable",
@@ -1264,6 +1268,14 @@
     "NumStability.Source.Higham.Chapter16.Section05": "aggregate",
     "NumStability.Source.Higham.Chapter16.Section05.GeneralizedMatrixEquations.All": "aggregate",
     "NumStability.Source.Higham.Chapter17": "aggregate",
+    "NumStability.Source.Higham.Chapter17.Equation08": "compatibility",
+    "NumStability.Source.Higham.Chapter17.Equation12": "compatibility",
+    "NumStability.Source.Higham.Chapter17.Equation15": "compatibility",
+    "NumStability.Source.Higham.Chapter17.Equation16": "compatibility",
+    "NumStability.Source.Higham.Chapter17.Equation17": "compatibility",
+    "NumStability.Source.Higham.Chapter17.Equation20": "compatibility",
+    "NumStability.Source.Higham.Chapter17.Results.All": "aggregate",
+    "NumStability.Source.Higham.Chapter17.Results.Series": "aggregate",
     "NumStability.Source.Higham.Chapter18": "aggregate",
     "NumStability.Source.Higham.Chapter18.Section01": "aggregate",
     "NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds": "aggregate",
@@ -1457,11 +1469,31 @@
       "tier": "reusable"
     },
     {
+      "prefix": "NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.",
+      "tier": "reusable"
+    },
+    {
       "prefix": "NumStability.Algorithms.LinearSystems.IterativeRefinement",
       "tier": "reusable"
     },
     {
+      "prefix": "NumStability.Algorithms.LinearSystems.LeastSquares.",
+      "tier": "reusable"
+    },
+    {
       "prefix": "NumStability.Algorithms.LinearSystems.LU.Doolittle",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Algorithms.LinearSystems.QR",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Algorithms.LinearSystems.Triangular",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Algorithms.NormEstimation.",
       "tier": "reusable"
     },
     {
@@ -1505,35 +1537,19 @@
       "tier": "reusable"
     },
     {
+      "prefix": "NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.",
+      "tier": "reusable"
+    },
+    {
+      "prefix": "NumStability.Analysis.Perturbation.LeastSquares.",
+      "tier": "reusable"
+    },
+    {
       "prefix": "NumStability.Analysis.ProblemDependentStability",
       "tier": "reusable"
     },
     {
       "prefix": "NumStability.Analysis.Statistics.SampleVariance",
-      "tier": "reusable"
-    },
-    {
-      "prefix": "NumStability.Source",
-      "tier": "source"
-    },
-    {
-      "prefix": "NumStability.Upstream",
-      "tier": "upstream"
-    },
-    {
-      "prefix": "NumStability.Algorithms.LinearSystems.LeastSquares.",
-      "tier": "reusable"
-    },
-    {
-      "prefix": "NumStability.Algorithms.LinearSystems.QR",
-      "tier": "reusable"
-    },
-    {
-      "prefix": "NumStability.Algorithms.LinearSystems.Triangular",
-      "tier": "reusable"
-    },
-    {
-      "prefix": "NumStability.Analysis.Perturbation.LeastSquares.",
       "tier": "reusable"
     },
     {
@@ -1545,8 +1561,16 @@
       "tier": "source"
     },
     {
-      "prefix": "NumStability.Algorithms.NormEstimation.",
-      "tier": "reusable"
+      "prefix": "NumStability.Source",
+      "tier": "source"
+    },
+    {
+      "prefix": "NumStability.Source.Higham.Chapter17.Results.",
+      "tier": "source"
+    },
+    {
+      "prefix": "NumStability.Upstream",
+      "tier": "upstream"
     }
   ]
 }

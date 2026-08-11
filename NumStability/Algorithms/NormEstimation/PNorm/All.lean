@@ -7,8 +7,8 @@ import NumStability.Algorithms.NormEstimation.PNorm.Duality.BoydUniqueness
 import NumStability.Algorithms.NormEstimation.PNorm.Duality.ConvergenceStatements
 import NumStability.Algorithms.NormEstimation.PNorm.Duality.PNormGeneral
 import NumStability.Algorithms.NormEstimation.PNorm.Duality.PNormPowerMethod
-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.ConvergenceStatements
-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.PNormRectangular
+import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Rectangular
+import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Square
 import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.BoydConcrete
 import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.BoydInterface
 import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.PNormGeneral

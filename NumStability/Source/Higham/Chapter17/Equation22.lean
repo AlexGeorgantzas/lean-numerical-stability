@@ -1,4 +1,4 @@
-import NumStability.Analysis.SemiconvergentLimitGeneral
+import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.Limits.General
 
 /-!
 # Higham Chapter 17, Equation 17.22

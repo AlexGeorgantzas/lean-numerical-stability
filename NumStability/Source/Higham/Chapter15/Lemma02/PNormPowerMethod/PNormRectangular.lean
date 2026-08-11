@@ -12,7 +12,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.NormEstimation.OneNorm.PowerMethod.CondEstimation
-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.PNormRectangular
+import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Rectangular
 import NumStability.Algorithms.NormEstimation.PNorm.Rectangular.PNormRectangular
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixNorms.Lp

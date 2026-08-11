@@ -574,6 +574,10 @@
     },
     {
       "match": "exact",
+      "path": "NumStabilityTest/Reorganization/R02.lean"
+    },
+    {
+      "match": "exact",
       "path": "README.md"
     },
     {

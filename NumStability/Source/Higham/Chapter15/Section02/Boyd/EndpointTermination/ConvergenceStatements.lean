@@ -18,7 +18,7 @@ import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.NormEstimation.OneNorm.FiniteIndex.Basic
 import NumStability.Algorithms.NormEstimation.OneNorm.PowerMethod.CondEstimation
 import NumStability.Algorithms.NormEstimation.OneNorm.PowerMethod.PNormPowerMethod
-import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.ConvergenceStatements
+import NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Square
 import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.PNormPowerMethod
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixNorms.Lp
