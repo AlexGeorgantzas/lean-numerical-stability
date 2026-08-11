@@ -160,8 +160,14 @@ Both deliveries are based on the exact C0007 code SHA and preserved through
 separate true merges. The projection records are immutable control evidence on
 `main`; they are never copied into worker history. Their exact deterministic
 streams were replayed against the same final integrated candidate with only
-the candidate-path argument changed. The exact remote refs and clean named W07
-worktree remain present until the C0008 acceptance-control commit passes Lean
-CI; projection retirement alone does not authorize early deletion. The clean
-post-delivery W10 integrator recovery/correction checkout remains preserved
-outside worker retirement.
+the candidate-path argument changed. After C0008 acceptance-control commit
+`5d047643efbc06e69d380a4266010d9f48d934e1` passed Lean CI, both exact remote
+refs were deleted atomically with exact expected-SHA leases at
+`2026-08-11T07:47:20Z` by `primary-human`. The ignored W07 artifacts were
+archived under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0008-W07-20260811`;
+its named delivery worktree was removed without force, and both local branches
+remain preserved at their immutable delivery tips. Projection retirement alone
+did not authorize early deletion. The clean post-delivery W10 integrator
+recovery/correction checkout
+at `C:\Users\qed_s\w10-worker` remains preserved outside worker retirement.

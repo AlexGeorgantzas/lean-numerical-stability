@@ -229,12 +229,18 @@ with compatibility and provenance checked separately.
 The repository-reorganization phase remains in progress. C0008 accepts W07
 and W10, so M01 through M12 are accepted; M90 is ready but remains
 unactivated, and repository-wide completion remains incomplete. B0011 and
-B0012 are accepted with retirement due, P0012/P0013 are retired immutable
-evidence, and R0010/R0011 are applied. Their exact remote refs and the clean
-named W07 worktree remain present until this acceptance-control commit passes
-Lean CI. The clean post-delivery W10 integrator recovery/correction checkout
-at `C:\Users\qed_s\w10-worker` is not a worker-lane checkout or retirement
-target and remains preserved. The
+B0012 are accepted and retired, P0012/P0013 are retired immutable evidence,
+and R0010/R0011 are applied. After C0008 acceptance-control commit
+`5d047643efbc06e69d380a4266010d9f48d934e1` passed
+[Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31469704946),
+both exact remote refs were deleted atomically with exact expected-SHA leases
+at `2026-08-11T07:47:20Z` by `primary-human`. The ignored W07 artifacts were
+archived under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0008-W07-20260811`;
+its named delivery worktree was removed without force, and both local branches
+remain preserved at their immutable tips. The clean post-delivery W10
+integrator recovery/correction checkout at `C:\Users\qed_s\w10-worker` is not
+a worker-lane checkout or retirement target and remains preserved. The
 [`active phase registry`](docs/architecture/phases/2026-08-repository-reorganization/README.md)
 is the authoritative status record.
 

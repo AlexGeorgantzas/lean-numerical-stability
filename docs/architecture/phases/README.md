@@ -13,9 +13,15 @@ immutable tips
 `9e7604cbdbd2314bc4bf38bcd9e342c3accfb1d6`, respectively. Separate true
 merge commits preserve both deliveries. C0008 accepts both waves; P0012/P0013
 are retired immutable evidence and independently C0007-based R0010/R0011 are
-applied. Both branch records are accepted with retirement due, so their exact
-remote refs and the clean named W07 worktree remain present until the C0008
-acceptance-control commit passes Lean CI. The clean W10 post-delivery
+applied. Both branch records are accepted and retired. After C0008
+acceptance-control commit `5d047643efbc06e69d380a4266010d9f48d934e1`
+passed [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31469704946),
+both exact remote refs were deleted atomically with exact expected-SHA leases
+at `2026-08-11T07:47:20Z` by `primary-human`. The ignored W07 artifacts were
+archived under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0008-W07-20260811`;
+its named delivery worktree was removed without force, and both local branches
+remain preserved at their immutable tips. The clean W10 post-delivery
 integrator recovery/correction checkout at `C:\Users\qed_s\w10-worker`
 remains preserved outside retirement. B0008/W04,
 B0009/W09, and B0010/W11 are accepted at C0007 and retired;

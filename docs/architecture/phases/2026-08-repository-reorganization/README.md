@@ -9,12 +9,18 @@ completion remain incomplete. B0011/W07 delivery
 separate true merges `9399c0531c6c6431e3f8def33fae1df3fbb060a6` and
 `25ea10390ab118dbfc3ecf2c05ba9e33fbe1e626`. Their frozen C0007 projections
 P0012/P0013 are retired immutable evidence, and independently C0007-based
-requests R0010/R0011 are applied at C0008. B0011 and B0012 are accepted with
-retirement due: both exact remote refs and the clean named W07 worktree remain
-present until this acceptance-control commit passes Lean CI. The clean local
-post-delivery W10 integrator recovery/correction checkout at
-`C:\Users\qed_s\w10-worker` is not a worker-lane checkout or retirement target
-and remains preserved.
+requests R0010/R0011 are applied at C0008. B0011 and B0012 are accepted and
+retired. After C0008 acceptance-control commit
+`5d047643efbc06e69d380a4266010d9f48d934e1` passed
+[Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31469704946),
+both exact remote refs were deleted atomically with exact expected-SHA leases
+at `2026-08-11T07:47:20Z` by `primary-human`. The ignored W07 artifacts were
+archived under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0008-W07-20260811`;
+its named delivery worktree was removed without force, and both local branches
+remain preserved at their immutable tips. The clean local post-delivery W10
+integrator recovery/correction checkout at `C:\Users\qed_s\w10-worker` is not
+a worker-lane checkout or retirement target and remains preserved.
 
 B0006/W06 delivery
 `436b38cbda2e06cf5c9ea3343f0bc6fe428f0b97` and B0007/W08 delivery
@@ -121,7 +127,7 @@ evidence for the bounded work they completed.
   [`W07.tsv`](selectors/W07.tsv) and [`W10.tsv`](selectors/W10.tsv). Applied
   requests [`R0010`](requests/R0010.json) and
   [`R0011`](requests/R0011.json) record the integrator-owned C0008 delta. Both
-  branch records identify C0008 integration and retirement `due`.
+  branch records identify C0008 integration and retirement `retired`.
   No prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
   the complete phase state;
@@ -292,8 +298,8 @@ P0012/P0013 projections. Their immutable delivery tips are
 `176c72838828795b89f4aa822479010c7860c8e5` and
 `9e7604cbdbd2314bc4bf38bcd9e342c3accfb1d6`; separate true merges and green
 C0008 code commit `b1b18772d80185ec08f49c818919558645c330a1` preserve their
-integration, while retirement remains due until the C0008 acceptance-control
-commit passes Lean CI. Planned-control commit
+integration. Both records are retired after the acceptance-control CI and
+exact-lease remote deletion recorded above. Planned-control commit
 `ac3bc1063c7d9aa1c7a0c12a85337c858b6f9200` passed
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31300495624)
 before either worker ref or the W07 worktree was created. Both worker refs

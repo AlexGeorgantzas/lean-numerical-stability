@@ -23,14 +23,15 @@ before work began. Their immutable delivery tips and hash-pinned packet
 evidence are recorded below. Separate true merge commits
 `9399c0531c6c6431e3f8def33fae1df3fbb060a6` and
 `25ea10390ab118dbfc3ecf2c05ba9e33fbe1e626` preserve W07 and W10,
-respectively. Both records are accepted with retirement due:
+respectively. Both records are accepted and retired:
 
 - [`B0011`](B0011.json): W07 local-lane branch
   `codex/reorg-2026-08-w07-stationary-ch17`, five exact historical owners, 34
   reviewed production destinations plus W07 test/delivery prefixes, owner
   `primary-human`, sole operator `codex-local`, and immutable delivery
-  `176c72838828795b89f4aa822479010c7860c8e5`. Its only authorized local
-  worktree is `C:\Users\qed_s\higham-worktrees\reorg-w07-codex`;
+  `176c72838828795b89f4aa822479010c7860c8e5`. Its named delivery worktree
+  `C:\Users\qed_s\higham-worktrees\reorg-w07-codex` was removed without force
+  at retirement;
 - [`B0012`](B0012.json): W10 remote-lane branch
   `codex/reorg-2026-08-w10-norm-estimation-ch15`, 27 exact historical owners,
   43 reviewed production destinations plus W10 test/delivery prefixes, owner
@@ -41,9 +42,15 @@ respectively. Both records are accepted with retirement due:
 
 Both records have hash-pinned delivery fields, C0008 integration fields, one
 applied shared request each (R0010 for W07 and R0011 for W10), and retirement
-`due`; P0012 and P0013 are retired immutable evidence. The two exact remote
-refs and the clean named W07 worktree remain present until the C0008
-acceptance-control commit passes Lean CI. The clean post-delivery W10
+`retired`; P0012 and P0013 are retired immutable evidence. After C0008
+acceptance-control commit `5d047643efbc06e69d380a4266010d9f48d934e1`
+passed [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31469704946),
+the two exact remote refs were deleted atomically with exact expected-SHA
+leases at `2026-08-11T07:47:20Z` by `primary-human`. The ignored W07 artifacts
+were archived under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0008-W07-20260811`;
+its named delivery worktree was removed without force, and both local branches
+remain preserved at their immutable tips. The clean post-delivery W10
 integrator recovery/correction checkout remains preserved outside retirement.
 Their independent hash-pinned
 reviews [`B0011-overlap-review.md`](B0011-overlap-review.md) and

@@ -40,11 +40,17 @@ reviews are [`R0010-overlap-review.md`](R0010-overlap-review.md) and
 [`R0011-overlap-review.md`](R0011-overlap-review.md). The requests were applied
 in green code commit `b1b18772d80185ec08f49c818919558645c330a1` and resolved
 at C0008 at `2026-08-11T07:00:00Z` by `primary-human`; their validation
-evidence is the hash-pinned C0008 gate record. The exact remote refs and clean
-named W07 worktree remain present until the C0008 acceptance-control commit
-passes Lean CI; request application alone does not authorize branch deletion.
-The clean post-delivery W10 integrator recovery/correction checkout remains
-preserved outside worker retirement.
+evidence is the hash-pinned C0008 gate record. After C0008 acceptance-control
+commit `5d047643efbc06e69d380a4266010d9f48d934e1` passed Lean CI, both exact
+remote refs were deleted atomically with exact expected-SHA leases at
+`2026-08-11T07:47:20Z` by `primary-human`. The ignored W07 artifacts were
+archived under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0008-W07-20260811`;
+its named delivery worktree was removed without force, and both local branches
+remain preserved at their immutable delivery tips. Request application alone
+did not authorize early branch deletion. The clean post-delivery W10 integrator
+recovery/correction checkout
+at `C:\Users\qed_s\w10-worker` remains preserved outside worker retirement.
 
 Both patches are independently based on C0004 and apply cleanly to a fresh
 C0004 index. They are phase-control artifacts on main and were intentionally
