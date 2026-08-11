@@ -1,0 +1,53 @@
+{
+  "base_checkpoint_id": "C0001",
+  "checker": {
+    "arguments": [
+      "--allow-module=NumStability.Source.Higham.Chapter13.Equation23",
+      "--allow-module=NumStability.Source.Higham.Chapter13.Equation25",
+      "--allow-module=NumStability.Source.Higham.Chapter13.Table01",
+      "--allow-prefix=NumStability.Source.Higham.Chapter13.Equation23.ProductBounds.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter13.Equation25.BackwardError.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter13.Equation25.PartitionedComputation.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter13.Table01.BackwardErrorBounds.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter13.Table01.DiagonalDominance.",
+      "--allow-prefix=NumStability.Source.Higham.Chapter13.Table01.ProductTransfers.",
+      "--candidate=<candidate-format2.tsv>",
+      "--private-map-sha256=3266EAFAE1CD51DCBF459760E1D24DC5F88E2E29AA3E633D3B313DCF96CA368C",
+      "--private-map=docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0004-private-normalization.tsv",
+      "--projection-sha256=E84302EC06E0215758B91F9B179D89E0A5E17931CF42734828F1253BB4C129D2",
+      "--projection=docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0004.tsv.gz"
+    ],
+    "artifact": {
+      "path": "tools/architecture/check_completion_phase_projection.py",
+      "sha256": "0F32935ED1EFDD2BD4D6A4C346F3E8300C86DB1D4A3551A17165479226109220"
+    }
+  },
+  "combined_baseline": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0001-combined.json",
+    "sha256": "F6AD7BC1267CB73968D8933D1126DCE30AD2748E1B2EFD611C3D6509872243F2"
+  },
+  "expected_counts": {
+    "body_edges": 133,
+    "declarations": 34,
+    "signature_edges": 80,
+    "union_edges": 139
+  },
+  "phase_id": "repository-reorganization-completion-2026-08",
+  "projection_graph": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0004.tsv.gz",
+    "sha256": "E84302EC06E0215758B91F9B179D89E0A5E17931CF42734828F1253BB4C129D2"
+  },
+  "projection_id": "P0004",
+  "record_kind": "baseline_projection",
+  "schema_version": 1,
+  "selector": {
+    "artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/selectors/R12.tsv",
+      "sha256": "2A45891E56E976DEAC01B791293D4DF05A4C1A045498D98B7D087B940582AD0F"
+    },
+    "kind": "module_path_tsv"
+  },
+  "status": "active",
+  "superseded_by": null,
+  "wave_id": "R12"
+}

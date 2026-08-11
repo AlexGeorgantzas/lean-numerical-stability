@@ -9,7 +9,8 @@
       {
         "lane_id": "claude-lane",
         "operator_ids": [
-          "claude-local"
+          "claude-local",
+          "codex-local"
         ],
         "owner_id": "primary-human"
       },
@@ -382,7 +383,7 @@
       "accepted_checkpoint_id": null,
       "depends_on": [],
       "milestone_id": "M11",
-      "status": "planned",
+      "status": "ready",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -406,7 +407,7 @@
       "accepted_checkpoint_id": null,
       "depends_on": [],
       "milestone_id": "M12",
-      "status": "planned",
+      "status": "ready",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -506,6 +507,154 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Algorithms/LeastSquares/Higham20Theorem20_7.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LeastSquares/LSQRSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/QRSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/RowSorting.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/StoredQR.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/TraceKernel.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/QR.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Normwise/UnderdeterminedSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Rowwise/UnderdeterminedSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/Radius.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/UnderdeterminedSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Solvers/UnderdeterminedSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Specifications/UnderdeterminedSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/Radius.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/UnderdeterminedSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/FixedRadius/Radius.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/Projectors/ComplementNorm/ProjectorNorm.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Foundations/UnderdeterminedSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/BackwardError/Core.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/Closure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/RoundedReplay.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/CorrectedRecurrence/Core.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/RoundedReplay/RoundedReplay.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/RankStability/FullRowRank/UnderdeterminedSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/ActualOutput.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/Forward.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/RemainderBounds.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/UnderdeterminedSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Closure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Uniform.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/EnvelopeTransfer.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/QRMajorant.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/Signed.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/EnvelopeTransfer.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/UnderdeterminedSolve.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Algorithms/NormEstimation/PNorm/All.lean"
     },
     {
@@ -515,6 +664,10 @@
     {
       "match": "exact",
       "path": "NumStability/Algorithms/StationaryIterationSeries.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/TestMatrices/Higham28Stewart.lean"
     },
     {
       "match": "exact",
@@ -530,6 +683,90 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Analysis/Perturbation/LeastSquares/BackwardError.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/Perturbation/LeastSquares/Basic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/Perturbation/LeastSquares/Contract.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/Perturbation/LeastSquares/Equality/RowwiseBackwardError.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Cauchy/Cauchy.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Cauchy/Contracts.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Companion/Companion.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Companion/CompanionSpectral.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Companion/Contracts.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Orthogonal/OrthogonalFibers.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Pascal/Contracts.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Pascal/PascalDualFlag.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Pascal/PascalOscillation.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Pascal/PascalOscillationCore.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Pascal/PascalSpectral.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Pascal/PascalTotalPositivity.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/RandomSVD/Stewart.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/RandomSVD/StewartHaar.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/RandomSVD/StewartRecursion.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/RealGinibre/GinibreRoots.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Analysis/TestMatrices/Toeplitz/Contracts.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Core.lean"
     },
     {
@@ -539,6 +776,10 @@
     {
       "match": "exact",
       "path": "NumStability/Source.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation08/LeastSquaresSketch/Endpoints.lean"
     },
     {
       "match": "exact",
@@ -567,6 +808,282 @@
     {
       "match": "exact",
       "path": "NumStability/Source/Higham/Chapter17/Equation22.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter19/Algorithm12/MGSPaddedClosure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter19/Labels.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter19/Lemma03/ActualSequence.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter19/PolarNearest.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter19/Problem09.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter19/Sensitivity/Closure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter19/StoredLoop/AllPivots.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter19/StoredLoop/StrongModel.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter19/Theorem06/CoxHigham.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem03/QRSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/ActualBackSub.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/ActualClosure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/ActualRhs.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/ActualTrace.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/Contract.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/Elimination.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/QdR.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/RowPolicy.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/SourceTrace.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section01/Cauchy/Cauchy.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/Cauchy.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/HilbertCondition.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/Ginibre.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreAbsoluteDetRecurrence.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCharacteristicProduct.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCorollary31Factor.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreDeterminantMoment.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreExpectationGlue.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreFiniteFormula.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreGaussianBridge.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreRecurrence.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreSignedExpectation.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreIncidence.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibrePlaneIncidence.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreSignedIncidenceAlgebra.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreTruncatedIncidence.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreAtlas.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreComplexPairs.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreDimensionTwo.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreOrthogonalFiber.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneChart.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneSylvester.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreJointDensity.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreMeasure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreTraceDensity.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/Probability.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreMultiplicity.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreRoots.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreParity.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedConclusion.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedGaussian.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedIncidence.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedKernel.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRank.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRankTransfer.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedScalar.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section03/RandomSVD/RandsvdNorm.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/GaussianQRHaar.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/Stewart.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/StewartRawFiber.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalCondition.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalOscillation.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalSpectral.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section04/ReciprocalSpectrumSPD/ReciprocalSPD.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzCondition.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzGeneral.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section06/Companion/Companion.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter28/Section06/Companion/CompanionSpectral.lean"
     },
     {
       "match": "exact",

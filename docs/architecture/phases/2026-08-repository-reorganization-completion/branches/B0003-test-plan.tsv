@@ -1,0 +1,205 @@
+test_class	target	purpose
+canonical_only	NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter19.Sensitivity.Bounds.Results	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter19.StoredLoop.Perturbation.Bridge	compile exact canonical destination without historical owner import
+focused	NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter19.Sensitivity.Bounds.Results	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter19.StoredLoop.Perturbation.Bridge	exercise frozen declaration route and private-normalized closure
+old_only	NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.GivensMatrixStep	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.GivensQR	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.GivensSpec	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.GramSchmidt	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.GramSchmidtPolar	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Alg11CGSRounded	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Alg12MGSClosure	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Alg12MGSNonbreakdown	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Alg12MGSPaddedClosure	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Alg12MGSRepair	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Alg12MGSRounded	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Alg12MGSSourceRate	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19FormedQ	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Labels	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Lemma3ActualSequence	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Lemma7Gamma4	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Lemma9DisjointSweep	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19PolarNearest	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Problem19_10	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Problem19_9	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Problem6ActualStep	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Sensitivity	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19SensitivityClosure	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19StoredLoop	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19StoredLoopAllPivots	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19StoredLoopStrongModel	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19SunBischof	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Theorem10ActualMatrix	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Theorem5Nonbreakdown	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Theorem5SourceClosure	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Theorem6ActualSource	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6ColPivot	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6ColPivotFull	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6CoxHigham	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6CoxHighamAssembly	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6CoxHighamFull	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6Elementwise	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6ElementwiseEntry	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6ElementwisePackaged	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6Final	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6Pivoted	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6RowSpecific	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19Thm6StrongModel	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19TurnbullAitken	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.Higham19WYApplicationClosure	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.HouseholderApply	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.HouseholderApplySupport	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.HouseholderConstruction2	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.HouseholderMatrixStep	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.HouseholderOneStep	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.HouseholderQApply	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.HouseholderQR	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.HouseholderQRSupport	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.HouseholderReflector	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.HouseholderSpec	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.HouseholderSpecSupport	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Algorithms.QR.QRSolve	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Source.Higham.Chapter19.Core	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Source.Higham.Chapter19.Sensitivity	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Source.Higham.Chapter19.StoredLoop	compile historical import-only wrapper and preserved public surface
+protected_consumer	NumStability.Algorithms.LeastSquares.Higham20Theorem20_7	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LeastSquares.LSQRSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.LeastSquares.Basic	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.LeastSquares.RowSorting	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.QR	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.BackwardError.Normwise.UnderdeterminedSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.BackwardError.Rowwise.UnderdeterminedSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.Conditioning.Componentwise.Radius	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.Conditioning.Componentwise.UnderdeterminedSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.UnderdeterminedSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifications.UnderdeterminedSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.Componentwise.Radius	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.Componentwise.UnderdeterminedSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.FixedRadius.Radius	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.Projectors.ComplementNorm.ProjectorNorm	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.QR.Foundations.UnderdeterminedSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.BackwardError.Core	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.Closure	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.RoundedReplay	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.QR.ModifiedGramSchmidt.CorrectedRecurrence.Core	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.QR.ModifiedGramSchmidt.RoundedReplay.RoundedReplay	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.RankStability.FullRowRank.UnderdeterminedSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ForwardError.ActualOutput	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ForwardError.Forward	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ForwardError.RemainderBounds	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ForwardError.UnderdeterminedSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.HouseholderClosure.Closure	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.HouseholderClosure.Uniform	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.QRTransfer.EnvelopeTransfer	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.QRTransfer.QRMajorant	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.QRTransfer.Signed	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.TriangularSolves.EnvelopeTransfer	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.TriangularSolves.UnderdeterminedSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Algorithms.TestMatrices.Higham28Stewart	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.Perturbation.LeastSquares.BackwardError	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.Perturbation.LeastSquares.Basic	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.Perturbation.LeastSquares.Contract	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.Perturbation.LeastSquares.Equality.RowwiseBackwardError	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Cauchy.Cauchy	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Cauchy.Contracts	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Companion.Companion	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Companion.CompanionSpectral	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Companion.Contracts	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Orthogonal.OrthogonalFibers	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Pascal.Contracts	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Pascal.PascalDualFlag	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Pascal.PascalOscillation	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Pascal.PascalOscillationCore	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Pascal.PascalSpectral	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Pascal.PascalTotalPositivity	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.RandomSVD.Stewart	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.RandomSVD.StewartHaar	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.RandomSVD.StewartRecursion	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.RealGinibre.GinibreRoots	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Analysis.TestMatrices.Toeplitz.Contracts	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.DrineasMahoney.RandNLA2016.Equation08.LeastSquaresSketch.Endpoints	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter19.Algorithm12.MGSPaddedClosure	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter19.Labels	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter19.Lemma03.ActualSequence	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter19.PolarNearest	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter19.Problem09	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter19.Sensitivity.Closure	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter19.StoredLoop.AllPivots	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter19.Theorem06.CoxHigham	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter20.Theorem03.QRSolve	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter20.Theorem07	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter20.Theorem07.ActualBackSub	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter20.Theorem07.ActualClosure	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter20.Theorem07.ActualRhs	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter20.Theorem07.ActualTrace	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter20.Theorem07.Contract	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter20.Theorem07.Elimination	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter20.Theorem07.QdR	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter20.Theorem07.RowPolicy	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter20.Theorem07.SourceTrace	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section01.Cauchy.Cauchy	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section01.HilbertConditioning.Cauchy	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section01.HilbertConditioning.HilbertCondition	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.Ginibre	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreAbsoluteDetRecurrence	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreCharacteristicProduct	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreCorollary31Factor	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreDeterminantMoment	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreExpectationGlue	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreFiniteFormula	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreGaussianBridge	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreRecurrence	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.GinibreSignedExpectation	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibreIncidence	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibrePlaneIncidence	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibreSignedIncidenceAlgebra	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibreTruncatedIncidence	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibreAtlas	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibreComplexPairs	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibreDimensionTwo	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibreOrthogonalFiber	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibrePlaneChart	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.InvariantPlanes.GinibrePlaneSylvester	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.ProbabilityLaw.GinibreJointDensity	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.ProbabilityLaw.GinibreMeasure	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.ProbabilityLaw.GinibreTraceDensity	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.ProbabilityLaw.Probability	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.RootMeasurability.GinibreMultiplicity	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.RootMeasurability.GinibreRoots	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreParity	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedConclusion	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedGaussian	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedIncidence	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedKernel	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedRank	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedRankTransfer	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedScalar	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section03.RandomSVD.RandsvdNorm	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section03.Theorem01.StewartHaar.GaussianQRHaar	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section03.Theorem01.StewartHaar.Stewart	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section03.Theorem01.StewartHaar.StewartRawFiber	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section04.Pascal.PascalCondition	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section04.Pascal.PascalOscillation	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section04.Pascal.PascalSpectral	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section04.ReciprocalSpectrumSPD.ReciprocalSPD	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section05.TridiagonalToeplitz.ToeplitzCondition	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section05.TridiagonalToeplitz.ToeplitzGeneral	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section06.Companion.Companion	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter28.Section06.Companion.CompanionSpectral	compile hash-pinned integrator-owned consumer postimage

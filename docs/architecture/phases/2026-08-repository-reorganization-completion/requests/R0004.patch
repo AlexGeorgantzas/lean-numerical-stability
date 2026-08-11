@@ -1,0 +1,59 @@
+diff --git a/NumStabilityTest.lean b/NumStabilityTest.lean
+--- a/NumStabilityTest.lean
++++ b/NumStabilityTest.lean
+@@ -522,6 +522,7 @@ import NumStabilityTest.Import.TriangularMigration
+ import NumStabilityTest.Import.TridiagonalCondCanonical
+ import NumStabilityTest.Reorganization.R01
+ import NumStabilityTest.Reorganization.R02
++import NumStabilityTest.Reorganization.R12.All
+ import NumStabilityTest.Reorganization.W01.Canonical.ExactSubtraction
+ import NumStabilityTest.Reorganization.W01.Canonical.Format
+ import NumStabilityTest.Reorganization.W01.Canonical.IeeeExceptions
+diff --git a/docs/architecture/layout-exceptions.json b/docs/architecture/layout-exceptions.json
+--- a/docs/architecture/layout-exceptions.json
++++ b/docs/architecture/layout-exceptions.json
+@@ -216,12 +216,15 @@
+       "NumStability.Source.Higham.Chapter13.Theorem07.PivotExistence",
+       "NumStability.Source.Higham.Chapter13.Theorem08.OneStep"
+     ],
++    "NumStability.Source.Higham.Chapter13.Equation23": "NumStability.Source.Higham.Chapter13.Equation23.",
++    "NumStability.Source.Higham.Chapter13.Equation25": "NumStability.Source.Higham.Chapter13.Equation25.",
+     "NumStability.Source.Higham.Chapter13.Lemma10": "NumStability.Source.Higham.Chapter13.Lemma10.",
+     "NumStability.Source.Higham.Chapter13.Problem04": "NumStability.Source.Higham.Chapter13.Problem04.",
+     "NumStability.Source.Higham.Chapter13.Problem04.FactorizationProducts": "NumStability.Source.Higham.Chapter13.Problem04.FactorizationProducts.",
+     "NumStability.Source.Higham.Chapter13.Problem04.GlobalTableauProducts": "NumStability.Source.Higham.Chapter13.Problem04.GlobalTableauProducts.",
+     "NumStability.Source.Higham.Chapter13.Section01": "NumStability.Source.Higham.Chapter13.Section01.",
+     "NumStability.Source.Higham.Chapter13.Section03": "NumStability.Source.Higham.Chapter13.Section03.",
++    "NumStability.Source.Higham.Chapter13.Table01": "NumStability.Source.Higham.Chapter13.Table01.",
+     "NumStability.Source.Higham.Chapter13.Theorem02": "NumStability.Source.Higham.Chapter13.Theorem02.",
+     "NumStability.Source.Higham.Chapter13.Theorem05": "NumStability.Source.Higham.Chapter13.Theorem05.",
+     "NumStability.Source.Higham.Chapter13.Theorem06": "NumStability.Source.Higham.Chapter13.Theorem06.",
+@@ -279,9 +282,6 @@
+       "NumStability.Source.Higham.Chapter10.Theorem07",
+       "NumStability.Source.Higham.Chapter11.Theorem07",
+       "NumStability.Source.Higham.Chapter12.IterativeRefinement",
+-      "NumStability.Source.Higham.Chapter13.Equation23",
+-      "NumStability.Source.Higham.Chapter13.Equation25",
+-      "NumStability.Source.Higham.Chapter13.Table01",
+       "NumStability.Source.Higham.Chapter14.Problem13",
+       "NumStability.Source.Higham.Chapter14.Problem14",
+       "NumStability.Source.Higham.Chapter14.Problem15",
+diff --git a/docs/architecture/tiers.json b/docs/architecture/tiers.json
+--- a/docs/architecture/tiers.json
++++ b/docs/architecture/tiers.json
+@@ -1063,12 +1063,15 @@
+     "NumStability.Source.Higham.Chapter12": "aggregate",
+     "NumStability.Source.Higham.Chapter13": "aggregate",
+     "NumStability.Source.Higham.Chapter13.BlockLU": "aggregate",
++    "NumStability.Source.Higham.Chapter13.Equation23": "aggregate",
++    "NumStability.Source.Higham.Chapter13.Equation25": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Lemma10": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Problem04": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Problem04.FactorizationProducts": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Problem04.GlobalTableauProducts": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Section01": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Section03": "aggregate",
++    "NumStability.Source.Higham.Chapter13.Table01": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Theorem02": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Theorem05": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Theorem06": "aggregate",

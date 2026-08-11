@@ -1,0 +1,1990 @@
+diff --git a/NumStability/Algorithms/LeastSquares/Higham20Theorem20_7.lean b/NumStability/Algorithms/LeastSquares/Higham20Theorem20_7.lean
+--- a/NumStability/Algorithms/LeastSquares/Higham20Theorem20_7.lean
++++ b/NumStability/Algorithms/LeastSquares/Higham20Theorem20_7.lean
+@@ -1,7 +1,7 @@
+ import NumStability.Algorithms.LeastSquares.LSQRSolve
+ import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
+ import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
+ import NumStability.Analysis.Perturbation.LeastSquares.Contract
+diff --git a/NumStability/Algorithms/LeastSquares/LSQRSolve.lean b/NumStability/Algorithms/LeastSquares/LSQRSolve.lean
+--- a/NumStability/Algorithms/LeastSquares/LSQRSolve.lean
++++ b/NumStability/Algorithms/LeastSquares/LSQRSolve.lean
+@@ -15,7 +15,7 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
+ import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
+ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+diff --git a/NumStability/Algorithms/LinearSystems/LeastSquares/Basic.lean b/NumStability/Algorithms/LinearSystems/LeastSquares/Basic.lean
+--- a/NumStability/Algorithms/LinearSystems/LeastSquares/Basic.lean
++++ b/NumStability/Algorithms/LinearSystems/LeastSquares/Basic.lean
+@@ -8,8 +8,8 @@ import Mathlib.Tactic.Linarith
+ import Mathlib.Tactic.Ring
+ import NumStability.Algorithms.LinearSystems.LeastSquares.MGS
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+ import NumStability.Analysis.MatrixAlgebra
+diff --git a/NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean b/NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean
+--- a/NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean
++++ b/NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean
+@@ -11,11 +11,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
+ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamAssembly
+ import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
+diff --git a/NumStability/Algorithms/LinearSystems/LeastSquares/QRSolve.lean b/NumStability/Algorithms/LinearSystems/LeastSquares/QRSolve.lean
+--- a/NumStability/Algorithms/LinearSystems/LeastSquares/QRSolve.lean
++++ b/NumStability/Algorithms/LinearSystems/LeastSquares/QRSolve.lean
+@@ -6,8 +6,8 @@ import Mathlib.LinearAlgebra.Matrix.Rank
+ import Mathlib.Tactic.FieldSimp
+ import Mathlib.Tactic.Linarith
+ import Mathlib.Tactic.Ring
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.FloatingPoint.Model
+ 
+ namespace NumStability
+diff --git a/NumStability/Algorithms/LinearSystems/LeastSquares/RowSorting.lean b/NumStability/Algorithms/LinearSystems/LeastSquares/RowSorting.lean
+--- a/NumStability/Algorithms/LinearSystems/LeastSquares/RowSorting.lean
++++ b/NumStability/Algorithms/LinearSystems/LeastSquares/RowSorting.lean
+@@ -2,7 +2,7 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
+ import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
+ import NumStability.Analysis.MatrixAlgebra
+ 
+diff --git a/NumStability/Algorithms/LinearSystems/LeastSquares/StoredQR.lean b/NumStability/Algorithms/LinearSystems/LeastSquares/StoredQR.lean
+--- a/NumStability/Algorithms/LinearSystems/LeastSquares/StoredQR.lean
++++ b/NumStability/Algorithms/LinearSystems/LeastSquares/StoredQR.lean
+@@ -7,9 +7,9 @@ import Mathlib.Tactic.FieldSimp
+ import Mathlib.Tactic.Linarith
+ import Mathlib.Tactic.Ring
+ import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+ import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
+diff --git a/NumStability/Algorithms/LinearSystems/LeastSquares/TraceKernel.lean b/NumStability/Algorithms/LinearSystems/LeastSquares/TraceKernel.lean
+--- a/NumStability/Algorithms/LinearSystems/LeastSquares/TraceKernel.lean
++++ b/NumStability/Algorithms/LinearSystems/LeastSquares/TraceKernel.lean
+@@ -1,5 +1,5 @@
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.FloatingPoint.Model
+diff --git a/NumStability/Algorithms/LinearSystems/QR.lean b/NumStability/Algorithms/LinearSystems/QR.lean
+--- a/NumStability/Algorithms/LinearSystems/QR.lean
++++ b/NumStability/Algorithms/LinearSystems/QR.lean
+@@ -4,16 +4,16 @@ import NumStability.Algorithms.LinearSystems.QR.GivensSpec
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderConstruction2
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQApply
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ 
+ /-!
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Normwise/UnderdeterminedSolve.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Normwise/UnderdeterminedSolve.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Normwise/UnderdeterminedSolve.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Normwise/UnderdeterminedSolve.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Rowwise/UnderdeterminedSolve.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Rowwise/UnderdeterminedSolve.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Rowwise/UnderdeterminedSolve.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Rowwise/UnderdeterminedSolve.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/Radius.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/Radius.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/Radius.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/Radius.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/UnderdeterminedSolve.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/UnderdeterminedSolve.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/UnderdeterminedSolve.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/UnderdeterminedSolve.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Solvers/UnderdeterminedSolve.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Solvers/UnderdeterminedSolve.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Solvers/UnderdeterminedSolve.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Solvers/UnderdeterminedSolve.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Specifications/UnderdeterminedSolve.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Specifications/UnderdeterminedSolve.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Specifications/UnderdeterminedSolve.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Specifications/UnderdeterminedSolve.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/Radius.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/Radius.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/Radius.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/Radius.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/UnderdeterminedSolve.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/UnderdeterminedSolve.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/UnderdeterminedSolve.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/UnderdeterminedSolve.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/FixedRadius/Radius.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/FixedRadius/Radius.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/FixedRadius/Radius.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/FixedRadius/Radius.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/Projectors/ComplementNorm/ProjectorNorm.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/Projectors/ComplementNorm/ProjectorNorm.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/Projectors/ComplementNorm/ProjectorNorm.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/Projectors/ComplementNorm/ProjectorNorm.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Foundations/UnderdeterminedSolve.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Foundations/UnderdeterminedSolve.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Foundations/UnderdeterminedSolve.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Foundations/UnderdeterminedSolve.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/BackwardError/Core.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/BackwardError/Core.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/BackwardError/Core.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/BackwardError/Core.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/Closure.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/Closure.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/Closure.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/Closure.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/RoundedReplay.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/RoundedReplay.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/RoundedReplay.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/RoundedReplay.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/CorrectedRecurrence/Core.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/CorrectedRecurrence/Core.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/CorrectedRecurrence/Core.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/CorrectedRecurrence/Core.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/RoundedReplay/RoundedReplay.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/RoundedReplay/RoundedReplay.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/RoundedReplay/RoundedReplay.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/RoundedReplay/RoundedReplay.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/RankStability/FullRowRank/UnderdeterminedSolve.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/RankStability/FullRowRank/UnderdeterminedSolve.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/RankStability/FullRowRank/UnderdeterminedSolve.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/RankStability/FullRowRank/UnderdeterminedSolve.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/ActualOutput.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/ActualOutput.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/ActualOutput.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/ActualOutput.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/Forward.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/Forward.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/Forward.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/Forward.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/RemainderBounds.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/RemainderBounds.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/RemainderBounds.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/RemainderBounds.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/UnderdeterminedSolve.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/UnderdeterminedSolve.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/UnderdeterminedSolve.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/UnderdeterminedSolve.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Closure.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Closure.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Closure.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Closure.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Uniform.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Uniform.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Uniform.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Uniform.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/EnvelopeTransfer.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/EnvelopeTransfer.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/EnvelopeTransfer.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/EnvelopeTransfer.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/QRMajorant.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/QRMajorant.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/QRMajorant.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/QRMajorant.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/Signed.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/Signed.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/Signed.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/Signed.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/EnvelopeTransfer.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/EnvelopeTransfer.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/EnvelopeTransfer.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/EnvelopeTransfer.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/UnderdeterminedSolve.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/UnderdeterminedSolve.lean
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/UnderdeterminedSolve.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/UnderdeterminedSolve.lean
+@@ -37,11 +37,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensQR
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Algorithms/TestMatrices/Higham28Stewart.lean b/NumStability/Algorithms/TestMatrices/Higham28Stewart.lean
+--- a/NumStability/Algorithms/TestMatrices/Higham28Stewart.lean
++++ b/NumStability/Algorithms/TestMatrices/Higham28Stewart.lean
+@@ -3,7 +3,7 @@ import Mathlib.MeasureTheory.Constructions.Pi
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.TestMatrices.Higham28
+ import NumStability.Analysis.TestMatrices.RandomSVD.Stewart
+ import NumStability.Source.Higham.Chapter28.Section03.Theorem01.StewartHaar.Stewart
+diff --git a/NumStability/Analysis/Perturbation/LeastSquares/BackwardError.lean b/NumStability/Analysis/Perturbation/LeastSquares/BackwardError.lean
+--- a/NumStability/Analysis/Perturbation/LeastSquares/BackwardError.lean
++++ b/NumStability/Analysis/Perturbation/LeastSquares/BackwardError.lean
+@@ -10,10 +10,10 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
+ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
+ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+ import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
+diff --git a/NumStability/Analysis/Perturbation/LeastSquares/Basic.lean b/NumStability/Analysis/Perturbation/LeastSquares/Basic.lean
+--- a/NumStability/Analysis/Perturbation/LeastSquares/Basic.lean
++++ b/NumStability/Analysis/Perturbation/LeastSquares/Basic.lean
+@@ -12,10 +12,10 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
+ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.Refinement
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Analysis/Perturbation/LeastSquares/Contract.lean b/NumStability/Analysis/Perturbation/LeastSquares/Contract.lean
+--- a/NumStability/Analysis/Perturbation/LeastSquares/Contract.lean
++++ b/NumStability/Analysis/Perturbation/LeastSquares/Contract.lean
+@@ -1,4 +1,4 @@
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ 
+ namespace NumStability
+diff --git a/NumStability/Analysis/Perturbation/LeastSquares/Equality/RowwiseBackwardError.lean b/NumStability/Analysis/Perturbation/LeastSquares/Equality/RowwiseBackwardError.lean
+--- a/NumStability/Analysis/Perturbation/LeastSquares/Equality/RowwiseBackwardError.lean
++++ b/NumStability/Analysis/Perturbation/LeastSquares/Equality/RowwiseBackwardError.lean
+@@ -8,11 +8,11 @@ import Mathlib.Tactic.Ring
+ import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
+ import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
+ import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Rounding
+diff --git a/NumStability/Analysis/TestMatrices/Cauchy/Cauchy.lean b/NumStability/Analysis/TestMatrices/Cauchy/Cauchy.lean
+--- a/NumStability/Analysis/TestMatrices/Cauchy/Cauchy.lean
++++ b/NumStability/Analysis/TestMatrices/Cauchy/Cauchy.lean
+@@ -99,7 +99,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
+ import Mathlib.Topology.Instances.Matrix
+ import Mathlib.Topology.MetricSpace.ProperSpace
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Cauchy.Basic
+diff --git a/NumStability/Analysis/TestMatrices/Cauchy/Contracts.lean b/NumStability/Analysis/TestMatrices/Cauchy/Contracts.lean
+--- a/NumStability/Analysis/TestMatrices/Cauchy/Contracts.lean
++++ b/NumStability/Analysis/TestMatrices/Cauchy/Contracts.lean
+@@ -97,7 +97,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
+ import Mathlib.Topology.Instances.Matrix
+ import Mathlib.Topology.MetricSpace.ProperSpace
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Cauchy.Basic
+diff --git a/NumStability/Analysis/TestMatrices/Companion/Companion.lean b/NumStability/Analysis/TestMatrices/Companion/Companion.lean
+--- a/NumStability/Analysis/TestMatrices/Companion/Companion.lean
++++ b/NumStability/Analysis/TestMatrices/Companion/Companion.lean
+@@ -98,7 +98,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
+ import Mathlib.Topology.Instances.Matrix
+ import Mathlib.Topology.MetricSpace.ProperSpace
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.JordanNormalForm
+ import NumStability.Analysis.MatrixAlgebra
+diff --git a/NumStability/Analysis/TestMatrices/Companion/CompanionSpectral.lean b/NumStability/Analysis/TestMatrices/Companion/CompanionSpectral.lean
+--- a/NumStability/Analysis/TestMatrices/Companion/CompanionSpectral.lean
++++ b/NumStability/Analysis/TestMatrices/Companion/CompanionSpectral.lean
+@@ -98,7 +98,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
+ import Mathlib.Topology.Instances.Matrix
+ import Mathlib.Topology.MetricSpace.ProperSpace
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.JordanNormalForm
+ import NumStability.Analysis.MatrixAlgebra
+diff --git a/NumStability/Analysis/TestMatrices/Companion/Contracts.lean b/NumStability/Analysis/TestMatrices/Companion/Contracts.lean
+--- a/NumStability/Analysis/TestMatrices/Companion/Contracts.lean
++++ b/NumStability/Analysis/TestMatrices/Companion/Contracts.lean
+@@ -97,7 +97,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
+ import Mathlib.Topology.Instances.Matrix
+ import Mathlib.Topology.MetricSpace.ProperSpace
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Companion.Basic
+diff --git a/NumStability/Analysis/TestMatrices/Orthogonal/OrthogonalFibers.lean b/NumStability/Analysis/TestMatrices/Orthogonal/OrthogonalFibers.lean
+--- a/NumStability/Analysis/TestMatrices/Orthogonal/OrthogonalFibers.lean
++++ b/NumStability/Analysis/TestMatrices/Orthogonal/OrthogonalFibers.lean
+@@ -17,7 +17,7 @@ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Bases
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Haar.HomogeneousSpaceUniqueness
+ import NumStability.Analysis.TestMatrices.Gaussian.GaussianDirection
+diff --git a/NumStability/Analysis/TestMatrices/Pascal/Contracts.lean b/NumStability/Analysis/TestMatrices/Pascal/Contracts.lean
+--- a/NumStability/Analysis/TestMatrices/Pascal/Contracts.lean
++++ b/NumStability/Analysis/TestMatrices/Pascal/Contracts.lean
+@@ -97,7 +97,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
+ import Mathlib.Topology.Instances.Matrix
+ import Mathlib.Topology.MetricSpace.ProperSpace
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Cauchy.Contracts
+diff --git a/NumStability/Analysis/TestMatrices/Pascal/PascalDualFlag.lean b/NumStability/Analysis/TestMatrices/Pascal/PascalDualFlag.lean
+--- a/NumStability/Analysis/TestMatrices/Pascal/PascalDualFlag.lean
++++ b/NumStability/Analysis/TestMatrices/Pascal/PascalDualFlag.lean
+@@ -99,7 +99,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
+ import Mathlib.Topology.Instances.Matrix
+ import Mathlib.Topology.MetricSpace.ProperSpace
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.MatrixSpectral
+diff --git a/NumStability/Analysis/TestMatrices/Pascal/PascalOscillation.lean b/NumStability/Analysis/TestMatrices/Pascal/PascalOscillation.lean
+--- a/NumStability/Analysis/TestMatrices/Pascal/PascalOscillation.lean
++++ b/NumStability/Analysis/TestMatrices/Pascal/PascalOscillation.lean
+@@ -99,7 +99,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
+ import Mathlib.Topology.Instances.Matrix
+ import Mathlib.Topology.MetricSpace.ProperSpace
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.MatrixSpectral
+diff --git a/NumStability/Analysis/TestMatrices/Pascal/PascalOscillationCore.lean b/NumStability/Analysis/TestMatrices/Pascal/PascalOscillationCore.lean
+--- a/NumStability/Analysis/TestMatrices/Pascal/PascalOscillationCore.lean
++++ b/NumStability/Analysis/TestMatrices/Pascal/PascalOscillationCore.lean
+@@ -99,7 +99,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
+ import Mathlib.Topology.Instances.Matrix
+ import Mathlib.Topology.MetricSpace.ProperSpace
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.MatrixSpectral
+diff --git a/NumStability/Analysis/TestMatrices/Pascal/PascalSpectral.lean b/NumStability/Analysis/TestMatrices/Pascal/PascalSpectral.lean
+--- a/NumStability/Analysis/TestMatrices/Pascal/PascalSpectral.lean
++++ b/NumStability/Analysis/TestMatrices/Pascal/PascalSpectral.lean
+@@ -97,7 +97,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
+ import Mathlib.Topology.Instances.Matrix
+ import Mathlib.Topology.MetricSpace.ProperSpace
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.MatrixSpectral
+diff --git a/NumStability/Analysis/TestMatrices/Pascal/PascalTotalPositivity.lean b/NumStability/Analysis/TestMatrices/Pascal/PascalTotalPositivity.lean
+--- a/NumStability/Analysis/TestMatrices/Pascal/PascalTotalPositivity.lean
++++ b/NumStability/Analysis/TestMatrices/Pascal/PascalTotalPositivity.lean
+@@ -99,7 +99,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
+ import Mathlib.Topology.Instances.Matrix
+ import Mathlib.Topology.MetricSpace.ProperSpace
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Pascal.Basic
+diff --git a/NumStability/Analysis/TestMatrices/RandomSVD/Stewart.lean b/NumStability/Analysis/TestMatrices/RandomSVD/Stewart.lean
+--- a/NumStability/Analysis/TestMatrices/RandomSVD/Stewart.lean
++++ b/NumStability/Analysis/TestMatrices/RandomSVD/Stewart.lean
+@@ -9,7 +9,7 @@ import Mathlib.MeasureTheory.Constructions.Pi
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Orthogonal.Basic
+ import NumStability.Analysis.TestMatrices.RandomSVD.Basic
+diff --git a/NumStability/Analysis/TestMatrices/RandomSVD/StewartHaar.lean b/NumStability/Analysis/TestMatrices/RandomSVD/StewartHaar.lean
+--- a/NumStability/Analysis/TestMatrices/RandomSVD/StewartHaar.lean
++++ b/NumStability/Analysis/TestMatrices/RandomSVD/StewartHaar.lean
+@@ -17,7 +17,7 @@ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Bases
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Haar.HomogeneousSpaceUniqueness
+ import NumStability.Analysis.TestMatrices.Gaussian.GaussianOrthogonal
+diff --git a/NumStability/Analysis/TestMatrices/RandomSVD/StewartRecursion.lean b/NumStability/Analysis/TestMatrices/RandomSVD/StewartRecursion.lean
+--- a/NumStability/Analysis/TestMatrices/RandomSVD/StewartRecursion.lean
++++ b/NumStability/Analysis/TestMatrices/RandomSVD/StewartRecursion.lean
+@@ -17,7 +17,7 @@ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Bases
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Haar.HomogeneousSpaceUniqueness
+ import NumStability.Analysis.TestMatrices.Hilbert.Basic
+diff --git a/NumStability/Analysis/TestMatrices/RealGinibre/GinibreRoots.lean b/NumStability/Analysis/TestMatrices/RealGinibre/GinibreRoots.lean
+--- a/NumStability/Analysis/TestMatrices/RealGinibre/GinibreRoots.lean
++++ b/NumStability/Analysis/TestMatrices/RealGinibre/GinibreRoots.lean
+@@ -19,7 +19,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ 
+diff --git a/NumStability/Analysis/TestMatrices/Toeplitz/Contracts.lean b/NumStability/Analysis/TestMatrices/Toeplitz/Contracts.lean
+--- a/NumStability/Analysis/TestMatrices/Toeplitz/Contracts.lean
++++ b/NumStability/Analysis/TestMatrices/Toeplitz/Contracts.lean
+@@ -97,7 +97,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
+ import Mathlib.Topology.Instances.Matrix
+ import Mathlib.Topology.MetricSpace.ProperSpace
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Toeplitz.Basic
+diff --git a/NumStability/Source/DrineasMahoney/RandNLA2016/Equation08/LeastSquaresSketch/Endpoints.lean b/NumStability/Source/DrineasMahoney/RandNLA2016/Equation08/LeastSquaresSketch/Endpoints.lean
+--- a/NumStability/Source/DrineasMahoney/RandNLA2016/Equation08/LeastSquaresSketch/Endpoints.lean
++++ b/NumStability/Source/DrineasMahoney/RandNLA2016/Equation08/LeastSquaresSketch/Endpoints.lean
+@@ -3,9 +3,9 @@ import NumStability.Algorithms.LinearSystems.Cholesky.Factorization.Spec
+ import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
+ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+ import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
+diff --git a/NumStability/Source/Higham/Chapter19/Algorithm12/MGSPaddedClosure.lean b/NumStability/Source/Higham/Chapter19/Algorithm12/MGSPaddedClosure.lean
+--- a/NumStability/Source/Higham/Chapter19/Algorithm12/MGSPaddedClosure.lean
++++ b/NumStability/Source/Higham/Chapter19/Algorithm12/MGSPaddedClosure.lean
+@@ -1,6 +1,6 @@
+ import NumStability.Source.Higham.Chapter19.Algorithm12.MGSClosure
+ import NumStability.Algorithms.RankOneUpdate
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ 
+ /-!
+ # Rounded MGS to the padded Householder analysis process
+diff --git a/NumStability/Source/Higham/Chapter19/Labels.lean b/NumStability/Source/Higham/Chapter19/Labels.lean
+--- a/NumStability/Source/Higham/Chapter19/Labels.lean
++++ b/NumStability/Source/Higham/Chapter19/Labels.lean
+@@ -11,7 +11,7 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.GivensSpec
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Analysis.Rounding
+diff --git a/NumStability/Source/Higham/Chapter19/Lemma03/ActualSequence.lean b/NumStability/Source/Higham/Chapter19/Lemma03/ActualSequence.lean
+--- a/NumStability/Source/Higham/Chapter19/Lemma03/ActualSequence.lean
++++ b/NumStability/Source/Higham/Chapter19/Lemma03/ActualSequence.lean
+@@ -1,4 +1,4 @@
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ 
+ /-!
+ # Higham Lemma 19.3: actual rectangular stored-loop producers
+diff --git a/NumStability/Source/Higham/Chapter19/PolarNearest.lean b/NumStability/Source/Higham/Chapter19/PolarNearest.lean
+--- a/NumStability/Source/Higham/Chapter19/PolarNearest.lean
++++ b/NumStability/Source/Higham/Chapter19/PolarNearest.lean
+@@ -1,5 +1,5 @@
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
+-import NumStability.Source.Higham.Chapter19.Sensitivity
++import NumStability.Source.Higham.Chapter19.Sensitivity.Bounds.Results
+ 
+ namespace NumStability
+ 
+diff --git a/NumStability/Source/Higham/Chapter19/Problem09.lean b/NumStability/Source/Higham/Chapter19/Problem09.lean
+--- a/NumStability/Source/Higham/Chapter19/Problem09.lean
++++ b/NumStability/Source/Higham/Chapter19/Problem09.lean
+@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
+ See LICENSES/Apache-2.0.txt.
+ Authors: QED
+ -/
+-import NumStability.Source.Higham.Chapter19.Sensitivity
++import NumStability.Source.Higham.Chapter19.Sensitivity.Bounds.Results
+ import NumStability.Analysis.MatrixSpectral
+ import NumStability.Analysis.SingularValues.Realification
+ import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part01
+diff --git a/NumStability/Source/Higham/Chapter19/Sensitivity/Closure.lean b/NumStability/Source/Higham/Chapter19/Sensitivity/Closure.lean
+--- a/NumStability/Source/Higham/Chapter19/Sensitivity/Closure.lean
++++ b/NumStability/Source/Higham/Chapter19/Sensitivity/Closure.lean
+@@ -1,4 +1,4 @@
+-import NumStability.Source.Higham.Chapter19.Sensitivity
++import NumStability.Source.Higham.Chapter19.Sensitivity.Bounds.Results
+ 
+ /-! Canonical Higham Chapter 19 QR sensitivity closure. -/
+ 
+diff --git a/NumStability/Source/Higham/Chapter19/StoredLoop/AllPivots.lean b/NumStability/Source/Higham/Chapter19/StoredLoop/AllPivots.lean
+--- a/NumStability/Source/Higham/Chapter19/StoredLoop/AllPivots.lean
++++ b/NumStability/Source/Higham/Chapter19/StoredLoop/AllPivots.lean
+@@ -62,8 +62,8 @@
+ -- IMPORT-ONLY.
+ 
+ import NumStability.Analysis.MatrixAlgebra
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+-import NumStability.Source.Higham.Chapter19.StoredLoop
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
++import NumStability.Source.Higham.Chapter19.StoredLoop.Perturbation.Bridge
+ import NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel
+ 
+ /-! Canonical Higham Chapter 19 QR stored-loop all-pivots closure. -/
+diff --git a/NumStability/Source/Higham/Chapter19/StoredLoop/StrongModel.lean b/NumStability/Source/Higham/Chapter19/StoredLoop/StrongModel.lean
+--- a/NumStability/Source/Higham/Chapter19/StoredLoop/StrongModel.lean
++++ b/NumStability/Source/Higham/Chapter19/StoredLoop/StrongModel.lean
+@@ -74,8 +74,8 @@
+ -- IMPORT-ONLY.
+ 
+ import NumStability.Analysis.MatrixAlgebra
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+-import NumStability.Source.Higham.Chapter19.StoredLoop
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
++import NumStability.Source.Higham.Chapter19.StoredLoop.Perturbation.Bridge
+ 
+ /-! Canonical Higham Chapter 19 QR stored-loop strong-model closure. -/
+ 
+diff --git a/NumStability/Source/Higham/Chapter19/Theorem06/CoxHigham.lean b/NumStability/Source/Higham/Chapter19/Theorem06/CoxHigham.lean
+--- a/NumStability/Source/Higham/Chapter19/Theorem06/CoxHigham.lean
++++ b/NumStability/Source/Higham/Chapter19/Theorem06/CoxHigham.lean
+@@ -1,5 +1,5 @@
+ import NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ 
+ /-!
+ # Higham, Theorem 19.6 = Cox–Higham (1998), Theorem 2.3 — the row-wise
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem03/QRSolve.lean b/NumStability/Source/Higham/Chapter20/Theorem03/QRSolve.lean
+--- a/NumStability/Source/Higham/Chapter20/Theorem03/QRSolve.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem03/QRSolve.lean
+@@ -14,11 +14,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
+ import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
+ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.QR.QRSolve
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem07.lean b/NumStability/Source/Higham/Chapter20/Theorem07.lean
+--- a/NumStability/Source/Higham/Chapter20/Theorem07.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem07.lean
+@@ -4,13 +4,13 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
+ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Perturbation.LeastSquares.Contract
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem07/ActualBackSub.lean b/NumStability/Source/Higham/Chapter20/Theorem07/ActualBackSub.lean
+--- a/NumStability/Source/Higham/Chapter20/Theorem07/ActualBackSub.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem07/ActualBackSub.lean
+@@ -5,7 +5,7 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Perturbation.LeastSquares.Contract
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem07/ActualClosure.lean b/NumStability/Source/Higham/Chapter20/Theorem07/ActualClosure.lean
+--- a/NumStability/Source/Higham/Chapter20/Theorem07/ActualClosure.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem07/ActualClosure.lean
+@@ -2,7 +2,7 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Rounding
+ import NumStability.FloatingPoint.Model
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem07/ActualRhs.lean b/NumStability/Source/Higham/Chapter20/Theorem07/ActualRhs.lean
+--- a/NumStability/Source/Higham/Chapter20/Theorem07/ActualRhs.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem07/ActualRhs.lean
+@@ -2,7 +2,7 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Rounding
+ import NumStability.FloatingPoint.Model
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem07/ActualTrace.lean b/NumStability/Source/Higham/Chapter20/Theorem07/ActualTrace.lean
+--- a/NumStability/Source/Higham/Chapter20/Theorem07/ActualTrace.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem07/ActualTrace.lean
+@@ -4,7 +4,7 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Rounding
+ import NumStability.FloatingPoint.Model
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem07/Contract.lean b/NumStability/Source/Higham/Chapter20/Theorem07/Contract.lean
+--- a/NumStability/Source/Higham/Chapter20/Theorem07/Contract.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem07/Contract.lean
+@@ -4,10 +4,10 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
+ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Rounding
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem07/Elimination.lean b/NumStability/Source/Higham/Chapter20/Theorem07/Elimination.lean
+--- a/NumStability/Source/Higham/Chapter20/Theorem07/Elimination.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem07/Elimination.lean
+@@ -5,7 +5,7 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
+ import NumStability.Algorithms.LinearSystems.LeastSquares.RowSorting
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
+ import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem07/QdR.lean b/NumStability/Source/Higham/Chapter20/Theorem07/QdR.lean
+--- a/NumStability/Source/Higham/Chapter20/Theorem07/QdR.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem07/QdR.lean
+@@ -1,7 +1,7 @@
+ import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
+ import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Perturbation.LeastSquares.Contract
+ import NumStability.Analysis.Rounding
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem07/RowPolicy.lean b/NumStability/Source/Higham/Chapter20/Theorem07/RowPolicy.lean
+--- a/NumStability/Source/Higham/Chapter20/Theorem07/RowPolicy.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem07/RowPolicy.lean
+@@ -3,7 +3,7 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
+ import NumStability.Algorithms.LinearSystems.LeastSquares.RowSorting
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Perturbation.LeastSquares.Basic
+ import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem07/SourceTrace.lean b/NumStability/Source/Higham/Chapter20/Theorem07/SourceTrace.lean
+--- a/NumStability/Source/Higham/Chapter20/Theorem07/SourceTrace.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem07/SourceTrace.lean
+@@ -1,9 +1,9 @@
+ import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Rounding
+ import NumStability.FloatingPoint.Model
+diff --git a/NumStability/Source/Higham/Chapter28/Section01/Cauchy/Cauchy.lean b/NumStability/Source/Higham/Chapter28/Section01/Cauchy/Cauchy.lean
+--- a/NumStability/Source/Higham/Chapter28/Section01/Cauchy/Cauchy.lean
++++ b/NumStability/Source/Higham/Chapter28/Section01/Cauchy/Cauchy.lean
+@@ -17,7 +17,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Cauchy.Basic
+diff --git a/NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/Cauchy.lean b/NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/Cauchy.lean
+--- a/NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/Cauchy.lean
++++ b/NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/Cauchy.lean
+@@ -17,7 +17,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Cauchy.Basic
+diff --git a/NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/HilbertCondition.lean b/NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/HilbertCondition.lean
+--- a/NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/HilbertCondition.lean
++++ b/NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/HilbertCondition.lean
+@@ -17,7 +17,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.MatrixSpectral
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/Ginibre.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/Ginibre.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/Ginibre.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/Ginibre.lean
+@@ -14,7 +14,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Asymptotics.Asymptotics
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreAbsoluteDetRecurrence.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreAbsoluteDetRecurrence.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreAbsoluteDetRecurrence.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreAbsoluteDetRecurrence.lean
+@@ -31,7 +31,7 @@ import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Independence
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCharacteristicProduct.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCharacteristicProduct.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCharacteristicProduct.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCharacteristicProduct.lean
+@@ -17,7 +17,7 @@ import Mathlib.MeasureTheory.Integral.Pi
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ 
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCorollary31Factor.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCorollary31Factor.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCorollary31Factor.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCorollary31Factor.lean
+@@ -17,7 +17,7 @@ import Mathlib.MeasureTheory.Measure.Prod
+ import Mathlib.Probability.Distributions.Beta
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreDeterminantMoment.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreDeterminantMoment.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreDeterminantMoment.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreDeterminantMoment.lean
+@@ -12,7 +12,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.MeasureTheory.Measure.Prod
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreExpectationGlue.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreExpectationGlue.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreExpectationGlue.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreExpectationGlue.lean
+@@ -23,7 +23,7 @@ import Mathlib.MeasureTheory.Measure.Prod
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreFiniteFormula.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreFiniteFormula.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreFiniteFormula.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreFiniteFormula.lean
+@@ -47,7 +47,7 @@ import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Independence
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreGaussianBridge.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreGaussianBridge.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreGaussianBridge.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreGaussianBridge.lean
+@@ -22,7 +22,7 @@ import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.RealGinibre.GinibreRoots
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreRecurrence.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreRecurrence.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreRecurrence.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreRecurrence.lean
+@@ -21,7 +21,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.FiniteExpectation.Ginibre
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreSignedExpectation.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreSignedExpectation.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreSignedExpectation.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreSignedExpectation.lean
+@@ -22,7 +22,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.ProbabilityLaw.Probability
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreIncidence.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreIncidence.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreIncidence.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreIncidence.lean
+@@ -20,7 +20,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.RealGinibre.GinibreRoots
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibrePlaneIncidence.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibrePlaneIncidence.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibrePlaneIncidence.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibrePlaneIncidence.lean
+@@ -20,7 +20,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ 
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreSignedIncidenceAlgebra.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreSignedIncidenceAlgebra.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreSignedIncidenceAlgebra.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreSignedIncidenceAlgebra.lean
+@@ -36,7 +36,7 @@ import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Independence
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreTruncatedIncidence.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreTruncatedIncidence.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreTruncatedIncidence.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreTruncatedIncidence.lean
+@@ -22,7 +22,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibreIncidence
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreAtlas.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreAtlas.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreAtlas.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreAtlas.lean
+@@ -20,7 +20,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibreIncidence
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreComplexPairs.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreComplexPairs.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreComplexPairs.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreComplexPairs.lean
+@@ -19,7 +19,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.RealGinibre.GinibreRoots
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreDimensionTwo.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreDimensionTwo.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreDimensionTwo.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreDimensionTwo.lean
+@@ -28,7 +28,7 @@ import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Independence
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Gaussian.GaussianOrthogonal
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreOrthogonalFiber.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreOrthogonalFiber.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreOrthogonalFiber.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreOrthogonalFiber.lean
+@@ -36,7 +36,7 @@ import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Independence
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneChart.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneChart.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneChart.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneChart.lean
+@@ -20,7 +20,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibrePlaneIncidence
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneSylvester.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneSylvester.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneSylvester.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneSylvester.lean
+@@ -23,7 +23,7 @@ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.RingTheory.Norm.Transitivity
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ 
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreJointDensity.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreJointDensity.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreJointDensity.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreJointDensity.lean
+@@ -15,7 +15,7 @@ import Mathlib.MeasureTheory.Integral.Pi
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ 
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreMeasure.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreMeasure.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreMeasure.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreMeasure.lean
+@@ -15,7 +15,7 @@ import Mathlib.MeasureTheory.Integral.Pi
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ 
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreTraceDensity.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreTraceDensity.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreTraceDensity.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreTraceDensity.lean
+@@ -18,7 +18,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.MeasureTheory.Measure.Prod
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/Probability.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/Probability.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/Probability.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/Probability.lean
+@@ -11,7 +11,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ 
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreMultiplicity.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreMultiplicity.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreMultiplicity.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreMultiplicity.lean
+@@ -20,7 +20,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.Incidence.GinibreIncidence
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreRoots.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreRoots.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreRoots.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreRoots.lean
+@@ -19,7 +19,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.RealGinibre.GinibreRoots
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreParity.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreParity.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreParity.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreParity.lean
+@@ -21,7 +21,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ 
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedConclusion.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedConclusion.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedConclusion.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedConclusion.lean
+@@ -36,7 +36,7 @@ import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Independence
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedGaussian.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedGaussian.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedGaussian.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedGaussian.lean
+@@ -23,7 +23,7 @@ import Mathlib.Probability.Distributions.Gaussian.CharFun
+ import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Independence
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Gaussian.GaussianOrthogonal
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedIncidence.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedIncidence.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedIncidence.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedIncidence.lean
+@@ -42,7 +42,7 @@ import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Independence
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedKernel.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedKernel.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedKernel.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedKernel.lean
+@@ -23,7 +23,7 @@ import Mathlib.Probability.Distributions.Gaussian.CharFun
+ import Mathlib.Probability.Distributions.Gaussian.HasGaussianLaw.Independence
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Source.Higham.Chapter28.Section02.RealGinibre.SignedIncidence.GinibreSignedGaussian
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRank.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRank.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRank.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRank.lean
+@@ -22,7 +22,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ 
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRankTransfer.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRankTransfer.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRankTransfer.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRankTransfer.lean
+@@ -22,7 +22,7 @@ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.RealGinibre.GinibreRoots
+diff --git a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedScalar.lean b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedScalar.lean
+--- a/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedScalar.lean
++++ b/NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedScalar.lean
+@@ -19,7 +19,7 @@ import Mathlib.MeasureTheory.Integral.Pi
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ 
+diff --git a/NumStability/Source/Higham/Chapter28/Section03/RandomSVD/RandsvdNorm.lean b/NumStability/Source/Higham/Chapter28/Section03/RandomSVD/RandsvdNorm.lean
+--- a/NumStability/Source/Higham/Chapter28/Section03/RandomSVD/RandsvdNorm.lean
++++ b/NumStability/Source/Higham/Chapter28/Section03/RandomSVD/RandsvdNorm.lean
+@@ -9,7 +9,7 @@ import Mathlib.MeasureTheory.Constructions.Pi
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Hilbert.Basic
+ import NumStability.Analysis.TestMatrices.RandomSVD.Basic
+diff --git a/NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/GaussianQRHaar.lean b/NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/GaussianQRHaar.lean
+--- a/NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/GaussianQRHaar.lean
++++ b/NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/GaussianQRHaar.lean
+@@ -25,7 +25,7 @@ import Mathlib.Topology.Bases
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Haar.HomogeneousSpaceUniqueness
+diff --git a/NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/Stewart.lean b/NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/Stewart.lean
+--- a/NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/Stewart.lean
++++ b/NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/Stewart.lean
+@@ -9,7 +9,7 @@ import Mathlib.MeasureTheory.Constructions.Pi
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Hilbert.Basic
+ import NumStability.Analysis.TestMatrices.RandomSVD.Basic
+diff --git a/NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/StewartRawFiber.lean b/NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/StewartRawFiber.lean
+--- a/NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/StewartRawFiber.lean
++++ b/NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/StewartRawFiber.lean
+@@ -17,7 +17,7 @@ import Mathlib.Probability.Distributions.Gaussian.Real
+ import Mathlib.Topology.Bases
+ import Mathlib.Topology.Instances.Matrix
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.Probability.Haar.HomogeneousSpaceUniqueness
+ import NumStability.Analysis.TestMatrices.Gaussian.GaussianDirection
+diff --git a/NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalCondition.lean b/NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalCondition.lean
+--- a/NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalCondition.lean
++++ b/NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalCondition.lean
+@@ -16,7 +16,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.MatrixSpectral
+diff --git a/NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalOscillation.lean b/NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalOscillation.lean
+--- a/NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalOscillation.lean
++++ b/NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalOscillation.lean
+@@ -16,7 +16,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.MatrixSpectral
+diff --git a/NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalSpectral.lean b/NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalSpectral.lean
+--- a/NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalSpectral.lean
++++ b/NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalSpectral.lean
+@@ -14,7 +14,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.MatrixSpectral
+diff --git a/NumStability/Source/Higham/Chapter28/Section04/ReciprocalSpectrumSPD/ReciprocalSPD.lean b/NumStability/Source/Higham/Chapter28/Section04/ReciprocalSpectrumSPD/ReciprocalSPD.lean
+--- a/NumStability/Source/Higham/Chapter28/Section04/ReciprocalSpectrumSPD/ReciprocalSPD.lean
++++ b/NumStability/Source/Higham/Chapter28/Section04/ReciprocalSpectrumSPD/ReciprocalSPD.lean
+@@ -14,7 +14,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Source.Higham.Chapter09.Problems
+diff --git a/NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzCondition.lean b/NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzCondition.lean
+--- a/NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzCondition.lean
++++ b/NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzCondition.lean
+@@ -14,7 +14,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Toeplitz.Contracts
+diff --git a/NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzGeneral.lean b/NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzGeneral.lean
+--- a/NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzGeneral.lean
++++ b/NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzGeneral.lean
+@@ -14,7 +14,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.MatrixAlgebra
+ import NumStability.Analysis.TestMatrices.Toeplitz.Basic
+diff --git a/NumStability/Source/Higham/Chapter28/Section06/Companion/Companion.lean b/NumStability/Source/Higham/Chapter28/Section06/Companion/Companion.lean
+--- a/NumStability/Source/Higham/Chapter28/Section06/Companion/Companion.lean
++++ b/NumStability/Source/Higham/Chapter28/Section06/Companion/Companion.lean
+@@ -15,7 +15,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.JordanNormalForm
+ import NumStability.Analysis.MatrixAlgebra
+diff --git a/NumStability/Source/Higham/Chapter28/Section06/Companion/CompanionSpectral.lean b/NumStability/Source/Higham/Chapter28/Section06/Companion/CompanionSpectral.lean
+--- a/NumStability/Source/Higham/Chapter28/Section06/Companion/CompanionSpectral.lean
++++ b/NumStability/Source/Higham/Chapter28/Section06/Companion/CompanionSpectral.lean
+@@ -15,7 +15,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
+ import Mathlib.MeasureTheory.Measure.Haar.Basic
+ import Mathlib.Probability.Distributions.Gaussian.Real
+ import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
+-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
++import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+ import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
+ import NumStability.Analysis.JordanNormalForm
+ import NumStability.Analysis.MatrixAlgebra
+diff --git a/NumStabilityTest.lean b/NumStabilityTest.lean
+--- a/NumStabilityTest.lean
++++ b/NumStabilityTest.lean
+@@ -522,6 +522,8 @@ import NumStabilityTest.Import.TriangularMigration
+ import NumStabilityTest.Import.TridiagonalCondCanonical
+ import NumStabilityTest.Reorganization.R01
+ import NumStabilityTest.Reorganization.R02
++import NumStabilityTest.Reorganization.R11.All
++import NumStabilityTest.Reorganization.R12.All
+ import NumStabilityTest.Reorganization.W01.Canonical.ExactSubtraction
+ import NumStabilityTest.Reorganization.W01.Canonical.Format
+ import NumStabilityTest.Reorganization.W01.Canonical.IeeeExceptions
+diff --git a/docs/architecture/COMPATIBILITY.md b/docs/architecture/COMPATIBILITY.md
+--- a/docs/architecture/COMPATIBILITY.md
++++ b/docs/architecture/COMPATIBILITY.md
+@@ -186,6 +186,9 @@ the table remains an import-only forwarding module.
+ | `NumStability.Algorithms.Ch14SourceCorrections` | `NumStability.Source.Higham.Chapter14.Discrepancies` |
+ | `NumStability.Algorithms.Chapter14Problem1415Weyl` | `NumStability.Source.Higham.Chapter14.Problem15` |
+ | `NumStability.Algorithms.Ch4KahanFiniteFamily` | `NumStability.Source.Higham.Chapter04.Equation08.FiniteFamily` |
++| `NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport` | `NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication` |
++| `NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport` | `NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR` |
++| `NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport` | `NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels` |
+ | `NumStability.Algorithms.QR.GivensMatrixStep` | `NumStability.Algorithms.LinearSystems.QR.GivensMatrixStep` |
+ | `NumStability.Algorithms.QR.GivensQR` | `NumStability.Algorithms.LinearSystems.QR.GivensQR` |
+ | `NumStability.Algorithms.QR.GivensSpec` | `NumStability.Algorithms.LinearSystems.QR.GivensSpec` |
+@@ -234,16 +237,16 @@ the table remains an import-only forwarding module.
+ | `NumStability.Algorithms.QR.Higham19TurnbullAitken` | `NumStability.Source.Higham.Chapter19.TurnbullAitken` |
+ | `NumStability.Algorithms.QR.Higham19WYApplicationClosure` | `NumStability.Source.Higham.Chapter19.WYApplicationClosure` |
+ | `NumStability.Algorithms.QR.HouseholderApply` | `NumStability.Algorithms.LinearSystems.QR.HouseholderApply` |
+-| `NumStability.Algorithms.QR.HouseholderApplySupport` | `NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport` |
++| `NumStability.Algorithms.QR.HouseholderApplySupport` | `NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication` |
+ | `NumStability.Algorithms.QR.HouseholderConstruction2` | `NumStability.Algorithms.LinearSystems.QR.HouseholderConstruction2` and `NumStability.Source.Higham.Chapter19.Lemma01.Construction2` |
+ | `NumStability.Algorithms.QR.HouseholderMatrixStep` | `NumStability.Algorithms.LinearSystems.QR.HouseholderMatrixStep` |
+ | `NumStability.Algorithms.QR.HouseholderOneStep` | `NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep` |
+ | `NumStability.Algorithms.QR.HouseholderQApply` | `NumStability.Algorithms.LinearSystems.QR.HouseholderQApply` |
+ | `NumStability.Algorithms.QR.HouseholderQR` | `NumStability.Algorithms.LinearSystems.QR.HouseholderQR` |
+-| `NumStability.Algorithms.QR.HouseholderQRSupport` | `NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport` |
++| `NumStability.Algorithms.QR.HouseholderQRSupport` | `NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR` |
+ | `NumStability.Algorithms.QR.HouseholderReflector` | `NumStability.Algorithms.LinearSystems.QR.HouseholderReflector` |
+ | `NumStability.Algorithms.QR.HouseholderSpec` | `NumStability.Algorithms.LinearSystems.QR.HouseholderSpec` |
+-| `NumStability.Algorithms.QR.HouseholderSpecSupport` | `NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport` |
++| `NumStability.Algorithms.QR.HouseholderSpecSupport` | `NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels` |
+ | `NumStability.Algorithms.QR.QRSolve` | `NumStability.Algorithms.LinearSystems.QR.QRSolve` |
+ | `NumStability.Algorithms.LeastSquares.Higham20Algorithms` | `NumStability.Algorithms.LeastSquares.LSQRSolve`, `NumStability.Algorithms.LinearSystems.LeastSquares.Refinement`, `NumStability.Analysis.Perturbation.LeastSquares.Basic`, and `NumStability.Source.Higham.Chapter20.Section02.Algorithms` |
+ | `NumStability.Algorithms.LeastSquares.Higham20AlternativeBound` | `NumStability.Algorithms.LeastSquares.LSQRSolve`, `NumStability.Algorithms.LinearSystems.LeastSquares.Basic`, `NumStability.Analysis.Perturbation.LeastSquares.AlternativeBound`, and `NumStability.Source.Higham.Chapter20.Theorem02.AlternativeBound` |
+@@ -268,7 +271,7 @@ the table remains an import-only forwarding module.
+ | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_10` | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_3`, `NumStability.Algorithms.LeastSquares.LSE`, `NumStability.Analysis.Perturbation.LeastSquares.Equality.MixedStability`, and `NumStability.Source.Higham.Chapter20.Theorem10` |
+ | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_3` | `NumStability.Algorithms.LeastSquares.LSQRSolve`, `NumStability.Algorithms.QR.Higham19`, and `NumStability.Source.Higham.Chapter20.Theorem03` |
+ | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_4Absorption` | `NumStability.Algorithms.LeastSquares.Higham20Refinement`, `NumStability.Analysis.Perturbation.LeastSquares.Absorption`, and `NumStability.Source.Higham.Chapter20.Theorem04` |
+-| `NumStability.Algorithms.LeastSquares.Higham20Theorem20_7` | `NumStability.Algorithms.LeastSquares.LSQRSolve`, `NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel`, `NumStability.Algorithms.LinearSystems.QR.HouseholderApply`, `NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport`, `NumStability.Algorithms.QR.Higham19Thm6CoxHigham`, `NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete`, `NumStability.Analysis.Perturbation.LeastSquares.Contract`, and `NumStability.Source.Higham.Chapter20.Theorem07` |
++| `NumStability.Algorithms.LeastSquares.Higham20Theorem20_7` | `NumStability.Algorithms.LeastSquares.LSQRSolve`, `NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel`, `NumStability.Algorithms.LinearSystems.QR.HouseholderApply`, `NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR`, `NumStability.Algorithms.QR.Higham19Thm6CoxHigham`, `NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete`, `NumStability.Analysis.Perturbation.LeastSquares.Contract`, and `NumStability.Source.Higham.Chapter20.Theorem07` |
+ | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_7ActualAssembly` | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_7ActualRhs`, and `NumStability.Source.Higham.Chapter20.Theorem07.ActualAssembly` |
+ | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_7ActualBackSub` | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_7ActualAssembly`, and `NumStability.Source.Higham.Chapter20.Theorem07.ActualBackSub` |
+ | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_7ActualClosure` | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_7ActualTrace`, and `NumStability.Source.Higham.Chapter20.Theorem07.ActualClosure` |
+@@ -285,7 +288,7 @@ the table remains an import-only forwarding module.
+ | `NumStability.Algorithms.LeastSquares.LSE` | `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Algebra.Order.BigOperators.Group.Finset`, `Mathlib.Data.Fin.Tuple.Sort`, `Mathlib.Data.Real.Basic`, `Mathlib.LinearAlgebra.Dual.Lemmas`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.LeastSquares.LSQRSolve`, `NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic`, `NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR`, `NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT`, `NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar`, `NumStability.Algorithms.QR.Higham19`, `NumStability.Algorithms.QR.Higham19Thm6ColPivot`, `NumStability.Algorithms.QR.Higham19Thm6CoxHigham`, `NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete`, `NumStability.Algorithms.QR.Higham19Thm6ElementwisePackaged`, `NumStability.Algorithms.QR.Higham19Thm6RowSpecific`, `NumStability.Algorithms.Underdetermined.UnderdeterminedSpec`, `NumStability.Analysis.Perturbation.LeastSquares.Equality.MixedStability`, `NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation`, `NumStability.Analysis.Perturbation.LeastSquares.Equality.RowwiseBackwardError`, and `NumStability.Source.Higham.Chapter20.Theorem08.LSE` |
+ | `NumStability.Algorithms.LeastSquares.LSNormalEquations` | `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Algebra.Order.BigOperators.Group.Finset`, `Mathlib.Data.Real.Basic`, `Mathlib.Tactic.FinCases`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.NormNum`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.LinearSystems.Cholesky.Solve.Basic`, `NumStability.Algorithms.Cholesky.CholeskySpec`, `NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations`, `NumStability.Algorithms.MatMul`, `NumStability.Analysis.MatrixAlgebra`, `NumStability.Analysis.Perturbation.LeastSquares.NormalEquations`, `NumStability.Analysis.PerturbationTheory`, `NumStability.Analysis.Rounding`, and `NumStability.FloatingPoint.Model` |
+ | `NumStability.Algorithms.LeastSquares.LSPerturbation` | `Mathlib.Data.Real.Basic`, `NumStability.Analysis.MatrixAlgebra`, `NumStability.Analysis.MatrixSpectral`, `NumStability.Analysis.Perturbation.LeastSquares.Basic`, `NumStability.Analysis.Perturbation.LeastSquares.Wedin`, `NumStability.Analysis.SingularValues.Realification`, and `NumStability.Source.Higham.Chapter20.Lemma11.Support` |
+-| `NumStability.Algorithms.LeastSquares.LSQRSolve` | `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Algebra.Order.BigOperators.Group.Finset`, `Mathlib.Analysis.Matrix.Spectrum`, `Mathlib.Data.Real.Basic`, `Mathlib.LinearAlgebra.Matrix.Rank`, `Mathlib.Tactic.FieldSimp`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.LeastSquares.LSPerturbation`, `NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem`, `NumStability.Algorithms.LinearSystems.LeastSquares.Basic`, `NumStability.Algorithms.LinearSystems.LeastSquares.GramBasis`, `NumStability.Algorithms.LinearSystems.LeastSquares.MGS`, `NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations`, `NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve`, `NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry`, `NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR`, `NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport`, `NumStability.Algorithms.LinearSystems.QR.QRSolve`, `NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution`, `NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution`, `NumStability.Algorithms.LinearSystems.Triangular.InverseBounds`, `NumStability.Algorithms.RandNLA.LowRankApprox`, `NumStability.Analysis.MatrixAlgebra`, `NumStability.Analysis.Perturbation.LeastSquares.AugmentedSystem`, `NumStability.Analysis.Perturbation.LeastSquares.BackwardError`, `NumStability.Analysis.Perturbation.LeastSquares.Basic`, `NumStability.Analysis.Perturbation.LeastSquares.GramBasis`, `NumStability.Analysis.Perturbation.LeastSquares.NormalEquations`, `NumStability.Analysis.Perturbation.LeastSquares.Normwise`, `NumStability.Analysis.PerturbationTheory`, `NumStability.Analysis.SingularValues.Realification`, and `NumStability.Source.Higham.Chapter20.Theorem03.QRSolve` |
++| `NumStability.Algorithms.LeastSquares.LSQRSolve` | `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Algebra.Order.BigOperators.Group.Finset`, `Mathlib.Analysis.Matrix.Spectrum`, `Mathlib.Data.Real.Basic`, `Mathlib.LinearAlgebra.Matrix.Rank`, `Mathlib.Tactic.FieldSimp`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.LeastSquares.LSPerturbation`, `NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem`, `NumStability.Algorithms.LinearSystems.LeastSquares.Basic`, `NumStability.Algorithms.LinearSystems.LeastSquares.GramBasis`, `NumStability.Algorithms.LinearSystems.LeastSquares.MGS`, `NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations`, `NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve`, `NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry`, `NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR`, `NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR`, `NumStability.Algorithms.LinearSystems.QR.QRSolve`, `NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution`, `NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution`, `NumStability.Algorithms.LinearSystems.Triangular.InverseBounds`, `NumStability.Algorithms.RandNLA.LowRankApprox`, `NumStability.Analysis.MatrixAlgebra`, `NumStability.Analysis.Perturbation.LeastSquares.AugmentedSystem`, `NumStability.Analysis.Perturbation.LeastSquares.BackwardError`, `NumStability.Analysis.Perturbation.LeastSquares.Basic`, `NumStability.Analysis.Perturbation.LeastSquares.GramBasis`, `NumStability.Analysis.Perturbation.LeastSquares.NormalEquations`, `NumStability.Analysis.Perturbation.LeastSquares.Normwise`, `NumStability.Analysis.PerturbationTheory`, `NumStability.Analysis.SingularValues.Realification`, and `NumStability.Source.Higham.Chapter20.Theorem03.QRSolve` |
+ | `NumStability.Algorithms.LeastSquares.Higham20SourceAliases` | `NumStability.Source.Higham.Chapter20.Equation32`, `NumStability.Source.Higham.Chapter20.Lemma06`, and `NumStability.Source.Higham.Chapter20.Theorem01` |
+ | `NumStability.Algorithms.Underdetermined.Higham21Condition` | `NumStability.Source.Higham.Chapter21.RowScalingInvariance` |
+ | `NumStability.Algorithms.Underdetermined.Higham21RowwiseMeasure` | `NumStability.Source.Higham.Chapter21.Theorem04.RowwiseBackwardError` |
+diff --git a/docs/architecture/layout-exceptions.json b/docs/architecture/layout-exceptions.json
+--- a/docs/architecture/layout-exceptions.json
++++ b/docs/architecture/layout-exceptions.json
+@@ -216,12 +216,15 @@
+       "NumStability.Source.Higham.Chapter13.Theorem07.PivotExistence",
+       "NumStability.Source.Higham.Chapter13.Theorem08.OneStep"
+     ],
++    "NumStability.Source.Higham.Chapter13.Equation23": "NumStability.Source.Higham.Chapter13.Equation23.",
++    "NumStability.Source.Higham.Chapter13.Equation25": "NumStability.Source.Higham.Chapter13.Equation25.",
+     "NumStability.Source.Higham.Chapter13.Lemma10": "NumStability.Source.Higham.Chapter13.Lemma10.",
+     "NumStability.Source.Higham.Chapter13.Problem04": "NumStability.Source.Higham.Chapter13.Problem04.",
+     "NumStability.Source.Higham.Chapter13.Problem04.FactorizationProducts": "NumStability.Source.Higham.Chapter13.Problem04.FactorizationProducts.",
+     "NumStability.Source.Higham.Chapter13.Problem04.GlobalTableauProducts": "NumStability.Source.Higham.Chapter13.Problem04.GlobalTableauProducts.",
+     "NumStability.Source.Higham.Chapter13.Section01": "NumStability.Source.Higham.Chapter13.Section01.",
+     "NumStability.Source.Higham.Chapter13.Section03": "NumStability.Source.Higham.Chapter13.Section03.",
++    "NumStability.Source.Higham.Chapter13.Table01": "NumStability.Source.Higham.Chapter13.Table01.",
+     "NumStability.Source.Higham.Chapter13.Theorem02": "NumStability.Source.Higham.Chapter13.Theorem02.",
+     "NumStability.Source.Higham.Chapter13.Theorem05": "NumStability.Source.Higham.Chapter13.Theorem05.",
+     "NumStability.Source.Higham.Chapter13.Theorem06": "NumStability.Source.Higham.Chapter13.Theorem06.",
+@@ -239,6 +242,8 @@
+     "NumStability.Source.Higham.Chapter17": "NumStability.Source.Higham.Chapter17.",
+     "NumStability.Source.Higham.Chapter18": "NumStability.Source.Higham.Chapter18.",
+     "NumStability.Source.Higham.Chapter18.Section01": "NumStability.Source.Higham.Chapter18.Section01.",
++    "NumStability.Source.Higham.Chapter19.Sensitivity": "NumStability.Source.Higham.Chapter19.Sensitivity.",
++    "NumStability.Source.Higham.Chapter19.StoredLoop": "NumStability.Source.Higham.Chapter19.StoredLoop.",
+     "NumStability.Source.Higham.Chapter20": "NumStability.Source.Higham.Chapter20.",
+     "NumStability.Source.Higham.Chapter21": "NumStability.Source.Higham.Chapter21.",
+     "NumStability.Source.Higham.Chapter21.Theorem03": "NumStability.Source.Higham.Chapter21.Theorem03.",
+@@ -279,14 +284,9 @@
+       "NumStability.Source.Higham.Chapter10.Theorem07",
+       "NumStability.Source.Higham.Chapter11.Theorem07",
+       "NumStability.Source.Higham.Chapter12.IterativeRefinement",
+-      "NumStability.Source.Higham.Chapter13.Equation23",
+-      "NumStability.Source.Higham.Chapter13.Equation25",
+-      "NumStability.Source.Higham.Chapter13.Table01",
+       "NumStability.Source.Higham.Chapter14.Problem13",
+       "NumStability.Source.Higham.Chapter14.Problem14",
+       "NumStability.Source.Higham.Chapter14.Problem15",
+-      "NumStability.Source.Higham.Chapter19.Sensitivity",
+-      "NumStability.Source.Higham.Chapter19.StoredLoop",
+       "NumStability.Source.Higham.Chapter20.Equations",
+       "NumStability.Source.Higham.Chapter20.Lemma11",
+       "NumStability.Source.Higham.Chapter20.Prose",
+@@ -303,65 +303,6 @@
+       "NumStability.Algorithms.LinearSystems.LU.Doolittle.Budgets",
+       "NumStability.Algorithms.LinearSystems.LU.Doolittle.Certificates",
+       "NumStability.Algorithms.LinearSystems.LU.Doolittle.RoundedEntries",
+-      "NumStability.Algorithms.QR.GivensMatrixStep",
+-      "NumStability.Algorithms.QR.GivensQR",
+-      "NumStability.Algorithms.QR.GivensSpec",
+-      "NumStability.Algorithms.QR.GramSchmidt",
+-      "NumStability.Algorithms.QR.GramSchmidtPolar",
+-      "NumStability.Algorithms.QR.Higham19",
+-      "NumStability.Algorithms.QR.Higham19Alg11CGSRounded",
+-      "NumStability.Algorithms.QR.Higham19Alg12MGSClosure",
+-      "NumStability.Algorithms.QR.Higham19Alg12MGSNonbreakdown",
+-      "NumStability.Algorithms.QR.Higham19Alg12MGSPaddedClosure",
+-      "NumStability.Algorithms.QR.Higham19Alg12MGSRepair",
+-      "NumStability.Algorithms.QR.Higham19Alg12MGSRounded",
+-      "NumStability.Algorithms.QR.Higham19Alg12MGSSourceRate",
+-      "NumStability.Algorithms.QR.Higham19FormedQ",
+-      "NumStability.Algorithms.QR.Higham19Labels",
+-      "NumStability.Algorithms.QR.Higham19Lemma3ActualSequence",
+-      "NumStability.Algorithms.QR.Higham19Lemma7Gamma4",
+-      "NumStability.Algorithms.QR.Higham19Lemma9DisjointSweep",
+-      "NumStability.Algorithms.QR.Higham19PolarNearest",
+-      "NumStability.Algorithms.QR.Higham19Problem19_10",
+-      "NumStability.Algorithms.QR.Higham19Problem19_9",
+-      "NumStability.Algorithms.QR.Higham19Problem6ActualStep",
+-      "NumStability.Algorithms.QR.Higham19Sensitivity",
+-      "NumStability.Algorithms.QR.Higham19SensitivityClosure",
+-      "NumStability.Algorithms.QR.Higham19StoredLoop",
+-      "NumStability.Algorithms.QR.Higham19StoredLoopAllPivots",
+-      "NumStability.Algorithms.QR.Higham19StoredLoopStrongModel",
+-      "NumStability.Algorithms.QR.Higham19SunBischof",
+-      "NumStability.Algorithms.QR.Higham19Theorem10ActualMatrix",
+-      "NumStability.Algorithms.QR.Higham19Theorem5Nonbreakdown",
+-      "NumStability.Algorithms.QR.Higham19Theorem5SourceClosure",
+-      "NumStability.Algorithms.QR.Higham19Theorem6ActualSource",
+-      "NumStability.Algorithms.QR.Higham19Thm6ColPivot",
+-      "NumStability.Algorithms.QR.Higham19Thm6ColPivotFull",
+-      "NumStability.Algorithms.QR.Higham19Thm6CoxHigham",
+-      "NumStability.Algorithms.QR.Higham19Thm6CoxHighamAssembly",
+-      "NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete",
+-      "NumStability.Algorithms.QR.Higham19Thm6CoxHighamFull",
+-      "NumStability.Algorithms.QR.Higham19Thm6Elementwise",
+-      "NumStability.Algorithms.QR.Higham19Thm6ElementwiseEntry",
+-      "NumStability.Algorithms.QR.Higham19Thm6ElementwisePackaged",
+-      "NumStability.Algorithms.QR.Higham19Thm6Final",
+-      "NumStability.Algorithms.QR.Higham19Thm6Pivoted",
+-      "NumStability.Algorithms.QR.Higham19Thm6RowSpecific",
+-      "NumStability.Algorithms.QR.Higham19Thm6StrongModel",
+-      "NumStability.Algorithms.QR.Higham19TurnbullAitken",
+-      "NumStability.Algorithms.QR.Higham19WYApplicationClosure",
+-      "NumStability.Algorithms.QR.HouseholderApply",
+-      "NumStability.Algorithms.QR.HouseholderApplySupport",
+-      "NumStability.Algorithms.QR.HouseholderConstruction2",
+-      "NumStability.Algorithms.QR.HouseholderMatrixStep",
+-      "NumStability.Algorithms.QR.HouseholderOneStep",
+-      "NumStability.Algorithms.QR.HouseholderQApply",
+-      "NumStability.Algorithms.QR.HouseholderQR",
+-      "NumStability.Algorithms.QR.HouseholderQRSupport",
+-      "NumStability.Algorithms.QR.HouseholderReflector",
+-      "NumStability.Algorithms.QR.HouseholderSpec",
+-      "NumStability.Algorithms.QR.HouseholderSpecSupport",
+-      "NumStability.Algorithms.QR.QRSolve",
+       "NumStability.Algorithms.Summation.Tree.ArbitraryOrderError.PivotNormalized",
+       "NumStability.FloatingPoint.Model",
+       "NumStability.Source.Higham.Chapter08.Equation15.GlobalEnvelopeCounterexample.RawCube",
+@@ -438,9 +379,6 @@
+       "NumStability.Algorithms.HighamChapter5ComplexAlgorithm51",
+       "NumStability.Algorithms.HighamChapter8",
+       "NumStability.Algorithms.HighamChapters1To9SourceClosure",
+-      "NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport",
+-      "NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport",
+-      "NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport",
+       "NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.Closure",
+       "NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ForwardError.ActualOutput",
+       "NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.HouseholderClosure.Closure",
+diff --git a/docs/architecture/tiers.json b/docs/architecture/tiers.json
+--- a/docs/architecture/tiers.json
++++ b/docs/architecture/tiers.json
+@@ -306,6 +306,9 @@
+     "NumStability.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.Uniqueness": "reusable",
+     "NumStability.Algorithms.LinearSystems.LU.NonsymmetricPositiveDefinite": "aggregate",
+     "NumStability.Algorithms.LinearSystems.LU.NonsymmetricPositiveDefinite.Basic": "reusable",
++    "NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport": "compatibility",
++    "NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport": "compatibility",
++    "NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport": "compatibility",
+     "NumStability.Algorithms.LinearSystems.SymmetricIndefinite": "aggregate",
+     "NumStability.Algorithms.LinearSystems.SymmetricIndefinite.Aasen": "aggregate",
+     "NumStability.Algorithms.LinearSystems.SymmetricIndefinite.Aasen.AasenCoupledFp": "source",
+@@ -1063,12 +1066,15 @@
+     "NumStability.Source.Higham.Chapter12": "aggregate",
+     "NumStability.Source.Higham.Chapter13": "aggregate",
+     "NumStability.Source.Higham.Chapter13.BlockLU": "aggregate",
++    "NumStability.Source.Higham.Chapter13.Equation23": "aggregate",
++    "NumStability.Source.Higham.Chapter13.Equation25": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Lemma10": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Problem04": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Problem04.FactorizationProducts": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Problem04.GlobalTableauProducts": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Section01": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Section03": "aggregate",
++    "NumStability.Source.Higham.Chapter13.Table01": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Theorem02": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Theorem05": "aggregate",
+     "NumStability.Source.Higham.Chapter13.Theorem06": "aggregate",
+@@ -1323,6 +1329,8 @@
+     "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.RealCases": "source",
+     "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.RealJordan": "source",
+     "NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.SpectralCriterion": "source",
++    "NumStability.Source.Higham.Chapter19.Sensitivity": "aggregate",
++    "NumStability.Source.Higham.Chapter19.StoredLoop": "aggregate",
+     "NumStability.Source.Higham.Chapter20": "aggregate",
+     "NumStability.Source.Higham.Chapter21": "aggregate",
+     "NumStability.Source.Higham.Chapter21.Corrections.Problem19_12.RoundedReplay": "source",

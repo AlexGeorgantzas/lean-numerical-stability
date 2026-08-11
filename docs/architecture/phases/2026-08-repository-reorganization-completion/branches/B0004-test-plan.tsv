@@ -1,0 +1,27 @@
+test_class	target	purpose
+canonical_only	NumStability.Source.Higham.Chapter13.Equation23.ProductBounds.PointRow	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter13.Equation25.BackwardError.Bounds	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter13.Equation25.PartitionedComputation.Implementation1	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter13.Table01.BackwardErrorBounds.Endpoints	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter13.Table01.DiagonalDominance.Bounds	compile exact canonical destination without historical owner import
+canonical_only	NumStability.Source.Higham.Chapter13.Table01.ProductTransfers.Families	compile exact canonical destination without historical owner import
+focused	NumStability.Source.Higham.Chapter13.Equation23.ProductBounds.PointRow	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter13.Equation25.BackwardError.Bounds	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter13.Equation25.PartitionedComputation.Implementation1	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter13.Table01.BackwardErrorBounds.Endpoints	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter13.Table01.DiagonalDominance.Bounds	exercise frozen declaration route and private-normalized closure
+focused	NumStability.Source.Higham.Chapter13.Table01.ProductTransfers.Families	exercise frozen declaration route and private-normalized closure
+old_only	NumStability.Source.Higham.Chapter13.Equation23	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Source.Higham.Chapter13.Equation25	compile historical import-only wrapper and preserved public surface
+old_only	NumStability.Source.Higham.Chapter13.Table01	compile historical import-only wrapper and preserved public surface
+protected_consumer	NumStability.Algorithms.LU.BlockLUTable13_1Families	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Higham.Chapter13.Table13_1	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter13.BlockLU	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter13.Equation25.Factorization	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter13.Problem04.ComparisonChains	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter13.Problem04.DeterminantChainProducts	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter13.Problem04.GlobalTableauChain	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter13.Problem04.InverseRatioChain	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter13.Problem04.LowerComparisonChain	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter13.Problem04.ProductBounds	compile hash-pinned integrator-owned consumer postimage
+protected_consumer	NumStability.Source.Higham.Chapter13.Problem04.RecursiveBudgetChains	compile hash-pinned integrator-owned consumer postimage

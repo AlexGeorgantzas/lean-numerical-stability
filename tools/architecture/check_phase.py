@@ -2310,6 +2310,7 @@ class PhaseValidator:
     def validate_requests(self, current_id: str) -> None:
         for request_id, request in sorted(self.requests.items()):
             context = request.get("_context", f"request {request_id}")
+            status = request.get("status")
             lane_id = request.get("lane_id")
             lane = self.lanes.get(lane_id)
             if lane is None:
@@ -2327,7 +2328,14 @@ class PhaseValidator:
             if request.get("valid_through_checkpoint_id") != target_id:
                 self.problems.violation(context, "valid_through_checkpoint_id must equal target_checkpoint_id; refresh by superseding the request")
             for path in request.get("paths", []):
-                if not any(rule.matches(path) for rule in self.shared_paths):
+                # Shared ownership is a live reservation, not a permanent claim.
+                # Terminal requests preserve their historical contract through
+                # immutable preimages, the hash-pinned patch, and resolution
+                # evidence, while allowing a later checkpoint to release the
+                # path to a new branch owner.
+                if status in {"draft", "active"} and not any(
+                    rule.matches(path) for rule in self.shared_paths
+                ):
                     self.problems.violation(context, f"requested path is not integrator-owned shared state: {path}")
                 if isinstance(request.get("target_base_sha"), str):
                     actual = self.blob_at(request["target_base_sha"], path, context)
@@ -2349,7 +2357,6 @@ class PhaseValidator:
             for wave in request.get("blocks", []):
                 if wave not in known_waves:
                     self.problems.violation(context, f"blocks names unknown wave {wave}")
-            status = request.get("status")
             if status in {"draft", "active"} and target_id != current_id:
                 self.problems.violation(
                     context,
@@ -2825,6 +2832,55 @@ def run_self_test() -> int:
             print("self-test failure: valid synthetic contract was rejected", file=sys.stderr)
             return 1
 
+        # A live request must retain its current shared-path reservation, but
+        # an applied request is historical evidence and must not prevent a
+        # later checkpoint from assigning that path to a branch owner.
+        phase["shared_paths"] = []
+        write_json(phase_dir / "phase.json", phase)
+        released_live = PhaseValidator(root, phase_dir).validate()
+        if not any(
+            "requested path is not integrator-owned shared state" in message
+            for message in released_live.contract_errors
+        ):
+            released_live.render()
+            print(
+                "self-test failure: a live request without a shared-path reservation was accepted",
+                file=sys.stderr,
+            )
+            return 1
+        request["status"] = "applied"
+        request["resolution"] = {
+            "commit_sha": commit,
+            "checkpoint_id": "C0000",
+            "resolved_at": "2026-08-01T00:01:00Z",
+            "resolved_by": "integrator",
+            "validation_evidence": [artifact(patch_path)],
+            "reason": "Self-test terminal shared-path release.",
+        }
+        write_json(phase_dir / "requests/R0001.json", request)
+        released_terminal = PhaseValidator(root, phase_dir).validate()
+        if not released_terminal.ok:
+            released_terminal.render()
+            print(
+                "self-test failure: an applied request retained a permanent shared-path reservation",
+                file=sys.stderr,
+            )
+            return 1
+        phase["shared_paths"] = [
+            {"match": "exact", "path": "NumStability.lean"}
+        ]
+        request["status"] = "active"
+        request["resolution"] = {
+            "commit_sha": None,
+            "checkpoint_id": None,
+            "resolved_at": None,
+            "resolved_by": None,
+            "validation_evidence": [],
+            "reason": None,
+        }
+        write_json(phase_dir / "phase.json", phase)
+        write_json(phase_dir / "requests/R0001.json", request)
+
         queue_text = unclassified_queue_path.read_text(encoding="utf-8")
         unclassified_queue_path.write_text(
             queue_text.replace("\tW1\tlane-a\t", "\tW9\tlane-a\t"),
@@ -3002,7 +3058,8 @@ def run_self_test() -> int:
         "phase contract self-test passed: valid fixture accepted; queue drift, semantic "
         "status mismatch, wrong ownership, destination overlap, stale baseline metadata, "
         "unpassed gates, projection count drift, cycle, premature unblock, premature "
-        "completion, and hash tampering rejected"
+        "completion, live shared-path release, and hash tampering rejected; terminal "
+        "shared-path release accepted"
     )
     return 0
 

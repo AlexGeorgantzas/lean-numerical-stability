@@ -1,0 +1,702 @@
+{
+  "blocks": [
+    "R11"
+  ],
+  "created_at": "2026-08-11T22:53:46Z",
+  "depends_on": [],
+  "lane_id": "claude-lane",
+  "patch": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0003.patch",
+    "sha256": "E1BFBF147D61FFE2CA08090B91DE362A2C089709221624AB2F9B36F9F4E2F4D3"
+  },
+  "paths": [
+    "NumStability/Algorithms/LeastSquares/Higham20Theorem20_7.lean",
+    "NumStability/Algorithms/LeastSquares/LSQRSolve.lean",
+    "NumStability/Algorithms/LinearSystems/LeastSquares/Basic.lean",
+    "NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean",
+    "NumStability/Algorithms/LinearSystems/LeastSquares/QRSolve.lean",
+    "NumStability/Algorithms/LinearSystems/LeastSquares/RowSorting.lean",
+    "NumStability/Algorithms/LinearSystems/LeastSquares/StoredQR.lean",
+    "NumStability/Algorithms/LinearSystems/LeastSquares/TraceKernel.lean",
+    "NumStability/Algorithms/LinearSystems/QR.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Normwise/UnderdeterminedSolve.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Rowwise/UnderdeterminedSolve.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/Radius.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/UnderdeterminedSolve.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Solvers/UnderdeterminedSolve.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Specifications/UnderdeterminedSolve.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/Radius.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/UnderdeterminedSolve.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/FixedRadius/Radius.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/Projectors/ComplementNorm/ProjectorNorm.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Foundations/UnderdeterminedSolve.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/BackwardError/Core.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/Closure.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/RoundedReplay.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/CorrectedRecurrence/Core.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/RoundedReplay/RoundedReplay.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/RankStability/FullRowRank/UnderdeterminedSolve.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/ActualOutput.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/Forward.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/RemainderBounds.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/UnderdeterminedSolve.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Closure.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Uniform.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/EnvelopeTransfer.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/QRMajorant.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/Signed.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/EnvelopeTransfer.lean",
+    "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/UnderdeterminedSolve.lean",
+    "NumStability/Algorithms/TestMatrices/Higham28Stewart.lean",
+    "NumStability/Analysis/Perturbation/LeastSquares/BackwardError.lean",
+    "NumStability/Analysis/Perturbation/LeastSquares/Basic.lean",
+    "NumStability/Analysis/Perturbation/LeastSquares/Contract.lean",
+    "NumStability/Analysis/Perturbation/LeastSquares/Equality/RowwiseBackwardError.lean",
+    "NumStability/Analysis/TestMatrices/Cauchy/Cauchy.lean",
+    "NumStability/Analysis/TestMatrices/Cauchy/Contracts.lean",
+    "NumStability/Analysis/TestMatrices/Companion/Companion.lean",
+    "NumStability/Analysis/TestMatrices/Companion/CompanionSpectral.lean",
+    "NumStability/Analysis/TestMatrices/Companion/Contracts.lean",
+    "NumStability/Analysis/TestMatrices/Orthogonal/OrthogonalFibers.lean",
+    "NumStability/Analysis/TestMatrices/Pascal/Contracts.lean",
+    "NumStability/Analysis/TestMatrices/Pascal/PascalDualFlag.lean",
+    "NumStability/Analysis/TestMatrices/Pascal/PascalOscillation.lean",
+    "NumStability/Analysis/TestMatrices/Pascal/PascalOscillationCore.lean",
+    "NumStability/Analysis/TestMatrices/Pascal/PascalSpectral.lean",
+    "NumStability/Analysis/TestMatrices/Pascal/PascalTotalPositivity.lean",
+    "NumStability/Analysis/TestMatrices/RandomSVD/Stewart.lean",
+    "NumStability/Analysis/TestMatrices/RandomSVD/StewartHaar.lean",
+    "NumStability/Analysis/TestMatrices/RandomSVD/StewartRecursion.lean",
+    "NumStability/Analysis/TestMatrices/RealGinibre/GinibreRoots.lean",
+    "NumStability/Analysis/TestMatrices/Toeplitz/Contracts.lean",
+    "NumStability/Source/DrineasMahoney/RandNLA2016/Equation08/LeastSquaresSketch/Endpoints.lean",
+    "NumStability/Source/Higham/Chapter19/Algorithm12/MGSPaddedClosure.lean",
+    "NumStability/Source/Higham/Chapter19/Labels.lean",
+    "NumStability/Source/Higham/Chapter19/Lemma03/ActualSequence.lean",
+    "NumStability/Source/Higham/Chapter19/PolarNearest.lean",
+    "NumStability/Source/Higham/Chapter19/Problem09.lean",
+    "NumStability/Source/Higham/Chapter19/Sensitivity/Closure.lean",
+    "NumStability/Source/Higham/Chapter19/StoredLoop/AllPivots.lean",
+    "NumStability/Source/Higham/Chapter19/StoredLoop/StrongModel.lean",
+    "NumStability/Source/Higham/Chapter19/Theorem06/CoxHigham.lean",
+    "NumStability/Source/Higham/Chapter20/Theorem03/QRSolve.lean",
+    "NumStability/Source/Higham/Chapter20/Theorem07.lean",
+    "NumStability/Source/Higham/Chapter20/Theorem07/ActualBackSub.lean",
+    "NumStability/Source/Higham/Chapter20/Theorem07/ActualClosure.lean",
+    "NumStability/Source/Higham/Chapter20/Theorem07/ActualRhs.lean",
+    "NumStability/Source/Higham/Chapter20/Theorem07/ActualTrace.lean",
+    "NumStability/Source/Higham/Chapter20/Theorem07/Contract.lean",
+    "NumStability/Source/Higham/Chapter20/Theorem07/Elimination.lean",
+    "NumStability/Source/Higham/Chapter20/Theorem07/QdR.lean",
+    "NumStability/Source/Higham/Chapter20/Theorem07/RowPolicy.lean",
+    "NumStability/Source/Higham/Chapter20/Theorem07/SourceTrace.lean",
+    "NumStability/Source/Higham/Chapter28/Section01/Cauchy/Cauchy.lean",
+    "NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/Cauchy.lean",
+    "NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/HilbertCondition.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/Ginibre.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreAbsoluteDetRecurrence.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCharacteristicProduct.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCorollary31Factor.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreDeterminantMoment.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreExpectationGlue.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreFiniteFormula.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreGaussianBridge.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreRecurrence.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreSignedExpectation.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreIncidence.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibrePlaneIncidence.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreSignedIncidenceAlgebra.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreTruncatedIncidence.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreAtlas.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreComplexPairs.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreDimensionTwo.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreOrthogonalFiber.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneChart.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneSylvester.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreJointDensity.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreMeasure.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreTraceDensity.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/Probability.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreMultiplicity.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreRoots.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreParity.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedConclusion.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedGaussian.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedIncidence.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedKernel.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRank.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRankTransfer.lean",
+    "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedScalar.lean",
+    "NumStability/Source/Higham/Chapter28/Section03/RandomSVD/RandsvdNorm.lean",
+    "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/GaussianQRHaar.lean",
+    "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/Stewart.lean",
+    "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/StewartRawFiber.lean",
+    "NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalCondition.lean",
+    "NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalOscillation.lean",
+    "NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalSpectral.lean",
+    "NumStability/Source/Higham/Chapter28/Section04/ReciprocalSpectrumSPD/ReciprocalSPD.lean",
+    "NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzCondition.lean",
+    "NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzGeneral.lean",
+    "NumStability/Source/Higham/Chapter28/Section06/Companion/Companion.lean",
+    "NumStability/Source/Higham/Chapter28/Section06/Companion/CompanionSpectral.lean",
+    "NumStabilityTest.lean",
+    "docs/architecture/COMPATIBILITY.md",
+    "docs/architecture/layout-exceptions.json",
+    "docs/architecture/tiers.json"
+  ],
+  "phase_id": "repository-reorganization-completion-2026-08",
+  "preimage_blobs": [
+    {
+      "blob_oid": "327d7c65fa13c267d72e739f10c25dc87846804c",
+      "path": "NumStability/Algorithms/LeastSquares/Higham20Theorem20_7.lean"
+    },
+    {
+      "blob_oid": "87f54aa8cf952e5023812f7bb834a8c141625ff7",
+      "path": "NumStability/Algorithms/LeastSquares/LSQRSolve.lean"
+    },
+    {
+      "blob_oid": "ddb17fbfc7e5f5e17e80474030eb9725cf15108e",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/Basic.lean"
+    },
+    {
+      "blob_oid": "227d2fe497fac8bb191785335a4151f4502a1da8",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/Equality/Basic.lean"
+    },
+    {
+      "blob_oid": "37f5feb8ff9947a715377c2a6a7c4045fe63d775",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/QRSolve.lean"
+    },
+    {
+      "blob_oid": "4ac77fbbd54bd9116c2a30756525543e6d21c12f",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/RowSorting.lean"
+    },
+    {
+      "blob_oid": "4f2597aa0a45c91414d9fd76814283f610c636d8",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/StoredQR.lean"
+    },
+    {
+      "blob_oid": "198c126782e156613fa1fe2b9e642845c7a9a320",
+      "path": "NumStability/Algorithms/LinearSystems/LeastSquares/TraceKernel.lean"
+    },
+    {
+      "blob_oid": "451e702907daf52e7459362f26ed92a667f0e304",
+      "path": "NumStability/Algorithms/LinearSystems/QR.lean"
+    },
+    {
+      "blob_oid": "2c0f25ba492b5a3c1f573c0062db266032aaa6be",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Normwise/UnderdeterminedSolve.lean"
+    },
+    {
+      "blob_oid": "c20b094c7dc209c7199543b133f37a932aebbb1f",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/BackwardError/Rowwise/UnderdeterminedSolve.lean"
+    },
+    {
+      "blob_oid": "48339019fc80700cceb321932de2576856790a2e",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/Radius.lean"
+    },
+    {
+      "blob_oid": "ecf3565929b3e192dcfac1aa792d4f55337efb18",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/Conditioning/Componentwise/UnderdeterminedSolve.lean"
+    },
+    {
+      "blob_oid": "a60c06a1aac5093673059a6ca16b53d96ad329b8",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Solvers/UnderdeterminedSolve.lean"
+    },
+    {
+      "blob_oid": "cae3af7378f7a5bc7817d4331ec23727492e4fd7",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Specifications/UnderdeterminedSolve.lean"
+    },
+    {
+      "blob_oid": "611e090fa10443f439370f00f4032699c93ef3e3",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/Radius.lean"
+    },
+    {
+      "blob_oid": "8d5be8457af7f993a3711a1ac7aa3fc55810df42",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Componentwise/UnderdeterminedSolve.lean"
+    },
+    {
+      "blob_oid": "bad6c697d55fdce3f208d66cdb06f6da4d573903",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/FixedRadius/Radius.lean"
+    },
+    {
+      "blob_oid": "2a2012a4c330e70edb8d65efa09eee0f8373fb8b",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/Projectors/ComplementNorm/ProjectorNorm.lean"
+    },
+    {
+      "blob_oid": "8486a99d4ddf9b2d0b45eb58757b11abff5e6e66",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Foundations/UnderdeterminedSolve.lean"
+    },
+    {
+      "blob_oid": "e73e48a67818448b43d09142d860edeb9a851ab8",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/BackwardError/Core.lean"
+    },
+    {
+      "blob_oid": "544e87447d31c51de52d683c9e2df2ac66b664be",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/Closure.lean"
+    },
+    {
+      "blob_oid": "fa1882983fbda7b37861c0b377c23281e7bc7243",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/RoundedReplay.lean"
+    },
+    {
+      "blob_oid": "3eb6688a2bbcbd64c8cae401705817128625eebe",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/CorrectedRecurrence/Core.lean"
+    },
+    {
+      "blob_oid": "ba002452aab5f890984ca100ee1535471b7e2c70",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/RoundedReplay/RoundedReplay.lean"
+    },
+    {
+      "blob_oid": "4dfac28d715ada6d045bf31346db5b6ed928ca84",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/RankStability/FullRowRank/UnderdeterminedSolve.lean"
+    },
+    {
+      "blob_oid": "76ec3be0431d00fcf272a4ff49458110b2e4e052",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/ActualOutput.lean"
+    },
+    {
+      "blob_oid": "cd0e12e7fc981efa8ada9250845db1287932d1cc",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/Forward.lean"
+    },
+    {
+      "blob_oid": "9fde8028193d71b82694f00b6dadf8d54f59bba0",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/RemainderBounds.lean"
+    },
+    {
+      "blob_oid": "da7856c9cb1bcb61c4945c613694b095b9519a43",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/UnderdeterminedSolve.lean"
+    },
+    {
+      "blob_oid": "e99fd65835b77e3bb248cdd8b255132cc596c1cf",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Closure.lean"
+    },
+    {
+      "blob_oid": "41290e05db5784032832f633a0e8c8956f71c276",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Uniform.lean"
+    },
+    {
+      "blob_oid": "d20717df9197024847cb25652ca7f138166c51da",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/EnvelopeTransfer.lean"
+    },
+    {
+      "blob_oid": "44824e25c137aec44dd7324bb7165d37a0a49a21",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/QRMajorant.lean"
+    },
+    {
+      "blob_oid": "0e0c1efaafb5f254b87477ee85cf2cc3004dfcc7",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/Signed.lean"
+    },
+    {
+      "blob_oid": "10201b74b6ca87a7658e89ded09d1f0fb7ea6c7c",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/EnvelopeTransfer.lean"
+    },
+    {
+      "blob_oid": "eb581610e24b3bd7ac94228cc3629b4536374d1f",
+      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/TriangularSolves/UnderdeterminedSolve.lean"
+    },
+    {
+      "blob_oid": "db6cc456d7701d6dc2c57f52a47a0fd741d80caf",
+      "path": "NumStability/Algorithms/TestMatrices/Higham28Stewart.lean"
+    },
+    {
+      "blob_oid": "f46c9da77b93d612933a3e7074a4f97d62fab41f",
+      "path": "NumStability/Analysis/Perturbation/LeastSquares/BackwardError.lean"
+    },
+    {
+      "blob_oid": "a369bc66e2f41d3669d58962975958828a87011e",
+      "path": "NumStability/Analysis/Perturbation/LeastSquares/Basic.lean"
+    },
+    {
+      "blob_oid": "810672db20412301200edf8311c1298779a0487b",
+      "path": "NumStability/Analysis/Perturbation/LeastSquares/Contract.lean"
+    },
+    {
+      "blob_oid": "0cca0f050f931431da19bc53217762546bc60df8",
+      "path": "NumStability/Analysis/Perturbation/LeastSquares/Equality/RowwiseBackwardError.lean"
+    },
+    {
+      "blob_oid": "be82b91442423f1f3da59ce7b4fd07fcac7543bd",
+      "path": "NumStability/Analysis/TestMatrices/Cauchy/Cauchy.lean"
+    },
+    {
+      "blob_oid": "3b239c464b8e355a09591c312a7f9f92f8ea0698",
+      "path": "NumStability/Analysis/TestMatrices/Cauchy/Contracts.lean"
+    },
+    {
+      "blob_oid": "b62d6b0ca621f446b24170083a2ac3883dd286de",
+      "path": "NumStability/Analysis/TestMatrices/Companion/Companion.lean"
+    },
+    {
+      "blob_oid": "8a87947b5d76d14c3202e7662faf13327aac0543",
+      "path": "NumStability/Analysis/TestMatrices/Companion/CompanionSpectral.lean"
+    },
+    {
+      "blob_oid": "49f6905af752ef5c88c198914afd0457d95ae7bb",
+      "path": "NumStability/Analysis/TestMatrices/Companion/Contracts.lean"
+    },
+    {
+      "blob_oid": "07eeceeb367a1a0613c8f1cf2e8366b18cdb78bf",
+      "path": "NumStability/Analysis/TestMatrices/Orthogonal/OrthogonalFibers.lean"
+    },
+    {
+      "blob_oid": "2e125cbb5500846f367a92e3e81b9e80783e7d3d",
+      "path": "NumStability/Analysis/TestMatrices/Pascal/Contracts.lean"
+    },
+    {
+      "blob_oid": "a8b04d3d5c7499cdc7b3bb9984a268e4c0bc42c0",
+      "path": "NumStability/Analysis/TestMatrices/Pascal/PascalDualFlag.lean"
+    },
+    {
+      "blob_oid": "ee60a8966cd50353f204216e803322a95c972d80",
+      "path": "NumStability/Analysis/TestMatrices/Pascal/PascalOscillation.lean"
+    },
+    {
+      "blob_oid": "32dace9306d6de6ff483bac7f9420a35531a6bc5",
+      "path": "NumStability/Analysis/TestMatrices/Pascal/PascalOscillationCore.lean"
+    },
+    {
+      "blob_oid": "1460155878c2574282f7f2453bf5b9dc0b190017",
+      "path": "NumStability/Analysis/TestMatrices/Pascal/PascalSpectral.lean"
+    },
+    {
+      "blob_oid": "03fd47820a021125621a3abdb952651405665a64",
+      "path": "NumStability/Analysis/TestMatrices/Pascal/PascalTotalPositivity.lean"
+    },
+    {
+      "blob_oid": "603886f9f430cfbb404625b0d217934a29561761",
+      "path": "NumStability/Analysis/TestMatrices/RandomSVD/Stewart.lean"
+    },
+    {
+      "blob_oid": "198c8d199251732a2d4c1bd1688c0d1ffaa1fc82",
+      "path": "NumStability/Analysis/TestMatrices/RandomSVD/StewartHaar.lean"
+    },
+    {
+      "blob_oid": "5b08cca1ce92bf4af07e179b20a8316c07d0388a",
+      "path": "NumStability/Analysis/TestMatrices/RandomSVD/StewartRecursion.lean"
+    },
+    {
+      "blob_oid": "4876e5135254376b47c61fc769a10976a2e773ef",
+      "path": "NumStability/Analysis/TestMatrices/RealGinibre/GinibreRoots.lean"
+    },
+    {
+      "blob_oid": "654d626645bca534df2f9afbd0c52153d537f899",
+      "path": "NumStability/Analysis/TestMatrices/Toeplitz/Contracts.lean"
+    },
+    {
+      "blob_oid": "c4f4cc5113e9810e458bacd5bcde372778cbc430",
+      "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation08/LeastSquaresSketch/Endpoints.lean"
+    },
+    {
+      "blob_oid": "be74f07ab28ac003cbe7487bd3e4d45e6c1fa598",
+      "path": "NumStability/Source/Higham/Chapter19/Algorithm12/MGSPaddedClosure.lean"
+    },
+    {
+      "blob_oid": "0e30d99d08709621b584c8352af3aaaa7caaefbe",
+      "path": "NumStability/Source/Higham/Chapter19/Labels.lean"
+    },
+    {
+      "blob_oid": "ce25541fbd9a4385b625d03ca85d28e1ee680719",
+      "path": "NumStability/Source/Higham/Chapter19/Lemma03/ActualSequence.lean"
+    },
+    {
+      "blob_oid": "417f0c79ed332e18938fca94730dc9638011103d",
+      "path": "NumStability/Source/Higham/Chapter19/PolarNearest.lean"
+    },
+    {
+      "blob_oid": "45467101b495cb1edfd7b0288495c90c23952127",
+      "path": "NumStability/Source/Higham/Chapter19/Problem09.lean"
+    },
+    {
+      "blob_oid": "509f169b124c45b2f64495d2bed5ff33b0cf3c66",
+      "path": "NumStability/Source/Higham/Chapter19/Sensitivity/Closure.lean"
+    },
+    {
+      "blob_oid": "66878f6e3e8e5af8a7d9f425dcd790d07c2e56e4",
+      "path": "NumStability/Source/Higham/Chapter19/StoredLoop/AllPivots.lean"
+    },
+    {
+      "blob_oid": "f234d9bcf91cd242d086d44164aa0f55682e95b9",
+      "path": "NumStability/Source/Higham/Chapter19/StoredLoop/StrongModel.lean"
+    },
+    {
+      "blob_oid": "a299dad0ba3d3e4bc1095117b5f2afc81a63a386",
+      "path": "NumStability/Source/Higham/Chapter19/Theorem06/CoxHigham.lean"
+    },
+    {
+      "blob_oid": "21a5fa03e53cfac48cd6f0abc7274b05cb2f0666",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem03/QRSolve.lean"
+    },
+    {
+      "blob_oid": "ffc39d7c698cc5eeddf4077c2b23c0ce80da7ddf",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07.lean"
+    },
+    {
+      "blob_oid": "e715a69dfef5279cb2b989a74b6f4dae2bdba571",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/ActualBackSub.lean"
+    },
+    {
+      "blob_oid": "a37d63131d420a0e1bf14d4f292d3114771c6d6b",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/ActualClosure.lean"
+    },
+    {
+      "blob_oid": "eb7b664721ea4ab0cda6a5acb064502352be4045",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/ActualRhs.lean"
+    },
+    {
+      "blob_oid": "6401c519421cd4a518f20e339f0a9b9e472c6830",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/ActualTrace.lean"
+    },
+    {
+      "blob_oid": "3967ec89fe2e4773bd5b0c1f699904f2e8e1dece",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/Contract.lean"
+    },
+    {
+      "blob_oid": "4fb999b61cf9ff0f781258d2c0c387ee1e2e035c",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/Elimination.lean"
+    },
+    {
+      "blob_oid": "66481a1864a70df2f4d1ce5de7af819e45eda3b3",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/QdR.lean"
+    },
+    {
+      "blob_oid": "32ca1ee6a7c25a04e1d1aa9e6d87ff0e790da7ec",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/RowPolicy.lean"
+    },
+    {
+      "blob_oid": "6456ad1e34fae81899253c3d3dac5256d50b9c03",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem07/SourceTrace.lean"
+    },
+    {
+      "blob_oid": "b61a45185b76bf38dc78946c02b287124c06a524",
+      "path": "NumStability/Source/Higham/Chapter28/Section01/Cauchy/Cauchy.lean"
+    },
+    {
+      "blob_oid": "4d705010f2acd639c661d7ee2e4488ad0d27ea84",
+      "path": "NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/Cauchy.lean"
+    },
+    {
+      "blob_oid": "fb8447f630d4cc616ae0587a5446cc9fdf36a6a7",
+      "path": "NumStability/Source/Higham/Chapter28/Section01/HilbertConditioning/HilbertCondition.lean"
+    },
+    {
+      "blob_oid": "8c79c8f25a2a379ce00b30aa7134f338b2642120",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/Ginibre.lean"
+    },
+    {
+      "blob_oid": "af991a049186e99af0ca0ab95bc3183d3b7dfee5",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreAbsoluteDetRecurrence.lean"
+    },
+    {
+      "blob_oid": "8de2bc325b31e82911ce4626c6c618cada72d50c",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCharacteristicProduct.lean"
+    },
+    {
+      "blob_oid": "bd30732ee7ef017094841325cb027b8a69fe16df",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreCorollary31Factor.lean"
+    },
+    {
+      "blob_oid": "c26c95d2779f53adcec5dfca2afb1d9b3dc42a1b",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreDeterminantMoment.lean"
+    },
+    {
+      "blob_oid": "f537cd26d306ed988f9d8398c4929dac049614a3",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreExpectationGlue.lean"
+    },
+    {
+      "blob_oid": "5779b009894dddd6ce10f28a3295b109b60f4221",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreFiniteFormula.lean"
+    },
+    {
+      "blob_oid": "fad513f8e21cbdd086bc8853571c9929ba5e848a",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreGaussianBridge.lean"
+    },
+    {
+      "blob_oid": "6b17617c17b42b7f3f35cbe1f98520f607f0d516",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreRecurrence.lean"
+    },
+    {
+      "blob_oid": "9aab9f29909a45ebf68486f95bea955925ec984b",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/FiniteExpectation/GinibreSignedExpectation.lean"
+    },
+    {
+      "blob_oid": "ed22b1eddcf7c0f7237479cd1b7d805bb5676ba1",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreIncidence.lean"
+    },
+    {
+      "blob_oid": "6f983194f2894d84ef7e9141fd259a66a5e4b8d6",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibrePlaneIncidence.lean"
+    },
+    {
+      "blob_oid": "3907708860c93f784a729da0e7e05990c641cf38",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreSignedIncidenceAlgebra.lean"
+    },
+    {
+      "blob_oid": "0d0f47643a0af6c89d64d91b3b081e32fa00714a",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/Incidence/GinibreTruncatedIncidence.lean"
+    },
+    {
+      "blob_oid": "c5edc153009ef3a2a52009ab35f8d1f1eb8b76c7",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreAtlas.lean"
+    },
+    {
+      "blob_oid": "2640b4b310d22c8fad6f52d7e0766032b13a43fa",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreComplexPairs.lean"
+    },
+    {
+      "blob_oid": "bd07135cbdf114b59d6364127b2b81b2cd1cffc1",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreDimensionTwo.lean"
+    },
+    {
+      "blob_oid": "7a83bc95b79a183913197f189b45236ad240b850",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibreOrthogonalFiber.lean"
+    },
+    {
+      "blob_oid": "dfea37ce880c7f16336a7d7e66ba2a39bed79767",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneChart.lean"
+    },
+    {
+      "blob_oid": "83854d17151c3c2d2987791279a7d242f2a798aa",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/InvariantPlanes/GinibrePlaneSylvester.lean"
+    },
+    {
+      "blob_oid": "f2afa6f63c6948b32ae71c2b121c08f9a5ca3a5e",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreJointDensity.lean"
+    },
+    {
+      "blob_oid": "74b9b888e3d3676a1e94875474e61c5958805551",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreMeasure.lean"
+    },
+    {
+      "blob_oid": "9517bccde170616ebbdba6502147816b5415a8a0",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/GinibreTraceDensity.lean"
+    },
+    {
+      "blob_oid": "5b77d9ade12c2e710553dc6efea723105f29ab03",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/ProbabilityLaw/Probability.lean"
+    },
+    {
+      "blob_oid": "383e2854ffc967d57bf22a17c541d90e3fa11240",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreMultiplicity.lean"
+    },
+    {
+      "blob_oid": "55a01b318171b6e020f8ae89df0ce885fd9704d5",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/RootMeasurability/GinibreRoots.lean"
+    },
+    {
+      "blob_oid": "76e32c316569c79f20e05c74b9ed97da8d53d983",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreParity.lean"
+    },
+    {
+      "blob_oid": "44ed54a84e7fb6a568bff89c1ada7610c2067f85",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedConclusion.lean"
+    },
+    {
+      "blob_oid": "dfddd08ced89a89a88ac23ac87af4bc56f7a8e71",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedGaussian.lean"
+    },
+    {
+      "blob_oid": "63c2f5c2871ea183ac2a5a6dd4c1f5fb9945b8d5",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedIncidence.lean"
+    },
+    {
+      "blob_oid": "4fabcb1fe440c87cf413d8191c39bb80673a909a",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedKernel.lean"
+    },
+    {
+      "blob_oid": "3d37c1daae51d18c58d17414d2cbbc7f3ab2fea5",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRank.lean"
+    },
+    {
+      "blob_oid": "39da9a0d6ba8159903fdcb16c379ba273aa7d86d",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedRankTransfer.lean"
+    },
+    {
+      "blob_oid": "c7051dc2b6ab8190e67de31af566e530c4352958",
+      "path": "NumStability/Source/Higham/Chapter28/Section02/RealGinibre/SignedIncidence/GinibreSignedScalar.lean"
+    },
+    {
+      "blob_oid": "b3a803a076ae19094e0c5a532771bdccc2e90d67",
+      "path": "NumStability/Source/Higham/Chapter28/Section03/RandomSVD/RandsvdNorm.lean"
+    },
+    {
+      "blob_oid": "61f612deac4343e0938aadcc8761490e158f58d5",
+      "path": "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/GaussianQRHaar.lean"
+    },
+    {
+      "blob_oid": "e694a890ff2c56ddd2305f3fd7eaa0473d610338",
+      "path": "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/Stewart.lean"
+    },
+    {
+      "blob_oid": "07a87715a301eda3a1ff593e149f63b94afc94e4",
+      "path": "NumStability/Source/Higham/Chapter28/Section03/Theorem01/StewartHaar/StewartRawFiber.lean"
+    },
+    {
+      "blob_oid": "35be0d94f347e4d93b5d80052b0c9cd30f2553bf",
+      "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalCondition.lean"
+    },
+    {
+      "blob_oid": "ccec0247f61cbf829a4bc8dd21b6f5b1c009d957",
+      "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalOscillation.lean"
+    },
+    {
+      "blob_oid": "f750ddb90e3bdba6af6cfdb62a4cf3a51f3f602c",
+      "path": "NumStability/Source/Higham/Chapter28/Section04/Pascal/PascalSpectral.lean"
+    },
+    {
+      "blob_oid": "3f3f3c07841e288f33c9cbeed0149fec067c570a",
+      "path": "NumStability/Source/Higham/Chapter28/Section04/ReciprocalSpectrumSPD/ReciprocalSPD.lean"
+    },
+    {
+      "blob_oid": "350c4e6c4541d235a7aee2cb2ffab5985a808327",
+      "path": "NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzCondition.lean"
+    },
+    {
+      "blob_oid": "0da6ffa54f383444aacf5234d5e531d741768ffa",
+      "path": "NumStability/Source/Higham/Chapter28/Section05/TridiagonalToeplitz/ToeplitzGeneral.lean"
+    },
+    {
+      "blob_oid": "46141bb9875187d15a74bb2ce5015909111774d3",
+      "path": "NumStability/Source/Higham/Chapter28/Section06/Companion/Companion.lean"
+    },
+    {
+      "blob_oid": "12fc87f7f00ad68446eb93cadfc4395970db472c",
+      "path": "NumStability/Source/Higham/Chapter28/Section06/Companion/CompanionSpectral.lean"
+    },
+    {
+      "blob_oid": "35510507568f31138cd2b1a6fc7c8979a0deef9e",
+      "path": "NumStabilityTest.lean"
+    },
+    {
+      "blob_oid": "b40517b9c686313ceb4a62ed61c8cdd3b0f4181e",
+      "path": "docs/architecture/COMPATIBILITY.md"
+    },
+    {
+      "blob_oid": "889291c1fe69d5b8b61b6a49bae48e9ee0d03dfc",
+      "path": "docs/architecture/layout-exceptions.json"
+    },
+    {
+      "blob_oid": "02d7332452b1117017e16150b7b2827f43bfcf30",
+      "path": "docs/architecture/tiers.json"
+    }
+  ],
+  "rationale": "Primary-human R11 shared-file postimages independently defined against exact C0001 code preimage 117aa2bb7e61f41e1531a78452f9f7f6cd5b0771. Path-list SHA-256 B98B986ED724D1B90DB2C368E4ADAE6046002DD05820883D0A8B1EBD445714FD; exact patch SHA-256 E1BFBF147D61FFE2CA08090B91DE362A2C089709221624AB2F9B36F9F4E2F4D3; postimage manifest SHA-256 6799789E9E739095C49E409799F17D723C4EE038E2E341105BD38595F26CC5D2; reviewed union patch SHA-256 A6AB1307D19CBF2BEDDA37EAC8C68FFB405292B405E068908E6E4F15406A3E3B; union manifest SHA-256 7279EDF6AF7277C2A4DD45286AEE97878EBFD025A89B240A6A644EE6FB665701; union review SHA-256 5B43D44B16496CAEACB14DE98FB4472B1698E18C3708B3BCD058C64C119F59DB. The request performs exactly 209 occurrences of five reviewed import mappings across 129 consumers, registers R11 tests and tiers, updates three compatibility targets, and ratchets the exact R11 layout debt. Integration authority applies only after immutable worker delivery validation.",
+  "record_kind": "shared_file_request",
+  "request_id": "R0003",
+  "requester_id": "primary-human",
+  "resolution": {
+    "checkpoint_id": null,
+    "commit_sha": null,
+    "reason": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "validation_evidence": []
+  },
+  "schema_version": 1,
+  "status": "active",
+  "superseded_by": null,
+  "supersedes": null,
+  "target_base_sha": "117aa2bb7e61f41e1531a78452f9f7f6cd5b0771",
+  "target_checkpoint_id": "C0001",
+  "valid_through_checkpoint_id": "C0001",
+  "wave_id": "R11"
+}
