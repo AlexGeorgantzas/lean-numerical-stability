@@ -1,0 +1,51 @@
+{
+ "base": "b1b18772d80185ec08f49c818919558645c330a1",
+ "retarget": {
+  "NumStability.Algorithms.NormEstimation.PNorm.Endpoints.ConvergenceStatements": "NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Square",
+  "NumStability.Algorithms.NormEstimation.PNorm.Endpoints.PNormRectangular": "NumStability.Algorithms.NormEstimation.PNorm.OneAndInfinityNorms.Rectangular"
+ },
+ "rows": [
+  {
+   "path": "NumStability/Algorithms/NormEstimation/PNorm/All.lean",
+   "c0000_blob": "4eda7a200ae121a3c7994d4ab87a4c372a41c7ba",
+   "changed": true,
+   "postimage_sha256": "D28918C3A5FBBA3950C34E7F661DDACE783CBCF8718F03B10E532F9BBE2634D5",
+   "endpoint_refs_before": 2,
+   "endpoint_refs_after": 0
+  },
+  {
+   "path": "NumStability/Algorithms/NormEstimation/PNorm/Rectangular/RectangularTermination.lean",
+   "c0000_blob": "4b414e0eb93182cc7d689d9581a70e0d69651319",
+   "changed": true,
+   "postimage_sha256": "A44599F9371D7932DCE3F4B30DE831319E758892EEBDED2F36647209D0ADED87",
+   "endpoint_refs_before": 1,
+   "endpoint_refs_after": 0
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter15/Lemma02/PNormPowerMethod/PNormRectangular.lean",
+   "c0000_blob": "70f68de272fb9c8197bb62354be29aaadc994392",
+   "changed": true,
+   "postimage_sha256": "B3A6F5833A753DA08779FAB8912CA335092B96332951BDECE82E32EDD1C2DB02",
+   "endpoint_refs_before": 1,
+   "endpoint_refs_after": 0
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/ConvergenceStatements.lean",
+   "c0000_blob": "dd968f7c98891b48a8253db4c060f605538e4f28",
+   "changed": true,
+   "postimage_sha256": "992550C29CE832AF7C922DD4A09C67AF6BDEDB3C9DDCCFB09A717F7657D03DE2",
+   "endpoint_refs_before": 1,
+   "endpoint_refs_after": 0
+  },
+  {
+   "path": "NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/RectangularTermination.lean",
+   "c0000_blob": "d6d736df901bfe9891b57852e3b36213c17b8988",
+   "changed": true,
+   "postimage_sha256": "040EA7580F2F27BE3E4324759C723F27530E32E0C2AFBC2A5A7EE196670E5E1F",
+   "endpoint_refs_before": 2,
+   "endpoint_refs_after": 0
+  }
+ ],
+ "reach_before": 5,
+ "reach_after": 0
+}

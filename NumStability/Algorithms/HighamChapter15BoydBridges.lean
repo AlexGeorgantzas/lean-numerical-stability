@@ -17,11 +17,10 @@ import NumStability.Source.Higham.Chapter15.Section02.Boyd.GlobalConvergence.Boy
 import NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.BoydInterface
 
 /-!
-# HighamChapter15BoydBridges (compatibility module)
+# HighamChapter15BoydBridges (compatibility wrapper)
 
-Import-only module retained so existing imports of `NumStability.Algorithms.HighamChapter15BoydBridges`
-keep resolving. Every declaration moved unchanged to the canonical
-modules imported above. The module's own original imports are
-re-stated so consumers reaching an identifier transitively through
-this path still see the same surface.
+Declaration-free reviewed owner. Its imports are normalized to the exact
+canonical and source targets that now hold the material it used to reach
+through historical paths, and the historical path itself is retained so
+existing imports of `NumStability.Algorithms.HighamChapter15BoydBridges` keep resolving. This module declares nothing.
 -/
