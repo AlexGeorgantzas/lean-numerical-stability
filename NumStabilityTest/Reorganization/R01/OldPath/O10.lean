@@ -1,0 +1,17 @@
+import NumStability.Analysis.SemiconvergentRealSpectrumComplete
+
+/-!
+# R01 historical-only import test O10
+
+Imports exactly the historical owner `NumStability.Analysis.SemiconvergentRealSpectrumComplete` and checks its complete preserved public surface.
+-/
+
+#check NumStability.basisActionMatrix_complement_eq_toMatrix_restrict
+#check NumStability.charpoly_restrict_dvd_of_isCompl
+#check NumStability.exists_complIndex_of_not_lt
+#check NumStability.matPow_G_tendsto_oneEigenProjector_of_convergence_real_spectrum
+#check NumStability.orthogonalChangeOfBasis
+#check NumStability.orthogonalChangeOfBasisEquiv
+#check NumStability.restrict_upperTri_diag_abs_lt_one
+#check NumStability.semiconvergent_block_form_exists_of_convergence_real_spectrum
+#check NumStability.toMatrix_orthogonalChangeOfBasis

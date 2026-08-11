@@ -1,0 +1,43 @@
+import NumStability.Algorithms.StationaryIterationSeries
+import NumStability.Source.Higham.Chapter17.Results.Series
+
+/-!
+# R01 historical stationary-iteration series consumer
+
+Checks the complete public surface of the six historical equation umbrellas through the protected series consumer.
+-/
+
+#check NumStability.summable_infNorm_matPow
+#check NumStability.tsum_infNorm_matPow_le
+#check NumStability.CAValues
+#check NumStability.CAValues_nonempty_of_entry_lower_bound
+#check NumStability.cALiteral
+#check NumStability.cALiteral_mem
+#check NumStability.cALiteral_nonneg
+#check NumStability.isClosed_CAValues
+#check NumStability.matPow_entry_mul_sum_le_geometric
+#check NumStability.partialSumBound_cALiteral
+#check NumStability.partialSumBound_of_stationarySeriesEntry_le
+#check NumStability.stationarySeriesEntry
+#check NumStability.stationarySeriesEntry_le
+#check NumStability.stationarySeriesEntry_nonneg
+#check NumStability.summable_matPow_entry_mul
+#check NumStability.literal_norm_form_forward_bound
+#check NumStability.literal_norm_form_jacobi_forward_bound
+#check NumStability.literal_norm_form_gaussSeidel_forward_bound
+#check NumStability.literal_norm_form_sor_forward_bound
+#check NumStability.bddAbove_residualSigmaValues
+#check NumStability.finiteResidualSigmaMatrix_le_residualSigmaMatrix
+#check NumStability.finiteResidualSigmaMatrix_nonneg
+#check NumStability.finiteResidualSigma_le_infNorm_residualSigmaMatrix
+#check NumStability.infNorm_residualSigmaMatrix_eq_residualSigmaSup
+#check NumStability.infNorm_residualSigmaMatrix_le_residualSigmaSup
+#check NumStability.residualSigmaEntry
+#check NumStability.residualSigmaEntry_nonneg
+#check NumStability.residualSigmaMatrix
+#check NumStability.residualSigmaSup_le_infNorm_residualSigmaMatrix
+#check NumStability.residualSigmaTsum_eq_infNorm_residualSigmaMatrix
+#check NumStability.residualSigmaTsum_eq_residualSigmaSup
+#check NumStability.residualSigmaTsum_le_diagonalizable_max_bound_of_infNorm_bound
+#check NumStability.residual_entry_abs_le_geometric
+#check NumStability.summable_residualSigmaEntry

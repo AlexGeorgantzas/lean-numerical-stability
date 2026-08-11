@@ -1,0 +1,23 @@
+import NumStability.Source.Higham.Chapter17.Equation20
+
+/-!
+# R01 historical-only import test O16
+
+Imports exactly the historical owner `NumStability.Source.Higham.Chapter17.Equation20` and checks its complete preserved public surface.
+-/
+
+#check NumStability.bddAbove_residualSigmaValues
+#check NumStability.finiteResidualSigmaMatrix_le_residualSigmaMatrix
+#check NumStability.finiteResidualSigmaMatrix_nonneg
+#check NumStability.finiteResidualSigma_le_infNorm_residualSigmaMatrix
+#check NumStability.infNorm_residualSigmaMatrix_eq_residualSigmaSup
+#check NumStability.infNorm_residualSigmaMatrix_le_residualSigmaSup
+#check NumStability.residualSigmaEntry
+#check NumStability.residualSigmaEntry_nonneg
+#check NumStability.residualSigmaMatrix
+#check NumStability.residualSigmaSup_le_infNorm_residualSigmaMatrix
+#check NumStability.residualSigmaTsum_eq_infNorm_residualSigmaMatrix
+#check NumStability.residualSigmaTsum_eq_residualSigmaSup
+#check NumStability.residualSigmaTsum_le_diagonalizable_max_bound_of_infNorm_bound
+#check NumStability.residual_entry_abs_le_geometric
+#check NumStability.summable_residualSigmaEntry
