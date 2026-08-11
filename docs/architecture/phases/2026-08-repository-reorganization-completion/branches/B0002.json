@@ -10568,18 +10568,18 @@
     "reviewed_checkpoint_id": "C0000"
   },
   "retirement": {
-    "ancestry_checkpoint_id": null,
+    "ancestry_checkpoint_id": "C0001",
     "remote_ref": "refs/heads/codex/reorg-completion-2026-08-r02-norm-estimation-ch15",
-    "retired_at": null,
-    "retired_by": null,
+    "retired_at": "2026-08-11T22:34:24Z",
+    "retired_by": "primary-human",
     "rule": "delivery_ancestor_of_green_checkpoint",
-    "status": "due"
+    "status": "retired"
   },
   "schema_version": 1,
   "shared_request_ids": [
     "R0002",
     "R0002T"
   ],
-  "status": "accepted",
+  "status": "retired",
   "wave_id": "R02"
 }

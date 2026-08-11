@@ -5,10 +5,15 @@ The active operating contract is the
 selected by [`active-phase.json`](active-phase.json). It is rooted at C0000 on
 accepted predecessor code commit
 `b1b18772d80185ec08f49c818919558645c330a1`; its current checkpoint is C0001
-at green code commit `117aa2bb7e61f41e1531a78452f9f7f6cd5b0771`. C0001 accepts R01/R02 and
-leaves their branch retirement due until the acceptance-control commit is
-green. This successor has precedence over dated migration packets and
-historical handoffs.
+at green code commit `117aa2bb7e61f41e1531a78452f9f7f6cd5b0771`. C0001 accepts R01/R02. After
+acceptance-control commit `93883eb0ec69a01704ff24ac71713a03f0be5a49`
+passed Lean CI run 31542177523 (job 93946871439), B0001/B0002 were retired at
+`2026-08-11T22:34:24Z`; their exact remote refs were deleted with expected-tip
+leases and verified absent. Their ignored evidence is archived under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0001-R01-R02-20260811`,
+and both clean named worker worktrees were removed without force. Local branch
+refs remain preserved at the immutable delivery tips. This successor has
+precedence over dated migration packets and historical handoffs.
 
 The immutable predecessor
 [`2026-08 repository reorganization`](2026-08-repository-reorganization/README.md)
