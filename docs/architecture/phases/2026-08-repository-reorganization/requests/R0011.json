@@ -1,0 +1,105 @@
+{
+  "blocks": [
+    "W10"
+  ],
+  "created_at": "2026-08-10T10:53:53Z",
+  "depends_on": [
+    "M03",
+    "M09"
+  ],
+  "lane_id": "remote-lane",
+  "patch": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/requests/R0011.patch",
+    "sha256": "71D9BD0B68C82848DAD3EBA4260A3F81FC4EF302524A68D14A449332BDA97F7A"
+  },
+  "paths": [
+    "NumStability/Algorithms/NormEstimation.lean",
+    "NumStability/Algorithms/NormEstimation/PNorm.lean",
+    "NumStability/Algorithms/NormEstimation/PNorm/All.lean",
+    "NumStability/Algorithms/NormEstimation/PNorm/Boyd.lean",
+    "NumStability/Algorithms/NormEstimation/TwoNorm.lean",
+    "NumStability/Algorithms/NormEstimation/TwoNorm/All.lean",
+    "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon.lean",
+    "NumStability/Source/Higham.lean",
+    "NumStability/Source/Higham/Chapter15.lean",
+    "NumStabilityTest.lean",
+    "NumStabilityTest/Reorganization/W10.lean",
+    "docs/architecture/layout-exceptions.json",
+    "docs/architecture/tiers.json"
+  ],
+  "phase_id": "repository-reorganization-2026-08",
+  "preimage_blobs": [
+    {
+      "blob_oid": "4b0177b71c16ef1b56f43a34bb8d1b1fa705a0c2",
+      "path": "NumStability/Algorithms/NormEstimation.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/NormEstimation/PNorm.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/NormEstimation/PNorm/All.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/NormEstimation/PNorm/Boyd.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/NormEstimation/TwoNorm.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/NormEstimation/TwoNorm/All.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon.lean"
+    },
+    {
+      "blob_oid": "8e8fe02ca14854d7c9193cd3673c0150aa538bc9",
+      "path": "NumStability/Source/Higham.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStability/Source/Higham/Chapter15.lean"
+    },
+    {
+      "blob_oid": "a3e450a3790c414dfee8f2c6eb8f1fee7e9cec74",
+      "path": "NumStabilityTest.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/W10.lean"
+    },
+    {
+      "blob_oid": "bbedd2a796aa7b003f89193e746599140fb03524",
+      "path": "docs/architecture/layout-exceptions.json"
+    },
+    {
+      "blob_oid": "c1afc0ad364fc908364114bfd63c5e0a2058baee",
+      "path": "docs/architecture/tiers.json"
+    }
+  ],
+  "rationale": "Apply W10's exact NormEstimation, Chapter 15, and 135-test discovery wiring plus reviewed tier/layout changes independently against C0007. Accepted consumers and the historical root aggregate remain unchanged. R0011 intersects R0010 only on NumStabilityTest.lean, tiers.json, and layout-exceptions.json; those postimages are reconciled as reviewed unions. The accepted W06 OneNorm/All destination is preserved as a separately reviewed W06/W10 overlap because phase schema version 1 forbids reclassifying it as shared. Exact integration evidence: docs/architecture/phases/2026-08-repository-reorganization/requests/R0011-overlap-review.md, SHA-256 BFA2C7D38F12AE7D95EEE6755A7CC7ED0D15FB43ED4033B314F4BD2204DEA740.",
+  "record_kind": "shared_file_request",
+  "request_id": "R0011",
+  "requester_id": "claude-remote",
+  "resolution": {
+    "checkpoint_id": null,
+    "commit_sha": null,
+    "reason": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "validation_evidence": []
+  },
+  "schema_version": 1,
+  "status": "active",
+  "superseded_by": null,
+  "supersedes": null,
+  "target_base_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+  "target_checkpoint_id": "C0007",
+  "valid_through_checkpoint_id": "C0007",
+  "wave_id": "W10"
+}

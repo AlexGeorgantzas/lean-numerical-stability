@@ -9,8 +9,10 @@ Its current accepted checkpoint is C0007 at code commit
 and M11 are accepted; M07 and M10 remain ready. B0011/W07 and B0012/W10 are
 delivered from exact C0007 at immutable tips
 `176c72838828795b89f4aa822479010c7860c8e5` and
-`9e7604cbdbd2314bc4bf38bcd9e342c3accfb1d6`, respectively, but are not yet
-integrated or accepted; P0012/P0013 remain active. B0008/W04,
+`9e7604cbdbd2314bc4bf38bcd9e342c3accfb1d6`, respectively. Separate true merge
+commits preserve both deliveries, and active C0007-based requests R0010/R0011
+record the reviewed integrator-owned union, but neither wave is accepted yet;
+P0012/P0013 remain active. B0008/W04,
 B0009/W09, and B0010/W11 are accepted at C0007 and retired;
 P0009/P0010/P0011 are retired and R0007/R0008/R0009 are applied. After the
 C0007 acceptance-control commit passed Lean CI, their three exact remote refs

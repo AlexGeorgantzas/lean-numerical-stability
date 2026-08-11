@@ -10,12 +10,19 @@ Two mutually disjoint transports have delivered from exact C0007 code commit
 `ac3bc1063c7d9aa1c7a0c12a85337c858b6f9200` passed
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31300495624)
 before both remote refs were initialized at that exact code SHA and the sole
-authorized local W07 worktree was created clean at the same SHA. W10 remains
-remote-only with no local worktree. Active-control commit
+authorized local W07 worktree was created clean at the same SHA. W10's assigned
+worker lane remained remote-only with no authorized local worker checkout.
+After delivery intake, a clean local integrator recovery/correction checkout
+at `C:\Users\qed_s\w10-worker` was used to materialize the corrected immutable
+W10 tip; it is not a worker-lane checkout or retirement target and remains
+preserved. Active-control commit
 `cb5fa161bcf6827c7d15e61df9dd9ded34f39327` passed
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31300899785)
 before work began. Their immutable delivery tips and hash-pinned packet
-evidence are recorded below; neither is integrated or accepted yet:
+evidence are recorded below. Separate true merge commits
+`9399c0531c6c6431e3f8def33fae1df3fbb060a6` and
+`25ea10390ab118dbfc3ecf2c05ba9e33fbe1e626` preserve W07 and W10,
+respectively; neither branch is accepted yet:
 
 - [`B0011`](B0011.json): W07 local-lane branch
   `codex/reorg-2026-08-w07-stationary-ch17`, five exact historical owners, 34
@@ -27,18 +34,25 @@ evidence are recorded below; neither is integrated or accepted yet:
   `codex/reorg-2026-08-w10-norm-estimation-ch15`, 27 exact historical owners,
   43 reviewed production destinations plus W10 test/delivery prefixes, owner
   `remote-human`, sole operator `claude-remote`, and immutable delivery
-  `9e7604cbdbd2314bc4bf38bcd9e342c3accfb1d6`. No local W10 worktree is
-  authorized.
+  `9e7604cbdbd2314bc4bf38bcd9e342c3accfb1d6`. No local W10 worker checkout was
+  authorized; the post-delivery integrator recovery/correction checkout at
+  `C:\Users\qed_s\w10-worker` remains preserved outside retirement.
 
-Both records have hash-pinned delivery fields, null integration fields, empty
-`shared_request_ids`, and retirement `not_due`; P0012 and P0013 remain active
-pending integration. Their independent hash-pinned
+Both records have hash-pinned delivery fields, null integration fields, one
+active shared request each (R0010 for W07 and R0011 for W10), and retirement
+`not_due`; P0012 and P0013 remain active pending acceptance. Their independent hash-pinned
 reviews [`B0011-overlap-review.md`](B0011-overlap-review.md) and
 [`B0012-overlap-review.md`](B0012-overlap-review.md) reproduce the C0007
 selectors/projections and prove zero owner, destination, direct-import,
 signature-edge, and body/proof-edge overlap in either direction. Their sole
 common direct production consumer is the integrator-owned
 `NumStability/Algorithms.lean`.
+
+R0010 and R0011 are independently C0007-based and replay forward and reverse
+against exact C0007 preimages. They intersect only on `NumStabilityTest.lean`,
+`docs/architecture/tiers.json`, and
+`docs/architecture/layout-exceptions.json`; those three integrated postimages
+are reviewed unions rather than sequential patch replacements.
 
 Three mutually disjoint branches were implemented from exact C0006 code commit
 `a32095e6e50189f7dcc39312bb4c6a36f421fab5` and accepted through separate true

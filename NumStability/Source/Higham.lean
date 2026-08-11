@@ -12,6 +12,7 @@ import NumStability.Source.Higham.Chapter11
 import NumStability.Source.Higham.Chapter12
 import NumStability.Source.Higham.Chapter13
 import NumStability.Source.Higham.Chapter14
+import NumStability.Source.Higham.Chapter15
 import NumStability.Source.Higham.Chapter16
 import NumStability.Source.Higham.Chapter17
 import NumStability.Source.Higham.Chapter18

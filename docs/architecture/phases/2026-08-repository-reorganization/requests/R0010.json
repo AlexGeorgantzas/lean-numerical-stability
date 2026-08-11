@@ -1,0 +1,69 @@
+{
+  "blocks": [
+    "W07"
+  ],
+  "created_at": "2026-08-10T10:53:53Z",
+  "depends_on": [
+    "M06"
+  ],
+  "lane_id": "local-lane",
+  "patch": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization/requests/R0010.patch",
+    "sha256": "E05687DC8959C8B3B24DE30E996553A780839CB2C501D5A0BBBF6A39B40BF425"
+  },
+  "paths": [
+    "NumStability/Algorithms/LinearSystems.lean",
+    "NumStability/Source/Higham/Chapter17.lean",
+    "NumStabilityTest.lean",
+    "NumStabilityTest/Reorganization/W07.lean",
+    "docs/architecture/layout-exceptions.json",
+    "docs/architecture/tiers.json"
+  ],
+  "phase_id": "repository-reorganization-2026-08",
+  "preimage_blobs": [
+    {
+      "blob_oid": "fd3b04b44f419223d6470c2609552f63e42868fd",
+      "path": "NumStability/Algorithms/LinearSystems.lean"
+    },
+    {
+      "blob_oid": "be9b42ad5f8149dbc409e8c8fa6467443cf9da0e",
+      "path": "NumStability/Source/Higham/Chapter17.lean"
+    },
+    {
+      "blob_oid": "a3e450a3790c414dfee8f2c6eb8f1fee7e9cec74",
+      "path": "NumStabilityTest.lean"
+    },
+    {
+      "blob_oid": null,
+      "path": "NumStabilityTest/Reorganization/W07.lean"
+    },
+    {
+      "blob_oid": "bbedd2a796aa7b003f89193e746599140fb03524",
+      "path": "docs/architecture/layout-exceptions.json"
+    },
+    {
+      "blob_oid": "c1afc0ad364fc908364114bfd63c5e0a2058baee",
+      "path": "docs/architecture/tiers.json"
+    }
+  ],
+  "rationale": "Apply W07's exact stationary-iteration and Chapter 17 discovery wiring, 48-test root, tier classifications, and reviewed layout delta independently against C0007. R0010 intersects R0011 only on NumStabilityTest.lean, tiers.json, and layout-exceptions.json; those postimages are reconciled as reviewed unions. Exact integration evidence: docs/architecture/phases/2026-08-repository-reorganization/requests/R0010-overlap-review.md, SHA-256 8D8BF1D34FFF61444CC66CAB66BFFCB5E6BF9D55A31453EC32349CED5B5A6B18.",
+  "record_kind": "shared_file_request",
+  "request_id": "R0010",
+  "requester_id": "codex-local",
+  "resolution": {
+    "checkpoint_id": null,
+    "commit_sha": null,
+    "reason": null,
+    "resolved_at": null,
+    "resolved_by": null,
+    "validation_evidence": []
+  },
+  "schema_version": 1,
+  "status": "active",
+  "superseded_by": null,
+  "supersedes": null,
+  "target_base_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",
+  "target_checkpoint_id": "C0007",
+  "valid_through_checkpoint_id": "C0007",
+  "wave_id": "W07"
+}

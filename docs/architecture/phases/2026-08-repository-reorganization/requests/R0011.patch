@@ -1,0 +1,477 @@
+diff --git a/NumStability/Algorithms/NormEstimation.lean b/NumStability/Algorithms/NormEstimation.lean
+index 4b0177b71..507b0603f 100644
+--- a/NumStability/Algorithms/NormEstimation.lean
++++ b/NumStability/Algorithms/NormEstimation.lean
+@@ -1,0 +2,2 @@ import NumStability.Algorithms.NormEstimation.OneNorm
++import NumStability.Algorithms.NormEstimation.PNorm
++import NumStability.Algorithms.NormEstimation.TwoNorm
+diff --git a/NumStability/Algorithms/NormEstimation/PNorm.lean b/NumStability/Algorithms/NormEstimation/PNorm.lean
+new file mode 100644
+index 000000000..238fcf62b
+--- /dev/null
++++ b/NumStability/Algorithms/NormEstimation/PNorm.lean
+@@ -0,0 +1,7 @@
++import NumStability.Algorithms.NormEstimation.PNorm.All
++
++/-!
++# Algorithms.NormEstimation.PNorm
++
++Declaration-free W10 discovery aggregate for reusable p-norm estimation.
++-/
+diff --git a/NumStability/Algorithms/NormEstimation/PNorm/All.lean b/NumStability/Algorithms/NormEstimation/PNorm/All.lean
+new file mode 100644
+index 000000000..4eda7a200
+--- /dev/null
++++ b/NumStability/Algorithms/NormEstimation/PNorm/All.lean
+@@ -0,0 +1,25 @@
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd
++import NumStability.Algorithms.NormEstimation.PNorm.Convergence.BoydConcrete
++import NumStability.Algorithms.NormEstimation.PNorm.Convergence.BoydInterface
++import NumStability.Algorithms.NormEstimation.PNorm.Convergence.ConvergenceStatements
++import NumStability.Algorithms.NormEstimation.PNorm.Duality.BoydInterface
++import NumStability.Algorithms.NormEstimation.PNorm.Duality.BoydUniqueness
++import NumStability.Algorithms.NormEstimation.PNorm.Duality.ConvergenceStatements
++import NumStability.Algorithms.NormEstimation.PNorm.Duality.PNormGeneral
++import NumStability.Algorithms.NormEstimation.PNorm.Duality.PNormPowerMethod
++import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.ConvergenceStatements
++import NumStability.Algorithms.NormEstimation.PNorm.Endpoints.PNormRectangular
++import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.BoydConcrete
++import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.BoydInterface
++import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.PNormGeneral
++import NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.PNormPowerMethod
++import NumStability.Algorithms.NormEstimation.PNorm.Rectangular.BoydInterface
++import NumStability.Algorithms.NormEstimation.PNorm.Rectangular.PNormGeneral
++import NumStability.Algorithms.NormEstimation.PNorm.Rectangular.PNormRectangular
++import NumStability.Algorithms.NormEstimation.PNorm.Rectangular.RectangularTermination
++
++/-!
++# Algorithms.NormEstimation.PNorm.All
++
++Reviewed W10 discovery entry point for the reusable p-norm estimation family.
++-/
+diff --git a/NumStability/Algorithms/NormEstimation/PNorm/Boyd.lean b/NumStability/Algorithms/NormEstimation/PNorm/Boyd.lean
+new file mode 100644
+index 000000000..e6bab03ff
+--- /dev/null
++++ b/NumStability/Algorithms/NormEstimation/PNorm/Boyd.lean
+@@ -0,0 +1,26 @@
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.Carrier.BoydInterface
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.Carrier.BoydLocal
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.Differentiation.BoydDomain
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.Differentiation.BoydInterface
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.Differentiation.BoydLocal
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.Differentiation.PNormGeneral
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.FixedPoints.BoydConcrete
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.FixedPoints.BoydInterface
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.FixedPoints.BoydLocal
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.LocalStability.BoydConcrete
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.LocalStability.BoydInterface
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.LocalStability.BoydLocal
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.LocalStability.BoydLocalStability
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.RowwiseDomain.Basic
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.Scalar.BoydDomain
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.Scalar.BoydLocal
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.Scalar.BoydRowwise
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.SecondVariation.BoydConcrete
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.SecondVariation.BoydLocal
++import NumStability.Algorithms.NormEstimation.PNorm.Boyd.Uniqueness.Basic
++
++/-!
++# Algorithms.NormEstimation.PNorm.Boyd
++
++Reviewed W10 discovery entry point for the reusable Boyd p-norm family.
++-/
+diff --git a/NumStability/Algorithms/NormEstimation/TwoNorm.lean b/NumStability/Algorithms/NormEstimation/TwoNorm.lean
+new file mode 100644
+index 000000000..3ecbe300b
+--- /dev/null
++++ b/NumStability/Algorithms/NormEstimation/TwoNorm.lean
+@@ -0,0 +1,7 @@
++import NumStability.Algorithms.NormEstimation.TwoNorm.All
++
++/-!
++# Algorithms.NormEstimation.TwoNorm
++
++Declaration-free W10 discovery aggregate for reusable two-norm estimation.
++-/
+diff --git a/NumStability/Algorithms/NormEstimation/TwoNorm/All.lean b/NumStability/Algorithms/NormEstimation/TwoNorm/All.lean
+new file mode 100644
+index 000000000..61d4a5841
+--- /dev/null
++++ b/NumStability/Algorithms/NormEstimation/TwoNorm/All.lean
+@@ -0,0 +1,7 @@
++import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon
++
++/-!
++# Algorithms.NormEstimation.TwoNorm.All
++
++Reviewed W10 discovery entry point for the reusable two-norm estimation family.
++-/
+diff --git a/NumStability/Algorithms/NormEstimation/TwoNorm/Dixon.lean b/NumStability/Algorithms/NormEstimation/TwoNorm/Dixon.lean
+new file mode 100644
+index 000000000..3d24cc45b
+--- /dev/null
++++ b/NumStability/Algorithms/NormEstimation/TwoNorm/Dixon.lean
+@@ -0,0 +1,12 @@
++import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon.Algebra.CondEstimators
++import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon.Algebra.DixonCompletion
++import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon.PowerBounds.CondEstimators
++import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon.PowerBounds.DixonCompletion
++import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon.Probability.DixonCompletion
++import NumStability.Algorithms.NormEstimation.TwoNorm.Dixon.Probability.DixonProbability
++
++/-!
++# Algorithms.NormEstimation.TwoNorm.Dixon
++
++Reviewed W10 discovery entry point for the reusable Dixon two-norm family.
++-/
+diff --git a/NumStability/Source/Higham.lean b/NumStability/Source/Higham.lean
+index 8e8fe02ca..abd69c1a7 100644
+--- a/NumStability/Source/Higham.lean
++++ b/NumStability/Source/Higham.lean
+@@ -14,0 +15 @@ import NumStability.Source.Higham.Chapter14
++import NumStability.Source.Higham.Chapter15
+diff --git a/NumStability/Source/Higham/Chapter15.lean b/NumStability/Source/Higham/Chapter15.lean
+new file mode 100644
+index 000000000..5b6cc8970
+--- /dev/null
++++ b/NumStability/Source/Higham/Chapter15.lean
+@@ -0,0 +1,54 @@
++import NumStability.Source.Higham.Chapter15.Algorithm01.PNormPowerMethod.ConvergenceStatements
++import NumStability.Source.Higham.Chapter15.Algorithm01.PNormPowerMethod.PNormPowerMethod
++import NumStability.Source.Higham.Chapter15.Algorithm01.PNormPowerMethod.PNormRectangular
++import NumStability.Source.Higham.Chapter15.Algorithm03.OneNormPowerMethod.Basic
++import NumStability.Source.Higham.Chapter15.Algorithm04.LAPACKNormEstimator.Basic
++import NumStability.Source.Higham.Chapter15.Algorithm05.LINPACKConditionEstimator.Basic
++import NumStability.Source.Higham.Chapter15.Equation02.Subgradient.PNormGeneral
++import NumStability.Source.Higham.Chapter15.Equation02.Subgradient.PNormPowerMethod
++import NumStability.Source.Higham.Chapter15.Equation03.GradientQuotient.ConvergenceStatements
++import NumStability.Source.Higham.Chapter15.Equation03.GradientQuotient.PNormGeneral
++import NumStability.Source.Higham.Chapter15.Equation03.GradientQuotient.PNormPowerMethod
++import NumStability.Source.Higham.Chapter15.Equation04.NormalizedDualDiscrepancy.Basic
++import NumStability.Source.Higham.Chapter15.Equation05.SubgradientInequality.Basic
++import NumStability.Source.Higham.Chapter15.Equation06.LAPACKCounterexample.Basic
++import NumStability.Source.Higham.Chapter15.Equation07.DixonBound.Basic
++import NumStability.Source.Higham.Chapter15.Lemma02.PNormPowerMethod.BoydInterface
++import NumStability.Source.Higham.Chapter15.Lemma02.PNormPowerMethod.BoydUniqueness
++import NumStability.Source.Higham.Chapter15.Lemma02.PNormPowerMethod.PNormPowerMethod
++import NumStability.Source.Higham.Chapter15.Lemma02.PNormPowerMethod.PNormRectangular
++import NumStability.Source.Higham.Chapter15.Problem04.LUConditionBounds.Basic
++import NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.TridiagonalInverse
++import NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.TridiagonalInverseCompletion
++import NumStability.Source.Higham.Chapter15.Problem06.TridiagonalInverseNorm.TridiagonalInverseRuns
++import NumStability.Source.Higham.Chapter15.Section01.ConditionNumbers.CondEstimation
++import NumStability.Source.Higham.Chapter15.Section01.ConditionNumbers.ConditionEstimators
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.Corrections.BoydConcrete
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.Corrections.BoydLocal
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.Corrections.BoydLocalStability
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.Corrections.ConvergenceStatements
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.EndpointTermination.ConvergenceStatements
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.EndpointTermination.RectangularTermination
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.GlobalConvergence.BoydInterface
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.GlobalConvergence.BoydUniqueness
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.GlobalConvergence.ConvergenceStatements
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.BoydConcrete
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.BoydInterface
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.BoydLocal
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.LocalConvergence.BoydLocalStability
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.BoydCompletion
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.BoydConcrete
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.BoydDomain
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.BoydLocal
++import NumStability.Source.Higham.Chapter15.Section02.Boyd.SourceDomain.BoydRowwise
++import NumStability.Source.Higham.Chapter15.Theorem06.Dixon.Basic
++import NumStability.Source.Higham.Chapter15.Theorem07.TridiagonalLU.Basic
++import NumStability.Source.Higham.Chapter15.Theorem08.TridiagonalDiagonalDominance.Basic
++import NumStability.Source.Higham.Chapter15.Theorem09.Ikebe.Basic
++
++/-!
++# Higham Chapter 15 source correspondence
++
++Complete canonical entry point for the Chapter 15 source-correspondence leaves
++currently migrated into `NumStability.Source.Higham`.
++-/
+diff --git a/NumStabilityTest.lean b/NumStabilityTest.lean
+index a3e450a37..99a343d07 100644
+--- a/NumStabilityTest.lean
++++ b/NumStabilityTest.lean
+@@ -548,0 +549 @@ import NumStabilityTest.Reorganization.W09
++import NumStabilityTest.Reorganization.W10
+diff --git a/NumStabilityTest/Reorganization/W10.lean b/NumStabilityTest/Reorganization/W10.lean
+new file mode 100644
+index 000000000..82c912436
+--- /dev/null
++++ b/NumStabilityTest/Reorganization/W10.lean
+@@ -0,0 +1,141 @@
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationOneNormFiniteIndexBasic
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationOneNormLAPACKBasic
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationOneNormLINPACKBasic
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationOneNormPowerMethodCondEstimation
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationOneNormPowerMethodPNormPowerMethod
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydCarrierBoydInterface
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydCarrierBoydLocal
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydDifferentiationBoydDomain
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydDifferentiationBoydInterface
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydDifferentiationBoydLocal
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydDifferentiationPNormGeneral
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydFixedPointsBoydConcrete
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydFixedPointsBoydInterface
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydFixedPointsBoydLocal
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydLocalStabilityBoydConcrete
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydLocalStabilityBoydInterface
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydLocalStabilityBoydLocal
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydLocalStabilityBoydLocalStability
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydRowwiseDomainBasic
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydScalarBoydDomain
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydScalarBoydLocal
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydScalarBoydRowwise
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydSecondVariationBoydConcrete
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydSecondVariationBoydLocal
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormBoydUniquenessBasic
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormConvergenceBoydConcrete
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormConvergenceBoydInterface
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormConvergenceConvergenceStatements
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormDualityBoydInterface
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormDualityBoydUniqueness
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormDualityConvergenceStatements
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormDualityPNormGeneral
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormDualityPNormPowerMethod
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormEndpointsConvergenceStatements
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormEndpointsPNormRectangular
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormPowerMethodBoydConcrete
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormPowerMethodBoydInterface
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormPowerMethodPNormGeneral
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormPowerMethodPNormPowerMethod
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormRectangularBoydInterface
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormRectangularPNormGeneral
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormRectangularPNormRectangular
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationPNormRectangularRectangularTermination
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationTwoNormDixonAlgebraCondEstimators
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationTwoNormDixonAlgebraDixonCompletion
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationTwoNormDixonPowerBoundsCondEstimators
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationTwoNormDixonPowerBoundsDixonCompletion
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationTwoNormDixonProbabilityDixonCompletion
++import NumStabilityTest.Reorganization.W10.Canonical.AlgorithmsNormEstimationTwoNormDixonProbabilityDixonProbability
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Algorithm01PNormPowerMethodConvergenceStatements
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Algorithm01PNormPowerMethodPNormPowerMethod
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Algorithm01PNormPowerMethodPNormRectangular
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Algorithm03OneNormPowerMethodBasic
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Algorithm04LAPACKNormEstimatorBasic
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Algorithm05LINPACKConditionEstimatorBasic
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Equation02SubgradientPNormGeneral
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Equation02SubgradientPNormPowerMethod
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Equation03GradientQuotientConvergenceStatements
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Equation03GradientQuotientPNormGeneral
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Equation03GradientQuotientPNormPowerMethod
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Equation04NormalizedDualDiscrepancyBasic
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Equation05SubgradientInequalityBasic
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Equation06LAPACKCounterexampleBasic
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Equation07DixonBoundBasic
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Lemma02PNormPowerMethodBoydInterface
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Lemma02PNormPowerMethodBoydUniqueness
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Lemma02PNormPowerMethodPNormPowerMethod
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Lemma02PNormPowerMethodPNormRectangular
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Problem04LUConditionBoundsBasic
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Problem06TridiagonalInverseNormTridiagonalInverse
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Problem06TridiagonalInverseNormTridiagonalInverseCompletion
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Problem06TridiagonalInverseNormTridiagonalInverseRuns
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section01ConditionNumbersCondEstimation
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section01ConditionNumbersConditionEstimators
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydCorrectionsBoydConcrete
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydCorrectionsBoydLocal
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydCorrectionsBoydLocalStability
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydCorrectionsConvergenceStatements
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydEndpointTerminationConvergenceStatements
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydEndpointTerminationRectangularTermination
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydGlobalConvergenceBoydInterface
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydGlobalConvergenceBoydUniqueness
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydGlobalConvergenceConvergenceStatements
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydLocalConvergenceBoydConcrete
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydLocalConvergenceBoydInterface
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydLocalConvergenceBoydLocal
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydLocalConvergenceBoydLocalStability
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydSourceDomainBoydCompletion
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydSourceDomainBoydConcrete
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydSourceDomainBoydDomain
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydSourceDomainBoydLocal
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Section02BoydSourceDomainBoydRowwise
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Theorem06DixonBasic
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Theorem07TridiagonalLUBasic
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Theorem08TridiagonalDiagonalDominanceBasic
++import NumStabilityTest.Reorganization.W10.Canonical.SourceHighamChapter15Theorem09IkebeBasic
++import NumStabilityTest.Reorganization.W10.Focused.AcceptedConsumers
++import NumStabilityTest.Reorganization.W10.Focused.Boyd
++import NumStabilityTest.Reorganization.W10.Focused.Chapter15Numbered
++import NumStabilityTest.Reorganization.W10.Focused.Dixon
++import NumStabilityTest.Reorganization.W10.Focused.GeneralIndexRetarget
++import NumStabilityTest.Reorganization.W10.Focused.OneNorm
++import NumStabilityTest.Reorganization.W10.Focused.PNorm
++import NumStabilityTest.Reorganization.W10.Focused.PNormEndpoints
++import NumStabilityTest.Reorganization.W10.Focused.RectangularTermination
++import NumStabilityTest.Reorganization.W10.Focused.RetainedPrivateClosure
++import NumStabilityTest.Reorganization.W10.Focused.W06ProtectedSurface
++import NumStabilityTest.Reorganization.W10.Focused.W09CanonicalDependency
++import NumStabilityTest.Reorganization.W10.OldPath.Ch15CondEstimators
++import NumStabilityTest.Reorganization.W10.OldPath.Ch15DixonClosure
++import NumStabilityTest.Reorganization.W10.OldPath.Ch15DixonProbability
++import NumStabilityTest.Reorganization.W10.OldPath.Chapter15CondEst
++import NumStabilityTest.Reorganization.W10.OldPath.CondEstimation
++import NumStabilityTest.Reorganization.W10.OldPath.Higham15Problem15_4
++import NumStabilityTest.Reorganization.W10.OldPath.Higham15Problem15_6
++import NumStabilityTest.Reorganization.W10.OldPath.Higham15Problem15_6Closure
++import NumStabilityTest.Reorganization.W10.OldPath.Higham15Problem15_6Operational
++import NumStabilityTest.Reorganization.W10.OldPath.HighamChapter15BoydBridges
++import NumStabilityTest.Reorganization.W10.OldPath.HighamChapter15BoydConcreteLemma3
++import NumStabilityTest.Reorganization.W10.OldPath.HighamChapter15BoydLocalStability
++import NumStabilityTest.Reorganization.W10.OldPath.HighamChapter15BoydRowwiseDomain
++import NumStabilityTest.Reorganization.W10.OldPath.HighamChapter15BoydScalar
++import NumStabilityTest.Reorganization.W10.OldPath.HighamChapter15BoydSourceClosure
++import NumStabilityTest.Reorganization.W10.OldPath.HighamChapter15BoydSourceDomain
++import NumStabilityTest.Reorganization.W10.OldPath.HighamChapter15BoydSourceLocal
++import NumStabilityTest.Reorganization.W10.OldPath.HighamChapter15BoydSourceSecondDerivative
++import NumStabilityTest.Reorganization.W10.OldPath.HighamChapter15BoydUniqueness
++import NumStabilityTest.Reorganization.W10.OldPath.HighamChapter15ConvergenceProse
++import NumStabilityTest.Reorganization.W10.OldPath.HighamChapter15RectTermination
++import NumStabilityTest.Reorganization.W10.OldPath.PNormPowerMethod
++import NumStabilityTest.Reorganization.W10.OldPath.PNormPowerMethodGeneralP
++import NumStabilityTest.Reorganization.W10.OldPath.PNormPowerMethodRect
++import NumStabilityTest.Reorganization.W10.OldPath.TridiagonalCondCh15
++import NumStabilityTest.Reorganization.W10.OldPath.TridiagonalCondCh15Closure
++import NumStabilityTest.Reorganization.W10.OldPath.TridiagonalCondCh15IkebeClosure
++
++/-!
++# W10 reorganization tests
++
++Declaration-free aggregate for the complete W10 delivery test matrix.
++-/
+diff --git a/docs/architecture/layout-exceptions.json b/docs/architecture/layout-exceptions.json
+index bbedd2a79..13db13891 100644
+--- a/docs/architecture/layout-exceptions.json
++++ b/docs/architecture/layout-exceptions.json
+@@ -299,7 +298,0 @@
+-      "NumStability.Algorithms.Ch15CondEstimators",
+-      "NumStability.Algorithms.Ch15DixonClosure",
+-      "NumStability.Algorithms.CondEstimation",
+-      "NumStability.Algorithms.HighamChapter15BoydScalar",
+-      "NumStability.Algorithms.HighamChapter15BoydSourceClosure",
+-      "NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative",
+-      "NumStability.Algorithms.HighamChapter15BoydUniqueness",
+@@ -307,6 +299,0 @@
+-      "NumStability.Algorithms.LU.Higham15Problem15_4",
+-      "NumStability.Algorithms.LU.Higham15Problem15_6Closure",
+-      "NumStability.Algorithms.LU.Higham15Problem15_6Operational",
+-      "NumStability.Algorithms.LU.TridiagonalCondCh15",
+-      "NumStability.Algorithms.LU.TridiagonalCondCh15Closure",
+-      "NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure",
+@@ -319 +305,0 @@
+-      "NumStability.Algorithms.PNormPowerMethodRect",
+@@ -391,0 +378,16 @@
++      "NumStability.Algorithms.Ch15CondEstimators",
++      "NumStability.Algorithms.Ch15DixonClosure",
++      "NumStability.Algorithms.Ch15DixonProbability",
++      "NumStability.Algorithms.Chapter15CondEst",
++      "NumStability.Algorithms.HighamChapter15BoydBridges",
++      "NumStability.Algorithms.HighamChapter15BoydConcreteLemma3",
++      "NumStability.Algorithms.HighamChapter15BoydLocalStability",
++      "NumStability.Algorithms.HighamChapter15BoydRowwiseDomain",
++      "NumStability.Algorithms.HighamChapter15BoydScalar",
++      "NumStability.Algorithms.HighamChapter15BoydSourceClosure",
++      "NumStability.Algorithms.HighamChapter15BoydSourceDomain",
++      "NumStability.Algorithms.HighamChapter15BoydSourceLocal",
++      "NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative",
++      "NumStability.Algorithms.HighamChapter15BoydUniqueness",
++      "NumStability.Algorithms.HighamChapter15ConvergenceProse",
++      "NumStability.Algorithms.HighamChapter15RectTermination",
+@@ -392,0 +395,10 @@
++      "NumStability.Algorithms.LU.Higham15Problem15_4",
++      "NumStability.Algorithms.LU.Higham15Problem15_6",
++      "NumStability.Algorithms.LU.Higham15Problem15_6Closure",
++      "NumStability.Algorithms.LU.Higham15Problem15_6Operational",
++      "NumStability.Algorithms.LU.TridiagonalCondCh15",
++      "NumStability.Algorithms.LU.TridiagonalCondCh15Closure",
++      "NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure",
++      "NumStability.Algorithms.PNormPowerMethod",
++      "NumStability.Algorithms.PNormPowerMethodGeneralP",
++      "NumStability.Algorithms.PNormPowerMethodRect",
+@@ -488,0 +501,2 @@
++      "NumStability.Algorithms.NormEstimation.PNorm.Endpoints.ConvergenceStatements",
++      "NumStability.Algorithms.NormEstimation.PNorm.Endpoints.PNormRectangular",
+@@ -715,3 +728,0 @@
+-      "NumStability.Algorithms.Ch15CondEstimators",
+-      "NumStability.Algorithms.Ch15DixonClosure",
+-      "NumStability.Algorithms.Ch15DixonProbability",
+@@ -720 +730,0 @@
+-      "NumStability.Algorithms.Chapter15CondEst",
+@@ -730 +739,0 @@
+-      "NumStability.Algorithms.CondEstimation",
+@@ -737,12 +745,0 @@
+-      "NumStability.Algorithms.HighamChapter15BoydBridges",
+-      "NumStability.Algorithms.HighamChapter15BoydConcreteLemma3",
+-      "NumStability.Algorithms.HighamChapter15BoydLocalStability",
+-      "NumStability.Algorithms.HighamChapter15BoydRowwiseDomain",
+-      "NumStability.Algorithms.HighamChapter15BoydScalar",
+-      "NumStability.Algorithms.HighamChapter15BoydSourceClosure",
+-      "NumStability.Algorithms.HighamChapter15BoydSourceDomain",
+-      "NumStability.Algorithms.HighamChapter15BoydSourceLocal",
+-      "NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative",
+-      "NumStability.Algorithms.HighamChapter15BoydUniqueness",
+-      "NumStability.Algorithms.HighamChapter15ConvergenceProse",
+-      "NumStability.Algorithms.HighamChapter15RectTermination",
+@@ -753,7 +749,0 @@
+-      "NumStability.Algorithms.LU.Higham15Problem15_4",
+-      "NumStability.Algorithms.LU.Higham15Problem15_6",
+-      "NumStability.Algorithms.LU.Higham15Problem15_6Closure",
+-      "NumStability.Algorithms.LU.Higham15Problem15_6Operational",
+-      "NumStability.Algorithms.LU.TridiagonalCondCh15",
+-      "NumStability.Algorithms.LU.TridiagonalCondCh15Closure",
+-      "NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure",
+@@ -770,3 +759,0 @@
+-      "NumStability.Algorithms.PNormPowerMethod",
+-      "NumStability.Algorithms.PNormPowerMethodGeneralP",
+-      "NumStability.Algorithms.PNormPowerMethodRect",
+diff --git a/docs/architecture/tiers.json b/docs/architecture/tiers.json
+index c1afc0ad3..8f685daca 100644
+--- a/docs/architecture/tiers.json
++++ b/docs/architecture/tiers.json
+@@ -1404 +1404,35 @@
+-    "NumStability.Source.Higham.Chapter28.Section06.Companion.CompanionSpectral": "source"
++    "NumStability.Source.Higham.Chapter28.Section06.Companion.CompanionSpectral": "source",
++    "NumStability.Algorithms.Ch15CondEstimators": "mixed",
++    "NumStability.Algorithms.Ch15DixonClosure": "mixed",
++    "NumStability.Algorithms.Ch15DixonProbability": "mixed",
++    "NumStability.Algorithms.Chapter15CondEst": "mixed",
++    "NumStability.Algorithms.CondEstimation": "reusable",
++    "NumStability.Algorithms.HighamChapter15BoydBridges": "mixed",
++    "NumStability.Algorithms.HighamChapter15BoydConcreteLemma3": "mixed",
++    "NumStability.Algorithms.HighamChapter15BoydLocalStability": "mixed",
++    "NumStability.Algorithms.HighamChapter15BoydRowwiseDomain": "mixed",
++    "NumStability.Algorithms.HighamChapter15BoydScalar": "mixed",
++    "NumStability.Algorithms.HighamChapter15BoydSourceClosure": "mixed",
++    "NumStability.Algorithms.HighamChapter15BoydSourceDomain": "mixed",
++    "NumStability.Algorithms.HighamChapter15BoydSourceLocal": "mixed",
++    "NumStability.Algorithms.HighamChapter15BoydSourceSecondDerivative": "mixed",
++    "NumStability.Algorithms.HighamChapter15BoydUniqueness": "mixed",
++    "NumStability.Algorithms.HighamChapter15ConvergenceProse": "mixed",
++    "NumStability.Algorithms.HighamChapter15RectTermination": "mixed",
++    "NumStability.Algorithms.LU.Higham15Problem15_4": "mixed",
++    "NumStability.Algorithms.LU.Higham15Problem15_6": "mixed",
++    "NumStability.Algorithms.LU.Higham15Problem15_6Closure": "mixed",
++    "NumStability.Algorithms.LU.Higham15Problem15_6Operational": "mixed",
++    "NumStability.Algorithms.LU.TridiagonalCondCh15": "mixed",
++    "NumStability.Algorithms.LU.TridiagonalCondCh15Closure": "mixed",
++    "NumStability.Algorithms.LU.TridiagonalCondCh15IkebeClosure": "mixed",
++    "NumStability.Algorithms.NormEstimation.PNorm": "aggregate",
++    "NumStability.Algorithms.NormEstimation.PNorm.All": "aggregate",
++    "NumStability.Algorithms.NormEstimation.PNorm.Boyd": "aggregate",
++    "NumStability.Algorithms.NormEstimation.TwoNorm": "aggregate",
++    "NumStability.Algorithms.NormEstimation.TwoNorm.All": "aggregate",
++    "NumStability.Algorithms.NormEstimation.TwoNorm.Dixon": "aggregate",
++    "NumStability.Algorithms.PNormPowerMethod": "mixed",
++    "NumStability.Algorithms.PNormPowerMethodGeneralP": "mixed",
++    "NumStability.Algorithms.PNormPowerMethodRect": "mixed",
++    "NumStability.Source.Higham.Chapter15": "aggregate"
+@@ -1497,0 +1532,4 @@
++    },
++    {
++      "prefix": "NumStability.Algorithms.NormEstimation.",
++      "tier": "reusable"

@@ -147,9 +147,11 @@ planned-control commit
 `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5` passed Lean CI; the activation
 commits remain absent from every worker branch.
 
-P0012 and P0013 remain active while B0011/W07 and B0012/W10 are delivered but
-not yet integrated. Both deliveries are based on the exact C0007 code SHA. The
+P0012 and P0013 remain active while B0011/W07 and B0012/W10 are delivered and
+preserved through separate true merges but not yet accepted. Both deliveries
+are based on the exact C0007 code SHA. The
 projection records are control evidence on
 `main`; they are never copied into worker history. Their deterministic streams
-must be replayed against each immutable delivery candidate and later against
-the same integrated candidate before the next checkpoint can be accepted.
+have been replayed against each immutable delivery candidate and must next be
+replayed, without argument changes other than the candidate path, against the
+same final integrated candidate before C0008 can be accepted.

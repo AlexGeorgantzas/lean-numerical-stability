@@ -544,8 +544,10 @@ import NumStabilityTest.Reorganization.W03
 import NumStabilityTest.Reorganization.W04
 import NumStabilityTest.Reorganization.W05
 import NumStabilityTest.Reorganization.W06
+import NumStabilityTest.Reorganization.W07
 import NumStabilityTest.Reorganization.W08
 import NumStabilityTest.Reorganization.W09
+import NumStabilityTest.Reorganization.W10
 import NumStabilityTest.Reorganization.W11
 import NumStabilityTest.Reorganization.W12
 import NumStabilityTest.Worker.Ch09.Layers1To5

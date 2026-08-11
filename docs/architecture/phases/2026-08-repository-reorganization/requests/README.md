@@ -10,12 +10,18 @@ R0001 and R0002 are terminal applied records that retroactively register the
 exact, hash-pinned integrator-owned deltas accepted at C0003 for W02 and at
 C0004 for W12, respectively.
 
-Delivered B0011/W07 and B0012/W10 have empty `shared_request_ids`; delivery
-intake does not itself create a formal C0007-based W07 or W10 request. Workers
-kept global aggregates, test roots, tier/layout manifests, phase controls, CI,
-and accepted consumers untouched. Required deltas are reported in immutable
-delivery evidence and remain to be independently created and hash-pinned here
-by the integration authority against C0007.
+Delivered B0011/W07 and B0012/W10 link active R0010 and R0011, respectively.
+Workers kept global aggregates, test roots, tier/layout manifests, phase
+controls, CI, and accepted consumers untouched. Both requests are independently
+hash-pinned against exact C0007 and replay forward and reverse. Their only
+intersections are `NumStabilityTest.lean`, `docs/architecture/tiers.json`, and
+`docs/architecture/layout-exceptions.json`; the integrated postimages are
+reviewed unions rather than sequential patch applications.
+The immutable W10 worker packet also requests the accepted W06 destination
+`NumStability/Algorithms/NormEstimation/OneNorm/All.lean`. Schema version 1
+correctly prevents reclassifying that historical destination as shared, so its
+exact postimage is tracked in the R0011 overlap review and integrated as a
+separate W06/W10 overlap outside the 13-path formal request.
 
 | Request | Wave | Requester / lane | Status | Target | Valid through | Paths | Patch SHA-256 | Blocks |
 | --- | --- | --- | --- | --- | --- | ---: | --- | --- |
@@ -26,6 +32,14 @@ by the integration authority against C0007.
 | [`R0007`](R0007.json) | W04 | `codex-remote` / `remote-lane` | applied | C0006 / `a32095e6e50189f7dcc39312bb4c6a36f421fab5` | C0006 | 8 | `5EB1ACF5C24D51ACB7F2FD6A258E8D53A2EFEBE09E77116539B4D85DE0D8114C` | W04 |
 | [`R0008`](R0008.json) | W09 | `claude-local` / `local-lane` | applied | C0006 / `a32095e6e50189f7dcc39312bb4c6a36f421fab5` | C0006 | 6 | `BB602D4C854416DDA7F6FC7D69445093A53F496931718C34461BE476A32BF3AC` | W09 |
 | [`R0009`](R0009.json) | W11 | `codex-local` / `local-lane` | applied | C0006 / `a32095e6e50189f7dcc39312bb4c6a36f421fab5` | C0006 | 7 | `E98E798A177831802DA9F36B1753EA1D31BDE707F17F0DF55E63D6DC6B4CDB68` | W11 |
+| [`R0010`](R0010.json) | W07 | `codex-local` / `local-lane` | active | C0007 / `9eb534a06db267203c2b9b88227edd44fc64f5db` | C0007 | 6 | `E05687DC8959C8B3B24DE30E996553A780839CB2C501D5A0BBBF6A39B40BF425` | W07 |
+| [`R0011`](R0011.json) | W10 | `claude-remote` / `remote-lane` | active | C0007 / `9eb534a06db267203c2b9b88227edd44fc64f5db` | C0007 | 13 | `71D9BD0B68C82848DAD3EBA4260A3F81FC4EF302524A68D14A449332BDA97F7A` | W10 |
+
+R0010 and R0011 apply independently to exact C0007. Their hash-pinned overlap
+reviews are [`R0010-overlap-review.md`](R0010-overlap-review.md) and
+[`R0011-overlap-review.md`](R0011-overlap-review.md). The requests remain
+active until the joint integrated code commit passes Lean CI and C0008 accepts
+their resolution; request application alone does not authorize branch deletion.
 
 Both patches are independently based on C0004 and apply cleanly to a fresh
 C0004 index. They are phase-control artifacts on main and were intentionally

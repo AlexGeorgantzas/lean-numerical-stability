@@ -4,7 +4,8 @@ Status: **ACTIVE**. Checkpoint C0007 accepts green code commit
 `9eb534a06db267203c2b9b88227edd44fc64f5db`. M01, M02, M03, M04, M05, M06,
 M08, M09, M11, and M12 are accepted; M07 and M10 are ready with active
 C0007-based projections and delivered transports B0011/W07 and B0012/W10,
-but remain unintegrated and unaccepted; repository-wide completion remains
+now preserved through separate true merges but still unaccepted;
+repository-wide completion remains
 incomplete. B0006/W06 delivery
 `436b38cbda2e06cf5c9ea3343f0bc6fe428f0b97` and B0007/W08 delivery
 `664d5d495975a05d74cd4c0c09f9207aff8cdd77` were integrated by separate true
@@ -31,13 +32,24 @@ disjoint C0007 ownership, reviewed destinations, and still-active P0012/P0013
 projections. Their immutable delivery tips are
 `176c72838828795b89f4aa822479010c7860c8e5` and
 `9e7604cbdbd2314bc4bf38bcd9e342c3accfb1d6`, and their hash-pinned delivery
-packets are tracked on `main`; neither delivery is integrated or accepted yet.
+packets are tracked on `main`.
+The immutable tips are preserved as second parents of true merge commits
+`9399c0531c6c6431e3f8def33fae1df3fbb060a6` (W07) and
+`25ea10390ab118dbfc3ecf2c05ba9e33fbe1e626` (W10). Active, independently
+C0007-based shared requests R0010 and R0011 record the integrator-owned
+discovery, test-root, tier, and layout changes; their only three intersections
+are reconciled as reviewed unions. Acceptance remains pending the full joint
+gate set and green code CI.
 Planned-control commit `ac3bc1063c7d9aa1c7a0c12a85337c858b6f9200`
 passed [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31300495624);
 only then were both worker refs initialized at the exact C0007 code SHA and the
 clean W07 worktree created at
-`C:\Users\qed_s\higham-worktrees\reorg-w07-codex`. W10 remains remote-only and
-has no authorized local worktree. Active-control commit
+`C:\Users\qed_s\higham-worktrees\reorg-w07-codex`. W10's assigned worker lane
+remained remote-only and had no authorized local worker checkout during
+implementation. After delivery intake, the clean local integrator
+recovery/correction checkout `C:\Users\qed_s\w10-worker` was used to
+materialize the corrected immutable W10 tip. It is not a worker-lane checkout
+or a retirement target and remains preserved. Active-control commit
 `cb5fa161bcf6827c7d15e61df9dd9ded34f39327` passed
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31300899785)
 before either worker began.
@@ -108,8 +120,9 @@ evidence for the bounded work they completed.
   [`P0012`](projections/P0012.json) and
   [`P0013`](projections/P0013.json), selected by
   [`W07.tsv`](selectors/W07.tsv) and [`W10.tsv`](selectors/W10.tsv). Both
-  records have hash-pinned delivery fields, null integration fields, no shared
-  request, and retirement `not_due`.
+  records have hash-pinned delivery fields, null integration fields, linked
+  active requests [`R0010`](requests/R0010.json) and
+  [`R0011`](requests/R0011.json), and retirement `not_due`.
   No prose packet overrides these records.
 - [`check_phase.py`](../../../../tools/architecture/check_phase.py) validates
   the complete phase state;
@@ -286,7 +299,10 @@ before either worker ref or the W07 worktree was created. Both worker refs
 began at exact C0007 code SHA `9eb534a06db267203c2b9b88227edd44fc64f5db`,
 never a later control commit. The sole authorized local W07 worktree at
 `C:\Users\qed_s\higham-worktrees\reorg-w07-codex` began clean at that SHA; W10
-is remote-only and has no authorized local worktree. Active-control commit
+remained assigned to the remote lane with no authorized local worker checkout.
+The later clean integrator recovery/correction checkout at
+`C:\Users\qed_s\w10-worker` is preserved outside worker retirement.
+Active-control commit
 `cb5fa161bcf6827c7d15e61df9dd9ded34f39327` passed Lean CI before work began.
 
 ## Classification warning

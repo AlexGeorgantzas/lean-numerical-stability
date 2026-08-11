@@ -673,6 +673,30 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Algorithms/NormEstimation/PNorm.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/NormEstimation/PNorm/All.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/NormEstimation/PNorm/Boyd.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/NormEstimation/TwoNorm.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/NormEstimation/TwoNorm/All.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/NormEstimation/TwoNorm/Dixon.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Algorithms/Sylvester.lean"
     },
     {
@@ -1177,6 +1201,10 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter15.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Source/Higham/Chapter16.lean"
     },
     {
@@ -1234,6 +1262,10 @@
     {
       "match": "exact",
       "path": "NumStability/Source/Higham/Chapter16/Section05.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter17.lean"
     },
     {
       "match": "exact",
@@ -1305,11 +1337,19 @@
     },
     {
       "match": "exact",
+      "path": "NumStabilityTest/Reorganization/W07.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStabilityTest/Reorganization/W08.lean"
     },
     {
       "match": "exact",
       "path": "NumStabilityTest/Reorganization/W09.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStabilityTest/Reorganization/W10.lean"
     },
     {
       "match": "exact",
