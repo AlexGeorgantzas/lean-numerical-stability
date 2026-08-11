@@ -1,0 +1,37 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.PrimarySplitting
+
+/-!
+# R01 canonical-only import test C11
+
+Imports exactly the frozen canonical leaf `NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.PrimarySplitting` and checks every public declaration routed there.
+-/
+
+#check NumStability.adaptEquiv
+#check NumStability.adaptEquiv_inl_val
+#check NumStability.adaptEquiv_inr_val
+#check NumStability.adaptedBasis
+#check NumStability.adaptedBasis_hEig
+#check NumStability.adaptedBasis_hInv
+#check NumStability.adaptedBasis_mem_E₁
+#check NumStability.adaptedBasis_mem_F
+#check NumStability.adaptedBasis_repr_lt_r_of_mem_F
+#check NumStability.adaptedSumBasis
+#check NumStability.adaptedSumBasis_inl
+#check NumStability.adaptedSumBasis_inr
+#check NumStability.adaptedSumBasis_repr_inl_of_mem_F
+#check NumStability.basisActionMatrix
+#check NumStability.basisColMatrix
+#check NumStability.basisColMatrix_colBot
+#check NumStability.basisColMatrix_colTop
+#check NumStability.basisColMatrix_isRightInverse
+#check NumStability.basisRowMatrix
+#check NumStability.basisRowMatrix_isRightInverse
+#check NumStability.basis_coord_expansion
+#check NumStability.exists_real_primary_splitting_of_forall_orbit_tendsto
+#check NumStability.matMul_basisColMatrix_eq_mulVec
+#check NumStability.matPow_G_tendsto_oneEigenProjector_of_convergence_and_complement_normal_form
+#check NumStability.rotationScaling_rowSum_eq
+#check NumStability.semiconvergent_block_form_exists_of_adapted_basis
+#check NumStability.semiconvergent_block_form_exists_of_convergence_and_complement_normal_form
+#check NumStability.twoByTwo_infNorm_reducible_iff
+#check NumStability.twoByTwo_max_rowSum_ge_of_trace_det

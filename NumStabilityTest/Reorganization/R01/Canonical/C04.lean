@@ -1,0 +1,18 @@
+import NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.Projectors.FixedRange
+
+/-!
+# R01 canonical-only import test C04
+
+Imports exactly the frozen canonical leaf `NumStability.Algorithms.LinearSystems.Iterative.Stationary.Semiconvergence.Projectors.FixedRange` and checks every public declaration routed there.
+-/
+
+#check NumStability.stationaryDrazinFixedProjector_fixed_by_G
+#check NumStability.stationaryDrazinFixedProjector_idempotent
+#check NumStability.stationaryDrazinFixedProjector_matMulVec_fixed
+#check NumStability.stationaryDrazinFixedProjector_matPow_fixed
+#check NumStability.stationaryDrazinRangeProjector_commutes_with_G
+#check NumStability.stationaryDrazinRangeProjector_commutes_with_matPow
+#check NumStability.stationaryDrazinRangeProjector_matPow_sandwich
+#check NumStability.stationaryDrazinRangeProjector_null_component_fixed
+#check NumStability.stationaryDrazin_matPow_vec_split
+#check NumStability.stationaryDrazin_matPow_vec_tendsto_fixedProjector_of_range_tendsto_zero

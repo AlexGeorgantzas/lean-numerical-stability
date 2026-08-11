@@ -1,0 +1,16 @@
+import NumStability.Source.Higham.Chapter17.Results.Section01.RoundedExecution
+
+/-!
+# R01 canonical-only import test C07
+
+Imports exactly the frozen canonical leaf `NumStability.Source.Higham.Chapter17.Results.Section01.RoundedExecution` and checks every public declaration routed there.
+-/
+
+#check NumStability.flStationaryIterationLower_actual_forward_bound
+#check NumStability.flStationaryIterationLower_localErrorBound
+#check NumStability.flStationaryIterationUpper_actual_forward_bound
+#check NumStability.flStationaryIterationUpper_localErrorBound
+#check NumStability.localErrorBound_of_roundedStationarySolveCertificate
+#check NumStability.sourceComputedIteration_actual_forward_bound
+#check NumStability.sourceComputedIteration_actual_norm_forward_bound
+#check NumStability.stationaryLocalError_sourceComputedIteration

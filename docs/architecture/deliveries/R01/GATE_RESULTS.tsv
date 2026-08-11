@@ -1,0 +1,28 @@
+phase	gate	command	jobs	mutex	exit	seconds	result	notes
+authority	planned_control_ci	GitHub Actions Lean CI run 31480013380 / job 93742561898		-	0		pass	planned-control ea5d5e6a646f701f8844067349e8d10bf799ea0a completed success
+authority	active_control_ci	GitHub Actions Lean CI run 31480852798 / job 93745203356		-	0		pass	active-control daf5c92355e26c07ab0d219c20cd6ce6782b98f3 completed success
+development	matrix_initial	lake build <41 exact TEST_MATRIX.tsv targets>	6083	Local\lean-reorganization-2026-08	1	561.900	corrected	40 targets built; private focused test attempted to parse numeric private-name components directly
+development	private_normalization_final	lake build NumStabilityTest.Reorganization.R01.Focused.PrivateNormalization	3417	Local\lean-reorganization-2026-08	0	21.811	pass	exact ten internal Lean.Name values found in environment; ten public reverse dependents checked
+tests	exact_matrix_final	lake build <41 exact TEST_MATRIX.tsv targets>	6083	Local\lean-reorganization-2026-08	0	10.228	pass	20 canonical-only + 16 old-only + 5 focused; 49 imports and 748 checks
+tests	canonical_only	lake build <20 canonical-only TEST_MATRIX.tsv targets>	3466	Local\lean-reorganization-2026-08	0	4.801	pass	one isolated test per canonical declaration leaf
+tests	old_path_only	lake build <16 old-only TEST_MATRIX.tsv targets>	3478	Local\lean-reorganization-2026-08	0	4.973	pass	one isolated test per historical owner/umbrella
+tests	focused	lake build <5 focused TEST_MATRIX.tsv targets>	6047	Local\lean-reorganization-2026-08	0	8.001	pass	public names, private normalization, Equation22, series consumer, roots
+repository	library	lake build NumStability	6159	Local\lean-reorganization-2026-08	0	81.812	pass	full production build
+repository	library_and_tests	lake build NumStability NumStabilityTest	8770	Local\lean-reorganization-2026-08	0	201.450	pass	full production and repository test build
+repository	lake_test	lake test		Local\lean-reorganization-2026-08	0	8.215	pass	Lake emitted no job-count summary
+audit	scope_preledger	python -B docs/architecture/deliveries/R01/CHECK_SCOPE.py		-	0	0.907	pass	95 paths before the final three required delivery files
+audit	scope_final	python -B docs/architecture/deliveries/R01/CHECK_SCOPE.py --check-changed-paths		-	0	1.361	pass	staged 98 paths = 16 M + 82 A; production=40; tests=41; delivery=17; exact status-aware ledger
+audit	static_final	python -B docs/architecture/deliveries/R01/CHECK_STATIC.py		-	0	25.859	pass	staged tree: 243 routes; hashes=4; cycles=0; aggregates=4; focused=5; forbidden reachability=0
+audit	request_replay	python -B docs/architecture/deliveries/R01/CHECK_REQUEST_REPLAY.py		-	0	29.629	pass	staged exact five paths; C0000 preimages; forward/reverse replay; exact postimages
+audit	request_replay_full	python -B docs/architecture/deliveries/R01/CHECK_REQUEST_REPLAY.py --full		-	0	203.613	pass	five-path request plus seven documented disposable acceptance paths; layout/compatibility/provenance/strict-source green
+repository	layout_worker	python -B tools/architecture/check_layout.py		-	1	130.702	integrator_required	NONZERO only for forbidden shared test-root/family/root/tier/layout-ratchet wiring; disposable acceptance is green
+repository	compatibility_worker	python -B tools/architecture/check_compatibility.py		-	0		pass	337 registered forwarding modules; 685 canonical targets; R01 registration validated in disposable acceptance
+repository	provenance_worker	python -B tools/architecture/check_provenance.py		-	0		pass	137 Apache-marked production files and 5 evidenced upstream modules
+source	strict_source_worker	python -B tools/architecture/generate_baseline.py --skip-declarations --strict-source --output-dir benchmark-results/R01-worker-strict-source --name R01-worker-strict-source		Local\lean-reorganization-2026-08	0	17.666	pass	zero unresolved imports/cycles and zero reusable-to-Source/mixed reachability
+audit	forbidden_tokens	python -B -c <comment-stripped repository placeholder scan>		-	0	125.711	pass	zero sorry, admit, top-level axiom, or top-level constant commands
+audit	tracked_generated	python -B -c <tracked generated-artifact scan>		-	0	0.386	pass	staged index has zero build, cache, bytecode, binary, or benchmark artifacts
+audit	diff_check_precommit	git diff --check		-	0	0.101	pass	unstaged tracked diff hygiene; staged/final checks repeated at handoff
+audit	diff_check_staged	git diff --cached --check		-	0	0.190	pass	all 98 staged paths including new files
+projection	candidate	python -B tools/architecture/generate_baseline.py --output-dir benchmark-results --name R01-candidate --keep-dependency-tsv benchmark-results/R01-candidate.tsv	6159	Local\lean-reorganization-2026-08	0	143.257	pass	format 2; 56903 declarations; 649259 typed rows; TSV D2A80F17356569426B23D8B0563D209F4B9D59EC2ACC32A37CD640B4410B8735
+projection	deterministic_summary	python -B tools/architecture/generate_baseline.py --output-dir benchmark-results --name R01-candidate --dependency-tsv benchmark-results/R01-candidate.tsv		Local\lean-reorganization-2026-08	0	23.257	pass	TSV/JSON/Markdown hashes unchanged
+projection	p0001_replay	python -B docs/architecture/deliveries/R01/CHECK_PROJECTION.py benchmark-results/R01-candidate.tsv --control-root C:\Users\qed_s\higham-worktrees\final-main-audit		Local\lean-reorganization-2026-08	0	4.782	pass	24 exact args; 243 relocated; 693/1341/1422 edges; ten private normalizations

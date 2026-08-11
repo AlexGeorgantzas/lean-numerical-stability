@@ -1,0 +1,49 @@
+import NumStability.Source.Higham.Chapter17.Results.Section04.DrazinConsequences
+
+/-!
+# R01 canonical-only import test C05
+
+Imports exactly the frozen canonical leaf `NumStability.Source.Higham.Chapter17.Results.Section04.DrazinConsequences` and checks every public declaration routed there.
+-/
+
+#check NumStability.W_mul_bottomProjector
+#check NumStability.bottomProjector
+#check NumStability.bottomProjector_apply_bottom
+#check NumStability.bottomProjector_apply_top
+#check NumStability.bottomProjector_idempotent
+#check NumStability.bottomProjector_matPow_J_comm
+#check NumStability.conjugated_bottomProjector_eq_semiconvergentE
+#check NumStability.drazinIG
+#check NumStability.drazinIG_mul_matSub_id_G_eq_semiconvergentE
+#check NumStability.drazinIG_spec
+#check NumStability.eq_17_23_block
+#check NumStability.eq_17_25_limit
+#check NumStability.eq_17_26_stationary_limit
+#check NumStability.eq_17_30_block
+#check NumStability.eq_17_30_pow
+#check NumStability.eq_17_31_normwise_bound
+#check NumStability.eq_17_32_componentwise_bound
+#check NumStability.hasSum_GiE_entry_drazinIG
+#check NumStability.indexOneDrazinInverse_eq_drazinIG
+#check NumStability.indexOneDrazinInverse_unique
+#check NumStability.infNorm_GiE_Minv_le
+#check NumStability.infNorm_matPow_J_bottomProjector_le
+#check NumStability.matMul_bottomProjector_left
+#check NumStability.matMul_bottomProjector_right
+#check NumStability.matMul_matSub_id_apply
+#check NumStability.matPow_G_tendsto_limit_drazin
+#check NumStability.matPow_J_cross
+#check NumStability.matPow_J_mul_W_entry_tendsto_zero
+#check NumStability.matSub_id_G_mul_drazinIG_eq_semiconvergentE
+#check NumStability.matSub_id_J_cross
+#check NumStability.matSub_id_J_mul_bottomProjector
+#check NumStability.matSub_id_J_top_row
+#check NumStability.matSub_id_matMul_apply
+#check NumStability.singularErrorSourceNormSum_le_tsum
+#check NumStability.stationaryDrazinRangeProjector_drazinIG_eq_semiconvergentE
+#check NumStability.sum_range_matPow_J_bottomProjector_entry
+#check NumStability.summable_abs_GiE_Minv_entry
+#check NumStability.summable_infNorm_GiE_Minv
+#check NumStability.topProjector_add_bottomProjector
+#check NumStability.tsum_GiE_entry_eq_drazinIG
+#check NumStability.tsum_infNorm_GiE_Minv_le

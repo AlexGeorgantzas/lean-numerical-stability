@@ -1,0 +1,31 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.Limits.General
+
+/-!
+# R01 canonical-only import test C13
+
+Imports exactly the frozen canonical leaf `NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.Limits.General` and checks every public declaration routed there.
+-/
+
+#check NumStability.G_mulVec_adaptedBasis
+#check NumStability.abs_entry_le_infNorm
+#check NumStability.blockJ_eq_topProjector_add_compBlock
+#check NumStability.compBlock_mul_topProjector
+#check NumStability.compBlock_no_comp_fixed
+#check NumStability.compBlock_top_zero
+#check NumStability.complexifyMat
+#check NumStability.eventually_matPow_infNorm_le_of_spectralRadius_lt
+#check NumStability.matMul_conj_entry_converges
+#check NumStability.matPow_G_tendsto_oneEigenProjector_of_convergence
+#check NumStability.matPow_G_tendsto_oneEigenProjector_of_matPow_J_tendsto
+#check NumStability.matPow_G_tendsto_oneEigenProjector_of_spectralRadius
+#check NumStability.matPow_J_eq_conj
+#check NumStability.matPow_blockJ_eq
+#check NumStability.matPow_blockJ_tendsto_topProjector_of_convergence
+#check NumStability.matPow_blockJ_tendsto_topProjector_of_spectralRadius
+#check NumStability.matPow_compBlock_top_zero
+#check NumStability.matPow_entry_converges_of_forall_orbit_tendsto
+#check NumStability.matPow_tendsto_zero_of_spectralRadius_lt_one
+#check NumStability.mulVecLin_pow
+#check NumStability.mulVecLin_pow_single_eq_matPow
+#check NumStability.norm_complexifyMat_pow
+#check NumStability.topProjector_mul_compBlock

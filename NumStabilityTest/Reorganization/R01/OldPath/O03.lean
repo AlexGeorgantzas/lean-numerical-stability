@@ -1,0 +1,24 @@
+import NumStability.Algorithms.StationaryIterationRounded
+
+/-!
+# R01 historical-only import test O03
+
+Imports exactly the historical owner `NumStability.Algorithms.StationaryIterationRounded` and checks its complete preserved public surface.
+-/
+
+#check NumStability.RoundedStationarySolveCertificate
+#check NumStability.flStationaryIterationLower
+#check NumStability.flStationaryIterationLower_actual_forward_bound
+#check NumStability.flStationaryIterationLower_localErrorBound
+#check NumStability.flStationaryIterationLower_solveCertificate
+#check NumStability.flStationaryIterationUpper
+#check NumStability.flStationaryIterationUpper_actual_forward_bound
+#check NumStability.flStationaryIterationUpper_localErrorBound
+#check NumStability.flStationaryIterationUpper_solveCertificate
+#check NumStability.localErrorBound_of_roundedStationarySolveCertificate
+#check NumStability.sourceComputedIteration_actual_forward_bound
+#check NumStability.sourceComputedIteration_actual_norm_forward_bound
+#check NumStability.stationaryLocalError
+#check NumStability.stationaryLocalError_sourceComputedIteration
+#check NumStability.stationaryRoundedRhs
+#check NumStability.stationaryRoundedRhs_error_bound

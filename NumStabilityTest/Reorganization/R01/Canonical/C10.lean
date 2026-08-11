@@ -1,0 +1,33 @@
+import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.TriangularBlockForm
+
+/-!
+# R01 canonical-only import test C10
+
+Imports exactly the frozen canonical leaf `NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.TriangularBlockForm` and checks every public declaration routed there.
+-/
+
+#check NumStability.Xscaled_entry
+#check NumStability.abs_lt_one_of_pow_tendsto_of_ne_one
+#check NumStability.compBlock
+#check NumStability.compBlock_diag_le
+#check NumStability.compBlock_eq
+#check NumStability.compBlock_upperTriangular
+#check NumStability.conjGamma
+#check NumStability.conjGamma_entry
+#check NumStability.conjGamma_row_sum_le_infNorm
+#check NumStability.eigenvector_one_of_maxGen_of_orbit_tendsto
+#check NumStability.isRightInverse_scaled
+#check NumStability.matMul_G_Xscaled_col
+#check NumStability.matPow_G_tendsto_oneEigenProjector_of_triangular_complement
+#check NumStability.matPow_G_tendsto_oneEigenProjector_of_triangular_complement_diag_conv
+#check NumStability.maxGenEigenspace_one_eq_eigenspace_of_forall_orbit_tendsto
+#check NumStability.scaleVec
+#check NumStability.scaleVec_bot
+#check NumStability.scaleVec_inv
+#check NumStability.scaleVec_pos
+#check NumStability.scaleVec_top
+#check NumStability.scaled_colBot
+#check NumStability.scaled_colTop
+#check NumStability.semiconvergent_block_form_exists_of_triangular_complement
+#check NumStability.semiconvergent_block_form_exists_of_triangular_complement_diag_conv
+#check NumStability.uniform_modulus_bound_lt_one
