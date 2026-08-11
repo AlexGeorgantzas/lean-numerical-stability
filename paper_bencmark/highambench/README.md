@@ -1,28 +1,54 @@
 # HighamBench construction corpus
 
-This directory contains a two-paper benchmark for testing whether access to the
-NumStability Lean library helps an agent finish fixed Lean proofs. A fixed proof
-means that the theorem statement is chosen before a run and the agent may change
-only the proof.
+This directory contains a 20-paper construction corpus for testing whether
+access to the NumStability Lean library helps an agent finish fixed Lean proofs.
+A fixed proof means that the theorem statement is chosen before a run and the
+agent may change only the proof.
 
-The current construction corpus contains P01 and P02. It is not the final
-corpus and may grow before measurements begin:
+The current corpus contains 60 tasks drawn from papers P01--P20. It may still
+change before the measurement-ready snapshot is created.
 
-> Nicholas J. Higham, "The Accuracy of Floating Point Summation," *SIAM Journal
-> on Scientific Computing* 14(4), 783--799, July 1993.
-> <https://doi.org/10.1137/0914050>
+## Task types
 
-> Takeshi Ogita, Siegfried M. Rump, and Shin'ichi Oishi, "Accurate Sum and Dot
-> Product," *SIAM Journal on Scientific Computing* 26(6), 1955--1988, 2005.
-> <https://doi.org/10.1137/030601818>
+Each paper contributes one task of each type used by the HighamBench 0.2
+specification:
 
-The local paper PDF is used only as the recorded source copy. It is covered by
-the publisher's terms. The benchmark metadata uses short paraphrases rather than
-copying long passages from the paper.
+- T1, direct use: apply or specialize a close existing NumStability result.
+- T2, combine: join multiple existing results with additional reasoning.
+- T3, extend: prove a result requiring material not already supplied as a
+  complete NumStability theorem.
 
-## The six tasks
+The manifest and per-task records contain each selected result, source tag,
+paper location, fixed Lean statement, and task-specific rationale.
 
-Both papers support all three task types in the HighamBench 0.2 specification.
+## Papers
+
+| ID | Authors | Paper | Year |
+| --- | --- | --- | --- |
+| `P01` | Nicholas J. Higham | [The Accuracy of Floating Point Summation](https://doi.org/10.1137/0914050) | 1993 |
+| `P02` | Takeshi Ogita, Siegfried M. Rump, and Shin'ichi Oishi | [Accurate Sum and Dot Product](https://doi.org/10.1137/030601818) | 2005 |
+| `P03` | Erin Carson and Nicholas J. Higham | [Accelerating the Solution of Linear Systems by Iterative Refinement in Three Precisions](https://doi.org/10.1137/17M1140819) | 2018 |
+| `P04` | Pierre Blanchard, Nicholas J. Higham, Florent Lopez, Theo Mary, and Srikara Pranesh | [Mixed Precision Block Fused Multiply-Add: Error Analysis and Application to GPU Tensor Cores](https://doi.org/10.1137/19M1289546) | 2020 |
+| `P05` | Siegfried M. Rump and Claude-Pierre Jeannerod | [Improved Backward Error Bounds for LU and Cholesky Factorizations](https://doi.org/10.1137/130927231) | 2014 |
+| `P06` | Michael P. Connolly and Nicholas J. Higham | [Probabilistic Rounding Error Analysis of Householder QR Factorization](https://doi.org/10.1137/22M1514817) | 2023 |
+| `P07` | Maike Meier, Yuji Nakatsukasa, Alex Townsend, and Marcus Webb | [Are Sketch-and-Precondition Least Squares Solvers Numerically Stable?](https://doi.org/10.1137/23M1551973) | 2024 |
+| `P08` | Robert D. Skeel | [Iterative Refinement Implies Numerical Stability for Gaussian Elimination](https://www.jstor.org/stable/2006197) | 1980 |
+| `P09` | George U. Ramos | [Roundoff Error Analysis of the Fast Fourier Transform](https://doi.org/10.1090/S0025-5718-1971-0300488-0) | 1971 |
+| `P10` | James Demmel, Ioana Dumitriu, and Olga Holtz | [Fast linear algebra is stable](https://doi.org/10.1007/s00211-007-0114-x) | 2007 |
+| `P11` | Alicja Smoktunowicz, Jesse L. Barlow, and Julien Langou | [A note on the error analysis of classical Gram–Schmidt](https://doi.org/10.1007/s00211-006-0042-1) | 2006 |
+| `P12` | Marko Lange and Shin'ichi Oishi | [A note on Dekker's FastTwoSum algorithm](https://doi.org/10.1007/s00211-020-01114-2) | 2020 |
+| `P13` | Nicholas J. Higham | [The numerical stability of barycentric Lagrange interpolation](https://doi.org/10.1093/imanum/24.4.547) | 2004 |
+| `P14` | Pierre Blanchard, Desmond J. Higham, and Nicholas J. Higham | [Accurately computing the log-sum-exp and softmax functions](https://doi.org/10.1093/imanum/draa038) | 2021 |
+| `P15` | Nicholas J. Higham and Theo Mary | [Solving block low-rank linear systems by LU factorization is numerically stable](https://doi.org/10.1093/imanum/drab020) | 2022 |
+| `P16` | Alfredo Buttari, Nicholas J. Higham, Theo Mary, and Bastien Vieublé | [A modular framework for the backward error analysis of GMRES](https://doi.org/10.1093/imanum/draf049) | 2026 |
+| `P17` | El-Mehdi El Arar, Massimiliano Fasi, Silviu-Ioan Filip, and Mantas Mikaitis | [Probabilistic Error Analysis of Limited-Precision Stochastic Rounding](https://doi.org/10.1137/24M1681458) | 2025 |
+| `P18` | Zachary J. Grant | [Perturbed Runge–Kutta Methods for Mixed Precision Applications](https://doi.org/10.1007/s10915-022-01801-2) | 2022 |
+| `P19` | Alfredo Buttari, Xin Liu, Theo Mary, and Bastien Vieublé | [Mixed precision strategies for preconditioned GMRES: a comprehensive analysis](https://hal.science/hal-05071696v2) | 2026 |
+| `P20` | Theo Mary and Mantas Mikaitis | [Error Analysis of Matrix Multiplication with Narrow Range Floating-Point Arithmetic](https://doi.org/10.1137/24M1685109) | 2025 |
+
+The local paper PDFs are recorded source copies and remain subject to their
+publishers' terms. The benchmark metadata records source locators and hashes and
+uses short paraphrases instead of copying long passages from the papers.
 
 ## One construction workflow for every paper
 
@@ -53,39 +79,6 @@ python3 paper_bencmark/highambench/tools/refresh_snapshot.py \
 Only after the complete corpus, proofs, and reviews are ready should the same
 command be run with `--phase measurement-ready`. The benchmark runner rejects
 construction-state tasks, so a partial corpus cannot be measured accidentally.
-
-| Task | Type | Source tag | Chosen result | Exact paper location |
-| --- | --- | --- | --- | --- |
-| `P01-T1` | T1, direct use | `EQN+TXT` | Pairwise summation bound for nonnegative inputs | Equation (3.6), journal p. 788 / PDF p. 6; nonnegative observation after (2.6), journal p. 785 / PDF p. 3 |
-| `P01-T2` | T2, combine | `EQN+TXT` | Pairwise and recursive bounds, including the comparison of their bound factors | Equation (2.6), journal p. 785 / PDF p. 3; equation (3.6) and the following comparison, journal p. 788 / PDF p. 6 |
-| `P01-T3` | T3, extend | `EQN` | Recursive-summation running-error bound under the no-guard-digit model | Equations (5.1), (5.2), and (5.3), journal p. 793 / PDF p. 11 |
-| `P02-T1` | T1, direct use | `EQN` | `VecSum` preserves the exact sum | Equation (4.7)(i) and Algorithm 4.3, journal p. 1965 / PDF p. 11 |
-| `P02-T2` | T2, combine | `PROP` | `Sum2` doubled-working-precision absolute-error bound | Proposition 4.5, equation (4.8), journal p. 1965 / PDF p. 11; proof on journal pp. 1966--1967 / PDF pp. 12--13 |
-| `P02-T3` | T3, extend | `PROP` | Optimized `DotK` K-fold absolute-error bound without multiplication underflow | Algorithm 5.10, journal p. 1977 / PDF p. 23; equation (5.10) and Proposition 5.11, journal p. 1978 / PDF p. 24 |
-
-T1 is close to one existing NumStability theorem. T2 needs several existing
-results and extra arithmetic. T3 formalizes equation (5.3), whose right side
-uses the actual computed prefix sums from recursive summation. NumStability has
-no accumulated no-guard running-budget theorem of this form. A condition-L
-proof can reuse pieces such as `NumStability.noGuardAddWitness_error_eq` and
-the generic `NumStability.runningError_bound_from_local_errors`, but it must
-still connect them to the no-guard recursive state, witnesses, indices, and the
-exact computed-prefix budget, or construct the full induction directly.
-
-The T1 and T2 statements use an exact `gamma` bound. Here `gamma` is the usual
-closed formula that safely collects several small rounding errors. T3 instead
-uses the exact finite bound printed in (5.3), so it needs no `gamma` condition
-and no informal `O(u^2)` term.
-
-For P02, T1 is a direct iteration of the local error-free `TwoSum` identity.
-T2 combines that invariant with the low-component budget, ordinary recursive
-summation, final rounding, and gamma arithmetic. T3 adds error-free products,
-iterated `VecSum`, a transformed dot-product mass estimate, and the gamma
-comparisons in Proposition 5.11. NumStability has nearby compensated-summation
-and extended-dot-product ingredients, but no `VecSum`, `SumK`, or `DotK`
-theorem. The T3 statement selects the paper's no-multiplication-underflow
-absolute bound; this keeps the shared setting neutral and avoids adding an
-underflow-unit and rounded-division model that the selected claim does not need.
 
 ## Two conditions
 
@@ -132,9 +125,9 @@ claimed because this repository does not currently have proof that the selected
 agent backend accepts and obeys a seed. If a backend with real seed support is
 used later, its seed values must be added to the raw run record before evaluation.
 
-There are 36 planned runs:
+There are 360 planned runs:
 
-`6 tasks x 3 repetitions x 2 conditions = 36 runs`.
+`60 tasks x 3 repetitions x 2 conditions = 360 runs`.
 
 The first condition in each pair was selected by the fixed SHA-256 rule recorded
 in `metadata/run_order.json`. SHA-256 is a repeatable text-to-number calculation.
@@ -146,16 +139,16 @@ seeds.
 - `../TASK_SOURCE_TAGS.md` defines the mandatory source-presentation tags for
   every task. `../AGENTS.md` makes that policy persistent across Codex
   sessions, and `tools/task_tags.py` checks every current task record.
-- `tools/refresh_snapshot.py` regenerates task-controlled manifests, run order,
-  release hashes, planned counts, and environment identity for every manifest
-  paper using one rule.
+- `tools/refresh_snapshot.py` validates the corpus and regenerates its derived
+  metadata: each task's controlled files and hashes, condition order, corpus
+  counts, and snapshot and environment identifiers.
 - `shared/HighamBench/Core.lean` is the small cross-paper core.
   `shared/HighamBench/P*Definitions.lean` files add only one paper's models and
   algorithms. Manifest scopes and separate compiled bundles keep them isolated.
 - `IMPLEMENTATION_PLAN.md` explains the construction decisions and the checks
   required before measured runs.
-- `metadata/manifest.json` records exactly two papers, their hashes, the
-  specification hash, all six tasks, and their exact source locations.
+- `metadata/manifest.json` records all 20 papers, their source hashes, the
+  specification hash, all 60 tasks, and their exact source locations.
 - `metadata/config.json` freezes the environment and run limits.
 - `metadata/run_order.json` fixes the order of N and L for every paired
   repetition.
@@ -164,15 +157,9 @@ seeds.
   records must be regenerated for every task before measurement.
 
 The review files distinguish completed checks from pending checks. A pending
-check is not a pass. All six public target skeletons have been rebuilt in both
-isolated conditions with their paper-specific source and compiled bundles.
-Negative import probes also confirmed that each paper's other module is absent.
-The six P01 private N/L proofs passed fresh hidden validation against the P01
-bundle; that current partial-corpus record is
-`metadata/evidence/construction_validation_P01_paper_modules.json`.
-Fresh private construction proofs for P02 and a complete twelve-proof,
-six-task construction record are still required before release. The complete
-measured matrix is also still required.
+check is not a pass. Measurement readiness requires current full-corpus
+construction evidence and two current final reviews for every task. The
+complete measured matrix is also still required.
 
 ## Frozen source versions
 
@@ -180,18 +167,16 @@ measured matrix is also still required.
 - mathlib: `e8ea1afc32790ce1d4e1a4e45cc412ba9388716b`
 - NumStability source baseline:
   `45813a95dacf577461bae13f033af0dbc985a225`
-- P01 paper PDF SHA-256:
-  `d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7`
-- P02 paper PDF SHA-256:
-  `e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d`
+- Paper PDF SHA-256 values and lawful source locators are recorded for every
+  corpus paper in `metadata/manifest.json`.
 - Specification PDF SHA-256:
   `25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8`
 
 ## What a result may say
 
 This pilot may show whether library access changed proof success, time, token
-use, or actual library use for these six fixed tasks and one fixed agent setup.
-It does not test translation from English into Lean, and two papers cannot stand
-for all numerical analysis papers. Any 95 percent range made by resampling only
-these two whole papers has very limited resolution and must not be presented as
-broad certainty.
+use, or actual library use for these 60 fixed tasks and one fixed agent setup.
+It does not test translation from English into Lean or human proof development.
+Any uncertainty interval obtained by resampling the 20 papers describes this
+corpus and must not be presented as certainty about all numerical analysis
+papers.
