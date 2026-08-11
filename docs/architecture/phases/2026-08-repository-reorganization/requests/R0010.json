@@ -51,15 +51,20 @@
   "request_id": "R0010",
   "requester_id": "codex-local",
   "resolution": {
-    "checkpoint_id": null,
-    "commit_sha": null,
-    "reason": null,
-    "resolved_at": null,
-    "resolved_by": null,
-    "validation_evidence": []
+    "checkpoint_id": "C0008",
+    "commit_sha": "b1b18772d80185ec08f49c818919558645c330a1",
+    "reason": "Applied during W07/W10 integration and accepted by the green C0008 checkpoint.",
+    "resolved_at": "2026-08-11T07:00:00Z",
+    "resolved_by": "primary-human",
+    "validation_evidence": [
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization/checkpoints/C0008-gates.md",
+        "sha256": "674E470DCA7D112DF2AE5B3C4B3789AB2629337C47B7BD1820E3E309FE96396A"
+      }
+    ]
   },
   "schema_version": 1,
-  "status": "active",
+  "status": "applied",
   "superseded_by": null,
   "supersedes": null,
   "target_base_sha": "9eb534a06db267203c2b9b88227edd44fc64f5db",

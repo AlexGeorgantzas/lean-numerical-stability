@@ -4,15 +4,20 @@ The active operating contract is the
 [`2026-08 repository reorganization`](2026-08-repository-reorganization/README.md).
 It has precedence over dated migration packets and historical handoffs.
 
-Its current accepted checkpoint is C0007 at code commit
-`9eb534a06db267203c2b9b88227edd44fc64f5db`. M03, M04, M05, M06, M08, M09,
-and M11 are accepted; M07 and M10 remain ready. B0011/W07 and B0012/W10 are
-delivered from exact C0007 at immutable tips
+Its current accepted checkpoint is C0008 at code commit
+`b1b18772d80185ec08f49c818919558645c330a1`. M01 through M12 are accepted;
+M90 is ready but remains unactivated, and repository-wide completion remains
+incomplete. B0011/W07 and B0012/W10 were delivered from exact C0007 at
+immutable tips
 `176c72838828795b89f4aa822479010c7860c8e5` and
-`9e7604cbdbd2314bc4bf38bcd9e342c3accfb1d6`, respectively. Separate true merge
-commits preserve both deliveries, and active C0007-based requests R0010/R0011
-record the reviewed integrator-owned union, but neither wave is accepted yet;
-P0012/P0013 remain active. B0008/W04,
+`9e7604cbdbd2314bc4bf38bcd9e342c3accfb1d6`, respectively. Separate true
+merge commits preserve both deliveries. C0008 accepts both waves; P0012/P0013
+are retired immutable evidence and independently C0007-based R0010/R0011 are
+applied. Both branch records are accepted with retirement due, so their exact
+remote refs and the clean named W07 worktree remain present until the C0008
+acceptance-control commit passes Lean CI. The clean W10 post-delivery
+integrator recovery/correction checkout at `C:\Users\qed_s\w10-worker`
+remains preserved outside retirement. B0008/W04,
 B0009/W09, and B0010/W11 are accepted at C0007 and retired;
 P0009/P0010/P0011 are retired and R0007/R0008/R0009 are applied. After the
 C0007 acceptance-control commit passed Lean CI, their three exact remote refs

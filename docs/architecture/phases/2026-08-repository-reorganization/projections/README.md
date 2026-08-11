@@ -27,9 +27,9 @@ The projection records are:
   [`W09.tsv`](../selectors/W09.tsv); and
 - [`P0011`](P0011.json), the retired C0006 W11 projection selected by
   [`W11.tsv`](../selectors/W11.tsv);
-- [`P0012`](P0012.json), the active C0007 W07 projection selected by
+- [`P0012`](P0012.json), the retired C0007 W07 projection selected by
   [`W07.tsv`](../selectors/W07.tsv); and
-- [`P0013`](P0013.json), the active C0007 W10 projection selected by
+- [`P0013`](P0013.json), the retired C0007 W10 projection selected by
   [`W10.tsv`](../selectors/W10.tsv).
 
 P0004 is tied to the C0003 combined baseline generated at code commit
@@ -81,15 +81,15 @@ edges, and 1,474 union edges at deterministic gzip SHA-256
 P0013 freezes 1,029 W10 declarations, 2,394 signature edges, 4,844 body/proof
 edges, and 5,075 union edges at deterministic gzip SHA-256
 `B61F64FC0C2CEF8DF22DDA78C5F28BB8D6B64FC1B57392AA36A2E187F3396ABA`.
-They remain active evidence for delivered but unintegrated B0011/B0012. Both
+They are retired immutable evidence for B0011/B0012, accepted at C0008. Both
 worker refs were initialized at exact C0007 code SHA
 `9eb534a06db267203c2b9b88227edd44fc64f5db` only after planned-control commit
 `ac3bc1063c7d9aa1c7a0c12a85337c858b6f9200` passed
 [Lean CI](https://github.com/AlexGeorgantzas/lean-numerical-stability/actions/runs/31300495624).
 Active-control commit `cb5fa161bcf6827c7d15e61df9dd9ded34f39327`
-subsequently passed Lean CI before work began. Delivery intake does not retire
-either projection; exact delivery and integrated-candidate replays remain
-required.
+subsequently passed Lean CI before work began. Delivery intake alone did not
+retire either projection; exact delivery and integrated-candidate replays were
+required and passed before C0008 acceptance.
 
 At C0005 the integrator replayed both exact recorded argument vectors against
 one full integrated format-2 candidate with SHA-256
@@ -119,6 +119,14 @@ edges. P0011 passed with 3,354 selected, 3,129 relocated, and 225 retained
 declarations, 19,096 signature edges, 26,201 body/proof edges, and 28,652 union
 edges.
 
+At C0008 the integrator replayed P0012 and P0013 against the same full
+integrated format-2 candidate with SHA-256
+`7973041136A13FEEBACA1C462868A9C9A3DB907FC7D8BC841601E14B3853F1C8`.
+P0012 passed with 252 selected, 136 relocated, and 116 retained declarations,
+800 signature edges, 1,400 body/proof edges, and 1,474 union edges. P0013
+passed with 1,029 selected, 895 relocated, and 134 retained declarations,
+2,394 signature edges, 4,844 body/proof edges, and 5,075 union edges.
+
 A worker generates one full format-2 candidate under the shared Lean mutex,
 then invokes `tools/architecture/check_phase_projection.py` with every sorted
 argument in its projection JSON. The candidate placeholder is replaced by the
@@ -147,11 +155,13 @@ planned-control commit
 `94da2d1e25247d7e9b6661dc188c932cdc6cc1d5` passed Lean CI; the activation
 commits remain absent from every worker branch.
 
-P0012 and P0013 remain active while B0011/W07 and B0012/W10 are delivered and
-preserved through separate true merges but not yet accepted. Both deliveries
-are based on the exact C0007 code SHA. The
-projection records are control evidence on
-`main`; they are never copied into worker history. Their deterministic streams
-have been replayed against each immutable delivery candidate and must next be
-replayed, without argument changes other than the candidate path, against the
-same final integrated candidate before C0008 can be accepted.
+P0012 and P0013 are retired with B0011/W07 and B0012/W10 accepted at C0008.
+Both deliveries are based on the exact C0007 code SHA and preserved through
+separate true merges. The projection records are immutable control evidence on
+`main`; they are never copied into worker history. Their exact deterministic
+streams were replayed against the same final integrated candidate with only
+the candidate-path argument changed. The exact remote refs and clean named W07
+worktree remain present until the C0008 acceptance-control commit passes Lean
+CI; projection retirement alone does not authorize early deletion. The clean
+post-delivery W10 integrator recovery/correction checkout remains preserved
+outside worker retirement.
