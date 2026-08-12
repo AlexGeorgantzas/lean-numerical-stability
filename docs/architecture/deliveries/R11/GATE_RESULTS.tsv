@@ -1,0 +1,25 @@
+phase	gate	command	jobs	mutex	exit	seconds	result	notes
+authority	planned_control_ci	GitHub Actions Lean CI push run 31546978830 / job 93961477202	8895	-	0		pass	planned-control c48d241532ad3dee12f4107a5e8875c7054159be completed success
+authority	active_control_green	R11/R12 activation review: architecture/tooling and build/smoke		-	0		pass	active control 5e075b947a63e84c784afecd00e1f130e21ea659; both branches created at C0001 and verified clean before activation
+tests	tests_canonical_only	lake build <5 canonical-only TEST_MATRIX.tsv targets>	54	Local\lean-reorganization-2026-08	0	620.807	pass	5 canonical destinations, each imported alone with no historical owner import
+tests	tests_focused	lake build <5 focused TEST_MATRIX.tsv targets>	6	Local\lean-reorganization-2026-08	0	25.647	pass	5 focused targets: frozen route plus private-normalized closure (present/absent)
+tests	tests_old_only	lake build <65 old-only TEST_MATRIX.tsv targets>	300	Local\lean-reorganization-2026-08	0	1236.872	pass	65 historical owners, each imported alone; preserved public surface
+tests	tests_protected_consumer	lake build <129 protected-consumer TEST_MATRIX.tsv targets>	327	Local\lean-reorganization-2026-08	0	1366.979	pass	129 integrator-owned consumers compiled unedited against the worker tree
+tests	tests_aggregate	lake build NumStabilityTest.Reorganization.R11.All	60	Local\lean-reorganization-2026-08	0	20.676	pass	declaration-free R11 aggregate named by the frozen R0003 root import
+repository	lake_library	lake build NumStability	1860	Local\lean-reorganization-2026-08	0	not_measurable	pass	full production build; elapsed not measurable (system clock stepped backwards mid-gate)
+repository	lake_library_and_tests	lake build NumStability NumStabilityTest	2860	Local\lean-reorganization-2026-08	0	17910.259	pass	full production and repository test build
+repository	lake_test	lake test	2436	Local\lean-reorganization-2026-08	0	14.299	pass	repository test driver
+repository	check_layout	python -B tools/architecture/check_layout.py		Local\lean-reorganization-2026-08	1	170.665	integrator_required	worker view; see INTEGRATOR_REQUESTS.md for the integrator-owned findings
+repository	check_compatibility	python -B tools/architecture/check_compatibility.py		Local\lean-reorganization-2026-08	1	23.093	integrator_required	worker view; COMPATIBILITY.md registration is integrator-owned in R0003
+repository	check_provenance	python -B tools/architecture/check_provenance.py		Local\lean-reorganization-2026-08	0	0.925	pass	Apache marking and evidenced upstream modules
+source	strict_source	python -B tools/architecture/generate_baseline.py --strict-source --no-build --output-dir benchmark-results/R11-strict-source --name R11-worker-strict-source		Local\lean-reorganization-2026-08	0	171.083	pass	no unresolved imports, no cycles, no reusable-to-Source/mixed reachability
+audit	placeholder_scan	python -B -c <comment-stripped production placeholder scan>		Local\lean-reorganization-2026-08	0	200.383	pass	comment-stripped production scan for sorry/admit/top-level axiom/constant
+audit	tracked_generated	python -B -c <changed-path generated-artifact scan>		Local\lean-reorganization-2026-08	0	0.206	pass	no build, cache, bytecode, binary or benchmark artifact among changed paths
+audit	diff_check	git diff --check		Local\lean-reorganization-2026-08	0	0.132	pass	whitespace and conflict-marker hygiene
+projection	candidate	python -B tools/architecture/generate_baseline.py --output-dir benchmark-results --name R11-candidate --no-build --keep-dependency-tsv benchmark-results/R11-candidate.tsv		Local\lean-reorganization-2026-08	0	168.772	pass	format-2 candidate graph
+projection	deterministic_replay	python -B tools/architecture/generate_baseline.py --output-dir benchmark-results --name R11-candidate --no-build --dependency-tsv benchmark-results/R11-candidate.tsv		Local\lean-reorganization-2026-08	0	29.996	pass	same TSV re-summarized; hashes unchanged
+projection	p0003_replay	python -B tools/architecture/check_completion_phase_projection.py <exact P0003 vector>		Local\lean-reorganization-2026-08	0	4.677	pass	1477 declarations, 15172 signature, 18056 body, 19873 union, 412 relocated, 1065 retained
+audit	scope_final	python -B docs/architecture/deliveries/R11/CHECK_SCOPE.py --check-changed-paths		-	0	0.818	pass	every changed path authorized; ledger and delivery file set cross-checked
+audit	static_final	python -B docs/architecture/deliveries/R11/CHECK_STATIC.py		-	0	11.983	pass	relocated bodies byte-identical; wrappers declaration-free; 0 cycles; 0 forbidden reachability
+audit	request_replay	python -B docs/architecture/deliveries/R11/CHECK_REQUEST_REPLAY.py		-	0	40.013	pass	133 preimages, 133 postimages, 133 reverse, 209 import replacements
+audit	request_replay_full	python -B docs/architecture/deliveries/R11/CHECK_REQUEST_REPLAY.py --full		-	1	345.150	integrator_required	acceptance tree = worker code + R0003 postimage; see INTEGRATOR_REQUESTS.md
