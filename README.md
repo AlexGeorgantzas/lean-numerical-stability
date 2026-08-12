@@ -227,13 +227,14 @@ result and live migration-debt values are enforced by
 with compatibility and provenance checked separately.
 
 The repository-reorganization successor remains in progress. C0001 accepts
-R01 and R02, so M01 and M02 are accepted; all later milestones remain planned
-and repository-wide completion remains incomplete. B0001/B0002 are accepted
-with retirement due, P0001/P0002 are retired immutable evidence, and
-R0001/R0002/R0002T are applied. Their exact remote refs and clean worker
-worktrees remain present until the C0001 acceptance-control commit itself
-passes Lean CI, after which evidence is archived and retirement is recorded
-separately. The
+R01 and R02, so M01 and M02 are accepted; repository-wide completion remains
+incomplete. B0001/B0002 are retired, their remote delivery refs are deleted,
+and their named worker worktrees were removed after evidence archival.
+P0001/P0002 remain retired immutable evidence, and R0001/R0002/R0002T are
+applied. The active C0001-based pair is B0003/R11 (QR and Chapter 19) with
+B0004/R12 (Chapter 13 equations and Table 01); M11 and M12 are ready, while
+other unaccepted milestones remain planned. The statistics above remain pinned
+to C0001 until a successor checkpoint is accepted. The
 [`active phase registry`](docs/architecture/phases/2026-08-repository-reorganization-completion/README.md)
 is the authoritative status record; the predecessor C0008 phase remains
 immutable historical evidence.
@@ -636,8 +637,10 @@ C0008 then accepted the W07 split of 5 Chapter 17/stationary-iteration owners
 into 34 canonical production modules and the W10 split of 27 Chapter 15/
 norm-estimation owners into 96 canonical production modules. M90 is ready but
 remains unactivated. Successor C0001 then accepted R01/R02 cleanup of 44
-residual owners into 38 new production modules. Subsequent accepted batches
-must reduce the current 277 unclassified modules, 244 noncanonical names, 72 missing module docs, and the
+residual owners into 38 new production modules. Those delivery branches are
+retired, and the active R11/R12 pair now targets QR/Chapter 19 and Chapter 13
+equations/Table 01 from exact C0001. Subsequent accepted batches must reduce the
+current 277 unclassified modules, 244 noncanonical names, 72 missing module docs, and the
 remaining reviewed giant-file outliers. The
 sequence and safety gates are tracked in
 [`docs/architecture/MIGRATION.md`](docs/architecture/MIGRATION.md), with exact
