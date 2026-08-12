@@ -1,0 +1,59 @@
+# R12 changed paths
+
+Exact B0004 delivery ledger from the no-renames C0001 diff:
+
+```text
+M	NumStability/Source/Higham/Chapter13/Equation23.lean
+A	NumStability/Source/Higham/Chapter13/Equation23/ProductBounds/PointRow.lean
+M	NumStability/Source/Higham/Chapter13/Equation25.lean
+A	NumStability/Source/Higham/Chapter13/Equation25/BackwardError/Bounds.lean
+A	NumStability/Source/Higham/Chapter13/Equation25/PartitionedComputation/Implementation1.lean
+M	NumStability/Source/Higham/Chapter13/Table01.lean
+A	NumStability/Source/Higham/Chapter13/Table01/BackwardErrorBounds/Endpoints.lean
+A	NumStability/Source/Higham/Chapter13/Table01/DiagonalDominance/Bounds.lean
+A	NumStability/Source/Higham/Chapter13/Table01/ProductTransfers/Families.lean
+A	NumStabilityTest/Reorganization/R12/All.lean
+A	NumStabilityTest/Reorganization/R12/Canonical/SourceHighamChapter13Equation23ProductBoundsPointRow.lean
+A	NumStabilityTest/Reorganization/R12/Canonical/SourceHighamChapter13Equation25BackwardErrorBounds.lean
+A	NumStabilityTest/Reorganization/R12/Canonical/SourceHighamChapter13Equation25PartitionedComputationImplementation1.lean
+A	NumStabilityTest/Reorganization/R12/Canonical/SourceHighamChapter13Table01BackwardErrorBoundsEndpoints.lean
+A	NumStabilityTest/Reorganization/R12/Canonical/SourceHighamChapter13Table01DiagonalDominanceBounds.lean
+A	NumStabilityTest/Reorganization/R12/Canonical/SourceHighamChapter13Table01ProductTransfersFamilies.lean
+A	NumStabilityTest/Reorganization/R12/Consumer/AlgorithmsLUBlockLUTable13_1Families.lean
+A	NumStabilityTest/Reorganization/R12/Consumer/HighamChapter13Table13_1.lean
+A	NumStabilityTest/Reorganization/R12/Consumer/SourceHighamChapter13BlockLU.lean
+A	NumStabilityTest/Reorganization/R12/Consumer/SourceHighamChapter13Equation25Factorization.lean
+A	NumStabilityTest/Reorganization/R12/Consumer/SourceHighamChapter13Problem04ComparisonChains.lean
+A	NumStabilityTest/Reorganization/R12/Consumer/SourceHighamChapter13Problem04DeterminantChainProducts.lean
+A	NumStabilityTest/Reorganization/R12/Consumer/SourceHighamChapter13Problem04GlobalTableauChain.lean
+A	NumStabilityTest/Reorganization/R12/Consumer/SourceHighamChapter13Problem04InverseRatioChain.lean
+A	NumStabilityTest/Reorganization/R12/Consumer/SourceHighamChapter13Problem04LowerComparisonChain.lean
+A	NumStabilityTest/Reorganization/R12/Consumer/SourceHighamChapter13Problem04ProductBounds.lean
+A	NumStabilityTest/Reorganization/R12/Consumer/SourceHighamChapter13Problem04RecursiveBudgetChains.lean
+A	NumStabilityTest/Reorganization/R12/Focused/SourceHighamChapter13Equation23ProductBoundsPointRow.lean
+A	NumStabilityTest/Reorganization/R12/Focused/SourceHighamChapter13Equation25BackwardErrorBounds.lean
+A	NumStabilityTest/Reorganization/R12/Focused/SourceHighamChapter13Equation25PartitionedComputationImplementation1.lean
+A	NumStabilityTest/Reorganization/R12/Focused/SourceHighamChapter13Table01BackwardErrorBoundsEndpoints.lean
+A	NumStabilityTest/Reorganization/R12/Focused/SourceHighamChapter13Table01DiagonalDominanceBounds.lean
+A	NumStabilityTest/Reorganization/R12/Focused/SourceHighamChapter13Table01ProductTransfersFamilies.lean
+A	NumStabilityTest/Reorganization/R12/OldOnly/SourceHighamChapter13Equation23.lean
+A	NumStabilityTest/Reorganization/R12/OldOnly/SourceHighamChapter13Equation25.lean
+A	NumStabilityTest/Reorganization/R12/OldOnly/SourceHighamChapter13Table01.lean
+A	docs/architecture/deliveries/R12/CHANGED_PATHS.md
+A	docs/architecture/deliveries/R12/CHECK_PROJECTION.py
+A	docs/architecture/deliveries/R12/CHECK_REQUEST_REPLAY.py
+A	docs/architecture/deliveries/R12/CHECK_SCOPE.py
+A	docs/architecture/deliveries/R12/CHECK_STATIC.py
+A	docs/architecture/deliveries/R12/DECLARATION_ROUTES.tsv
+A	docs/architecture/deliveries/R12/DELIVERY.md
+A	docs/architecture/deliveries/R12/GATE_RESULTS.tsv
+A	docs/architecture/deliveries/R12/INTEGRATOR_REQUESTS.md
+A	docs/architecture/deliveries/R12/PRIVATE_CLOSURE.md
+A	docs/architecture/deliveries/R12/PRIVATE_CLOSURE.tsv
+A	docs/architecture/deliveries/R12/PROJECTION.md
+A	docs/architecture/deliveries/R12/RETENTION.tsv
+A	docs/architecture/deliveries/R12/ROUTING.md
+A	docs/architecture/deliveries/R12/TEST_MATRIX.tsv
+```
+
+Totals: 51 paths; 3 modified, 48 added; 9 production, 27 tests, 15 evidence.

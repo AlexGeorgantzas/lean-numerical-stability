@@ -1,0 +1,36 @@
+import NumStability.Source.Higham.Chapter13.Table01
+
+/-!
+# Historical import-only aggregate: NumStability.Source.Higham.Chapter13.Table01
+
+Imports only the historical aggregate and checks its preserved public surface.
+-/
+
+#check @NumStability.block_lu_stability_block_diagDom_col
+#check @NumStability.block_lu_stability_block_diagDom_row
+#check @NumStability.block_lu_stability_point_diagDom_col
+#check @NumStability.block_lu_stability_point_diagDom_row
+#check @NumStability.block_lu_stability_spd
+#check @NumStability.higham13_col_bdd_infNorm_stability_bound
+#check @NumStability.higham13_col_bdd_oneNorm_stability_bound
+#check @NumStability.higham13_col_bdd_stability_bound
+#check @NumStability.higham13_rowdom_largeL_A
+#check @NumStability.higham13_rowdom_largeL_L
+#check @NumStability.higham13_rowdom_largeL_U
+#check @NumStability.higham13_rowdom_largeL_arbitrarily_large
+#check @NumStability.higham13_rowdom_largeL_reconstructs
+#check @NumStability.higham13_rowdom_largeL_row_block_diag_dom
+#check @NumStability.higham13_rowdom_largeL_subdiagonal_entry
+#check @NumStability.higham13_table13_1_arbitrary_backward_error_from_growth
+#check @NumStability.higham13_table13_1_arbitrary_product_family_from_eq13_22_source_norms
+#check @NumStability.higham13_table13_1_backward_error_from_product_bound
+#check @NumStability.higham13_table13_1_block_row_bdd_backward_error_from_growth
+#check @NumStability.higham13_table13_1_col_bdd_backward_error
+#check @NumStability.higham13_table13_1_col_bdd_product_family_from_source_norms
+#check @NumStability.higham13_table13_1_implementation1_family_from_partitioned_computation_and_product_transfer
+#check @NumStability.higham13_table13_1_point_col_bdd_backward_error
+#check @NumStability.higham13_table13_1_point_col_bdd_product_family_from_source_norms
+#check @NumStability.higham13_table13_1_point_row_backward_error_from_growth
+#check @NumStability.higham13_table13_1_point_row_product_family_from_eq13_23_source_norms
+#check @NumStability.higham13_table13_1_spd_backward_error
+#check @NumStability.higham13_table13_1_spd_product_family_from_eq13_24_source_norms
