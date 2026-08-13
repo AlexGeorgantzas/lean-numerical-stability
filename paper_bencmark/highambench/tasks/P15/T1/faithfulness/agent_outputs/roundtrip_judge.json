@@ -1,0 +1,158 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P15-T1",
+  "paper_sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7",
+  "blind_translation_sha256": "0b458727bad7eaaf02d8e49ffa42e8dd292aa46e580147536d91ef8e62825f2c",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "PDF p. 3, printed p. 953, defines the unsubscripted norm as the Frobenius norm and immediately states its first useful property: ||AB|| <= ||A|| ||B||.",
+      "translation_evidence": "The translation presents matrix-product submultiplicativity with exact multiplicative constant 1 as a standalone proposition.",
+      "reasoning": "The selected publication, passage, and surrounding Frobenius-norm discussion are the correct source for the translated result."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The displayed property does not restrict A and B to square matrices. Multiplication compatibility is implicit, and nearby PDF p. 4, printed p. 954, explicitly uses A in R^(a x b) and B in R^(b x c).",
+      "translation_evidence": "The binders use one natural number n and require both A and B to be real n-by-n matrices indexed by Fin n.",
+      "reasoning": "The translation omits multiplication-compatible rectangular matrices by forcing equal square dimensions."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "The norm property is stated generically for A and B, with no existential witnesses or dependent choices.",
+      "translation_evidence": "The translation universally quantifies n, A, and B and introduces no existential witness.",
+      "reasoning": "Universal scope and the absence of witness dependence are preserved. The narrowed quantifier domain is assessed under binders and specialization."
+    },
+    {
+      "id": "S04",
+      "status": "pass",
+      "paper_evidence": "Apart from the implicit requirement that AB be defined, the paper states no positivity, nonzero, invertibility, rank, or structural hypothesis.",
+      "translation_evidence": "The translation has no proposition-level hypotheses, and its matrix types ensure that its product is defined.",
+      "reasoning": "No algebraic side condition has been added or omitted, although multiplication compatibility is encoded more restrictively than necessary."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "The source conclusion consists solely of the inequality ||AB|| <= ||A|| ||B||.",
+      "translation_evidence": "The translation contains one conclusion, N_n(C) <= N_n(A) * N_n(B), where C is the ordinary matrix product.",
+      "reasoning": "The product, three norm occurrences, non-strict inequality, and multiplicative right-hand side are structurally present. Identification of N_n is assessed separately."
+    },
+    {
+      "id": "S06",
+      "status": "unclear",
+      "paper_evidence": "The paper explicitly defines ||A|| as the square root of the sum of |a_ij|^2 and uses ordinary matrix multiplication.",
+      "translation_evidence": "The dependency ledger unfolds the matrix product and scalar operations, but D016 states that the defining formula inherited by Matrix.frobeniusNormedRing is not supplied.",
+      "reasoning": "Ordinary multiplication and ordering are understood, but the central imported norm definition has not been unfolded sufficiently to verify its formula or normalization."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "This preliminary norm property concerns exact matrices and exact multiplication, not a computed or perturbed product.",
+      "translation_evidence": "The product is defined by exact finite sums over real numbers, with no rounding or perturbation operator.",
+      "reasoning": "Neither side conflates exact and computed quantities."
+    },
+    {
+      "id": "S08",
+      "status": "not-applicable",
+      "paper_evidence": "The paper lists this as a general Frobenius-norm property used throughout the analysis, not as a claim about a particular algorithm.",
+      "translation_evidence": "The translation contains no algorithm, execution trace, or computed output.",
+      "reasoning": "There is no algorithmic linkage in the selected paper claim to preserve."
+    },
+    {
+      "id": "S09",
+      "status": "unclear",
+      "paper_evidence": "Every norm is explicitly the unsquared Frobenius norm ||A|| = (sum over i,j of |a_ij|^2)^(1/2).",
+      "translation_evidence": "All three occurrences use N_n selected from Matrix.frobeniusNormedRing, but the dependency ledger says the inherited norm formula and any normalization are unavailable.",
+      "reasoning": "The name suggests a Frobenius construction, but the supplied evidence does not establish that N_n is exactly the paper's unsquared, unnormalized Frobenius norm."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "The paper states submultiplicativity with exact constant 1 and no dimension-dependent coefficient.",
+      "translation_evidence": "The conclusion is N_n(C) <= N_n(A) * N_n(B), and C(i,j) sums over every k in Fin n.",
+      "reasoning": "The exact constant, product coefficient, and contracted-index range match for the translated square case."
+    },
+    {
+      "id": "S11",
+      "status": "not-applicable",
+      "paper_evidence": "Although the following section introduces floating-point arithmetic, the selected Frobenius-norm property itself is an exact algebraic statement with no precision or rounding assumptions.",
+      "translation_evidence": "The translation uses exact real arithmetic and contains no floating-point model or exceptional values.",
+      "reasoning": "No floating-point assumptions belong to this result."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The source gives a non-strict upper bound for any multiplication-compatible matrices.",
+      "translation_evidence": "The same non-strict inequality is asserted only for pairs of real square matrices sharing one dimension n.",
+      "reasoning": "The inequality direction and strictness match, but the universally quantified claim is logically weaker in dimensional coverage."
+    },
+    {
+      "id": "S13",
+      "status": "not-applicable",
+      "paper_evidence": "The selected statement is a norm inequality, not a forward, backward, residual, mixed, or stability-error bound.",
+      "translation_evidence": "The translation introduces no approximation or error quantity.",
+      "reasoning": "No error notion is present to compare."
+    },
+    {
+      "id": "S14",
+      "status": "not-applicable",
+      "paper_evidence": "The paper's norm inequality is exact and contains no first-order approximation, remainder, or big-O term.",
+      "translation_evidence": "The translation is an exact inequality with no discarded terms.",
+      "reasoning": "Higher-order treatment is absent from both statements."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The immediate paper context uses real matrices, but the norm property itself allows any compatible row, inner, and column dimensions and does not impose squareness.",
+      "translation_evidence": "The translation specializes to finite real n-by-n matrices and also includes n = 0.",
+      "reasoning": "Specialization to real entries is supported by context, but specialization to one square dimension is unsupported. The zero-dimensional extension is also not explicit in the paper."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The source inequality applies to ordinary nontrivial matrix products and has no potentially inconsistent premises.",
+      "translation_evidence": "There are no premises, and instances with n >= 1 provide nontrivial matrices and products; n = 0 is merely degenerate.",
+      "reasoning": "The translated proposition is satisfiable and does not hold solely because of vacuous hypotheses."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "A theorem quantified only over pairs of real n-by-n matrices cannot establish the paper's inequality for general compatible rectangular products such as an a-by-b matrix times a b-by-c matrix."
+    },
+    "paper_implies_translation": {
+      "verdict": "unclear",
+      "reasoning": "The paper would cover positive-dimensional real square matrices if N_n is exactly its Frobenius norm, but the supplied dependency ledger does not establish that norm formula or normalization. The translation's additional n = 0 case is also not explicitly covered by the paper."
+    }
+  },
+  "classification": "undetermined",
+  "accepted": false,
+  "requires_adjudication": true,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "unresolved norm semantics",
+      "paper_evidence": "The paper explicitly requires the unsquared Frobenius norm for all three norm occurrences.",
+      "translation_evidence": "D016 leaves the inherited norm formula of Matrix.frobeniusNormedRing unavailable, and the translation consequently retains an abstract N_n.",
+      "impact": "The core norm identity cannot be verified, so paper-implies-translation and semantic equivalence remain unclear."
+    },
+    {
+      "severity": "major",
+      "category": "rectangular dimension coverage",
+      "paper_evidence": "The selected property imposes only product compatibility, and nearby context explicitly treats A in R^(a x b) and B in R^(b x c).",
+      "translation_evidence": "Both matrix binders have type Matrix (Fin n) (Fin n) Real.",
+      "impact": "The translation covers only equal-sized square products and therefore cannot imply the full paper statement."
+    },
+    {
+      "severity": "minor",
+      "category": "zero-dimensional extension",
+      "paper_evidence": "The paper does not explicitly quantify dimensions over natural numbers including zero.",
+      "translation_evidence": "The binder n ranges over Nat, including n = 0, where the matrix product and norm inequality are degenerate.",
+      "impact": "Whether the paper entails this additional edge case is unclear, although it does not make the translated theorem vacuous."
+    }
+  ],
+  "rationale": "The translation preserves the exact non-strict product inequality, constant 1, exact arithmetic, and absence of side conditions for its stated domain. It nevertheless restricts the paper's multiplication-compatible matrices to equal-sized square real matrices, so translation-implies-paper fails. The dependency ledger also does not expose enough of the selected norm to verify that it is exactly the paper's Frobenius norm, and the zero-dimensional case is not explicitly sourced. Because paper-implies-translation is therefore unclear, the result is undetermined and requires adjudication."
+}

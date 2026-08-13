@@ -1,0 +1,55 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "blind dependency D016 is unclear",
+    "round-trip S06 is unclear",
+    "round-trip S09 is unclear"
+  ],
+  "classification": "undetermined",
+  "completed_at_utc": "2026-08-13T17:59:00.070347+00:00",
+  "findings": [
+    {
+      "category": "unresolved norm semantics",
+      "evidence": "The paper explicitly defines the required unsquared Frobenius norm, while D016 delegates its Norm component to an unexpanded declaration.",
+      "impact": "Paper-implies-Lean cannot be verified, preventing a faithful-equivalent or not-faithful-weaker final classification.",
+      "severity": "critical"
+    },
+    {
+      "category": "dimensional specialization",
+      "evidence": "The paper's property applies wherever AB is defined and its immediate context uses rectangular factors; Lean assigns both factors the same Matrix (Fin n) (Fin n) Real type.",
+      "impact": "Lean does not imply the full paper claim. Even if the norm identity is later confirmed, the appropriate classification would be not-faithful-weaker.",
+      "severity": "major"
+    },
+    {
+      "category": "nonvacuity and strength",
+      "evidence": "The target has no hypotheses and includes nonzero matrices for every positive n; its n = 0 instance is merely degenerate.",
+      "impact": "The target is nonvacuous, but neither its square restriction nor its zero-dimensional edge case supplies genuine stronger theorem content.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "Lean quantifies only pairs of real n-by-n matrices sharing one dimension. It therefore supplies no instance of the paper's claim for a genuinely rectangular compatible product, such as an a-by-b matrix multiplied by a b-by-c matrix with unequal outer dimensions. This is reduced applicability, not stronger theorem content.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "If D016's inherited norm is exactly the paper's unsquared, unnormalized Frobenius norm, the paper claim specializes to the represented square real matrices. The supplied declaration evidence does not establish that identity. The additional n = 0 case is degenerate and does not constitute genuine nonvacuous strength.",
+      "verdict": "unclear"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-weaker",
+    "roundtrip": "undetermined"
+  },
+  "rationale": "The verified paper states constant-one submultiplicativity for the unsquared Frobenius norm and does not confine the factors to equal square dimensions. The Lean declaration faithfully encodes exact real matrix multiplication and the same inequality shape, but only for common-size square matrices, so Lean-to-paper is definitively no. Establishing paper-to-Lean requires identifying D016's selected norm with the paper's precise Frobenius norm. Because the supplied body delegates that norm to an unexpanded dependency, this identification cannot be made from primary declaration evidence. The remaining uncertainty is material, so the final classification is undetermined and the target is not accepted.",
+  "remaining_uncertainties": [
+    "The supplied declaration evidence does not unfold Matrix.frobeniusSeminormedAddCommGroup, so D016 cannot be verified as exactly sqrt(sum_{i,j} |a_ij|^2) with no normalization."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P15-T1"
+}
