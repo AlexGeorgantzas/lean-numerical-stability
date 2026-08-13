@@ -1,0 +1,47 @@
+{
+  "evidence_policy": "Use only the referenced PDF and surrounding paper context as evidence. Produce an independent contract for every listed task.",
+  "paper_id": "P06",
+  "paper_path": "paper_bencmark/reference_papers/P06_PROBABILISTIC ROUNDING ERROR ANALYSIS OFHOUSEHOLDER QR FACTORIZATION.pdf",
+  "paper_sha256": "c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79",
+  "paper_version": "published journal version; volume 44, issue 3, 2023, printed pages 1146-1163",
+  "role": "paper-source-locator",
+  "schema_version": "highambench-faithfulness-0.2",
+  "tasks": [
+    {
+      "source_locations": [
+        {
+          "anchor": "equation (4.20) and its preceding implication sentence",
+          "pdf_page": 10,
+          "printed_page": "1155",
+          "role": "Frobenius backward-error bound implied by the columnwise estimate",
+          "section": "4. Application of a sequence of Householder matrices"
+        }
+      ],
+      "task_id": "P06-T1"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "equations (3.3)-(3.4)",
+          "pdf_page": 5,
+          "printed_page": "1150",
+          "role": "definition of the symmetric dilation and its operator-norm/largest-eigenvalue identity",
+          "section": "3. Matrix concentration inequalities"
+        }
+      ],
+      "task_id": "P06-T2"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "equations (4.8)-(4.9) in the proof of Lemma 4.2",
+          "pdf_page": 7,
+          "printed_page": "1152",
+          "role": "first-order expansion of the perturbed transformation product and the single-perturbation insertion matrices",
+          "section": "4. Application of a sequence of Householder matrices"
+        }
+      ],
+      "task_id": "P06-T3"
+    }
+  ]
+}

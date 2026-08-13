@@ -1,0 +1,131 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "The probability 1 - 2mn exp(-lambda^2) is stated with (4.17), followed later by the sentence that (4.17) implies (4.20) (PDF p. 9, printed p. 1154, (4.17); PDF p. 10, printed p. 1155, sentence before (4.20)).",
+      "impact": "The same-event probability is inherited by logical implication, but it should be labeled inherited rather than presented as text explicitly repeated at (4.20).",
+      "issue": "Equation (4.20) does not restate a probability."
+    },
+    {
+      "evidence": "The term is written after c_6 lambda sqrt(n) gamma_tilde_m(lambda)||A||_F, without an explicit factor such as ||A||_F or a stated hidden constant (PDF p. 10, printed p. 1155, (4.20)).",
+      "impact": "A formalization must not silently choose whether the remainder is absolute, relative to ||A||_F, or uniform in m,n and lambda.",
+      "issue": "The scale and uniformity of the additive O(u^2) term are not specified in (4.20)."
+    },
+    {
+      "evidence": "The condition m^(1/2)n^(3/2)u < 1 occurs in the preceding higher-order discussion, while (4.20) is later displayed without restating it (PDF p. 10, printed p. 1155, (4.18)-(4.20)).",
+      "impact": "It is required for the interpretation that first-order growth dominates, but the paper does not present it as a formal antecedent directly on the displayed asymptotic inequality.",
+      "issue": "Condition (4.18) is not syntactically attached to equation (4.20)."
+    },
+    {
+      "evidence": "lambda > 0 accompanies the definition (1.6), and m >= n is standing QR context confirmed after (4.19) (PDF p. 2, printed p. 1147, (1.6); PDF p. 10, printed p. 1155, text after (4.19)).",
+      "impact": "These are inherited contextual binders rather than fresh explicit hypotheses at equation (4.20).",
+      "issue": "Theorem 4.4 does not restate lambda > 0 or m >= n in its opening line."
+    }
+  ],
+  "contract_plain_english": "For Householder QR of an m-by-n real matrix, under the paper's probabilistic rounding model and its strengthened probability-1 local-application assumption, the computed R_hat is the exact R factor of A + Delta A for some orthogonal Q, and the Frobenius backward error is bounded by c_6 lambda sqrt(n) gamma_tilde_m(lambda)||A||_F plus an unspecified second-order remainder; the bound inherits the all-column probability at least 1 - 2mn exp(-lambda^2) (PDF p. 9, printed p. 1154, Theorem 4.4 and (4.16)-(4.17); PDF p. 10, printed p. 1155, (4.20)).",
+  "paper_batch_sha256": "5fc79f8dcb892e5e54a0e6404abfb754e2c8f1233e5e586f0036f135448517d2",
+  "paper_sha256": "c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "norm conventions and equation (1.6)",
+      "observation": "The paper defines the vector 2-norm, its subordinate matrix norm, the Frobenius norm ||A||_F = trace(A^T A)^(1/2), column notation a_j, modest integer constants c_i, and gamma_tilde_k(lambda) = exp((lambda sqrt(k) u + k u^2)/(1-u)) - 1 = lambda sqrt(k) u + O(u^2), with lambda > 0.",
+      "pdf_page": 2,
+      "printed_page": "1147"
+    },
+    {
+      "anchor": "Model 1.5",
+      "observation": "Generated rounding errors satisfy the standard relative-error model and are mean-independent random variables of mean zero.",
+      "pdf_page": 3,
+      "printed_page": "1148"
+    },
+    {
+      "anchor": "Lemma 4.1, equations (4.1)-(4.2)",
+      "observation": "A computed sequence of Householder applications is represented by local perturbations Delta P_j, with ||Delta P_j||_2 <= c_5 gamma_tilde_m(lambda).",
+      "pdf_page": 6,
+      "printed_page": "1151"
+    },
+    {
+      "anchor": "paragraph preceding Lemma 4.2 and Lemma 4.2 hypothesis",
+      "observation": "The remaining section results, including Theorem 4.4, strengthen the local bound (4.2) to an assumption that it holds with probability 1 for every j.",
+      "pdf_page": 7,
+      "printed_page": "1152"
+    },
+    {
+      "anchor": "Theorem 4.4, equations (4.16)-(4.17)",
+      "observation": "For the computed upper-trapezoidal Householder QR factor R_hat, there exists an orthogonal Q such that A + Delta A = Q R_hat, and all columns satisfy ||Delta a_j||_2 <= c_6 lambda sqrt(n) gamma_tilde_m(lambda) ||a_j||_2 + O(u^2), j=1:n, with probability at least 1 - 2mn exp(-lambda^2).",
+      "pdf_page": 9,
+      "printed_page": "1154"
+    },
+    {
+      "anchor": "equations (4.18)-(4.20) and the implication sentence preceding (4.20)",
+      "observation": "After discussing the first-order restriction m^(1/2)n^(3/2)u < 1, the paper states that the columnwise bound (4.17) implies ||Delta A||_F <= c_6 lambda sqrt(n) gamma_tilde_m(lambda) ||A||_F + O(u^2).",
+      "pdf_page": 10,
+      "printed_page": "1155"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "The contract concerns the normwise backward error of the computed upper-trapezoidal R factor produced by Householder QR; it is specialized from applying n Householder transformations and includes the treatment of explicitly zeroed entries and computed Householder vectors described in the proof of Theorem 4.4 (PDF p. 9, printed p. 1154, Theorem 4.4 and its proof).",
+    "binders": [
+      "Matrix dimensions m,n with m >= n; input A in R^(m x n); computed upper-trapezoidal Householder QR factor R_hat in R^(m x n) (PDF p. 9, printed p. 1154, Theorem 4.4; PDF p. 10, printed p. 1155, text following (4.19)).",
+      "Parameter lambda > 0, unit roundoff u, existential orthogonal Q in R^(m x m), perturbation Delta A with columns Delta a_j, and indices j=1,...,n (PDF p. 2, printed p. 1147, (1.6); PDF p. 9, printed p. 1154, (4.16)-(4.17))."
+    ],
+    "conclusions": [
+      "There exists an orthogonal Q such that A + Delta A = Q R_hat (PDF p. 9, printed p. 1154, (4.16)).",
+      "The normwise backward error satisfies ||Delta A||_F <= c_6 lambda sqrt(n) gamma_tilde_m(lambda) ||A||_F + O(u^2) (PDF p. 10, printed p. 1155, (4.20)).",
+      "Inherited-event conclusion: because (4.20) is obtained from the simultaneously valid columnwise bounds (4.17), it holds on that same event, whose stated probability is at least p_4(lambda,m,n) = 1 - 2mn exp(-lambda^2); equation (4.20) does not repeat this probability (PDF p. 9, printed p. 1154, (4.17); PDF p. 10, printed p. 1155, implication sentence before (4.20))."
+    ],
+    "constants_and_indexing": [
+      "The leading factor is exactly c_6 lambda sqrt(n) gamma_tilde_m(lambda): the square-root factor is indexed by n, while gamma_tilde is indexed by m (PDF p. 10, printed p. 1155, (4.20)).",
+      "The source columnwise estimate applies simultaneously for j=1:n and has probability lower bound 1 - 2mn exp(-lambda^2) (PDF p. 9, printed p. 1154, (4.17)).",
+      "The same lambda occurs both outside gamma_tilde_m(lambda) and inside its definition (PDF p. 2, printed p. 1147, (1.6); PDF p. 10, printed p. 1155, (4.20))."
+    ],
+    "definitions_and_conventions": [
+      "||A||_F = trace(A^T A)^(1/2), and a_j denotes column j of A (PDF p. 2, printed p. 1147, norm-convention paragraph).",
+      "gamma_tilde_m(lambda) = exp((lambda sqrt(m) u + m u^2)/(1-u)) - 1 = lambda sqrt(m)u + O(u^2), with lambda > 0 (PDF p. 2, printed p. 1147, (1.6), specialized from index n to m).",
+      "The c_i, including c_6, are integer constants of modest size rather than dimension-dependent quantities (PDF p. 2, printed p. 1147, norm-convention paragraph).",
+      "Delta A is a backward perturbation of the input because it appears in the exact relation A + Delta A = Q R_hat with Q orthogonal (PDF p. 9, printed p. 1154, (4.16))."
+    ],
+    "error_notions": [
+      "Delta A is a normwise input backward error for the computed R_hat, certified through an exact QR relation with an orthogonal Q (PDF p. 9, printed p. 1154, (4.16)).",
+      "Equation (4.20) is the Frobenius aggregation of the columnwise 2-norm backward errors in (4.17) (PDF p. 9, printed p. 1154, (4.17); PDF p. 10, printed p. 1155, sentence before (4.20))."
+    ],
+    "exceptional_values": [
+      "No separate NaN, infinity, overflow, or underflow clauses are stated; applicability is conditional on elementary operations satisfying the relative-error model (PDF p. 2, printed p. 1147, (1.4)).",
+      "Only lambda > 0 is stated for gamma_tilde; no additional restriction is imposed to make 1 - 2mn exp(-lambda^2) nonnegative, so for small lambda that probability lower bound can be vacuous (PDF p. 2, printed p. 1147, (1.6); PDF p. 9, printed p. 1154, (4.17))."
+    ],
+    "higher_order_terms": [
+      "The displayed bound retains an additive O(u^2) term and is explicitly described as a first-order backward-error result (PDF p. 9, printed p. 1154, paragraph following Theorem 4.4; PDF p. 10, printed p. 1155, (4.20)).",
+      "For r=n, the paper estimates the omitted second-order contribution at scale n^2 gamma_tilde_m(lambda)^2 ||b||_2, approximately n^2 m u^2 ||b||_2 when constants and lambda are omitted (PDF p. 9, printed p. 1154, higher-order discussion continuing onto PDF p. 10, printed p. 1155).",
+      "The condition m^(1/2)n^(3/2)u < 1 is used to ensure the omitted higher-order terms do not overturn the claimed sqrt(mn)u growth (PDF p. 10, printed p. 1155, (4.18) and subsequent ratio argument)."
+    ],
+    "hypotheses": [
+      "R_hat is obtained from A by the Householder QR algorithm (PDF p. 9, printed p. 1154, Theorem 4.4).",
+      "The rounding errors obey Model 1.5: the standard relative-error model with errors generated in computation order, mean independent, and of mean zero (PDF p. 3, printed p. 1148, Model 1.5).",
+      "The local application-error bound ||Delta P_j||_2 <= c_5 gamma_tilde_m(lambda) is assumed to hold with probability 1 for every Householder application (PDF p. 6, printed p. 1151, (4.2); PDF p. 7, printed p. 1152, Lemma 4.2 hypothesis).",
+      "For the paper's interpretation that the first-order error grows like sqrt(mn)u rather than being dominated by omitted terms, it imposes m^(1/2)n^(3/2)u < 1 (PDF p. 10, printed p. 1155, (4.18) and following discussion)."
+    ],
+    "implicit_context": [
+      "Theorem 4.4 inherits the standing QR dimension condition m >= n even though that inequality is not repeated in its opening sentence (PDF p. 10, printed p. 1155, discussion following (4.19)).",
+      "Q is an exact existential orthogonal factor, while R_hat is the computed factor; (4.20) is not a forward-error comparison with a separately specified exact R (PDF p. 9, printed p. 1154, Theorem 4.4 and (4.16)).",
+      "The Frobenius estimate is obtained by aggregating the all-column event in (4.17), not by applying a new probabilistic argument at (4.20) (PDF p. 9, printed p. 1154, Lemma 4.3 proof and (4.17); PDF p. 10, printed p. 1155, implication sentence before (4.20))."
+    ],
+    "norms": [
+      "The conclusion uses the Frobenius norm on both Delta A and A (PDF p. 10, printed p. 1155, (4.20)).",
+      "Its source bounds use the Euclidean 2-norm on each column (PDF p. 9, printed p. 1154, (4.17)); the paper defines the vector 2-norm and corresponding subordinate matrix norm globally (PDF p. 2, printed p. 1147, norm-convention paragraph)."
+    ],
+    "numerical_model": [
+      "Elementary operations satisfy fl(x op y) = (x op y)(1 + delta), |delta| <= u (PDF p. 2, printed p. 1147, (1.4)).",
+      "Model 1.5 additionally requires computation-order mean independence and zero mean (PDF p. 3, printed p. 1148, Model 1.5).",
+      "The analysis assumes the local bound (4.2) with probability 1, although its preceding derivation only supplies probability at least 1 - 2rm exp(-lambda^2/2) (PDF p. 7, printed p. 1152, (4.5)-(4.6) and paragraph before Lemma 4.2; PDF p. 10, printed p. 1155, discussion before (4.20))."
+    ]
+  },
+  "task_id": "P06-T1",
+  "undebatable_constraints": [
+    "The bound is Frobenius-to-Frobenius and concerns the same Delta A appearing in A + Delta A = Q R_hat (PDF p. 9, printed p. 1154, (4.16); PDF p. 10, printed p. 1155, (4.20)).",
+    "The exact leading expression is c_6 lambda sqrt(n) gamma_tilde_m(lambda); neither the sqrt(n) factor nor the m index on gamma_tilde may be changed (PDF p. 10, printed p. 1155, (4.20)).",
+    "The additive O(u^2) term is part of the displayed claim and cannot be silently deleted or converted into an exact all-orders inequality (PDF p. 10, printed p. 1155, (4.20) and preceding higher-order discussion).",
+    "The result is conditional on Model 1.5 and the probability-1 version of the local perturbation bound (4.2) (PDF p. 7, printed p. 1152, Lemma 4.2; PDF p. 9, printed p. 1154, Theorem 4.4).",
+    "The probability attached to the source columnwise event is at least 1 - 2mn exp(-lambda^2), and the Frobenius implication does not introduce a different probability (PDF p. 9, printed p. 1154, (4.17); PDF p. 10, printed p. 1155, implication before (4.20))."
+  ]
+}
