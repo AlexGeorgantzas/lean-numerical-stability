@@ -1,0 +1,259 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "4eb2cc402bc41763a1b4108896fc4eb6855080cf71bc679ec5fd0ef665421610",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For vectors a and factor indexed by Fin n, this is the finite weighted sum T = sum_{i in Fin n} a_i factor_i.",
+      "effect_on_target": "It supplies the perturbed or weighted sum T appearing in the numerator |T-S| of the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For a vector a indexed by Fin n, this is the finite sum S = sum_{i in Fin n} a_i.",
+      "effect_on_target": "The first hypothesis is S != 0. The same S appears in |T-S| and in both denominators |S|.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "For a vector a, this is K = (sum_{i in Fin n} |a_i|)/|sum_{i in Fin n} a_i|.",
+      "effect_on_target": "It supplies the exact ratio K multiplied by gamma on the right-hand side of the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "This extracts the division operation stored in a DivInvMonoid structure.",
+      "effect_on_target": "Applied to the real-number instance, it provides the real division used in the two displayed ratios.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type with n positions, corresponding to indices 0 through n-1.",
+      "effect_on_target": "It fixes the common dimension and index domain of a and factor and the domain over which every sum and pointwise hypothesis ranges.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "HDiv.hDiv",
+      "meaning": "This projects the binary heterogeneous-division operation from an HDiv instance.",
+      "effect_on_target": "With real inputs and output, it denotes ordinary real division in the left-hand relative error and in K.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "HMul.hMul",
+      "meaning": "This projects the binary heterogeneous-multiplication operation from an HMul instance.",
+      "effect_on_target": "With real arguments, it denotes the products a_i factor_i and gamma K.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "HSub.hSub",
+      "meaning": "This projects the binary heterogeneous-subtraction operation from an HSub instance.",
+      "effect_on_target": "With real arguments, it denotes factor_i - 1 in the hypothesis and T-S in the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LE.le",
+      "meaning": "This projects the less-than-or-equal relation from an LE instance.",
+      "effect_on_target": "With the real instance, it gives every inequality <= in the pointwise hypothesis and final bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Nat",
+      "meaning": "This is the type of natural numbers.",
+      "effect_on_target": "The universally quantified natural number n determines the finite dimension.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "Ne",
+      "meaning": "Ne a b is defined as the negation of a = b.",
+      "effect_on_target": "It makes the first hypothesis exactly S != 0.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "OfNat.ofNat",
+      "meaning": "This extracts the interpretation of a natural-number literal in a type carrying the corresponding OfNat instance.",
+      "effect_on_target": "It interprets the literals 0 and 1 as the real constants zero and one.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "One.toOfNat1",
+      "meaning": "This constructs the interpretation of the numeral 1 from a type's distinguished one element.",
+      "effect_on_target": "For the reals, it makes the constant in |factor_i - 1| the real number one.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Real",
+      "meaning": "This is the type of real numbers.",
+      "effect_on_target": "All vector entries, factors, gamma, sums, products, differences, absolute values, and ratios in the proposition are real.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instAddGroup",
+      "meaning": "This supplies the additive-group structure of the real numbers, including addition, additive inverses, and zero.",
+      "effect_on_target": "It supports real negation and the definition of absolute value as max(x,-x).",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This supplies the standard multiplicative, inverse, and division structure on the real numbers.",
+      "effect_on_target": "It determines the real division operation used in |T-S|/|S| and in K.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instLE",
+      "meaning": "This supplies the standard order relation <= on the real numbers.",
+      "effect_on_target": "It gives the mathematical meaning of the pointwise bound and the concluding inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instMul",
+      "meaning": "This supplies standard multiplication on the real numbers.",
+      "effect_on_target": "It determines the products a_i factor_i and gamma K.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instOne",
+      "meaning": "This supplies the distinguished real number one.",
+      "effect_on_target": "It supplies the constant 1 subtracted from each factor_i.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instSub",
+      "meaning": "This supplies real subtraction, defined as adding the additive inverse: a-b = a+(-b).",
+      "effect_on_target": "It determines factor_i - 1 and T-S.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instZero",
+      "meaning": "This supplies the distinguished real number zero.",
+      "effect_on_target": "It supplies the constant 0 in the nonzero-sum hypothesis S != 0.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.lattice",
+      "meaning": "This supplies the lattice order structure of the real numbers, including binary maximum.",
+      "effect_on_target": "Together with the additive-group structure, it makes abs(x) equal to max(x,-x), the standard real absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Zero.toOfNat0",
+      "meaning": "This constructs the interpretation of the numeral 0 from a type's distinguished zero element.",
+      "effect_on_target": "For the reals, it makes the right side of S != 0 the real number zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "abs",
+      "meaning": "For an ordered additive group, abs(x) is defined as max(x,-x); over the reals this is the standard absolute value |x|.",
+      "effect_on_target": "It measures |factor_i-1|, |T-S|, every |a_i|, and |S|.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "instHDiv",
+      "meaning": "This converts an ordinary same-type Div operation into an HDiv operation with the same input and output type.",
+      "effect_on_target": "It lifts standard real division so HDiv.hDiv denotes ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "instHMul",
+      "meaning": "This converts an ordinary same-type Mul operation into an HMul operation with the same input and output type.",
+      "effect_on_target": "It lifts standard real multiplication for a_i factor_i and gamma K.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "instHSub",
+      "meaning": "This converts an ordinary same-type Sub operation into an HSub operation with the same input and output type.",
+      "effect_on_target": "It lifts standard real subtraction for factor_i - 1 and T-S.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Fin.fintype",
+      "meaning": "This gives Fin n a finite-type structure whose elements enumerate all n finite indices.",
+      "effect_on_target": "It permits Finset.univ to range over every index in Fin n in each finite sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Finset.sum",
+      "meaning": "For a finite set and a function into an additive commutative monoid, this maps the function over the finite elements and adds all resulting values.",
+      "effect_on_target": "It defines T, S, and sum_i |a_i| as finite real sums; the empty sum is zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, this is the finite set containing every element of that type.",
+      "effect_on_target": "It ensures that each sum ranges over all indices i in Fin n, with no omitted or repeated index.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This supplies the additive commutative monoid structure of the real numbers.",
+      "effect_on_target": "It supplies associative and commutative real addition and zero for all finite sums, including the value zero for an empty sum.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "For every natural number n.",
+      "For every pair of real-valued functions a, factor : Fin n -> R, equivalently two real vectors (a_i) and (factor_i) of common length n.",
+      "For every real number gamma."
+    ],
+    "hypotheses": [
+      "The exact finite sum S = sum_{i in Fin n} a_i is nonzero.",
+      "For every index i in Fin n, |factor_i - 1| <= gamma."
+    ],
+    "conclusions": [
+      "Let T = sum_{i in Fin n} a_i factor_i and K = (sum_{i in Fin n} |a_i|)/|S|. Then |T-S|/|S| <= gamma K."
+    ],
+    "mathematical_definitions": [
+      "The index set Fin n consists of the n positions 0,...,n-1, and every displayed sum is over all of these positions.",
+      "S = sum_{i in Fin n} a_i.",
+      "T = sum_{i in Fin n} a_i factor_i.",
+      "K = (sum_{i in Fin n} |a_i|)/|sum_{i in Fin n} a_i|.",
+      "All operations are exact real operations, and |x| is the standard scalar real absolute value max(x,-x).",
+      "The only explicit constants are the real numbers 0 and 1."
+    ],
+    "proposition_plain_english": "For any dimension n, any real vectors a and factor of length n, and any real gamma, assume that the sum of the entries of a is nonzero and that every factor differs from one in absolute value by at most gamma. Then the absolute difference between the weighted sum sum_i a_i factor_i and the original sum sum_i a_i, divided by the absolute value of the original sum, is at most gamma times the ratio of sum_i |a_i| to the absolute value of sum_i a_i."
+  },
+  "restrictions_and_vacuity_risks": [
+    "No positivity or nonnegativity assumption is stated for the entries a_i or factor_i.",
+    "No explicit assumption gamma >= 0 is stated. If all hypotheses are satisfiable, then n cannot be zero and the pointwise absolute-value bound forces gamma >= 0; for gamma < 0 the implication is vacuous.",
+    "No explicit assumption n > 0 is stated. When n = 0, S is the empty sum 0, so the hypothesis S != 0 is false and the proposition is vacuous.",
+    "If sum_i a_i = 0, the proposition makes no claim because its nonzero-sum hypothesis fails.",
+    "The nonzero-sum hypothesis ensures that |S| is nonzero, although real division itself is a total Lean operation.",
+    "The only norm-like operation on individual scalars is real absolute value; sum_i |a_i| is the finite l1 sum of the entries of a.",
+    "The proposition contains no floating-point format, rounding operation, computed approximation, probabilistic assumption, or finite-precision error model; all quantities and sums are exact real quantities.",
+    "There are no existential quantifiers, witness dependencies, or conjunction-valued conclusions. All data are universally quantified, the two assumptions are implications' premises, and the conclusion is one inequality.",
+    "No upper bound such as gamma < 1, no sharpness statement, and no equality characterization is encoded."
+  ],
+  "ambiguities": []
+}

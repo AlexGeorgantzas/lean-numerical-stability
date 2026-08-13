@@ -1,0 +1,61 @@
+{
+  "evidence_policy": "Use only the referenced PDF and surrounding paper context as evidence. Produce an independent contract for every listed task.",
+  "paper_id": "P17",
+  "paper_path": "paper_bencmark/reference_papers/P17_PROBABILISTIC ERROR ANALYSIS OF LIMITED-PRECISIONSTOCHASTIC ROUNDING.pdf",
+  "paper_sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d",
+  "paper_version": "published journal version; SIAM Journal on Scientific Computing 47(5), 2025, pages B1227-B1249",
+  "role": "paper-source-locator",
+  "schema_version": "highambench-faithfulness-0.2",
+  "tasks": [
+    {
+      "source_locations": [
+        {
+          "anchor": "Theorem 3.6 product expectation envelope",
+          "pdf_page": 9,
+          "printed_page": "B1235",
+          "role": "finite accumulated-error product bound",
+          "section": "3. Properties of limited-precision stochastic rounding"
+        },
+        {
+          "anchor": "completion of the induction proof and Remark 3.7 specialization",
+          "pdf_page": 10,
+          "printed_page": "B1236",
+          "role": "roundoff-radius instantiation",
+          "section": "3. Properties of limited-precision stochastic rounding"
+        }
+      ],
+      "task_id": "P17-T1"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "recursive-sum product representation (4.4), condition number (4.2), and Theorem 4.1 equation (4.6)",
+          "pdf_page": 13,
+          "printed_page": "B1239",
+          "role": "summation bias conclusion",
+          "section": "4.1 Recursive summation"
+        },
+        {
+          "anchor": "proof of Theorem 4.1 using Theorem 3.6 and triangle inequality",
+          "pdf_page": 14,
+          "printed_page": "B1240",
+          "role": "coefficientwise-to-condition-number derivation",
+          "section": "4.1 Recursive summation"
+        }
+      ],
+      "task_id": "P17-T2"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "Theorem 4.3 equation (4.11), centered bound (4.12), and deterministic remainder bound (4.10)",
+          "pdf_page": 15,
+          "printed_page": "B1241",
+          "role": "variance-based high-probability summation error conclusion",
+          "section": "4.1 Recursive summation"
+        }
+      ],
+      "task_id": "P17-T3"
+    }
+  ]
+}
