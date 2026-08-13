@@ -1,0 +1,116 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "[PDF page 9; anchor: Theorem 3.6 statement and inductive inequalities] The printed hypotheses allow arbitrary random delta_k and only B>0, while the proof compares Q_{n-1}(1+beta_n) with Q_{n-1}(1+-B), which requires control of the sign of Q_{n-1}; the final lower induction also naturally uses 1-B>=0.",
+      "impact": "A literal formalization should not silently add Q_k>=0 or B<=1. If the intended SR context is formalized instead, those inherited rounding-factor properties must be made explicit.",
+      "issue": "The abstract theorem omits positivity assumptions used by its induction proof."
+    },
+    {
+      "evidence": "[PDF page 9; anchor: Remark 3.4] The paper explicitly says beta_k is random for k>=2 despite being produced by a deterministic rounding mode, because its input depends on delta_1,...,delta_{k-1}.",
+      "impact": "The contract treats beta_k as an adapted random variable, not as a globally constant error.",
+      "issue": "The term deterministic error for beta_k is local rather than probabilistic."
+    },
+    {
+      "evidence": "[PDF pages 9 and 10; anchors: Remark 3.3 and Remark 3.8] Remark 3.3 informally says a large number of random bits makes beta_k zero, whereas Remark 3.8 states the precise recovery through the limit r tending to infinity and u_{p+r} tending to zero.",
+      "impact": "The finite-r envelope (3.4) should be preserved; exact unbiasedness is safely asserted only when the relevant beta values vanish or in the stated limiting interpretation.",
+      "issue": "Finite-r equality with ideal stochastic rounding is not guaranteed merely by a qualitative large-r phrase."
+    }
+  ],
+  "contract_plain_english": "[PDF pages 9-10; anchors: Theorem 3.6 and Remark 3.7] If the first random rounding error has the same mean as its corresponding truncation error, every later rounding error has conditional mean equal to its corresponding truncation error, and all truncation errors are bounded by B, then the expected accumulated product lies between (1-B)^n and (1+B)^n. For limited-precision stochastic rounding, B is u_{p+r}, giving the exact two-sided bound (3.4).",
+  "paper_batch_sha256": "5856f4d88e51aeb1df8e36f051f77e90c96a2896bb707ed0186c2f74cf1ebc0b",
+  "paper_sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "Definition 2.9 limited-precision stochastic rounding (2.6)",
+      "observation": "SR_{p,r}(x) rounds to one of the two enclosing precision-p values using probabilities determined by fl_{p+r}(x). The preceding text defines fl_{p+r}(x)=x(1+beta), with |beta|<=2^(1-p-r)=u_{p+r}.",
+      "pdf_page": 6,
+      "printed_page": "B1232"
+    },
+    {
+      "anchor": "equation (3.1) and Remark 3.1",
+      "observation": "For SR_{p,r}(x)=x(1+delta), the paper derives E(delta)=beta, where beta is the relative error in fl_{p+r}(x), and explains that the bias decreases as r increases.",
+      "pdf_page": 7,
+      "printed_page": "B1233"
+    },
+    {
+      "anchor": "Lemma 3.2 conditional expectation relation",
+      "observation": "For the kth rounded scalar operation, E(delta_k | delta_1,...,delta_{k-1})=beta_k. If the exact operation result c is zero, the proof sets delta_k=beta_k=0.",
+      "pdf_page": 8,
+      "printed_page": "B1234"
+    },
+    {
+      "anchor": "Theorem 3.6 product expectation envelope",
+      "observation": "The theorem assumes E(delta_1)=E(beta_1), conditional means equal beta_k for k=2,...,n, and a uniform bound |beta_k|<=B with B>0. It concludes the two-sided finite-product expectation bound (1-B)^n <= E[product_{k=1}^n(1+delta_k)] <= (1+B)^n.",
+      "pdf_page": 9,
+      "printed_page": "B1235"
+    },
+    {
+      "anchor": "completion of Theorem 3.6 and Remark 3.7 equation (3.4)",
+      "observation": "For errors arising from Lemma 3.2, Remark 3.7 instantiates B with u_{p+r}, yielding (1-u_{p+r})^n <= E[product_{k=1}^n(1+delta_k)] <= (1+u_{p+r})^n.",
+      "pdf_page": 10,
+      "printed_page": "B1236"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "[PDF pages 8-10; anchors: Lemma 3.2, Theorem 3.6, and Remark 3.7] The abstract result applies to a finite sequence of scalar elementary operations whose relative SR_{p,r} errors satisfy the Lemma 3.2 conditional-mean relation; it is not tied to a particular summation or inner-product algorithm.",
+    "binders": [
+      "[PDF page 9; anchor: Theorem 3.6 statement] A positive product length n, random variables delta_1,...,delta_n and beta_1,...,beta_n, and a constant B>0.",
+      "[PDF pages 6 and 10; anchors: Definition 2.9 and Remark 3.7] In the limited-precision-SR specialization, precision p and a positive integer r determine u_{p+r}=2^(1-p-r), and the delta_k and beta_k are the operation errors characterized by Lemma 3.2."
+    ],
+    "conclusions": [
+      "[PDF page 9; anchor: Theorem 3.6 conclusion] (1-B)^n <= E[product_{k=1}^n (1+delta_k)] <= (1+B)^n.",
+      "[PDF page 10; anchor: Remark 3.7 equation (3.4)] For the limited-precision-SR errors, (1-u_{p+r})^n <= E[product_{k=1}^n (1+delta_k)] <= (1+u_{p+r})^n."
+    ],
+    "constants_and_indexing": [
+      "[PDF page 9; anchor: Theorem 3.6 statement] The first index has the separate hypothesis E(delta_1)=E(beta_1), while indices 2 through n use conditional expectations given all preceding delta values.",
+      "[PDF pages 9 and 10; anchors: Theorem 3.6 and equation (3.4)] Both envelope exponents are exactly n.",
+      "[PDF pages 6 and 10; anchors: truncation-error radius and Remark 3.7] The specialization uses B=u_{p+r}, not the larger SR output-error radius u_p."
+    ],
+    "definitions_and_conventions": [
+      "[PDF page 9; anchor: paragraph preceding Theorem 3.6 and its proof] Q_n denotes product_{k=1}^n(1+delta_k), interpreted as the accumulated multiplicative error factor.",
+      "[PDF pages 7 and 8; anchors: equation (3.1) and Lemma 3.2] For one operation with exact result c, SR_{p,r}(c)=c(1+delta_k) and fl_{p+r}(c)=c(1+beta_k).",
+      "[PDF page 6; anchor: text preceding Definition 2.9] u_{p+r}=2^(1-p-r), the relative-error radius for the p+r-bit truncation or directed-rounding stage."
+    ],
+    "error_notions": [
+      "[PDF page 9; anchor: paragraph preceding Theorem 3.6] The bounded object is the expectation of an accumulated multiplicative error factor, not an absolute output error or a normwise relative error.",
+      "[PDF pages 7-9; anchors: equation (3.1), Lemma 3.2, and Remark 3.5] delta_k is the random relative rounding error; beta_k is the corresponding relative p+r-bit truncation error and has the same unconditional expected value as delta_k."
+    ],
+    "exceptional_values": [
+      "[PDF page 8; anchor: proof of Lemma 3.2] If an exact scalar-operation result c equals zero, the surrounding SR error construction explicitly sets delta_k=beta_k=0.",
+      "[PDF pages 5 and 9; anchors: normalized floating-point model and Theorem 3.6] The theorem contains no explicit clauses for overflow, underflow, subnormal values, infinities, or NaNs."
+    ],
+    "higher_order_terms": [
+      "[PDF pages 9 and 10; anchors: Theorem 3.6 and equation (3.4)] The bounds retain the exact finite powers (1+-B)^n and (1+-u_{p+r})^n; no big-O term is omitted."
+    ],
+    "hypotheses": [
+      "[PDF page 9; anchor: Theorem 3.6 first-moment hypothesis] E(delta_1)=E(beta_1).",
+      "[PDF page 9; anchor: Theorem 3.6 conditional-mean hypothesis] For every k with 2<=k<=n, E(delta_k | delta_1,...,delta_{k-1})=beta_k.",
+      "[PDF page 9; anchor: Theorem 3.6 uniform-envelope hypothesis] There is one constant B>0 such that |beta_k|<=B for every 1<=k<=n.",
+      "[PDF pages 6, 8, and 10; anchors: truncation-error bound, Lemma 3.2, and Remark 3.7] In the SR_{p,r} application, beta_k is the relative fl_{p+r} error and satisfies |beta_k|<=u_{p+r}; this supplies B=u_{p+r}."
+    ],
+    "implicit_context": [
+      "[PDF page 9; anchor: paragraph preceding Theorem 3.6] The theorem is motivated by delta_k being random errors produced by SR_{p,r}, but its printed statement is abstract and calls delta_k and beta_k only random variables.",
+      "[PDF page 9; anchor: Theorem 3.6 statement] Existence of the displayed expectations, conditional expectations, and product expectation is presupposed rather than separately stated as an integrability hypothesis.",
+      "[PDF page 9; anchor: Remark 3.4] Although each beta_k comes from a deterministic rounding rule, beta_k is itself random for k>=2 because it depends on earlier random errors."
+    ],
+    "norms": [
+      "[PDF page 9; anchor: Theorem 3.6 hypothesis] Only scalar absolute value |beta_k| is used; no vector or matrix norm occurs."
+    ],
+    "numerical_model": [
+      "[PDF page 6; anchor: Definition 2.9 equation (2.6)] SR_{p,r} produces a precision-p result by randomly choosing between the enclosing precision-p floating-point values, using fl_{p+r}(x) to determine the Bernoulli probability.",
+      "[PDF page 6; anchor: Remark 2.10] SR_{p,r} outputs p-bit results and uses r additional random bits before truncation; fl_{p+r}(x) has p+r bits of precision.",
+      "[PDF pages 5 and 6; anchors: standard model (2.4) and pre-Definition 2.9 truncation model] The surrounding model is normalized binary floating-point arithmetic, with random rounding-error radius u_p and truncation-error radius u_{p+r}."
+    ]
+  },
+  "task_id": "P17-T1",
+  "undebatable_constraints": [
+    "[PDF page 9; anchor: Theorem 3.6 statement] The conditional expectation is conditioned on delta_1,...,delta_{k-1}, and its value is the random variable beta_k.",
+    "[PDF page 9; anchor: Theorem 3.6 statement] The hypothesis controls beta_k uniformly; it does not explicitly impose a magnitude bound on delta_k.",
+    "[PDF page 9; anchor: Theorem 3.6 conclusion] Both the lower and upper product bounds are parts of the claim.",
+    "[PDF page 10; anchor: Remark 3.7 equation (3.4)] The SR_{p,r} radius is u_{p+r}, and the exponent remains n.",
+    "[PDF page 9; anchor: paragraph introducing Theorem 3.6] The expectation is taken after forming the complete product, not factor by factor.",
+    "[PDF page 9; anchor: Remark 3.4] beta_k must not be formalized as a fixed deterministic scalar for k>=2; it can depend on prior random errors."
+  ]
+}

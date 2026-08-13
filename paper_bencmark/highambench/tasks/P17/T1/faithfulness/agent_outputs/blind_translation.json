@@ -1,0 +1,237 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "89ab60844d77ed45208b548ecf912778cafd9cf9b66d54cea35db01af7a3b61b",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "And",
+      "meaning": "Logical conjunction of two propositions.",
+      "effect_on_target": "Requires both the lower product bound and the upper product bound to hold simultaneously.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type consisting of the natural-number indices 0 through n-1.",
+      "effect_on_target": "The function delta has exactly n indexed real components, and the product ranges over those n indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "Fin.fintype",
+      "meaning": "Provides a finite enumeration of Fin n using the finite range of length n.",
+      "effect_on_target": "Makes it possible to form the universal finite set of all indices in Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "Finset.prod",
+      "meaning": "Maps a function over a finite set and multiplies all resulting values using the commutative-monoid product.",
+      "effect_on_target": "Forms the exact real product of the factors 1 + delta(i) over all i in Fin n; for an empty index set its value is the multiplicative identity 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "Ensures that the product includes every index i in Fin n exactly once.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "HAdd.hAdd",
+      "meaning": "Applies the addition operation supplied by an HAdd instance.",
+      "effect_on_target": "With the supplied real-number instance, constructs each factor as the ordinary real sum 1 + delta(i).",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "HPow.hPow",
+      "meaning": "Applies the exponentiation operation supplied by an HPow instance.",
+      "effect_on_target": "With the supplied natural-power instance, forms the real powers (1 - B)^n and (1 + B)^n.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "HSub.hSub",
+      "meaning": "Applies the subtraction operation supplied by an HSub instance.",
+      "effect_on_target": "With the supplied real-number instance, forms the lower endpoint 1 - B.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LE.le",
+      "meaning": "Applies the less-than-or-equal relation supplied by an LE instance.",
+      "effect_on_target": "Expresses the hypotheses 0 <= B, B <= 1, and |delta(i)| <= B, as well as both product inequalities, using the usual real order.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Monoid.toNatPow",
+      "meaning": "Defines natural-number exponentiation in a monoid by its repeated multiplication operation, with exponent zero giving the identity.",
+      "effect_on_target": "Interprets both endpoint powers as ordinary natural powers of real numbers and makes x^0 equal to 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "Nat",
+      "meaning": "The type of natural numbers, including zero.",
+      "effect_on_target": "The dimension and number of product factors is an arbitrary natural number n, so the zero-dimensional case is included.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "OfNat.ofNat",
+      "meaning": "Interprets a natural-number literal in a type through its OfNat instance.",
+      "effect_on_target": "Interprets the displayed literals 0 and 1 as the corresponding real constants.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "One.toOfNat1",
+      "meaning": "Builds the interpretation of the numeral 1 from a type's multiplicative identity.",
+      "effect_on_target": "Supplies the real constant 1 used in the factors and in the bases 1 - B and 1 + B.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "The bound B, every component delta(i), the factors, products, and powers are real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instAdd",
+      "meaning": "The ordinary addition operation on real numbers.",
+      "effect_on_target": "Determines that 1 + delta(i) and 1 + B are ordinary real sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive-group structure on the real numbers, including addition, zero, and additive negation.",
+      "effect_on_target": "Supplies additive negation to the definition of |delta(i)| as max(delta(i), -delta(i)).",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instCommMonoid",
+      "meaning": "The commutative multiplicative-monoid structure on the real numbers, with multiplication and identity 1.",
+      "effect_on_target": "Makes Finset.prod the ordinary order-independent product of the real factors 1 + delta(i).",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instLE",
+      "meaning": "The usual less-than-or-equal ordering on real numbers.",
+      "effect_on_target": "Gives every inequality in the proposition its ordinary real-order meaning.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative-monoid structure on the real numbers.",
+      "effect_on_target": "Supplies repeated real multiplication for the natural powers appearing in the two bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instOne",
+      "meaning": "The multiplicative identity 1 in the real numbers.",
+      "effect_on_target": "Determines the constant 1 in every factor, both power bases, empty products, and zero-exponent powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instSub",
+      "meaning": "Real subtraction, defined by a - b = a + (-b).",
+      "effect_on_target": "Interprets 1 - B as ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instZero",
+      "meaning": "The additive identity 0 in the real numbers.",
+      "effect_on_target": "Determines the real constant 0 in the hypothesis 0 <= B.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.lattice",
+      "meaning": "The lattice structure on the real numbers, whose supremum operation is the usual maximum.",
+      "effect_on_target": "Supplies the maximum used to define absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Zero.toOfNat0",
+      "meaning": "Builds the interpretation of the numeral 0 from a type's additive identity.",
+      "effect_on_target": "Supplies the real zero in the lower-bound hypothesis 0 <= B.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "abs",
+      "meaning": "Defines the absolute value of a real number a as max(a, -a).",
+      "effect_on_target": "The componentwise hypothesis is the usual condition |delta(i)| <= B, equivalently -B <= delta(i) <= B under 0 <= B.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "instHAdd",
+      "meaning": "Promotes a homogeneous Add operation to an HAdd operation on the same type.",
+      "effect_on_target": "Connects the HAdd expressions in the target to ordinary real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "instHPow",
+      "meaning": "Promotes a Pow operation to an HPow operation with the same base and result type.",
+      "effect_on_target": "Connects the HPow expressions to natural-number exponentiation of real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "instHSub",
+      "meaning": "Promotes a homogeneous Sub operation to an HSub operation on the same type.",
+      "effect_on_target": "Connects the HSub expression 1 - B to ordinary real subtraction.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "n is universally quantified over the natural numbers, including 0.",
+      "B is universally quantified over the real numbers.",
+      "After the assumptions on B, delta is universally quantified over all functions Fin n -> Real, equivalently all real families (delta(i)) indexed by i = 0, ..., n-1."
+    ],
+    "hypotheses": [
+      "0 <= B.",
+      "B <= 1.",
+      "For every i in Fin n, |delta(i)| <= B."
+    ],
+    "conclusions": [
+      "(1 - B)^n <= product over all i in Fin n of (1 + delta(i)).",
+      "The product over all i in Fin n of (1 + delta(i)) <= (1 + B)^n."
+    ],
+    "mathematical_definitions": [
+      "Fin n is the n-element index set {0, 1, ..., n-1}.",
+      "Let P denote the exact finite product P = product over i in Fin n of (1 + delta(i)).",
+      "The absolute value is |x| = max(x, -x).",
+      "The exponents are natural-number powers formed by repeated real multiplication.",
+      "When n = 0, the product is empty and equals 1, and both zero-exponent powers equal 1.",
+      "There are no existentially quantified witnesses and no vector norm; the only size condition is the coordinatewise scalar absolute-value bound."
+    ],
+    "proposition_plain_english": "For every natural number n and every real number B with 0 <= B <= 1, every n-indexed real family delta satisfying |delta(i)| <= B for every index i obeys the two-sided bound (1 - B)^n <= product over i = 0 to n - 1 of (1 + delta(i)) <= (1 + B)^n."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The result applies under the explicit restriction 0 <= B <= 1.",
+    "The perturbation restriction is coordinatewise: each delta(i) lies in [-B, B]. No aggregate, Euclidean, or other vector norm is present.",
+    "Because B <= 1, each factor 1 + delta(i) is nonnegative, but strict positivity is not guaranteed; when B = 1, a component delta(i) = -1 can make a factor zero.",
+    "The case n = 0 is included. The componentwise hypothesis is then vacuous, the product is empty, and both conclusions reduce to 1 <= 1.",
+    "As a chain of implications, an instance with B outside [0, 1], or a delta that violates its componentwise bound, satisfies the corresponding implication vacuously because its hypotheses are unavailable.",
+    "The proposition gives only the displayed endpoint product bounds. It does not assert strict inequalities, equality characterizations, probabilistic independence, a sum bound, an approximation error estimate, or that B is the smallest possible component bound."
+  ],
+  "ambiguities": []
+}
