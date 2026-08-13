@@ -1,0 +1,187 @@
+{
+  "entries": [
+    {
+      "id": "D002",
+      "interpretation": "For row i, p03MatVec A v i is the finite real sum over columns j of A i j multiplied by v j.",
+      "name": "HighamBench.p03MatVec",
+      "reuse_sha256": "3f3e080f083006263af0420142bb13cab74424b883a0dbb86672ce9986c4f184",
+      "semantic_sha256": "1369ded3dc793c70d72eeba99084d1d0ffc9aac01ed5047bab8b80574697ee32",
+      "source_dependency_id": "D001",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D004",
+      "interpretation": "Fin n is the finite coordinate index type with indices from zero through n minus one.",
+      "name": "Fin",
+      "reuse_sha256": "d6ff16e3d0dd2d5208f716846c88566e2cda555104a5ef994744bbc9fe3b964c",
+      "semantic_sha256": "59788903be5da78a88e4dc3844df38effdaabdfa82bb364602790d2271da7fda",
+      "source_dependency_id": "D003",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D005",
+      "interpretation": "HAdd.hAdd dispatches overloaded addition through the selected HAdd instance; here it resolves to real addition.",
+      "name": "HAdd.hAdd",
+      "reuse_sha256": "f0a208134f0be8d9c4f62fed752e833defbeaa7d7355a7f0eb97527b52a769f8",
+      "semantic_sha256": "e0bf2a92addd6ea713343e4ef69f67e4e1155781d08f46957b9f71412d865f59",
+      "source_dependency_id": "D004",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D006",
+      "interpretation": "HMul.hMul dispatches overloaded multiplication through the selected HMul instance; here it resolves to real multiplication.",
+      "name": "HMul.hMul",
+      "reuse_sha256": "043f9e8718f9e88882d760a34b86e7840facb49adb85e336d277391509a74cc5",
+      "semantic_sha256": "4e00447a4a8ef4c2ce13e307c56a1fbcd7fa8c732fe039a452b42477a50df2c6",
+      "source_dependency_id": "D015",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D008",
+      "interpretation": "Nat is the type of natural numbers used for the system dimension n.",
+      "name": "Nat",
+      "reuse_sha256": "a9b35dc65f8fe1414c7c158021712de6bc81e36dfed74f53b6ef0e77d99649a9",
+      "semantic_sha256": "2e1c25ca42e1e377a41827f0d2f09ae02cfb28ab155c30e277f1000f5e79b32c",
+      "source_dependency_id": "D006",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D011",
+      "interpretation": "Real is Lean's exact mathematical real-number type.",
+      "name": "Real",
+      "reuse_sha256": "ea1c9703299f6b4a3989c797f2a9a0a1b79aaf14813b3322023661d8f3fd7482",
+      "semantic_sha256": "38529f0578472feffc4c79d5d0755fa10fc3edafb232ab5e442336d13630ee90",
+      "source_dependency_id": "D007",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D012",
+      "interpretation": "Real.instAdd provides ordinary addition on real numbers.",
+      "name": "Real.instAdd",
+      "reuse_sha256": "b99f49fd674e6c7b3215be434e704ba83bdf1057272a73d2ff3a7bde1d80f163",
+      "semantic_sha256": "f99208c181266311bec9c890b688378f329076f9e6be38fe93d9cedf4d7f50ce",
+      "source_dependency_id": "D008",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D015",
+      "interpretation": "Real.instMul provides ordinary multiplication on real numbers.",
+      "name": "Real.instMul",
+      "reuse_sha256": "fc791f7590243b52a697d21d3fbd5944209c68022bbf93965ff90e52c8064ff0",
+      "semantic_sha256": "459ccbe28a1d29ccd2b329ea29e1a84b329b8064b8a8ecc52764b69b23e229ed",
+      "source_dependency_id": "D017",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D019",
+      "interpretation": "instHAdd lifts a homogeneous Add instance into a homogeneous HAdd instance.",
+      "name": "instHAdd",
+      "reuse_sha256": "562d1a77e6f0776269d696792195dd2231b029682f446a852186626214a6bcea",
+      "semantic_sha256": "38066efd17aeeca52ec2890d9aafca2fa3cce8fda7f5843c1b8e5da130d93981",
+      "source_dependency_id": "D010",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D020",
+      "interpretation": "instHMul lifts a homogeneous Mul instance into a homogeneous HMul instance.",
+      "name": "instHMul",
+      "reuse_sha256": "5cb07b0c605f9c2b2762be4698a32090340f3fde3d71d965a362602ee4972b70",
+      "semantic_sha256": "1fd375514ac68e29e7941c94ba308ea936395db23d0fee63a5c69dcccd3b2bdc",
+      "source_dependency_id": "D018",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D022",
+      "interpretation": "Eq is exact propositional equality between two terms of the same type.",
+      "name": "Eq",
+      "reuse_sha256": "32b960214ea75a7ddf0ac041367800a710306055c759f30a565b31620dab305a",
+      "semantic_sha256": "63e9afa87e04d13393a2fe09e8e76489d96be3982734b4b40a52fc6ebea863d7",
+      "source_dependency_id": "D002",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D023",
+      "interpretation": "Fin.fintype supplies a finite enumeration containing every element of Fin n exactly once.",
+      "name": "Fin.fintype",
+      "reuse_sha256": "9778af6807090f8be77da7856f20df1359a48e3eabbf5177f68b8be8f96a9e7b",
+      "semantic_sha256": "e7038d0981813ab904ddadd5c858e1d87d6d42413a72872c71b6e0413db6bb44",
+      "source_dependency_id": "D012",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D024",
+      "interpretation": "Finset.sum folds an AddCommMonoid-valued function over a finite set, using zero for the empty sum.",
+      "name": "Finset.sum",
+      "reuse_sha256": "6baae77808ea118cc1051b8c696d042b6b9355aebb6ea48b33ab2fd4b3154686",
+      "semantic_sha256": "931ceac4e9efb5833f58970d10ced4621362e020ea1119492a8d379b7e692372",
+      "source_dependency_id": "D013",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D025",
+      "interpretation": "Finset.univ is the finite set of all elements of a fintype.",
+      "name": "Finset.univ",
+      "reuse_sha256": "656630b2582fd6cba8097035767a9c99111e207d64db5ae8aed7d38a9c748437",
+      "semantic_sha256": "194413a784fbc0b27d0cb6b1ab67ed060210172bf16ba24045aa439e58f9a8c7",
+      "source_dependency_id": "D014",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D026",
+      "interpretation": "HSub.hSub dispatches overloaded subtraction through the selected HSub instance; here it resolves to real subtraction.",
+      "name": "HSub.hSub",
+      "reuse_sha256": "9017c277d92c5358fe64cc0ef2804adaebdf76bdd631d915f904d1c3979a83da",
+      "semantic_sha256": "98025b38d523c0eadea77ba4961a20b2a913b23c079c4bfeba24a7bfaa24a4bc",
+      "source_dependency_id": "D005",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D027",
+      "interpretation": "Real.instAddCommMonoid is the usual commutative additive monoid structure on the reals.",
+      "name": "Real.instAddCommMonoid",
+      "reuse_sha256": "45d4fe3a9ca198b001b264d2e14a6ccc6b85181a512993edb6d0f479bda740b1",
+      "semantic_sha256": "11a549e6c9caa007a4627570dd86aea756ada755f141da0356b8766788f2eef7",
+      "source_dependency_id": "D016",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D028",
+      "interpretation": "Real.instSub defines real subtraction as addition of the additive inverse.",
+      "name": "Real.instSub",
+      "reuse_sha256": "03ad41775b4bca106588bd3e220fadb0dbf2a8375d5ebfe25f82138c181b8bf6",
+      "semantic_sha256": "926d9e8fcca2819a885d446e168b20c7c8aac2e542d59ed2b48e32c9a4659a36",
+      "source_dependency_id": "D009",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D031",
+      "interpretation": "instHSub lifts a homogeneous Sub instance into a homogeneous HSub instance.",
+      "name": "instHSub",
+      "reuse_sha256": "ccbdd5ce3779363286f65e5e9de8f087e59f2fc61339cf8cba930745ac59120f",
+      "semantic_sha256": "aa782f2b5af3d068f4c5340de4b32b193fece2c659a45582cc3024a19b550c87",
+      "source_dependency_id": "D011",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    }
+  ],
+  "role": "direct-dependency-reuse",
+  "schema_version": "highambench-faithfulness-0.2",
+  "target_task_id": "P03-T3"
+}

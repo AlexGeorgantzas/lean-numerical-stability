@@ -1,0 +1,375 @@
+{
+  "contracts": [
+    {
+      "ambiguities": [
+        {
+          "evidence": "The paper introduces Algorithm 1.1 only for nonsingular A and derives (4.1) by multiplying an expression containing A^{-1}; nevertheless, (4.1) itself contains no inverse. [PDF pp. 2, 7-8, printed A818 and A823-A824, Algorithm 1.1 and equations (3.7), (4.1)]",
+          "impact": "A source-faithful formalization should retain nonsingularity as inherited paper context, while recognizing that the isolated algebraic lemma can validly be generalized to arbitrary conforming A. [PDF pp. 2 and 8, printed A818 and A824, Algorithm 1.1 and equation (4.1)]",
+          "issue": "Nonsingularity is inherited from Algorithm 1.1 and from the derivation through (3.7), but is not algebraically needed for the final identity once (3.3) and (3.6) are assumed. [PDF pp. 2, 7-8, printed A818 and A823-A824, Algorithm 1.1 and equations (3.3), (3.6), (3.7), (4.1)]"
+        }
+      ],
+      "contract_plain_english": "One unscaled refinement step has an exact residual decomposition: the new signed residual equals the residual-computation error, plus the correction-equation defect, plus the update-rounding error after multiplication by A. Nothing in this passage alone bounds those terms or claims convergence. [PDF pp. 7-8, printed A823-A824, equations (3.3), (3.6), and (4.1)]",
+      "source_evidence": [
+        {
+          "anchor": "Algorithm 1.1",
+          "observation": "For nonsingular A \u2208 \u211d^{n\u00d7n}, Algorithm 1.1 computes the residual in precision u_r and rounds it to u_s, solves the correction equation in effective precision u_s while storing the correction in u, and forms the next iterate in u.",
+          "pdf_page": 2,
+          "printed_page": "A818"
+        },
+        {
+          "anchor": "section 2, standard model and definition of \u03b3_k",
+          "observation": "The analysis adopts the standard floating-point model and defines \u03b3_k = ku/(1\u2212ku), with a superscript indicating which unit roundoff is used.",
+          "pdf_page": 5,
+          "printed_page": "A821"
+        },
+        {
+          "anchor": "equations (3.3), (3.6), and (3.7)",
+          "observation": "The computed residual and update are represented exactly as r\u0302_i = b\u2212Ax\u0302_i+\u0394r_i and x\u0302_{i+1} = x\u0302_i+d\u0302_i+\u0394x_i, with stated componentwise bounds on \u0394r_i and \u0394x_i.",
+          "pdf_page": 7,
+          "printed_page": "A823"
+        },
+        {
+          "anchor": "equation (4.1)",
+          "observation": "Multiplication of (3.7) by A gives the exact signed residual identity A x\u0302_{i+1}\u2212b = \u0394r_i+A d\u0302_i\u2212r\u0302_i+A\u0394x_i.",
+          "pdf_page": 8,
+          "printed_page": "A824"
+        },
+        {
+          "anchor": "section 6, Scaling",
+          "observation": "The rounding-error analysis explicitly ignores underflow and overflow; section 6 proposes a scaled algorithmic variant when these are a concern.",
+          "pdf_page": 12,
+          "printed_page": "A828"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "This is the exact one-step residual decomposition for the original, unscaled Algorithm 1.1: residual computation and rounding, correction solve, and precision-u update are linked without asserting convergence or stability. [PDF pp. 2, 7-8, printed A818 and A823-A824, Algorithm 1.1 and equations (3.3), (3.6), (4.1)]",
+        "binders": [
+          "Let n be the system dimension, A \u2208 \u211d^{n\u00d7n} be nonsingular, and b \u2208 \u211d^n, as inherited from Algorithm 1.1. [PDF p. 2, printed A818, Algorithm 1.1]",
+          "For each loop index i \u2265 0, x\u0302_i and x\u0302_{i+1} are computed iterates, r\u0302_i is the computed-and-rounded residual, d\u0302_i is the computed correction, and \u0394r_i and \u0394x_i are their exact rounding-error terms. [PDF pp. 2 and 7, printed A818 and A823, Algorithm 1.1 and equations (3.3), (3.6)]",
+          "The unit roundoffs satisfy u_r \u2264 u \u2264 u_s \u2264 u_f when the two precision-order statements are combined. [PDF pp. 1-2, printed A817-A818, equation (1.1) and the definition of u_s]"
+        ],
+        "conclusions": [
+          "For each i \u2265 0, A x\u0302_{i+1}\u2212b = \u0394r_i+A d\u0302_i\u2212r\u0302_i+A\u0394x_i exactly. [PDF p. 8, printed A824, equation (4.1)]"
+        ],
+        "constants_and_indexing": [
+          "The identity relates iteration i to i+1 and has no shifted residual other than r\u0302_i. [PDF p. 8, printed A824, equation (4.1)]",
+          "The update contribution is A\u0394x_i, not \u0394x_i, and the correction defect is A d\u0302_i\u2212r\u0302_i with this sign. [PDF p. 8, printed A824, equation (4.1)]",
+          "The factors u_s, 1+u_s, and \u03b3_p^r occur in the bound for \u0394r_i but not as explicit coefficients in the exact identity. [PDF pp. 7-8, printed A823-A824, equations (3.3) and (4.1)]"
+        ],
+        "definitions_and_conventions": [
+          "\u0394r_i is defined by r\u0302_i\u2212(b\u2212Ax\u0302_i), and \u0394x_i is defined by x\u0302_{i+1}\u2212(x\u0302_i+d\u0302_i); they are exact error variables, not approximations or unspecified perturbations. [PDF p. 7, printed A823, equations (3.3) and (3.6)]",
+          "Absolute values of vectors and matrices are entrywise, and inequalities between vectors or matrices are componentwise. [PDF p. 5, printed A821, section 2 notation]",
+          "\u03b3_p^r means pu_r/(1\u2212pu_r), where p is the maximum number of nonzeros in a row of [A b], and p=n+1 for dense A and b. [PDF pp. 5 and 7, printed A821 and A823, definition of \u03b3_k and text preceding equation (3.3)]"
+        ],
+        "error_notions": [
+          "The left side uses A x\u0302_{i+1}\u2212b, the negative of the usual exact mathematical residual b\u2212Ax\u0302_{i+1}; r\u0302_i is instead the residual actually computed and rounded during iteration i. [PDF pp. 7-8, printed A823-A824, equations (3.3) and (4.1)]",
+          "Equation (4.1) alone does not state a forward-error, normwise-backward-error, or componentwise-backward-error bound. [PDF p. 8, printed A824, equation (4.1) and the subsequent normwise analysis]"
+        ],
+        "exceptional_values": [
+          "The paper's analysis ignores underflow and overflow and therefore applies under the ordinary finite-value standard-model regime; the scaled replacement in section 6 is not part of this identity's Algorithm 1.1 linkage. [PDF p. 12, printed A828, section 6, Scaling]",
+          "The definition \u03b3_p^r = pu_r/(1\u2212pu_r) implicitly requires a nonzero, normally positive denominator for the stated finite bound. [PDF pp. 5 and 7, printed A821 and A823, definition of \u03b3_k and use of \u03b3_p^r]"
+        ],
+        "higher_order_terms": [
+          "No big-O or higher-order term is omitted from (4.1); all rounding effects are contained exactly in \u0394r_i and \u0394x_i. [PDF p. 8, printed A824, equation (4.1)]",
+          "The associated residual-error bound retains the factor 1+u_s rather than replacing it by a first-order approximation. [PDF p. 7, printed A823, equation (3.3)]"
+        ],
+        "hypotheses": [
+          "The computed residual has the exact representation r\u0302_i = b\u2212Ax\u0302_i+\u0394r_i. [PDF p. 7, printed A823, equation (3.3)]",
+          "The computed update has the exact representation x\u0302_{i+1} = x\u0302_i+d\u0302_i+\u0394x_i. [PDF p. 7, printed A823, equation (3.6)]",
+          "The quantities are those produced by one iteration of the unscaled Algorithm 1.1. [PDF p. 2, printed A818, Algorithm 1.1]"
+        ],
+        "implicit_context": [
+          "A and b are treated as the precision-u input data, and all iterates are stored in precision u. [PDF pp. 1-2, printed A817-A818, precision definitions and Algorithm 1.1]",
+          "The paper obtains (4.1) by multiplying (3.7) by A, although the same identity follows directly from (3.3) and (3.6). [PDF pp. 7-8, printed A823-A824, equations (3.3), (3.6), (3.7), and (4.1)]",
+          "No solver-accuracy condition such as (2.3), (2.4), or (2.5) is invoked in the statement of the exact identity. [PDF p. 8, printed A824, equation (4.1) and the immediately following introduction of assumption (2.4)]"
+        ],
+        "norms": [
+          "No norm occurs in the identity itself. The surrounding rounding bounds use componentwise absolute values; infinity norms enter only in the subsequent analysis. [PDF pp. 7-8, printed A823-A824, equations (3.3), (3.6), and the text after (4.1)]"
+        ],
+        "numerical_model": [
+          "The residual error satisfies |\u0394r_i| \u2264 u_s|b\u2212Ax\u0302_i|+(1+u_s)\u03b3_p^r(|b|+|A||x\u0302_i|). [PDF p. 7, printed A823, equation (3.3)]",
+          "The update error satisfies |\u0394x_i| \u2264 u|x\u0302_{i+1}| under the cited variant of the standard rounding model. [PDF p. 7, printed A823, equation (3.6)]",
+          "Equation (4.1) itself is an exact algebraic identity after introducing these error variables; it is not a first-order approximation. [PDF p. 8, printed A824, equation (4.1)]"
+        ]
+      },
+      "task_id": "P03-T1",
+      "undebatable_constraints": [
+        "The claimed equality is A x\u0302_{i+1}\u2212b = \u0394r_i+A d\u0302_i\u2212r\u0302_i+A\u0394x_i, with exactly the displayed signs and index offset. [PDF p. 8, printed A824, equation (4.1)]",
+        "All hatted vectors are computed quantities, whereas b\u2212Ax\u0302_i is the exact residual of the stored iterate relative to the input A and b. [PDF pp. 2 and 7, printed A818 and A823, Algorithm 1.1 and equation (3.3)]",
+        "The result is one-step and exact; it contains no norm, inequality, convergence claim, or solver-stability premise. [PDF p. 8, printed A824, equation (4.1)]",
+        "\u0394r_i and \u0394x_i must remain distinct because they arise from different algorithmic operations and precisions. [PDF pp. 2 and 7, printed A818 and A823, Algorithm 1.1 and equations (3.3), (3.6)]"
+      ]
+    },
+    {
+      "ambiguities": [
+        {
+          "evidence": "The preliminaries call c_1 and c_2 functions of n, A, r\u0302_i, and u_s, while Theorem 4.1 states one condition c_1\u03ba\u221e(A)u_s<1 and then concludes the recurrence for every i\u22650. [PDF pp. 5 and 9, printed A821 and A825, solver-model explanation and Theorem 4.1]",
+          "impact": "If c_1 and c_2 vary with i, the solver bound and strict denominator condition must be read pointwise for every iteration, and \u03b1_i inherits that dependence; treating them as global constants requires an additional uniformity assumption. [PDF pp. 5 and 9, printed A821 and A825, equation (2.4) and Theorem 4.1]",
+          "issue": "The theorem writes c_1 and c_2 without iteration subscripts even though the preliminaries allow them to depend on r\u0302_i. [PDF pp. 5 and 9, printed A821 and A825, text after equations (2.3)-(2.5) and Theorem 4.1]"
+        },
+        {
+          "evidence": "\u03b3_p^r is defined with denominator 1\u2212pu_r, but the theorem explicitly states only nonsingularity, (2.4), and c_1\u03ba\u221e(A)u_s<1. [PDF pp. 5 and 9, printed A821 and A825, definition of \u03b3_k and Theorem 4.1]",
+          "impact": "A fully explicit formal statement must either assume pu_r<1 or bind \u03b3_p^r abstractly together with the residual-error premise. [PDF pp. 5 and 7, printed A821 and A823, definition of \u03b3_p^r and equation (3.3)]",
+          "issue": "The standard-model smallness requirement needed for finite \u03b3_p^r is implicit rather than included among Theorem 4.1's explicit hypotheses. [PDF pp. 5, 7, and 9, printed A821, A823, and A825, definition of \u03b3_k, equation (3.3), and Theorem 4.1]"
+        }
+      ],
+      "contract_plain_english": "If every correction solve has the normwise residual quality prescribed by (2.4) and c_1\u03ba\u221e(A)u_s is below one, then one refinement step satisfies an explicit infinity-norm residual recurrence. Its multiplicative coefficient contains the correction-solver instability, while its additive term contains residual-computation and update-rounding errors with all finite-precision factors retained. [PDF pp. 8-9, printed A824-A825, equation (4.1), displayed derivation, and Theorem 4.1]",
+      "source_evidence": [
+        {
+          "anchor": "Algorithm 1.1",
+          "observation": "The theorem concerns the computed iterates of the unscaled mixed-precision iterative-refinement algorithm.",
+          "pdf_page": 2,
+          "printed_page": "A818"
+        },
+        {
+          "anchor": "equations (2.1) and (2.4)",
+          "observation": "The paper defines \u03ba\u221e(A)=\u2016A^{-1}\u2016\u221e\u2016A\u2016\u221e and assumes a normwise correction-solver residual bound involving nonnegative quantities c_1 and c_2.",
+          "pdf_page": 5,
+          "printed_page": "A821"
+        },
+        {
+          "anchor": "equations (3.3) and (3.6)",
+          "observation": "The residual-computation and update-rounding errors have the componentwise models later converted to infinity-norm bounds.",
+          "pdf_page": 7,
+          "printed_page": "A823"
+        },
+        {
+          "anchor": "equation (4.1) and the h_i derivation",
+          "observation": "After defining h_i=r\u0302_i\u2212A d\u0302_i, the paper applies (2.4) and bounds d\u0302_i through A^{-1}(r\u0302_i\u2212h_i).",
+          "pdf_page": 8,
+          "printed_page": "A824"
+        },
+        {
+          "anchor": "displayed derivation immediately before Theorem 4.1 and Theorem 4.1",
+          "observation": "Under c_1\u03ba\u221e(A)u_s<1, the correction defect is isolated and then substituted into (4.1), yielding the residual recurrence and the exact displayed definitions of \u03b1_i and \u03b2_i.",
+          "pdf_page": 9,
+          "printed_page": "A825"
+        },
+        {
+          "anchor": "section 6, Scaling",
+          "observation": "The analysis ignores underflow and overflow; scaling is proposed later as a modified algorithm.",
+          "pdf_page": 12,
+          "printed_page": "A828"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "The result bounds one unscaled Algorithm 1.1 step by combining the residual rounding model, the normwise correction-solver defect model (2.4), and the precision-u update model. [PDF pp. 2, 7-9, printed A818 and A823-A825, Algorithm 1.1, equations (2.4), (3.3), (3.6), (4.1), and Theorem 4.1]",
+        "binders": [
+          "Let A \u2208 \u211d^{n\u00d7n} be nonsingular and b \u2208 \u211d^n, and let Algorithm 1.1 produce x\u0302_i, r\u0302_i, d\u0302_i, and x\u0302_{i+1} for i \u2265 0. [PDF pp. 2 and 9, printed A818 and A825, Algorithm 1.1 and Theorem 4.1]",
+          "Let c_1 and c_2 be the nonnegative solver-bound quantities from (2.4), and define h_i := r\u0302_i\u2212A d\u0302_i. [PDF pp. 5 and 8, printed A821 and A824, equation (2.4) and the text after (4.1)]",
+          "Let \u03ba\u221e(A):=\u2016A^{-1}\u2016\u221e\u2016A\u2016\u221e, let p be the maximum row nonzero count of [A b], and let \u03b3_p^r:=pu_r/(1\u2212pu_r). [PDF pp. 5 and 7, printed A821 and A823, equation (2.1), definition of \u03b3_k, and text preceding (3.3)]"
+        ],
+        "conclusions": [
+          "The exact starting identity is A x\u0302_{i+1}\u2212b=\u0394r_i+A d\u0302_i\u2212r\u0302_i+A\u0394x_i. [PDF p. 8, printed A824, equation (4.1)]",
+          "The first correction-defect bound is \u2016h_i\u2016\u221e \u2264 u_s(c_1\u2016A\u2016\u221e\u2016d\u0302_i\u2016\u221e+c_2\u2016r\u0302_i\u2016\u221e) \u2264 u_s(c_1\u2016A\u2016\u221e\u2016A^{-1}\u2016\u221e(\u2016r\u0302_i\u2016\u221e+\u2016h_i\u2016\u221e)+c_2\u2016r\u0302_i\u2016\u221e). [PDF p. 8, printed A824, displayed h_i derivation]",
+          "Isolating h_i under c_1\u03ba\u221e(A)u_s<1 gives \u2016h_i\u2016\u221e \u2264 u_s[(c_1\u03ba\u221e(A)+c_2)/(1\u2212c_1\u03ba\u221e(A)u_s)]\u2016r\u0302_i\u2016\u221e. [PDF p. 9, printed A825, first displayed bound]",
+          "Before eliminating r\u0302_i, the one-step residual bound is \u2016b\u2212Ax\u0302_{i+1}\u2016\u221e \u2264 u_s\u2016b\u2212Ax\u0302_i\u2016\u221e+(1+u_s)\u03b3_p^r(\u2016b\u2016\u221e+\u2016A\u2016\u221e\u2016x\u0302_i\u2016\u221e)+u_s[(c_1\u03ba\u221e(A)+c_2)/(1\u2212c_1\u03ba\u221e(A)u_s)]\u2016r\u0302_i\u2016\u221e+u\u2016A\u2016\u221e\u2016x\u0302_{i+1}\u2016\u221e. [PDF p. 9, printed A825, first residual inequality before Theorem 4.1]",
+          "After a second use of (3.3), Theorem 4.1 concludes \u2016b\u2212Ax\u0302_{i+1}\u2016\u221e \u2264 \u03b1_i\u2016b\u2212Ax\u0302_i\u2016\u221e+\u03b2_i for every i\u22650. [PDF p. 9, printed A825, final displayed derivation and Theorem 4.1]",
+          "The coefficient is \u03b1_i=u_s(1+(1+u_s)(c_1\u03ba\u221e(A)+c_2)/(1\u2212c_1\u03ba\u221e(A)u_s)). [PDF p. 9, printed A825, Theorem 4.1]",
+          "The additive term is \u03b2_i=(1+u_s(c_1\u03ba\u221e(A)+c_2)/(1\u2212c_1\u03ba\u221e(A)u_s))(1+u_s)\u03b3_p^r(\u2016b\u2016\u221e+\u2016A\u2016\u221e\u2016x\u0302_i\u2016\u221e)+u\u2016A\u2016\u221e\u2016x\u0302_{i+1}\u2016\u221e. [PDF p. 9, printed A825, Theorem 4.1]"
+        ],
+        "constants_and_indexing": [
+          "The result is quantified for i\u22650 and relates residual i+1 to residual i. [PDF p. 9, printed A825, Theorem 4.1]",
+          "The strict condition is c_1\u03ba\u221e(A)u_s<1, and the same expression appears in the exact denominator 1\u2212c_1\u03ba\u221e(A)u_s. [PDF p. 9, printed A825, defect bound and Theorem 4.1]",
+          "\u03b1_i contains the factor 1+u_s outside the correction-defect ratio, while \u03b2_i contains both 1+u_s and the separate update term involving x\u0302_{i+1}. [PDF p. 9, printed A825, Theorem 4.1]",
+          "The residual-rounding contribution in \u03b2_i uses x\u0302_i, whereas the update-rounding contribution uses x\u0302_{i+1}. [PDF p. 9, printed A825, Theorem 4.1]"
+        ],
+        "definitions_and_conventions": [
+          "h_i is the computed correction-equation residual r\u0302_i\u2212A d\u0302_i, whereas b\u2212Ax\u0302_i is the exact residual of the current stored iterate for the original system. [PDF pp. 8-9, printed A824-A825, text after (4.1) and Theorem 4.1]",
+          "\u03ba\u221e(A)=\u2016A^{-1}\u2016\u221e\u2016A\u2016\u221e. [PDF p. 5, printed A821, equation (2.1)]",
+          "c_1 and c_2 are nonnegative functions of n, A, r\u0302_i, and u_s according to the preliminary solver model. [PDF p. 5, printed A821, text following equations (2.3)-(2.5)]",
+          "\u03b3_p^r=pu_r/(1\u2212pu_r), with p the maximum number of nonzeros in a row of [A b]. [PDF pp. 5 and 7, printed A821 and A823, definition of \u03b3_k and text preceding (3.3)]"
+        ],
+        "error_notions": [
+          "The recurrence controls the exact normwise residual \u2016b\u2212Ax\u0302_i\u2016\u221e of the original system, not the computed residual norm \u2016r\u0302_i\u2016\u221e. [PDF p. 9, printed A825, Theorem 4.1]",
+          "h_i measures the residual of the computed correction d\u0302_i in the correction equation A d=r\u0302_i. [PDF pp. 5 and 8, printed A821 and A824, equation (2.4) and definition of h_i]",
+          "Theorem 4.1 itself does not normalize the residual by \u2016A\u2016\u221e\u2016x\u0302_i\u2016\u221e+\u2016b\u2016\u221e and therefore does not by itself state a bound on the normwise relative backward error \u03b7. [PDF pp. 5 and 9, printed A821 and A825, definition of \u03b7 and Theorem 4.1]"
+        ],
+        "exceptional_values": [
+          "The strict denominator condition excludes 1\u2212c_1\u03ba\u221e(A)u_s\u22640. [PDF p. 9, printed A825, assumption preceding the isolated h_i bound and Theorem 4.1]",
+          "The \u03b3_p^r expression presupposes a finite standard-model bound, ordinarily pu_r<1; this side condition is not restated in Theorem 4.1. [PDF pp. 5 and 7, printed A821 and A823, definition and use of \u03b3_p^r]",
+          "Underflow and overflow are ignored by this analysis; the later scaling modification is outside Theorem 4.1 as stated. [PDF p. 12, printed A828, section 6, Scaling]"
+        ],
+        "higher_order_terms": [
+          "Theorem 4.1 is stated with exact rational factors in u_s and does not use big-O or \u2272 notation. [PDF p. 9, printed A825, Theorem 4.1]",
+          "Factors 1+u_s and the denominator 1\u2212c_1\u03ba\u221e(A)u_s are retained and must not be silently replaced by first-order approximations. [PDF p. 9, printed A825, displayed derivation and Theorem 4.1]"
+        ],
+        "hypotheses": [
+          "The solver used in step 4 satisfies \u2016r\u0302_i\u2212A d\u0302_i\u2016\u221e \u2264 u_s(c_1\u2016A\u2016\u221e\u2016d\u0302_i\u2016\u221e+c_2\u2016r\u0302_i\u2016\u221e). [PDF p. 5, printed A821, equation (2.4)]",
+          "The denominator condition c_1\u03ba\u221e(A)u_s<1 holds. [PDF p. 9, printed A825, opening line of the derivation and Theorem 4.1]",
+          "The residual and update obey r\u0302_i=b\u2212Ax\u0302_i+\u0394r_i with the bound in (3.3), and x\u0302_{i+1}=x\u0302_i+d\u0302_i+\u0394x_i with |\u0394x_i|\u2264u|x\u0302_{i+1}|. [PDF p. 7, printed A823, equations (3.3) and (3.6)]",
+          "The unit roundoffs inherit u_r\u2264u\u2264u_s\u2264u_f from the algorithm's precision ordering. [PDF pp. 1-2, printed A817-A818, equation (1.1) and the definition of u_s]"
+        ],
+        "implicit_context": [
+          "A and b are precision-u input data, residuals are computed at u_r and rounded to u_s, corrections are effectively solved at u_s and stored at u, and updates are performed at u. [PDF pp. 1-2, printed A817-A818, precision definitions and Algorithm 1.1]",
+          "Theorem 4.1 requires only solver condition (2.4), not the relative-forward-solve condition (2.3) or componentwise solver condition (2.5). [PDF pp. 5 and 9, printed A821 and A825, equations (2.3)-(2.5) and Theorem 4.1]",
+          "Although labeled \u03b1_i, its displayed formula depends on i only through any iteration dependence hidden in c_1 and c_2; \u03b2_i additionally contains x\u0302_i and x\u0302_{i+1}. [PDF pp. 5 and 9, printed A821 and A825, text after equations (2.3)-(2.5) and Theorem 4.1]"
+        ],
+        "norms": [
+          "Every norm in the theorem and its displayed derivation is the vector or induced matrix infinity norm. [PDF pp. 8-9, printed A824-A825, h_i derivation and Theorem 4.1]",
+          "The passage uses \u03ba\u221e(A), not a two-norm condition number or the componentwise condition number cond(A). [PDF pp. 5 and 9, printed A821 and A825, equation (2.1) and Theorem 4.1]"
+        ],
+        "numerical_model": [
+          "The standard floating-point model is used at unit roundoffs u_r, u_s, and u; u_f does not enter the recurrence explicitly. [PDF pp. 1-2, 5, and 9, printed A817-A818, A821, and A825, precision definitions, section 2 model, and Theorem 4.1]",
+          "Residual computation contributes the \u03b3_p^r term and residual rounding contributes factors involving u_s; update rounding contributes u\u2016A\u2016\u221e\u2016x\u0302_{i+1}\u2016\u221e. [PDF pp. 7 and 9, printed A823 and A825, equations (3.3), (3.6), and Theorem 4.1]",
+          "The correction-solver model is a normwise residual/backward-error condition, not an exact-solve or relative-forward-error assumption. [PDF p. 5, printed A821, equation (2.4) and its explanation]"
+        ]
+      },
+      "task_id": "P03-T2",
+      "undebatable_constraints": [
+        "A is a nonsingular real n\u00d7n matrix and the theorem concerns Algorithm 1.1 iterates for every i\u22650. [PDF p. 9, printed A825, Theorem 4.1]",
+        "The required solver premise is exactly the normwise condition (2.4), together with c_1\u03ba\u221e(A)u_s<1. [PDF pp. 5 and 9, printed A821 and A825, equation (2.4) and Theorem 4.1]",
+        "The contraction coefficient \u03b1_i is independent of u_r explicitly; u_r occurs through \u03b3_p^r only in \u03b2_i. [PDF p. 9, printed A825, Theorem 4.1]",
+        "The theorem bounds the exact original-system residual in the infinity norm and makes no direct forward-error or componentwise-error claim. [PDF p. 9, printed A825, Theorem 4.1]",
+        "No factor, denominator, or i-to-i+1 offset in the displayed \u03b1_i and \u03b2_i formulas may be dropped. [PDF p. 9, printed A825, Theorem 4.1]"
+      ]
+    },
+    {
+      "ambiguities": [
+        {
+          "evidence": "Equation (5.3) defines Z_1=u_sG_i+(1+u_s)\u03b3_p^r|A|, while Theorem 5.1 quantifies over i and refers back to the same Z_1 and M_1 symbols. [PDF pp. 10-11, printed A826-A827, equations (5.3), (5.5), and Theorem 5.1]",
+          "impact": "A formalization should treat Z_1 and M_1 as local iteration-dependent objects, or rename them Z_i and M_i while documenting that normalization; treating them as globally fixed would add an unsupported assumption. [PDF pp. 10-11, printed A826-A827, equations (5.3), (5.5), and Theorem 5.1]",
+          "issue": "The literal symbols Z_1 and M_1 carry subscript 1 even though Z_1 contains G_i and therefore varies with the iteration. [PDF pp. 10-11, printed A826-A827, equations (5.3), (5.5), and Theorem 5.1]"
+        },
+        {
+          "evidence": "The paper moves from the exact M_1 and W_i formulas to M_1=I+O(u_s), then to W_i\u2272\u2026 and \u2016W_i\u2016\u221e\u2272\u2026, before stating \u2016W_i\u2016\u221e<1 in view of (5.6). [PDF p. 11, printed A827, interpretation following Theorem 5.1]",
+          "impact": "The exact recurrence and the M-matrix bound can be formalized literally, but equation (5.7) and the asserted strict contraction require an explicit interpretation of hidden higher-order terms and constants. [PDF pp. 10-11, printed A826-A827, M-matrix paragraph, Theorem 5.1, and equation (5.7)]",
+          "issue": "The symbols O(u_s) and \u2272 in the interpretation of W_i have no explicit constants or quantified asymptotic regime. [PDF p. 11, printed A827, text preceding and equation (5.7)]"
+        },
+        {
+          "evidence": "The paper says this relation can be expected in practice only after completing Theorem 5.1 and equation (5.7). [PDF p. 11, printed A827, text following equation (5.7)]",
+          "impact": "It may motivate which term dominates the interpreted norm bound, but it must not be added to the formal source contract for Theorem 5.1. [PDF p. 11, printed A827, text following equation (5.7)]",
+          "issue": "The statement that G_i\u2265|A| is presented as a practical expectation, not a theorem hypothesis or universally quantified matrix inequality. [PDF p. 11, printed A827, paragraph following equation (5.7)]"
+        }
+      ],
+      "contract_plain_english": "Under a componentwise correction-solver defect bound and the uniform one-half condition (5.6), a nonnegative M-matrix resolvent controls the correction contribution and yields an exact componentwise recurrence for the next true residual. The theorem includes a nonnegative additive vector y_i; only the subsequent first-order interpretation gives the approximate infinity-norm estimate (5.7), and the theorem alone does not yet bound \u03c9. [PDF pp. 10-11, printed A826-A827, equations (5.2)-(5.7) and Theorem 5.1]",
+      "source_evidence": [
+        {
+          "anchor": "equations (2.2), (2.5), (2.6), and (2.7)",
+          "observation": "The paper defines cond(A), assumes the componentwise correction-solver residual bound |r\u0302_i\u2212A d\u0302_i|\u2264u_sG_i|d\u0302_i|, and defines componentwise relative backward error \u03c9.",
+          "pdf_page": 5,
+          "printed_page": "A821"
+        },
+        {
+          "anchor": "continuation of equation (2.7)",
+          "observation": "For the componentwise backward-error quotient, \u03be/0 is interpreted as zero when \u03be=0 and as infinity otherwise.",
+          "pdf_page": 6,
+          "printed_page": "A822"
+        },
+        {
+          "anchor": "equations (3.3) and (3.6)",
+          "observation": "The residual and update rounding models used in section 5 are stated componentwise.",
+          "pdf_page": 7,
+          "printed_page": "A823"
+        },
+        {
+          "anchor": "equations (5.1)-(5.6) and opening of Theorem 5.1",
+          "observation": "The paper derives the base componentwise residual inequality, defines Z_1 and the M-matrix inverse M_1, proves its nonnegativity and norm bound under a one-half condition, and states the theorem's uniform hypothesis.",
+          "pdf_page": 10,
+          "printed_page": "A826"
+        },
+        {
+          "anchor": "continuation of Theorem 5.1 and equation (5.7)",
+          "observation": "The theorem gives the componentwise residual recurrence with W_i and y_i, followed by a first-order interpretation of W_i and its infinity-norm bound.",
+          "pdf_page": 11,
+          "printed_page": "A827"
+        },
+        {
+          "anchor": "section 6, Scaling",
+          "observation": "The analysis ignores underflow and overflow; a scaled modification is proposed separately.",
+          "pdf_page": 12,
+          "printed_page": "A828"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "The result applies to the original unscaled Algorithm 1.1 and combines the componentwise solver-defect condition (2.5), residual computation at u_r followed by rounding to u_s, and update rounding at u. [PDF pp. 2, 5, 7, and 10-11, printed A818, A821, A823, and A826-A827, Algorithm 1.1, equations (2.5), (3.3), (3.6), and Theorem 5.1]",
+        "binders": [
+          "Let A \u2208 \u211d^{n\u00d7n} be nonsingular, b \u2208 \u211d^n, and let Algorithm 1.1 produce x\u0302_i, r\u0302_i, d\u0302_i, and x\u0302_{i+1} for i\u22650. [PDF pp. 2 and 10-11, printed A818 and A826-A827, Algorithm 1.1 and Theorem 5.1]",
+          "For each i, let G_i \u2208 \u211d^{n\u00d7n} have nonnegative entries and satisfy the solver model (2.5); let I be the n\u00d7n identity. [PDF pp. 5 and 10, printed A821 and A826, equation (2.5), its explanatory text, and equations (5.3)-(5.5)]",
+          "Let p be the maximum number of nonzeros in a row of [A b], and let \u03b3_p^r=pu_r/(1\u2212pu_r). [PDF pp. 5 and 7, printed A821 and A823, definition of \u03b3_k and text preceding equation (3.3)]"
+        ],
+        "conclusions": [
+          "The base inequality is |b\u2212Ax\u0302_{i+1}|\u2264u_s|b\u2212Ax\u0302_i|+(1+u_s)\u03b3_p^r(1+u)(|b|+|A||x\u0302_{i+1}|)+Z_1|d\u0302_i|+u|A||x\u0302_{i+1}|. [PDF p. 10, printed A826, equation (5.2)]",
+          "Z_1=u_sG_i+(1+u_s)\u03b3_p^r|A| and has nonnegative entries. [PDF p. 10, printed A826, equation (5.3) and following sentence]",
+          "The correction satisfies |d\u0302_i|\u2264|A^{-1}|[(1+u_s)|b\u2212Ax\u0302_i|+(1+u_s)(1+u)\u03b3_p^r(|b|+|A||x\u0302_{i+1}|)]+|A^{-1}|Z_1|d\u0302_i|. [PDF p. 10, printed A826, displayed derivation between equations (5.3) and (5.4)]",
+          "After premultiplication by Z_1, (I\u2212Z_1|A^{-1}|)Z_1|d\u0302_i|\u2264Z_1|A^{-1}|[(1+u_s)|b\u2212Ax\u0302_i|+(1+u_s)(1+u)\u03b3_p^r(|b|+|A||x\u0302_{i+1}|)]. [PDF p. 10, printed A826, displayed inequality immediately before equation (5.4)]",
+          "With M_1:=(I\u2212Z_1|A^{-1}|)^{-1}, equation (5.4) gives Z_1|d\u0302_i|\u2264M_1Z_1|A^{-1}|[(1+u_s)|b\u2212Ax\u0302_i|+(1+u_s)(1+u)\u03b3_p^r(|b|+|A||x\u0302_{i+1}|)]. [PDF p. 10, printed A826, equations (5.4) and (5.5)]",
+          "If \u2016Z_1|A^{-1}|\u2016\u221e\u22641/2, then I\u2212Z_1|A^{-1}| is an M-matrix; M_1 exists, has nonnegative entries, and satisfies \u2016M_1\u2016\u221e\u22642. [PDF p. 10, printed A826, paragraph following equation (5.5)]",
+          "Theorem 5.1 concludes |b\u2212Ax\u0302_{i+1}|\u2264W_i|b\u2212Ax\u0302_i|+y_i componentwise for every i\u22650. [PDF p. 11, printed A827, continuation of Theorem 5.1]",
+          "W_i=u_sI+(1+u_s)M_1Z_1|A^{-1}|. [PDF p. 11, printed A827, continuation of Theorem 5.1]",
+          "y_i=(1+u_s)(1+u)\u03b3_p^r(I+M_1Z_1|A^{-1}|)(|b|+|A||x\u0302_{i+1}|)+u|A||x\u0302_{i+1}|. [PDF p. 11, printed A827, continuation of Theorem 5.1]",
+          "For interpretation, the paper states M_1=I+O(u_s), W_i\u2272u_sI+(u_sG_i+\u03b3_p^r|A|)|A^{-1}|, and \u2016W_i\u2016\u221e\u2272u_s+u_s\u2016G_i|A^{-1}|\u2016\u221e+\u03b3_p^r cond(A^{-1}). [PDF p. 11, printed A827, text preceding and equation (5.7)]",
+          "The paper then states \u2016W_i\u2016\u221e<1 in view of (5.6) and concludes that \u2016W_i\u2016\u221e is much less than one when the solver is not too unstable and A is not too ill conditioned relative to u_s. [PDF p. 11, printed A827, text following equation (5.7)]"
+        ],
+        "constants_and_indexing": [
+          "Theorem 5.1 requires condition (5.6) for all i and concludes the recurrence for every i\u22650. [PDF pp. 10-11, printed A826-A827, equation (5.6) and continuation of Theorem 5.1]",
+          "The M-matrix threshold is exactly 1/2, and the resulting resolvent norm bound is exactly 2. [PDF p. 10, printed A826, paragraph following equation (5.5)]",
+          "The factors (1+u_s)(1+u) multiply \u03b3_p^r in y_i, while W_i contains (1+u_s)M_1Z_1|A^{-1}|. [PDF p. 11, printed A827, formulas for W_i and y_i]",
+          "Although denoted Z_1 and M_1, both quantities depend on the current i through G_i. [PDF pp. 10-11, printed A826-A827, equations (5.3), (5.5), and Theorem 5.1]"
+        ],
+        "definitions_and_conventions": [
+          "All absolute values of vectors and matrices are entrywise, and all displayed vector and matrix inequalities are componentwise. [PDF p. 5, printed A821, section 2 notation]",
+          "For nonsingular B, cond(B)=\u2016|B^{-1}||B|\u2016\u221e; hence cond(A^{-1})=\u2016|A||A^{-1}|\u2016\u221e, with the multiplication order shown. [PDF pp. 5 and 10, printed A821 and A826, equation (2.2) and equation (5.6)]",
+          "Z_1 and M_1 are the literal symbols used in equations (5.3) and (5.5), while W_i and y_i are the theorem's iteration-indexed matrix and vector. [PDF pp. 10-11, printed A826-A827, equations (5.3), (5.5), and Theorem 5.1]",
+          "The componentwise relative backward error is \u03c9(y)=max_j |b\u2212Ay|_j/(|A||y|+|b|)_j, equivalently the minimum common componentwise relative perturbation to A and b. [PDF pp. 5-6, printed A821-A822, equations (2.6) and (2.7)]"
+        ],
+        "error_notions": [
+          "The theorem's main conclusion is a componentwise recurrence for the exact residual |b\u2212Ax\u0302_i|, not directly a bound on \u03c9(x\u0302_i). [PDF p. 11, printed A827, Theorem 5.1 and the discussion after equation (5.7)]",
+          "The computed residual r\u0302_i appears in the solver hypothesis, while the theorem recurrence uses the exact original-system residual b\u2212Ax\u0302_i. [PDF pp. 5 and 11, printed A821 and A827, equation (2.5) and Theorem 5.1]",
+          "The additive vector y_i is explicitly noted not to be a scalar multiple of |A||x\u0302_{i+1}|+|b|, so an \u03c9 bound requires the later Lemma 5.2 argument rather than following immediately from Theorem 5.1. [PDF p. 11, printed A827, paragraph after equation (5.7)]"
+        ],
+        "exceptional_values": [
+          "Condition (5.6) ensures the inverse defining M_1 exists and is nonnegative; without such a condition, equation (5.5) alone does not guarantee an admissible componentwise resolvent. [PDF p. 10, printed A826, equations (5.5), (5.6), and the M-matrix paragraph]",
+          "For \u03c9, a zero denominator component is interpreted as zero only when the corresponding numerator is zero and as infinity otherwise. [PDF p. 6, printed A822, continuation of equation (2.7)]",
+          "The finite \u03b3_p^r bound implicitly needs the ordinary standard-model smallness condition on pu_r. [PDF pp. 5 and 7, printed A821 and A823, definition and use of \u03b3_p^r]",
+          "Underflow and overflow are ignored; the scaled algorithm introduced in section 6 is not part of Theorem 5.1. [PDF p. 12, printed A828, section 6, Scaling]"
+        ],
+        "higher_order_terms": [
+          "Equations (5.2)-(5.6) and the W_i,y_i recurrence are exact inequalities with no omitted big-O terms. [PDF pp. 10-11, printed A826-A827, equations (5.2)-(5.6) and Theorem 5.1]",
+          "The later statement M_1=I+O(u_s) and both \u2272 bounds suppress higher-order terms and unspecified constants; equation (5.7) is therefore an interpretation, not the exact theorem recurrence. [PDF p. 11, printed A827, text preceding and equation (5.7)]"
+        ],
+        "hypotheses": [
+          "The step-4 solver satisfies |r\u0302_i\u2212A d\u0302_i|\u2264u_sG_i|d\u0302_i| componentwise. [PDF p. 5, printed A821, equation (2.5)]",
+          "For all i, u_s\u2016G_i|A^{-1}|\u2016\u221e+(1+u_s)\u03b3_p^r cond(A^{-1})\u22641/2. [PDF pp. 10-11, printed A826-A827, equation (5.6) and its continuation]",
+          "The residual and update satisfy the componentwise models (3.3) and (3.6). [PDF p. 7, printed A823, equations (3.3) and (3.6)]",
+          "The unit roundoffs inherit u_r\u2264u\u2264u_s\u2264u_f from Algorithm 1.1. [PDF pp. 1-2, printed A817-A818, equation (1.1) and the definition of u_s]"
+        ],
+        "implicit_context": [
+          "Equation (5.1), |x\u0302_i|\u2264(1+u)|x\u0302_{i+1}|+|d\u0302_i|, is used to replace x\u0302_i by x\u0302_{i+1} and d\u0302_i in the derivation of (5.2) and (5.4). [PDF p. 10, printed A826, equation (5.1) and following derivation]",
+          "Condition (5.6) is a scalar sufficient condition for \u2016Z_1|A^{-1}|\u2016\u221e\u22641/2 because Z_1=u_sG_i+(1+u_s)\u03b3_p^r|A| and cond(A^{-1})=\u2016|A||A^{-1}|\u2016\u221e. [PDF p. 10, printed A826, equations (5.3), (5.5), and (5.6)]",
+          "W_i and y_i are nonnegative componentwise under the theorem's M-matrix conclusion, although the theorem does not separately label this fact. [PDF pp. 10-11, printed A826-A827, nonnegativity discussion after (5.5) and formulas for W_i and y_i]",
+          "The practical expectation G_i\u2265|A| appears only after the theorem and is not one of Theorem 5.1's assumptions. [PDF p. 11, printed A827, paragraph following equation (5.7)]"
+        ],
+        "norms": [
+          "The recurrence and its base inequalities are componentwise; only the hypotheses establishing the M-matrix and the interpretation (5.7) use the infinity norm. [PDF pp. 10-11, printed A826-A827, equations (5.2)-(5.7)]",
+          "The matrix condition in (5.6) uses cond(A^{-1}), not cond(A) or \u03ba\u221e(A). [PDF p. 10, printed A826, equation (5.6)]",
+          "The M-matrix resolvent bound is \u2016M_1\u2016\u221e\u22642 under the exact threshold \u2016Z_1|A^{-1}|\u2016\u221e\u22641/2. [PDF p. 10, printed A826, paragraph following equation (5.5)]"
+        ],
+        "numerical_model": [
+          "Residual computation contributes \u03b3_p^r and residual rounding contributes u_s and 1+u_s; update rounding contributes u and 1+u. [PDF pp. 7 and 10-11, printed A823 and A826-A827, equations (3.3), (3.6), (5.1)-(5.4), and Theorem 5.1]",
+          "The solver model (2.5) is componentwise and permits an iteration-dependent nonnegative matrix G_i rather than a scalar normwise constant. [PDF p. 5, printed A821, equation (2.5) and its explanatory text]",
+          "The exact theorem recurrence retains all displayed finite-precision factors; the subsequent W_i interpretation is asymptotic. [PDF pp. 10-11, printed A826-A827, Theorem 5.1 and equation (5.7)]"
+        ]
+      },
+      "task_id": "P03-T3",
+      "undebatable_constraints": [
+        "The solver premise is the componentwise inequality (2.5) with a nonnegative matrix G_i. [PDF p. 5, printed A821, equation (2.5) and following text]",
+        "Condition (5.6) is uniform over all i and contains cond(A^{-1}) with the order |A||A^{-1}|. [PDF pp. 5 and 10-11, printed A821 and A826-A827, equation (2.2), equation (5.6), and its continuation]",
+        "The exact theorem conclusion includes both W_i and the additive vector y_i; omitting y_i changes the result. [PDF p. 11, printed A827, Theorem 5.1]",
+        "The products M_1Z_1|A^{-1}|, |A||x\u0302_{i+1}|, and G_i|A^{-1}| have fixed, noncommutative order. [PDF pp. 10-11, printed A826-A827, equations (5.4)-(5.7) and Theorem 5.1]",
+        "Equation (5.7) is an infinity-norm asymptotic interpretation and must not replace the exact componentwise recurrence. [PDF p. 11, printed A827, Theorem 5.1 and equation (5.7)]",
+        "The theorem itself does not claim a componentwise relative backward-error bound for \u03c9; that requires the subsequent lemma and analysis. [PDF p. 11, printed A827, discussion following equation (5.7)]"
+      ]
+    }
+  ],
+  "paper_id": "P03",
+  "paper_sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc",
+  "role": "paper-source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_locator_sha256": "d325b31e2cf1ecac253237196c87cfb8e169960305af1f36083a03802a8829df",
+  "task_ids": [
+    "P03-T1",
+    "P03-T2",
+    "P03-T3"
+  ]
+}
