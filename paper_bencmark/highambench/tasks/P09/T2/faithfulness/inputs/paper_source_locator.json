@@ -1,0 +1,47 @@
+{
+  "evidence_policy": "Use only the referenced PDF and surrounding paper context as evidence. Produce an independent contract for every listed task.",
+  "paper_id": "P09",
+  "paper_path": "paper_bencmark/reference_papers/P09_Roundoff Error Analysis of the Fast Fourier Transform.pdf",
+  "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
+  "paper_version": "published journal version; volume 25, issue 116, October 1971, printed pages 757-768",
+  "role": "paper-source-locator",
+  "schema_version": "highambench-faithfulness-0.2",
+  "tasks": [
+    {
+      "source_locations": [
+        {
+          "anchor": "unnumbered max-versus-RMS inequality in the proof of Theorem 1(b)",
+          "pdf_page": 7,
+          "printed_page": "763",
+          "role": "exact norm conversion from RMS error to maximum error",
+          "section": "3. Roundoff Errors in the Fast Fourier Transform"
+        }
+      ],
+      "task_id": "P09-T1"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "prose assertion e = T delta and the two following unnumbered bounds",
+          "pdf_page": 12,
+          "printed_page": "768",
+          "role": "fictional input perturbation and its norm certificates",
+          "section": "6. Conclusion"
+        }
+      ],
+      "task_id": "P09-T2"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "Theorem 2(a), its telescoping decomposition, and equation (4.2)",
+          "pdf_page": 8,
+          "printed_page": "764",
+          "role": "multidimensional RMS error accumulation",
+          "section": "4. Roundoff Errors in Multidimensional Transformations"
+        }
+      ],
+      "task_id": "P09-T3"
+    }
+  ]
+}
