@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import sys
@@ -16,6 +17,28 @@ POLICY = ROOT / "docs" / "architecture" / "COMPATIBILITY.md"
 IMPORT_LINE_RE = re.compile(
     r"(?m)^[ \t]*(?:(?:public|private|meta)\s+)*import[ \t]+[^\r\n]+(?:\r?\n|$)"
 )
+
+# R11 preserves Chapter19.Core byte-for-byte as a reviewed source outlier. Its
+# two support imports became historical paths in the same integration. Keep the
+# exception exact and fail when either edge disappears so the allowance cannot
+# silently broaden or outlive the retained outlier.
+RETAINED_PRODUCTION_IMPORT_EXCEPTIONS = frozenset(
+    {
+        (
+            "NumStability.Source.Higham.Chapter19.Core",
+            "NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport",
+        ),
+        (
+            "NumStability.Source.Higham.Chapter19.Core",
+            "NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport",
+        ),
+    }
+)
+RETAINED_PRODUCTION_SOURCE_SHA256 = {
+    "NumStability.Source.Higham.Chapter19.Core": (
+        "8599A1F13F1A241EFE90BB1059D98C09A4419BE4C2202B97F45DEC69189B3FE3"
+    ),
+}
 
 
 def module_path(name: str) -> Path:
@@ -39,7 +62,102 @@ def documented_mappings() -> dict[str, tuple[str, ...]]:
     return mappings
 
 
+def retained_production_import_failures(
+    historical_names: set[str],
+    production_import_edges: set[tuple[str, str]],
+    production_source_sha256: dict[str, str | None],
+) -> list[str]:
+    failures: list[str] = []
+    invalid_exception_targets = sorted(
+        target
+        for _, target in RETAINED_PRODUCTION_IMPORT_EXCEPTIONS
+        if target not in historical_names
+    )
+    if invalid_exception_targets:
+        failures.append(
+            "production-import exceptions target paths absent from compatibility table: "
+            + ", ".join(invalid_exception_targets)
+        )
+
+    exception_sources = {
+        source for source, _ in RETAINED_PRODUCTION_IMPORT_EXCEPTIONS
+    }
+    if exception_sources != set(RETAINED_PRODUCTION_SOURCE_SHA256):
+        failures.append(
+            "production-import exception sources do not match frozen source pins: "
+            f"exceptions={sorted(exception_sources)!r}, "
+            f"pins={sorted(RETAINED_PRODUCTION_SOURCE_SHA256)!r}"
+        )
+    for name, expected_sha256 in sorted(RETAINED_PRODUCTION_SOURCE_SHA256.items()):
+        actual_sha256 = production_source_sha256.get(name)
+        if actual_sha256 is None:
+            failures.append(f"missing retained production source: {name}")
+        elif actual_sha256 != expected_sha256:
+            failures.append(
+                f"{name}: retained source SHA-256 {actual_sha256}, "
+                f"expected {expected_sha256}"
+            )
+
+    seen_exceptions = production_import_edges & RETAINED_PRODUCTION_IMPORT_EXCEPTIONS
+    for name, target in sorted(production_import_edges - seen_exceptions):
+        failures.append(f"{name}: production import uses historical path {target}")
+    for name, target in sorted(
+        RETAINED_PRODUCTION_IMPORT_EXCEPTIONS - seen_exceptions
+    ):
+        failures.append(f"stale production-import exception: {name} -> {target}")
+    return failures
+
+
+def self_test_retained_production_imports() -> None:
+    historical_names = {
+        target for _, target in RETAINED_PRODUCTION_IMPORT_EXCEPTIONS
+    }
+    valid_edges = set(RETAINED_PRODUCTION_IMPORT_EXCEPTIONS)
+    valid_digests = dict(RETAINED_PRODUCTION_SOURCE_SHA256)
+    assert not retained_production_import_failures(
+        historical_names, valid_edges, valid_digests
+    )
+
+    missing_edge = min(valid_edges)
+    missing_edge_failures = retained_production_import_failures(
+        historical_names, valid_edges - {missing_edge}, valid_digests
+    )
+    assert any(
+        "stale production-import exception" in item
+        for item in missing_edge_failures
+    )
+
+    broadened_failures = retained_production_import_failures(
+        historical_names,
+        valid_edges
+        | {
+            (
+                "NumStability.Source.Higham.Chapter19.Unreviewed",
+                min(historical_names),
+            )
+        },
+        valid_digests,
+    )
+    assert any(
+        "production import uses historical path" in item
+        for item in broadened_failures
+    )
+
+    changed_source_failures = retained_production_import_failures(
+        historical_names,
+        valid_edges,
+        {name: "0" * 64 for name in valid_digests},
+    )
+    assert any("retained source SHA-256" in item for item in changed_source_failures)
+
+
 def main() -> int:
+    try:
+        self_test_retained_production_imports()
+    except AssertionError as error:
+        print(f"error: compatibility checker self-test failed: {error}", file=sys.stderr)
+        return 2
+
     try:
         mappings = documented_mappings()
     except (OSError, ValueError) as error:
@@ -95,6 +213,16 @@ def main() -> int:
             failures.append(f"{historical}: forwarding module contains Lean code")
 
     historical_names = set(mappings)
+    production_source_sha256: dict[str, str | None] = {}
+    for name in sorted(RETAINED_PRODUCTION_SOURCE_SHA256):
+        path = module_path(name)
+        production_source_sha256[name] = (
+            hashlib.sha256(path.read_bytes()).hexdigest().upper()
+            if path.is_file()
+            else None
+        )
+
+    production_import_edges: set[tuple[str, str]] = set()
     for path in source_paths(ROOT):
         name = module_name(path.relative_to(ROOT))
         if name in historical_names:
@@ -102,7 +230,14 @@ def main() -> int:
         text = path.read_text(encoding="utf-8-sig", errors="replace")
         for target in IMPORT_RE.findall(remove_lean_comments(text)):
             if target in historical_names:
-                failures.append(f"{name}: production import uses historical path {target}")
+                production_import_edges.add((name, target))
+    failures.extend(
+        retained_production_import_failures(
+            historical_names,
+            production_import_edges,
+            production_source_sha256,
+        )
+    )
 
     test_imports: set[str] = set()
     test_paths = [ROOT / "NumStabilityTest.lean"]
@@ -131,7 +266,9 @@ def main() -> int:
     target_count = sum(len(targets) for targets in mappings.values())
     print(
         f"compatibility contract passed: {len(mappings)} forwarding modules, "
-        f"{target_count} canonical targets"
+        f"{target_count} canonical targets, "
+        f"{len(production_import_edges & RETAINED_PRODUCTION_IMPORT_EXCEPTIONS)} "
+        "retained production-import exceptions"
     )
     return 0
 

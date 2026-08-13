@@ -23,7 +23,7 @@ import Mathlib.Probability.Distributions.Gaussian.Real
 import Mathlib.RingTheory.Norm.Transitivity
 import Mathlib.Topology.Instances.Matrix
 import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
 import NumStability.Analysis.MatrixAlgebra
 

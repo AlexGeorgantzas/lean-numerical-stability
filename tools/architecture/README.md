@@ -13,7 +13,10 @@ book-formalization migration. The generator has two layers:
   constructors, unfold helpers, and similar implementation details do not.
 - `check_compatibility.py` verifies that every old path documented in the
   compatibility table is an import-only wrapper around exactly its stated
-  canonical targets, and that production code does not import old paths.
+  canonical targets, and that production code does not import old paths. Its
+  exact retained-boundary exceptions are self-ratcheting: the check fails when
+  an allowed historical import disappears, the pinned source changes, or an
+  unreviewed edge broadens the allowance.
 - `check_layout.py` enforces the naming, classification, aggregate, generated-
   artifact, and documentation ratchet recorded in
   `docs/architecture/layout-exceptions.json`.

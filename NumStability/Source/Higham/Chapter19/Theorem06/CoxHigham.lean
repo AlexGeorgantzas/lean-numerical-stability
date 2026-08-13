@@ -1,5 +1,5 @@
 import NumStability.Source.Higham.Chapter19.Theorem06.RowSpecific
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 
 /-!
 # Higham, Theorem 19.6 = Cox–Higham (1998), Theorem 2.3 — the row-wise

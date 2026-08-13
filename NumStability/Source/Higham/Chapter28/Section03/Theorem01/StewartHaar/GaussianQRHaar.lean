@@ -25,7 +25,7 @@ import Mathlib.Topology.Bases
 import Mathlib.Topology.Instances.Matrix
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Probability.Haar.HomogeneousSpaceUniqueness

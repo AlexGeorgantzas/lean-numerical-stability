@@ -1,6 +1,6 @@
 import NumStability.Source.Higham.Chapter19.Algorithm12.MGSClosure
 import NumStability.Algorithms.RankOneUpdate
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
 
 /-!
 # Rounded MGS to the padded Householder analysis process

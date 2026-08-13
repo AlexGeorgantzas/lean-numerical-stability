@@ -3,7 +3,7 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.RowSorting
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Basic
 import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamConcrete

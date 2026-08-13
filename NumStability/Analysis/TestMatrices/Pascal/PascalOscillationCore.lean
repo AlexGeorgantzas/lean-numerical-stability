@@ -99,7 +99,7 @@ import Mathlib.Topology.ContinuousMap.Weierstrass
 import Mathlib.Topology.Instances.Matrix
 import Mathlib.Topology.MetricSpace.ProperSpace
 import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixSpectral

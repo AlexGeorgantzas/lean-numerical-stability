@@ -5,9 +5,15 @@
   "branch_id": "B0004",
   "branch_name": "codex/reorg-completion-2026-08-r12-ch13-equations-table",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "0726678a0f2db56e533f3b956a2f7f1531059d7d",
+    "report": {
+      "path": "docs/architecture/deliveries/R12/DELIVERY.md",
+      "sha256": "266B867F4B57B62B6CFB72B186A75CE5084CCA76973CF89B634F61815D06B105"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/R12/CHANGED_PATHS.md",
+      "sha256": "4B40844FCA0FAE502A644DDBB108E34738D3C2516D0809FAEDD38FFE9C3450A2"
+    }
   },
   "destination_prefixes": [
     {
@@ -10741,6 +10747,6 @@
   "shared_request_ids": [
     "R0004"
   ],
-  "status": "active",
+  "status": "delivered",
   "wave_id": "R12"
 }

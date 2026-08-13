@@ -1,21 +1,19 @@
 -- NumStability/Source/Higham/Chapter19/StoredLoop.lean
 --
--- Import-only compatibility wrapper retained by reorganization wave R11
--- (phase branch B0003, projection P0003).
+-- Import-only Chapter 19 stored-loop aggregate completed at R11 integration.
 --
--- This historical path is preserved, not deleted and not Git-renamed, so every
--- existing `import` of it keeps resolving. All of its declarations moved
--- unchanged to `NumStability.Source.Higham.Chapter19.StoredLoop.Perturbation.Bridge`, which this module
--- re-exports. Importing this module therefore still yields exactly the same
--- declarations, including everything previously reachable transitively.
+-- This path remains the family entry point. Its former declarations moved
+-- unchanged to `StoredLoop.Perturbation.Bridge`, while the aggregate also
+-- exports the canonical all-pivots and strong-model descendants.
 
+import NumStability.Source.Higham.Chapter19.StoredLoop.AllPivots
 import NumStability.Source.Higham.Chapter19.StoredLoop.Perturbation.Bridge
+import NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel
 
 /-!
-# StoredLoop (compatibility wrapper)
+# Chapter 19 stored-loop analysis
 
-Declaration-free import-only wrapper. The canonical home of this material is
-`NumStability.Source.Higham.Chapter19.StoredLoop.Perturbation.Bridge`.
-
-Retained by wave R11 so historical imports continue to resolve unchanged.
+Declaration-free complete aggregate for the Chapter 19 stored-loop family.
+It preserves the historical entry point while exposing every canonical
+descendant.
 -/

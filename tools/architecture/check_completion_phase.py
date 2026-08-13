@@ -277,6 +277,15 @@ NEXT_BRANCH_FACTS = {
         "operator": "claude-local",
         "lane": "claude-lane",
         "branch": "codex/reorg-completion-2026-08-r11-qr-ch19",
+        "delivery_sha": "444a03259af510bdfe0921d1847b6add1b26ed73",
+        "delivery_report": (
+            "docs/architecture/deliveries/R11/DELIVERY.md",
+            "35C9AE0319D4248F450E3B83252C0802483E6433EE7F6E6B1A22AF33497722EC",
+        ),
+        "delivery_scope": (
+            "docs/architecture/deliveries/R11/CHANGED_PATHS.md",
+            "1B6A0356843A96C21D4ADE283DC920E4408204925B8FD35F78EB8A122A82AB3F",
+        ),
         "owned_count": 65,
         "selector_sha256": "461D1A0E09A0EADD02B57F3FEB6E097508D02F769A13A11E1CF6896B289A3F23",
         "projection_sha256": "31EC591D949DB6041078C036F0CFF74A0A3EE229B35E351DDF999D15F494D60E",
@@ -333,6 +342,15 @@ NEXT_BRANCH_FACTS = {
         "operator": "codex-local",
         "lane": "claude-lane",
         "branch": "codex/reorg-completion-2026-08-r12-ch13-equations-table",
+        "delivery_sha": "0726678a0f2db56e533f3b956a2f7f1531059d7d",
+        "delivery_report": (
+            "docs/architecture/deliveries/R12/DELIVERY.md",
+            "266B867F4B57B62B6CFB72B186A75CE5084CCA76973CF89B634F61815D06B105",
+        ),
+        "delivery_scope": (
+            "docs/architecture/deliveries/R12/CHANGED_PATHS.md",
+            "4B40844FCA0FAE502A644DDBB108E34738D3C2516D0809FAEDD38FFE9C3450A2",
+        ),
         "owned_count": 3,
         "selector_sha256": "2A45891E56E976DEAC01B791293D4DF05A4C1A045498D98B7D087B940582AD0F",
         "projection_sha256": "E84302EC06E0215758B91F9B179D89E0A5E17931CF42734828F1253BB4C129D2",
@@ -2777,9 +2795,9 @@ class CompletionValidator:
             )
             status = branch.get("status")
             self.problems.require(
-                status in {"planned", "active"},
+                status in {"planned", "active", "delivered"},
                 f"{branch_id}.status",
-                "C0001 next-wave controls permit only planned or active",
+                "C0001 next-wave controls permit only planned, active, or delivered",
             )
             if isinstance(status, str):
                 statuses.add(status)
@@ -2967,7 +2985,7 @@ class CompletionValidator:
         self.problems.require(
             len(statuses) == 1,
             "B0003/B0004 state",
-            f"branches must transition synchronously through planned/active; found {sorted(statuses)}",
+            f"branches must transition synchronously through planned/active/delivered; found {sorted(statuses)}",
         )
         if set(branch_rules) == set(NEXT_BRANCH_FACTS):
             for left in branch_rules["B0003"]:
@@ -3029,12 +3047,60 @@ class CompletionValidator:
     def validate_next_branch_lifecycle(
         self, branch_id: str, branch: dict[str, Any], facts: dict[str, Any]
     ) -> None:
-        self.problems.require(
-            branch.get("delivery")
-            == {"commit_sha": None, "report": None, "scope_evidence": None},
-            f"{branch_id}.delivery",
-            "planned/active next-wave control requires an empty delivery record",
+        status = branch.get("status")
+        report_path, report_sha256 = facts["delivery_report"]
+        scope_path, scope_sha256 = facts["delivery_scope"]
+        expected_delivery = (
+            {
+                "commit_sha": facts["delivery_sha"],
+                "report": {"path": report_path, "sha256": report_sha256},
+                "scope_evidence": {"path": scope_path, "sha256": scope_sha256},
+            }
+            if status == "delivered"
+            else {"commit_sha": None, "report": None, "scope_evidence": None}
         )
+        self.problems.require(
+            branch.get("delivery") == expected_delivery,
+            f"{branch_id}.delivery",
+            f"expected exact {status} delivery record {expected_delivery!r}",
+        )
+        if status == "delivered":
+            ancestry = self.git(
+                "merge-base",
+                "--is-ancestor",
+                facts["delivery_sha"],
+                "HEAD",
+                check=False,
+            )
+            self.problems.require(
+                ancestry.returncode == 0,
+                f"{branch_id}.delivery.commit_sha",
+                "delivered tip must be an ancestor of the integrated tree",
+            )
+            parent_vector = self.git(
+                "rev-list",
+                "--parents",
+                "-n",
+                "1",
+                facts["delivery_sha"],
+                check=False,
+            ).stdout.strip().split()
+            self.problems.require(
+                parent_vector == [facts["delivery_sha"], INTEGRATED_CODE_SHA],
+                f"{branch_id}.delivery.commit_sha",
+                "delivery must be a direct child of exact C0001",
+            )
+            for label, path, expected_sha256 in (
+                ("report", report_path, report_sha256),
+                ("scope_evidence", scope_path, scope_sha256),
+            ):
+                artifact_path = self.root / path
+                self.problems.require(
+                    artifact_path.is_file()
+                    and sha256_path(artifact_path) == expected_sha256,
+                    f"{branch_id}.delivery.{label}",
+                    f"expected exact delivery artifact {path} at {expected_sha256}",
+                )
         self.problems.require(
             branch.get("integration")
             == {
@@ -3043,7 +3109,7 @@ class CompletionValidator:
                 "accepted_sha": None,
             },
             f"{branch_id}.integration",
-            "planned/active next-wave control requires an empty integration record",
+            "pre-acceptance next-wave control requires an empty integration record",
         )
         expected_retirement = {
             "remote_ref": f"refs/heads/{facts['branch']}",
@@ -3056,7 +3122,7 @@ class CompletionValidator:
         self.problems.require(
             branch.get("retirement") == expected_retirement,
             f"{branch_id}.retirement",
-            f"expected exact pre-delivery retirement state {expected_retirement!r}",
+            f"expected exact pre-acceptance retirement state {expected_retirement!r}",
         )
 
     def validate_next_projection(
@@ -3816,7 +3882,7 @@ class CompletionValidator:
                         f"missing exact projection-replay count {token}",
                     )
 
-        if state == "active":
+        if state in {"active", "delivered"}:
             activation_path = self.phase_dir / "reviews/R11-R12-activation.md"
             pins = [
                 self.require_next_evidence(branch_id, self.relative(activation_path))
@@ -3826,7 +3892,7 @@ class CompletionValidator:
                 all(pin is not None for pin in pins)
                 and len({pin.sha256 for pin in pins if pin is not None}) == 1,
                 "B0003/B0004 activation evidence",
-                "active branches must pin the same activation review SHA-256",
+                "activated branches must pin the same activation review SHA-256",
             )
             try:
                 activation = activation_path.read_text(encoding="utf-8")
@@ -4589,11 +4655,24 @@ def run_self_test() -> int:
                 "request_postimages_sha256",
             )
         ],
+        *[
+            str(facts[key][1])
+            for facts in NEXT_BRANCH_FACTS.values()
+            for key in ("delivery_report", "delivery_scope")
+        ],
     ]
     problems.require(
         all(SHA256_RE.fullmatch(digest) is not None for digest in next_digests),
         "self-test",
         "next-wave SHA-256 constants are malformed",
+    )
+    problems.require(
+        all(
+            SHA1_RE.fullmatch(str(facts["delivery_sha"])) is not None
+            for facts in NEXT_BRANCH_FACTS.values()
+        ),
+        "self-test",
+        "next-wave delivery SHA-1 constants are malformed",
     )
     with tempfile.TemporaryDirectory(prefix="completion-validator-self-test-") as directory:
         tsv = Path(directory) / "sample.tsv"
@@ -4688,7 +4767,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "C0000-pinned 2,593-row freeze, 492-row scope, exact R01/R02 98/145-path "
         "delivery evidence, projections, routes, private closure, tests, "
         "overlap proofs, postimages, reviewed union, milestone DAG, and exact "
-        "C0001-pinned synchronous R11/R12 planned/active controls"
+        "C0001-pinned synchronous R11/R12 planned/active/delivered controls"
     )
     return 0
 

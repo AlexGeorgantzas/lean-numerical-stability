@@ -74,8 +74,8 @@
 -- IMPORT-ONLY.
 
 import NumStability.Analysis.MatrixAlgebra
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
-import NumStability.Source.Higham.Chapter19.StoredLoop
+import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
+import NumStability.Source.Higham.Chapter19.StoredLoop.Perturbation.Bridge
 
 /-! Canonical Higham Chapter 19 QR stored-loop strong-model closure. -/
 

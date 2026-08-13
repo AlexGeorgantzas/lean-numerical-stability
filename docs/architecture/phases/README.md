@@ -15,14 +15,25 @@ and both clean named worker worktrees were removed without force. Local branch
 refs remain preserved at the immutable delivery tips. This successor has
 precedence over dated migration packets and historical handoffs.
 
-The active pair is B0003/R11 (QR and Chapter 19) with B0004/R12 (Chapter 13
-equations and Table 01), both rooted at exact C0001 code
-`117aa2bb7e61f41e1531a78452f9f7f6cd5b0771`. Their fresh selectors,
-format-2 projections, routes, private closure, test plans, and same-preimage
-shared-request union are frozen in the active successor. Planned-control commit
-`c48d241532ad3dee12f4107a5e8875c7054159be` passed Lean CI run 31546978830
-(job 93961477202) before both exact refs and clean named worktrees were created
-and activated.
+B0003/R11 (QR and Chapter 19) and B0004/R12 (Chapter 13 equations and Table 01)
+were delivered from exact C0001 code
+`117aa2bb7e61f41e1531a78452f9f7f6cd5b0771` at immutable tips
+`444a03259af510bdfe0921d1847b6add1b26ed73` and
+`0726678a0f2db56e533f3b956a2f7f1531059d7d`, respectively. Separate true merge
+commits `10169717ce4966e9963885b04e7b7733a3bc7730` and
+`1495047a1befb1431f0501cf7a423c8e77f8661a` preserve both deliveries. After
+both merges, the reviewed 133-path R0003/R0004 union was applied exactly once
+from its common C0001 preimage; sequential whole-file request replacement was
+not used. The bounded integration follow-up completes the Chapter 19
+`Sensitivity` and `StoredLoop` aggregates and records self-ratcheting
+exceptions for exactly the two retained historical imports in byte-identical
+`Chapter19.Core`. R11/R12 are integrated but remain unaccepted: M11/M12 are
+ready, C0001 remains current, and C0002 awaits the full acceptance gates and
+exact green code CI. Their selectors, format-2 projections, routes, private
+closure, test plans, and same-preimage request union remain frozen. The
+planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be` passed Lean CI run
+31546978830 (job 93961477202) before both exact refs and clean named worktrees
+were created and activated.
 
 The immutable predecessor
 [`2026-08 repository reorganization`](2026-08-repository-reorganization/README.md)

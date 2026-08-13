@@ -1,7 +1,7 @@
 import NumStability.Algorithms.LeastSquares.LSQRSolve
 import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
 import NumStability.Algorithms.QR.Higham19Thm6CoxHigham
 import NumStability.Algorithms.QR.Higham19Thm6CoxHighamConcrete
 import NumStability.Analysis.Perturbation.LeastSquares.Contract

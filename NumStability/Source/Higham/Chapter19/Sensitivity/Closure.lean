@@ -1,4 +1,4 @@
-import NumStability.Source.Higham.Chapter19.Sensitivity
+import NumStability.Source.Higham.Chapter19.Sensitivity.Bounds.Results
 
 /-! Canonical Higham Chapter 19 QR sensitivity closure. -/
 

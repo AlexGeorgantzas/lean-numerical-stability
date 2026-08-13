@@ -1,5 +1,5 @@
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.FloatingPoint.Model

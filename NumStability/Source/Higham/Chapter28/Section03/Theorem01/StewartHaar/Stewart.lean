@@ -9,7 +9,7 @@ import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Measure.Haar.Basic
 import Mathlib.Probability.Distributions.Gaussian.Real
 import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.TestMatrices.Hilbert.Basic
 import NumStability.Analysis.TestMatrices.RandomSVD.Basic

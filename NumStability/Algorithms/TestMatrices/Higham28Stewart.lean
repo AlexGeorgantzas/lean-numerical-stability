@@ -3,7 +3,7 @@ import Mathlib.MeasureTheory.Constructions.Pi
 import Mathlib.MeasureTheory.Measure.Haar.Basic
 import Mathlib.Probability.Distributions.Gaussian.Real
 import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Algorithms.TestMatrices.Higham28
 import NumStability.Analysis.TestMatrices.RandomSVD.Stewart
 import NumStability.Source.Higham.Chapter28.Section03.Theorem01.StewartHaar.Stewart

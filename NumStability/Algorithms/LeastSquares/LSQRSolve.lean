@@ -15,7 +15,7 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution

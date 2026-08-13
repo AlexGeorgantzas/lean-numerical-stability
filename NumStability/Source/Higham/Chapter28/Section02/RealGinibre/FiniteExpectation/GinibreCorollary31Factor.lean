@@ -17,7 +17,7 @@ import Mathlib.MeasureTheory.Measure.Prod
 import Mathlib.Probability.Distributions.Beta
 import Mathlib.Probability.Distributions.Gaussian.Real
 import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment

@@ -5,9 +5,15 @@
   "branch_id": "B0003",
   "branch_name": "codex/reorg-completion-2026-08-r11-qr-ch19",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "444a03259af510bdfe0921d1847b6add1b26ed73",
+    "report": {
+      "path": "docs/architecture/deliveries/R11/DELIVERY.md",
+      "sha256": "35C9AE0319D4248F450E3B83252C0802483E6433EE7F6E6B1A22AF33497722EC"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/R11/CHANGED_PATHS.md",
+      "sha256": "1B6A0356843A96C21D4ADE283DC920E4408204925B8FD35F78EB8A122A82AB3F"
+    }
   },
   "destination_prefixes": [
     {
@@ -10745,6 +10751,6 @@
   "shared_request_ids": [
     "R0003"
   ],
-  "status": "active",
+  "status": "delivered",
   "wave_id": "R11"
 }

@@ -1,7 +1,7 @@
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Contract
 import NumStability.Analysis.Rounding

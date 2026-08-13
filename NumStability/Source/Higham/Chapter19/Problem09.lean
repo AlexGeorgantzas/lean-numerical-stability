@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
-import NumStability.Source.Higham.Chapter19.Sensitivity
+import NumStability.Source.Higham.Chapter19.Sensitivity.Bounds.Results
 import NumStability.Analysis.MatrixSpectral
 import NumStability.Analysis.SingularValues.Realification
 import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part01

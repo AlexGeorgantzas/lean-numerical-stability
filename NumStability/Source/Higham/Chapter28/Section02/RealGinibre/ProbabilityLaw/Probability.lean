@@ -11,7 +11,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.Measure.Haar.Basic
 import Mathlib.Probability.Distributions.Gaussian.Real
 import NumStability.Algorithms.LinearSystems.QR.HouseholderReflector
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Analysis.Conditioning.LinearSystems.PerronFrobenius
 import NumStability.Analysis.MatrixAlgebra
 

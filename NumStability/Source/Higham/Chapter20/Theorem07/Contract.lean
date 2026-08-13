@@ -4,10 +4,10 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.LeastSquares.TraceKernel
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding

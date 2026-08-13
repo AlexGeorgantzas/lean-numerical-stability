@@ -11,11 +11,11 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.QRSolve
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
 import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Source.Higham.Chapter19.Theorem06.CoxHighamAssembly
 import NumStability.Source.Higham.Chapter19.Theorem06.Pivoted

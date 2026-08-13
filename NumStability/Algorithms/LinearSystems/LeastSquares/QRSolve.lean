@@ -6,8 +6,8 @@ import Mathlib.LinearAlgebra.Matrix.Rank
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import NumStability.Algorithms.LinearSystems.QR.HouseholderApplySupport
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpecSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
+import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
 import NumStability.FloatingPoint.Model
 
 namespace NumStability

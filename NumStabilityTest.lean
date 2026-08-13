@@ -522,6 +522,8 @@ import NumStabilityTest.Import.TriangularMigration
 import NumStabilityTest.Import.TridiagonalCondCanonical
 import NumStabilityTest.Reorganization.R01
 import NumStabilityTest.Reorganization.R02
+import NumStabilityTest.Reorganization.R11.All
+import NumStabilityTest.Reorganization.R12.All
 import NumStabilityTest.Reorganization.W01.Canonical.ExactSubtraction
 import NumStabilityTest.Reorganization.W01.Canonical.Format
 import NumStabilityTest.Reorganization.W01.Canonical.IeeeExceptions

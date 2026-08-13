@@ -1,5 +1,5 @@
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
-import NumStability.Source.Higham.Chapter19.Sensitivity
+import NumStability.Source.Higham.Chapter19.Sensitivity.Bounds.Results
 
 namespace NumStability
 

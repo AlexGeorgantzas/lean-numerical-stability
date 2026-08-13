@@ -11,7 +11,7 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.HouseholderApply
 import NumStability.Algorithms.LinearSystems.QR.HouseholderOneStep
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQRSupport
+import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
 import NumStability.Algorithms.LinearSystems.QR.GivensSpec
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Analysis.Rounding
