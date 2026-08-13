@@ -1,0 +1,354 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "719b4d67c6e21357302ebc4493123dea7fceffde1c58ed9091101dc88280126f",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For a natural number n, this is the type Matrix (Fin n) (Fin n) Real, namely real-valued n-by-n matrices.",
+      "effect_on_target": "It fixes A, B, C, and R as square real matrices of the same dimension n.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "It is the real quantity β = (epsilon/sep) * (3*F(C) + 2*mu*(F(A)+F(B))*F(R)), where F is LocalDef004.",
+      "effect_on_target": "It is the additive term in every recurrence step and multiplies the finite geometric sum in the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "It is the real quantity α = 4 + 2*(F(A)+F(B))/sep, where F is LocalDef004.",
+      "effect_on_target": "It is the recurrence multiplier, appears as α^depth on the initial error, and supplies every power in the geometric sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "For an n-by-n real matrix X, it is F(X) = sqrt(Σ_i Σ_j X(i,j)^2), with both sums over all i,j in Fin n; this is the Frobenius norm.",
+      "effect_on_target": "It determines all matrix-dependent terms in α and β.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "It supplies a proof of Nat.AtLeastTwo for 2+1, the natural number 3.",
+      "effect_on_target": "It permits the real numeral 3 in the term 3*F(C); it contributes no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "It supplies a proof of Nat.AtLeastTwo for 3+1, the natural number 4.",
+      "effect_on_target": "It permits the real numeral 4 in α; it contributes no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "It supplies a proof of Nat.AtLeastTwo for 1+1, the natural number 2.",
+      "effect_on_target": "It permits the real numeral 2 in the definitions of α and β; it contributes no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "Finset.range",
+      "meaning": "For depth in Nat, Finset.range depth is the finite set of natural numbers {0,1,...,depth-1}.",
+      "effect_on_target": "It makes the sum in the conclusion exactly Σ_{k=0}^{depth-1} α^k, empty when depth=0.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "Finset.sum",
+      "meaning": "It maps a function over a finite set and adds all resulting values using the additive commutative monoid operation.",
+      "effect_on_target": "It forms the matrix-entry sums in F and the finite geometric sum in the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "HAdd.hAdd",
+      "meaning": "It selects the addition operation supplied by an HAdd instance.",
+      "effect_on_target": "It denotes ordinary natural addition in k+1 and ordinary real addition in α, β, the recurrence, and the final bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "HMul.hMul",
+      "meaning": "It selects the multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "It denotes ordinary real multiplication throughout α, β, the recurrence, and the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "HPow.hPow",
+      "meaning": "It selects the exponentiation operation supplied by an HPow instance.",
+      "effect_on_target": "It denotes the natural powers α^depth and α^k, and squares matrix entries in F.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LE.le",
+      "meaning": "It selects the less-than-or-equal relation supplied by an LE instance.",
+      "effect_on_target": "It expresses the real upper bounds in both the recurrence hypothesis and final conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "LT.lt",
+      "meaning": "It selects the strict less-than relation supplied by an LT instance.",
+      "effect_on_target": "It expresses 0 < sep over the reals and k < depth over the natural numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Monoid.toNatPow",
+      "meaning": "It equips a monoid with natural-number exponentiation by repeated multiplication, with x^0 = 1.",
+      "effect_on_target": "It gives the usual real natural powers appearing in the geometric recurrence bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Nat",
+      "meaning": "It is the type of natural numbers.",
+      "effect_on_target": "It is the type of n, depth, recurrence indices, and exponents.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "OfNat.ofNat",
+      "meaning": "It interprets a natural-number literal in a type through an OfNat instance.",
+      "effect_on_target": "It supplies the literals 0, 1, 2, 3, and 4 used in indices, inequalities, powers, and coefficient definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Real",
+      "meaning": "It is the type of real numbers.",
+      "effect_on_target": "Matrix entries, sep, epsilon, mu, sequence values, coefficients, sums, and bounds are all real.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instAdd",
+      "meaning": "It provides ordinary addition on the real numbers.",
+      "effect_on_target": "It interprets all real additions in α, β, the step bound, and the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "It gives the real numbers their additive commutative monoid structure, whose identity is 0.",
+      "effect_on_target": "It supports the finite real sums; in particular, a sum over an empty finite set is 0.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instLE",
+      "meaning": "It provides the standard order relation ≤ on real numbers.",
+      "effect_on_target": "It gives the recurrence and final inequalities their ordinary real-order meaning.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instLT",
+      "meaning": "It provides the standard strict order relation < on real numbers.",
+      "effect_on_target": "It makes the assumption on sep exactly strict positivity.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instMonoid",
+      "meaning": "It gives the real numbers their multiplicative monoid structure.",
+      "effect_on_target": "It supports natural powers of the real coefficient α and the squared matrix entries.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instMul",
+      "meaning": "It provides ordinary multiplication on real numbers.",
+      "effect_on_target": "It interprets all products in α, β, the recurrence, and the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "Real.instZero",
+      "meaning": "It provides the real number 0.",
+      "effect_on_target": "It supplies the zero used in the positivity assumption and as the additive identity of empty sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Zero.toOfNat0",
+      "meaning": "It converts a Zero instance into an interpretation of the numeral 0.",
+      "effect_on_target": "It interprets the left side of 0 < sep as real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "instAddNat",
+      "meaning": "It provides ordinary addition on natural numbers.",
+      "effect_on_target": "It makes the next recurrence index k+1 the natural-number successor of k.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "instHAdd",
+      "meaning": "It lifts a homogeneous Add operation to HAdd on the same type.",
+      "effect_on_target": "It routes HAdd expressions to ordinary natural or real addition as appropriate.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "instHMul",
+      "meaning": "It lifts a homogeneous Mul operation to HMul on the same type.",
+      "effect_on_target": "It routes HMul expressions to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "instHPow",
+      "meaning": "It lifts a Pow operation to HPow.",
+      "effect_on_target": "It routes exponentiation expressions to ordinary real powers with natural exponents.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "instLTNat",
+      "meaning": "It provides the standard strict order on natural numbers.",
+      "effect_on_target": "It restricts recurrence steps to exactly the indices k with k < depth.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "instOfNatNat",
+      "meaning": "It interprets each natural-number literal n as that same natural number.",
+      "effect_on_target": "It supplies natural literals such as the indices 0 and 1 and the arithmetic used in numeral evidence.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "It extracts division from a divisive inverse-monoid structure.",
+      "effect_on_target": "It supplies real division in epsilon/sep and 2*(F(A)+F(B))/sep.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Fin",
+      "meaning": "For n in Nat, Fin n is the finite index type consisting of natural indices below n.",
+      "effect_on_target": "It makes each matrix have n row indices and n column indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "HDiv.hDiv",
+      "meaning": "It selects the division operation supplied by an HDiv instance.",
+      "effect_on_target": "It denotes real division by sep in α and β.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Matrix",
+      "meaning": "Matrix m n α is definitionally the function type m → n → α.",
+      "effect_on_target": "Thus A, B, C, and R assign a real entry to each pair of row and column indices in Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "It equips the real numbers with multiplication, inverse, and division.",
+      "effect_on_target": "It gives the quotients by sep their standard real-arithmetic interpretation; sep > 0 ensures the denominator is nonzero.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "Real.instNatCast",
+      "meaning": "It embeds natural numbers into the real numbers.",
+      "effect_on_target": "It provides the real constants 2, 3, and 4 in the definitions of α and β.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "instHDiv",
+      "meaning": "It lifts a homogeneous Div operation to HDiv on the same type.",
+      "effect_on_target": "It routes HDiv expressions to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "Given a natural-number cast and evidence Nat.AtLeastTwo n, it interprets the numeral n by casting n into the target type.",
+      "effect_on_target": "Together with D005-D007, it elaborates the real literals 2, 3, and 4.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "Fin.fintype",
+      "meaning": "It gives Fin n a finite enumeration containing every index exactly once.",
+      "effect_on_target": "It makes summation over every row and column index of an n-by-n matrix possible.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, it is the finite set containing every element of that type.",
+      "effect_on_target": "The two universal finite sets in F(X) range over all row and column indices in Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "It is an inductive proposition indexed by a natural number and is used as evidence for interpreting numerals of value at least two; its constructors are not supplied in the dossier.",
+      "effect_on_target": "Only its supplied instances at 2, 3, and 4 are used to elaborate real constants; no Nat.AtLeastTwo premise remains in the mathematical proposition.",
+      "status": "unclear"
+    },
+    {
+      "id": "D044",
+      "name": "Real.sqrt",
+      "meaning": "It is the nonnegative real square root, implemented through the nonnegative part of its input; on the nonnegative sums of squares used here it is the ordinary nonnegative square root.",
+      "effect_on_target": "It turns each sum of squared matrix entries into the Frobenius norm F(X).",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "n and depth are arbitrary natural numbers.",
+      "A, B, C, and R are arbitrary real n-by-n matrices, represented as functions Fin n × Fin n → Real.",
+      "sep, epsilon, and mu are arbitrary real numbers.",
+      "err is an arbitrary real sequence indexed by the natural numbers."
+    ],
+    "hypotheses": [
+      "sep is strictly positive: 0 < sep.",
+      "For every natural number k with k < depth, err(k+1) ≤ α*err(k) + β."
+    ],
+    "conclusions": [
+      "err(depth) ≤ α^depth*err(0) + β*Σ_{k=0}^{depth-1} α^k."
+    ],
+    "mathematical_definitions": [
+      "For any n-by-n real matrix X, F(X) = sqrt(Σ_{i∈Fin n} Σ_{j∈Fin n} X(i,j)^2).",
+      "α = 4 + 2*(F(A)+F(B))/sep.",
+      "β = (epsilon/sep)*(3*F(C) + 2*mu*(F(A)+F(B))*F(R)).",
+      "The power α^m is the usual natural power, so α^0 = 1.",
+      "The sum Σ_{k=0}^{depth-1} α^k is a finite sum and equals 0 when depth=0."
+    ],
+    "proposition_plain_english": "For every natural dimension n and recurrence depth, every four real n-by-n matrices A, B, C, and R, and all real parameters sep, epsilon, and mu, assume sep is positive. Define α = 4 + 2*(F(A)+F(B))/sep and β = (epsilon/sep)*(3*F(C) + 2*mu*(F(A)+F(B))*F(R)), where F is the Frobenius norm computed as the square root of the sum of all squared entries. Then every real sequence err satisfying err(k+1) ≤ α*err(k) + β for each k < depth also satisfies err(depth) ≤ α^depth*err(0) + β times the finite geometric sum Σ_{k=0}^{depth-1} α^k."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The parameters n and depth may be zero.",
+    "When depth=0, the step hypothesis has no applicable indices and is vacuous; the conclusion reduces to err(0) ≤ err(0).",
+    "When n=0, every matrix has an empty index set and each displayed Frobenius norm is 0.",
+    "Because 0 < sep is an implication antecedent, the proposition is vacuous for sep ≤ 0.",
+    "For a sequence that does not satisfy every required recurrence inequality, the implication from the step hypothesis asserts no bound.",
+    "No sign condition is imposed on epsilon, mu, β, or the sequence err.",
+    "No symmetry, invertibility, definiteness, rank, or other structural condition is imposed on A, B, C, or R.",
+    "The only matrix norm encoded is the Frobenius norm sqrt(Σ_i Σ_j X(i,j)^2); no spectral or induced norm appears.",
+    "From sep > 0 and nonnegativity of the Frobenius norms, α ≥ 4, but this consequence is not stated as a separate hypothesis.",
+    "The conclusion is only a finite-depth upper bound. It does not assert convergence, asymptotic stability, optimality, equality, or tightness.",
+    "The names sep, epsilon, mu, and err impose no additional interpretation such as separation, perturbation size, machine precision, or absolute error."
+  ],
+  "ambiguities": [
+    "The packet gives only the type Nat → Prop for the inductive declaration Nat.AtLeastTwo and omits its constructors, so its exact standalone logical definition cannot be reconstructed. This does not affect the translated proposition because the supplied proofs are used only to elaborate the real numerals 2, 3, and 4."
+  ]
+}

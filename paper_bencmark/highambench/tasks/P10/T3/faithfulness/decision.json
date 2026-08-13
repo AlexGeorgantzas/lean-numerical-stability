@@ -1,0 +1,73 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "round-trip judge requested adjudication",
+    "blind dependency D043 is unclear",
+    "round-trip S09 is unclear",
+    "round-trip S12 is unclear"
+  ],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-13T16:00:45.557480+00:00",
+  "findings": [
+    {
+      "category": "algorithm-linkage",
+      "evidence": "The paper derives the recurrence from SylR's four block solves, right-hand-side products, separation inequality (19), and product-error model (8). Lean places the resulting scalar step inequality directly in hstep.",
+      "impact": "The central numerical-analysis burden is assumed rather than proved, leaving a generic recurrence lemma instead of a theorem about SylR.",
+      "severity": "critical"
+    },
+    {
+      "category": "missing-conclusions",
+      "evidence": "The paper proceeds from the recurrence to equation (20), compares it with a conventional forward-error bound, and concludes logarithmic stability. None of these conclusions appears in Lean.",
+      "impact": "The declaration omits the selected result's principal asymptotic and stability claims.",
+      "severity": "major"
+    },
+    {
+      "category": "binders-and-indexing",
+      "evidence": "The paper uses positive power-of-two n, recursion from n to n/2, mu(n/2), and depth log2 n. Lean has arbitrary independent n and depth, successor-indexed steps, and one arbitrary scalar mu.",
+      "impact": "The declaration cannot recover the paper's size-dependent exponents or multiplication-error indexing without substantial external assumptions.",
+      "severity": "major"
+    },
+    {
+      "category": "separation-and-error-semantics",
+      "evidence": "In the paper sep(A,B) is defined by the Sylvester operator, R solves AR-RB=-C, and err is a forward-error bound including computed right-hand-side errors. Lean leaves sep, R, and err mutually independent.",
+      "impact": "The symbols carrying the paper's conditioning and forward-error content are detached from the matrices and algorithm.",
+      "severity": "major"
+    },
+    {
+      "category": "norm-specialization",
+      "evidence": "Lean explicitly uses the Frobenius norm, while the paper prints unsubscripted recurrence norms but defines separation through Frobenius norms.",
+      "impact": "The specialization is compatible and not independently disqualifying, but it does not repair the missing definition of sep or algorithmic linkage.",
+      "severity": "minor"
+    },
+    {
+      "category": "recurrence-relation",
+      "evidence": "The paper introduces err as a bound and derives the recurrence from inequalities before printing it with equality; Lean consistently uses upper-bound inequalities.",
+      "impact": "The Lean inequality direction is faithful for a dominating error bound and is not a source of rejection.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean theorem assumes an abstract scalar recurrence and only unrolls it. It does not establish that SylR generates the recurrence, define sep(A,B), connect R or err to exact and computed Sylvester solutions, derive equation (20), or conclude logarithmic stability.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper proves an algorithm-specific, size-halving recurrence and asymptotic result for SylR. It does not assert the Lean theorem's universal conditional for arbitrary independent dimensions, depths, matrices, scalar parameters, and real sequences. The paper recurrence can motivate one constrained instance, not the full quantified declaration.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "Primary PDF evidence and the complete declaration bodies resolve D043, S09, and S12 without relying on vote counts or reuse hashes. Lean preserves the local coefficients and gives a valid, nonvacuous affine-recurrence unrolling. It nevertheless omits the SylR execution, Sylvester data dependencies, size halving, numerical model, equation (20), and logarithmic-stability conclusion. Its apparent generality is not genuine paper-level strengthening: it results from moving the paper-specific recurrence into an antecedent and removing the conditions and conclusions that give it numerical meaning. With both implication directions negative, the consistent classification is not-faithful-different and accepted is false.",
+  "remaining_uncertainties": [
+    "The paper does not typographically identify every unsubscripted recurrence norm, although Frobenius is an admissible and contextually supported specialization.",
+    "The selected paper passage does not conclusively specify whether the matrix scalar field is real or complex; Lean specializes to real matrices.",
+    "Equation (20) leaves its big-O constants, finite-n threshold, and suppressed higher-order terms unspecified."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P10-T3"
+}
