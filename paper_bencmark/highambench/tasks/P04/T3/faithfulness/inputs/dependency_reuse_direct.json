@@ -1,0 +1,257 @@
+{
+  "entries": [
+    {
+      "id": "D010",
+      "interpretation": "HAdd.hAdd selects the heterogeneous-addition operation supplied by its typeclass instance.",
+      "name": "HAdd.hAdd",
+      "reuse_sha256": "2c99a1926bdac64e3a35f3fa155d689dc336fe4eb783a294540e765003beae74",
+      "semantic_sha256": "e0bf2a92addd6ea713343e4ef69f67e4e1155781d08f46957b9f71412d865f59",
+      "source_dependency_id": "D003",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D011",
+      "interpretation": "HMul.hMul selects the heterogeneous-multiplication operation supplied by its typeclass instance.",
+      "name": "HMul.hMul",
+      "reuse_sha256": "8915b03a91c892e98db02c0973c28bad864cb016b465642b346d14f34e446a76",
+      "semantic_sha256": "4e00447a4a8ef4c2ce13e307c56a1fbcd7fa8c732fe039a452b42477a50df2c6",
+      "source_dependency_id": "D004",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D013",
+      "interpretation": "LE.le selects the non-strict order relation supplied for the type.",
+      "name": "LE.le",
+      "reuse_sha256": "c476dc1b2ea074ec4bd39cbce7c0ff24c628f572b131686eb6963c3e7131fb19",
+      "semantic_sha256": "54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48",
+      "source_dependency_id": "D005",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D018",
+      "interpretation": "OfNat.ofNat interprets a natural-number literal in the requested type.",
+      "name": "OfNat.ofNat",
+      "reuse_sha256": "37f0ecf64bd742bcc93f38034359021b711500e02dfff8ff3c1f2db70c293777",
+      "semantic_sha256": "6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead",
+      "source_dependency_id": "D007",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D020",
+      "interpretation": "Real is mathlib's type of real numbers.",
+      "name": "Real",
+      "reuse_sha256": "3483e25ab144d9f6b5fc2cc409de11ee2b17d27a19ada9ad855dd312dd9e9444",
+      "semantic_sha256": "38529f0578472feffc4c79d5d0755fa10fc3edafb232ab5e442336d13630ee90",
+      "source_dependency_id": "D008",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D021",
+      "interpretation": "Real.instAdd supplies ordinary real addition.",
+      "name": "Real.instAdd",
+      "reuse_sha256": "2600632309109b9eef72c7a64a51bb9f19137f042a46f93146279b789a7082de",
+      "semantic_sha256": "f99208c181266311bec9c890b688378f329076f9e6be38fe93d9cedf4d7f50ce",
+      "source_dependency_id": "D009",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D022",
+      "interpretation": "Real.instAddGroup supplies the additive-group structure on Real, including negation.",
+      "name": "Real.instAddGroup",
+      "reuse_sha256": "1f5c2cb2573ac7ae1df7dd2fb4169025e230cf39eed10a3bb6015178c0a216f9",
+      "semantic_sha256": "f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0",
+      "source_dependency_id": "D010",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D023",
+      "interpretation": "Real.instLE supplies the usual non-strict order on Real.",
+      "name": "Real.instLE",
+      "reuse_sha256": "96f4d2c6a6ed1a6072650c127a11af0743154b941d6d0bf8072e93589cecd9d1",
+      "semantic_sha256": "144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3",
+      "source_dependency_id": "D011",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D025",
+      "interpretation": "Real.instMul supplies ordinary real multiplication.",
+      "name": "Real.instMul",
+      "reuse_sha256": "cc1d87e896e40ca98beaba733d8981b2be417bf56b3cd139099a7fe33f462ebe",
+      "semantic_sha256": "459ccbe28a1d29ccd2b329ea29e1a84b329b8064b8a8ecc52764b69b23e229ed",
+      "source_dependency_id": "D012",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D026",
+      "interpretation": "Real.instNatCast supplies the canonical embedding of Nat into Real.",
+      "name": "Real.instNatCast",
+      "reuse_sha256": "11515d289291036cdc99fffdf3a5fc5b207622a159829c92fabab8dbc5d90b0b",
+      "semantic_sha256": "5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15",
+      "source_dependency_id": "D028",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D027",
+      "interpretation": "Real.lattice supplies max and min under the usual real order.",
+      "name": "Real.lattice",
+      "reuse_sha256": "094296f36b8f60f6e248ebe56a2c9cd0a87d2a95d53003f3fb7fc76713aa00a8",
+      "semantic_sha256": "5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510",
+      "source_dependency_id": "D014",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D028",
+      "interpretation": "abs a is max(a,-a), hence standard absolute value on Real.",
+      "name": "abs",
+      "reuse_sha256": "32a708fd3378d4db96640e2e6509634aa96151e94172fcf7f08b2b9a3e3d8a93",
+      "semantic_sha256": "8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b",
+      "source_dependency_id": "D016",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D029",
+      "interpretation": "instHAdd lifts a homogeneous Add operation to HAdd.",
+      "name": "instHAdd",
+      "reuse_sha256": "8f153af5aa1baf5f6424ff39c5d08323cd358ffeece5f9ced3043ad2cffa73b6",
+      "semantic_sha256": "38066efd17aeeca52ec2890d9aafca2fa3cce8fda7f5843c1b8e5da130d93981",
+      "source_dependency_id": "D018",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D030",
+      "interpretation": "instHMul lifts a homogeneous Mul operation to HMul.",
+      "name": "instHMul",
+      "reuse_sha256": "46765db2b9c4e049bf61e51bed5aa60e6f7c8d1bae634a71be3cc3d75d34fb61",
+      "semantic_sha256": "1fd375514ac68e29e7941c94ba308ea936395db23d0fee63a5c69dcccd3b2bdc",
+      "source_dependency_id": "D019",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D034",
+      "interpretation": "DivInvMonoid.toDiv extracts the division operation from a division/inverse monoid.",
+      "name": "DivInvMonoid.toDiv",
+      "reuse_sha256": "df63d67be0a47651e461c7c0857bc6f06de6eb2312aa865ec12586eb832a6aa4",
+      "semantic_sha256": "cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea",
+      "source_dependency_id": "D020",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D038",
+      "interpretation": "HDiv.hDiv selects the heterogeneous-division operation supplied by its instance.",
+      "name": "HDiv.hDiv",
+      "reuse_sha256": "7cc520200fbbc81cb5af9bd69f23a7fa8d3c03985e9622d43e610579ec2d1769",
+      "semantic_sha256": "10d75d9f08ad8c923109392866fba5fb3645de144bc824cefdd353658fe9f06b",
+      "source_dependency_id": "D021",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D039",
+      "interpretation": "HSub.hSub selects the heterogeneous-subtraction operation supplied by its instance.",
+      "name": "HSub.hSub",
+      "reuse_sha256": "b332fe28eda7461a55409befd08f414509b9cfcdfd7730a06048da7b83c87c62",
+      "semantic_sha256": "98025b38d523c0eadea77ba4961a20b2a913b23c079c4bfeba24a7bfaa24a4bc",
+      "source_dependency_id": "D022",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D041",
+      "interpretation": "Nat.cast maps a natural number to the corresponding value in a type with NatCast.",
+      "name": "Nat.cast",
+      "reuse_sha256": "fb2cb8ca958b6b9b06056213ea79965d590b2ebafdc4f8f0a3e9756bb034f7d8",
+      "semantic_sha256": "6e24327ea908b1837083bb15aef27d593e950a2ff8ade81d8aa94bfe33b64450",
+      "source_dependency_id": "D024",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D042",
+      "interpretation": "One.toOfNat1 turns a One instance into the OfNat instance for the literal 1.",
+      "name": "One.toOfNat1",
+      "reuse_sha256": "decd674803aac02ebd385212bdf204f6212acc91345ee72dc5ad8d7b3dfe3bb0",
+      "semantic_sha256": "cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5",
+      "source_dependency_id": "D025",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D044",
+      "interpretation": "Real.instDivInvMonoid supplies real multiplication, inverse, and division.",
+      "name": "Real.instDivInvMonoid",
+      "reuse_sha256": "ab4d730c0e1a3194e52e83a676c0de91daf486521f7cb16d7cf21b77a11bde44",
+      "semantic_sha256": "166f2abb65bf1271e5e8d70fdb78c55672c7e366b30439e83b517f803cdefac3",
+      "source_dependency_id": "D026",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D046",
+      "interpretation": "Real.instOne supplies the multiplicative identity 1 in Real.",
+      "name": "Real.instOne",
+      "reuse_sha256": "278b68069fb2dca8c3606f359ce8d431c0f9e00fb8e417d19697eed49e4fc22e",
+      "semantic_sha256": "b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81",
+      "source_dependency_id": "D029",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D047",
+      "interpretation": "Real.instSub supplies ordinary real subtraction a-b=a+(-b).",
+      "name": "Real.instSub",
+      "reuse_sha256": "b749cd229005c3a1648902abc2bc67a4c2a7c085861f5f029cae4ef461a4036c",
+      "semantic_sha256": "926d9e8fcca2819a885d446e168b20c7c8aac2e542d59ed2b48e32c9a4659a36",
+      "source_dependency_id": "D030",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D048",
+      "interpretation": "instAddNat supplies ordinary natural-number addition.",
+      "name": "instAddNat",
+      "reuse_sha256": "62b44b9ddca5bb499eb94e1c4dcea8170c8d2b20443add211beee7e2ca3209f3",
+      "semantic_sha256": "a1534bcd3e1888406ac787d30eeff8a284cb6688c23f5e8de09351dda91a280c",
+      "source_dependency_id": "D017",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D049",
+      "interpretation": "instHDiv lifts homogeneous division to HDiv.",
+      "name": "instHDiv",
+      "reuse_sha256": "bf79a894f33a6eb637c4e4c038bf278981a5dc8a3e147af4deafafc35a9b734c",
+      "semantic_sha256": "ea3478ce3daf37e2cbdcd4bfaf7b5142fd7d274b56d75d2fae007c15e1b89871",
+      "source_dependency_id": "D031",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    },
+    {
+      "id": "D050",
+      "interpretation": "instHSub lifts homogeneous subtraction to HSub.",
+      "name": "instHSub",
+      "reuse_sha256": "f39a60e5a7fdc34f852de226b72fe543dea9c623443daecb3a67b84708f713fb",
+      "semantic_sha256": "aa782f2b5af3d068f4c5340de4b32b193fece2c659a45582cc3024a19b550c87",
+      "source_dependency_id": "D032",
+      "source_direct_output_sha256": "59100ca117811f24a484738f4503848d51ffbec7c1723a2108ace018cc584ea5",
+      "source_task_id": "P04-T1"
+    }
+  ],
+  "role": "direct-dependency-reuse",
+  "schema_version": "highambench-faithfulness-0.2",
+  "target_task_id": "P04-T3"
+}

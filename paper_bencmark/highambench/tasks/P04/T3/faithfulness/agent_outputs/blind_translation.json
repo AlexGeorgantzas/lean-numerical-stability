@@ -1,0 +1,416 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "f1ab8ee76b928333543348e584f5e460ff81101249dc133bdfaa977fd78c6d3e",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For v ∈ ℝ and m ∈ ℕ, this defines γ_m(v) = ((m : ℝ)v)/(1 - (m : ℝ)v).",
+      "effect_on_target": "It supplies γ_n(u), γ_bdim(u), γ_(q⊖1)(uFma), and γ_((n⊖bdim)+1)(u), which occur in the hypotheses and final perturbation coefficient.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "It defines α = 2uLow + uLow² + max(γ_(q⊖1)(uFma) + γ_((n⊖bdim)+1)(u) + γ_(q⊖1)(uFma)γ_((n⊖bdim)+1)(u), γ_bdim(u))(1 + uLow)², where ⊖ is truncated natural subtraction.",
+      "effect_on_target": "The entrywise bound on ΔF is αM_ij, and the final entrywise bound uses (α + 2γ_n(u) + γ_n(u)²)M_ij.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "This is ordinary finite matrix multiplication: (BC)_ij = Σ_k B_ik C_kj over every k ∈ Fin N.",
+      "effect_on_target": "It interprets LU, LΔU, ΔLU, and ΔLΔU throughout the factorization identity and error bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "This is ordinary matrix-vector multiplication: (Bz)_i = Σ_j B_ij z_j over every j ∈ Fin N.",
+      "effect_on_target": "It interprets the forward equation, backward equation, and final perturbed system.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "This is evidence that the natural numeral 1 + 1, namely 2, satisfies the Nat.AtLeastTwo predicate.",
+      "effect_on_target": "It provides numeral-elaboration support for the constant 2 in local expressions and introduces no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "And",
+      "meaning": "Logical conjunction of two propositions.",
+      "effect_on_target": "It requires the same witness ΔA to satisfy both the exact perturbed system and its entrywise bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "Eq",
+      "meaning": "Exact equality of two values of the same type.",
+      "effect_on_target": "All matrix and vector equations are exact equalities over real-valued functions.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "Exists",
+      "meaning": "Existential quantification over a value satisfying a proposition.",
+      "effect_on_target": "It asserts the existence of a real N-by-N matrix ΔA after all parameters and hypotheses have been supplied.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "Fin",
+      "meaning": "Fin N is the finite index type with elements 0 through N - 1.",
+      "effect_on_target": "It makes every matrix N-by-N and every vector N-dimensional, and it bounds all summation and entrywise indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "HAdd.hAdd",
+      "meaning": "This selects the addition operation supplied by the relevant HAdd instance.",
+      "effect_on_target": "With the displayed instances it denotes ordinary real addition and pointwise addition of matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "HMul.hMul",
+      "meaning": "This selects the multiplication operation supplied by the relevant HMul instance.",
+      "effect_on_target": "Here it denotes ordinary real multiplication in sums, coefficients, and entrywise right-hand sides.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "HPow.hPow",
+      "meaning": "This selects exponentiation from the relevant HPow instance.",
+      "effect_on_target": "It gives the ordinary squares uLow², (1 + uLow)², and γ_n(u)².",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LE.le",
+      "meaning": "The non-strict order relation ≤ supplied by an LE instance.",
+      "effect_on_target": "With the real instance it expresses every entrywise absolute-value inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Monoid.toNatPow",
+      "meaning": "It defines natural-number powers in a monoid by repeated multiplication.",
+      "effect_on_target": "It makes each exponent 2 an ordinary real square.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "It supplies the dimension N, count parameters q, n, and bdim, finite-power exponents, and truncated subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "meaning": "For a nonzero natural n, it certifies that n + 1 satisfies Nat.AtLeastTwo.",
+      "effect_on_target": "Applied at n = 1, it supports elaboration of the real numeral 2 without adding a theorem hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Nat.instNeZeroSucc",
+      "meaning": "It certifies that every natural successor n + 1 is nonzero.",
+      "effect_on_target": "It supplies the nonzero evidence used to elaborate the numeral 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "OfNat.ofNat",
+      "meaning": "It interprets a natural-number literal in a target type through an OfNat instance.",
+      "effect_on_target": "It gives the exact constants 0, 1, and 2 at their required natural or real types.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Pi.instAdd",
+      "meaning": "It defines addition of functions pointwise.",
+      "effect_on_target": "Applied twice, it makes A + ΔF, L + ΔL, U + ΔU, and A + ΔA entrywise matrix sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "All scalar parameters, matrix entries, vector entries, sums, equations, and inequalities are over ℝ.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instAdd",
+      "meaning": "The ordinary addition operation on real numbers.",
+      "effect_on_target": "It interprets scalar sums in γ-related coefficients and pointwise matrix addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive-group structure of ℝ, including zero, addition, and negation.",
+      "effect_on_target": "It supplies the negation needed by real absolute value and the additive algebra used throughout.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instLE",
+      "meaning": "The usual non-strict order on ℝ.",
+      "effect_on_target": "It makes every displayed ≤ an ordinary real inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure of ℝ.",
+      "effect_on_target": "It supplies ordinary natural powers of real numbers, particularly the displayed squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "Real.instMul",
+      "meaning": "The ordinary multiplication operation on ℝ.",
+      "effect_on_target": "It interprets matrix-product summands, coefficient products, and multiplication by M_ij.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Real.instNatCast",
+      "meaning": "The canonical embedding of natural numbers into ℝ.",
+      "effect_on_target": "It converts count parameters to real numbers in γ_m(v) and interprets real natural-number literals such as 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Real.lattice",
+      "meaning": "The lattice structure on ℝ using the usual order.",
+      "effect_on_target": "It supports the usual real maximum and the definition of absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "abs",
+      "meaning": "It defines |a| as max(a, -a), which is the ordinary absolute value on ℝ.",
+      "effect_on_target": "Every perturbation hypothesis and the final perturbation conclusion bounds the absolute value of an individual matrix entry.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "instHAdd",
+      "meaning": "It promotes an ordinary Add operation to homogeneous HAdd.",
+      "effect_on_target": "It routes all homogeneous real and matrix additions to their ordinary addition operations.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "instHMul",
+      "meaning": "It promotes an ordinary Mul operation to homogeneous HMul.",
+      "effect_on_target": "It routes all real products to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "instHPow",
+      "meaning": "It promotes a Pow operation to homogeneous HPow.",
+      "effect_on_target": "It routes real-to-natural exponentiation to ordinary natural powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "Given natural casting and evidence that n is at least two, it interprets the numeral n by its natural cast.",
+      "effect_on_target": "It makes the real literal 2 exactly the real number obtained by casting the natural number 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "instOfNatNat",
+      "meaning": "It interprets a natural numeral n as the natural number n itself.",
+      "effect_on_target": "It supplies exact natural literals used for exponents, subtraction, addition, and numeral elaboration.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "It extracts division from a division-and-inverse monoid structure.",
+      "effect_on_target": "It supplies real division in γ_m(v).",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Fin.fintype",
+      "meaning": "It gives the finite enumeration of all elements of Fin N.",
+      "effect_on_target": "It ensures matrix and matrix-vector products sum over exactly the N valid indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Finset.sum",
+      "meaning": "It forms the finite sum of a function over a finite set, using the additive identity for an empty set.",
+      "effect_on_target": "It defines every matrix-product and matrix-vector-product component.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It makes each product sum range over every index in Fin N.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "HDiv.hDiv",
+      "meaning": "This selects division from the relevant HDiv instance.",
+      "effect_on_target": "With the real instance it is the division appearing in γ_m(v).",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "HSub.hSub",
+      "meaning": "This selects subtraction from the relevant HSub instance.",
+      "effect_on_target": "It interprets the real denominator 1 - (m : ℝ)v and the natural differences q ⊖ 1 and n ⊖ bdim.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "Max.max",
+      "meaning": "This selects the binary maximum operation from a Max instance.",
+      "effect_on_target": "With the real instance it is the usual maximum between the two candidate coefficients in α.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "Nat.cast",
+      "meaning": "It maps a natural number into a type equipped with natural casting.",
+      "effect_on_target": "It produces the real factor (m : ℝ) in γ_m(v).",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "One.toOfNat1",
+      "meaning": "It interprets the literal 1 using the multiplicative identity.",
+      "effect_on_target": "It supplies the exact real constant 1 in γ denominators and in (1 + uLow)².",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The commutative additive-monoid structure of ℝ.",
+      "effect_on_target": "It makes finite real sums in matrix and matrix-vector multiplication well-defined, including empty sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The standard division and inverse structure on ℝ, with division defined through multiplication by an inverse.",
+      "effect_on_target": "It determines the real quotient in every γ_m(v); Lean's real division is total even when the denominator is zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "Real.instMax",
+      "meaning": "The usual maximum operation on real numbers.",
+      "effect_on_target": "It selects the larger of the composite γ expression and γ_bdim(u) in α.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "Real.instOne",
+      "meaning": "The multiplicative identity 1 in ℝ.",
+      "effect_on_target": "It supplies the real constant 1 in denominators and coefficient expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "Real.instSub",
+      "meaning": "Real subtraction, defined as addition of the additive inverse.",
+      "effect_on_target": "It interprets 1 - (m : ℝ)v in γ_m(v).",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "instAddNat",
+      "meaning": "Ordinary addition of natural numbers.",
+      "effect_on_target": "It forms (n ⊖ bdim) + 1 and supports natural numeral calculations.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "instHDiv",
+      "meaning": "It promotes an ordinary Div operation to homogeneous HDiv.",
+      "effect_on_target": "It routes the quotient in γ_m(v) to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "instHSub",
+      "meaning": "It promotes an ordinary Sub operation to homogeneous HSub.",
+      "effect_on_target": "It routes real subtraction and natural subtraction to their respective ordinary operations.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "instSubNat",
+      "meaning": "Natural-number subtraction, truncated at zero.",
+      "effect_on_target": "It makes q - 1 equal q ⊖ 1 and n - bdim equal n ⊖ bdim, rather than integer subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "A proposition certifying that a natural number is at least two, used by generic numeral-casting instances.",
+      "effect_on_target": "It only enables elaboration of numeral 2 and imposes no assumption on any quantified parameter.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "N is an arbitrary natural number and is the common matrix and vector dimension.",
+      "uLow, uFma, and u are arbitrary real numbers.",
+      "q, n, and bdim are arbitrary natural numbers; n is a count parameter distinct from the dimension N.",
+      "A, L, U, ΔF, ΔL, ΔU, and M are arbitrary real N-by-N matrices, represented as functions Fin N → Fin N → ℝ.",
+      "x, y, and rhs are arbitrary real N-vectors, represented as functions Fin N → ℝ."
+    ],
+    "hypotheses": [
+      "The exact matrix identity LU = A + ΔF holds.",
+      "The exact vector identity (L + ΔL)y = rhs holds.",
+      "The exact vector identity (U + ΔU)x = y holds.",
+      "For every i,j ∈ Fin N, |ΔF_ij| ≤ αM_ij.",
+      "For every i,j ∈ Fin N, |(LΔU)_ij| ≤ γ_n(u)M_ij.",
+      "For every i,j ∈ Fin N, |(ΔL U)_ij| ≤ γ_n(u)M_ij.",
+      "For every i,j ∈ Fin N, |(ΔL ΔU)_ij| ≤ γ_n(u)²M_ij."
+    ],
+    "conclusions": [
+      "There exists a real N-by-N matrix ΔA, chosen after all preceding data and hypotheses and therefore permitted to depend on them, such that (A + ΔA)x = rhs exactly.",
+      "The same ΔA satisfies, for every i,j ∈ Fin N, |ΔA_ij| ≤ (α + 2γ_n(u) + γ_n(u)²)M_ij."
+    ],
+    "mathematical_definitions": [
+      "Write I_N = Fin N = {0,…,N-1}. For matrices B and C, (BC)_ij = Σ_(k∈I_N) B_ik C_kj. For a vector z, (Bz)_i = Σ_(j∈I_N) B_ij z_j. Matrix addition is entrywise.",
+      "For m ∈ ℕ and v ∈ ℝ, define γ_m(v) = ((m : ℝ)v)/(1 - (m : ℝ)v).",
+      "Natural subtraction is truncated: q ⊖ 1 = max(q - 1,0) and n ⊖ bdim = max(n - bdim,0).",
+      "Define α = 2uLow + uLow² + max(γ_(q⊖1)(uFma) + γ_((n⊖bdim)+1)(u) + γ_(q⊖1)(uFma)γ_((n⊖bdim)+1)(u), γ_bdim(u))(1 + uLow)².",
+      "Define the final scalar coefficient C = α + 2γ_n(u) + γ_n(u)²; the final bound is |ΔA_ij| ≤ CM_ij."
+    ],
+    "proposition_plain_english": "For every dimension N, all stated real parameters, count parameters, real N-by-N matrices, and real N-vectors, suppose LU equals A + ΔF exactly, the perturbed lower-factor equation (L + ΔL)y = rhs holds exactly, and the perturbed upper-factor equation (U + ΔU)x = y holds exactly. Suppose additionally that ΔF, LΔU, ΔL U, and ΔL ΔU satisfy the four stated entrywise absolute-value bounds relative to the raw entries M_ij. Then there is an N-by-N real perturbation ΔA, potentially depending on this particular x, y, rhs, and all other supplied data, for which x solves (A + ΔA)x = rhs exactly and whose entries obey |ΔA_ij| ≤ (α + 2γ_n(u) + γ_n(u)²)M_ij."
+  },
+  "restrictions_and_vacuity_risks": [
+    "N may be zero. When N = 0, all index sets are empty, all entrywise bounds are vacuous, all vector equalities are equalities between empty functions, and the conclusion is trivial.",
+    "No positivity, smallness, or unit-roundoff assumptions are imposed on uLow, uFma, or u.",
+    "No denominator condition such as 1 - (m : ℝ)v ≠ 0 is imposed. Lean's real division is total, so γ_m(v) remains a term even when the denominator is zero rather than being excluded as mathematically undefined.",
+    "No assumptions q ≥ 1 or n ≥ bdim are present. Thus q - 1 and n - bdim are truncated natural differences.",
+    "No relationship is imposed among N, q, n, and bdim.",
+    "M is arbitrary and is not assumed entrywise nonnegative. Every right-hand side uses M_ij itself, not |M_ij|. If one of these products is negative, the corresponding absolute-value hypothesis is impossible and the implication is vacuously true for that data.",
+    "The scalar coefficients α and γ_n(u) are not assumed nonnegative.",
+    "The bounds are entrywise scalar bounds. No matrix norm or vector norm occurs.",
+    "L and U are not asserted to be triangular, invertible, or nonsingular, and no structural relation between M and L or U is encoded.",
+    "All equations and operations are exact over ℝ. The proposition does not encode floating-point operations, an algorithm, computed-versus-exact values, or any rounding process beyond the displayed algebraic assumptions.",
+    "The existential ΔA is selected after x, y, rhs, and all hypotheses. The proposition does not assert one perturbation that works uniformly for every right-hand side or solution vector.",
+    "The proposition neither specifies a formula for ΔA nor asserts uniqueness."
+  ],
+  "ambiguities": []
+}
