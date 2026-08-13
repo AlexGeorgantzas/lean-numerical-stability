@@ -1,0 +1,59 @@
+{
+  "accepted": true,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "source contract contains ambiguity",
+    "round-trip S12 is unclear",
+    "round-trip S15 is unclear"
+  ],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-13T08:44:41.420274+00:00",
+  "findings": [
+    {
+      "category": "execution-preserving-model-embedding",
+      "evidence": "PDF equations (2.1)-(2.3) and Theorem 3.4 provide the properties required by the Lean structures on every reached no-underflow operation; exact off-run definitions complete the total Real operations.",
+      "impact": "The global axioms do not remove any selected paper execution, resolving the round-trip judge's main applicability concern.",
+      "severity": "note"
+    },
+    {
+      "category": "K=3-source-derivation-gap",
+      "evidence": "Algorithm 5.10 permits overall K=3 and calls SumK(r,2), whereas the text invokes Proposition 4.10, which requires its SumK parameter to be at least 3. Proposition 4.5 and Lemma 4.9(ii) cover SumK(r,2) and imply the displayed final bound.",
+      "impact": "The PDF omits the boundary-case argument at that point, but the omission does not create a statement mismatch or remaining semantic uncertainty.",
+      "severity": "minor"
+    },
+    {
+      "category": "TwoSum-operand-order",
+      "evidence": "Algorithm 4.3 writes TwoSum(next,running), while D026 uses TwoSum(running,next). Theorem 3.4 fixes both outputs from the commutative exact sum and its rounded high in the paper model.",
+      "impact": "Paper executions are unchanged; Lean additionally covers order-sensitive abstract variants.",
+      "severity": "note"
+    },
+    {
+      "category": "genuine-model-and-domain-generalization",
+      "evidence": "The PDF quantifies over F-valued inputs, while Lean quantifies over arbitrary real vectors and every satisfiable ErrorFreeDotModel.",
+      "impact": "This is nonvacuous additional scope, supporting faithful-stronger rather than faithful-equivalent.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "For paper dimension N set Lean n=N-1 and u=eps. Extend each concrete no-underflow execution's reached operations to an ErrorFreeDotModel using exact off-run behavior. The paper's equations (2.1)-(2.3) and Theorem 3.4 discharge every model field, and operand-order symmetry makes Lean's VecSum numerically identical on the paper specialization. Unfolding D005-D013 then reproduces Algorithm 5.10, its SumK(r,K-1) call, exact dot product, magnitude, gamma index, and selected inequality, including K=3 via Proposition 4.5.",
+      "verdict": "yes"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper result is restricted to working-precision vectors and its concrete arithmetic execution. It does not assert the bound for arbitrary real vectors or every total abstract model satisfying D010, D014, and D017, including exact and order-sensitive non-IEEE models admitted by Lean.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "faithful-stronger",
+    "roundtrip": "undetermined"
+  },
+  "rationale": "Primary inspection of PDF pp. 5-8, 11, 15-16, 20, and 23-24 and declarations D001-D102 resolves the disagreement. N=n+1 is an exact positive-dimension reindexing; the transformed vector, SumK parameter, exact reference value, magnitude, gamma index, coefficients, powers, and non-strict absolute inequality match. A finite reached-operation extension embeds every selected no-underflow paper run into the global Lean model. The apparent VecSum operand reversal is observationally identical for the paper's TwoSum, and the K=3 boundary follows from the paper's Sum2 estimate even though the local derivation cites Proposition 4.10 too broadly. Lean retains all paper cases and has satisfiable extra real-domain and abstract-model cases, so the final classification is faithful-stronger.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.1",
+  "task_id": "P02-T3"
+}
