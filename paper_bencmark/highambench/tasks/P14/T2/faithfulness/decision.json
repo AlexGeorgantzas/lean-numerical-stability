@@ -1,0 +1,70 @@
+{
+  "accepted": true,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-13T17:21:44.304741+00:00",
+  "findings": [
+    {
+      "category": "exact-strengthening",
+      "impact": "The formal conclusion is stronger while recovering exactly the paper's first-order coefficient.",
+      "lean_evidence": "The Lean target gives an exact rational bound with explicit product and gamma terms.",
+      "paper_evidence": "The paper states the first-order coefficient n+3 with an unspecified O(u^2) term.",
+      "severity": "note"
+    },
+    {
+      "category": "componentwise-versus-normwise",
+      "impact": "The displayed theorem is not copied literally, but it follows as a direct corollary of the stronger pointwise statement.",
+      "lean_evidence": "The target states the componentwise relative error for an arbitrary j.",
+      "paper_evidence": "Theorem 3.3 displays a relative infinity-norm bound after explicitly weakening the preceding componentwise result.",
+      "severity": "note"
+    },
+    {
+      "category": "asymptotic-domain",
+      "impact": "These restrictions are compatible with the fixed-n asymptotic paper result but should not be misread as proving an unrestricted finite-n version of equation (3.6).",
+      "lean_evidence": "GammaValid and denominatorRadius<1 explicitly restrict the exact finite bound to a small-error regime.",
+      "paper_evidence": "The paper leaves O(u^2) nonexplicit and notes that the bound is useless when n is of order 1/u.",
+      "severity": "note"
+    },
+    {
+      "category": "explicit higher-order strengthening",
+      "impact": "The statements are not literally equivalent, but specialization and asymptotic expansion show that the translation entails the paper result.",
+      "paper_evidence": "Equation (3.6) gives only (n+3)u+O(u^2), without an explicit remainder or uniform finite-u range.",
+      "severity": "note",
+      "translation_evidence": "The translation gives an exact rational bound under n*u<1 and eta<1."
+    },
+    {
+      "category": "componentwise strengthening",
+      "impact": "The translated conclusion is stronger and yields the theorem's normwise conclusion immediately.",
+      "paper_evidence": "Theorem 3.3 displays a relative infinity-norm bound after weakening the preceding componentwise estimate.",
+      "severity": "note",
+      "translation_evidence": "The translation retains a uniform scalar relative-error estimate for arbitrary j."
+    },
+    {
+      "category": "abstract execution model",
+      "impact": "This is a general extensional formulation; the concrete paper execution is a valid specialization, but the paper does not imply the full generalized claim.",
+      "paper_evidence": "The paper describes the concrete operation sequence of Algorithm 3.1 under the standard floating-point model and absence of overflow and underflow.",
+      "severity": "note",
+      "translation_evidence": "The translation quantifies over supplied approximate exponentials, division error, and any real addition operation satisfying the required local model."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "Specialize epsilonExp=epsilonDiv=u and apply the target separately with each component's division error. For fixed n as u tends to zero, denominatorRadius=(n+1)u/(1-nu), numeratorRadius=2u+u^2, and the exact bound is (n+3)u+O(u^2). The uniform componentwise result implies Theorem 3.3's relative infinity-norm bound.",
+      "verdict": "yes"
+    },
+    "paper_implies_lean": {
+      "reasoning": "Theorem 3.3 is normwise and asymptotic, and even the preceding componentwise derivation leaves the O(u^2) coefficient unspecified. It therefore does not imply this explicit rational componentwise bound for arbitrary independent epsilonExp and epsilonDiv.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "faithful-stronger",
+    "roundtrip": "faithful-stronger"
+  },
+  "rationale": "The verified paper derives a per-component relative error with first-order coefficient n+3 and then weakens it to Theorem 3.3's relative infinity-norm bound. The Lean proposition faithfully models the unshifted Algorithm 3.1 data path, keeps exact and computed quantities separate, and provides a nonvacuous exact componentwise bound. Under epsilonExp=epsilonDiv=u its bound expands to (n+3)u+O(u^2), so it implies the paper result. The converse fails because the paper supplies neither the explicit higher-order bound nor the arbitrary-error-radius generalization.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P14-T2"
+}
