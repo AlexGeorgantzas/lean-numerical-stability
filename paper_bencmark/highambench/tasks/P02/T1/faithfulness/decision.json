@@ -1,0 +1,60 @@
+{
+  "accepted": true,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "source contract contains ambiguity",
+    "blind translation contains ambiguity",
+    "round-trip S06 is unclear"
+  ],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-13T07:28:50.458338+00:00",
+  "findings": [
+    {
+      "category": "selected-scope",
+      "evidence": "Equation (4.7) separates exact sum preservation in part (i) from final computed-sum identification in part (ii), and the target states only the former.",
+      "impact": "Nearby TwoSum bounds, equation (4.7)(ii), and operation counts are context or separate results, not missing conjuncts of this target.",
+      "severity": "note"
+    },
+    {
+      "category": "genuine-domain-generalization",
+      "evidence": "Lean quantifies over arbitrary real vectors and every ErrorFreeAddModel; explicit exact-addition models satisfy the constructors and include vectors outside F.",
+      "impact": "The additional applicability is satisfiable and does not exclude the paper case, so it is genuine strength.",
+      "severity": "note"
+    },
+    {
+      "category": "operand-order",
+      "evidence": "Lean follows Algorithm 4.1's accumulator-first order, while Algorithm 4.3 prints the in-place call in the reverse order.",
+      "impact": "Abstract nonsymmetric models can produce different individual components, but exact sum preservation remains valid and the paper's concrete TwoSum gives the same real-valued pair under argument exchange.",
+      "severity": "note"
+    },
+    {
+      "category": "contract-abstraction",
+      "evidence": "ErrorFreeAddModel assumes semantic TwoSum laws rather than implementing the three-line routine or recording its cost.",
+      "impact": "The target faithfully generalizes the selected invariant but is not a low-level verification of Algorithm 3.1 or its six-flop count.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "Extend the paper's rounded addition and Algorithm 3.1 TwoSum from F pairs to all real pairs by using exact addition and zero residual outside F, set u=eps, map a paper vector of length N to Fin(N), and instantiate Lean with n=N-1. Because paper TwoSum outputs remain in F, every cascade step agrees with Algorithm 4.1. The Lean equality then gives exactly equation (4.7)(i), and the concrete operand-order rewrite in Algorithm 4.3 is extensionally equivalent under equation (3.2).",
+      "verdict": "yes"
+    },
+    "paper_implies_lean": {
+      "reasoning": "Equation (4.7)(i) concerns the paper's fixed floating-point operation and F-valued vectors. It does not assert sum preservation for every total ErrorFreeAddModel and every Real-valued vector, including exact-addition and other non-floating models.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "faithful-stronger",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "Primary PDF evidence identifies the selected proposition as equation (4.7)(i), the exact preservation of the input vector's real sum by the residuals and final prefix. The exact declaration, D002-D005, D027, and the verified ascending semantics of D029 implement that cascade and output layout. The paper's concrete arithmetic embeds into the abstract model through a total extension, so Lean implies the selected paper result. Conversely, the paper does not quantify over arbitrary admissible operations or arbitrary real vectors. Explicit model witnesses establish that this broader theorem is nonvacuous. Thus the implication pair is yes/no and the final accepted classification is faithful-stronger.",
+  "remaining_uncertainties": [
+    "The cited PDF passages do not completely specify radix, rounding mode, NaN, infinity, or signed-zero behavior. This adjudication therefore does not claim that ErrorFreeAddModel verifies Algorithm 3.1 for arbitrary hardware semantics; it uses the paper's own Theorem 3.4 contract. That low-level uncertainty is outside the selected real-valued sum-preservation invariant and does not affect the classification."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.1",
+  "task_id": "P02-T1"
+}

@@ -1,0 +1,23 @@
+{
+  "evidence_policy": "Use the referenced PDF and surrounding paper context as evidence. Do not use context.md or task.json paraphrases as semantic evidence.",
+  "paper_path": "paper_bencmark/reference_papers/P02_ACCURATE SUM AND DOT PRODUCT.pdf",
+  "paper_sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d",
+  "paper_version": "journal version; volume 26, issue 6, 2005, printed pages 1955-1988",
+  "source_locations": [
+    {
+      "anchor": "Theorem 3.4, equation (3.2)",
+      "pdf_page": 8,
+      "printed_page": 1962,
+      "role": "local error-free TwoSum identity",
+      "section": "3. Error-free transformations"
+    },
+    {
+      "anchor": "equation (4.7)(i) and Algorithm 4.3",
+      "pdf_page": 11,
+      "printed_page": 1965,
+      "role": "VecSum exact-sum invariant",
+      "section": "4. Summation"
+    }
+  ],
+  "task_id": "P02-T1"
+}

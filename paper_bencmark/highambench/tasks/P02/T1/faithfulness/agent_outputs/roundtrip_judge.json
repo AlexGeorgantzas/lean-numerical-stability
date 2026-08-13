@@ -1,0 +1,173 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "roundtrip-judge",
+  "task_id": "P02-T1",
+  "paper_sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d",
+  "blind_translation_sha256": "5c2be4d0e5839f4a7b772ea21616bf9abdeda5948e0d4ea91b6a716bdd9ac329",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF has the stated SHA-256. Printed pages 1961-1962 contain Algorithm 3.1 and Theorem 3.4, equation (3.2); printed pages 1963 and 1965 contain Algorithm 4.1, equations (4.1)-(4.2), equation (4.7), and Algorithm 4.3.",
+      "translation_evidence": "The translation concerns a cascaded two-output addition transformation whose residuals and final accumulator preserve the exact vector sum, identifying the subject of equation (4.7)(i) and its TwoSum dependency.",
+      "reasoning": "The cited paper version, passages, and surrounding local and vector results are correctly selected."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper binds floating-point inputs in F and generated outputs of concrete algorithms. Its vector has a positive, implicitly bounded length with one-based entries p_1 through p_n and generated entries q_2 through q_n and pi_n.",
+      "translation_evidence": "The translation binds an arbitrary package fp, every natural n including zero, and every function Fin(n+1) -> Real. Its outputs come from an abstract real-valued operation.",
+      "reasoning": "Replacing a paper length N by n+1 and using zero-based indices is compatible for N at least one, but replacing F-valued inputs and concrete generated outputs by arbitrary reals and an arbitrary operation package changes the binder types materially."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The paper fixes its working arithmetic and algorithms; x, y, q_i, and pi_i are determined outputs. It does not quantify over alternative TwoSum implementations or addition systems.",
+      "translation_evidence": "The proposition universally quantifies over every admissible fp package. Inside the package, relative-error witnesses delta are existentially quantified separately for every ordered real pair.",
+      "reasoning": "The per-input dependence of delta is represented correctly, but the concrete algorithmic guarantee is changed into universally quantified reasoning conditional on bundled axioms. This is not the paper's quantifier scope."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The standing hypotheses are one working precision, IEEE 754 arithmetic, floating-point inputs, no overflow, and permitted underflow. Algorithm 3.1 is the displayed three-line computation and requires no magnitude ordering.",
+      "translation_evidence": "The package instead assumes u >= 0, a relative-error representation for fl_add on all real pairs, fl_add(0,x)=x, and exact-recovery and residual laws for an abstract twoSum. It has no finite-representability, overflow, or underflow hypothesis.",
+      "reasoning": "Essential execution-model hypotheses are omitted, while stronger and differently scoped real-domain axioms are introduced."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Equation (3.2) gives exact recovery, identification of the rounded leading output, and two residual bounds. Equation (4.7) gives both exact vector decomposition and identification of pi_n as the ordinary sequential floating-point sum. Theorem 3.4 also states a six-flop cost.",
+      "translation_evidence": "The sole target conclusion is equality of the transformed and input real sums. Leading-output identification, exact recovery, and one residual bound are package assumptions; the other residual bound is derivable from those assumptions and the delta model. The final abstract accumulator is definitionally a sequential fl_add fold, but no concrete Algorithm 3.1 result or operation count is concluded.",
+      "reasoning": "The translation retains the algebraic conservation kernel but relocates local conclusions into assumptions and omits the concrete computational and cost conclusions. The complete paper result is not asserted."
+    },
+    {
+      "id": "S06",
+      "status": "unclear",
+      "paper_evidence": "The paper explicitly defines fl as execution of every enclosed operation in working precision and prints the exact operation sequences and loop ranges.",
+      "translation_evidence": "The dependency ledger interprets the local definitions, projections, finite sums, indices, and cases, but states that Fin.foldl delegates to an omitted private loop and that ascending traversal is only the conventional reading.",
+      "reasoning": "Most imported operators are adequately interpreted, but the dependency packet does not independently establish the fold's iteration order. Adjudication is needed to verify that definition under the isolation constraint."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes exact real identities such as a+b=x+y and s=sum p_i from computed quantities such as x=fl(a+b) and pi_n=fl(sum p_i).",
+      "translation_evidence": "Both displayed finite sums and the recovery law use exact Real addition, while q is separately identified with the modeled computed operation fl_add.",
+      "reasoning": "Within its abstract model, the translation does not conflate exact sums, computed leading values, and residual corrections."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Algorithm 3.1 computes x, z, and y through six specified working-precision additions or subtractions. Algorithm 4.3 iterates upward and calls TwoSum(p_i,p_{i-1}), storing its first output in p_i and second output in p_{i-1}.",
+      "translation_evidence": "The translation uses any pair-valued real operation satisfying axioms, contains no intermediate z or concrete operation sequence, and applies twoSum(S_j,v_{j+1}), with accumulator first.",
+      "reasoning": "The concrete TwoSum implementation is replaced by a specification, and the operand order differs from the displayed in-place VecSum call. Since the abstract operation is not required to be symmetric, this can change the residuals and final accumulator."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Equation (3.2) uses ordinary scalar absolute value. Equation (4.7)(i) is an exact scalar sum identity and specifies no vector norm.",
+      "translation_evidence": "The package laws use ordinary real absolute value, and the target conclusion uses exact finite real sums without a vector norm.",
+      "reasoning": "No squared norm, vector norm, or componentwise-to-normwise substitution is introduced."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The residual coefficients are exactly eps, residuals are q_2 through q_N, VecSum iterates i=2 through N, and its call order is TwoSum(next input, accumulated value). TwoSum costs six floating-point operations.",
+      "translation_evidence": "The zero-based residuals E_0 through E_{n-1} correctly correspond to q_2 through q_N after setting N=n+1, but the constant is an arbitrary u not identified with eps, the operation is called as twoSum(accumulator,next input), and no operation count appears.",
+      "reasoning": "The index shift itself is coherent, but the numerical constant, operand order, and cost data do not match the paper."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The paper assumes one IEEE 754 working precision, excludes overflow, permits underflow, and proves TwoSum remains exact in the presence of underflow for inputs and outputs in F.",
+      "translation_evidence": "All values are reals; u is any nonnegative real; and no representation, precision, rounding mode, overflow, underflow, NaN, infinity, or signed-zero behavior is encoded.",
+      "reasoning": "The abstract relative-error model is not equivalent to the paper's floating-point execution model."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper asserts exact identities and inequalities for outputs generated by its concrete algorithms.",
+      "translation_evidence": "The translation assumes the decisive per-step exact identity as part of admissibility and concludes only its telescoping sum consequence for arbitrary packages.",
+      "reasoning": "Although the included sum equality has the correct equality direction, moving the local theorem into a premise and omitting concrete output claims changes the overall logical strength."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The relevant notion is an error-free transformation: the residual is the exact correction to the computed leading value, and the vector result is an exact residual decomposition rather than a forward, backward, or normwise estimate.",
+      "translation_evidence": "The package requires q+r=a+b, defines each E_j as the second output associated with the running leading output, and concludes exact total-sum conservation. It introduces no alternative stability or normwise error notion.",
+      "reasoning": "The error-free residual notion itself is preserved, even though its concrete algorithmic provenance is not."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Equations (3.2) and (4.7)(i) are exact, with no omitted big-O term, higher-order correction, eta remainder, or accumulated global residual bound.",
+      "translation_evidence": "The recovery and vector-sum statements are exact real equalities. The delta representation is also stated exactly rather than as a first-order truncation.",
+      "reasoning": "No higher-order term is discarded or introduced in the translated conservation statement."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The result is specialized to finite working-precision floating-point data and the concrete TwoSum and VecSum algorithms.",
+      "translation_evidence": "The translation explicitly generalizes inputs to all reals and computations to every package satisfying abstract laws.",
+      "reasoning": "This is a substantial domain and algorithm generalization, not a definitionally equivalent reformulation. The translation acknowledges it, but no bridge establishes it as a faithful strengthening of the paper result."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's claims concern actual floating-point algorithms on nonempty vectors, with the one-element boundary naturally corresponding to an empty VecSum loop.",
+      "translation_evidence": "The package assumptions are satisfiable, for example with u=0, fl_add(x,y)=x+y, and twoSum(x,y)=(x+y,0). For n=0 the theorem is the intended one-entry boundary case, while positive n gives nontrivial telescoping steps.",
+      "reasoning": "The universal package quantifier is not vacuous, and the general theorem is not true solely because every vector case is empty or trivial."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The abstract conservation theorem does not establish that the displayed six-operation Algorithm 3.1 in the stated floating-point model satisfies its package laws, follows the literal VecSum operand order, handles underflow under no overflow, or has the paper's operation cost. Those require an additional concrete-model bridge."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper proves results for its fixed operation on F under its execution assumptions. It does not entail a theorem quantified over arbitrary real-valued addition packages and all real vectors, especially packages whose ordered operation need not be symmetric."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": true,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "algorithm-linkage",
+      "paper_evidence": "Algorithm 3.1 is a specified three-line working-precision computation, and Algorithm 4.3 explicitly cascades that operation.",
+      "translation_evidence": "An arbitrary real-valued pair operation satisfying bundled laws replaces the implementation.",
+      "impact": "The translation proves an algebraic telescoping lemma, not the concrete paper algorithm's complete result."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point-model",
+      "paper_evidence": "Inputs and outputs lie in F under one IEEE 754 working precision, no overflow, and possible underflow.",
+      "translation_evidence": "Inputs and operations range over Real, with arbitrary u >= 0 and no representation or exceptional-value semantics.",
+      "impact": "Neither statement specializes to the other without a nontrivial model construction and restriction theorem."
+    },
+    {
+      "severity": "major",
+      "category": "operand-order",
+      "paper_evidence": "The in-place call is TwoSum(p_i,p_{i-1}), placing the next untouched input before the accumulated value.",
+      "translation_evidence": "The recurrence calls twoSum(S_j,v_{j+1}), and admissibility does not require symmetry.",
+      "impact": "The final computed accumulator and individual residuals need not match equation (4.7)(ii) or Algorithm 4.3, even though exact total conservation still follows."
+    },
+    {
+      "severity": "major",
+      "category": "conclusion-completeness",
+      "paper_evidence": "The selected result includes all clauses of equation (3.2), both parts of equation (4.7), and the six-flop TwoSum cost.",
+      "translation_evidence": "The target concludes only exact sum preservation; local properties are assumptions or abstract consequences, and no cost or concrete computed-sum assertion is present.",
+      "impact": "Substantial computational content of the paper result is not entailed by the translated proposition."
+    },
+    {
+      "severity": "minor",
+      "category": "dependency-clarity",
+      "paper_evidence": "The paper explicitly fixes ascending loop order.",
+      "translation_evidence": "The dependency ledger relies on the conventional ascending meaning of Fin.foldl while noting that its private loop body was omitted.",
+      "impact": "The intended order is plausible but cannot be independently verified from the permitted translation packet, so adjudication is required."
+    }
+  ],
+  "rationale": "The translation correctly captures the telescoping mathematical core: exact per-step recovery yields exact preservation of the total, with exact and computed quantities distinguished and only scalar absolute value used. It nevertheless changes the source into a universal real-valued package theorem, omits the concrete floating-point and exceptional-value model, reverses the literal VecSum operand order without requiring symmetry, and does not conclude the complete algorithmic result or cost. These changes prevent both implication directions. The unresolved Fin.foldl traversal evidence independently requires adjudication."
+}
+

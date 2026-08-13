@@ -1,0 +1,424 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "blind-translation",
+  "dossier_sha256": "a8771823a32e9f1c98d91d1a00a68e6ae4fcda4a81bba9b2ee81d6d8e885dc28",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "The type of admissible computation packages. By D003, such a package contains an addition model and a two-output real addition operation satisfying identification, exact-recovery, and residual-bound laws.",
+      "effect_on_target": "The universally quantified fp parameter supplies the operation used to compute every running sum and residual. Quantification is restricted to packages satisfying the bundled laws.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For an input v of length n+1, this defines an output of length n+1 whose indices below n contain the residuals from D004 and whose last index n contains the final accumulator from D005.",
+      "effect_on_target": "It is the summand on the left-hand side. The conclusion states that the exact sum of this transformed output equals the exact sum of v.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "Constructor for D001. It takes a model M, an operation twoSum(a,b)=(q,r), and laws q=M.fl_add(a,b), q+r=a+b, and |r| <= M.u|q| for every a,b.",
+      "effect_on_target": "The exact law q+r=a+b is the per-step conservation identity underlying the conclusion. The identification with modeled addition and the residual bound restrict admissible fp values but are not asserted in the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "For i in Fin n, it returns the second component of twoSum(S_i,v_{i+1}), where S_i is the prefix accumulator defined by D005.",
+      "effect_on_target": "These are exactly the first n entries of the transformed vector and provide the correction terms that telescope with the running accumulator.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "For k <= n, it initializes an accumulator at v_0 and applies the first component of twoSum successively using the entries v_{i+1} indexed by i in Fin k. Under the standard Fin.foldl order, this gives S_0=v_0 and S_{j+1}=fst(twoSum(S_j,v_{j+1})).",
+      "effect_on_target": "It defines every prefix accumulator S_k, including the final transformed entry S_n and the input accumulator used to form each residual.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "The projection extracting the twoSum function from an fp package.",
+      "effect_on_target": "It supplies the pair-valued operation used in D004 and D005.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "The type of modeled real-addition systems constructed as in D013.",
+      "effect_on_target": "An instance is bundled into fp and determines the modeled addition and error constant associated with the first output of twoSum.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "The projection extracting fl_add : Real -> Real -> Real from an addition model.",
+      "effect_on_target": "The first component returned by twoSum is required to equal this modeled computed addition, although that identification is not needed in the stated equality.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "The projection extracting the real error parameter u from an addition model.",
+      "effect_on_target": "It appears in the modeled relative-error law and the residual bound, but no bound involving u occurs in the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "For i in Fin n, it proves i.val <= n.",
+      "effect_on_target": "It discharges the bound required to form the prefix accumulator S_{i.val} in D004; it adds no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "For i in Fin n, it proves i.val+1 < n+1.",
+      "effect_on_target": "It validates the input-vector index v_{i+1} used when computing the ith residual.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LocalDef012",
+      "meaning": "If k <= n and i is in Fin k, it proves i.val+1 < n+1.",
+      "effect_on_target": "It validates every v_{i+1} access inside the prefix fold defining S_k.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LocalDef013",
+      "meaning": "Constructor for an addition model with u in Real, 0 <= u, an operation fl_add satisfying fl_add(0,x)=x, and, for every x,y, an input-dependent witness delta such that |delta| <= u and fl_add(x,y)=(x+y)(1+delta).",
+      "effect_on_target": "It restricts the modeled first component of twoSum to a relative-error addition model. The witness delta may depend on x and y and is not present in the target conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Eq",
+      "meaning": "Propositional equality between two terms of the same type.",
+      "effect_on_target": "The target conclusion is exact equality in Real, not an approximation or inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Fin",
+      "meaning": "Fin m is the finite index type with values 0 through m-1.",
+      "effect_on_target": "Fin(n+1) indexes the n+1 input and output entries, while Fin n indexes the n residual-producing steps.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Fin.fintype",
+      "meaning": "The finite-type structure enumerating every element of Fin m via the finite range.",
+      "effect_on_target": "It makes the universal finite set of indices available for both sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Finset.sum",
+      "meaning": "Finite summation in an additive commutative monoid, implemented by mapping the summand over the finite multiset and summing.",
+      "effect_on_target": "It forms the exact real totals on both sides of the equality.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "Both sums range over all indices 0 through n, with no omitted entries.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "HAdd.hAdd",
+      "meaning": "The heterogeneous-addition operation selected by an HAdd instance.",
+      "effect_on_target": "With the supplied instances it denotes ordinary natural addition in n+1 and ordinary real addition in the package laws.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Nat",
+      "meaning": "The natural numbers, including zero.",
+      "effect_on_target": "The dimension parameter n and all finite indices and prefix lengths are natural numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "OfNat.ofNat",
+      "meaning": "Interpretation of a natural numeral in a type with the corresponding OfNat instance.",
+      "effect_on_target": "It interprets the literal 1 used in the dimension n+1.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "Input entries, computed accumulators, residuals, model constants, and both exact sums are real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative-monoid structure on the reals.",
+      "effect_on_target": "It supplies zero and associative, commutative real addition for Finset.sum, so enumeration order does not affect either displayed total.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "instAddNat",
+      "meaning": "The ordinary addition operation on natural numbers.",
+      "effect_on_target": "It makes the dimension expression n+1 the usual natural successor dimension.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "instHAdd",
+      "meaning": "It turns a homogeneous Add operation into the corresponding HAdd operation.",
+      "effect_on_target": "It routes HAdd notation to ordinary addition on Nat and Real.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "instOfNatNat",
+      "meaning": "The natural-number numeral instance that interprets each natural literal as itself.",
+      "effect_on_target": "It interprets the literal 1 in n+1 and natural index literals such as 0.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Fin.lastCases",
+      "meaning": "Case analysis on Fin(n+1): one case is the last element with value n, and the other case embeds an element of Fin n with the same value.",
+      "effect_on_target": "It defines the transformed vector to be S_n at index n and the residual E_i at each index i<n.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Nat.le_refl",
+      "meaning": "The reflexive inequality n <= n.",
+      "effect_on_target": "It supplies the bound needed to evaluate the prefix accumulator at k=n for the last output entry.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Fin.foldl",
+      "meaning": "A left fold with an initial accumulator and an index-dependent update over Fin k; its body delegates to an internal loop starting at index 0.",
+      "effect_on_target": "It generates S_k by repeatedly replacing the accumulator with the first component of twoSum applied to the next selected input.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Fin.mk",
+      "meaning": "It constructs an element of Fin m from a natural value together with a proof that the value is less than m.",
+      "effect_on_target": "It constructs the valid indices 0 and i+1 used to access v.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Fin.val",
+      "meaning": "It extracts the underlying natural value of a finite index.",
+      "effect_on_target": "It converts fold and residual indices into the prefix length i and the input position i+1.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "HMul.hMul",
+      "meaning": "The heterogeneous-multiplication operation selected by an HMul instance.",
+      "effect_on_target": "It denotes real multiplication in the relative-error formula and residual bound bundled into fp.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "LE.le",
+      "meaning": "The less-than-or-equal relation selected by an LE instance.",
+      "effect_on_target": "It expresses 0 <= u, |delta| <= u, the residual bound, and natural bounds used to validate prefixes.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Nat.succ_pos",
+      "meaning": "For every n, it proves 0 < n+1.",
+      "effect_on_target": "It validates index 0 in the nonempty input type Fin(n+1), allowing the fold to initialize at v_0.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Prod",
+      "meaning": "The Cartesian product type.",
+      "effect_on_target": "twoSum returns a pair consisting of a computed first component and a residual second component.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Prod.fst",
+      "meaning": "Projection of the first component of a pair.",
+      "effect_on_target": "It selects the computed addition result used as the next running accumulator.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Prod.snd",
+      "meaning": "Projection of the second component of a pair.",
+      "effect_on_target": "It selects the residual stored among the first n transformed entries.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "Real.instAdd",
+      "meaning": "Ordinary addition on the real numbers.",
+      "effect_on_target": "It interprets q+r, a+b, x+y, and finite real summation as ordinary exact real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive-group structure on the reals.",
+      "effect_on_target": "It supplies real negation required by the definition of absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "Real.instLE",
+      "meaning": "The ordinary order relation <= on the reals.",
+      "effect_on_target": "It interprets the model and residual inequalities as ordinary real inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "Real.instMul",
+      "meaning": "Ordinary multiplication on the real numbers.",
+      "effect_on_target": "It interprets u|q| and (x+y)(1+delta) as ordinary real products.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "Real.lattice",
+      "meaning": "The lattice structure induced by the ordinary order on the reals.",
+      "effect_on_target": "Together with the real additive group, it supports the scalar absolute-value operation appearing in the package assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "abs",
+      "meaning": "The ordered-group absolute value, defined as max(a,-a); on Real this is ordinary scalar absolute value.",
+      "effect_on_target": "It measures delta, the twoSum residual, and the computed first component in the bundled bounds. No vector norm occurs.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "instHMul",
+      "meaning": "It turns a homogeneous Mul operation into the corresponding HMul operation.",
+      "effect_on_target": "It routes multiplication expressions in the package laws to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "instLENat",
+      "meaning": "The ordinary <= relation on natural numbers.",
+      "effect_on_target": "It expresses admissible prefix lengths k <= n and related index-validity proofs.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "LT.lt",
+      "meaning": "The strict-order relation selected by an LT instance.",
+      "effect_on_target": "It states the strict natural bounds required to construct elements of Fin(n+1).",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "Nat.succ",
+      "meaning": "The natural successor operation.",
+      "effect_on_target": "It forms i.val+1 and n+1 in index-bound proofs.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "instLTNat",
+      "meaning": "The ordinary strict order < on natural numbers.",
+      "effect_on_target": "It interprets all Fin membership bounds and successor-index proofs.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "For each modeled addition, it requires the same witness delta to satisfy both its magnitude bound and the relative-error equation.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "For every x,y, the addition model requires some delta, potentially depending on x and y; no such witness is returned or quantified in the target conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "One.toOfNat1",
+      "meaning": "It interprets the numeral 1 using a type's multiplicative identity.",
+      "effect_on_target": "It gives the real constant 1 in the factor 1+delta.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "Real.instOne",
+      "meaning": "The multiplicative identity 1 in Real.",
+      "effect_on_target": "It supplies the exact real constant 1 in the modeled relative-error formula.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "Real.instZero",
+      "meaning": "The additive identity 0 in Real.",
+      "effect_on_target": "It supplies the exact real constant 0 in 0 <= u and fl_add(0,x)=x.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "Zero.toOfNat0",
+      "meaning": "It interprets the numeral 0 using a type's additive identity.",
+      "effect_on_target": "It gives the real constant 0 used in the addition-model assumptions.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "fp is an arbitrary admissible package of type LocalDef001, containing an addition model and a two-output operation twoSum on pairs of real numbers.",
+      "n is an arbitrary natural number, including n=0.",
+      "v is an arbitrary function Fin(n+1) -> Real, equivalently a real tuple (v_0,...,v_n) of exactly n+1 entries."
+    ],
+    "hypotheses": [
+      "There are no separate implication hypotheses; all computational assumptions are bundled into the type of fp.",
+      "The model contained in fp has a real constant u with 0 <= u and an operation fl_add such that fl_add(0,x)=x for every real x.",
+      "For every real x,y, there exists a witness delta depending on x and y such that |delta| <= u and fl_add(x,y)=(x+y)(1+delta).",
+      "For every real a,b, writing twoSum(a,b)=(q,r), one has q=fl_add(a,b), the exact identity q+r=a+b, and the scalar bound |r| <= u|q|."
+    ],
+    "conclusions": [
+      "If W is the transformed vector defined below, then its exact real sum is preserved: sum_{i=0}^{n} W_i = sum_{i=0}^{n} v_i. Equivalently, S_n + sum_{j=0}^{n-1} E_j = v_0+v_1+...+v_n, with the residual sum empty when n=0."
+    ],
+    "mathematical_definitions": [
+      "Write twoSum(a,b)=(q(a,b),r(a,b)), where q is the computed first component and r is the residual second component.",
+      "For 0 <= k <= n, S_k is the D005 fold initialized at v_0 and updated over i in Fin k by s := q(s,v_{i+1}). Under the standard ascending Fin.foldl order, S_0=v_0 and S_{j+1}=q(S_j,v_{j+1}) for 0 <= j<n.",
+      "For 0 <= j<n, define E_j=r(S_j,v_{j+1}). The bundled exactness law gives S_{j+1}+E_j=S_j+v_{j+1}; also |E_j| <= u|S_{j+1}|.",
+      "Define W in Real^{n+1} by W_j=E_j for 0 <= j<n and W_n=S_n. This W is exactly LocalDef002 fp v.",
+      "The left-hand finite sum is therefore E_0+...+E_{n-1}+S_n, while the right-hand finite sum is v_0+...+v_n."
+    ],
+    "proposition_plain_english": "For every admissible modeled addition package, every natural n, and every real vector of length n+1, start with v_0 and successively combine the current accumulator with v_1 through v_n using the first output of twoSum. Store the second output from each step as a residual, and finally store the last accumulator. The exact sum of the n residuals together with that final accumulator equals the exact sum of all n+1 original entries."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The input and output dimensions are exactly n+1, so they are always nonempty. The case n=0 is not vacuous: the fold performs no additions, W_0=S_0=v_0, and the conclusion reduces to v_0=v_0.",
+    "The computation is a sequential prefix fold beginning at v_0; under the standard Fin.foldl semantics, entries are processed in increasing order v_1,...,v_n. No claim is made for a different accumulation tree or permutation.",
+    "All values and equalities are in the exact real numbers. The proposition does not encode finite representability, overflow, underflow, exceptional values, or execution by a concrete hardware floating-point format.",
+    "The only magnitude operation is scalar absolute value. No vector norm, forward-error bound, backward-error bound, or stability estimate appears in the conclusion.",
+    "The theorem concludes only conservation of the total sum. It does not assert componentwise equality between W and v, nor does it bound the final accumulator or the sum of residuals.",
+    "The assumptions q=fl_add(a,b), the relative-error model for fl_add, fl_add(0,x)=x, 0 <= u, and |r| <= u|q| are stronger than needed for the displayed conservation equality; the per-step exact identity q+r=a+b is the law directly responsible for it.",
+    "No upper bound such as u<1 is imposed on the model parameter u.",
+    "The existential relative-error witness delta may depend separately on each ordered pair (x,y); no global delta or selected witness function is encoded.",
+    "The target universally quantifies over fp but does not itself assert that LocalDef001 is inhabited. Consequently, viewed in isolation, its fp quantification would be vacuous if no constructor arguments satisfying D003 existed."
+  ],
+  "ambiguities": [
+    "The displayed body of Fin.foldl delegates to an omitted private loop. The conventional and intended reading is an ascending traversal of indices 0,...,k-1, which yields the stated recurrence for S_k, but that traversal order is not independently derivable from the private-loop body supplied in the dossier."
+  ]
+}
+
