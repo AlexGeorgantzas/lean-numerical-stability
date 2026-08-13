@@ -10895,6 +10895,10 @@
         "sha256": "C78A5AB0BB71B6FE97B41D363DDE44F74253F3EE6DE8C8782C309D47BD17A167"
       },
       {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R03-activation.md",
+        "sha256": "752B79BC9BBB2B492FA50DD43EC7E108DEF60D24D72B4F602CF2055B29189DB2"
+      },
+      {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R03-projection-replay.md",
         "sha256": "D2399C417DE20AB7187F948DE394CFCD3EE7F74ADEE80AFE6F1D05C19EA7BEF8"
       },
@@ -10921,6 +10925,6 @@
   "shared_request_ids": [
     "R0005"
   ],
-  "status": "planned",
+  "status": "active",
   "wave_id": "R03"
 }

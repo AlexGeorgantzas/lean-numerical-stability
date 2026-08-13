@@ -334,7 +334,7 @@ NEXT_REQUEST_OVERLAP = frozenset(
 # The successor to the completed C0001-rooted R11/R12 pair is deliberately a
 # separate, singleton epoch.  Do not fold these facts into NEXT_BRANCH_FACTS:
 # those constants are immutable evidence for the already accepted C0002
-# checkpoint, while this packet is the planned (pre-activation) R03 state.
+# checkpoint, while this packet is the independent planned/active R03 state.
 R03_BRANCH_ID = "B0005"
 R03_PROJECTION_ID = "P0005"
 R03_REQUEST_ID = "R0005"
@@ -348,6 +348,9 @@ R03_REMOTE_REF = f"refs/heads/{R03_BRANCH_NAME}"
 R03_PLANNED_WORKTREE = (
     r"C:\Users\qed_s\higham-worktrees\completion-r03-codex"
 )
+R03_PLANNED_CONTROL_SHA = "fb5a021b4640dd595a99f7560ce252ad9836a5b6"
+R03_PLANNED_CONTROL_CI_RUN = "31691727184"
+R03_PLANNED_CONTROL_CI_JOB = "94420320315"
 R03_SELECTOR_SHA256 = (
     "176BC214ABAE4B9CC2E9822E3177033213C4BD730D0057FBE8BAB524412C6B3A"
 )
@@ -434,6 +437,10 @@ R03_TEST_HEADER = ("test_class", "target", "purpose")
 
 R03_PHASE_PREFIX = (
     "docs/architecture/phases/2026-08-repository-reorganization-completion"
+)
+R03_ACTIVATION_REVIEW_PATH = f"{R03_PHASE_PREFIX}/reviews/R03-activation.md"
+R03_ACTIVATION_REVIEW_SHA256 = (
+    "752B79BC9BBB2B492FA50DD43EC7E108DEF60D24D72B4F602CF2055B29189DB2"
 )
 R03_EVIDENCE_PATHS = {
     "baseline": f"{R03_PHASE_PREFIX}/baselines/C0002-combined.json",
@@ -797,7 +804,7 @@ class R03EpochSnapshot:
     selector_rows: int
     selector_matches_inventory: bool
     route_sha256: str
-    activation_evidence: tuple[str, ...]
+    activation_evidence: tuple[Artifact, ...]
     delivery: dict[str, Any]
     integration: dict[str, Any]
     retirement: dict[str, Any]
@@ -808,8 +815,116 @@ class R03EpochSnapshot:
     request_target_base_sha: str
     request_status: str
     request_resolution: dict[str, Any]
+    r07_milestone_status: str
     worker_shared_leaks: tuple[str, ...]
     request_unreserved_paths: tuple[str, ...]
+
+
+def r03_activation_fact(text: str, label: str) -> str | None:
+    """Read one exact-value row from the activation review's fact table."""
+
+    match = re.search(
+        rf"^\|\s*{re.escape(label)}\s*\|\s*`([^`\r\n]+)`\s*\|\s*$",
+        text,
+        re.MULTILINE,
+    )
+    return match.group(1) if match is not None else None
+
+
+def validate_r03_activation_review_text(
+    text: str, problems: Problems, *, context: str = R03_ACTIVATION_REVIEW_PATH
+) -> None:
+    """Validate the human-reviewed external activation facts without Git/network I/O."""
+
+    activated = re.search(r"^- Activated at: `([^`\r\n]+)`\s*$", text, re.MULTILINE)
+    problems.require(
+        activated is not None
+        and RFC3339_RE.fullmatch(activated.group(1)) is not None,
+        f"{context}.activated_at",
+        "activation time must be an exact RFC3339 timestamp",
+    )
+    exact_lines = (
+        (
+            "- Authority: `primary-human`, exercising the explicitly granted "
+            "branch-registry, activation-control, main-push, and worktree-creation authority",
+            "primary-human activation authority",
+        ),
+        (f"- Branch / wave: `{R03_BRANCH_ID}` / `{R03_WAVE_ID}`", "branch/wave"),
+        (f"- Lane / operator: `{R03_LANE_ID}` / `{R03_OPERATOR_ID}`", "lane/operator"),
+        (f"- Current checkpoint: `{C0002_CHECKPOINT_ID}`", "current checkpoint"),
+        (
+            "- Accepted C0002 checkpoint and immutable worker base: "
+            f"`{C0002_CODE_SHA}`",
+            "accepted checkpoint/base",
+        ),
+        (f"- Planned-control commit: `{R03_PLANNED_CONTROL_SHA}`", "planned-control commit"),
+        (
+            "- Planned-control CI: Lean CI push run "
+            f"`{R03_PLANNED_CONTROL_CI_RUN}`, job `{R03_PLANNED_CONTROL_CI_JOB}`, "
+            "completed `success`",
+            "planned-control CI",
+        ),
+    )
+    text_lines = set(text.splitlines())
+    for exact, label in exact_lines:
+        problems.require(
+            exact in text_lines,
+            f"{context}.identity",
+            f"activation review must record exact {label}",
+        )
+
+    expected_facts = {
+        "Local branch": R03_BRANCH_NAME,
+        "Local branch tip": C0002_CODE_SHA,
+        "Remote ref": R03_REMOTE_REF,
+        "Remote ref tip": C0002_CODE_SHA,
+        "Named worktree": R03_PLANNED_WORKTREE,
+        "Worktree HEAD": C0002_CODE_SHA,
+    }
+    actual_facts = {
+        label: r03_activation_fact(text, label) for label in expected_facts
+    }
+    for label, expected in expected_facts.items():
+        problems.require(
+            actual_facts[label] == expected,
+            f"{context}.tips",
+            f"{label} must equal exact activation fact {expected!r}",
+        )
+
+    required_statements = (
+        (
+            "The planned-control gate was green for the exact planned-control commit "
+            "before any B0005 ref or worktree was created.",
+            "green planned-control ordering",
+        ),
+        ("explicit nonexistent-tip lease", "nonexistent-tip lease"),
+        ("empty tracked and untracked status", "clean tracked/untracked worktree"),
+        ("No worker commit, production edit, or R0005 application exists.", "no worker edit"),
+        ("R07 remains unactivated and M07 remains `planned`.", "R07/M07 deferral"),
+        (
+            "Workers may edit only B0005-owned paths, B0005 destination prefixes, "
+            "`NumStabilityTest/Reorganization/R03/`, and "
+            "`docs/architecture/deliveries/R03/`.",
+            "worker scope",
+        ),
+        ("All 121 R0005 paths remain integrator-only.", "R0005 integrator ownership"),
+        (
+            "R0005 is context-free; any disposable replay must use "
+            "`git apply --unidiff-zero`.",
+            "context-free replay command",
+        ),
+        ("No implementation began before activation-control CI.", "implementation ordering"),
+        ("full `NumStability` and `NumStabilityTest` build", "full activation build"),
+        ("`core.autocrlf=false`", "LF autocrlf setting"),
+        ("`core.eol=lf`", "LF eol setting"),
+        ("`core.safecrlf=false`", "LF safecrlf setting"),
+    )
+    for statement, label in required_statements:
+        problems.require(
+            statement in text,
+            f"{context}.claims",
+            f"activation review must record exact {label}",
+        )
 
 
 def validate_r03_epoch_snapshot(
@@ -818,9 +933,9 @@ def validate_r03_epoch_snapshot(
     *,
     expected_route_sha256: str,
 ) -> None:
-    """Enforce the exact pre-activation lifecycle independently of file I/O."""
+    """Enforce the exact planned/active lifecycle independently of file I/O."""
 
-    context = "C0002-rooted R03 planned epoch"
+    context = "C0002-rooted R03 planned/active epoch"
     problems.require(
         snapshot.branch_base_checkpoint_id == C0002_CHECKPOINT_ID
         and snapshot.branch_base_sha == C0002_CODE_SHA,
@@ -846,12 +961,26 @@ def validate_r03_epoch_snapshot(
         f"{context}.authority",
         "unauthorized operator: branch and codex-lane must authorize only codex-local",
     )
-    problems.require(
-        snapshot.branch_status == "planned"
-        and not snapshot.activation_evidence,
-        f"{context}.activation",
-        "premature activation: planned epoch may not be active or carry activation/base-tip evidence",
+    expected_activation = Artifact(
+        R03_ACTIVATION_REVIEW_PATH, R03_ACTIVATION_REVIEW_SHA256
     )
+    problems.require(
+        snapshot.branch_status in {"planned", "active"},
+        f"{context}.activation",
+        "branch status must be exactly planned or active",
+    )
+    if snapshot.branch_status == "planned":
+        problems.require(
+            not snapshot.activation_evidence,
+            f"{context}.activation",
+            "planned epoch may not carry activation/base-tip/ref-tip/worktree evidence",
+        )
+    elif snapshot.branch_status == "active":
+        problems.require(
+            snapshot.activation_evidence == (expected_activation,),
+            f"{context}.activation",
+            "active epoch must hash-pin exactly the reviewed R03 activation evidence",
+        )
     expected_delivery = {
         "commit_sha": None,
         "report": None,
@@ -889,7 +1018,12 @@ def validate_r03_epoch_snapshot(
         and snapshot.request_status == "active"
         and snapshot.request_resolution == expected_resolution,
         f"{context}.lifecycle",
-        "invalid lifecycle transition: planned branch/null delivery+integration/not_due retirement, active projection, and unresolved active request required",
+        "invalid lifecycle transition: planned/active branch with null delivery+integration, not_due retirement, active projection, and unresolved active request required",
+    )
+    problems.require(
+        snapshot.r07_milestone_status == "planned",
+        f"{context}.r07",
+        "R07/M07 must remain unactivated and planned",
     )
     problems.require(
         not snapshot.worker_shared_leaks and not snapshot.request_unreserved_paths,
@@ -1259,7 +1393,7 @@ class CompletionValidator:
         self.validate_overlap_reviews()
         self.validate_requests_and_postimages()
         self.validate_next_wave_controls()
-        self.validate_r03_planned_epoch()
+        self.validate_r03_epoch()
         self.validate_milestone_dag()
         return self.problems
 
@@ -5108,16 +5242,16 @@ class CompletionValidator:
             )
         return matches[0]
 
-    def validate_r03_planned_epoch(self) -> None:
-        """Ratchet the singleton exact-C0002 R03 packet before activation."""
+    def validate_r03_epoch(self) -> None:
+        """Ratchet the singleton exact-C0002 R03 packet through activation."""
 
-        context = "C0002-rooted R03 planned epoch"
+        context = "C0002-rooted R03 planned/active epoch"
         self.problems.require(
             self.current_checkpoint_id == C0002_CHECKPOINT_ID,
             context,
-            "R03 planning controls require current checkpoint C0002",
+            "R03 planned/active controls require current checkpoint C0002",
         )
-        self.validate_r03_milestones()
+        r07_milestone_status = self.validate_r03_milestones()
         lane_operators = self.validate_r03_authority()
         inventory, inventory_by_path, selector = self.validate_r03_selector()
         branch, worker_rules, activation_evidence = self.validate_r03_branch(
@@ -5134,7 +5268,10 @@ class CompletionValidator:
         request, request_paths, unreserved = self.validate_r03_request(
             worker_rules, consumer_sets
         )
-        self.validate_r03_ref_and_worktree_absence()
+        if branch is not None and branch.get("status") == "planned":
+            self.validate_r03_ref_and_worktree_absence()
+        elif branch is not None and branch.get("status") == "active":
+            self.validate_r03_activation_review()
 
         if branch is not None and projection is not None and request is not None:
             shared_leaks = tuple(
@@ -5197,6 +5334,7 @@ class CompletionValidator:
                 request_resolution=request.get("resolution", {})
                 if isinstance(request.get("resolution"), dict)
                 else {},
+                r07_milestone_status=r07_milestone_status,
                 worker_shared_leaks=shared_leaks,
                 request_unreserved_paths=tuple(sorted(unreserved)),
             )
@@ -5209,11 +5347,11 @@ class CompletionValidator:
                 expected_route_sha256=expected_route or "<pending>",
             )
 
-    def validate_r03_milestones(self) -> None:
+    def validate_r03_milestones(self) -> str:
         milestones = self.phase.get("milestones")
         if not isinstance(milestones, list):
             self.problems.add("phase.json.milestones", "expected a list")
-            return
+            return ""
         by_id = {
             item.get("milestone_id"): item
             for item in milestones
@@ -5241,6 +5379,7 @@ class CompletionValidator:
             "phase.json.milestones[M07]",
             "R07 must remain explicitly deferred/planned",
         )
+        return str(by_id.get("M07", {}).get("status", ""))
 
     def validate_r03_authority(self) -> tuple[str, ...]:
         authority = self.phase.get("authority")
@@ -5358,7 +5497,7 @@ class CompletionValidator:
         self,
         inventory_by_path: dict[str, dict[str, str]],
         selector: list[tuple[str, str]],
-    ) -> tuple[dict[str, Any] | None, list[PathRule], tuple[str, ...]]:
+    ) -> tuple[dict[str, Any] | None, list[PathRule], tuple[Artifact, ...]]:
         path = self.phase_dir / "branches/B0005.json"
         branch = self.read_json(path, self.relative(path))
         if branch is None:
@@ -5406,13 +5545,18 @@ class CompletionValidator:
             "base_sha": C0002_CODE_SHA,
             "baseline_projection_id": R03_PROJECTION_ID,
             "shared_request_ids": [R03_REQUEST_ID],
-            "status": "planned",
         }.items():
             self.problems.require(
                 branch.get(key) == expected,
                 f"{R03_BRANCH_ID}.{key}",
                 f"expected {expected!r}, found {branch.get(key)!r}",
             )
+        status = branch.get("status")
+        self.problems.require(
+            status in {"planned", "active"},
+            f"{R03_BRANCH_ID}.status",
+            "expected exact planned or active R03 lifecycle state",
+        )
 
         refresh = branch.get("refresh")
         evidence: Any = []
@@ -5447,30 +5591,53 @@ class CompletionValidator:
                     artifacts.append(artifact)
         self.branch_evidence[R03_BRANCH_ID] = artifacts
         evidence_paths = [artifact.path for artifact in artifacts]
+        expected_evidence_paths = set(R03_EVIDENCE_PATHS.values())
+        if status == "active":
+            expected_evidence_paths.add(R03_ACTIVATION_REVIEW_PATH)
         self.problems.require(
             evidence_paths == sorted(evidence_paths)
             and len(evidence_paths) == len(set(evidence_paths))
-            and set(evidence_paths) == set(R03_EVIDENCE_PATHS.values()),
+            and set(evidence_paths) == expected_evidence_paths,
             f"{R03_BRANCH_ID}.refresh.evidence",
-            "must be the exact sorted singleton R03 evidence manifest",
+            "must be the exact sorted R03 evidence manifest for the branch lifecycle state",
         )
         for key in R03_EVIDENCE_PATHS:
             self.require_r03_evidence(key)
         activation_evidence = tuple(
             sorted(
-                evidence_path
-                for evidence_path in evidence_paths
-                if any(
-                    token in evidence_path.casefold()
-                    for token in ("activation", "base-tip", "ref-tip", "worktree")
-                )
+                (
+                    artifact
+                    for artifact in artifacts
+                    if artifact.path == R03_ACTIVATION_REVIEW_PATH
+                ),
+                key=lambda artifact: (artifact.path, artifact.sha256),
             )
         )
-        self.problems.require(
-            not activation_evidence,
-            f"{R03_BRANCH_ID}.refresh.evidence",
-            "planned packet may not contain activation, base-tip, ref-tip, or worktree evidence",
-        )
+        if status == "planned":
+            self.problems.require(
+                not activation_evidence
+                and not any(
+                    any(
+                        token in evidence_path.casefold()
+                        for token in ("activation", "base-tip", "ref-tip", "worktree")
+                    )
+                    for evidence_path in evidence_paths
+                ),
+                f"{R03_BRANCH_ID}.refresh.evidence",
+                "planned packet may not contain activation, base-tip, ref-tip, or worktree evidence",
+            )
+        elif status == "active":
+            self.problems.require(
+                activation_evidence
+                == (
+                    Artifact(
+                        R03_ACTIVATION_REVIEW_PATH,
+                        R03_ACTIVATION_REVIEW_SHA256,
+                    ),
+                ),
+                f"{R03_BRANCH_ID}.refresh.evidence",
+                "active packet must hash-pin the exact R03 activation review",
+            )
 
         expected_owned = {selected_path for _module, selected_path in selector}
         owned = self.parse_rules(branch.get("owned_paths"), f"{R03_BRANCH_ID}.owned_paths")
@@ -6687,6 +6854,31 @@ class CompletionValidator:
                 f"planned epoch must not create {R03_PLANNED_WORKTREE}",
             )
 
+    def validate_r03_activation_review(self) -> None:
+        """Validate hash-pinned external ref/worktree facts without requiring local state."""
+
+        path = self.root / R03_ACTIVATION_REVIEW_PATH
+        if not path.is_file():
+            self.problems.add(
+                R03_ACTIVATION_REVIEW_PATH,
+                "active R03 epoch requires the activation review",
+            )
+            return
+        self.problems.require(
+            sha256_path(path) == R03_ACTIVATION_REVIEW_SHA256,
+            R03_ACTIVATION_REVIEW_PATH,
+            f"expected exact activation review SHA-256 {R03_ACTIVATION_REVIEW_SHA256}",
+        )
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as error:
+            self.problems.add(
+                R03_ACTIVATION_REVIEW_PATH,
+                f"cannot read activation review: {error}",
+            )
+            return
+        validate_r03_activation_review_text(text, self.problems)
+
     def validate_milestone_dag(self) -> None:
         path = self.phase_dir / "reviews/milestone-dag.tsv"
         header, rows = self.read_tsv(path, self.relative(path))
@@ -7176,6 +7368,10 @@ def run_self_test() -> int:
             isinstance(digest, str) and SHA256_RE.fullmatch(digest) is not None
             for digest in R03_ARTIFACT_SHA256.values()
         )
+        and SHA256_RE.fullmatch(R03_ACTIVATION_REVIEW_SHA256) is not None
+        and SHA1_RE.fullmatch(R03_PLANNED_CONTROL_SHA) is not None
+        and R03_PLANNED_CONTROL_CI_RUN.isdecimal()
+        and R03_PLANNED_CONTROL_CI_JOB.isdecimal()
         and R03_REQUEST_PATH_COUNT == 121
         and isinstance(R03_REQUEST_PATH_SHA256, str)
         and SHA256_RE.fullmatch(R03_REQUEST_PATH_SHA256) is not None
@@ -7188,7 +7384,7 @@ def run_self_test() -> int:
         "R03 hashes, request/destination facts, or reviewed re-reservations drifted",
     )
     r03_test_route_sha = "A" * 64
-    r03_positive = R03EpochSnapshot(
+    r03_planned = R03EpochSnapshot(
         branch_base_checkpoint_id=C0002_CHECKPOINT_ID,
         branch_base_sha=C0002_CODE_SHA,
         branch_status="planned",
@@ -7227,30 +7423,80 @@ def run_self_test() -> int:
             "resolved_by": None,
             "validation_evidence": [],
         },
+        r07_milestone_status="planned",
         worker_shared_leaks=(),
         request_unreserved_paths=(),
     )
-    positive_r03_problems = Problems()
-    validate_r03_epoch_snapshot(
-        r03_positive,
-        positive_r03_problems,
-        expected_route_sha256=r03_test_route_sha,
+    r03_active = replace(
+        r03_planned,
+        branch_status="active",
+        activation_evidence=(
+            Artifact(R03_ACTIVATION_REVIEW_PATH, R03_ACTIVATION_REVIEW_SHA256),
+        ),
+    )
+    for label, snapshot in (("planned", r03_planned), ("active", r03_active)):
+        positive_r03_problems = Problems()
+        validate_r03_epoch_snapshot(
+            snapshot,
+            positive_r03_problems,
+            expected_route_sha256=r03_test_route_sha,
+        )
+        problems.require(
+            not positive_r03_problems.messages,
+            f"self-test R03 {label} positive",
+            f"valid {label} epoch rejected: {positive_r03_problems.messages}",
+        )
+
+    r03_review_text = f"""# R03 activation review
+
+- Activated at: `2026-08-13T11:30:58Z`
+- Authority: `primary-human`, exercising the explicitly granted branch-registry, activation-control, main-push, and worktree-creation authority
+- Branch / wave: `{R03_BRANCH_ID}` / `{R03_WAVE_ID}`
+- Lane / operator: `{R03_LANE_ID}` / `{R03_OPERATOR_ID}`
+- Current checkpoint: `{C0002_CHECKPOINT_ID}`
+- Accepted C0002 checkpoint and immutable worker base: `{C0002_CODE_SHA}`
+- Planned-control commit: `{R03_PLANNED_CONTROL_SHA}`
+- Planned-control CI: Lean CI push run `{R03_PLANNED_CONTROL_CI_RUN}`, job `{R03_PLANNED_CONTROL_CI_JOB}`, completed `success`
+
+The planned-control gate was green for the exact planned-control commit before any B0005 ref or worktree was created. The checkout used `core.autocrlf=false`, `core.eol=lf`, and `core.safecrlf=false`, then an explicit nonexistent-tip lease.
+
+| Fact | Exact value |
+| --- | --- |
+| Local branch | `{R03_BRANCH_NAME}` |
+| Local branch tip | `{C0002_CODE_SHA}` |
+| Remote ref | `{R03_REMOTE_REF}` |
+| Remote ref tip | `{C0002_CODE_SHA}` |
+| Named worktree | `{R03_PLANNED_WORKTREE}` |
+| Worktree HEAD | `{C0002_CODE_SHA}` |
+
+At activation, the named worktree had empty tracked and untracked status. No worker commit, production edit, or R0005 application exists. R07 remains unactivated and M07 remains `planned`.
+
+Workers may edit only B0005-owned paths, B0005 destination prefixes, `NumStabilityTest/Reorganization/R03/`, and `docs/architecture/deliveries/R03/`. All 121 R0005 paths remain integrator-only. R0005 is context-free; any disposable replay must use `git apply --unidiff-zero`.
+
+No implementation began before activation-control CI. The worker remains frozen through the full `NumStability` and `NumStabilityTest` build.
+"""
+    positive_review_problems = Problems()
+    validate_r03_activation_review_text(
+        r03_review_text,
+        positive_review_problems,
+        context="self-test R03 activation review",
     )
     problems.require(
-        not positive_r03_problems.messages,
-        "self-test R03 positive",
-        f"valid planned epoch rejected: {positive_r03_problems.messages}",
+        not positive_review_problems.messages,
+        "self-test R03 activation review positive",
+        f"valid activation review rejected: {positive_review_problems.messages}",
     )
+
     r03_negative_cases: list[tuple[str, R03EpochSnapshot, str]] = [
         (
             "wrong base",
-            replace(r03_positive, branch_base_sha=INTEGRATED_CODE_SHA),
+            replace(r03_active, branch_base_sha=INTEGRATED_CODE_SHA),
             ".base:",
         ),
         (
             "wrong projection/request base",
             replace(
-                r03_positive,
+                r03_active,
                 projection_base_checkpoint_id=SUCCESSOR_CHECKPOINT_ID,
                 request_target_base_sha=INTEGRATED_CODE_SHA,
             ),
@@ -7258,40 +7504,67 @@ def run_self_test() -> int:
         ),
         (
             "selector drift",
-            replace(r03_positive, selector_rows=R03_OWNER_COUNT - 1),
+            replace(r03_active, selector_rows=R03_OWNER_COUNT - 1),
             ".selector:",
         ),
         (
             "route/hash drift",
-            replace(r03_positive, route_sha256="B" * 64),
+            replace(r03_active, route_sha256="B" * 64),
             ".routes:",
         ),
         (
             "unauthorized operator",
-            replace(r03_positive, operator_ids=("claude-local",)),
+            replace(r03_active, operator_ids=("claude-local",)),
             ".authority:",
         ),
         (
-            "premature activation",
+            "planned activation evidence",
             replace(
-                r03_positive,
-                branch_status="active",
-                activation_evidence=("reviews/R03-activation.md",),
+                r03_planned,
+                activation_evidence=(
+                    Artifact(
+                        R03_ACTIVATION_REVIEW_PATH,
+                        R03_ACTIVATION_REVIEW_SHA256,
+                    ),
+                ),
+            ),
+            ".activation:",
+        ),
+        (
+            "active missing activation review",
+            replace(r03_active, activation_evidence=()),
+            ".activation:",
+        ),
+        (
+            "active stale activation review",
+            replace(
+                r03_active,
+                activation_evidence=(
+                    Artifact(R03_ACTIVATION_REVIEW_PATH, "B" * 64),
+                ),
             ),
             ".activation:",
         ),
         (
             "shared-path leakage",
             replace(
-                r03_positive,
+                r03_active,
                 worker_shared_leaks=("docs/architecture/tiers.json",),
             ),
             ".shared_paths:",
         ),
         (
-            "invalid lifecycle transition",
+            "unreserved request leakage",
             replace(
-                r03_positive,
+                r03_active,
+                request_unreserved_paths=("NumStabilityTest.lean",),
+            ),
+            ".shared_paths:",
+        ),
+        (
+            "premature delivery",
+            replace(
+                r03_active,
                 delivery={
                     "commit_sha": "1" * 40,
                     "report": None,
@@ -7301,14 +7574,26 @@ def run_self_test() -> int:
             ".lifecycle:",
         ),
         (
+            "premature integration",
+            replace(
+                r03_active,
+                integration={
+                    "method": "merge",
+                    "accepted_checkpoint_id": C0002_CHECKPOINT_ID,
+                    "accepted_sha": C0002_CODE_SHA,
+                },
+            ),
+            ".lifecycle:",
+        ),
+        (
             "premature projection retirement",
-            replace(r03_positive, projection_status="retired"),
+            replace(r03_active, projection_status="retired"),
             ".lifecycle:",
         ),
         (
             "premature request resolution",
             replace(
-                r03_positive,
+                r03_active,
                 request_status="applied",
                 request_resolution={
                     "checkpoint_id": C0002_CHECKPOINT_ID,
@@ -7324,13 +7609,18 @@ def run_self_test() -> int:
         (
             "premature retirement due",
             replace(
-                r03_positive,
+                r03_active,
                 retirement={
-                    **r03_positive.retirement,
+                    **r03_active.retirement,
                     "status": "due",
                 },
             ),
             ".lifecycle:",
+        ),
+        (
+            "R07 activation",
+            replace(r03_active, r07_milestone_status="ready"),
+            ".r07:",
         ),
     ]
     for label, mutated, diagnostic in r03_negative_cases:
@@ -7344,6 +7634,56 @@ def run_self_test() -> int:
             any(diagnostic in message for message in mutation_problems.messages),
             f"self-test R03 {label}",
             f"adversarial mutation was not rejected with {diagnostic}: {mutation_problems.messages}",
+        )
+
+    r03_review_negative_cases = (
+        (
+            "wrong activation base",
+            r03_review_text.replace(
+                "- Accepted C0002 checkpoint and immutable worker base: "
+                f"`{C0002_CODE_SHA}`",
+                "- Accepted C0002 checkpoint and immutable worker base: "
+                f"`{INTEGRATED_CODE_SHA}`",
+            ),
+            ".identity:",
+        ),
+        (
+            "wrong local branch tip",
+            r03_review_text.replace(
+                f"| Local branch tip | `{C0002_CODE_SHA}` |",
+                f"| Local branch tip | `{INTEGRATED_CODE_SHA}` |",
+            ),
+            ".tips:",
+        ),
+        (
+            "wrong remote ref tip",
+            r03_review_text.replace(
+                f"| Remote ref tip | `{C0002_CODE_SHA}` |",
+                f"| Remote ref tip | `{INTEGRATED_CODE_SHA}` |",
+            ),
+            ".tips:",
+        ),
+        (
+            "wrong worktree tip",
+            r03_review_text.replace(
+                f"| Worktree HEAD | `{C0002_CODE_SHA}` |",
+                f"| Worktree HEAD | `{INTEGRATED_CODE_SHA}` |",
+            ),
+            ".tips:",
+        ),
+    )
+    for label, mutated_text, diagnostic in r03_review_negative_cases:
+        mutation_problems = Problems()
+        validate_r03_activation_review_text(
+            mutated_text,
+            mutation_problems,
+            context="self-test R03 activation review",
+        )
+        problems.require(
+            any(diagnostic in message for message in mutation_problems.messages),
+            f"self-test R03 review {label}",
+            f"adversarial review mutation was not rejected with {diagnostic}: "
+            f"{mutation_problems.messages}",
         )
     with tempfile.TemporaryDirectory(prefix="completion-validator-self-test-") as directory:
         tsv = Path(directory) / "sample.tsv"
@@ -7399,8 +7739,9 @@ def run_self_test() -> int:
         "completion phase self-test passed: exact C0000/C0001/C0002 constants, shared "
         "consumers and releases, next-wave B/P/R lifecycle/authority ratchets, merge/SHA "
         "pins, path collisions, format-2 declaration/signature/body parsing, and DAG "
-        "cycle rejection; exact C0002-rooted R03 positive state plus wrong-base, selector, "
-        "route/hash, authority, activation, shared-path, and lifecycle mutations"
+        "cycle rejection; exact C0002-rooted R03 planned/active states and activation "
+        "review plus missing/stale evidence, wrong-base/tip, selector, route/hash, "
+        "authority, R07, shared-path, and lifecycle mutations"
     )
     return 0
 
@@ -7442,7 +7783,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "overlap proofs, postimages, reviewed union, milestone DAG, and exact "
         "C0001-pinned synchronous R11/R12 planned/active/delivered or C0002 "
         "accepted/retired controls with exact checkpoint evidence; plus the singleton "
-        "exact-C0002 B0005/P0005/R0005 planned R03 epoch"
+        "exact-C0002 B0005/P0005/R0005 planned/active R03 epoch"
     )
     return 0
 

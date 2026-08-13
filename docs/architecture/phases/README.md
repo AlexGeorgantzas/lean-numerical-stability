@@ -44,15 +44,21 @@ refs remain preserved at the immutable delivery tips. The temporary
 its single `claude-local` operator. C0002 records 2,642 production modules and 356 distinct
 residual-debt rows, including 277 unclassified modules, so neither bounded nor
 repository-wide completion is claimed. A fresh exact-C0002 singleton review
-advances M03/R03 to ready/planned controls B0005/P0005/R0005. Those controls
-remain pre-activation: no worker ref or worktree exists, and delivery and
-integration are null. R03 owns all 9 mixed and all 13 missing-module-doc rows;
-M07/R07 and every other unaccepted milestone remain planned. The exact graph
-has no direct owner-import or typed declaration edges between R03 and R07, but
-it has 24/23 opposite-direction transitive owner-reachability pairs, 7 common
-direct dependencies, and 5 shared direct outside consumers, so no pair is
-authorized. C0002 stays current and its statistics, including 277 unclassified
-modules, do not change.
+advances M03/R03 to ready/active controls B0005/P0005/R0005. Planned-control
+commit `fb5a021b4640dd595a99f7560ce252ad9836a5b6` passed Lean CI run 31691727184
+(job 94420320315) before B0005 was created explicitly from exact C0002 code,
+pushed as a new remote ref with a nonexistent-tip lease, and activated with its
+clean LF-configured named worktree. Delivery and integration remain null and
+retirement remains `not_due`; the hash-pinned
+[`R03 activation review`](2026-08-repository-reorganization-completion/reviews/R03-activation.md)
+records the exact authority, refs, worktree, and tips. R03 owns all 9 mixed and
+all 13 missing-module-doc rows. M03 remains ready and unaccepted; M07/R07 and
+every other unaccepted milestone remain planned, and R07 is not activated. The
+exact graph has no direct owner-import or typed declaration edges between R03
+and R07, but it has 24/23 opposite-direction transitive owner-reachability
+pairs, 7 common direct dependencies, and 5 shared direct outside consumers, so
+no pair is authorized. C0002 stays current and its statistics, including 277
+unclassified modules, do not change.
 The planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be`
 passed Lean CI run 31546978830 (job 93961477202) before the R11/R12 refs and
 clean named worktrees were created and activated.
