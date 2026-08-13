@@ -1,0 +1,398 @@
+{
+  "contracts": [
+    {
+      "ambiguities": [
+        {
+          "evidence": "Section 4 separately introduces x_0=0 and d_0=-x_1 as convenient definitions, and Lemma 4.2's proof does not separately discuss h_1. [PDF p. 9/printed 824, algorithm and initialization; PDF p. 11/printed 826, Lemma 4.2 proof]",
+          "impact": "A formal rendering must treat m=0 as the artificial base case, not as an additional computed refinement step.",
+          "issue": "The algorithmic display defines ordinary refinement updates for m>=1, whereas Lemma 4.2 also quantifies m=0."
+        },
+        {
+          "evidence": "The source supplies only the abstract componentwise relation |h_{m+1}| <= u|x_m-d_m| and the standing assumption that operations are well-defined. [PDF p. 11/printed 826, Lemma 4.2 proof; PDF p. 3/printed 818, floating-point model]",
+          "impact": "The source contract requires the stated h_{m+1} bound, not a stronger machine-specific rounding semantics.",
+          "issue": "The paper does not specify an IEEE rounding mode or detailed treatment of underflow for the final subtraction."
+        }
+      ],
+      "contract_plain_english": "For every refinement index m>=0, the computed next iterate differs componentwise from the exact solution by at most (1+u) times the absolute inverse applied to the exact intermediate residual, plus u times the magnitude of the exact solution. This is an explicit forward-error bound for the rounded update and contains no norm or big-O term. [PDF p. 11/printed 826, Lemma 4.2 second inequality and proof]",
+      "source_evidence": [
+        {
+          "anchor": "Section 2, opening paragraphs",
+          "observation": "The problem is Ax=b with n equations and n unknowns over a floating-point subset of the reals. Unit roundoff u is positive, nu <= .01, every floating-point operation mentioned is assumed well-defined, and absolute values and inequalities are componentwise.",
+          "pdf_page": 3,
+          "printed_page": "818"
+        },
+        {
+          "anchor": "Section 3, paragraph beginning \"The basic result\"",
+          "observation": "The exact solution is x=A^{-1}b, so A is implicitly nonsingular; Gaussian elimination uses column pivoting.",
+          "pdf_page": 8,
+          "printed_page": "823"
+        },
+        {
+          "anchor": "Section 4, iterative-refinement definition",
+          "observation": "The initial computed solution x_1 and corrections d_m are obtained by column-pivoted solves; x_{m+1} is the floating-point subtraction of d_m from x_m. The artificial initialization is x_0=0, r_0=-b, d_0=-x_1. Both single- and double-precision residual accumulation are considered.",
+          "pdf_page": 9,
+          "printed_page": "824"
+        },
+        {
+          "anchor": "Paragraph before Lemma 4.1 and Lemma 4.1 definition",
+          "observation": "q_{m+1}=A(x_m-d_m)-b is defined as the exact residual of the unrounded corrected value x_m-d_m.",
+          "pdf_page": 10,
+          "printed_page": "825"
+        },
+        {
+          "anchor": "Lemma 4.2, second displayed inequality and proof",
+          "observation": "For m=0,1,2,..., |x_{m+1}-x| <= (1+u)|A^{-1}||q_{m+1}|+u|x|. The proof writes x_{m+1}=x_m-d_m+h_{m+1}, with |h_{m+1}| <= u|x_m-d_m|, and equivalently x_{m+1}=A^{-1}q_{m+1}+x+h_{m+1}, with |h_{m+1}| <= u|A^{-1}q_{m+1}|+u|x|.",
+          "pdf_page": 11,
+          "printed_page": "826"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "This is specifically the second part of Lemma 4.2. It bounds the componentwise forward error of the next computed iterate using the exact intermediate residual q_{m+1} and the rounding error of the final subtraction; it does not itself assert convergence, backward stability, or a normwise estimate. [PDF p. 11/printed 826, Lemma 4.2 and proof]",
+        "binders": [
+          "n is the number of equations and unknowns; A is an n-by-n real matrix, b and x are n-vectors, and x=A^{-1}b. [PDF p. 3/printed 818, Section 2 opening; PDF p. 8/printed 823, Section 3 basic-result paragraph]",
+          "m ranges over 0,1,2,... in the displayed claim. [PDF p. 11/printed 826, Lemma 4.2]",
+          "u is the positive single-precision relative-roundoff bound. [PDF p. 3/printed 818, Section 2 floating-point model]"
+        ],
+        "conclusions": [
+          "Componentwise, |x_{m+1}-x| <= (1+u)|A^{-1}||q_{m+1}| + u|x|. [PDF p. 11/printed 826, Lemma 4.2 second displayed inequality]"
+        ],
+        "constants_and_indexing": [
+          "The coefficients are exactly 1+u and u; there is no anonymous C_i factor in this inequality. [PDF p. 11/printed 826, Lemma 4.2 second inequality]",
+          "The offset is q_{m+1} to x_{m+1}, with m beginning at 0. [PDF p. 11/printed 826, Lemma 4.2]",
+          "The m=0 case uses x_0=0 and d_0=-x_1 rather than a normal refinement correction. [PDF p. 9/printed 824, convenient initialization]"
+        ],
+        "definitions_and_conventions": [
+          "q_{m+1}=A(x_m-d_m)-b=A(x_m-d_m-x) is exact, even though x_m and d_m are computed quantities. [PDF p. 10/printed 825, definition before Lemma 4.1; PDF p. 11/printed 826, Lemma 4.2 proof]",
+          "Vertical bars denote entrywise absolute value and every displayed vector inequality is componentwise. Products such as |A^{-1}||q_{m+1}| are ordinary matrix-vector products of nonnegative entries. [PDF p. 3/printed 818, Section 2 componentwise convention]",
+          "The proof uses x_m-d_m=A^{-1}q_{m+1}+x, followed by the rounded update. [PDF p. 11/printed 826, Lemma 4.2 proof]"
+        ],
+        "error_notions": [
+          "|x_{m+1}-x| is a componentwise forward error between a computed iterate and the exact solution. [PDF p. 11/printed 826, Lemma 4.2 second inequality]",
+          "|q_{m+1}| is the componentwise magnitude of an exact residual associated with the unrounded corrected value, not the computed residual r_m. [PDF p. 10/printed 825, q-definition; PDF p. 9/printed 824, r_m definition]"
+        ],
+        "exceptional_values": [
+          "A^{-1} requires A to be nonsingular. [PDF p. 8/printed 823, x=A^{-1}b context]",
+          "Floating-point overflow, undefined operations, and non-real exceptional values are outside the model because every cited result is assumed well-defined in a floating-point subset of the reals. [PDF p. 3/printed 818, Section 2 floating-point model]",
+          "No nonzero-component assumption on x or q_{m+1} is imposed by Lemma 4.2. [PDF p. 11/printed 826, Lemma 4.2]"
+        ],
+        "higher_order_terms": [
+          "The displayed result is a finite explicit inequality with no O(u^2), asymptotic remainder, or omitted higher-order term. [PDF p. 11/printed 826, Lemma 4.2 second inequality]"
+        ],
+        "hypotheses": [
+          "A is nonsingular, inherited from the use of A^{-1} and x=A^{-1}b rather than restated in Lemma 4.2. [PDF p. 8/printed 823, Section 3 basic-result paragraph]",
+          "x_m and d_m belong to the column-pivoted iterative-refinement process, with x_0=0 and d_0=-x_1 for the m=0 extension. [PDF p. 9/printed 824, Section 4 algorithm definition]",
+          "The computed update has the componentwise rounding representation x_{m+1}=x_m-d_m+h_{m+1}, |h_{m+1}| <= u|x_m-d_m|. [PDF p. 11/printed 826, Lemma 4.2 proof]",
+          "All referenced floating-point operations are well-defined. [PDF p. 3/printed 818, Section 2 floating-point model]",
+          "Lemma 4.2 states no additional condition involving kappa(A^{-1}) or the anonymous C_i constants. [PDF p. 11/printed 826, Lemma 4.2]"
+        ],
+        "implicit_context": [
+          "The result belongs to Section 4's analysis of iterative refinement following Gaussian elimination with column pivoting. [PDF p. 9/printed 824, Section 4 algorithm definition]",
+          "The paper studies both s.p.r.a. and d.p.r.a.; this inequality does not involve the residual-precision parameter and therefore is common to both variants. [PDF p. 9/printed 824, Section 4 precision paragraph; PDF p. 11/printed 826, Lemma 4.2]",
+          "For m=0, the convenient definitions give q_1=Ax_1-b, so the bound includes the initially computed solution. [PDF p. 9/printed 824, initialization; PDF p. 10/printed 825, q-definition]"
+        ],
+        "norms": [
+          "No vector or matrix norm occurs in the conclusion; replacing the componentwise inequality by a norm inequality would be a different claim. [PDF p. 11/printed 826, Lemma 4.2; PDF p. 3/printed 818, componentwise convention]"
+        ],
+        "numerical_model": [
+          "Single-precision floating-point arithmetic has relative-roundoff bound u, with nu <= .01 and well-defined results assumed. [PDF p. 3/printed 818, Section 2 floating-point model]",
+          "The only rounding step used explicitly in this proof is the final vector subtraction, represented by |h_{m+1}| <= u|x_m-d_m|. [PDF p. 11/printed 826, Lemma 4.2 proof]",
+          "Residual accumulation may be single precision or double precision followed by conversion to single precision, but that distinction does not occur in this bound. [PDF p. 9/printed 824, Section 4 precision paragraph; PDF p. 11/printed 826, Lemma 4.2]"
+        ]
+      },
+      "task_id": "P08-T1",
+      "undebatable_constraints": [
+        "The quantified range is every integer m >= 0. [PDF p. 11/printed 826, Lemma 4.2]",
+        "The conclusion is componentwise, not normwise. [PDF p. 3/printed 818, componentwise convention; PDF p. 11/printed 826, Lemma 4.2]",
+        "The left side is the forward error |x_{m+1}-x|, not a residual or backward error. [PDF p. 11/printed 826, second displayed inequality]",
+        "q_{m+1} is the exact residual of x_m-d_m, while x_{m+1} is the rounded update. [PDF p. 10/printed 825, q-definition; PDF p. 11/printed 826, proof]",
+        "The term multiplying |A^{-1}||q_{m+1}| is exactly 1+u, and the additive data term is exactly u|x|. [PDF p. 11/printed 826, second displayed inequality]",
+        "The result is inherited from the column-pivoted iterative-refinement algorithm and applies to both residual-accumulation variants. [PDF p. 9/printed 824, Section 4 algorithm and precision paragraph]"
+      ]
+    },
+    {
+      "ambiguities": [
+        {
+          "evidence": "The paper defines r_m as a computed value on printed p. 824, q_{m+1} as an exact residual on printed p. 825, and Lemma 4.2 bounds A(x_{m+1}-x) on printed p. 826. [PDF pp. 9-11, Section 4 algorithm, q-definition, and Lemma 4.2]",
+          "impact": "A formal contract must keep these three quantities distinct; identifying any two would strengthen or alter the claim.",
+          "issue": "The term \"residual\" can refer either to the exact residual image A(x_{m+1}-x), the exact intermediate residual q_{m+1}, or the computed residual r_m."
+        },
+        {
+          "evidence": "The loop is displayed for m=1,2,..., followed by x_0=0 and d_0=-x_1, while Lemma 4.2 begins at m=0. [PDF p. 9/printed 824, algorithm and initialization; PDF p. 11/printed 826, Lemma 4.2]",
+          "impact": "The base case should be represented separately or justified from those definitions.",
+          "issue": "The m=0 case is covered through artificial initialization rather than the ordinary refinement loop."
+        },
+        {
+          "evidence": "The proof supplies only the abstract h_{m+1} componentwise bound and the standing well-defined-operation assumption. [PDF p. 11/printed 826, Lemma 4.2 proof; PDF p. 3/printed 818, floating-point model]",
+          "impact": "The contract cannot require IEEE-specific behavior beyond the stated error inequality.",
+          "issue": "No machine-specific rounding mode is fixed."
+        }
+      ],
+      "contract_plain_english": "For every m>=0, the exact residual of the computed next iterate is bounded componentwise by the exact residual before the rounded update, amplified by I+u|A||A^{-1}|, plus u|A||x|. The claim concerns exact residual images, not computed residual storage, and has no norm or big-O remainder. [PDF p. 11/printed 826, Lemma 4.2 first inequality and proof]",
+      "source_evidence": [
+        {
+          "anchor": "Section 2, opening paragraphs",
+          "observation": "The paper treats Ax=b with n equations and n unknowns over a floating-point subset of the reals. Unit roundoff u is positive, nu <= .01, referenced floating-point results are assumed well-defined, and absolute values and inequalities are componentwise.",
+          "pdf_page": 3,
+          "printed_page": "818"
+        },
+        {
+          "anchor": "Section 3, paragraph beginning \"The basic result\"",
+          "observation": "The exact solution is x=A^{-1}b in the column-pivoted Gaussian-elimination setting.",
+          "pdf_page": 8,
+          "printed_page": "823"
+        },
+        {
+          "anchor": "Section 4, iterative-refinement definition",
+          "observation": "The algorithm obtains x_1 and d_m by column-pivoted solves and computes x_{m+1} by floating-point subtraction. It defines x_0=0, r_0=-b, d_0=-x_1 and considers both s.p.r.a. and d.p.r.a.",
+          "pdf_page": 9,
+          "printed_page": "824"
+        },
+        {
+          "anchor": "Paragraph before Lemma 4.1 and Lemma 4.1 definition",
+          "observation": "q_{m+1}=A(x_m-d_m)-b is the exact residual of the unrounded corrected value.",
+          "pdf_page": 10,
+          "printed_page": "825"
+        },
+        {
+          "anchor": "Lemma 4.2, first displayed inequality and proof",
+          "observation": "For m=0,1,2,..., |A(x_{m+1}-x)| <= (I+u|A||A^{-1}|)|q_{m+1}|+u|A||x|. The proof uses x_{m+1}=A^{-1}q_{m+1}+x+h_{m+1} and |h_{m+1}| <= u|A^{-1}q_{m+1}|+u|x|.",
+          "pdf_page": 11,
+          "printed_page": "826"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "This is the first part of Lemma 4.2. It converts the exact intermediate residual q_{m+1} into a componentwise bound on the exact residual image of the rounded next iterate. It is not a bound on the computed residual r_{m+1}, a normwise residual estimate, or a convergence theorem. [PDF p. 11/printed 826, Lemma 4.2 and proof]",
+        "binders": [
+          "n is the system dimension; A is an n-by-n real matrix, b and x are n-vectors, and x=A^{-1}b. [PDF p. 3/printed 818, Section 2 opening; PDF p. 8/printed 823, Section 3 basic-result paragraph]",
+          "m ranges over 0,1,2,... . [PDF p. 11/printed 826, Lemma 4.2]",
+          "u is the positive single-precision relative-roundoff bound, and I is the n-by-n identity matrix. [PDF p. 3/printed 818, floating-point model; PDF p. 11/printed 826, Lemma 4.2 first inequality]"
+        ],
+        "conclusions": [
+          "Componentwise, |A(x_{m+1}-x)| <= (I+u|A||A^{-1}|)|q_{m+1}| + u|A||x|. [PDF p. 11/printed 826, Lemma 4.2 first displayed inequality]"
+        ],
+        "constants_and_indexing": [
+          "The matrix coefficient is exactly I+u|A||A^{-1}|, and the additive term is exactly u|A||x|. [PDF p. 11/printed 826, first displayed inequality]",
+          "The offset pairs q_{m+1} with x_{m+1}, for every m>=0. [PDF p. 11/printed 826, Lemma 4.2]",
+          "No anonymous C_i constant appears in this bound. [PDF p. 11/printed 826, Lemma 4.2 first inequality]"
+        ],
+        "definitions_and_conventions": [
+          "Because Ax=b, A(x_{m+1}-x)=Ax_{m+1}-b is the exact residual of the computed iterate, not the separately computed residual r_{m+1}. [PDF p. 8/printed 823, x=A^{-1}b context; PDF p. 9/printed 824, r_m definition; PDF p. 11/printed 826, Lemma 4.2]",
+          "q_{m+1}=A(x_m-d_m)-b is exact and refers to the unrounded corrected value. [PDF p. 10/printed 825, q-definition]",
+          "Vertical bars and inequalities are componentwise; |A||A^{-1}||q_{m+1}| and |A||x| are ordinary nonnegative matrix-vector products. [PDF p. 3/printed 818, componentwise convention]",
+          "The identity contribution I|q_{m+1}| and the rounding contribution u|A||A^{-1}||q_{m+1}| are both retained. [PDF p. 11/printed 826, first displayed inequality and proof]"
+        ],
+        "error_notions": [
+          "|A(x_{m+1}-x)|=|Ax_{m+1}-b| is a componentwise exact-residual magnitude for the computed iterate. [PDF p. 8/printed 823, exact-solution definition; PDF p. 11/printed 826, first inequality]",
+          "|q_{m+1}| is the componentwise magnitude of the exact residual before the rounded update. [PDF p. 10/printed 825, q-definition]",
+          "Neither side is the stored or computed residual r_m unless an additional equality not asserted by the paper is introduced. [PDF p. 9/printed 824, r_m definition; PDF p. 10/printed 825, q-definition]"
+        ],
+        "exceptional_values": [
+          "A must be nonsingular for A^{-1} to exist. [PDF p. 8/printed 823, x=A^{-1}b context]",
+          "Undefined floating-point results, overflow-like failures, and non-real exceptional values are excluded by the standing well-defined-real-operation assumption. [PDF p. 3/printed 818, Section 2 floating-point model]",
+          "Lemma 4.2 imposes no positivity or nonzero-component requirement on x or q_{m+1}. [PDF p. 11/printed 826, Lemma 4.2]"
+        ],
+        "higher_order_terms": [
+          "The inequality retains its full finite u-dependent expression and contains no O(u^2) or other omitted term. [PDF p. 11/printed 826, Lemma 4.2 first inequality]"
+        ],
+        "hypotheses": [
+          "A is nonsingular, inherited from x=A^{-1}b and the repeated use of A^{-1}. [PDF p. 8/printed 823, Section 3 basic-result paragraph]",
+          "The iterates and corrections are those of column-pivoted iterative refinement, including x_0=0 and d_0=-x_1 for m=0. [PDF p. 9/printed 824, Section 4 algorithm definition]",
+          "The rounded update satisfies x_{m+1}=x_m-d_m+h_{m+1} with |h_{m+1}| <= u|x_m-d_m|. [PDF p. 11/printed 826, Lemma 4.2 proof]",
+          "All referenced floating-point operations are well-defined. [PDF p. 3/printed 818, Section 2 floating-point model]",
+          "No conditioning or smallness hypothesis beyond the standing floating-point context is stated for Lemma 4.2. [PDF p. 11/printed 826, Lemma 4.2]"
+        ],
+        "implicit_context": [
+          "The claim is within Section 4's column-pivoted iterative-refinement analysis. [PDF p. 9/printed 824, Section 4 algorithm definition]",
+          "Both s.p.r.a. and d.p.r.a. are in scope; the claim is independent of which precision was used to accumulate r_m because it is derived only from q_{m+1} and the final update. [PDF p. 9/printed 824, precision paragraph; PDF p. 11/printed 826, Lemma 4.2 proof]",
+          "At m=0, q_1=Ax_1-b under x_0=0 and d_0=-x_1. [PDF p. 9/printed 824, initialization; PDF p. 10/printed 825, q-definition]"
+        ],
+        "norms": [
+          "No norm occurs in the conclusion; it is a vector inequality interpreted componentwise. [PDF p. 3/printed 818, componentwise convention; PDF p. 11/printed 826, Lemma 4.2 first inequality]"
+        ],
+        "numerical_model": [
+          "The standing single-precision model has relative-roundoff bound u and nu <= .01, with operations assumed well-defined. [PDF p. 3/printed 818, Section 2 floating-point model]",
+          "The proof's explicit rounding model is |h_{m+1}| <= u|x_m-d_m| for the final subtraction. [PDF p. 11/printed 826, Lemma 4.2 proof]",
+          "Single- and double-precision residual accumulation differ in forming r_m, but no residual-precision parameter occurs in this claim. [PDF p. 9/printed 824, residual-precision paragraph; PDF p. 11/printed 826, Lemma 4.2]"
+        ]
+      },
+      "task_id": "P08-T2",
+      "undebatable_constraints": [
+        "The quantified range is every integer m>=0. [PDF p. 11/printed 826, Lemma 4.2]",
+        "The claim is componentwise and vector-valued, not normwise. [PDF p. 3/printed 818, componentwise convention; PDF p. 11/printed 826, first inequality]",
+        "The left side is |A(x_{m+1}-x)|, equivalently the exact residual |Ax_{m+1}-b|. [PDF p. 8/printed 823, exact x; PDF p. 11/printed 826, first inequality]",
+        "The right side uses the exact intermediate residual q_{m+1}, not the computed residual r_m. [PDF p. 9/printed 824, r_m definition; PDF p. 10/printed 825, q-definition]",
+        "The full coefficient I+u|A||A^{-1}| and the additive u|A||x| term must both be preserved. [PDF p. 11/printed 826, first displayed inequality]",
+        "The source result is shared by the s.p.r.a. and d.p.r.a. variants of column-pivoted iterative refinement. [PDF p. 9/printed 824, Section 4 algorithm and precision paragraph]"
+      ]
+    },
+    {
+      "ambiguities": [
+        {
+          "evidence": "q is introduced only as q_{m+1} for m=0,1,2,..., while the proof displays a q_{m+1}-from-q_m recurrence and then describes a separate m=0 base case. [PDF p. 10/printed 825, Lemma 4.1 definition; PDF p. 12/printed 827, recurrence and induction text]",
+          "impact": "The recurrence should be applied directly for m>=1, with q_1 handled by the base case; asserting it at m=0 would require an extra definition of q_0 not supplied by the paper.",
+          "issue": "The displayed recurrence does not state its own index range, although it contains q_m and q_0 is never defined."
+        },
+        {
+          "evidence": "Both conditions appear explicitly in different lines of the proof and statement. The paper does not separately state the implication between them at this point. [PDF p. 12/printed 827, Lemma 4.3 statement and proof]",
+          "impact": "A formal reconstruction must either retain both local conditions or prove from the C_i definitions that the lemma's c_8 condition supplies the earlier c_1 condition.",
+          "issue": "The recurrence line carries the condition c_1u kappa(A^{-1}) <= 1/2, whereas the stated lemma carries c_8u kappa(A^{-1}) <= 1/2."
+        },
+        {
+          "evidence": "Section 3 says their functional dependence is deliberately suppressed, while the Notes define them through u, A, matrix inverses, and earlier C_i quantities. [PDF p. 7/printed 822, anonymous-quantity convention; PDF pp. 8, 11, 12/printed 823, 826, 827, Notes defining C_2 through C_12]",
+          "impact": "The contract must preserve these source-defined quantities or an equivalent bounded construction; it cannot silently replace them by arbitrary universal numeric constants.",
+          "issue": "The C_i and c_i are not presented as simple explicit functions of n despite being described as bounded above by such functions."
+        },
+        {
+          "evidence": "The paper permits any absolute monotone norm normalized by ||e_i||=1 and extends it to matrices, rather than selecting one particular norm. [PDF p. 4/printed 819, absolute-norm convention]",
+          "impact": "The smallness hypothesis is relative to the chosen admissible norm; a formalization must quantify or fix that choice explicitly.",
+          "issue": "The absolute norm used in c_8 and kappa(A^{-1}) is not uniquely fixed."
+        }
+      ],
+      "contract_plain_english": "For every finite m>=0, the paper gives a componentwise upper bound for the exact residual q_{m+1}. It consists of an m-step propagated initial term plus explicit residual-accumulation, u^2, and mixed-precision terms. The proof derives a one-step q recurrence from Lemmas 4.1 and 4.2, handles q_1 as the base case, and iterates the recurrence under the stated conditioning threshold. [PDF p. 12/printed 827, Lemma 4.3, Note, and proof]",
+      "source_evidence": [
+        {
+          "anchor": "Section 2, opening paragraphs",
+          "observation": "The setting is a real n-by-n linear system with positive unit roundoff u, nu <= .01, well-defined floating-point results, and componentwise absolute-value inequalities.",
+          "pdf_page": 3,
+          "printed_page": "818"
+        },
+        {
+          "anchor": "Section 2, paragraph beginning \"Only absolute norms\"",
+          "observation": "Only absolute, monotone norms are considered; the norm is scaled so ||e_i||=1 and extended to matrices in the usual way.",
+          "pdf_page": 4,
+          "printed_page": "819"
+        },
+        {
+          "anchor": "Definition of kappa(A^{-1}) near the top of the page",
+          "observation": "kappa(A^{-1}) is defined nonstandardly as || |A||A^{-1}| ||.",
+          "pdf_page": 5,
+          "printed_page": "820"
+        },
+        {
+          "anchor": "Section 3, paragraph introducing C_1,c_1,C_2,...",
+          "observation": "Lowercase c_i denote scalar and uppercase C_i matrix quantities whose dependence on n is suppressed and which are bounded above by functions of n only.",
+          "pdf_page": 7,
+          "printed_page": "822"
+        },
+        {
+          "anchor": "Equation (3.1) and following Note",
+          "observation": "The column-pivoted solve uses a nonnegative matrix C_1; c_1=||C_1|| and C_2=(I-uC_1|A||A^{-1}|)^{-1}C_1, under c_1u kappa(A^{-1}) <= 1/2.",
+          "pdf_page": 8,
+          "printed_page": "823"
+        },
+        {
+          "anchor": "Section 4, iterative-refinement and precision definitions",
+          "observation": "The algorithm uses column-pivoted solves, x_0=0, r_0=-b, d_0=-x_1, and computes residuals with subtraction last. For s.p.r.a. the residual is accumulated in single precision; for d.p.r.a. it is accumulated in double precision and converted to single precision, with double-precision relative error bounded by u^2 and conversion error by u.",
+          "pdf_page": 9,
+          "printed_page": "824"
+        },
+        {
+          "anchor": "Lemma 4.1",
+          "observation": "q_{m+1}=A(x_m-d_m)-b and |q_{m+1}| <= uC_6|A||x_m-x|+(n ubar+c_3u^2)|A||x|+ubar u C_7|A||A^{-1}||A||x|, where ubar=u for s.p.r.a. and ubar=u^2 for d.p.r.a., assuming c_1u kappa(A^{-1}) <= 1/2.",
+          "pdf_page": 10,
+          "printed_page": "825"
+        },
+        {
+          "anchor": "Note following Lemma 4.1 and Lemma 4.2 second inequality",
+          "observation": "The paper defines c_3,c_4,c_5,C_6,C_7 and proves |x_m-x| <= (1+u)|A^{-1}||q_m|+u|x| after shifting Lemma 4.2's index.",
+          "pdf_page": 11,
+          "printed_page": "826"
+        },
+        {
+          "anchor": "Lemma 4.3, following Note, and displayed recurrence in the proof",
+          "observation": "Lemma 4.3 gives the explicit finite-m bound for |q_{m+1}| under c_8u kappa(A^{-1}) <= 1/2, defines C_8,c_8,C_9,C_10,C_11,C_12, and proves it from a displayed recurrence plus induction with base m=0 supplied by Lemma 4.1.",
+          "pdf_page": 12,
+          "printed_page": "827"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "Lemma 4.3 is a finite-iteration componentwise bound for the exact residual sequence q. Its proof substitutes Lemma 4.2's second inequality, with the necessary index shift, into Lemma 4.1 to obtain a linear matrix recurrence, then uses Lemma 4.1 for the base case and induction for later iterates. It does not state a limit, convergence equality, or computed-residual recurrence. [PDF pp. 10-12/printed 825-827, Lemmas 4.1-4.3]",
+        "binders": [
+          "n is the positive system dimension; A is a real nonsingular n-by-n matrix, b is an n-vector, and x=A^{-1}b. [PDF p. 3/printed 818, Section 2 opening; PDF p. 8/printed 823, Section 3 basic-result context]",
+          "m ranges over 0,1,2,... in the final Lemma 4.3 bound. [PDF p. 12/printed 827, Lemma 4.3]",
+          "u is the positive single-precision relative-roundoff bound, and ubar is selected by algorithm variant: ubar=u for s.p.r.a. and ubar=u^2 for d.p.r.a. [PDF p. 3/printed 818, floating-point model; PDF p. 10/printed 825, Lemma 4.1]",
+          "C_i are matrix quantities and c_i are scalar quantities with suppressed n-dependence. [PDF p. 7/printed 822, Section 3 anonymous-quantity convention]"
+        ],
+        "conclusions": [
+          "For every m>=0, componentwise, |q_{m+1}| <= (uC_8|A||A^{-1}|)^m uC_10|A||x| + n ubar|A||x| + u^2C_11|A||x| + ubar u C_12|A||A^{-1}||A||x|. [PDF p. 12/printed 827, Lemma 4.3]",
+          "The proof's one-step componentwise recurrence is |q_{m+1}| <= uC_8|A||A^{-1}||q_m| + n ubar|A||x| + u^2C_9|A||x| + ubar u C_7|A||A^{-1}||A||x|. [PDF p. 12/printed 827, recurrence in Lemma 4.3 proof]",
+          "The final result is established by taking m=0 from Lemma 4.1 and applying the recurrence inductively for successive indices. [PDF p. 12/printed 827, final sentences of Lemma 4.3 proof]"
+        ],
+        "constants_and_indexing": [
+          "The finite bound's iteration factor is exactly (uC_8|A||A^{-1}|)^m, followed on the right by uC_10|A||x|. [PDF p. 12/printed 827, Lemma 4.3]",
+          "The non-iteration terms are exactly n ubar|A||x|, u^2C_11|A||x|, and ubar u C_12|A||A^{-1}||A||x|. [PDF p. 12/printed 827, Lemma 4.3]",
+          "The recurrence uses C_9 and C_7, whereas the closed induction bound uses the resolvent-defined C_11 and C_12 and the enlarged initial coefficient C_10. [PDF p. 12/printed 827, Note and recurrence]",
+          "Lemma 4.3 starts at m=0 and bounds q_{m+1}; the recurrence's q_m term means its meaningful direct range starts at m=1 because q_0 is not defined. [PDF p. 10/printed 825, q_{m+1} definition; PDF p. 12/printed 827, recurrence and induction text]"
+        ],
+        "definitions_and_conventions": [
+          "q_{m+1}=A(x_m-d_m)-b is the exact residual of the unrounded corrected value. [PDF p. 10/printed 825, definition in Lemma 4.1]",
+          "All absolute values and displayed inequalities are componentwise; powers such as (uC_8|A||A^{-1}|)^m are ordinary matrix powers. [PDF p. 3/printed 818, componentwise convention; PDF p. 12/printed 827, Lemma 4.3]",
+          "C_8=(1+u)C_6, c_8=||C_8||, and C_9=C_6+c_3I. [PDF p. 12/printed 827, Note following Lemma 4.3]",
+          "C_10=C_6+(n ubar/u+c_3u)I+ubar C_7|A||A^{-1}|. [PDF p. 12/printed 827, Note following Lemma 4.3]",
+          "C_11=(I-uC_8|A||A^{-1}|)^{-1}C_9 and C_12=(I-uC_8|A||A^{-1}|)^{-1}(nC_8+C_7). [PDF p. 12/printed 827, Note following Lemma 4.3]",
+          "c_5=n+(c_3+c_4)u^2/ubar, C_6=C_2+(1+c_5 ubar/u)(I+uC_2|A||A^{-1}|), and C_7=(n+c_3u^2/ubar)C_2. [PDF p. 11/printed 826, Note following Lemma 4.1]",
+          "For s.p.r.a., c_3=(1+u)((1+u)^n-1)/u^2-n/u and c_4=0. For d.p.r.a., c_3=(1+u)(1+u^2)((1+u^2)^n-1)/u^2-n and c_4=1+u. [PDF p. 11/printed 826, Note following Lemma 4.1]",
+          "c_1=||C_1|| and C_2=(I-uC_1|A||A^{-1}|)^{-1}C_1, where C_1 is the nonnegative matrix from the column-pivoted Gaussian-elimination error bound. [PDF p. 8/printed 823, equation (3.1) and Note]"
+        ],
+        "error_notions": [
+          "|q_{m+1}| is a componentwise exact-residual magnitude, not a norm and not the computed residual r_m. [PDF p. 10/printed 825, q-definition; PDF p. 9/printed 824, r_m definition]",
+          "The recurrence controls q_{m+1} from q_m, while Lemma 4.3 gives an explicit finite-m upper bound in terms of |A||x| and |A||A^{-1}||A||x|. [PDF p. 12/printed 827, Lemma 4.3 and proof]"
+        ],
+        "exceptional_values": [
+          "A must be nonsingular because A^{-1} occurs throughout. [PDF p. 8/printed 823, exact-solution and equation (3.1) context]",
+          "The inverses defining C_2,C_11,C_12 are used under the paper's smallness assumptions; no singular-resolvent case is included in the claim. [PDF p. 8/printed 823, C_2 definition; PDF p. 12/printed 827, Lemma 4.3 assumption and C_11,C_12 definitions]",
+          "Undefined floating-point operations and non-real exceptional values are excluded by the standing model. [PDF p. 3/printed 818, Section 2 floating-point model]",
+          "No nonzero-component assumption on x or q_m appears. [PDF p. 12/printed 827, Lemma 4.3 and recurrence]"
+        ],
+        "higher_order_terms": [
+          "No big-O term is present: all retained orders are explicit as u times the iteration factor, n ubar, u^2, and ubar u. [PDF p. 12/printed 827, Lemma 4.3]",
+          "Under s.p.r.a. (ubar=u), the residual-accumulation term n ubar is first order and the cross term ubar u is second order; under d.p.r.a. (ubar=u^2), these become second and third order respectively. [PDF p. 10/printed 825, ubar definition; PDF p. 12/printed 827, Lemma 4.3]"
+        ],
+        "hypotheses": [
+          "The iterates arise from Section 4's column-pivoted iterative-refinement algorithm, with residual subtraction performed last and the stated s.p.r.a./d.p.r.a. choices. [PDF p. 9/printed 824, Section 4 algorithm and precision definitions]",
+          "The final Lemma 4.3 bound assumes c_8 u kappa(A^{-1}) <= 1/2. [PDF p. 12/printed 827, Lemma 4.3]",
+          "kappa(A^{-1})=|| |A||A^{-1}| || for an inherited absolute matrix norm. [PDF p. 5/printed 820, kappa definition; PDF p. 4/printed 819, absolute-norm convention]",
+          "The recurrence displayed in the proof is stated under c_1 u kappa(A^{-1}) <= 1/2. [PDF p. 12/printed 827, Lemma 4.3 proof]",
+          "The standing floating-point assumptions include nu <= .01 and well-defined operations. [PDF p. 3/printed 818, Section 2 floating-point model]"
+        ],
+        "implicit_context": [
+          "The final bound combines Lemma 4.1's residual estimate with the second, forward-error inequality of Lemma 4.2. [PDF p. 10/printed 825, Lemma 4.1; PDF p. 11/printed 826, Lemma 4.2; PDF p. 12/printed 827, Lemma 4.3 proof]",
+          "The anonymous C_i and c_i are asserted to be bounded above by functions of n only; their displayed formulas retain u, A, and inverse factors whose boundedness is controlled by the standing smallness assumptions. [PDF p. 7/printed 822, anonymous-quantity convention; PDF p. 12/printed 827, Note following Lemma 4.3]",
+          "The initial index is q_1: x_0=0 and d_0=-x_1, so Lemma 4.1 supplies the m=0 base case. [PDF p. 9/printed 824, initialization; PDF p. 10/printed 825, Lemma 4.1; PDF p. 12/printed 827, induction proof]"
+        ],
+        "norms": [
+          "The final residual bound and recurrence are componentwise; a norm occurs only in c_8=||C_8|| and in the scalar hypothesis through kappa(A^{-1})=|| |A||A^{-1}| ||. [PDF p. 12/printed 827, Lemma 4.3 and Note; PDF p. 5/printed 820, kappa definition]",
+          "The inherited norm is any absolute monotone norm normalized by ||e_i||=1 and extended to matrices. [PDF p. 4/printed 819, absolute-norm convention]",
+          "The paper explicitly warns that its kappa notation is nonstandard and is not a norm-defined condition number in the usual sense. [PDF p. 5/printed 820, paragraph after kappa definitions]"
+        ],
+        "numerical_model": [
+          "Single-precision arithmetic has relative-roundoff bound u; double-precision arithmetic used for d.p.r.a. has bound u^2; conversion back to single precision has relative error bounded by u. [PDF p. 9/printed 824, residual-precision paragraph]",
+          "ubar=u for s.p.r.a. and ubar=u^2 for d.p.r.a. [PDF p. 10/printed 825, Lemma 4.1]",
+          "Residual subtraction is performed last; s.p.r.a. computes the residual in single precision, while d.p.r.a. computes it in double precision and then converts it. [PDF p. 9/printed 824, residual-precision paragraph]",
+          "The recurrence also inherits the final-update rounding factor 1+u through C_8=(1+u)C_6. [PDF p. 11/printed 826, Lemma 4.2 second inequality; PDF p. 12/printed 827, C_8 definition]"
+        ]
+      },
+      "task_id": "P08-T3",
+      "undebatable_constraints": [
+        "Lemma 4.3 quantifies every integer m>=0 and bounds q_{m+1}. [PDF p. 12/printed 827, Lemma 4.3]",
+        "The final hypothesis is c_8u kappa(A^{-1}) <= 1/2. [PDF p. 12/printed 827, Lemma 4.3]",
+        "The result and recurrence are componentwise matrix-vector inequalities, not normwise estimates. [PDF p. 3/printed 818, componentwise convention; PDF p. 12/printed 827, Lemma 4.3]",
+        "ubar must remain variant-sensitive: u for s.p.r.a. and u^2 for d.p.r.a. [PDF p. 10/printed 825, Lemma 4.1]",
+        "The four terms of the finite bound, their multiplication order, and the exponent m must all be preserved. [PDF p. 12/printed 827, Lemma 4.3]",
+        "The recurrence contains C_8 in its propagation factor, C_9 in its u^2 term, and C_7 in its ubar u term. [PDF p. 12/printed 827, recurrence in proof]",
+        "q is an exact residual sequence derived from computed iterates and corrections; it is not the computed residual r sequence. [PDF p. 9/printed 824, r_m definition; PDF p. 10/printed 825, q-definition]",
+        "The proof is an induction with the m=0 case supplied by Lemma 4.1. [PDF p. 12/printed 827, final proof sentences]"
+      ]
+    }
+  ],
+  "paper_id": "P08",
+  "paper_sha256": "f520066b46331dcbf25e51345c5ff5ffffe8fcad573d7f46e68834f83b3a2c54",
+  "role": "paper-source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_locator_sha256": "3242b63a529acc04514175dadb3f98deebf67f847a6bf33be0b5bb7850f84391",
+  "task_ids": [
+    "P08-T1",
+    "P08-T2",
+    "P08-T3"
+  ]
+}

@@ -1,0 +1,244 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "555f9cd226dc5bd96cf0619cf9139d61109ee0d44b54d1b801c2f301f6ccb400",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For a real matrix A, real vector x, and row i, LocalDef001(A,x,i) = sum over j in Fin n of |A(i,j)| |x(j)|.",
+      "effect_on_target": "It supplies the final error contribution u sum_j |A(i,j)| |x(j)| and is also nested inside LocalDef002 to measure the magnitude propagation of Ainv applied to q.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "LocalDef002(A,Ainv,q,i) = sum over j in Fin n of |A(i,j)| LocalDef001(Ainv,q,j) = sum_j |A(i,j)| sum_k |Ainv(j,k)| |q(k)|.",
+      "effect_on_target": "It is the nonnegative quantity multiplied by u in the middle term of the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "For a real matrix A and vector x, LocalDef003(A,x,i) = sum over j in Fin n of A(i,j)x(j), the i-th coordinate of the matrix-vector product Ax.",
+      "effect_on_target": "It defines Ainv q in the update and rounding hypotheses, A(Ainv q) in the inverse-action hypothesis, and A(xNext-x) on the left-hand side of the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "Eq",
+      "meaning": "Eq(a,b) is exact propositional equality between two terms of the same type.",
+      "effect_on_target": "It makes both the inverse-action relation and the update formula exact equalities, rather than approximate relations.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type with n elements, conventionally represented by the natural indices 0 through n-1.",
+      "effect_on_target": "It fixes all matrices to n by n dimensions, all vectors to dimension n, and all coordinate quantifiers and sums to the same finite index set.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "HAdd.hAdd",
+      "meaning": "HAdd.hAdd selects the binary addition operation supplied by an HAdd instance.",
+      "effect_on_target": "With the supplied real instances, every occurrence is ordinary real addition in the update formula and in the right-hand sides of the bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "HMul.hMul",
+      "meaning": "HMul.hMul selects the binary multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "With the supplied real instances, it is ordinary real multiplication in matrix-vector products, weighted sums, and the terms multiplied by u.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "HSub.hSub",
+      "meaning": "HSub.hSub selects the binary subtraction operation supplied by an HSub instance.",
+      "effect_on_target": "With the supplied real instance, it forms the coordinatewise real difference xNext(j)-x(j) inside A(xNext-x).",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LE.le",
+      "meaning": "LE.le selects the less-than-or-equal relation supplied by an LE instance.",
+      "effect_on_target": "With the real order instance, it expresses 0 <= u and both componentwise absolute-value bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Nat",
+      "meaning": "Nat is the type of natural numbers, including zero.",
+      "effect_on_target": "The universally quantified natural number n determines the common matrix and vector dimension and permits the zero-dimensional case.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "OfNat.ofNat",
+      "meaning": "OfNat.ofNat interprets a natural-number literal in a type having the corresponding OfNat instance.",
+      "effect_on_target": "Together with the real zero instances, it interprets the literal 0 in the hypothesis 0 <= u as the real number zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Real",
+      "meaning": "Real is the scalar type of real numbers.",
+      "effect_on_target": "Every matrix entry, vector coordinate, scalar u, arithmetic expression, absolute value, and inequality in the proposition is real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Real.instAdd",
+      "meaning": "Real.instAdd equips the real numbers with their ordinary addition operation.",
+      "effect_on_target": "It determines the additions in xNext(i) = (Ainv q)(i) + x(i) + h(i) and in the right-hand sides of the inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Real.instAddGroup",
+      "meaning": "Real.instAddGroup supplies the additive-group structure of the real numbers, including additive inverses.",
+      "effect_on_target": "It is used by the definition of absolute value and supports the ordinary signed real arithmetic appearing in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instLE",
+      "meaning": "Real.instLE equips the real numbers with their ordinary less-than-or-equal relation.",
+      "effect_on_target": "It gives the standard meanings of nonnegativity and of all stated upper bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instMul",
+      "meaning": "Real.instMul equips the real numbers with their ordinary multiplication operation.",
+      "effect_on_target": "It determines all products in the matrix-vector sums, absolute-value majorants, and factors involving u.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instSub",
+      "meaning": "Real.instSub defines real subtraction by a-b = a+(-b).",
+      "effect_on_target": "It gives the ordinary coordinatewise difference xNext(j)-x(j) used in the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instZero",
+      "meaning": "Real.instZero supplies the ordinary real number zero.",
+      "effect_on_target": "It provides the lower endpoint in 0 <= u and the additive identity underlying empty finite sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real.lattice",
+      "meaning": "Real.lattice supplies the lattice operations associated with the usual order on the real numbers.",
+      "effect_on_target": "It allows abs(a) to be defined as max(a,-a), hence as the ordinary real absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Zero.toOfNat0",
+      "meaning": "Zero.toOfNat0 converts a Zero instance into an OfNat instance for the numeral 0.",
+      "effect_on_target": "It ensures that the numeral in the hypothesis 0 <= u denotes the real additive identity.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "abs",
+      "meaning": "For an ordered additive group, abs(a) is max(a,-a); on the real numbers this is the ordinary absolute value |a|.",
+      "effect_on_target": "It measures the componentwise magnitudes of h, Ainv q, x, q, A(xNext-x), and all matrix entries and vector coordinates inside LocalDef001 and LocalDef002.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "instHAdd",
+      "meaning": "instHAdd converts a homogeneous Add operation on a type into the corresponding homogeneous HAdd operation.",
+      "effect_on_target": "It routes every explicit HAdd occurrence on reals to ordinary real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "instHMul",
+      "meaning": "instHMul converts a homogeneous Mul operation on a type into the corresponding homogeneous HMul operation.",
+      "effect_on_target": "It routes every explicit HMul occurrence on reals to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "instHSub",
+      "meaning": "instHSub converts a homogeneous Sub operation on a type into the corresponding homogeneous HSub operation.",
+      "effect_on_target": "It routes the explicit subtraction xNext(j)-x(j) to ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "Fin.fintype",
+      "meaning": "Fin.fintype(n) supplies a finite enumeration of all elements of Fin n.",
+      "effect_on_target": "It makes the universal finite index set available to the sums defining LocalDef001, LocalDef002, and LocalDef003.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Finset.sum",
+      "meaning": "Finset.sum(s,f) is the additive sum of f over the finite set s.",
+      "effect_on_target": "It gives all matrix-vector and absolute-value majorant expressions their finite-sum meanings.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Finset.univ",
+      "meaning": "Finset.univ is the finite set containing every element of a finite type.",
+      "effect_on_target": "For Fin n, it makes each local definition sum over every coordinate j from 0 through n-1.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "Real.instAddCommMonoid supplies the commutative additive-monoid structure of the real numbers.",
+      "effect_on_target": "It provides the associative, commutative real addition and zero required to define all finite sums, including an empty sum as zero.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "n is an arbitrary natural number, possibly zero.",
+      "A and Ainv are arbitrary real n by n matrices, represented as functions Fin n -> Fin n -> Real.",
+      "x, q, h, and xNext are arbitrary real vectors of dimension n, represented as functions Fin n -> Real.",
+      "u is an arbitrary real scalar.",
+      "The conclusion is universally quantified over each coordinate i in Fin n; the hypotheses containing an index are likewise required at every coordinate.",
+      "There are no existentially quantified witnesses."
+    ],
+    "hypotheses": [
+      "u is nonnegative: 0 <= u.",
+      "Ainv acts as a right inverse of A on the particular vector q: for every i, sum_j A(i,j)(sum_k Ainv(j,k)q(k)) = q(i).",
+      "The next vector satisfies the exact componentwise update xNext(i) = (sum_j Ainv(i,j)q(j)) + x(i) + h(i) for every i.",
+      "The perturbation h satisfies the componentwise bound |h(i)| <= u |sum_j Ainv(i,j)q(j)| + u |x(i)| for every i."
+    ],
+    "conclusions": [
+      "For every i in Fin n, |sum_j A(i,j)(xNext(j)-x(j))| <= |q(i)| + u sum_j |A(i,j)| sum_k |Ainv(j,k)| |q(k)| + u sum_j |A(i,j)| |x(j)|."
+    ],
+    "mathematical_definitions": [
+      "All sums indexed by j or k range over Fin n; an empty sum is zero.",
+      "For any matrix M and vector v, (Mv)(i) = sum_j M(i,j)v(j).",
+      "LocalDef001(M,v,i) = sum_j |M(i,j)| |v(j)|.",
+      "LocalDef002(A,Ainv,q,i) = sum_j |A(i,j)| sum_k |Ainv(j,k)| |q(k)|.",
+      "The vector xNext-x is formed coordinatewise: (xNext-x)(j) = xNext(j)-x(j).",
+      "Every absolute value is the ordinary real absolute value; no vector or matrix norm occurs."
+    ],
+    "proposition_plain_english": "For every dimension n, real matrices A and Ainv, real vectors x, q, h, and xNext, and nonnegative real u, suppose that A(Ainv q) equals q exactly, that xNext = Ainv q + x + h componentwise, and that each |h(i)| is at most u times |(Ainv q)(i)| plus u times |x(i)|. Then, at every coordinate i, the absolute value of the i-th coordinate of A(xNext-x) is at most |q(i)| plus u times sum_j |A(i,j)| sum_k |Ainv(j,k)| |q(k)| plus u times sum_j |A(i,j)| |x(j)|."
+  },
+  "restrictions_and_vacuity_risks": [
+    "Ainv is not required to be an inverse of A as a matrix. The only encoded relation is A(Ainv q) = q for the single supplied vector q.",
+    "The statement imposes no invertibility, nonsingularity, rank, symmetry, or dimensional positivity condition on A or Ainv.",
+    "The scalar u is required only to be nonnegative; no upper bound such as u < 1 is encoded.",
+    "For a negative u, the antecedent 0 <= u is false, so the corresponding implication is vacuously true.",
+    "When n = 0, Fin n is empty, all coordinatewise hypotheses and the conclusion are vacuous, and the proposition carries no matrix or vector content.",
+    "As an implication, the proposition is also vacuously true whenever any required inverse-action, update, or rounding hypothesis is not satisfied.",
+    "The conclusion bounds |A(xNext-x)| componentwise. It does not bound a residual such as |A(xNext-x)-q|.",
+    "The quantities are exact real numbers. No floating-point type, rounding operation, computed-value predicate, or operational evaluation model is encoded.",
+    "The error estimates use entrywise absolute values and finite weighted sums, not a vector norm or induced matrix norm.",
+    "The vectors q, x, h, and xNext have no restrictions beyond the displayed hypotheses."
+  ],
+  "ambiguities": []
+}
