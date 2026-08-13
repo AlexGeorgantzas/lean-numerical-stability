@@ -1,0 +1,172 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P14-T1",
+  "paper_sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd",
+  "blind_translation_sha256": "d5a0ef51c7edd0b0d65f37202c4f3789bd28545c13157dfbe555336fe96e879c",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF has the required SHA-256. Section 3, printed pages 2316-2318, contains Algorithm 3.1, the positive exponential-sum analysis, equations (3.1)-(3.3), and the surrounding recursive-summation bounds.",
+      "translation_evidence": "The translation concerns a left-to-right computed sum of nonnegative terms and an addition-error bound, which is thematically located in the cited positive-summation passage.",
+      "reasoning": "The paper version and relevant source passage are correctly identified, although the translation does not preserve the full result found there."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper binds x in R^n, defines w_i=exp(x_i), distinguishes computed exponentials hat(w_i), the exact sum of computed exponentials tilde(s), the recursively computed hat(s), partial sums t_i, and Delta s, using indices 1 through n.",
+      "translation_evidence": "The translation instead binds an abstract fp package, arbitrary n in Nat, and an arbitrary nonnegative vector w:Fin n->Real indexed from 0; it has only S and a recursively computed sum.",
+      "reasoning": "Reindexing alone would be harmless, but the arbitrary input vector and fp package replace essential binders and omit x, exponential evaluations, tilde(s), partial sums, and Delta s."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The paper applies an exponential-error assumption to every evaluated component and an operation-level rounding model to the additions executed by Algorithm 3.1.",
+      "translation_evidence": "The translation universally quantifies a binary operation satisfying a global all-real-operands model, with a separate existential delta for each operand pair, before quantifying the vector.",
+      "reasoning": "The translation changes the modeled object's quantifier structure and entirely omits the per-component exponential-error witnesses. The paper's notational ambiguity about indexing delta_1 does not remove this mismatch."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes unshifted exponential evaluation, relative exponential error at most u, standard modeled additions, positivity of computed exponentials, fixed sequential order, and absence of overflow and underflow.",
+      "translation_evidence": "The translation assumes arbitrary nonnegative inputs, S!=0, (n truncated-minus 1)u<1, an exact left-zero law, and a global abstract addition model; it has no exponential-accuracy or overflow/underflow hypothesis.",
+      "reasoning": "Several paper hypotheses are missing, while nonzero-sum, finite-u validity, and exact left-zero assumptions not stated in the paper result are added."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The passage concludes a componentwise exponential error bound, two partial-sum-based recursive-addition bounds, a combined weighted bound, the printed equation (3.2), and hat(s)=s+Delta s with |Delta s|<=(n+1)us+O(u^2).",
+      "translation_evidence": "The sole conclusion is |computed-S|/|S|<=((n-1)u)/(1-(n-1)u), with natural truncated subtraction.",
+      "reasoning": "The translation omits nearly all conclusions of the paper passage and substitutes a different exact relative bound for recursive summation alone."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "The paper's nontrivial definitions include exp, exact and computed exponential terms, tilde(s), recursively rounded hat(s), indexed partial sums, and an additive perturbation.",
+      "translation_evidence": "The dependency ledger adequately explains Fin, finite summation, real absolute value and division, abstract fl_add, the recursive computed sum, and gamma_m, but contains no exponential-stage definitions or intermediate exact sum of computed exponentials.",
+      "reasoning": "The ledger is internally explicit, but it unfolds the operators of a different addition-only theorem and does not interpret all operators and definitions essential to the paper result."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "The paper explicitly separates s=sum w_i, tilde(s)=sum hat(w_i) evaluated exactly, and hat(s), which includes recursive-addition rounding.",
+      "translation_evidence": "The translation separates only S=sum w_i from its recursively computed value.",
+      "reasoning": "The omitted intermediate quantity prevents separate representation of exponential-evaluation error and summation error, an undebatable distinction in the paper."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The result is linked to Algorithm 3.1 lines 1-5: compute each unshifted exp(x_i) and accumulate the results sequentially in increasing index order.",
+      "translation_evidence": "The recursive definition preserves a fixed left-associated increasing-index sum but accepts already supplied arbitrary entries and performs no exponential evaluations.",
+      "reasoning": "Only the recursive-addition order is preserved; linkage to the paper's actual exponential-generation and accumulation algorithm is incomplete."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "The passage uses componentwise scalar absolute errors for exponential evaluations and scalar absolute forward errors for tilde(s) versus hat(s) and s versus hat(s); no vector norm occurs.",
+      "translation_evidence": "The translation uses ordinary scalar absolute value but states only a normalized scalar relative error.",
+      "reasoning": "The scalar absolute-value operator is preserved, but the componentwise exponential-error layer and the paper's absolute sum-error conclusions are absent."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The paper uses partial sums indexed 1 through n-1, coefficients n-1 and n+1-i in the summation stage, intended combined weights n+2-i, and the aggregate first-order constant n+1.",
+      "translation_evidence": "The translation uses m=n truncated-minus 1 and the single factor gamma_m=mu/(1-mu).",
+      "reasoning": "The n-1 count describes additions only and does not reproduce the exponential-stage contribution, weighted coefficients, or aggregate n+1 constant."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The paper invokes the standard floating-point model for basic operations, separately assumes relative accuracy for exp, and explicitly excludes overflow and underflow.",
+      "translation_evidence": "The translation postulates an arbitrary real binary operation satisfying a relative-error equation for all real operands, with no format, rounding mode, exponential evaluation, overflow, underflow, subnormal, NaN, or infinity semantics.",
+      "reasoning": "The abstract addition model captures a local algebraic rounding relation but does not match the paper's complete numerical model or exceptional-value assumptions."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper gives first-order non-strict upper bounds with unquantified O(u^2) remainders and an additive equality hat(s)=s+Delta s.",
+      "translation_evidence": "The translation gives an exact non-strict relative inequality with denominator 1-(n-1)u.",
+      "reasoning": "The direction of the upper bound agrees, but its exactness, normalization, domain, and logical content differ; it is not the same relation."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The paper combines componentwise exponential forward error with scalar absolute summation forward error and finally introduces an additive perturbation Delta s.",
+      "translation_evidence": "The translation states only scalar relative forward error of recursively summing exact supplied entries.",
+      "reasoning": "The translation substitutes a single relative summation error for the paper's two-stage forward-error analysis."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Every relevant paper bound retains O(u^2). Equation (3.2) is literally printed without the expected factor u, while the preceding line and equation (3.3) support an intended first-order interpretation.",
+      "translation_evidence": "The translation supplies the exact rational factor gamma_m and contains neither O(u^2) nor any account of the printed equation (3.2) discrepancy.",
+      "reasoning": "An exact gamma bound may expand to a first-order expression for fixed m, but the translation neither states that relationship nor preserves the paper's higher-order treatment and disclosed typographical ambiguity."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The paper treats finite real vectors x and strictly positive exact terms exp(x_i), together with their computed approximations.",
+      "translation_evidence": "The translation generalizes inputs to arbitrary nonnegative real vectors, including zero components, while specializing away the exponential stage and requiring a nonzero exact sum.",
+      "reasoning": "This is a mixed generalization and specialization, not a faithful restatement of the paper's domain."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "For n=1, the paper still permits exponential-evaluation error and its aggregate sum bound is not identically zero; the paper does not formulate a dimension-zero theorem.",
+      "translation_evidence": "For n=0 the hypotheses are inconsistent because S=0 yet S!=0, and for n=1 the computed sum is definitionally exact with a zero right-hand side.",
+      "reasoning": "Although nontrivial instances exist for n>=2, the translation introduces a vacuous zero-dimensional case and an unintended trivial singleton case relative to the paper's exponential computation."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translation proves only an addition-stage relative bound for already supplied inputs. It supplies no x, exponential evaluations, exponential-error bounds, intermediate tilde(s), weighted first-order conclusions, additive Delta s, or O(u^2) statement, so it cannot establish the paper result."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper's asymptotic analysis for exp-generated positive terms does not establish the translation's exact gamma bound for every abstract modeled addition operation and every arbitrary nonnegative vector, including vectors with zero components."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "algorithm-and-quantity-scope",
+      "paper_evidence": "Equations (3.1)-(3.3) analyze both computed exponentials and their recursive accumulation, with s, tilde(s), and hat(s) kept distinct.",
+      "translation_evidence": "The translation models only recursive addition of arbitrary exact entries and has no exponential stage or intermediate tilde(s).",
+      "impact": "The translated proposition is not the paper's two-stage error result."
+    },
+    {
+      "severity": "major",
+      "category": "conclusion-constants-and-error-form",
+      "paper_evidence": "The aggregate result is |Delta s|<=(n+1)us+O(u^2), supported by indexed first-order bounds.",
+      "translation_evidence": "The conclusion is an exact relative bound gamma_{n-1}=((n-1)u)/(1-(n-1)u).",
+      "impact": "The constant, normalization, finite-u form, and represented error sources all differ."
+    },
+    {
+      "severity": "major",
+      "category": "hypotheses-and-numerical-model",
+      "paper_evidence": "The paper assumes accurate exponential evaluation, standard floating-point additions, sequential execution, and no overflow or underflow.",
+      "translation_evidence": "The translation assumes a global abstract addition operation, exact left-zero behavior, nonzero sum, and (n-1)u<1, but does not model exp or exceptional values.",
+      "impact": "The theorem applies under a materially different contract."
+    },
+    {
+      "severity": "major",
+      "category": "higher-order-treatment",
+      "paper_evidence": "The source retains O(u^2), and equation (3.2) contains a documented missing factor u in its printed final line.",
+      "translation_evidence": "The exact gamma expression contains no O(u^2) remainder and does not disclose or represent the printed discrepancy.",
+      "impact": "The paper's asymptotic and textual meaning is replaced rather than translated."
+    },
+    {
+      "severity": "minor",
+      "category": "dimension-and-vacuity",
+      "paper_evidence": "The algorithm is presented for x in R^n and retains exponential error when n=1.",
+      "translation_evidence": "Natural dimensions include a vacuous n=0 branch and a definitionally exact n=1 branch.",
+      "impact": "Boundary dimensions do not preserve the paper computation's behavior."
+    }
+  ],
+  "rationale": "The PDF hash and source location were verified. The blind translation accurately describes an exact gamma_{n-1} theorem for left-to-right summation of nonnegative real inputs under an abstract addition model. The cited paper result instead analyzes unshifted exponential evaluation followed by recursive summation, distinguishes three sum quantities, and derives indexed first-order absolute bounds culminating in an (n+1)us+O(u^2) aggregate result. Because each statement omits or changes essential content needed by the other, neither implication holds and the translation is not-faithful-different."
+}

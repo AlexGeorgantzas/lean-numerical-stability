@@ -1,0 +1,16 @@
+{
+  "evidence_policy": "Use the referenced PDF and surrounding paper context as evidence. Do not use context.md or task.json paraphrases as semantic evidence.",
+  "paper_path": "paper_bencmark/reference_papers/P14_Accurately computing the log-sum-exp and softmax functions.pdf",
+  "paper_sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd",
+  "paper_version": "published journal version; IMA Journal of Numerical Analysis 41(4), 2021, printed pages 2311-2330",
+  "source_locations": [
+    {
+      "anchor": "positive exponential sum and unnumbered recursive-summation bounds preceding equations (3.2)-(3.3)",
+      "pdf_page": 7,
+      "printed_page": "2317",
+      "role": "positive recursive-summation error stage",
+      "section": "3. Basic algorithms and error analysis"
+    }
+  ],
+  "task_id": "P14-T1"
+}
