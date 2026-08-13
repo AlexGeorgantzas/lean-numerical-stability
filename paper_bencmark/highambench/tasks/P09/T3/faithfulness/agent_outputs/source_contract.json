@@ -1,0 +1,137 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "Equation (4.1) prints e(s_1t_1/N_1+...+s_mt_m/N_m), while the earlier one-dimensional transform writes exp(i2pi jk/N). (PDF p. 7, printed p. 763, anchor: equation (4.1); PDF p. 1, printed p. 757, anchor: equation (1.1))",
+      "impact": "The Fourier context strongly indicates e(u)=exp(i2pi u), but the contract should record that identification as inherited notation rather than a local explicit definition.",
+      "issue": "The complex-exponential shorthand e(u) in equation (4.1) is not locally defined."
+    },
+    {
+      "evidence": "The theorem displays the ratio with denominator Y_RMS and gives no nonzero-output hypothesis. (PDF p. 8, printed p. 764, anchor: Theorem 2(a))",
+      "impact": "The relative formula needs a nonzero-output condition or a convention for the zero transform, although the absolute telescoping inequality remains meaningful.",
+      "issue": "Theorem 2(a) divides by Y_RMS without stating Y_RMS!=0."
+    },
+    {
+      "evidence": "The sentence immediately before (4.2) says to take RMS values and use Cauchy-Schwarz, and (4.2) bounds the norm of a sum by the sum of norms. (PDF p. 8, printed p. 764, anchor: sentence and equation (4.2))",
+      "impact": "This affects the name of the supporting inequality, not the displayed bound that the contract must preserve.",
+      "issue": "The proof attributes equation (4.2) to Cauchy-Schwarz although the displayed operation is the triangle inequality for the RMS norm."
+    },
+    {
+      "evidence": "The proof is completed only after assuming [fl(X)]_RMS=[X]_RMS or [X]_RMS+O(epsilon). (PDF p. 9, printed p. 765, anchor: final sentence of the proof of part (a))",
+      "impact": "It is inherited proof context and should be retained as a hypothesis rather than treating Theorem 2(a) as unconditional for arbitrarily rounded inputs.",
+      "issue": "The input-representability condition is stated only at the end of the proof, not in Theorem 2's formal statement."
+    },
+    {
+      "evidence": "Theorem 2 writes K(N_l,gamma) for dimensions l=1,...,m, and Theorem 1 defines K(N,gamma) after factoring N=N_1...N_M. (PDF p. 8, printed p. 764, anchor: Theorem 2; PDF p. 3, printed p. 759, anchor: Theorem 1 definition of K)",
+      "impact": "Each dimension's K requires its own one-dimensional FFT factorization, but Section 4 does not introduce separate notation for those internal radix indices.",
+      "issue": "K(N_l,gamma) overloads N_l as a dimension size while Theorem 1 defines K using a separate radix factorization of its scalar transform order."
+    },
+    {
+      "evidence": "Theorem 2 uses K(N_l,gamma) for every l, while the earlier definition says gamma depends on how trigonometric values and arguments are computed for a transformation of a given order. (PDF p. 8, printed p. 764, anchor: Theorem 2(a); PDF p. 3, printed p. 759, anchor: definition of gamma)",
+      "impact": "The source does not clarify whether gamma is a common bound for all stages or whether dimension-specific gamma_l values have been collapsed into one bound.",
+      "issue": "The source uses one gamma symbol across all dimensions even though gamma was described as depending on computation for a transform of a given order."
+    }
+  ],
+  "contract_plain_english": "The multidimensional FFT is analyzed as a sequence of m one-dimensional FFTs. Its exact total error is decomposed into one local roundoff error per dimension, each propagated through the earlier exact transforms; taking RMS norms and applying the one-dimensional estimates gives a relative RMS bound whose first-order constant is the sum of K(N_l,gamma) over all dimensions. (PDF pp. 8-9, printed pp. 764-765, anchor: Theorem 2(a), telescoping decomposition, equation (4.2), and completion of the proof)",
+  "paper_batch_sha256": "348db3c4cffe4770d8510e9fec47ccdab62bf40c19935e431854786ba7f44db4",
+  "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "equation (4.1)",
+      "observation": "The multidimensional transform sums over s_l=0,...,N_l-1 for l=1,...,m and produces Y(t_1,...,t_m) from X(s_1,...,s_m).",
+      "pdf_page": 7,
+      "printed_page": "763"
+    },
+    {
+      "anchor": "definitions preceding Theorem 2 and Theorem 2(a)",
+      "observation": "The paper defines component error E=fl(Y)-Y and the RMS error normalized by N_1...N_m, then states [fl(Y)-Y]_RMS/Y_RMS <= epsilon sum_{l=1}^m K(N_l,gamma)+O(epsilon^2).",
+      "pdf_page": 8,
+      "printed_page": "764"
+    },
+    {
+      "anchor": "proof of Theorem 2(a), Z-system, telescoping decomposition, and equations (4.2)-(4.4)",
+      "observation": "The paper sets Z_0=Y, Z_m=X, and Z_{l-1}=T_l Z_l, expands the total computed error into one local roundoff term per dimension, bounds the RMS norm by the sum in (4.2), and records the one-dimensional error and norm-scaling relations (4.3)-(4.4).",
+      "pdf_page": 8,
+      "printed_page": "764"
+    },
+    {
+      "anchor": "continuation of the proof of Theorem 2(a)",
+      "observation": "After propagating all local errors, the paper uses [fl(Z_l)]_RMS=[Z_l]_RMS+O(epsilon), [Z_l]_RMS=(N_{l+1}...N_m)^(1/2)[X]_RMS, and assumes [fl(X)]_RMS=[X]_RMS or at least [X]_RMS+O(epsilon) to complete part (a).",
+      "pdf_page": 9,
+      "printed_page": "765"
+    },
+    {
+      "anchor": "Theorem 1 and definition of K(N,gamma)",
+      "observation": "The per-dimension constants in Theorem 2 refer back to the one-dimensional FFT constant K from Theorem 1, including the arithmetic and trigonometric roundoff model.",
+      "pdf_page": 3,
+      "printed_page": "759"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "The proof treats a multidimensional FFT as m successive one-dimensional FFTs T_m,...,T_1, accumulates one local floating-point error from each stage, and propagates later-stage errors through the preceding exact transforms. Each K(N_l,gamma) is inherited from the one-dimensional mixed-radix FFT analysis, whose matrix factorization covers Cooley-Tukey and Sande-Tukey variants. (PDF p. 2, printed p. 758, anchor: equation (2.2) and variant remark; PDF p. 8, printed p. 764, anchor: Z-system and telescoping decomposition)",
+    "binders": [
+      "m is the number of dimensions; for each l=1,...,m, dimension l has length N_l and indices s_l,t_l=0,...,N_l-1. (PDF p. 7, printed p. 763, anchor: equation (4.1) and its index clause)",
+      "X is the multidimensional input array, Y is its exact transform, and fl(Y) is the result of the nested floating-point computation. (PDF pp. 7-8, printed pp. 763-764, anchor: equation (4.1), definition of E, and nested fl expression in the proof)",
+      "Z_0=Y, Z_m=X, and Z_{l-1}=T_l Z_l for l=1,...,m, where T_l performs the one-dimensional transform in coordinate l. (PDF p. 8, printed p. 764, anchor: rewritten system following Theorem 2)"
+    ],
+    "conclusions": [
+      "[fl(Y)-Y]_RMS/Y_RMS <= epsilon sum_{l=1}^m K(N_l,gamma) + O(epsilon^2). (PDF p. 8, printed p. 764, anchor: Theorem 2(a))",
+      "The total error has the exact telescoping decomposition fl(Y)-Y = [fl(T_1 fl(Z_1))-T_1 fl(Z_1)] + T_1[fl(T_2 fl(Z_2))-T_2 fl(Z_2)] + ... + T_1...T_{m-1}[fl(T_m X)-T_m X]. (PDF p. 8, printed p. 764, anchor: telescoping display in the proof of Theorem 2)",
+      "Equation (4.2) bounds the total RMS error by the sum of the RMS norms of all propagated local errors: the first local T_1 error, then T_1 applied to the local T_2 error, through T_1...T_{m-1} applied to the local T_m error. (PDF p. 8, printed p. 764, anchor: equation (4.2))",
+      "The supporting relations are [fl(Z_{l-1})-Z_{l-1}]_RMS/[Z_l]_RMS <= epsilon sqrt(N_l)K(N_l,gamma)+O(epsilon^2) and [Z_{l-1}]_RMS=sqrt(N_l)[Z_l]_RMS. (PDF p. 8, printed p. 764, anchor: equations (4.3)-(4.4))"
+    ],
+    "constants_and_indexing": [
+      "Coordinate indices s_l and t_l are zero-based, while transform-stage indices l run from 1 to m; Z_0 is Y and Z_m is X. (PDF pp. 7-8, printed pp. 763-764, anchor: equation (4.1) index clause and Z-system)",
+      "The first-order coefficient is exactly sum_{l=1}^m K(N_l,gamma), with no extra m, sqrt(m), or product-of-dimensions factor in the relative RMS bound. (PDF p. 8, printed p. 764, anchor: Theorem 2(a))",
+      "For each one-dimensional size q, K(q,gamma) is the Theorem 1 mixed-radix constant sum of alpha over that size's radix factors plus (M-1)(3+2gamma). (PDF p. 3, printed p. 759, anchor: definition of K; PDF p. 8, printed p. 764, anchor: reference to Theorem 1)"
+    ],
+    "definitions_and_conventions": [
+      "E(t_1,...,t_m):=fl(Y(t_1,...,t_m))-Y(t_1,...,t_m). (PDF p. 8, printed p. 764, anchor: first definition on the page)",
+      "[fl(Y)-Y]_RMS={sum_{t_1}...sum_{t_m}|E(t_1,...,t_m)|^2/(N_1...N_m)}^(1/2). (PDF p. 8, printed p. 764, anchor: multidimensional RMS-error definition)",
+      "Y_RMS in the theorem denotes the RMS value of the exact multidimensional output, consistently with the same product normalization. (PDF p. 8, printed p. 764, anchor: definitions preceding and denominator in Theorem 2(a))",
+      "The Z_l are exact partial transforms, whereas fl(Z_l) denotes their floating-point approximations within the nested computation. (PDF p. 8, printed p. 764, anchor: Z-system and telescoping proof)"
+    ],
+    "error_notions": [
+      "The local errors are forward errors of each coordinate FFT, and the theorem controls their accumulated forward RMS error in the final multidimensional output. (PDF p. 8, printed p. 764, anchor: telescoping decomposition and Theorem 2(a))",
+      "The theorem's RMS error is relative to the exact output RMS value Y_RMS, not componentwise relative error and not maximum error. (PDF p. 8, printed p. 764, anchor: Theorem 2(a))"
+    ],
+    "exceptional_values": [
+      "No overflow, underflow, subnormal, NaN, infinity, or exceptional trigonometric-value behavior is covered by the stated multidimensional theorem or inherited arithmetic model. (PDF pp. 2-3, printed pp. 758-759, anchor: arithmetic and trigonometric models; PDF p. 8, printed p. 764, anchor: Theorem 2)"
+    ],
+    "higher_order_terms": [
+      "The telescoping identity is exact, and equation (4.2) itself has no big-O term. (PDF p. 8, printed p. 764, anchor: telescoping display and equation (4.2))",
+      "The per-stage estimate (4.3) and final Theorem 2(a) append O(epsilon^2), while replacing computed intermediate norms by exact norms introduces O(epsilon) changes that are absorbed into the final second-order remainder. (PDF pp. 8-9, printed pp. 764-765, anchor: equations (4.3), continuation of the proof, and Theorem 2(a))",
+      "The paper does not quantify uniformity of the remainder in m, the N_l, their radix factorizations, gamma, or X. (PDF pp. 8-9, printed pp. 764-765, anchor: Theorem 2(a) and its proof)"
+    ],
+    "hypotheses": [
+      "Y is the m-dimensional Fourier transform displayed in (4.1), with a sum over every coordinate index. (PDF p. 7, printed p. 763, anchor: equation (4.1))",
+      "The computed result is modeled by the nested order fl(T_1 fl(T_2 ... fl(T_m X)...)), so T_m is applied first and T_1 last. (PDF p. 8, printed p. 764, anchor: equation immediately before the telescoping decomposition)",
+      "Each coordinate transform is computed by a one-dimensional floating-point FFT to which Theorem 1 and K(N_l,gamma) apply. (PDF p. 8, printed p. 764, anchor: equation (4.3) and sentence invoking Theorem 1)",
+      "To finish the proof, the paper assumes [fl(X)]_RMS=[X]_RMS, or at least [fl(X)]_RMS=[X]_RMS+O(epsilon). (PDF p. 9, printed p. 765, anchor: final sentence of the proof of Theorem 2(a))"
+    ],
+    "implicit_context": [
+      "Repeated use of (4.4) gives [Z_l]_RMS=(N_{l+1}...N_m)^(1/2)[X]_RMS, so every propagated first-order local error acquires the same full-transform scale before division by Y_RMS. (PDF p. 9, printed p. 765, anchor: continuation of the proof of Theorem 2(a))",
+      "The enclosing Theorem 2 also has part (b), which bounds maximum error by epsilon (N_1...N_m)^(1/2) sum_{l=1}^m K(N_l,gamma)+O(epsilon^2); the selected T3 claim is the RMS accumulation in part (a). (PDF p. 8, printed p. 764, anchor: Theorem 2(a)-(b))"
+    ],
+    "norms": [
+      "The multidimensional RMS norm divides the total sum of squared magnitudes by the product N_1...N_m before taking the square root. (PDF p. 8, printed p. 764, anchor: RMS-error definition)",
+      "Each exact coordinate transform scales RMS by sqrt(N_l), as stated in (4.4). (PDF p. 8, printed p. 764, anchor: equation (4.4))",
+      "Equation (4.2) uses a non-strict upper bound by the sum of the RMS norms of all m propagated local errors. (PDF p. 8, printed p. 764, anchor: equation (4.2))"
+    ],
+    "numerical_model": [
+      "Each one-dimensional stage inherits fl(a+b)=a(1+theta epsilon)+b(1+theta epsilon) and fl(ab)=ab(1+theta epsilon), with theta in [-1,1]. (PDF p. 2, printed p. 758, anchor: equations (3.1)-(3.2); PDF p. 8, printed p. 764, anchor: invocation of Theorem 1)",
+      "The analysis also inherits the absolute sine-and-cosine error model with gamma>=0: computed sine or cosine equals the exact value plus gamma theta epsilon. (PDF p. 3, printed p. 759, anchor: trigonometric error model; PDF p. 8, printed p. 764, anchor: K(N_l,gamma) in Theorem 2)",
+      "The proof is deterministic and normwise; it does not invoke a statistical independence or mean-square roundoff model. (PDF p. 8, printed p. 764, anchor: telescoping decomposition and equation (4.2))"
+    ]
+  },
+  "task_id": "P09-T3",
+  "undebatable_constraints": [
+    "The final relative RMS coefficient is the sum of the m one-dimensional constants K(N_l,gamma). (PDF p. 8, printed p. 764, anchor: Theorem 2(a))",
+    "The RMS normalization uses the full product N_1...N_m. (PDF p. 8, printed p. 764, anchor: multidimensional RMS definition)",
+    "The computation order is nested, with T_m applied first and T_1 last, and the telescoping decomposition contains one propagated local error for every stage. (PDF p. 8, printed p. 764, anchor: nested fl expression and telescoping display)",
+    "Equation (4.2) preserves all m summands and uses <=. (PDF p. 8, printed p. 764, anchor: equation (4.2))",
+    "The proof relies on the sqrt(N_l) exact norm scaling (4.4) and the one-dimensional stage estimate (4.3). (PDF p. 8, printed p. 764, anchor: equations (4.3)-(4.4))",
+    "The proof's input condition [fl(X)]_RMS=[X]_RMS or [X]_RMS+O(epsilon) cannot be silently dropped. (PDF p. 9, printed p. 765, anchor: final sentence of the proof of Theorem 2(a))"
+  ]
+}

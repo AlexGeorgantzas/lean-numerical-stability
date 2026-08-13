@@ -1,0 +1,432 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P09-T3",
+  "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
+  "dossier_sha256": "2862d383d371da3e648a939a508f25d0b4ae69015a9a91d488f5b5a413811d64",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.p09Rms",
+      "reuse_sha256": "72c205fc0ddf04451f0901516e2a443d8d9a31fc541ab9054238aa7860abadd6",
+      "effect_on_target": "Defines each target RMS as the real Euclidean norm divided by sqrt(n).",
+      "paper_match": "For positive n this is sqrt(sum_j x_j^2/n), matching normalized RMS after flattening a real representation. The target separately fails to identify n with N_1...N_m or encode complex entries.",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p09VectorSum",
+      "interpretation": "This definition forms the pointwise finite sum: at coordinate j it returns the sum of term i j over every i in Fin m.",
+      "effect_on_target": "The hdecomp hypothesis identifies total exactly with the pointwise sum of all m local term vectors.",
+      "paper_match": "It represents the paper's telescoping sum if each term has already been chosen as one propagated local FFT error. Propagation and the FFT origin of those terms are not encoded by this definition.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.p09VecNorm2",
+      "reuse_sha256": "d29b679e5a807f416243054fc723877481ad14f66c96a9a1891f6394ef48c67e",
+      "effect_on_target": "Supplies the nonnegative Euclidean-norm numerator used by p09Rms.",
+      "paper_match": "This matches the norm underlying the paper's RMS for a real vector or a real-equivalent encoding of a complex vector.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.p09VecNorm2Sq",
+      "reuse_sha256": "718f6c94acd938cf089fd5133847779707008aab4b891b43381a1082f91737c2",
+      "effect_on_target": "Aggregates squared real coordinates before the square root in every RMS expression.",
+      "paper_match": "It matches squared Euclidean magnitude for real coordinates; complex modulus squared requires an unstated real-equivalent encoding.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "Eq",
+      "interpretation": "Eq is Lean's exact propositional equality between two values of the same type.",
+      "effect_on_target": "It makes hdecomp an exact equality of functions Fin n -> Real, hence pointwise equality at every coordinate.",
+      "paper_match": "The paper's telescoping decomposition is exact before applying the RMS inequality, so exact equality is appropriate.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "Fin",
+      "reuse_sha256": "cd79814e865955529feeef9c171bd40df69b753354e8ddc1c2ff1f6366c9f17e",
+      "effect_on_target": "Fin m indexes the local terms and Fin n indexes coordinates of each flattened real vector.",
+      "paper_match": "Fin m is a harmless zero-based reindexing of paper stages 1,...,m. Fin n can index a flattened output, although the target gives no equation n=N_1...N_m.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "Fin.fintype",
+      "reuse_sha256": "67c1719acafb19f1b140d697ed4656a3d2dd83887ec46571ff88cd7ed6ad38a3",
+      "effect_on_target": "Provides complete finite enumeration for all stage and coordinate sums.",
+      "paper_match": "Complete enumeration matches the paper's sums over every stage and output index.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "Finset.sum",
+      "reuse_sha256": "5288ef8106ecb795c3363416fd73460d33935c60506911e876868f2c36768f05",
+      "effect_on_target": "Forms the pointwise term sum and the scalar sums of K and remainder.",
+      "paper_match": "Ordinary finite summation matches equation (4.2) and the coefficient sum in Theorem 2(a).",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "Finset.univ",
+      "reuse_sha256": "28acb81272d20c2cd8ff3732b49f52daa1c40525aad8d36f7b55ea345e62973c",
+      "effect_on_target": "Makes each Finset.sum range over every element of the applicable Fin type.",
+      "paper_match": "This preserves all m summands, as required by equation (4.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "HAdd.hAdd",
+      "interpretation": "HAdd.hAdd selects the heterogeneous addition operation supplied by an HAdd instance.",
+      "effect_on_target": "With the displayed real instances, it implements ordinary real addition between the first-order budget and remainder sums.",
+      "paper_match": "Ordinary addition is the operation used to accumulate the paper's local bounds and higher-order terms.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "HMul.hMul",
+      "reuse_sha256": "90f5eb353285dcf746f7822944feee7c2497fbe0e2a622c03ba11b36d0af57a3",
+      "effect_on_target": "Provides the multiplications in epsilon*K(i)*yRms and epsilon*(sum K)*yRms.",
+      "paper_match": "The scalar multiplication pattern matches the absolute form of the paper's first-order relative bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "LE.le",
+      "reuse_sha256": "66d8fc8aa022f66660f4a24a1b114c84bf44df579a79d815a683f9a47623ca93",
+      "effect_on_target": "Provides the non-strict inequalities in every local premise and in the conclusion.",
+      "paper_match": "The paper's equations (4.2), (4.3), and Theorem 2(a) all use non-strict upper bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "Nat",
+      "reuse_sha256": "d7519eafed2c54cc55e07fd66bcdbe97860973add8eec42fc9c9bda67fb5cd87",
+      "effect_on_target": "Types m and n as arbitrary nonnegative cardinalities, including zero.",
+      "paper_match": "Natural cardinalities are appropriate, but the paper uses positive dimension counts and positive transform lengths; the target does not enforce the paper-relevant positivity.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Real",
+      "reuse_sha256": "71b25a45c25a5a950913a7b2dbf4f8410170fa7c902e552a3fd0380abc0f4467",
+      "effect_on_target": "Makes vector entries, epsilon, yRms, K values, remainders, and all bounds exact real numbers.",
+      "paper_match": "Real scalars are correct for RMS values and error constants. Real vector entries require an unstated encoding because the paper's Fourier data and errors are complex.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instAdd",
+      "interpretation": "Real.instAdd is the Add Real structure whose operation is ordinary real addition.",
+      "effect_on_target": "It supplies addition inside p09VectorSum and between scalar budget components.",
+      "paper_match": "This is the ordinary addition used in the paper's telescoping identity and accumulated bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instAddCommMonoid",
+      "reuse_sha256": "30221d0dbd687d326ed38f104ed0fa7ba456b2ba5be10199815d43c92e52ce3d",
+      "effect_on_target": "Supplies real zero and commutative addition for all Finset sums, including empty sums.",
+      "paper_match": "It correctly implements finite real sums; the empty m=0 case has no paper counterpart.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instLE",
+      "reuse_sha256": "87866b29bc0bab98dff0c087a43cd7459dfe809b0fcf072c7aa1343b4b7e5570",
+      "effect_on_target": "Interprets all target inequalities using the standard real order.",
+      "paper_match": "This matches the order used by the paper's numerical upper bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instMul",
+      "reuse_sha256": "39d48a732a2a33f83139bbc6cb85e6fc66d0c5684ec46fc6f615b22cdcde4bbf",
+      "effect_on_target": "Interprets all displayed products as ordinary real multiplication.",
+      "paper_match": "This matches multiplication of epsilon, K, and the RMS scale in the paper's bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "instHAdd",
+      "interpretation": "instHAdd lifts a homogeneous Add operation to HAdd by using the same Add.add operation on both operands.",
+      "effect_on_target": "It resolves HAdd on Real to the ordinary real addition supplied by Real.instAdd.",
+      "paper_match": "No nonstandard addition is introduced; the resulting operation matches the paper's scalar and vector sums.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "instHMul",
+      "reuse_sha256": "2442771e163b14ff68ef1c6c0257b7060bb52d0e568fade6d7214a7ed2e23515",
+      "effect_on_target": "Lifts ordinary real multiplication to the HMul operations shown in the explicit type.",
+      "paper_match": "It introduces no semantic difference from the paper's ordinary scalar products.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "DivInvMonoid.toDiv",
+      "reuse_sha256": "76a67940d6613ef7969675aa3d226a144bf1139d160483038c80ee5a357dd236",
+      "effect_on_target": "Supplies the real division used internally by p09Rms.",
+      "paper_match": "Division by sqrt(n) implements RMS normalization for positive n; Lean's totalized zero division creates a degenerate n=0 case absent from the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "HDiv.hDiv",
+      "reuse_sha256": "b64f8629edb00501ebd84ba62cf9ef9b7437bfda3448a94bcbd97cd7559a8539",
+      "effect_on_target": "Selects the division operation used in the definition of p09Rms.",
+      "paper_match": "With the real instances it gives the ordinary division needed for RMS normalization.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "Nat.cast",
+      "reuse_sha256": "937c28935d916b91029fc66081257a960d934e971654415d0cfbe3c179aacca6",
+      "effect_on_target": "Casts the vector cardinality n to Real before taking its square root.",
+      "paper_match": "This is the standard conversion required to normalize by the real square root of a finite cardinality.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instDivInvMonoid",
+      "reuse_sha256": "ce3be1507c38e8e8aab4532c83e37e1306c6e99ee071b19865e356b9828042aa",
+      "effect_on_target": "Provides ordinary real inversion and division to p09Rms.",
+      "paper_match": "It matches ordinary RMS normalization on paper-relevant positive cardinalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "Real.instNatCast",
+      "reuse_sha256": "241de7bc337bcfbc9e6893272d04cb2fef013e204b77c81090e61d0c153551da",
+      "effect_on_target": "Makes the cast of n the canonical nonnegative real number.",
+      "paper_match": "This matches the paper's use of transform cardinalities as real normalization factors.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "Real.sqrt",
+      "reuse_sha256": "e269785d16bc98a2df37cfe84cf49d662f8eefb644892aa7511d6b9997736ecd",
+      "effect_on_target": "Takes the principal square roots in the Euclidean norm and RMS denominator.",
+      "paper_match": "The nonnegative principal root matches the paper's RMS convention.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "instHDiv",
+      "reuse_sha256": "c8336ab7caf16b5ed3fe6c7da7a3ba7e02410e11bc0223c048646d06775756cb",
+      "effect_on_target": "Lifts real division to the HDiv operation used by p09Rms.",
+      "paper_match": "It preserves ordinary real division and introduces no paper-level discrepancy.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "HPow.hPow",
+      "reuse_sha256": "84bd0ac8320aeef45754d420074f5c42d59e1075dcab88407d17cc3c71f3a862",
+      "effect_on_target": "Provides exponentiation for each squared coordinate in p09VecNorm2Sq.",
+      "paper_match": "Exponent two matches the squared magnitudes used in an RMS norm for real coordinates.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "Monoid.toNatPow",
+      "reuse_sha256": "218460eb742e368d57358aa321233404b48243177028b181e528fa71d6690f52",
+      "effect_on_target": "Interprets the natural power as repeated real multiplication, so power two is an ordinary square.",
+      "paper_match": "This matches the paper's sum of squared error magnitudes in a real representation.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "OfNat.ofNat",
+      "reuse_sha256": "ac2073e314c31df0d66cc11bc463c1a740e8aa6cca22c4bfb210da1f5a6190b2",
+      "effect_on_target": "Interprets the numeral used as the exponent in each coordinate square.",
+      "paper_match": "The resulting exponent is exactly two, as required for RMS.",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "Real.instMonoid",
+      "reuse_sha256": "5435298d44bb1656378a4f37e919e8c82091e6a069d59cf5055f96c91f7716a0",
+      "effect_on_target": "Supplies real one and multiplication for natural powers.",
+      "paper_match": "It gives ordinary real squaring, consistent with the paper's norm calculation.",
+      "status": "pass"
+    },
+    {
+      "id": "D032",
+      "name": "instHPow",
+      "reuse_sha256": "e631454bb089cf5a979f267aa7525d2f848a888d0e2ff32dd74cdb1cceda2aac",
+      "effect_on_target": "Lifts natural-power evaluation to the HPow expression in p09VecNorm2Sq.",
+      "paper_match": "It introduces no difference from ordinary coordinate squaring.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "instOfNatNat",
+      "reuse_sha256": "17ecac36244e6f1109e5f13d5088144ea8eb6f8e5a49fa472d12f29340ba6d40",
+      "effect_on_target": "Interprets the natural numeral 2 as itself for the exponent.",
+      "paper_match": "This correctly fixes the norm's exponent at two.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "PDF printed pages 763-765 contain Section 4, equation (4.1), Theorem 2(a), the exact telescoping decomposition, equations (4.2)-(4.4), and completion of the proof.",
+      "lean_evidence": "The verified dossier is for HighamBench.p09_t3_multidimensional_rms_error_budget and exposes an RMS accumulation proposition.",
+      "reasoning": "The cited paper version and surrounding passage are the correct source for multidimensional RMS error accumulation."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper has m coordinate dimensions with separate positive lengths N_l, complex arrays X and Y indexed by tuples, exact transforms T_l, and partial transforms Z_l.",
+      "lean_evidence": "Lean has only m and one flat length n, arbitrary real vectors term i and total, and arbitrary scalar functions K and remainder; it has no N_l, tuple index type, complex data, X, Y, T_l, or Z_l.",
+      "reasoning": "The binders permit an abstract flattened real-vector lemma but do not assign the types and dimensions required by the paper result."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "In the paper, each K(N_l,gamma), local error, propagated term, and higher-order contribution depends on the corresponding FFT stage, dimensions, arithmetic model, and input.",
+      "lean_evidence": "Lean universally quantifies K and remainder independently of all algorithmic data, then assumes hdecomp and hlocal for those arbitrary choices.",
+      "reasoning": "The paper-derived dependencies are replaced by unrestricted parameters and premises; in particular an asymptotic remainder is not represented with its required existential dependence and bound."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The proof uses the nested coordinate FFTs, Theorem 1's floating-point estimates, positive transform lengths, exact norm scaling, and the condition that fl(X) has the same RMS as X up to O(epsilon). The relative ratio also needs nonzero Y_RMS to be defined.",
+      "lean_evidence": "Lean assumes only hdecomp and hlocal. It has no positivity, nonzero-output, input-representability, FFT-stage, or floating-point-model hypotheses, and instead assumes the key local estimates outright.",
+      "reasoning": "The hypothesis sets do not match; the abstract assumptions conceal rather than formalize the paper's substantive hypotheses."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Theorem 2(a) concludes a relative forward RMS bound for the computed multidimensional FFT with coefficient sum_l K(N_l,gamma) and an O(epsilon^2) remainder.",
+      "lean_evidence": "Lean concludes only an absolute conditional bound for arbitrary total and terms, with arbitrary yRms, K, and remainder values.",
+      "reasoning": "The proposition does not conclude that any FFT computation satisfies the premises or the paper's relative asymptotic error bound."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "The source uses complex Fourier transforms T_l, propagated local errors, RMS based on complex magnitudes, the defined one-dimensional K(N_l,gamma), and asymptotic O notation.",
+      "lean_evidence": "The local operators unfold to a pointwise real-vector sum and normalized real Euclidean norm. K and remainder are uninterpreted functions, and no Fourier or asymptotic operator occurs.",
+      "reasoning": "The Lean operators are understood, but key paper definitions are omitted and replaced by unconstrained data."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "The paper distinguishes exact Y and Z_l from computed fl(Y) and fl(Z_l), and each telescoping term is a computed-minus-exact local error propagated by exact transforms.",
+      "lean_evidence": "term and total are arbitrary real vectors with no binders for exact outputs, computed outputs, or floating-point approximations.",
+      "reasoning": "Nothing in the proposition ensures that total is fl(Y)-Y or that any term is a local computed error."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Theorem 2 analyzes fl(T_1 fl(T_2 ... fl(T_m X))) and invokes the one-dimensional mixed-radix FFT bound at every stage.",
+      "lean_evidence": "The target mentions no FFT, T_l, nesting order, matrix factorization, stage execution, or rounding operation.",
+      "reasoning": "The proposition is a generic norm-budget lemma and remains true without any algorithm or execution model."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "The paper uses the complex multidimensional RMS sqrt(sum |E(t_1,...,t_m)|^2/(N_1...N_m)) and divides by the exact output RMS Y_RMS.",
+      "lean_evidence": "p09Rms is a real-vector norm divided by sqrt(n), n is not tied to N_1...N_m, and yRms is not required to equal the RMS of an exact output.",
+      "reasoning": "A flattening or real-equivalent encoding could preserve the homogeneous inequality, but the necessary representation and normalization links are absent."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The first-order coefficient is exactly the sum over l=1,...,m of the defined constants K(N_l,gamma), with each N_l tied to a coordinate FFT.",
+      "lean_evidence": "Lean sums arbitrary K i over Fin m. The zero-based stage reindexing is harmless, but there are no N_l, gamma, radix factorizations, or constraints identifying K i with the paper constant.",
+      "reasoning": "The syntactic sum shape matches, while the constants and their parameter dependence do not."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Each stage inherits the paper's floating-point addition, multiplication, and absolute trigonometric-error models, including rounded or chopped precision assumptions and no treatment of exceptional values.",
+      "lean_evidence": "epsilon is an arbitrary exact real and the target contains no floating-point values, rounding mode, theta bounds, gamma, precision, overflow, underflow, NaN, or infinity conditions.",
+      "reasoning": "The target has no floating-point model and therefore cannot state the paper's roundoff result."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper gives a non-strict relative asymptotic inequality derived for the multidimensional FFT.",
+      "lean_evidence": "Lean also uses non-strict inequalities, but only as a conditional absolute triangle-budget result whose decisive local bounds are assumptions and whose remainder is unrestricted.",
+      "reasoning": "The direction and strictness match, but the logical strength does not."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The selected result bounds accumulated forward error fl(Y)-Y in RMS norm relative to the exact output RMS.",
+      "lean_evidence": "Neither total nor term is linked to computed-minus-exact output, and yRms is not linked to the exact output.",
+      "reasoning": "The proposition can describe arbitrary vector decompositions, so it does not preserve the paper's forward-error notion."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "The telescoping identity and equation (4.2) are exact, while the stage estimates and final theorem have O(epsilon^2) terms obtained after absorbing O(epsilon) intermediate-norm perturbations.",
+      "lean_evidence": "remainder i is an arbitrary real with no dependence on epsilon, no quadratic bound, no asymptotic quantifiers, and no uniformity condition.",
+      "reasoning": "Summing arbitrary remainders does not formalize a second-order remainder."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The result concerns complex multidimensional FFTs with one positive length per coordinate and a product-sized output index set.",
+      "lean_evidence": "The target is an abstract theorem for arbitrary finite real vectors, including m=0 and n=0, with no declared flattening, complex encoding, or FFT specialization.",
+      "reasoning": "Its broader abstract domain does not constitute faithful generalization because the proposition assumes away the algorithm-specific estimates that the benchmark result is meant to establish."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "Nonzero exactly representable inputs and positive FFT dimensions provide ordinary nonvacuous instances of the paper analysis.",
+      "lean_evidence": "For m=n=1, term 0 0=total 0=1, epsilon=yRms=K 0=1, and remainder 0=0 satisfy both premises and make the conclusion hold at equality.",
+      "reasoning": "The Lean implication is a genuine triangle-inequality budget and has nontrivial satisfying instances, although it is not the paper theorem."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean proposition does not derive hdecomp or hlocal from a multidimensional FFT, identify K with K(N_l,gamma), bind yRms to the exact output, or constrain the summed remainder to O(epsilon^2). Recovering Theorem 2(a) requires supplying precisely these missing paper-specific facts externally, so the proposition itself does not imply the selected result."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper establishes its inequality only for errors generated by the specified complex multidimensional FFT and floating-point model. It does not assert the Lean proposition's universal conditional statement for arbitrary real vectors, arbitrary K and remainder functions, arbitrary signs, or degenerate cardinalities. The generic triangle lemma is independently true, not a proposition implied by the selected FFT result."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "algorithm-linkage",
+      "paper_evidence": "Theorem 2(a) analyzes a nested sequence of coordinate FFTs, and its proof constructs one propagated local roundoff term for each T_l before applying equation (4.2).",
+      "lean_evidence": "The target quantifies arbitrary term and total vectors and assumes their decomposition and local bounds, with no FFT or floating-point computation present.",
+      "impact": "The target proves only a generic norm-budget implication and does not establish the benchmark's algorithmic roundoff claim."
+    },
+    {
+      "severity": "critical",
+      "category": "higher-order-terms",
+      "paper_evidence": "The final error has a first-order coefficient sum_l K(N_l,gamma) and a remainder specifically of order epsilon squared.",
+      "lean_evidence": "K and remainder are arbitrary functions; no condition makes K i equal the paper constant or remainder i quadratic in epsilon.",
+      "impact": "The conclusion can carry an arbitrarily large or unrelated budget and cannot be read as the paper's asymptotic estimate."
+    },
+    {
+      "severity": "major",
+      "category": "error-and-scale-linkage",
+      "paper_evidence": "The numerator is the forward error fl(Y)-Y and the denominator is the RMS of the exact multidimensional output Y.",
+      "lean_evidence": "total is not identified with fl(Y)-Y, terms are not identified with propagated local errors, and yRms is an arbitrary real.",
+      "impact": "Even the quantities on the two sides of the Lean inequality need not denote the paper's error or reference scale."
+    },
+    {
+      "severity": "major",
+      "category": "dimensions-and-norms",
+      "paper_evidence": "The RMS norm uses complex magnitudes and normalization by the product N_1...N_m over a multidimensional index set.",
+      "lean_evidence": "The target uses a flat real vector of unconstrained length n and provides no product-cardinality or complex-encoding relation.",
+      "impact": "A plausible flattening can be supplied externally, but the proposition does not state the representation needed to match the paper."
+    }
+  ],
+  "rationale": "The dependency inventory is semantically clear, and the Lean theorem is a nonvacuous finite-dimensional RMS triangle-budget lemma. Its pointwise sum and normalized Euclidean norm can model equation (4.2) after all propagated error terms and scales have already been supplied. However, the proposition omits the multidimensional FFT, exact/computed quantities, stage construction, one-dimensional K constants, floating-point model, output-RMS linkage, input condition, and quadratic remainder semantics. Those omissions are the substantive content connecting equation (4.2) to Theorem 2(a). Conversely, the paper's FFT-specific theorem does not assert the Lean theorem for arbitrary real vectors and arbitrary budgets. Therefore neither implication direction holds and the appropriate classification is not-faithful-different."
+}
+
