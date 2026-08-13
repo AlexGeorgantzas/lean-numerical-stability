@@ -1,0 +1,56 @@
+{
+  "accepted": true,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-13T15:10:56.158920+00:00",
+  "findings": [
+    {
+      "category": "specialization/generalization",
+      "impact": "The target is broader, not narrower: applying it to the real vector of complex component magnitudes recovers the paper result, while its universal real-vector statement is not supplied by the paper-context instance.",
+      "lean_evidence": "The target quantifies over every e : Fin n -> Real for every positive n.",
+      "paper_evidence": "Printed page 763 applies the max-versus-RMS inequality to e(j) = fl(y(j)) - y(j), a complex output-error vector for the FFT in Theorem 1.",
+      "severity": "note"
+    },
+    {
+      "category": "binder-and-scope generalization",
+      "impact": "The translation is not a literal restatement, but it is nonvacuously stronger and entails the paper's norm inequality by applying it to component magnitudes.",
+      "paper_evidence": "The paper binds e(j)=fl(y(j))-y(j) as an N-component complex FFT output error.",
+      "severity": "major",
+      "translation_evidence": "The translation universally binds an arbitrary n-component real vector."
+    },
+    {
+      "category": "algorithm-and-error linkage",
+      "impact": "The proposition loses the provenance and intended application of e, although those omissions do not weaken the exact algebraic inequality.",
+      "paper_evidence": "The selected conversion proves the maximum-error step of Theorem 1(b) for the paper's floating-point FFT.",
+      "severity": "major",
+      "translation_evidence": "No exact output, computed output, FFT, or roundoff model appears."
+    },
+    {
+      "category": "norm and constant preservation",
+      "impact": "The core norm semantics, dimension, indexing, non-strict relation, and coefficient are preserved exactly.",
+      "paper_evidence": "The paper uses a 1/N-normalized RMS norm and the exact coefficient sqrt(N).",
+      "severity": "note",
+      "translation_evidence": "The right-hand side is sqrt(n) times sqrt(sum_i e(i)^2)/sqrt(n), with Fin n indexing all coordinates."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "Given the paper's positive order N and complex output error e(i) = fl(y(i)) - y(i), instantiate Lean with the real vector r(i) = |e(i)|. Then p09Max r is max_i |e(i)| and p09Rms r is sqrt(sum_i |e(i)|^2)/sqrt(N), equal to the paper's RMS norm. The Lean conclusion is exactly the selected paper conversion.",
+      "verdict": "yes"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The selected passage asserts the conversion for the particular complex output-error vector arising in the enclosing FFT computation. It does not quantify over every arbitrary real vector or show that every such vector is realizable as an FFT output error. Therefore that paper-context instance alone does not imply Lean's universally quantified proposition.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "faithful-stronger",
+    "roundtrip": "faithful-stronger"
+  },
+  "rationale": "After unfolding every target dependency, the Lean statement is max_i |e_i| <= sqrt(n) * (sqrt(sum_i e_i^2)/sqrt(n)) for every positive n and real vector e. This matches the exact conversion displayed in the proof of Theorem 1(b). The paper's complex error vector is covered by instantiating Lean with its component magnitudes, and the RMS formulations are equal for n > 0. Lean removes algorithm-specific context and quantifies over all real vectors, which is genuine, satisfiable extra generality; the paper's fixed FFT-error instance does not imply that universal proposition. Hence the result is accepted as faithful-stronger, with no unclear dependency or semantic check requiring adjudication.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P09-T1"
+}

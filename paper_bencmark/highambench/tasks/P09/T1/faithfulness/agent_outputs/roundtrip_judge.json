@@ -1,0 +1,159 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P09-T1",
+  "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
+  "blind_translation_sha256": "ddd651280f0f3d2c83f26a8691fe8de80ad59172f4b987bd03805f5a7409d52d",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "PDF p. 7, printed p. 763, proof of Theorem 1(b), defines e(j)=fl(y(j))-y(j) and derives max_i |e(i)| <= sqrt(N)||e||_RMS.",
+      "translation_evidence": "The translation asserts N(e) <= sqrt(n)R(e), with N(e) the maximum absolute coordinate and R(e) the normalized RMS magnitude.",
+      "reasoning": "The translated inequality matches the selected max-versus-RMS conversion and its exact sqrt-dimension factor."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper binds an N-component complex output-error vector e(j)=fl(y(j))-y(j), indexed by 0,...,N-1.",
+      "translation_evidence": "The translation binds an arbitrary real-valued function e : Fin n -> Real.",
+      "reasoning": "The dimension and index set correspond, but the complex computed-output error binder is replaced by an arbitrary real vector."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The paper applies the inequality to the particular error produced by the floating-point FFT under discussion.",
+      "translation_evidence": "The translation universally quantifies over every positive n and every real vector e.",
+      "reasoning": "Universal quantification over arbitrary vectors is a genuine strengthening rather than preservation of the paper's contextual quantifier scope."
+    },
+    {
+      "id": "S04",
+      "status": "pass",
+      "paper_evidence": "The exact conversion needs only a positive number N of components and the paper's normalized RMS definition; it uses no nonzero-output hypothesis.",
+      "translation_evidence": "The sole hypothesis is 0 < n, ensuring sqrt(n) is nonzero; no coordinate restriction is imposed.",
+      "reasoning": "For the selected exact norm conversion, positivity is the appropriate substantive condition. The enclosing relative-error denominator issue does not enter this inequality."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "The selected conclusion is max_i |e(i)| <= sqrt(N)||e||_RMS; the preceding squared inequality is its nonnegative squared form.",
+      "translation_evidence": "The conclusion is max_i |e(i)| <= sqrt(n)(sqrt(sum_i e(i)^2)/sqrt(n)).",
+      "reasoning": "The central conclusion is complete. Because both sides are nonnegative, the translated unsquared inequality also yields the paper's squared precursor, and conversely."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "PDF pp. 1 and 7, printed pp. 757 and 763, define RMS using division by N, the infinity norm as a componentwise maximum, and use real square roots of sums of squared magnitudes.",
+      "translation_evidence": "D001-D036 interpret Fin n, the finite supremum norm, finite summation, real squaring, square root, division, multiplication, casts, and order; all are marked understood.",
+      "reasoning": "The dependency ledger unfolds every operator affecting the target, with no hidden operation changing the mathematical inequality."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "The paper distinguishes exact y from computed fl(y) and defines their output difference e(j)=fl(y(j))-y(j).",
+      "translation_evidence": "The translation treats e only as an arbitrary real vector and introduces neither y nor fl(y).",
+      "reasoning": "No rounded quantity is incorrectly identified as exact, but the exact-versus-computed relationship defining the paper's error is erased."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The conversion is applied to the output error of the one-dimensional mixed-radix floating-point FFT in Theorem 1.",
+      "translation_evidence": "The proposition is an algorithm-independent statement about every finite real vector.",
+      "reasoning": "The algebraic conversion remains applicable to the FFT error, but the translated statement itself contains no FFT or execution-model linkage."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "The paper uses ||e||_RMS=(sum_j |e(j)|^2/N)^(1/2) and ||e||_infinity=max_i |e(i)|.",
+      "translation_evidence": "R(e)=sqrt(sum_i e(i)^2)/sqrt(n) and N(e)=max_i |e(i)|.",
+      "reasoning": "For real coordinates, e(i)^2=|e(i)|^2, and for positive n the translated RMS expression equals the paper's normalized RMS norm."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "Both paper operations range over indices 0,...,N-1, and the factor is exactly sqrt(N).",
+      "translation_evidence": "Fin n indexes exactly 0,...,n-1, and the coefficient is exactly sqrt(n).",
+      "reasoning": "Dimension, indexing, coefficient, and normalization agree without offsets or extra parameter dependence."
+    },
+    {
+      "id": "S11",
+      "status": "not-applicable",
+      "paper_evidence": "Although Theorem 1 has floating-point and trigonometric error models, the selected max-versus-RMS conversion contains no epsilon, rounding operation, underflow, overflow, or exceptional-value case.",
+      "translation_evidence": "The translation is an exact real inequality and contains no floating-point model.",
+      "reasoning": "Floating-point-model details do not participate in the selected deterministic norm conversion."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "Both unnumbered displays in the proof of Theorem 1(b) use non-strict less-than-or-equal relations.",
+      "translation_evidence": "The translated conclusion uses <= in the same direction.",
+      "reasoning": "The relation's direction and strictness match; the broader vector quantification is assessed separately."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The paper's e is absolute componentwise forward output error, and its maximum is the maximum absolute output error.",
+      "translation_evidence": "The translation assigns no error semantics to e and treats it as an arbitrary vector.",
+      "reasoning": "The norm formula is preserved, but its interpretation as computed-minus-exact FFT output error is absent."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The two norm inequalities on PDF p. 7 are exact and contain no omitted terms; O(epsilon^2) occurs only in the surrounding FFT error estimates.",
+      "translation_evidence": "The translated inequality is exact and contains no approximation or remainder.",
+      "reasoning": "No higher-order term belongs in the selected conversion, so none has been lost or introduced."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The paper applies the conversion to an N-dimensional complex FFT output-error vector.",
+      "translation_evidence": "The translation specializes coordinates to Real while generalizing from an FFT error to every real vector.",
+      "reasoning": "This is not a literal type-and-domain match. The real-coordinate restriction does not prevent recovery of the paper claim, because the translation can be applied to the real vector i |-> |e(i)|."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "FFT order N is positive, and the norm inequality is a substantive bound valid for every corresponding error vector.",
+      "translation_evidence": "The hypothesis 0 < n is satisfiable, avoids division by zero, and leaves arbitrary real coordinates.",
+      "reasoning": "The positive-dimensional proposition is nonvacuous and is not true merely because of an impossible hypothesis or degenerate definition."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "Given the paper's complex error vector, instantiate the translated theorem with the real vector r(i)=|e(i)|. Then max_i |r(i)|=max_i |e(i)| and sum_i r(i)^2=sum_i |e(i)|^2, yielding exactly the paper's max-versus-RMS conversion. Squaring its nonnegative sides also recovers the preceding squared display."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper states the conversion for the particular complex output error arising in its FFT analysis. That contextual statement does not quantify over arbitrary real vectors, and no premise establishes that every real vector is such an FFT output error."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "major",
+      "category": "binder-and-scope generalization",
+      "paper_evidence": "The paper binds e(j)=fl(y(j))-y(j) as an N-component complex FFT output error.",
+      "translation_evidence": "The translation universally binds an arbitrary n-component real vector.",
+      "impact": "The translation is not a literal restatement, but it is nonvacuously stronger and entails the paper's norm inequality by applying it to component magnitudes."
+    },
+    {
+      "severity": "major",
+      "category": "algorithm-and-error linkage",
+      "paper_evidence": "The selected conversion proves the maximum-error step of Theorem 1(b) for the paper's floating-point FFT.",
+      "translation_evidence": "No exact output, computed output, FFT, or roundoff model appears.",
+      "impact": "The proposition loses the provenance and intended application of e, although those omissions do not weaken the exact algebraic inequality."
+    },
+    {
+      "severity": "note",
+      "category": "norm and constant preservation",
+      "paper_evidence": "The paper uses a 1/N-normalized RMS norm and the exact coefficient sqrt(N).",
+      "translation_evidence": "The right-hand side is sqrt(n) times sqrt(sum_i e(i)^2)/sqrt(n), with Fin n indexing all coordinates.",
+      "impact": "The core norm semantics, dimension, indexing, non-strict relation, and coefficient are preserved exactly."
+    }
+  ],
+  "rationale": "The blind translation erases the FFT-specific computed-error interpretation and changes complex output-error coordinates to arbitrary real coordinates, so several contextual semantic checks fail. Nevertheless, its universally quantified real-vector inequality is a genuine nonvacuous strengthening: applying it to the coordinate-magnitude vector of any complex FFT error gives the paper's exact max-versus-RMS result, including the equivalent squared inequality. The converse does not follow from the paper's context-specific statement. The appropriate classification is therefore faithful-stronger, with no unresolved evidence or implication requiring adjudication."
+}
+

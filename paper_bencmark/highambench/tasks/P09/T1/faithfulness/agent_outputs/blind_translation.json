@@ -1,0 +1,290 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "8aa8c74838d289cc9d2845e87499ea512ad6791656f406fcddf24b03452b85ac",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For a real-valued function e on Fin n, this is its norm under the standard finite function-space normed-ring structure, namely the maximum of |e(i)| over i in Fin n.",
+      "effect_on_target": "It supplies the left-hand side of the asserted inequality, the maximum absolute coordinate of e.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For e on Fin n, this is LocalDef003(e) divided by the real square root of the real cast of n, hence sqrt(sum_i e(i)^2) / sqrt(n).",
+      "effect_on_target": "It supplies the normalized Euclidean magnitude multiplied by sqrt(n) on the right-hand side.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "For e on Fin n, this is the real square root of LocalDef004(e), namely sqrt(sum_i e(i)^2).",
+      "effect_on_target": "It is the numerator in LocalDef002 and represents the Euclidean norm of e.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "For e on Fin n, this is the finite sum over all i in Fin n of e(i) raised to the second power.",
+      "effect_on_target": "It is the sum of coordinate squares beneath the square root in the right-hand side.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "Fin",
+      "meaning": "Fin n is the finite type of natural-number indices i satisfying i < n.",
+      "effect_on_target": "It makes e an n-coordinate real vector and determines the index set of the finite sum and maximum.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "HMul.hMul",
+      "meaning": "This selects heterogeneous multiplication from an HMul instance.",
+      "effect_on_target": "With the supplied real instance, it makes the right-hand side the ordinary real product sqrt(n) times LocalDef002(e).",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LE.le",
+      "meaning": "This selects the less-than-or-equal relation from an LE instance.",
+      "effect_on_target": "With the real-order instance, it expresses the asserted ordinary real inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LT.lt",
+      "meaning": "This selects the strict less-than relation from an LT instance.",
+      "effect_on_target": "With the natural-number instance, it expresses the hypothesis 0 < n.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "Nat",
+      "meaning": "This is the type of natural numbers.",
+      "effect_on_target": "It restricts the dimension n to a natural number.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Nat.cast",
+      "meaning": "This maps a natural number into a type equipped with a natural-number cast.",
+      "effect_on_target": "Using the real cast, it interprets n as a real number before taking its square root.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "OfNat.ofNat",
+      "meaning": "This interprets a natural-number literal in a type carrying the corresponding OfNat instance.",
+      "effect_on_target": "It interprets the literal 0 in the positivity hypothesis as the natural number zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Real",
+      "meaning": "This is the type of real numbers.",
+      "effect_on_target": "The coordinates, norms, sums, square roots, products, quotients, and inequality values are real.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Real.instLE",
+      "meaning": "This equips the real numbers with their standard less-than-or-equal relation.",
+      "effect_on_target": "It gives the conclusion its ordinary real-order interpretation.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Real.instMul",
+      "meaning": "This equips the real numbers with ordinary real multiplication.",
+      "effect_on_target": "It interprets the product on the right-hand side as real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instNatCast",
+      "meaning": "This equips the real numbers with the standard embedding of natural numbers into the reals.",
+      "effect_on_target": "It makes the occurrence of n inside sqrt(n) the corresponding nonnegative real number.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Real.sqrt",
+      "meaning": "This is the nonnegative real square-root operation; on an arbitrary real x its definition agrees with the square root of max(x, 0).",
+      "effect_on_target": "It forms sqrt(n) and sqrt(sum_i e(i)^2); both arguments are nonnegative here.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "instHMul",
+      "meaning": "This turns a homogeneous multiplication operation on a type into the corresponding HMul operation.",
+      "effect_on_target": "Applied to real multiplication, it connects HMul.hMul in the target to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "instLTNat",
+      "meaning": "This equips natural numbers with their standard strict order Nat.lt.",
+      "effect_on_target": "It makes the assumption exactly the natural-number inequality 0 < n.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "instOfNatNat",
+      "meaning": "This interprets each natural-number literal as that same natural number.",
+      "effect_on_target": "It ensures that the literal used in the hypothesis is natural-number zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "This extracts division from a division-and-inversion monoid structure.",
+      "effect_on_target": "For the reals, it provides the division used in LocalDef002.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Fin.fintype",
+      "meaning": "This gives Fin n its finite enumeration containing every index below n exactly once.",
+      "effect_on_target": "It permits both the function-space norm construction and summation over all coordinates.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "HDiv.hDiv",
+      "meaning": "This selects heterogeneous division from an HDiv instance.",
+      "effect_on_target": "With the real instance, it interprets LocalDef002 as ordinary real division by sqrt(n).",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Norm.norm",
+      "meaning": "This extracts the real-valued norm operation from a Norm structure.",
+      "effect_on_target": "It applies the finite function-space norm to e in LocalDef001.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "NormedCommRing.toNormedRing",
+      "meaning": "This forgets commutativity from a normed commutative ring while retaining its normed-ring operations.",
+      "effect_on_target": "It supplies each real coordinate with the normed-ring structure required by the function-space construction.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "NormedRing.toNorm",
+      "meaning": "This extracts the norm structure from a normed ring.",
+      "effect_on_target": "It exposes the function-space norm used by LocalDef001.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Pi.normedRing",
+      "meaning": "For a finite index type and normed-ring-valued coordinates, this equips the function type with its standard pointwise ring operations and finite supremum norm.",
+      "effect_on_target": "For Fin n to Real, it makes LocalDef001(e) equal to the maximum coordinate norm max_i |e(i)|.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This equips the real numbers with multiplication, inversion, and division, with division given by multiplication by an inverse.",
+      "effect_on_target": "It supplies ordinary real division for the quotient defining LocalDef002.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Real.normedCommRing",
+      "meaning": "This equips the real numbers with their standard normed commutative ring structure, whose norm is absolute value.",
+      "effect_on_target": "It supplies the coordinate norm and algebraic structure used to construct the function-space norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "instHDiv",
+      "meaning": "This turns homogeneous division on a type into the corresponding HDiv operation.",
+      "effect_on_target": "Applied to real division, it connects HDiv.hDiv in LocalDef002 to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Finset.sum",
+      "meaning": "This adds the values of a function over the elements of a finite set using a commutative additive monoid.",
+      "effect_on_target": "It forms the finite sum of all coordinate squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Finset.univ",
+      "meaning": "This is the finite set containing every element of a finite type.",
+      "effect_on_target": "For Fin n, it makes LocalDef004 sum over all n coordinate indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "HPow.hPow",
+      "meaning": "This selects exponentiation from an HPow instance.",
+      "effect_on_target": "With the real natural-power instance, it interprets e(i) raised to 2 as the square e(i)^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "Monoid.toNatPow",
+      "meaning": "This equips a monoid with exponentiation by natural numbers via repeated multiplication.",
+      "effect_on_target": "For the real multiplicative monoid, it gives the usual natural power used for each coordinate square.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This equips the real numbers with their standard commutative additive monoid structure.",
+      "effect_on_target": "It makes Finset.sum in LocalDef004 ordinary finite real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instMonoid",
+      "meaning": "This equips the real numbers with their standard multiplicative monoid structure.",
+      "effect_on_target": "It provides repeated real multiplication for the exponentiation e(i)^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "instHPow",
+      "meaning": "This turns an ordinary power operation into the corresponding heterogeneous-power operation.",
+      "effect_on_target": "It connects HPow.hPow in LocalDef004 to natural-number exponentiation of real coordinates.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "n is an implicitly quantified natural number.",
+      "e is an arbitrary function Fin n → Real, equivalently an n-coordinate real vector."
+    ],
+    "hypotheses": [
+      "The dimension is positive: 0 < n."
+    ],
+    "conclusions": [
+      "The maximum absolute coordinate of e satisfies max_{i in Fin n} |e(i)| ≤ sqrt(n) · (sqrt(sum_{i in Fin n} e(i)^2) / sqrt(n)). Since n > 0, this is equivalently max_{i in Fin n} |e(i)| ≤ sqrt(sum_{i in Fin n} e(i)^2)."
+    ],
+    "mathematical_definitions": [
+      "I_n = Fin n = {i in Nat : i < n}.",
+      "S(e) = sum_{i in I_n} e(i)^2.",
+      "L(e) = sqrt(S(e)), the Euclidean norm of e.",
+      "R(e) = L(e) / sqrt(n), the root-mean-square magnitude of the coordinates.",
+      "N(e) = max_{i in I_n} |e(i)|, the finite supremum norm.",
+      "The asserted inequality is N(e) ≤ sqrt(n) · R(e)."
+    ],
+    "proposition_plain_english": "For every positive natural-number dimension n and every real vector e with n coordinates, the largest absolute coordinate of e is at most the square root of n times the root-mean-square magnitude of its coordinates. Equivalently, the maximum absolute coordinate is at most the Euclidean norm."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The dimension is restricted to natural numbers and the substantive assertion assumes n > 0.",
+    "For n = 0, the outer implication has a false antecedent, so that branch of the universally quantified proposition is vacuous.",
+    "Positivity of n ensures that sqrt(n) is nonzero, so the division in LocalDef002 is mathematically well-defined without division by zero.",
+    "Lean's real division is total even at zero, but that convention does not affect the positive-dimensional case.",
+    "No restrictions are imposed on the real coordinates of e.",
+    "The proposition states only the upper bound; it does not state equality conditions, strictness, optimality, or any converse or lower bound."
+  ],
+  "ambiguities": []
+}
+

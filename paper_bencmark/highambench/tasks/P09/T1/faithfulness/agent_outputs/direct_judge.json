@@ -1,0 +1,435 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P09-T1",
+  "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
+  "dossier_sha256": "723a6d179bb99f10cc9c71c5f0fb76e66f99821583b79e73d5d36d6e8a388f32",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.p09Max",
+      "interpretation": "The definition is the norm of a finite real-valued function under the Pi normed-ring instance; for nonempty Fin n this is the supremum, hence the maximum, of the component absolute values.",
+      "effect_on_target": "It makes the left side p09Max e equal to max_i |e i| because hn makes Fin n nonempty.",
+      "paper_match": "This is the paper's infinity norm max_i |e(i)|.",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p09Rms",
+      "interpretation": "The definition divides p09VecNorm2 x by sqrt of the real cast of n.",
+      "effect_on_target": "It makes p09Rms e the Euclidean length sqrt(sum_i e_i^2) normalized by sqrt(n).",
+      "paper_match": "For n > 0 this equals sqrt((sum_i |e_i|^2)/n), the paper's RMS norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.p09VecNorm2",
+      "interpretation": "The definition is the principal real square root of p09VecNorm2Sq x.",
+      "effect_on_target": "It supplies sqrt(sum_i e_i^2) as the numerator of p09Rms.",
+      "paper_match": "For real values, or for the real vector of complex component magnitudes, this is the Euclidean norm used in the paper's RMS definition.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.p09VecNorm2Sq",
+      "interpretation": "The definition sums (x i)^2 over Finset.univ.",
+      "effect_on_target": "It is the sum of squares underlying the target's RMS quantity.",
+      "paper_match": "The paper sums |e(j)|^2 over j = 0,...,N-1; x_i^2 = |x_i|^2 for real x, and taking x_i = |e(i)| handles the paper's complex errors.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "Fin",
+      "interpretation": "Fin n is the finite type of natural indices strictly below n.",
+      "effect_on_target": "It gives e exactly n components indexed 0 through n-1.",
+      "paper_match": "This matches the paper's N output indices 0 through N-1.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "HMul.hMul",
+      "interpretation": "This operation projects the heterogeneous multiplication supplied by an HMul instance.",
+      "effect_on_target": "With instHMul and Real.instMul it interprets the target's right side as ordinary real multiplication.",
+      "paper_match": "The resulting product is exactly sqrt(N) times the RMS norm in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "LE.le",
+      "interpretation": "This operation projects the non-strict order relation supplied by an LE instance.",
+      "effect_on_target": "With Real.instLE it makes the theorem conclusion an ordinary real <= inequality.",
+      "paper_match": "The selected paper display also uses non-strict <=.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "LT.lt",
+      "interpretation": "This operation projects the strict order relation supplied by an LT instance.",
+      "effect_on_target": "With instLTNat it interprets hn as the natural-number condition 0 < n.",
+      "paper_match": "A Fourier-transform order and the denominator in the paper's RMS definition require N to be positive.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "Nat",
+      "interpretation": "Nat is the type of nonnegative integers.",
+      "effect_on_target": "It types the vector dimension n.",
+      "paper_match": "The paper's transform order N and component count are natural numbers.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "Nat.cast",
+      "interpretation": "This operation maps a natural number through the selected NatCast instance.",
+      "effect_on_target": "With Real.instNatCast it turns n into the real number used as the argument of sqrt.",
+      "paper_match": "The paper's factor sqrt(N) likewise treats the component count as a real scalar.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "OfNat.ofNat",
+      "interpretation": "This operation interprets a numeral through an OfNat instance.",
+      "effect_on_target": "With instOfNatNat it supplies the natural-number zero in hn.",
+      "paper_match": "It expresses the positivity condition on the component count and introduces no semantic mismatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "Real",
+      "interpretation": "Real is the exact real-number type used for vector entries, norms, square roots, products, and inequalities.",
+      "effect_on_target": "The target ranges over arbitrary real vectors rather than directly over complex FFT output errors.",
+      "paper_match": "The paper's inequality depends only on the real magnitudes |e(i)|, so applying the target to i |-> |e(i)| recovers the complex-error result; the arbitrary-real domain is a genuine generalization.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "Real.instLE",
+      "interpretation": "This instance supplies the standard order relation on real numbers.",
+      "effect_on_target": "It fixes the direction and non-strictness of the target comparison.",
+      "paper_match": "It matches the paper's real-valued norm inequality with <=.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Real.instMul",
+      "interpretation": "This instance supplies ordinary multiplication of real numbers.",
+      "effect_on_target": "It multiplies sqrt(n) by p09Rms e.",
+      "paper_match": "This matches the paper's scalar factor sqrt(N) multiplying the RMS norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instNatCast",
+      "interpretation": "This instance embeds natural numbers canonically into the reals.",
+      "effect_on_target": "It gives the nonnegative real dimension whose square root appears in the target.",
+      "paper_match": "This matches the standard interpretation of N in sqrt(N).",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "Real.sqrt",
+      "interpretation": "Real.sqrt is the nonnegative principal square root on reals.",
+      "effect_on_target": "It is used both in sqrt(n) and in the Euclidean numerator inside p09Rms; all arguments here are nonnegative.",
+      "paper_match": "It matches the paper's principal square roots in the RMS definition and the exact sqrt(N) factor.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "instHMul",
+      "interpretation": "This instance lifts a homogeneous Mul operation to HMul.",
+      "effect_on_target": "It selects Real.instMul for the displayed product.",
+      "paper_match": "It adds only elaboration machinery; the resulting operation is the paper's ordinary real scalar multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "instLTNat",
+      "interpretation": "This instance defines the LT relation on Nat to be Nat.lt.",
+      "effect_on_target": "It makes hn exactly 0 < n in the usual natural-number order.",
+      "paper_match": "This matches the implicit positivity of the paper's transform order.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "instOfNatNat",
+      "interpretation": "This instance interprets each natural numeral as itself.",
+      "effect_on_target": "It makes the numeral in hn the natural number zero.",
+      "paper_match": "It has no divergent paper semantics and supports the correct positivity hypothesis.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "This projection supplies division from the real DivInvMonoid structure.",
+      "effect_on_target": "It interprets p09Rms as p09VecNorm2 e divided by sqrt(n).",
+      "paper_match": "For positive n this is the paper's 1/sqrt(N) RMS normalization.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "Fin.fintype",
+      "interpretation": "This instance enumerates every element of Fin n exactly once.",
+      "effect_on_target": "It supports both the finite Pi supremum norm and the univ sum over all n components.",
+      "paper_match": "It matches the paper's maximum and sum over all indices 0,...,N-1.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "HDiv.hDiv",
+      "interpretation": "This operation projects heterogeneous division from an HDiv instance.",
+      "effect_on_target": "With instHDiv and the real division instance it performs the quotient in p09Rms.",
+      "paper_match": "The quotient implements the paper's normalization by sqrt(N).",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "Norm.norm",
+      "interpretation": "This operation projects the norm function from a Norm instance.",
+      "effect_on_target": "Through Pi.normedRing it gives p09Max the finite-function supremum norm.",
+      "paper_match": "For a nonempty finite index set this is the paper's maximum component magnitude.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "NormedCommRing.toNormedRing",
+      "interpretation": "This projection obtains a NormedRing structure from a NormedCommRing.",
+      "effect_on_target": "It supplies the real normed-ring structure needed to build the Pi normed-ring instance.",
+      "paper_match": "The inherited real norm is absolute value, which is the component magnitude needed by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "NormedRing.toNorm",
+      "interpretation": "This projection extracts a Norm operation from a NormedRing.",
+      "effect_on_target": "It exposes the finite-function norm used by p09Max.",
+      "paper_match": "Together with the Pi instance it produces the maximum of real component magnitudes, matching the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "Pi.normedRing",
+      "interpretation": "For a finitely indexed family of normed rings, this constructs the pointwise function normed ring with norm equal to the finite supremum of component norms.",
+      "effect_on_target": "For Fin n -> Real it makes p09Max e the maximum of |e i| when n > 0.",
+      "paper_match": "This is precisely the infinity norm used in the selected max-versus-RMS display.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "This instance supplies ordinary real inversion and division.",
+      "effect_on_target": "It determines the division by sqrt(n) in p09Rms; hn ensures the denominator is nonzero.",
+      "paper_match": "It matches the paper's RMS normalization and does not introduce partial or floating-point division.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "Real.normedCommRing",
+      "interpretation": "This is the standard normed commutative-ring structure on the reals, with ordinary arithmetic and absolute-value norm.",
+      "effect_on_target": "It supplies component norms for p09Max and arithmetic for squares, sums, products, and quotients.",
+      "paper_match": "These exact real operations implement the magnitudes and scalar arithmetic in the paper's deterministic norm inequality.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "instHDiv",
+      "interpretation": "This instance lifts a homogeneous Div operation to HDiv.",
+      "effect_on_target": "It selects ordinary real division for p09Rms.",
+      "paper_match": "It is elaboration infrastructure whose resolved operation matches division by sqrt(N) in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "Finset.sum",
+      "interpretation": "Finset.sum maps the summand over a finite set and adds the results in an additive commutative monoid.",
+      "effect_on_target": "It adds all squared entries in p09VecNorm2Sq.",
+      "paper_match": "This matches the paper's sum from j = 0 to N-1 of squared component magnitudes.",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "Finset.univ",
+      "interpretation": "Finset.univ is the finite set containing every element of a Fintype.",
+      "effect_on_target": "Here it makes the sum range over every i : Fin n.",
+      "paper_match": "This exactly matches the paper's complete N-component index range.",
+      "status": "pass"
+    },
+    {
+      "id": "D032",
+      "name": "HPow.hPow",
+      "interpretation": "This operation projects heterogeneous exponentiation from an HPow instance.",
+      "effect_on_target": "With instHPow and natural exponentiation it interprets (e i)^2 as the ordinary real square.",
+      "paper_match": "For real entries, and in particular complex-error magnitudes, this equals the squared magnitude in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "Monoid.toNatPow",
+      "interpretation": "This instance defines natural powers by repeated monoid multiplication.",
+      "effect_on_target": "For exponent 2 on Real it supplies the ordinary square used in p09VecNorm2Sq.",
+      "paper_match": "It matches the paper's second power |e(j)|^2.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "This instance supplies real zero and commutative addition.",
+      "effect_on_target": "It determines how Finset.sum combines the squared components.",
+      "paper_match": "It is the standard exact summation appearing in the paper's algebraic norm definition.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instMonoid",
+      "interpretation": "This instance supplies real one and multiplication.",
+      "effect_on_target": "It determines the natural-power operation used for exponent 2.",
+      "paper_match": "It yields ordinary real squaring, matching squared component magnitudes.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "instHPow",
+      "interpretation": "This instance lifts a Pow operation to HPow.",
+      "effect_on_target": "It connects the notation in p09VecNorm2Sq to Real natural exponentiation.",
+      "paper_match": "It adds no alternative semantics; the resulting square is the one required by the paper.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF hash is 9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758. Printed page 763, in the proof of Theorem 1(b), defines e(j) = fl(y(j)) - y(j) and displays max_i |e(i)| <= sqrt(N)||e||_RMS; printed pages 757 and 759 supply the norm definitions and enclosing theorem.",
+      "lean_evidence": "The verified packet hash is 723a6d179bb99f10cc9c71c5f0fb76e66f99821583b79e73d5d36d6e8a388f32 and the target is p09_t1_max_error_le_sqrt_card_mul_rms.",
+      "reasoning": "The exact cited passage, paper version, and surrounding definitions are the correct source for this target."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "The paper has N complex output-error components indexed 0,...,N-1; the displayed quantities use their real magnitudes.",
+      "lean_evidence": "Lean binds n : Nat, hn : 0 < n, and e : Fin n -> Real.",
+      "reasoning": "Fin n gives the correct dimension and index set. Although Lean's e is real rather than complex, the paper result is obtained by instantiating it with the real vector i |-> |fl(y(i)) - y(i)|; Lean additionally covers arbitrary real vectors."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "Within Theorem 1(b), N and the computed output error e are fixed and no witness is introduced by the norm conversion.",
+      "lean_evidence": "Lean universally quantifies n and then every e after assuming 0 < n.",
+      "reasoning": "The broader universal scope has no witness-dependence issue and directly specializes to the paper's fixed N and error vector."
+    },
+    {
+      "id": "S04",
+      "status": "pass",
+      "paper_evidence": "The exact conversion uses only N components and the normalized RMS definition; positivity of N is implicit in an FFT order and in division by N. Rounding-model hypotheses are used for Theorem 1(a), not for this conversion.",
+      "lean_evidence": "Lean assumes exactly hn : 0 < n and imposes no FFT or floating-point hypothesis.",
+      "reasoning": "The explicit positivity condition is appropriate, and omitting algorithmic hypotheses is a valid generalization because the selected inequality is deterministic and algorithm-independent."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "Printed page 763 first gives max_i |e(i)|^2 <= sum_j |e(j)|^2 and then the selected conversion max_i |e(i)| <= sqrt(N)||e||_RMS; substituting part (a) is a subsequent application.",
+      "lean_evidence": "Lean concludes p09Max e <= sqrt(n) * p09Rms e.",
+      "reasoning": "The target contains the selected square-root conversion. Under the unfolded nonnegative norms and n > 0, it is equivalent to the preceding squared display; the surrounding K(N,gamma) bound is outside this task's stated conversion."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The paper defines ||e||_infinity = max_i |e(i)| and ||e||_RMS = sqrt((sum_i |e(i)|^2)/N).",
+      "lean_evidence": "p09Max is the finite Pi supremum norm, while p09Rms is sqrt(sum_i e_i^2)/sqrt(n).",
+      "reasoning": "For n > 0, sqrt(sum)/sqrt(n) equals sqrt(sum/n), and real squaring equals squared absolute value. All nontrivial target operators therefore have the intended meaning."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper explicitly sets e(j) to the computed-minus-exact output difference fl(y(j)) - y(j).",
+      "lean_evidence": "Lean does not introduce exact or computed outputs; it quantifies a generic real vector e.",
+      "reasoning": "There is no conflation: the abstraction is instantiated with the component magnitudes of the paper's computed-minus-exact error. The exact inequality itself depends only on that resulting vector."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "The conversion occurs in the proof of Theorem 1(b) for a mixed-radix floating-point FFT, but printed page 763 derives it solely from a finite sum-of-squares inequality.",
+      "lean_evidence": "The Lean proposition has no FFT, radix, factorization, or execution-model binder.",
+      "reasoning": "This is a sound algorithm-independent generalization rather than a replacement: applying it to i |-> |fl(y(i)) - y(i)| supplies exactly the conversion step used by the FFT proof."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "The paper uses the componentwise maximum magnitude and the 1/sqrt(N)-normalized Euclidean norm, both unsquared in the final conversion.",
+      "lean_evidence": "p09Max is the maximum absolute component and p09Rms is the Euclidean norm divided by sqrt(n).",
+      "reasoning": "The norm kinds, normalization, and squared-versus-unsquared form match."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "Both paper ranges contain exactly N indices 0,...,N-1, and the conversion factor is exactly sqrt(N).",
+      "lean_evidence": "Fin n and Finset.univ provide exactly n indices, and the right side uses Real.sqrt (n : Real) with no offset or extra coefficient.",
+      "reasoning": "Indexing, cardinality, and the sole constant agree exactly."
+    },
+    {
+      "id": "S11",
+      "status": "not-applicable",
+      "paper_evidence": "Although the enclosing theorem states arithmetic and trigonometric roundoff models, the two exact norm displays on printed page 763 contain no epsilon, gamma, rounding mode, underflow, overflow, NaN, or infinity case.",
+      "lean_evidence": "The target is an exact theorem over mathematical real numbers and contains no floating-point operation or exceptional value.",
+      "reasoning": "The selected conversion is independent of the floating-point model, so there is no model parameter or exceptional-value behavior to match inside this proposition."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "The selected paper conversion uses non-strict <= from maximum error to sqrt(N) times RMS error.",
+      "lean_evidence": "The elaborated target uses Real.instLE.le with p09Max on the left and sqrt(n) * p09Rms on the right.",
+      "reasoning": "Direction, non-strictness, and logical form match."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The paper's e is absolute componentwise forward output error, and the selected maximum is an absolute error; relative normalization by ||y||_RMS occurs only in the enclosing Theorem 1(b).",
+      "lean_evidence": "Lean bounds norms of a generic error vector and introduces no input, backward, residual, or relative-error notion.",
+      "reasoning": "Instantiating the generic vector with component magnitudes of fl(y)-y preserves the paper's absolute forward-output-error notion."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Neither exact max-versus-RMS display on printed page 763 has an approximation or O(epsilon^2) term; such a term belongs to the surrounding Theorem 1 estimates.",
+      "lean_evidence": "The Lean proposition is an exact inequality with no remainder or asymptotic notation.",
+      "reasoning": "No higher-order term has been dropped from the selected conversion."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The paper applies the inequality to one complex FFT output-error vector of dimension N.",
+      "lean_evidence": "Lean proves it for every positive dimension and every real vector.",
+      "reasoning": "This is a genuine nonvacuous generalization: the complex paper case follows by using the real magnitude vector, while Lean also covers real vectors unrelated to an FFT. It supports classification as faithful-stronger."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "Positive FFT orders and their error vectors exist, and the paper inequality can be sharp when only one component is nonzero.",
+      "lean_evidence": "The hypothesis is satisfiable, for example n = 1; for n = 1 the conclusion is equality for every e, and for larger n a vector with one nonzero entry also attains equality.",
+      "reasoning": "The theorem is not vacuous, hn prevents a zero RMS denominator, and the result is not true for an unintended trivial reason."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "Given the paper's positive order N and complex output error e(i) = fl(y(i)) - y(i), instantiate Lean with the real vector r(i) = |e(i)|. Then p09Max r is max_i |e(i)| and p09Rms r is sqrt(sum_i |e(i)|^2)/sqrt(N), equal to the paper's RMS norm. The Lean conclusion is exactly the selected paper conversion."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The selected passage asserts the conversion for the particular complex output-error vector arising in the enclosing FFT computation. It does not quantify over every arbitrary real vector or show that every such vector is realizable as an FFT output error. Therefore that paper-context instance alone does not imply Lean's universally quantified proposition."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "note",
+      "category": "specialization/generalization",
+      "paper_evidence": "Printed page 763 applies the max-versus-RMS inequality to e(j) = fl(y(j)) - y(j), a complex output-error vector for the FFT in Theorem 1.",
+      "lean_evidence": "The target quantifies over every e : Fin n -> Real for every positive n.",
+      "impact": "The target is broader, not narrower: applying it to the real vector of complex component magnitudes recovers the paper result, while its universal real-vector statement is not supplied by the paper-context instance."
+    }
+  ],
+  "rationale": "After unfolding every target dependency, the Lean statement is max_i |e_i| <= sqrt(n) * (sqrt(sum_i e_i^2)/sqrt(n)) for every positive n and real vector e. This matches the exact conversion displayed in the proof of Theorem 1(b). The paper's complex error vector is covered by instantiating Lean with its component magnitudes, and the RMS formulations are equal for n > 0. Lean removes algorithm-specific context and quantifies over all real vectors, which is genuine, satisfiable extra generality; the paper's fixed FFT-error instance does not imply that universal proposition. Hence the result is accepted as faithful-stronger, with no unclear dependency or semantic check requiring adjudication."
+}
+
