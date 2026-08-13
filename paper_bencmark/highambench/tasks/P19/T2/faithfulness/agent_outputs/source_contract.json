@@ -1,0 +1,137 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "Section 2 defines kappa_F, kappa_2, and a Frobenius-to-smallest-singular-value condition measure, then says the paper often writes simply kappa because of norm equivalence (PDF p. 6, printed p. 5, anchor: condition-number notation). Equation (3.8) uses unqualified kappa (PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+      "impact": "A formal contract should either keep kappa abstract as the paper does or explicitly choose and justify one of the paper's normwise variants.",
+      "issue": "The exact normwise interpretation of unqualified kappa is not fixed throughout the theorem."
+    },
+    {
+      "evidence": "Theorem 3.1 supposes a basis of increasing dimension k <= n and then says there exists a dimension k <= n satisfying the result (PDF p. 9, printed p. 8, anchor: opening of Theorem 3.1).",
+      "impact": "The quantifier should be formalized as existence of an index in an increasing full-rank basis family, rather than treating one fixed k as both given and newly chosen.",
+      "issue": "The symbol k is used both for the varying family of basis dimensions and for the existentially selected dimension."
+    },
+    {
+      "evidence": "The paper defines c(n,k) only as a low-degree polynomial and defines its comparison symbol by dropping negligible second-order terms (PDF p. 6, printed p. 5, anchor: notation paragraphs); equation (3.8) uses both devices (PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+      "impact": "Equation (3.8) is not an exact inequality with a recoverable numerical constant from the displayed statement alone.",
+      "issue": "The forward-error comparison hides both unspecified constants and omitted second-order terms."
+    }
+  ],
+  "contract_plain_english": "At some dimension k no larger than n, the MGS-generated basis is controlled by the constants 4/3. If all four modular computations satisfy their normwise models and smallness conditions, then for any nonsingular analytical right preconditioner M_R the attainable normalized forward error is bounded, to first order and up to c(n,k), by kappa(M_L^-1 A M_R^-1) times xi. The quantity xi is precisely the weighted sum alpha epsilon_c + beta epsilon_b + beta u_g + lambda epsilon_x, corresponding respectively to matrix-product error, preconditioned-right-hand-side error, least-squares rounding, and solution-formation error (PDF p. 9, printed p. 8, anchor: Theorem 3.1 and equations (3.7)-(3.8)).",
+  "paper_batch_sha256": "282bdf4dba3e70c740465a2c4663b96debd1a66ef82c3debf273ad41cdbf76e0",
+  "paper_sha256": "67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "equation (1.1)",
+      "observation": "The standing problem is Ax = b with A in R^(n x n), A nonsingular, and nonzero b in R^n.",
+      "pdf_page": 2,
+      "printed_page": "1"
+    },
+    {
+      "anchor": "Algorithm 2 and equations (3.1)-(3.3)",
+      "observation": "Algorithm 2 forms C_k = M_L^-1 A tilde_Z_k, forms tilde_b = M_L^-1 b, solves a least-squares problem by MGS and Givens rotations, and forms x_k = tilde_Z_k y_k. Equations (3.2) and (3.3) define relative error parameters epsilon_c and epsilon_b.",
+      "pdf_page": 7,
+      "printed_page": "6"
+    },
+    {
+      "anchor": "least-squares error model and equations (3.4)-(3.6)",
+      "observation": "The MGS/Givens least-squares computation contributes errors of size c(n,k)u_g when hat_C_k is not numerically singular. Equation (3.4) defines epsilon_x through norm2(Delta x) <= epsilon_x norm2(tilde_Z_k hat_y_k). Conditions (3.5)-(3.6) require (epsilon_c + epsilon_b + u_g)kappa(M_L^-1 A tilde_Z_k) << 1 and epsilon_x << 1.",
+      "pdf_page": 8,
+      "printed_page": "7"
+    },
+    {
+      "anchor": "Theorem 3.1, equations (3.7)-(3.8)",
+      "observation": "For a full-rank basis of increasing dimension and nonsingular M_L, Theorem 3.1 asserts the existence of k <= n for which the computed Krylov basis satisfies sigma_min(hat_V_k)^(-1) <= 4/3 and sigma_max(hat_V_k) <= 4/3. Subject to the modular models and conditions, for any nonsingular M_R the normalized forward error is bounded by c(n,k)xi kappa(M_L^-1 A M_R^-1), where xi = alpha epsilon_c + beta epsilon_b + beta u_g + lambda epsilon_x.",
+      "pdf_page": 9,
+      "printed_page": "8"
+    },
+    {
+      "anchor": "definitions of alpha, beta, and lambda below equation (3.8)",
+      "observation": "alpha = [kappa(M_R)/sigma_min(M_R tilde_Z_k)] [normF(M_L^-1 A tilde_Z_k)/normF(M_L^-1 A M_R^-1)]; beta = max(1, [normF(M_L^-1 A tilde_Z_k)/normF(M_L^-1 A M_R^-1)]/sigma_min(M_R tilde_Z_k))kappa(M_R); and lambda = 1/kappa(M_L^-1 A M_R^-1).",
+      "pdf_page": 9,
+      "printed_page": "8"
+    },
+    {
+      "anchor": "Appendix A, equation (A.11) and closing sentence",
+      "observation": "The proof converts the split-preconditioned backward-error argument into a forward-error bound for the original system, drops second-order terms, obtains (A.11), and states that this recovers equation (3.8).",
+      "pdf_page": 39,
+      "printed_page": "38"
+    },
+    {
+      "anchor": "Section 2, equation (2.1) and notation paragraphs",
+      "observation": "The forward error is norm2(hat_x - x)/norm2(x). The paper defines 2-norm and Frobenius-based condition numbers, often abbreviates them by kappa, uses the less-than-or-approximately-equal symbol when dropping negligible second-order terms, and leaves c(n,k) as an unspecified low-degree polynomial.",
+      "pdf_page": 6,
+      "printed_page": "5"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "Algorithm 2 has four modules corresponding to the four terms in xi: forming M_L^-1 A tilde_Z_k contributes epsilon_c, forming M_L^-1 b contributes epsilon_b, solving the MGS/Givens least-squares problem contributes u_g, and forming tilde_Z_k hat_y_k contributes epsilon_x (PDF p. 7, printed p. 6, anchor: Algorithm 2 and equations (3.2)-(3.3); PDF p. 8, printed p. 7, anchor: least-squares model and equation (3.4); PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+    "binders": [
+      "Let A in R^(n x n) be nonsingular and let 0 != b in R^n, with exact solution x of Ax = b (PDF p. 2, printed p. 1, anchor: equation (1.1)).",
+      "Let tilde_Z_k in R^(n x k) be a full-rank search basis belonging to a family of increasing dimensions k <= n, and let M_L in R^(n x n) be nonsingular (PDF p. 9, printed p. 8, anchor: opening of Theorem 3.1).",
+      "The theorem first existentially selects a dimension k <= n at which the computed basis hat_V_k is well conditioned; for that dimension and the stated models, the bound then holds for any nonsingular M_R in R^(n x n) (PDF p. 9, printed p. 8, anchor: Theorem 3.1 and equations (3.7)-(3.8)).",
+      "epsilon_c, epsilon_b, and epsilon_x are nonnegative modular accuracy parameters, while u_g is the unit roundoff used for the remaining GMRES operations, including the MGS/Givens least-squares computation (PDF p. 7, printed p. 6, anchor: equations (3.2)-(3.3); PDF p. 8, printed p. 7, anchor: least-squares model and equation (3.4))."
+    ],
+    "conclusions": [
+      "There exists k <= n such that sigma_min(hat_V_k)^(-1) <= 4/3 and sigma_max(hat_V_k) <= 4/3 (PDF p. 9, printed p. 8, anchor: equation (3.7)).",
+      "For that k, under the modular models and conditions, norm2(hat_x_k - x)/norm2(x) is less than or approximately equal to c(n,k)xi kappa(M_L^-1 A M_R^-1) for every nonsingular M_R (PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+      "The aggregate is exactly xi = alpha epsilon_c + beta epsilon_b + beta u_g + lambda epsilon_x; the least-squares and right-hand-side sources share the coefficient beta, while the matrix-product and solution-formation sources use alpha and lambda respectively (PDF p. 9, printed p. 8, anchor: equation (3.8))."
+    ],
+    "constants_and_indexing": [
+      "The theorem is existential in an iteration or basis dimension k with k <= n, not universal over every k (PDF p. 9, printed p. 8, anchor: Theorem 3.1).",
+      "The basis-conditioning constants are exactly 4/3 in both inequalities of (3.7) (PDF p. 9, printed p. 8, anchor: equation (3.7)).",
+      "c(n,k) denotes unspecified low-degree polynomials in n and k, so no exact multiplicative constant is supplied (PDF p. 6, printed p. 5, anchor: definition of c(n,k); PDF p. 9, printed p. 8, anchor: sentence following equation (3.8))."
+    ],
+    "definitions_and_conventions": [
+      "alpha = [kappa(M_R)/sigma_min(M_R tilde_Z_k)] [normF(M_L^-1 A tilde_Z_k)/normF(M_L^-1 A M_R^-1)] (PDF p. 9, printed p. 8, anchor: alpha definition below equation (3.8)).",
+      "beta = max(1, [normF(M_L^-1 A tilde_Z_k)/normF(M_L^-1 A M_R^-1)]/sigma_min(M_R tilde_Z_k))kappa(M_R) (PDF p. 9, printed p. 8, anchor: beta definition below equation (3.8)).",
+      "lambda = 1/kappa(M_L^-1 A M_R^-1) (PDF p. 9, printed p. 8, anchor: lambda definition below equation (3.8)).",
+      "tilde_Z_k spans the search space and can differ from the stored computed basis hat_Z_k because it may be chosen to absorb rounding errors (PDF p. 7, printed p. 6, anchor: discussion preceding Algorithm 2)."
+    ],
+    "error_notions": [
+      "The theorem's final quantity is normalized forward error for the original system, norm2(hat_x_k - x)/norm2(x) (PDF p. 6, printed p. 5, anchor: equation (2.1); PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+      "epsilon_c is a relative Frobenius-norm matrix-product error, epsilon_b is a relative 2-norm right-hand-side error, and epsilon_x is a relative 2-norm solution-formation error (PDF p. 7, printed p. 6, anchor: equations (3.2)-(3.3); PDF p. 8, printed p. 7, anchor: equation (3.4)).",
+      "u_g represents the finite-precision error of the least-squares stage rather than an independently supplied modular epsilon parameter (PDF p. 8, printed p. 7, anchor: least-squares error-model paragraph; PDF p. 9, printed p. 8, anchor: equation (3.8))."
+    ],
+    "exceptional_values": [
+      "A, M_L, and M_R must be nonsingular, tilde_Z_k must be full column rank, and consequently M_R tilde_Z_k has positive smallest singular value so the definitions of alpha and beta are meaningful (PDF p. 2, printed p. 1, anchor: equation (1.1); PDF p. 9, printed p. 8, anchor: Theorem 3.1 and coefficient definitions; PDF p. 38, printed p. 37, anchor: text following equation (A.9)).",
+      "The standing assumption b != 0 with nonsingular A implies x != 0, making the normalized forward error denominator nonzero (PDF p. 2, printed p. 1, anchor: equation (1.1); PDF p. 6, printed p. 5, anchor: equation (2.1)).",
+      "The least-squares model excludes numerical singularity through u_g kappa(hat_C_k) << 1, and the paper does not specify behavior under overflow, underflow, NaN, or infinity (PDF p. 8, printed p. 7, anchor: least-squares error-model paragraph; PDF p. 5, printed p. 4, anchor: standard floating-point model statement)."
+    ],
+    "higher_order_terms": [
+      "The aggregate xi is an exact four-term definition, but the resulting forward-error relation uses the paper's less-than-or-approximately-equal symbol and therefore omits negligible second-order terms (PDF p. 9, printed p. 8, anchor: equation (3.8); PDF p. 6, printed p. 5, anchor: approximation convention).",
+      "Appendix A explicitly says second-order terms are dropped when deriving (A.11) and recovering (3.8) (PDF p. 39, printed p. 38, anchor: equation (A.11) and preceding sentence)."
+    ],
+    "hypotheses": [
+      "hat_C_k = fl(M_L^-1 A tilde_Z_k) = M_L^-1 A tilde_Z_k + Delta c with normF(Delta c) <= epsilon_c normF(M_L^-1 A tilde_Z_k) (PDF p. 7, printed p. 6, anchor: equation (3.2)).",
+      "hat_b = fl(M_L^-1 b) = tilde_b + Delta b with norm2(Delta b) <= epsilon_b norm2(tilde_b) (PDF p. 7, printed p. 6, anchor: equation (3.3)).",
+      "The least-squares stage is the specified MGS orthogonalization followed by Givens rotations and a triangular solve, with columnwise perturbations bounded by c(n,k)u_g when u_g kappa(hat_C_k) << 1 (PDF p. 8, printed p. 7, anchor: least-squares error-model paragraph).",
+      "hat_x_k = fl(tilde_Z_k hat_y_k) = tilde_Z_k hat_y_k + Delta x with norm2(Delta x) <= epsilon_x norm2(tilde_Z_k hat_y_k) (PDF p. 8, printed p. 7, anchor: equation (3.4)).",
+      "(epsilon_c + epsilon_b + u_g)kappa(M_L^-1 A tilde_Z_k) << 1 and epsilon_x << 1 (PDF p. 8, printed p. 7, anchor: equations (3.5)-(3.6))."
+    ],
+    "implicit_context": [
+      "Theorem 3.1 is specialized to MGS-GMRES and is an improved modular result used later to derive separate left-, right-, and flexible-preconditioned bounds (PDF p. 7, printed p. 6, anchor: Section 3.1 opening paragraphs).",
+      "The matrix M_R is introduced analytically even though Algorithm 2 is written using M_L and tilde_Z_k; in exact arithmetic the intended search basis is M_R^-1 V_k (PDF p. 7, printed p. 6, anchor: discussion preceding equation (3.1); PDF p. 9, printed p. 8, anchor: Theorem 3.1).",
+      "The proof obtains the result through a perturbed split-preconditioned system and then converts back to the original system Ax = b (PDF p. 37, printed p. 36, anchor: equations (A.4)-(A.6); PDF p. 39, printed p. 38, anchor: equation (A.11))."
+    ],
+    "norms": [
+      "The forward error and right-hand-side and solution perturbations use vector 2-norms (PDF p. 6, printed p. 5, anchor: equation (2.1); PDF p. 7, printed p. 6, anchor: equation (3.3); PDF p. 8, printed p. 7, anchor: equation (3.4)).",
+      "The matrix-product perturbation and the norm ratios defining alpha and beta use Frobenius norms (PDF p. 7, printed p. 6, anchor: equation (3.2); PDF p. 9, printed p. 8, anchor: alpha and beta definitions).",
+      "sigma_min denotes the smallest singular value, and the paper uses an unqualified kappa when it does not distinguish among its stated normwise condition-number variants (PDF p. 6, printed p. 5, anchor: singular-value and condition-number notation)."
+    ],
+    "numerical_model": [
+      "The framework uses relative normwise perturbation models for the matrix product, preconditioned right-hand side, and solution formation, together with a backward-error model for the MGS/Givens least-squares computation (PDF p. 7, printed p. 6, anchor: equations (3.2)-(3.3); PDF p. 8, printed p. 7, anchor: least-squares model and equation (3.4)).",
+      "The standard floating-point model is assumed, and the unit roundoffs are required to be substantially below one (PDF p. 5, printed p. 4, anchor: Section 2 opening notation paragraphs)."
+    ]
+  },
+  "task_id": "P19-T2",
+  "undebatable_constraints": [
+    "xi has four additive sources in the order alpha epsilon_c, beta epsilon_b, beta u_g, and lambda epsilon_x (PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+    "epsilon_b and u_g have the same coefficient beta; replacing either coefficient by alpha or lambda changes the source statement (PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+    "The outer condition-number factor is kappa(M_L^-1 A M_R^-1), not kappa(M_L^-1 A) (PDF p. 9, printed p. 8, anchor: equation (3.8) and Remark 1).",
+    "The claim is conditional on models (3.2)-(3.4) and smallness conditions (3.5)-(3.6) (PDF pp. 7-9, printed pp. 6-8, anchors: equations (3.2)-(3.8)).",
+    "The theorem guarantees existence of a suitable k <= n; it does not assert the bound at every iteration (PDF p. 9, printed p. 8, anchor: Theorem 3.1).",
+    "alpha, beta, and lambda retain the displayed singular-value, Frobenius-norm, and condition-number factors (PDF p. 9, printed p. 8, anchor: definitions below equation (3.8))."
+  ]
+}
