@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HighamBench final faithfulness decision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "role",
+    "task_id",
+    "completed_at_utc",
+    "adjudicated",
+    "adjudication_reasons",
+    "judge_classifications",
+    "implications",
+    "classification",
+    "accepted",
+    "findings",
+    "remaining_uncertainties",
+    "rationale"
+  ],
+  "properties": {
+    "schema_version": {"const": "highambench-faithfulness-0.1"},
+    "role": {"const": "final-decision"},
+    "task_id": {"type": "string", "pattern": "^P[0-9]{2}-T[123]$"},
+    "completed_at_utc": {"type": "string", "minLength": 1},
+    "adjudicated": {"type": "boolean"},
+    "adjudication_reasons": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "judge_classifications": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["direct", "roundtrip"],
+      "properties": {
+        "direct": {"$ref": "#/$defs/classification"},
+        "roundtrip": {"$ref": "#/$defs/classification"}
+      }
+    },
+    "implications": {"type": "object"},
+    "classification": {"$ref": "#/$defs/classification"},
+    "accepted": {"type": "boolean"},
+    "findings": {"type": "array", "items": {"type": "object"}},
+    "remaining_uncertainties": {"type": "array", "items": {"type": "string"}},
+    "rationale": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "classification": {"enum": ["faithful-equivalent", "faithful-stronger", "not-faithful-weaker", "not-faithful-different", "undetermined"]}
+  }
+}

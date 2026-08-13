@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HighamBench direct judgment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "role",
+    "task_id",
+    "paper_sha256",
+    "dossier_sha256",
+    "dependency_coverage",
+    "semantic_checklist",
+    "implications",
+    "classification",
+    "accepted",
+    "requires_adjudication",
+    "findings",
+    "rationale"
+  ],
+  "properties": {
+    "schema_version": {"const": "highambench-faithfulness-0.1"},
+    "role": {"const": "direct-judge"},
+    "task_id": {"type": "string", "pattern": "^P[0-9]{2}-T[123]$"},
+    "paper_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "dossier_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "dependency_coverage": {"$ref": "#/$defs/dependencyCoverage"},
+    "semantic_checklist": {"$ref": "#/$defs/semanticChecklist"},
+    "implications": {"$ref": "#/$defs/implications"},
+    "classification": {"$ref": "#/$defs/classification"},
+    "accepted": {"type": "boolean"},
+    "requires_adjudication": {"type": "boolean"},
+    "findings": {"$ref": "#/$defs/findings"},
+    "rationale": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "classification": {"enum": ["faithful-equivalent", "faithful-stronger", "not-faithful-weaker", "not-faithful-different", "undetermined"]},
+    "verdict": {"enum": ["yes", "no", "unclear"]},
+    "dependencyCoverage": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "interpretation", "effect_on_target", "paper_match", "status"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^D[0-9]{3}$"},
+          "name": {"type": "string", "minLength": 1},
+          "interpretation": {"type": "string", "minLength": 1},
+          "effect_on_target": {"type": "string", "minLength": 1},
+          "paper_match": {"type": "string", "minLength": 1},
+          "status": {"enum": ["pass", "fail", "unclear", "not-applicable"]}
+        }
+      }
+    },
+    "semanticChecklist": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "status", "paper_evidence", "lean_evidence", "reasoning"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^S[0-9]{2}$"},
+          "status": {"enum": ["pass", "fail", "unclear", "not-applicable"]},
+          "paper_evidence": {"type": "string", "minLength": 1},
+          "lean_evidence": {"type": "string", "minLength": 1},
+          "reasoning": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "implications": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lean_implies_paper", "paper_implies_lean"],
+      "properties": {
+        "lean_implies_paper": {"$ref": "#/$defs/implication"},
+        "paper_implies_lean": {"$ref": "#/$defs/implication"}
+      }
+    },
+    "implication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verdict", "reasoning"],
+      "properties": {
+        "verdict": {"$ref": "#/$defs/verdict"},
+        "reasoning": {"type": "string", "minLength": 1}
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "category", "paper_evidence", "lean_evidence", "impact"],
+        "properties": {
+          "severity": {"enum": ["critical", "major", "minor", "note"]},
+          "category": {"type": "string", "minLength": 1},
+          "paper_evidence": {"type": "string", "minLength": 1},
+          "lean_evidence": {"type": "string", "minLength": 1},
+          "impact": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

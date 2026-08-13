@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HighamBench blind translation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "role",
+    "dossier_sha256",
+    "dependency_coverage",
+    "translation",
+    "restrictions_and_vacuity_risks",
+    "ambiguities"
+  ],
+  "properties": {
+    "schema_version": {"const": "highambench-faithfulness-0.1"},
+    "role": {"const": "blind-translation"},
+    "dossier_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "dependency_coverage": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "meaning", "effect_on_target", "status"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^D[0-9]{3}$"},
+          "name": {"type": "string", "minLength": 1},
+          "meaning": {"type": "string", "minLength": 1},
+          "effect_on_target": {"type": "string", "minLength": 1},
+          "status": {"enum": ["understood", "unclear"]}
+        }
+      }
+    },
+    "translation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["binders", "hypotheses", "conclusions", "mathematical_definitions", "proposition_plain_english"],
+      "properties": {
+        "binders": {"$ref": "#/$defs/stringArray"},
+        "hypotheses": {"$ref": "#/$defs/stringArray"},
+        "conclusions": {"$ref": "#/$defs/nonemptyStringArray"},
+        "mathematical_definitions": {"$ref": "#/$defs/stringArray"},
+        "proposition_plain_english": {"type": "string", "minLength": 1}
+      }
+    },
+    "restrictions_and_vacuity_risks": {"$ref": "#/$defs/stringArray"},
+    "ambiguities": {"$ref": "#/$defs/stringArray"}
+  },
+  "$defs": {
+    "stringArray": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "nonemptyStringArray": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+  }
+}
