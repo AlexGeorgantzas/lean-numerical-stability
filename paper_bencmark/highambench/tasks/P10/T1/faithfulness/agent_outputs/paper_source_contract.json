@@ -1,0 +1,412 @@
+{
+  "contracts": [
+    {
+      "ambiguities": [
+        {
+          "evidence": "Equation (8) prints err(C,n) = ..., while equation (1) prints an inequality for ||Ccomp\u2212C|| and the surrounding text calls the calculation first order. (PDF p. 8, printed p. 66, anchor: equation (8); PDF p. 2, printed p. 60, anchor: equation (1)).",
+          "impact": "The passage securely specifies the first-order contribution and its coefficient, but it does not justify interpreting the displayed equality as an exact identity between actual errors rather than error accounting or a chosen bound.",
+          "issue": "Equation (8) uses an equality sign although its ingredients originate in an error-bound model."
+        },
+        {
+          "evidence": "Equation (8) uses unsubscripted norm symbols, and the earlier discussion only notes equivalence among finite-dimensional norms. (PDF p. 8, printed p. 66, anchor: equation (8); PDF p. 2, printed p. 60, anchor: paragraph after equation (1)).",
+          "impact": "A formal contract must not silently specialize ||\u00b7|| to the spectral, Frobenius, max, or another particular norm.",
+          "issue": "The norm is not identified by name."
+        },
+        {
+          "evidence": "Its introductory sentence says only that C = A\u00b7B is a product of two matrices, although the surrounding recursive inversion uses square blocks and equation (1) was stated for n-by-n products. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8); PDF p. 7, printed p. 65, anchor: recursive inverse formula; PDF p. 2, printed p. 60, anchor: equation (1)).",
+          "impact": "Conformability is mandatory, but n-by-n squareness is inherited context rather than an explicit binder in equation (8).",
+          "issue": "Equation (8) does not explicitly state matrix dimensions."
+        },
+        {
+          "evidence": "The same symbols A and B are said to have inherited errors and then appear inside ||A|| and ||B|| in equation (8), without hats or a separate exact/computed notation. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8) and equation (8)).",
+          "impact": "The source fixes the first-order form but leaves this representational choice unresolved.",
+          "issue": "The notation does not explicitly distinguish norms of exact inputs from norms of their computed approximations."
+        }
+      ],
+      "contract_plain_english": "For a first-order normwise analysis of a computed product C = A\u00b7B, any error already present in the right input B contributes ||A|| times that error to the product error. This is one additive part of equation (8), and the paper does not attach \u03b5, \u03bc(n), or any extra constant to it. (PDF p. 8, printed p. 66, anchor: equation (8), second summand).",
+      "source_evidence": [
+        {
+          "anchor": "paragraph immediately preceding equation (8)",
+          "observation": "The paper introduces a first-order analysis of absolute error and considers a product C = A\u00b7B whose two inputs carry inherited errors err(A,n) and err(B,n) from prior computations.",
+          "pdf_page": 8,
+          "printed_page": "66"
+        },
+        {
+          "anchor": "equation (8), second summand and its right-hand annotation",
+          "observation": "Equation (8) contains the summand ||A||\u00b7err(B,n), annotated as amplifying the error in B by ||A||.",
+          "pdf_page": 8,
+          "printed_page": "66"
+        },
+        {
+          "anchor": "complete equation (8)",
+          "observation": "The selected summand occurs in the three-term first-order rule err(C,n) = \u03bc(n)\u03b5||A||\u00b7||B|| + ||A||\u00b7err(B,n) + err(A,n)\u00b7||B||.",
+          "pdf_page": 8,
+          "printed_page": "66"
+        },
+        {
+          "anchor": "equation (1) and the paragraph defining stable matrix multiplication",
+          "observation": "For n-by-n multiplication, the underlying normwise model bounds ||Ccomp\u2212C|| by \u03bc(n)\u03b5||A||||B|| + O(\u03b5\u00b2), where \u03b5 is machine epsilon and \u03bc(n) is a low-degree polynomial in n.",
+          "pdf_page": 2,
+          "printed_page": "60"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "This contract concerns propagation through one matrix-product operation: when the right operand B already has error, multiplication on the left by A amplifies that inherited error by ||A||. It is used in, but is not itself a separate claim about, the recursive triangular-inversion algorithm. (PDF p. 8, printed p. 66, anchor: equation (8) and following recursive-error application).",
+        "binders": [
+          "A and B are matrices with a defined product C = A\u00b7B, and n is the size parameter used by err and \u03bc. Equation (8) does not independently restate the exact shapes of A and B. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8) and equation (8)).",
+          "err(B,n) is the inherited error attached to the right product input B. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8))."
+        ],
+        "conclusions": [
+          "The first-order contribution to err(C,n) caused by the inherited error in the right input B is exactly the displayed summand ||A||\u00b7err(B,n), with coefficient 1. (PDF p. 8, printed p. 66, anchor: equation (8), second summand).",
+          "Within the enclosing rule, this contribution is added to the local multiplication term \u03bc(n)\u03b5||A||||B|| and the left-input propagation term err(A,n)||B||. (PDF p. 8, printed p. 66, anchor: complete equation (8))."
+        ],
+        "constants_and_indexing": [
+          "The coefficient of ||A||\u00b7err(B,n) is 1. (PDF p. 8, printed p. 66, anchor: equation (8), second summand).",
+          "The same size argument n appears in err(B,n) and err(C,n); there is no index shift in the selected rule. (PDF p. 8, printed p. 66, anchor: equation (8)).",
+          "Operand orientation is essential: inherited right-input error is multiplied by the norm of the left input. (PDF p. 8, printed p. 66, anchor: equation (8) and annotation)."
+        ],
+        "definitions_and_conventions": [
+          "err(X,n) is used as a normwise absolute error quantity for a computed matrix X at size parameter n; the surrounding paragraph explicitly calls the analysis an absolute-error analysis. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8)).",
+          "The factor multiplying err(B,n) is the norm of the opposite, left operand A, not the norm of B. (PDF p. 8, printed p. 66, anchor: equation (8), annotation 'amplifying the error in B by ||A||').",
+          "C = A\u00b7B denotes the mathematical product whose computed realization is being analyzed. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8))."
+        ],
+        "error_notions": [
+          "The selected error notion is absolute and normwise, not componentwise or relative. (PDF p. 8, printed p. 66, anchor: first-order absolute-error paragraph and equation (8)).",
+          "err(B,n) is inherited from prior computation, while \u03bc(n)\u03b5||A||||B|| represents newly introduced multiplication error. (PDF p. 8, printed p. 66, anchor: equation (8) and its annotations)."
+        ],
+        "exceptional_values": [
+          "The cited product-error passages state no treatment of overflow, underflow, NaN, infinity, or other exceptional floating-point values. (PDF p. 2, printed p. 60, anchor: equation (1); PDF p. 8, printed p. 66, anchor: equation (8))."
+        ],
+        "higher_order_terms": [
+          "Equation (8) is explicitly introduced as first-order analysis and displays no O(\u03b5\u00b2) remainder. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8) and equation (8)).",
+          "The underlying multiplication model in equation (1) does include +O(\u03b5\u00b2), so products of small errors and other higher-order interactions are outside the displayed equation (8) rule. (PDF p. 2, printed p. 60, anchor: equation (1); PDF p. 8, printed p. 66, anchor: equation (8))."
+        ],
+        "hypotheses": [
+          "B has been obtained or affected by prior computation and therefore carries inherited error err(B,n). (PDF p. 8, printed p. 66, anchor: paragraph before equation (8)).",
+          "The product is analyzed only to first order. (PDF p. 8, printed p. 66, anchor: first-order error-analysis paragraph).",
+          "The local multiplication obeys the paper's normwise model with machine epsilon \u03b5 and factor \u03bc(n). (PDF p. 2, printed p. 60, anchor: equation (1); PDF p. 8, printed p. 66, anchor: equation (8))."
+        ],
+        "implicit_context": [
+          "Equation (8) is introduced as a reusable product-error rule inside the recursive triangular-inversion analysis. (PDF p. 8, printed p. 66, anchor: Section 3.1 discussion surrounding equation (8)).",
+          "The surrounding inversion algorithm recursively multiplies square diagonal blocks of half the current dimension, but equation (8)'s own sentence merely says 'two matrices.' (PDF p. 7, printed p. 65, anchor: recursive block inverse formula; PDF p. 8, printed p. 66, anchor: paragraph before equation (8))."
+        ],
+        "norms": [
+          "The amplification factor is ||A|| in the same normwise framework used for err. (PDF p. 8, printed p. 66, anchor: equation (8), second summand).",
+          "Equation (8) does not name a specific matrix norm; the general multiplication discussion says that one may switch norms at the expense of dimension-dependent factors. (PDF p. 2, printed p. 60, anchor: paragraph following equation (1); PDF p. 8, printed p. 66, anchor: equation (8))."
+        ],
+        "numerical_model": [
+          "\u03b5 is machine epsilon and bounds roundoff in the local matrix multiplication model. (PDF p. 2, printed p. 60, anchor: equation (1) and following definition of \u03b5).",
+          "\u03bc(n) is a low-degree polynomial, \u03bc(n) = O(n^c) for some constant c, attached to local matrix-multiplication error rather than to the inherited-error propagation term. (PDF p. 2, printed p. 60, anchor: equation (1) and definition of \u03bc; PDF p. 8, printed p. 66, anchor: equation (8)).",
+          "The selected term contains neither \u03b5 nor \u03bc(n); it propagates an already-existing error. (PDF p. 8, printed p. 66, anchor: equation (8), second summand)."
+        ]
+      },
+      "task_id": "P10-T1",
+      "undebatable_constraints": [
+        "The selected term must have the form ||A||\u00b7err(B,n), not ||B||\u00b7err(B,n) and not err(A,n)\u00b7||B||. (PDF p. 8, printed p. 66, anchor: equation (8), second summand).",
+        "The selected term propagates error inherited by the right operand B. (PDF p. 8, printed p. 66, anchor: annotation beside the second summand).",
+        "The coefficient is 1 and no \u03b5 or \u03bc(n) factor appears on this inherited-error term. (PDF p. 8, printed p. 66, anchor: equation (8), second summand).",
+        "The claim belongs to a first-order, absolute normwise error analysis. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8)).",
+        "The term is additive within the complete three-term equation (8). (PDF p. 8, printed p. 66, anchor: complete equation (8))."
+      ]
+    },
+    {
+      "ambiguities": [
+        {
+          "evidence": "Equation (8) uses '=', whereas the foundational multiplication result in equation (1) is an inequality and includes O(\u03b5\u00b2); equation (8) is introduced as first order. (PDF p. 8, printed p. 66, anchor: equation (8); PDF p. 2, printed p. 60, anchor: equation (1)).",
+          "impact": "A faithful formalization should preserve the three-term first-order bound structure without asserting exact equality of realized errors unless err is explicitly defined as the chosen bound.",
+          "issue": "The displayed equality may be error-accounting notation rather than an exact identity."
+        },
+        {
+          "evidence": "Only unsubscripted ||\u00b7|| appears in equation (8), while the earlier text discusses norm equivalence without selecting one norm. (PDF p. 8, printed p. 66, anchor: equation (8); PDF p. 2, printed p. 60, anchor: paragraph following equation (1)).",
+          "impact": "No particular norm should be silently substituted.",
+          "issue": "The matrix norm is unspecified."
+        },
+        {
+          "evidence": "The equation's introduction says 'two matrices C = A\u00b7B'; n-by-n dimensions occur in equation (1) and in the surrounding inversion application. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8); PDF p. 2, printed p. 60, anchor: equation (1)).",
+          "impact": "Conformability is explicit in substance, but square n-by-n dimensions are contextual.",
+          "issue": "The exact matrix dimensions are not restated in equation (8)."
+        },
+        {
+          "evidence": "A and B simultaneously denote operands with inherited errors and the matrices whose norms occur in equation (8), with no hats or perturbation variables. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8) and equation (8)).",
+          "impact": "The source determines the first-order formula but not a unique exact-versus-computed encoding.",
+          "issue": "Exact and computed operands are not notationally separated."
+        }
+      ],
+      "contract_plain_english": "When multiplying two matrices that may already be inaccurate, the first-order absolute normwise error is split into three additive pieces: fresh multiplication roundoff \u03bc(n)\u03b5||A||||B||, propagation of B's error as ||A||err(B,n), and propagation of A's error as err(A,n)||B||. (PDF p. 8, printed p. 66, anchor: equation (8)).",
+      "source_evidence": [
+        {
+          "anchor": "paragraph immediately preceding equation (8)",
+          "observation": "The rule is introduced for computing C = A\u00b7B when A and B already have inherited errors err(A,n) and err(B,n), within a first-order absolute-error analysis.",
+          "pdf_page": 8,
+          "printed_page": "66"
+        },
+        {
+          "anchor": "complete equation (8)",
+          "observation": "The paper gives err(C,n) = \u03bc(n)\u03b5||A||\u00b7||B|| + ||A||\u00b7err(B,n) + err(A,n)\u00b7||B||.",
+          "pdf_page": 8,
+          "printed_page": "66"
+        },
+        {
+          "anchor": "right-hand annotations in equation (8)",
+          "observation": "The three summands are respectively attributed to matrix multiplication, amplification of B's inherited error by ||A||, and amplification of A's inherited error by ||B||.",
+          "pdf_page": 8,
+          "printed_page": "66"
+        },
+        {
+          "anchor": "equation (1) and its explanatory paragraph",
+          "observation": "The underlying local multiplication guarantee is normwise: ||Ccomp\u2212C|| \u2264 \u03bc(n)\u03b5||A||||B|| + O(\u03b5\u00b2), with \u03b5 machine epsilon and \u03bc(n) a low-degree polynomial.",
+          "pdf_page": 2,
+          "printed_page": "60"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "The contract is the local three-term error-propagation rule used whenever the recursive algorithm multiplies matrices that may themselves be inexact; it does not depend on the order in which the surrounding triangular-inversion products are associated. (PDF p. 8, printed p. 66, anchor: equation (8) and the subsequent note choosing to premultiply T12 first).",
+        "binders": [
+          "n is the size parameter used by \u03bc and each err quantity. (PDF p. 8, printed p. 66, anchor: equation (8)).",
+          "A and B are conformable matrices, C = A\u00b7B, and A and B may each carry inherited errors from prior computations. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8))."
+        ],
+        "conclusions": [
+          "The complete displayed first-order product-error rule is err(C,n) = \u03bc(n)\u03b5||A||||B|| + ||A||err(B,n) + err(A,n)||B||. (PDF p. 8, printed p. 66, anchor: equation (8)).",
+          "The first summand is newly introduced local matrix-multiplication error. (PDF p. 8, printed p. 66, anchor: first line of equation (8) and annotation 'from matrix multiplication').",
+          "The second summand propagates the inherited error in B and amplifies it by ||A||. (PDF p. 8, printed p. 66, anchor: second line of equation (8)).",
+          "The third summand propagates the inherited error in A and amplifies it by ||B||. (PDF p. 8, printed p. 66, anchor: third line of equation (8))."
+        ],
+        "constants_and_indexing": [
+          "Each of the three displayed contributions has coefficient 1 apart from the explicitly displayed \u03bc(n)\u03b5 factor in the local term. (PDF p. 8, printed p. 66, anchor: equation (8)).",
+          "The size argument n is unchanged across err(C,n), err(A,n), and err(B,n). (PDF p. 8, printed p. 66, anchor: equation (8)).",
+          "Propagation is cross-oriented: err(B,n) is multiplied by ||A||, while err(A,n) is multiplied by ||B||. (PDF p. 8, printed p. 66, anchor: second and third lines of equation (8))."
+        ],
+        "definitions_and_conventions": [
+          "err(C,n), err(A,n), and err(B,n) are absolute normwise error quantities in this first-order accounting. (PDF p. 8, printed p. 66, anchor: first-order absolute-error paragraph and equation (8)).",
+          "\u03bc(n) is the dimension-dependent stability factor belonging to matrix multiplication. (PDF p. 2, printed p. 60, anchor: equation (1) and definition of \u03bc).",
+          "The rule separates newly generated local roundoff from propagation of errors already present in each operand. (PDF p. 8, printed p. 66, anchor: annotations in equation (8))."
+        ],
+        "error_notions": [
+          "The rule concerns absolute normwise forward error in the computed product, not componentwise error. (PDF p. 8, printed p. 66, anchor: first-order absolute-error paragraph and equation (8)).",
+          "It accounts separately for local multiplication error, inherited right-input error, and inherited left-input error. (PDF p. 8, printed p. 66, anchor: all three annotations in equation (8))."
+        ],
+        "exceptional_values": [
+          "No assumptions or conclusions concerning overflow, underflow, NaN, infinity, or other exceptional floating-point values are stated with equations (1) or (8). (PDF p. 2, printed p. 60, anchor: equation (1); PDF p. 8, printed p. 66, anchor: equation (8))."
+        ],
+        "higher_order_terms": [
+          "The rule is explicitly first order and does not display a product err(A,n)err(B,n), \u03b5 times an inherited error, or an O(\u03b5\u00b2) remainder. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8) and equation (8)).",
+          "Equation (1), from which the local multiplication term is inherited, includes +O(\u03b5\u00b2). (PDF p. 2, printed p. 60, anchor: equation (1))."
+        ],
+        "hypotheses": [
+          "The product C is evaluated under the paper's stable normwise matrix-multiplication model. (PDF p. 2, printed p. 60, anchor: equation (1); PDF p. 8, printed p. 66, anchor: equation (8)).",
+          "The analysis is first order. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8)).",
+          "The two operands have inherited errors denoted err(A,n) and err(B,n). (PDF p. 8, printed p. 66, anchor: paragraph before equation (8))."
+        ],
+        "implicit_context": [
+          "Equation (8) is subsequently applied repeatedly to products in recursive triangular matrix inversion. (PDF p. 8, printed p. 66, anchor: text following equation (8) and displayed recursive bounds).",
+          "The surrounding application uses square recursive blocks, but the rule's own introductory sentence only requires a matrix product C = A\u00b7B. (PDF p. 7, printed p. 65, anchor: recursive inverse block formula; PDF p. 8, printed p. 66, anchor: paragraph before equation (8))."
+        ],
+        "norms": [
+          "All three terms use matrix norms: the local term contains ||A||||B||, right-error propagation contains ||A||, and left-error propagation contains ||B||. (PDF p. 8, printed p. 66, anchor: equation (8)).",
+          "No specific norm is named in equation (8); the earlier multiplication model permits changing norms with additional dimension-dependent factors. (PDF p. 2, printed p. 60, anchor: paragraph after equation (1); PDF p. 8, printed p. 66, anchor: equation (8))."
+        ],
+        "numerical_model": [
+          "\u03b5 is machine epsilon. (PDF p. 2, printed p. 60, anchor: equation (1) explanatory paragraph).",
+          "\u03bc(n) is a low-degree polynomial in n, \u03bc(n) = O(n^c) for some constant c. (PDF p. 2, printed p. 60, anchor: equation (1) explanatory paragraph).",
+          "Only the local multiplication term is explicitly proportional to \u03b5; inherited errors are propagated through the other two terms. (PDF p. 8, printed p. 66, anchor: equation (8))."
+        ]
+      },
+      "task_id": "P10-T2",
+      "undebatable_constraints": [
+        "All three first-order summands must be preserved. (PDF p. 8, printed p. 66, anchor: complete equation (8)).",
+        "The local term is \u03bc(n)\u03b5||A||||B||. (PDF p. 8, printed p. 66, anchor: first line of equation (8)).",
+        "Right-input error contributes ||A||err(B,n). (PDF p. 8, printed p. 66, anchor: second line of equation (8)).",
+        "Left-input error contributes err(A,n)||B||. (PDF p. 8, printed p. 66, anchor: third line of equation (8)).",
+        "The rule is first-order, absolute, and normwise. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8))."
+      ]
+    },
+    {
+      "ambiguities": [
+        {
+          "evidence": "The sep definition writes ||\u00b7||F, whereas all norms in the recurrence and equation (20) are printed without a subscript. (PDF p. 27, printed p. 85, anchor: sep definition; PDF p. 28, printed p. 86, anchor: recurrence and equation (20)).",
+          "impact": "The source strongly links solution and right-hand-side perturbations to Frobenius norm but does not explicitly state a single named norm for every other factor; a formalization should record or justify any specialization.",
+          "issue": "The recurrence uses unsubscripted norms although sep(A,B) is explicitly defined with the Frobenius norm."
+        },
+        {
+          "evidence": "The induction hypothesis calls err(n\u2032) a bound, the preceding block estimates use \u2264, and the paper then writes 'This yields the recurrence' with err(n) = .... (PDF p. 27, printed p. 85, anchor: induction hypothesis; PDF p. 28, printed p. 86, anchor: block bounds and affine recurrence).",
+          "impact": "The equality can consistently define a dominating recurrence, but it should not automatically be read as exact equality of realized numerical errors.",
+          "issue": "The recurrence is printed with equality even though err(n) is introduced as a bound."
+        },
+        {
+          "evidence": "The two big-O bounds are displayed consecutively without an intervening derivation. (PDF p. 28, printed p. 86, anchor: two asymptotic lines ending at equation (20)).",
+          "impact": "Likely supporting estimates such as ||C|| \u2264 (||A||+||B||)||R|| and domination of 2+q by 3q are inferential context, not separately stated hypotheses at this anchor.",
+          "issue": "The algebra used to pass from the first asymptotic bound to equation (20) is not explained in the text."
+        },
+        {
+          "evidence": "Both recurrence solutions are stated only with O(\u00b7), and no hidden constant or threshold is supplied. (PDF p. 28, printed p. 86, anchor: asymptotic solution and equation (20)).",
+          "impact": "Equation (20) is an asymptotic contract, not a numerical inequality with an explicit universal constant.",
+          "issue": "Big-O constants and the precise finite-n validity range are unspecified."
+        },
+        {
+          "evidence": "The section discusses upper-triangular Schur-form matrices and uses transpose B^T in vectorization, but does not state at these anchors whether all matrices are real or complex or whether conjugate transpose is intended in a complex setting. (PDF p. 26, printed p. 84, anchor: Schur-form discussion; PDF p. 27, printed p. 85, anchor: vectorized system and sep definition).",
+          "impact": "A formal contract should not silently choose a real or complex scalar field solely from this passage.",
+          "issue": "The scalar field is not specified in the selected passage."
+        }
+      ],
+      "contract_plain_english": "For the power-of-two divide-and-conquer solver SylR applied to the nonsingular ordinary equation AR\u2212RB=\u2212C, the error at size n is the sum of an amplified four-subproblem error and a forcing term from right-hand-side rounding and matrix multiplication. Solving that recurrence gives equation (20), with polynomial factors in n and \u03bc(n/2) and the Sylvester condition ratio raised to 1+log2 n; comparison with the conventional forward-error bound yields the paper's logarithmic-stability conclusion. (PDF p. 28, printed p. 86, anchor: affine recurrence, equation (20), and following sentence).",
+      "source_evidence": [
+        {
+          "anchor": "ordinary Sylvester equation preceding equation (14)",
+          "observation": "The ordinary problem is A R \u2212 R B = \u2212C. When A and B are upper triangular, the associated triangular system is nonsingular precisely when their eigenvalues are distinct.",
+          "pdf_page": 26,
+          "printed_page": "84"
+        },
+        {
+          "anchor": "equations (14)\u2013(18) and paragraph introducing the recursive algorithm",
+          "observation": "The matrices are split conformally into 2-by-2 blocks, producing four smaller Sylvester equations solved in the order R21, then R11 and R22, then R12; for simplicity all matrices are assumed square, of the same power-of-two dimension.",
+          "pdf_page": 26,
+          "printed_page": "84"
+        },
+        {
+          "anchor": "SylR pseudocode",
+          "observation": "SylR takes n-by-n A, B, C, uses the scalar base case R = \u2212C/(A\u2212B), and recursively constructs R21, R11, R22, and R12 with matrix products in their right-hand sides.",
+          "pdf_page": 27,
+          "printed_page": "85"
+        },
+        {
+          "anchor": "definition of sep(A,B) and equation (19)",
+          "observation": "The paper defines sep(A,B) = \u03c3min(I\u2297A\u2212B^T\u2297I) = min_{||R||F=1}||AR\u2212RB||F and states sep(Aii,Bjj) \u2265 sep(A,B) for every recursive subproblem.",
+          "pdf_page": 27,
+          "printed_page": "85"
+        },
+        {
+          "anchor": "induction hypothesis immediately following equation (19)",
+          "observation": "err(n\u2032) bounds the error in any smaller Sylvester solution of dimension n\u2032 encountered by the algorithm, including errors in computing its right-hand side.",
+          "pdf_page": 27,
+          "printed_page": "85"
+        },
+        {
+          "anchor": "sentence preceding the block-error inequalities",
+          "observation": "A right-hand-side perturbation bounded in norm by x can change the solution in norm by x/sep(A,B), and the proof also uses the product-error rule (8).",
+          "pdf_page": 28,
+          "printed_page": "86"
+        },
+        {
+          "anchor": "affine recurrence immediately before equation (20)",
+          "observation": "The paper states err(n) = (4 + 2(||A||+||B||)/sep(A,B))err(n/2) + (\u03b5/sep(A,B))(3||C|| + 2\u03bc(n/2)(||A||+||B||)||R||).",
+          "pdf_page": 28,
+          "printed_page": "86"
+        },
+        {
+          "anchor": "first asymptotic line following the affine recurrence",
+          "observation": "The recurrence is bounded by O((n\u03b5/sep(A,B))(||C||+\u03bc(n/2)(||A||+||B||)||R||)(2+(||A||+||B||)/sep(A,B))^(log2 n)).",
+          "pdf_page": 28,
+          "printed_page": "86"
+        },
+        {
+          "anchor": "equation (20)",
+          "observation": "The final displayed bound is O(n^(1+log2 3) \u03bc(n/2) \u03b5 ||R|| ((||A||+||B||)/sep(A,B))^(1+log2 n)).",
+          "pdf_page": 28,
+          "printed_page": "86"
+        },
+        {
+          "anchor": "sentence immediately following equation (20)",
+          "observation": "The paper compares equation (20) with the conventional bound O(\u03b5||R||(||A||+||B||)/sep(A,B)) and concludes that SylR is logarithmically stable.",
+          "pdf_page": 28,
+          "printed_page": "86"
+        },
+        {
+          "anchor": "Definition 3.1, equation (5)",
+          "observation": "Logarithmic stability is defined by a relative error of the form O(\u03b5)\u03baf(x)^\u03c7(n) + O(\u03b5\u00b2), where \u03c7(n) is at least 1 and is bounded by a polynomial in log n.",
+          "pdf_page": 7,
+          "printed_page": "65"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "The recurrence and equation (20) belong specifically to the divide-and-conquer ordinary Sylvester solver SylR: it recursively forms right-hand sides with fast matrix multiplication, solves four n/2 subproblems, and uses the global lower bound sep(Aii,Bjj) \u2265 sep(A,B) to control error amplification. They are not a proved recurrence for the generalized two-equation variant, which the paper only sketches afterward. (PDF p. 26, printed p. 84, anchor: equations (14)\u2013(18); PDF p. 27, printed p. 85, anchor: SylR and equation (19); PDF p. 28, printed p. 86, anchor: equation (20) and following generalized-case paragraph).",
+        "binders": [
+          "n is a positive power of 2 for the equal-halving recursive SylR analysis. (PDF p. 26, printed p. 84, anchor: paragraph before SylR; PDF p. 27, printed p. 85, anchor: complexity-analysis assumption).",
+          "A, B, and C are n-by-n matrices; A and B are upper triangular in the Schur-form setting. (PDF p. 26, printed p. 84, anchor: Sylvester-equation discussion; PDF p. 27, printed p. 85, anchor: SylR header).",
+          "R is the exact solution of A R \u2212 R B = \u2212C against which the computed recursive result is compared. (PDF p. 26, printed p. 84, anchor: ordinary Sylvester equation; PDF p. 27, printed p. 85, anchor: err induction hypothesis).",
+          "\u03b5 is machine epsilon, \u03bc(n/2) is the multiplication-error factor at half dimension, and err(n) is a recursive absolute-error bound. (PDF p. 2, printed p. 60, anchor: equation (1); PDF p. 27, printed p. 85, anchor: induction hypothesis; PDF p. 28, printed p. 86, anchor: affine recurrence)."
+        ],
+        "conclusions": [
+          "The affine error recurrence is err(n) = (4 + 2(||A||+||B||)/sep(A,B))err(n/2) + (\u03b5/sep(A,B))(3||C|| + 2\u03bc(n/2)(||A||+||B||)||R||). (PDF p. 28, printed p. 86, anchor: recurrence immediately before equation (20)).",
+          "Its first displayed asymptotic solution is err(n) \u2264 O((n\u03b5/sep(A,B))(||C|| + \u03bc(n/2)(||A||+||B||)||R||)(2 + (||A||+||B||)/sep(A,B))^(log2 n)). (PDF p. 28, printed p. 86, anchor: first asymptotic line following the recurrence).",
+          "The further simplified bound is err(n) \u2264 O(n^(1+log2 3) \u03bc(n/2) \u03b5 ||R|| ((||A||+||B||)/sep(A,B))^(1+log2 n)). (PDF p. 28, printed p. 86, anchor: equation (20)).",
+          "Because a conventional Sylvester solver has error O(\u03b5||R||(||A||+||B||)/sep(A,B)), the paper concludes that recursive SylR is logarithmically stable. (PDF p. 28, printed p. 86, anchor: sentence following equation (20))."
+        ],
+        "constants_and_indexing": [
+          "The recurrence multiplier is exactly 4 + 2(||A||+||B||)/sep(A,B). (PDF p. 28, printed p. 86, anchor: affine recurrence).",
+          "The forcing term has constants 3 on ||C|| and 2 on \u03bc(n/2)(||A||+||B||)||R||. (PDF p. 28, printed p. 86, anchor: affine recurrence).",
+          "The recursive argument is n/2, and the multiplication factor is evaluated at n/2. (PDF p. 28, printed p. 86, anchor: affine recurrence).",
+          "The first asymptotic amplification exponent is log2 n. (PDF p. 28, printed p. 86, anchor: first asymptotic line after the recurrence).",
+          "Equation (20) has n exponent 1 + log2 3 and separation-ratio exponent 1 + log2 n. (PDF p. 28, printed p. 86, anchor: equation (20)).",
+          "The four block indices are 21, 11, 22, and 12 in their dependency order. (PDF p. 26, printed p. 84, anchor: equations (15)\u2013(18); PDF p. 27, printed p. 85, anchor: SylR lines (a)\u2013(d))."
+        ],
+        "definitions_and_conventions": [
+          "sep(A,B) = \u03c3min(I\u2297A\u2212B^T\u2297I) = min_{||X||F=1}||AX\u2212XB||F, where ||\u00b7||F is the Frobenius norm. (PDF p. 27, printed p. 85, anchor: definition of sep(A,B)).",
+          "The Sylvester equation is equivalently (I\u2297A\u2212B^T\u2297I)vec(R) = \u2212vec(C), with vec stacking columns from left to right. (PDF p. 27, printed p. 85, anchor: paragraph defining the Sylvester condition number).",
+          "err(n\u2032) is a normwise absolute forward-error bound for any dimension-n\u2032 Sylvester subproblem encountered recursively, including right-hand-side construction errors. (PDF p. 27, printed p. 85, anchor: induction hypothesis after equation (19)).",
+          "Logarithmic stability allows the relevant condition-number factor to be raised to an exponent \u03c7(n) bounded by a polynomial in log n. (PDF p. 7, printed p. 65, anchor: Definition 3.1 and equation (5))."
+        ],
+        "error_notions": [
+          "err(n) is an absolute normwise forward-error bound for the computed solution R. (PDF p. 27, printed p. 85, anchor: induction hypothesis; PDF p. 28, printed p. 86, anchor: recurrence).",
+          "Errors made while forming recursive right-hand sides are included, not treated as exact data. (PDF p. 27, printed p. 85, anchor: induction hypothesis after equation (19)).",
+          "Right-hand-side perturbations are converted into solution perturbations by division by sep(A,B). (PDF p. 28, printed p. 86, anchor: opening sentence).",
+          "The comparator is the conventional forward-error bound O(\u03b5||R||(||A||+||B||)/sep(A,B)), not a backward-error statement. (PDF p. 28, printed p. 86, anchor: sentence after equation (20))."
+        ],
+        "exceptional_values": [
+          "The recurrence requires sep(A,B) > 0 because sep(A,B) appears in denominators; for upper-triangular A and B, the paper identifies nonsingularity with distinct eigenvalues. (PDF p. 26, printed p. 84, anchor: paragraph following equation (13); PDF p. 28, printed p. 86, anchor: recurrence).",
+          "The scalar base case divides by A\u2212B, so coincident scalar eigenvalues are excluded. (PDF p. 27, printed p. 85, anchor: SylR base case).",
+          "The cited analysis gives no treatment of overflow, underflow, NaN, infinity, or failure caused by exceptional floating-point values. (PDF p. 27, printed p. 85, anchor: SylR and error-model setup; PDF p. 28, printed p. 86, anchor: recurrence and equation (20))."
+        ],
+        "higher_order_terms": [
+          "The recurrence and equation (20) are first-order bounds and contain no explicit +O(\u03b5\u00b2) term. (PDF p. 28, printed p. 86, anchor: recurrence and equation (20); PDF p. 8, printed p. 66, anchor: first-order introduction to equation (8)).",
+          "Both asymptotic solution lines use big-O notation, so constants and terms suppressed by that notation are not specified. (PDF p. 28, printed p. 86, anchor: two asymptotic lines ending at equation (20)).",
+          "Definition 3.1 includes an O(\u03b5\u00b2) remainder in the general definition of logarithmic stability even though the Sylvester recurrence does not display it. (PDF p. 7, printed p. 65, anchor: equation (5); PDF p. 28, printed p. 86, anchor: recurrence)."
+        ],
+        "hypotheses": [
+          "The ordinary Sylvester equation is nonsingular; in the stated upper-triangular setting this is equivalent to A and B having distinct eigenvalues, and it implies sep(A,B) > 0. (PDF p. 26, printed p. 84, anchor: paragraph following equation (13); PDF p. 27, printed p. 85, anchor: definition of sep(A,B)).",
+          "Every recursive subproblem obeys sep(Aii,Bjj) \u2265 sep(A,B). (PDF p. 27, printed p. 85, anchor: equation (19)).",
+          "The induction hypothesis makes err(n\u2032) bound both solution error and error introduced while computing each smaller right-hand side. (PDF p. 27, printed p. 85, anchor: paragraph following equation (19)).",
+          "Matrix products used in the recursive right-hand sides obey the first-order product-error model (8). (PDF p. 28, printed p. 86, anchor: sentence preceding the block-error inequalities; PDF p. 8, printed p. 66, anchor: equation (8)).",
+          "A right-hand-side perturbation of norm at most x changes the solution by at most x/sep(A,B) in the norm used by the proof. (PDF p. 28, printed p. 86, anchor: opening sentence)."
+        ],
+        "implicit_context": [
+          "The recurrence is derived for the ordinary equation A R \u2212 R B = \u2212C and the ordinary SylR algorithm. The generalized Sylvester case is only sketched after equation (20). (PDF p. 26, printed p. 84, anchor: ordinary and generalized equations; PDF p. 28, printed p. 86, anchor: paragraph after equation (20)).",
+          "SylR solves the four half-sized blocks in dependency order R21, R11, R22, R12. (PDF p. 26, printed p. 84, anchor: equations (15)\u2013(18); PDF p. 27, printed p. 85, anchor: SylR lines (a)\u2013(d)).",
+          "Each non-base recursion level contains four smaller Sylvester solves and four matrix multiplications, with two multiplications used for the R12 right-hand side. (PDF p. 27, printed p. 85, anchor: SylR pseudocode and cost recurrence)."
+        ],
+        "norms": [
+          "The separation sep(A,B) is explicitly defined through Frobenius norms and the smallest singular value of the vectorized Sylvester operator. (PDF p. 27, printed p. 85, anchor: definition of sep(A,B)).",
+          "The recurrence itself prints unsubscripted norms for A, B, C, R, and block quantities. (PDF p. 28, printed p. 86, anchor: block-error inequalities and affine recurrence).",
+          "The perturbation statement x/sep(A,B) is naturally tied to the Frobenius norm used in the definition of sep, but the paper does not explicitly relabel every unsubscripted norm in the recurrence as Frobenius. (PDF p. 27, printed p. 85, anchor: sep definition; PDF p. 28, printed p. 86, anchor: opening sentence and recurrence)."
+        ],
+        "numerical_model": [
+          "\u03b5 denotes machine epsilon in the normwise rounding model. (PDF p. 2, printed p. 60, anchor: equation (1) and explanatory paragraph).",
+          "\u03bc(n/2) is the low-degree dimension factor for matrix multiplication performed on half-sized blocks. (PDF p. 2, printed p. 60, anchor: definition of \u03bc; PDF p. 28, printed p. 86, anchor: recurrence and equation (20)).",
+          "The forcing term combines direct right-hand-side rounding, represented by 3\u03b5||C||/sep(A,B), with two multiplication-error contributions represented by 2\u03bc(n/2)\u03b5(||A||+||B||)||R||/sep(A,B). (PDF p. 28, printed p. 86, anchor: affine recurrence).",
+          "The analysis uses first-order product error (8); no explicit higher-order remainder is carried through the recurrence. (PDF p. 28, printed p. 86, anchor: reference to equation (8) and recurrence; PDF p. 8, printed p. 66, anchor: first-order error-analysis paragraph).",
+          "The final logarithmic-stability interpretation permits extra precision so that accuracy comparable to a conventional stable method can be recovered with polylogarithmic precision overhead. (PDF p. 7, printed p. 65, anchor: Definition 3.1 and Lemma 3.2; PDF p. 28, printed p. 86, anchor: conclusion following equation (20))."
+        ]
+      },
+      "task_id": "P10-T3",
+      "undebatable_constraints": [
+        "The contract is for the ordinary recursive Sylvester solver A R \u2212 R B = \u2212C, not for the generalized Sylvester equations. (PDF p. 26, printed p. 84, anchor: ordinary equation and equations (14)\u2013(18); PDF p. 28, printed p. 86, anchor: generalized-case paragraph after equation (20)).",
+        "All matrices in SylR are n-by-n, and the recursive analysis assumes n is a power of 2. (PDF p. 26, printed p. 84, anchor: paragraph before SylR; PDF p. 27, printed p. 85, anchor: SylR header and complexity assumption).",
+        "The recurrence multiplier must retain both 4 and 2(||A||+||B||)/sep(A,B). (PDF p. 28, printed p. 86, anchor: affine recurrence).",
+        "The forcing term must retain \u03b5/sep(A,B), 3||C||, and 2\u03bc(n/2)(||A||+||B||)||R||. (PDF p. 28, printed p. 86, anchor: affine recurrence).",
+        "Equation (20) must retain n^(1+log2 3), \u03bc(n/2), \u03b5||R||, and the ratio ((||A||+||B||)/sep(A,B)) raised to 1+log2 n. (PDF p. 28, printed p. 86, anchor: equation (20)).",
+        "sep(A,B) is defined through the Frobenius-norm Sylvester operator and is positive for the nonsingular problem. (PDF p. 27, printed p. 85, anchor: sep definition; PDF p. 26, printed p. 84, anchor: nonsingularity statement).",
+        "err(n\u2032) includes errors made while computing recursive right-hand sides. (PDF p. 27, printed p. 85, anchor: induction hypothesis after equation (19)).",
+        "The final paper-level conclusion is logarithmic stability relative to the stated conventional forward-error bound. (PDF p. 28, printed p. 86, anchor: sentence following equation (20))."
+      ]
+    }
+  ],
+  "paper_id": "P10",
+  "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
+  "role": "paper-source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_locator_sha256": "91f77a26c65c7ca024e216f6cc35327e6521963eee50d0bda4fd50b72060a4dc",
+  "task_ids": [
+    "P10-T1",
+    "P10-T2",
+    "P10-T3"
+  ]
+}

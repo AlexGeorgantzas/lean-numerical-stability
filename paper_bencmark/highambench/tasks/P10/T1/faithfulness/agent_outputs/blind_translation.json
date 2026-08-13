@@ -1,0 +1,202 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "24476ab5b9b011e4e040fd98de4744aeffdd79fd419e7723ac5f4056362e1c41",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For each natural number n, this is the type of n-by-n matrices with real entries, represented as functions Fin n -> Fin n -> Real.",
+      "effect_on_target": "It makes both A and dB arbitrary square real matrices of the same dimension n.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For an n-by-n real matrix M, this is sqrt(sum_i sum_j (M i j)^2), with both indices ranging over every element of Fin n; it is the Frobenius norm of M.",
+      "effect_on_target": "It supplies all three norms in the inequality: the norm of the matrix product on the left and the norms of A and dB on the right.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "For n-by-n matrices A and B, this is their matrix product using the finite real dot-product multiplication instance.",
+      "effect_on_target": "It makes the matrix inside the left-hand Frobenius norm equal to the ordinary matrix product A dB, not an entrywise product.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "HMul.hMul",
+      "meaning": "This projects the binary multiplication operation from an HMul instance.",
+      "effect_on_target": "At the explicit target occurrence, the selected HMul instance is induced by real multiplication, so the two Frobenius norms on the right are multiplied as real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LE.le",
+      "meaning": "This projects the less-than-or-equal relation from an LE instance.",
+      "effect_on_target": "It forms the non-strict inequality between the real-valued norm on the left and the real-valued product on the right.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "Nat",
+      "meaning": "This is the type of natural numbers.",
+      "effect_on_target": "The universally quantified natural number n determines the common matrix dimension and may be zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "Real",
+      "meaning": "This is the type of real numbers.",
+      "effect_on_target": "Matrix entries, finite sums, square roots, norms, multiplication, and both sides of the inequality are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "Real.instLE",
+      "meaning": "This equips the real numbers with their standard less-than-or-equal relation.",
+      "effect_on_target": "It makes the target comparison the usual real inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "Real.instMul",
+      "meaning": "This equips the real numbers with their standard multiplication.",
+      "effect_on_target": "It determines the scalar product of the two norms on the right and the multiplication of real entries used in matrix dot products.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "instHMul",
+      "meaning": "Given an ordinary multiplication operation on a type, this constructs homogeneous multiplication HMul on that same type using the ordinary operation.",
+      "effect_on_target": "Applied to Real, it ensures that HMul.hMul on the right-hand side is ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "Fin",
+      "meaning": "For n, Fin n is the canonical finite index type with n elements, corresponding to indices 0 through n-1.",
+      "effect_on_target": "It provides the row, column, and contracted indices of the n-by-n matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Fin.fintype",
+      "meaning": "This provides the finite enumeration of all elements of Fin n.",
+      "effect_on_target": "It permits all matrix indices, including the contracted matrix-product index, to be summed over finitely.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Finset.sum",
+      "meaning": "This sums the values of a function over a finite set using the supplied additive commutative monoid.",
+      "effect_on_target": "It constructs the sums of squared entries in each Frobenius norm and the finite sums occurring in matrix multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, this is the finite set containing every element of that type.",
+      "effect_on_target": "It makes each norm sum range over every row and every column index in Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "HPow.hPow",
+      "meaning": "This projects the exponentiation operation from an HPow instance.",
+      "effect_on_target": "With the selected real-by-natural power instance and exponent 2, it squares each real matrix entry.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Matrix",
+      "meaning": "A matrix with row type m, column type n, and entries in alpha is represented as a function m -> n -> alpha.",
+      "effect_on_target": "It gives the pointwise representation of A, dB, and their product and establishes that their entries are addressed by two Fin n indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "meaning": "For compatible matrices M and N over a finitely indexed additive and multiplicative type, this defines their product by (M N) i k = sum_j M i j * N j k.",
+      "effect_on_target": "It expands LocalDef003 n A dB into ordinary matrix multiplication, so its (i,k) entry is sum_j A i j * dB j k.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Monoid.toNatPow",
+      "meaning": "This equips a monoid with exponentiation by natural numbers using repeated monoid multiplication.",
+      "effect_on_target": "For the multiplicative monoid of real numbers, exponent 2 evaluates each entry's power as its real square.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "OfNat.ofNat",
+      "meaning": "This interprets a natural-number literal in a type that has the corresponding OfNat instance.",
+      "effect_on_target": "It interprets the literal 2 used as the natural exponent in the norm definition.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This equips the real numbers with their standard addition and additive identity as an additive commutative monoid.",
+      "effect_on_target": "It gives the addition and zero used by finite sums in the Frobenius norms and matrix dot products.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instMonoid",
+      "meaning": "This equips the real numbers with their standard multiplication and multiplicative identity as a monoid.",
+      "effect_on_target": "It supplies natural-number exponentiation of real entries, in particular their squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.sqrt",
+      "meaning": "This is the nonnegative real square-root operation, implemented through the square root of the nonnegative part of its input.",
+      "effect_on_target": "It takes the square root of each sum of entrywise squares. These inputs are nonnegative, so it is the ordinary nonnegative square root.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "instHPow",
+      "meaning": "Given a power operation Pow alpha beta, this constructs the corresponding homogeneous-result HPow alpha beta alpha instance.",
+      "effect_on_target": "It exposes real exponentiation by natural numbers through HPow.hPow in the Frobenius-norm definition.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "instOfNatNat",
+      "meaning": "This interprets each natural-number literal n as that same value in Nat.",
+      "effect_on_target": "It makes the exponent literal 2 exactly the natural number two.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "n is an arbitrary natural number; it is an implicit universally quantified binder in Lean.",
+      "A and dB are arbitrary n-by-n matrices with real entries, equivalently functions Fin n -> Fin n -> Real."
+    ],
+    "hypotheses": [],
+    "conclusions": [
+      "sqrt(sum_i sum_k (sum_j A_ij * dB_jk)^2) <= sqrt(sum_i sum_j A_ij^2) * sqrt(sum_i sum_j dB_ij^2), where every index ranges over Fin n."
+    ],
+    "mathematical_definitions": [
+      "For an n-by-n real matrix M, define its Frobenius norm by ||M||_F = sqrt(sum_{i=0}^{n-1} sum_{j=0}^{n-1} M_ij^2).",
+      "Define the matrix product by (A dB)_ik = sum_{j=0}^{n-1} A_ij * dB_jk.",
+      "Empty finite sums are zero, so these definitions also apply when n = 0."
+    ],
+    "proposition_plain_english": "For every natural number n and every pair of n-by-n real matrices A and dB, the Frobenius norm of their ordinary matrix product is at most the product of their Frobenius norms: ||A dB||_F <= ||A||_F ||dB||_F."
+  },
+  "restrictions_and_vacuity_risks": [
+    "Only finite square matrices over the real numbers are covered; rectangular matrices and other scalar fields are not quantified.",
+    "There are no assumptions on A or dB: neither invertibility, positivity, normalization, nor nonzeroness is required.",
+    "The identifier dB carries no encoded perturbation meaning; dB is an arbitrary matrix with no smallness or relationship-to-another-matrix condition.",
+    "The multiplicative bound has exact constant 1.",
+    "The case n = 0 is included. It is degenerate rather than logically vacuous: the unique empty matrices have zero Frobenius norm, and the conclusion reduces to 0 <= 0.",
+    "The proposition concerns exact real arithmetic and encodes no floating-point operations, rounding errors, probabilistic statements, or computed approximations.",
+    "The norm is specifically the entrywise Frobenius norm, not an operator or spectral norm.",
+    "No equality characterization, strict inequality, or optimality assertion beyond the displayed bound is encoded."
+  ],
+  "ambiguities": []
+}

@@ -1,0 +1,352 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P10-T1",
+  "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
+  "dossier_sha256": "a2dfb6ebbb9e7986c015e15100dba2365d705a6ba8d46d292553222278d2ae75",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.P10Matrix",
+      "interpretation": "For each natural number n, this is definitionally the type Matrix (Fin n) (Fin n) Real, namely square n-by-n real matrices.",
+      "effect_on_target": "Both A and dB are square real matrices with the same finite row, column, and contraction index set.",
+      "paper_match": "Equation (8) concerns conformable matrices in an n-sized, square-block context. Restriction to square real matrices is an explicit compatible specialization.",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p10FrobNorm",
+      "interpretation": "This maps a real matrix to the square root of the sum of the squares of all its entries, so it is the unsquared Frobenius norm.",
+      "effect_on_target": "Every norm in the target is specifically the Frobenius norm, including the norm of the propagated perturbation A dB.",
+      "paper_match": "The paper requires an absolute normwise bound but does not name the norm. The Frobenius norm is a legitimate submultiplicative specialization with coefficient one.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.p10MatMul",
+      "interpretation": "This is ordinary matrix multiplication supplied by the matrix HMul instance.",
+      "effect_on_target": "The left-hand side is the Frobenius norm of A multiplied on the left into dB.",
+      "paper_match": "This has the required operand orientation: the right-input perturbation is propagated as A dB and is amplified by the norm of A.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "HMul.hMul",
+      "interpretation": "This projects the heterogeneous multiplication operation from the applicable HMul instance.",
+      "effect_on_target": "It resolves the displayed scalar product to real multiplication and supports the matrix multiplication used inside p10MatMul.",
+      "paper_match": "Both uses implement the ordinary products represented by juxtaposition or a centered dot in equation (8).",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "LE.le",
+      "interpretation": "This projects the binary non-strict order relation from an LE instance.",
+      "effect_on_target": "With Real.instLE, the conclusion is a non-strict real inequality.",
+      "paper_match": "Although equation (8) prints an equality, its context and equation (1) establish error-bound accounting. A non-strict bound is the justified relation for the actual propagated perturbation norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "Nat",
+      "interpretation": "This is the inductive type of natural numbers.",
+      "effect_on_target": "The matrix dimension n ranges over all natural numbers, including zero.",
+      "paper_match": "The paper uses n as a matrix-size parameter. The additional zero-dimensional case is harmless, while positive dimensions provide nontrivial instances.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "Real",
+      "interpretation": "This is the mathematical real-number type.",
+      "effect_on_target": "Matrix entries, norms, products, and the order comparison are all over exact real numbers.",
+      "paper_match": "Real matrices are a compatible specialization of the paper's matrix setting for this algebraic propagation term.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "Real.instLE",
+      "interpretation": "This equips Real with its usual non-strict order.",
+      "effect_on_target": "The target compares two real norm quantities using the standard relation ≤.",
+      "paper_match": "Normwise error bounds in the paper use the ordinary order on nonnegative real magnitudes.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "Real.instMul",
+      "interpretation": "This equips Real with ordinary real multiplication.",
+      "effect_on_target": "The right-hand side is exactly p10FrobNorm A multiplied by p10FrobNorm dB.",
+      "paper_match": "It realizes the coefficient-one product of the left operand norm and the inherited right-error magnitude.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "instHMul",
+      "interpretation": "This converts a homogeneous Mul instance into the corresponding homogeneous HMul instance.",
+      "effect_on_target": "It makes HMul.hMul on the two real norm values identical to ordinary real multiplication.",
+      "paper_match": "This is typeclass infrastructure for the ordinary scalar multiplication used by the selected paper term.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "Fin",
+      "interpretation": "Fin n is the finite index type whose values correspond to the integers from zero through n minus one.",
+      "effect_on_target": "Rows, columns, entrywise norm sums, and the matrix-product contraction all range over n indices.",
+      "paper_match": "This is a standard formal representation of the n-dimensional matrix indexing used in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "Fin.fintype",
+      "interpretation": "This supplies a finite enumeration of Fin n.",
+      "effect_on_target": "It permits exhaustive finite sums in the Frobenius norm and matrix dot products.",
+      "paper_match": "Finite enumeration faithfully implements the finite-dimensional matrix operations assumed by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "Finset.sum",
+      "interpretation": "This forms the additive sum of a function over a finite set.",
+      "effect_on_target": "It sums entry squares in the Frobenius norm and underlies the finite dot products used in matrix multiplication.",
+      "paper_match": "These are the standard sums required by the explicit Frobenius-norm specialization and ordinary matrix multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Finset.univ",
+      "interpretation": "This is the finite set containing every element of a finite type.",
+      "effect_on_target": "Both nested norm sums include every row and every column index.",
+      "paper_match": "Summing all matrix entries is exactly the intended Frobenius-norm construction.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "HPow.hPow",
+      "interpretation": "This projects heterogeneous exponentiation from the applicable HPow instance.",
+      "effect_on_target": "Each matrix entry is raised to the natural-number exponent two in p10FrobNorm.",
+      "paper_match": "Entrywise squaring is the correct construction for the explicit Frobenius norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "Matrix",
+      "interpretation": "A matrix with row type m, column type n, and entries α is represented as a function m → n → α.",
+      "effect_on_target": "A and dB are extensional mathematical arrays of real entries rather than floating-point storage objects.",
+      "paper_match": "The selected contribution is a mathematical normwise bound on matrices; exact functional matrices are suitable for its algebraic component.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "interpretation": "This defines matrix multiplication by setting entry (i,k) to the finite dot product Σ_j M(i,j)N(j,k).",
+      "effect_on_target": "p10MatMul n A dB is the standard left-to-right product A dB with contraction over Fin n.",
+      "paper_match": "It precisely models the first-order output perturbation caused by a right-input perturbation, with the required operand orientation.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "Monoid.toNatPow",
+      "interpretation": "This gives elements of a monoid their standard natural-number powers.",
+      "effect_on_target": "Real entry powers in p10FrobNorm use ordinary repeated multiplication.",
+      "paper_match": "For exponent two this produces the entry squares required by the Frobenius norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "OfNat.ofNat",
+      "interpretation": "This interprets a natural-number literal in a type with the corresponding OfNat instance.",
+      "effect_on_target": "It participates in interpreting the literal exponent 2.",
+      "paper_match": "It introduces no altered constant; the exponent is exactly two.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "This supplies the usual real zero and commutative addition as an additive commutative monoid.",
+      "effect_on_target": "Finite norm sums and matrix dot products use ordinary real addition and zero.",
+      "paper_match": "This is the standard scalar arithmetic underlying the paper's mathematical matrix products and norms.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instMonoid",
+      "interpretation": "This supplies ordinary real multiplication, one, and natural powers as a monoid.",
+      "effect_on_target": "It determines the meaning of each entry square in the Frobenius norm.",
+      "paper_match": "The resulting squares are the standard real squares required by the chosen norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "Real.sqrt",
+      "interpretation": "This is the nonnegative real square-root function, implemented through the nonnegative-real square root.",
+      "effect_on_target": "It converts the nonnegative sum of entry squares into the unsquared Frobenius norm.",
+      "paper_match": "The paper's selected rule uses ordinary norms, not squared norms, so the square root gives the correct form.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "instHPow",
+      "interpretation": "This converts a Pow instance into the corresponding HPow instance with the same result type.",
+      "effect_on_target": "It routes entry exponentiation to the standard real natural-power operation.",
+      "paper_match": "This is neutral typeclass infrastructure preserving ordinary entry squaring.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "instOfNatNat",
+      "interpretation": "This interprets every natural-number literal n as that same value in Nat.",
+      "effect_on_target": "The exponent supplied to the real power operation is the natural number two.",
+      "paper_match": "The dependency preserves the exact exponent required for the Frobenius norm.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The hash-verified published PDF is Demmel, Dumitriu, and Holtz, Fast linear algebra is stable, Numerische Mathematik 108 (2007), 59-91. PDF page 8, printed page 66, contains equation (8) and its surrounding first-order recursive triangular-inversion analysis.",
+      "lean_evidence": "The supplied exact and elaborated types identify P10-T1 as the inequality for p10FrobNorm (p10MatMul n A dB).",
+      "reasoning": "The selected source is exactly equation (8)'s second summand, read with the preceding computed-product paragraph and the subsequent recursive use."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "Equation (8) uses a left matrix A, a right matrix B carrying inherited error err(B,n), and the common size parameter n; the surrounding recursion uses square blocks.",
+      "lean_evidence": "Lean quantifies n and square real matrices A and dB, where dB reifies the matrix perturbation in B and p10FrobNorm dB is its absolute error magnitude.",
+      "reasoning": "The base matrix B is eliminable from this isolated contribution because A(B+dB)-AB=A dB. The square-real choice is an explicit compatible specialization."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "The paper presents the rule for a product whose inputs may carry arbitrary inherited errors from prior computations; the selected contribution depends on A and the right-input error.",
+      "lean_evidence": "Lean universally quantifies n, A, and dB with no dependent witness or altered quantifier order.",
+      "reasoning": "Universal quantification over dB covers every possible right-input perturbation. No paper witness dependence or Skolemization is lost."
+    },
+    {
+      "id": "S04",
+      "status": "pass",
+      "paper_evidence": "The paper places the term in a first-order analysis and assumes that B carries inherited error; the local multiplication model supplies a separate μ(n)ε term.",
+      "lean_evidence": "The target is an exact algebraic bound for the isolated inherited-error component and therefore needs no smallness, positivity, invertibility, or floating-point hypothesis.",
+      "reasoning": "Whenever the paper's contextual hypotheses hold, the exact Lean inequality applies to the resulting dB. Omitting hypotheses unnecessary for this isolated component does not weaken or vacuously strengthen the benchmark claim."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "P10-T1 selects only equation (8)'s second summand, ||A|| err(B,n), while the complete equation separately contains local multiplication and left-input-error terms.",
+      "lean_evidence": "The conclusion bounds ||A dB|| by ||A|| ||dB|| and introduces no local multiplication or left-input contribution.",
+      "reasoning": "This is complete for the selected right-input contribution. Requiring the other two summands would turn T1 into the separate complete-rule task."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The selected paper expression uses ordinary matrix multiplication, a matrix norm, scalar multiplication, and normwise comparison.",
+      "lean_evidence": "D001-D024 unfold the target to standard finite real matrix multiplication, the unsquared Frobenius norm, ordinary real multiplication, and real ≤.",
+      "reasoning": "All nontrivial target operators and imported definitions have explicit standard interpretations, with no misleading hidden operation."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes the mathematical product C=A·B from its computed realization and attributes err(B,n) to prior computation, although it does not consistently mark exact and computed inputs typographically.",
+      "lean_evidence": "Lean uses dB directly as the perturbation matrix and bounds the norm of its propagated contribution A dB; it does not identify dB with B itself.",
+      "reasoning": "Representing the computed-minus-exact difference directly avoids conflating it with the exact right operand. The omitted base B cancels from the isolated difference."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "Equation (8) is a reusable product-error rule applied inside recursive triangular inversion, and T1 concerns propagation through one matrix-product operation rather than the entire inversion algorithm.",
+      "lean_evidence": "p10MatMul n A dB is exactly the matrix-product operation producing the right-error contribution.",
+      "reasoning": "The proposition remains linked to the relevant product operation. Encoding the surrounding recursive inversion would exceed the selected local task."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "The paper specifies an absolute normwise analysis but leaves the particular matrix norm unnamed and notes finite-dimensional norm equivalence.",
+      "lean_evidence": "p10FrobNorm is explicitly sqrt(Σ_i Σ_j A_ij^2), the unsquared Frobenius norm on real matrices.",
+      "reasoning": "The target makes an explicit normwise, rather than componentwise, specialization. Frobenius submultiplicativity has the required coefficient one."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "Equation (8)'s second term is ||A|| err(B,n): the coefficient is one, the opposite left operand supplies the norm, the same n is used, and neither ε nor μ(n) multiplies this term.",
+      "lean_evidence": "The target is ||A dB||F ≤ ||A||F ||dB||F with A on the left, one common n, and no additional scalar factor.",
+      "reasoning": "Orientation, coefficient, indexing, and parameter dependence all match the selected contribution."
+    },
+    {
+      "id": "S11",
+      "status": "pass",
+      "paper_evidence": "Machine epsilon and μ(n) occur only in equation (8)'s local multiplication term. The inherited-right-error term contains neither, and the cited passages specify no overflow, underflow, NaN, infinity, or rounding-mode treatment.",
+      "lean_evidence": "The target uses exact real arithmetic and introduces no ε, μ(n), rounding operation, or exceptional-value convention.",
+      "reasoning": "This accurately isolates the algebraic propagation term rather than silently attaching local roundoff to it. The target does not purport to formalize the complete floating-point execution."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "Equation (8) is printed with equality, but equation (1) is an inequality with an O(ε²) remainder and the surrounding discussion treats err quantities as first-order error bounds.",
+      "lean_evidence": "Lean states the non-strict inequality ||A dB||F ≤ ||A||F ||dB||F.",
+      "reasoning": "The Lean relation captures the justified bound underlying the displayed contribution and does not overstate the paper's accounting equality as an exact identity of actual errors."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The selected quantity is the absolute, normwise error inherited by the right operand and propagated into the product.",
+      "lean_evidence": "p10FrobNorm dB is an absolute normwise perturbation magnitude, and p10FrobNorm (A dB) is the corresponding propagated output-error magnitude.",
+      "reasoning": "No relative, componentwise, residual, backward, or mixed error notion has been substituted."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Equation (8) is explicitly first order; higher-order interactions are omitted, while equation (1) records an O(ε²) remainder for the enclosing multiplication model.",
+      "lean_evidence": "The target bounds only the linear contribution A dB and contains neither a left perturbation nor a product of perturbations.",
+      "reasoning": "The exact bound on this linear component faithfully supplies the selected first-order term without claiming to formalize or eliminate the enclosing higher-order remainder."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The paper's local sentence says two conformable matrices and leaves the norm unnamed; the surrounding equation (1) and recursive application use n-by-n matrices.",
+      "lean_evidence": "Lean specializes to finite square real matrices and the Frobenius norm, while also admitting the degenerate n=0 case.",
+      "reasoning": "This is an explicit, nonvacuous real-square-Frobenius specialization that still measures the claimed coefficient-one right-error amplification. It is not classified as stronger merely because of its restricted domain."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The product-error rule applies to ordinary nonzero matrix products and nonzero inherited perturbations, not only to a degenerate case.",
+      "lean_evidence": "For n=1 with the sole entries of A and dB both equal to 1, both sides equal 1; thus a nonzero instance attains equality.",
+      "reasoning": "The binders are satisfiable in a nontrivial dimension, and the conclusion is not true merely because the index set is empty or an imposed factor vanishes."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "In the explicit real-square-Frobenius specialization, let dB be the computed-minus-exact right-input perturbation. Then A(B+dB)-AB=A dB, and Lean gives ||A dB||F ≤ ||A||F||dB||F. If err(B,n) is an error bound, ||dB||F ≤ err(B,n) yields the selected contribution ||A||F err(B,n) with coefficient one. This implication concerns P10-T1's selected term, not all of equation (8)."
+    },
+    "paper_implies_lean": {
+      "verdict": "yes",
+      "reasoning": "Instantiate the paper's normwise right-error amplification rule with real square matrices, the Frobenius norm, and an inherited error matrix dB whose exact error magnitude is ||dB||F. The asserted coefficient-one amplification by the opposite left operand then gives ||A dB||F ≤ ||A||F||dB||F. Universal dB is legitimate because any matrix can serve as a right perturbation; homogeneity also removes any first-order smallness restriction for this isolated linear bound."
+    }
+  },
+  "classification": "faithful-equivalent",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "note",
+      "category": "explicit-specialization",
+      "paper_evidence": "Equation (8) leaves the norm unnamed and states the product rule in general matrix notation within an n-by-n recursive context.",
+      "lean_evidence": "The target uses square real matrices and an explicitly defined Frobenius norm.",
+      "impact": "This is a nonvacuous, task-preserving specialization and must not be reported as a stronger theorem solely because of its narrower domain."
+    },
+    {
+      "severity": "note",
+      "category": "perturbation-reification",
+      "paper_evidence": "The paper represents inherited right-input error by the scalar quantity err(B,n).",
+      "lean_evidence": "Lean represents the underlying error matrix as dB and obtains its scalar magnitude as p10FrobNorm dB.",
+      "impact": "Faithfulness uses the standard identification dB=Bcomp-B and err(B,n)=||dB||, or the corresponding upper-bound inequality. Because dB is universally quantified, this introduces no unintended restriction."
+    },
+    {
+      "severity": "note",
+      "category": "bound-versus-accounting-equality",
+      "paper_evidence": "Equation (8) prints an equality, while equation (1) and the surrounding first-order analysis describe error bounds and omit higher-order terms.",
+      "lean_evidence": "The target states a non-strict submultiplicative inequality for the actual propagated perturbation norm.",
+      "impact": "The Lean relation captures the defensible mathematical content of the selected summand without asserting an unjustified exact identity between actual errors."
+    }
+  ],
+  "rationale": "At the granularity of P10-T1, the Lean proposition is the exact algebraic bound that generates equation (8)'s inherited-right-error summand: a right perturbation dB propagates as A dB and has norm at most ||A||F||dB||F. The operand orientation, coefficient one, common size index, absolute normwise character, and absence of ε or μ(n) all match. The real-square-Frobenius choice is an explicit nonvacuous specialization that still supplies the benchmark task, rather than grounds for calling the theorem stronger. The target does not encode the other two terms or the recursive inversion recurrence, but those are outside this selected T1 contribution. Both semantic implications therefore hold for the selected result under the stated specialization."
+}

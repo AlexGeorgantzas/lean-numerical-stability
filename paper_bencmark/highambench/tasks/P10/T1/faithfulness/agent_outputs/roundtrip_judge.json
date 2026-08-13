@@ -1,0 +1,172 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P10-T1",
+  "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
+  "blind_translation_sha256": "13980af30160a3aa94e82252e6b82d855790e04ce8c4506daefdaa10b77c564d",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The authoritative published version identifies equation (8) on PDF page 8, printed page 66, specifically its second summand ||A|| err(B,n) and the surrounding three-term rule.",
+      "translation_evidence": "The blind translation concerns multiplication by a left matrix A and a second matrix dB, so it can be compared directly with the selected propagation term rather than a different paper result.",
+      "reasoning": "The supplied source version, passage, and surrounding result are unambiguous and correctly selected."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper binds conformable product inputs A and B, a size parameter n, and an inherited error quantity err(B,n); equation (8) does not independently require real, square, or zero-dimensional matrices.",
+      "translation_evidence": "The translation universally quantifies n over Nat, including zero, and A and dB over square n-by-n real matrices. It has no binder for B or err(B,n).",
+      "reasoning": "The translation replaces the right input and its attached error quantity with an arbitrary real square matrix and imposes dimensions and a scalar field not fixed by the selected passage."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The paper's rule applies to a product C=A B in which B carries an inherited error err(B,n).",
+      "translation_evidence": "For every n, A, and independently chosen dB, the translation asserts a matrix-norm inequality without relating dB to B, a computed approximation, or an inherited error.",
+      "reasoning": "Universal quantification over an arbitrary dB does not preserve the dependence of the propagated quantity on the prior computation of B."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The source assumes an inherited error in B, first-order error analysis, and the paper's normwise local multiplication model.",
+      "translation_evidence": "The translation explicitly has no hypotheses and treats dB as an arbitrary matrix with no perturbation, smallness, or computation relationship.",
+      "reasoning": "Essential semantic hypotheses about inherited error and first-order numerical analysis are absent."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The conclusion identifies ||A|| err(B,n), with coefficient 1, as the additive contribution of right-input error within equation (8).",
+      "translation_evidence": "The sole conclusion is the standalone inequality ||A dB||_F <= ||A||_F ||dB||_F.",
+      "reasoning": "The translation states an algebraic submultiplicativity result, not that its right-hand side is an inherited-error contribution to err(C,n) or an additive part of the paper's error rule."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The selected paper term uses matrix multiplication, a matrix norm, and the inherited error notation err(B,n).",
+      "translation_evidence": "The dependency ledger fully interprets its matrix type, finite indices, ordinary matrix multiplication, real arithmetic, Frobenius norm, and non-strict inequality; all listed dependencies are marked understood.",
+      "reasoning": "The blind proposition's nontrivial operators are unfolded coherently. Its semantic omissions are failures of correspondence rather than unresolved dependency interpretation."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "Equation (8) analyzes a computed product and distinguishes newly introduced multiplication error from error inherited by previously computed inputs.",
+      "translation_evidence": "The translation concerns only exact real matrix multiplication and gives dB no computed or perturbation meaning.",
+      "reasoning": "Exact algebraic quantities are substituted for computed and inherited-error quantities without an explicit identification."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The propagation rule is used inside recursive triangular matrix inversion and describes error passing through one product operation.",
+      "translation_evidence": "The translation contains no computed product, recursive inversion operation, execution stage, or linkage to an algorithm.",
+      "reasoning": "The proposition has been detached from the paper's algorithm and execution model."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "The paper uses an unnamed norm in a normwise absolute-error framework and does not authorize specialization to a particular matrix norm in equation (8).",
+      "translation_evidence": "Every norm is specifically the entrywise Frobenius norm, and err(B,n) is replaced implicitly by ||dB||_F without a defining relationship.",
+      "reasoning": "Although both expressions are unsquared normwise quantities, the translation silently fixes the norm and changes an error quantity into the norm of an arbitrary matrix."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The selected term has coefficient 1, left-right orientation ||A|| err(B,n), and the same size index n as the output error.",
+      "translation_evidence": "The inequality preserves constant 1 and left multiplication by A, but it contains no n-indexed input or output error quantities and instead uses the dimension of dB.",
+      "reasoning": "Some algebraic orientation is retained, but the paper's indexed error dependence is not represented, so the complete constants-and-indexing contract does not match."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The term belongs to a first-order floating-point model whose enclosing equation includes local roundoff governed by machine epsilon and mu(n), while exceptional-value behavior is unstated.",
+      "translation_evidence": "The translation explicitly concerns exact real arithmetic and encodes no precision, rounding, machine epsilon, overflow, underflow, NaN, or computed approximation.",
+      "reasoning": "The numerical model surrounding the inherited-error term is omitted rather than represented."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "Equation (8) displays the propagated quantity as an additive summand in a first-order error equation, notwithstanding the source's ambiguity about interpreting that equality as exact actual error.",
+      "translation_evidence": "The translation asserts a non-strict upper bound on the Frobenius norm of an exact matrix product.",
+      "reasoning": "The relations concern different quantities and logical claims; the paper's equality-versus-bound ambiguity does not turn its error-accounting statement into this standalone product inequality."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "err(B,n) is an inherited absolute normwise error, distinct from newly introduced local multiplication error.",
+      "translation_evidence": "dB is an arbitrary matrix and the translation explicitly records that its identifier carries no perturbation meaning.",
+      "reasoning": "The required inherited forward-error notion is absent and cannot be recovered from the variable name."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Equation (8) is explicitly first-order; higher-order interactions are omitted, while the underlying multiplication model records an O(epsilon^2) remainder.",
+      "translation_evidence": "The Frobenius submultiplicativity inequality is presented as an exact theorem with no approximation order or remainder.",
+      "reasoning": "An exact algebraic inequality does not encode the paper's first-order truncation or treatment of higher-order error interactions."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The selected passage requires a conformable matrix product but leaves the norm unnamed and does not explicitly bind the operands as square real matrices or include n=0.",
+      "translation_evidence": "The translation is restricted to finite square matrices over Real, fixes the Frobenius norm, and explicitly includes n=0.",
+      "reasoning": "These are unsupported specializations and an added degenerate dimension, not a faithful rendering of the source's stated generality."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper applies the term to genuine matrix products carrying inherited input error in a recursive numerical algorithm.",
+      "translation_evidence": "The universal proposition includes nontrivial dimensions and arbitrary matrices; n=0 is merely one degenerate case, and for n>=1 the inequality is substantive.",
+      "reasoning": "The translated proposition is satisfiable and nonvacuous, although its substantive content is not the paper's error-propagation claim."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "Deriving the paper claim would require extra assumptions identifying dB with the perturbation in a previously computed B, setting err(B,n)=||dB||_F, relating the output perturbation to A dB, selecting the Frobenius norm, and embedding the bound in first-order additive error accounting. None of these follow from the translation."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper's first-order propagation rule for inherited computational error does not universally assert exact Frobenius submultiplicativity for every pair of square real matrices, including dimension zero. That theorem would require additional norm and perturbation formalization."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "error-semantics substitution",
+      "paper_evidence": "The selected result propagates the inherited absolute normwise error err(B,n) of the right product input.",
+      "translation_evidence": "The translated dB is an arbitrary matrix with no relationship to B, a computed approximation, or an error.",
+      "impact": "The proposition proves a generic matrix inequality rather than the selected paper claim about inherited computational error."
+    },
+    {
+      "severity": "major",
+      "category": "conclusion and relation mismatch",
+      "paper_evidence": "The quantity ||A|| err(B,n) is an additive first-order contribution to err(C,n) in equation (8).",
+      "translation_evidence": "The conclusion is a standalone inequality bounding ||A dB||_F.",
+      "impact": "Neither statement logically implies the other without substantial bridging definitions and hypotheses."
+    },
+    {
+      "severity": "major",
+      "category": "numerical and algorithmic context omitted",
+      "paper_evidence": "The result belongs to a computed matrix-product model used in recursive triangular inversion, with local roundoff and first-order error accounting.",
+      "translation_evidence": "The proposition uses exact real arithmetic and contains no algorithm, computed quantity, precision model, or rounding behavior.",
+      "impact": "The translation cannot express the paper's stability or propagation interpretation."
+    },
+    {
+      "severity": "major",
+      "category": "unsupported norm and type specialization",
+      "paper_evidence": "Equation (8) leaves the norm unnamed and only requires conformable matrices in its immediate statement.",
+      "translation_evidence": "The translation fixes square real matrices and the Frobenius norm, including dimension zero.",
+      "impact": "The translated theorem has a narrower and differently specified mathematical domain than the paper passage."
+    },
+    {
+      "severity": "major",
+      "category": "higher-order treatment",
+      "paper_evidence": "The displayed propagation rule is explicitly first-order, with higher-order interactions outside equation (8).",
+      "translation_evidence": "The inequality is exact and has no approximation order or remainder.",
+      "impact": "The exact theorem does not preserve the source's first-order numerical meaning."
+    }
+  ],
+  "rationale": "The blind translation correctly and completely describes an exact Frobenius-norm submultiplicativity theorem, but that theorem is only a possible algebraic ingredient for bounding a perturbation after additional identifications. It does not encode an inherited error in B, a computed output error, first-order additive propagation, the floating-point model, or the recursive algorithm, and it silently specializes the source's unnamed norm and matrix domain. Because those missing links prevent implication in either direction, the appropriate classification is not-faithful-different."
+}
