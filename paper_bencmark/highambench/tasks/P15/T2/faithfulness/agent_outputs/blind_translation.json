@@ -1,0 +1,290 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "6d8bb543f7578c2f1c488dbf291c9c900a371c9e1a260443e32703e75e307e7b",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For a natural number n, this is the type of real n-by-n matrices, represented as functions Fin n -> Fin n -> Real.",
+      "effect_on_target": "It is the type of A, Atilde, truncError, roundingError, and the existentially quantified totalError.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For a natural number n, this is the type of real n-vectors, represented as functions Fin n -> Real.",
+      "effect_on_target": "It is the type of v and computed, so vector equalities in the target are extensional equalities at every index in Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "This maps a real square matrix to the real-valued norm supplied by Matrix.frobeniusNormedRing.",
+      "effect_on_target": "It supplies every matrix-norm quantity in the truncation-error hypothesis, rounding-error hypothesis, and total-error conclusion.",
+      "status": "unclear"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "This is matrix-vector multiplication: for a matrix M and vector x, its value at i is the finite sum over all j in Fin n of M(i,j) times x(j).",
+      "effect_on_target": "It defines both the assumed computation computed = (Atilde + roundingError)v and the required backward representation computed = (A + totalError)v.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "And",
+      "meaning": "Logical conjunction of two propositions.",
+      "effect_on_target": "The same existential witness totalError must satisfy both the computed-vector equality and the norm bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "Eq",
+      "meaning": "Exact equality of two terms of the same type.",
+      "effect_on_target": "It makes Atilde = A + truncError, computed = (Atilde + roundingError)v, and computed = (A + totalError)v exact matrix or vector equalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "Exists",
+      "meaning": "Existential quantification over a type.",
+      "effect_on_target": "It asserts the existence of at least one real n-by-n totalError after all matrices, vectors, scalars, and hypotheses have been fixed.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type whose elements correspond to natural numbers strictly below n.",
+      "effect_on_target": "It indexes all matrix rows, matrix columns, vector coordinates, and finite sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "HAdd.hAdd",
+      "meaning": "This projects the heterogeneous addition operation from an HAdd instance.",
+      "effect_on_target": "With the displayed instances it denotes pointwise matrix addition and ordinary real addition, including 1 + gammaC and the two terms of the final bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "HMul.hMul",
+      "meaning": "This projects the heterogeneous multiplication operation from an HMul instance.",
+      "effect_on_target": "With the displayed real instance it denotes ordinary real multiplication in matrix-vector products and all scalar bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LE.le",
+      "meaning": "This projects the less-than-or-equal relation from an LE instance.",
+      "effect_on_target": "With the real instance it expresses nonnegativity and every norm upper bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Matrix.add",
+      "meaning": "This gives matrices the pointwise addition inherited from their function representation.",
+      "effect_on_target": "Thus (M + N)(i,j) = M(i,j) + N(i,j) in all matrix sums appearing in the hypotheses and conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "The universally quantified dimension n is an arbitrary natural number, including zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "OfNat.ofNat",
+      "meaning": "This interprets a natural-number literal in a type having the corresponding OfNat instance.",
+      "effect_on_target": "It interprets the displayed literals 0 and 1 as real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "One.toOfNat1",
+      "meaning": "This constructs the interpretation of the numeral 1 from a type's distinguished one.",
+      "effect_on_target": "It makes the 1 in 1 + gammaC the real multiplicative identity.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "All matrix entries, vector entries, scalar parameters, norms, products, sums, and inequalities are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instAdd",
+      "meaning": "The ordinary addition operation on real numbers.",
+      "effect_on_target": "It is used entrywise in matrix addition, in finite sums, in 1 + gammaC, and in the final upper bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instLE",
+      "meaning": "The ordinary order relation on real numbers.",
+      "effect_on_target": "It gives the mathematical meaning of all occurrences of <=.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instMul",
+      "meaning": "The ordinary multiplication operation on real numbers.",
+      "effect_on_target": "It supplies entry-vector products and the products epsilon*beta, gammaC*norm, and epsilon*(1+gammaC)*beta.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instOne",
+      "meaning": "The distinguished real number one.",
+      "effect_on_target": "It supplies the constant 1 in the factor 1 + gammaC.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instZero",
+      "meaning": "The distinguished real number zero.",
+      "effect_on_target": "It supplies the constant 0 in the three nonnegativity hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Zero.toOfNat0",
+      "meaning": "This constructs the interpretation of the numeral 0 from a type's distinguished zero.",
+      "effect_on_target": "It makes each lower endpoint in 0 <= epsilon, 0 <= beta, and 0 <= gammaC the real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "instHAdd",
+      "meaning": "This turns a homogeneous Add operation into a homogeneous HAdd operation with the same addition function.",
+      "effect_on_target": "It resolves HAdd to pointwise matrix addition for matrices and ordinary addition for reals.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "instHMul",
+      "meaning": "This turns a homogeneous Mul operation into a homogeneous HMul operation with the same multiplication function.",
+      "effect_on_target": "It resolves every displayed scalar HMul operation to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "Fin.fintype",
+      "meaning": "This gives Fin n a finite enumeration containing each index exactly once.",
+      "effect_on_target": "It makes summation over all vector and matrix indices finite, including when n is zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Finset.sum",
+      "meaning": "This forms the finite additive sum of a real-valued function over a finite set.",
+      "effect_on_target": "It is the summation operation in each coordinate of matrix-vector multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Finset.univ",
+      "meaning": "This is the finite set containing every element of a finite type.",
+      "effect_on_target": "In D004 it makes the matrix-vector product sum range over every column index j in Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Matrix",
+      "meaning": "A matrix with row type m, column type n, and entries in alpha is a function m -> n -> alpha.",
+      "effect_on_target": "Consequently all matrix equalities and additions are coordinatewise, and LocalDef001 n consists of square Fin n-indexed real matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Matrix.frobeniusNormedRing",
+      "meaning": "This equips square matrices over an RCLike scalar type with a normed-ring structure whose norm is inherited from Matrix.frobeniusSeminormedAddCommGroup.",
+      "effect_on_target": "Its norm component is the matrix norm used by D003; the supplied body does not unfold the inherited norm to an entrywise closed formula.",
+      "status": "unclear"
+    },
+    {
+      "id": "D030",
+      "name": "Norm.norm",
+      "meaning": "This projects the real-valued norm function from a Norm instance.",
+      "effect_on_target": "It applies the matrix norm selected through D029 to each matrix occurring in a norm hypothesis or conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "NormedRing.toNorm",
+      "meaning": "This extracts the Norm structure contained in a NormedRing instance.",
+      "effect_on_target": "It connects Matrix.frobeniusNormedRing to the norm operation invoked by D003.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This equips the real numbers with their additive commutative monoid structure.",
+      "effect_on_target": "It permits the finite real sums used in matrix-vector multiplication, with empty sums equal to zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "Real.instRCLike",
+      "meaning": "This supplies the RCLike structure on the real numbers.",
+      "effect_on_target": "It allows D029 to construct the displayed matrix normed-ring structure for real matrices; it introduces no additional target hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "instDecidableEqFin",
+      "meaning": "This decides equality of two Fin n indices by deciding equality of their underlying natural-number values.",
+      "effect_on_target": "It supplies the decidable equality required to construct the matrix normed-ring instance; it imposes no mathematical restriction on n.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "An arbitrary natural number n, implicitly universally quantified and allowed to be zero.",
+      "Real n-by-n matrices A, Atilde, truncError, and roundingError.",
+      "Real n-vectors v and computed.",
+      "Real scalars epsilon, beta, and gammaC."
+    ],
+    "hypotheses": [
+      "epsilon >= 0.",
+      "beta >= 0.",
+      "gammaC >= 0.",
+      "Atilde = A + truncError exactly; equivalently, Atilde(i,j) = A(i,j) + truncError(i,j) for all i,j in Fin n.",
+      "computed = (Atilde + roundingError)v exactly; equivalently, computed(i) = sum over j in Fin n of (Atilde(i,j) + roundingError(i,j))*v(j) for every i.",
+      "||truncError||_F <= epsilon*beta, where ||.||_F denotes the matrix norm selected by D003.",
+      "||roundingError||_F <= gammaC*||Atilde||_F."
+    ],
+    "conclusions": [
+      "There exists a real n-by-n matrix totalError.",
+      "For that same totalError, computed = (A + totalError)v exactly; coordinatewise, computed(i) = sum over j in Fin n of (A(i,j) + totalError(i,j))*v(j).",
+      "For that same totalError, ||totalError||_F <= gammaC*||A||_F + epsilon*(1 + gammaC)*beta."
+    ],
+    "mathematical_definitions": [
+      "Fin n is the index set {0,...,n-1}; when n=0 it is empty.",
+      "Matrix addition is pointwise: (M+N)(i,j) = M(i,j)+N(i,j).",
+      "Matrix-vector multiplication is (Mx)(i) = sum over all j in Fin n of M(i,j)x(j).",
+      "The notation ||M||_F here denotes exactly Matrix.frobeniusNormedRing.norm M, the norm selected in D003.",
+      "A direct witness justified by the hypotheses is totalError = truncError + roundingError, although the conclusion itself does not require the existential witness to equal this matrix."
+    ],
+    "proposition_plain_english": "For every finite dimension n, real square matrices A, Atilde, truncError, and roundingError, real vectors v and computed, and nonnegative real parameters epsilon, beta, and gammaC, suppose Atilde is exactly A plus truncError, computed is exactly the product of Atilde plus roundingError with v, the norm of truncError is at most epsilon*beta, and the norm of roundingError is at most gammaC times the norm of Atilde. Then there is a real square matrix totalError such that computed is exactly (A + totalError)v and the norm of totalError is at most gammaC*||A||_F + epsilon*(1 + gammaC)*beta."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The dimension n may be zero. Then Fin n is empty, the matrix and vector types are degenerate, the matrix-vector sums are empty, and the assertion becomes correspondingly trivial.",
+    "The statement is an implication, so it is vacuously true whenever any exact equality, nonnegativity condition, or norm bound in the antecedent fails.",
+    "If epsilon*beta = 0, the truncation bound forces truncError to have zero norm; if gammaC = 0, the rounding bound forces roundingError to have zero norm. Data incompatible with those consequences make the antecedent false.",
+    "The conclusion constrains totalError only through its norm and its action on the single fixed vector v. It does not assert the matrix identity A + totalError = Atilde + roundingError.",
+    "In particular, when v is the zero vector, the computed-vector equality places no additional constraint on totalError beyond consistency of the hypotheses and the norm bound.",
+    "The existential witness is not asserted to be unique and is not explicitly required to equal truncError + roundingError.",
+    "No norm or nonzero condition is imposed on v, and no forward-error bound comparing computed with Av is stated.",
+    "No invertibility, conditioning, rank, symmetry, or other structural assumption on A is encoded.",
+    "The error bounds are normwise matrix bounds, not componentwise bounds, and beta is merely an arbitrary nonnegative real parameter with no encoded relationship to A or v.",
+    "All arithmetic and equalities are over exact real numbers; no floating-point format, rounding mode, machine arithmetic semantics, or probabilistic error model is encoded."
+  ],
+  "ambiguities": [
+    "The packet identifies the selected norm through Matrix.frobeniusNormedRing, but its body delegates the actual norm to Matrix.frobeniusSeminormedAddCommGroup without supplying that declaration's body. Therefore the exact entrywise closed formula, such as the standard square-root-of-sum-of-squares formula suggested by the identifier, cannot be derived solely from the supplied bodies."
+  ]
+}
