@@ -1,0 +1,104 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "adjudicator",
+  "task_id": "P01-T2",
+  "trigger": [
+    "judge classifications differ",
+    "source contract contains ambiguity"
+  ],
+  "resolved_items": [
+    {
+      "item": "judge classifications differ",
+      "resolution": "The correct classification is faithful-equivalent. The round-trip judgment's claimed stronger scope is not genuine machine-level strength: Lean assumes the paper's relative-error law directly and makes no claim about operations that violate it. Model-violating underflow and guard-digit-deficient arithmetic cannot instantiate StandardAddModel. At the common algebraic model boundary, both implication directions hold.",
+      "primary_evidence": "PDF page 2, printed page 784, states model (1.2), then explains that guard-digit and underflow issues concern applicability of that model. Declaration D008 requires the same per-addition equation and error bound for fl_add. The target contains no underflow, exceptional-value, or machine-execution predicate whose domain could be broadened."
+    },
+    {
+      "item": "source contract contains ambiguity",
+      "resolution": "The source contract's ambiguities are resolvable for this proposition. They concern an implicit gamma-domain condition, the explicitly selected power-of-two specialization, informal comparison prose, and machine or asymptotic context not asserted by the target. None makes the target-paper relationship undetermined.",
+      "primary_evidence": "The relevant primary passages are the finite-product display on PDF page 2, equation (2.6) on PDF page 3, and the pairwise construction, power-of-two assumption, equation (3.6), and following comparison on PDF page 6. D001-D008 and the exact target declaration expose the corresponding formal premises, algorithms, and bounds."
+    },
+    {
+      "item": "S04 and S11: underflow and guard-digit scope",
+      "resolution": "The source's no-underflow sentence and guard-digit warning delimit when physical arithmetic satisfies model (1.2). StandardAddModel internalizes that model as an axiom. It does not purport to validate underflowing or guard-digit-deficient operations that violate the axiom, so omission of separate machine predicates is an abstraction of the same premise, not a broader exceptional-value theorem.",
+      "primary_evidence": "PDF page 2, printed page 784, first states fl(x op y)=(x op y)(1+delta), |delta|<=u, and then says the model is violated without a guard digit and assumes no underflow. D008 requires forall x y, exists delta with |delta|<=u and fl_add(x,y)=(x+y)(1+delta)."
+    },
+    {
+      "item": "gamma-domain ambiguity",
+      "resolution": "The paper does not print m*u<1 beside the finite-product estimate, but that condition is mathematically implicit in using gamma_m=m*u/(1-m*u) as a nonnegative upper bound. Lean makes it explicit at the largest required index. Since u>=0 and r<=2^r-1, this also validates gamma_r. It does not reduce applicability within the intended combined bound.",
+      "primary_evidence": "PDF page 2, printed page 784, displays |theta_m|<=m*u/(1-m*u). D001 defines GammaValid u m as m*u<1, D005 defines the identical quotient, and the target assumes GammaValid fp.u (2^r-1)."
+    },
+    {
+      "item": "power-of-two specialization ambiguity",
+      "resolution": "Lean exactly matches the specialization used to derive equation (3.6). It does not claim a non-power-of-two extension.",
+      "primary_evidence": "PDF page 6, printed page 788, says 'Assume for simplicity that n=2^r' immediately before the equal-depth product and equation (3.6). The target binds v : Fin(2^r) -> Real, and D006 defines the corresponding r-level balanced adjacent-pair tree."
+    },
+    {
+      "item": "informal 'smaller bound' ambiguity",
+      "resolution": "The target's non-strict gamma_r<=gamma_(2^r-1) is the correct uniform formal comparison. Equality occurs for n=1 or n=2 and when u=0; strictness requires additional conditions. The target does not compare actual errors or the sharper ordering-sensitive bound (2.5).",
+      "primary_evidence": "PDF page 3, printed page 785, gives coefficient gamma_(n-1) in (2.6). PDF page 6, printed page 788, gives gamma_(log2 n) in (3.6), calls it smaller in growth order, and immediately notes that (2.5) can be smaller. The target's third conjunct uses <= only."
+    },
+    {
+      "item": "input representability ambiguity",
+      "resolution": "The selected analysis treats the x_i as exact real addends and rounds only summation operations. Lean's arbitrary real vector and exact reference sum therefore match the source; no omitted input-conversion error is part of this result.",
+      "primary_evidence": "PDF page 2, printed page 784, declares real x_1,...,x_n, defines the exact sum, and starts modeled errors at k=2 in (2.1). D007 returns a singleton input exactly, while the target's Finset sums use exact real addition."
+    },
+    {
+      "item": "zero exact sum in the relative rewrite",
+      "resolution": "The missing S_n!=0 condition affects only the paper's subsequent relative-error rewrite. The Lean target states the absolute bounds (2.6) and (3.6), which remain meaningful when the exact sum is zero.",
+      "primary_evidence": "PDF page 3, printed page 785, first states the absolute inequality (2.6) and only afterward divides by |S_n| to define R_n. Both target error conjuncts use absolute computed-minus-exact errors without division by the exact sum."
+    },
+    {
+      "item": "overflow and nonfinite-value silence",
+      "resolution": "Neither source nor target supplies an IEEE exceptional-value semantics. Lean's real-valued model does not assert that overflow, infinities, or NaNs satisfy the theorem; any behavior not satisfying model_add is outside its quantified models. This silence therefore creates no stronger exceptional-value claim.",
+      "primary_evidence": "PDF page 2, printed page 784, discusses underflow and guard digits but not overflow or nonfinite values. D002-D008 model real-valued addition solely through the relative-error equation, and the target contains no exceptional-value type or predicate."
+    },
+    {
+      "item": "O(u^2) ambiguity",
+      "resolution": "Lean retains the exact finite gamma inequalities and does not formalize the explanatory first-order expansions. This preserves rather than weakens the selected bounds; no unspecified O(u^2) constant is needed.",
+      "primary_evidence": "The finite-product display on printed page 784, the first inequality in (2.6) on printed page 785, and (3.6) on printed page 788 use exact gamma coefficients. D005 defines that exact coefficient, and both target bounds use it directly."
+    },
+    {
+      "item": "degenerate r=0 and u=0 cases",
+      "resolution": "These endpoint cases do not constitute genuine stronger theorem content. For r=0, n=1 and both algorithms perform no rounded addition; for u=0, model_add forces exact addition. They are harmless closures of the displayed formulas rather than broader numerical claims.",
+      "primary_evidence": "The paper assumes n=2^r without stating r>0. D006 and D007 return the sole entry exactly, D005 gives gamma_0=0, and D008 with u=0 forces |delta|=0 in every modeled addition."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "For an underflow-free floating addition in the paper's standard regime, model (1.2), exact initial addition, and the implicit valid-gamma condition provide a StandardAddModel and the target premise. Unfolding the two Lean algorithms then gives the same power-of-two adjacent-pair computation and left-to-right computation, so the target yields (3.6), the n=2^r instance of (2.6), and only their non-strict coefficient comparison."
+    },
+    "paper_implies_lean": {
+      "verdict": "yes",
+      "reasoning": "At the paper's stated algebraic abstraction, each StandardAddModel operation supplies exactly the bounded per-addition delta used in the derivations. Equation (3.6) supplies the pairwise conjunct, equation (2.6) instantiated at n=2^r supplies the recursive conjunct, and r<=2^r-1 together with u>=0 and positive denominators gives gamma_r<=gamma_(2^r-1). The source's underflow and guard-digit warnings exclude operations for which the model fails; they do not add another mathematical dependency after the model law is assumed."
+    }
+  },
+  "classification": "faithful-equivalent",
+  "accepted": true,
+  "remaining_uncertainties": [
+    "The PDF does not formalize machine-level underflow, overflow, nonfinite values, or rounding modes as predicates, so this adjudication is limited to the algebraic model (1.2).",
+    "The usual condition m*u<1 is not printed beside the finite-product display; its intended necessity is inferred from the denominator and from the bound's mathematical validity."
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "category": "gamma-domain",
+      "evidence": "The paper displays gamma_m=m*u/(1-m*u) without an adjacent side condition, while Lean explicitly assumes (2^r-1)u<1.",
+      "impact": "Lean states the intended validity domain needed by both exact gamma bounds; this is not an applicability defect."
+    },
+    {
+      "severity": "note",
+      "category": "floating-point abstraction",
+      "evidence": "The paper's machine qualifications follow model (1.2); StandardAddModel directly requires that same relative-error equation and contains no exceptional-value semantics.",
+      "impact": "The target remains an idealized model theorem and does not gain genuine coverage of model-violating underflow or no-guard arithmetic."
+    },
+    {
+      "severity": "note",
+      "category": "comparison-scope",
+      "evidence": "The target compares only gamma_r and gamma_(2^r-1), while the paper separately warns that its ordering-sensitive recursive bound (2.5) can beat (3.6).",
+      "impact": "The formal theorem does not overstate coefficient superiority as an ordering of actual errors or all available bounds."
+    }
+  ],
+  "rationale": "Primary inspection confirms that the declaration reproduces the exact power-of-two pairwise bound (3.6), the matching instance of recursive bound (2.6), and the source-supported non-strict comparison of their gamma coefficients. All disputed local definitions have the intended meanings: StandardAddModel is the addition part of (1.2), gamma is the exact finite coefficient, pairwiseSum is the adjacent-pair balanced tree, and recursiveSum is the fixed left fold with an exact singleton. The round-trip judgment mistook direct axiomatization of the relative-error model for a theorem about machine behavior outside that model. Since operations exhibiting model-violating underflow or guard-digit behavior are not StandardAddModel instances, no genuine broader exceptional-value claim exists. Both implication directions are therefore yes, requiring faithful-equivalent with accepted=true."
+}
+

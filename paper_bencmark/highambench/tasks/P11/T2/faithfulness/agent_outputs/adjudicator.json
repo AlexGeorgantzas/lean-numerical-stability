@@ -1,0 +1,96 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "adjudicator",
+  "task_id": "P11-T2",
+  "trigger": [
+    "source contract contains ambiguity"
+  ],
+  "resolved_items": [
+    {
+      "item": "source contract contains ambiguity",
+      "resolution": "The locator selects the unnumbered exact residual-to-orthogonality-defect identity, not all of Theorem 1 or the norm bound (7). Its variables inherit the enclosing CGS-P context, but the displayed equality itself uses only the exact residual relations and invertibility of R_k. Omitting the floating-point and algorithm hypotheses is therefore a legitimate algebraic generalization of this supporting identity, although it does not compensate for Lean's square-only matrix domain.",
+      "primary_evidence": "PDF page 14, printed page 312, says 'To get (7)' and first derives Q_k = (A_k + Delta A_k)R_k^{-1}, then states the exact two-line identity before taking norms. PDF page 4, printed page 302, separately states Theorem 1, equations (3)-(8), and the CGS-P context."
+    },
+    {
+      "item": "Implicit quantifiers and inherited scope",
+      "resolution": "Textually, the source instances are the computed leading factors for k = 1,...,n under Theorem 1. Algebraically, the identity only needs Q_k R_k = A_k + Delta A_k, E_k = R_k^T R_k - A_k^T A_k, and an inverse for R_k. Lean directly assumes the corresponding factorization equation and a right inverse, but universally generalizes to arbitrary square data.",
+      "primary_evidence": "Printed page 302 quantifies the theorem over k = 1,...,n and computed R_k,Q_k from Algorithm 2. Printed page 312 explicitly says the derivation applies equations (4) and (5) and then uses R_k^{-1}. The declaration dossier gives only hQR and hInv as hypotheses."
+    },
+    {
+      "item": "Dimensions, identity size, and index domain",
+      "resolution": "The source identity has A_k, Delta A_k, and Q_k of size m-by-k and R_k and I of size k-by-k, with positive k. Lean instead makes A, dA, Q, R, and Rinv all n-by-n and permits n = 0. Thus I is unambiguously k-by-k in the paper, and the Lean declaration omits genuine tall cases m > k.",
+      "primary_evidence": "Printed pages 300 and 302 state A in R^{m x n}, m >= n, define A_k as its first k columns, and give A_k in R^{m x k} for k = 1,...,n. The displayed identity on printed page 312 is consequently k-by-k. D001 and D012 make every Lean matrix Matrix (Fin n) (Fin n) Real for arbitrary Nat n."
+    },
+    {
+      "item": "Invertibility and condition (3)",
+      "resolution": "The source requires an actual inverse R_k^{-1}. The paper says condition (3) assures nonsingularity, while Lean supplies Rinv and assumes R Rinv = I. For finite square real matrices this right inverse is the inverse; moreover, the displayed algebraic derivation can use hInv and its transpose directly. This aspect of Lean matches the identity's inverse requirement.",
+      "primary_evidence": "Printed page 302 says restriction (3) assures that R is nonsingular; printed page 307 again derives nonsingularity and positive diagonal entries from (3). Printed page 312 uses R_k^{-1} and R_k^{-T}. The declaration's hInv is exactly R Rinv = I and its conclusion uses Rinv^T and Rinv."
+    },
+    {
+      "item": "Norm and floating-point context",
+      "resolution": "Neither norm semantics nor an operation-by-operation floating-point model is part of the selected equality. Their absence from Lean is not a defect for this identity. The round-trip judgment's floating-point-model failure applies to the enclosing theorem's provenance, not to the exact supporting identity selected by the locator.",
+      "primary_evidence": "On printed page 312, the identity contains no norm, fl operation, epsilon_M, or approximation; norms and O(epsilon_M^2) first appear after 'Thus'. Printed page 301 supplies the surrounding IEEE and first-order discussion. The Lean target likewise contains only exact real matrix equalities."
+    },
+    {
+      "item": "Exactness and higher-order term",
+      "resolution": "The identity is exact and includes the quadratic term -(Delta A_k)^T(Delta A_k). Lean preserves the equality, sign convention, transpose order, sandwich order, both cross terms, and the quadratic term exactly.",
+      "primary_evidence": "The rendered display on printed page 312 explicitly has I - Q_k^T Q_k = R_k^{-T}(E_k - A_k^T Delta A_k - (Delta A_k)^T A_k - (Delta A_k)^T(Delta A_k))R_k^{-1}. D002, D005, D006, and D007 unfold to precisely this expression with dA for Delta A_k."
+    },
+    {
+      "item": "Nonvacuity and claimed strength",
+      "resolution": "Lean's generalized square scope is nonvacuous, but it is not faithful strength because its square type excludes source instances with m > k. The declaration is broader in provenance and narrower in dimensions, so neither domain contains the other under the direct correspondence.",
+      "primary_evidence": "For n = 1, A = 3, dA = 1, Q = 2, R = 2, and Rinv = 1/2 satisfy both Lean hypotheses and yield -3 on both sides. Printed pages 300, 302, and 312 nevertheless include tall m-by-k source instances that cannot instantiate D001 directly."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The source identity has genuine m-by-k instances with m > k, whereas every Lean binder is n-by-n. No binder or declared correspondence represents those tall factors. Generalizing away algorithmic hypotheses does not restore the omitted dimensional instances."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper states the identity for positive-index leading factors computed in the Theorem 1 CGS-P context. It does not state the universal claim for every arbitrary square tuple satisfying only hQR and hInv, nor the n = 0 case. The fact that this broader square claim is independently derivable algebraically does not make it a consequence of the paper's stated scope."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The paper never states the page-312 identity as a separately quantified lemma, so its maximal intended generality beyond the enclosing computed CGS-P factors is not textually fixed. This does not affect the classification because Lean still omits the explicit m > k source instances.",
+    "The paper defines kappa_2(R_k) using R_k^{-1} before saying condition (3) assures nonsingularity, without stating an extended condition-number convention for singular matrices. This presentation issue is immaterial once the selected identity's inverse is assumed.",
+    "The paper displays only an addition rounding relation although Algorithm 2 also uses products, norms, division, and square roots. No fuller operation model can be inferred from the cited pages, but none is needed inside the selected exact identity."
+  ],
+  "findings": [
+    {
+      "severity": "major",
+      "category": "dimension-specialization",
+      "evidence": "The paper's A_k, Delta A_k, and Q_k are m-by-k while R_k is k-by-k; D001 makes all five Lean matrices n-by-n.",
+      "impact": "Lean does not directly retain the paper's tall-matrix instances and therefore cannot be classified as faithful-stronger."
+    },
+    {
+      "severity": "major",
+      "category": "mixed-statement-scope",
+      "evidence": "The source variables are computed leading CGS-P factors for k = 1,...,n, while Lean quantifies over arbitrary square matrices constrained only by hQR and hInv.",
+      "impact": "Lean broadens admissible algebraic data while narrowing dimensions, making the complete scopes incomparable."
+    },
+    {
+      "severity": "minor",
+      "category": "index-domain",
+      "evidence": "The source uses k = 1,...,n, whereas Lean's Nat parameter includes zero.",
+      "impact": "Lean adds a degenerate empty-dimensional instance absent from the source, although its theorem also has nontrivial positive-dimensional instances."
+    },
+    {
+      "severity": "note",
+      "category": "algebraic-core",
+      "evidence": "Unfolding D002-D007 gives exactly I - Q^T Q = Rinv^T[(R^T R - A^T A) - A^T dA - dA^T A - dA^T dA]Rinv.",
+      "impact": "Within the square specialization, the exact formula, signs, residual convention, conjugation order, and quadratic term are faithful."
+    },
+    {
+      "severity": "note",
+      "category": "exact-supporting-identity",
+      "evidence": "Printed page 312 places epsilon_M, norms, and O(epsilon_M^2) only in the estimate following the displayed equality.",
+      "impact": "The absence of floating-point and norm machinery from Lean is appropriate for the selected exact identity and should not independently count as a formula-level failure."
+    }
+  ],
+  "rationale": "Primary evidence resolves the selected object as the exact supporting identity used to derive bound (7), not the complete numerical theorem. Lean faithfully reproduces that identity on square real matrices and validly generalizes away unnecessary algorithmic and rounding hypotheses. It nevertheless replaces the paper's m-by-k geometry with a single square dimension and adds arbitrary non-algorithmic data and n = 0. Consequently Lean does not retain every source instance, while the paper does not assert Lean's broader square scope. Both implication directions are therefore no, so the consistent classification is not-faithful-different and the declaration is not accepted."
+}
+

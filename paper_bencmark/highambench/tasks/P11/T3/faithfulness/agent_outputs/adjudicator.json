@@ -1,0 +1,127 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "adjudicator",
+  "task_id": "P11-T3",
+  "trigger": [
+    "source contract contains ambiguity"
+  ],
+  "resolved_items": [
+    {
+      "item": "Trigger: source contract contains ambiguity",
+      "resolution": "The source ambiguities do not prevent classification. The selected result is clearly a first-order, prefixwise spectral-norm theorem for CGS-P outputs. Its rigorous all-orders remainder, complete floating-point semantics, and invertibility convention remain underspecified and are preserved as uncertainties.",
+      "primary_evidence": "PDF page 3 (printed 301) states the normalized-range model and discards O(epsilon_M^2); PDF page 4 (printed 302) states Algorithm 2 linkage, condition (3), and bound (7); PDF page 14 (printed 312) ends the derivation with an explicit O(epsilon_M^2) remainder."
+    },
+    {
+      "item": "Remainder-free typography of inequality (7)",
+      "resolution": "Inequality (7) is not an exact remainder-free finite-precision inequality. The theorem preamble qualifies equations (4)-(8) as holding to within O(epsilon_M^2), and the appendix derives the leading term plus O(epsilon_M^2).",
+      "primary_evidence": "PDF page 4 (printed 302), Theorem 1 preamble and equation (7); PDF page 14 (printed 312), final estimate deriving (7)."
+    },
+    {
+      "item": "Use of R_k inverse before nonsingularity is established",
+      "resolution": "The paper leaves a formal circularity unresolved: kappa_2(R_k) is defined using R_k inverse, while the text subsequently says condition (3) assures nonsingularity. A mechanization must add prefix invertibility or define the condition number for singular matrices; the paper states neither convention.",
+      "primary_evidence": "PDF page 4 (printed 302) defines kappa_2(R_k)=||R_k||_2||R_k^-1||_2, then states after Theorem 1 that restriction (3) assures nonsingularity; PDF page 9 (printed 307) again uses (3) to conclude nonsingularity and r_kk>0."
+    },
+    {
+      "item": "Primitive floating-point semantics",
+      "resolution": "The source specifies only a partial numerical model, insufficient to determine a complete mechanized execution semantics or evaluation order.",
+      "primary_evidence": "PDF page 3 (printed 301) displays a relative-error rule for addition in the normalized range. PDF pages 9-11 (printed 307-309) invoke standard bounds for norms, inner products, products, subtraction, division, and square roots without defining all corresponding primitive operations."
+    },
+    {
+      "item": "Inherited rank and dimension assumptions",
+      "resolution": "The assumptions m>=n and rank(A)=n are standing context for Theorem 1, despite not being repeated in its heading.",
+      "primary_evidence": "PDF page 2 (printed 300) introduces the algorithms for A in R^(m x n), m>=n, rank(A)=n. Theorem 1 on PDF page 4 (printed 302) refers to the R resulting from Algorithm 2 and to the first k columns of that same A."
+    },
+    {
+      "item": "Hidden O(epsilon_M^2) coefficient",
+      "resolution": "The first-order coefficient c4 is explicit, but the paper does not determine a rigorous all-orders remainder bound or its dependence on dimensions, input, or conditioning.",
+      "primary_evidence": "PDF page 3 (printed 301) declares higher-order contributions insignificant; PDF page 14 (printed 312) appends O(epsilon_M^2) without a coefficient or uniformity statement."
+    },
+    {
+      "item": "Exceptional-value policy",
+      "resolution": "The source excludes results outside the normalized range from its displayed local model and identifies possible nonreal-square-root breakdown, but leaves subnormal, overflow, infinity, NaN, signed-zero, and input-conversion behavior unspecified.",
+      "primary_evidence": "PDF page 3 (printed 301) restricts the relative-error formula to normalized-range results; PDF page 7 (printed 305), Remark 2, states that phi_k>=psi_k can make Algorithm 2 produce nonreal Q and R."
+    },
+    {
+      "item": "D001 and D016 matrix dimensions and indexing",
+      "resolution": "The declaration is square and single-indexed, whereas the paper is rectangular and prefixwise. This is reduced applicability, not theorem strength.",
+      "primary_evidence": "The declaration defines every matrix as Matrix (Fin n) (Fin n) Real and permits n=0. PDF pages 2 and 4 (printed 300 and 302) use A_k,Q_k in R^(m x k), R_k in R^(k x k), m>=n, and k=1,...,n."
+    },
+    {
+      "item": "D002 norm semantics",
+      "resolution": "The declaration uses the Frobenius norm throughout, while the selected paper theorem and its final appendix estimate use the spectral/operator 2-norm. Norm comparison cannot restore the paper's exact constant without dimension-dependent factors.",
+      "primary_evidence": "D002 is sqrt of the sum of all squared entries. PDF page 4 (printed 302) writes ||.||_2 and defines kappa_2 using that norm; PDF page 14 (printed 312) uses ||R_k||_2^2=||R_k^T R_k||_2 and spectral submultiplicativity."
+    },
+    {
+      "item": "Residual operators, exact equations, and the right inverse",
+      "resolution": "The declaration correctly represents Delta A=QR-A, E=R^T R-A^T A, and I-Q^TQ. Because R and Rinv are finite square real matrices, RRinv=I makes Rinv the genuine inverse. These facts validate the declaration as an exact algebraic budget lemma but do not supply the paper's algorithmic hypotheses.",
+      "primary_evidence": "D003-D007 define ordinary identity, multiplication, transpose, normal-equation residual, and orthogonality defect; hQR and hInv are exact equalities. PDF page 14 (printed 312) uses the corresponding exact identity with R_k^-1."
+    },
+    {
+      "item": "Algorithm, quantifier scope, constants, and numerical model",
+      "resolution": "The declaration omits CGS-P execution, common-run prefix dependence, full-column-rank input, strict condition (3), epsilon_M, c1-c4, kappa_2(R_k), normalized-range arithmetic, and first-order semantics.",
+      "primary_evidence": "PDF pages 3-4 (printed 301-302) state Algorithm 2, its pythagorean diagonal, the floating-point model, the piecewise constants, condition (3), and the all-prefix conclusion. None occurs in the elaborated declaration."
+    },
+    {
+      "item": "Supporting algebraic lemma versus selected complete result",
+      "resolution": "The declaration formalizes the pattern of the exact appendix identity and a Frobenius-norm residual budget, not Theorem 1 inequality (7). Retaining a proof ingredient does not make it faithful to the selected complete result.",
+      "primary_evidence": "PDF page 14 (printed 312) first gives an exact residual identity, then applies Theorem 1 bounds (4)-(6) to obtain c4(m,k)kappa_2(R_k)^2 epsilon_M+O(epsilon_M^2). The declaration stops at an exact generic bound rho^2(e+2ad+d^2)."
+    },
+    {
+      "item": "Nonvacuity and claimed strength",
+      "resolution": "The declaration is nonvacuous, but its exactness does not make it faithful-stronger because it fails to retain the paper's general rectangular instances. For n=1, A=1, dA=1, Q=2, R=Rinv=1, e=0, and a=d=rho=1 satisfy the hypotheses with nonzero defect 3 and equality in the conclusion.",
+      "primary_evidence": "The example follows directly from the declaration definitions. The paper setting is also nonempty: for the one-column identity input Algorithm 2 gives Q=R=1, and condition (3) holds when 5 epsilon_M<1."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean theorem cannot cover general m-by-k paper prefixes because all its matrices are square. It supplies neither CGS-P provenance nor the spectral c4(m,k)kappa_2(R_k)^2 epsilon_M bound. Substituting paper-style residual estimates would still encounter Frobenius-versus-spectral dimension factors and would not reproduce the selected theorem."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper proves a first-order spectral-norm result only for prefixes computed by CGS-P under its standing setup and strict condition. It does not assert the declaration's exact Frobenius inequality for every arbitrary square matrix certificate and every collection of scalar majorants. The appendix identity explains the declaration's origin but does not universalize the paper theorem to that target."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The paper does not specify whether condition (3) uses an extended condition number for singular R_k or implicitly assumes invertibility before the condition is formed.",
+    "No coefficient, sign, threshold, or parameter dependence is supplied for the O(epsilon_M^2) remainder, so no exact all-orders version of inequality (7) is determined.",
+    "The paper does not provide complete primitive rounding rules, evaluation orders, or a specific IEEE rounding mode for every operation used by Algorithm 2.",
+    "Behavior for subnormals, overflow, infinities, NaNs, signed zero, and input conversion is not specified beyond the normalized-range restriction and the discussed square-root breakdown."
+  ],
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "complete-result-linkage",
+      "evidence": "Theorem 1 on printed page 302 concerns all prefixes produced by floating-point CGS-P under condition (3); the declaration quantifies arbitrary exact square matrices satisfying algebraic certificate hypotheses.",
+      "impact": "The selected numerical-analysis theorem is replaced by a supporting algebraic lemma."
+    },
+    {
+      "severity": "major",
+      "category": "norm-and-dimension-mismatch",
+      "evidence": "The paper uses rectangular m-by-k prefixes and spectral 2-norms, while D001 makes every matrix n-by-n and D002 defines the Frobenius norm.",
+      "impact": "The declaration omits paper instances and cannot recover the stated quantitative bound with its exact constant."
+    },
+    {
+      "severity": "major",
+      "category": "constants-model-and-remainder",
+      "evidence": "The paper's result contains c4(m,k), kappa_2(R_k)^2, epsilon_M, strict condition (3), and an O(epsilon_M^2) qualification. The declaration contains only arbitrary majorants e,a,d,rho and an exact remainder-free inequality.",
+      "impact": "The numerical content, applicability condition, and approximation order of inequality (7) are absent."
+    },
+    {
+      "severity": "note",
+      "category": "retained-algebraic-core",
+      "evidence": "The declaration's QR=A+dA, normal-equation residual, right inverse, orthogonality defect, and e+2ad+d^2 expression mirror the exact decomposition on printed page 312.",
+      "impact": "The target has a genuine and nonvacuous relationship to the proof, but matching that proof fragment is insufficient for statement faithfulness."
+    },
+    {
+      "severity": "note",
+      "category": "source-formalization-gaps",
+      "evidence": "The source uses R_k^-1 before explaining nonsingularity and leaves both the higher-order constant and full floating-point semantics unspecified.",
+      "impact": "A faithful mechanization must make additional conventions explicit, but none of these ambiguities reconciles the declaration with the selected theorem."
+    }
+  ],
+  "rationale": "Primary evidence establishes that the selected claim is Theorem 1(7): a prefixwise spectral-norm loss-of-orthogonality bound for matrices computed by CGS-P, under standing rectangular full-rank assumptions, strict condition (3), explicit constants, and first-order floating-point semantics. The Lean declaration instead proves an exact Frobenius-norm budget for arbitrary square matrix certificates. Its algebraic core is genuine and nonvacuous, but it omits essential source hypotheses and conclusions and excludes general rectangular paper instances. Neither complete statement implies the other, so the consistent classification is not-faithful-different and the declaration is not accepted."
+}
+

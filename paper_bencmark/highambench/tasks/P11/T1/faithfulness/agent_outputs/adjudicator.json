@@ -1,0 +1,116 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "adjudicator",
+  "task_id": "P11-T1",
+  "trigger": [
+    "source contract contains ambiguity"
+  ],
+  "resolved_items": [
+    {
+      "item": "source contract contains ambiguity",
+      "resolution": "The ambiguities do not prevent a definite audit. The minimum source-backed contract is the k=1 base case inside Theorem 1 for computed CGS-P quantities: for the perturbation supplied by the normalization error analysis, q1=(I+G1)a1/r11, ||G1||_2<=epsilon_M, A1-Q1R1=a1-q1*r11=-G1*a1, and the exact norm chain in equation (16). The theorem's algorithmic, rank, conditioning, and normalized-range context is inherited. Unstated details of G1 and IEEE behavior are not added to the contract.",
+      "primary_evidence": "PDF p. 2 (printed 300) gives A in R^(m x n), m>=n, rank(A)=n; PDF p. 3 (301) gives Algorithm 2 and the normalized-range IEEE model; PDF p. 4 (302) gives Theorem 1 and condition (3); PDF pp. 9-10 (307-308) give nonsingularity, the G1 representation, the residual identities, and equation (16)."
+    },
+    {
+      "item": "G1 structure",
+      "resolution": "For faithfulness, G1 is only required to be an m-by-m real linear operator whose action appears in q1=(I+G1)a1/r11 and whose induced 2-norm is at most epsilon_M. Diagonality or a componentwise entry formula is not part of the cited statement, even if it may be derivable from a more detailed division model.",
+      "primary_evidence": "PDF p. 10 (printed 308) states only q1=(I+G1)a1/r11 and ||G1||_2<=epsilon_M; it gives no entries or structural qualifier for G1."
+    },
+    {
+      "item": "inherited hypotheses and algorithm linkage",
+      "resolution": "Condition (3), the positive full-column-rank setup, computed Algorithm 2 quantities, normalized-range arithmetic, and r11>0 belong to the complete selected result. The fact that the short algebra leading to equation (16) uses less does not convert the cited theorem base case into an unqualified standalone lemma.",
+      "primary_evidence": "PDF pp. 2-4 (printed 300-302) set the dimensions, full rank, Algorithm 2, floating-point model, and Theorem 1 hypothesis; PDF p. 9 (307) uses (3) to conclude R is nonsingular and r_kk>0; PDF p. 10 (308) explicitly begins the proof of Theorem 1 with k=1."
+    },
+    {
+      "item": "matrix norm and dimensions",
+      "resolution": "The paper's ||G1||_2 is the induced spectral 2-norm on an m-by-m operator, while the Lean hypothesis uses sqrt(sum_i sum_j G_ij^2), the Frobenius norm on an n-by-n matrix. The vector norms in both are Euclidean. Identifying Lean n with paper m aligns the action dimensions but does not repair the matrix-norm mismatch or restore the paper's distinct m-by-n input A.",
+      "primary_evidence": "PDF p. 4 (printed 302) defines kappa_2 with matrix 2-norms, and PDF p. 10 (308) applies ||G1*a1||_2<=||G1||_2||a1||_2. Declaration dossier D001-D004 defines a square matrix, Frobenius norm, ordinary mulVec, and Euclidean vector norm."
+    },
+    {
+      "item": "quantifier and witness dependence",
+      "resolution": "The paper supplies G1 for a fixed admissible input and its computed first-column normalization; Lean instead universally quantifies an arbitrary independent G, a, and epsilon. Lean neither constructs the paper witness nor relates its G to q1 or r11.",
+      "primary_evidence": "PDF p. 10 (printed 308) introduces G1 only after the computed r11 and q1 are in scope. The elaborated Lean target in both dossiers is forall n G a epsilon, ||G||_F<=epsilon implies ||G*a||_2<=epsilon||a||_2, with no existential or execution relation."
+    },
+    {
+      "item": "computed quantities, exact residual, and conclusion completeness",
+      "resolution": "q1, r11, Q1, and R1 are computed floating-point outputs, but A1-Q1R1 is then an exact mathematical residual of those outputs. The source conclusion includes the normalization relation and both residual equalities before the bound. Lean states only a generic exact-real matrix-action inequality, so it omits the computed-versus-exact distinction and the selected residual conclusion.",
+      "primary_evidence": "PDF p. 3 (printed 301) gives the Algorithm 2 assignments; PDF p. 10 (308) writes ordinary equalities A1-Q1R1=a1-q1*r11=-G1*a1 with no fl operation. The Lean target and D003-D004 contain only exact Real mulVec and Euclidean norms."
+    },
+    {
+      "item": "exceptional-value scope",
+      "resolution": "The source supports only the stated normalized-range relative-error model and the standard bound invoked for the computed division. It does not claim coverage of subnormals, overflow, infinities, or NaNs, and it does not specify an exact IEEE rounding mode. Lean's exact Real theorem is therefore not a formal generalization of exceptional floating-point behavior.",
+      "primary_evidence": "PDF p. 3 (printed 301) limits fl(x+y)=(x+y)(1+delta), |delta|<=epsilon_M, to results in the normalized range; PDF p. 10 (308) invokes standard error bounds without adding an exceptional-value model. The declaration dossier contains only Real arithmetic."
+    },
+    {
+      "item": "S01 source-selection disagreement",
+      "resolution": "S01 passes: the locator selects the published paper's equation (16) and its correct enclosing theorem. The Lean proposition's failure to reproduce that passage is a proposition-content failure covered by S03-S13, not evidence that the source itself was selected incorrectly.",
+      "primary_evidence": "The source locator identifies PDF p. 10 (printed 308), Appendix proof of Theorem 1, equation (16), and the matching PDF hash. Direct inspection of PDF p. 10 confirms that exact anchor and context."
+    },
+    {
+      "item": "S14 higher-order-terms disagreement",
+      "resolution": "Equation (16) and its G1 action bound contain no O(epsilon_M^2) remainder, so no such term should be inserted into the local inequality; in that narrow respect the Lean conclusion's lack of an O term is not a spurious strengthening. The surrounding theorem nevertheless adopts a first-order convention, and Lean erases that numerical-analysis context. That erasure contributes to the overall context mismatch but does not change the exact displayed form of equation (16).",
+      "primary_evidence": "PDF p. 3 (printed 301) states the linear-approximation convention; PDF p. 4 (302) says Theorem 1 holds to within O(epsilon_M^2); PDF p. 10 (308) displays q1=(I+G1)a1/r11, ||G1||_2<=epsilon_M, and equation (16) without an O term."
+    },
+    {
+      "item": "implication directions and final classification",
+      "resolution": "Neither complete proposition implies the other under the source-to-Lean alignment. Lean cannot obtain the algorithm-derived witness, normalization relation, residual identities, or inherited source hypotheses, and the paper's spectral bound cannot discharge Lean's Frobenius premise with coefficient one. Conversely, the paper controls only its computed G1 and a1 and does not assert Lean's universal theorem for every square G and vector a. The mixed generalization and narrowing is not genuine theorem strength.",
+      "primary_evidence": "PDF pp. 2-4 and 9-10 define the complete algorithmic theorem and equation (16). The declaration dossiers unfold the Lean proposition as the universal implication ||G||_F<=epsilon -> ||G*a||_2<=epsilon||a||_2 for exact real square matrices, including n=0."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean theorem proves only a universal action inequality under a Frobenius-norm premise. It does not supply the computed perturbation witness, q1 normalization relation, residual identities, CGS-P execution, or inherited hypotheses. Moreover, the paper gives only ||G1||_2<=epsilon_M, which need not imply ||G1||_F<=epsilon_M."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper's result is restricted to the perturbation and first column arising from each admissible computed CGS-P run. It does not quantify over every square real G and every vector a, and its spectral-norm premise is not Lean's Frobenius-norm premise."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The paper does not specify whether G1 is diagonal or give its entries; only its action relation and spectral-norm bound are source-guaranteed.",
+    "The paper does not specify the exact IEEE rounding mode or behavior outside the normalized range, so no more detailed exceptional-value contract can be recovered from the cited text."
+  ],
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "proposition-replacement",
+      "evidence": "PDF p. 10 (printed 308) states a computed normalization relation, exact first-column residual identities, and equation (16); the Lean target states only ||G*a||_2<=epsilon||a||_2.",
+      "impact": "The formal target is a supporting generic action lemma, not the selected first-column residual result."
+    },
+    {
+      "severity": "critical",
+      "category": "matrix-norm-mismatch",
+      "evidence": "The paper assumes the induced spectral bound ||G1||_2<=epsilon_M, while declaration dossier D002 defines Lean's premise with the Frobenius norm sqrt(sum_i sum_j G_ij^2).",
+      "impact": "The source perturbation need not satisfy the Lean premise with coefficient one, so Lean cannot be instantiated to recover the paper bound."
+    },
+    {
+      "severity": "major",
+      "category": "quantifier-and-algorithm-mismatch",
+      "evidence": "The paper's G1 depends on a computed CGS-P first-column normalization; Lean universally quantifies arbitrary independent exact-real G, a, and epsilon and contains no execution relation.",
+      "impact": "Witness dependence, computed status, and algorithm linkage are lost, preventing implication in either direction."
+    },
+    {
+      "severity": "major",
+      "category": "missing-source-context",
+      "evidence": "The paper inherits positive dimensions, m>=n, full column rank, condition (3), r11>0, and normalized-range IEEE assumptions; none appears in the Lean proposition.",
+      "impact": "The target does not state when the paper's perturbation and residual arise and cannot be treated as a faithful stronger theorem merely because its explicit binder list is broader."
+    },
+    {
+      "severity": "minor",
+      "category": "dimensions-and-domain",
+      "evidence": "The paper has a rectangular A in R^(m x n) with positive m,n, while Lean retains only one square dimension and includes n=0.",
+      "impact": "The operator action can be dimensionally aligned by mapping Lean n to paper m, but the original problem dimensions and nondegenerate domain are not represented."
+    },
+    {
+      "severity": "note",
+      "category": "matching-local-fragment",
+      "evidence": "Both equation (16) and the Lean conclusion use unsquared Euclidean vector norms, coefficient one, exact post-analysis multiplication, and no displayed O(epsilon_M^2) remainder.",
+      "impact": "This local algebraic resemblance does not overcome the norm, quantifier, residual, and algorithmic mismatches."
+    }
+  ],
+  "rationale": "Primary inspection shows that the selected source is the k=1 induction base of Theorem 1 for computed CGS-P factors, not a free-standing theorem about arbitrary matrices. Its perturbation is algorithm-dependent, bounded in the induced spectral norm, and tied by exact equalities to the computed first-column residual under inherited floating-point and conditioning assumptions. Lean instead proves an exact universal Frobenius-to-Euclidean action inequality and omits the perturbation construction, residual identities, computed quantities, algorithm, source dimensions, and numerical model. A Frobenius premise is narrower than the paper's spectral premise and does not make the complete Lean statement a faithful strengthening. Independent checks of both implication directions therefore give no/no, yielding not-faithful-different with accepted=false."
+}
+

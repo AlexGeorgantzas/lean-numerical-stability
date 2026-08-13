@@ -1,0 +1,57 @@
+{
+  "accepted": true,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "source contract contains ambiguity",
+    "round-trip S02 is unclear",
+    "round-trip S08 is unclear",
+    "round-trip S15 is unclear"
+  ],
+  "classification": "faithful-equivalent",
+  "completed_at_utc": "2026-08-13T06:50:36.057310+00:00",
+  "findings": [
+    {
+      "category": "source-typography",
+      "evidence": "Printed equation (5.2) sums over k but contains x_i beta_k; equation (5.3) unambiguously contains |x_k|.",
+      "impact": "The target faithfully formalizes the closed bound (5.3) but should not be described as a literal formalization of the printed identity (5.2).",
+      "severity": "note"
+    },
+    {
+      "category": "model-abstraction",
+      "evidence": "The paper excludes underflow to justify model (5.1); Lean instead assumes the exact addition half of (5.1) for every real operand pair.",
+      "impact": "This is an algebraic packaging of the hypothesis used by (5.3), not an omission that permits model-violating executions.",
+      "severity": "note"
+    },
+    {
+      "category": "edge-domain-and-initialization",
+      "evidence": "Lean includes n=0 and keeps a singleton exact; the paper analyzes additions from k=2 and explicitly states S_hat_1=x_1.",
+      "impact": "The initialization matches the analyzed algorithm, and the additional empty case is trivial rather than genuine stronger content.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "Map v(j) to x_{j+1}. recursiveSum is S_hat_n, the Finset sum is the exact S_n, and the unfolded budget is sum_{k=2}^n (|S_hat_{k-1}| + |x_k|). The target therefore specializes exactly to equation (5.3) under the paper's componentwise no-guard model.",
+      "verdict": "yes"
+    },
+    "paper_implies_lean": {
+      "reasoning": "For n>=2, NoGuardAddModel supplies the bounded alpha_k and beta_k witnesses from (5.1) at each recursive call; telescoping computed-minus-exact local errors and applying the triangle inequality gives the Lean budget exactly. The n=1 and n=0 statements are definitional zero-error cases. The paper's no-underflow condition has no independent algebraic role once the model law is assumed directly.",
+      "verdict": "yes"
+    }
+  },
+  "judge_classifications": {
+    "direct": "faithful-equivalent",
+    "roundtrip": "undetermined"
+  },
+  "rationale": "Primary inspection of printed pages 784 and 793 and the definitions of NoGuardAddModel, recursiveSum, and noGuardRecursiveRunningBudget resolves the round-trip concerns. The theorem uses the same per-operation two-perturbation model, exact sum, computed prefixes, absolute forward error, coefficient u, and k=2,...,n indexing as equation (5.3). No-underflow is abstracted into direct satisfaction of the model law, the exact singleton is explicitly the paper's S_hat_1=x_1 convention, and the arbitrary-real scalar domain is stated in Section 2. Both implications hold. The n=0 extension is tautological, so there is no genuine nonvacuous basis for faithful-stronger. The surviving x_i ambiguity belongs to printed equation (5.2) and does not make the selected bound uncertain.",
+  "remaining_uncertainties": [
+    "Equation (5.2) literally contains the unbound symbol x_i. The likely correction to x_k is supported by the recurrence and (5.3), but this adjudication does not attribute that correction to the printed identity.",
+    "The paper does not explicitly state an n=0 convention or a representability predicate. These source omissions do not affect the selected (5.3) classification because Lean's n=0 case is tautological and Section 2 formulates the data as real numbers."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.1",
+  "task_id": "P01-T3"
+}

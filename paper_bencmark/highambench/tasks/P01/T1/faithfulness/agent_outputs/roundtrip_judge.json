@@ -1,0 +1,166 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "roundtrip-judge",
+  "task_id": "P01-T1",
+  "paper_sha256": "d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7",
+  "blind_translation_sha256": "e6a4d5a8f3817aec0a35f72459357be5f44d47b0378c55dac638422a5126ebe5",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF is Higham's July 1993 SIAM Journal on Scientific Computing article. Printed pages 784, 785, and 788 contain model (1.2), the finite-product estimate, the nonnegative-input observation, and pairwise bound (3.6), respectively.",
+      "translation_evidence": "The translation concerns a depth-r balanced pairwise sum of 2^r inputs with coefficient gamma_r, matching the selected result's mathematical signature.",
+      "reasoning": "The source version, passages, and surrounding pairwise-summation result are correctly selected."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "For the pairwise derivation the paper takes n=2^r scalar real inputs, indexed from 1 to n, with r=log_2 n and unit roundoff u.",
+      "translation_evidence": "The translation binds r as a natural number, v as a real family on Fin(2^r), and an addition-model package containing u and fl_add.",
+      "reasoning": "Fin(2^r) is the zero-based equivalent of the paper's 1-through-n index set, and packaging u and the addition operation does not change their types or dimension."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "Each rounded addition contributes an error bounded by u; path errors may vary with the input path and operation, with no independence or common-error assumption.",
+      "translation_evidence": "For every operand pair x,y, the model supplies an existential delta that may depend on x and y, and different tree nodes need not share a witness.",
+      "reasoning": "The translation preserves local witness dependence and does not incorrectly Skolemize all additions to one error value."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "Equation (3.6) applies to arbitrary real summands under the relative-error model and no-underflow assumption. Nonnegativity appears only in a separate simplification. Positivity of 1-r*u is implicit in using gamma_r as a finite positive bound.",
+      "translation_evidence": "The proposition assumes every v(i) is nonnegative, imposes fl_add(0,x)=x for every real x, and explicitly assumes r*u<1. It does not state a no-underflow condition.",
+      "reasoning": "The explicit r*u<1 condition appropriately supplies an implicit validity condition, but nonnegativity and exact left-zero are additional restrictions not required by equation (3.6), while the paper's exceptional-value hypothesis is not represented in the same form."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The selected passage gives the pathwise product representation and the general bound |S_hat-S| <= gamma_r sum_i |x_i|. Together with the nonnegative observation it also yields a relative-error consequence when S is nonzero.",
+      "translation_evidence": "The translation concludes only |B_r(v)-S| <= gamma_r*S under nonnegative inputs; it does not state the pathwise product representation, the arbitrary-sign bound, or a relative-error quotient.",
+      "reasoning": "The displayed inequality is the correct nonnegative specialization, but it does not express the complete general conclusion of equation (3.6) and its supplied surrounding consequences."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "Pairwise summation recursively combines adjacent pairs, and gamma_m is m*u/(1-m*u). The exact sum uses ordinary real addition.",
+      "translation_evidence": "The dependency ledger unfolds the balanced recursion, finite index inclusions, exact finite sum, scalar absolute value, natural exponentiation, real casts, and gamma_r.",
+      "reasoning": "All operators affecting the proposition are interpreted, and their meanings agree with the paper on the translated domain."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes the exact sum S_n, computed sum S_hat_n, and forward error E_n=S_hat_n-S_n.",
+      "translation_evidence": "S is an exact Finset sum using real addition, while B_r is computed recursively using fl_add; the conclusion bounds |B_r-S|.",
+      "reasoning": "Exact and computed quantities remain distinct."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "The paper repeatedly sums adjacent pairs and, for n=2^r, obtains a balanced tree with r stages.",
+      "translation_evidence": "B_{k+1} recursively computes the lower and upper halves and combines them with fl_add.",
+      "reasoning": "For a power-of-two input count, the lower-half/upper-half recursion produces exactly the same ordered balanced tree as repeated adjacent-pair reduction."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Equation (3.6) uses scalar absolute forward error and the scalar l1 input magnitude sum_i |x_i|.",
+      "translation_evidence": "The translation uses scalar absolute value on B_r-S and gamma_r*S, with every v(i) assumed nonnegative.",
+      "reasoning": "On the translated domain, S=sum_i v(i)=sum_i |v(i)|, so the norm expression is identical. The loss of signed inputs is recorded under specialization."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "For n=2^r, every input participates in exactly r=log_2 n additions, and the coefficient is gamma_r=r*u/(1-r*u).",
+      "translation_evidence": "The vector has 2^r entries, the recursion has depth r, and the coefficient is exactly r*u/(1-r*u).",
+      "reasoning": "The constant, depth dependence, power-of-two dimension, and zero-based index offsets match."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Model (1.2) is the standard per-operation relative-error model; the paper explicitly excludes underflow and warns about machines without a guard digit.",
+      "translation_evidence": "The model is an abstract real operation satisfying the relative-error equation for every real operand pair, additionally has exact left-zero behavior, and explicitly does not encode underflow, overflow, formats, rounding modes, NaNs, or infinities.",
+      "reasoning": "The local relative-error equation matches, but the translation replaces the paper's computation-level floating-point and no-underflow context with a stronger global real-operation axiom and an extra exactness law."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "Equation (3.6) is a non-strict upper bound on absolute error with gamma_r as a multiplicative coefficient.",
+      "translation_evidence": "The conclusion is the same non-strict upper-bound relation, and r*u<1 makes its denominator positive.",
+      "reasoning": "Within the retained nonnegative domain, the inequality direction, strictness, and coefficient are unchanged. The weaker scope is accounted for separately."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The primary selected result is an absolute scalar forward-error bound for computed minus exact sum.",
+      "translation_evidence": "The proposition bounds |B_r(v)-S| and asserts no backward, residual, or statistical error property.",
+      "reasoning": "The error notion is absolute forward error in both statements."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The finite-product estimate retains higher-order effects through gamma_r=r*u/(1-r*u); equation (3.6) is not merely a first-order r*u estimate.",
+      "translation_evidence": "The coefficient is the exact rational gamma_r, with no O(u^2) term or first-order replacement.",
+      "reasoning": "Higher-order product effects are handled faithfully."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "Equation (3.6) covers arbitrary signed real scalar inputs and measures them by sum_i |x_i|.",
+      "translation_evidence": "The proposition covers only nonnegative real vectors and consequently replaces sum_i |v(i)| by S.",
+      "reasoning": "This is a proper specialization that excludes cancellation and all mixed-sign inputs. It is therefore logically weaker than the paper result, despite being correct on its restricted domain."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's model is meaningful for computations satisfying the relative-error law with no underflow and with gamma's denominator positive.",
+      "translation_evidence": "The hypotheses are satisfiable, for example by exact real addition with u=0 or any nonnegative u satisfying r*u<1. The r=0 and all-zero cases reduce correctly.",
+      "reasoning": "The proposition is nonvacuous, and its trivial boundary cases are intended consequences rather than accidental proofs of the general claim."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translation supplies no claim for vectors containing negative entries and cannot recover equation (3.6) for arbitrary signed summands or cancellation cases. Its additional operation-model restrictions also do not establish the result for the paper's full model class."
+    },
+    "paper_implies_translation": {
+      "verdict": "yes",
+      "reasoning": "Apply equation (3.6) with n=2^r to the translated balanced pairwise tree. For nonnegative v, sum_i |v(i)| equals the exact sum S, giving exactly |B_r-S| <= gamma_r*S. The translated model law is sufficient for every executed addition, and r*u<1 supplies the positive-denominator condition."
+    }
+  },
+  "classification": "not-faithful-weaker",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "major",
+      "category": "input-domain specialization",
+      "paper_evidence": "Equation (3.6) is stated for arbitrary real summands and has right-hand side gamma_r sum_i |x_i|.",
+      "translation_evidence": "Every input must be nonnegative, and the right-hand side is gamma_r times the exact sum S.",
+      "impact": "The translation is only the nonnegative corollary of the paper's bound. It omits signed and cancellation-prone inputs, so the paper implies the translation but not conversely."
+    },
+    {
+      "severity": "major",
+      "category": "conclusion completeness",
+      "paper_evidence": "The selected passage includes the pathwise product representation followed by the general absolute bound, and the supplied surrounding result supports a nonzero-sum relative consequence.",
+      "translation_evidence": "Only one specialized absolute-error inequality is asserted.",
+      "impact": "The translation does not express the full selected result and surrounding conclusions, even though its inequality is correct on nonnegative inputs."
+    },
+    {
+      "severity": "minor",
+      "category": "floating-point model",
+      "paper_evidence": "The paper assumes the standard relative-error model for floating-point operations and explicitly rules out underflow; it does not state a universal exact-left-zero axiom over all real operands.",
+      "translation_evidence": "The abstract operation obeys the model for every real pair, must satisfy fl_add(0,x)=x, and has no explicit exceptional-value semantics.",
+      "impact": "The translated theorem ranges over a narrower and more abstract operation class than the source states, further weakening its coverage without changing the central implication result."
+    },
+    {
+      "severity": "note",
+      "category": "gamma validity condition",
+      "paper_evidence": "The paper prints gamma_r=r*u/(1-r*u) without an adjacent explicit r*u<1 hypothesis.",
+      "translation_evidence": "The proposition explicitly assumes r*u<1.",
+      "impact": "This addition is mathematically appropriate for interpreting gamma_r as a finite positive error bound and is not the reason for rejection."
+    }
+  ],
+  "rationale": "The translation correctly captures the power-of-two dimension, balanced pairwise algorithm, local relative-error witnesses, exact-versus-computed distinction, scalar absolute forward error, and exact gamma_r coefficient. Its decisive mismatch is the restriction to nonnegative inputs: on that subset S equals sum_i |v(i)|, so the proposition is a valid corollary of equation (3.6), but it provides no result for the arbitrary signed inputs covered by the paper. The additional exact-left-zero/global-operation assumptions and omitted pathwise and relative statements reinforce the loss of coverage. The implication directions are therefore clear, yielding not-faithful-weaker without need for adjudication."
+}
+

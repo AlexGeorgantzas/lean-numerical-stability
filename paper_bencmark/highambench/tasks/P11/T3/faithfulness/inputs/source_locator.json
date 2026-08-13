@@ -1,0 +1,23 @@
+{
+  "evidence_policy": "Use the referenced PDF and surrounding paper context as evidence. Do not use context.md or task.json paraphrases as semantic evidence.",
+  "paper_path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram\u2013Schmidt.pdf",
+  "paper_sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5",
+  "paper_version": "published journal version; volume 105, issue 2, 2006, printed pages 299-313",
+  "source_locations": [
+    {
+      "anchor": "Theorem 1, inequality (7)",
+      "pdf_page": 4,
+      "printed_page": "302",
+      "role": "stated loss-of-orthogonality bound",
+      "section": "Theorem 1"
+    },
+    {
+      "anchor": "unnumbered exact identity and following norm estimate deriving (7)",
+      "pdf_page": 14,
+      "printed_page": "312",
+      "role": "proof decomposition into normal-equation and factorization-error terms",
+      "section": "Appendix: Proof of Theorem 1"
+    }
+  ],
+  "task_id": "P11-T3"
+}

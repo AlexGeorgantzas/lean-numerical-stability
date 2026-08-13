@@ -1,0 +1,152 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "roundtrip-judge",
+  "task_id": "P01-T2",
+  "paper_sha256": "d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7",
+  "blind_translation_sha256": "7b3a319f63269151facb954bb4c0c5cc37218263f9ebbe57b0e03f8a3c6ec901",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The inspected PDF is the July 1993 SIAM Journal on Scientific Computing version, volume 14, issue 4, printed pages 783-799. The relevant passages are the finite-product estimate on printed page 784, recursive bound (2.6) on page 785, and pairwise bound (3.6) on page 788.",
+      "translation_evidence": "The translation combines the exact gamma coefficient, the recursive bound with index 2^r-1, the pairwise bound with index r, and their coefficient comparison.",
+      "reasoning": "These are the correct paper version, passages, and mutually linked results."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "The paper considers real addends x_1,...,x_n and, for (3.6), assumes n=2^r so that every addend has path length log_2(n)=r.",
+      "translation_evidence": "The binders are an arbitrary natural r and an arbitrary real vector indexed by Fin(2^r).",
+      "reasoning": "The dimension and scalar type match. The change from one-based to zero-based finite indexing is a bijective reindexing with no mathematical effect."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "Each rounded addition has its own bounded error, and the pairwise representation uses errors delta_k^(i) that may depend on both the addend and tree level.",
+      "translation_evidence": "For every x and y there exists a delta, allowed to depend on that operand pair, satisfying the relative-error equation and bound. No common witness or probabilistic relation is imposed.",
+      "reasoning": "The existential witness is local to an operation and no independence or shared-error assumption is introduced. Packaging a fixed fl_add is consistent with the paper's fixed floating-point operation."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes the standard relative-error model, explicitly excludes floating-point underflow, and implicitly requires positive gamma denominators.",
+      "translation_evidence": "The translation assumes u>=0, exact left addition by zero, a global relative-error axiom, and the explicit condition (2^r-1)u<1, but states that no underflow condition is encoded.",
+      "reasoning": "The denominator condition and exact first addition correctly formalize implicit requirements, but the paper's explicit no-underflow hypothesis is not preserved literally. The global model axiom makes the resulting mathematical theorem stronger rather than invalid."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "Equation (3.6) gives the pairwise gamma_log2(n) bound, equation (2.6) gives the recursive gamma_(n-1) bound, and the following prose compares their coefficients.",
+      "translation_evidence": "The conclusion is exactly the conjunction of the pairwise bound, the left-to-right recursive bound, and gamma_r(u)<=gamma_(2^r-1)(u).",
+      "reasoning": "All conclusions of the selected bound comparison are present. The finite-product estimate and the x_i=1/i^3 discussion support and qualify these conclusions rather than constituting missing cases of the conjunction."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The paper defines gamma_m=mu/(1-mu), recursive summation, adjacent-pair recursive summation, the exact sum, and the sum of absolute input magnitudes.",
+      "translation_evidence": "The dependency ledger unfolds gamma, the balanced reduction P, the sequential reduction Q, Fin-indexed exact sums, real absolute value, casts, and finite summation.",
+      "reasoning": "Every nontrivial operator affecting the proposition has a concrete mathematical interpretation, and no unresolved imported definition remains."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes the exact real sum S_n from the computed sum hat(S)_n and defines E_n=hat(S)_n-S_n.",
+      "translation_evidence": "P_r(v) and Q_(2^r)(v) use fl_add, while sum_i v_i and sum_i |v_i| use exact real operations.",
+      "reasoning": "Computed reductions, exact sums, and error quantities remain distinct."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "Pairwise summation recursively combines adjacent pairs; for n=2^r this produces a perfect equal-depth tree. Recursive summation is a fixed successive accumulation.",
+      "translation_evidence": "P recursively reduces contiguous first and second halves, which for power-of-two lengths is the same adjacent-pair tree. Q is the fixed left-to-right fold.",
+      "reasoning": "Both computed quantities remain linked to the paper's algorithms, not to arbitrary balanced trees, permutations, or compensated methods."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "The error measure is scalar absolute value and the data factor is sum_i |x_i|, equivalently the vector l1 norm.",
+      "translation_evidence": "Both inequalities use absolute value of computed-minus-exact and the exact finite sum of componentwise absolute values.",
+      "reasoning": "The scalar absolute forward error and componentwise l1 size factor match exactly; no squared or relative norm is substituted."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "Pairwise summation uses gamma_log2(n), recursive summation uses gamma_(n-1), and gamma_m is exactly mu/(1-mu).",
+      "translation_evidence": "With n=2^r, the constants are gamma_r(u) and gamma_(2^r-1)(u), with gamma_m(u)=(mu)/(1-mu).",
+      "reasoning": "The indices, casts, offsets, parameter dependence, and exact rational coefficients agree."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The paper explicitly assumes no underflow and warns that machines lacking a guard digit violate the stated model; it does not discuss overflow, infinities, or NaNs in the inspected passage.",
+      "translation_evidence": "The proposition models an arbitrary total real operation satisfying the relative-error equation and contains no finite format, precision, rounding mode, guard-digit, underflow, overflow, subnormal, or nonfinite-value semantics.",
+      "reasoning": "The algebraic relative-error model is captured, but machine-level applicability and the explicit underflow restriction are abstracted away. This broadens the theorem beyond the paper's stated floating-point regime."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "The source bounds are non-strict upper bounds. Although the prose calls (3.6) smaller, the coefficients coincide for n=2 and require valid positive denominators for comparison.",
+      "translation_evidence": "All error bounds use <=, the validity premise is strict, and the coefficient comparison is the non-strict inequality gamma_r<=gamma_(2^r-1).",
+      "reasoning": "The inequality directions are correct, and the non-strict coefficient comparison accurately handles equality at small power-of-two dimensions."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Equations (2.6) and (3.6) are absolute forward-error bounds against the exact real sum.",
+      "translation_evidence": "The target bounds |P-S| and |Q-S| and does not normalize by |S| or assert a backward-error statement.",
+      "reasoning": "No relative, backward, residual, or probabilistic error notion replaces the paper's principal absolute forward error."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The principal inequalities use the finite exact gamma coefficient; the O(u^2) expressions are subsequent first-order expansions and examples.",
+      "translation_evidence": "The target retains gamma_m(u)=mu/(1-mu) exactly and does not replace it by the approximation mu.",
+      "reasoning": "The higher-order dependence relevant to the theorem is preserved exactly. Omitting the explanatory first-order expansions does not weaken or distort the exact inequalities."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The displayed pairwise bound is derived for real scalar inputs with n=2^r.",
+      "translation_evidence": "The target treats arbitrary real scalar vectors of exactly 2^r entries and includes the valid degenerate case r=0.",
+      "reasoning": "The principal dimensional and scalar specialization matches. The r=0 case is a harmless valid extension with one input and no rounded additions."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's model is intended for ordinary positive unit roundoff with sufficiently small operation counts, yielding nontrivial deterministic worst-case bounds.",
+      "translation_evidence": "The package is satisfiable, for example by exact real addition with delta=0, and the explicit validity premise is satisfiable whenever u is sufficiently small. For r>0 the conclusions genuinely constrain rounded reductions.",
+      "reasoning": "The proposition is not vacuous and is not made true by an inconsistent operation package or denominator condition."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "Specializing the abstract operation to an underflow-free floating addition satisfying the paper's relative-error model gives exactly the power-of-two pairwise bound, recursive bound, and coefficient comparison. The explicit denominator condition supplies the positivity that the paper leaves mathematically implicit."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper states its result in an underflow-free floating-point regime and warns that its model requires modification outside that regime. The translation asserts the algebraic result for every total real operation satisfying the model axiom, without an underflow or guard-digit restriction, and also includes degenerate exact-arithmetic cases not explicitly covered by the paper's operational statement."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "floating-point model and exceptional values",
+      "paper_evidence": "The paper explicitly excludes underflow and records a guard-digit limitation on model (1.2).",
+      "translation_evidence": "The target instead assumes the relative-error equation as a total abstract axiom and encodes no underflow, guard-digit, finite-format, or exceptional-value semantics.",
+      "impact": "The mathematical error bounds remain valid and specialize to the paper, but the target has broader abstract applicability than the paper explicitly claims."
+    },
+    {
+      "severity": "note",
+      "category": "contextual comparison",
+      "paper_evidence": "After (3.6), the paper explains that the ordering-sensitive recursive bound can beat the pairwise bound, including the x_i=1/i^3 example.",
+      "translation_evidence": "The target compares only gamma_r with gamma_(2^r-1) and does not compare actual errors or the sharper ordering-sensitive recursive bound.",
+      "impact": "There is no contradiction or overclaim: the formal comparison is correctly limited to the two ordering-independent coefficients, though the paper's illustrative caveat is not itself formalized."
+    }
+  ],
+  "rationale": "The translation accurately captures the selected exact mathematics: power-of-two dimensions, the fixed adjacent-pair tree, the fixed left fold, pair-dependent bounded relative errors, exact real reference sums, scalar absolute forward error, the l1 data factor, exact gamma constants, and the non-strict coefficient comparison. Its only substantive departure is numerical-model scope. By axiomatizing the relative-error equation for an arbitrary total real operation, it no longer carries the paper's explicit no-underflow and guard-digit applicability restrictions. The translated proposition therefore entails the paper result on specialization but asserts a valid broader abstract theorem that the paper does not literally state, yielding faithful-stronger."
+}
+

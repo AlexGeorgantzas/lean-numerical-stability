@@ -1,0 +1,58 @@
+{
+  "accepted": true,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ",
+    "source contract contains ambiguity"
+  ],
+  "classification": "faithful-equivalent",
+  "completed_at_utc": "2026-08-13T06:50:35.395860+00:00",
+  "findings": [
+    {
+      "category": "selected-specialization",
+      "evidence": "Equation (3.6) covers signed inputs, while the selected additional passage supplies the nonnegative simplification and the Lean target explicitly assumes nonnegative inputs.",
+      "impact": "The declaration is equivalent to the selected nonnegative result but cannot replace the unrestricted signed-input equation (3.6).",
+      "severity": "note"
+    },
+    {
+      "category": "gamma-domain",
+      "evidence": "The paper displays gamma_m=m*u/(1-m*u) without an adjacent side condition; Lean explicitly assumes r*u<1.",
+      "impact": "Lean states the validity condition required for the displayed coefficient to be a finite positive bound.",
+      "severity": "note"
+    },
+    {
+      "category": "absolute-versus-relative",
+      "evidence": "The target states an absolute error inequality, whereas the nonzero-sum requirement arises only when printed page 785 divides by |S_n|.",
+      "impact": "The all-zero input is valid for the Lean theorem, and no nonzero exact-sum hypothesis is missing.",
+      "severity": "note"
+    },
+    {
+      "category": "model-abstraction",
+      "evidence": "The paper excludes underflow to justify model (1.2); Lean assumes the resulting addition law directly in StandardAddModel.",
+      "impact": "The theorem concerns model-valid real-valued operations and proves nothing about concrete executions that violate the relative-error law.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "Unfolding GammaValid, gamma, pairwiseSum, and the exact Finset sum gives the paper's power-of-two balanced pairwise computation and gamma_r absolute bound on nonnegative inputs. This implication is to the selected nonnegative specialization and does not assert unrestricted equation (3.6) for signed inputs.",
+      "verdict": "yes"
+    },
+    "paper_implies_lean": {
+      "reasoning": "Apply equation (3.6) with n=2^r to the tree defined by pairwiseSum. StandardAddModel supplies the per-addition relative-error witnesses, GammaValid supplies the mathematically necessary positive denominator, and hv gives sum_i |v i|=sum_i v i. This yields the Lean inequality, including the all-zero case.",
+      "verdict": "yes"
+    }
+  },
+  "judge_classifications": {
+    "direct": "faithful-equivalent",
+    "roundtrip": "not-faithful-weaker"
+  },
+  "rationale": "Primary inspection resolves the disagreement in favor of equivalence to the selected P01-T1 proposition. The source packet deliberately combines the power-of-two pairwise bound with the nonnegative-input simplification. Lean has exactly 2^r real inputs, the same balanced adjacent-pair tree, the same per-operation relative-error model, a separate exact real sum, scalar absolute forward error, and the exact gamma_r coefficient. Its explicit gamma-validity premise supplies a condition required by the paper's displayed denominator. The preceding pathwise representation and the separate relative-error quotient are not omitted conjuncts of the selected absolute bound. Both implications are therefore yes, while the declaration remains narrower than and must not be advertised as the full signed-input equation (3.6).",
+  "remaining_uncertainties": [
+    "The PDF does not print the usual condition m*u<1 beside the finite-product estimate; its intended necessity is inferred from the denominator and from the inequality's mathematical validity.",
+    "The paper does not formalize initial representability, overflow, infinities, or NaNs. This adjudication is therefore limited to the real-valued standard relative-error model used in the cited analysis."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.1",
+  "task_id": "P01-T1"
+}

@@ -1,0 +1,518 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "blind-translation",
+  "dossier_sha256": "4659b42677386eee7280f4f4953cbcfa0ade0bfc4db73469da452ada592e434e",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For a real u and natural number n, this is the proposition (n as a real number) * u < 1.",
+      "effect_on_target": "It supplies the explicit validity hypothesis r*u < 1, ensuring in particular that the denominator 1-r*u in the error factor is positive.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "This is the type of floating-addition model packages described by constructor D007: a real parameter u, a proof that u is nonnegative, a binary operation on reals, and its exact-zero and relative-error laws.",
+      "effect_on_target": "The universally quantified fp supplies both the unit-error parameter u and the modeled addition operation used by the recursive computation.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "This is the third projection of a LocalDef002 package, namely its binary real operation fl_add.",
+      "effect_on_target": "It selects the modeled addition operation passed to the balanced recursive summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "This is the first projection of a LocalDef002 package, namely its real error parameter u.",
+      "effect_on_target": "It selects the u used in the validity condition and in the error factor r*u/(1-r*u).",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "For a real u and natural n, it is the real number gamma_n = ((n as a real)*u)/(1-(n as a real)*u).",
+      "effect_on_target": "With n=r, this is the multiplicative coefficient on the exact sum in the asserted forward-error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "This defines balanced binary-tree summation of 2^r real inputs using a supplied operation flAdd. At depth 0 it returns the unique input v(0). At depth r+1 it recursively sums the lower half v(i), recursively sums the upper half v(i+2^r), and combines the two results with flAdd.",
+      "effect_on_target": "It is the computed quantity whose absolute difference from the exact real sum is bounded. The computation has r levels and a fixed lower-half-before-upper-half binary-tree structure.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "This constructs a floating-addition model from u with 0 <= u and an operation fl_add satisfying fl_add(0,x)=x for every real x and, for every real x,y, admitting a real delta with |delta| <= u and fl_add(x,y)=(x+y)*(1+delta). The witness delta may depend on x and y.",
+      "effect_on_target": "These are the intrinsic assumptions on every modeled addition used by the computation. In particular, each invocation has a possibly different input-dependent relative-error witness.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "For i in Fin(2^r), this constructs the index with the same natural value i in Fin(2^(r+1)); it is the inclusion of the lower half.",
+      "effect_on_target": "It selects entries numbered 0 through 2^r-1 for the left recursive subtree.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "This proves 0 < 2^0, hence that index 0 belongs to Fin(2^0)=Fin(1).",
+      "effect_on_target": "It validates the unique index used by the base case of balanced summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "This is a dependent case distinction on a natural number: it invokes one branch at 0 and another branch at r+1, while carrying a vector of the corresponding size 2^r.",
+      "effect_on_target": "It separates the base and successor cases in the definition of balanced summation without changing the resulting mathematical recurrence.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "For i in Fin(2^r), this constructs the index i+2^r in Fin(2^(r+1)); it is the inclusion of the upper half.",
+      "effect_on_target": "It selects entries numbered 2^r through 2^(r+1)-1 for the right recursive subtree.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LocalDef012",
+      "meaning": "This proves that each natural value i<2^r also satisfies i<2^(r+1).",
+      "effect_on_target": "It justifies the lower-half finite-index inclusion used by D008.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LocalDef013",
+      "meaning": "This proves i+2^r < 2^(r+1) whenever i<2^r.",
+      "effect_on_target": "It justifies the upper-half finite-index inclusion used by D011.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Fin",
+      "meaning": "Fin(n) is the type of natural-number indices i satisfying 0 <= i < n.",
+      "effect_on_target": "It makes v a vector with exactly 2^r entries and fixes the ranges of every exact and recursive sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Fin.fintype",
+      "meaning": "This gives Fin(n) its finite enumeration consisting of all indices 0 through n-1.",
+      "effect_on_target": "It permits the exact sum to range over every one of the 2^r indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Finset.sum",
+      "meaning": "This maps a function over a finite set and adds all resulting values using the additive commutative monoid operation.",
+      "effect_on_target": "It forms the exact real sum S = sum_{i=0}^{2^r-1} v(i).",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, this is the finite set containing all of its elements.",
+      "effect_on_target": "It makes the exact sum include every index in Fin(2^r), with no omitted or repeated index.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "HMul.hMul",
+      "meaning": "This extracts the heterogeneous multiplication operation from an HMul instance.",
+      "effect_on_target": "With the supplied instances it denotes ordinary multiplication, including r*u, gamma_r*S, and the products in the local relative-error law.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "HPow.hPow",
+      "meaning": "This extracts exponentiation from an HPow instance.",
+      "effect_on_target": "With the natural-number power instance it makes 2^r the ordinary natural power determining the vector length.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "HSub.hSub",
+      "meaning": "This extracts subtraction from an HSub instance.",
+      "effect_on_target": "It denotes real subtraction in the computed-minus-exact error and in the denominator 1-r*u.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "LE.le",
+      "meaning": "This extracts the non-strict order relation from an LE instance.",
+      "effect_on_target": "For reals it expresses input nonnegativity, |delta| <= u, and the final error inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Monoid.toNatPow",
+      "meaning": "A monoid supplies natural powers x^n through repeated monoid multiplication.",
+      "effect_on_target": "Applied to the natural-number multiplicative monoid, it defines the ordinary natural value 2^r.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Nat",
+      "meaning": "This is the type of natural numbers, including zero.",
+      "effect_on_target": "The depth r is an arbitrary natural number, and 2^r is therefore always a positive finite input count.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Nat.instMonoid",
+      "meaning": "This is the standard multiplicative monoid structure on natural numbers.",
+      "effect_on_target": "It makes the power expression 2^r use ordinary natural-number multiplication and exponentiation.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "OfNat.ofNat",
+      "meaning": "This interprets a natural-number literal in a type having the corresponding OfNat instance.",
+      "effect_on_target": "It supplies the literal 2 used as the base of the input dimension 2^r.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Real",
+      "meaning": "This is the type of mathematical real numbers.",
+      "effect_on_target": "Inputs, exact sums, computed sums, error witnesses, and all error bounds are mathematical real quantities.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This is the standard commutative additive-monoid structure on the reals.",
+      "effect_on_target": "It supplies exact real addition and zero to Finset.sum, making the reference sum independent of enumeration order.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Real.instAddGroup",
+      "meaning": "This is the standard additive-group structure on the reals, including negation.",
+      "effect_on_target": "It supports subtraction, negation, and the scalar absolute value used in the final error.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Real.instLE",
+      "meaning": "This is the usual non-strict order on real numbers.",
+      "effect_on_target": "All occurrences of <= in the assumptions and conclusion have their standard real meaning.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Real.instMul",
+      "meaning": "This is ordinary real multiplication.",
+      "effect_on_target": "It interprets the products in gamma_r, the final bound, and the operation-error model as exact real products.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Real.instSub",
+      "meaning": "Real subtraction is defined by a-b = a+(-b).",
+      "effect_on_target": "It gives the standard differences between computed and exact sums and between 1 and r*u.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "Real.instZero",
+      "meaning": "This is the real number zero.",
+      "effect_on_target": "It appears in the input nonnegativity assumption and the exact-left-zero law for fl_add.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "Real.lattice",
+      "meaning": "This is the standard lattice structure induced by the real order.",
+      "effect_on_target": "It supplies the maximum operation used in the definition of scalar absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Zero.toOfNat0",
+      "meaning": "This interprets the numeral 0 as the zero element of a type.",
+      "effect_on_target": "It turns the displayed zero in 0 <= v(i) into real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "abs",
+      "meaning": "In an ordered additive group, abs(a) is max(a,-a); over the reals this is the usual scalar absolute value |a|.",
+      "effect_on_target": "It measures the scalar forward error |computed sum - exact sum| and bounds each local witness by |delta| <= u.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "instHMul",
+      "meaning": "This lifts an ordinary homogeneous multiplication operation into the HMul interface.",
+      "effect_on_target": "It resolves the overloaded multiplications in the proposition to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "instHPow",
+      "meaning": "This lifts a power operation into the HPow interface.",
+      "effect_on_target": "It resolves the overloaded expression 2^r to the natural-number power operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "instHSub",
+      "meaning": "This lifts an ordinary subtraction operation into the HSub interface.",
+      "effect_on_target": "It resolves overloaded subtraction to standard real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "instOfNatNat",
+      "meaning": "This interprets each natural-number literal n as that same natural number.",
+      "effect_on_target": "It makes the dimension base literal 2 exactly the natural number two.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "This extracts division from a division-and-inverse monoid structure.",
+      "effect_on_target": "It provides real division for the quotient r*u/(1-r*u) defining gamma_r.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "Fin.mk",
+      "meaning": "Given a natural value i and a proof i<n, this constructs the corresponding element of Fin(n).",
+      "effect_on_target": "It constructs the base index and the lower- and upper-half indices used by the recursive summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "HAdd.hAdd",
+      "meaning": "This extracts addition from an HAdd instance.",
+      "effect_on_target": "It denotes real addition in (x+y)*(1+delta) and natural addition in r+1 and i+2^r.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "HDiv.hDiv",
+      "meaning": "This extracts division from an HDiv instance.",
+      "effect_on_target": "It denotes ordinary real division in the definition of gamma_r.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "LT.lt",
+      "meaning": "This extracts the strict order relation from an LT instance.",
+      "effect_on_target": "For reals it expresses the strict validity condition r*u < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "Nat.below",
+      "meaning": "For course-of-values recursion at n, this packages recursive results for smaller natural arguments.",
+      "effect_on_target": "It makes the depth-r summation function available when defining the depth-(r+1) lower and upper subtree sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "Nat.brecOn",
+      "meaning": "This is course-of-values recursion on natural numbers.",
+      "effect_on_target": "It implements the recursion over tree depth in D006 and yields the balanced summation function at the requested r.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "Nat.cast",
+      "meaning": "This embeds a natural number into a type with a natural-cast operation; here it embeds n into the reals.",
+      "effect_on_target": "It turns r into the real coefficient occurring in r*u and gamma_r.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "Nat.succ",
+      "meaning": "This maps a natural number r to its successor r+1.",
+      "effect_on_target": "It indexes the successor case of the recursive balanced summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "One.toOfNat1",
+      "meaning": "This interprets the numeral 1 as the multiplicative identity of a type.",
+      "effect_on_target": "It supplies real one in r*u < 1, 1-r*u, and 1+delta.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This is the standard real multiplicative structure with inversion and division, with division represented by multiplication by an inverse.",
+      "effect_on_target": "It gives gamma_r its ordinary real quotient meaning.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "Real.instLT",
+      "meaning": "This is the usual strict order on real numbers.",
+      "effect_on_target": "It makes the validity hypothesis exactly the standard inequality r*u < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "Real.instNatCast",
+      "meaning": "This is the standard embedding of natural numbers into the reals.",
+      "effect_on_target": "It interprets the natural depth r as the corresponding nonnegative integer-valued real in the error factor.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "Real.instOne",
+      "meaning": "This is the real number one as multiplicative identity.",
+      "effect_on_target": "It supplies the constant 1 in the validity condition, denominator, and local relative-error formula.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "instAddNat",
+      "meaning": "This is ordinary natural-number addition.",
+      "effect_on_target": "It interprets r+1 and the shifted upper-half index i+2^r.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "instHAdd",
+      "meaning": "This lifts ordinary addition into the HAdd interface.",
+      "effect_on_target": "It resolves overloaded additions to real addition or natural addition according to context.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "instHDiv",
+      "meaning": "This lifts ordinary division into the HDiv interface.",
+      "effect_on_target": "It resolves the quotient in gamma_r to standard real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "And",
+      "meaning": "This is logical conjunction: both component propositions must hold.",
+      "effect_on_target": "For each x,y, the same existential witness delta must satisfy both |delta| <= u and fl_add(x,y)=(x+y)*(1+delta).",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "Eq",
+      "meaning": "This is exact equality.",
+      "effect_on_target": "The zero law and local relative-error representation are exact real equalities, not approximate relations.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "Exists",
+      "meaning": "This is existential quantification.",
+      "effect_on_target": "For every operand pair x,y there must exist at least one corresponding delta; no single global delta is required.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "Fin.val",
+      "meaning": "This extracts the underlying natural value of a finite index.",
+      "effect_on_target": "It preserves an index for the lower half and shifts its numerical value by 2^r for the upper half.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "Nat.casesOn",
+      "meaning": "This performs case analysis on a natural number, distinguishing zero from a successor.",
+      "effect_on_target": "It realizes the base-versus-recursive branch selection inside D010.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "Nat.instPartialOrder",
+      "meaning": "This is the standard partial order on natural numbers.",
+      "effect_on_target": "It supports the natural strict-order fact 0<2^0 used to construct the base finite index.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "Nat.zero",
+      "meaning": "This is the natural number zero.",
+      "effect_on_target": "It identifies the base recursion depth and the sole index used when the input length is 2^0=1.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "PartialOrder.toPreorder",
+      "meaning": "This extracts the preorder component of a partial order.",
+      "effect_on_target": "It is part of the instance chain providing the standard natural-number strict order needed by D009.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "Preorder.toLT",
+      "meaning": "This extracts the strict-order relation from a preorder.",
+      "effect_on_target": "It supplies the natural-number less-than relation used in the base finite-index bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Real.instAdd",
+      "meaning": "This is ordinary real addition.",
+      "effect_on_target": "It interprets x+y and 1+delta in the modeled local-error equation.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "instLTNat",
+      "meaning": "This is ordinary strict less-than on natural numbers.",
+      "effect_on_target": "It expresses all bounds certifying that the constructed base, lower-half, and upper-half indices lie in their Fin types.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "fp is an arbitrary floating-addition model package. Write u for its first component and fl_add for its third component.",
+      "r is an arbitrary natural number, including r=0.",
+      "v is a real-valued vector indexed by Fin(2^r), equivalently a family v(0),...,v(2^r-1) of exactly 2^r real numbers."
+    ],
+    "hypotheses": [
+      "Intrinsic to fp, u is nonnegative: 0 <= u.",
+      "Intrinsic to fp, fl_add has exact left-zero behavior: for every real x, fl_add(0,x)=x.",
+      "Intrinsic to fp, for every pair of real operands x,y there exists a real delta, potentially depending on x and y, such that |delta| <= u and fl_add(x,y)=(x+y)*(1+delta).",
+      "The depth-error product satisfies (r as a real)*u < 1.",
+      "Every input is nonnegative: for every i in Fin(2^r), 0 <= v(i)."
+    ],
+    "conclusions": [
+      "If B_r(v) is the balanced binary-tree sum computed with fl_add and S=sum_{i=0}^{2^r-1} v(i) is the exact real sum, then |B_r(v)-S| <= [r*u/(1-r*u)]*S, where r is interpreted as a real in the coefficient."
+    ],
+    "mathematical_definitions": [
+      "The exact quantity is S = sum_{i in Fin(2^r)} v(i) = v(0)+...+v(2^r-1), using exact real addition.",
+      "The computed quantity is defined recursively by B_0(v)=v(0), and B_{k+1}(v)=fl_add(B_k(i maps to v(i)), B_k(i maps to v(i+2^k))), where the first recursive input is the lower half and the second is the upper half of the 2^(k+1)-entry vector.",
+      "The error coefficient is gamma_r = (r*u)/(1-r*u), with r cast from a natural number to a real.",
+      "At every internal tree node, the model law provides an input-dependent witness delta for that node's actual two operands; different nodes are not required to share a witness."
+    ],
+    "proposition_plain_english": "For every abstract floating-point addition model with nonnegative unit-error parameter u, exact behavior when the left operand is zero, and a per-operation relative-error representation fl_add(x,y)=(x+y)(1+delta) with |delta| <= u, for every natural depth r satisfying r*u<1, and for every nonnegative vector of exactly 2^r real inputs, the absolute forward error of the depth-r balanced binary-tree sum is at most gamma_r times the exact sum, where gamma_r=r*u/(1-r*u)."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The conclusion is conditional. For a given fp and r, if r*u < 1 is false, the implication imposes no error bound.",
+    "The conclusion is also conditional on every input being nonnegative; vectors containing a negative entry are outside the theorem.",
+    "Only vector lengths that are exact powers of two are represented, and the computation uses the specific balanced lower-half/upper-half tree encoded by D006.",
+    "The operation fl_add is not assumed commutative or associative. Its operand order is fixed by the recursive definition.",
+    "The local witness delta is existential and may depend on the two operands, which themselves may depend on errors from lower tree levels. No common, deterministic, or independent sequence of error witnesses is asserted.",
+    "The target uses scalar real absolute value, not a vector or matrix norm.",
+    "The right-hand side contains the exact sum S rather than |S|. Nonnegativity of the inputs ensures S >= 0.",
+    "If S=0, the bound has right-hand side zero and therefore asserts exact equality B_r(v)=S; for nonnegative inputs this is the all-zero case.",
+    "At r=0, there is one input, no call to fl_add, gamma_0=0, and the conclusion reduces to the exact identity |v(0)-v(0)| <= 0.",
+    "Although real division is total in the formal setting, r*u<1 makes 1-r*u strictly positive, so the displayed denominator is nonzero in every nonvacuous application.",
+    "The model concerns mathematical real inputs and an abstract real-valued operation. It does not encode a concrete floating-point format, rounding mode, overflow, underflow, subnormal numbers, NaNs, infinities, or finite representability.",
+    "Exact real multiplication, division, subtraction, absolute value, and the reference sum are used in the statement; they are not additional modeled floating-point operations.",
+    "No result is asserted for non-power-of-two input counts, a sequential summation order, a different reduction tree, or computations involving operations other than the packaged addition.",
+    "The proposition gives only this absolute forward-error upper bound. It does not assert tightness, a lower bound, a componentwise backward error, or a relative-error quotient when the exact sum is nonzero."
+  ],
+  "ambiguities": []
+}
+

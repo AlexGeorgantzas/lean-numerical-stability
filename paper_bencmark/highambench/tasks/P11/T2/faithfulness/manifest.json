@@ -1,0 +1,1033 @@
+{
+  "audit_setup": [
+    {
+      "path": "paper_bencmark/faithfulness_audit/METHODOLOGY.md",
+      "sha256": "313af176bd212db95e270c4d9823aef671434b6b72488531d20d34c8c0ce1550"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/scripts/common.py",
+      "sha256": "9bb4b8cfbbfabba9a827979781c9eb848cd28065d17b7b0489a5937de9afb747"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/scripts/declaration_dossier.lean",
+      "sha256": "5025910a023a0bc4fe027d7b9af078e4fb71ae9462fb192b1575056889f8f2ff"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/scripts/finalize_audit.py",
+      "sha256": "0ab93128b8c3fe7468549756d1b153fa36d8deccfefdf459cee4e87d4ce22ec5"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/scripts/prepare_audit.py",
+      "sha256": "413e26f546c75f8ffd3cda5dc93d5b696b675b4ca0b07937566d9cd937b708ac"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/scripts/validate_agent_output.py",
+      "sha256": "9e3895fa57197569e779075a3221ff894bb20f48fe127bad766756bf5e90569b"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/scripts/validate_audit.py",
+      "sha256": "880fb8e2e970a56e0eef93e52ed74dc6bc8653b9402998865d4b7d52e6afb218"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/templates/report.md",
+      "sha256": "ebee15ac035a2ef5f007a4148fc1c76f13e9e0a0a22d8b3548f8ca96ac9eec06"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/skill/highambench-faithfulness-audit/SKILL.md",
+      "sha256": "f26629062c9df8c2e07c7c0fd4e8aed574768cf671ec0b72bf77898505a81ac2"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/skill/highambench-faithfulness-audit/agents/openai.yaml",
+      "sha256": "efff193d4f2379df5e96e297130a5d07bbac062a551ccfc8cbf897f1489468cb"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/prompts/adjudicator.md",
+      "sha256": "82c9312f62717ae7f6bfb1e171d734b95a5dab1438753def2e3bdd43da282927"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/prompts/blind_translation.md",
+      "sha256": "f736c81b30d3b3819f03da17da1796b65ec708f63308c3ee750ba95c243e6c63"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/prompts/direct_judge.md",
+      "sha256": "2edc2a47cc6a780b2c0f8ffefb81dcbe80a6d3e20231f5b825843f87a1104d1e"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/prompts/roundtrip_judge.md",
+      "sha256": "7546dd7a95458905466314da3a9c7cab66ffa4c229856a6163013cae6bea8a2d"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/prompts/source_contract.md",
+      "sha256": "b1ada4ddca4b7286e620c4ee9dc2d28639decf39091af95c50eb7a30ef578280"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/schemas/adjudicator.schema.json",
+      "sha256": "13b67e8af2343edcc18d4f7d3f36f8e8997a773dd13e0eae1049a166d6783d5f"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/schemas/blind_translation.schema.json",
+      "sha256": "5131ff808073d4bfc1d418ffda19e8b43d9fbe28cd0a82fc67cd10f8d5ea3ff8"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/schemas/decision.schema.json",
+      "sha256": "ef579f0aed55c378599f24acd18c63a1647bf286add0cf953787c48072147fc9"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/schemas/direct_judge.schema.json",
+      "sha256": "95beaf90fbe433468dd1ce48566cdb81602ea759062c63aa519b6a97d3fc5931"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/schemas/roundtrip_judge.schema.json",
+      "sha256": "abcb65abba8f2f060db0906594b09fdb98de34fb7ffb22def71e63d9f7102cf4"
+    },
+    {
+      "path": "paper_bencmark/faithfulness_audit/schemas/source_contract.schema.json",
+      "sha256": "60f98befad6a6725418a49a9f665228a0f93259e1f97edd6815fc8d06988a61e"
+    }
+  ],
+  "blindness": {
+    "allowed_input": "inputs/blind_dossier.md supplied inline",
+    "forbidden": [
+      "conversation history",
+      "filesystem or tool access",
+      "reference paper",
+      "context.md",
+      "task.json",
+      "theorem proof",
+      "other agent outputs"
+    ]
+  },
+  "compiled_environment": {
+    "module_count": 5159,
+    "sorted_module_names_sha256": "0700789df9a8e3a72ae85cda5a920fd1509852dbb14c980ebc0a713ed9305a6d"
+  },
+  "completed_at_utc": "2026-08-12T18:43:07.302212+00:00",
+  "context": {
+    "path": "paper_bencmark/highambench/tasks/P11/T2/context.md",
+    "semantic_evidence": false,
+    "sha256": "3599bb5c8bc080ea897ef1c3c154631a799531a08180f5ecc8f536e69f49e6e7"
+  },
+  "dependencies": [
+    {
+      "blind_name": "LocalDef001",
+      "distance": 1,
+      "id": "D001",
+      "kind": "abbrev",
+      "name": "HighamBench.P11Matrix",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local"
+    },
+    {
+      "blind_name": "LocalDef002",
+      "distance": 1,
+      "id": "D002",
+      "kind": "def",
+      "name": "HighamBench.p11DefectCore",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local"
+    },
+    {
+      "blind_name": "LocalDef003",
+      "distance": 1,
+      "id": "D003",
+      "kind": "def",
+      "name": "HighamBench.p11Identity",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local"
+    },
+    {
+      "blind_name": "LocalDef004",
+      "distance": 1,
+      "id": "D004",
+      "kind": "def",
+      "name": "HighamBench.p11MatMul",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local"
+    },
+    {
+      "blind_name": "LocalDef005",
+      "distance": 1,
+      "id": "D005",
+      "kind": "def",
+      "name": "HighamBench.p11OrthogonalityDefect",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local"
+    },
+    {
+      "blind_name": "LocalDef006",
+      "distance": 1,
+      "id": "D006",
+      "kind": "def",
+      "name": "HighamBench.p11Transpose",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local"
+    },
+    {
+      "blind_name": "LocalDef007",
+      "distance": 2,
+      "id": "D007",
+      "kind": "def",
+      "name": "HighamBench.p11NormalEquationResidual",
+      "owner_module": "HighamBench.P11Definitions",
+      "role": "local"
+    },
+    {
+      "blind_name": "Eq",
+      "distance": 1,
+      "id": "D008",
+      "kind": "inductive",
+      "name": "Eq",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Fin",
+      "distance": 1,
+      "id": "D009",
+      "kind": "inductive",
+      "name": "Fin",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "HAdd.hAdd",
+      "distance": 1,
+      "id": "D010",
+      "kind": "abbrev",
+      "name": "HAdd.hAdd",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Matrix.add",
+      "distance": 1,
+      "id": "D011",
+      "kind": "def",
+      "name": "Matrix.add",
+      "owner_module": "Mathlib.LinearAlgebra.Matrix.Defs",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Nat",
+      "distance": 1,
+      "id": "D012",
+      "kind": "inductive",
+      "name": "Nat",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Real",
+      "distance": 1,
+      "id": "D013",
+      "kind": "inductive",
+      "name": "Real",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Real.instAdd",
+      "distance": 1,
+      "id": "D014",
+      "kind": "def",
+      "name": "Real.instAdd",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "instHAdd",
+      "distance": 1,
+      "id": "D015",
+      "kind": "def",
+      "name": "instHAdd",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Fin.fintype",
+      "distance": 2,
+      "id": "D016",
+      "kind": "def",
+      "name": "Fin.fintype",
+      "owner_module": "Mathlib.Data.Fintype.Basic",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "HMul.hMul",
+      "distance": 2,
+      "id": "D017",
+      "kind": "abbrev",
+      "name": "HMul.hMul",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "HSub.hSub",
+      "distance": 2,
+      "id": "D018",
+      "kind": "abbrev",
+      "name": "HSub.hSub",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Matrix",
+      "distance": 2,
+      "id": "D019",
+      "kind": "def",
+      "name": "Matrix",
+      "owner_module": "Mathlib.LinearAlgebra.Matrix.Defs",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "distance": 2,
+      "id": "D020",
+      "kind": "def",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "owner_module": "Mathlib.Data.Matrix.Mul",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Matrix.one",
+      "distance": 2,
+      "id": "D021",
+      "kind": "def",
+      "name": "Matrix.one",
+      "owner_module": "Mathlib.Data.Matrix.Diagonal",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Matrix.sub",
+      "distance": 2,
+      "id": "D022",
+      "kind": "def",
+      "name": "Matrix.sub",
+      "owner_module": "Mathlib.LinearAlgebra.Matrix.Defs",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Matrix.transpose",
+      "distance": 2,
+      "id": "D023",
+      "kind": "def",
+      "name": "Matrix.transpose",
+      "owner_module": "Mathlib.LinearAlgebra.Matrix.Defs",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "OfNat.ofNat",
+      "distance": 2,
+      "id": "D024",
+      "kind": "abbrev",
+      "name": "OfNat.ofNat",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "One.toOfNat1",
+      "distance": 2,
+      "id": "D025",
+      "kind": "def",
+      "name": "One.toOfNat1",
+      "owner_module": "Init.Data.Zero",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Real.instAddCommMonoid",
+      "distance": 2,
+      "id": "D026",
+      "kind": "def",
+      "name": "Real.instAddCommMonoid",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Real.instMul",
+      "distance": 2,
+      "id": "D027",
+      "kind": "def",
+      "name": "Real.instMul",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Real.instOne",
+      "distance": 2,
+      "id": "D028",
+      "kind": "def",
+      "name": "Real.instOne",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Real.instSub",
+      "distance": 2,
+      "id": "D029",
+      "kind": "def",
+      "name": "Real.instSub",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "Real.instZero",
+      "distance": 2,
+      "id": "D030",
+      "kind": "def",
+      "name": "Real.instZero",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "instDecidableEqFin",
+      "distance": 2,
+      "id": "D031",
+      "kind": "def",
+      "name": "instDecidableEqFin",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier"
+    },
+    {
+      "blind_name": "instHSub",
+      "distance": 2,
+      "id": "D032",
+      "kind": "def",
+      "name": "instHSub",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier"
+    }
+  ],
+  "dependency_edges": [
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.P11Matrix"
+    },
+    {
+      "child": "Matrix",
+      "origin": "body",
+      "parent": "HighamBench.P11Matrix"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P11Matrix"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P11Matrix"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P11Matrix"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "HSub.hSub",
+      "origin": "body",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "body",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "type",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "HighamBench.p11MatMul",
+      "origin": "body",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "HighamBench.p11NormalEquationResidual",
+      "origin": "body",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "HighamBench.p11Transpose",
+      "origin": "body",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "Matrix.sub",
+      "origin": "body",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "Real.instSub",
+      "origin": "body",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "instHSub",
+      "origin": "body",
+      "parent": "HighamBench.p11DefectCore"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p11Identity"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "body",
+      "parent": "HighamBench.p11Identity"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "type",
+      "parent": "HighamBench.p11Identity"
+    },
+    {
+      "child": "Matrix.one",
+      "origin": "body",
+      "parent": "HighamBench.p11Identity"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p11Identity"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p11Identity"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "body",
+      "parent": "HighamBench.p11Identity"
+    },
+    {
+      "child": "One.toOfNat1",
+      "origin": "body",
+      "parent": "HighamBench.p11Identity"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p11Identity"
+    },
+    {
+      "child": "Real.instOne",
+      "origin": "body",
+      "parent": "HighamBench.p11Identity"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "body",
+      "parent": "HighamBench.p11Identity"
+    },
+    {
+      "child": "instDecidableEqFin",
+      "origin": "body",
+      "parent": "HighamBench.p11Identity"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p11MatMul"
+    },
+    {
+      "child": "Fin.fintype",
+      "origin": "body",
+      "parent": "HighamBench.p11MatMul"
+    },
+    {
+      "child": "HMul.hMul",
+      "origin": "body",
+      "parent": "HighamBench.p11MatMul"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "body",
+      "parent": "HighamBench.p11MatMul"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "type",
+      "parent": "HighamBench.p11MatMul"
+    },
+    {
+      "child": "Matrix",
+      "origin": "body",
+      "parent": "HighamBench.p11MatMul"
+    },
+    {
+      "child": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "origin": "body",
+      "parent": "HighamBench.p11MatMul"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p11MatMul"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p11MatMul"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p11MatMul"
+    },
+    {
+      "child": "Real.instAddCommMonoid",
+      "origin": "body",
+      "parent": "HighamBench.p11MatMul"
+    },
+    {
+      "child": "Real.instMul",
+      "origin": "body",
+      "parent": "HighamBench.p11MatMul"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p11NormalEquationResidual"
+    },
+    {
+      "child": "HSub.hSub",
+      "origin": "body",
+      "parent": "HighamBench.p11NormalEquationResidual"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "body",
+      "parent": "HighamBench.p11NormalEquationResidual"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "type",
+      "parent": "HighamBench.p11NormalEquationResidual"
+    },
+    {
+      "child": "HighamBench.p11MatMul",
+      "origin": "body",
+      "parent": "HighamBench.p11NormalEquationResidual"
+    },
+    {
+      "child": "HighamBench.p11Transpose",
+      "origin": "body",
+      "parent": "HighamBench.p11NormalEquationResidual"
+    },
+    {
+      "child": "Matrix.sub",
+      "origin": "body",
+      "parent": "HighamBench.p11NormalEquationResidual"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p11NormalEquationResidual"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p11NormalEquationResidual"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p11NormalEquationResidual"
+    },
+    {
+      "child": "Real.instSub",
+      "origin": "body",
+      "parent": "HighamBench.p11NormalEquationResidual"
+    },
+    {
+      "child": "instHSub",
+      "origin": "body",
+      "parent": "HighamBench.p11NormalEquationResidual"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "HSub.hSub",
+      "origin": "body",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "body",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "type",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "HighamBench.p11Identity",
+      "origin": "body",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "HighamBench.p11MatMul",
+      "origin": "body",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "HighamBench.p11Transpose",
+      "origin": "body",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "Matrix.sub",
+      "origin": "body",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "Real.instSub",
+      "origin": "body",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "instHSub",
+      "origin": "body",
+      "parent": "HighamBench.p11OrthogonalityDefect"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p11Transpose"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "body",
+      "parent": "HighamBench.p11Transpose"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "type",
+      "parent": "HighamBench.p11Transpose"
+    },
+    {
+      "child": "Matrix.transpose",
+      "origin": "body",
+      "parent": "HighamBench.p11Transpose"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p11Transpose"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p11Transpose"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p11Transpose"
+    },
+    {
+      "child": "Eq",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "HighamBench.P11Matrix",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "HighamBench.p11DefectCore",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "HighamBench.p11Identity",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "HighamBench.p11MatMul",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "HighamBench.p11OrthogonalityDefect",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "HighamBench.p11Transpose",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "Matrix.add",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "Real.instAdd",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.p11_t2_orthogonality_defect_identity"
+    }
+  ],
+  "direct_external_imports": [
+    "Mathlib.Algebra.BigOperators.Fin",
+    "Mathlib.Analysis.Matrix.Normed",
+    "Mathlib.Data.Real.Basic",
+    "Mathlib.Tactic"
+  ],
+  "inputs": {
+    "blind_dossier": {
+      "path": "paper_bencmark/highambench/tasks/P11/T2/faithfulness/inputs/blind_dossier.md",
+      "sha256": "8caf1fe2aa2c0287b9c6c1380aa53b2b3af6e367a3fd1f06dc44d39befd6bd20"
+    },
+    "declaration_dossier": {
+      "path": "paper_bencmark/highambench/tasks/P11/T2/faithfulness/inputs/declaration_dossier.md",
+      "sha256": "9cf6428bd30c41300100c8cd58bda8d4b2c9c49a42fc1c8130f8cdf2dc80b21f"
+    },
+    "source_locator": {
+      "path": "paper_bencmark/highambench/tasks/P11/T2/faithfulness/inputs/source_locator.json",
+      "sha256": "d852b170574fb224f1934e9143f7623c0f0ed210cd7cc6730b4373e98cdf97e7"
+    }
+  },
+  "lean_environment": {
+    "lake_manifest": {
+      "path": "lake-manifest.json",
+      "sha256": "ccfe8a72d6d227aebfe4e58575ddf2a2aef03b795052f97b770c36f684cc5774"
+    },
+    "toolchain": {
+      "path": "lean-toolchain",
+      "sha256": "fdf7ccfe204caff50fab1913b9f13a763be5384e87d14555c9fdcb2be2b9f7f8",
+      "value": "leanprover/lean4:v4.29.0-rc3"
+    }
+  },
+  "local_import_sources": [
+    {
+      "direct_imports": [
+        "Mathlib.Algebra.BigOperators.Fin",
+        "Mathlib.Data.Real.Basic",
+        "Mathlib.Tactic"
+      ],
+      "module": "HighamBench.Core",
+      "path": "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+      "sha256": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a"
+    },
+    {
+      "direct_imports": [
+        "HighamBench.Core",
+        "Mathlib.Analysis.Matrix.Normed"
+      ],
+      "module": "HighamBench.P11Definitions",
+      "path": "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean",
+      "sha256": "d30af6550e76d4083f8958fd38563533a67d33dbfaf20349679d355a37a5e8f1"
+    }
+  ],
+  "outputs": {
+    "adjudicator": {
+      "path": "paper_bencmark/highambench/tasks/P11/T2/faithfulness/agent_outputs/adjudicator.json",
+      "sha256": "58027bc895e31027cd9223258fb7f5324c820f4e2491299358f3697631188772"
+    },
+    "blind_translation": {
+      "path": "paper_bencmark/highambench/tasks/P11/T2/faithfulness/agent_outputs/blind_translation.json",
+      "sha256": "ccbd9b3259835e43f8344955168694cb89770144127cdabfed421d2ab605642d"
+    },
+    "decision": {
+      "path": "paper_bencmark/highambench/tasks/P11/T2/faithfulness/decision.json",
+      "sha256": "271595e9996c98e396b28bbb4ba637a51c3483b929bc95a2fb932e5aa3e1c712"
+    },
+    "direct_judge": {
+      "path": "paper_bencmark/highambench/tasks/P11/T2/faithfulness/agent_outputs/direct_judge.json",
+      "sha256": "40e1193f056d775ab0c8245c13c5dcd4af7590b9fd0e7f0014eb75e64798efc8"
+    },
+    "report": {
+      "path": "paper_bencmark/highambench/tasks/P11/T2/faithfulness/report.md",
+      "sha256": "6e56a0024e85d4ac26288737478711144bba94e1a65b83880397b350f528cc8b"
+    },
+    "roundtrip_judge": {
+      "path": "paper_bencmark/highambench/tasks/P11/T2/faithfulness/agent_outputs/roundtrip_judge.json",
+      "sha256": "d1babda4520b70266e7bf79fa4d6448bea29e83d56c4fffdbe9ca87b311b5772"
+    },
+    "source_contract": {
+      "path": "paper_bencmark/highambench/tasks/P11/T2/faithfulness/agent_outputs/source_contract.json",
+      "sha256": "3eb4845c275c93ac76ad1216225513ce38b2edb9a1fc467dcab505544414fc20"
+    }
+  },
+  "paper": {
+    "path": "paper_bencmark/reference_papers/P11_A note on the error analysis of classical Gram\u2013Schmidt.pdf",
+    "sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5",
+    "source_locations": [
+      {
+        "anchor": "unnumbered two-line displayed identity beginning I-Q_k^T Q_k",
+        "pdf_page": 14,
+        "printed_page": "312",
+        "role": "exact residual-to-orthogonality-defect identity",
+        "section": "Appendix: Proof of Theorem 1"
+      }
+    ]
+  },
+  "prepared_at_utc": "2026-08-12T18:27:16.434813+00:00",
+  "schema_version": "highambench-faithfulness-0.1",
+  "semantic_checks": [
+    {
+      "id": "S01",
+      "name": "source-selection",
+      "requirement": "The exact paper version, passage, and surrounding result are correct."
+    },
+    {
+      "id": "S02",
+      "name": "binders-and-types",
+      "requirement": "Every binder, type, dimension, and index set has the intended meaning."
+    },
+    {
+      "id": "S03",
+      "name": "quantifier-scope",
+      "requirement": "Quantifier order, scope, witness dependence, and Skolemization are preserved."
+    },
+    {
+      "id": "S04",
+      "name": "hypotheses",
+      "requirement": "Explicit and implicit hypotheses match, including positivity and nonzero conditions."
+    },
+    {
+      "id": "S05",
+      "name": "conclusion-completeness",
+      "requirement": "Every conclusion, conjunct, case, and dependency is present."
+    },
+    {
+      "id": "S06",
+      "name": "operators-and-definitions",
+      "requirement": "Every nontrivial operator and imported definition has been unfolded and interpreted."
+    },
+    {
+      "id": "S07",
+      "name": "exact-versus-computed",
+      "requirement": "Exact, rounded, perturbed, and computed quantities are not conflated."
+    },
+    {
+      "id": "S08",
+      "name": "algorithm-linkage",
+      "requirement": "The statement remains linked to the paper's algorithm and execution model."
+    },
+    {
+      "id": "S09",
+      "name": "norm-semantics",
+      "requirement": "Norm kind, squared versus unsquared form, and componentwise versus normwise meaning match."
+    },
+    {
+      "id": "S10",
+      "name": "constants-and-indexing",
+      "requirement": "Constants, coefficients, index offsets, and parameter dependence match."
+    },
+    {
+      "id": "S11",
+      "name": "floating-point-model",
+      "requirement": "Precision, rounding mode, exceptional values, underflow, and overflow assumptions match."
+    },
+    {
+      "id": "S12",
+      "name": "relation-strength",
+      "requirement": "Equality/inequality direction, strictness, and logical strength are correct."
+    },
+    {
+      "id": "S13",
+      "name": "error-notion",
+      "requirement": "Forward, backward, mixed, residual, and stability notions are not substituted for one another."
+    },
+    {
+      "id": "S14",
+      "name": "higher-order-terms",
+      "requirement": "First-order approximations, exact remainders, and big-O terms are handled faithfully."
+    },
+    {
+      "id": "S15",
+      "name": "specialization",
+      "requirement": "Finite, scalar, real, dimensional, or other specialization/generalization is classified correctly."
+    },
+    {
+      "id": "S16",
+      "name": "nonvacuity",
+      "requirement": "The formal hypotheses are satisfiable and the conclusion is not true for an unintended trivial reason."
+    }
+  ],
+  "status": "completed",
+  "target": {
+    "declaration": "HighamBench.p11_t2_orthogonality_defect_identity",
+    "path": "paper_bencmark/highambench/tasks/P11/T2/Target.lean",
+    "sha256": "0841de2615bd65b411edf5fd3aef97f97877d931fe8963f505b2f668abea4c2e"
+  },
+  "task_id": "P11-T2",
+  "task_metadata": {
+    "path": "paper_bencmark/highambench/tasks/P11/T2/task.json",
+    "semantic_evidence": false,
+    "sha256": "1c2ac88d0b5c3b51e623f836e2cc9ef9d521558b8d267adff2402672386f6013"
+  }
+}
