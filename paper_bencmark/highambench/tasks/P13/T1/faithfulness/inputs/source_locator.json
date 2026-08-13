@@ -1,0 +1,16 @@
+{
+  "evidence_policy": "Use the referenced PDF and surrounding paper context as evidence. Do not use context.md or task.json paraphrases as semantic evidence.",
+  "paper_path": "paper_bencmark/reference_papers/P13_The numerical stability of barycentric Lagrange interpolation.pdf",
+  "paper_sha256": "9ebf8adb699f96c82ccbb153dd6ca592c64475a8bc3e0703a50cb659b012c520",
+  "paper_version": "published journal version; IMA Journal of Numerical Analysis 24(4), October 2004, printed pages 547-556",
+  "source_locations": [
+    {
+      "anchor": "Lemma 2.2 and equation (2.2)",
+      "pdf_page": 2,
+      "printed_page": "548",
+      "role": "closed-form condition number and lower bound",
+      "section": "2. Condition number"
+    }
+  ],
+  "task_id": "P13-T1"
+}
