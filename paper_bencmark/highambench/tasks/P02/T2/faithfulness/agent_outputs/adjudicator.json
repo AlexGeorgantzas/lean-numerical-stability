@@ -1,0 +1,87 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "adjudicator",
+  "task_id": "P02-T2",
+  "trigger": [
+    "source contract contains ambiguity"
+  ],
+  "resolved_items": [
+    {
+      "item": "source contract contains ambiguity",
+      "resolution": "The five source-contract ambiguities concern inherited arithmetic context, gamma side conditions, the singleton proof case, compact algorithm notation, and exceptional values. Primary PDF and declaration evidence fixes their effect on P02-T2; none leaves the theorem comparison undetermined.",
+      "primary_evidence": "The inspected source :codex-file-citation{path=\"/Users/georgiosalexandrosgeorgantzas/GitHub/lean-fp-analysis/paper_bencmark/reference_papers/P02_ACCURATE SUM AND DOT PRODUCT.pdf\" purpose=\"source\"} has SHA-256 e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d. PDF pages 5-13 contain the standing model, gamma convention, TwoSum theorem, Sum2 algorithms, Proposition 4.5, and proof. Target.lean lines 8-13, Core.lean lines 18-46, and P02Definitions.lean lines 27-78 supply the declaration evidence."
+    },
+    {
+      "item": "Inherited rounding-mode context and semantic checks S04/S11",
+      "resolution": "The intended paper specialization is IEEE binary working precision in the surrounding round-to-nearest context, with no overflow and underflow allowed. More importantly, the paper explicitly supplies the relative-addition and exact-TwoSum properties used in the proof. Lean does not cover an arbitrary named rounding mode: each admitted model must satisfy those semantic laws. Omitting a rounding-mode field is therefore an abstraction and generalization, not loss of the paper case.",
+      "primary_evidence": "PDF page 2 (printed 1956) discusses base-2 rounding to nearest; page 5 (printed 1959) fixes IEEE 754, one precision, no overflow, and possible underflow; page 6 (printed 1960), equations (2.1) and (2.4), states the addition and summation bounds; pages 7-8, Algorithm 3.1 and Theorem 3.4, give x=fl(a+b), a+b=x+y, and |y|<=eps|x| under underflow. Core.lean lines 18-26 and P02Definitions.lean lines 27-34 encode these contracts."
+    },
+    {
+      "item": "Implicit gamma side conditions",
+      "resolution": "For Lemma 4.2 alone, equation (4.4) inherits (N-1)eps<1, while equations (4.5)-(4.6) inherit N eps<1. Proposition 4.5 explicitly assumes N eps<1. With paper length N=n+1, Lean's GammaValid u (n+1) is exactly the proposition's condition, not an added applicability restriction.",
+      "primary_evidence": "PDF page 6 says k eps<1 is implicit whenever gamma_k is used. Page 10 displays gamma_(N-1) in (4.4) and gamma_N in (4.5)-(4.6). Page 11 explicitly assumes N eps<1 in Proposition 4.5. Core.lean lines 29-34 defines gamma and GammaValid; Target.lean line 10 applies validity at n+1 while line 13 uses gamma u n."
+    },
+    {
+      "item": "Singleton input and the gamma_(N-2) proof expression",
+      "resolution": "Proposition 4.5 includes N=1 even though the generic proof later writes gamma_(N-2). For N=1, Algorithm 4.4 has an empty loop and returns the sole input exactly, so (4.8) holds with gamma_0=0; the proof requires this separate base case. Lean preserves it using n=0, VecSum on Fin 1, and recursiveSum's exact singleton branch.",
+      "primary_evidence": "PDF page 11 states inputs for 1<=i<=N without an N>=2 restriction, and Algorithm 4.4 loops from 2 to N. Page 12, equation (4.11), contains the generic gamma_(N-2) step. Core.lean lines 39-46 returns a singleton entry exactly; P02Definitions.lean lines 56-60 and 71-78 make Sum2 on Fin 1 exact."
+    },
+    {
+      "item": "Algorithm 4.4 parenthesization, operand order, S08, and dependencies D009/D013/D017-D020",
+      "resolution": "The paper fixes the computed result by declaring Algorithms 4.1 and 4.4 identical. Lean uses Algorithm 4.1's TwoSum order, stores corrections before the final high, and adds that high after the correction sum, matching Algorithm 4.4's final order. These variants coincide in the paper arithmetic because the high is fl(a+b), rounded addition is commutative, and exactness uniquely fixes the low as a+b-high. On an abstract Lean model lacking commutativity, the operation can differ from both displayed pseudocodes; this is an extra-domain distinction but does not break specialization to the paper algorithm.",
+      "primary_evidence": "PDF page 9, Algorithm 4.1, uses TwoSum(pi_(i-1),p_i), accumulates sigma in increasing order, and returns fl(pi_N+sigma_N). Page 11, Algorithms 4.3-4.4, reverses the TwoSum operands, sums overwritten lows before the high, and explicitly declares identical results. P02Definitions.lean lines 38-60 calls twoSum(high,next) and returns lows followed by the high; Core.lean lines 36-46 folds left-to-right. The model fields contain no commutativity axiom."
+    },
+    {
+      "item": "NaNs, infinities, overflow, and underflow",
+      "resolution": "The paper theorem is a finite-real statement: inputs lie in F, the exact sum lies in R, overflow is excluded, and underflow is explicitly allowed. NaNs and infinities are therefore not cases promised by Proposition 4.5. Lean's Real-valued model likewise excludes them and represents underflow through the semantic addition and TwoSum contracts.",
+      "primary_evidence": "PDF page 5 defines F and excludes overflow while allowing underflow. Page 6 distinguishes exact real results from values in F and says addition/subtraction underflow is exact. Page 8 includes TwoSum underflow, and page 11 defines s in R and again includes underflow. Target.lean lines 9-13 and Core.lean lines 18-34 use mathlib Real throughout."
+    },
+    {
+      "item": "Judge disagreement on S02/S03/S04/S11: fixed floating-point context versus quantified all-real models",
+      "resolution": "The binder and hypothesis differences are genuine generalization, not equivalence. The paper fixes F, eps, and its arithmetic and quantifies finite floating-point inputs. Lean quantifies every real vector and every total ErrorFreeAddModel satisfying all-real contracts. The paper case remains applicable because its finite no-overflow operations can be extended to total real operations by preserving paper fl and TwoSum on relevant finite pairs and using exact addition with zero residual elsewhere.",
+      "primary_evidence": "PDF pages 5-8 fix F, eps, the IEEE/no-overflow context, and TwoSum on a,b in F; page 11 states Proposition 4.5 for p_i in F. Target.lean lines 8-10 universally quantifies fp and v:Fin(n+1)->Real. Core.lean lines 18-26 and P02Definitions.lean lines 27-34 require their laws for every real operand pair."
+    },
+    {
+      "item": "Genuine, nonvacuous strength and S15/S16",
+      "resolution": "The additional scope is substantive. Besides exact models, nonexact noncommutative models satisfy the declaration fields. For example, choose 0<u<1, c=u/2, define flAdd(x,y)=x+y when x=0 and (x+y)(1+c) otherwise, and twoSum(a,b)=(flAdd(a,b),a+b-flAdd(a,b)). The witnesses delta=0 or c satisfy |delta|<=u, and the low bound follows from c<=u(1+c). Choosing n with (n+1)u<1 gives admissible nonzero-rounding instances beyond the paper's fixed IEEE model.",
+      "primary_evidence": "Core.lean lines 18-26 requires only u>=0, flAdd(0,x)=x, and a per-pair relative-error witness. P02Definitions.lean lines 27-34 requires high=flAdd, exact decomposition, and |low|<=u|high|. Core.lean lines 33-34 makes the dimensional premise satisfiable whenever (n+1)u<1. The displayed construction directly satisfies these fields and has nonzero error at, for example, x=y=1."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "For a paper instance of length N>=1, set Lean n=N-1, u=eps, and v(j)=p_(j+1). Extend the finite no-overflow paper operations to a total ErrorFreeAddModel, retaining them on paper operations and using exact addition and zero residual elsewhere. Equations (2.1), (3.2), and Theorem 3.4 establish the fields. In the paper arithmetic the operand-order variants agree, GammaValid becomes N eps<1, gamma u n becomes gamma_(N-1), and the conclusion is exactly equation (4.8)."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "Proposition 4.5 states the result only for inputs in the fixed working-precision set F and the paper's arithmetic. It does not quantify arbitrary real vectors, arbitrary nonnegative u, or every total ErrorFreeAddModel, including nonexact noncommutative models admitted by the declaration."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "remaining_uncertainties": [
+    "Section 2 does not contain one standalone sentence globally restating 'round to nearest' at Proposition 4.5; that label is inherited from surrounding discussion. This editorial uncertainty does not affect the verdict because equations (2.1), (2.4), and Theorem 3.4 state the operative properties and Lean assumes them directly."
+  ],
+  "findings": [
+    {
+      "severity": "major",
+      "category": "domain-and-model-generalization",
+      "evidence": "PDF pages 5 and 11 restrict the stated result to the fixed working-precision set F and paper arithmetic. Target.lean lines 8-13 instead quantifies all real vectors and all ErrorFreeAddModel values, whose laws range over every real pair.",
+      "impact": "The reverse implication fails, but the paper case embeds without extra restrictions and the broader model class has nonexact inhabitants. This is genuine, nonvacuous strength."
+    },
+    {
+      "severity": "minor",
+      "category": "algorithm-operand-order-outside-paper-model",
+      "evidence": "Algorithms 4.1 and 4.4 use opposite TwoSum and final-add operand orders but declare identical results in the paper arithmetic. Lean combines Algorithm 4.1's twoSum(high,next) order with Algorithm 4.4's correction-sum-then-high order, while its abstract model has no commutativity field.",
+      "impact": "For abstract noncommutative models, Lean's function need not literally be either displayed pseudocode. For the paper specialization all orders coincide, so Lean still implies Proposition 4.5."
+    },
+    {
+      "severity": "note",
+      "category": "singleton-proof-exposition",
+      "evidence": "Proposition 4.5 has no N>=2 premise, while equation (4.11) writes gamma_(N-2). Algorithm 4.4 returns the only input exactly when N=1, and Lean's singleton branches do the same.",
+      "impact": "The paper proof requires an implicit singleton base case; this creates no scope mismatch or negative gamma index in the Lean statement."
+    }
+  ],
+  "rationale": "Primary evidence fixes the paper theorem as |res-s|<=eps|s|+gamma_(N-1)^2*sum|p_i| under N eps<1, with finite working-precision inputs, no overflow, and underflow allowed. Unfolding Lean gives one TwoSum-based vector transform followed by a left-to-right modeled sum; with N=n+1 its condition and coefficient are exact. The paper arithmetic embeds in the all-real model without changing the paper result, so Lean implies the paper. The paper statement does not imply Lean's theorem for arbitrary real vectors and arbitrary admissible total models, and those extra models are nonvacuous. The resulting yes/no implication pair requires classification as faithful-stronger."
+}
+

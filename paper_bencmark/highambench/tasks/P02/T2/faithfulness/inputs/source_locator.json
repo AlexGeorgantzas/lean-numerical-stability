@@ -1,0 +1,42 @@
+{
+  "evidence_policy": "Use the referenced PDF and surrounding paper context as evidence. Do not use context.md or task.json paraphrases as semantic evidence.",
+  "paper_path": "paper_bencmark/reference_papers/P02_ACCURATE SUM AND DOT PRODUCT.pdf",
+  "paper_sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d",
+  "paper_version": "journal version; volume 26, issue 6, 2005, printed pages 1955-1988",
+  "source_locations": [
+    {
+      "anchor": "Lemma 4.2, equations (4.4)-(4.6)",
+      "pdf_pages": [
+        10,
+        11
+      ],
+      "printed_pages": [
+        1964,
+        1965
+      ],
+      "role": "bound for the total magnitude of TwoSum low components",
+      "section": "4. Summation"
+    },
+    {
+      "anchor": "Proposition 4.5, equation (4.8)",
+      "pdf_page": 11,
+      "printed_page": 1965,
+      "role": "Sum2 absolute forward-error bound",
+      "section": "4. Summation"
+    },
+    {
+      "anchor": "equations (4.10)-(4.12)",
+      "pdf_pages": [
+        12,
+        13
+      ],
+      "printed_pages": [
+        1966,
+        1967
+      ],
+      "role": "paper proof of the Sum2 bound",
+      "section": "4. Summation"
+    }
+  ],
+  "task_id": "P02-T2"
+}

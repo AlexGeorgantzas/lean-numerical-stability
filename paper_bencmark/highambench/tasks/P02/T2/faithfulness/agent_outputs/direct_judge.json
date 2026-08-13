@@ -1,0 +1,867 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "direct-judge",
+  "task_id": "P02-T2",
+  "paper_sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d",
+  "dossier_sha256": "2eb77a681213ac1635c62ccc981a0c24487fe66ad7a78c2280938c87d8bef06f",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.ErrorFreeAddModel",
+      "interpretation": "A bundled structure whose constructor (D007) contains a standard rounded-addition model, a real-pair-valued TwoSum operation, and laws for its high part, exact decomposition, and low-part bound.",
+      "effect_on_target": "The universally quantified fp supplies every computed operation and the unit-roundoff parameter used by sum2 and the bound.",
+      "paper_match": "It abstracts exactly the addition and unrestricted TwoSum properties used in the paper, while extending their domain from finite floating-point operands to all reals.",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.ErrorFreeAddModel.toStandardAddModel",
+      "interpretation": "The body fun self => self.1 projects the embedded StandardAddModel.",
+      "effect_on_target": "It exposes fp.u and fp.fl_add to GammaValid, gamma, and the final recursive summation.",
+      "paper_match": "This is only structure projection; the projected model is the paper's working-precision rounded-addition model.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.GammaValid",
+      "interpretation": "GammaValid u k is the proposition (k : Real) * u < 1.",
+      "effect_on_target": "At k=n+1 it makes the denominator needed for the length-(n+1) problem positive.",
+      "paper_match": "Writing the paper's length as m=n+1 gives exactly the explicit hypothesis m*eps<1 in Proposition 4.5.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.StandardAddModel.u",
+      "interpretation": "The body fun self => self.1 projects the real parameter u.",
+      "effect_on_target": "It is used as unit roundoff in the first error term, gamma, and GammaValid.",
+      "paper_match": "It corresponds to the paper's eps; Lean additionally permits any nonnegative u satisfying the model laws.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "HighamBench.gamma",
+      "interpretation": "gamma u k is exactly ((k:Real)*u)/(1-(k:Real)*u).",
+      "effect_on_target": "With k=n it supplies gamma_n^2 for a vector of length n+1.",
+      "paper_match": "Under m=n+1 this is the paper's gamma_(m-1)=((m-1)eps)/(1-(m-1)eps), with no approximation.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "HighamBench.sum2",
+      "interpretation": "The body defines sum2 fp v as sumK fp 2 v.",
+      "effect_on_target": "It fixes K=2, hence one VecSum transformation followed by a working-precision recursive sum.",
+      "paper_match": "Unfolding sumK makes this Algorithm 4.4/Sum2, equivalently Algorithm 4.1, not ordinary summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "HighamBench.ErrorFreeAddModel.mk",
+      "interpretation": "The constructor requires a StandardAddModel and twoSum such that high=fl_add(a,b), high+low=a+b exactly, and |low|<=u*|high| for all real a,b.",
+      "effect_on_target": "These fields are the hypotheses from which the cascade preserves the exact sum and bounds correction magnitudes.",
+      "paper_match": "They are precisely the parts of Theorem 3.4 and the addition model used in Lemma 4.2 and Proposition 4.5; the paper also states an unused low bound by |a+b|.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "HighamBench.StandardAddModel",
+      "interpretation": "A bundled structure whose constructor (D011) contains u, u>=0, fl_add, exact addition from zero, and a relative-error law.",
+      "effect_on_target": "It forms the rounded-addition component inherited by fp.",
+      "paper_match": "It is an abstract version of the paper's one-working-precision addition model.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "HighamBench.sumK",
+      "interpretation": "sumK fp K v is recursiveSum fp.fl_add (n+1) (iteratedVecSum fp (K-1) v), with natural subtraction.",
+      "effect_on_target": "For K=2 it applies VecSum once and then sums the transformed vector left to right using fl_add.",
+      "paper_match": "This is operationally the K=2 case of Algorithm 4.8 and the paper identifies that case with Sum2.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "HighamBench.StandardAddModel.fl_add",
+      "interpretation": "The body fun self => self.3 projects the model's binary rounded-addition function.",
+      "effect_on_target": "Every accumulation after VecSum, including the final high-plus-low addition, uses this function.",
+      "paper_match": "It represents the paper's fl(a+b) in working precision.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "HighamBench.StandardAddModel.mk",
+      "interpretation": "The constructor fields require u>=0, fl_add 0 x=x, and for every x,y a delta with |delta|<=u and fl_add x y=(x+y)(1+delta).",
+      "effect_on_target": "They give the local relative-error witnesses for all additions and make a one-element recursive sum exact.",
+      "paper_match": "This captures equations (2.1) and the exact-underflow addition behavior needed by the proof, but is stated abstractly for all real arguments rather than as IEEE syntax.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "HighamBench.iteratedVecSum",
+      "interpretation": "By natural recursion, iteration zero returns v and iteration k+1 applies vecSum to the kth result.",
+      "effect_on_target": "At k=1, forced by sum2, exactly one error-free vector transformation occurs.",
+      "paper_match": "That is the single VecSum pass used by Algorithm 4.4.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "HighamBench.recursiveSum",
+      "interpretation": "For length 0 it returns 0; for length 1 it returns the sole entry exactly; otherwise it recursively sums the prefix and fl_adds the last entry.",
+      "effect_on_target": "It sums the transformed vector in index order, so the lows are accumulated before the final high component.",
+      "paper_match": "This realizes sigma's increasing-index working-precision accumulation and res=fl(pi+sigma) in Algorithms 4.1/4.4.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "HighamBench.iteratedVecSum.match_1",
+      "interpretation": "This generated helper is Nat case analysis selecting the zero or successor branch.",
+      "effect_on_target": "It only implements the recursion defining iteratedVecSum and introduces no numerical condition.",
+      "paper_match": "It has no independent paper counterpart; its branch behavior is already accounted for in D012.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D015",
+      "name": "HighamBench.recursiveSum._proof_1",
+      "interpretation": "This theorem proves 0<n+1 under the branch assumption n=0.",
+      "effect_on_target": "It only discharges the bound needed to construct the singleton Fin index.",
+      "paper_match": "It is an indexing proof with no numerical-paper content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D016",
+      "name": "HighamBench.recursiveSum.match_1",
+      "interpretation": "This generated helper performs dependent case analysis on vector length zero versus successor.",
+      "effect_on_target": "It selects the empty or nonempty recursiveSum equation without changing either equation.",
+      "paper_match": "It has no independent paper counterpart; D013 contains the relevant summation semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D017",
+      "name": "HighamBench.vecSum",
+      "interpretation": "vecSum uses Fin.lastCases: indices before the last receive twoSumCorrection, and the last receives the final twoSumPrefix high value.",
+      "effect_on_target": "It transforms [p1,...,pm] into [q2,...,qm,pi_m] while preserving length.",
+      "paper_match": "This is exactly Algorithm 4.3's error-free vector transformation and the overwritten vector used in Algorithm 4.4.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "HighamBench.twoSumCorrection",
+      "interpretation": "For i in Fin n it returns the second component of TwoSum(prefix through i, v[i+1]).",
+      "effect_on_target": "These are the n emitted low components q2 through q_(n+1).",
+      "paper_match": "The operands and one-based offset agree with the cascade in Algorithms 4.1 and 4.3.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "HighamBench.twoSumPrefix",
+      "interpretation": "Starting from v[0], Fin.foldl k repeatedly replaces the state by the first component of TwoSum(state,v[i+1]).",
+      "effect_on_target": "At k=n it is the ordinary rounded high sum pi_(n+1), and at smaller k it supplies each correction's incoming prefix.",
+      "paper_match": "This matches the increasing-index pi recurrence in Algorithm 4.1.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "HighamBench.ErrorFreeAddModel.twoSum",
+      "interpretation": "The body fun self => self.2 projects the model's TwoSum function.",
+      "effect_on_target": "It supplies every high/low pair used by the prefix and correction definitions.",
+      "paper_match": "It denotes unrestricted Knuth TwoSum, as constrained by D007, rather than magnitude-ordered FastTwoSum.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "HighamBench.twoSumCorrection._proof_1",
+      "interpretation": "This theorem proves i.val<=n for i:Fin n.",
+      "effect_on_target": "It is passed only as a bound certifying the prefix call is in range.",
+      "paper_match": "It is an indexing obligation with no independent paper meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D022",
+      "name": "HighamBench.twoSumCorrection._proof_2",
+      "interpretation": "This theorem proves i.val+1<n+1 for i:Fin n.",
+      "effect_on_target": "It certifies that v[i+1] is a valid input entry.",
+      "paper_match": "It formalizes the obvious loop-bound fact and adds no numerical assumption.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D023",
+      "name": "HighamBench.twoSumPrefix._proof_1",
+      "interpretation": "From k<=n and i:Fin k it proves i.val+1<n+1.",
+      "effect_on_target": "It certifies all shifted vector accesses in the prefix fold.",
+      "paper_match": "It is bookkeeping for the paper's loop range and has no independent numerical claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D024",
+      "name": "Fin",
+      "interpretation": "Fin k is the type of natural indices strictly below k.",
+      "effect_on_target": "It makes v a vector with exactly n+1 entries and fixes all finite loop ranges.",
+      "paper_match": "Mapping Lean index j to paper index j+1 gives the paper's 1,...,m indexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "Fin.fintype",
+      "interpretation": "This instance enumerates all elements of Fin k using finRange.",
+      "effect_on_target": "It lets Finset.univ sum every vector coordinate exactly once.",
+      "paper_match": "It implements the finite index set used by the paper's sums.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "Finset.sum",
+      "interpretation": "It maps a function over a finite set and combines the values with the additive commutative monoid operation.",
+      "effect_on_target": "It defines both the exact real sum s and the exact magnitude sum S.",
+      "paper_match": "These are mathematical sums, not rounded accumulations, exactly as in Proposition 4.5.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "Finset.univ",
+      "interpretation": "For a Fintype it returns the finset containing every element.",
+      "effect_on_target": "It makes each displayed target sum range over every Fin(n+1) index.",
+      "paper_match": "This is the full input range 1<=i<=m in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "HAdd.hAdd",
+      "interpretation": "This projection dispatches overloaded addition through an HAdd instance.",
+      "effect_on_target": "It denotes Nat addition in n+1 and real addition on the right-hand side.",
+      "paper_match": "The selected instances are ordinary natural and exact-real addition, matching index arithmetic and bound arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "HMul.hMul",
+      "interpretation": "This projection dispatches overloaded multiplication through an HMul instance.",
+      "effect_on_target": "It forms (n+1)u, u*|s|, gamma^2*S, and model products.",
+      "paper_match": "All selected products are exact real products (or standard index arithmetic), as in the analytical bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "HPow.hPow",
+      "interpretation": "This projection dispatches exponentiation through an HPow instance.",
+      "effect_on_target": "With the real monoid instance and exponent 2 it computes gamma(fp.u,n) squared.",
+      "paper_match": "It is the literal square gamma_(m-1)^2 in equation (4.8).",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "HSub.hSub",
+      "interpretation": "This projection dispatches overloaded subtraction through an HSub instance.",
+      "effect_on_target": "It forms sum2-s and the denominator 1-k*u; natural subtraction also appears in K-1.",
+      "paper_match": "The selected operations give the paper's exact-real difference, gamma denominator, and one VecSum pass.",
+      "status": "pass"
+    },
+    {
+      "id": "D032",
+      "name": "LE.le",
+      "interpretation": "This projection dispatches the non-strict order relation.",
+      "effect_on_target": "It is the outer <= and all model-law bounds.",
+      "paper_match": "For Real it is ordinary scalar order, matching every displayed paper inequality.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "Monoid.toNatPow",
+      "interpretation": "This instance defines natural powers by monoid repeated multiplication.",
+      "effect_on_target": "It interprets a^2 in the target as a*a.",
+      "paper_match": "Thus no index is squared: the paper's gamma coefficient itself is squared.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "Nat",
+      "interpretation": "Nat is the inductive type of nonnegative integers.",
+      "effect_on_target": "Lean's n is one less than the positive vector length and also indexes gamma.",
+      "paper_match": "This reparameterizes the paper's positive length m as m=n+1 without omitting m=1.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "OfNat.ofNat",
+      "interpretation": "This projection interprets numeric literals through OfNat instances.",
+      "effect_on_target": "It supplies the literals 1 and 2 in the length, GammaValid, and square.",
+      "paper_match": "The resulting natural and real constants are the ordinary paper constants.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "Real",
+      "interpretation": "Real is mathlib's real-number type.",
+      "effect_on_target": "Inputs, operation outputs, exact sums, errors, u, and gamma all live in the reals.",
+      "paper_match": "The paper embeds finite floating-point values and exact analytical quantities in R; Lean genuinely extends the input/model contracts to arbitrary reals.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instAdd",
+      "interpretation": "This instance supplies ordinary real addition.",
+      "effect_on_target": "It interprets s terms, the error-bound sum, and exact identities inside model laws.",
+      "paper_match": "It matches the paper's exact real arithmetic outside fl.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "This instance gives reals the additive commutative monoid used by Finset.sum.",
+      "effect_on_target": "It makes exact finite sums order-independent at the mathematical level.",
+      "paper_match": "This matches s=sum p_i and S=sum |p_i|, which are exact real sums.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "Real.instAddGroup",
+      "interpretation": "This instance supplies real negation/subtraction structure and is also used by abs.",
+      "effect_on_target": "It supports |sum2-s| and every scalar absolute value.",
+      "paper_match": "It gives the standard real absolute-error semantics in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "Real.instLE",
+      "interpretation": "This instance supplies the usual real <= relation.",
+      "effect_on_target": "It interprets the target inequality and model bounds.",
+      "paper_match": "It matches the paper's non-strict real inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "Real.instMonoid",
+      "interpretation": "This instance supplies real multiplication, one, and natural powers.",
+      "effect_on_target": "It is used to interpret gamma^2.",
+      "paper_match": "It gives the ordinary exact square appearing in equation (4.8).",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "Real.instMul",
+      "interpretation": "This instance supplies ordinary real multiplication.",
+      "effect_on_target": "It interprets every product in gamma, GammaValid, model_add, and the bound.",
+      "paper_match": "The paper's analytical products have exactly this meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "Real.instSub",
+      "interpretation": "This instance defines real subtraction as addition of the negation.",
+      "effect_on_target": "It interprets sum2-s and 1-k*u.",
+      "paper_match": "It matches ordinary real subtraction in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "Real.lattice",
+      "interpretation": "This instance supplies real min/max lattice operations.",
+      "effect_on_target": "Together with the real additive group it defines abs.",
+      "paper_match": "It yields the standard scalar absolute value used throughout the selected paper result.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "abs",
+      "interpretation": "The body defines abs a as max(a,-a).",
+      "effect_on_target": "It measures |computed-exact|, |s|, and each |v_i|.",
+      "paper_match": "This is exactly scalar absolute value; S is sum of component magnitudes, not |s| or a different norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "instAddNat",
+      "interpretation": "This instance defines natural addition as Nat.add.",
+      "effect_on_target": "It makes n+1 the vector length and supports loop-index increments.",
+      "paper_match": "It realizes the paper's ordinary integer index arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "instHAdd",
+      "interpretation": "This lifts an Add instance to homogeneous overloaded addition.",
+      "effect_on_target": "It routes Nat and Real + notation to the instances above.",
+      "paper_match": "It is notation plumbing and does not alter the corresponding paper operations.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "instHMul",
+      "interpretation": "This lifts a Mul instance to homogeneous overloaded multiplication.",
+      "effect_on_target": "It routes real multiplication notation in the statement and definitions.",
+      "paper_match": "It is notation plumbing for ordinary products in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "instHPow",
+      "interpretation": "This lifts a Pow instance to homogeneous HPow.",
+      "effect_on_target": "It routes the target's exponentiation to real natural power.",
+      "paper_match": "It preserves the literal gamma square in equation (4.8).",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "instHSub",
+      "interpretation": "This lifts a Sub instance to homogeneous overloaded subtraction.",
+      "effect_on_target": "It routes real and natural subtraction in the target closure.",
+      "paper_match": "It preserves the intended exact-real differences and K-1 iteration count.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "instOfNatNat",
+      "interpretation": "This instance interprets a natural literal n as the same Nat n.",
+      "effect_on_target": "It fixes the 0, 1, and 2 constants used by indices and K.",
+      "paper_match": "It is standard numeral interpretation with no shift beyond the explicit n+1 reparameterization.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "This projection obtains division from the real DivInvMonoid.",
+      "effect_on_target": "It is part of gamma's exact quotient.",
+      "paper_match": "It implements the division in gamma_k=k*u/(1-k*u).",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "HDiv.hDiv",
+      "interpretation": "This projection dispatches overloaded division.",
+      "effect_on_target": "It divides k*u by 1-k*u in gamma.",
+      "paper_match": "The selected real division gives exactly the paper's gamma constant.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "LT.lt",
+      "interpretation": "This projection dispatches strict order.",
+      "effect_on_target": "It interprets GammaValid's < and internal Fin bounds.",
+      "paper_match": "For Real and Nat it gives the ordinary strict inequalities used by the paper and indexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "Nat.cast",
+      "interpretation": "This projection casts a natural through NatCast.",
+      "effect_on_target": "It converts n and n+1 to reals in gamma and GammaValid.",
+      "paper_match": "It matches the paper's use of integer counts as real coefficients.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "One.toOfNat1",
+      "interpretation": "This instance interprets literal 1 from a One instance.",
+      "effect_on_target": "It supplies real 1 in gamma's denominator and model_add.",
+      "paper_match": "It is the ordinary multiplicative identity in the paper formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "This instance supplies real division and inversion from the real multiplicative structure.",
+      "effect_on_target": "It gives semantic content to gamma's quotient.",
+      "paper_match": "It matches exact real division under GammaValid's nonzero positive denominator.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "Real.instLT",
+      "interpretation": "This instance supplies the usual strict order on reals.",
+      "effect_on_target": "It makes GammaValid mean a genuine real inequality.",
+      "paper_match": "Thus hvalid is exactly (n+1)u<1.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "Real.instNatCast",
+      "interpretation": "This instance embeds natural numbers into reals.",
+      "effect_on_target": "It interprets the count multiplying u.",
+      "paper_match": "This is the paper's standard integer-to-real coercion in gamma.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "Real.instOne",
+      "interpretation": "This instance supplies the real number 1.",
+      "effect_on_target": "It appears in gamma and the relative-error factor 1+delta.",
+      "paper_match": "It matches the paper's real unit.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "instHDiv",
+      "interpretation": "This lifts a Div instance to homogeneous overloaded division.",
+      "effect_on_target": "It routes gamma notation to real division.",
+      "paper_match": "It is notation plumbing and leaves the paper constant unchanged.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "Eq",
+      "interpretation": "Eq is Lean's exact propositional equality.",
+      "effect_on_target": "It states the high-part identity, error-free high+low identity, zero-add identity, and model equation.",
+      "paper_match": "These are exact identities, matching the paper's error-free transformation rather than approximate equalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "Prod",
+      "interpretation": "Prod Real Real is an ordered pair of reals.",
+      "effect_on_target": "It is the return type of TwoSum.",
+      "paper_match": "The first/second ordering represents the paper's high and low outputs [x,y].",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "Prod.fst",
+      "interpretation": "This projection returns the first component of a pair.",
+      "effect_on_target": "It selects every TwoSum high component used in the prefix cascade.",
+      "paper_match": "It matches x=fl(a+b) and the paper's pi recurrence.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "Prod.snd",
+      "interpretation": "This projection returns the second component of a pair.",
+      "effect_on_target": "It selects every emitted low correction.",
+      "paper_match": "It matches the paper's y or q_i residual component.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "instSubNat",
+      "interpretation": "This instance defines natural subtraction as truncated Nat.sub.",
+      "effect_on_target": "It makes 2-1=1 in sum2's call to iteratedVecSum.",
+      "paper_match": "At K=2 there is no truncation ambiguity, and the one iteration matches Sum2.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "And",
+      "interpretation": "And forms a conjunction of two propositions.",
+      "effect_on_target": "It packages |delta|<=u together with the rounded-addition equation in model_add.",
+      "paper_match": "Both local error properties are required simultaneously, as in the paper's fl model.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "Exists",
+      "interpretation": "Exists expresses a witness depending on the quantified inputs.",
+      "effect_on_target": "For each x,y it provides a possibly different local delta.",
+      "paper_match": "This preserves the paper's per-operation fresh rounding error rather than imposing one global error.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "Fin.castSucc",
+      "interpretation": "It embeds an index i:Fin n into Fin(n+1) with the same numeric value.",
+      "effect_on_target": "recursiveSum uses it to restrict a vector to its prefix.",
+      "paper_match": "This implements the paper's prefix accumulation without permuting entries.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "Fin.last",
+      "interpretation": "Fin.last n is the index n in Fin(n+1).",
+      "effect_on_target": "recursiveSum uses it for the final vector entry, which after VecSum is the high component.",
+      "paper_match": "This places pi_m after q2,...,qm exactly as Algorithm 4.4 requires.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "Fin.mk",
+      "interpretation": "This constructor pairs a natural value with a proof that it is below the bound.",
+      "effect_on_target": "It realizes explicit indices 0 and i+1 in vector accesses.",
+      "paper_match": "It only enforces the paper's loop bounds and introduces no extra mathematical restriction.",
+      "status": "pass"
+    },
+    {
+      "id": "D072",
+      "name": "Nat.below",
+      "interpretation": "Nat.below packages all smaller recursive values for course-of-values recursion.",
+      "effect_on_target": "It is internal machinery for iteratedVecSum and recursiveSum.",
+      "paper_match": "It has no independent numerical counterpart; the resulting equations are covered by D012 and D013.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D073",
+      "name": "Nat.brecOn",
+      "interpretation": "Nat.brecOn performs course-of-values recursion using Nat.below.",
+      "effect_on_target": "It evaluates the recursive definitions over natural lengths/iteration counts.",
+      "paper_match": "It is implementation machinery, not an additional paper hypothesis or conclusion.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D074",
+      "name": "Nat.succ",
+      "interpretation": "Nat.succ maps n to n+1.",
+      "effect_on_target": "It expresses positive vector lengths and successor recursion cases.",
+      "paper_match": "It implements the reparameterization of the paper's length m>=1 as n+1.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "Not",
+      "interpretation": "Not P is defined as P -> False.",
+      "effect_on_target": "It types the else branch of recursiveSum's test n=0.",
+      "paper_match": "It has no independent paper semantics and adds no hypothesis to the theorem.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D076",
+      "name": "Real.instZero",
+      "interpretation": "This instance supplies the real number 0.",
+      "effect_on_target": "It is recursiveSum's empty result and appears in model assumptions.",
+      "paper_match": "The target uses only nonempty vectors; zero also matches the paper's initial low accumulator.",
+      "status": "pass"
+    },
+    {
+      "id": "D077",
+      "name": "Unit",
+      "interpretation": "Unit is the one-element type PUnit.",
+      "effect_on_target": "It is used only to encode the zero branch of a generated match helper.",
+      "paper_match": "It has no numerical effect or paper counterpart.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D078",
+      "name": "Zero.toOfNat0",
+      "interpretation": "This instance interprets literal 0 from a Zero instance.",
+      "effect_on_target": "It supplies real zero and natural zero in base cases.",
+      "paper_match": "It gives the ordinary zero used in the paper's initializations.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "dite",
+      "interpretation": "dite is a dependent if-then-else driven by a Decidable proposition.",
+      "effect_on_target": "recursiveSum uses it to keep a one-element sum exact when the predecessor length is zero.",
+      "paper_match": "This matches fl(0+x)=x and prevents an extra artificial rounding step in the paper's accumulation.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "instDecidableEqNat",
+      "interpretation": "This is the standard decision procedure for equality of natural numbers.",
+      "effect_on_target": "It decides recursiveSum's n=0 branch.",
+      "paper_match": "It is computational bookkeeping with no independent paper condition.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D081",
+      "name": "Fin.lastCases",
+      "interpretation": "This eliminator separates the last element of Fin(n+1) from the preceding Fin n elements.",
+      "effect_on_target": "vecSum uses it to put the final prefix high at the last index and corrections at all earlier indices.",
+      "paper_match": "It realizes exactly the transformed vector [q2,...,qm,pi_m].",
+      "status": "pass"
+    },
+    {
+      "id": "D082",
+      "name": "Nat.casesOn",
+      "interpretation": "This recursor performs the zero/successor case split on a natural.",
+      "effect_on_target": "It implements generated match helpers for the recursive definitions.",
+      "paper_match": "It has no independent numerical-paper content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D083",
+      "name": "Nat.le_refl",
+      "interpretation": "This theorem proves n<=n.",
+      "effect_on_target": "It supplies the bound for requesting the full-length twoSumPrefix.",
+      "paper_match": "It is an indexing proof, not a numerical assumption.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D084",
+      "name": "Nat.zero",
+      "interpretation": "Nat.zero is the natural number 0 constructor.",
+      "effect_on_target": "It is the base case for vector lengths, folds, and iterations.",
+      "paper_match": "It corresponds to ordinary recursion initialization and does not change the selected positive-length statement.",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "Unit.unit",
+      "interpretation": "This is the unique inhabitant of Unit.",
+      "effect_on_target": "It only feeds the generated zero-branch match helper.",
+      "paper_match": "It has no paper counterpart or numerical effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D086",
+      "name": "instLTNat",
+      "interpretation": "This instance supplies the usual strict order on naturals.",
+      "effect_on_target": "It interprets Fin bounds and generated index proofs.",
+      "paper_match": "It enforces precisely the finite loop ranges, without adding an analytical hypothesis.",
+      "status": "pass"
+    },
+    {
+      "id": "D087",
+      "name": "Fin.foldl",
+      "interpretation": "Fin.foldl n f init invokes its loop from index 0 and folds through Fin n in increasing order.",
+      "effect_on_target": "twoSumPrefix therefore processes v[1],...,v[k] sequentially after starting at v[0].",
+      "paper_match": "This is the paper's increasing-index TwoSum cascade, not a reordered transformation.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "Fin.val",
+      "interpretation": "This projection returns the natural value carried by a Fin index.",
+      "effect_on_target": "It forms the shifted access i.val+1 and the prefix length i.val.",
+      "paper_match": "It implements the one-based-to-zero-based index translation used above.",
+      "status": "pass"
+    },
+    {
+      "id": "D089",
+      "name": "Nat.succ_pos",
+      "interpretation": "This theorem proves 0<n+1.",
+      "effect_on_target": "It certifies that v[0] exists for every target vector.",
+      "paper_match": "It is an index-safety proof and adds no numerical restriction.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D090",
+      "name": "instLENat",
+      "interpretation": "This instance supplies the usual non-strict order on naturals.",
+      "effect_on_target": "It types k<=n arguments that keep prefix folds and shifted accesses in range.",
+      "paper_match": "It matches the paper's loop-bound ordering and has no effect on the analytical inequality.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The inspected journal PDF is SIAM J. Sci. Comput. 26(6), 2005, pp. 1955-1988. Printed pp. 1964-1967 contain Lemma 4.2, Algorithms 4.3-4.4, Proposition 4.5, and equations (4.8), (4.10)-(4.12).",
+      "lean_evidence": "The target is HighamBench.p02_t2_sum2_error_bound and states the Sum2 forward-error bound; the verified PDF and dossier hashes equal the manifest values.",
+      "reasoning": "The selected source and surrounding proof are the correct paper result and version."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "Proposition 4.5 takes a positive length m, floating inputs p_i for 1<=i<=m, and exact real s=sum p_i and S=sum |p_i|.",
+      "lean_evidence": "Lean quantifies fp, n:Nat, and v:Fin(n+1)->Real. Fin(n+1) has indices 0,...,n, so m=n+1 and v[j] corresponds to p_(j+1).",
+      "reasoning": "The dimensions and index offsets agree. Real-valued inputs are an explicit genuine generalization handled in S15."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "The paper fixes the arithmetic model and eps globally, then states the bound for every admissible input vector and length satisfying m*eps<1.",
+      "lean_evidence": "Lean universally quantifies fp first, then n and v, and assumes GammaValid fp.u (n+1); all operation laws are fields universally quantified over their operands.",
+      "reasoning": "There is no reversed witness dependence: each model_add delta may depend on x,y, and the conclusion is uniform in every admissible model and vector."
+    },
+    {
+      "id": "S04",
+      "status": "pass",
+      "paper_evidence": "The paper assumes one working precision, IEEE round-to-nearest context, no overflow, underflow allowed, unrestricted TwoSum, and m*eps<1.",
+      "lean_evidence": "ErrorFreeAddModel requires u>=0, a relative-error fl_add with fl_add 0 x=x, exact unrestricted TwoSum, and |low|<=u|high|; hvalid unfolds to (n+1)u<1.",
+      "reasoning": "Lean replaces implementation-level IEEE hypotheses by the stronger semantic contracts actually used in the proof. Those contracts can model the paper run and do not add a restriction on the selected admissible case."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "Proposition 4.5 concludes only |res-s|<=eps|s|+gamma_(m-1)^2*S. Lemma 4.2 and (4.6) are supporting results used to prove it.",
+      "lean_evidence": "The target conclusion is exactly |sum2 fp v-s|<=fp.u*|s|+(gamma fp.u n)^2*S with exact Finset definitions of s and S.",
+      "reasoning": "All parts of the selected proposition are present. The supporting lemma need not be a conjunct of Proposition 4.5."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The paper defines gamma_k=k*eps/(1-k*eps), Sum2 as one VecSum cascade followed by rounded accumulation, and s,S as exact sums.",
+      "lean_evidence": "D001-D090 show gamma's quotient, sum2=sumK 2, one iteratedVecSum pass, transformed-vector ordering, left-to-right recursiveSum, real abs, and full finite sums.",
+      "reasoning": "Every nontrivial target operator has been unfolded; no name-based interpretation or hidden alternate norm/algorithm remains."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "Equations (4.1)-(4.2) distinguish exact s and exact pi_m+sum q_i from computed pi_m, sigma_m, and res.",
+      "lean_evidence": "The Finset sums use exact Real addition, while sum2 uses fp.twoSum and fp.fl_add; vecSum stores exact real representatives of computed high/low outputs, and recursiveSum performs the rounded accumulation.",
+      "reasoning": "Lean does not identify the rounded low sum or final output with the exact mathematical sum."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "Algorithms 4.1, 4.3, and 4.4 process the vector by unrestricted TwoSum, accumulate q2,...,qm, and finally add pi_m; the paper declares 4.4 equivalent to 4.1.",
+      "lean_evidence": "Unfolding sum2 gives recursiveSum fp.fl_add of vecSum fp v; vecSum is [q2,...,qm,pi_m], and recursiveSum processes that order.",
+      "reasoning": "The target remains operationally linked to Sum2/Sum2s rather than ordinary summation or FastTwoSum."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Equation (4.8) uses scalar absolute value, with S=sum |p_i| and the coefficient gamma_(m-1) squared.",
+      "lean_evidence": "Lean uses Real abs for the forward error and exact sum, Finset.sum of coordinatewise abs for S, and HPow with exponent 2 on gamma.",
+      "reasoning": "The norm, componentwise magnitude sum, and squared coefficient all match."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "For m inputs the paper assumes m*eps<1 and uses gamma_(m-1)^2; the proof's internal low-sum coefficient is gamma_(m-2).",
+      "lean_evidence": "Lean's length is m=n+1, hvalid is GammaValid u (n+1), and the conclusion uses (gamma u n)^2.",
+      "reasoning": "After the explicit reindexing, every constant and offset is exact; Lean does not use gamma_m or gamma indexed by a square."
+    },
+    {
+      "id": "S11",
+      "status": "pass",
+      "paper_evidence": "Printed pp. 1959-1962 state IEEE 754, base-2 round-to-nearest context, one precision, no overflow, possible underflow, the relative addition model, and TwoSum validity under underflow.",
+      "lean_evidence": "Lean has no IEEE datatype or exceptional values; instead its model assumes the relative addition and exact TwoSum contracts for all real operands, and therefore has no eta term. Inputs and outputs are real, so NaN and infinity are outside the type.",
+      "reasoning": "This is a semantic abstraction/generalization of the applicable finite, no-overflow paper executions. It preserves the underflow-inclusive estimate through the contracts rather than silently assuming a different error formula."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "Equation (4.8) is a non-strict upper bound on absolute forward error.",
+      "lean_evidence": "The elaborated target's outer relation is Real <= with the same left and right expressions.",
+      "reasoning": "Direction, non-strictness, and scalar relation strength match exactly."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Proposition 4.5 compares computed res with the exact sum s, so it is an absolute forward-error result; S is an input-magnitude factor.",
+      "lean_evidence": "Lean compares sum2 fp v directly with the exact Finset sum and uses the same two-term absolute bound.",
+      "reasoning": "No backward error, residual, relative-only bound, or signed-error substitute is introduced."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Equation (4.8) contains the exact finite factor gamma_(m-1)^2 and no O(eps^k) remainder; the (m eps)^2 language is only interpretive.",
+      "lean_evidence": "Lean defines gamma as the exact rational expression and squares it literally.",
+      "reasoning": "No denominator or higher-order term is dropped or replaced by big-O notation."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The paper states the theorem for finite working-precision inputs and the paper's IEEE arithmetic under no overflow.",
+      "lean_evidence": "Lean proves the same formula for every real vector and every abstract ErrorFreeAddModel satisfying the semantic laws, and permits u=0 or other nonnegative parameters under GammaValid.",
+      "reasoning": "This is a genuine broader-domain/model theorem that still contains the paper case via an appropriate totalized model; it supports classification as faithful-stronger, not as strength from extra hypotheses."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's standard IEEE examples provide intended admissible executions whenever m*eps<1 and no overflow occurs.",
+      "lean_evidence": "Lean models exist: exact addition with twoSum=(a+b,0) works for any u>=0 with (n+1)u<1. Nonexact models also exist, e.g. for u>0 choose c=u/2, use fl_add x y=x+y when x=0 and (x+y)(1+c) otherwise, and twoSum=(fl_add a b,a+b-fl_add a b).",
+      "reasoning": "The hypotheses are satisfiable and permit nonzero rounding error; the theorem is not vacuous or true only because the model forces exact arithmetic."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "For a paper instance with m>=1, set Lean n=m-1 and v[j]=p_(j+1), and instantiate fp by the paper's rounded addition and unrestricted TwoSum contracts (totalizing the operations outside the finite no-overflow case if necessary). Unfolded sum2 is the same cascade and final accumulation, GammaValid is m*eps<1, and the conclusion becomes equation (4.8)."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "Proposition 4.5 by itself quantifies only over finite floating-point inputs in the paper's working-precision model. It does not assert the target's uniform theorem for arbitrary real vectors, arbitrary nonnegative u, and every abstract ErrorFreeAddModel satisfying the contracts. That broader theorem needs the generalized contract-based argument, not merely the stated paper proposition."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "note",
+      "category": "domain-and-model-generalization",
+      "paper_evidence": "Proposition 4.5 is stated for p_i in the working-precision set F under the paper's IEEE/no-overflow context.",
+      "lean_evidence": "The target quantifies over v:Fin(n+1)->Real and every ErrorFreeAddModel, whose laws hold for all real operands.",
+      "impact": "Lean proves a genuine contract-based generalization while retaining the paper case; this is the sole reason paper-implies-Lean is no and the classification is faithful-stronger."
+    }
+  ],
+  "rationale": "After unfolding all dependencies, Lean's sum2 applies one unrestricted TwoSum VecSum cascade, orders the transformed vector as q2,...,qm,pi_m, and left-to-right rounds its sum. With m=n+1, its premise is m*u<1 and its conclusion is exactly |res-s|<=u|s|+gamma_(m-1)^2*sum|p_i|. The abstract real-valued model is nonvacuous and contains the selected paper execution, while extending beyond the finite IEEE statement; therefore the target is faithfully stronger rather than merely equivalent."
+}
+

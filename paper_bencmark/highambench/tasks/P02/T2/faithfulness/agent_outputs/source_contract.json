@@ -1,0 +1,175 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "source-contract",
+  "task_id": "P02-T2",
+  "paper_sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d",
+  "source_evidence": [
+    {
+      "pdf_page": 2,
+      "printed_page": "1956",
+      "anchor": "Section 1.1, Algorithm 1.1 and following Knuth TwoSum discussion",
+      "observation": "The nearby arithmetic context explicitly discusses binary floating-point arithmetic with rounding to nearest and identifies Knuth's TwoSum as producing x = fl(a+b) and the exact residual y without a magnitude-ordering condition."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "1959",
+      "anchor": "Section 2, opening standing assumptions",
+      "observation": "The paper assumes IEEE 754 arithmetic, no overflow, possible underflow, and one working precision; it defines F, eps, and eta, with eps = 2^-53 and eta = 2^-1074 for binary64."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "1960",
+      "anchor": "Section 2, equations (2.1)-(2.4) and definition of gamma_n",
+      "observation": "The paper defines fl, gives the relative-error model for addition and subtraction, states that these operations are exact on underflow, defines gamma_k = k eps/(1-k eps), implicitly assumes k eps < 1 whenever gamma_k is used, and gives the order-independent summation bound (2.4)."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "1961",
+      "anchor": "Algorithm 3.1 and equation (3.1)",
+      "observation": "TwoSum computes x = fl(a+b), then a working-precision correction y, with the exact identity a+b=x+y; the text says the proof remains valid in the presence of underflow."
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "1962",
+      "anchor": "Theorem 3.4, equation (3.2)",
+      "observation": "For TwoSum outputs x,y, even with underflow, a+b=x+y, x=fl(a+b), |y| <= eps|x|, and |y| <= eps|a+b|."
+    },
+    {
+      "pdf_page": 9,
+      "printed_page": "1963",
+      "anchor": "Algorithm 4.1 and equations (4.1)-(4.2)",
+      "observation": "Sum2s recursively computes [pi_i,q_i]=TwoSum(pi_{i-1},p_i), accumulates sigma_i=fl(sigma_{i-1}+q_i), and returns fl(pi_n+sigma_n); pi_n is the ordinary computed sum, sigma_n is the computed sum of q_2,...,q_n, and the exact identity s=pi_n+sum_{i=2}^n q_i holds."
+    },
+    {
+      "pdf_page": 10,
+      "printed_page": "1964",
+      "anchor": "Lemma 4.2, equations (4.4)-(4.6)",
+      "observation": "For [beta_i,c_i]=TwoSum(beta_{i-1},b_i), the lemma gives separate total-low-component bounds for beta_0=0 and general beta_0, and states the auxiliary gamma inequality (4.6)."
+    },
+    {
+      "pdf_page": 11,
+      "printed_page": "1965",
+      "anchor": "Lemma 4.2 proof; equation (4.7); Algorithms 4.3-4.4; Proposition 4.5, equation (4.8)",
+      "observation": "The lemma proof starts at n=1; the page records the two-part error-free vector identity, defines VecSum and Sum2 using TwoSum, declares Sum2 equivalent to Sum2s with identical res, and states |res-s| <= eps|s| + gamma_{n-1}^2 S under n eps < 1, including underflow."
+    },
+    {
+      "pdf_page": 12,
+      "printed_page": "1966",
+      "anchor": "Remarks 1-2 and proof of Proposition 4.5, equations (4.10)-(4.11)",
+      "observation": "The result is interpreted as doubled-working-precision quality rounded to working precision; the proof bounds sum_{i=2}^n |q_i| by gamma_{n-1}S and the computed low-sum error by gamma_{n-2}gamma_{n-1}S."
+    },
+    {
+      "pdf_page": 13,
+      "printed_page": "1967",
+      "anchor": "Proof of Proposition 4.5, equation (4.12)",
+      "observation": "The final addition is represented as res=(1+epsilon)(pi_n+sigma_n), |epsilon| <= eps; the exact error-free identity cancels the high component, and (1+eps)gamma_{n-2} <= gamma_{n-1} yields equation (4.8)."
+    }
+  ],
+  "statement": {
+    "binders": [
+      "Lemma 4.2 takes a sequence length n, beta_0 in F, and b_i in F for 1 <= i <= n, then defines beta_i,c_i in F as the outputs of a prescribed TwoSum loop; the proof explicitly begins with n=1. (PDF p. 10, printed p. 1964, anchor: Lemma 4.2; PDF p. 11, printed p. 1965, anchor: Lemma 4.2 proof.)",
+      "Proposition 4.5 takes p_i in F for 1 <= i <= n, runs Algorithm 4.4 to obtain the computed result res, and defines the exact real quantities s := sum_{i=1}^n p_i and S := sum_{i=1}^n |p_i|. (PDF p. 11, printed p. 1965, anchor: Proposition 4.5.)",
+      "The working precision, F, eps, and gamma_k are global paper parameters rather than locally quantified variables. (PDF p. 5, printed p. 1959, anchor: Section 2 standing assumptions; PDF p. 6, printed p. 1960, anchor: definition of gamma_n.)"
+    ],
+    "hypotheses": [
+      "For Lemma 4.2, the outputs must be computed in increasing index order by [beta_i,c_i] = TwoSum(beta_{i-1},b_i), i=1,...,n. (PDF p. 10, printed p. 1964, anchor: Lemma 4.2 loop.)",
+      "Equation (4.4) additionally takes beta_0=0, whereas equation (4.5) permits arbitrary beta_0 in F. (PDF p. 10, printed p. 1964, anchor: equations (4.4)-(4.5).)",
+      "By the paper's standing gamma convention, (4.4) inherits (n-1)eps < 1, while (4.5) and (4.6) inherit n eps < 1; the lemma does not restate these side conditions locally. (PDF p. 6, printed p. 1960, anchor: definition and implicit convention for gamma_n; PDF p. 10, printed p. 1964, anchor: equations (4.4)-(4.6).)",
+      "Proposition 4.5 explicitly assumes n eps < 1 and that the displayed Sum2 algorithm is applied to the inputs. (PDF p. 11, printed p. 1965, anchor: Proposition 4.5.)",
+      "The global arithmetic context assumes no overflow but permits underflow. (PDF p. 5, printed p. 1959, anchor: Section 2 standing assumptions.)"
+    ],
+    "conclusions": [
+      "For beta_0=0, sum_{i=1}^n |c_i| <= gamma_{n-1} sum_{i=1}^n |b_i|. (PDF p. 10, printed p. 1964, anchor: Lemma 4.2, equation (4.4).)",
+      "For general beta_0 in F, sum_{i=1}^n |c_i| <= gamma_n (|beta_0| + sum_{i=1}^n |b_i|). (PDF p. 10, printed p. 1964, anchor: Lemma 4.2, equation (4.5).)",
+      "The auxiliary inequality is gamma_{n-1} + eps(1+gamma_n) <= ((n-1)eps)/(1-n eps) + eps/(1-n eps) = gamma_n; it is used in the induction rather than being a third output bound. (PDF p. 10, printed p. 1964, anchor: equation (4.6); PDF p. 11, printed p. 1965, anchor: Lemma 4.2 proof.)",
+      "For Sum2, including in the presence of underflow, |res-s| <= eps|s| + gamma_{n-1}^2 S. (PDF p. 11, printed p. 1965, anchor: Proposition 4.5, equation (4.8).)"
+    ],
+    "definitions_and_conventions": [
+      "F denotes the working-precision floating-point numbers; fl(...) means that all operations inside the parentheses are executed in that working precision, with parentheses used when evaluation order is crucial. (PDF p. 5, printed p. 1959, anchor: Section 2 opening; PDF p. 6, printed p. 1960, anchor: definition of fl.)",
+      "gamma_k is exactly k eps/(1-k eps), with k eps < 1 implicitly required whenever gamma_k occurs. (PDF p. 6, printed p. 1960, anchor: definition of gamma_n.)",
+      "In Algorithm 4.1, pi_1=p_1, sigma_1=0, [pi_i,q_i]=TwoSum(pi_{i-1},p_i), sigma_i=fl(sigma_{i-1}+q_i), and res=fl(pi_n+sigma_n). (PDF p. 9, printed p. 1963, anchor: Algorithm 4.1.)",
+      "The exact transformation identity is s=sum_{i=1}^n p_i=pi_n+sum_{i=2}^n q_i, while sigma_n is a rounded working-precision sum of q_2,...,q_n. (PDF p. 9, printed p. 1963, anchor: equations (4.1)-(4.2).)",
+      "In Proposition 4.5, s and S are exact real sums; res, pi_n, sigma_n, and the q_i are computed working-precision quantities. (PDF p. 9, printed p. 1963, anchor: Algorithm 4.1 and equations (4.1)-(4.2); PDF p. 11, printed p. 1965, anchor: Proposition 4.5.)"
+    ],
+    "implicit_context": [
+      "All computation uses one working precision; no extra-precision accumulator is inherited by Sum2. (PDF p. 5, printed p. 1959, anchor: Section 2 standing assumptions.)",
+      "TwoSum supplies both the rounded leading sum and its exact residual, with |residual| bounded by eps times either the leading result or exact sum, even under underflow. (PDF p. 8, printed p. 1962, anchor: Theorem 3.4, equation (3.2).)",
+      "For a rounded sum of m terms, equation (2.4) gives absolute error at most gamma_{m-1} times the sum of their magnitudes, independently of summation order and in the presence of underflow. (PDF p. 6, printed p. 1960, anchor: equation (2.4) and following sentence.)",
+      "The transformed vector satisfies both sum_{i=1}^n p_i=sum_{i=2}^n q_i+pi_n=s and pi_n=fl(sum_{i=1}^n p_i). (PDF p. 11, printed p. 1965, anchor: equation (4.7).)"
+    ],
+    "algorithm_linkage": "The proposition is linked to Algorithm 4.4, Sum2: for i=2,...,n it overwrites [p_i,p_{i-1}] with TwoSum(p_i,p_{i-1}), then computes res=fl((sum_{i=1}^{n-1} p_i)+p_n). The paper declares this equivalent to Algorithm 4.1, Sum2s, with identical res; the proof uses Algorithm 4.1's pi_i,q_i,sigma_i notation. The transformation is Knuth's unrestricted TwoSum, not the unsorted FastTwoSum variant used by Kahan-Babuska. The displayed implementation costs 7(n-1) flops; an adjacent sentence gives 3(n-1) flops if TwoSumADD3 replaces TwoSum, but Proposition 4.5 itself names Algorithm 4.4 as displayed. (PDF p. 9, printed p. 1963, anchor: Algorithms 4.1 and surrounding comparison; PDF p. 11, printed p. 1965, anchor: Algorithms 4.3-4.4 and Proposition 4.5; PDF p. 12, printed p. 1966, anchor: Algorithm 4.4 flop counts.)",
+    "numerical_model": [
+      "The inherited model is IEEE 754, binary t-bit working precision with eps=2^-t, one working precision only, no overflow, and possible underflow. (PDF p. 5, printed p. 1959, anchor: Sections 1.2 and 2 opening.)",
+      "For addition and subtraction the operative model is fl(a op b)=(a op b)(1+epsilon), equivalently (a op b)/(1+epsilon'), with each local relative error bounded by eps; addition and subtraction are stated to be exact when underflow occurs. (PDF p. 6, printed p. 1960, anchor: floating-point model and equation (2.1).)",
+      "The final proof introduces a fresh local epsilon satisfying |epsilon| <= eps through res=(1+epsilon)(pi_n+sigma_n); this epsilon is not the global unit eps. (PDF p. 13, printed p. 1967, anchor: equation (4.12).)",
+      "No eta term appears in Lemma 4.2 or Proposition 4.5 because their relevant transformations and accumulations use addition and subtraction, for which the paper's model handles underflow exactly. (PDF p. 6, printed p. 1960, anchor: underflow statement; PDF p. 8, printed p. 1962, anchor: Theorem 3.4; PDF p. 11, printed p. 1965, anchor: Proposition 4.5.)"
+    ],
+    "error_notions": [
+      "Lemma 4.2 controls the total absolute magnitude of all TwoSum low components c_i, not the absolute value of their signed sum. (PDF p. 10, printed p. 1964, anchor: equations (4.4)-(4.5).)",
+      "Equation (4.8) is a scalar absolute forward-error bound comparing computed res with the exact real sum s. (PDF p. 11, printed p. 1965, anchor: Proposition 4.5, equation (4.8).)",
+      "The eps|s| term represents final rounding to working precision, while gamma_{n-1}^2 S bounds accumulated computational error. (PDF p. 12, printed p. 1966, anchor: Remark 1 and equation (4.8).)",
+      "Only when s != 0 does Remark 3 divide by |s| and rewrite the result as |res-s|/|s| <= eps + gamma_{n-1}^2 cond(sum p_i), with cond=sum|p_i|/|s|; the absolute proposition itself does not require s != 0. (PDF p. 12, printed p. 1966, anchor: Remark 3, equation (4.9), and following display.)"
+    ],
+    "norms": [
+      "All displayed error quantities use scalar absolute value. (PDF p. 10, printed p. 1964, anchor: equations (4.4)-(4.5); PDF p. 11, printed p. 1965, anchor: equation (4.8).)",
+      "S=sum_{i=1}^n |p_i| is the exact sum of component magnitudes, equivalently the one-norm magnitude of the input vector, not |s|. (PDF p. 11, printed p. 1965, anchor: Proposition 4.5.)",
+      "No other vector or matrix norm occurs in the selected result. (PDF p. 10, printed p. 1964, anchor: Lemma 4.2; PDF p. 11, printed p. 1965, anchor: Proposition 4.5.)"
+    ],
+    "constants_and_indexing": [
+      "Lemma 4.2's loop and low-component sum run from i=1 through n and start from beta_0; the sharper gamma_{n-1} constant applies specifically when beta_0=0, while the general seed uses gamma_n. (PDF p. 10, printed p. 1964, anchor: Lemma 4.2 and equations (4.4)-(4.5).)",
+      "Sum2s starts with pi_1=p_1 and sigma_1=0; its TwoSum and low-accumulation loop runs from i=2 through n, so its low components are q_2,...,q_n. (PDF p. 9, printed p. 1963, anchor: Algorithm 4.1.)",
+      "The lemma is applied to obtain sum_{i=2}^n |q_i| <= gamma_{n-1}S. (PDF p. 12, printed p. 1966, anchor: equation (4.10).)",
+      "Because q_2,...,q_n comprise n-1 terms, their rounded-sum error uses gamma_{n-2}: |sigma_n-sum_{i=2}^n q_i| <= gamma_{n-2}sum_{i=2}^n |q_i| <= gamma_{n-2}gamma_{n-1}S. (PDF p. 12, printed p. 1966, anchor: equation (4.11).)",
+      "The final coefficient is gamma_{n-1} squared, obtained using (1+eps)gamma_{n-2} <= gamma_{n-1}; it is not gamma_n, gamma_{2n-2}, or gamma indexed by (n-1)^2. (PDF p. 11, printed p. 1965, anchor: equation (4.8); PDF p. 13, printed p. 1967, anchor: equation (4.12) and final proof sentence.)"
+    ],
+    "higher_order_terms": [
+      "Equation (4.8) is a finite exact inequality with gamma_{n-1}^2; it contains no omitted O(eps^k) term. (PDF p. 11, printed p. 1965, anchor: Proposition 4.5, equation (4.8).)",
+      "Replacing gamma_{n-1}^2 by an informal (n eps)^2 approximation would discard the denominators in gamma_k=k eps/(1-k eps) and is only a qualitative interpretation from Remark 3, not the proposition's literal constant. (PDF p. 6, printed p. 1960, anchor: definition of gamma_n; PDF p. 12, printed p. 1966, anchor: Remark 3.)",
+      "The phrase 'as if computed in doubled working precision and rounded to working precision' is an interpretation of the two terms in (4.8), not an equality with an explicitly specified higher-precision execution. (PDF p. 12, printed p. 1966, anchor: Remark 1.)"
+    ],
+    "exceptional_values": [
+      "Overflow is excluded by the paper's standing assumptions. (PDF p. 5, printed p. 1959, anchor: Section 2 opening.)",
+      "Underflow is allowed, and Proposition 4.5 explicitly says its bound remains valid in its presence; there is no additive eta correction in (4.8). (PDF p. 11, printed p. 1965, anchor: Proposition 4.5, equation (4.8).)",
+      "NaNs and infinities are not discussed in the selected passages; the statement uses p_i in F and an exact sum s in R, so coverage of IEEE exceptional non-real values is not asserted. (PDF p. 5, printed p. 1959, anchor: definition of F; PDF p. 11, printed p. 1965, anchor: Proposition 4.5.)"
+    ]
+  },
+  "undebatable_constraints": [
+    "Both branches of Lemma 4.2 must be preserved: gamma_{n-1} for beta_0=0 and gamma_n with an added |beta_0| term for a general seed. (PDF p. 10, printed p. 1964, anchor: equations (4.4)-(4.5).)",
+    "The lemma bounds sum |c_i|, not |sum c_i| and not each c_i separately as its final claim. (PDF p. 10, printed p. 1964, anchor: equations (4.4)-(4.5).)",
+    "The Sum2 conclusion is exactly |res-s| <= eps|s| + gamma_{n-1}^2 S with S=sum|p_i| and explicit hypothesis n eps < 1. (PDF p. 11, printed p. 1965, anchor: Proposition 4.5, equation (4.8).)",
+    "The first term depends on the exact sum |s|, whereas the second depends on the sum of input magnitudes S; these quantities cannot be interchanged. (PDF p. 11, printed p. 1965, anchor: Proposition 4.5.)",
+    "The algorithm is the cascaded TwoSum-based Sum2/Sum2s transformation, with a final rounded accumulation of low components and leading component; it is not ordinary summation alone or an unsorted FastTwoSum implementation. (PDF p. 9, printed p. 1963, anchor: Algorithm 4.1; PDF p. 11, printed p. 1965, anchor: Algorithm 4.4.)",
+    "The exact cancellation identity s=pi_n+sum_{i=2}^n q_i is essential to the proof and distinguishes exact transformed values from the computed low sum sigma_n. (PDF p. 9, printed p. 1963, anchor: equation (4.2); PDF p. 13, printed p. 1967, anchor: equation (4.12).)",
+    "The guarantee includes underflow but excludes overflow under the standing paper model. (PDF p. 5, printed p. 1959, anchor: Section 2 opening; PDF p. 11, printed p. 1965, anchor: Proposition 4.5.)",
+    "No big-O remainder may be added to or substituted for the literal gamma_{n-1}^2 term. (PDF p. 11, printed p. 1965, anchor: equation (4.8).)"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The exact rounding-mode label is inherited rather than restated in Lemma 4.2 or Proposition 4.5.",
+      "evidence": "The nearby introduction explicitly discusses base-2 rounding to nearest, while Section 2 states IEEE 754 and the concrete eps-relative error equations without locally repeating 'round to nearest' in the selected results. (PDF p. 2, printed p. 1956, anchor: Section 1.1; PDF pp. 5-6, printed pp. 1959-1960, anchor: Section 2 arithmetic model.)",
+      "impact": "A formal contract should enforce the stated fl error model and TwoSum properties; it should not silently generalize the result to arbitrary directed rounding modes."
+    },
+    {
+      "issue": "Lemma 4.2 does not state one explicit gamma side condition.",
+      "evidence": "Section 2 says k eps < 1 is implicit whenever gamma_k is used; equation (4.4) uses gamma_{n-1}, while equations (4.5)-(4.6) use gamma_n. (PDF p. 6, printed p. 1960, anchor: gamma convention; PDF p. 10, printed p. 1964, anchor: equations (4.4)-(4.6).)",
+      "impact": "The minimal inherited condition is (n-1)eps < 1 for (4.4) alone and n eps < 1 for (4.5)-(4.6); using n eps < 1 uniformly is stronger but covers the complete multi-part lemma."
+    },
+    {
+      "issue": "Proposition 4.5 does not explicitly exclude n=1, but equation (4.11) contains gamma_{n-2}.",
+      "evidence": "The proposition indexes inputs by 1 <= i <= n without an n >= 2 hypothesis, while the proof's low-sum estimate uses gamma_{n-2}; the lemma proof separately recognizes n=1 as a base case. (PDF p. 11, printed p. 1965, anchor: Lemma 4.2 proof and Proposition 4.5; PDF p. 12, printed p. 1966, anchor: equation (4.11).)",
+      "impact": "A formal proof preserving the proposition's apparent n >= 1 scope must handle n=1 separately; gamma_{-1} must not be introduced."
+    },
+    {
+      "issue": "The compact summation notation in Algorithm 4.4 does not independently spell out the parenthesization of sum_{i=1}^{n-1} p_i.",
+      "evidence": "Algorithm 4.4 writes a fl-wrapped sigma expression, but the paper immediately declares its result identical to Algorithm 4.1, whose sigma_i recursion fixes increasing-index accumulation. (PDF p. 9, printed p. 1963, anchor: Algorithm 4.1; PDF p. 11, printed p. 1965, anchor: Algorithm 4.4 and equivalence sentence.)",
+      "impact": "When the exact computed res matters, Algorithm 4.1's recursion is the unambiguous operational reading; the proof's generic summation bound itself is order-independent."
+    },
+    {
+      "issue": "IEEE NaNs and infinities are not explicitly classified.",
+      "evidence": "The paper defines F as working-precision floating-point numbers, excludes overflow, and defines s as a real number, but the selected text does not mention NaN or infinity behavior. (PDF p. 5, printed p. 1959, anchor: Section 2 opening; PDF p. 11, printed p. 1965, anchor: Proposition 4.5.)",
+      "impact": "The contract should be read for finite floating-point inputs and real exact sums unless a separate exceptional-value semantics is supplied."
+    }
+  ],
+  "contract_plain_english": "Starting from floating-point inputs, Sum2 repeatedly applies the unrestricted error-free TwoSum transformation, producing one leading ordinary rounded sum and low residuals whose exact total restores the true real sum. Lemma 4.2 says that the sum of the residual magnitudes is at most gamma_{n-1} times the input magnitudes when the recurrence starts at zero, or at most gamma_n times the initial-seed-plus-input magnitudes for a general seed. (PDF pp. 10-11, printed pp. 1964-1965, anchor: Lemma 4.2, equations (4.4)-(4.6).) Sum2 then rounds the sum of the low residuals and finally rounds its addition to the leading component. Under the paper's one-working-precision IEEE model, with no overflow, underflow allowed, and n eps < 1, the resulting absolute forward error is at most eps times the magnitude of the exact sum plus gamma_{n-1} squared times the exact sum of input magnitudes. (PDF pp. 11-13, printed pp. 1965-1967, anchor: Proposition 4.5 and equations (4.8), (4.10)-(4.12).)"
+}
+

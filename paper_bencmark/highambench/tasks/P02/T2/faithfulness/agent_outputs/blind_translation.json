@@ -1,0 +1,683 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "blind-translation",
+  "dossier_sha256": "83c4fd0ba4db87d6b87d36403ef978a2e0c0bfbf918101cc704aad4598c5f4dd",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "The type of augmented addition models. Through constructor D007, an inhabitant packages an underlying standard relative-error addition model together with a two-output addition operation and its correctness bounds.",
+      "effect_on_target": "The universally quantified fp supplies the unit roundoff u, modeled addition flAdd, and twoSum operation used to compute the left-hand side and justify the bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "The first projection from an augmented model to its underlying standard addition model.",
+      "effect_on_target": "It exposes the model from which fp.u and fp.fl_add are obtained.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "The validity predicate Valid(u,m), defined by (m as a real) times u being strictly less than 1.",
+      "effect_on_target": "The target assumes Valid(u,n+1), namely (n+1)u < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "The first projection of a standard addition model, returning its real parameter u.",
+      "effect_on_target": "This is the same u used in the validity condition, the addition axioms, gamma_n, and the final error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "For real u and natural n, it defines gamma_n(u) = (n u)/(1 - n u), with n cast to a real.",
+      "effect_on_target": "Its square multiplies the componentwise absolute-value sum in the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "The computed summation result obtained by invoking LocalDef009 at fixed level K = 2.",
+      "effect_on_target": "It is the computed quantity C whose absolute error from the exact sum is bounded.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "A constructor for the augmented model. Given a standard model and twoSum(a,b) = (h,l), it requires h = flAdd(a,b), h + l = a + b exactly, and |l| <= u|h| for every pair of reals a,b.",
+      "effect_on_target": "These assumptions make the first twoSum component the modeled rounded addition and the second component an exact residual with a specified size bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "The type of standard addition models characterized by constructor D011.",
+      "effect_on_target": "It carries the nonnegative parameter u and the relative-error addition operation used by the algorithm.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "At level K, it applies the transformation LocalDef017 exactly K - 1 times, using natural-number subtraction, and then sequentially sums the resulting vector with the model's flAdd operation.",
+      "effect_on_target": "Since the target fixes K = 2, exactly one transformation is applied before the final modeled summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "The projection returning the binary real operation fl_add from a standard addition model.",
+      "effect_on_target": "It supplies the operation used for high components of twoSum and for the final sequential summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "A standard-model constructor requiring u >= 0, flAdd(0,x) = x, and, for every ordered pair x,y, the existence of a real delta depending on x and y such that |delta| <= u and flAdd(x,y) = (x+y)(1+delta).",
+      "effect_on_target": "It supplies the nonnegativity and per-operation relative-error hypotheses. The existential error is local to each pair x,y, not one global error shared by all additions.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LocalDef012",
+      "meaning": "It defines T^k(v) by course-of-values recursion: T^0(v) = v and T^(k+1)(v) = LocalDef017(fp,T^k(v)).",
+      "effect_on_target": "LocalDef009 calls it with k = 2 - 1 = 1, so the final summation receives one transformed vector.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LocalDef013",
+      "meaning": "Sequential modeled summation: the empty vector sums to 0, a singleton sums exactly to its sole entry, and a vector of length at least two is summed left-to-right by applying flAdd to the recursively summed prefix and the last entry.",
+      "effect_on_target": "It fixes the order and base cases of the final computation C.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "LocalDef014",
+      "meaning": "A generic natural-number case splitter selecting a zero case or successor case.",
+      "effect_on_target": "It implements the base and iterative cases in the repeated-transformation definition D012 without adding a mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "LocalDef015",
+      "meaning": "It proves that if n = 0 then 0 < n + 1.",
+      "effect_on_target": "It supplies a bound needed to construct the index 0 in the singleton branch of sequential summation; it contributes no independent assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "LocalDef016",
+      "meaning": "A dependent case splitter for vectors indexed by Fin x, separating dimension zero from dimension n+1.",
+      "effect_on_target": "It enables D013 to define empty, singleton, and longer-vector summation cases.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "LocalDef017",
+      "meaning": "One error-free transformation of a vector v = (v_0,...,v_n). If p_0 = v_0 and twoSum(p_j,v_{j+1}) = (p_{j+1},e_{j+1}), it returns w = (e_1,...,e_n,p_n), with w = (p_0) when n = 0.",
+      "effect_on_target": "This is the single transformation applied before the final summation at level K = 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "LocalDef018",
+      "meaning": "For i < n, it returns the second component of twoSum(p_i,v_{i+1}), where p_i is the leading high-component partial sum.",
+      "effect_on_target": "It supplies transformed entry w_i = e_{i+1}, the residual from the corresponding addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "LocalDef019",
+      "meaning": "For k <= n, it starts at v_0 and folds over indices 0 through k-1, repeatedly replacing the state by the first component of twoSum(state,v_{i+1}); the result is p_k.",
+      "effect_on_target": "It defines every high-component partial sum and the final transformed entry p_n.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "LocalDef020",
+      "meaning": "The projection returning the twoSum operation from an augmented model.",
+      "effect_on_target": "It provides the paired high and residual outputs used by D018 and D019.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "LocalDef021",
+      "meaning": "For i in Fin n, it proves i.val <= n.",
+      "effect_on_target": "It supplies a bound needed when requesting the partial sum p_(i.val); it changes no numerical expression.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "LocalDef022",
+      "meaning": "For i in Fin n, it proves i.val + 1 < n + 1.",
+      "effect_on_target": "It justifies indexing the original vector at v_(i+1).",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "LocalDef023",
+      "meaning": "If k <= n and i is in Fin k, it proves i.val + 1 < n + 1.",
+      "effect_on_target": "It justifies each v_(i+1) access inside the finite fold defining p_k.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Fin",
+      "meaning": "Fin m is the finite index type with values 0,...,m-1.",
+      "effect_on_target": "The input has type Fin(n+1) -> Real, so it contains exactly n+1 entries indexed 0 through n.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "Fin.fintype",
+      "meaning": "It equips Fin m with the finite enumeration containing all its indices.",
+      "effect_on_target": "It allows Finset.univ and therefore the exact finite sums over all input indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Finset.sum",
+      "meaning": "It maps a function over a finite set and adds the resulting values in an additive commutative monoid.",
+      "effect_on_target": "It forms the exact real sums S = sum_i v_i and A = sum_i |v_i|.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, it is the finite set of all elements of that type.",
+      "effect_on_target": "It makes both target sums range over every index i in Fin(n+1).",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "HAdd.hAdd",
+      "meaning": "It invokes the addition operation selected by the relevant HAdd instance.",
+      "effect_on_target": "It denotes natural addition in n+1 and ordinary real addition in the algorithm, model axioms, and bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "HMul.hMul",
+      "meaning": "It invokes multiplication selected by the relevant HMul instance.",
+      "effect_on_target": "It denotes ordinary real multiplication in validity, gamma_n, model equations, and the final bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "HPow.hPow",
+      "meaning": "It invokes exponentiation selected by an HPow instance.",
+      "effect_on_target": "With the real monoid natural-power instance and exponent 2, it forms gamma_n(u)^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "HSub.hSub",
+      "meaning": "It invokes subtraction selected by the relevant HSub instance.",
+      "effect_on_target": "It forms C-S, 1-nu, and the natural level decrement K-1.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "LE.le",
+      "meaning": "It invokes the non-strict order relation of the relevant ordered type.",
+      "effect_on_target": "For reals it expresses nonnegativity, local error bounds, residual bounds, and the final inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "Monoid.toNatPow",
+      "meaning": "It equips a monoid with natural-number exponentiation by repeated multiplication.",
+      "effect_on_target": "It gives the ordinary real square appearing in gamma_n(u)^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Nat",
+      "meaning": "The type of natural numbers, including zero.",
+      "effect_on_target": "It is the type of n, dimensions, iteration levels, and finite indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "OfNat.ofNat",
+      "meaning": "It interprets a natural-number literal in a type having the corresponding OfNat instance.",
+      "effect_on_target": "It supplies the literals 1 and 2 used in n+1, K=2, squaring, and related expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "Inputs, model parameters, intermediate values, exact sums, residuals, and error bounds are all real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instAdd",
+      "meaning": "The ordinary addition operation on real numbers.",
+      "effect_on_target": "It interprets every real-valued addition in the proposition and its model definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative monoid structure on the reals.",
+      "effect_on_target": "It supports the exact finite sums over v_i and |v_i|.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive group structure on the reals.",
+      "effect_on_target": "It supplies negation and the group structure needed for real absolute value and subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "Real.instLE",
+      "meaning": "The ordinary non-strict order on real numbers.",
+      "effect_on_target": "It interprets every real <= relation, including the final error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure on the reals.",
+      "effect_on_target": "It supplies natural powers, specifically the square of gamma_n(u).",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "Real.instMul",
+      "meaning": "The ordinary multiplication operation on real numbers.",
+      "effect_on_target": "It interprets products such as nu, (x+y)(1+delta), u|S|, and gamma_n(u)^2 A.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "Real.instSub",
+      "meaning": "Real subtraction, defined as addition of the additive inverse.",
+      "effect_on_target": "It interprets the error difference C-S and denominator 1-nu.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "Real.lattice",
+      "meaning": "The lattice structure on the real order.",
+      "effect_on_target": "Together with the additive group, it supports the definition of real absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "abs",
+      "meaning": "Absolute value defined as max(a,-a); on reals this is the usual scalar absolute value.",
+      "effect_on_target": "It measures |C-S|, |S|, every |v_i|, each local delta, and each residual.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "instAddNat",
+      "meaning": "The standard natural-number addition operation.",
+      "effect_on_target": "It interprets n+1 and successor-index arithmetic.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "instHAdd",
+      "meaning": "It lifts an ordinary Add operation to the homogeneous HAdd interface.",
+      "effect_on_target": "It connects HAdd notation to standard addition on naturals and reals without adding assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "instHMul",
+      "meaning": "It lifts an ordinary Mul operation to the homogeneous HMul interface.",
+      "effect_on_target": "It connects HMul notation to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "instHPow",
+      "meaning": "It lifts a power operation to the homogeneous HPow interface.",
+      "effect_on_target": "It connects the power expression in the target to ordinary natural exponentiation of reals.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "instHSub",
+      "meaning": "It lifts an ordinary Sub operation to the homogeneous HSub interface.",
+      "effect_on_target": "It connects subtraction notation to real subtraction and truncated natural subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "instOfNatNat",
+      "meaning": "It interprets a natural-number literal as that same natural number.",
+      "effect_on_target": "It supplies the natural literals used for dimensions, levels, and exponents.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "It projects the division operation from a divisive inverse monoid.",
+      "effect_on_target": "For the real instance, it supplies the division used in gamma_n(u).",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "HDiv.hDiv",
+      "meaning": "It invokes division selected by the relevant HDiv instance.",
+      "effect_on_target": "It forms (nu)/(1-nu) in the definition of gamma_n(u).",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "LT.lt",
+      "meaning": "It invokes the strict order relation of the relevant ordered type.",
+      "effect_on_target": "For reals it expresses the validity condition (n+1)u < 1; for naturals it appears in index bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "Nat.cast",
+      "meaning": "It casts a natural number into a type with a natural-number cast, here the reals.",
+      "effect_on_target": "It converts n and n+1 to reals in validity and gamma_n(u).",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "One.toOfNat1",
+      "meaning": "It interprets the literal 1 using a type's multiplicative identity.",
+      "effect_on_target": "For reals it supplies the 1 in validity, 1-nu, and 1+delta.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The real multiplicative, inverse, and division structure.",
+      "effect_on_target": "It gives gamma_n(u) ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "Real.instLT",
+      "meaning": "The ordinary strict order on real numbers.",
+      "effect_on_target": "It interprets the hypothesis (n+1)u < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "Real.instNatCast",
+      "meaning": "The standard embedding of natural numbers into the reals.",
+      "effect_on_target": "It interprets the real coefficients n and n+1.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "Real.instOne",
+      "meaning": "The multiplicative identity 1 in the reals.",
+      "effect_on_target": "It supplies the real constant 1 in the model and gamma denominator.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "instHDiv",
+      "meaning": "It lifts an ordinary Div operation to the homogeneous HDiv interface.",
+      "effect_on_target": "It connects HDiv notation in gamma_n(u) to real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "It states the model identities, exact twoSum decomposition, and the natural-number branch test n=0.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "Prod",
+      "meaning": "The ordered product type.",
+      "effect_on_target": "twoSum returns a pair of reals interpreted as a high component followed by a residual component.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "Prod.fst",
+      "meaning": "The first projection of an ordered pair.",
+      "effect_on_target": "It selects the high component of twoSum, equal to flAdd(a,b).",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "Prod.snd",
+      "meaning": "The second projection of an ordered pair.",
+      "effect_on_target": "It selects the exact residual placed into the transformed vector.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "instSubNat",
+      "meaning": "Natural-number subtraction, truncated at zero.",
+      "effect_on_target": "It computes the transformation count K-1; with K=2 this is exactly 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "It combines |delta| <= u with the corresponding relative-error equation for each flAdd call.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "It asserts a possibly different error witness delta for each ordered input pair x,y in the standard addition model.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "Fin.castSucc",
+      "meaning": "It embeds Fin n into Fin(n+1) while preserving the numerical index.",
+      "effect_on_target": "It identifies the prefix of a vector during recursive summation and the non-last entries during transformation.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "Fin.last",
+      "meaning": "It constructs the final index n of Fin(n+1).",
+      "effect_on_target": "It selects the last input in recursive summation and the final high partial sum position in the transformation.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "Fin.mk",
+      "meaning": "It constructs a finite index from a natural value and a proof that the value is below the dimension.",
+      "effect_on_target": "It realizes indices 0 and i+1 used by the summation and transformation algorithms.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "Nat.below",
+      "meaning": "It recursively packages the values of a motive at all smaller natural numbers.",
+      "effect_on_target": "It provides prior recursive results to the course-of-values definitions D012 and D013; it adds no numerical condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "Nat.brecOn",
+      "meaning": "Course-of-values recursion on a natural number.",
+      "effect_on_target": "It implements repeated transformations and dimension-recursive sequential summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "Nat.succ",
+      "meaning": "The natural-number successor operation.",
+      "effect_on_target": "It represents positive dimensions and successor indices, equivalent to adding one.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "Not",
+      "meaning": "Logical negation, defined as implication to false.",
+      "effect_on_target": "It supplies the proof argument for the nonzero branch of the dependent n=0 case split in D013.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "Real.instZero",
+      "meaning": "The additive identity 0 in the reals.",
+      "effect_on_target": "It supplies u's lower bound and the empty-vector sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "Unit",
+      "meaning": "A one-element type.",
+      "effect_on_target": "It carries the argument of the zero branch in a generic natural-number case split and has no mathematical effect on the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "Zero.toOfNat0",
+      "meaning": "It interprets the literal 0 using a type's zero element.",
+      "effect_on_target": "It supplies real zero in model and summation definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "dite",
+      "meaning": "A dependent conditional selecting a branch according to a decidable proposition.",
+      "effect_on_target": "It makes sequential summation return the sole entry when the predecessor dimension is zero and use flAdd otherwise.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "instDecidableEqNat",
+      "meaning": "The decision procedure for equality of natural numbers.",
+      "effect_on_target": "It decides the n=0 branch used in sequential summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "Fin.lastCases",
+      "meaning": "It splits an index of Fin(n+1) into the last index n or a prefix index coming from Fin n.",
+      "effect_on_target": "It defines the transformed vector as residuals in all prefix positions and p_n in the last position.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "Nat.casesOn",
+      "meaning": "Ordinary elimination by the zero and successor cases of a natural number.",
+      "effect_on_target": "It underlies the case-splitting helpers used to define transformation iteration and dimension-recursive summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "Nat.le_refl",
+      "meaning": "Reflexivity of natural-number order: n <= n.",
+      "effect_on_target": "It justifies requesting the final partial high sum p_n.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "Nat.zero",
+      "meaning": "The natural number zero.",
+      "effect_on_target": "It supplies base cases and the initial vector index.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "Unit.unit",
+      "meaning": "The sole inhabitant of Unit.",
+      "effect_on_target": "It selects the zero branch of LocalDef014 and has no independent mathematical effect.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "instLTNat",
+      "meaning": "The standard strict order on natural numbers.",
+      "effect_on_target": "It interprets all finite-index bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "Fin.foldl",
+      "meaning": "A finite left fold over Fin k, beginning at index 0 and applying the step successively across the finite index range.",
+      "effect_on_target": "It builds p_k by processing v_1,...,v_k in increasing index order.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "Fin.val",
+      "meaning": "It extracts the natural-number value of a finite index.",
+      "effect_on_target": "It converts fold and prefix indices into the component numbers i and i+1.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "Nat.succ_pos",
+      "meaning": "It proves 0 < n+1 for every natural n.",
+      "effect_on_target": "It justifies the initial index 0 in every nonempty input vector Fin(n+1).",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "instLENat",
+      "meaning": "The standard non-strict order on natural numbers.",
+      "effect_on_target": "It interprets the bounds k <= n used to define partial high sums and justify their indices.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "fp is an arbitrary augmented real addition model. Write u for its real unit-roundoff parameter, flAdd for its modeled binary addition, and twoSum for its paired high-and-residual operation.",
+      "n is an arbitrary natural number, including zero.",
+      "v is an arbitrary function Fin(n+1) -> Real, equivalently an arbitrary real vector (v_0,...,v_n) of exactly n+1 components.",
+      "hvalid is a proof of the strict validity condition (n+1)u < 1, where n+1 is cast to a real."
+    ],
+    "hypotheses": [
+      "The model parameter satisfies u >= 0.",
+      "For every real x, flAdd(0,x) = x.",
+      "For every ordered pair of reals x,y, there exists a real delta depending on x and y such that |delta| <= u and flAdd(x,y) = (x+y)(1+delta).",
+      "For every pair a,b, if twoSum(a,b) = (h,l), then h = flAdd(a,b).",
+      "For every pair a,b, if twoSum(a,b) = (h,l), then h+l = a+b exactly.",
+      "For every pair a,b, if twoSum(a,b) = (h,l), then |l| <= u|h|.",
+      "The dimension-dependent condition (n+1)u < 1 holds."
+    ],
+    "conclusions": [
+      "If C is the level-2 computed sum defined below, S = sum from i=0 to n of v_i, A = sum from i=0 to n of |v_i|, and gamma_n(u) = nu/(1-nu), then |C-S| <= u|S| + gamma_n(u)^2 A."
+    ],
+    "mathematical_definitions": [
+      "Define the exact sum S = sum_{i=0}^n v_i and A = sum_{i=0}^n |v_i|. The latter is the finite l1 norm of v.",
+      "Define gamma_n(u) = ((n as a real)u)/(1-(n as a real)u).",
+      "Define p_0 = v_0. For j = 0,...,n-1, define (p_{j+1},e_{j+1}) = twoSum(p_j,v_{j+1}). Thus p_{j+1} = flAdd(p_j,v_{j+1}), p_{j+1}+e_{j+1} = p_j+v_{j+1}, and |e_{j+1}| <= u|p_{j+1}|.",
+      "Define the once-transformed vector w of length n+1 by w_j = e_{j+1} for 0 <= j < n and w_n = p_n. When n=0, this simply means w_0 = p_0 = v_0.",
+      "Define Seq_fl([]) = 0, Seq_fl([x_0]) = x_0, and for a list of at least two entries define Seq_fl([x_0,...,x_m]) = flAdd(Seq_fl([x_0,...,x_{m-1}]),x_m).",
+      "The computed quantity is C = Seq_fl([w_0,...,w_n]). This is LocalDef006(fp,v): level K=2 performs K-1=1 transformation and then one left-to-right modeled summation.",
+      "The exact-decomposition equations imply that the exact real sum of the transformed vector w is S."
+    ],
+    "proposition_plain_english": "For every nonempty real vector v=(v_0,...,v_n) and every augmented addition model satisfying the stated relative-error and exact-residual axioms, if (n+1)u<1, perform one twoSum-based transformation: accumulate high partial sums p_j, store each exact residual e_j, place the final high sum last, and then sum that transformed vector from left to right with flAdd. The resulting value C differs from the exact sum S by at most u times |S| plus the square of nu/(1-nu) times the componentwise absolute-value sum of v."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The vector always has length n+1, so empty input vectors are not covered. The case n=0 is included and represents a singleton vector.",
+    "The conclusion is conditional on a supplied proof of (n+1)u<1. When this inequality is false, the declaration makes no claim; viewed as an implication, it is vacuous.",
+    "Because u>=0 is built into fp and (n+1)u<1, one has nu<1, so the denominator 1-nu in gamma_n(u) is strictly positive and nonzero.",
+    "The gamma factor uses n, while the validity condition uses n+1; these are distinct quantities exactly as encoded.",
+    "Level K=2 means one transformation, not two transformations, because the algorithm iterates the transformation K-1 times using truncated natural subtraction.",
+    "The computation order is fixed: high partial sums process v_1 through v_n in increasing index order, and the transformed vector is then summed left-to-right.",
+    "No sign, magnitude, nonzero, ordering, representability, or conditioning assumptions are imposed on the entries v_i; they are arbitrary real numbers.",
+    "All arithmetic is modeled by functions on exact real numbers. The proposition does not encode a finite representable set, overflow, underflow, subnormal behavior, infinities, NaNs, or a concrete machine implementation.",
+    "The twoSum operation is assumed axiomatically to return an exactly decomposing residual satisfying |l|<=u|h|. The proposition does not prove that a particular implementation has these properties.",
+    "The result is an absolute forward-error bound. It does not assert a relative-error ratio when S is nonzero, and when S=0 the u|S| term vanishes but the gamma_n(u)^2 A term can remain.",
+    "The componentwise sum A is the l1 norm; no Euclidean, maximum, or operator norm occurs.",
+    "No claim is made for other compensation levels, alternative summation orders, or vectors of a different dimension under the same n."
+  ],
+  "ambiguities": []
+}
+
