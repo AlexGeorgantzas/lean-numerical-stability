@@ -1,0 +1,147 @@
+{
+  "entries": [
+    {
+      "id": "D005",
+      "interpretation": "p12Nearest representable exact rounded means that rounded is representable and has absolute distance from exact no greater than that of every representable candidate.",
+      "name": "HighamBench.p12Nearest",
+      "reuse_sha256": "d8b3c420977688a5152435b75ac5713580eb4b731ef6d566708ddd46e4bfcc3a",
+      "semantic_sha256": "edcdf2d37cd85e670605f9af536f80bcc7591a77ea9445f0c81565e1f99760d0",
+      "source_dependency_id": "D001",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D007",
+      "interpretation": "And is logical conjunction: both component propositions must hold.",
+      "name": "And",
+      "reuse_sha256": "c5359964579f42cd451c7b80335c5bc6444e0bd8f9eb2ad62d6bcc73a5827d44",
+      "semantic_sha256": "37ecdc009aa953e3d4924ef10e6a1fb591f6af993cd344fd5a6b5321466517c9",
+      "source_dependency_id": "D014",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D009",
+      "interpretation": "HAdd.hAdd projects the binary operation supplied by an HAdd instance.",
+      "name": "HAdd.hAdd",
+      "reuse_sha256": "74aa55b0ad9407a572b103fe243ec7bfd85c500b6fe3cb2cda7e9134aa7c8ed5",
+      "semantic_sha256": "e0bf2a92addd6ea713343e4ef69f67e4e1155781d08f46957b9f71412d865f59",
+      "source_dependency_id": "D002",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D010",
+      "interpretation": "HSub.hSub projects the binary operation supplied by an HSub instance.",
+      "name": "HSub.hSub",
+      "reuse_sha256": "910865b63624f8f852cdf917c24378a2c58fe15bd9021ef96ea7cb8572a22709",
+      "semantic_sha256": "98025b38d523c0eadea77ba4961a20b2a913b23c079c4bfeba24a7bfaa24a4bc",
+      "source_dependency_id": "D003",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D011",
+      "interpretation": "LE.le projects the binary order relation supplied by an LE instance.",
+      "name": "LE.le",
+      "reuse_sha256": "021045e95e0c21a2eb0a14dae03247f90624c147438f82cd2bb70bbaf7adbe27",
+      "semantic_sha256": "54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48",
+      "source_dependency_id": "D004",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D012",
+      "interpretation": "Real is mathlib's type of mathematical real numbers.",
+      "name": "Real",
+      "reuse_sha256": "5eda97e2aeddf310e1f963c8b9a394088cd4583baa5b2cfa49162cc318cd87d2",
+      "semantic_sha256": "38529f0578472feffc4c79d5d0755fa10fc3edafb232ab5e442336d13630ee90",
+      "source_dependency_id": "D005",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D013",
+      "interpretation": "Real.instAdd supplies the standard real addition operation.",
+      "name": "Real.instAdd",
+      "reuse_sha256": "e9db96f91871c57076af00e6fb401681a44e3b6c18c7daca0597f7bbdbdfa9a9",
+      "semantic_sha256": "f99208c181266311bec9c890b688378f329076f9e6be38fe93d9cedf4d7f50ce",
+      "source_dependency_id": "D006",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D014",
+      "interpretation": "Real.instAddGroup supplies the additive-group structure of the reals, including negation and the associated algebraic laws.",
+      "name": "Real.instAddGroup",
+      "reuse_sha256": "f77853411748aaf532855b44e49577d858002306d195b28def05f569026eb2dd",
+      "semantic_sha256": "f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0",
+      "source_dependency_id": "D007",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D015",
+      "interpretation": "Real.instLE supplies the standard ordering relation on real numbers.",
+      "name": "Real.instLE",
+      "reuse_sha256": "d3a74f29e3c128c65a64cd85c1ff20e38c7c45bf6fef0129f1eb1707ed54a74e",
+      "semantic_sha256": "144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3",
+      "source_dependency_id": "D008",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D016",
+      "interpretation": "Real.instSub defines real subtraction as addition of the negation.",
+      "name": "Real.instSub",
+      "reuse_sha256": "9a37ea0c3ed4633bcb29365559f29747f0d50114d73cdb3937f82dfad5f40b21",
+      "semantic_sha256": "926d9e8fcca2819a885d446e168b20c7c8aac2e542d59ed2b48e32c9a4659a36",
+      "source_dependency_id": "D009",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D017",
+      "interpretation": "Real.lattice supplies max and min operations compatible with the standard real order.",
+      "name": "Real.lattice",
+      "reuse_sha256": "a13a5b29df057070012dc41ff632c26b9c967412e3c02001f5e5ad789148084a",
+      "semantic_sha256": "5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510",
+      "source_dependency_id": "D010",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D018",
+      "interpretation": "abs is defined as max(a,-a) in a lattice-ordered additive group.",
+      "name": "abs",
+      "reuse_sha256": "a468b89dd7f25f736a8a5bd180e4b5390358b5412c8a76a75e3c898cff46f514",
+      "semantic_sha256": "8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b",
+      "source_dependency_id": "D011",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D019",
+      "interpretation": "instHAdd converts an Add instance into homogeneous HAdd notation by forwarding hAdd to the instance's add operation.",
+      "name": "instHAdd",
+      "reuse_sha256": "d606ddbdeb8527fc64397dcca7d82be54c432c0d137fdfd662fb34df5358cdc7",
+      "semantic_sha256": "38066efd17aeeca52ec2890d9aafca2fa3cce8fda7f5843c1b8e5da130d93981",
+      "source_dependency_id": "D012",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    },
+    {
+      "id": "D020",
+      "interpretation": "instHSub converts a Sub instance into homogeneous HSub notation by forwarding hSub to the instance's subtraction operation.",
+      "name": "instHSub",
+      "reuse_sha256": "04fa48c2c3005a6026ea7d75bd00afa56b0f3a065c58e799fbbbd8cdd55084be",
+      "semantic_sha256": "aa782f2b5af3d068f4c5340de4b32b193fece2c659a45582cc3024a19b550c87",
+      "source_dependency_id": "D013",
+      "source_direct_output_sha256": "5c9879b316aa888cf2971828a15e75d8abbe21f16f7849cfadf6907fe9130e60",
+      "source_task_id": "P12-T1"
+    }
+  ],
+  "role": "direct-dependency-reuse",
+  "schema_version": "highambench-faithfulness-0.2",
+  "target_task_id": "P12-T2"
+}

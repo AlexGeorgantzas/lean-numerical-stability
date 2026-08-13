@@ -1,0 +1,61 @@
+{
+  "evidence_policy": "Use only the referenced PDF and surrounding paper context as evidence. Produce an independent contract for every listed task.",
+  "paper_id": "P12",
+  "paper_path": "paper_bencmark/reference_papers/P12_A note on Dekker\u2019s FastTwoSum algorithm.pdf",
+  "paper_sha256": "0569d969cebaabe42de69fef10fa91002af12d62149af7485d0712414b53c2a1",
+  "paper_version": "published journal version; volume 145, issue 2, 2020, printed pages 383-403; corrected open-access publication 2021",
+  "role": "paper-source-locator",
+  "schema_version": "highambench-faithfulness-0.2",
+  "tasks": [
+    {
+      "source_locations": [
+        {
+          "anchor": "equation (10)",
+          "pdf_page": 6,
+          "printed_page": "388",
+          "role": "nearest-addition error bound used by Theorem 2",
+          "section": "3. Generalization for arbitrary bases"
+        }
+      ],
+      "task_id": "P12-T1"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "Theorem 2, equations (3), (7), and (8)",
+          "pdf_page": 5,
+          "printed_page": "387",
+          "role": "error-free transformation and the two exact-subtraction steps",
+          "section": "3. Generalization for arbitrary bases"
+        },
+        {
+          "anchor": "completion of Theorem 2 and equation (10)",
+          "pdf_page": 6,
+          "printed_page": "388",
+          "role": "final subtraction exactness and nearest-addition error property",
+          "section": "3. Generalization for arbitrary bases"
+        }
+      ],
+      "task_id": "P12-T2"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "Lemma 4 and equation (18)",
+          "pdf_page": 14,
+          "printed_page": "396",
+          "role": "ThreeProduct algorithm and exact three-term product identity",
+          "section": "4.2 Error-free transformation - ThreeProduct"
+        },
+        {
+          "anchor": "FastTwoSum merge and exact final-add conclusion in the proof of Lemma 4",
+          "pdf_page": 15,
+          "printed_page": "397",
+          "role": "middle-error merge and reduction from four product terms to three",
+          "section": "4.2 Error-free transformation - ThreeProduct"
+        }
+      ],
+      "task_id": "P12-T3"
+    }
+  ]
+}

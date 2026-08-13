@@ -1,0 +1,91 @@
+{
+  "accepted": false,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-13T16:29:09.190418+00:00",
+  "findings": [
+    {
+      "category": "core-proof-obligation-replaced-by-premises",
+      "impact": "The target does not formalize the paper's main numerical result. It proves only an abstract algebraic consequence after the central exactness facts have effectively been supplied.",
+      "lean_evidence": "The target omits condition (7) and instead assumes representable(s-x) and representable(y-t); paired with p12Nearest, these premises immediately force both exact equalities.",
+      "paper_evidence": "Theorem 2 uses condition (7), the representation structure of F, and criterion (8) to prove first t=s-x and then e=y-t.",
+      "severity": "critical"
+    },
+    {
+      "category": "floating-point-model-mismatch",
+      "impact": "The formal operation model is neither the paper's model nor a justified specialization of it.",
+      "lean_evidence": "All three rounded steps use p12Nearest over an arbitrary predicate, with no base, precision, exponent range, representation, or overflow semantics.",
+      "paper_evidence": "The paper requires nearest addition but only faithful subtraction in a base-\u03b2, precision-p system with bounded exponents.",
+      "severity": "major"
+    },
+    {
+      "category": "domain-and-quantifier-mismatch",
+      "impact": "The Lean and paper propositions range over different cases and have incomparable antecedents, preventing either implication.",
+      "lean_evidence": "The target quantifies arbitrary real x, y, and trace values, omits representable y, and has no existential representation witness.",
+      "paper_evidence": "Theorem 2 quantifies x,y\u2208F and existentially selects a permitted representation of x satisfying the displayed threshold.",
+      "severity": "major"
+    },
+    {
+      "category": "conclusion-incompleteness",
+      "impact": "The target fails to expose two required parts of the selected paper result and shifts them out of the theorem's delivered conclusions.",
+      "lean_evidence": "The conclusion contains only the final identity and addition-error bound; the subtraction equalities are obtainable only from the stronger representability and nearest-rounding premises.",
+      "paper_evidence": "The proof explicitly establishes exactness of both subtraction steps before the final error-free identity.",
+      "severity": "major"
+    },
+    {
+      "category": "derived-exactness-assumed",
+      "impact": "The principal mathematical content of the paper theorem is assumed rather than translated.",
+      "paper_evidence": "Theorem 2 uses condition (7), the radix format, and implication (8) to prove t=s-x and e=y-t.",
+      "severity": "critical",
+      "translation_evidence": "The translation assumes R(s-x) and R(y-t); combined with nearestness, these assumptions immediately force t=s-x and e=y-t."
+    },
+    {
+      "category": "missing-condition-7",
+      "impact": "The translated statement cannot express the paper's generalization for arbitrary bases or its sufficient input condition.",
+      "paper_evidence": "The exact theorem hypothesis is the existential representation bound |y|\u2264(\u03b2^p-\u03b2/2)\u03b2^{e(x)}.",
+      "severity": "major",
+      "translation_evidence": "No representation witness, exponent, \u03b2, p, or corresponding bound occurs."
+    },
+    {
+      "category": "algorithm-and-rounding-mismatch",
+      "impact": "The statement describes a different selection model and does not establish correctness of the paper's algorithm.",
+      "paper_evidence": "FastTwoSum uses one nearest addition followed by two faithfully rounded subtractions.",
+      "severity": "major",
+      "translation_evidence": "All three components satisfy nearest predicates, and no component is linked to an executed operation."
+    },
+    {
+      "category": "floating-point-domain-erased",
+      "impact": "The domain, format structure, and input representability requirements are not preserved.",
+      "paper_evidence": "Both inputs and all computed values belong to the radix floating-point set F with bounded mantissa and exponent.",
+      "severity": "major",
+      "translation_evidence": "R is arbitrary, x and y are arbitrary reals, and y need not satisfy R."
+    },
+    {
+      "category": "logical-strength-incomparable",
+      "impact": "Neither theorem statement implies the other under their stated binders and hypotheses.",
+      "paper_evidence": "The source derives exact intermediate behavior from format-specific assumptions.",
+      "severity": "major",
+      "translation_evidence": "The translation broadens the domain to arbitrary predicates while strengthening the local antecedent with exact-representability and nearest-subtraction assumptions."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean proposition cannot recover Theorem 2 from condition (7), nearest addition, and faithful subtraction because it contains no floating-point representation structure or condition (7) and requires hst, hye, and nearest relations for the subtraction outputs. Establishing those premises is precisely the central work of the paper result.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper is scoped to a set F of the form (1), inputs x,y\u2208F, specified operations, and condition (7). It does not establish the Lean proposition's universal implication for every predicate Real\u2192Prop, arbitrary real y, and arbitrary relational trace under the different antecedents.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "The target preserves the three-step dataflow, exact final identity, scalar residual bound, and nearest-addition relation. It does not preserve Theorem 2's substantive contract: x and y in a structured floating-point system, an existential representation of x satisfying condition (7), and faithful subtraction from which both exact subtraction steps are proved. Instead it quantifies an arbitrary representability predicate, omits representability of y and all base/precision/exponent data, assumes both exact differences representable, and applies nearest rounding to every operation. These changes make the target a nonvacuous but largely immediate abstract lemma, not a faithful strengthening or specialization. Because neither proposition implies the other under their stated domains and hypotheses, the result is not-faithful-different.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P12-T2"
+}

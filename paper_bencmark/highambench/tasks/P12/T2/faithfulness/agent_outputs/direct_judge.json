@@ -1,0 +1,327 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P12-T2",
+  "paper_sha256": "0569d969cebaabe42de69fef10fa91002af12d62149af7485d0712414b53c2a1",
+  "dossier_sha256": "8b5adc1e7aa2b4d2360a1ed6d3a619a8f12af0e6402e1f726c502e6ce2f966e6",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.P12FastTwoSumTrace",
+      "interpretation": "An inductive trace type which, together with its supplied constructor and projections, stores exactly three real values corresponding to s, t, and e.",
+      "effect_on_target": "The target quantifies an arbitrary three-real trace and constrains its fields through the three p12Nearest premises.",
+      "paper_match": "The field structure matches the original FastTwoSum dataflow, including the internal t and returned s and e, although representability is not built into the trace type.",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.P12FastTwoSumTrace.e",
+      "interpretation": "The projection returning the third real component of a trace.",
+      "effect_on_target": "This component is constrained as a nearest representative of y-tr.t and is used as the correction in tr.s+tr.e.",
+      "paper_match": "It occupies the same position as the correction e computed by the third FastTwoSum operation.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.P12FastTwoSumTrace.s",
+      "interpretation": "The projection returning the first real component of a trace.",
+      "effect_on_target": "This component is constrained as a nearest representative of x+y and is the high part in both conclusions.",
+      "paper_match": "It matches the paper's first computed quantity s=x⊕y.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.P12FastTwoSumTrace.t",
+      "interpretation": "The projection returning the second real component of a trace.",
+      "effect_on_target": "This component is constrained as a nearest representative of tr.s-x and is used in the exact argument y-tr.t of the final rounding relation.",
+      "paper_match": "Its dataflow position matches the intermediate t computed by the second FastTwoSum operation.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "HighamBench.p12Nearest",
+      "reuse_sha256": "d8b3c420977688a5152435b75ac5713580eb4b731ef6d566708ddd46e4bfcc3a",
+      "effect_on_target": "For hs it makes tr.s a globally nearest representable value to x+y. With hx, this directly yields the error bound by taking x as a candidate. For ht and he, the separate hst and hye premises supply zero-distance representable candidates, forcing tr.t=tr.s-x and tr.e=y-tr.t.",
+      "paper_match": "Its use for the addition matches nearest-addition and permits unspecified ties. Its use for both subtractions does not match the paper's faithful-subtraction hypothesis, and together with hst and hye it makes the exactness steps immediate assumptions rather than consequences of condition (7) and the floating-point structure.",
+      "status": "fail"
+    },
+    {
+      "id": "D006",
+      "name": "HighamBench.P12FastTwoSumTrace.mk",
+      "interpretation": "A constructor taking three real arguments in the order s, t, e and packaging them as a P12FastTwoSumTrace.",
+      "effect_on_target": "It permits every real triple to serve as a trace before the theorem premises impose relational constraints.",
+      "paper_match": "The component order agrees with the three sequential FastTwoSum quantities.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "And",
+      "reuse_sha256": "c5359964579f42cd451c7b80335c5bc6444e0bd8f9eb2ad62d6bcc73a5827d44",
+      "effect_on_target": "The conclusion requires both the exact two-term identity and the line-1 absolute-error bound.",
+      "paper_match": "Theorem 2 concludes the exact identity, and equation (9) establishes the stated nearest-addition error bound. This conjunction does not include the two exact-subtraction conclusions.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "Eq",
+      "interpretation": "Homogeneous propositional equality between two values of the same type.",
+      "effect_on_target": "It states exact real equality tr.s+tr.e=x+y, with no rounding operation applied to either side.",
+      "paper_match": "This matches the exact real identity s+e=x+y in equation (3).",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "HAdd.hAdd",
+      "reuse_sha256": "74aa55b0ad9407a572b103fe243ec7bfd85c500b6fe3cb2cda7e9134aa7c8ed5",
+      "effect_on_target": "Through the supplied real HAdd instance, every displayed + is exact real addition; computed addition is represented separately by p12Nearest.",
+      "paper_match": "This correctly realizes the exact additions in x+y, the rounding argument, and the final unevaluated sum s+e.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "HSub.hSub",
+      "reuse_sha256": "910865b63624f8f852cdf917c24378a2c58fe15bd9021ef96ea7cb8572a22709",
+      "effect_on_target": "Through the real HSub instance, it forms the exact differences tr.s-x, y-tr.t, and tr.s-(x+y), which are then used in predicates or the bound.",
+      "paper_match": "These are the correct exact real arguments and residuals corresponding to the paper's computed subtraction steps; the rounding-mode mismatch arises from p12Nearest rather than from this exact subtraction operator.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "LE.le",
+      "reuse_sha256": "021045e95e0c21a2eb0a14dae03247f90624c147438f82cd2bb70bbaf7adbe27",
+      "effect_on_target": "It supplies the inclusive comparison in |tr.s-(x+y)|≤|y|.",
+      "paper_match": "The direction and inclusiveness match the nearest-addition bound used in equation (9).",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "Real",
+      "reuse_sha256": "5eda97e2aeddf310e1f963c8b9a394088cd4583baa5b2cfa49162cc318cd87d2",
+      "effect_on_target": "All inputs, exact expressions, and trace fields range over mathematical reals. Membership in a floating-point set is represented only by an arbitrary predicate, and no such premise is imposed on y.",
+      "paper_match": "Real numbers are suitable denotations for finite floating-point values, but the current target ranges beyond the paper's x,y,s,t,e∈F domain because representable is unconstrained and y need not satisfy it.",
+      "status": "fail"
+    },
+    {
+      "id": "D013",
+      "name": "Real.instAdd",
+      "reuse_sha256": "e9db96f91871c57076af00e6fb401681a44e3b6c18c7daca0597f7bbdbdfa9a9",
+      "effect_on_target": "It supplies standard exact real addition to all additions in the target.",
+      "paper_match": "It matches the paper's unadorned exact real additions.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Real.instAddGroup",
+      "reuse_sha256": "f77853411748aaf532855b44e49577d858002306d195b28def05f569026eb2dd",
+      "effect_on_target": "It provides real negation and additive-group structure used by subtraction and absolute value.",
+      "paper_match": "These are the standard real operations underlying the paper's exact differences and scalar absolute values.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instLE",
+      "reuse_sha256": "d3a74f29e3c128c65a64cd85c1ff20e38c7c45bf6fef0129f1eb1707ed54a74e",
+      "effect_on_target": "It makes the target inequality use the standard real order.",
+      "paper_match": "This matches the scalar order used by the paper's bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instSub",
+      "reuse_sha256": "9a37ea0c3ed4633bcb29365559f29747f0d50114d73cdb3937f82dfad5f40b21",
+      "effect_on_target": "It interprets every subtraction expression as exact real addition of a negation.",
+      "paper_match": "It correctly represents the paper's unadorned exact differences, distinct from computed floating-point subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "Real.lattice",
+      "reuse_sha256": "a13a5b29df057070012dc41ff632c26b9c967412e3c02001f5e5ad789148084a",
+      "effect_on_target": "It supplies the ordered lattice structure used to define real absolute value.",
+      "paper_match": "Its resulting absolute value has the scalar real meaning used throughout equations (7)-(10).",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "abs",
+      "reuse_sha256": "a468b89dd7f25f736a8a5bd180e4b5390358b5412c8a76a75e3c898cff46f514",
+      "effect_on_target": "It measures the scalar magnitudes of the line-1 residual and y.",
+      "paper_match": "This is exactly the scalar absolute-value notion in the paper, not a vector or matrix norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "instHAdd",
+      "reuse_sha256": "d606ddbdeb8527fc64397dcca7d82be54c432c0d137fdfd662fb34df5358cdc7",
+      "effect_on_target": "It forwards homogeneous + notation to standard real addition.",
+      "paper_match": "The resulting operations correctly denote exact real addition where + appears in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "instHSub",
+      "reuse_sha256": "04fa48c2c3005a6026ea7d75bd00afa56b0f3a065c58e799fbbbd8cdd55084be",
+      "effect_on_target": "It forwards homogeneous - notation to standard real subtraction.",
+      "paper_match": "The resulting operations correctly denote the exact real differences used as rounding arguments and residuals.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The PDF hash matches the supplied hash. Its first page identifies the Numerische Mathematik 145:383-403 publication, published in 2020 and corrected in 2021. Theorem 2 and equations (7)-(10) occur on PDF pages 5-6, printed pages 387-388.",
+      "lean_evidence": "The packet identifies p12_t2_fast_two_sum_exact and supplies exact, readable, elaborated, and fully explicit types for P12-T2.",
+      "reasoning": "The selected source and surrounding passage are the arbitrary-base FastTwoSum result relevant to this target."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Theorem 2 fixes x,y∈F and computed s,t,e∈F in one floating-point system determined by β, p, and exponent limits.",
+      "lean_evidence": "The target quantifies representable : Real→Prop, arbitrary real x and y, and an arbitrary real trace. It assumes representable x and p12Nearest makes s,t,e representable, but there is no representable y premise and no type or structure for β, p, or exponent bounds.",
+      "reasoning": "The ambient real encoding is not restricted enough to preserve the paper's binders and common floating-point domain."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "After x and y are fixed, Theorem 2 requires the existence of a permitted representation of x whose exponent satisfies condition (7); the computed trace then depends on the selected operations and inputs.",
+      "lean_evidence": "The target universally quantifies representable, x, y, and tr before introducing implication premises. It contains no existential representation or exponent witness and instead accepts any trace satisfying three rounding relations and two exact-representability premises.",
+      "reasoning": "The existential witness and its dependence on x are absent, and the paper's generated computation is replaced by universal relational trace quantification."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "Theorem 2 assumes x,y∈F, nearest addition, faithful subtraction, and some permitted representation of x satisfying |y|≤(β^p-β/2)β^{e(x)}. Equation (8) is qualified by absence of overflow.",
+      "lean_evidence": "The target omits representable y and condition (7), assumes representable(s-x) and representable(y-t), and applies p12Nearest to both subtraction outputs. It has no β, p, representation, exponent-range, or overflow premise.",
+      "reasoning": "The central magnitude and floating-point hypotheses are replaced by assumptions that directly provide the exact subtraction arguments as representable."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The proof establishes t=s-x and e=y-t before concluding s+e=x+y; equation (9) gives the line-1 error bound.",
+      "lean_evidence": "The explicit conclusion contains only tr.s+tr.e=x+y and |tr.s-(x+y)|≤|y|. Exactness of t and e is not returned; it follows immediately only because hst, ht, hye, and he are already premises.",
+      "reasoning": "Two substantive exact-subtraction conclusions have been moved into premise-driven consequences rather than delivered from the paper's hypotheses."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "The paper defines F by integer mantissas and exponents, defines nearest and faithful rounding separately, permits nonunique representations, and uses representability criterion (8).",
+      "lean_evidence": "p12Nearest is nearest distance over an arbitrary predicate. The remaining operators are exact real addition, subtraction, order, equality, and absolute value. No dependency defines the paper's floating-point set, representations, exponents, faithful rounding, or criterion (8).",
+      "reasoning": "Although the supplied dependencies are interpretable, the target's imported semantic model does not contain the nontrivial definitions on which Theorem 2 depends."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes computed s, t, and e from exact x+y, s-x, y-t, and the unevaluated exact sum s+e.",
+      "lean_evidence": "The exact real expressions occur as the first arguments of p12Nearest, while tr.s, tr.t, and tr.e are separate rounded-output fields. The final equality and residual bound use exact real operations.",
+      "reasoning": "Exact and computed quantities remain syntactically distinct. The inappropriate assumptions and rounding mode are separate faithfulness defects."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "Original FastTwoSum executes s←x⊕y, t←s⊖x, and e←y⊖t, with no cβ preprocessing.",
+      "lean_evidence": "The premises sequentially relate tr.s to x+y, tr.t to tr.s-x, and tr.e to y-tr.t.",
+      "reasoning": "The three-stage dataflow and field order match the original algorithm rather than the later modified algorithm, despite the incorrect subtraction semantics."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Equations (7)-(10) use scalar absolute value.",
+      "lean_evidence": "The target uses real abs on tr.s-(x+y) and y.",
+      "reasoning": "There is no squared, vector, componentwise, or normwise substitution."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "Condition (7) has the inclusive threshold (β^p-β/2)β^{e(x)}, and criterion (8) uses β^pβ^{min(e(a),e(b))}.",
+      "lean_evidence": "The target contains no β, p, e(x), minimum exponent, or either threshold. Its only numerical comparison is |tr.s-(x+y)|≤|y|.",
+      "reasoning": "The constants and parameter dependence carrying the arbitrary-base theorem are entirely absent."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The system F has base, precision, and bounded exponents; addition is nearest, subtraction need only be faithful, ties are unspecified, and equation (8) explicitly mentions absence of overflow.",
+      "lean_evidence": "representable is an unconstrained predicate over reals, all three operations use p12Nearest, and the target has no exceptional-value, underflow, overflow, exponent-range, or precision semantics.",
+      "reasoning": "The floating-point model differs decisively regardless of whether no-overflow is read as an implicit theorem condition."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper derives exact subtraction and the final equality from condition (7), nearest addition, and faithful subtraction.",
+      "lean_evidence": "The target drops condition (7), strengthens subtraction relations to nearest, and adds hst and hye, which make exact subtraction immediate. Its final equality and error inequality themselves have the correct exact and inclusive relations.",
+      "reasoning": "The antecedents are not strength-equivalent: the paper's substantive sufficient condition is replaced by direct representability assumptions, producing an incomparable proposition."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The result is an error-free transformation with signed residual e=x+y-s and a forward line-1 error bound |s-(x+y)|≤|y|.",
+      "lean_evidence": "The conjunction states s+e=x+y and the same absolute forward-error bound; over the reals, the equality is equivalent to e=x+y-s.",
+      "reasoning": "The target does not substitute a backward, mixed, or merely approximate error notion."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The identities t=s-x, e=y-t, and s+e=x+y are exact and contain no omitted higher-order terms.",
+      "lean_evidence": "The target uses exact equality and an exact inequality with no approximation or big-O notation.",
+      "reasoning": "There is no higher-order truncation mismatch."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "Theorem 2 concerns arbitrary bases but a specific finite floating-point system F and inputs x,y∈F satisfying condition (7).",
+      "lean_evidence": "The target generalizes F to every predicate on Real and permits nonrepresentable y, while simultaneously restricting the exact differences to be representable and requiring nearest subtraction.",
+      "reasoning": "This mixed generalization and restriction is not a faithful specialization of the paper theorem."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The paper's proof performs the substantive work of deriving representability and exactness of both subtractions from condition (7) and the structure of F.",
+      "lean_evidence": "The premises are satisfiable, for example with representable true for every real, x=1, y=2, and trace (s,t,e)=(3,2,0). More generally, hst plus ht forces t=s-x, hye plus he forces e=y-t, and hx plus hs directly yields the error bound.",
+      "reasoning": "The proposition is nonempty, but its conclusion holds for an unintended trivial reason: the hypotheses encode the core exactness facts that the paper proves."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean proposition cannot recover Theorem 2 from condition (7), nearest addition, and faithful subtraction because it contains no floating-point representation structure or condition (7) and requires hst, hye, and nearest relations for the subtraction outputs. Establishing those premises is precisely the central work of the paper result."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper is scoped to a set F of the form (1), inputs x,y∈F, specified operations, and condition (7). It does not establish the Lean proposition's universal implication for every predicate Real→Prop, arbitrary real y, and arbitrary relational trace under the different antecedents."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "core-proof-obligation-replaced-by-premises",
+      "paper_evidence": "Theorem 2 uses condition (7), the representation structure of F, and criterion (8) to prove first t=s-x and then e=y-t.",
+      "lean_evidence": "The target omits condition (7) and instead assumes representable(s-x) and representable(y-t); paired with p12Nearest, these premises immediately force both exact equalities.",
+      "impact": "The target does not formalize the paper's main numerical result. It proves only an abstract algebraic consequence after the central exactness facts have effectively been supplied."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point-model-mismatch",
+      "paper_evidence": "The paper requires nearest addition but only faithful subtraction in a base-β, precision-p system with bounded exponents.",
+      "lean_evidence": "All three rounded steps use p12Nearest over an arbitrary predicate, with no base, precision, exponent range, representation, or overflow semantics.",
+      "impact": "The formal operation model is neither the paper's model nor a justified specialization of it."
+    },
+    {
+      "severity": "major",
+      "category": "domain-and-quantifier-mismatch",
+      "paper_evidence": "Theorem 2 quantifies x,y∈F and existentially selects a permitted representation of x satisfying the displayed threshold.",
+      "lean_evidence": "The target quantifies arbitrary real x, y, and trace values, omits representable y, and has no existential representation witness.",
+      "impact": "The Lean and paper propositions range over different cases and have incomparable antecedents, preventing either implication."
+    },
+    {
+      "severity": "major",
+      "category": "conclusion-incompleteness",
+      "paper_evidence": "The proof explicitly establishes exactness of both subtraction steps before the final error-free identity.",
+      "lean_evidence": "The conclusion contains only the final identity and addition-error bound; the subtraction equalities are obtainable only from the stronger representability and nearest-rounding premises.",
+      "impact": "The target fails to expose two required parts of the selected paper result and shifts them out of the theorem's delivered conclusions."
+    }
+  ],
+  "rationale": "The target preserves the three-step dataflow, exact final identity, scalar residual bound, and nearest-addition relation. It does not preserve Theorem 2's substantive contract: x and y in a structured floating-point system, an existential representation of x satisfying condition (7), and faithful subtraction from which both exact subtraction steps are proved. Instead it quantifies an arbitrary representability predicate, omits representability of y and all base/precision/exponent data, assumes both exact differences representable, and applies nearest rounding to every operation. These changes make the target a nonvacuous but largely immediate abstract lemma, not a faithful strengthening or specialization. Because neither proposition implies the other under their stated domains and hypotheses, the result is not-faithful-different."
+}
