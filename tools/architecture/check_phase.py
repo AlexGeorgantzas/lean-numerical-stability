@@ -2099,15 +2099,22 @@ class PhaseValidator:
                 branch_names[name] = branch_id
             lane_id = branch.get("lane_id")
             lane = self.lanes.get(lane_id)
+            branch_operators = branch.get("operator_ids", [])
+            for operator in branch_operators:
+                if operator not in self.principals:
+                    self.problems.violation(
+                        context, f"operator {operator} is an unknown principal"
+                    )
             if lane is None:
                 self.problems.violation(context, f"unknown lane_id {lane_id}")
             else:
                 if branch.get("owner_id") != lane.get("owner_id"):
                     self.problems.violation(context, "owner_id must equal the lane owner")
-                allowed_operators = set(lane.get("operator_ids", []))
-                for operator in branch.get("operator_ids", []):
-                    if operator not in allowed_operators:
-                        self.problems.violation(context, f"operator {operator} is not authorized for lane {lane_id}")
+                if status in live_statuses:
+                    allowed_operators = set(lane.get("operator_ids", []))
+                    for operator in branch_operators:
+                        if operator not in allowed_operators:
+                            self.problems.violation(context, f"operator {operator} is not authorized for lane {lane_id}")
             if branch.get("wave_id") not in known_waves:
                 self.problems.violation(context, f"unknown wave_id {branch.get('wave_id')}")
             wave_rows = [
@@ -2832,6 +2839,53 @@ def run_self_test() -> int:
             print("self-test failure: valid synthetic contract was rejected", file=sys.stderr)
             return 1
 
+        # Current lane membership governs live execution authority. Terminal
+        # records retain the operator attribution that was valid during their
+        # execution epoch even if the lane's current operator set has changed.
+        branch["operator_ids"] = ["integrator"]
+        write_json(phase_dir / "branches/B0001.json", branch)
+        unauthorized_live_operator = PhaseValidator(root, phase_dir).validate()
+        if not any(
+            "operator integrator is not authorized for lane lane-a" in message
+            for message in unauthorized_live_operator.contract_errors
+        ):
+            unauthorized_live_operator.render()
+            print(
+                "self-test failure: unauthorized live branch operator was accepted",
+                file=sys.stderr,
+            )
+            return 1
+        branch["status"] = "cancelled"
+        projection["status"] = "retired"
+        write_json(phase_dir / "branches/B0001.json", branch)
+        write_json(phase_dir / "projections/P0001.json", projection)
+        terminal_historical_operator = PhaseValidator(root, phase_dir).validate()
+        if not terminal_historical_operator.ok:
+            terminal_historical_operator.render()
+            print(
+                "self-test failure: terminal branch historical operator attribution was rejected",
+                file=sys.stderr,
+            )
+            return 1
+        branch["operator_ids"] = ["unknown-terminal-operator"]
+        write_json(phase_dir / "branches/B0001.json", branch)
+        unknown_terminal_operator = PhaseValidator(root, phase_dir).validate()
+        if not any(
+            "operator unknown-terminal-operator is an unknown principal" in message
+            for message in unknown_terminal_operator.contract_errors
+        ):
+            unknown_terminal_operator.render()
+            print(
+                "self-test failure: terminal branch accepted an unknown operator principal",
+                file=sys.stderr,
+            )
+            return 1
+        branch["operator_ids"] = ["worker"]
+        branch["status"] = "planned"
+        projection["status"] = "active"
+        write_json(phase_dir / "branches/B0001.json", branch)
+        write_json(phase_dir / "projections/P0001.json", projection)
+
         # A live request must retain its current shared-path reservation, but
         # an applied request is historical evidence and must not prevent a
         # later checkpoint from assigning that path to a branch owner.
@@ -3058,8 +3112,9 @@ def run_self_test() -> int:
         "phase contract self-test passed: valid fixture accepted; queue drift, semantic "
         "status mismatch, wrong ownership, destination overlap, stale baseline metadata, "
         "unpassed gates, projection count drift, cycle, premature unblock, premature "
-        "completion, live shared-path release, and hash tampering rejected; terminal "
-        "shared-path release accepted"
+        "completion, unauthorized live operator, live shared-path release, and hash "
+        "tampering and unknown terminal operators rejected; known terminal historical "
+        "operator attribution and terminal shared-path release accepted"
     )
     return 0
 

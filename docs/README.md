@@ -17,7 +17,10 @@ history. When two documents disagree, use the precedence order below.
    per-file licensing and upstream-attribution policy.
 6. [`architecture/phases/2026-08-repository-reorganization-completion/`](architecture/phases/2026-08-repository-reorganization-completion/README.md)
    is the active repository-wide scope, authority, wave, checkpoint, and branch
-   contract. Dated worker packets do not override it.
+   contract. Its current checkpoint is C0002 at exact green code commit
+   `9d2334d77f1a38f8a4caa81fe53eeb11a8e3e7cd`; 277 production modules remain
+   unclassified, so repository-wide completion remains incomplete. Dated
+   worker packets do not override it.
 
 ## Current source coverage
 

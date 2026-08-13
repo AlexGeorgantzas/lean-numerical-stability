@@ -4,16 +4,19 @@ The active operating contract is the
 [`2026-08 repository reorganization completion`](2026-08-repository-reorganization-completion/README.md),
 selected by [`active-phase.json`](active-phase.json). It is rooted at C0000 on
 accepted predecessor code commit
-`b1b18772d80185ec08f49c818919558645c330a1`; its current checkpoint is C0001
-at green code commit `117aa2bb7e61f41e1531a78452f9f7f6cd5b0771`. C0001 accepts R01/R02. After
-acceptance-control commit `93883eb0ec69a01704ff24ac71713a03f0be5a49`
-passed Lean CI run 31542177523 (job 93946871439), B0001/B0002 were retired at
+`b1b18772d80185ec08f49c818919558645c330a1`; its current checkpoint is C0002
+at green code commit `9d2334d77f1a38f8a4caa81fe53eeb11a8e3e7cd`. C0002 accepts R11/R12 on top
+of C0001's accepted R01/R02 integration. This successor has precedence over
+dated migration packets and historical handoffs.
+
+After C0001 acceptance-control commit
+`93883eb0ec69a01704ff24ac71713a03f0be5a49` passed Lean CI run 31542177523
+(job 93946871439), B0001/B0002 were retired at
 `2026-08-11T22:34:24Z`; their exact remote refs were deleted with expected-tip
 leases and verified absent. Their ignored evidence is archived under
 `C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0001-R01-R02-20260811`,
 and both clean named worker worktrees were removed without force. Local branch
-refs remain preserved at the immutable delivery tips. This successor has
-precedence over dated migration packets and historical handoffs.
+refs remain preserved at the immutable delivery tips.
 
 B0003/R11 (QR and Chapter 19) and B0004/R12 (Chapter 13 equations and Table 01)
 were delivered from exact C0001 code
@@ -27,13 +30,21 @@ from its common C0001 preimage; sequential whole-file request replacement was
 not used. The bounded integration follow-up completes the Chapter 19
 `Sensitivity` and `StoredLoop` aggregates and records self-ratcheting
 exceptions for exactly the two retained historical imports in byte-identical
-`Chapter19.Core`. R11/R12 are integrated but remain unaccepted: M11/M12 are
-ready, C0001 remains current, and C0002 awaits the full acceptance gates and
-exact green code CI. Their selectors, format-2 projections, routes, private
-closure, test plans, and same-preimage request union remain frozen. The
-planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be` passed Lean CI run
-31546978830 (job 93961477202) before both exact refs and clean named worktrees
-were created and activated.
+`Chapter19.Core`. Exact-code Lean CI run 31673501960 (job 94362951630) passed
+for `9d2334d77f1a38f8a4caa81fe53eeb11a8e3e7cd`. At C0002, M11/M12 are
+accepted, B0003/B0004 are accepted with retirement due, P0003/P0004 are retired
+immutable evidence, and R0003/R0004 are applied. The temporary `codex-local`
+authorization expired at C0002 and `claude-lane` is restored to its single
+`claude-local` operator. The exact remote delivery refs and named worker
+worktrees remain present pending acceptance-control CI; no retirement is
+claimed yet. C0002 records 2,642 production modules and 356 distinct
+residual-debt rows, including 277 unclassified modules, so neither bounded nor
+repository-wide completion is claimed. M03/R03 and M07/R07 are only candidates
+for a fresh C0002 graph review, not an authorized pair. Their activation would
+require fresh selectors, projections, routes, overlap evidence, and controls.
+The planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be`
+passed Lean CI run 31546978830 (job 93961477202) before the R11/R12 refs and
+clean named worktrees were created and activated.
 
 The immutable predecessor
 [`2026-08 repository reorganization`](2026-08-repository-reorganization/README.md)

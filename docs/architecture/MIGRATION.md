@@ -5,12 +5,18 @@ only when its stated evidence is checked into the repository or recorded by CI.
 
 The active repository-wide operating contract is
 [`phases/2026-08-repository-reorganization-completion/`](phases/2026-08-repository-reorganization-completion/README.md).
-Its current C0001 checkpoint freezes the complete 2,631-module inventory,
+Its current C0002 checkpoint freezes the complete 2,642-module inventory,
 assigns every current debt row to a lane and dependency wave, distinguishes
 bounded-phase from repository-wide completion, and records branch, baseline,
 shared-request, build-lock, and checkpoint lifecycle rules. Validate it with
 `python tools/architecture/check_phase.py`. Dated packets and migration reports
 are evidence, not current worker instructions.
+
+C0002 accepts R11/R12 at exact code commit
+`9d2334d77f1a38f8a4caa81fe53eeb11a8e3e7cd`, but it does not claim bounded or
+repository-wide completion: 356 distinct residual-debt rows remain, including
+277 unclassified modules. M03/R03 and M07/R07 are only candidates for a fresh
+C0002 graph review, not an authorized concurrent pair.
 
 1. **Current baseline.** Regenerate and version the architecture and build
    report at the exact migration commit using tracked tooling.
