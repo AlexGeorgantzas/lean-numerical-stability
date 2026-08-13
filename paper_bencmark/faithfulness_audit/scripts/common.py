@@ -5,7 +5,11 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-AUDIT_SCHEMA_VERSION = "highambench-faithfulness-0.1"
+AUDIT_SCHEMA_VERSION = "highambench-faithfulness-0.2"
+SUPPORTED_AUDIT_SCHEMA_VERSIONS = {
+    "highambench-faithfulness-0.1",
+    AUDIT_SCHEMA_VERSION,
+}
 TASK_ID_PATTERN = r"P\d{2}-T[123]"
 
 CLASSIFICATIONS = (

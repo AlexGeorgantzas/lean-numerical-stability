@@ -1,211 +1,227 @@
 ---
 name: highambench-faithfulness-audit
-description: Run a reproducible, multi-agent faithfulness audit of a HighamBench Lean target against its reference-paper statement. Use when the user asks to audit, check, verify, review, or assess the paper faithfulness of a task such as P11-T1, including blind target translation, detailed imported-definition coverage, direct and round-trip judgments, conditional adjudication, and per-task audit artifacts.
+description: Run a reproducible, multi-agent faithfulness audit of HighamBench Lean targets against reference-paper statements. Use when the user asks to audit, check, verify, review, or assess paper faithfulness for one task such as P11-T1 or a paper batch such as P03, including blind translation, imported-definition coverage, paper-level source extraction, direct and round-trip judgments, hash-verified dependency reuse, conditional adjudication, and per-task artifacts.
 ---
 
 # Run a HighamBench Faithfulness Audit
 
-Audit the proposition only. Do not edit the target, shared Lean files, task
-metadata, context, reference PDF, benchmark snapshots, or proofs.
+Audit propositions only. Do not edit targets, shared Lean files, task metadata,
+contexts, PDFs, benchmark snapshots, or proofs.
 
-## Locate the canonical protocol
+## Load the protocol
 
-Work from the `lean-fp-analysis` repository containing
-`paper_bencmark/highambench/`. The existing directory is intentionally spelled
-`paper_bencmark`; do not create a parallel `paper_benchmark` directory.
+Work in the `lean-fp-analysis` repository containing
+`paper_bencmark/highambench/`. The spelling `paper_bencmark` is intentional.
 
-Read these files before running agents:
+Read before running roles:
 
-- `paper_bencmark/faithfulness_audit/METHODOLOGY.md`
-- all five role prompts under `paper_bencmark/faithfulness_audit/prompts/`
-- the corresponding JSON schemas under
-  `paper_bencmark/faithfulness_audit/schemas/`
+- `paper_bencmark/faithfulness_audit/METHODOLOGY.md`;
+- all role prompts under `paper_bencmark/faithfulness_audit/prompts/`;
+- all role schemas under `paper_bencmark/faithfulness_audit/schemas/`.
 
-Treat the methodology as canonical. The installed skill is orchestration glue,
-while the repository owns the reproducible method.
+The methodology is canonical. This skill supplies orchestration.
 
-## Interpret the request
+Normalize task references such as `P11 T1`, `P11/T1`, or `P11-T1` to
+`P11-T1`. Use paper-batch mode for a request covering T1, T2, and T3 from one
+paper. Use single-task mode for an isolated task.
 
-Normalize a task reference such as `P11 T1`, `P11/T1`, or `P11-T1` to
-`P11-T1`. Audit one task per requested audit unless the user explicitly asks for
-a batch.
+Do not create user-visible Codex tasks. Use internal agents. The audit workflow
+authorizes these subagents.
 
-Do not create user-visible Codex tasks. Use internal multi-agent tools. The user
-has explicitly authorized the audit workflow's subagents.
+## Preserve existing work
 
-## Prepare the inputs
+Inspect every requested `faithfulness/manifest.json` first. Reuse a valid
+`prepared` bundle and validate existing partial role outputs before continuing.
+For a `completed` audit, report the existing result unless the user explicitly
+requests a fresh run.
 
-If the task has no `faithfulness/manifest.json`, run from the repository root:
+Never use `--force` merely to simplify orchestration. Use it only for an
+explicit fresh run or an intentional input invalidation. Preparation archives
+old artifacts, but avoid invalidating them unnecessarily.
 
-```bash
-python3 paper_bencmark/faithfulness_audit/scripts/prepare_audit.py P11-T1
-python3 paper_bencmark/faithfulness_audit/scripts/validate_audit.py P11-T1 --phase prepared
-```
+Preparation must compile untouched targets and writes only under each task's
+`faithfulness/` folder.
 
-If a manifest already exists, inspect its status and run the prepared validator
-instead of calling preparation again. Reuse a valid `prepared` bundle. For a
-partial run, validate every existing agent output before continuing; do not
-silently mix valid and invalid artifacts. For a `completed` audit, report the
-existing result unless the user explicitly requests a fresh independent run.
-
-Do not use `--force` if completed or partial results exist. Explain the existing
-state and inspect it first. Use `--force` only when the user requests a fresh run
-or when current inputs intentionally invalidate prior results.
-
-Preparation must compile the untouched target and succeed. It writes only under
-the task's `faithfulness/` result folder.
-
-## Enforce fresh-agent isolation
+## Enforce agent isolation
 
 For every role, call `multi_agent_v1__spawn_agent` with `fork_context: false`.
-Do not override the model or reasoning effort. Do not reuse an agent with
-`send_input`; a malformed or incomplete answer gets a newly spawned retry.
-Close every completed or failed agent promptly because open completed agents
-consume concurrency.
+Do not override model or reasoning effort. Do not use `send_input` to repair a
+role. Retry malformed or invalid output with a new fresh agent. Close completed
+or failed agents promptly.
 
-Only the orchestrator writes files. Agents return JSON in their final messages
-and must not modify the workspace.
+Only the orchestrator writes files. Agents return bare JSON in final messages
+and never modify the workspace. Parse and validate every output before another
+role consumes it.
 
-### Blind-agent rule
+### Blind rule
 
-The blind translator's message must inline only:
+A blind translator receives inline only:
 
 1. `prompts/blind_translation.md`;
 2. `schemas/blind_translation.schema.json`;
-3. the blind dossier SHA-256 from the manifest;
-4. the complete `inputs/blind_dossier.md` text.
+3. the manifest hash for `inputs/blind_review_packet.md`;
+4. the complete text of that packet.
 
-Explicitly prohibit all tool calls and filesystem inspection. Do not pass a
-skill item, local path, task ID, paper path, theorem name, source text,
-conversation history, or any prior output. `fork_context: false` is mandatory
-but does not itself remove filesystem capability, so the no-tool condition is
-part of run validity.
+Explicitly prohibit tool calls and filesystem inspection. Do not pass a skill,
+path, task ID, paper, theorem name, target source, context, conversation history,
+or prior output. `fork_context: false` is necessary but does not itself remove
+filesystem capability, so the no-tool instruction is part of validity.
 
-## Run phase one in parallel
+## Run a paper batch
 
-Spawn both fresh agents before waiting.
+Use this path when all three tasks of one paper are pending.
 
-### Source-contract agent
+### 1. Prepare T1, T2, and T3
 
-Inline the source-contract prompt, its schema, and `source_locator.json`. Supply
-the reference PDF's absolute path and page anchors from the locator. Permit the
-agent to inspect only the PDF and surrounding pages needed to resolve definitions
-and cross-references. Do not supply the target, dossiers, context, or task
+```bash
+python3 paper_bencmark/faithfulness_audit/scripts/prepare_paper_audit.py P03
+```
+
+This compiles the three targets concurrently and adds one hash-identical
+`paper_source_locator.json` to every task. Validate all three prepared bundles.
+
+### 2. Run paper extraction and blind translations concurrently
+
+Spawn four fresh agents before waiting:
+
+- one paper source-contract agent;
+- one blind translator for each of T1, T2, and T3.
+
+The paper source agent receives the paper-level prompt and schema,
+`paper_source_locator.json` plus its SHA-256, and the absolute reference-PDF
+path. Permit inspection only of that PDF and surrounding pages needed for
+definitions and cross-references. Do not supply Lean, dossiers, context, or task
 paraphrases.
 
-### Blind-translation agent
+Each blind agent follows the blind rule and remains independent of the other
+three roles.
 
-Use the blind-agent rule above.
-
-Wait for both agents. Require bare JSON with no Markdown fence. Parse it before
-writing:
-
-```text
-faithfulness/agent_outputs/source_contract.json
-faithfulness/agent_outputs/blind_translation.json
-```
-
-If parsing or required coverage fails, close that agent and retry the role with
-a new fresh agent. Never show one phase-one agent the other's output.
-
-Validate both files immediately:
+After validating the paper-agent JSON shape, write it to a temporary local path
+and split it:
 
 ```bash
-python3 paper_bencmark/faithfulness_audit/scripts/validate_agent_output.py P11-T1 source-contract
-python3 paper_bencmark/faithfulness_audit/scripts/validate_agent_output.py P11-T1 blind-translation
+python3 paper_bencmark/faithfulness_audit/scripts/split_paper_source_contract.py \
+  /path/to/paper_source_contract.json
 ```
 
-## Run phase two in parallel
-
-Spawn both judges fresh before waiting.
-
-### Direct judge
-
-Inline:
-
-- the direct-judge prompt and schema;
-- `source_locator.json` and the exact PDF path/pages;
-- `source_contract.json`;
-- `manifest.json`;
-- the complete `inputs/declaration_dossier.md`.
-
-Require one dependency record for every manifest `Dxxx` ID and one semantic
-record for every `Sxx` ID. The judge must inspect the original source and every
-imported semantic dependency rather than trusting names or the source contract.
-
-### Round-trip judge
-
-Inline:
-
-- the round-trip prompt and schema;
-- `source_locator.json` and the exact PDF path/pages;
-- `source_contract.json`;
-- `blind_translation.json` and its SHA-256;
-- only the manifest's `semantic_checks` list.
-
-Do not supply Lean, either dossier, dependency inventory, context, task
-paraphrases, or direct judgment.
-
-Write valid bare JSON to:
-
-```text
-faithfulness/agent_outputs/direct_judge.json
-faithfulness/agent_outputs/roundtrip_judge.json
-```
-
-Validate both files immediately:
+The splitter writes and validates a hash-bound paper contract plus each task's
+`source_contract.json`. Write each blind result to its task-local
+`agent_outputs/blind_translation.json`, then validate it:
 
 ```bash
-python3 paper_bencmark/faithfulness_audit/scripts/validate_agent_output.py P11-T1 direct-judge
-python3 paper_bencmark/faithfulness_audit/scripts/validate_agent_output.py P11-T1 roundtrip-judge
+python3 paper_bencmark/faithfulness_audit/scripts/validate_agent_output.py \
+  P03-T1 blind-translation
 ```
 
-## Decide whether to adjudicate
+Repeat validation for T2 and T3. Never show source output to a blind agent.
 
-Run:
+### 3. Run T1 direct and all round-trip judges concurrently
+
+Spawn four fresh agents:
+
+- the T1 direct judge;
+- T1, T2, and T3 round-trip judges.
+
+The T1 direct judge receives the direct prompt/schema, PDF source packet,
+task-local source contract, manifest semantic checks, and complete
+`inputs/direct_review_packet.md`. Require every `Dxxx` and `Sxx` in order.
+
+Each round-trip judge receives only its prompt/schema, PDF source packet,
+task-local source contract, blind translation plus hash, and semantic-check
+list. Do not supply Lean, dossiers, dependency inventory, context, or direct
+judgment.
+
+Write and validate all four outputs immediately.
+
+### 4. Compact T2 and T3 direct packets
+
+Only after P03-T1's direct output validates, run:
 
 ```bash
-python3 paper_bencmark/faithfulness_audit/scripts/finalize_audit.py P11-T1 --check-adjudication
+python3 paper_bencmark/faithfulness_audit/scripts/apply_dependency_reuse.py \
+  P03-T2 --source P03-T1 --role direct
+python3 paper_bencmark/faithfulness_audit/scripts/apply_dependency_reuse.py \
+  P03-T3 --source P03-T1 --role direct
 ```
 
-Exit code `0` means no adjudicator is required. Exit code `3` means the printed
-reasons require one; it is not a command failure.
+The command rewrites no blind input. It includes only exact semantic-hash
+matches whose source dependency status is `pass` or `not-applicable`.
 
-When required, spawn one fresh adjudicator with `fork_context: false`. Inline the
-adjudicator prompt and schema, source locator and PDF, both dossiers, all four
-agent outputs, and the printed trigger reasons. Require primary-evidence
-resolution of each reason. Write its bare JSON to:
+For a full dependency section, a direct output includes `interpretation`. For a
+reuse section, it includes the exact `reuse_sha256` instead. In both cases, the
+new judge must independently write `effect_on_target`, `paper_match`, and
+`status`. Reuse never supplies those task-specific decisions.
 
-```text
-faithfulness/agent_outputs/adjudicator.json
+### 5. Run T2 and T3 direct judges concurrently
+
+Spawn both fresh judges with their now-final direct review packets. Write and
+validate each `direct_judge.json`.
+
+## Run one task
+
+For an isolated task, prepare and validate:
+
+```bash
+python3 paper_bencmark/faithfulness_audit/scripts/prepare_audit.py P11-T1
+python3 paper_bencmark/faithfulness_audit/scripts/validate_audit.py \
+  P11-T1 --phase prepared
 ```
 
-Validate it immediately with `validate_agent_output.py P11-T1 adjudicator`.
+Phase one runs a fresh single-task source-contract agent and blind translator in
+parallel. The source role receives `source_locator.json`, source prompt/schema,
+and the PDF. The blind role follows the blind rule. Validate both outputs.
 
-Do not spawn an adjudicator when the check says none is needed.
+Phase two runs fresh direct and round-trip judges in parallel. Supply the direct
+judge `direct_review_packet.md`, not the larger complete dossier. Supply the
+round-trip judge no Lean material. Validate both outputs.
+
+## Adjudicate only when triggered
+
+For every task, run:
+
+```bash
+python3 paper_bencmark/faithfulness_audit/scripts/finalize_audit.py \
+  P03-T1 --check-adjudication
+```
+
+Exit `0` means no adjudicator is required. Exit `3` means the printed reasons
+require one and is not a command failure. Source or translation ambiguity alone
+does not trigger adjudication; an unresolved judge status, request,
+`undetermined` result, or classification disagreement does.
+
+When required, spawn one fresh adjudicator. Inline the adjudicator prompt and
+schema, PDF source packet, complete direct and blind dossiers, any reuse records,
+all four outputs, and exact trigger reasons. Require primary-evidence resolution
+for every reason. Write and validate `agent_outputs/adjudicator.json`.
+
+Independent task adjudicators may run concurrently. Never spawn one when the
+check reports no trigger.
 
 ## Finalize and verify
 
-Run:
+For each task:
 
 ```bash
-python3 paper_bencmark/faithfulness_audit/scripts/finalize_audit.py P11-T1
-python3 paper_bencmark/faithfulness_audit/scripts/validate_audit.py P11-T1 --phase complete
+python3 paper_bencmark/faithfulness_audit/scripts/finalize_audit.py P03-T1
+python3 paper_bencmark/faithfulness_audit/scripts/validate_audit.py \
+  P03-T1 --phase complete
 ```
 
-Read `decision.json` and `report.md`. Sanity-check that:
+Sanity-check `decision.json` and `report.md`:
 
-- all dependency and semantic IDs are covered exactly once;
-- implication verdicts agree with the classification;
-- `accepted` is true only for `faithful-equivalent` or
-  `faithful-stronger`;
-- any stronger classification is genuine, nonvacuous strength;
-- every final claim cites the paper and declaration evidence;
-- hashes still match current inputs.
+- every dependency and semantic ID occurs exactly once;
+- reused records carry the manifest-bound hash;
+- implication verdicts imply the recorded classification;
+- `accepted` is true only for `faithful-equivalent` or `faithful-stronger`;
+- stronger means genuine nonvacuous strength, not restricted applicability;
+- claims use paper and declaration evidence;
+- all current hashes match.
 
-Report the classification, whether it is accepted, the most consequential
-findings, and the result-folder path. State explicitly that no benchmark input
-was changed.
+When the user requires one commit per task, finalize, validate, stage only that
+task's faithfulness artifacts, commit, and push in T1, T2, T3 order. Agents for
+later tasks may already have run concurrently; commits remain task-local and
+ordered. Never stage unrelated dirty files.
 
-Do not commit or push audit files unless the user separately asks after reviewing
-the local results.
+Report each classification, acceptance, consequential findings, and absolute
+result-folder path. State that no benchmark input changed. Do not commit or push
+unless the user requested it.

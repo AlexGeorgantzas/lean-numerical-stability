@@ -216,6 +216,7 @@ def parse_lean_report(output: str) -> dict[str, Any]:
         raise PreparationError("Lean dossier helper returned an incomplete report")
     for index, dependency in enumerate(dependencies, start=1):
         dependency["id"] = f"D{index:03d}"
+        dependency["semantic_sha256"] = dependency_fingerprint(dependency)
     return {
         "target_type_readable": target_readable,
         "target_type_explicit": target_explicit,
@@ -223,6 +224,25 @@ def parse_lean_report(output: str) -> dict[str, Any]:
         "dependencies": dependencies,
         "edges": edges,
     }
+
+
+def dependency_fingerprint(dependency: dict[str, Any]) -> str:
+    """Hash declaration semantics independently of task-local IDs and distance."""
+    semantic_fields = {
+        key: dependency.get(key, "")
+        for key in (
+            "role",
+            "name",
+            "owner_module",
+            "kind",
+            "type_readable",
+            "type_explicit",
+            "body_readable",
+        )
+    }
+    return sha256_text(
+        json.dumps(semantic_fields, sort_keys=True, ensure_ascii=True, separators=(",", ":"))
+    )
 
 
 def build_semantic_report(
@@ -281,6 +301,7 @@ def dependency_section(dependency: dict[str, Any], *, explicit: bool) -> str:
         f"- Owner module: `{dependency['owner_module']}`",
         f"- Declaration kind: `{dependency['kind']}`",
         f"- Distance from target type: `{dependency['distance']}`",
+        f"- Semantic SHA-256: `{dependency['semantic_sha256']}`",
         "",
         "Type:",
         "",
@@ -328,6 +349,8 @@ def make_direct_dossier(
     semantic: dict[str, Any],
     local_order: list[str],
     graph: dict[str, list[str]],
+    *,
+    include_complete_sources: bool = True,
 ) -> str:
     lines = [
         f"# Declaration dossier for {task_id}",
@@ -371,24 +394,63 @@ def make_direct_dossier(
     )
     for dependency in semantic["dependencies"]:
         lines.extend([dependency_section(dependency, explicit=True), ""])
-    lines.extend(["## Complete local imported sources", ""])
-    for module in local_order:
-        source_path = local_module_source(module)
-        assert source_path is not None
-        source = source_path.read_text(encoding="utf-8")
-        relative = source_path.relative_to(REPOSITORY_ROOT).as_posix()
-        lines.extend(
-            [
-                f"### `{module}`",
-                "",
-                f"Path: `{relative}`",
-                f"SHA-256: `{sha256_file(source_path)}`",
-                "",
-                fenced(source),
-                "",
-            ]
-        )
+    if include_complete_sources:
+        lines.extend(["## Complete local imported sources", ""])
+        for module in local_order:
+            source_path = local_module_source(module)
+            assert source_path is not None
+            source = source_path.read_text(encoding="utf-8")
+            relative = source_path.relative_to(REPOSITORY_ROOT).as_posix()
+            lines.extend(
+                [
+                    f"### `{module}`",
+                    "",
+                    f"Path: `{relative}`",
+                    f"SHA-256: `{sha256_file(source_path)}`",
+                    "",
+                    fenced(source),
+                    "",
+                ]
+            )
     return "\n".join(lines).rstrip() + "\n"
+
+
+def write_dependency_inventories(
+    inputs_dir: Path,
+    semantic: dict[str, Any],
+) -> tuple[Path, Path]:
+    direct_path = inputs_dir / "dependency_inventory.json"
+    blind_path = inputs_dir / "blind_dependency_inventory.json"
+    name_replacements = blind_names(semantic["dependencies"])
+    local_modules = sorted(
+        {
+            dependency["owner_module"]
+            for dependency in semantic["dependencies"]
+            if dependency["role"] == "local"
+        }
+    )
+    module_replacements = {
+        module: f"LocalImport{index:03d}"
+        for index, module in enumerate(local_modules, start=1)
+    }
+    write_json(
+        direct_path,
+        {
+            "schema_version": AUDIT_SCHEMA_VERSION,
+            "dependencies": semantic["dependencies"],
+        },
+    )
+    write_json(
+        blind_path,
+        {
+            "schema_version": AUDIT_SCHEMA_VERSION,
+            "dependencies": [
+                blind_dependency(dependency, name_replacements, module_replacements)
+                for dependency in semantic["dependencies"]
+            ],
+        },
+    )
+    return direct_path, blind_path
 
 
 def make_blind_dossier(semantic: dict[str, Any]) -> str:
@@ -456,7 +518,10 @@ def audit_setup_paths() -> list[Path]:
         SCRIPT_DIR / "common.py",
         SCRIPT_DIR / "declaration_dossier.lean",
         SCRIPT_DIR / "finalize_audit.py",
+        SCRIPT_DIR / "apply_dependency_reuse.py",
         SCRIPT_DIR / "prepare_audit.py",
+        SCRIPT_DIR / "prepare_paper_audit.py",
+        SCRIPT_DIR / "split_paper_source_contract.py",
         SCRIPT_DIR / "validate_agent_output.py",
         SCRIPT_DIR / "validate_audit.py",
         AUDIT_ROOT / "templates" / "report.md",
@@ -515,7 +580,18 @@ def prepare(task_id: str, *, force: bool = False) -> Path:
         raise PreparationError("task.json has an incomplete paper_source")
     paper_path = REPOSITORY_ROOT / paper_relative
     if not paper_path.is_file():
-        raise PreparationError(f"missing reference paper: {paper_path}")
+        reference_root = PAPER_BENCHMARK_ROOT / "reference_papers"
+        candidates = [
+            candidate
+            for candidate in reference_root.glob("*.pdf")
+            if sha256_file(candidate) == paper_expected_hash
+        ]
+        if len(candidates) != 1:
+            raise PreparationError(
+                f"missing reference paper {paper_path}; found {len(candidates)} hash-matched alternatives"
+            )
+        paper_path = candidates[0]
+        paper_relative = paper_path.relative_to(REPOSITORY_ROOT).as_posix()
     paper_actual_hash = sha256_file(paper_path)
     if paper_actual_hash != paper_expected_hash:
         raise PreparationError(
@@ -564,12 +640,27 @@ def prepare(task_id: str, *, force: bool = False) -> Path:
         local_order,
         graph,
     )
+    direct_review_packet = make_direct_dossier(
+        normalized_task_id,
+        declaration_source,
+        semantic,
+        local_order,
+        graph,
+        include_complete_sources=False,
+    )
     blind_dossier = make_blind_dossier(semantic)
     direct_path = inputs_dir / "declaration_dossier.md"
     blind_path = inputs_dir / "blind_dossier.md"
+    direct_review_path = inputs_dir / "direct_review_packet.md"
+    blind_review_path = inputs_dir / "blind_review_packet.md"
     source_locator_path = inputs_dir / "source_locator.json"
     direct_path.write_text(direct_dossier, encoding="utf-8")
     blind_path.write_text(blind_dossier, encoding="utf-8")
+    direct_review_path.write_text(direct_review_packet, encoding="utf-8")
+    blind_review_path.write_text(blind_dossier, encoding="utf-8")
+    direct_inventory_path, blind_inventory_path = write_dependency_inventories(
+        inputs_dir, semantic
+    )
 
     source_locator = {
         "task_id": normalized_task_id,
@@ -660,6 +751,7 @@ def prepare(task_id: str, *, force: bool = False) -> Path:
                     "owner_module",
                     "distance",
                     "kind",
+                    "semantic_sha256",
                 )
             }
             for dependency in semantic["dependencies"]
@@ -682,9 +774,25 @@ def prepare(task_id: str, *, force: bool = False) -> Path:
                 "path": source_locator_path.relative_to(REPOSITORY_ROOT).as_posix(),
                 "sha256": sha256_file(source_locator_path),
             },
+            "direct_review_packet": {
+                "path": direct_review_path.relative_to(REPOSITORY_ROOT).as_posix(),
+                "sha256": sha256_file(direct_review_path),
+            },
+            "blind_review_packet": {
+                "path": blind_review_path.relative_to(REPOSITORY_ROOT).as_posix(),
+                "sha256": sha256_file(blind_review_path),
+            },
+            "dependency_inventory": {
+                "path": direct_inventory_path.relative_to(REPOSITORY_ROOT).as_posix(),
+                "sha256": sha256_file(direct_inventory_path),
+            },
+            "blind_dependency_inventory": {
+                "path": blind_inventory_path.relative_to(REPOSITORY_ROOT).as_posix(),
+                "sha256": sha256_file(blind_inventory_path),
+            },
         },
         "blindness": {
-            "allowed_input": "inputs/blind_dossier.md supplied inline",
+            "allowed_input": "inputs/blind_review_packet.md supplied inline",
             "forbidden": [
                 "conversation history",
                 "filesystem or tool access",

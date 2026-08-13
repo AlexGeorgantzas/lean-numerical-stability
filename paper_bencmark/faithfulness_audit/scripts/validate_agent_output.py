@@ -68,6 +68,14 @@ TOP_LEVEL_REQUIRED = {
     },
 }
 
+TOP_LEVEL_OPTIONAL = {
+    "source-contract": {"paper_batch_sha256"},
+    "blind-translation": set(),
+    "direct-judge": set(),
+    "roundtrip-judge": set(),
+    "adjudicator": set(),
+}
+
 
 def require(condition: bool, message: str, errors: list[str]) -> None:
     if not condition:
@@ -119,29 +127,36 @@ def validate_dependency_names(
         if not isinstance(actual, dict):
             errors.append(f"{label}: dependency record {expected['id']} is not an object")
             continue
+        reused = "reuse_sha256" in actual
         if label == "blind-translation":
             expected_name = expected.get("blind_name")
-            required = ("meaning", "effect_on_target")
+            required = ("effect_on_target",) if reused else ("meaning", "effect_on_target")
             statuses = {"understood", "unclear"}
-            expected_fields = {
-                "id",
-                "name",
-                "meaning",
-                "effect_on_target",
-                "status",
-            }
+            expected_fields = (
+                {"id", "name", "reuse_sha256", "effect_on_target", "status"}
+                if reused
+                else {"id", "name", "meaning", "effect_on_target", "status"}
+            )
         else:
             expected_name = expected.get("name")
-            required = ("interpretation", "effect_on_target", "paper_match")
+            required = (
+                ("effect_on_target", "paper_match")
+                if reused
+                else ("interpretation", "effect_on_target", "paper_match")
+            )
             statuses = {"pass", "fail", "unclear", "not-applicable"}
-            expected_fields = {
-                "id",
-                "name",
-                "interpretation",
-                "effect_on_target",
-                "paper_match",
-                "status",
-            }
+            expected_fields = (
+                {"id", "name", "reuse_sha256", "effect_on_target", "paper_match", "status"}
+                if reused
+                else {
+                    "id",
+                    "name",
+                    "interpretation",
+                    "effect_on_target",
+                    "paper_match",
+                    "status",
+                }
+            )
         require(
             set(actual) == expected_fields,
             f"{label}: {expected['id']} fields are incomplete or unexpected",
@@ -150,7 +165,48 @@ def validate_dependency_names(
         require(actual.get("name") == expected_name, f"{label}: {expected['id']} name mismatch", errors)
         for key in required:
             require_string(actual, key, f"{label} {expected['id']}", errors)
+        if reused:
+            require_string(actual, "reuse_sha256", f"{label} {expected['id']}", errors)
         require(actual.get("status") in statuses, f"{label}: {expected['id']} invalid status", errors)
+
+
+def validate_reused_records(
+    output: dict[str, Any],
+    manifest: dict[str, Any],
+    role: str,
+    errors: list[str],
+) -> None:
+    cache_key = "dependency_reuse_blind" if role == "blind-translation" else "dependency_reuse_direct"
+    record = manifest.get("inputs", {}).get(cache_key)
+    cache_by_id: dict[str, dict[str, Any]] = {}
+    if isinstance(record, dict) and isinstance(record.get("path"), str):
+        cache = load_json(Path(__file__).resolve().parents[3] / record["path"])
+        cache_by_id = {
+            item["id"]: item
+            for item in cache.get("entries", [])
+            if isinstance(item, dict) and isinstance(item.get("id"), str)
+        }
+    for dependency in output.get("dependency_coverage", []):
+        if not isinstance(dependency, dict):
+            continue
+        item_id = str(dependency.get("id"))
+        reused = "reuse_sha256" in dependency
+        cached = cache_by_id.get(item_id)
+        require(
+            reused == (cached is not None),
+            (
+                f"{role}: {item_id} must use its recorded reuse hash"
+                if cached is not None
+                else f"{role}: {item_id} uses unrecorded dependency reuse"
+            ),
+            errors,
+        )
+        if reused and cached is not None:
+            require(
+                dependency.get("reuse_sha256") == cached.get("reuse_sha256"),
+                f"{role}: {item_id} reuse hash mismatch",
+                errors,
+            )
 
 
 def validate_semantic_records(
@@ -200,6 +256,13 @@ def validate_source(output: dict[str, Any], manifest: dict[str, Any], errors: li
                 errors,
             )
             require(isinstance(record.get("pdf_page"), int) and record.get("pdf_page", 0) > 0, f"{label}: invalid PDF page", errors)
+            require(
+                "printed_page" not in record
+                or record.get("printed_page") is None
+                or isinstance(record.get("printed_page"), str),
+                f"{label}: printed_page must be a string or null",
+                errors,
+            )
             require_string(record, "anchor", label, errors)
             require_string(record, "observation", label, errors)
     statement = output.get("statement")
@@ -215,11 +278,78 @@ def validate_source(output: dict[str, Any], manifest: dict[str, Any], errors: li
             require_string_list(statement, key, "source-contract statement", errors, nonempty=(key == "conclusions"))
         require_string(statement, "algorithm_linkage", "source-contract statement", errors)
     require_string_list(output, "undebatable_constraints", "source-contract", errors, nonempty=True)
-    require(isinstance(output.get("ambiguities"), list), "source-contract: ambiguities must be a list", errors)
+    ambiguities = output.get("ambiguities")
+    require(isinstance(ambiguities, list), "source-contract: ambiguities must be a list", errors)
+    if isinstance(ambiguities, list):
+        for index, record in enumerate(ambiguities):
+            label = f"source-contract ambiguities[{index}]"
+            require(
+                isinstance(record, dict)
+                and set(record) == {"issue", "evidence", "impact"},
+                f"{label}: fields are incomplete or unexpected",
+                errors,
+            )
+            if isinstance(record, dict):
+                for key in ("issue", "evidence", "impact"):
+                    require_string(record, key, label, errors)
+    if manifest.get("paper_batch") is not None:
+        _, audit_dir = task_paths(str(manifest.get("task_id")))
+        batch_path = audit_dir / "agent_outputs" / "paper_source_contract.json"
+        require(batch_path.is_file(), "source-contract: paper batch output is missing", errors)
+        if batch_path.is_file():
+            batch = load_json(batch_path)
+            require(
+                output.get("paper_batch_sha256") == sha256_file(batch_path),
+                "source-contract: paper batch hash mismatch",
+                errors,
+            )
+            require(
+                batch.get("paper_sha256") == output.get("paper_sha256"),
+                "source-contract: paper batch identifies a different paper",
+                errors,
+            )
+            matching = [
+                item
+                for item in batch.get("contracts", [])
+                if isinstance(item, dict)
+                and item.get("task_id") == output.get("task_id")
+            ]
+            require(
+                len(matching) == 1,
+                "source-contract: paper batch lacks one matching task contract",
+                errors,
+            )
+            if len(matching) == 1:
+                local_contract = {
+                    key: value
+                    for key, value in output.items()
+                    if key
+                    not in {
+                        "schema_version",
+                        "role",
+                        "paper_sha256",
+                        "paper_batch_sha256",
+                    }
+                }
+                require(
+                    local_contract == matching[0],
+                    "source-contract: split task contract differs from paper batch",
+                    errors,
+                )
+    else:
+        require(
+            "paper_batch_sha256" not in output,
+            "source-contract: unexpected paper batch hash",
+            errors,
+        )
 
 
 def validate_blind(output: dict[str, Any], manifest: dict[str, Any], errors: list[str]) -> None:
-    require(output.get("dossier_sha256") == manifest.get("inputs", {}).get("blind_dossier", {}).get("sha256"), "blind-translation: dossier hash mismatch", errors)
+    expected = manifest.get("inputs", {}).get(
+        "blind_review_packet",
+        manifest.get("inputs", {}).get("blind_dossier", {}),
+    ).get("sha256")
+    require(output.get("dossier_sha256") == expected, "blind-translation: dossier hash mismatch", errors)
     translation = output.get("translation")
     required = {"binders", "hypotheses", "conclusions", "mathematical_definitions", "proposition_plain_english"}
     require(isinstance(translation, dict), "blind-translation: translation must be an object", errors)
@@ -242,9 +372,9 @@ def validate_role(task_id: str, role: str, path: Path | None = None) -> dict[str
     output = load_json(output_path)
     missing = TOP_LEVEL_REQUIRED[role] - set(output)
     require(not missing, f"{role}: missing top-level keys {sorted(missing)}", errors)
-    extra = set(output) - TOP_LEVEL_REQUIRED[role]
+    extra = set(output) - TOP_LEVEL_REQUIRED[role] - TOP_LEVEL_OPTIONAL[role]
     require(not extra, f"{role}: unexpected top-level keys {sorted(extra)}", errors)
-    require(output.get("schema_version") == AUDIT_SCHEMA_VERSION, f"{role}: schema version mismatch", errors)
+    require(output.get("schema_version") == manifest.get("schema_version"), f"{role}: schema version mismatch", errors)
     require(output.get("role") == role, f"{role}: role field mismatch", errors)
 
     dependencies = [item for item in manifest.get("dependencies", []) if isinstance(item, dict)]
@@ -256,13 +386,19 @@ def validate_role(task_id: str, role: str, path: Path | None = None) -> dict[str
     elif role == "blind-translation":
         coverage_ids(output, "dependency_coverage", role, dependency_id_list, errors)
         validate_dependency_names(output, dependencies, role, errors)
+        validate_reused_records(output, manifest, role, errors)
         validate_blind(output, manifest, errors)
     elif role == "direct-judge":
         require(output.get("task_id") == manifest.get("task_id"), f"{role}: task ID mismatch", errors)
         require(output.get("paper_sha256") == manifest.get("paper", {}).get("sha256"), f"{role}: paper hash mismatch", errors)
-        require(output.get("dossier_sha256") == manifest.get("inputs", {}).get("declaration_dossier", {}).get("sha256"), f"{role}: dossier hash mismatch", errors)
+        expected_dossier = manifest.get("inputs", {}).get(
+            "direct_review_packet",
+            manifest.get("inputs", {}).get("declaration_dossier", {}),
+        ).get("sha256")
+        require(output.get("dossier_sha256") == expected_dossier, f"{role}: dossier hash mismatch", errors)
         coverage_ids(output, "dependency_coverage", role, dependency_id_list, errors)
         validate_dependency_names(output, dependencies, role, errors)
+        validate_reused_records(output, manifest, role, errors)
         coverage_ids(output, "semantic_checklist", role, semantic_ids, errors)
         validate_semantic_records(output, role, errors)
         validate_classification(output, role, "lean_implies_paper", "paper_implies_lean", errors)

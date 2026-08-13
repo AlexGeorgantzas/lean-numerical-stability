@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 try:
-    from .common import ACCEPTED_CLASSIFICATIONS, AUDIT_SCHEMA_VERSION, sha256_file
+    from .common import ACCEPTED_CLASSIFICATIONS, sha256_file
     from .validate_agent_output import validate_role
     from .validate_audit import (
         AuditValidationError,
@@ -24,7 +24,6 @@ try:
 except ImportError:  # Direct script execution.
     from common import (  # type: ignore
         ACCEPTED_CLASSIFICATIONS,
-        AUDIT_SCHEMA_VERSION,
         sha256_file,
     )
     from validate_agent_output import validate_role  # type: ignore
@@ -69,7 +68,7 @@ def load_core_outputs(audit_dir: Path) -> tuple[dict[str, Any], ...]:
 
 
 def adjudication_state(task_id: str) -> tuple[list[str], Path, tuple[dict[str, Any], ...]]:
-    _manifest, errors = validate_prepared(task_id)
+    manifest, errors = validate_prepared(task_id)
     if errors:
         raise FinalizationError("prepared artifacts are invalid:\n" + "\n".join(errors))
     _, audit_dir = task_paths(task_id)
@@ -81,7 +80,9 @@ def adjudication_state(task_id: str) -> tuple[list[str], Path, tuple[dict[str, A
         "roundtrip-judge",
     ):
         validate_role(task_id, role)
-    reasons = output_requires_adjudication(*outputs)
+    reasons = output_requires_adjudication(
+        *outputs, schema_version=str(manifest.get("schema_version"))
+    )
     return reasons, audit_dir, outputs
 
 
@@ -134,10 +135,18 @@ def dependency_summary(blind: dict[str, Any], direct: dict[str, Any]) -> str:
         for item in direct_records
         if isinstance(item, dict) and item.get("status") in {"fail", "unclear"}
     ]
+    blind_reused = sum(
+        1 for item in blind_records if isinstance(item, dict) and "reuse_sha256" in item
+    )
+    direct_reused = sum(
+        1 for item in direct_records if isinstance(item, dict) and "reuse_sha256" in item
+    )
     return (
-        f"- Blind translator covered `{len(blind_records)}` dependencies; unclear: "
+        f"- Blind translator covered `{len(blind_records)}` dependencies "
+        f"(`{blind_reused}` hash-reused meanings); unclear: "
         f"`{', '.join(blind_unclear) if blind_unclear else 'none'}`.\n"
-        f"- Direct judge covered `{len(direct_records)}` dependencies; failing or unclear: "
+        f"- Direct judge covered `{len(direct_records)}` dependencies "
+        f"(`{direct_reused}` hash-reused interpretations); failing or unclear: "
         f"`{', '.join(direct_unresolved) if direct_unresolved else 'none'}`."
     )
 
@@ -188,6 +197,8 @@ def render_report(
 def finalize(task_id: str) -> Path:
     reasons, audit_dir, outputs = adjudication_state(task_id)
     _source, blind, direct, roundtrip = outputs
+    manifest_path = audit_dir / "manifest.json"
+    manifest = load_json(manifest_path)
     adjudicator_path = audit_dir / "agent_outputs" / "adjudicator.json"
     adjudicator: dict[str, Any] | None = None
     if reasons:
@@ -218,7 +229,7 @@ def finalize(task_id: str) -> Path:
     )
     completed_at = datetime.now(timezone.utc).isoformat()
     decision = {
-        "schema_version": AUDIT_SCHEMA_VERSION,
+        "schema_version": manifest["schema_version"],
         "role": "final-decision",
         "task_id": task_id.upper(),
         "completed_at_utc": completed_at,
@@ -238,8 +249,6 @@ def finalize(task_id: str) -> Path:
     decision_path = audit_dir / "decision.json"
     write_json(decision_path, decision)
 
-    manifest_path = audit_dir / "manifest.json"
-    manifest = load_json(manifest_path)
     previous_manifest = dict(manifest)
     report_path = audit_dir / "report.md"
     report_path.write_text(
@@ -256,6 +265,11 @@ def finalize(task_id: str) -> Path:
     }
     if adjudicator is not None:
         output_files["adjudicator"] = adjudicator_path
+    if manifest.get("paper_batch") is not None:
+        batch_path = audit_dir / "agent_outputs" / "paper_source_contract.json"
+        if not batch_path.is_file():
+            raise FinalizationError("paper-level source contract is missing")
+        output_files["paper_source_contract"] = batch_path
     manifest["status"] = "completed"
     manifest["completed_at_utc"] = completed_at
     manifest["outputs"] = {

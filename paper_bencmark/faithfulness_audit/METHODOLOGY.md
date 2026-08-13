@@ -3,19 +3,23 @@
 ## Purpose
 
 This audit determines whether a fixed Lean target represents the result selected
-from its reference paper. Kernel acceptance is necessary but irrelevant to this
-question: a provable theorem can still formalize the wrong statement.
+from its reference paper. Kernel acceptance is necessary but does not answer
+this question: a provable theorem can still formalize the wrong statement.
 
 The audit accepts either:
 
-- `faithful-equivalent`: the Lean and paper statements have the same mathematical
-  content, allowing definitional reformulation and harmless presentation changes;
-- `faithful-stronger`: Lean genuinely proves a more general domain or a stronger
+- `faithful-equivalent`: Lean and the paper have the same mathematical content,
+  allowing definitional reformulation and harmless presentation changes;
+- `faithful-stronger`: Lean genuinely proves a more general domain or stronger
   conclusion while retaining the selected paper result.
 
 Adding hypotheses, restricting dimensions, deleting conclusions, replacing an
 algorithmic claim by an unrelated analytic fact, or making a theorem vacuous is
 not a stronger result.
+
+Protocol v0.2 reduces repeated work across a paper's T1, T2, and T3 audits. It
+does not remove stateless roles, primary-PDF evidence, dependency coverage,
+round-trip judgment, conditional adjudication, or task-local final decisions.
 
 ## Repository layout
 
@@ -34,170 +38,194 @@ paper_bencmark/faithfulness_audit/
 One task audit uses a dedicated result folder:
 
 ```text
-paper_bencmark/highambench/tasks/P11/T1/faithfulness/
+paper_bencmark/highambench/tasks/P03/T1/faithfulness/
   manifest.json
   inputs/
     source_locator.json
+    paper_source_locator.json
     declaration_dossier.md
     blind_dossier.md
+    direct_review_packet.md
+    blind_review_packet.md
+    dependency_inventory.json
+    blind_dependency_inventory.json
+    dependency_reuse_direct.json     # only when reuse applies
   agent_outputs/
+    paper_source_contract.json       # paper-batch mode
     source_contract.json
     blind_translation.json
     direct_judge.json
     roundtrip_judge.json
-    adjudicator.json          # only when required
+    adjudicator.json                 # only when required
   decision.json
   report.md
-  history/                    # prior runs archived by an intentional refresh
+  history/                           # prior runs archived by intentional refresh
 ```
 
-The folder is used because an audit has several independent inputs and outputs.
 No audit agent may edit `Target.lean`, `context.md`, `task.json`, shared Lean
-sources, or the reference PDF.
+sources, or the reference PDF. Only the orchestrator writes audit artifacts.
 
 ## Sources of authority
 
-The reference PDF and the exact Lean environment are authoritative.
-`task.json` may locate the PDF, source pages, and theorem declaration, but its
-informal paraphrases are not evidence. `context.md` is an object being audited,
-not evidence for the verdict. The target proof is excluded because faithfulness
+The reference PDF and exact Lean environment are authoritative. `task.json` may
+locate the PDF, source pages, and theorem declaration, but its informal
+paraphrases are not evidence. `context.md` is an object being audited, not
+evidence for the verdict. The target proof is excluded because faithfulness
 concerns the proposition, not how it is proved.
 
-Before any model call, `scripts/prepare_audit.py` must:
+Before any model call, preparation must:
 
-1. validate the task ID and required files;
+1. validate task IDs and required files;
 2. verify the reference PDF against the SHA-256 recorded in `task.json`;
-3. hash the target, metadata, context, and every local imported source;
-4. compile the unchanged target and local imports in a temporary Lean module tree;
-5. inspect the elaborated theorem type through Lean's environment API;
-6. generate the direct and blind declaration dossiers;
-7. write a `prepared` manifest.
+3. hash the target, metadata, context, local imports, and audit setup;
+4. compile the unchanged targets and local imports;
+5. inspect each elaborated theorem type through Lean's environment API;
+6. generate complete evidence dossiers and role-specific review packets;
+7. write and validate `prepared` manifests.
 
-If preparation fails, no judge runs.
+`prepare_paper_audit.py` runs those independent preparations concurrently for
+T1, T2, and T3, then verifies that all three identify exactly one paper file,
+version, and hash. If any preparation fails, no role runs.
 
-## Declaration dossier coverage
+## Declaration coverage
 
-A judge must never infer the meaning of a symbol from its name. For example,
-`p11VecNorm` must be checked from its body rather than assumed to be a Euclidean
-norm.
+A role must never infer the meaning of a symbol from its name. For example, a
+name ending in `Norm` is not evidence that the declaration is a Euclidean norm.
 
-The dossier has four complementary layers:
+The complete declaration dossier has four layers:
 
-1. **Exact declaration source.** The theorem text is included without its doc
+1. **Exact declaration source.** The theorem text appears without its doc
    comment or proof.
-2. **Elaborated type.** Lean prints both a readable type and a fully explicit type
-   exposing implicit arguments, typeclass instances, coercions, and notation.
-3. **Recursive local closure.** Starting only from constants in the theorem type,
-   the tool recursively follows the types and bodies of every declaration owned
-   by the target's local HighamBench import modules. For a local inductive or
-   structure, it also follows every constructor so all fields and invariants are
-   exposed even when a projection does not appear separately in the target.
-4. **External semantic frontier.** Every directly reached Lean/mathlib declaration
-   is listed with its owner, kind, type, and one-level definition body. Traversal
-   stops there to avoid replacing a statement audit with an expansion of all of
-   Lean and mathlib.
+2. **Elaborated type.** Lean prints readable and fully explicit types exposing
+   implicit arguments, instances, coercions, and notation.
+3. **Recursive local closure.** Traversal follows types and bodies of every
+   declaration owned by the target's local HighamBench modules. Constructors of
+   local structures and inductives are included.
+4. **External semantic frontier.** Directly reached Lean/mathlib declarations
+   are listed with owner, kind, type, and one-level body. Traversal stops there.
 
-The direct dossier additionally includes the complete, hashed source text of
-every local imported module, including locally imported files that turn out not
-to occur in the semantic closure. The manifest fingerprints the complete
-compiled environment and records dependency edges.
+The complete direct dossier also contains the hashed source of every local
+import, including imports not reached by the target type. It remains available
+for human review and adjudication. Normal judges receive a compact review packet
+that omits this duplicated module text because every reached declaration is
+already represented in the semantic inventory.
 
-The blind dossier deterministically replaces every benchmark-local declaration
-and owner module with neutral identifiers such as `LocalDef001` and
-`LocalImport001`. This removes paper numbers and semantic hints from local names
-without changing types, bodies, dependency IDs, or mathematical content.
+The blind dossier replaces benchmark-local names and modules with neutral IDs
+without changing types, bodies, dependency IDs, or mathematical content. The
+blind translator receives only its review packet inline and has no tools.
 
-Each semantic dependency receives an ID such as `D001`. Both the blind
-translator and direct judge must return exactly one coverage record for every
-ID. Missing or duplicate IDs invalidate the run. This makes "I read the imports"
-an auditable requirement rather than a prompt suggestion.
+Every dependency has a task-local `Dxxx` ID and a semantic SHA-256. The semantic
+hash covers its role, actual declaration name, owner module, kind, readable and
+explicit types, and readable body. It excludes task-local ID and graph distance.
+Both the blind translator and direct judge must return exactly one record for
+every `Dxxx` ID, in order. Missing or duplicate IDs invalidate the output.
 
-The external frontier is the declared trust boundary. If a verdict depends on a
-nonstandard external declaration whose one-level body is insufficient, the judge
-must mark it `unclear`; the adjudicator must inspect deeper source before a final
-decision.
+The external frontier is the trust boundary. If one-level external evidence is
+insufficient, the role must return `unclear`; unresolved items trigger an
+adjudicator with access to the complete dossiers.
 
-## Stateless audit loop
+## Hash-verified reuse
 
-All roles are fresh subagents started with inherited conversation disabled. A
-role receives only its declared input bundle. Invalid output is retried with a
-new subagent, not repaired in the old conversation.
+A declaration interpretation may be reused only when all of these hold:
 
-### 1. Source-contract agent
+- its semantic SHA-256 exactly matches a dependency in a validated earlier role;
+- the earlier blind status is `understood`, or the earlier direct status is
+  `pass`/`not-applicable`, for the role being reused;
+- the source role output and reuse payload are SHA-256 bound;
+- the target role receives the cached text and exact `reuse_sha256`.
 
-Inputs:
+Reuse covers **declaration meaning only**. The new role must still explain the
+dependency's effect on the current target. A direct judge must also decide its
+match to the current paper result. Those task-specific fields cannot be copied.
+Dependencies without an eligible exact match remain fully expanded.
 
-- `prompts/source_contract.md`;
-- `inputs/source_locator.json`;
-- the cited PDF pages and enough surrounding pages to resolve definitions,
-  assumptions, and cross-references.
+The default fast paper schedule uses direct reuse for T2 and T3 after validating
+T1's direct dependency ledger. Blind meanings can also be reused in a sequential
+or resumed audit, but all three blind translations normally run concurrently,
+so their packets remain complete and independent.
 
-It does not receive the Lean target, declaration dossiers, `context.md`, or
-informal statement fields from `task.json`. It extracts the paper statement,
-including implicit context and undebatable constraints.
+## Stateless roles
 
-### 2. Blind-translation agent
+Every role is a fresh subagent started with inherited conversation disabled. A
+role receives only its declared bundle. Invalid output is retried with another
+fresh agent, not repaired in the old conversation.
 
-Inputs:
+### Paper source-contract agent
 
-- `prompts/blind_translation.md`;
-- the complete text of `inputs/blind_dossier.md`, supplied inline.
+In paper-batch mode, one fresh source agent receives
+`paper_source_contract.md`, `paper_source_locator.json`, and the reference PDF.
+It reads the paper context once and returns separate contracts for T1, T2, and
+T3. It receives no Lean, dossiers, `context.md`, or informal task paraphrases.
+The splitter hash-binds the batch output and writes one validated task-local
+`source_contract.json` per task.
 
-It receives no paper, task identity, theorem name, proof, prior agent output,
-conversation history, filesystem access, or tools. A run that uses outside
-information is invalid. The dossier contains all semantic dependencies but no
-source commentary.
+`source_contract.md` remains the single-task fallback when only one task exists
+or a paper batch was not requested.
 
-The source-contract and blind-translation agents run in parallel.
+### Blind translator
 
-### 3. Direct judge
+Each task gets its own fresh blind agent. It receives only
+`blind_translation.md`, its schema, the packet hash, and the complete inline
+`blind_review_packet.md`. It receives no task identity, paper, theorem name,
+proof, prior output, filesystem access, or tools.
 
-Inputs:
+### Direct judge
 
-- `prompts/direct_judge.md`;
-- the PDF source packet and source contract;
-- `inputs/declaration_dossier.md` and the manifest's dependency inventory.
+Each task gets its own fresh direct judge. It receives the PDF source packet,
+task source contract, manifest checklist, and `direct_review_packet.md`. It
+checks the PDF independently rather than treating the source contract as
+authoritative. It must complete every dependency and semantic-check record.
 
-It independently checks the paper rather than treating the source-contract
-agent as authoritative. It must complete every `Dxxx` dependency and every
-`Sxx` numerical semantic check.
+### Round-trip judge
 
-### 4. Round-trip judge
+Each task gets its own fresh round-trip judge. It receives the PDF source
+packet, task source contract, blind translation, and semantic-check list. It
+does not see Lean, either declaration dossier, or the direct judgment.
 
-Inputs:
-
-- `prompts/roundtrip_judge.md`;
-- the PDF source packet and source contract;
-- the blind translation.
-
-It does not see Lean or either declaration dossier. This preserves an
-independent round-trip test. The blind translator's mandatory dependency ledger
-is how imported semantics enter this path.
-
-The two judges run in parallel after the first two agents finish.
-
-### 5. Adjudicator
+### Adjudicator
 
 A fresh adjudicator is mandatory when:
 
-- classifications differ;
+- direct and round-trip classifications differ;
 - either judge requests adjudication or returns `undetermined`;
-- a dependency or semantic check is unresolved;
-- the implication directions conflict with the stated classification.
+- a dependency or semantic check remains `unclear`;
+- implication directions conflict with the stated classification.
 
-It receives the paper source packet, both dossiers, all prior outputs, and
-`prompts/adjudicator.md`. It resolves evidence item by item; it does not vote or
-average judgments.
+Source or translation ambiguities are evidence the judges must resolve; their
+mere presence does not automatically create a fifth model call. If a judge
+cannot resolve one, its `unclear` status or adjudication request triggers the
+adjudicator. The adjudicator receives primary PDF evidence, complete dossiers,
+reuse records, and all role outputs. It resolves evidence item by item rather
+than voting.
+
+## Fast paper schedule
+
+For one paper with T1, T2, and T3:
+
+1. Prepare all three tasks concurrently with `prepare_paper_audit.py`.
+2. Spawn one paper source-contract agent and three task-local blind translators
+   concurrently.
+3. Validate and split the paper source contract; validate all blind outputs.
+4. Spawn the T1 direct judge and all three round-trip judges concurrently.
+5. Validate T1's direct ledger. Apply direct-only semantic-hash reuse to the T2
+   and T3 review packets before either direct judge starts.
+6. Spawn the T2 and T3 direct judges concurrently.
+7. Run only the adjudicators actually triggered. Independent adjudicators may
+   run concurrently.
+8. Finalize, validate, commit, and push task results in T1, T2, T3 order when
+   per-task commits are required.
+
+Thus all judgments remain task-local, while the repeated PDF read and repeated
+definition interpretation are reduced. Running tasks concurrently does not make
+one task's verdict depend on another task's verdict.
 
 ## Implication decisions
 
-Every judge answers both questions separately:
+Every judge answers both directions separately:
 
 1. Does the Lean proposition imply the selected paper result under the paper's
    context?
 2. Does the selected paper result imply the Lean proposition?
-
-The domain-aware classification is:
 
 | Lean implies paper | Paper implies Lean | Classification |
 |---|---|---|
@@ -208,55 +236,77 @@ The domain-aware classification is:
 | unclear | any | `undetermined` |
 
 Logical implication alone does not excuse vacuity. Added assumptions, restricted
-types, or an impossible premise must be analyzed as loss of applicability.
+types, or impossible premises must be analyzed as reduced applicability.
 
 ## Numerical semantic checks
 
-The generated manifest fixes 16 required checks (`S01`-`S16`): source selection;
-binders and types; quantifier scope; hypotheses; conclusion completeness;
-operators and imported definitions; exact versus computed values; algorithm
-linkage; norm semantics; constants and indexing; floating-point model and
-exceptional values; relation strength; error notion; higher-order terms;
+Every manifest fixes 16 required checks (`S01`-`S16`): source selection; binders
+and types; quantifier scope; hypotheses; conclusion completeness; operators and
+imported definitions; exact versus computed values; algorithm linkage; norm
+semantics; constants and indexing; floating-point model and exceptional values;
+relation strength; error notion; higher-order terms;
 specialization/generalization; and nonvacuity.
 
 Each judge records `pass`, `fail`, `unclear`, or `not-applicable`, with concrete
 paper and Lean/translation evidence. `not-applicable` requires an explanation.
 
-## Finalization and later repair
+## Finalization and repair
 
-Only the orchestrator writes agent outputs. It validates JSON, hashes every
-artifact, invokes adjudication when required, writes `decision.json`, renders
-`report.md`, and changes the manifest status to `completed` only after the
-complete validator passes.
+Only the orchestrator writes outputs. It validates JSON, hashes every artifact,
+invokes adjudication when required, writes `decision.json`, renders `report.md`,
+and marks the manifest `completed` only after complete validation passes.
 
-An audit does not repair the target. A later repair agent may consume the final
-report and retry the formalization, after which the changed target must receive
-a new audit because its hash has changed.
+An audit does not repair a target. A later repair agent may consume the report
+and retry formalization. Any changed target requires a new audit because its
+hash no longer matches.
 
-Validate every role immediately after writing its JSON. An invalid role output
-is removed from the active run and retried with a new stateless agent:
-
-```bash
-python3 paper_bencmark/faithfulness_audit/scripts/validate_agent_output.py \
-  P11-T1 source-contract
-```
+Completed v0.1 audits retain their original setup fingerprints as historical
+provenance and remain validatable. New preparation always uses v0.2.
 
 ## Commands
 
-Prepare and validate an input bundle:
+Prepare a complete paper batch:
+
+```bash
+python3 paper_bencmark/faithfulness_audit/scripts/prepare_paper_audit.py P03
+```
+
+Split a valid paper-level source-agent response:
+
+```bash
+python3 paper_bencmark/faithfulness_audit/scripts/split_paper_source_contract.py \
+  /path/to/paper_source_contract.json
+```
+
+Apply direct dependency reuse after validating P03-T1's direct output:
+
+```bash
+python3 paper_bencmark/faithfulness_audit/scripts/apply_dependency_reuse.py \
+  P03-T2 --source P03-T1 --role direct
+```
+
+Prepare or validate one task:
 
 ```bash
 python3 paper_bencmark/faithfulness_audit/scripts/prepare_audit.py P11-T1
-python3 paper_bencmark/faithfulness_audit/scripts/validate_audit.py P11-T1 --phase prepared
+python3 paper_bencmark/faithfulness_audit/scripts/validate_audit.py \
+  P11-T1 --phase prepared
 ```
 
-Refresh prepared inputs only when intentionally invalidating prior results:
+Validate each role immediately after writing its JSON:
+
+```bash
+python3 paper_bencmark/faithfulness_audit/scripts/validate_agent_output.py \
+  P11-T1 direct-judge
+```
+
+Refresh only when intentionally invalidating prior results:
 
 ```bash
 python3 paper_bencmark/faithfulness_audit/scripts/prepare_audit.py P11-T1 --force
 ```
 
-Install the repository's skill copy locally:
+Install the repository skill copy locally:
 
 ```bash
 python3 paper_bencmark/faithfulness_audit/scripts/install_skill.py
