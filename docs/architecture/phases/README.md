@@ -32,12 +32,16 @@ not used. The bounded integration follow-up completes the Chapter 19
 exceptions for exactly the two retained historical imports in byte-identical
 `Chapter19.Core`. Exact-code Lean CI run 31673501960 (job 94362951630) passed
 for `9d2334d77f1a38f8a4caa81fe53eeb11a8e3e7cd`. At C0002, M11/M12 are
-accepted, B0003/B0004 are accepted with retirement due, P0003/P0004 are retired
-immutable evidence, and R0003/R0004 are applied. The temporary `codex-local`
-authorization expired at C0002 and `claude-lane` is restored to its single
-`claude-local` operator. The exact remote delivery refs and named worker
-worktrees remain present pending acceptance-control CI; no retirement is
-claimed yet. C0002 records 2,642 production modules and 356 distinct
+accepted, B0003/B0004 are retired, P0003/P0004 are retired immutable evidence,
+and R0003/R0004 are applied. Acceptance-control commit
+`c92c48a348a0e09e7d6ac9d4ff1db7673a027648` passed Lean CI run 31678412178
+(job 94378054384) before both exact remote refs were deleted with expected-tip
+leases. Ignored delivery evidence is hash-verified under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0002-R11-R12-20260813`,
+both clean named worker worktrees were removed without force, and local branch
+refs remain preserved at the immutable delivery tips. The temporary
+`codex-local` authorization expired at C0002 and `claude-lane` is restored to
+its single `claude-local` operator. C0002 records 2,642 production modules and 356 distinct
 residual-debt rows, including 277 unclassified modules, so neither bounded nor
 repository-wide completion is claimed. M03/R03 and M07/R07 are only candidates
 for a fresh C0002 graph review, not an authorized pair. Their activation would
@@ -45,6 +49,10 @@ require fresh selectors, projections, routes, overlap evidence, and controls.
 The planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be`
 passed Lean CI run 31546978830 (job 93961477202) before the R11/R12 refs and
 clean named worktrees were created and activated.
+
+[`R11-R12-retirement.md`](2026-08-repository-reorganization-completion/reviews/R11-R12-retirement.md)
+records the acceptance CI, exact-lease deletions, archive manifest, clean
+worktree removal, and local-ref preservation.
 
 The immutable predecessor
 [`2026-08 repository reorganization`](2026-08-repository-reorganization/README.md)

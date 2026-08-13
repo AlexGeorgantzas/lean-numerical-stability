@@ -10736,17 +10736,17 @@
     "reviewed_checkpoint_id": "C0001"
   },
   "retirement": {
-    "ancestry_checkpoint_id": null,
+    "ancestry_checkpoint_id": "C0002",
     "remote_ref": "refs/heads/codex/reorg-completion-2026-08-r12-ch13-equations-table",
-    "retired_at": null,
-    "retired_by": null,
+    "retired_at": "2026-08-13T07:46:11Z",
+    "retired_by": "primary-human",
     "rule": "delivery_ancestor_of_green_checkpoint",
-    "status": "due"
+    "status": "retired"
   },
   "schema_version": 1,
   "shared_request_ids": [
     "R0004"
   ],
-  "status": "accepted",
+  "status": "retired",
   "wave_id": "R12"
 }

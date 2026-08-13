@@ -240,14 +240,17 @@ commits `10169717ce4966e9963885b04e7b7733a3bc7730` and
 `1495047a1befb1431f0501cf7a423c8e77f8661a` preserve both deliveries. The
 reviewed same-C0001 R0003/R0004 union was applied exactly once after both merges,
 together with its bounded Chapter 19 integration follow-ups. At C0002,
-B0003/B0004 are accepted with retirement due, P0003/P0004 are retired immutable
-evidence, and R0003/R0004 are applied. The temporary `codex-local` authorization
-on `claude-lane` expired at C0002 and the lane's single-operator boundary is
-restored. The exact remote delivery refs and named worker worktrees remain
-present until the acceptance-control commit itself passes CI. M03/R03 and
-M07/R07 are only candidates for a fresh C0002 graph review, not an authorized
-pair; other unaccepted milestones remain planned. The statistics above are the
-current C0002 ratchet. The
+B0003/B0004 are retired, P0003/P0004 are retired immutable evidence, and
+R0003/R0004 are applied. Acceptance-control commit
+`c92c48a348a0e09e7d6ac9d4ff1db7673a027648` passed exact Lean CI run
+31678412178 before the two remote delivery refs were deleted with exact-tip
+leases and both clean named worker worktrees were removed without force after
+evidence archival. Local delivery refs remain at their immutable tips. The
+temporary `codex-local` authorization on `claude-lane` expired at C0002 and the
+lane's single-operator boundary is restored. M03/R03 and M07/R07 are only
+candidates for a fresh C0002 graph review, not an authorized pair; other
+unaccepted milestones remain planned. The statistics above are the current
+C0002 ratchet. The
 [`active phase registry`](docs/architecture/phases/2026-08-repository-reorganization-completion/README.md)
 is the authoritative status record; the predecessor C0008 phase remains
 immutable historical evidence.
@@ -653,10 +656,11 @@ norm-estimation owners into 96 canonical production modules. M90 is ready but
 remains unactivated. Successor C0001 then accepted R01/R02 cleanup of 44
 residual owners into 38 new production modules. Those delivery branches are
 retired. C0002 then accepted the exact-C0001 R11/R12 deliveries, reorganizing
-68 residual owners and adding 11 canonical production modules. B0003/B0004
-remain accepted with retirement due; their exact remote refs and named worker
-worktrees are retained pending acceptance-control CI. The current C0002 counts
-are authoritative. Subsequent accepted batches must reduce the current 277
+68 residual owners and adding 11 canonical production modules. B0003/B0004 are
+retired: their exact remote refs were deleted after acceptance-control CI went
+green, their named worker worktrees were removed after evidence archival, and
+their local delivery refs remain preserved. The current C0002 counts are
+authoritative. Subsequent accepted batches must reduce the current 277
 unclassified modules, 241 noncanonical names, 13 missing module docs, 16
 declaration-bearing umbrellas, and the remaining reviewed giant-file outliers.
 The sequence and safety gates are tracked in
