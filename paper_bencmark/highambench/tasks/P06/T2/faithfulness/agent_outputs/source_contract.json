@@ -1,0 +1,90 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "It says only 'rectangular matrix B'; d_1-by-d_2 notation first appears in Theorem 3.2 immediately afterward (PDF p. 5, printed p. 1150, text before (3.3) and Theorem 3.2).",
+      "impact": "Using d_1,d_2 and the resulting block sizes is a dimensionally forced elaboration, not wording explicitly contained in (3.3).",
+      "issue": "Equation (3.3) does not assign symbols to B's row and column dimensions."
+    },
+    {
+      "evidence": "The block uses B^T, and the paper's surrounding matrix setting is real (PDF p. 1, printed p. 1146, introductory QR definitions; PDF p. 5, printed p. 1150, (3.3)).",
+      "impact": "A complex-matrix generalization would require an adjoint rather than the literal transpose and is not the exact sourced contract.",
+      "issue": "The scalar field is not restated at the definition."
+    }
+  ],
+  "contract_plain_english": "For a rectangular real matrix B, form the symmetric block matrix with B and B^T in the off-diagonal blocks and zeros on the diagonal. Its largest eigenvalue is exactly the operator 2-norm of B; this is a deterministic identity used to transfer a symmetric matrix concentration theorem to rectangular matrices (PDF p. 5, printed p. 1150, (3.3)-(3.4) and following paragraph).",
+  "paper_batch_sha256": "5fc79f8dcb892e5e54a0e6404abfb754e2c8f1233e5e586f0036f135448517d2",
+  "paper_sha256": "c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "norm-convention paragraph",
+      "observation": "The paper uses the vector 2-norm and corresponding subordinate matrix norm.",
+      "pdf_page": 2,
+      "printed_page": "1147"
+    },
+    {
+      "anchor": "section 3 notation preceding Theorem 3.1",
+      "observation": "Within section 3, lambda_max denotes the largest eigenvalue of a symmetric matrix.",
+      "pdf_page": 5,
+      "printed_page": "1150"
+    },
+    {
+      "anchor": "equations (3.3)-(3.4)",
+      "observation": "For a rectangular matrix B, the paper defines its symmetric dilation phi(B) as the block matrix [[0,B],[B^T,0]] and states lambda_max(phi(B)) = ||B||_2.",
+      "pdf_page": 5,
+      "printed_page": "1150"
+    },
+    {
+      "anchor": "paragraph following equation (3.4) and Theorem 3.2",
+      "observation": "The identity is used to pass from the symmetric matrix concentration theorem to a theorem for nonsymmetric d_1-by-d_2 matrices.",
+      "pdf_page": 5,
+      "printed_page": "1150"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "There is no numerical algorithm in the claim itself; the paper uses the symmetric dilation and identity (3.4) to derive the nonsymmetric matrix concentration inequality in Theorem 3.2 from Theorem 3.1 (PDF p. 5, printed p. 1150, paragraph following (3.4)).",
+    "binders": [
+      "A rectangular matrix B; if its dimensions are denoted d_1 by d_2 as in the immediately following theorem, the block layout makes phi(B) a (d_1+d_2)-by-(d_1+d_2) matrix (PDF p. 5, printed p. 1150, (3.3) and Theorem 3.2)."
+    ],
+    "conclusions": [
+      "phi(B) = [[0, B], [B^T, 0]] (PDF p. 5, printed p. 1150, (3.3)).",
+      "lambda_max(phi(B)) = ||B||_2 (PDF p. 5, printed p. 1150, (3.4))."
+    ],
+    "constants_and_indexing": [
+      "The two diagonal zero blocks have sizes d_1-by-d_1 and d_2-by-d_2, while B and B^T occupy the d_1-by-d_2 and d_2-by-d_1 off-diagonal blocks; these sizes are forced by (3.3) and the d_1-by-d_2 notation immediately following it (PDF p. 5, printed p. 1150, (3.3) and Theorem 3.2).",
+      "No numerical constants or index offsets occur in (3.3)-(3.4) (PDF p. 5, printed p. 1150, (3.3)-(3.4))."
+    ],
+    "definitions_and_conventions": [
+      "phi(B) is called the symmetric dilation of B (PDF p. 5, printed p. 1150, sentence containing (3.3)).",
+      "lambda_max is the largest algebraic eigenvalue of a symmetric matrix (PDF p. 5, printed p. 1150, section 3 notation paragraph).",
+      "||B||_2 is the subordinate matrix 2-norm, equivalently the largest singular value in this rectangular-matrix setting (PDF p. 2, printed p. 1147, norm-convention paragraph; PDF p. 5, printed p. 1150, (3.4)).",
+      "The off-diagonal lower-left block is B^T, so the displayed dilation is symmetric in the paper's real-matrix setting (PDF p. 5, printed p. 1150, (3.3))."
+    ],
+    "error_notions": [],
+    "exceptional_values": [
+      "No nonzero or nonsingularity condition is imposed on B, and no exceptional-value cases are identified for (3.3)-(3.4) (PDF p. 5, printed p. 1150, text and equations (3.3)-(3.4))."
+    ],
+    "higher_order_terms": [],
+    "hypotheses": [
+      "B is rectangular; equations (3.3)-(3.4) state no rank, invertibility, nonzero, probabilistic, or floating-point hypothesis (PDF p. 5, printed p. 1150, text immediately before (3.3) and equations (3.3)-(3.4))."
+    ],
+    "implicit_context": [
+      "The paper works with real matrices and uses transpose T; the field is not restated locally at (3.3) (PDF p. 1, printed p. 1146, introductory QR setting; PDF p. 5, printed p. 1150, (3.3)).",
+      "The named dimensions d_1,d_2 occur in Theorem 3.2 immediately after the definition rather than in equation (3.3) itself (PDF p. 5, printed p. 1150, paragraph after (3.4) and Theorem 3.2).",
+      "The identity is exact and deterministic; it is a linear-algebra input to the subsequent probabilistic concentration result, not itself a probability statement (PDF p. 5, printed p. 1150, (3.3)-(3.5))."
+    ],
+    "norms": [
+      "The right side is the subordinate operator 2-norm of the rectangular matrix B (PDF p. 2, printed p. 1147, norm-convention paragraph; PDF p. 5, printed p. 1150, (3.4)).",
+      "The left side is lambda_max, not the spectral radius or a norm of phi(B), although for this dilation its value equals ||B||_2 (PDF p. 5, printed p. 1150, section notation and (3.4))."
+    ],
+    "numerical_model": []
+  },
+  "task_id": "P06-T2",
+  "undebatable_constraints": [
+    "The block order is exactly top-right B and bottom-left B^T, with zero diagonal blocks (PDF p. 5, printed p. 1150, (3.3)).",
+    "The claimed scalar is the largest eigenvalue lambda_max(phi(B)), not the maximum absolute eigenvalue written as a separate operation (PDF p. 5, printed p. 1150, section notation and (3.4)).",
+    "The right side is ||B||_2, the subordinate matrix 2-norm (PDF p. 2, printed p. 1147, norm convention; PDF p. 5, printed p. 1150, (3.4)).",
+    "The claim is an exact deterministic identity for a rectangular matrix and carries no rounding model, probability, error term, or big-O remainder (PDF p. 5, printed p. 1150, (3.3)-(3.4))."
+  ]
+}

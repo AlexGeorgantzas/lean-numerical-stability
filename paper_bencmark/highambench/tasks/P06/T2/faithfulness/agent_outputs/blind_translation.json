@@ -1,0 +1,427 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "617096bf5e4beb1c502e25c056a35384f4256883ba0002c6d345f62c37cbac8e",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For indices i and j in a type with decidable equality, this is the real Kronecker delta δ(i,j), equal to 1 when i = j and 0 otherwise.",
+      "effect_on_target": "Scaled by L, it defines the matrix Lδ on Fin m ⊔ Fin n, whose quadratic form is L times the sum of the squares of all coordinates.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For two real matrices A and B on the same finite index type, it states that q_A(x) ≤ q_B(x) for every real vector x, where q_A(x) = Σ_i x_i Σ_j A_ij x_j.",
+      "effect_on_target": "It makes the right side of the equivalence the universal quadratic-form inequality q_{B_M}(z) ≤ q_{Lδ}(z).",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "It states that for every x in ℝ^n, the Euclidean norm of Ax is at most L times the Euclidean norm of x.",
+      "effect_on_target": "It is exactly the left side of the target equivalence, with A = M.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "It defines a matrix B_M on Fin m ⊔ Fin n by B_M(inl i,inr j) = M_ij, B_M(inr j,inl i) = M_ij, and B_M = 0 on the two same-summand blocks.",
+      "effect_on_target": "It supplies the symmetric block matrix with diagonal blocks zero and off-diagonal blocks M and Mᵀ in the right-hand quadratic-form inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "For a finite square matrix A and vector x, it computes Σ_i x_i(Ax)_i = Σ_i Σ_j x_i A_ij x_j.",
+      "effect_on_target": "It gives the precise quadratic forms compared by LocalDef002.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "For an m-by-n real matrix A and x in ℝ^n, it defines (Ax)_i = Σ_j A_ij x_j.",
+      "effect_on_target": "It is the matrix-vector product whose Euclidean norm appears on the left side.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "This dependent case splitter for a pair of sum indices selects its first branch for an inl/inr pair, its second branch for an inr/inl pair, and its third branch for either same-summand pair.",
+      "effect_on_target": "It implements the four-block case distinction defining B_M in LocalDef004.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "For a finite real vector x, it computes sqrt(Σ_i x_i^2), the Euclidean norm.",
+      "effect_on_target": "It supplies both norms in the left-hand bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "For a square matrix A on a finite index type and vector x, it computes the coordinate (Ax)_i = Σ_j A_ij x_j.",
+      "effect_on_target": "It expands LocalDef005 into the ordinary quadratic form Σ_i Σ_j x_i A_ij x_j.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "For a sum value t, it invokes the supplied inr branch when t is an inr value and invokes the fallback branch when t is an inl value, carrying an internal constructor-index proof.",
+      "effect_on_target": "Within LocalDef007 it distinguishes the inl/inr cross block from the inl/inl zero block.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "For a sum value t, it invokes the supplied inl branch when t is an inl value and invokes the fallback branch when t is an inr value, carrying an internal constructor-index proof.",
+      "effect_on_target": "Within LocalDef007 it distinguishes the inr/inl cross block from the inr/inr zero block.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type with n positions.",
+      "effect_on_target": "Fin m indexes matrix rows and Fin n indexes matrix columns and input-vector coordinates; zero-sized index types are permitted.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Fin.fintype",
+      "meaning": "It equips Fin n with a finite enumeration containing every index exactly once.",
+      "effect_on_target": "It makes all sums over row or column indices finite and exhaustive.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "HMul.hMul",
+      "meaning": "It selects the heterogeneous multiplication operation from an HMul instance.",
+      "effect_on_target": "At every occurrence in the target dependencies, the selected operation is ordinary multiplication of real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Iff",
+      "meaning": "Iff is logical equivalence between two propositions.",
+      "effect_on_target": "It asserts that the norm bound and the block-matrix quadratic-form bound imply one another.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "LE.le",
+      "meaning": "It selects a less-than-or-equal relation from an LE instance.",
+      "effect_on_target": "Here it denotes the usual order ≤ on real numbers in the assumption and both inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Nat",
+      "meaning": "Nat is the type of natural numbers.",
+      "effect_on_target": "The arbitrary dimensions m and n are natural numbers and may be zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "OfNat.ofNat",
+      "meaning": "It interprets a natural-number literal in a type having the corresponding OfNat instance.",
+      "effect_on_target": "It interprets the literal 0 in the hypothesis as real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real",
+      "meaning": "Real is the type of real numbers.",
+      "effect_on_target": "All matrix entries, vector coordinates, the bound L, sums, products, powers, and inequalities are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instLE",
+      "meaning": "It provides the standard order relation on the real numbers.",
+      "effect_on_target": "It gives the meanings of 0 ≤ L, the Euclidean norm inequality, and the quadratic-form inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instMul",
+      "meaning": "It provides ordinary multiplication on real numbers.",
+      "effect_on_target": "It interprets Lδ, L times a norm, matrix-vector products, and quadratic-form products as ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instZero",
+      "meaning": "It provides the real number zero.",
+      "effect_on_target": "It supplies the lower endpoint in 0 ≤ L, the zero value of the Kronecker delta off the diagonal, and the zero diagonal blocks of B_M.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Sum",
+      "meaning": "Sum α β is the disjoint union of α and β.",
+      "effect_on_target": "The right-hand matrix and vector are indexed by the disjoint union Fin m ⊔ Fin n, representing an m-coordinate part and an n-coordinate part.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Zero.toOfNat0",
+      "meaning": "It constructs the interpretation of the numeral 0 from a type's Zero instance.",
+      "effect_on_target": "It ensures that the numeral 0 used in the nonnegativity assumption is real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "instDecidableEqFin",
+      "meaning": "It decides equality of two Fin n indices by comparing their underlying natural-number values.",
+      "effect_on_target": "It helps decide equality on the disjoint index set for evaluating the Kronecker delta.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "instDecidableEqSum",
+      "meaning": "Given decidable equality on both summands, it provides decidable equality on their disjoint union.",
+      "effect_on_target": "It allows LocalDef001 to evaluate δ(a,b) for indices a,b in Fin m ⊔ Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "instFintypeSum",
+      "meaning": "It equips the disjoint union of two finite types with the finite enumeration formed from both summands.",
+      "effect_on_target": "It makes the right-hand quadratic forms sum over all m+n disjoint-union coordinates.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "instHMul",
+      "meaning": "It turns an ordinary multiplication operation on a type into homogeneous heterogeneous multiplication on that type.",
+      "effect_on_target": "It routes all HMul expressions involving real numbers to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "DecidableEq",
+      "meaning": "DecidableEq α assigns a decision procedure to every equality proposition a = b in α.",
+      "effect_on_target": "It permits the conditional definition of the Kronecker delta; it adds no mathematical assumption about M or L.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Eq",
+      "meaning": "Eq is propositional equality.",
+      "effect_on_target": "It is the condition determining whether a Kronecker-delta entry is 1 or 0.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Fintype",
+      "meaning": "A Fintype structure provides a finite collection of all elements of a type together with completeness.",
+      "effect_on_target": "It supplies the finite domains used by every universal finite sum in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "One.toOfNat1",
+      "meaning": "It constructs the interpretation of the numeral 1 from a type's One instance.",
+      "effect_on_target": "It provides the real value 1 on the diagonal of the Kronecker delta.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "Real.instOne",
+      "meaning": "It provides the real number one.",
+      "effect_on_target": "It supplies the diagonal value of the Kronecker delta.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "ite",
+      "meaning": "Given a decidable proposition c, ite c t e returns t when c holds and e otherwise.",
+      "effect_on_target": "It makes LocalDef001 equal to 1 exactly on equal index pairs and 0 otherwise.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Finset.sum",
+      "meaning": "It adds the values of a function over every member of a finite set using a commutative additive monoid.",
+      "effect_on_target": "It implements all matrix-vector products, quadratic forms, and sums of coordinate squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, it is the finite set containing every element.",
+      "effect_on_target": "It ensures that each displayed sum ranges over every relevant row, column, or disjoint-union index.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "HPow.hPow",
+      "meaning": "It selects a power operation from an HPow instance.",
+      "effect_on_target": "Here it computes the real square x_i^2 used in the Euclidean norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "Monoid.toNatPow",
+      "meaning": "It defines natural-number powers in a monoid by repeated multiplication.",
+      "effect_on_target": "For real multiplication and exponent 2, it makes each power exactly the ordinary square of a coordinate.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "Nat.hasNotBit",
+      "meaning": "Nat.hasNotBit m n states that the low bit of m shifted right by n is not 1, formally (1 AND (m >> n)) ≠ 1.",
+      "effect_on_target": "It appears only as internal evidence in the generated sum-constructor dispatch of LocalDef010 and LocalDef011 and imposes no hypothesis on the mathematical variables.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "It supplies the additive commutative monoid structure of the real numbers.",
+      "effect_on_target": "It gives finite real sums their usual addition and zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "Real.instMonoid",
+      "meaning": "It supplies the multiplicative monoid structure of the real numbers.",
+      "effect_on_target": "It gives natural powers of real coordinates their ordinary multiplicative meaning.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "Real.sqrt",
+      "meaning": "It is the nonnegative real square-root operation, defined through the nonnegative-real square root after projecting the input to its nonnegative part.",
+      "effect_on_target": "Its arguments here are sums of squares, so it produces the ordinary Euclidean norms of x and Mx.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "Sum.casesOn",
+      "meaning": "It eliminates a disjoint-union value by applying one branch to an inl value and another branch to an inr value.",
+      "effect_on_target": "It performs the outer case split used to define the four blocks of B_M.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "Sum.ctorIdx",
+      "meaning": "It assigns constructor index 0 to inl values and constructor index 1 to inr values.",
+      "effect_on_target": "It supports the internal bit-test evidence used by the generated case helpers and contributes no separate mathematical condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "Sum.inl",
+      "meaning": "It injects an element of the first type into a disjoint union.",
+      "effect_on_target": "It embeds row indices Fin m into the combined index set.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "Sum.inr",
+      "meaning": "It injects an element of the second type into a disjoint union.",
+      "effect_on_target": "It embeds column indices Fin n into the combined index set.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "instHPow",
+      "meaning": "It converts a power operation Pow α β into the corresponding homogeneous HPow operation.",
+      "effect_on_target": "It routes the coordinate expressions raised to 2 to ordinary real natural-number exponentiation.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "instOfNatNat",
+      "meaning": "It interprets each natural-number literal n in Nat as n itself.",
+      "effect_on_target": "It makes the exponent literal 2 the natural number 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "Bool",
+      "meaning": "Bool is the Boolean truth-value type.",
+      "effect_on_target": "It occurs only in internal equality and bitwise decision procedures and does not change the mathematical proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "Bool.false",
+      "meaning": "It is the false Boolean value.",
+      "effect_on_target": "It is used internally to certify failed natural-number equality tests and adds no target-level condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "Eq.refl",
+      "meaning": "It is the reflexivity proof that every value equals itself.",
+      "effect_on_target": "It is used only in internal proof terms for case analysis or equality decisions and has no separate mathematical effect.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "Nat.land",
+      "meaning": "It is bitwise conjunction of natural numbers.",
+      "effect_on_target": "It appears only inside Nat.hasNotBit, which supports generated constructor dispatch and imposes no arithmetic condition in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "Nat.ne_of_beq_eq_false",
+      "meaning": "It proves that two natural numbers are unequal when their Boolean equality test returns false.",
+      "effect_on_target": "It supports internal decidable-equality evidence and contributes no mathematical hypothesis or conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "Nat.shiftRight",
+      "meaning": "It shifts a natural number right by a specified number of binary positions, recursively dividing by 2.",
+      "effect_on_target": "It is used only in the internal bit test that distinguishes sum constructors.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "Sum.rec",
+      "meaning": "It is the recursor for a disjoint union, applying the appropriate supplied branch to an inl or inr value.",
+      "effect_on_target": "It underlies the case split that assigns M to the two off-diagonal blocks and zero to the two diagonal blocks.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "m and n are arbitrary natural numbers, including zero.",
+      "M is an arbitrary real m-by-n matrix represented by entries M_ij for i in Fin m and j in Fin n.",
+      "L is an arbitrary real number.",
+      "In the left-hand assertion, x ranges universally over all real vectors indexed by Fin n.",
+      "In the right-hand assertion, z ranges universally over all real vectors indexed by I = Fin m ⊔ Fin n; equivalently, z consists of arbitrary u in ℝ^m and v in ℝ^n."
+    ],
+    "hypotheses": [
+      "L is nonnegative: 0 ≤ L."
+    ],
+    "conclusions": [
+      "The assertion that every x in ℝ^n satisfies ||Mx||₂ ≤ L||x||₂ is logically equivalent to the assertion that every z indexed by Fin m ⊔ Fin n satisfies q_{B_M}(z) ≤ q_{Lδ}(z).",
+      "Writing z = (u,v), the right-hand assertion is equivalently: for every u in ℝ^m and v in ℝ^n, 2 Σ_i Σ_j u_i M_ij v_j ≤ L(Σ_i u_i^2 + Σ_j v_j^2)."
+    ],
+    "mathematical_definitions": [
+      "For x indexed by Fin n, (Mx)_i = Σ_{j in Fin n} M_ij x_j.",
+      "For any finite real vector y, ||y||₂ = sqrt(Σ_i y_i^2).",
+      "Let I = Fin m ⊔ Fin n and δ(a,b) = 1 when a = b and 0 otherwise.",
+      "Define B_M on I by B_M(inl i,inr j) = M_ij, B_M(inr j,inl i) = M_ij, B_M(inl i,inl i') = 0, and B_M(inr j,inr j') = 0.",
+      "For a matrix A on a finite index set and a vector y, q_A(y) = Σ_a y_a(Σ_b A_ab y_b) = Σ_a Σ_b y_a A_ab y_b.",
+      "The comparison matrix has entries (Lδ)_ab = Lδ(a,b), so q_{Lδ}(z) = LΣ_a z_a^2.",
+      "If u_i = z(inl i) and v_j = z(inr j), then q_{B_M}(z) = 2Σ_iΣ_j u_i M_ij v_j."
+    ],
+    "proposition_plain_english": "For every finite real m-by-n matrix M and every nonnegative real number L, M maps every vector x to a vector whose Euclidean norm is at most L times the Euclidean norm of x if and only if the symmetric block matrix with zero diagonal blocks and off-diagonal blocks M and Mᵀ has quadratic form at most L times the squared Euclidean norm on every combined vector (u,v)."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The proposition is conditional on 0 ≤ L and makes no assertion for negative L.",
+    "The dimensions m and n may be zero. If either dimension is zero, both sides are automatically true under 0 ≤ L, so the equivalence is degenerate.",
+    "All spaces are finite-dimensional and real; no complex, infinite-dimensional, or non-Euclidean version is encoded.",
+    "L is only asserted to be an upper bound. The proposition does not state that L is minimal, attained, or equal to an operator norm.",
+    "The right side encodes a one-sided universal quadratic-form inequality, not an explicitly absolute-valued inequality or an equality.",
+    "Empty finite sums are interpreted as zero."
+  ],
+  "ambiguities": []
+}
