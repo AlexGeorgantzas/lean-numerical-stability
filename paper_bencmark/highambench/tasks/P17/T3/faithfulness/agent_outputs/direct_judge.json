@@ -1,0 +1,559 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P17-T3",
+  "paper_sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d",
+  "dossier_sha256": "dd6ca79107f1911e7c97031ceebbd16ae2f44acd172bdf2e60a7dd41c6943693",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.P17FiniteProbability",
+      "interpretation": "A finite discrete probability model whose constructor supplies nonnegative real weights summing to one.",
+      "effect_on_target": "The theorem ranges over an arbitrary finite probability space rather than a distribution constructed from stochastic-rounding executions.",
+      "paper_match": "Finite rounding histories can be represented this way, but the dependency does not link P to SR_{p,r} or the recursive-summation algorithm.",
+      "status": "fail"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p17EventProb",
+      "interpretation": "The probability of an event E is the sum of P.prob over all outcomes in E.",
+      "effect_on_target": "It gives the right-hand side the meaning of a finite event probability.",
+      "paper_match": "This is a valid finite-discrete realization of the paper's probability of the error event.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.p17Expectation",
+      "interpretation": "The expectation of X is the finite weighted sum of P.prob omega times X omega.",
+      "effect_on_target": "The hmoment hypothesis bounds the raw second moment of centered.",
+      "paper_match": "Finite expectation is appropriate; for the paper's zero-mean M component, the second raw moment equals its variance, although the target does not establish that identification.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.P17FiniteProbability.mk",
+      "interpretation": "The constructor builds a finite probability model from nonnegative weights whose total is one.",
+      "effect_on_target": "It ensures P is a normalized probability mass function.",
+      "paper_match": "These are the expected probability axioms for a finite representation of rounding outcomes.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "HighamBench.P17FiniteProbability.prob",
+      "interpretation": "The projection returns the real probability weight assigned to an outcome.",
+      "effect_on_target": "It supplies weights to both event probability and expectation.",
+      "paper_match": "Outcome weights have the ordinary probabilistic meaning required by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "It obtains division from the real division-and-inversion structure.",
+      "effect_on_target": "It contributes ordinary real division to varianceBudget divided by lambda.",
+      "paper_match": "The paper likewise divides its variance expression by lambda under the square root.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "Fintype",
+      "interpretation": "A type equipped with a finite enumeration of all its elements.",
+      "effect_on_target": "Omega is restricted to finitely many outcomes, permitting probability and expectation to be finite sums.",
+      "paper_match": "A fixed finite sequence of Bernoulli rounding choices can be modeled by a finite outcome type, though this dependency alone does not encode that sequence.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "HAdd.hAdd",
+      "reuse_sha256": "8e238a782a5fa590cf4b1016f83e5f0f68ef2ffa7f08828d92e4751b917d3094",
+      "effect_on_target": "It forms centered omega plus the single scalar bias, and also adds the square-root radius to biasRadius.",
+      "paper_match": "Ordinary addition is correct, but the paper adds M to the outcome-dependent remainder A; a fixed scalar bias cannot represent that pathwise random remainder.",
+      "status": "fail"
+    },
+    {
+      "id": "D009",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-dispatched division, instantiated here as ordinary real division.",
+      "effect_on_target": "It forms varianceBudget divided by lambda.",
+      "paper_match": "This matches the placement of division by lambda in the paper's stochastic term.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched multiplication, instantiated here as ordinary real multiplication.",
+      "effect_on_target": "It weights expectations and multiplies both sides of the event inequality by kappa.",
+      "paper_match": "Ordinary products and multiplication of the complete radius by kappa agree with the paper's scalar algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "HPow.hPow",
+      "reuse_sha256": "ae427df10665c63a10e9f5d6e8e18ac7b758e79d1f0955f4c3ca097fff66c85d",
+      "effect_on_target": "It squares centered omega in the second-moment hypothesis.",
+      "paper_match": "A squared M component is appropriate for the variance estimate because M is zero mean, but the target leaves centered arbitrary.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "HSub.hSub",
+      "reuse_sha256": "acf46554bba0caeba7168c2bd11bf9a41b4510a9dac46d3f3cd39b8a2e858287",
+      "effect_on_target": "It forms the lower probability bound 1 minus lambda.",
+      "paper_match": "This matches the paper's success probability of at least 1 minus lambda.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "LE.le",
+      "reuse_sha256": "0dcd4d54dc5efe73d79e4b04d175f2dca920b0224dc82b6e16091b7f8d35baaa",
+      "effect_on_target": "It supplies all non-strict inequalities in hypotheses, the event, and the probability conclusion.",
+      "paper_match": "The final error and probability inequalities have the same non-strict directions as equations (4.11) and (4.12).",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "LT.lt",
+      "interpretation": "The strict-order relation supplied by the relevant typeclass, instantiated as ordinary strict order on reals.",
+      "effect_on_target": "It expresses positivity of varianceBudget and lambda.",
+      "paper_match": "The positivity relation is correct; the missing upper condition lambda less than one is an omission in the target rather than a different interpretation of this operator.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "Monoid.toNatPow",
+      "reuse_sha256": "fe46aa204372eb5439324019fd0953697fe646c07328127f2604d3111db326ea",
+      "effect_on_target": "It defines the square of centered omega by repeated real multiplication.",
+      "paper_match": "This is the standard squared quantity used in a second-moment or variance estimate.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "Nat",
+      "interpretation": "The natural-number type used for the exponent two.",
+      "effect_on_target": "It fixes the moment in hmoment to a second moment.",
+      "paper_match": "A natural exponent two matches the paper's squared-error variance analysis.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "OfNat.ofNat",
+      "reuse_sha256": "9412c8799dd7ab5a9cd03a6289b408558cf47f44c8678d5f9fcd39132aa90a1d",
+      "effect_on_target": "It interprets the literals zero, one, and two in their required types.",
+      "paper_match": "These literals retain their ordinary meanings.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "One.toOfNat1",
+      "reuse_sha256": "1c662a114670d76bda6f45c1caef6f56839c8751fcd1c29ba6602c9e4eac9386",
+      "effect_on_target": "It supplies the real number one in 1 minus lambda.",
+      "paper_match": "This matches the paper's probability lower bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "Real",
+      "interpretation": "The mathematical real-number type.",
+      "effect_on_target": "All random values, budgets, radii, kappa, lambda, probabilities, and expectations are real scalars.",
+      "paper_match": "The paper's inputs, errors, parameters, and scalar inequalities are real-valued.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instAdd",
+      "reuse_sha256": "e64b5c91700232551ae1fd439ea5d1ba590397e612faaf16f62a23cc5c378695",
+      "effect_on_target": "It realizes all displayed additions as ordinary real addition.",
+      "paper_match": "The scalar addition operation itself agrees with the paper; the fixed-bias operand choice is a separate target-level mismatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instAddGroup",
+      "reuse_sha256": "953242ba6ab9ee59ca4aeeae55b66c1f65ae1b3ec736bb896a8082722e08a850",
+      "effect_on_target": "It supplies real negation and additive structure used by absolute value.",
+      "paper_match": "This gives the usual scalar absolute-value semantics used throughout equations (4.8)-(4.12).",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The standard real multiplication, inversion, natural and integer powers, and division structure.",
+      "effect_on_target": "It makes varianceBudget divided by lambda ordinary real division.",
+      "paper_match": "The quotient has the intended real-arithmetic meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instLE",
+      "reuse_sha256": "05753e0845504079b2a49760ce0760bba31bd490a1fbbbec350ab090bf5f6150",
+      "effect_on_target": "It interprets every non-strict comparison using the usual real order.",
+      "paper_match": "The paper's scalar bounds use the same order.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instLT",
+      "interpretation": "The usual strict order on real numbers.",
+      "effect_on_target": "It gives hvariance and hlambda their ordinary positivity meanings.",
+      "paper_match": "It correctly expresses positivity, though the target does not additionally state lambda less than one.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "Real.instMonoid",
+      "reuse_sha256": "f4f35dbd3354a3a2c6e30a12525fb25ce21682401bd0b8c6c4a2b89afdaece9f",
+      "effect_on_target": "It provides multiplication and one for the natural power centered squared.",
+      "paper_match": "The resulting square is ordinary real squaring.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary multiplication on real numbers.",
+      "effect_on_target": "It multiplies probability weights, kappa, centered-plus-bias, and the bound radius.",
+      "paper_match": "These products have the expected scalar meaning in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "Real.instOne",
+      "reuse_sha256": "e51a242fc9e06a843daf48323e127b9a5e24e589e9139d1c4d178817cc4f01b4",
+      "effect_on_target": "It supplies the real multiplicative identity used as the numeral one.",
+      "paper_match": "It has the ordinary meaning required by 1 minus lambda.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "Real.instSub",
+      "reuse_sha256": "cae5df6a1fe8b8368ddc76512a5e3b97db34cf5aa11faf1cff630d6f5dd7eb35",
+      "effect_on_target": "It realizes 1 minus lambda as ordinary real subtraction.",
+      "paper_match": "This exactly matches the form of the paper's probability lower bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "Real.instZero",
+      "reuse_sha256": "add1e0d38b718ff561745d67e457a3e5a9e88523d6641af854dd815b11797de6",
+      "effect_on_target": "It supplies zero in positivity and nonnegativity hypotheses and in probability sums outside an event.",
+      "paper_match": "Zero has its ordinary scalar meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "Real.lattice",
+      "reuse_sha256": "5c94154655daa21d92ca5ad3ae013135ac73fc292c856c799cf18acc88e6c476",
+      "effect_on_target": "It contributes the usual ordered-lattice operations used to define real absolute value.",
+      "paper_match": "This yields the scalar absolute values used in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "Real.sqrt",
+      "interpretation": "The nonnegative real square root, with nonpositive inputs mapped through their nonnegative part.",
+      "effect_on_target": "It forms the stochastic radius square root of varianceBudget divided by lambda; the hypotheses make that quotient positive.",
+      "paper_match": "This matches the nonnegative square root in equation (4.11).",
+      "status": "pass"
+    },
+    {
+      "id": "D032",
+      "name": "Zero.toOfNat0",
+      "reuse_sha256": "4ffc57c777cabc45c64299faad3978aad738b122dda5156a2ea75d97ce8a5347",
+      "effect_on_target": "It derives the real numeral zero from the additive identity.",
+      "paper_match": "It has the intended ordinary meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "abs",
+      "interpretation": "Absolute value defined as the maximum of a real and its negation.",
+      "effect_on_target": "It bounds the scalar bias and measures the magnitude of kappa times centered-plus-bias.",
+      "paper_match": "The absolute-value operation matches the paper, although the target applies it to an abstract fixed-bias expression rather than the defined forward error M plus A.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "instHAdd",
+      "reuse_sha256": "634c32b54fc9e5d8e0d6c15053ec736151828bfac08d0e430707a48416bcb433",
+      "effect_on_target": "It transparently lifts ordinary real addition into the heterogeneous-addition interface.",
+      "paper_match": "The lifting preserves ordinary addition; it does not repair the mismatch between fixed bias and the paper's random A.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "instHDiv",
+      "interpretation": "It lifts homogeneous division into the heterogeneous-division interface without changing the operation.",
+      "effect_on_target": "It makes varianceBudget divided by lambda use the real division instance.",
+      "paper_match": "The resulting quotient matches the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "instHMul",
+      "interpretation": "It lifts homogeneous multiplication into the heterogeneous-multiplication interface without changing the operation.",
+      "effect_on_target": "It realizes all target multiplications as real multiplication.",
+      "paper_match": "The lifting is semantically transparent and compatible with the paper's products.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "instHPow",
+      "reuse_sha256": "265c3ec48b8a93626c5d1509c62aa0d0670a6d1f84ee18a4d0a74fe156315b23",
+      "effect_on_target": "It lifts real natural powers into the interface used to write centered squared.",
+      "paper_match": "The resulting operation is ordinary real squaring.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "instHSub",
+      "reuse_sha256": "9acf234ffe7767f8c9d61a522c93ace13daa9ca28ce1049c951e39128f4bf717",
+      "effect_on_target": "It lifts ordinary real subtraction into the interface used for 1 minus lambda.",
+      "paper_match": "The lifting preserves the intended probability expression.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "instOfNatNat",
+      "interpretation": "It interprets each natural numeral as that natural number.",
+      "effect_on_target": "It makes the exponent literal two denote the natural number two.",
+      "paper_match": "This gives the intended second power.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "setOf",
+      "interpretation": "It constructs a set from its membership predicate.",
+      "effect_on_target": "It turns the pointwise error inequality into the event whose probability is bounded.",
+      "paper_match": "A probability event defined by the error inequality is the correct set-theoretic form.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "Classical.propDecidable",
+      "interpretation": "It supplies a classical decision procedure for propositions.",
+      "effect_on_target": "It permits the event indicator in p17EventProb to branch on membership.",
+      "paper_match": "This is an implementation detail with no mathematical counterpart or effect on the paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D042",
+      "name": "Finset.sum",
+      "interpretation": "It sums a real-valued function over a finite set using the additive commutative monoid structure.",
+      "effect_on_target": "It computes normalization, event probabilities, and expectations as finite sums.",
+      "paper_match": "Finite sums correctly realize probability and expectation on a finite rounding-outcome space.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "Finset.univ",
+      "reuse_sha256": "e1c319c6b4ed4d5f6114006b06fd0104d65483830507f476dc0b7a6c1f1fe0be",
+      "effect_on_target": "It makes probability and expectation sums range over every outcome in Omega.",
+      "paper_match": "Summing over all outcomes is the expected finite probability semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "Membership.mem",
+      "interpretation": "The typeclass-dispatched membership predicate, instantiated for membership of an outcome in a set.",
+      "effect_on_target": "It determines whether each outcome contributes its probability weight to an event.",
+      "paper_match": "This is the ordinary semantics of an event indicator.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative monoid structure of real numbers.",
+      "effect_on_target": "It provides zero and commutative addition for all finite real sums.",
+      "paper_match": "Ordinary finite real summation matches the paper's scalar sums.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "Set",
+      "interpretation": "A set of outcomes is represented as a predicate from outcomes to propositions.",
+      "effect_on_target": "The error event is represented extensionally by its membership condition.",
+      "paper_match": "This is a standard representation of a probability event.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "Set.instMembership",
+      "interpretation": "It makes membership in a set evaluate the set's predicate at the proposed element.",
+      "effect_on_target": "Event membership is exactly satisfaction of the pointwise error inequality.",
+      "paper_match": "This preserves the intended event semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "ite",
+      "interpretation": "A conditional expression selecting its first value when the proposition holds and its second value otherwise.",
+      "effect_on_target": "It implements the event indicator by selecting P.prob omega inside the event and zero outside.",
+      "paper_match": "This is the standard finite-sum definition of event probability.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "Eq",
+      "interpretation": "Propositional equality between two terms of the same type.",
+      "effect_on_target": "It requires the sum of all probability weights to equal one in the probability-model constructor.",
+      "paper_match": "Probability normalization is required by the paper's use of probability.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The inspected PDF has the required SHA-256 and is the published SIAM Journal on Scientific Computing 47(5), 2025 version. PDF page 15, printed B1241, contains Theorem 4.3 and equations (4.10)-(4.12), with the recursive-summation setup and decomposition on pages 13-14.",
+      "lean_evidence": "The supplied packet identifies p17_t3_variance_plus_bias_probability_bound as the P17-T3 target and gives its exact, readable, elaborated, and fully explicit types.",
+      "reasoning": "The selected source and passage are the correct ones for P17-T3."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Pages 13-15 bind a vector a in R^n, y as its exact sum, the recursively computed hat y, precision p, positive integer r, n-1 rounded additions, and lambda in (0,1).",
+      "lean_evidence": "The target instead binds an arbitrary finite type Omega, arbitrary probability model P, arbitrary function centered, and independent real scalars bias, varianceBudget, biasRadius, kappa, and lambda. It has no a, n, p, r, y, or hat y.",
+      "reasoning": "The target's binders are those of a generic probability inequality, not the objects and dimensions of Theorem 4.3."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The summation input, execution, errors, M, A, kappa, and gamma quantities are fixed or derived before Theorem 4.3 quantifies lambda.",
+      "lean_evidence": "All probability data, random values, budgets, radii, kappa, and lambda are universally quantified independently, subject only to abstract inequalities.",
+      "reasoning": "The target does not preserve the dependence of M, A, kappa, and the two radii on the input vector, rounding execution, n, p, and r."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "Theorem 4.3 requires 0 < lambda < 1. Its relative error and kappa require y nonzero. The proof uses the SR_{p,r} recurrence, mean-independent zero-mean alpha errors, |alpha| <= u_p, the beta bound u_{p+r}, and the variance result for M.",
+      "lean_evidence": "The target assumes only varianceBudget > 0, lambda > 0, kappa >= 0, a raw second-moment bound, and a fixed scalar bias bound. It has no lambda < 1, y nonzero, SR assumptions, mean-independence hypothesis, zero-mean condition, or pathwise remainder function.",
+      "reasoning": "Essential hypotheses are omitted or replaced by abstract sufficient conditions. The added strict positivity of varianceBudget also prevents direct use of the zero budget occurring when n=1."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Equation (4.10) gives a pathwise bound for A, equation (4.12) gives the probability bound for M, and equation (4.11) gives the concrete relative forward-error conclusion for hat y.",
+      "lean_evidence": "The conclusion is only a probability event for |kappa * (centered omega + bias)| with abstract budgets. It contains no definitions or conclusions for M, A, hat y, y, or the exact gamma expressions.",
+      "reasoning": "The selected paper conclusion and its necessary decomposition are not present as concrete statements."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The paper uses ordinary real arithmetic, scalar absolute value, square root, finite coefficient sums, expectation, and probability.",
+      "lean_evidence": "D001-D049 expose finite probability as normalized weights, event probability and expectation as finite sums, real arithmetic and order, real absolute value, real square root, set predicates, and event indicators.",
+      "reasoning": "The imported operators are fully interpretable and have standard meanings. The substantive failures arise from which quantities are supplied to them, not hidden operator semantics."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "Pages 13-15 distinguish exact y, computed hat y, the alpha-only component M, and the limited-random-bit remainder A, with hat y - y decomposed through M and A.",
+      "lean_evidence": "No exact or computed sum occurs. The expression centered omega plus a fixed scalar bias is not defined to equal a normalized hat y minus y, M plus A, or any other paper quantity.",
+      "reasoning": "The target cannot establish that its bounded random scalar is the paper's computed forward error."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Equation (4.4) and Theorem 4.3 concern left-to-right recursive summation with n-1 additions rounded by SR_{p,r}.",
+      "lean_evidence": "The target contains no recursive state, addition order, rounding operation, p, r, delta, beta, alpha, or mapping from outcomes to an execution.",
+      "reasoning": "There is no statement-level linkage to the algorithm or execution model."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "The paper uses scalar absolute values, the coefficient l1 magnitude sum_i |a_i|, and kappa(a) = sum_i |a_i| / |y|. The variance estimate concerns the squared M component.",
+      "lean_evidence": "The target uses scalar absolute value and a squared function, but kappa is arbitrary and there is no coefficient l1 sum, |y| denominator, or definition connecting centered squared to M squared.",
+      "reasoning": "The primitive norm is correct, but the coefficient and normalization semantics required for the relative bound are absent."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "Equation (4.11) uses exactly sqrt(gamma_{n-1}(u_p^2)/lambda) plus gamma_{n-1}(u_p+u_{p+r}) minus gamma_{n-1}(u_p), with n-1 reflecting the number of rounded additions.",
+      "lean_evidence": "The target replaces these expressions by independent variables varianceBudget and biasRadius and contains no n-1 index, u_p, u_{p+r}, gamma, or relation defining the budgets.",
+      "reasoning": "The constants, indexing, and parameter dependence of Theorem 4.3 are erased."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Pages 5-8 define normalized binary floating point, SR_{p,r}, precision p and p+r approximation, and the zero-result convention; pages 13-15 apply that model to recursive summation.",
+      "lean_evidence": "The target is a real-valued finite probability statement with no floating-point values, rounding mode, precision, exceptional-value convention, underflow, overflow, or SR distribution.",
+      "reasoning": "The numerical model is entirely absent."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "For every 0 < lambda < 1, the paper gives non-strict error and probability inequalities. For nonzero y, its defined kappa is at least one.",
+      "lean_evidence": "The target uses the correct non-strict directions but assumes only lambda > 0 and kappa >= 0. It also requires varianceBudget > 0.",
+      "reasoning": "The logical domains are not equivalent: lambda >= 1 and kappa = 0 introduce trivial cases, while strict variance positivity excludes a legitimate zero-variance boundary case."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "Equation (4.11) is a relative forward-error bound for one computed sum, |hat y - y| / |y|.",
+      "lean_evidence": "The event concerns an arbitrary scaled random expression |kappa * (centered omega + bias)| and never mentions an exact result, computed result, or forward error.",
+      "reasoning": "A generic concentration expression is substituted for the paper's explicitly defined relative forward error."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Theorem 4.3 retains the exact gamma functions and full gamma difference. The first-order description proportional to sqrt(n)u_p + n u_{p+r} is not used in the theorem.",
+      "lean_evidence": "No gamma function or higher-order term occurs; both exact expressions are hidden behind unconstrained budget variables.",
+      "reasoning": "The target does not preserve the paper's exact higher-order dependence or assert that its budgets equal those expressions."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The source result is already scalar-valued but specifically concerns vectors in R^n and finite recursive SR_{p,r} executions.",
+      "lean_evidence": "The target generalizes to arbitrary finite probability models and arbitrary random scalars while deleting the vector, algorithm, and parameter linkage.",
+      "reasoning": "Finite outcomes are compatible with rounding histories, but this is not an explicit faithful specialization or generalization of Theorem 4.3 because no instantiation theorem or semantic mapping is stated."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "For y nonzero, kappa(a) is at least one, and Theorem 4.3 restricts lambda to (0,1), so its probability claim is substantive.",
+      "lean_evidence": "The target permits kappa = 0, making its event identically true, and permits lambda >= 1, making 1 - lambda nonpositive. Its hypotheses are otherwise satisfiable, so these are genuine admitted cases rather than global inconsistency.",
+      "reasoning": "The theorem is not wholly vacuous, but it includes unintended trivial regimes unavailable under the paper's intended quantities."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean proposition does not identify its random expression with |hat y - y| / |y|, does not provide the concrete gamma budgets, and cannot instantiate its single scalar bias as the paper's outcome-dependent pathwise remainder A. Therefore its conclusion does not entail equation (4.11)."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "Theorem 4.3 concerns one SR_{p,r} recursive-summation distribution and its derived quantities. It does not assert the target's universal concentration theorem for every finite probability model, arbitrary random function, arbitrary fixed bias, and arbitrary budgets."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "algorithm-linkage-and-result-identity",
+      "paper_evidence": "PDF pages 13-15 define a, y, the SR_{p,r} recurrence, hat y, M, A, and the relative forward error before stating equation (4.11).",
+      "lean_evidence": "The target has only an arbitrary finite probability model and an arbitrary expression kappa * (centered omega + bias), with none of the paper's algorithmic quantities.",
+      "impact": "The proposition does not state the benchmarked recursive-summation theorem."
+    },
+    {
+      "severity": "critical",
+      "category": "random-remainder-replaced-by-fixed-bias",
+      "paper_evidence": "Lemma 3.10 and equations (4.8)-(4.10) make B_i and A depend on the rounding errors; A is controlled pathwise but is not a single deterministic scalar.",
+      "lean_evidence": "bias is one real number independent of omega, and hbias bounds only |bias|.",
+      "impact": "The paper's decomposition M + A cannot be mapped to centered omega + bias, so the abstract event does not yield the paper's final error event."
+    },
+    {
+      "severity": "major",
+      "category": "constants-indexing-and-error-notion",
+      "paper_evidence": "Equation (4.11) contains kappa(a), gamma_{n-1}(u_p^2), lambda, u_p, u_{p+r}, and the relative error |hat y - y| / |y| with exact indexing.",
+      "lean_evidence": "kappa, varianceBudget, and biasRadius are unconstrained independent scalars, and no relative-error numerator or denominator appears.",
+      "impact": "The exact theorem cannot be recovered from the Lean statement even if the generic probability inequality is mathematically valid."
+    },
+    {
+      "severity": "major",
+      "category": "hypothesis-domain-and-nonvacuity",
+      "paper_evidence": "Theorem 4.3 states 0 < lambda < 1; nonzero y is required by kappa and relative error, and the resulting kappa is at least one.",
+      "lean_evidence": "The target assumes only lambda > 0 and kappa >= 0, while separately requiring varianceBudget > 0.",
+      "impact": "The target admits trivial lambda >= 1 and kappa = 0 cases and excludes the zero-variance boundary, so its domain is not the paper's domain."
+    }
+  ],
+  "rationale": "Direct inspection of Theorem 4.3 and its surrounding definitions shows that the Lean target is a generic finite-space second-moment-plus-fixed-bias inequality, not the stated SR_{p,r} recursive-summation result. Its probability primitives and scalar operators are conventional, but it omits the algorithm, exact and computed sums, gamma constants, indexing, and relative-error definition. Most decisively, the paper's limited-precision remainder A is outcome-dependent and only pathwise bounded, whereas Lean supplies one deterministic scalar bias. Neither proposition implies the other under the meanings actually stated, so the result is not-faithful-different."
+}

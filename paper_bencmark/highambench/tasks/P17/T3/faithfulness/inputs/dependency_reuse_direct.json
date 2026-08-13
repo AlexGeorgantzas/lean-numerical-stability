@@ -1,0 +1,207 @@
+{
+  "entries": [
+    {
+      "id": "D008",
+      "interpretation": "Typeclass-dispatched addition, instantiated here as ordinary real addition.",
+      "name": "HAdd.hAdd",
+      "reuse_sha256": "8e238a782a5fa590cf4b1016f83e5f0f68ef2ffa7f08828d92e4751b917d3094",
+      "semantic_sha256": "e0bf2a92addd6ea713343e4ef69f67e4e1155781d08f46957b9f71412d865f59",
+      "source_dependency_id": "D006",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D011",
+      "interpretation": "Typeclass-dispatched exponentiation, instantiated as natural-number powers of reals.",
+      "name": "HPow.hPow",
+      "reuse_sha256": "ae427df10665c63a10e9f5d6e8e18ac7b758e79d1f0955f4c3ca097fff66c85d",
+      "semantic_sha256": "6196b8cbb884c4f39841ba74b23d75f3c753fe0d044cc402bd6e4e3bd59d5cb8",
+      "source_dependency_id": "D007",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D012",
+      "interpretation": "Typeclass-dispatched subtraction, instantiated as ordinary real subtraction.",
+      "name": "HSub.hSub",
+      "reuse_sha256": "acf46554bba0caeba7168c2bd11bf9a41b4510a9dac46d3f3cd39b8a2e858287",
+      "semantic_sha256": "98025b38d523c0eadea77ba4961a20b2a913b23c079c4bfeba24a7bfaa24a4bc",
+      "source_dependency_id": "D008",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D013",
+      "interpretation": "The non-strict order relation supplied by the relevant LE instance.",
+      "name": "LE.le",
+      "reuse_sha256": "0dcd4d54dc5efe73d79e4b04d175f2dca920b0224dc82b6e16091b7f8d35baaa",
+      "semantic_sha256": "54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48",
+      "source_dependency_id": "D009",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D015",
+      "interpretation": "Defines x raised to a natural exponent by repeated monoid multiplication.",
+      "name": "Monoid.toNatPow",
+      "reuse_sha256": "fe46aa204372eb5439324019fd0953697fe646c07328127f2604d3111db326ea",
+      "semantic_sha256": "5b7373fe2de26535c1cdbf1b953ce34faf30f68aac8abd83ade2e78e6ec65b8a",
+      "source_dependency_id": "D010",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D017",
+      "interpretation": "Interprets natural-number literals in a target type.",
+      "name": "OfNat.ofNat",
+      "reuse_sha256": "9412c8799dd7ab5a9cd03a6289b408558cf47f44c8678d5f9fcd39132aa90a1d",
+      "semantic_sha256": "6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead",
+      "source_dependency_id": "D012",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D018",
+      "interpretation": "Derives interpretation of the numeral 1 from the real multiplicative identity.",
+      "name": "One.toOfNat1",
+      "reuse_sha256": "1c662a114670d76bda6f45c1caef6f56839c8751fcd1c29ba6602c9e4eac9386",
+      "semantic_sha256": "cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5",
+      "source_dependency_id": "D013",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D020",
+      "interpretation": "Ordinary addition on real numbers.",
+      "name": "Real.instAdd",
+      "reuse_sha256": "e64b5c91700232551ae1fd439ea5d1ba590397e612faaf16f62a23cc5c378695",
+      "semantic_sha256": "f99208c181266311bec9c890b688378f329076f9e6be38fe93d9cedf4d7f50ce",
+      "source_dependency_id": "D015",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D021",
+      "interpretation": "The additive-group structure of the reals, including addition, negation, and zero.",
+      "name": "Real.instAddGroup",
+      "reuse_sha256": "953242ba6ab9ee59ca4aeeae55b66c1f65ae1b3ec736bb896a8082722e08a850",
+      "semantic_sha256": "f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0",
+      "source_dependency_id": "D016",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D023",
+      "interpretation": "The usual non-strict linear order on real numbers.",
+      "name": "Real.instLE",
+      "reuse_sha256": "05753e0845504079b2a49760ce0760bba31bd490a1fbbbec350ab090bf5f6150",
+      "semantic_sha256": "144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3",
+      "source_dependency_id": "D018",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D025",
+      "interpretation": "The multiplicative monoid structure of the reals.",
+      "name": "Real.instMonoid",
+      "reuse_sha256": "f4f35dbd3354a3a2c6e30a12525fb25ce21682401bd0b8c6c4a2b89afdaece9f",
+      "semantic_sha256": "37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8",
+      "source_dependency_id": "D019",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D027",
+      "interpretation": "The real multiplicative identity.",
+      "name": "Real.instOne",
+      "reuse_sha256": "e51a242fc9e06a843daf48323e127b9a5e24e589e9139d1c4d178817cc4f01b4",
+      "semantic_sha256": "b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81",
+      "source_dependency_id": "D020",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D028",
+      "interpretation": "Real subtraction defined as addition of the additive inverse.",
+      "name": "Real.instSub",
+      "reuse_sha256": "cae5df6a1fe8b8368ddc76512a5e3b97db34cf5aa11faf1cff630d6f5dd7eb35",
+      "semantic_sha256": "926d9e8fcca2819a885d446e168b20c7c8aac2e542d59ed2b48e32c9a4659a36",
+      "source_dependency_id": "D021",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D029",
+      "interpretation": "The real additive identity.",
+      "name": "Real.instZero",
+      "reuse_sha256": "add1e0d38b718ff561745d67e457a3e5a9e88523d6641af854dd815b11797de6",
+      "semantic_sha256": "860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882",
+      "source_dependency_id": "D022",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D030",
+      "interpretation": "The lattice structure induced by the usual order on the reals.",
+      "name": "Real.lattice",
+      "reuse_sha256": "5c94154655daa21d92ca5ad3ae013135ac73fc292c856c799cf18acc88e6c476",
+      "semantic_sha256": "5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510",
+      "source_dependency_id": "D023",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D032",
+      "interpretation": "Derives interpretation of the numeral 0 from the real additive identity.",
+      "name": "Zero.toOfNat0",
+      "reuse_sha256": "4ffc57c777cabc45c64299faad3978aad738b122dda5156a2ea75d97ce8a5347",
+      "semantic_sha256": "f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a",
+      "source_dependency_id": "D024",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D034",
+      "interpretation": "Lifts homogeneous real addition into the heterogeneous-addition interface.",
+      "name": "instHAdd",
+      "reuse_sha256": "634c32b54fc9e5d8e0d6c15053ec736151828bfac08d0e430707a48416bcb433",
+      "semantic_sha256": "38066efd17aeeca52ec2890d9aafca2fa3cce8fda7f5843c1b8e5da130d93981",
+      "source_dependency_id": "D026",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D037",
+      "interpretation": "Lifts real natural powers into the heterogeneous-power interface.",
+      "name": "instHPow",
+      "reuse_sha256": "265c3ec48b8a93626c5d1509c62aa0d0670a6d1f84ee18a4d0a74fe156315b23",
+      "semantic_sha256": "eb300d353d84392c776cad5e356479f878030744a43f9a1584942a89d16350b4",
+      "source_dependency_id": "D027",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D038",
+      "interpretation": "Lifts homogeneous real subtraction into the heterogeneous-subtraction interface.",
+      "name": "instHSub",
+      "reuse_sha256": "9acf234ffe7767f8c9d61a522c93ace13daa9ca28ce1049c951e39128f4bf717",
+      "semantic_sha256": "aa782f2b5af3d068f4c5340de4b32b193fece2c659a45582cc3024a19b550c87",
+      "source_dependency_id": "D028",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    },
+    {
+      "id": "D043",
+      "interpretation": "The finite set containing every element of a finite type.",
+      "name": "Finset.univ",
+      "reuse_sha256": "e1c319c6b4ed4d5f6114006b06fd0104d65483830507f476dc0b7a6c1f1fe0be",
+      "semantic_sha256": "194413a784fbc0b27d0cb6b1ab67ed060210172bf16ba24045aa439e58f9a8c7",
+      "source_dependency_id": "D005",
+      "source_direct_output_sha256": "46bd2c06c77c05f6b16c59ac1e695a525148308428cffbdfa6ac34cf437f6ed1",
+      "source_task_id": "P17-T1"
+    }
+  ],
+  "role": "direct-dependency-reuse",
+  "schema_version": "highambench-faithfulness-0.2",
+  "target_task_id": "P17-T3"
+}
