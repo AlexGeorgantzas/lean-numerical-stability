@@ -1,0 +1,227 @@
+{
+  "entries": [
+    {
+      "id": "D004",
+      "interpretation": "This is the exact real finite sum of the products ell i * f i.",
+      "name": "HighamBench.p13InterpolationValue",
+      "reuse_sha256": "91651a431909eb18900aed94b174f42faeaf9eb340bc7bda4e2d4e78c2f2070c",
+      "semantic_sha256": "70562d0bc0d8c2ac0f383af2d951ff600b8a30ab3a85c099f9d4f449c22ebc0b",
+      "source_dependency_id": "D002",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D006",
+      "interpretation": "This extracts division from a division-and-inverse monoid structure.",
+      "name": "DivInvMonoid.toDiv",
+      "reuse_sha256": "7d038def03b8b04afde21f875edb707b3ff548ef11d2da4fa55b6043d015b1e0",
+      "semantic_sha256": "cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea",
+      "source_dependency_id": "D014",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D009",
+      "interpretation": "This dispatches heterogeneous division through the selected HDiv instance.",
+      "name": "HDiv.hDiv",
+      "reuse_sha256": "95bbeabfe5a449f2ba09086bbe1d6364b401db913c8278859fe06ad567803d42",
+      "semantic_sha256": "10d75d9f08ad8c923109392866fba5fb3645de144bc824cefdd353658fe9f06b",
+      "source_dependency_id": "D018",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D010",
+      "interpretation": "This dispatches heterogeneous multiplication through the selected HMul instance.",
+      "name": "HMul.hMul",
+      "reuse_sha256": "604a960639af0efce7efa7efc6f134fe051b3c5dc1c48c78ffaa9ce8b9649dcc",
+      "semantic_sha256": "4e00447a4a8ef4c2ce13e307c56a1fbcd7fa8c732fe039a452b42477a50df2c6",
+      "source_dependency_id": "D019",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D012",
+      "interpretation": "This projects the binary non-strict order relation supplied by the relevant LE instance.",
+      "name": "LE.le",
+      "reuse_sha256": "8fc86d4b46d47573c7084325585f71d53c2195bd6ef436faef4ed7aa61e99ee1",
+      "semantic_sha256": "54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48",
+      "source_dependency_id": "D004",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D015",
+      "interpretation": "Ne a b means not (a = b).",
+      "name": "Ne",
+      "reuse_sha256": "b379281ac30d72322e40b97d7100066d7c3c750cf0a953ab0d40f3f1f1d1ec74",
+      "semantic_sha256": "635adc1f9e4a981a5c01b21338fdf89e637bd4ef0aa6911bda4dc03acfe9fba6",
+      "source_dependency_id": "D006",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D016",
+      "interpretation": "This obtains a typed numeral from the corresponding OfNat instance.",
+      "name": "OfNat.ofNat",
+      "reuse_sha256": "217c6c364afad38f28c563d138bedd706cd225dea80409f4bcf8f9a16838ef56",
+      "semantic_sha256": "6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead",
+      "source_dependency_id": "D007",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D017",
+      "interpretation": "This constructs the numeral-one interpretation from a One instance.",
+      "name": "One.toOfNat1",
+      "reuse_sha256": "aa2a375ccf272e189f88e088a0cd0f3800f44033349f108f9a37c636524dc1ca",
+      "semantic_sha256": "cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5",
+      "source_dependency_id": "D008",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D018",
+      "interpretation": "Real is Lean's type of real numbers.",
+      "name": "Real",
+      "reuse_sha256": "a8b1d6c8a236c9000a59f2eddfc4bb9eafa545405b21f06782cfbb22d6531335",
+      "semantic_sha256": "38529f0578472feffc4c79d5d0755fa10fc3edafb232ab5e442336d13630ee90",
+      "source_dependency_id": "D009",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D020",
+      "interpretation": "This supplies real addition, zero, and additive inverses.",
+      "name": "Real.instAddGroup",
+      "reuse_sha256": "f2e72b4b339dff0a5dbbcbc0ccd3af8d122f0604199b14886775db5e57dc5221",
+      "semantic_sha256": "f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0",
+      "source_dependency_id": "D021",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D021",
+      "interpretation": "This supplies real multiplication, inversion, and division.",
+      "name": "Real.instDivInvMonoid",
+      "reuse_sha256": "7666c0953a2efc300f90fdd768e88421404d01fba675a21f058f5fc0f8a66dc7",
+      "semantic_sha256": "166f2abb65bf1271e5e8d70fdb78c55672c7e366b30439e83b517f803cdefac3",
+      "source_dependency_id": "D022",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D022",
+      "interpretation": "This is the standard non-strict order on real numbers.",
+      "name": "Real.instLE",
+      "reuse_sha256": "ad12fb8bfe185a50548cde2b1fe4430aad1d1eb5e7fe6cf41615c4a56a579fb8",
+      "semantic_sha256": "144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3",
+      "source_dependency_id": "D010",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D024",
+      "interpretation": "This supplies ordinary multiplication on real numbers.",
+      "name": "Real.instMul",
+      "reuse_sha256": "9226216e945c56e1f162c24801f8900aba95bcadd64b323b1fac2328074c418f",
+      "semantic_sha256": "459ccbe28a1d29ccd2b329ea29e1a84b329b8064b8a8ecc52764b69b23e229ed",
+      "source_dependency_id": "D023",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D025",
+      "interpretation": "This supplies the multiplicative identity 1 in the real numbers.",
+      "name": "Real.instOne",
+      "reuse_sha256": "6fb8d92f2871fe72b593b6cb306abc1722cf47e304fd579e39aef2a8bfa5ff6b",
+      "semantic_sha256": "b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81",
+      "source_dependency_id": "D011",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D027",
+      "interpretation": "This supplies the additive identity 0 in the real numbers.",
+      "name": "Real.instZero",
+      "reuse_sha256": "1e61978cbbd3b176de599693b6db2ada4fe690d45638f7c75a3bd4b054dd6004",
+      "semantic_sha256": "860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882",
+      "source_dependency_id": "D012",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D028",
+      "interpretation": "This supplies the standard lattice order, including maximum and minimum, on the real numbers.",
+      "name": "Real.lattice",
+      "reuse_sha256": "a9ded547c0f64bfdaedff72c03dbb5e290c4f75262960fff2d5fd356320f4732",
+      "semantic_sha256": "5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510",
+      "source_dependency_id": "D024",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D029",
+      "interpretation": "This constructs the numeral-zero interpretation from a Zero instance.",
+      "name": "Zero.toOfNat0",
+      "reuse_sha256": "6f4d693d3279d6348a8beabfa01ca7ac2e6db5ec0904d145c0a3d72f15281a3a",
+      "semantic_sha256": "f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a",
+      "source_dependency_id": "D013",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D030",
+      "interpretation": "In this ordered additive group, abs a is max(a,-a), which for real a is the usual nonnegative absolute value.",
+      "name": "abs",
+      "reuse_sha256": "5600a951864c72f91f5551c89acab72b0c37a8a9e178e5335c0917eca73e1e9a",
+      "semantic_sha256": "8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b",
+      "source_dependency_id": "D025",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D032",
+      "interpretation": "This converts a homogeneous Div operation into the corresponding homogeneous HDiv operation.",
+      "name": "instHDiv",
+      "reuse_sha256": "3b34ef37f7beb75ebd0cda4c2464144e16d11cdad3fa2c07eacd02e6277977fc",
+      "semantic_sha256": "ea3478ce3daf37e2cbdcd4bfaf7b5142fd7d274b56d75d2fae007c15e1b89871",
+      "source_dependency_id": "D026",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D033",
+      "interpretation": "This converts a homogeneous Mul operation into the corresponding homogeneous HMul operation.",
+      "name": "instHMul",
+      "reuse_sha256": "c527b442abb61196db8a735ab550d0c90390f8e2c1b3f3936c52414a4c6c9578",
+      "semantic_sha256": "1fd375514ac68e29e7941c94ba308ea936395db23d0fee63a5c69dcccd3b2bdc",
+      "source_dependency_id": "D027",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D036",
+      "interpretation": "This folds addition over a finite set after applying the supplied summand function.",
+      "name": "Finset.sum",
+      "reuse_sha256": "2c83cd50974a10e9bfd9b166e086a82ede265eb6fd123d760d924382ca48b01b",
+      "semantic_sha256": "931ceac4e9efb5833f58970d10ced4621362e020ea1119492a8d379b7e692372",
+      "source_dependency_id": "D016",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    },
+    {
+      "id": "D038",
+      "interpretation": "This supplies associative, commutative real addition with identity zero.",
+      "name": "Real.instAddCommMonoid",
+      "reuse_sha256": "61817d1b06dbd530df02033695349dedbd248eef070112791c2f7bb2cebe065a",
+      "semantic_sha256": "11a549e6c9caa007a4627570dd86aea756ada755f141da0356b8766788f2eef7",
+      "source_dependency_id": "D020",
+      "source_direct_output_sha256": "ce5c37f0a333fb2e4c581c8af5c1760897d63f3f8966dbcb593ab88609dadc00",
+      "source_task_id": "P13-T1"
+    }
+  ],
+  "role": "direct-dependency-reuse",
+  "schema_version": "highambench-faithfulness-0.2",
+  "target_task_id": "P13-T3"
+}
