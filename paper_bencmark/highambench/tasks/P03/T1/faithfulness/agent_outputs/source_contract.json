@@ -1,0 +1,104 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "The paper introduces Algorithm 1.1 only for nonsingular A and derives (4.1) by multiplying an expression containing A^{-1}; nevertheless, (4.1) itself contains no inverse. [PDF pp. 2, 7-8, printed A818 and A823-A824, Algorithm 1.1 and equations (3.7), (4.1)]",
+      "impact": "A source-faithful formalization should retain nonsingularity as inherited paper context, while recognizing that the isolated algebraic lemma can validly be generalized to arbitrary conforming A. [PDF pp. 2 and 8, printed A818 and A824, Algorithm 1.1 and equation (4.1)]",
+      "issue": "Nonsingularity is inherited from Algorithm 1.1 and from the derivation through (3.7), but is not algebraically needed for the final identity once (3.3) and (3.6) are assumed. [PDF pp. 2, 7-8, printed A818 and A823-A824, Algorithm 1.1 and equations (3.3), (3.6), (3.7), (4.1)]"
+    }
+  ],
+  "contract_plain_english": "One unscaled refinement step has an exact residual decomposition: the new signed residual equals the residual-computation error, plus the correction-equation defect, plus the update-rounding error after multiplication by A. Nothing in this passage alone bounds those terms or claims convergence. [PDF pp. 7-8, printed A823-A824, equations (3.3), (3.6), and (4.1)]",
+  "paper_batch_sha256": "cc0f2d27697c7df47ddee702a54285359037d701ffa45ec71a92ca67f9cf3902",
+  "paper_sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "Algorithm 1.1",
+      "observation": "For nonsingular A \u2208 \u211d^{n\u00d7n}, Algorithm 1.1 computes the residual in precision u_r and rounds it to u_s, solves the correction equation in effective precision u_s while storing the correction in u, and forms the next iterate in u.",
+      "pdf_page": 2,
+      "printed_page": "A818"
+    },
+    {
+      "anchor": "section 2, standard model and definition of \u03b3_k",
+      "observation": "The analysis adopts the standard floating-point model and defines \u03b3_k = ku/(1\u2212ku), with a superscript indicating which unit roundoff is used.",
+      "pdf_page": 5,
+      "printed_page": "A821"
+    },
+    {
+      "anchor": "equations (3.3), (3.6), and (3.7)",
+      "observation": "The computed residual and update are represented exactly as r\u0302_i = b\u2212Ax\u0302_i+\u0394r_i and x\u0302_{i+1} = x\u0302_i+d\u0302_i+\u0394x_i, with stated componentwise bounds on \u0394r_i and \u0394x_i.",
+      "pdf_page": 7,
+      "printed_page": "A823"
+    },
+    {
+      "anchor": "equation (4.1)",
+      "observation": "Multiplication of (3.7) by A gives the exact signed residual identity A x\u0302_{i+1}\u2212b = \u0394r_i+A d\u0302_i\u2212r\u0302_i+A\u0394x_i.",
+      "pdf_page": 8,
+      "printed_page": "A824"
+    },
+    {
+      "anchor": "section 6, Scaling",
+      "observation": "The rounding-error analysis explicitly ignores underflow and overflow; section 6 proposes a scaled algorithmic variant when these are a concern.",
+      "pdf_page": 12,
+      "printed_page": "A828"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "This is the exact one-step residual decomposition for the original, unscaled Algorithm 1.1: residual computation and rounding, correction solve, and precision-u update are linked without asserting convergence or stability. [PDF pp. 2, 7-8, printed A818 and A823-A824, Algorithm 1.1 and equations (3.3), (3.6), (4.1)]",
+    "binders": [
+      "Let n be the system dimension, A \u2208 \u211d^{n\u00d7n} be nonsingular, and b \u2208 \u211d^n, as inherited from Algorithm 1.1. [PDF p. 2, printed A818, Algorithm 1.1]",
+      "For each loop index i \u2265 0, x\u0302_i and x\u0302_{i+1} are computed iterates, r\u0302_i is the computed-and-rounded residual, d\u0302_i is the computed correction, and \u0394r_i and \u0394x_i are their exact rounding-error terms. [PDF pp. 2 and 7, printed A818 and A823, Algorithm 1.1 and equations (3.3), (3.6)]",
+      "The unit roundoffs satisfy u_r \u2264 u \u2264 u_s \u2264 u_f when the two precision-order statements are combined. [PDF pp. 1-2, printed A817-A818, equation (1.1) and the definition of u_s]"
+    ],
+    "conclusions": [
+      "For each i \u2265 0, A x\u0302_{i+1}\u2212b = \u0394r_i+A d\u0302_i\u2212r\u0302_i+A\u0394x_i exactly. [PDF p. 8, printed A824, equation (4.1)]"
+    ],
+    "constants_and_indexing": [
+      "The identity relates iteration i to i+1 and has no shifted residual other than r\u0302_i. [PDF p. 8, printed A824, equation (4.1)]",
+      "The update contribution is A\u0394x_i, not \u0394x_i, and the correction defect is A d\u0302_i\u2212r\u0302_i with this sign. [PDF p. 8, printed A824, equation (4.1)]",
+      "The factors u_s, 1+u_s, and \u03b3_p^r occur in the bound for \u0394r_i but not as explicit coefficients in the exact identity. [PDF pp. 7-8, printed A823-A824, equations (3.3) and (4.1)]"
+    ],
+    "definitions_and_conventions": [
+      "\u0394r_i is defined by r\u0302_i\u2212(b\u2212Ax\u0302_i), and \u0394x_i is defined by x\u0302_{i+1}\u2212(x\u0302_i+d\u0302_i); they are exact error variables, not approximations or unspecified perturbations. [PDF p. 7, printed A823, equations (3.3) and (3.6)]",
+      "Absolute values of vectors and matrices are entrywise, and inequalities between vectors or matrices are componentwise. [PDF p. 5, printed A821, section 2 notation]",
+      "\u03b3_p^r means pu_r/(1\u2212pu_r), where p is the maximum number of nonzeros in a row of [A b], and p=n+1 for dense A and b. [PDF pp. 5 and 7, printed A821 and A823, definition of \u03b3_k and text preceding equation (3.3)]"
+    ],
+    "error_notions": [
+      "The left side uses A x\u0302_{i+1}\u2212b, the negative of the usual exact mathematical residual b\u2212Ax\u0302_{i+1}; r\u0302_i is instead the residual actually computed and rounded during iteration i. [PDF pp. 7-8, printed A823-A824, equations (3.3) and (4.1)]",
+      "Equation (4.1) alone does not state a forward-error, normwise-backward-error, or componentwise-backward-error bound. [PDF p. 8, printed A824, equation (4.1) and the subsequent normwise analysis]"
+    ],
+    "exceptional_values": [
+      "The paper's analysis ignores underflow and overflow and therefore applies under the ordinary finite-value standard-model regime; the scaled replacement in section 6 is not part of this identity's Algorithm 1.1 linkage. [PDF p. 12, printed A828, section 6, Scaling]",
+      "The definition \u03b3_p^r = pu_r/(1\u2212pu_r) implicitly requires a nonzero, normally positive denominator for the stated finite bound. [PDF pp. 5 and 7, printed A821 and A823, definition of \u03b3_k and use of \u03b3_p^r]"
+    ],
+    "higher_order_terms": [
+      "No big-O or higher-order term is omitted from (4.1); all rounding effects are contained exactly in \u0394r_i and \u0394x_i. [PDF p. 8, printed A824, equation (4.1)]",
+      "The associated residual-error bound retains the factor 1+u_s rather than replacing it by a first-order approximation. [PDF p. 7, printed A823, equation (3.3)]"
+    ],
+    "hypotheses": [
+      "The computed residual has the exact representation r\u0302_i = b\u2212Ax\u0302_i+\u0394r_i. [PDF p. 7, printed A823, equation (3.3)]",
+      "The computed update has the exact representation x\u0302_{i+1} = x\u0302_i+d\u0302_i+\u0394x_i. [PDF p. 7, printed A823, equation (3.6)]",
+      "The quantities are those produced by one iteration of the unscaled Algorithm 1.1. [PDF p. 2, printed A818, Algorithm 1.1]"
+    ],
+    "implicit_context": [
+      "A and b are treated as the precision-u input data, and all iterates are stored in precision u. [PDF pp. 1-2, printed A817-A818, precision definitions and Algorithm 1.1]",
+      "The paper obtains (4.1) by multiplying (3.7) by A, although the same identity follows directly from (3.3) and (3.6). [PDF pp. 7-8, printed A823-A824, equations (3.3), (3.6), (3.7), and (4.1)]",
+      "No solver-accuracy condition such as (2.3), (2.4), or (2.5) is invoked in the statement of the exact identity. [PDF p. 8, printed A824, equation (4.1) and the immediately following introduction of assumption (2.4)]"
+    ],
+    "norms": [
+      "No norm occurs in the identity itself. The surrounding rounding bounds use componentwise absolute values; infinity norms enter only in the subsequent analysis. [PDF pp. 7-8, printed A823-A824, equations (3.3), (3.6), and the text after (4.1)]"
+    ],
+    "numerical_model": [
+      "The residual error satisfies |\u0394r_i| \u2264 u_s|b\u2212Ax\u0302_i|+(1+u_s)\u03b3_p^r(|b|+|A||x\u0302_i|). [PDF p. 7, printed A823, equation (3.3)]",
+      "The update error satisfies |\u0394x_i| \u2264 u|x\u0302_{i+1}| under the cited variant of the standard rounding model. [PDF p. 7, printed A823, equation (3.6)]",
+      "Equation (4.1) itself is an exact algebraic identity after introducing these error variables; it is not a first-order approximation. [PDF p. 8, printed A824, equation (4.1)]"
+    ]
+  },
+  "task_id": "P03-T1",
+  "undebatable_constraints": [
+    "The claimed equality is A x\u0302_{i+1}\u2212b = \u0394r_i+A d\u0302_i\u2212r\u0302_i+A\u0394x_i, with exactly the displayed signs and index offset. [PDF p. 8, printed A824, equation (4.1)]",
+    "All hatted vectors are computed quantities, whereas b\u2212Ax\u0302_i is the exact residual of the stored iterate relative to the input A and b. [PDF pp. 2 and 7, printed A818 and A823, Algorithm 1.1 and equation (3.3)]",
+    "The result is one-step and exact; it contains no norm, inequality, convergence claim, or solver-stability premise. [PDF p. 8, printed A824, equation (4.1)]",
+    "\u0394r_i and \u0394x_i must remain distinct because they arise from different algorithmic operations and precisions. [PDF pp. 2 and 7, printed A818 and A823, Algorithm 1.1 and equations (3.3), (3.6)]"
+  ]
+}

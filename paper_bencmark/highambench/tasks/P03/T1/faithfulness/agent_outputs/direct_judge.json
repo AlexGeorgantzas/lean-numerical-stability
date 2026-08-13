@@ -1,0 +1,297 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P03-T1",
+  "paper_sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc",
+  "dossier_sha256": "e1dbf8b352b736035e0d366424933943d19c74237087dfba62de1c4a21f8deaf",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.p03MatVec",
+      "interpretation": "For row i, p03MatVec A v i is the finite real sum over columns j of A i j multiplied by v j.",
+      "effect_on_target": "It makes each occurrence of p03MatVec the corresponding component of Ax, Ad, Ay, or A Delta-x and supplies the matrix-vector linearity used by the identity.",
+      "paper_match": "This is the standard component formula for the matrix-vector products in equations (3.3), (3.6), and (4.1).",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "Eq",
+      "interpretation": "Eq is exact propositional equality between two terms of the same type.",
+      "effect_on_target": "Both assumptions and the conclusion assert exact real equalities, not approximations or inequalities.",
+      "paper_match": "Equation (4.1), together with the error representations (3.3) and (3.6), is exact.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "Fin",
+      "interpretation": "Fin n is the finite coordinate index type with indices from zero through n minus one.",
+      "effect_on_target": "It indexes the rows, columns, and vector components. The concluding Lean binder i is a coordinate index, not the paper's iteration index.",
+      "paper_match": "It correctly represents n-dimensional coordinates after interpreting x and y as the current and next iterates of one fixed paper iteration.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "HAdd.hAdd",
+      "interpretation": "HAdd.hAdd dispatches overloaded addition through the selected HAdd instance; here it resolves to real addition.",
+      "effect_on_target": "It determines the left-associated real additions in the residual representation, update representation, and right side of the conclusion.",
+      "paper_match": "These additions are the componentwise form of the vector additions in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "HSub.hSub",
+      "interpretation": "HSub.hSub dispatches overloaded subtraction through the selected HSub instance; here it resolves to real subtraction.",
+      "effect_on_target": "It fixes the signs in b-Ax, Ay-b, and Delta-r+Ad-rHat.",
+      "paper_match": "The resulting signs exactly match equations (3.3) and (4.1).",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "Nat",
+      "interpretation": "Nat is the type of natural numbers used for the system dimension n.",
+      "effect_on_target": "The theorem ranges over every finite dimension, including the additional zero-dimensional case.",
+      "paper_match": "For ordinary positive n it matches the paper's system dimension. The n=0 case is a harmless vacuous extension.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "Real",
+      "interpretation": "Real is Lean's exact mathematical real-number type.",
+      "effect_on_target": "Matrix entries, vector components, errors, and all arithmetic in the proposition are exact real quantities.",
+      "paper_match": "The paper states A and its vectors over the reals and treats computed floating-point values as real quantities in its error equations.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "Real.instAdd",
+      "interpretation": "Real.instAdd provides ordinary addition on real numbers.",
+      "effect_on_target": "It supplies the concrete operation selected by every homogeneous addition in the target.",
+      "paper_match": "It matches ordinary scalar addition in each component of the paper's vector identity.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "Real.instSub",
+      "interpretation": "Real.instSub defines real subtraction as addition of the additive inverse.",
+      "effect_on_target": "It gives the standard meanings of b-Ax, Ay-b, and subtraction of rHat.",
+      "paper_match": "It preserves the exact residual and correction-defect signs displayed in equation (4.1).",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "instHAdd",
+      "interpretation": "instHAdd lifts a homogeneous Add instance into a homogeneous HAdd instance.",
+      "effect_on_target": "It ensures that the overloaded additions in the elaborated type use Real.instAdd without coercion or mixed-type behavior.",
+      "paper_match": "No nonstandard addition is introduced, so the component arithmetic matches the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "instHSub",
+      "interpretation": "instHSub lifts a homogeneous Sub instance into a homogeneous HSub instance.",
+      "effect_on_target": "It ensures that the overloaded subtractions use Real.instSub.",
+      "paper_match": "No nonstandard subtraction changes the residual convention or signs.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "Fin.fintype",
+      "interpretation": "Fin.fintype supplies a finite enumeration containing every element of Fin n exactly once.",
+      "effect_on_target": "It permits p03MatVec to sum over every matrix column.",
+      "paper_match": "This realizes the finite n-term sum defining a matrix-vector product.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "Finset.sum",
+      "interpretation": "Finset.sum folds an AddCommMonoid-valued function over a finite set, using zero for the empty sum.",
+      "effect_on_target": "It computes each matrix-vector component as a finite sum of real products.",
+      "paper_match": "This is the standard finite summation implicit in Ax, Ad, and A Delta-x.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Finset.univ",
+      "interpretation": "Finset.univ is the finite set of all elements of a fintype.",
+      "effect_on_target": "The matrix-vector sum includes every column index j in Fin n.",
+      "paper_match": "It matches summation over all n columns of A.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "HMul.hMul",
+      "interpretation": "HMul.hMul dispatches overloaded multiplication through the selected HMul instance; here it resolves to real multiplication.",
+      "effect_on_target": "It multiplies each matrix entry A i j by the corresponding vector component.",
+      "paper_match": "This is the scalar multiplication used in the paper's matrix-vector products.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "Real.instAddCommMonoid is the usual commutative additive monoid structure on the reals.",
+      "effect_on_target": "It supplies addition and zero to Finset.sum and makes the order of finite summation immaterial.",
+      "paper_match": "It gives the ordinary real finite sums underlying matrix-vector multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instMul",
+      "interpretation": "Real.instMul provides ordinary multiplication on real numbers.",
+      "effect_on_target": "It is the concrete multiplication used for A i j times a vector component.",
+      "paper_match": "It matches ordinary scalar multiplication in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "instHMul",
+      "interpretation": "instHMul lifts a homogeneous Mul instance into a homogeneous HMul instance.",
+      "effect_on_target": "It ensures that p03MatVec uses Real.instMul without coercions or mixed-type multiplication.",
+      "paper_match": "No nonstandard multiplication changes the meaning of the matrix-vector products.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF is the SIAM Journal on Scientific Computing volume 40, issue 2, 2018 publication spanning A817-A847. PDF page 8, printed A824, begins section 4 and displays equation (4.1) with its derivation from (3.7).",
+      "lean_evidence": "The dossier target is the P03 one-step residual identity and its conclusion has the same four-term decomposition as equation (4.1).",
+      "reasoning": "The cited version, page, section, and selected result are correct."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "Algorithm 1.1 uses A in R^(n x n) and vectors in R^n. Equation (4.1) concerns one fixed iteration's current iterate, correction, residual, error terms, and next iterate.",
+      "lean_evidence": "A has type Fin n -> Fin n -> Real and all seven vector binders have type Fin n -> Real. The concluding Fin n binder is a component index; x and y can be mapped to xHat_k and xHat_(k+1).",
+      "reasoning": "The scalar and dimensional types are correct for a pointwise encoding of one fixed refinement step. Temporal scope and nonsingularity are assessed separately."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "Algorithm 1.1 loops over iteration indices k >= 0, and equation (4.1) is asserted for quantities produced at each such k.",
+      "lean_evidence": "Lean has no iteration-index binder or sequence of iterates. It universally quantifies arbitrary fixed-step tuples x, d, Delta-x, b, rHat, Delta-r, and y satisfying two equations, then quantifies over coordinates.",
+      "reasoning": "Every paper step instantiates the Lean theorem, but the literal quantifier scope is broadened from algorithm-generated steps to all algebraic tuples satisfying the representations."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "Algorithm 1.1 assumes nonsingular A, prescribed precisions, and algorithm-produced quantities. Equations (3.3) and (3.6) provide the two exact representations used in deriving (4.1).",
+      "lean_evidence": "The only hypotheses are hres and hupdate. There is no nonsingularity assumption, no algorithm-execution premise, and no precision or finite-arithmetic premise.",
+      "reasoning": "The two algebraically necessary representations are present, but inherited paper hypotheses are omitted. This creates a valid broader algebraic theorem rather than an exact contextual match."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "Equation (4.1) concludes AxHat_(k+1)-b = Delta-r_k + A dHat_k - rHat_k + A Delta-x_k.",
+      "lean_evidence": "The conclusion is p03MatVec A y i - b i = Delta-r i + p03MatVec A d i - rHat i + p03MatVec A Delta-x i for every component i.",
+      "reasoning": "All terms in the selected identity are present, with no omitted conjunct, bound, or additional conclusion."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The paper uses ordinary real matrix-vector multiplication and vector addition/subtraction in (3.3), (3.6), and (4.1).",
+      "lean_evidence": "D001 unfolds p03MatVec to sum_j A i j*v j; D004-D018 resolve the remaining operations to exact real addition, subtraction, multiplication, equality, and finite summation.",
+      "reasoning": "All nontrivial target operators have the intended standard meanings."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes the exact residual b-AxHat_k, the computed residual rHat_k, the computed correction dHat_k, the computed iterates, and the exact error variables Delta-r_k and Delta-x_k.",
+      "lean_evidence": "x, d, Delta-x, b, rHat, Delta-r, and y are separate binders. hres and hupdate give Delta-r and Delta-x exactly the defining algebraic roles from (3.3) and (3.6).",
+      "reasoning": "The proposition does not merge the two error variables or substitute the exact residual for the computed residual, although computed provenance is not encoded in their types."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The quantities in (4.1) arise from residual computation, correction solution, and update steps 3-5 of unscaled Algorithm 1.1.",
+      "lean_evidence": "No predicate states that x, d, rHat, or y were produced by Algorithm 1.1, and no sequence relates multiple iterations. Only hres and hupdate link the fixed-step values algebraically.",
+      "reasoning": "The theorem remains applicable to every algorithm step but does not itself preserve the paper's execution-model linkage."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "No norm occurs in equation (4.1); infinity norms enter only in the subsequent backward-error analysis.",
+      "lean_evidence": "The target contains only componentwise real equalities and finite matrix-vector sums, with no norm or order relation.",
+      "reasoning": "No normwise, squared-norm, or componentwise-inequality semantics are substituted into the selected identity."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "Equation (4.1) uses the next iterate k+1 on the left, the residual and correction from k, the signs Delta-r_k + A dHat_k - rHat_k + A Delta-x_k, and no explicit roundoff coefficients.",
+      "lean_evidence": "Mapping x to xHat_k and y to xHat_(k+1), the target has exactly the same signs and terms. Its final i is consistently a coordinate index.",
+      "reasoning": "The fixed-step renaming preserves the iteration offset and all coefficients and signs."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The paper uses the standard floating-point model, orders the precisions by u_r <= u <= u_f and u <= u_s <= u_f, stores specified quantities at specified precisions, and explicitly ignores underflow and overflow.",
+      "lean_evidence": "The declaration uses exact Real arithmetic and contains no precision parameters, rounding-mode semantics, representability constraints, exceptional values, underflow, or overflow assumptions.",
+      "reasoning": "The exact identity is independent of these details once the two error equations are assumed, but the declaration does not formalize the inherited floating-point model."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "Equation (4.1) is an exact equality.",
+      "lean_evidence": "The conclusion uses Eq between the two real expressions for every component.",
+      "reasoning": "There is no change in relation direction, strictness, or equality strength."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The left side of (4.1) is AxHat_(k+1)-b, the negative of the usual residual, while rHat_k is the residual computed during iteration k. Equation (4.1) itself is not a backward-error bound.",
+      "lean_evidence": "The left side is Ay-b, and the right side separately subtracts rHat after adding Delta-r and Ad. No forward-error, backward-error, or stability predicate occurs.",
+      "reasoning": "The signed residual decomposition and computed-residual role are preserved without substituting another error notion."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Equation (4.1) is exact; all residual- and update-rounding effects are represented by Delta-r_k and Delta-x_k, with no omitted big-O term.",
+      "lean_evidence": "hres, hupdate, and the conclusion are exact real equalities and contain no approximation relation or truncated term.",
+      "reasoning": "The Lean proposition does not turn the identity into a first-order approximation or discard a remainder."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The paper's identity is contextualized by a nonsingular real n-dimensional system and quantities produced by Algorithm 1.1.",
+      "lean_evidence": "Lean stays finite-dimensional and real but extends the statement to arbitrary A, including singular A, arbitrary fixed-step tuples satisfying hres and hupdate, and n=0.",
+      "reasoning": "This is correctly classified as a strict algebraic generalization, not as an equivalent contextual formalization or a specialization."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "Equations (3.3) and (3.6) define satisfiable exact error terms for actual refinement steps.",
+      "lean_evidence": "For example, with n=1, A=[2], x=[1], d=[3], Delta-x=[4], b=[5], Delta-r=[6], choose rHat=[9] and y=[8]. Both hypotheses hold and both sides of the conclusion equal 11.",
+      "reasoning": "The hypotheses have nontrivial positive-dimensional models. Although n=0 is included, the theorem is not true only because of that vacuous case."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "For each paper iteration k, instantiate x=xHat_k, y=xHat_(k+1), d=dHat_k, rHat=rHat_k, Delta-r=Delta-r_k, and Delta-x=Delta-x_k. Equations (3.3) and (3.6) supply hres and hupdate, and D001 identifies p03MatVec with matrix-vector multiplication. The componentwise Lean conclusion is therefore exactly equation (4.1)."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper asserts (4.1) only in the inherited context of nonsingular A and quantities produced by Algorithm 1.1. It does not, as a stated result, quantify over singular matrices, arbitrary algebraic tuples, n=0, or tuples unrelated to an execution. Elementary algebra independently proves that extension, but the contextual paper result alone does not imply the full Lean quantification."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "contextual-generalization",
+      "paper_evidence": "Algorithm 1.1 assumes nonsingular A and equation (4.1) concerns values generated at a loop iteration k.",
+      "lean_evidence": "The declaration ranges over every real square A and every fixed-step tuple satisfying hres and hupdate, without an iteration sequence or nonsingularity premise.",
+      "impact": "The declaration is not contextually equivalent to the paper result, and the paper-to-Lean implication fails. The extension is nonvacuous and still covers every intended paper instance."
+    },
+    {
+      "severity": "note",
+      "category": "floating-point-provenance",
+      "paper_evidence": "The surrounding paper specifies residual, solve, update, storage precisions, standard-model error bounds, and exclusion of underflow and overflow.",
+      "lean_evidence": "The target contains only exact Real equations and does not encode computation, precision, exceptional-value, or error-bound predicates.",
+      "impact": "The theorem certifies the isolated algebraic identity but cannot by itself establish that supplied values arose from the paper's floating-point algorithm or satisfy its rounding bounds."
+    }
+  ],
+  "rationale": "The Lean proposition is a nonvacuous pointwise real-algebra generalization of equation (4.1). After unfolding p03MatVec, it preserves the exact residual sign, all four right-hand terms, the update offset, and the distinct residual- and update-error variables. Every paper instance satisfies its two hypotheses, so Lean implies the selected paper identity. The reverse implication fails because Lean drops nonsingularity and algorithmic and floating-point provenance and quantifies over arbitrary conforming tuples. Those omissions broaden rather than weaken the exact algebraic result, so the fixed classification is faithful-stronger."
+}

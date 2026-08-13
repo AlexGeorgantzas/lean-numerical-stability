@@ -1,0 +1,63 @@
+{
+  "accepted": true,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-13T09:49:15.227524+00:00",
+  "findings": [
+    {
+      "category": "contextual-generalization",
+      "impact": "The declaration is not contextually equivalent to the paper result, and the paper-to-Lean implication fails. The extension is nonvacuous and still covers every intended paper instance.",
+      "lean_evidence": "The declaration ranges over every real square A and every fixed-step tuple satisfying hres and hupdate, without an iteration sequence or nonsingularity premise.",
+      "paper_evidence": "Algorithm 1.1 assumes nonsingular A and equation (4.1) concerns values generated at a loop iteration k.",
+      "severity": "minor"
+    },
+    {
+      "category": "floating-point-provenance",
+      "impact": "The theorem certifies the isolated algebraic identity but cannot by itself establish that supplied values arose from the paper's floating-point algorithm or satisfy its rounding bounds.",
+      "lean_evidence": "The target contains only exact Real equations and does not encode computation, precision, exceptional-value, or error-bound predicates.",
+      "paper_evidence": "The surrounding paper specifies residual, solve, update, storage precisions, standard-model error bounds, and exclusion of underflow and overflow.",
+      "severity": "note"
+    },
+    {
+      "category": "algorithm-and-computation-context",
+      "impact": "The translation cannot independently express execution provenance or support the paper's numerical error estimates, although its broader algebraic theorem still covers every paper instance of equation (4.1).",
+      "paper_evidence": "Algorithm 1.1 and equations (3.3), (3.6), and (4.1) identify the vectors as outputs and rounding errors from specific mixed-precision operations.",
+      "severity": "major",
+      "translation_evidence": "The translated variables are arbitrary real vectors, with no algorithmic or computed-quantity semantics."
+    },
+    {
+      "category": "domain-and-hypothesis-generalization",
+      "impact": "The translation is not source-equivalent; it is strictly stronger over the algebraic domain.",
+      "paper_evidence": "The paper assumes a nonsingular matrix and an indexed step of Algorithm 1.1 under its floating-point model.",
+      "severity": "minor",
+      "translation_evidence": "The proposition permits arbitrary square matrices, n=0, and arbitrary tuples satisfying only the two defining equations."
+    },
+    {
+      "category": "exact-identity",
+      "impact": "There is no changed coefficient, sign, norm, error direction, or omitted higher-order term in the selected conclusion.",
+      "paper_evidence": "Equation (4.1) has the exact signed residual and terms \u0394r_i, A dHat_i-rHat_i, and A\u0394x_i.",
+      "severity": "note",
+      "translation_evidence": "After the natural one-step renaming, the hypotheses and conclusion reproduce these terms with identical signs and exact equality."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "For each paper iteration k, instantiate x=xHat_k, y=xHat_(k+1), d=dHat_k, rHat=rHat_k, Delta-r=Delta-r_k, and Delta-x=Delta-x_k. Equations (3.3) and (3.6) supply hres and hupdate, and D001 identifies p03MatVec with matrix-vector multiplication. The componentwise Lean conclusion is therefore exactly equation (4.1).",
+      "verdict": "yes"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper asserts (4.1) only in the inherited context of nonsingular A and quantities produced by Algorithm 1.1. It does not, as a stated result, quantify over singular matrices, arbitrary algebraic tuples, n=0, or tuples unrelated to an execution. Elementary algebra independently proves that extension, but the contextual paper result alone does not imply the full Lean quantification.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "faithful-stronger",
+    "roundtrip": "faithful-stronger"
+  },
+  "rationale": "The Lean proposition is a nonvacuous pointwise real-algebra generalization of equation (4.1). After unfolding p03MatVec, it preserves the exact residual sign, all four right-hand terms, the update offset, and the distinct residual- and update-error variables. Every paper instance satisfies its two hypotheses, so Lean implies the selected paper identity. The reverse implication fails because Lean drops nonsingularity and algorithmic and floating-point provenance and quantifies over arbitrary conforming tuples. Those omissions broaden rather than weaken the exact algebraic result, so the fixed classification is faithful-stronger.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P03-T1"
+}
