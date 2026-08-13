@@ -6,7 +6,7 @@
   },
   "assumptions": [],
   "author_label": null,
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P18 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P18 shared files are present; no NumStability artifact is present."
@@ -22,8 +22,8 @@
   "informal_proof": "Expand the paper-scoped Euclidean norm and apply the finite-dimensional triangle inequality.",
   "informal_statement": "An exact finite-vector bound for the paper's one-step decomposition E = E_sch + E_per.",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P18",
   "paper_source": {

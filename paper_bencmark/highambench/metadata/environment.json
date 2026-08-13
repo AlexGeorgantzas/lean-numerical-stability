@@ -1,34 +1,192 @@
 {
   "agent": {
-    "binary_sha256": "ae77c5e73db36d15c131381c5d620278abed999650867a7490b13384e1f5842d",
+    "binary_sha256": "d13cfcda217421fb20d0aa6aa80819a62483a72e4a7fd52743675ca20d86377c",
     "disabled_capabilities": [
       "web and browser tools",
       "apps and plugins",
-      "multi-agent work",
       "memory",
       "image generation"
     ],
     "fresh_mode": [
-      "codex exec --ephemeral",
+      "Codex app-server thread/start with ephemeral=false inside a unique temporary state directory",
+      "history.persistence=none",
       "a new temporary CODEX_HOME for every attempt",
+      "the temporary state directory is deleted on normal adapter exit and is never reused or mounted by another attempt",
       "user configuration and project rules ignored"
     ],
     "id": "codex-cli",
-    "model": "gpt-5.6-terra",
-    "prompt_sha256": "5c99c5e5812f4b3c5dc2be4e673f8baff5ad96b5babfbbe9b0b5a9a81e593758",
-    "reasoning_effort": "medium",
-    "version": "0.146.0-alpha.3.1"
+    "model": "gpt-5.6-sol",
+    "prompt_protocol": {
+      "N_receives_condition_supplement": false,
+      "common_prompt": {
+        "bytes": 2668,
+        "path": "agent_prompt.md",
+        "sha256": "3024ed126d13331029add14475ed64e37802c6bd3d42abf9ee97c286603514da"
+      },
+      "composition_order": [
+        "common_prompt",
+        "condition_L_supplement_if_condition_L",
+        "task_context",
+        "fixed_target"
+      ],
+      "condition_supplements": {
+        "L": {
+          "bytes": 1834,
+          "path": "condition_prompts/L.md",
+          "sha256": "24d10a8812290b8abe26091a20fe11368ee0d4d0ab2b545ef6972dff57de941e"
+        }
+      },
+      "relevant_theorem_or_module_hints_supplied": false,
+      "version": "signposted-library-v1"
+    },
+    "prompt_sha256": "3024ed126d13331029add14475ed64e37802c6bd3d42abf9ee97c286603514da",
+    "reasoning_effort": "ultra",
+    "ultra_orchestration": {
+      "accounting_projection_schema_version": 6,
+      "automatic_task_delegation": true,
+      "child_model": "gpt-5.6-sol",
+      "child_model_locked": true,
+      "child_reasoning_effort": "ultra",
+      "child_reasoning_effort_locked": true,
+      "codex_config_locks": {
+        "agents.default_subagent_model": "gpt-5.6-sol",
+        "agents.default_subagent_reasoning_effort": "ultra",
+        "features.hooks": true,
+        "features.multi_agent_v2.expose_spawn_agent_model_overrides": false,
+        "features.multi_agent_v2.hide_spawn_agent_metadata": true,
+        "features.multi_agent_v2.max_concurrent_threads_per_session": 4,
+        "features.multi_agent_v2.usage_hint_enabled": true,
+        "features.multi_agent_v2.usage_hint_text": "For spawn_agent, omit fork_turns (defaults to \"all\") or set it to exactly \"all\" or \"none\"; positive integers and all other values are unavailable."
+      },
+      "enabled": true,
+      "fork_policy": {
+        "allowed_fork_turns": [
+          "omitted",
+          "all",
+          "none"
+        ],
+        "block_reason_template": "fork_turns for call {call_id} must be omitted or set to \"all\" or \"none\".",
+        "command": "/usr/bin/python3.10 /u501/m2fetrat/.codex/highambench-ultra-fork-policy.py",
+        "display_order": 0,
+        "enforcement": "codex_pre_tool_use_command_hook_v1",
+        "execution_mode": "sync",
+        "handler_type": "command",
+        "helper_filename": "highambench-ultra-fork-policy.py",
+        "helper_sha256": "5456bb8106715d1b783e14b81ce2df66e64bac828a1b1c345b4cdb76d2b3cd30",
+        "hook_event_name": "preToolUse",
+        "hook_notification": "hook/completed",
+        "hook_trust_bypass_cli_flag_present": true,
+        "hook_trust_bypass_effective_source": "thread_start_config",
+        "hook_trust_bypass_thread_config": {
+          "bypass_hook_trust": true
+        },
+        "hooks_json_sha256": "ffde6e560f2bb1c594a25a5ff8bbe07924324fa7c5f9f7297eb7ce5fb5503718",
+        "matcher": "^(Agent|spawn_agent|collaborationspawn_agent)$",
+        "positive_integer_fork_turns_allowed": false,
+        "schema_version": 1,
+        "scope": "turn",
+        "source": "user",
+        "source_path": "/u501/m2fetrat/.codex/hooks.json",
+        "usage_hint": "For spawn_agent, omit fork_turns (defaults to \"all\") or set it to exactly \"all\" or \"none\"; positive integers and all other values are unavailable.",
+        "usage_hint_sha256": "003b6103043c6f47ce098addedff5a82906c40786c667d132065e0ed35e97556"
+      },
+      "max_concurrency_scope": "root and subagent inference threads in one Codex session",
+      "max_concurrent_threads_per_session": 4,
+      "multi_agent_version": "v2",
+      "root_model": "gpt-5.6-sol",
+      "root_reasoning_effort": "ultra",
+      "spawn_agent_metadata_hidden": true,
+      "spawn_model_override_exposed": false,
+      "spawn_reasoning_effort_override_exposed": false,
+      "submission_barrier": {
+        "accepted_boundary": {
+          "descendants_quiescent": true,
+          "drain_complete": false,
+          "later_model_response_possible": false,
+          "measurement_exact": true,
+          "root_turn_active": true,
+          "stop_reason": "first_valid_proof",
+          "submission_boundary_exact": true
+        },
+        "candidate_path": "Candidate.lean",
+        "descendants_quiescent_before_submission": true,
+        "direct_submission_path_forbidden": true,
+        "inner_dynamic_arguments": {
+          "candidate_path": "Candidate.lean"
+        },
+        "inner_dynamic_call_left_blocked": true,
+        "inner_dynamic_call_observed": true,
+        "inner_dynamic_item_started": true,
+        "inner_dynamic_tool_name": "submit_proof",
+        "inner_dynamic_tool_response_sent": false,
+        "inner_submit_invocation_exact": true,
+        "inner_submit_only_nested_tool_call": true,
+        "outer_exec_final_raw_item": true,
+        "outer_exec_name": "exec",
+        "outer_exec_output_emitted": false,
+        "outer_exec_program": "// @exec: {\"yield_time_ms\": 2400000}\nawait tools.submit_proof({candidate_path:\"Candidate.lean\"});\n",
+        "outer_exec_program_bytes": 98,
+        "outer_exec_program_sha256": "bb4995a4eaad6d9128cb1b0d177f8ba882be176fbd0db589bb861182d3020edd",
+        "outer_exec_timer_starts_at_or_after_prompt_release": true,
+        "outer_exec_yield_attempt_wall_seconds": 1800,
+        "outer_exec_yield_envelope_basis": "prompt_release_wall_clock_plus_post_submission_validation_reserve",
+        "outer_exec_yield_envelope_ms": 2169000,
+        "outer_exec_yield_exceeds_envelope": true,
+        "outer_exec_yield_margin_ms": 231000,
+        "outer_exec_yield_post_submission_validation_reserve_seconds": 369,
+        "outer_exec_yield_time_ms": 2400000,
+        "outer_raw_item_and_call_ids_pairwise_distinct": true,
+        "outer_raw_item_observed_before_inner_dynamic_call": true,
+        "outer_raw_item_type": "custom_tool_call",
+        "raw_response_completed_before_boundary_publication": true,
+        "root_coordinator_only": true,
+        "runner_materializes_submission_after_acceptance": true,
+        "runner_owned_submission_path": "Submission.lean",
+        "runner_validates_immutable_candidate_snapshot": true,
+        "schema_version": 5,
+        "sole_model_tool_call_in_response": true,
+        "submission_event_order_flags": [
+          "dynamic_call_observed_before_raw_response_completed",
+          "raw_response_completed_before_dynamic_call_observed"
+        ],
+        "submission_event_order_flags_exactly_one_true": true,
+        "submission_event_order_values": [
+          "inner_dynamic_call_before_raw_response_completed",
+          "raw_response_completed_before_inner_dynamic_call"
+        ],
+        "submission_transport": "functions_exec_dynamic_submit_proof_v2",
+        "tool_name": "submit_proof",
+        "workspace_local_module_imports_rejected": true
+      }
+    },
+    "version": "0.146.0-alpha.9.2"
   },
   "benchmark_id": "highambench-0.2-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20",
   "environment_bundle_definition": "SHA-256 of UTF-8 canonical JSON with sorted keys and compact separators over an object containing the complete config and environment records, after removing environment_id and environment_bundle_sha256 from their top-level/frozen locations.",
-  "environment_bundle_sha256": "6e1e14aadc2da617c11acdda0a79bf50e54de3a4e4b5d355d3737315bda320fa",
-  "environment_id": "highambench-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20-6e1e14aadc2da617",
+  "environment_bundle_sha256": "c9580d9ce26ffa5f01c41f04cb7aa4423d4a37d4439af69bc0a7f4c7ce215070",
+  "environment_id": "highambench-p01-p02-p03-p04-p05-p06-p07-p08-p09-p10-p11-p12-p13-p14-p15-p16-p17-p18-p19-p20-c9580d9ce26ffa5f",
   "host_class": {
+    "allocated_physical_cores": 2,
+    "allocated_sockets": 1,
+    "allocated_threads_per_core": [
+      2,
+      2
+    ],
+    "allocation_memory_limit_bytes": 34359738368,
+    "cpu_family": 6,
+    "cpu_model": 173,
+    "cpu_stepping": 1,
+    "cpu_vendor": "GenuineIntel",
     "kernel": "Linux 6.17.0-35-generic x86_64",
     "online_logical_cpus": 4,
-    "processor": "AMD EPYC 9554 64-Core Processor",
+    "processor": "Intel(R) Xeon(R) 6960P",
+    "slurm_allocated_memory_bytes": 34359738368,
+    "slurm_cpus_per_task": 4,
+    "slurm_num_cpus": 4,
+    "slurm_num_nodes": 1,
+    "slurm_num_tasks": 1,
     "virtualization": "LXC",
-    "visible_memory_bytes": 1216761819136
+    "visible_memory_bytes": 995999997952
   },
   "isolation": {
     "bubblewrap_binary_sha256": "d78807229d616606e339c5988392b9e0ab4a6a6998fa51e4590837f426a12fca",
@@ -37,23 +195,44 @@
     "condition_n": "NumStability source, compiled files, names, documentation, indexes, and caches are absent. Each complete staged task is scanned and a real import probe must fail before the agent starts.",
     "container_image_digest": null,
     "dependency_audit_sha256": "0f19d8c9e1a2e6c17f22f0ab38425d0351e4d6cf65c0b03165e06ecb9d718be7",
-    "filesystem_adapter_sha256": "d42b09a39a30cd7c03b313a929bc2c472f1327a69ceaeee334de6897cd6e1094",
+    "ephemeral_thread_start_per_run": false,
+    "filesystem_adapter_sha256": "2344a77a19efea09efb7d42ee4da1c371d171870cca88852a5038ce58bb5f359",
+    "fresh_codex_state_directory_per_run": true,
     "gold_proof_policy": "The private construction proofs and source PDFs are never mounted in an evaluated attempt.",
+    "history_persistence": "none",
     "kind": "bubblewrap namespace; not an OCI container",
     "lean_adapter_sha256": "aae24febc4bf42802919c027bf6edb1c409903376ae0c37d9d0294d855d895ca",
+    "memories_feature_disabled": true,
     "network_boundary": "Model-generated shell commands inherit a kernel rule that rejects socket operations and records every denied request. The Codex control process keeps only the provider connection needed for the model. Model web, app, plugin, and search capabilities are disabled.",
+    "normal_exit_state_cleanup": true,
     "offline_shell_binary_sha256": "a43df72964e86027ed3c2e66ab4aceda7d02896b6cc2db6befa107d79bb4171c",
     "offline_shell_source_sha256": "2a15af726576647926f639745fb0eb5dbda9ecb0cb9680ded1e1138e1e49fd32",
     "package_runtime": "Both conditions receive the same exact pruned package view: Mathlib source and the .olean, .olean.server, .olean.private, and .ir files Lean needs. Git data, traces, hashes, indexes, and other package files are absent.",
-    "runner_sha256": "dd32ade7b548d070793389589fff9d62b3dd55f943bbaf7ede0ab06736bb64c7",
-    "validator_sha256": "2842f43cab220363ba3b6bb66004e3023d15c3eba5a8a6ddbb048aa2507808cb"
+    "prior_outputs_or_submissions_mounted": false,
+    "provider_prompt_prefix_cache": {
+      "automatic_prefix_caching_may_occur": true,
+      "cached_input_charged_at_full_token_weight": true,
+      "cached_object": "exact-prefix prefill key/value computation, not generated output",
+      "cross_run_answer_or_proof_replay": false,
+      "kind": "automatic exact-input-prefix prefill computation reuse",
+      "pinned_codex_disable_control_available": false,
+      "semantic_history_transfer": false
+    },
+    "provider_token_gate_sha256": "18fc40069a408224be6bea6e1eaeabcd01572cb361c465cb4fa842010b60bad3",
+    "runner_sha256": "e26fec6dd63c7caba88fc9053310315eadb5874c41d151ff8f3a8b6e4c27946e",
+    "state_directory_reused_across_runs": false,
+    "thread_resume_or_fork_used": false,
+    "validator_sha256": "f8d4b4df009594078e9d49646932ed3e43cb2812c8a04403eb72ccb28832ac0a"
   },
   "kind": "highambench-environment-record",
   "known_reference_protocol_deviations": [
+    "Condition L receives the frozen signposted-library-v1 supplement while condition N does not. This user-directed treatment intentionally departs from the reference PDF's identical-prompt rule and is kept separate from the earlier raw-access P01 measurements.",
     "The Codex backend has no demonstrated fixed random-seed input, so rep-01, rep-02, and rep-03 are repetition IDs only.",
     "There is no frozen OCI container image; fresh bubblewrap namespaces are used instead.",
     "The read-only host folders /usr, /bin, /lib, /lib64, and /etc are not one completely fingerprinted operating-system image.",
-    "Exact provider token totals arrive at turn completion and may include a small amount generated after the first valid proof. First-valid wall time is still recorded at validator acceptance.",
+    "Accepted proofs stop at an authenticated exact first-valid-proof submission boundary, with the root submit call blocked, descendants quiescent, and no later model response. A wall-clock interruption of an active tree can remain measurement-inexact; the matrix aborts and preserves that incident without scoring or retrying it.",
+    "The current user-authorized 5,000,000-token cap replaces the earlier 2,000,000-token project freeze and is applied identically to N and L.",
+    "The external highambench-provider-token-gate-v6 buffering/reservation layer and its sole-inflight, call-atomic token endpoint are a HighamBench execution-protocol amendment applied identically to N and L for exact accounting. Gate v6 accepts an absent upstream Content-Type only after strict complete byte-level SSE authentication and records the header bases, parser receipt, body hash/size, response identity, event counts, downstream synthesized-content-type flag, response-output manifest, and app-server delivery reconciliation. Provider totals are authoritative; the raw app-server ledger remains a structural subset. Suppressed collaboration waits, collaboration-message supersessions, and completed child responses discarded after an explicit parent interrupt each require narrowly authenticated evidence. This compatibility rule does not alter the N/L symmetry of the amendment. The frozen Codex binary is unchanged and does not itself enforce this gate; results must not be labeled strict reference-PDF HighamBench 0.2 results.",
     "The model control process needs its provider connection even though model-accessible shell and web networking are disabled."
   ],
   "lean": {
@@ -77,8 +256,8 @@
         "HighamBench/P02Definitions.olean": "14c6ea7fa9187a1f9b52cd0562239fb723aa2ad2a7ee269ee764800ed84524b8"
       },
       "P03": {
-        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
-        "HighamBench/P03Definitions.olean": "bb86b0cdccc9c5f21f8b49f1b8c5c539040201c9746c7f0f86e5a5afc5340aea"
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P03Definitions.olean": "8acedbe1b03e20496ff91bfde29d10c676ce48dc56f7884eaf7494be2332d98d"
       },
       "P04": {
         "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
@@ -86,11 +265,11 @@
       },
       "P05": {
         "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P05Definitions.olean": "3513f86b56ce8e445df12470f371fd34f34fb0c02e48473273def1f3bdd7e64d"
+        "HighamBench/P05Definitions.olean": "c1dc3f0999165fdd32b8d4f3ed80bbe30932eefa5823617e2f8a48db5872e49b"
       },
       "P06": {
         "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P06Definitions.olean": "e2a8d931e905db04793a2a4ffd92e2b31a79a088d9ba9b0349fa118e139581ab"
+        "HighamBench/P06Definitions.olean": "918b6d9bc2612747cc078fe9d3c6165002e7e540bdc7f709341e5f0b59c2bf03"
       },
       "P07": {
         "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
@@ -98,55 +277,55 @@
       },
       "P08": {
         "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P08Definitions.olean": "c385c1967070fbe1c0220e809069631ee3dbb7769a4908a5b515795d255c6421"
+        "HighamBench/P08Definitions.olean": "a6d828a428f644e96c540b8ea67c106c958cf9575ac49ae514c7658e59a985ad"
       },
       "P09": {
         "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
         "HighamBench/P09Definitions.olean": "ece9140516dfb9433218391eaf9d5d6a576bd6402d31c4b07a94af603e2a47bc"
       },
       "P10": {
-        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
-        "HighamBench/P10Definitions.olean": "22d5ed0145eb1674bacf1db7bac5b07c005b5729021221ea244f3cef2718d11d"
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P10Definitions.olean": "73d5cf28955739a9834c60b8ce038f403c58a1812d84106e35c4b5866ca666b7"
       },
       "P11": {
-        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
-        "HighamBench/P11Definitions.olean": "afc97a2af3aaf86f0550f6e59c5e4369fd9f1725cb09f958f11bfbd393f36b6d"
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P11Definitions.olean": "5de066bed247f20ed1fe27587b3894d0abd6e822c64cf28f44b7da2d0c6ae657"
       },
       "P12": {
-        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
-        "HighamBench/P12Definitions.olean": "7d5fc2d8e3688b415056fbf179a58545ef1c76f1b4835dc3fa076758bb5966a0"
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P12Definitions.olean": "9f6c3874e97cb6811464848ea1c81c14c363ecc811caa9720f54b781d504f3f2"
       },
       "P13": {
-        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
-        "HighamBench/P13Definitions.olean": "3b83e8d078b287f4ffbc43de2e6213dae39e384e31997f86b6ed442d0680756e"
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P13Definitions.olean": "32b3bd32ce13b19ab7bc966da39228625c83736ff6a51c726249354520d8369d"
       },
       "P14": {
-        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
-        "HighamBench/P14Definitions.olean": "b8fd085be252b34d0adf7e993d82d7c2939cc79a66be72bc86b77746b85c67f5"
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P14Definitions.olean": "7aec87942b8458f3cc5547c46583aef435a3b1fd3c67b2f0e7576ca9901fc287"
       },
       "P15": {
-        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
-        "HighamBench/P15Definitions.olean": "c864037d50faafacbc73d8484abedc5e11ac79fe56a5d967b7773f1d10e6243a"
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P15Definitions.olean": "681d7131fbccc990bd24844602306cabc2bc2cef5d4afc30d7f98144317549a7"
       },
       "P16": {
-        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
-        "HighamBench/P16Definitions.olean": "935dec65ecca53ed91e27c94cc77614b5877e33920d4054ae7205a891774a2c5"
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P16Definitions.olean": "4a0edcc13d1f9c12391a55194816486979f1af09a60bfa28fdf927caa369eadf"
       },
       "P17": {
-        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
-        "HighamBench/P17Definitions.olean": "6a48be1a4f075ba24d0bb41544a82ab1548823b3532baada85ed9f81062ac6f8"
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P17Definitions.olean": "8a46939097fbd0b202d4ba504e392713e6a5d4f784f501ada6766b26903465be"
       },
       "P18": {
-        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
-        "HighamBench/P18Definitions.olean": "3d87e945e5834658c97c1e91c4c0205b638fc748550a122ee69611b01fe3bc24"
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P18Definitions.olean": "7607573147c84c0719a63f09c27ee39e98ee94d9b2a88aa32e5fd6e3c2e7f435"
       },
       "P19": {
-        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
-        "HighamBench/P19Definitions.olean": "27f1dd635cd505b7e593867e49f2bbeff29a10ca1fad1cb00ba1dd2e33260a9f"
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P19Definitions.olean": "6082935328ac0a7b900324e2f70483d25db4d9788834585af0be0f136f67687d"
       },
       "P20": {
-        "HighamBench/Core.olean": "7fc6ade160c0aaac4d98a426d60dba3f069bfc18cdbac68af3cec76971f12aa1",
-        "HighamBench/P20Definitions.olean": "fb5b88e2ef4b899d4ab972eccf4e607a79786dada948916f7958d1b71632d82e"
+        "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
+        "HighamBench/P20Definitions.olean": "3cbe4e0faa8b4ea61bc99788fe08afd59020117539a7b3c4dabc0c2a4d6b7514"
       }
     },
     "shared_sources": {
@@ -167,22 +346,483 @@
       "HighamBench/P14Definitions.lean": "43b0cbc4a33c3556b173455522d5436a89cad4f3e98e66dcd072f22bcdc779f2",
       "HighamBench/P15Definitions.lean": "831dce905ad8a08bb52f5b55ebad349c09ac26a06168d6ca22eb022d2cf91792",
       "HighamBench/P16Definitions.lean": "7f2630cf2406121b98d74782c2533349ff41d913e9e16dac3c230974b7f572ec",
-      "HighamBench/P17Definitions.lean": "e14850408c10ac1811546bbbf928e1493f9bd87b566c23ecd7aa46d670c8ec29",
+      "HighamBench/P17Definitions.lean": "90ea1cc4af8101d1e345960950d5c2c97a04fcadac1147c75edfbe1e7e7ad9a0",
       "HighamBench/P18Definitions.lean": "e8076948865057c148e1531349eca646c2cbb158637d394c47a28ec84a12cfb2",
       "HighamBench/P19Definitions.lean": "5f2109bae7fa37ed222b56d3bd9ba97eadcf30ffe7f073d6f8dc75f36c896e13",
       "HighamBench/P20Definitions.lean": "5b94f6f4eac02fe552a60504a7d4c1efb1d8dbe27826e3c608c83a495fbb8c2b"
     },
     "version": "4.29.0-rc3"
   },
+  "provider_token_gate": {
+    "implementation": {
+      "name": "provider_token_gate.py",
+      "path": "tools/provider_token_gate.py",
+      "source_sha256": "18fc40069a408224be6bea6e1eaeabcd01572cb361c465cb4fa842010b60bad3",
+      "version": "6"
+    },
+    "kind": "highambench-provider-token-gate-freeze",
+    "model_catalog": {
+      "catalog_sha256": "0dea49fbbe38900bef0a46c85e79a7ccef9b79d0f4ae5b3c7e898e34ca3dab9b",
+      "entry_sha256": "1b7c2944189a61833cc1d0122ce1cfcb5b70f6cd78797abe2296fb5791338858",
+      "reasoning_effort": "ultra",
+      "response_bound": 272000,
+      "slug": "gpt-5.6-sol",
+      "source": "authenticated_codex_debug_models_bundled"
+    },
+    "protocol": "highambench-provider-token-gate-v6",
+    "provenance_producer": {
+      "dns_queries_performed": false,
+      "environment_policy": "inherit_then_remove_required_absent",
+      "flag": "--print-transport-provenance",
+      "interpreter": "/usr/bin/python3.10",
+      "network_connections_performed": false,
+      "required_absent": [
+        "ALL_PROXY",
+        "CURL_CA_BUNDLE",
+        "HTTPS_PROXY",
+        "HTTP_PROXY",
+        "LD_AUDIT",
+        "LD_LIBRARY_PATH",
+        "LD_PRELOAD",
+        "NO_PROXY",
+        "OPENSSL_CONF",
+        "OPENSSL_MODULES",
+        "PYTHONHOME",
+        "PYTHONHTTPSVERIFY",
+        "PYTHONINSPECT",
+        "PYTHONPATH",
+        "PYTHONSTARTUP",
+        "PYTHONWARNINGS",
+        "REQUESTS_CA_BUNDLE",
+        "SSLKEYLOGFILE",
+        "SSL_CERT_DIR",
+        "SSL_CERT_FILE",
+        "all_proxy",
+        "http_proxy",
+        "https_proxy",
+        "no_proxy"
+      ],
+      "source_argument": "tools/provider_token_gate.py"
+    },
+    "schema_version": 2,
+    "static_configuration": {
+      "allowed_setup_route_prefixes": [],
+      "capability_persisted": false,
+      "counted_request_kinds": [
+        "turn",
+        "compaction"
+      ],
+      "counted_route": "POST /responses",
+      "crossing_release_policy": "ordinary_empty_output_or_compaction_single_item_before_minimal_completion",
+      "final_artifact_mode": "0444",
+      "loopback_only": true,
+      "rejected_inference_routes": [
+        "POST /responses/compact"
+      ],
+      "request_compression": false,
+      "request_retries": 0,
+      "response_bound_enforcement": "runtime_fail_closed_before_buffered_response_release",
+      "response_compression": "identity",
+      "stream_retries": 0,
+      "strict_admission_inequality": "completed_tokens + (open_request_count + 1) * response_bound < token_limit",
+      "upstream_base_path": "/backend-api/codex",
+      "upstream_origin": "https://chatgpt.com",
+      "upstream_response_contract": {
+        "content_encoding_policy": "absent_or_single_identity",
+        "content_type_policy": "absent_or_single_text_event_stream_optional_utf8_charset",
+        "downstream_content_encoding": "identity",
+        "downstream_content_type": "text/event-stream",
+        "outbound_accept": "text/event-stream",
+        "parser": "highambench-strict-responses-sse-v2",
+        "protocol": "highambench-responses-sse-envelope-v1",
+        "schema_version": 1,
+        "success_status": 200
+      },
+      "websockets_supported": false
+    },
+    "transport_provenance": {
+      "connection_factory_mode": "explicit_tls",
+      "environment": {
+        "observed_absent": [
+          "ALL_PROXY",
+          "CURL_CA_BUNDLE",
+          "HTTPS_PROXY",
+          "HTTP_PROXY",
+          "LD_AUDIT",
+          "LD_LIBRARY_PATH",
+          "LD_PRELOAD",
+          "NO_PROXY",
+          "OPENSSL_CONF",
+          "OPENSSL_MODULES",
+          "PYTHONHOME",
+          "PYTHONHTTPSVERIFY",
+          "PYTHONINSPECT",
+          "PYTHONPATH",
+          "PYTHONSTARTUP",
+          "PYTHONWARNINGS",
+          "REQUESTS_CA_BUNDLE",
+          "SSLKEYLOGFILE",
+          "SSL_CERT_DIR",
+          "SSL_CERT_FILE",
+          "all_proxy",
+          "http_proxy",
+          "https_proxy",
+          "no_proxy"
+        ],
+        "proxy_mode": "direct_http_client_no_environment_proxy",
+        "required_absent": [
+          "ALL_PROXY",
+          "CURL_CA_BUNDLE",
+          "HTTPS_PROXY",
+          "HTTP_PROXY",
+          "LD_AUDIT",
+          "LD_LIBRARY_PATH",
+          "LD_PRELOAD",
+          "NO_PROXY",
+          "OPENSSL_CONF",
+          "OPENSSL_MODULES",
+          "PYTHONHOME",
+          "PYTHONHTTPSVERIFY",
+          "PYTHONINSPECT",
+          "PYTHONPATH",
+          "PYTHONSTARTUP",
+          "PYTHONWARNINGS",
+          "REQUESTS_CA_BUNDLE",
+          "SSLKEYLOGFILE",
+          "SSL_CERT_DIR",
+          "SSL_CERT_FILE",
+          "all_proxy",
+          "http_proxy",
+          "https_proxy",
+          "no_proxy"
+        ]
+      },
+      "kind": "python-stdlib-http-client-explicit-tls-v1",
+      "openssl": {
+        "config": {
+          "bytes": 12419,
+          "logical_path": "/usr/lib/ssl/openssl.cnf",
+          "mode": "0644",
+          "resolved_path": "/etc/ssl/openssl.cnf",
+          "sha256": "47fdeeac79328ffb03c9d855237a500b4ad5216dc971a8b2f40a420b4b3c11ef",
+          "symlink_target": "/etc/ssl/openssl.cnf"
+        },
+        "libcrypto": {
+          "bytes": 4455728,
+          "logical_path": "/usr/lib/x86_64-linux-gnu/libcrypto.so.3",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/x86_64-linux-gnu/libcrypto.so.3",
+          "sha256": "f488e5cdfaaaa816648e7287db9468ef27b78980a5327632539067c59981a2be",
+          "symlink_target": null
+        },
+        "libssl": {
+          "bytes": 667864,
+          "logical_path": "/usr/lib/x86_64-linux-gnu/libssl.so.3",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/x86_64-linux-gnu/libssl.so.3",
+          "sha256": "3b3562ee6d106840e8d000300c9517ebc28269c2ed0a9b23351e71c518cd7bb8",
+          "symlink_target": null
+        },
+        "version": "OpenSSL 3.0.2 15 Mar 2022",
+        "version_number": 805306400
+      },
+      "python": {
+        "binary": {
+          "bytes": 5937704,
+          "logical_path": "/usr/bin/python3.10",
+          "mode": "0755",
+          "resolved_path": "/usr/bin/python3.10",
+          "sha256": "d6bca2b84e73c7775a0dd5e6a76899cfe4ee62863d7c8f88513811d1fda23f49",
+          "symlink_target": null
+        },
+        "executable": "/usr/bin/python3.10",
+        "hashlib_extension": {
+          "bytes": 63728,
+          "logical_path": "/usr/lib/python3.10/lib-dynload/_hashlib.cpython-310-x86_64-linux-gnu.so",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/python3.10/lib-dynload/_hashlib.cpython-310-x86_64-linux-gnu.so",
+          "sha256": "9d48b20174e976f7a6bcaf0e76d208d1bf5b77b85b1565d1ca7a202e3eec41c2",
+          "symlink_target": null
+        },
+        "hashlib_module": {
+          "bytes": 10229,
+          "logical_path": "/usr/lib/python3.10/hashlib.py",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/python3.10/hashlib.py",
+          "sha256": "9d56ebad0263a48ac94e0b2b7a3723625f2ff4dc7707d1156580e008d40bc790",
+          "symlink_target": null
+        },
+        "http_client_module": {
+          "bytes": 57532,
+          "logical_path": "/usr/lib/python3.10/http/client.py",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/python3.10/http/client.py",
+          "sha256": "e597e7ea22f942a8f0a4364d869e4ccdc6c281a2ab20427fe360e9f3a496fc4b",
+          "symlink_target": null
+        },
+        "http_server_module": {
+          "bytes": 48207,
+          "logical_path": "/usr/lib/python3.10/http/server.py",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/python3.10/http/server.py",
+          "sha256": "3b91d9b7a7c7e58a828bdb505b981201965d9634b90e2a98291bd6a018963426",
+          "symlink_target": null
+        },
+        "implementation": "cpython",
+        "json_decoder_module": {
+          "bytes": 12473,
+          "logical_path": "/usr/lib/python3.10/json/decoder.py",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/python3.10/json/decoder.py",
+          "sha256": "9f02654649816145bc76f8c210a5fe3ba1de142d4d97a1c93105732e747c285b",
+          "symlink_target": null
+        },
+        "json_encoder_module": {
+          "bytes": 16074,
+          "logical_path": "/usr/lib/python3.10/json/encoder.py",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/python3.10/json/encoder.py",
+          "sha256": "06b881b824f71e95d72af4ab865de4c35553e791b6d959a125caac61401cc350",
+          "symlink_target": null
+        },
+        "json_extension": {
+          "bytes": 49160,
+          "logical_path": "/usr/lib/python3.10/lib-dynload/_json.cpython-310-x86_64-linux-gnu.so",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/python3.10/lib-dynload/_json.cpython-310-x86_64-linux-gnu.so",
+          "sha256": "8f06c02cc5d7f692dd175b4fae18619fe66215391aa7797bc8400e7488eaef36",
+          "symlink_target": null
+        },
+        "json_module": {
+          "bytes": 14020,
+          "logical_path": "/usr/lib/python3.10/json/__init__.py",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/python3.10/json/__init__.py",
+          "sha256": "d5d41e2c29049515d295d81a6d40b4890fbec8d8482cfb401630f8ef2f77e4d5",
+          "symlink_target": null
+        },
+        "socket_implementation": "built-in",
+        "socket_module": {
+          "bytes": 36785,
+          "logical_path": "/usr/lib/python3.10/socket.py",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/python3.10/socket.py",
+          "sha256": "a11ad8b558a58696a39a92658e400ed74f060a7d78e71eb79fc88842dfa5f361",
+          "symlink_target": null
+        },
+        "ssl_extension": {
+          "bytes": 225296,
+          "logical_path": "/usr/lib/python3.10/lib-dynload/_ssl.cpython-310-x86_64-linux-gnu.so",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/python3.10/lib-dynload/_ssl.cpython-310-x86_64-linux-gnu.so",
+          "sha256": "99cb4cde3c14dd8acd75b6f4508e391d5299443c455bc4c1089172059e6f8f86",
+          "symlink_target": null
+        },
+        "ssl_module": {
+          "bytes": 53725,
+          "logical_path": "/usr/lib/python3.10/ssl.py",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/python3.10/ssl.py",
+          "sha256": "0bb5594fc11e744c99aff4ea7cabb50eed5ad62b8f87171bb80af4143dc83aa0",
+          "symlink_target": null
+        },
+        "version": "3.10.12"
+      },
+      "resolver": {
+        "gai_conf": {
+          "bytes": 2584,
+          "logical_path": "/etc/gai.conf",
+          "mode": "0644",
+          "resolved_path": "/etc/gai.conf",
+          "sha256": "76a5771adee7b9f36c7ae66eae78d72f325557500269107f2d98a7e3560a1808",
+          "symlink_target": null
+        },
+        "hostname": "chatgpt.com",
+        "hosts_file": {
+          "bytes": 270,
+          "logical_path": "/etc/hosts",
+          "mode": "0644",
+          "resolved_path": "/etc/hosts",
+          "sha256": "362a6fd7a4586829f8f0e8ef9ffa717df9176afc0e012a88cfe94598daf74055",
+          "symlink_target": null
+        },
+        "libc": {
+          "bytes": 2220400,
+          "logical_path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "mode": "0755",
+          "resolved_path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "sha256": "c53819710b163d3f1d2541778590d58d3ef31cb0ed75adcbe059faac68c1e72d",
+          "symlink_target": null
+        },
+        "libnss_dns": {
+          "bytes": 14352,
+          "logical_path": "/usr/lib/x86_64-linux-gnu/libnss_dns.so.2",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/x86_64-linux-gnu/libnss_dns.so.2",
+          "sha256": "b5d11c935472be35b59c0c9d15bf01f5c94e02dfd200883e9e993da09c7b73ea",
+          "symlink_target": null
+        },
+        "libnss_files": {
+          "bytes": 14352,
+          "logical_path": "/usr/lib/x86_64-linux-gnu/libnss_files.so.2",
+          "mode": "0644",
+          "resolved_path": "/usr/lib/x86_64-linux-gnu/libnss_files.so.2",
+          "sha256": "423f14091ddbd452eac7d1944cb0efd2969d5ec8707a975b2055658070d5c51a",
+          "symlink_target": null
+        },
+        "nsswitch_conf": {
+          "bytes": 550,
+          "logical_path": "/etc/nsswitch.conf",
+          "mode": "0644",
+          "resolved_path": "/etc/nsswitch.conf",
+          "sha256": "09644d76e24868dba2db08a083f6ae8f71f9b61c6c3cbf1c4b27ff8dc3a44b1e",
+          "symlink_target": null
+        },
+        "policy": "host_getaddrinfo_dynamic_addresses_authenticated_by_tls_hostname",
+        "resolv_conf": {
+          "bytes": 948,
+          "logical_path": "/etc/resolv.conf",
+          "mode": "0644",
+          "resolved_path": "/run/systemd/resolve/stub-resolv.conf",
+          "sha256": "73ce4eb1058aa1942843379b84b1e6f0d6c23b951604ff04a8dc20372ca0e799",
+          "symlink_target": "../run/systemd/resolve/stub-resolv.conf"
+        },
+        "resolved_addresses_frozen": false,
+        "variability_classification": "availability_only_under_authenticated_tls_hostname"
+      },
+      "schema_version": 1,
+      "tls": {
+        "alpn_protocols": [
+          "http/1.1"
+        ],
+        "certificate_authority_count": 146,
+        "certificate_source": {
+          "bytes": 219342,
+          "logical_path": "/etc/ssl/certs/ca-certificates.crt",
+          "mode": "0644",
+          "resolved_path": "/etc/ssl/certs/ca-certificates.crt",
+          "sha256": "1d605d5ab7f2b38625f91b9bfc5bfffc905de288d11613a0a7fa8422930e0526",
+          "symlink_target": null
+        },
+        "certificate_source_mode": "explicit_hashed_pem_cadata_only",
+        "check_hostname": true,
+        "cipher_names_sha256": "03f13f50d0d93e055a16c665e984290c44b049ed200821e771f8aaeac97aac1d",
+        "context_options": 2186412112,
+        "default_capath_used": false,
+        "keylog_enabled": false,
+        "maximum_version": "MAXIMUM_SUPPORTED",
+        "maximum_version_value": -1,
+        "minimum_version": "TLSv1_2",
+        "minimum_version_value": 771,
+        "protocol": "PROTOCOL_TLS_CLIENT",
+        "protocol_value": 16,
+        "security_level": 2,
+        "server_hostname": "chatgpt.com",
+        "server_port": 443,
+        "verify_flags": 32768,
+        "verify_mode": "CERT_REQUIRED",
+        "verify_mode_value": 2
+      }
+    }
+  },
   "release_manifest": "paper_bencmark/highambench/metadata/release_files.json",
-  "release_manifest_sha256": "8ad431add093107ff6582ce6f12378bfaf04589680a627fe4d18bdbec5bc7c60",
+  "release_manifest_sha256": "583675aeee9cb03b733d4553052d2e1d1cfa4f0f49a03d70d0276a64aadbd734",
   "runtime": {
     "packages_runtime_manifest": "paper_bencmark/highambench/metadata/packages_runtime.json",
     "packages_runtime_manifest_sha256": "a2ee0563bc731aa3dba22ed7af0e9bd1322c8c06b51cd9d01bd573282d9c8c31",
+    "post_submission_validation_reserve_seconds": 369,
+    "prompt_startup_timeout_seconds": 120,
     "python": {
       "binary_sha256": "d6bca2b84e73c7775a0dd5e6a76899cfe4ee62863d7c8f88513811d1fda23f49",
       "version": "3.10.12"
     }
   },
-  "schema_version": "0.1.0"
+  "schema_version": "0.1.0",
+  "token_control": {
+    "advisory_rollout_budget": {
+      "enabled": true,
+      "feature": "rollout_budget",
+      "feature_row": "rollout_budget under development false",
+      "limit_tokens": 5000000,
+      "prefill_token_weight": 1,
+      "role": "advisory_only",
+      "sampling_token_weight": 1,
+      "strict_config": true
+    },
+    "all_descendant_threads_included": true,
+    "cached_input_counted_once": true,
+    "checked_before_submission_validation": true,
+    "comparison": ">=",
+    "concurrent_inflight_overshoot_possible": false,
+    "control": "loopback_provider_response_admission_gate",
+    "crossing_response_actions_released": false,
+    "crossing_response_release": "ordinary_empty_output_or_compaction_single_item_before_minimal_completion",
+    "input_includes_cached": true,
+    "limit_tokens": 5000000,
+    "live_cumulative": true,
+    "live_update_sequence": true,
+    "measurement_exact_required": true,
+    "measurement_source": "codex_app_server_rawResponse/completed",
+    "notification": "rawResponse/completed",
+    "one_response_overshoot_possible": true,
+    "outcome_exactness": {
+      "accepted_proof": {
+        "descendants_quiescent": true,
+        "drain_complete": false,
+        "later_model_response_possible": false,
+        "measurement_exact": true,
+        "provider_gate_close_reason": "accepted_submission",
+        "provider_requests_quiescent": true,
+        "required_evidence": "exact_authenticated_submission_boundary",
+        "root_turn_active": true,
+        "submission_boundary_exact": true
+      },
+      "scored_failure": {
+        "drain_complete": true,
+        "measurement_exact": true,
+        "provider_gate_close_reason": "natural_end",
+        "provider_requests_quiescent": true,
+        "required_evidence": "exact_natural_drain",
+        "tree_quiescent": true
+      },
+      "token_limit": {
+        "crossing_response_actions_released": false,
+        "drain_complete": false,
+        "measurement_exact": true,
+        "provider_gate_close_reason": "token_limit",
+        "provider_requests_quiescent": true,
+        "required_evidence": "sealed_sanitized_sole_inflight_crossing",
+        "tree_quiescent": false
+      },
+      "unscorable_useful_work": {
+        "matrix_action": "abort_and_preserve_incident",
+        "retry_allowed": false,
+        "scored": false,
+        "trigger": "no_exact_authenticated_provider_gate_endpoint_for_outcome"
+      }
+    },
+    "outer_runner_polling": true,
+    "over_limit_pass_allowed": false,
+    "provider_gate_protocol": "highambench-provider-token-gate-v6",
+    "provider_requests_quiescent_at_scored_endpoint": true,
+    "provider_response_bound_tokens": 272000,
+    "response_ids_deduplicated": true,
+    "root_completion_is_tree_barrier": false,
+    "strict_admission_inequality": "completed_tokens + (open_request_count + 1) * response_bound < token_limit",
+    "tree_quiescence_distinct_from_provider_quiescence": true,
+    "trusted_adapter_freezes_first_threshold": true,
+    "trusted_adapter_latches_first_threshold": true,
+    "trusted_usage_path_outside_workspace": true,
+    "usage_scope": "rooted_attempt_thread_tree_completed_responses"
+  },
+  "token_control_canary": {
+    "path": "paper_bencmark/highambench/metadata/evidence/token_control_live_canary.json",
+    "sha256": "b2fb3ae15ed94d4d79f2978b6d8de45f901e24ae6dbeafb9adde6048c381dc2a",
+    "status": "passed"
+  },
+  "ultra_orchestration_canary": {
+    "path": "paper_bencmark/highambench/metadata/evidence/ultra_orchestration_live_canary.json",
+    "sha256": "381e3c35753610a54626cfbcad4798777a8179653a522969bd4822935a1fd909",
+    "status": "passed"
+  }
 }

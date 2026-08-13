@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import copy
+from dataclasses import replace
+import hashlib
 import json
 from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 TOOLS = Path(__file__).resolve().parents[1]
@@ -16,8 +20,10 @@ from check_construction import (  # noqa: E402
     construction_specs,
     local_helper_sources,
     make_parser,
+    promote_current_evidence,
     resolve_environment,
     run_checks,
+    verification_basis,
 )
 from hashes import create_manifest  # noqa: E402
 from common import BenchmarkToolError, sha256_file  # noqa: E402
@@ -375,6 +381,260 @@ class ConstructionCheckTests(unittest.TestCase):
                 "importable": False,
             },
         }
+
+    def complete_promotion_evidence(self) -> dict:
+        """Build a lightweight but exact synthetic 20-paper/120-result record."""
+
+        shared_root = self.benchmark / "shared" / "HighamBench"
+        papers = []
+        controlled_shared_files = [
+            {
+                "path": "paper_bencmark/highambench/shared/HighamBench/Core.lean",
+                "paper_ids": [f"P{index:02d}" for index in range(1, 21)],
+                "sha256": sha256_file(shared_root / "Core.lean"),
+            }
+        ]
+        for index in range(1, 21):
+            paper_id = f"P{index:02d}"
+            shared = shared_root / f"{paper_id}Definitions.lean"
+            shared.write_text("import HighamBench.Core\n", encoding="utf-8")
+            compiled_root = self.shared_olean / paper_id / "HighamBench"
+            compiled_root.mkdir(parents=True, exist_ok=True)
+            (compiled_root / "Core.olean").write_bytes(
+                f"test shared olean {paper_id} Core".encode("utf-8")
+            )
+            (compiled_root / f"{paper_id}Definitions.olean").write_bytes(
+                f"test shared olean {paper_id} definitions".encode("utf-8")
+            )
+            controlled_shared_files.append(
+                {
+                    "path": (
+                        "paper_bencmark/highambench/shared/HighamBench/"
+                        f"{paper_id}Definitions.lean"
+                    ),
+                    "paper_ids": [paper_id],
+                    "sha256": sha256_file(shared),
+                }
+            )
+            targets = []
+            for tier_index in range(1, 4):
+                tier = f"T{tier_index}"
+                task_id = f"{paper_id}-{tier}"
+                declaration = f"{paper_id.lower()}_{tier.lower()}_test"
+                task = self.benchmark / "tasks" / paper_id / tier
+                task.mkdir(parents=True, exist_ok=True)
+                (task / "Target.lean").write_text(
+                    "namespace HighamBench\n"
+                    f"theorem {declaration} : True := by sorry\n"
+                    "end HighamBench\n",
+                    encoding="utf-8",
+                )
+                (task / "context.md").write_text(
+                    f"context {task_id}\n", encoding="utf-8"
+                )
+                controlled = create_manifest(
+                    self.benchmark,
+                    requested=[
+                        "agent_prompt.md",
+                        "shared/HighamBench/Core.lean",
+                        f"shared/HighamBench/{paper_id}Definitions.lean",
+                        f"tasks/{paper_id}/{tier}/Target.lean",
+                        f"tasks/{paper_id}/{tier}/context.md",
+                    ],
+                    label=f"{task_id}-controlled",
+                )
+                (self.benchmark / "metadata" / "controlled" / f"{task_id}.json").write_text(
+                    json.dumps(controlled), encoding="utf-8"
+                )
+                targets.append(
+                    {
+                        "task_id": task_id,
+                        "tier": tier,
+                        "availability": "available",
+                        "lean_target": {
+                            "declaration": declaration,
+                            "file": (
+                                "paper_bencmark/highambench/tasks/"
+                                f"{paper_id}/{tier}/Target.lean"
+                            ),
+                        },
+                    }
+                )
+            papers.append({"paper_id": paper_id, "targets": targets})
+
+        central_manifest = {
+            "controlled_shared_files": controlled_shared_files,
+            "papers": papers,
+        }
+        central_path = self.benchmark / "metadata" / "manifest.json"
+        central_path.write_text(json.dumps(central_manifest), encoding="utf-8")
+        specs = tuple(construction_specs(self.benchmark))
+        task_ids = list(dict.fromkeys(spec.task_id for spec in specs))
+        paper_ids = list(dict.fromkeys(spec.paper_id for spec in specs))
+        (self.benchmark / "metadata" / "environment.json").write_text(
+            json.dumps(
+                {
+                    "lean": {
+                        "shared_olean_bundles": {
+                            paper_id: {
+                                relative: sha256_file(
+                                    self.shared_olean / paper_id / relative
+                                )
+                                for relative in (
+                                    "HighamBench/Core.olean",
+                                    f"HighamBench/{paper_id}Definitions.olean",
+                                )
+                            }
+                            for paper_id in paper_ids
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        self.promotion_environment = replace(
+            self.environment,
+            specs=specs,
+            manifest_task_ids=tuple(task_ids),
+            manifest_paper_ids=tuple(paper_ids),
+            selected_paper_ids=tuple(paper_ids),
+        )
+
+        results = []
+        for spec in specs:
+            manifest_sha = sha256_file(
+                self.benchmark
+                / "metadata"
+                / "controlled"
+                / f"{spec.task_id}.json"
+            )
+            dependency = {
+                "complete": True,
+                "exit_code": 0,
+                "forbidden_dependency_count": 0,
+                "format_version": 2,
+                "library_declarations": (
+                    []
+                    if spec.condition == "N"
+                    else [
+                        {
+                            "distance": 1,
+                            "module": "NumStability.Example",
+                            "name": "NumStability.example",
+                        }
+                    ]
+                ),
+                "library_use": spec.condition == "L",
+                "local_modules": ["Submission"],
+                "missing_helper_modules": [],
+                "semantic_type_check": {
+                    "candidate": spec.target_theorem,
+                    "equal": True,
+                    "expected": "HighamBench.generatedExpected",
+                },
+            }
+            preflight = None
+            if spec.condition == "N":
+                preflight = {
+                    "complete": True,
+                    "controlled_files_verified_after_staging": {
+                        "changed": [],
+                        "expected": 5,
+                        "missing": [],
+                        "ok": True,
+                        "verified": 5,
+                    },
+                    "controlled_manifest_sha256": manifest_sha,
+                    "filesystem_leaks": [],
+                    "import_probe": {
+                        "attempted": True,
+                        "importable": False,
+                        "reliable": True,
+                        "system_error": None,
+                        "timed_out": False,
+                    },
+                    "ok": True,
+                }
+            results.append(
+                {
+                    "task_id": spec.task_id,
+                    "paper_id": spec.paper_id,
+                    "tier": spec.tier,
+                    "condition": spec.condition,
+                    "target_theorem": spec.target_theorem,
+                    "pass": True,
+                    "reasons": [],
+                    "manifest_sha256": manifest_sha,
+                    "gold_source_sha256": "a" * 64,
+                    "helpers": [],
+                    "condition_n_library_arguments_omitted": spec.condition == "N",
+                    "n_preflight": preflight,
+                    "validation": {
+                        "compile_exit_code": 0,
+                        "compile_timed_out": False,
+                        "controlled_after_audit_ok": True,
+                        "controlled_after_compile_ok": True,
+                        "controlled_after_expected_compile_ok": True,
+                        "controlled_before_ok": True,
+                        "controlled_hidden_ok": True,
+                        "dependency_audit": dependency,
+                        "failure_code": None,
+                        "note": "accepted by hidden Lean validation",
+                        "pass": True,
+                        "semantic_statement_equal": True,
+                        "statement_unchanged": True,
+                        "static_finding_count": 0,
+                    },
+                }
+            )
+
+        return {
+            "schema_version": 1,
+            "kind": "highambench-private-construction-check",
+            "generated_at_utc": "2026-08-11T00:00:00+00:00",
+            "execution": {
+                "jobs": 4,
+                "result_order": "central manifest order, N then L per task",
+            },
+            "pass": True,
+            "record_status": "current_final",
+            "scope": {
+                "central_manifest": "metadata/manifest.json",
+                "central_manifest_sha256": sha256_file(central_path),
+                "manifest_paper_ids": paper_ids,
+                "manifest_available_task_ids": task_ids,
+                "selected_paper_ids": paper_ids,
+                "selected_task_ids": task_ids,
+                "complete_manifest_scope": True,
+            },
+            "summary": {
+                "expected": 120,
+                "checked": 120,
+                "passed": 120,
+                "condition_n_passed": 60,
+                "condition_l_passed": 60,
+            },
+            "isolation": {
+                "fresh_workspace_per_result": True,
+                "controlled_task_staged_under": "task/",
+                "private_gold_staged_as": "Submission.lean",
+                "private_helper_oleans_reused": False,
+                "condition_n_numstability_mounts_configured": False,
+                "condition_n_preflight_after_complete_controlled_staging": True,
+                "condition_l_numstability_mounts_configured": True,
+                "validator_hidden_rebuild": True,
+            },
+            "verification_basis": verification_basis(self.promotion_environment),
+            "results": results,
+        }
+
+    def write_promotion_candidate(self, evidence: dict, name: str = "candidate.json") -> Path:
+        path = self.root / name
+        path.write_text(
+            json.dumps(evidence, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        return path
 
     def test_paper_selector_and_import_driven_helpers_use_generic_rules(self) -> None:
         specs = construction_specs(self.benchmark, paper_ids=["P01"])
@@ -756,6 +1016,205 @@ class ConstructionCheckTests(unittest.TestCase):
             BenchmarkToolError, "pruned package runtime leaks a condition-N marker"
         ):
             run_checks(self.environment, preflight_fn=self.successful_preflight)
+
+    def test_complete_current_promotion_installs_certificate_and_both_pointers(self) -> None:
+        evidence = self.complete_promotion_evidence()
+        candidate = self.write_promotion_candidate(evidence)
+        (self.benchmark / "metadata" / "evidence").mkdir()
+        promoted = promote_current_evidence(self.promotion_environment, candidate)
+
+        evidence_root = self.benchmark / "metadata" / "evidence"
+        certificate = evidence_root / "construction_validation_full_current.json"
+        n_pointer = json.loads(
+            (evidence_root / "condition_n_preflight.json").read_text(encoding="utf-8")
+        )
+        l_pointer = json.loads(
+            (evidence_root / "library_dependency_probe.json").read_text(encoding="utf-8")
+        )
+        certificate_sha = hashlib.sha256(certificate.read_bytes()).hexdigest()
+        self.assertEqual(json.loads(certificate.read_text(encoding="utf-8")), evidence)
+        self.assertEqual(promoted["certificate_sha256"], certificate_sha)
+        self.assertEqual(promoted["paper_count"], 20)
+        self.assertEqual(promoted["task_count"], 60)
+        self.assertEqual(promoted["result_count"], 120)
+        self.assertEqual(promoted["condition_n_preflight_count"], 60)
+        self.assertEqual(promoted["condition_l_library_dependency_count"], 60)
+        for pointer in (n_pointer, l_pointer):
+            self.assertEqual(pointer["current_evidence_sha256"], certificate_sha)
+            self.assertEqual(
+                pointer["current_evidence"],
+                "paper_bencmark/highambench/metadata/evidence/"
+                "construction_validation_full_current.json",
+            )
+            self.assertEqual(
+                pointer["status"], "current complete-corpus construction evidence"
+            )
+        self.assertEqual(n_pointer["current_result"]["condition_n_tasks_checked"], 60)
+        self.assertEqual(
+            l_pointer["current_result"]["condition_l_passed_proofs_using_numstability"],
+            60,
+        )
+        self.assertEqual(
+            list(evidence_root.glob(".*.promote-*")),
+            [],
+        )
+
+    def test_current_promotion_rejects_tamper_without_touching_destinations(self) -> None:
+        evidence = self.complete_promotion_evidence()
+        evidence_root = self.benchmark / "metadata" / "evidence"
+        evidence_root.mkdir()
+        destinations = [
+            evidence_root / "construction_validation_full_current.json",
+            evidence_root / "condition_n_preflight.json",
+            evidence_root / "library_dependency_probe.json",
+        ]
+        for index, destination in enumerate(destinations):
+            destination.write_text(f"old-{index}\n", encoding="utf-8")
+        before = {path: path.read_bytes() for path in destinations}
+
+        n_index = next(
+            index
+            for index, result in enumerate(evidence["results"])
+            if result["condition"] == "N"
+        )
+        l_index = next(
+            index
+            for index, result in enumerate(evidence["results"])
+            if result["condition"] == "L"
+        )
+        cases = []
+        bad_summary = copy.deepcopy(evidence)
+        bad_summary["summary"]["passed"] = 119
+        cases.append(("summary", bad_summary, "120/120"))
+        bad_manifest = copy.deepcopy(evidence)
+        bad_manifest["results"][0]["manifest_sha256"] = "f" * 64
+        cases.append(("controlled", bad_manifest, "failed or stale"))
+        bad_preflight = copy.deepcopy(evidence)
+        bad_preflight["results"][n_index]["n_preflight"]["import_probe"][
+            "reliable"
+        ] = False
+        cases.append(("preflight", bad_preflight, "isolation preflight"))
+        bad_dependency = copy.deepcopy(evidence)
+        bad_dependency["results"][l_index]["validation"]["dependency_audit"][
+            "library_use"
+        ] = False
+        cases.append(("dependency", bad_dependency, "NumStability use"))
+        bad_tool = copy.deepcopy(evidence)
+        bad_tool["verification_basis"]["tools"]["tools/validator.py"] = "f" * 64
+        cases.append(("tool", bad_tool, "changed after certification"))
+        bad_runtime_basis = copy.deepcopy(evidence)
+        bad_runtime_basis["verification_basis"]["packages_runtime"]["file_count"] += 1
+        cases.append(
+            (
+                "runtime-basis",
+                bad_runtime_basis,
+                "verification basis does not exactly match",
+            )
+        )
+        bad_top_level = copy.deepcopy(evidence)
+        bad_top_level["unexpected"] = True
+        cases.append(("top-level", bad_top_level, "noncanonical top-level"))
+
+        for name, tampered, error in cases:
+            with self.subTest(name=name):
+                candidate = self.write_promotion_candidate(
+                    tampered, f"candidate-{name}.json"
+                )
+                with self.assertRaisesRegex(BenchmarkToolError, error):
+                    promote_current_evidence(self.promotion_environment, candidate)
+                self.assertEqual(
+                    {path: path.read_bytes() for path in destinations}, before
+                )
+
+    def test_current_promotion_fails_closed_on_symlink_paths(self) -> None:
+        evidence = self.complete_promotion_evidence()
+        candidate = self.write_promotion_candidate(evidence)
+        evidence_root = self.benchmark / "metadata" / "evidence"
+        evidence_root.mkdir()
+        certificate = evidence_root / "construction_validation_full_current.json"
+        certificate.write_text("old-certificate\n", encoding="utf-8")
+        symlink_target = self.root / "outside-pointer.json"
+        symlink_target.write_text("outside\n", encoding="utf-8")
+        pointer = evidence_root / "condition_n_preflight.json"
+        pointer.symlink_to(symlink_target)
+
+        with self.assertRaisesRegex(BenchmarkToolError, "may not be a symlink"):
+            promote_current_evidence(self.promotion_environment, candidate)
+        self.assertEqual(certificate.read_text(encoding="utf-8"), "old-certificate\n")
+        self.assertEqual(symlink_target.read_text(encoding="utf-8"), "outside\n")
+
+        candidate_link = self.root / "candidate-link.json"
+        candidate_link.symlink_to(candidate)
+        pointer.unlink()
+        with self.assertRaisesRegex(BenchmarkToolError, "regular non-symlink"):
+            promote_current_evidence(self.promotion_environment, candidate_link)
+
+    def test_current_promotion_rolls_back_if_one_replace_fails(self) -> None:
+        evidence = self.complete_promotion_evidence()
+        candidate = self.write_promotion_candidate(evidence)
+        evidence_root = self.benchmark / "metadata" / "evidence"
+        evidence_root.mkdir()
+        destinations = [
+            evidence_root / "construction_validation_full_current.json",
+            evidence_root / "condition_n_preflight.json",
+            evidence_root / "library_dependency_probe.json",
+        ]
+        for index, destination in enumerate(destinations):
+            destination.write_text(f"old-{index}\n", encoding="utf-8")
+        before = {path: path.read_bytes() for path in destinations}
+
+        import check_construction as construction_module
+
+        real_replace = construction_module.os.replace
+        destination_set = {path.resolve() for path in destinations}
+        promotion_replaces = 0
+        failed_once = False
+
+        def fail_second_promotion_replace(source, destination):
+            nonlocal promotion_replaces, failed_once
+            if Path(destination).resolve() in destination_set and not failed_once:
+                promotion_replaces += 1
+                if promotion_replaces == 2:
+                    failed_once = True
+                    raise OSError("injected second-document replacement failure")
+            return real_replace(source, destination)
+
+        with patch.object(
+            construction_module.os,
+            "replace",
+            side_effect=fail_second_promotion_replace,
+        ):
+            with self.assertRaisesRegex(BenchmarkToolError, "promotion failed"):
+                promote_current_evidence(self.promotion_environment, candidate)
+        self.assertEqual({path: path.read_bytes() for path in destinations}, before)
+        self.assertEqual(list(evidence_root.glob(".*.promote-*")), [])
+
+    def test_promote_current_cli_flag_is_explicit(self) -> None:
+        arguments = make_parser().parse_args(
+            [
+                "--project-root",
+                str(self.project),
+                "--private-gold",
+                str(self.private_gold),
+                "--toolchain-root",
+                str(self.toolchain),
+                "--packages-root",
+                str(self.packages),
+                "--shared-olean-root",
+                str(self.shared_olean),
+                "--library-source",
+                str(self.library_source),
+                "--library-root-file",
+                str(self.library_root),
+                "--library-olean",
+                str(self.library_olean),
+                "--output",
+                str(self.root / "new-certificate.json"),
+                "--promote-current",
+            ]
+        )
+        self.assertTrue(arguments.promote_current)
+        self.assertEqual(arguments.output, self.root / "new-certificate.json")
 
     def test_failed_complete_n_preflight_blocks_private_proof_validation(self) -> None:
         spec = next(

@@ -12,7 +12,7 @@
     "The residual and update accuracy parameters epsilonR and epsilonU are nonnegative."
   ],
   "author_label": "Lemma 4.2",
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P16 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P16 shared files are present; no NumStability artifact is present."
@@ -28,8 +28,8 @@
   "informal_proof": "Use the exact identity b-A*xNext = (rhat-A*correction)-deltaR-A*deltaX, apply Euclidean triangle inequality twice and the Frobenius action bound, replace ||x|| by ||xNext||, and collect coefficients exactly.",
   "informal_statement": "Exact finite version of Lemma 4.2's backward residual recurrence before the paper drops second-order terms.",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P16",
   "paper_source": {

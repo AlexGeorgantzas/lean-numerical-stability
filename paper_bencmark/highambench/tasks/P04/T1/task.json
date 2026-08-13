@@ -10,7 +10,7 @@
     "The two chained relative-error factors are bounded by gamma_q and gamma_n."
   ],
   "author_label": null,
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P04 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P04 shared files are present; no NumStability artifact is present."
@@ -26,8 +26,8 @@
   "informal_proof": "Apply the triangle and product bounds to \u03b1+\u03b2+\u03b1\u03b2, then use the gamma addition identity under the positive-denominator guard.",
   "informal_statement": "The same-precision gamma-factor core used to derive equation (3.4).",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P04",
   "paper_source": {

@@ -2,7 +2,7 @@
 
 ## Fixed source
 
-The source is Nicholas J. Higham, *The Accuracy of Floating Point Summation*, 1993. The local file is `paper_bencmark/reference_papers/THE ACCURACY OF FLOATING POINT SUMMATION.pdf`. Its SHA-256 hash is `d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7`.
+The source is Nicholas J. Higham, *The Accuracy of Floating Point Summation*, 1993. The local file is `paper_bencmark/reference_papers/P01_THE ACCURACY OF FLOATING POINT SUMMATION.pdf`. Its SHA-256 hash is `d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7`.
 
 The main result used here is equation (3.6) on PDF page 6, printed page 788, in section 3, “Other Methods.” The finite-product estimate that is used to define `gamma` appears immediately after equation (2.2) on PDF page 2, printed page 784. The nonnegative-input simplification is supported by the discussion after equation (2.6) on PDF page 3, printed page 785, in section 2, “Orderings of Recursive Summation.”
 

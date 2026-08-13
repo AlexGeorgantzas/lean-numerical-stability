@@ -14,7 +14,7 @@
     "The target is the absolute-error result, so no nonzero-dot-product assumption is needed."
   ],
   "author_label": "Proposition 5.11",
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and shared files are present; no NumStability artifact is present."
@@ -30,12 +30,12 @@
   "informal_proof": "Show that the length-2N transform sums exactly to the dot product and has absolute mass at most |x^T y|+gamma_(2N)|x|^T|y|. For K>=4 apply Proposition 4.10 with parameter K-1; for K=3 use Proposition 4.5 because SumK(_,2)=Sum2. Then discharge the gamma comparisons leading to equation (5.10).",
   "informal_statement": "In the no-multiplication-underflow case, DotK error is bounded by (u+2 gamma_(4N-2)^2)|x^T y| + gamma_(4N-2)^K |x|^T|y|.",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P02",
   "paper_source": {
-    "local_path": "paper_bencmark/reference_papers/ACCURATE SUM AND DOT PRODUCT.pdf",
+    "local_path": "paper_bencmark/reference_papers/P02_ACCURATE SUM AND DOT PRODUCT.pdf",
     "sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d"
   },
   "paper_version": "journal version; volume 26, issue 6, 2005, printed pages 1955-1988",

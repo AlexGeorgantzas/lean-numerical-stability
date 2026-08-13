@@ -12,7 +12,7 @@
     "The triangular-solve matrix coefficient gammaC is nonnegative."
   ],
   "author_label": "Theorem 4.5",
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P15 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P15 shared files are present; no NumStability artifact is present."
@@ -28,8 +28,8 @@
   "informal_proof": "Expand (L+dL)(U+dU), use the factorization equation, and compose the two solve equations to obtain the exact perturbed system. Apply Frobenius triangle and submultiplicativity to the four matrix-error terms. For the right-hand side, bound y from (U+dU)x = y+dy, solve the finite feedback inequality using gammaP < 1, and substitute it into the two action bounds.",
   "informal_statement": "An exact finite-remainder certificate for Theorem 4.5 equations (4.23)-(4.25), retaining the coefficient products suppressed by O(u epsilon) and O(u^2).",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P15",
   "paper_source": {

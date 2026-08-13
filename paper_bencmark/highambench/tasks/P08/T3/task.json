@@ -10,7 +10,7 @@
     "Every source term satisfies abs(d_m)<=s, with s nonnegative."
   ],
   "author_label": "Lemma 4.3",
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P08 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P08 shared files are present; no NumStability artifact is present."
@@ -26,8 +26,8 @@
   "informal_proof": "First turn the signed recurrence into an absolute componentwise inequality. Build its nonnegative affine envelope, prove domination by induction, and separately unroll the envelope into the displayed matrix-power sum.",
   "informal_statement": "The finite induction certificate at the core of Lemma 4.3's all-iteration residual bound.",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P08",
   "paper_source": {

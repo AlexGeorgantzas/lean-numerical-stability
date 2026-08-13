@@ -14,10 +14,10 @@
   "benchmark_specification": {
     "local_path": "paper_bencmark/scratch_pad/HighamBench_Simple_Two_Condition_Specification.pdf",
     "name": "HighamBench Simple Two-Condition Specification",
-    "sha256": "25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8",
+    "sha256": "59dfc314d4f9afecbbc6131c3c693624b09cc9e908f0e157efa468675ff56915",
     "version": "0.2"
   },
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
   "included_tasks": [
     "P07-T1",

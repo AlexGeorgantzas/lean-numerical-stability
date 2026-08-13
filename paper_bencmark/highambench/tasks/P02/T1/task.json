@@ -11,7 +11,7 @@
     "The additional standard-model and residual-bound fields are part of the common P02 interface but are not needed by T1."
   ],
   "author_label": null,
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and shared files are present; no NumStability artifact is present."
@@ -27,12 +27,12 @@
   "informal_proof": "At every cascade step, TwoSum replaces two values by high and low components with the same exact total. Iterating that identity leaves the saved lows plus the final high equal to the original sum.",
   "informal_statement": "The exact sum of the vector returned by Algorithm 4.3 (VecSum) equals the exact sum of its input.",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P02",
   "paper_source": {
-    "local_path": "paper_bencmark/reference_papers/ACCURATE SUM AND DOT PRODUCT.pdf",
+    "local_path": "paper_bencmark/reference_papers/P02_ACCURATE SUM AND DOT PRODUCT.pdf",
     "sha256": "e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d"
   },
   "paper_version": "journal version; volume 26, issue 6, 2005, printed pages 1955-1988",

@@ -3,8 +3,9 @@
 
 The central manifest is the ordered corpus description. This tool applies one
 workflow to every manifest paper: validate task metadata, rebuild controlled
-manifests, regenerate the paired run order, snapshot the complete evaluation
-tree, and recompute the environment identity.
+manifests, regenerate the paired run order, freeze the live cumulative token
+control, snapshot the complete evaluation tree, and recompute the environment
+identity.
 """
 
 from __future__ import annotations
@@ -20,19 +21,39 @@ from typing import Any, Mapping, Sequence
 try:
     from .common import BenchmarkToolError, read_json, sha256_file, write_json
     from .hashes import create_manifest
+    from . import runner
     from .run_matrix import (
+        CONDITION_L_PROMPT_RELATIVE,
+        DEFAULT_POST_SUBMISSION_VALIDATION_RESERVE_SECONDS,
+        DEFAULT_PROMPT_STARTUP_TIMEOUT_SECONDS,
         ENVIRONMENT_BUNDLE_DEFINITION,
+        FROZEN_MODEL_VERSION,
+        FROZEN_REASONING_EFFORT,
+        PROMPT_PROTOCOL_VERSION,
+        canonical_document_digest,
         environment_bundle_digest,
         evaluation_release_tree_files,
+        provider_token_gate_environment_record,
+        ultra_orchestration_record,
     )
     from .task_tags import validate_task_catalog
 except ImportError:  # Direct script execution.
     from common import BenchmarkToolError, read_json, sha256_file, write_json  # type: ignore
     from hashes import create_manifest  # type: ignore
+    import runner  # type: ignore
     from run_matrix import (  # type: ignore
+        CONDITION_L_PROMPT_RELATIVE,
+        DEFAULT_POST_SUBMISSION_VALIDATION_RESERVE_SECONDS,
+        DEFAULT_PROMPT_STARTUP_TIMEOUT_SECONDS,
         ENVIRONMENT_BUNDLE_DEFINITION,
+        FROZEN_MODEL_VERSION,
+        FROZEN_REASONING_EFFORT,
+        PROMPT_PROTOCOL_VERSION,
+        canonical_document_digest,
         environment_bundle_digest,
         evaluation_release_tree_files,
+        provider_token_gate_environment_record,
+        ultra_orchestration_record,
     )
     from task_tags import validate_task_catalog  # type: ignore
 
@@ -43,6 +64,32 @@ PHASES = (PHASE_CONSTRUCTION, PHASE_MEASUREMENT_READY)
 PAIR_ORDER_VERSION = 2
 RELEASE_MANIFEST_RELATIVE = "metadata/release_files.json"
 PROJECT_BENCHMARK_PREFIX = PurePosixPath("paper_bencmark/highambench")
+TOKEN_MEASUREMENT_SOURCE = "codex_app_server_rawResponse/completed"
+TOKEN_USAGE_NOTIFICATION = "rawResponse/completed"
+
+
+def _session_isolation_record() -> dict[str, Any]:
+    """Return the fixed no-history/no-proof-transfer contract for each run."""
+
+    return {
+        "ephemeral_thread_start_per_run": False,
+        "fresh_codex_state_directory_per_run": True,
+        "history_persistence": "none",
+        "memories_feature_disabled": True,
+        "normal_exit_state_cleanup": True,
+        "prior_outputs_or_submissions_mounted": False,
+        "state_directory_reused_across_runs": False,
+        "thread_resume_or_fork_used": False,
+        "provider_prompt_prefix_cache": {
+            "automatic_prefix_caching_may_occur": True,
+            "cached_input_charged_at_full_token_weight": True,
+            "cached_object": "exact-prefix prefill key/value computation, not generated output",
+            "cross_run_answer_or_proof_replay": False,
+            "kind": "automatic exact-input-prefix prefill computation reuse",
+            "pinned_codex_disable_control_available": False,
+            "semantic_history_transfer": False,
+        },
+    }
 
 
 def _object(value: Any, label: str) -> dict[str, Any]:
@@ -202,7 +249,19 @@ def _set_task_phase(
     targets: Sequence[tuple[str, str, str, Mapping[str, Any]]],
     *,
     measurement_ready: bool,
+    limits: Mapping[str, Any],
 ) -> None:
+    wall_clock_seconds = limits.get("wall_clock_seconds")
+    total_model_tokens = limits.get("total_model_tokens")
+    if (
+        not isinstance(wall_clock_seconds, int)
+        or isinstance(wall_clock_seconds, bool)
+        or wall_clock_seconds <= 0
+        or not isinstance(total_model_tokens, int)
+        or isinstance(total_model_tokens, bool)
+        or total_model_tokens <= 0
+    ):
+        raise BenchmarkToolError("task limits must be positive integers")
     tasks_by_paper: dict[str, list[str]] = {str(paper["paper_id"]): [] for paper in papers}
     for paper_id, tier, task_id, _target in targets:
         task_path = root / "tasks" / paper_id / tier / "task.json"
@@ -210,6 +269,10 @@ def _set_task_phase(
         if task.get("task_id") != task_id or task.get("paper_id") != paper_id or task.get("tier") != tier:
             raise BenchmarkToolError(f"{task_id} task identity disagrees with its path")
         task["classification_frozen_before_runs"] = measurement_ready
+        task["limits"] = {
+            "total_model_tokens": total_model_tokens,
+            "wall_clock_seconds": wall_clock_seconds,
+        }
         write_json(task_path, task)
         tasks_by_paper[paper_id].append(task_id)
 
@@ -231,7 +294,9 @@ def _set_task_phase(
 def _measurement_readiness(
     root: Path,
     targets: Sequence[tuple[str, str, str, Mapping[str, Any]]],
-) -> None:
+    *,
+    ignore_exact_target_novelty_rejections: bool = False,
+) -> dict[str, Any]:
     """Require complete construction and two current reviews for every task."""
 
     task_ids = [task_id for _paper_id, _tier, task_id, _target in targets]
@@ -267,13 +332,45 @@ def _measurement_readiness(
         )
 
     coverage = {task_id: 0 for task_id in task_ids}
+    review_records: list[dict[str, Any]] = []
+    ignored_rejections: set[str] = set()
     reviews_dir = root / "metadata" / "reviews"
     if reviews_dir.is_dir():
         for path in sorted(reviews_dir.glob("*.json")):
             review = read_json(path)
-            if not isinstance(review, Mapping) or review.get("record_status") != "current_final":
+            if not isinstance(review, Mapping):
                 continue
-            task_reviews = review.get("task_reviews")
+            status = review.get("record_status")
+            if ignore_exact_target_novelty_rejections:
+                if status not in ("current_final", "final", "current_with_blocking_defects"):
+                    continue
+                reviewer = review.get("reviewer")
+                if not isinstance(reviewer, Mapping) or reviewer.get("fresh_context") is not True:
+                    raise BenchmarkToolError(
+                        f"novelty override review {path.name} is not a fresh-context Codex review"
+                    )
+                identifiers = review.get("identifiers")
+                snapshot = review.get("snapshot")
+                review_manifest_sha256 = (
+                    review.get("benchmark_manifest_sha256")
+                    or (
+                        identifiers.get("benchmark_manifest_sha256")
+                        if isinstance(identifiers, Mapping)
+                        else None
+                    )
+                    or (
+                        snapshot.get("manifest_sha256")
+                        if isinstance(snapshot, Mapping)
+                        else None
+                    )
+                )
+                if review_manifest_sha256 != current_manifest_sha256:
+                    raise BenchmarkToolError(
+                        f"novelty override review {path.name} cites a stale benchmark manifest"
+                    )
+            elif status != "current_final":
+                continue
+            task_reviews = review.get("task_reviews", review.get("tasks"))
             if not isinstance(task_reviews, list):
                 continue
             covered_in_record: set[str] = set()
@@ -282,22 +379,62 @@ def _measurement_readiness(
                     continue
                 task_id = raw_task_review.get("task_id")
                 outcome = raw_task_review.get(
-                    "review_outcome", raw_task_review.get("outcome")
+                    "review_outcome",
+                    raw_task_review.get("outcome", raw_task_review.get("decision")),
                 )
-                if (
-                    task_id in coverage
-                    and task_id not in covered_in_record
-                    and isinstance(outcome, str)
-                    and outcome.lower().startswith("pass")
-                ):
+                if task_id not in coverage or task_id in covered_in_record:
+                    continue
+                accepted = isinstance(outcome, str) and outcome.lower().startswith("pass")
+                if ignore_exact_target_novelty_rejections and not accepted:
+                    normalized = outcome.lower() if isinstance(outcome, str) else ""
+                    exact_target_collision = (
+                        raw_task_review.get("exact_target_absent_from_mathlib") is False
+                        or raw_task_review.get("exact_target_absent_from_numstability") is False
+                    )
+                    accepted = (
+                        raw_task_review.get("source_faithful") is True
+                        and ("exact_target" in normalized or exact_target_collision)
+                        and ("fail" in normalized or "collision" in normalized)
+                    )
+                    if accepted:
+                        ignored_rejections.add(str(task_id))
+                if ignore_exact_target_novelty_rejections and raw_task_review.get(
+                    "source_faithful"
+                ) is not True:
+                    accepted = False
+                if accepted:
                     coverage[str(task_id)] += 1
                     covered_in_record.add(str(task_id))
+            if covered_in_record:
+                review_records.append(
+                    {
+                        "path": f"metadata/reviews/{path.name}",
+                        "sha256": sha256_file(path),
+                        "record_status": status,
+                        "task_count": len(covered_in_record),
+                    }
+                )
     missing = [task_id for task_id, count in coverage.items() if count < 2]
     if missing:
         raise BenchmarkToolError(
             "measurement-ready phase requires two current final reviews for every task; missing: "
             + ", ".join(missing)
         )
+    return {
+        "enabled": ignore_exact_target_novelty_rejections,
+        "scope": "exact-target novelty rejections only",
+        "source_fidelity_required": True,
+        "fresh_context_reviews_required": ignore_exact_target_novelty_rejections,
+        "review_records": review_records,
+        "ignored_rejection_task_ids": sorted(ignored_rejections),
+        "note": (
+            "The project owner directed that the fresh-context reviews be retained "
+            "but their exact-target novelty rejections be ignored for this private, "
+            "pre-publication measurement."
+            if ignore_exact_target_novelty_rejections
+            else "No review override was applied."
+        ),
+    }
 
 
 def _sync_manifest(
@@ -467,6 +604,239 @@ def _sync_run_order(
     }
 
 
+def _token_control_record(limit_tokens: int) -> dict[str, Any]:
+    """Return the cached-inclusive, outcome-dependent ledger contract."""
+
+    return {
+        "advisory_rollout_budget": {
+            "enabled": True,
+            "feature": "rollout_budget",
+            "feature_row": "rollout_budget under development false",
+            "limit_tokens": limit_tokens,
+            "prefill_token_weight": 1,
+            "role": "advisory_only",
+            "sampling_token_weight": 1,
+            "strict_config": True,
+        },
+        "all_descendant_threads_included": True,
+        "cached_input_counted_once": True,
+        "checked_before_submission_validation": True,
+        "comparison": ">=",
+        "concurrent_inflight_overshoot_possible": False,
+        "control": "loopback_provider_response_admission_gate",
+        "input_includes_cached": True,
+        "limit_tokens": limit_tokens,
+        "live_update_sequence": True,
+        "live_cumulative": True,
+        "measurement_exact_required": True,
+        "measurement_source": TOKEN_MEASUREMENT_SOURCE,
+        "notification": TOKEN_USAGE_NOTIFICATION,
+        "one_response_overshoot_possible": True,
+        "outer_runner_polling": True,
+        "over_limit_pass_allowed": False,
+        "response_ids_deduplicated": True,
+        "root_completion_is_tree_barrier": False,
+        "trusted_adapter_freezes_first_threshold": True,
+        "trusted_adapter_latches_first_threshold": True,
+        "trusted_usage_path_outside_workspace": True,
+        "usage_scope": "rooted_attempt_thread_tree_completed_responses",
+        "provider_gate_protocol": runner.PROVIDER_GATE_PROTOCOL,
+        "provider_response_bound_tokens": 272000,
+        "strict_admission_inequality": (
+            "completed_tokens + (open_request_count + 1) * "
+            "response_bound < token_limit"
+        ),
+        "crossing_response_release": runner.PROVIDER_GATE_CROSSING_RELEASE_POLICY,
+        "crossing_response_actions_released": False,
+        "provider_requests_quiescent_at_scored_endpoint": True,
+        "tree_quiescence_distinct_from_provider_quiescence": True,
+        "outcome_exactness": {
+            "accepted_proof": {
+                "required_evidence": "exact_authenticated_submission_boundary",
+                "provider_gate_close_reason": "accepted_submission",
+                "provider_requests_quiescent": True,
+                "drain_complete": False,
+                "measurement_exact": True,
+                "submission_boundary_exact": True,
+                "root_turn_active": True,
+                "descendants_quiescent": True,
+                "later_model_response_possible": False,
+            },
+            "token_limit": {
+                "required_evidence": "sealed_sanitized_sole_inflight_crossing",
+                "provider_gate_close_reason": "token_limit",
+                "provider_requests_quiescent": True,
+                "tree_quiescent": False,
+                "drain_complete": False,
+                "measurement_exact": True,
+                "crossing_response_actions_released": False,
+            },
+            "scored_failure": {
+                "required_evidence": "exact_natural_drain",
+                "provider_gate_close_reason": "natural_end",
+                "provider_requests_quiescent": True,
+                "drain_complete": True,
+                "measurement_exact": True,
+                "tree_quiescent": True,
+            },
+            "unscorable_useful_work": {
+                "trigger": (
+                    "no_exact_authenticated_provider_gate_endpoint_for_outcome"
+                ),
+                "matrix_action": "abort_and_preserve_incident",
+                "retry_allowed": False,
+                "scored": False,
+            },
+        },
+    }
+
+
+def _sync_token_control(
+    config: dict[str, Any], environment: dict[str, Any]
+) -> None:
+    limits = _object(config.get("limits"), "config limits")
+    limit_tokens = limits.get("total_model_tokens")
+    if (
+        not isinstance(limit_tokens, int)
+        or isinstance(limit_tokens, bool)
+        or limit_tokens <= 0
+    ):
+        raise BenchmarkToolError(
+            "config limits.total_model_tokens must be a positive integer"
+        )
+    config["token_control"] = _token_control_record(limit_tokens)
+    environment["token_control"] = _token_control_record(limit_tokens)
+
+
+def _sync_prompt_startup_timeout(
+    config: dict[str, Any], environment: dict[str, Any]
+) -> None:
+    """Freeze adapter startup separately from prompt-to-proof measurement time."""
+
+    if not float(DEFAULT_PROMPT_STARTUP_TIMEOUT_SECONDS).is_integer():
+        raise BenchmarkToolError("prompt startup timeout must be an exact integer")
+    timeout = int(DEFAULT_PROMPT_STARTUP_TIMEOUT_SECONDS)
+    limits = _object(config.get("limits"), "config limits")
+    runtime = _object(environment.setdefault("runtime", {}), "environment runtime")
+    limits["prompt_startup_timeout_seconds"] = timeout
+    runtime["prompt_startup_timeout_seconds"] = timeout
+
+
+def _sync_post_submission_validation_reserve(
+    config: dict[str, Any], environment: dict[str, Any]
+) -> None:
+    """Freeze the complete serial hidden-validation and process-closure tail."""
+
+    if not float(DEFAULT_POST_SUBMISSION_VALIDATION_RESERVE_SECONDS).is_integer():
+        raise BenchmarkToolError(
+            "post-submission validation reserve must be an exact integer"
+        )
+    reserve = int(DEFAULT_POST_SUBMISSION_VALIDATION_RESERVE_SECONDS)
+    limits = _object(config.get("limits"), "config limits")
+    runtime = _object(environment.setdefault("runtime", {}), "environment runtime")
+    limits["post_submission_validation_reserve_seconds"] = reserve
+    runtime["post_submission_validation_reserve_seconds"] = reserve
+
+
+def _sync_session_isolation(
+    config: dict[str, Any], environment: dict[str, Any]
+) -> None:
+    record = _session_isolation_record()
+    configured = _object(config.setdefault("isolation", {}), "config isolation")
+    implemented = _object(
+        environment.setdefault("isolation", {}), "environment isolation"
+    )
+    configured.update(record)
+    implemented.update(record)
+
+
+def _sync_ultra_orchestration(
+    config: dict[str, Any], environment: dict[str, Any]
+) -> None:
+    """Freeze Ultra delegation and its projection-v6 accounting contract."""
+
+    frozen = _object(config.get("frozen_environment"), "config frozen_environment")
+    agent = _object(environment.setdefault("agent", {}), "environment agent")
+    record = ultra_orchestration_record()
+    frozen["model_version"] = FROZEN_MODEL_VERSION
+    frozen["model_reasoning_effort"] = FROZEN_REASONING_EFFORT
+    frozen["ultra_orchestration"] = record
+    agent["model"] = FROZEN_MODEL_VERSION
+    agent["reasoning_effort"] = FROZEN_REASONING_EFFORT
+    agent["ultra_orchestration"] = record
+    agent["disabled_capabilities"] = [
+        "web and browser tools",
+        "apps and plugins",
+        "memory",
+        "image generation",
+    ]
+    agent["fresh_mode"] = [
+        "Codex app-server thread/start with ephemeral=false inside a unique temporary state directory",
+        "history.persistence=none",
+        "a new temporary CODEX_HOME for every attempt",
+        "the temporary state directory is deleted on normal adapter exit and is never reused or mounted by another attempt",
+        "user configuration and project rules ignored",
+    ]
+
+
+def _sync_provider_token_gate(
+    root: Path, config: dict[str, Any], environment: dict[str, Any]
+) -> None:
+    """Freeze the gate source, model bound, and local TLS/DNS provenance."""
+
+    record = provider_token_gate_environment_record(root)
+    implementation = _object(
+        record.get("implementation"), "provider-token-gate implementation"
+    )
+    static_configuration = _object(
+        record.get("static_configuration"),
+        "provider-token-gate static configuration",
+    )
+    upstream_response_contract = _object(
+        static_configuration.get("upstream_response_contract"),
+        "provider-token-gate upstream response contract",
+    )
+    if (
+        type(record.get("schema_version")) is not int
+        or record.get("schema_version") != 2
+        or record.get("protocol") != "highambench-provider-token-gate-v6"
+        or implementation.get("version") != "6"
+        or canonical_document_digest(upstream_response_contract)
+        != canonical_document_digest(
+            runner.PROVIDER_GATE_UPSTREAM_RESPONSE_CONTRACT
+        )
+    ):
+        raise BenchmarkToolError(
+            "snapshot refresh requires the exact provider-token-gate v6 freeze"
+        )
+    frozen = _object(config.get("frozen_environment"), "config frozen_environment")
+    frozen["provider_token_gate_sha256"] = canonical_document_digest(record)
+    environment["provider_token_gate"] = record
+
+
+def _invalidate_live_canary_descriptors(
+    config: dict[str, Any], environment: dict[str, Any]
+) -> None:
+    """Require fresh live attestations after every full snapshot refresh.
+
+    A refresh may change any release-covered execution component.  Retaining a
+    prior ``passed`` descriptor would let the launcher skip generation and only
+    discover the stale component binding at its later verify-only gate.  The
+    explicit promoter does not call ``refresh_snapshot``; it validates one
+    attestation against the current snapshot, marks it passed, and performs only
+    the non-semantic release/environment rehash needed to retain that evidence.
+    """
+
+    frozen = _object(config.get("frozen_environment"), "config frozen_environment")
+    for key in ("ultra_orchestration_canary", "token_control_canary"):
+        configured = frozen.get(key)
+        implemented = environment.get(key)
+        if isinstance(configured, dict):
+            configured["status"] = "replacement_required"
+        if isinstance(implemented, dict):
+            implemented["status"] = "replacement_required"
+
+
 def _sync_release_and_environment(
     root: Path,
     config: dict[str, Any],
@@ -480,11 +850,42 @@ def _sync_release_and_environment(
     frozen["prompt_sha256"] = prompt_sha256
     agent = _object(environment.setdefault("agent", {}), "environment agent")
     agent["prompt_sha256"] = prompt_sha256
+    condition_l_prompt = root / CONDITION_L_PROMPT_RELATIVE
+    if not condition_l_prompt.is_file() or condition_l_prompt.is_symlink():
+        raise BenchmarkToolError(
+            f"condition-L prompt must be a regular file: {condition_l_prompt}"
+        )
+    prompt_protocol = {
+        "version": PROMPT_PROTOCOL_VERSION,
+        "composition_order": [
+            "common_prompt",
+            "condition_L_supplement_if_condition_L",
+            "task_context",
+            "fixed_target",
+        ],
+        "common_prompt": {
+            "path": "agent_prompt.md",
+            "sha256": prompt_sha256,
+            "bytes": (root / "agent_prompt.md").stat().st_size,
+        },
+        "condition_supplements": {
+            "L": {
+                "path": CONDITION_L_PROMPT_RELATIVE,
+                "sha256": sha256_file(condition_l_prompt),
+                "bytes": condition_l_prompt.stat().st_size,
+            }
+        },
+        "N_receives_condition_supplement": False,
+        "relevant_theorem_or_module_hints_supplied": False,
+    }
+    frozen["prompt_protocol"] = prompt_protocol
+    agent["prompt_protocol"] = prompt_protocol
 
     isolation = environment.get("isolation")
     if isinstance(isolation, dict):
         component_paths = {
             "filesystem_adapter_sha256": "tools/codex_isolated.py",
+            "provider_token_gate_sha256": "tools/provider_token_gate.py",
             "lean_adapter_sha256": "tools/lean_isolated.py",
             "offline_shell_source_sha256": "tools/offline_shell.c",
             "runner_sha256": "tools/runner.py",
@@ -540,7 +941,12 @@ def _sync_release_and_environment(
     return release_sha256, bundle, len(release["files"])
 
 
-def refresh_snapshot(root: Path, *, phase: str) -> dict[str, Any]:
+def refresh_snapshot(
+    root: Path,
+    *,
+    phase: str,
+    ignore_exact_target_novelty_rejections: bool = False,
+) -> dict[str, Any]:
     if phase not in PHASES:
         raise BenchmarkToolError(f"phase must be one of {', '.join(PHASES)}")
     benchmark_root = root.resolve()
@@ -558,6 +964,10 @@ def refresh_snapshot(root: Path, *, phase: str) -> dict[str, Any]:
     paper_ids = [str(paper["paper_id"]) for paper in papers]
     benchmark_id = _benchmark_id(manifest, paper_ids)
     measurement_ready = phase == PHASE_MEASUREMENT_READY
+    if ignore_exact_target_novelty_rejections and not measurement_ready:
+        raise BenchmarkToolError(
+            "the exact-target novelty override is valid only for measurement-ready snapshots"
+        )
 
     tag_catalog = validate_task_catalog(benchmark_root)
     manifest_task_ids = [task_id for _paper_id, _tier, task_id, _target in targets]
@@ -574,11 +984,22 @@ def refresh_snapshot(root: Path, *, phase: str) -> dict[str, Any]:
             f"manifest={sorted(paper_ids)}, directories={paper_record_ids}"
         )
 
+    review_policy: dict[str, Any] | None = None
     if measurement_ready:
-        _measurement_readiness(benchmark_root, targets)
+        review_policy = _measurement_readiness(
+            benchmark_root,
+            targets,
+            ignore_exact_target_novelty_rejections=(
+                ignore_exact_target_novelty_rejections
+            ),
+        )
 
     _set_task_phase(
-        benchmark_root, papers, targets, measurement_ready=measurement_ready
+        benchmark_root,
+        papers,
+        targets,
+        measurement_ready=measurement_ready,
+        limits=_object(config.get("limits"), "config limits"),
     )
     validate_task_catalog(benchmark_root)
     _sync_manifest(
@@ -597,11 +1018,22 @@ def refresh_snapshot(root: Path, *, phase: str) -> dict[str, Any]:
         targets,
         benchmark_id=benchmark_id,
     )
+    _sync_prompt_startup_timeout(config, environment)
+    _sync_post_submission_validation_reserve(config, environment)
+    _sync_token_control(config, environment)
+    _sync_session_isolation(config, environment)
+    _sync_ultra_orchestration(config, environment)
+    _sync_provider_token_gate(benchmark_root, config, environment)
+    _invalidate_live_canary_descriptors(config, environment)
     config["configuration_status"] = (
         "corpus under construction; task metadata and snapshots may be regenerated"
         if phase == PHASE_CONSTRUCTION
         else "measurement-ready corpus snapshot; changes require a new snapshot"
     )
+    if review_policy is None:
+        config.pop("private_measurement_review_override", None)
+    else:
+        config["private_measurement_review_override"] = review_policy
     frozen = _object(config.get("frozen_environment"), "config frozen_environment")
     frozen["construction_status_note"] = (
         "The corpus is still being built. No measured run may start until every task "
@@ -641,13 +1073,27 @@ def make_parser() -> argparse.ArgumentParser:
         default=Path(__file__).resolve().parents[1],
     )
     parser.add_argument("--phase", choices=PHASES, required=True)
+    parser.add_argument(
+        "--ignore-exact-target-novelty-rejections",
+        action="store_true",
+        help=(
+            "retain two fresh-context reviews and require source fidelity, but "
+            "ignore only exact-target novelty rejections for a private measurement"
+        ),
+    )
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = make_parser().parse_args(argv)
     try:
-        result = refresh_snapshot(args.benchmark_root, phase=args.phase)
+        result = refresh_snapshot(
+            args.benchmark_root,
+            phase=args.phase,
+            ignore_exact_target_novelty_rejections=(
+                args.ignore_exact_target_novelty_rejections
+            ),
+        )
     except (OSError, BenchmarkToolError, ValueError) as error:
         print(f"refresh-snapshot error: {error}", file=sys.stderr)
         return 1

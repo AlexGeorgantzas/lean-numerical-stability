@@ -8,7 +8,7 @@
     "The error vector has a positive finite number of coordinates."
   ],
   "author_label": null,
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P09 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P09 shared files are present; no NumStability artifact is present."
@@ -24,8 +24,8 @@
   "informal_proof": "Apply the frozen finite-vector infinity-versus-Euclidean norm theorem, then unfold RMS and cancel the positive square root of the dimension.",
   "informal_statement": "The exact maximum-versus-RMS inequality used to prove Theorem 1(b).",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P09",
   "paper_source": {

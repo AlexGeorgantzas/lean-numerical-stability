@@ -221,6 +221,7 @@ def inventory_candidate_lean(
     sources: list[Path] = []
     oleans: list[Path] = []
     findings: list[dict[str, Any]] = []
+    ignored_build_roots: list[str] = []
 
     def walk_error(error: OSError) -> None:
         filename = str(error.filename) if error.filename else str(workspace)
@@ -247,6 +248,15 @@ def inventory_candidate_lean(
                         "detail": "symlinked directories can conceal unchecked Lean sources",
                     }
                 )
+                continue
+            # Lake's workspace-local build tree is ephemeral compiler output,
+            # not a candidate module root in the hidden validator.  The hidden
+            # copy drops this tree and rebuilds against frozen, read-only
+            # dependency oleans, so scanning or trusting its stale oleans would
+            # be both unnecessary and misleading.  Candidate modules that can
+            # actually resolve from /workspace remain scanned below.
+            if name == ".lake":
+                ignored_build_roots.append(_workspace_relative(workspace, path))
                 continue
             retained_directories.append(name)
         directory_names[:] = retained_directories
@@ -316,9 +326,70 @@ def inventory_candidate_lean(
         "candidate_oleans": [
             _workspace_relative(workspace, path) for path in oleans
         ],
+        "ignored_build_roots": sorted(set(ignored_build_roots)),
         "local_modules": sorted(modules),
         "findings": findings,
     }
+
+
+def workspace_local_import_findings(
+    submission: Path,
+    workspace: Path,
+    candidate_inventory: dict[str, Any],
+    protected_modules: set[str],
+) -> list[dict[str, Any]]:
+    """Reject imports resolved by the candidate-source inventory.
+
+    The authenticated submission protocol permits declarations in the
+    submission file itself, but not a proof assembled by importing another
+    model-created source file.  Controlled sources are absent from
+    ``scanned_sources`` and therefore remain importable.  Mathlib, Lean, and
+    the condition-L library are likewise external to the candidate inventory.
+
+    ``inventory_candidate_lean`` already accounts for workspace-relative
+    module identities and source-root suffixes.  Reusing that inventory avoids
+    classifying imports from their textual prefixes.  If the inventory says an
+    import is local but its owning source is not unique, validation fails
+    closed instead of guessing which workspace file Lean would select.
+    """
+
+    try:
+        imports = extract_imports(submission.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError):
+        # The ordinary source scan reports the unreadable file.
+        return []
+
+    local_modules = set(candidate_inventory.get("local_modules", ()))
+    source_relatives = [
+        Path(relative) for relative in candidate_inventory.get("scanned_sources", ())
+    ]
+    findings: list[dict[str, Any]] = []
+    for imported in imports:
+        if imported not in local_modules:
+            continue
+        imported_path = Path(*imported.split("."))
+        owners = sorted(
+            relative.as_posix()
+            for relative in source_relatives
+            if _path_parts_end_with(relative.with_suffix(""), imported_path)
+        )
+        ambiguous = len(owners) != 1 or imported in protected_modules
+        findings.append(
+            {
+                "path": str(submission),
+                "kind": "workspace-local module import",
+                "import": imported,
+                "candidate_sources": owners,
+                "resolution": "ambiguous" if ambiguous else "candidate",
+                "detail": (
+                    "candidate module ownership is ambiguous; authenticated "
+                    "submission validation fails closed"
+                    if ambiguous
+                    else "authenticated submissions may not import a candidate-created module"
+                ),
+            }
+        )
+    return findings
 
 
 def _simple_target_name(target_theorem: str) -> str:
@@ -408,7 +479,12 @@ def classify_lean_failure(output: str) -> str:
     lowered = output.lower()
     syntax_or_elab_markers = (
         "unexpected token",
+        "expected token",
         "unexpected end of input",
+        "unexpected identifier",
+        "expected command",
+        "invalid syntax",
+        "function expected",
         "unknown identifier",
         "unknown constant",
         "unknown namespace",
@@ -425,16 +501,17 @@ def classify_lean_failure(output: str) -> str:
         "tactic 'exact' failed",
         "tactic 'rfl' failed",
         "tactic execution has not been implemented",
-        "type mismatch",
         "declaration has metavariables",
     )
     if any(marker in lowered for marker in syntax_or_elab_markers):
         return "SYNTAX_OR_ELAB"
     if any(marker in lowered for marker in proof_markers):
         return "PROOF_ERROR"
-    # Lean reached the submitted declaration but rejected it for an otherwise
-    # unclassified reason. Treat that conservatively as a proof error.
-    return "PROOF_ERROR"
+    # Only affirmative proof-phase evidence receives PROOF_ERROR.  Compiler
+    # rejection without such evidence remains syntax/elaboration failure; this
+    # prevents an unfamiliar parser or elaborator diagnostic from silently
+    # moving below PROOF_ERROR in the frozen precedence.
+    return "SYNTAX_OR_ELAB"
 
 
 def parse_dependency_audit(output: str) -> dict[str, Any]:
@@ -518,6 +595,7 @@ class ValidationConfig:
     compile_timeout_seconds: float = 120.0
     audit_timeout_seconds: float = 120.0
     keep_hidden: bool = False
+    reject_workspace_local_module_imports: bool = False
 
 
 def validate(config: ValidationConfig) -> dict[str, Any]:
@@ -539,6 +617,9 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
         "condition": config.condition,
         "target_theorem": config.target_theorem,
         "submission": config.submission_relative,
+        "reject_workspace_local_module_imports": (
+            config.reject_workspace_local_module_imports
+        ),
         "controlled_before": None,
         "controlled_hidden": None,
         "controlled_after_compile": None,
@@ -646,6 +727,15 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
                     "detail": "candidate modules may not claim frozen NumStability ownership",
                 }
             )
+    if config.reject_workspace_local_module_imports:
+        findings.extend(
+            workspace_local_import_findings(
+                submission,
+                workspace,
+                candidate_inventory,
+                protected_modules,
+            )
+        )
     result["static_findings"] = findings
     if findings:
         result.update(
@@ -695,7 +785,12 @@ def validate(config: ValidationConfig) -> dict[str, Any]:
             hidden_workspace,
             symlinks=False,
             ignore=shutil.ignore_patterns(
-                ".git", "__pycache__", "private_gold", "benchmark-results", "results"
+                ".git",
+                ".lake",
+                "__pycache__",
+                "private_gold",
+                "benchmark-results",
+                "results",
             ),
         )
         if manifest is not None:
@@ -1015,6 +1110,14 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--compile-timeout-seconds", type=float, default=120.0)
     parser.add_argument("--audit-timeout-seconds", type=float, default=120.0)
     parser.add_argument("--keep-hidden", action="store_true")
+    parser.add_argument(
+        "--reject-workspace-local-module-imports",
+        action="store_true",
+        help=(
+            "authenticated-submit mode: reject imports resolved to any "
+            "candidate-created workspace Lean source"
+        ),
+    )
     parser.add_argument("--output", type=Path)
     return parser
 
@@ -1048,6 +1151,9 @@ def main() -> int:
                 compile_timeout_seconds=args.compile_timeout_seconds,
                 audit_timeout_seconds=args.audit_timeout_seconds,
                 keep_hidden=args.keep_hidden,
+                reject_workspace_local_module_imports=(
+                    args.reject_workspace_local_module_imports
+                ),
             )
         )
     except BenchmarkToolError as error:

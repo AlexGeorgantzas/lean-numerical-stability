@@ -6,15 +6,32 @@ Lean proof of the fixed theorem.
 
 The complete context and fixed target are appended below. Read-only copies of
 them and the task's shared Lean files are also below the `task/` directory;
-use `find task -type f` if you want their paths.  Create a new file named
-`Submission.lean` in the workspace root.  Copy the import, namespace, theorem
-name, arguments, assumptions, and conclusion from the fixed target exactly.
-Replace only the proof that starts after `-- PROOF_START`.  You may put proved
-local helper lemmas in `Submission.lean` before the target theorem.
+use `find task -type f` if you want their paths.  Develop the proof in the scratch
+file `Candidate.lean`.  Copy the import, namespace, theorem name,
+arguments, assumptions, and conclusion from the fixed target exactly.  Replace
+only the proof that starts after `-- PROOF_START`.  You may put proved local
+helper lemmas in the candidate before the target theorem.
 
-The fixed wall-clock limit is 900 seconds.  The fixed model limit is 120,000
-input-plus-output tokens, with cached input counted as input.  Stop as soon as
-`lean Submission.lean` succeeds.
+The fixed wall-clock limit is 1,800 seconds.  The fixed model limit is 5,000,000
+input-plus-output tokens, with cached input counted as input.
+
+Never create, modify, rename, or copy a file to `Submission.lean`; that path is
+owned by the trusted benchmark runner.  Test the complete scratch candidate
+with Lean first.  If you delegated work, the root coordinator must then wait
+until every subagent is terminal, collect all useful results, and make sure no
+child work or message remains pending.  Only the root coordinator may submit.
+In a separate final model response, make exactly one model tool call: `exec`.
+Its raw input must be exactly these two lines, including the final newline:
+
+```javascript
+// @exec: {"yield_time_ms": 2400000}
+await tools.submit_proof({candidate_path:"Candidate.lean"});
+```
+
+Do not add any other code, text, tool call, or action to that response.  The
+yield setting is transport-only and does not extend the 1,800-second proof
+deadline.  A rejection result permits repair and another tested submission; an
+accepted call ends the attempt automatically and must remain unanswered.
 
 Rules:
 
@@ -27,8 +44,7 @@ Rules:
 - Do not use the internet or attempt any network request.
 - You may inspect and search local files with normal shell tools.
 - You may import and use a locally mounted formal library if one is present.
-- The final response should be brief; the checked `Submission.lean` file is the
-  submission.
+- Submit only through `submit_proof`; a normal final message is not a submission.
 
 The validator will rebuild the file in a fresh hidden copy, confirm that the
 fixed statement is unchanged, reject forbidden shortcuts, and inspect the

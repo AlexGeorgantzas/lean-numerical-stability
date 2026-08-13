@@ -10,7 +10,7 @@
     "The componentwise majorant is |L||U|."
   ],
   "author_label": "Theorem 4.2",
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P05 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P05 shared files are present; no NumStability artifact is present."
@@ -26,8 +26,8 @@
   "informal_proof": "Set DeltaA=LU-A, retain the local rowwise bounds, and use i<=n-1 together with nonnegativity of |L||U| to obtain the uniform estimate.",
   "informal_statement": "The square-case sharpening of Theorem 4.2 and equation (4.2).",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P05",
   "paper_source": {

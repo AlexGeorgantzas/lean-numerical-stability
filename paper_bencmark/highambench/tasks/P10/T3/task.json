@@ -9,7 +9,7 @@
     "At every level below the chosen finite depth, the error obeys the paper's displayed affine recurrence."
   ],
   "author_label": null,
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P10 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P10 shared files are present; no NumStability artifact is present."
@@ -25,8 +25,8 @@
   "informal_proof": "Use nonnegativity of the Frobenius norms and positivity of sep to prove that the recurrence multiplier is nonnegative. Induct on the depth, multiply the induction hypothesis by that multiplier, apply the next recurrence step, and prove the finite geometric-sum identity by a second induction.",
   "informal_statement": "The exact finite geometric unrolling of the Sylvester error recurrence displayed immediately before equation (20).",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P10",
   "paper_source": {
