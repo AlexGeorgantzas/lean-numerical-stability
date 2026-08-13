@@ -24,7 +24,7 @@ import subprocess
 import sys
 import tempfile
 from collections import Counter, defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Iterator, Sequence
 
@@ -131,6 +131,14 @@ C0002_RELEASED_SHARED_PATHS = frozenset(
         "NumStability/Source/Higham/Chapter20/Theorem03/QRSolve.lean",
         "NumStability/Source/Higham/Chapter20/Theorem07.lean",
         "NumStability/Algorithms/TestMatrices/Higham28Stewart.lean",
+    }
+)
+R03_RERESERVED_C0002_PATHS = frozenset(
+    {
+        "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/Closure.lean",
+        "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/ActualOutput.lean",
+        "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Closure.lean",
+        "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Uniform.lean",
     }
 )
 REQUEST_RESOLUTION_EVIDENCE = {
@@ -321,6 +329,222 @@ NEXT_REQUEST_OVERLAP = frozenset(
         "docs/architecture/layout-exceptions.json",
         "docs/architecture/tiers.json",
     }
+)
+
+# The successor to the completed C0001-rooted R11/R12 pair is deliberately a
+# separate, singleton epoch.  Do not fold these facts into NEXT_BRANCH_FACTS:
+# those constants are immutable evidence for the already accepted C0002
+# checkpoint, while this packet is the planned (pre-activation) R03 state.
+R03_BRANCH_ID = "B0005"
+R03_PROJECTION_ID = "P0005"
+R03_REQUEST_ID = "R0005"
+R03_WAVE_ID = "R03"
+R03_LANE_ID = "codex-lane"
+R03_OPERATOR_ID = "codex-local"
+R03_BRANCH_NAME = (
+    "codex/reorg-completion-2026-08-r03-floating-point-foundations-ch01-ch12"
+)
+R03_REMOTE_REF = f"refs/heads/{R03_BRANCH_NAME}"
+R03_PLANNED_WORKTREE = (
+    r"C:\Users\qed_s\higham-worktrees\completion-r03-codex"
+)
+R03_SELECTOR_SHA256 = (
+    "176BC214ABAE4B9CC2E9822E3177033213C4BD730D0057FBE8BAB524412C6B3A"
+)
+R03_PROJECTION_SHA256 = (
+    "9D221D2DF34D79D67799F2F4F3ED16D74365A7EEBBDB372700EF574242F16D53"
+)
+R03_PROJECTION_PAYLOAD_SHA256 = (
+    "7AAB876C821A25ABAD19346BCE35188CF28D1A31C20AF0C931CA1B3AC9892733"
+)
+R03_CANDIDATE_SHA256 = (
+    "E03DB7A24886AD0B45C7371FE30ACE3AD135B3C4CC9866D65186753CD14FAD4C"
+)
+R03_PRIVATE_CLOSURE_SHA256 = (
+    "59B218703D4EEAAC056773C3C91F0506089962ADB7BEB09E0B55D847E65647A3"
+)
+R03_COUNTS = {
+    "declarations": 2389,
+    "signature_edges": 28180,
+    "body_edges": 42404,
+    "union_edges": 43943,
+}
+R03_OWNER_COUNT = 47
+R03_FORBIDDEN_EXACT_COUNT = C0002_METRICS["production_modules"] - R03_OWNER_COUNT
+R03_PRIVATE_COUNT = 398
+R03_PRIVATE_CLOSURE_ROWS = 2502
+R03_PRIVATE_REVERSE_DEPENDENTS = 2104
+R03_PRIVATE_SELECTED_OWNER_ROWS = 2063
+R03_DEBT_COUNTS = {
+    "unclassified_modules": 23,
+    "mixed_modules": 9,
+    "missing_module_docstrings": 13,
+    "noncanonical_modules": 24,
+    "declaration_bearing_umbrellas": 2,
+}
+R03_R07_OVERLAP_COUNTS = {
+    "r03_to_r07_transitive_owner_pairs": 24,
+    "r07_to_r03_transitive_owner_pairs": 23,
+    "common_direct_project_dependencies": 7,
+    "shared_outside_consumers": 5,
+}
+R03_PROTECTED_PREFIXES = NEXT_PROTECTED_PREFIXES
+R03_TEST_CLASSES = frozenset(
+    {
+        "aggregate_entrypoint",
+        "canonical_only",
+        "focused",
+        "old_only",
+        "protected_consumer",
+    }
+)
+R03_DECLARATION_ROUTE_HEADER = (
+    "baseline_owner_module",
+    "baseline_declaration_name",
+    "visibility",
+    "kind",
+    "baseline_order",
+    "destination_module",
+    "route_class",
+    "normalization_decision",
+)
+R03_MODULE_ROUTE_HEADER = (
+    "owner_module",
+    "path",
+    "base_blob_oid",
+    "current_tier",
+    "debt_flags",
+    "declaration_count",
+    "semantic_classification",
+    "destination_modules",
+    "compatibility_action",
+    "split_rationale",
+    "dependency_rationale",
+    "review_status",
+)
+R03_PRIVATE_HEADER = ("old_private", "new_private", "destination_module")
+R03_PRIVATE_CLOSURE_HEADER = (
+    "declaration",
+    "owner_module",
+    "visibility",
+    "selected_owner",
+    "closure_role",
+)
+R03_TEST_HEADER = ("test_class", "target", "purpose")
+
+R03_PHASE_PREFIX = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion"
+)
+R03_EVIDENCE_PATHS = {
+    "baseline": f"{R03_PHASE_PREFIX}/baselines/C0002-combined.json",
+    "baseline_summary": f"{R03_PHASE_PREFIX}/baselines/C0002-combined.md",
+    "inventory": f"{R03_PHASE_PREFIX}/checkpoints/C0002-inventory.tsv",
+    "gates": f"{R03_PHASE_PREFIX}/checkpoints/C0002-gates.md",
+    "declaration_routes": f"{R03_PHASE_PREFIX}/branches/B0005-declaration-routes.tsv",
+    "module_routes": f"{R03_PHASE_PREFIX}/branches/B0005-module-routes.tsv",
+    "private_map": f"{R03_PHASE_PREFIX}/branches/B0005-private-normalization.tsv",
+    "private_closure": f"{R03_PHASE_PREFIX}/branches/B0005-private-closure.tsv",
+    "test_plan": f"{R03_PHASE_PREFIX}/branches/B0005-test-plan.tsv",
+    "consumers": f"{R03_PHASE_PREFIX}/branches/B0005-consumers.tsv",
+    "overlap_review": f"{R03_PHASE_PREFIX}/branches/B0005-overlap-review.md",
+    "projection_record": f"{R03_PHASE_PREFIX}/projections/P0005.json",
+    "projection_graph": f"{R03_PHASE_PREFIX}/projections/P0005.tsv.gz",
+    "request_record": f"{R03_PHASE_PREFIX}/requests/R0005.json",
+    "request_patch": f"{R03_PHASE_PREFIX}/requests/R0005.patch",
+    "request_postimages": f"{R03_PHASE_PREFIX}/requests/R0005-postimages.tsv",
+    "request_replacements": f"{R03_PHASE_PREFIX}/requests/R0005-replacements.tsv",
+    "selection_review": f"{R03_PHASE_PREFIX}/reviews/C0002-R03-selection.md",
+    "route_review": f"{R03_PHASE_PREFIX}/reviews/R03-route-review.md",
+    "projection_replay": f"{R03_PHASE_PREFIX}/reviews/R03-projection-replay.md",
+    "selector": f"{R03_PHASE_PREFIX}/selectors/R03.tsv",
+}
+
+# PENDING_R03_SHA256: replace every None with the reviewed artifact digest in
+# the planning commit.  The runtime validator treats a None as a hard failure;
+# placeholders can never silently weaken the ratchet.
+R03_ARTIFACT_SHA256: dict[str, str | None] = {
+    "baseline": C0002_COMBINED_BASELINE_SHA256,
+    "baseline_summary": C0002_COMBINED_SUMMARY_SHA256,
+    "inventory": C0002_INVENTORY_SHA256,
+    "gates": C0002_GATES_SHA256,
+    "declaration_routes": "85B286E4D78B19814A68EDABA70A648EA3E2C394577E0CCBF4670FD0DD93C5D9",
+    "module_routes": "D430CD1D62D599F0DEF9F2E260D9B389048B5A7289189DACC7834DDD0B233972",
+    "private_map": "EB2729C65CCAFF1ED4FE6712C3373A78570088D2BCC07FB18DE72B7033721146",
+    "private_closure": R03_PRIVATE_CLOSURE_SHA256,
+    "test_plan": "C319C48A3643BA0476A1F842A8B21C3C6C4D71CA9E3778CC12503DAE4AE3D4AB",
+    "consumers": "3AFD072408026219BDB07D1004E3768B27576AEB88AFBC8312FA9D9467155400",
+    "overlap_review": "EC3ADA8E009CCD9E0C8849F73FB8F248EED9FEB1C31A4B33D2C41A74A047CA67",
+    "projection_record": "43F3343E1D8BDEFF81682FBFD068958D952D334EE3204E65A6923BAACE1617DB",
+    "projection_graph": R03_PROJECTION_SHA256,
+    "request_record": "166864879AE95E091E8B945585BED92571CDAFD257E882E0A51D7F13DFB68567",
+    "request_patch": "7B560710C0D8206B18EC18CA92E94A949639CDE60E7351B8E8198077389A7C7F",
+    "request_postimages": "01AED0CF9F56EDC490E2FB35ADFDCAF5B55AD23AE2FA04D507FBE82973CF0BA3",
+    "request_replacements": "94F809C455D30DE3A757739AC4258DC3C21A9B7AB41732724B64F2FDB11EFFC8",
+    "selection_review": "C78A5AB0BB71B6FE97B41D363DDE44F74253F3EE6DE8C8782C309D47BD17A167",
+    "route_review": "A90899E79B900B5C4047D2489A9F4BE5327BECA6E943141A72B4AF58C6CBACF9",
+    "projection_replay": "D2399C417DE20AB7187F948DE394CFCD3EE7F74ADEE80AFE6F1D05C19EA7BEF8",
+    "selector": R03_SELECTOR_SHA256,
+}
+
+# PENDING_R03_DESTINATIONS/PENDING_R03_REQUEST: filled from the reviewed route
+# and shared-request packets.  As above, None is rejected at runtime.
+R03_DESTINATIONS: frozenset[str] | None = frozenset(
+    {
+        "NumStability/Algorithms/LinearSystems/LU/Doolittle/Assembly",
+        "NumStability/Algorithms/PolynomialEvaluation/DerivativeEvaluation",
+        "NumStability/Analysis/Approximation/SineTaylor/OddDegreeFiveError",
+        "NumStability/Analysis/FloatingPointArithmetic/IeeeSpecialValueOperations",
+        "NumStability/Analysis/Statistics/SampleVariance/RoundingErrorBounds",
+        "NumStability/Source/Higham/Chapter01/Problem10/TwoPassSampleVariance/RemainderBound",
+        "NumStability/Source/Higham/Chapter01/Section09/SampleVariance/IeeeSingleOnePassCounterexample",
+        "NumStability/Source/Higham/Chapter01/Section12/InstabilityWithoutCancellation",
+        "NumStability/Source/Higham/Chapter01/Section13/IncreasingPrecision",
+        "NumStability/Source/Higham/Chapter01/Section14/CancellationOfRoundingErrors",
+        "NumStability/Source/Higham/Chapter02/Problem03/AdjacentPrecisionValues/Results",
+        "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample",
+        "NumStability/Source/Higham/Chapter02/Problem10/DivisionRoundTrip/ExhaustiveBinary64",
+        "NumStability/Source/Higham/Chapter02/Problem12/ReciprocalProduct/Results",
+        "NumStability/Source/Higham/Chapter02/Problem13/ReciprocalProductThreshold/Results",
+        "NumStability/Source/Higham/Chapter02/Problem14/UnitRoundoffProbe/IeeeExamples",
+        "NumStability/Source/Higham/Chapter02/Problem21/HypotenuseNormalization/StandardModelCounterexample",
+        "NumStability/Source/Higham/Chapter02/Problem25/NonzeroEvaluation/IeeeFiniteSystems",
+        "NumStability/Source/Higham/Chapter02/Problem28/IterativeDivisionTermination/UnderflowAwareConvergence",
+        "NumStability/Source/Higham/Chapter02/Section06/Discriminant/FusedMultiplyAdd/Counterexample",
+        "NumStability/Source/Higham/Chapter02/Section06/Discriminant/StandardModel/Counterexample",
+        "NumStability/Source/Higham/Chapter02/Section10/ArctangentRange/Counterexample",
+        "NumStability/Source/Higham/Chapter02/Section10/Tablemaker/FiniteSeparation/Results",
+        "NumStability/Source/Higham/Chapter02/Section11/AccuracyTests/CodySineResults",
+        "NumStability/Source/Higham/Chapter03/Problem11/KahanAbsoluteValue/IeeeDoubleTrace",
+        "NumStability/Source/Higham/Chapter04/Problem02/WilkinsonAttainability/IeeeDoubleTrace",
+        "NumStability/Source/Higham/Chapter05/Algorithm01/ComplexHorner/ErrorBounds",
+        "NumStability/Source/Higham/Chapter05/Section02/BidiagonalDerivativeAnalysis/Results",
+        "NumStability/Source/Higham/Chapter05/Section02/DerivativeError/Results",
+        "NumStability/Source/Higham/Chapter05/Section04/PatersonStockmeyer/Results",
+        "NumStability/Source/Higham/Chapter05/Section05/FastPolynomialEvaluation/Results",
+        "NumStability/Source/Higham/Chapter07/Equation17",
+        "NumStability/Source/Higham/Chapter07/Equation26/DistanceToSingularity",
+        "NumStability/Source/Higham/Chapter07/Equation26/RumpCycle/Results",
+        "NumStability/Source/Higham/Chapter07/LinearSystemsConditioning/Theorem03",
+        "NumStability/Source/Higham/Chapter07/LinearSystemsConditioning/Theorem05/RowInfinityScaleCounterexample",
+        "NumStability/Source/Higham/Chapter08/Equation02/TriangularSubstitution/RelativeInfinityNormBounds",
+        "NumStability/Source/Higham/Chapter08/Equation15/FanInExecutor",
+        "NumStability/Source/Higham/Chapter08/Equation15/GlobalEnvelopeCounterexample/LocalCancellationResults",
+        "NumStability/Source/Higham/Chapter08/Equation18/FanInExecutor",
+        "NumStability/Source/Higham/Chapter08/Problem02/ComparisonMatrixWitness/ArbitraryRatios",
+        "NumStability/Source/Higham/Chapter08/Problem07/DiagonalScaling/Results",
+        "NumStability/Source/Higham/Chapter08/Problem08/SingleEntrySingularity/Results",
+        "NumStability/Source/Higham/Chapter08/Problem09/KahanSingularValues/Results",
+        "NumStability/Source/Higham/Chapter08/Section03/TriangularSystems/ComparisonConditioningResults",
+        "NumStability/Source/Higham/Chapter08/Section03/TriangularSystems/InverseNormResults",
+        "NumStability/Source/Higham/Chapter12/IterativeRefinement/ForwardErrorBounds",
+        "NumStability/Source/Higham/Chapter12/IterativeRefinement/Results",
+        "NumStabilityTest/Reorganization/R03",
+        "docs/architecture/deliveries/R03",
+    }
+)
+R03_REQUEST_PATH_COUNT: int | None = 121
+R03_REQUEST_PATH_SHA256: str | None = (
+    "22D7FB62215BA50D4C9E5E83254B3196C2920CC7B8BF2A835201D7730694E3FB"
 )
 NEXT_BRANCH_FACTS = {
     "B0003": {
@@ -558,6 +782,120 @@ class Problems:
     def require(self, condition: bool, context: str, message: str) -> None:
         if not condition:
             self.add(context, message)
+
+
+@dataclass(frozen=True)
+class R03EpochSnapshot:
+    """Small policy surface shared by the runtime ratchet and adversarial tests."""
+
+    branch_base_checkpoint_id: str
+    branch_base_sha: str
+    branch_status: str
+    operator_ids: tuple[str, ...]
+    lane_operator_ids: tuple[str, ...]
+    selector_sha256: str
+    selector_rows: int
+    selector_matches_inventory: bool
+    route_sha256: str
+    activation_evidence: tuple[str, ...]
+    delivery: dict[str, Any]
+    integration: dict[str, Any]
+    retirement: dict[str, Any]
+    projection_base_checkpoint_id: str
+    projection_status: str
+    projection_selector_sha256: str
+    request_target_checkpoint_id: str
+    request_target_base_sha: str
+    request_status: str
+    request_resolution: dict[str, Any]
+    worker_shared_leaks: tuple[str, ...]
+    request_unreserved_paths: tuple[str, ...]
+
+
+def validate_r03_epoch_snapshot(
+    snapshot: R03EpochSnapshot,
+    problems: Problems,
+    *,
+    expected_route_sha256: str,
+) -> None:
+    """Enforce the exact pre-activation lifecycle independently of file I/O."""
+
+    context = "C0002-rooted R03 planned epoch"
+    problems.require(
+        snapshot.branch_base_checkpoint_id == C0002_CHECKPOINT_ID
+        and snapshot.branch_base_sha == C0002_CODE_SHA,
+        f"{context}.base",
+        f"branch must use exact {C0002_CHECKPOINT_ID} code {C0002_CODE_SHA}",
+    )
+    problems.require(
+        snapshot.selector_sha256 == R03_SELECTOR_SHA256
+        and snapshot.projection_selector_sha256 == R03_SELECTOR_SHA256
+        and snapshot.selector_rows == R03_OWNER_COUNT
+        and snapshot.selector_matches_inventory,
+        f"{context}.selector",
+        "selector drift: branch/projection selector must be the exact sorted 47-owner C0002 R03 wave",
+    )
+    problems.require(
+        snapshot.route_sha256 == expected_route_sha256,
+        f"{context}.routes",
+        f"route/hash drift: expected declaration-route SHA-256 {expected_route_sha256}",
+    )
+    problems.require(
+        snapshot.operator_ids == (R03_OPERATOR_ID,)
+        and snapshot.lane_operator_ids == (R03_OPERATOR_ID,),
+        f"{context}.authority",
+        "unauthorized operator: branch and codex-lane must authorize only codex-local",
+    )
+    problems.require(
+        snapshot.branch_status == "planned"
+        and not snapshot.activation_evidence,
+        f"{context}.activation",
+        "premature activation: planned epoch may not be active or carry activation/base-tip evidence",
+    )
+    expected_delivery = {
+        "commit_sha": None,
+        "report": None,
+        "scope_evidence": None,
+    }
+    expected_integration = {
+        "method": None,
+        "accepted_checkpoint_id": None,
+        "accepted_sha": None,
+    }
+    expected_retirement = {
+        "remote_ref": R03_REMOTE_REF,
+        "rule": "delivery_ancestor_of_green_checkpoint",
+        "status": "not_due",
+        "retired_at": None,
+        "retired_by": None,
+        "ancestry_checkpoint_id": None,
+    }
+    expected_resolution = {
+        "checkpoint_id": None,
+        "commit_sha": None,
+        "reason": None,
+        "resolved_at": None,
+        "resolved_by": None,
+        "validation_evidence": [],
+    }
+    problems.require(
+        snapshot.delivery == expected_delivery
+        and snapshot.integration == expected_integration
+        and snapshot.retirement == expected_retirement
+        and snapshot.projection_base_checkpoint_id == C0002_CHECKPOINT_ID
+        and snapshot.projection_status == "active"
+        and snapshot.request_target_checkpoint_id == C0002_CHECKPOINT_ID
+        and snapshot.request_target_base_sha == C0002_CODE_SHA
+        and snapshot.request_status == "active"
+        and snapshot.request_resolution == expected_resolution,
+        f"{context}.lifecycle",
+        "invalid lifecycle transition: planned branch/null delivery+integration/not_due retirement, active projection, and unresolved active request required",
+    )
+    problems.require(
+        not snapshot.worker_shared_leaks and not snapshot.request_unreserved_paths,
+        f"{context}.shared_paths",
+        "shared-path leakage: worker paths must avoid shared controls and every request path must be reserved",
+    )
 
 
 def normalize_path(value: str) -> str:
@@ -921,6 +1259,7 @@ class CompletionValidator:
         self.validate_overlap_reviews()
         self.validate_requests_and_postimages()
         self.validate_next_wave_controls()
+        self.validate_r03_planned_epoch()
         self.validate_milestone_dag()
         return self.problems
 
@@ -1032,12 +1371,24 @@ class CompletionValidator:
                 "missing exact integrator-shared consumer(s): " + ", ".join(missing),
             )
         if self.current_checkpoint_id == C0002_CHECKPOINT_ID:
-            stale = sorted(C0002_RELEASED_SHARED_PATHS & shared_exact)
+            # C0002 released eleven future-owner reservations after R11/R12.
+            # R0005 independently needs four of those same files as exact R03
+            # consumer postimages, so a new active request may re-reserve only
+            # this reviewed subset; the other seven must remain released.
+            stale = sorted(
+                (C0002_RELEASED_SHARED_PATHS - R03_RERESERVED_C0002_PATHS)
+                & shared_exact
+            )
             self.problems.require(
                 not stale,
                 "phase.json.shared_paths",
-                "C0002 must release the eleven future R05/R09 owner reservations; "
+                "C0002 must keep the seven non-R03 future R05/R09 owner reservations released; "
                 f"still present: {stale}",
+            )
+            self.problems.require(
+                R03_RERESERVED_C0002_PATHS <= shared_exact,
+                "phase.json.shared_paths",
+                "active R0005 must exactly re-reserve its four reviewed C0002 consumer paths",
             )
         readme = self.phase_dir / "README.md"
         try:
@@ -2923,6 +3274,7 @@ class CompletionValidator:
         *,
         base_sha: str = CODE_SHA,
         base_label: str = "C0000",
+        unidiff_zero: bool = False,
     ) -> None:
         """Apply *patch* to a disposable base index, hash results, then reverse."""
 
@@ -2937,9 +3289,11 @@ class CompletionValidator:
                     f"cannot initialize exact {base_label} index: {read.stderr.strip()}",
                 )
                 return
+            apply_mode = ["--unidiff-zero"] if unidiff_zero else []
             applied = self.git(
                 "apply",
                 "--cached",
+                *apply_mode,
                 "--whitespace=nowarn",
                 str(patch),
                 check=False,
@@ -3050,6 +3404,7 @@ class CompletionValidator:
                 "apply",
                 "--cached",
                 "--reverse",
+                *apply_mode,
                 "--whitespace=nowarn",
                 str(patch),
                 check=False,
@@ -4715,6 +5070,1623 @@ class CompletionValidator:
                 "import replacement must name distinct nonempty old/new modules",
             )
 
+    def r03_expected_digest(self, key: str, context: str) -> str | None:
+        expected = R03_ARTIFACT_SHA256.get(key)
+        if expected is None:
+            self.problems.add(
+                context,
+                f"PENDING_R03_SHA256: validator constant for {key!r} has not been ratcheted",
+            )
+            return None
+        self.problems.require(
+            SHA256_RE.fullmatch(expected) is not None,
+            context,
+            f"malformed R03 SHA-256 constant for {key!r}",
+        )
+        return expected
+
+    def require_r03_evidence(self, key: str) -> Artifact | None:
+        path = R03_EVIDENCE_PATHS[key]
+        matches = [
+            artifact
+            for artifact in self.branch_evidence.get(R03_BRANCH_ID, [])
+            if artifact.path == path
+        ]
+        self.problems.require(
+            len(matches) == 1,
+            f"{R03_BRANCH_ID}.refresh.evidence",
+            f"must hash-pin exactly one {path}",
+        )
+        if len(matches) != 1:
+            return None
+        expected = self.r03_expected_digest(key, f"R03 artifact {key}")
+        if expected is not None:
+            self.problems.require(
+                matches[0].sha256 == expected,
+                f"{R03_BRANCH_ID}.refresh.evidence[{path}]",
+                f"expected exact SHA-256 {expected}",
+            )
+        return matches[0]
+
+    def validate_r03_planned_epoch(self) -> None:
+        """Ratchet the singleton exact-C0002 R03 packet before activation."""
+
+        context = "C0002-rooted R03 planned epoch"
+        self.problems.require(
+            self.current_checkpoint_id == C0002_CHECKPOINT_ID,
+            context,
+            "R03 planning controls require current checkpoint C0002",
+        )
+        self.validate_r03_milestones()
+        lane_operators = self.validate_r03_authority()
+        inventory, inventory_by_path, selector = self.validate_r03_selector()
+        branch, worker_rules, activation_evidence = self.validate_r03_branch(
+            inventory_by_path, selector
+        )
+        projection, declarations = self.validate_r03_projection(
+            {module for module, _path in selector}
+        )
+        consumer_sets = self.validate_r03_consumers()
+        self.validate_r03_routes_and_tests(
+            selector, inventory_by_path, declarations, worker_rules, consumer_sets
+        )
+        self.validate_r03_reviews()
+        request, request_paths, unreserved = self.validate_r03_request(
+            worker_rules, consumer_sets
+        )
+        self.validate_r03_ref_and_worktree_absence()
+
+        if branch is not None and projection is not None and request is not None:
+            shared_leaks = tuple(
+                sorted(
+                    {
+                        f"{rule.path} -> {shared.path}"
+                        for rule in worker_rules
+                        for shared in self.shared_rules
+                        if rule.intersects(shared)
+                    }
+                )
+            )
+            selector_path = self.phase_dir / "selectors/R03.tsv"
+            route_path = self.phase_dir / "branches/B0005-declaration-routes.tsv"
+            selector_sha = sha256_path(selector_path) if selector_path.is_file() else ""
+            route_sha = sha256_path(route_path) if route_path.is_file() else ""
+            selector_expected = sorted(
+                (row.get("module", ""), row.get("path", ""))
+                for row in inventory
+                if row.get("wave_id") == R03_WAVE_ID
+            )
+            snapshot = R03EpochSnapshot(
+                branch_base_checkpoint_id=str(branch.get("base_checkpoint_id", "")),
+                branch_base_sha=str(branch.get("base_sha", "")),
+                branch_status=str(branch.get("status", "")),
+                operator_ids=tuple(branch.get("operator_ids", ()))
+                if isinstance(branch.get("operator_ids"), list)
+                else (),
+                lane_operator_ids=lane_operators,
+                selector_sha256=selector_sha,
+                selector_rows=len(selector),
+                selector_matches_inventory=selector == selector_expected,
+                route_sha256=route_sha,
+                activation_evidence=activation_evidence,
+                delivery=branch.get("delivery", {})
+                if isinstance(branch.get("delivery"), dict)
+                else {},
+                integration=branch.get("integration", {})
+                if isinstance(branch.get("integration"), dict)
+                else {},
+                retirement=branch.get("retirement", {})
+                if isinstance(branch.get("retirement"), dict)
+                else {},
+                projection_base_checkpoint_id=str(
+                    projection.get("base_checkpoint_id", "")
+                ),
+                projection_status=str(projection.get("status", "")),
+                projection_selector_sha256=str(
+                    projection.get("selector", {})
+                    .get("artifact", {})
+                    .get("sha256", "")
+                )
+                if isinstance(projection.get("selector"), dict)
+                else "",
+                request_target_checkpoint_id=str(
+                    request.get("target_checkpoint_id", "")
+                ),
+                request_target_base_sha=str(request.get("target_base_sha", "")),
+                request_status=str(request.get("status", "")),
+                request_resolution=request.get("resolution", {})
+                if isinstance(request.get("resolution"), dict)
+                else {},
+                worker_shared_leaks=shared_leaks,
+                request_unreserved_paths=tuple(sorted(unreserved)),
+            )
+            expected_route = self.r03_expected_digest(
+                "declaration_routes", "R03 declaration-route snapshot"
+            )
+            validate_r03_epoch_snapshot(
+                snapshot,
+                self.problems,
+                expected_route_sha256=expected_route or "<pending>",
+            )
+
+    def validate_r03_milestones(self) -> None:
+        milestones = self.phase.get("milestones")
+        if not isinstance(milestones, list):
+            self.problems.add("phase.json.milestones", "expected a list")
+            return
+        by_id = {
+            item.get("milestone_id"): item
+            for item in milestones
+            if isinstance(item, dict) and isinstance(item.get("milestone_id"), str)
+        }
+        m03 = by_id.get("M03", {})
+        self.problems.require(
+            m03.get("wave_ids") == [R03_WAVE_ID]
+            and m03.get("status") == "ready"
+            and m03.get("accepted_checkpoint_id") is None,
+            "phase.json.milestones[M03]",
+            "M03 alone must be ready for R03 with accepted_checkpoint_id null",
+        )
+        for milestone_id, milestone in sorted(by_id.items()):
+            if milestone.get("accepted_checkpoint_id") is not None:
+                continue
+            expected = "ready" if milestone_id == "M03" else "planned"
+            self.problems.require(
+                milestone.get("status") == expected,
+                f"phase.json.milestones[{milestone_id}]",
+                f"unaccepted milestone must remain {expected!r}",
+            )
+        self.problems.require(
+            by_id.get("M07", {}).get("status") == "planned",
+            "phase.json.milestones[M07]",
+            "R07 must remain explicitly deferred/planned",
+        )
+
+    def validate_r03_authority(self) -> tuple[str, ...]:
+        authority = self.phase.get("authority")
+        lanes = authority.get("lanes") if isinstance(authority, dict) else None
+        matches = [
+            lane
+            for lane in lanes or []
+            if isinstance(lane, dict) and lane.get("lane_id") == R03_LANE_ID
+        ]
+        lane = matches[0] if len(matches) == 1 else {}
+        operators = (
+            tuple(lane.get("operator_ids", ()))
+            if isinstance(lane.get("operator_ids"), list)
+            else ()
+        )
+        self.problems.require(
+            len(matches) == 1
+            and lane.get("owner_id") == "primary-human"
+            and operators == (R03_OPERATOR_ID,),
+            f"phase.json.authority.lanes[{R03_LANE_ID}]",
+            "R03 requires one primary-human-owned codex-lane authorizing only codex-local",
+        )
+        return operators
+
+    def validate_r03_selector(
+        self,
+    ) -> tuple[
+        list[dict[str, str]],
+        dict[str, dict[str, str]],
+        list[tuple[str, str]],
+    ]:
+        inventory_path = self.phase_dir / "checkpoints/C0002-inventory.tsv"
+        if inventory_path.is_file():
+            self.problems.require(
+                sha256_path(inventory_path) == C0002_INVENTORY_SHA256,
+                self.relative(inventory_path),
+                f"expected exact C0002 inventory SHA-256 {C0002_INVENTORY_SHA256}",
+            )
+        _, inventory = self.read_tsv(
+            inventory_path, self.relative(inventory_path), SCOPE_HEADER
+        )
+        self.problems.require(
+            len(inventory) == C0002_METRICS["production_modules"],
+            self.relative(inventory_path),
+            f"expected {C0002_METRICS['production_modules']} exact C0002 inventory rows",
+        )
+        inventory_by_path = {row.get("path", ""): row for row in inventory}
+        self.problems.require(
+            len(inventory_by_path) == len(inventory),
+            self.relative(inventory_path),
+            "C0002 inventory paths must be unique",
+        )
+        expected = sorted(
+            (row.get("module", ""), row.get("path", ""))
+            for row in inventory
+            if row.get("wave_id") == R03_WAVE_ID
+        )
+        selector_path = self.phase_dir / "selectors/R03.tsv"
+        if selector_path.is_file():
+            self.problems.require(
+                sha256_path(selector_path) == R03_SELECTOR_SHA256,
+                self.relative(selector_path),
+                f"expected exact R03 selector SHA-256 {R03_SELECTOR_SHA256}",
+            )
+        _, selector_rows = self.read_tsv(
+            selector_path, self.relative(selector_path), SELECTOR_HEADER
+        )
+        actual = [
+            (row.get("module", ""), row.get("path", "")) for row in selector_rows
+        ]
+        self.problems.require(
+            actual == expected and len(actual) == R03_OWNER_COUNT,
+            self.relative(selector_path),
+            "selector must equal the exact sorted 47-owner C0002 R03 inventory wave",
+        )
+        selected_rows = [inventory_by_path.get(path, {}) for _module, path in expected]
+        debt_counts = Counter(
+            flag
+            for row in selected_rows
+            for flag in split_values(row.get("debt_flags", ""))
+        )
+        self.problems.require(
+            {key: debt_counts.get(key, 0) for key in R03_DEBT_COUNTS}
+            == R03_DEBT_COUNTS,
+            "R03 C0002 debt facts",
+            f"expected exact debt counts {R03_DEBT_COUNTS}",
+        )
+        for module, path in expected:
+            row = inventory_by_path.get(path, {})
+            self.problems.require(
+                module_from_path(path) == module
+                and row.get("phase_scope") == "in_scope"
+                and row.get("lane_id") == R03_LANE_ID,
+                f"R03 selector[{path}]",
+                "module/path and immutable in-scope lane assignment must match C0002",
+            )
+            actual_blob = self.git_blob(C0002_CODE_SHA, path)
+            self.problems.require(
+                actual_blob == row.get("base_blob_oid"),
+                f"R03 selector[{path}]",
+                f"C0002 blob mismatch: inventory {row.get('base_blob_oid')!r}, Git {actual_blob!r}",
+            )
+        baseline_path = self.phase_dir / "baselines/C0002-combined.json"
+        if baseline_path.is_file():
+            self.problems.require(
+                sha256_path(baseline_path) == C0002_COMBINED_BASELINE_SHA256,
+                self.relative(baseline_path),
+                "C0002 combined baseline drifted",
+            )
+        else:
+            self.problems.add(self.relative(baseline_path), "missing C0002 combined baseline")
+        return inventory, inventory_by_path, actual
+
+    def validate_r03_branch(
+        self,
+        inventory_by_path: dict[str, dict[str, str]],
+        selector: list[tuple[str, str]],
+    ) -> tuple[dict[str, Any] | None, list[PathRule], tuple[str, ...]]:
+        path = self.phase_dir / "branches/B0005.json"
+        branch = self.read_json(path, self.relative(path))
+        if branch is None:
+            return None, [], ()
+        self.branch_records[R03_BRANCH_ID] = branch
+        exact_keys = {
+            "schema_version",
+            "record_kind",
+            "phase_id",
+            "branch_id",
+            "lane_id",
+            "wave_id",
+            "branch_name",
+            "owner_id",
+            "operator_ids",
+            "base_checkpoint_id",
+            "base_sha",
+            "owned_paths",
+            "destination_prefixes",
+            "forbidden_paths",
+            "baseline_projection_id",
+            "shared_request_ids",
+            "status",
+            "refresh",
+            "delivery",
+            "integration",
+            "retirement",
+        }
+        self.problems.require(
+            set(branch) == exact_keys,
+            self.relative(path),
+            "must retain the strict generic phase_branch schema (no ad-hoc activation/worktree fields)",
+        )
+        for key, expected in {
+            "schema_version": 1,
+            "record_kind": "phase_branch",
+            "phase_id": PHASE_ID,
+            "branch_id": R03_BRANCH_ID,
+            "lane_id": R03_LANE_ID,
+            "wave_id": R03_WAVE_ID,
+            "branch_name": R03_BRANCH_NAME,
+            "owner_id": "primary-human",
+            "operator_ids": [R03_OPERATOR_ID],
+            "base_checkpoint_id": C0002_CHECKPOINT_ID,
+            "base_sha": C0002_CODE_SHA,
+            "baseline_projection_id": R03_PROJECTION_ID,
+            "shared_request_ids": [R03_REQUEST_ID],
+            "status": "planned",
+        }.items():
+            self.problems.require(
+                branch.get(key) == expected,
+                f"{R03_BRANCH_ID}.{key}",
+                f"expected {expected!r}, found {branch.get(key)!r}",
+            )
+
+        refresh = branch.get("refresh")
+        evidence: Any = []
+        if not isinstance(refresh, dict) or set(refresh) != {
+            "reviewed_checkpoint_id",
+            "decision",
+            "evidence",
+        }:
+            self.problems.add(
+                f"{R03_BRANCH_ID}.refresh",
+                "expected exactly reviewed_checkpoint_id/decision/evidence",
+            )
+        else:
+            self.problems.require(
+                refresh.get("reviewed_checkpoint_id") == C0002_CHECKPOINT_ID
+                and refresh.get("decision") == "current",
+                f"{R03_BRANCH_ID}.refresh",
+                "must record a current review against exact C0002",
+            )
+            evidence = refresh.get("evidence")
+        artifacts: list[Artifact] = []
+        if not isinstance(evidence, list):
+            self.problems.add(
+                f"{R03_BRANCH_ID}.refresh.evidence", "expected a hash-pinned list"
+            )
+        else:
+            for index, item in enumerate(evidence):
+                artifact = self.artifact(
+                    item, f"{R03_BRANCH_ID}.refresh.evidence[{index}]"
+                )
+                if artifact is not None:
+                    artifacts.append(artifact)
+        self.branch_evidence[R03_BRANCH_ID] = artifacts
+        evidence_paths = [artifact.path for artifact in artifacts]
+        self.problems.require(
+            evidence_paths == sorted(evidence_paths)
+            and len(evidence_paths) == len(set(evidence_paths))
+            and set(evidence_paths) == set(R03_EVIDENCE_PATHS.values()),
+            f"{R03_BRANCH_ID}.refresh.evidence",
+            "must be the exact sorted singleton R03 evidence manifest",
+        )
+        for key in R03_EVIDENCE_PATHS:
+            self.require_r03_evidence(key)
+        activation_evidence = tuple(
+            sorted(
+                evidence_path
+                for evidence_path in evidence_paths
+                if any(
+                    token in evidence_path.casefold()
+                    for token in ("activation", "base-tip", "ref-tip", "worktree")
+                )
+            )
+        )
+        self.problems.require(
+            not activation_evidence,
+            f"{R03_BRANCH_ID}.refresh.evidence",
+            "planned packet may not contain activation, base-tip, ref-tip, or worktree evidence",
+        )
+
+        expected_owned = {selected_path for _module, selected_path in selector}
+        owned = self.parse_rules(branch.get("owned_paths"), f"{R03_BRANCH_ID}.owned_paths")
+        self.problems.require(
+            len(owned) == R03_OWNER_COUNT
+            and all(rule.match == "exact" for rule in owned)
+            and {rule.path for rule in owned} == expected_owned,
+            f"{R03_BRANCH_ID}.owned_paths",
+            "must own every and only exact R03 selector path",
+        )
+        destinations = self.parse_rules(
+            branch.get("destination_prefixes"),
+            f"{R03_BRANCH_ID}.destination_prefixes",
+        )
+        expected_destinations = R03_DESTINATIONS
+        if expected_destinations is None:
+            self.problems.add(
+                f"{R03_BRANCH_ID}.destination_prefixes",
+                "PENDING_R03_DESTINATIONS: exact reviewed destination set is not ratcheted",
+            )
+        else:
+            self.problems.require(
+                all(rule.match == "prefix" for rule in destinations)
+                and {rule.path for rule in destinations} == expected_destinations,
+                f"{R03_BRANCH_ID}.destination_prefixes",
+                f"must equal exact reviewed set {sorted(expected_destinations)}",
+            )
+        base_paths = self.git_tree_paths(C0002_CODE_SHA)
+        for index, destination in enumerate(destinations):
+            occupied = [
+                tree_path
+                for tree_path in base_paths
+                if is_equal_or_child(tree_path.casefold(), destination.folded)
+            ]
+            self.problems.require(
+                not occupied,
+                f"{R03_BRANCH_ID}.destination_prefixes[{destination.path}]",
+                f"must be casefold-vacant at C0002; found {occupied[:5]}",
+            )
+            for other in destinations[index + 1 :]:
+                self.problems.require(
+                    not destination.intersects(other),
+                    f"{R03_BRANCH_ID}.destination_prefixes",
+                    f"equal-or-ancestor collision {destination.path} / {other.path}",
+                )
+
+        forbidden = self.parse_rules(
+            branch.get("forbidden_paths"), f"{R03_BRANCH_ID}.forbidden_paths"
+        )
+        forbidden_exact = {rule.path for rule in forbidden if rule.match == "exact"}
+        forbidden_prefix = {rule.path for rule in forbidden if rule.match == "prefix"}
+        self.problems.require(
+            forbidden_exact == set(inventory_by_path) - expected_owned
+            and len(forbidden_exact) == R03_FORBIDDEN_EXACT_COUNT,
+            f"{R03_BRANCH_ID}.forbidden_paths",
+            "exact forbidden rules must be the exhaustive 2,595-path C0002 complement",
+        )
+        self.problems.require(
+            forbidden_prefix == set(R03_PROTECTED_PREFIXES),
+            f"{R03_BRANCH_ID}.forbidden_paths",
+            "prefix forbidden rules must be the exact guarded infrastructure set",
+        )
+        worker_rules = owned + destinations
+        for rule in worker_rules:
+            for shared in self.shared_rules:
+                if rule.intersects(shared):
+                    self.problems.add(
+                        f"{R03_BRANCH_ID} authority",
+                        f"worker rule {rule.path} intersects integrator-shared {shared.path}",
+                    )
+        return branch, worker_rules, activation_evidence
+
+    def validate_r03_projection(
+        self, selector_modules: set[str]
+    ) -> tuple[
+        dict[str, Any] | None,
+        dict[tuple[str, str], tuple[str, str]],
+    ]:
+        path = self.phase_dir / "projections/P0005.json"
+        projection = self.read_json(path, self.relative(path))
+        if projection is None:
+            return None, {}
+        exact_keys = {
+            "schema_version",
+            "record_kind",
+            "phase_id",
+            "projection_id",
+            "wave_id",
+            "base_checkpoint_id",
+            "selector",
+            "projection_graph",
+            "combined_baseline",
+            "expected_counts",
+            "checker",
+            "status",
+            "superseded_by",
+        }
+        self.problems.require(
+            set(projection) == exact_keys,
+            self.relative(path),
+            "must retain the strict generic baseline_projection schema",
+        )
+        for key, expected in {
+            "schema_version": 1,
+            "record_kind": "baseline_projection",
+            "phase_id": PHASE_ID,
+            "projection_id": R03_PROJECTION_ID,
+            "wave_id": R03_WAVE_ID,
+            "base_checkpoint_id": C0002_CHECKPOINT_ID,
+            "status": "active",
+            "superseded_by": None,
+            "expected_counts": R03_COUNTS,
+        }.items():
+            self.problems.require(
+                projection.get(key) == expected,
+                f"{R03_PROJECTION_ID}.{key}",
+                f"expected {expected!r}, found {projection.get(key)!r}",
+            )
+
+        selector = projection.get("selector")
+        selector_artifact = None
+        if not isinstance(selector, dict) or set(selector) != {"kind", "artifact"}:
+            self.problems.add(
+                f"{R03_PROJECTION_ID}.selector", "expected exactly kind/artifact"
+            )
+        else:
+            self.problems.require(
+                selector.get("kind") == "module_path_tsv",
+                f"{R03_PROJECTION_ID}.selector.kind",
+                "expected module_path_tsv",
+            )
+            selector_artifact = self.artifact(
+                selector.get("artifact"), f"{R03_PROJECTION_ID}.selector.artifact"
+            )
+        if selector_artifact is not None:
+            self.problems.require(
+                selector_artifact.path == R03_EVIDENCE_PATHS["selector"]
+                and selector_artifact.sha256 == R03_SELECTOR_SHA256,
+                f"{R03_PROJECTION_ID}.selector.artifact",
+                "must pin exact C0002 R03 selector",
+            )
+
+        graph = self.artifact(
+            projection.get("projection_graph"),
+            f"{R03_PROJECTION_ID}.projection_graph",
+        )
+        declarations: dict[tuple[str, str], tuple[str, str]] = {}
+        if graph is not None:
+            self.problems.require(
+                graph.path == R03_EVIDENCE_PATHS["projection_graph"]
+                and graph.sha256 == R03_PROJECTION_SHA256,
+                f"{R03_PROJECTION_ID}.projection_graph",
+                f"must pin deterministic graph {R03_PROJECTION_SHA256}",
+            )
+            graph_path = self.root / graph.path
+            counts = self.parse_projection_graph(graph_path, R03_PROJECTION_ID)
+            self.problems.require(
+                counts == R03_COUNTS,
+                f"{R03_PROJECTION_ID}.expected_counts",
+                f"expected exact format-2 counts {R03_COUNTS}, found {counts}",
+            )
+            try:
+                with gzip.open(graph_path, "rb") as handle:
+                    payload_sha = hashlib.sha256(handle.read()).hexdigest().upper()
+            except (OSError, gzip.BadGzipFile) as error:
+                self.problems.add(
+                    f"{R03_PROJECTION_ID}.projection_graph",
+                    f"cannot hash decompressed payload: {error}",
+                )
+            else:
+                self.problems.require(
+                    payload_sha == R03_PROJECTION_PAYLOAD_SHA256,
+                    f"{R03_PROJECTION_ID}.projection_graph",
+                    f"expected payload SHA-256 {R03_PROJECTION_PAYLOAD_SHA256}",
+                )
+            declarations = self.parse_projection_declarations(
+                graph_path, R03_PROJECTION_ID
+            )
+            owners = {owner for owner, _name in declarations}
+            self.problems.require(
+                owners == selector_modules,
+                f"{R03_PROJECTION_ID}.projection_graph",
+                "every and only R03 selector owner must contribute declarations",
+            )
+            self.problems.require(
+                Counter(visibility for _kind, visibility in declarations.values()).get(
+                    "private", 0
+                )
+                == R03_PRIVATE_COUNT,
+                f"{R03_PROJECTION_ID}.projection_graph",
+                f"expected exact {R03_PRIVATE_COUNT} private declarations",
+            )
+
+        combined = self.artifact(
+            projection.get("combined_baseline"),
+            f"{R03_PROJECTION_ID}.combined_baseline",
+        )
+        if combined is not None:
+            self.problems.require(
+                combined.path == R03_EVIDENCE_PATHS["baseline"]
+                and combined.sha256 == C0002_COMBINED_BASELINE_SHA256,
+                f"{R03_PROJECTION_ID}.combined_baseline",
+                "must use the exact official C0002 combined baseline",
+            )
+
+        checker = projection.get("checker")
+        if not isinstance(checker, dict) or set(checker) != {"artifact", "arguments"}:
+            self.problems.add(
+                f"{R03_PROJECTION_ID}.checker",
+                "expected exactly artifact/arguments",
+            )
+        else:
+            checker_artifact = self.artifact(
+                checker.get("artifact"), f"{R03_PROJECTION_ID}.checker.artifact"
+            )
+            if checker_artifact is not None:
+                self.problems.require(
+                    checker_artifact.path
+                    == "tools/architecture/check_completion_phase_projection.py"
+                    and checker_artifact.sha256 == NEXT_PROJECTION_CHECKER_SHA256,
+                    f"{R03_PROJECTION_ID}.checker.artifact",
+                    "must pin the exact private-aware projection checker",
+                )
+            destinations = R03_DESTINATIONS or frozenset()
+            if R03_DESTINATIONS is None:
+                self.problems.add(
+                    f"{R03_PROJECTION_ID}.checker.arguments",
+                    "PENDING_R03_DESTINATIONS: cannot ratchet allow-prefix vector",
+                )
+            private_map_sha = self.r03_expected_digest(
+                "private_map", f"{R03_PROJECTION_ID}.checker.arguments"
+            )
+            expected_arguments = sorted(
+                [f"--allow-module={module}" for module in selector_modules]
+                + [
+                    f"--allow-prefix={module_from_path(prefix)}."
+                    for prefix in destinations
+                    if prefix.startswith("NumStability/")
+                ]
+                + [
+                    "--candidate=<candidate-format2.tsv>",
+                    f"--candidate-sha256={R03_CANDIDATE_SHA256}",
+                    f"--private-map-sha256={private_map_sha or '<pending>'}",
+                    f"--private-map={R03_EVIDENCE_PATHS['private_map']}",
+                    f"--projection-sha256={R03_PROJECTION_SHA256}",
+                    f"--projection={R03_EVIDENCE_PATHS['projection_graph']}",
+                ]
+            )
+            arguments = checker.get("arguments")
+            self.problems.require(
+                isinstance(arguments, list)
+                and len(arguments) == len(set(arguments))
+                and set(arguments) == set(expected_arguments),
+                f"{R03_PROJECTION_ID}.checker.arguments",
+                "checker vector must exactly and uniquely bind all owners, destinations, private map, and graph",
+            )
+        return projection, declarations
+
+    def validate_r03_consumers(self) -> dict[str, set[str]]:
+        path = self.phase_dir / "branches/B0005-consumers.tsv"
+        header = (
+            "record_kind",
+            "direction",
+            "consumer_module",
+            "consumer_path",
+            "consumer_scope",
+            "consumer_wave",
+            "target_wave",
+            "target_owner",
+            "relation",
+            "edge_kind",
+            "source_declaration",
+            "targets",
+            "witness",
+            "details",
+        )
+        _, rows = self.read_tsv(path, self.relative(path), header)
+        expected_counts = {
+            "common_direct_project_dependency": 7,
+            "owner_reachability": 47,
+            "r03_external_declaration_consumer": 14287,
+            "r03_module_consumer": 2058,
+            "shared_direct_outside_consumer": 5,
+        }
+        counts = Counter(row.get("record_kind", "") for row in rows)
+        self.problems.require(
+            dict(counts) == expected_counts,
+            self.relative(path),
+            f"expected exact consumer/reachability row counts {expected_counts}",
+        )
+        identities = [tuple(row.get(column, "") for column in header) for row in rows]
+        self.problems.require(
+            len(identities) == len(set(identities)),
+            self.relative(path),
+            "consumer evidence rows must be unique",
+        )
+        reach = Counter(
+            row.get("direction", "")
+            for row in rows
+            if row.get("record_kind") == "owner_reachability"
+        )
+        self.problems.require(
+            reach
+            == Counter(
+                {
+                    "R03->R07": R03_R07_OVERLAP_COUNTS[
+                        "r03_to_r07_transitive_owner_pairs"
+                    ],
+                    "R07->R03": R03_R07_OVERLAP_COUNTS[
+                        "r07_to_r03_transitive_owner_pairs"
+                    ],
+                }
+            ),
+            self.relative(path),
+            "must contain exact 24/23 directed transitive owner-reachability rows",
+        )
+        self.problems.require(
+            counts.get("common_direct_project_dependency", 0)
+            == R03_R07_OVERLAP_COUNTS["common_direct_project_dependencies"]
+            and counts.get("shared_direct_outside_consumer", 0)
+            == R03_R07_OVERLAP_COUNTS["shared_outside_consumers"],
+            self.relative(path),
+            "must contain exact seven common dependencies and five shared outside consumers",
+        )
+        allowed_kinds = set(expected_counts)
+        for index, row in enumerate(rows):
+            row_context = f"{self.relative(path)}[{index}]"
+            kind = row.get("record_kind", "")
+            module = row.get("consumer_module", "")
+            consumer_path = row.get("consumer_path", "")
+            self.problems.require(
+                kind in allowed_kinds
+                and bool(module)
+                and consumer_path == path_from_module(module),
+                row_context,
+                "consumer kind/module/path must be complete and canonical",
+            )
+            self.problems.require(
+                DEFERRED_RE.search(" ".join(row.values())) is None,
+                row_context,
+                "consumer evidence may not contain deferred review text",
+            )
+            if kind == "owner_reachability":
+                self.problems.require(
+                    row.get("relation") == "transitive"
+                    and bool(row.get("target_owner"))
+                    and " -> " in row.get("witness", ""),
+                    row_context,
+                    "owner reachability requires a transitive target and concrete witness",
+                )
+            elif kind == "common_direct_project_dependency":
+                self.problems.require(
+                    row.get("target_wave") == "R03+R07"
+                    and row.get("relation") == "direct_dependency",
+                    row_context,
+                    "common dependency must be a direct R03+R07 project dependency",
+                )
+            elif kind == "shared_direct_outside_consumer":
+                self.problems.require(
+                    row.get("target_wave") == "R03+R07"
+                    and row.get("relation") == "direct_both",
+                    row_context,
+                    "shared outside consumer must directly consume both waves",
+                )
+            elif kind == "r03_module_consumer":
+                self.problems.require(
+                    row.get("target_wave") == R03_WAVE_ID
+                    and row.get("relation") in {"direct", "transitive_only"},
+                    row_context,
+                    "R03 module consumer requires direct or transitive-only relation",
+                )
+            elif kind == "r03_external_declaration_consumer":
+                self.problems.require(
+                    row.get("target_wave") == R03_WAVE_ID
+                    and row.get("relation") == "declaration_edge"
+                    and row.get("edge_kind")
+                    in {"signature", "body", "signature+body"}
+                    and bool(row.get("source_declaration")),
+                    row_context,
+                    "external declaration consumer requires typed format-2 edge evidence",
+                )
+        return {
+            "module_consumers": {
+                row.get("consumer_module", "")
+                for row in rows
+                if row.get("record_kind") == "r03_module_consumer"
+            },
+            "external_consumer_modules": {
+                row.get("consumer_module", "")
+                for row in rows
+                if row.get("record_kind") == "r03_external_declaration_consumer"
+            },
+            "shared_outside_consumers": {
+                row.get("consumer_module", "")
+                for row in rows
+                if row.get("record_kind") == "shared_direct_outside_consumer"
+            },
+            "common_dependencies": {
+                row.get("consumer_module", "")
+                for row in rows
+                if row.get("record_kind") == "common_direct_project_dependency"
+            },
+        }
+
+    def validate_r03_routes_and_tests(
+        self,
+        selector: list[tuple[str, str]],
+        inventory_by_path: dict[str, dict[str, str]],
+        declarations: dict[tuple[str, str], tuple[str, str]],
+        worker_rules: list[PathRule],
+        consumer_sets: dict[str, set[str]],
+    ) -> None:
+        branch_dir = self.phase_dir / "branches"
+        route_path = branch_dir / "B0005-declaration-routes.tsv"
+        _, routes = self.read_tsv(
+            route_path,
+            self.relative(route_path),
+            R03_DECLARATION_ROUTE_HEADER,
+        )
+        self.problems.require(
+            len(routes) == R03_COUNTS["declarations"],
+            self.relative(route_path),
+            f"expected exact {R03_COUNTS['declarations']} declaration routes",
+        )
+        route_identities = [
+            (
+                row.get("baseline_owner_module", ""),
+                row.get("baseline_declaration_name", ""),
+            )
+            for row in routes
+        ]
+        self.problems.require(
+            len(route_identities) == len(set(route_identities))
+            and set(route_identities) == set(declarations),
+            self.relative(route_path),
+            "routes must uniquely cover every and only projected declaration",
+        )
+        orders: dict[str, list[int]] = defaultdict(list)
+        owner_destinations: dict[str, set[str]] = defaultdict(set)
+        private_routes: dict[str, tuple[str, str]] = {}
+        route_keys: list[tuple[str, int]] = []
+        public_names: set[str] = set()
+        for index, row in enumerate(routes):
+            row_context = f"{self.relative(route_path)}[{index}]"
+            owner = row.get("baseline_owner_module", "")
+            name = row.get("baseline_declaration_name", "")
+            destination = row.get("destination_module", "")
+            expected = declarations.get((owner, name))
+            if expected is not None:
+                self.problems.require(
+                    (row.get("kind", ""), row.get("visibility", "")) == expected,
+                    row_context,
+                    "kind/visibility must equal the frozen format-2 declaration",
+                )
+            try:
+                order = int(row.get("baseline_order", ""))
+                if order < 1:
+                    raise ValueError
+            except ValueError:
+                self.problems.add(
+                    f"{row_context}.baseline_order", "expected a positive integer"
+                )
+                order = 0
+            orders[owner].append(order)
+            route_keys.append((owner, order))
+            owner_destinations[owner].add(destination)
+            self.problems.require(
+                row.get("route_class") in {"reusable", "source", "internal"},
+                f"{row_context}.route_class",
+                "R03 route class must be exactly reusable, source, or internal",
+            )
+            expected_decision = (
+                "private_name_hash_pinned"
+                if row.get("visibility") == "private"
+                else "preserve_name_and_signature"
+            )
+            self.problems.require(
+                row.get("normalization_decision") == expected_decision,
+                f"{row_context}.normalization_decision",
+                f"expected exact decision {expected_decision!r}",
+            )
+            self.problems.require(
+                destination.startswith("NumStability.")
+                and "Chapter72" not in destination,
+                f"{row_context}.destination_module",
+                "destination must be a reviewed NumStability module and may not use invalid Chapter72",
+            )
+            if row.get("visibility") == "private":
+                self.problems.require(
+                    name not in private_routes,
+                    row_context,
+                    f"duplicate private declaration {name}",
+                )
+                private_routes[name] = (owner, destination)
+            else:
+                public_names.add(name)
+        self.problems.require(
+            route_keys == sorted(route_keys),
+            self.relative(route_path),
+            "routes must be sorted by owner and frozen baseline order",
+        )
+        for owner, owner_orders in orders.items():
+            self.problems.require(
+                owner_orders == list(range(1, len(owner_orders) + 1)),
+                self.relative(route_path),
+                f"{owner} baseline_order must be a contiguous 1-based sequence",
+            )
+        self.problems.require(
+            len(private_routes) == R03_PRIVATE_COUNT,
+            self.relative(route_path),
+            f"expected exact {R03_PRIVATE_COUNT} private declaration routes",
+        )
+        rump_destinations = owner_destinations.get(
+            "NumStability.Algorithms.Higham726Rump", set()
+        )
+        self.problems.require(
+            bool(rump_destinations)
+            and all(
+                destination.startswith(
+                    "NumStability.Source.Higham.Chapter07.Equation26."
+                )
+                for destination in rump_destinations
+            ),
+            self.relative(route_path),
+            "Higham726Rump must route only through Higham Chapter 7 Equation 26",
+        )
+
+        selector_by_module = {module: path for module, path in selector}
+        projected_counts = Counter(owner for owner, _name in declarations)
+        module_path = branch_dir / "B0005-module-routes.tsv"
+        _, module_rows = self.read_tsv(
+            module_path,
+            self.relative(module_path),
+            R03_MODULE_ROUTE_HEADER,
+        )
+        module_names = [row.get("owner_module", "") for row in module_rows]
+        self.problems.require(
+            module_names == sorted(selector_by_module)
+            and set(module_names) == set(selector_by_module)
+            and len(module_names) == R03_OWNER_COUNT,
+            self.relative(module_path),
+            "module routes must cover every selector owner once in sorted order",
+        )
+        mixed_count = 0
+        missing_doc_count = 0
+        noncanonical_count = 0
+        umbrella_count = 0
+        unclassified_count = 0
+        semantic_classes: Counter[str] = Counter()
+        for index, row in enumerate(module_rows):
+            row_context = f"{self.relative(module_path)}[{index}]"
+            owner = row.get("owner_module", "")
+            selected_path = selector_by_module.get(owner, "")
+            inventory_row = inventory_by_path.get(selected_path, {})
+            self.problems.require(
+                row.get("path") == selected_path
+                and row.get("base_blob_oid") == inventory_row.get("base_blob_oid")
+                and row.get("current_tier") == inventory_row.get("current_tier")
+                and row.get("debt_flags") == inventory_row.get("debt_flags"),
+                row_context,
+                "path/blob/tier/debt flags must exactly mirror C0002 inventory",
+            )
+            flags = set(split_values(row.get("debt_flags", "")))
+            unclassified_count += "unclassified_modules" in flags
+            mixed_count += "mixed_modules" in flags
+            missing_doc_count += "missing_module_docstrings" in flags
+            noncanonical_count += "noncanonical_modules" in flags
+            umbrella_count += "declaration_bearing_umbrellas" in flags
+            try:
+                declaration_count = int(row.get("declaration_count", ""))
+            except ValueError:
+                self.problems.add(
+                    f"{row_context}.declaration_count", "expected an integer"
+                )
+                declaration_count = -1
+            self.problems.require(
+                declaration_count == projected_counts.get(owner, 0),
+                f"{row_context}.declaration_count",
+                f"expected exact projected count {projected_counts.get(owner, 0)}",
+            )
+            listed = split_values(row.get("destination_modules", ""))
+            self.problems.require(
+                listed == sorted(set(listed))
+                and set(listed) == owner_destinations.get(owner, set()),
+                f"{row_context}.destination_modules",
+                f"must equal exact declaration destinations {sorted(owner_destinations.get(owner, set()))}",
+            )
+            semantic = row.get("semantic_classification", "")
+            semantic_parts = (
+                semantic.removeprefix("mixed_split_").split("_")
+                if semantic.startswith("mixed_split_")
+                else split_values(semantic)
+            )
+            semantic_classes.update(semantic_parts)
+            self.problems.require(
+                bool(semantic_parts)
+                and set(semantic_parts) <= {"reusable", "source", "internal"},
+                f"{row_context}.semantic_classification",
+                "must explicitly classify declarations as reusable/source/internal",
+            )
+            if inventory_row.get("current_tier") == "mixed":
+                routed_classes = {
+                    route.get("route_class", "")
+                    for route in routes
+                    if route.get("baseline_owner_module") == owner
+                }
+                self.problems.require(
+                    all(
+                        bool(row.get(key, "").strip())
+                        and DEFERRED_RE.search(row.get(key, "")) is None
+                        for key in ("split_rationale", "dependency_rationale")
+                    ),
+                    row_context,
+                    "each mixed owner requires an explicit declaration classification/split and dependency rationale",
+                )
+                self.problems.require(
+                    set(semantic_parts) == (routed_classes - {"internal"})
+                    and routed_classes <= {"reusable", "source", "internal"},
+                    f"{row_context}.semantic_classification",
+                    "mixed-owner module classification must equal its declaration-level reusable/source roles (internal support may be additional)",
+                )
+            self.problems.require(
+                bool(row.get("compatibility_action", "").strip())
+                and DEFERRED_RE.search(row.get("compatibility_action", "")) is None
+                and row.get("review_status") == "approved_before_activation",
+                row_context,
+                "compatibility action must be explicit and primary-human reviewed before activation",
+            )
+        self.problems.require(
+            {
+                "unclassified_modules": unclassified_count,
+                "mixed_modules": mixed_count,
+                "missing_module_docstrings": missing_doc_count,
+                "noncanonical_modules": noncanonical_count,
+                "declaration_bearing_umbrellas": umbrella_count,
+            }
+            == R03_DEBT_COUNTS,
+            self.relative(module_path),
+            f"module route debt facts must equal {R03_DEBT_COUNTS}",
+        )
+
+        private_path = branch_dir / "B0005-private-normalization.tsv"
+        _, private_rows = self.read_tsv(
+            private_path, self.relative(private_path), R03_PRIVATE_HEADER
+        )
+        self.problems.require(
+            len(private_rows) == R03_PRIVATE_COUNT,
+            self.relative(private_path),
+            f"expected exact {R03_PRIVATE_COUNT}-row private map",
+        )
+        old_names = [row.get("old_private", "") for row in private_rows]
+        new_names = [row.get("new_private", "") for row in private_rows]
+        self.problems.require(
+            old_names == sorted(private_routes)
+            and set(old_names) == set(private_routes)
+            and len(new_names) == len(set(new_names)),
+            self.relative(private_path),
+            "private map must exactly cover projected private names with unique postimages",
+        )
+        for index, row in enumerate(private_rows):
+            row_context = f"{self.relative(private_path)}[{index}]"
+            old = row.get("old_private", "")
+            new = row.get("new_private", "")
+            owner, destination = private_routes.get(old, ("", ""))
+            self.problems.require(
+                row.get("destination_module") == destination,
+                f"{row_context}.destination_module",
+                f"expected routed destination {destination!r}",
+            )
+            expected_prefix = f"_private.{destination}."
+            self.problems.require(
+                bool(old)
+                and bool(new)
+                and (new == old if destination == owner else new.startswith(expected_prefix))
+                and DEFERRED_RE.search(" ".join(row.values())) is None,
+                row_context,
+                "private normalization must be complete and use only the reviewed destination prefix",
+            )
+
+        closure_path = branch_dir / "B0005-private-closure.tsv"
+        _, closure_rows = self.read_tsv(
+            closure_path,
+            self.relative(closure_path),
+            R03_PRIVATE_CLOSURE_HEADER,
+        )
+        roles = Counter(row.get("closure_role", "") for row in closure_rows)
+        selected_owner_rows = sum(
+            row.get("selected_owner") == "yes" for row in closure_rows
+        )
+        self.problems.require(
+            len(closure_rows) == R03_PRIVATE_CLOSURE_ROWS
+            and roles
+            == Counter(
+                {
+                    "private_seed": R03_PRIVATE_COUNT,
+                    "reverse_dependent": R03_PRIVATE_REVERSE_DEPENDENTS,
+                }
+            )
+            and selected_owner_rows == R03_PRIVATE_SELECTED_OWNER_ROWS,
+            self.relative(closure_path),
+            "private reverse closure must be exact 2,502 = 398 seeds + 2,104 dependents with 2,063 selected-owner rows",
+        )
+        closure_names = [row.get("declaration", "") for row in closure_rows]
+        seeds = {
+            row.get("declaration", "")
+            for row in closure_rows
+            if row.get("closure_role") == "private_seed"
+        }
+        self.problems.require(
+            len(closure_names) == len(set(closure_names))
+            and seeds == set(private_routes),
+            self.relative(closure_path),
+            "closure declarations must be unique and seeds must equal private-map domain",
+        )
+        for index, row in enumerate(closure_rows):
+            role = row.get("closure_role", "")
+            self.problems.require(
+                row.get("visibility")
+                == ("private" if role == "private_seed" else "public")
+                and row.get("selected_owner") in {"yes", "no"},
+                f"{self.relative(closure_path)}[{index}]",
+                "closure role/visibility/selected-owner typing drifted",
+            )
+
+        test_path = branch_dir / "B0005-test-plan.tsv"
+        _, test_rows = self.read_tsv(
+            test_path, self.relative(test_path), R03_TEST_HEADER
+        )
+        pairs = [
+            (row.get("test_class", ""), row.get("target", ""))
+            for row in test_rows
+        ]
+        classes = {row.get("test_class", "") for row in test_rows}
+        self.problems.require(
+            pairs == sorted(pairs)
+            and len(pairs) == len(set(pairs))
+            and classes == R03_TEST_CLASSES,
+            self.relative(test_path),
+            f"test plan must be sorted/unique and cover exactly {sorted(R03_TEST_CLASSES)}",
+        )
+        by_class = {
+            test_class: {
+                row.get("target", "")
+                for row in test_rows
+                if row.get("test_class") == test_class
+            }
+            for test_class in R03_TEST_CLASSES
+        }
+        relocated_destinations = {
+            destination
+            for owner, destinations in owner_destinations.items()
+            for destination in destinations
+            if destination != owner
+        }
+        relocated_owners = {
+            owner
+            for owner, destinations in owner_destinations.items()
+            if any(destination != owner for destination in destinations)
+        }
+        self.problems.require(
+            by_class["old_only"] == relocated_owners,
+            self.relative(test_path),
+            "old-only tests must cover every and only relocated historical owners",
+        )
+        self.problems.require(
+            by_class["canonical_only"] == relocated_destinations,
+            self.relative(test_path),
+            "canonical-only tests must cover every and only relocated destinations",
+        )
+        self.problems.require(
+            by_class["focused"] == {"NumStabilityTest.Reorganization.R03.All"},
+            self.relative(test_path),
+            "focused plan must compile the exact R03 test umbrella",
+        )
+        protected_expected = (
+            consumer_sets.get("module_consumers", set())
+            | consumer_sets.get("external_consumer_modules", set())
+        )
+        self.problems.require(
+            by_class["protected_consumer"] == protected_expected,
+            self.relative(test_path),
+            "protected-consumer tests must cover every exact module/declaration consumer",
+        )
+        self.problems.require(
+            by_class["aggregate_entrypoint"]
+            == {
+                "NumStability",
+                "NumStability.Algorithms",
+                "NumStability.Analysis",
+                "NumStability.Analysis.FloatingPointArithmetic",
+                "NumStability.Source",
+                "NumStability.Source.Higham",
+                "NumStability.Source.Higham.Chapter12.IterativeRefinement",
+            },
+            self.relative(test_path),
+            "aggregate/entry-point tests must equal the seven reviewed public entry points",
+        )
+        for index, row in enumerate(test_rows):
+            purpose = row.get("purpose", "")
+            self.problems.require(
+                bool(purpose.strip()) and DEFERRED_RE.search(purpose) is None,
+                f"{self.relative(test_path)}[{index}].purpose",
+                "test purpose must be explicit and non-deferred",
+            )
+
+    def validate_r03_request(
+        self,
+        worker_rules: list[PathRule],
+        consumer_sets: dict[str, set[str]],
+    ) -> tuple[dict[str, Any] | None, set[str], set[str]]:
+        request_dir = self.phase_dir / "requests"
+        path = request_dir / "R0005.json"
+        request = self.read_json(path, self.relative(path))
+        if request is None:
+            return None, set(), set()
+        self.requests[R03_REQUEST_ID] = request
+        exact_keys = {
+            "schema_version",
+            "record_kind",
+            "phase_id",
+            "request_id",
+            "lane_id",
+            "wave_id",
+            "requester_id",
+            "created_at",
+            "target_checkpoint_id",
+            "target_base_sha",
+            "paths",
+            "preimage_blobs",
+            "rationale",
+            "patch",
+            "depends_on",
+            "blocks",
+            "valid_through_checkpoint_id",
+            "status",
+            "supersedes",
+            "superseded_by",
+            "resolution",
+        }
+        self.problems.require(
+            set(request) == exact_keys,
+            self.relative(path),
+            "must retain the strict generic shared_file_request schema",
+        )
+        for key, expected in {
+            "schema_version": 1,
+            "record_kind": "shared_file_request",
+            "phase_id": PHASE_ID,
+            "request_id": R03_REQUEST_ID,
+            "lane_id": R03_LANE_ID,
+            "wave_id": R03_WAVE_ID,
+            "requester_id": "primary-human",
+            "target_checkpoint_id": C0002_CHECKPOINT_ID,
+            "target_base_sha": C0002_CODE_SHA,
+            "depends_on": [],
+            "blocks": [R03_WAVE_ID],
+            "valid_through_checkpoint_id": C0002_CHECKPOINT_ID,
+            "status": "active",
+            "supersedes": None,
+            "superseded_by": None,
+        }.items():
+            self.problems.require(
+                request.get(key) == expected,
+                f"{R03_REQUEST_ID}.{key}",
+                f"expected {expected!r}, found {request.get(key)!r}",
+            )
+        created_at = request.get("created_at")
+        self.problems.require(
+            isinstance(created_at, str)
+            and RFC3339_RE.fullmatch(created_at) is not None,
+            f"{R03_REQUEST_ID}.created_at",
+            "expected an RFC3339 primary-human authority timestamp",
+        )
+        raw_paths = request.get("paths")
+        paths = (
+            raw_paths
+            if isinstance(raw_paths, list)
+            and all(isinstance(item, str) for item in raw_paths)
+            else []
+        )
+        self.problems.require(
+            paths == sorted(set(paths)) and bool(paths),
+            f"{R03_REQUEST_ID}.paths",
+            "request paths must be a nonempty sorted unique string list",
+        )
+        if R03_REQUEST_PATH_COUNT is None or R03_REQUEST_PATH_SHA256 is None:
+            self.problems.add(
+                f"{R03_REQUEST_ID}.paths",
+                "PENDING_R03_REQUEST: exact path count/digest is not ratcheted",
+            )
+        else:
+            self.problems.require(
+                len(paths) == R03_REQUEST_PATH_COUNT
+                and path_list_sha256(paths) == R03_REQUEST_PATH_SHA256,
+                f"{R03_REQUEST_ID}.paths",
+                f"expected exact {R03_REQUEST_PATH_COUNT}-path set at {R03_REQUEST_PATH_SHA256}",
+            )
+        shared_exact = {
+            rule.path for rule in self.shared_rules if rule.match == "exact"
+        }
+        unreserved = set(paths) - shared_exact
+        self.problems.require(
+            not unreserved,
+            f"{R03_REQUEST_ID}.paths",
+            f"active request paths lack exact shared reservations: {sorted(unreserved)}",
+        )
+        for requested in paths:
+            requested_rule = PathRule(requested, "exact")
+            for worker in worker_rules:
+                self.problems.require(
+                    not requested_rule.intersects(worker),
+                    f"{R03_REQUEST_ID}.paths[{requested}]",
+                    f"integrator request leaks into worker rule {worker.path}",
+                )
+
+        expected_preimages = [
+            {"blob_oid": self.git_blob(C0002_CODE_SHA, requested), "path": requested}
+            for requested in paths
+        ]
+        self.problems.require(
+            request.get("preimage_blobs") == expected_preimages,
+            f"{R03_REQUEST_ID}.preimage_blobs",
+            "must exactly record sorted C0002 blob OIDs for every request path",
+        )
+        patch = self.artifact(request.get("patch"), f"{R03_REQUEST_ID}.patch")
+        patch_expected = self.r03_expected_digest(
+            "request_patch", f"{R03_REQUEST_ID}.patch"
+        )
+        patch_path: Path | None = None
+        if patch is not None:
+            self.problems.require(
+                patch.path == R03_EVIDENCE_PATHS["request_patch"]
+                and patch.sha256 == (patch_expected or "<pending>"),
+                f"{R03_REQUEST_ID}.patch",
+                "must pin the exact independently replayable R0005 patch",
+            )
+            patch_path = self.root / patch.path
+
+        post_path = request_dir / "R0005-postimages.tsv"
+        post_header, post_rows = self.read_tsv(
+            post_path,
+            self.relative(post_path),
+            (
+                "path",
+                "preimage_blob_oid",
+                "preimage_sha256",
+                "postimage_sha256",
+            ),
+        )
+        postimages = self.validate_postimage_rows(
+            post_header,
+            post_rows,
+            self.relative(post_path),
+            set(paths),
+            "postimage_sha256",
+            base_sha=C0002_CODE_SHA,
+            base_label=C0002_CHECKPOINT_ID,
+        )
+        post_expected = self.r03_expected_digest(
+            "request_postimages", self.relative(post_path)
+        )
+        if post_path.is_file() and post_expected is not None:
+            self.problems.require(
+                sha256_path(post_path) == post_expected,
+                self.relative(post_path),
+                f"expected exact postimage SHA-256 {post_expected}",
+            )
+        if patch_path is not None:
+            self.materialize_patch_postimages(
+                R03_REQUEST_ID,
+                patch_path,
+                set(paths),
+                postimages,
+                base_sha=C0002_CODE_SHA,
+                base_label=C0002_CHECKPOINT_ID,
+                unidiff_zero=True,
+            )
+
+        replacement_path = request_dir / "R0005-replacements.tsv"
+        replacement_header, replacement_rows = self.read_tsv(
+            replacement_path, self.relative(replacement_path)
+        )
+        allowed_headers = {
+            ("old_import", "new_import", "path", "occurrences"),
+            ("path", "old_import", "new_import", "occurrences"),
+            ("path", "old_import", "old_occurrences", "new_imports"),
+            (
+                "consumer_path",
+                "preimage_blob_oid",
+                "old_import",
+                "new_import",
+            ),
+        }
+        self.problems.require(
+            tuple(replacement_header) in allowed_headers,
+            self.relative(replacement_path),
+            "replacement TSV must use an approved exact import-replacement schema",
+        )
+        replacement_paths: list[str] = []
+        replacement_keys: list[tuple[str, str, str]] = []
+        for index, row in enumerate(replacement_rows):
+            row_context = f"{self.relative(replacement_path)}[{index}]"
+            replacement_path_value = row.get("path") or row.get("consumer_path", "")
+            old_import = row.get("old_import", "")
+            new_import = row.get("new_import") or row.get("new_imports", "")
+            new_import_values = split_values(new_import)
+            replacement_paths.append(replacement_path_value)
+            replacement_keys.append(
+                (replacement_path_value, old_import, new_import)
+            )
+            self.problems.require(
+                replacement_path_value in set(paths)
+                and bool(old_import)
+                and bool(new_import_values)
+                and old_import not in new_import_values
+                and new_import_values == sorted(set(new_import_values)),
+                row_context,
+                "replacement must name a requested path and sorted distinct old/new imports",
+            )
+            occurrence_field = (
+                "occurrences" if "occurrences" in row else "old_occurrences"
+            )
+            if occurrence_field in row:
+                try:
+                    occurrence_count = int(row.get(occurrence_field, ""))
+                except ValueError:
+                    occurrence_count = 0
+                self.problems.require(
+                    occurrence_count > 0,
+                    f"{row_context}.{occurrence_field}",
+                    "occurrence count must be a positive integer",
+                )
+            if "preimage_blob_oid" in row:
+                self.problems.require(
+                    row.get("preimage_blob_oid")
+                    == self.git_blob(C0002_CODE_SHA, replacement_path_value),
+                    f"{row_context}.preimage_blob_oid",
+                    "replacement must pin exact C0002 consumer blob",
+                )
+        self.problems.require(
+            replacement_keys == sorted(set(replacement_keys))
+            and bool(replacement_rows),
+            self.relative(replacement_path),
+            "replacement rows must be nonempty, sorted, and unique",
+        )
+        expected_consumer_paths = {
+            path_from_module(module)
+            for module in consumer_sets.get("module_consumers", set())
+        }
+        self.problems.require(
+            set(replacement_paths) <= expected_consumer_paths,
+            self.relative(replacement_path),
+            "every replacement path must be an exact graph-derived R03 consumer",
+        )
+
+        expected_resolution = {
+            "checkpoint_id": None,
+            "commit_sha": None,
+            "reason": None,
+            "resolved_at": None,
+            "resolved_by": None,
+            "validation_evidence": [],
+        }
+        self.problems.require(
+            request.get("resolution") == expected_resolution,
+            f"{R03_REQUEST_ID}.resolution",
+            "planned request must remain active and completely unresolved",
+        )
+        rationale = str(request.get("rationale", "")).upper()
+        rationale_digests = [
+            R03_REQUEST_PATH_SHA256,
+            patch_expected,
+            post_expected,
+            self.r03_expected_digest(
+                "request_replacements", f"{R03_REQUEST_ID}.rationale"
+            ),
+        ]
+        for digest in rationale_digests:
+            if digest is not None and digest not in rationale:
+                self.problems.add(
+                    f"{R03_REQUEST_ID}.rationale",
+                    f"must hash-pin exact SHA-256 {digest}",
+                )
+        self.problems.require(
+            C0002_CODE_SHA.upper() in rationale,
+            f"{R03_REQUEST_ID}.rationale",
+            "must name the exact C0002 preimage",
+        )
+        branch = self.branch_records.get(R03_BRANCH_ID, {})
+        self.problems.require(
+            branch.get("shared_request_ids") == [R03_REQUEST_ID],
+            f"{R03_BRANCH_ID}.shared_request_ids",
+            f"expected exactly [{R03_REQUEST_ID!r}]",
+        )
+        return request, set(paths), unreserved
+
+    def validate_r03_reviews(self) -> None:
+        required_artifacts = {
+            "selection_review": (
+                "c0002",
+                C0002_CODE_SHA,
+                "r03",
+                "r07",
+                "singleton",
+                "defer",
+                "m03",
+                "m05",
+                "m06",
+                "24",
+                "23",
+                "7",
+                "5",
+                R03_SELECTOR_SHA256.casefold(),
+            ),
+            "route_review": (
+                "primary-human",
+                "r03",
+                "c0002",
+                C0002_CODE_SHA,
+                "higham726rump",
+                "chapter72",
+                "chapter07",
+                "equation26",
+                "public",
+                "signature",
+                "private",
+                "mixed",
+            ),
+            "projection_replay": (
+                "c0002",
+                C0002_CODE_SHA,
+                "r03",
+                R03_SELECTOR_SHA256.casefold(),
+                R03_PROJECTION_SHA256.casefold(),
+                R03_PROJECTION_PAYLOAD_SHA256.casefold(),
+                str(R03_COUNTS["declarations"]),
+                str(R03_COUNTS["signature_edges"]),
+                str(R03_COUNTS["body_edges"]),
+                str(R03_COUNTS["union_edges"]),
+                "reverse",
+            ),
+            "overlap_review": (
+                "c0002",
+                C0002_CODE_SHA,
+                "r03",
+                "r07",
+                "singleton",
+                "24",
+                "23",
+                "7",
+                "5",
+                R03_SELECTOR_SHA256.casefold(),
+                R03_PROJECTION_SHA256.casefold(),
+            ),
+        }
+        for key, tokens in required_artifacts.items():
+            path = self.root / R03_EVIDENCE_PATHS[key]
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeError) as error:
+                self.problems.add(
+                    R03_EVIDENCE_PATHS[key], f"cannot read reviewed evidence: {error}"
+                )
+                continue
+            folded = " ".join(text.casefold().replace("_", "-").split())
+            for token in tokens:
+                if token.casefold() not in folded:
+                    self.problems.add(
+                        R03_EVIDENCE_PATHS[key],
+                        f"missing exact reviewed token {token!r}",
+                    )
+            if key in {"route_review", "projection_replay"}:
+                self.problems.require(
+                    re.search(
+                        r"\b(?:tbd|todo|pending|unreviewed|undecided|worker decides|decide later)\b",
+                        text,
+                        re.IGNORECASE,
+                    )
+                    is None,
+                    R03_EVIDENCE_PATHS[key],
+                    "R03 route/projection decisions may not remain deferred",
+                )
+        route_text_path = self.root / R03_EVIDENCE_PATHS["route_review"]
+        try:
+            route_text = route_text_path.read_text(encoding="utf-8").casefold()
+        except (OSError, UnicodeError):
+            route_text = ""
+        self.problems.require(
+            "chapter72" in route_text
+            and any(
+                token in route_text
+                for token in ("invalid", "reject", "forbidden", "not a valid")
+            )
+            and "chapter07" in route_text
+            and "equation26" in route_text,
+            R03_EVIDENCE_PATHS["route_review"],
+            "must explicitly reject Chapter72 and freeze Chapter07 Equation26",
+        )
+
+    def validate_r03_ref_and_worktree_absence(self) -> None:
+        """Check only local state; remote absence remains hash-pinned review evidence."""
+
+        ref = self.git("show-ref", "--verify", "--quiet", R03_REMOTE_REF, check=False)
+        self.problems.require(
+            ref.returncode == 1,
+            "R03 pre-activation ref",
+            f"planned epoch must not create local {R03_REMOTE_REF}",
+        )
+        if os.name == "nt":
+            worktree = Path(R03_PLANNED_WORKTREE)
+            self.problems.require(
+                not worktree.exists(),
+                "R03 pre-activation worktree",
+                f"planned epoch must not create {R03_PLANNED_WORKTREE}",
+            )
+
     def validate_milestone_dag(self) -> None:
         path = self.phase_dir / "reviews/milestone-dag.tsv"
         header, rows = self.read_tsv(path, self.relative(path))
@@ -5181,6 +7153,198 @@ def run_self_test() -> int:
         "self-test",
         "C0002 code/merge/delivery SHA-1 constants are malformed",
     )
+    problems.require(
+        (R03_BRANCH_ID, R03_PROJECTION_ID, R03_REQUEST_ID, R03_WAVE_ID)
+        == ("B0005", "P0005", "R0005", "R03")
+        and R03_OWNER_COUNT == 47
+        and R03_FORBIDDEN_EXACT_COUNT == 2642 - 47
+        and R03_COUNTS
+        == {
+            "declarations": 2389,
+            "signature_edges": 28180,
+            "body_edges": 42404,
+            "union_edges": 43943,
+        }
+        and R03_PRIVATE_CLOSURE_ROWS
+        == R03_PRIVATE_COUNT + R03_PRIVATE_REVERSE_DEPENDENTS
+        and R03_PRIVATE_SELECTED_OWNER_ROWS == 2063,
+        "self-test R03 constants",
+        "exact C0002/R03 identities, graph counts, or closure arithmetic drifted",
+    )
+    problems.require(
+        all(
+            isinstance(digest, str) and SHA256_RE.fullmatch(digest) is not None
+            for digest in R03_ARTIFACT_SHA256.values()
+        )
+        and R03_REQUEST_PATH_COUNT == 121
+        and isinstance(R03_REQUEST_PATH_SHA256, str)
+        and SHA256_RE.fullmatch(R03_REQUEST_PATH_SHA256) is not None
+        and R03_DESTINATIONS is not None
+        and len(R03_DESTINATIONS) == 50
+        and not any("Chapter72" in path for path in R03_DESTINATIONS)
+        and len(R03_RERESERVED_C0002_PATHS) == 4
+        and R03_RERESERVED_C0002_PATHS <= C0002_RELEASED_SHARED_PATHS,
+        "self-test R03 artifact ratchets",
+        "R03 hashes, request/destination facts, or reviewed re-reservations drifted",
+    )
+    r03_test_route_sha = "A" * 64
+    r03_positive = R03EpochSnapshot(
+        branch_base_checkpoint_id=C0002_CHECKPOINT_ID,
+        branch_base_sha=C0002_CODE_SHA,
+        branch_status="planned",
+        operator_ids=(R03_OPERATOR_ID,),
+        lane_operator_ids=(R03_OPERATOR_ID,),
+        selector_sha256=R03_SELECTOR_SHA256,
+        selector_rows=R03_OWNER_COUNT,
+        selector_matches_inventory=True,
+        route_sha256=r03_test_route_sha,
+        activation_evidence=(),
+        delivery={"commit_sha": None, "report": None, "scope_evidence": None},
+        integration={
+            "method": None,
+            "accepted_checkpoint_id": None,
+            "accepted_sha": None,
+        },
+        retirement={
+            "remote_ref": R03_REMOTE_REF,
+            "rule": "delivery_ancestor_of_green_checkpoint",
+            "status": "not_due",
+            "retired_at": None,
+            "retired_by": None,
+            "ancestry_checkpoint_id": None,
+        },
+        projection_base_checkpoint_id=C0002_CHECKPOINT_ID,
+        projection_status="active",
+        projection_selector_sha256=R03_SELECTOR_SHA256,
+        request_target_checkpoint_id=C0002_CHECKPOINT_ID,
+        request_target_base_sha=C0002_CODE_SHA,
+        request_status="active",
+        request_resolution={
+            "checkpoint_id": None,
+            "commit_sha": None,
+            "reason": None,
+            "resolved_at": None,
+            "resolved_by": None,
+            "validation_evidence": [],
+        },
+        worker_shared_leaks=(),
+        request_unreserved_paths=(),
+    )
+    positive_r03_problems = Problems()
+    validate_r03_epoch_snapshot(
+        r03_positive,
+        positive_r03_problems,
+        expected_route_sha256=r03_test_route_sha,
+    )
+    problems.require(
+        not positive_r03_problems.messages,
+        "self-test R03 positive",
+        f"valid planned epoch rejected: {positive_r03_problems.messages}",
+    )
+    r03_negative_cases: list[tuple[str, R03EpochSnapshot, str]] = [
+        (
+            "wrong base",
+            replace(r03_positive, branch_base_sha=INTEGRATED_CODE_SHA),
+            ".base:",
+        ),
+        (
+            "wrong projection/request base",
+            replace(
+                r03_positive,
+                projection_base_checkpoint_id=SUCCESSOR_CHECKPOINT_ID,
+                request_target_base_sha=INTEGRATED_CODE_SHA,
+            ),
+            ".lifecycle:",
+        ),
+        (
+            "selector drift",
+            replace(r03_positive, selector_rows=R03_OWNER_COUNT - 1),
+            ".selector:",
+        ),
+        (
+            "route/hash drift",
+            replace(r03_positive, route_sha256="B" * 64),
+            ".routes:",
+        ),
+        (
+            "unauthorized operator",
+            replace(r03_positive, operator_ids=("claude-local",)),
+            ".authority:",
+        ),
+        (
+            "premature activation",
+            replace(
+                r03_positive,
+                branch_status="active",
+                activation_evidence=("reviews/R03-activation.md",),
+            ),
+            ".activation:",
+        ),
+        (
+            "shared-path leakage",
+            replace(
+                r03_positive,
+                worker_shared_leaks=("docs/architecture/tiers.json",),
+            ),
+            ".shared_paths:",
+        ),
+        (
+            "invalid lifecycle transition",
+            replace(
+                r03_positive,
+                delivery={
+                    "commit_sha": "1" * 40,
+                    "report": None,
+                    "scope_evidence": None,
+                },
+            ),
+            ".lifecycle:",
+        ),
+        (
+            "premature projection retirement",
+            replace(r03_positive, projection_status="retired"),
+            ".lifecycle:",
+        ),
+        (
+            "premature request resolution",
+            replace(
+                r03_positive,
+                request_status="applied",
+                request_resolution={
+                    "checkpoint_id": C0002_CHECKPOINT_ID,
+                    "commit_sha": C0002_CODE_SHA,
+                    "reason": "premature",
+                    "resolved_at": "2026-08-13T00:00:00Z",
+                    "resolved_by": "primary-human",
+                    "validation_evidence": [],
+                },
+            ),
+            ".lifecycle:",
+        ),
+        (
+            "premature retirement due",
+            replace(
+                r03_positive,
+                retirement={
+                    **r03_positive.retirement,
+                    "status": "due",
+                },
+            ),
+            ".lifecycle:",
+        ),
+    ]
+    for label, mutated, diagnostic in r03_negative_cases:
+        mutation_problems = Problems()
+        validate_r03_epoch_snapshot(
+            mutated,
+            mutation_problems,
+            expected_route_sha256=r03_test_route_sha,
+        )
+        problems.require(
+            any(diagnostic in message for message in mutation_problems.messages),
+            f"self-test R03 {label}",
+            f"adversarial mutation was not rejected with {diagnostic}: {mutation_problems.messages}",
+        )
     with tempfile.TemporaryDirectory(prefix="completion-validator-self-test-") as directory:
         tsv = Path(directory) / "sample.tsv"
         tsv.write_text("module\tpath\nA\tA.lean\n", encoding="utf-8", newline="\n")
@@ -5235,7 +7399,8 @@ def run_self_test() -> int:
         "completion phase self-test passed: exact C0000/C0001/C0002 constants, shared "
         "consumers and releases, next-wave B/P/R lifecycle/authority ratchets, merge/SHA "
         "pins, path collisions, format-2 declaration/signature/body parsing, and DAG "
-        "cycle rejection"
+        "cycle rejection; exact C0002-rooted R03 positive state plus wrong-base, selector, "
+        "route/hash, authority, activation, shared-path, and lifecycle mutations"
     )
     return 0
 
@@ -5276,7 +7441,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         "delivery evidence, projections, routes, private closure, tests, "
         "overlap proofs, postimages, reviewed union, milestone DAG, and exact "
         "C0001-pinned synchronous R11/R12 planned/active/delivered or C0002 "
-        "accepted/retired controls with exact checkpoint evidence"
+        "accepted/retired controls with exact checkpoint evidence; plus the singleton "
+        "exact-C0002 B0005/P0005/R0005 planned R03 epoch"
     )
     return 0
 
