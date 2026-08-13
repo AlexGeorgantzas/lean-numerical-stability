@@ -1,0 +1,158 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P19-T1",
+  "paper_sha256": "67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad",
+  "blind_translation_sha256": "e201854b56440d26c7e06d4683feb5c5498e14315c2bf10b6de85dc1f831568f",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "Equation (C.8) on PDF page 42, printed page 41, is the exact two-sided triangle bracket for the stored basis product, matrix-product correction, and analysis-only product.",
+      "translation_evidence": "The translation states the exact upper Euclidean triangle inequality for a vector named storedProduct and a vector named correctionProduct.",
+      "reasoning": "The selected upper inequality is correctly identified algebraically. Omissions from the surrounding two-sided and conditional result are assessed separately."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper has 1 <= k <= n, nonsingular A in R^(n x n), matrices hat_Z_k, Delta Z_k^(2), and tilde_Z_k in R^(n x k), and hat_y_k in R^k.",
+      "translation_evidence": "The translation binds only an arbitrary natural n and two arbitrary functions Fin n -> Real, with n permitted to be zero.",
+      "reasoning": "The resulting n-vectors are represented correctly, but all matrix, coefficient-vector, positivity, and nonsingularity binders are erased."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The products share the computed coefficient vector hat_y_k, Delta Z_k^(2) is constructed from A^-1 Delta A^(j)hat_z_j, and tilde_Z_k is defined from hat_Z_k and that correction.",
+      "translation_evidence": "storedProduct and correctionProduct are independently and universally quantified arbitrary vectors.",
+      "reasoning": "The paper's dependency structure is replaced by unrestricted quantification, producing a strict generalization."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The construction assumes 1 <= k <= n, nonsingular A, and tilde_Z_k = hat_Z_k + Delta Z_k^(2). The exact bracket does not require the later smallness condition.",
+      "translation_evidence": "There are no hypotheses, and the dimension may be zero.",
+      "reasoning": "Omitting the smallness condition is correct for the exact inequality, but the construction and dimensional hypotheses do not match the paper."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Equation (C.8) displays both the upper and lower triangle bounds, followed by a conditional approximate-equality conclusion using (C.7) and condition (3.16).",
+      "translation_evidence": "Only the upper inequality ||storedProduct + correctionProduct||_2 <= ||storedProduct||_2 + ||correctionProduct||_2 is stated.",
+      "reasoning": "The lower branch and conditional approximation are not explicitly translated, although the universal triangle theorem can be used to derive the lower branch."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The selected branch uses vector addition and the Euclidean vector 2-norm.",
+      "translation_evidence": "Pointwise addition and the norm sqrt(sum_i x(i)^2) are fully unfolded, and every listed dependency is understood.",
+      "reasoning": "The operators occurring in the translated formula have the intended mathematical interpretation."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "hat_Z_k is formed from stored computed preconditioner applications, Delta Z_k^(2) absorbs matrix-product rounding, and tilde_Z_k is an analysis-only object.",
+      "translation_evidence": "Both arguments are arbitrary exact real vectors, and their names impose no computed or perturbative meaning.",
+      "reasoning": "The exact inequality remains valid, but the distinctions among stored, computed, perturbed, and analysis-only quantities are not represented."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The quantities arise from right-preconditioned GMRES, with M_R^-1 applied before A and hat_y_k obtained from the computed least-squares problem.",
+      "translation_evidence": "No GMRES iteration, matrix, preconditioner, least-squares vector, or execution model appears.",
+      "reasoning": "The proposition has been detached completely from the paper's algorithm."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Every norm in equation (C.8) is an unsquared Euclidean vector 2-norm.",
+      "translation_evidence": "Each norm is the square root of the sum of coordinate squares.",
+      "reasoning": "Norm kind, dimensional role, and squared-versus-unsquared form match."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The correction has columns indexed j = 1,...,k, the matrices are n by k, hat_y_k has k entries, and the superscript (2) distinguishes the matrix-product correction.",
+      "translation_evidence": "Only coordinate indices in Fin n occur; k, j, the column structure, and the correction label are absent.",
+      "reasoning": "The final product dimension is retained, but the paper's indexing and parameter dependence are not."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The correction originates from fl(A M_R^-1 hat_v_j) = (A + Delta A^(j))hat_z_j with a componentwise bound involving u_a; the standard finite floating-point model is assumed.",
+      "translation_evidence": "The statement uses only exact real arithmetic and explicitly encodes no rounding, precision, overflow, underflow, NaN, or infinity behavior.",
+      "reasoning": "Equation (C.8) itself is exact, but the numerical model defining its operands is lost."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper gives an exact non-strict two-sided bracket for its specifically constructed products.",
+      "translation_evidence": "The upper relation has the correct non-strict direction but is universally quantified over every pair of finite real vectors.",
+      "reasoning": "The selected branch has the right direction and strictness, but the translated proposition is logically stronger and does not directly state the full two-sided relation."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The selected claim bounds the norm of a perturbed basis product and is not itself a normalized forward-, backward-, or residual-error bound.",
+      "translation_evidence": "The conclusion is solely a norm inequality and introduces no competing error notion.",
+      "reasoning": "No forward, backward, residual, or stability notion is substituted for the selected perturbation-norm inequality."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Equation (C.8) is exact, while the following approximate equality is conditional on (C.7), u_a kappa(A)rho_A^R << 1, and the paper's convention for neglected higher-order effects.",
+      "translation_evidence": "Only the exact upper inequality is present; no relative correction estimate, smallness condition, approximation, or higher-order convention appears.",
+      "reasoning": "Exactness of the translated branch is correct, but the surrounding higher-order treatment is omitted."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The paper applies the bracket to particular n-dimensional products generated inside right-preconditioned GMRES with 1 <= k <= n.",
+      "translation_evidence": "The proposition covers every pair of real vectors in every finite dimension, including dimension zero.",
+      "reasoning": "This is a strict generalization from algorithmically constructed products to arbitrary finite real vectors."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's exact bracket is an ordinary triangle-inequality consequence for well-defined finite vectors.",
+      "translation_evidence": "The unconditional universal triangle inequality is nontrivial for positive dimensions; its n = 0 instance merely reduces to 0 <= 0.",
+      "reasoning": "There are no inconsistent premises or implication-based vacuity. The additional zero-dimensional case does not make the universal proposition vacuous."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "For a paper instance, set storedProduct = hat_Z_k hat_y_k and correctionProduct = Delta Z_k^(2)hat_y_k. Equation (C.5) identifies their sum with tilde_Z_k hat_y_k, so the translated theorem gives the selected upper branch. Its universal quantification also permits applying it to the sum and the negative correction, yielding the lower branch after rearrangement."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "Equation (C.8) concerns products constructed in the right-preconditioned GMRES analysis. It neither quantifies over all finite-dimensional vector pairs nor establishes that every such pair, including zero-dimensional pairs, can arise from that construction."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "major",
+      "category": "algorithmic-provenance-erased",
+      "paper_evidence": "The operands in (C.8) are the stored preconditioned basis product, an A-multiplication rounding correction, and their analysis-only perturbed sum.",
+      "translation_evidence": "The operands are unrestricted exact real vectors with no mathematical meaning imposed by their names.",
+      "impact": "The result is not an equivalent restatement of the paper's algorithm-specific claim, although the paper instance follows from it."
+    },
+    {
+      "severity": "major",
+      "category": "surrounding-result-omitted",
+      "paper_evidence": "The displayed equation includes a lower branch, and the following text derives a conditional approximate equality from (C.7) and the smallness condition.",
+      "translation_evidence": "Only the generic upper triangle inequality is directly stated.",
+      "impact": "The translation does not directly preserve the complete displayed and higher-order treatment; the lower branch requires an additional instantiation and the approximation requires paper-side estimates."
+    },
+    {
+      "severity": "minor",
+      "category": "dimensional-generalization",
+      "paper_evidence": "The paper assumes 1 <= k <= n and uses n by k basis and correction matrices with a shared vector in R^k.",
+      "translation_evidence": "Only arbitrary Fin n vectors remain, and n may be zero.",
+      "impact": "The translated theorem has a strictly larger domain than the paper statement."
+    }
+  ],
+  "rationale": "The blind translation correctly expresses the exact Euclidean upper triangle inequality underlying equation (C.8), and its unrestricted universal form is strong enough to recover both exact branches for the paper's products. It is nevertheless not equivalent: it removes all GMRES, rounding-model, matrix, indexing, and computed-versus-analysis-only structure and does not directly state the conditional approximation. The resulting proposition is therefore faithful as a strict mathematical strengthening of the exact bracket, not as a complete structural translation of its paper context."
+}
