@@ -1,0 +1,329 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "c7945c9f5c1cc6a16a0ac7aa65cf534711cf978ab9d3b90be22b24004d5d0d56",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For a real m-by-n matrix A and real numbers lower and upper, this is the conjunction (for every x in R^n, lower * ||x||_2 <= ||Ax||_2) and (for every x in R^n, ||Ax||_2 <= upper * ||x||_2).",
+      "effect_on_target": "It defines the two-sided norm-bound predicates compared in the conclusion: bounds [α, β] for QA*T and bounds [β^{-1}, α^{-1}] for C.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For a real m-by-n matrix Q, this asserts that ||Qx||_2 = ||x||_2 for every x in R^n.",
+      "effect_on_target": "The hypotheses require both QA and Q to preserve the Euclidean norm exactly.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "This is matrix-vector multiplication: for A of size m-by-n and x in R^n, (Ax)_i = sum over j in Fin n of A_{ij} x_j.",
+      "effect_on_target": "It supplies every matrix action occurring in norm preservation and norm bounds, and the induced map x maps to Tx whose surjectivity is assumed.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "This is matrix multiplication: for A of size m-by-n and B of size n-by-p, (AB)_{ij} = sum over k in Fin n of A_{ik} B_{kj}.",
+      "effect_on_target": "It forms QA*T in the left-hand norm bounds and C*T in the hypothesis C*T = Q.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "For a matrix A and scalar c, this asserts the lower norm bound c * ||x||_2 <= ||Ax||_2 for every vector x in the domain.",
+      "effect_on_target": "It supplies the lower bounds α for QA*T and β^{-1} for C.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "For a matrix A and scalar c, this asserts the upper norm bound ||Ax||_2 <= c * ||x||_2 for every vector x in the domain.",
+      "effect_on_target": "It supplies the upper bounds β for QA*T and α^{-1} for C.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "For x in R^n, this is the Euclidean norm ||x||_2 = sqrt(sum over i in Fin n of x_i^2).",
+      "effect_on_target": "It fixes every norm in the hypotheses and conclusion to be the finite-dimensional Euclidean norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "And",
+      "meaning": "Logical conjunction: both component propositions must hold.",
+      "effect_on_target": "It combines each lower and upper bound, and also requires both the bound equivalence and the ratio equality in the final conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "This extracts the division operation from a DivInvMonoid structure.",
+      "effect_on_target": "Applied to the real-number structure, it supplies ordinary real division for the two displayed ratios.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Eq",
+      "meaning": "Propositional equality of two terms of the same type.",
+      "effect_on_target": "It expresses norm preservation, matrix equality C*T = Q, the preimage equation in surjectivity, and the concluding equality of ratios.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type with elements corresponding to 0, 1, ..., n-1.",
+      "effect_on_target": "It indexes all matrix rows, matrix columns, vectors, and finite sums, thereby fixing their dimensions.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Function.Surjective",
+      "meaning": "A function f is surjective when for every target value b there exists a source value a, depending on b, such that f(a) = b.",
+      "effect_on_target": "The hypothesis says that for every y in R^n there exists x in R^n such that Tx = y.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "HDiv.hDiv",
+      "meaning": "This selects the heterogeneous division operation supplied by an HDiv instance.",
+      "effect_on_target": "With real arguments and the real division instance, it interprets β/α and α^{-1}/β^{-1} as real quotients.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Iff",
+      "meaning": "Logical equivalence: each of the two propositions implies the other.",
+      "effect_on_target": "It states that the specified two-sided bounds for QA*T hold exactly when the reciprocal, order-reversed bounds for C hold.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Inv.inv",
+      "meaning": "This selects the unary inverse operation supplied by an Inv instance.",
+      "effect_on_target": "With the real instance, it produces β^{-1} and α^{-1} in the bounds and ratio identity.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "LT.lt",
+      "meaning": "This selects the strict-order relation supplied by an LT instance.",
+      "effect_on_target": "With the real strict order, it expresses the hypotheses 0 < α and 0 < β.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Nat",
+      "meaning": "The type of natural numbers, including zero.",
+      "effect_on_target": "The dimensions m, n, and s are arbitrary natural numbers, so zero-dimensional cases are included.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "OfNat.ofNat",
+      "meaning": "This interprets a natural-number literal in a type using its OfNat instance.",
+      "effect_on_target": "It interprets the literal 0 in the positivity hypotheses as the real number zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "All matrix entries, vector coordinates, bounds, norms, inverses, and quotients are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This equips the real numbers with their standard multiplication, reciprocal, division satisfying a/b = a*b^{-1}, and integer-power operations.",
+      "effect_on_target": "It supplies the real division structure used to interpret the quotient expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instInv",
+      "meaning": "This equips the real numbers with their standard reciprocal operation.",
+      "effect_on_target": "It interprets α^{-1} and β^{-1}; positivity ensures both inputs are nonzero.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instLT",
+      "meaning": "This equips the real numbers with their standard strict order <.",
+      "effect_on_target": "It makes the assumptions on α and β ordinary strict positivity.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instZero",
+      "meaning": "This equips the real numbers with the standard element 0.",
+      "effect_on_target": "It supplies the zero appearing in 0 < α and 0 < β.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Zero.toOfNat0",
+      "meaning": "This constructs the interpretation of the numeral 0 from a type's distinguished zero element.",
+      "effect_on_target": "It ensures that the numeral in the positivity hypotheses denotes real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "instHDiv",
+      "meaning": "This turns a homogeneous division operation on a type into an HDiv operation with the same input and output type.",
+      "effect_on_target": "It exposes standard real division to the notation used by both quotient expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Fin.fintype",
+      "meaning": "This gives Fin n its canonical finite enumeration.",
+      "effect_on_target": "It permits sums over every coordinate in Fin n and the construction of the full finite index set.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Finset.sum",
+      "meaning": "This sums the values of a function over a finite set using the additive commutative monoid operation.",
+      "effect_on_target": "It computes matrix-vector products, matrix products, and sums of coordinate squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Finset.univ",
+      "meaning": "This is the finite set containing every element of a finite type.",
+      "effect_on_target": "For Fin n it makes each displayed sum range over all coordinates or contracted matrix indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "HMul.hMul",
+      "meaning": "This selects the heterogeneous multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "With real arguments, it gives ordinary real multiplication in matrix products, matrix-vector products, scalar norm bounds, and coordinate squares indirectly through powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This equips the real numbers with their standard additive commutative monoid structure.",
+      "effect_on_target": "It supplies real addition and zero for all finite sums defining products and norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Real.instMul",
+      "meaning": "This equips the real numbers with standard multiplication.",
+      "effect_on_target": "It supplies multiplication of matrix entries and vector coordinates and multiplication of scalar bounds by norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "instHMul",
+      "meaning": "This turns a homogeneous multiplication operation into an HMul operation with the same input and output type.",
+      "effect_on_target": "It exposes standard real multiplication to all products used in the local definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "HPow.hPow",
+      "meaning": "This selects the exponentiation operation supplied by an HPow instance.",
+      "effect_on_target": "It interprets each x_i^2 in the Euclidean norm definition.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "LE.le",
+      "meaning": "This selects the non-strict order relation supplied by an LE instance.",
+      "effect_on_target": "It interprets all lower and upper norm bounds as ordinary non-strict real inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Monoid.toNatPow",
+      "meaning": "This equips a monoid with natural-number exponentiation by repeated multiplication.",
+      "effect_on_target": "For the real multiplicative monoid, it makes exponent 2 denote the ordinary square of each coordinate.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Real.instLE",
+      "meaning": "This equips the real numbers with their standard non-strict order <=.",
+      "effect_on_target": "It supplies the order relation in every norm inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instMonoid",
+      "meaning": "This equips the real numbers with their standard multiplicative monoid structure, including multiplication, one, and natural powers.",
+      "effect_on_target": "It supplies the natural-power operation used to square vector coordinates.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "Real.sqrt",
+      "meaning": "This is the nonnegative real square-root function; in the target it is applied only to nonnegative sums of squares.",
+      "effect_on_target": "It turns each sum of coordinate squares into the Euclidean norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "instHPow",
+      "meaning": "This turns a power operation with a given exponent type into the corresponding HPow operation.",
+      "effect_on_target": "It exposes natural-number powers of real numbers to the expression x_i^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "instOfNatNat",
+      "meaning": "This interprets each natural-number numeral as that natural number itself.",
+      "effect_on_target": "It interprets the exponent literal 2 as the natural number two.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "m, n, and s are arbitrary natural-number dimensions.",
+      "QA is an m-by-n real matrix, represented as a function Fin m -> Fin n -> Real.",
+      "Q and C are s-by-n real matrices.",
+      "T is an n-by-n real matrix.",
+      "α and β are real numbers."
+    ],
+    "hypotheses": [
+      "α is strictly positive: 0 < α.",
+      "β is strictly positive: 0 < β.",
+      "QA preserves the Euclidean norm: for every x in R^n, ||QA x||_2 = ||x||_2.",
+      "Q preserves the Euclidean norm: for every x in R^n, ||Qx||_2 = ||x||_2.",
+      "The exact matrix equality C*T = Q holds.",
+      "The map induced by T is surjective: for every y in R^n, there exists an x in R^n, depending on y, such that Tx = y."
+    ],
+    "conclusions": [
+      "The following statements are logically equivalent: (i) for every x in R^n, α||x||_2 <= ||(QA*T)x||_2 and ||(QA*T)x||_2 <= β||x||_2; (ii) for every x in R^n, β^{-1}||x||_2 <= ||Cx||_2 and ||Cx||_2 <= α^{-1}||x||_2.",
+      "The exact real-number equality β/α = α^{-1}/β^{-1} holds."
+    ],
+    "mathematical_definitions": [
+      "For x in R^n, ||x||_2 = sqrt(sum_{i=0}^{n-1} x_i^2).",
+      "For an m-by-n matrix A, (Ax)_i = sum_{j=0}^{n-1} A_{ij}x_j.",
+      "For compatible matrices A and B, (AB)_{ij} = sum_k A_{ik}B_{kj}.",
+      "A two-sided bound B(A; l, u) means (for every x, l||x||_2 <= ||Ax||_2) and (for every x, ||Ax||_2 <= u||x||_2).",
+      "The inverses α^{-1} and β^{-1} and the quotients are ordinary exact real reciprocals and divisions."
+    ],
+    "proposition_plain_english": "For every choice of dimensions and real matrices QA, Q, C, and T, and every pair of positive real numbers α and β, assume QA and Q preserve Euclidean norms, C*T equals Q exactly, and T maps R^n onto R^n. Then QA*T has the uniform two-sided Euclidean norm bounds α and β if and only if C has the reciprocal bounds β^{-1} and α^{-1}, respectively. In addition, β/α equals α^{-1}/β^{-1} exactly."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The dimensions may be zero; no positivity assumption is imposed on m, n, or s.",
+    "The theorem is conditional. If any norm-preservation, matrix-equality, positivity, or surjectivity hypothesis is impossible for the supplied data, the implication is vacuously true.",
+    "For n > 0, exact norm preservation makes QA and Q injective, so the hypotheses cannot be satisfied when m < n or s < n.",
+    "No assumption α <= β is present. The conclusion is an equivalence of bound predicates, not an assertion that either predicate actually holds.",
+    "When n = 0, the vector domain contains only the zero vector, so all stated norm inequalities reduce to 0 <= 0 independently of their bound constants.",
+    "Surjectivity is asserted only for the matrix-vector map induced by T. An inverse matrix, injectivity, determinant, or nonsingularity is not explicitly mentioned.",
+    "QA and Q are required only to preserve the Euclidean norm; orthogonality, square shape, and any particular entrywise structure are not explicitly encoded.",
+    "C is not assumed to preserve norms or to be surjective; its only matrix hypothesis is C*T = Q.",
+    "Strict positivity of α and β ensures their reciprocals and all displayed quotients have nonzero denominators.",
+    "All equalities and inequalities are exact statements over real numbers; no floating-point arithmetic, approximation, error term, or rounding model is encoded."
+  ],
+  "ambiguities": []
+}

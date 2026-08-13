@@ -1,0 +1,114 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] The local assumptions say A has independent columns and S has independent rows, which can still permit S to annihilate part of col(A); [PDF p. 2, printed p. 906; anchor: standing full-rank assumption] the paper separately assumes SA is full rank throughout.",
+      "impact": "A standalone formal statement must explicitly assume rank(SA) = n, or equivalently the nonsingularity of R or full column rank of SQ_A.",
+      "issue": "The hypotheses printed inside Lemma 2.1 do not by themselves ensure that B = SA has full column rank."
+    },
+    {
+      "evidence": "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] The lemma permits s >= n; [PDF p. 2, printed p. 906; anchor: standing dimensions] the paper generally assumes m > s > n.",
+      "impact": "The algebraic lemma is printed with the weaker local condition s >= n, while applications in the paper use the strict oversampling regime; these should not be silently conflated.",
+      "issue": "The local dimension condition differs from the paper's standing sketching regime."
+    }
+  ],
+  "contract_plain_english": "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 and proof] In exact arithmetic, if A and its sketch SA have full column rank and R is the triangular factor of the economized QR of SA, then right-preconditioning A by the exact inverse R^{-1} gives precisely the same spectral condition number as restricting the sketch S to the column space of A, namely kappa_2(AP) = kappa_2(SQ_A).",
+  "paper_batch_sha256": "822fe7aa06960deeaa078b8ac855714c9b957ac1656f37de3dcbbaa9f707f076",
+  "paper_sha256": "4c4d638b359719f47e2c4664a50e9fa8e4704e8b6b39923d73c41883a97c5790",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "Lemma 2.1 statement",
+      "observation": "For A in R^{m x n} with linearly independent columns, S in R^{s x m} with s >= n and linearly independent rows, B = SA, economized QR factorizations A = Q_A R_A and B = QR, and P = R^{-1}, the lemma states kappa_2(AP) = kappa_2(SQ_A).",
+      "pdf_page": 9,
+      "printed_page": "913"
+    },
+    {
+      "anchor": "Proof of Lemma 2.1",
+      "observation": "The proof uses AP = Q_A R_A R^{-1}, B = SA = QR = S(Q_A R_A), and (SQ_A)R_A R^{-1} = Q with Q orthonormal.",
+      "pdf_page": 9,
+      "printed_page": "913"
+    },
+    {
+      "anchor": "Paragraphs immediately before and after Lemma 2.1",
+      "observation": "The identity is explicitly presented as an exact-arithmetic property of the Blendenpik preconditioner, not as a finite-precision or probabilistic equality.",
+      "pdf_page": 9,
+      "printed_page": "913"
+    },
+    {
+      "anchor": "Standing full-rank assumption after Algorithm 1.1",
+      "observation": "The paper assumes throughout that A and SA are full rank, with m > s > n in the main least-squares setting.",
+      "pdf_page": 2,
+      "printed_page": "906"
+    },
+    {
+      "anchor": "Definition of kappa_2(A)",
+      "observation": "The paper defines kappa_2 as sigma_max divided by sigma_min.",
+      "pdf_page": 2,
+      "printed_page": "906"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "[PDF p. 9, printed p. 913; anchor: prose immediately before Lemma 2.1] This is the exact-arithmetic condition-number identity for Blendenpik's sketch-and-precondition construction: sketch A to SA, take R from its QR factorization, and use P = R^{-1} as the right preconditioner.",
+    "binders": [
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] A in R^{m x n}, S in R^{s x m}, B := SA in R^{s x n}, and dimensions satisfying s >= n.",
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] A = Q_A R_A and B = QR are economized QR factorizations, with Q_A in R^{m x n}, Q in R^{s x n}, and square upper-triangular R_A and R in R^{n x n}.",
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] P := R^{-1} is the exact right preconditioner."
+    ],
+    "conclusions": [
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 displayed conclusion] kappa_2(AP) = kappa_2(SQ_A), where P = R^{-1}.",
+      "[PDF p. 9, printed p. 913; anchor: proof of Lemma 2.1] The proof establishes the intermediate equalities kappa_2(AP) = kappa_2(R_A R^{-1}) and kappa_2(R_A R^{-1}) = kappa_2(SQ_A).",
+      "[PDF p. 9, printed p. 913; anchor: proof identity] The second equality is supported by (SQ_A)R_A R^{-1} = Q with Q having orthonormal columns."
+    ],
+    "constants_and_indexing": [
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] The only dimension constraint printed locally is s >= n; there are no numerical constants, iteration indices, or index offsets in the identity.",
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 displayed equation] The equality has no multiplicative distortion factor: the two condition numbers are exactly equal."
+    ],
+    "definitions_and_conventions": [
+      "[PDF p. 9, printed p. 913; anchor: prose before Lemma 2.1] Q_A is an orthonormal basis for the column space of A.",
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] \"Economized QR\" uses n-column orthonormal factors and n-by-n triangular factors for the full-column-rank matrices.",
+      "[PDF p. 2, printed p. 906; anchor: definition of kappa_2(A)] kappa_2(M) := sigma_max(M)/sigma_min(M) for the full-column-rank matrices in the identity.",
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] P is the mathematical inverse R^{-1}, not a separately rounded or approximately computed inverse."
+    ],
+    "error_notions": [
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement and proof] The result contains no forward error, backward error, residual, or computed-value error claim; it is solely an exact condition-number identity."
+    ],
+    "exceptional_values": [
+      "[PDF p. 9, printed p. 913; anchor: definition P = R^{-1}] R must be nonsingular for P to exist; this follows from full column rank of B = SA in the standing context, not merely from row independence of S.",
+      "[PDF p. 9, printed p. 913; anchor: condition-number identity] A, AP, and SQ_A must have nonzero smallest singular values for the finite condition numbers used in the proof.",
+      "[PDF p. 9, printed p. 913; anchor: exact-arithmetic discussion] Floating-point exceptional values, overflow, underflow, NaNs, and infinities are outside the claim."
+    ],
+    "higher_order_terms": [
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 displayed equation and proof] The result is exact and contains no big-O term, perturbation expansion, or omitted higher-order contribution."
+    ],
+    "hypotheses": [
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] A has linearly independent columns.",
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] S has linearly independent rows and s >= n.",
+      "[PDF p. 2, printed p. 906; anchor: standing full-rank assumption] The paper's standing context additionally assumes B = SA has full column rank, making R invertible and P well-defined.",
+      "[PDF p. 9, printed p. 913; anchor: paragraph introducing Lemma 2.1] The identity concerns exact arithmetic."
+    ],
+    "implicit_context": [
+      "[PDF p. 2, printed p. 906; anchor: standing full-rank assumption] The main paper setting has m > s > n and both A and SA full rank, although Lemma 2.1 itself prints only s >= n together with rank assumptions on A and S.",
+      "[PDF p. 9, printed p. 913; anchor: paragraph following Lemma 2.1] The identity motivates selecting a sketch for which S Q_A is well-conditioned, often with high probability, but the lemma itself is deterministic and does not assert a probability bound.",
+      "[PDF p. 9, printed p. 913; anchor: paragraph following Lemma 2.1] Independence from kappa_2(A) is an interpretation of the right-hand side kappa_2(SQ_A), not an additional algebraic conclusion involving a quantified random S."
+    ],
+    "norms": [
+      "[PDF p. 2, printed p. 906; anchor: definition of kappa_2(A)] kappa_2 is the spectral 2-norm condition number expressed as the ratio of largest to smallest singular value.",
+      "[PDF p. 9, printed p. 913; anchor: proof of Lemma 2.1] Left multiplication by the orthonormal-column factor Q_A preserves the nonzero singular values used in kappa_2(AP)."
+    ],
+    "numerical_model": [
+      "[PDF p. 9, printed p. 913; anchor: prose before and after Lemma 2.1] All products, QR factors, inverses, and condition numbers in the lemma are exact; no rounding-error variables or unit roundoff occur.",
+      "[PDF p. 9, printed p. 913; anchor: paragraph following Lemma 2.1] Finite-precision failure modes are explicitly deferred to later analysis and are not part of this identity.",
+      "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] Although sketching matrices are random in applications, S is fixed in the lemma and the equality is deterministic."
+    ]
+  },
+  "task_id": "P07-T3",
+  "undebatable_constraints": [
+    "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] The identity is exactly kappa_2(AP) = kappa_2(SQ_A) with P = R^{-1}.",
+    "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] Both QR factorizations are economized QR factorizations of A and B = SA, respectively.",
+    "[PDF p. 9, printed p. 913; anchor: proof of Lemma 2.1] A faithful proof contract must retain AP = Q_A R_A R^{-1} and (SQ_A)R_A R^{-1} = Q.",
+    "[PDF p. 9, printed p. 913; anchor: exact-arithmetic framing] The matrices and inverse are exact values, not computed approximations.",
+    "[PDF p. 2, printed p. 906; anchor: standing full-rank assumption] Full column rank of SA is required to make R^{-1} and the finite condition numbers well-defined.",
+    "[PDF p. 9, printed p. 913; anchor: Lemma 2.1 statement] The lemma is deterministic for each admissible S and contains no high-probability qualifier."
+  ]
+}

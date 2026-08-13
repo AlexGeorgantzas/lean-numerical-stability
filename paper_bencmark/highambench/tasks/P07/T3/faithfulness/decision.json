@@ -1,0 +1,77 @@
+{
+  "accepted": true,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-13T13:54:36.508039+00:00",
+  "findings": [
+    {
+      "category": "condition-number-encoding",
+      "impact": "The target must be read as a universal certificate theorem. Under that reading it implies the exact condition-number identity; reading one fixed loose certificate in isolation would be insufficient.",
+      "lean_evidence": "The target names no kappa or singular value; it universally relates lower and upper norm certificates and preserves their ratios.",
+      "paper_evidence": "Lemma 2.1 directly writes kappa_2(AP)=kappa_2(SQ_A).",
+      "severity": "note"
+    },
+    {
+      "category": "abstract-generalization",
+      "impact": "The declaration is broader than the displayed paper lemma and therefore the reverse implication fails, but the direct substitution C=S Q_A and T=R_A R^{-1} preserves the complete benchmark result.",
+      "lean_evidence": "The target retains only QA,Q,C,T and the sufficient facts that QA,Q are isometries, C*T=Q, and T is surjective.",
+      "paper_evidence": "The paper binds A,S,B,Q_A,R_A,Q,R,P and derives the identities from two economized QR factorizations.",
+      "severity": "note"
+    },
+    {
+      "category": "dimension-extension",
+      "impact": "These are additional cases outside the paper, not a narrowing of its domain; explicit positive-dimensional examples establish nonvacuity.",
+      "lean_evidence": "Natural dimensions are unrestricted and may include zero or configurations with s>m, subject only to existence of the stated isometries.",
+      "paper_evidence": "The paper works in positive full-rank matrix dimensions, locally with s>=n and generally with m>s>n.",
+      "severity": "note"
+    },
+    {
+      "category": "paper-specific binders and algorithm linkage omitted",
+      "impact": "The reader must supply C = S*QA and T = RA*R^{-1} to connect the theorem to the paper, although that substitution is valid.",
+      "paper_evidence": "Lemma 2.1 explicitly uses A, S, B = SA, two economized QR factorizations, and P = R^{-1} in the Blendenpik construction.",
+      "severity": "major",
+      "translation_evidence": "The proposition retains only abstract QA, Q, C, and T with C*T = Q."
+    },
+    {
+      "category": "condition number represented indirectly",
+      "impact": "Recovering the displayed paper result requires an additional extremal-bound argument, but the universally quantified translated conclusion is sufficient and strictly stronger.",
+      "paper_evidence": "The displayed conclusion is directly kappa_2(AP) = kappa_2(S*QA).",
+      "severity": "major",
+      "translation_evidence": "No condition-number operator occurs; the conclusion transfers every positive two-sided norm bound and equates the corresponding ratios."
+    },
+    {
+      "category": "broadened dimensions and degenerate cases",
+      "impact": "The translation includes trivial zero-dimensional and non-algorithmic instances not represented by the intended least-squares setting.",
+      "paper_evidence": "The local lemma has s >= n and the paper's main regime has m > s > n with full-rank A and SA.",
+      "severity": "minor",
+      "translation_evidence": "m, n, and s are arbitrary naturals, including zero, with dimension restrictions arising only indirectly from norm preservation."
+    },
+    {
+      "category": "exact numerical and norm semantics preserved",
+      "impact": "There is no rounding-model, probability, error-notion, or norm-kind mismatch.",
+      "paper_evidence": "The result is deterministic exact arithmetic and uses the spectral 2-norm condition number.",
+      "severity": "note",
+      "translation_evidence": "The proposition uses exact real arithmetic and unsquared Euclidean norm bounds."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "For a paper instance set C=S Q_A and T=R_A R^{-1}. The QR identities give AP=Q_A T, C*T=Q, isometries of Q_A and Q, and surjectivity of T. Applying the universally quantified certificate equivalence to attained extremal bounds in both directions yields sigma_min(C)=1/sigma_max(AP) and sigma_max(C)=1/sigma_min(AP), hence kappa_2(AP)=kappa_2(SQ_A).",
+      "verdict": "yes"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper result ranges over factors arising from A, S, and economized QR and states only equality of the optimal condition-number ratios. The Lean proposition additionally covers every abstract C,T satisfying C*T=Q, including nontriangular T and dimension configurations such as s>m that cannot satisfy the paper's row-independent-sketch regime, and asserts correspondence of every positive two-sided certificate.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "faithful-stronger",
+    "roundtrip": "faithful-stronger"
+  },
+  "rationale": "The Lean declaration isolates and strengthens the exact algebraic core of Lemma 2.1. Under QA=Q_A, C=S Q_A, and T=R_A R^{-1}, its hypotheses are consequences of the paper's full-rank economized QR setting and QA*T is AP. The universal reciprocal correspondence of all two-sided Euclidean norm certificates determines reciprocal extremal singular values, so it yields the paper's exact kappa_2 equality. Conversely, the paper's stated result does not cover the Lean theorem's broader abstract domain or its certificate-level conclusion. This is a nonvacuous faithful generalization, so the correct classification is faithful-stronger.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P07-T3"
+}
