@@ -1,0 +1,107 @@
+{
+  "entries": [
+    {
+      "id": "D002",
+      "interpretation": "HAdd.hAdd dispatches overloaded addition through the selected HAdd instance; here it resolves to real addition.",
+      "name": "HAdd.hAdd",
+      "reuse_sha256": "f0a208134f0be8d9c4f62fed752e833defbeaa7d7355a7f0eb97527b52a769f8",
+      "semantic_sha256": "e0bf2a92addd6ea713343e4ef69f67e4e1155781d08f46957b9f71412d865f59",
+      "source_dependency_id": "D004",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D004",
+      "interpretation": "HMul.hMul dispatches overloaded multiplication through the selected HMul instance; here it resolves to real multiplication.",
+      "name": "HMul.hMul",
+      "reuse_sha256": "043f9e8718f9e88882d760a34b86e7840facb49adb85e336d277391509a74cc5",
+      "semantic_sha256": "4e00447a4a8ef4c2ce13e307c56a1fbcd7fa8c732fe039a452b42477a50df2c6",
+      "source_dependency_id": "D015",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D005",
+      "interpretation": "HSub.hSub dispatches overloaded subtraction through the selected HSub instance; here it resolves to real subtraction.",
+      "name": "HSub.hSub",
+      "reuse_sha256": "9017c277d92c5358fe64cc0ef2804adaebdf76bdd631d915f904d1c3979a83da",
+      "semantic_sha256": "98025b38d523c0eadea77ba4961a20b2a913b23c079c4bfeba24a7bfaa24a4bc",
+      "source_dependency_id": "D005",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D010",
+      "interpretation": "Real is Lean's exact mathematical real-number type.",
+      "name": "Real",
+      "reuse_sha256": "ea1c9703299f6b4a3989c797f2a9a0a1b79aaf14813b3322023661d8f3fd7482",
+      "semantic_sha256": "38529f0578472feffc4c79d5d0755fa10fc3edafb232ab5e442336d13630ee90",
+      "source_dependency_id": "D007",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D011",
+      "interpretation": "Real.instAdd provides ordinary addition on real numbers.",
+      "name": "Real.instAdd",
+      "reuse_sha256": "b99f49fd674e6c7b3215be434e704ba83bdf1057272a73d2ff3a7bde1d80f163",
+      "semantic_sha256": "f99208c181266311bec9c890b688378f329076f9e6be38fe93d9cedf4d7f50ce",
+      "source_dependency_id": "D008",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D015",
+      "interpretation": "Real.instMul provides ordinary multiplication on real numbers.",
+      "name": "Real.instMul",
+      "reuse_sha256": "fc791f7590243b52a697d21d3fbd5944209c68022bbf93965ff90e52c8064ff0",
+      "semantic_sha256": "459ccbe28a1d29ccd2b329ea29e1a84b329b8064b8a8ecc52764b69b23e229ed",
+      "source_dependency_id": "D017",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D017",
+      "interpretation": "Real.instSub defines real subtraction as addition of the additive inverse.",
+      "name": "Real.instSub",
+      "reuse_sha256": "03ad41775b4bca106588bd3e220fadb0dbf2a8375d5ebfe25f82138c181b8bf6",
+      "semantic_sha256": "926d9e8fcca2819a885d446e168b20c7c8aac2e542d59ed2b48e32c9a4659a36",
+      "source_dependency_id": "D009",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D018",
+      "interpretation": "instHAdd lifts a homogeneous Add instance into a homogeneous HAdd instance.",
+      "name": "instHAdd",
+      "reuse_sha256": "562d1a77e6f0776269d696792195dd2231b029682f446a852186626214a6bcea",
+      "semantic_sha256": "38066efd17aeeca52ec2890d9aafca2fa3cce8fda7f5843c1b8e5da130d93981",
+      "source_dependency_id": "D010",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D020",
+      "interpretation": "instHMul lifts a homogeneous Mul instance into a homogeneous HMul instance.",
+      "name": "instHMul",
+      "reuse_sha256": "5cb07b0c605f9c2b2762be4698a32090340f3fde3d71d965a362602ee4972b70",
+      "semantic_sha256": "1fd375514ac68e29e7941c94ba308ea936395db23d0fee63a5c69dcccd3b2bdc",
+      "source_dependency_id": "D018",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    },
+    {
+      "id": "D021",
+      "interpretation": "instHSub lifts a homogeneous Sub instance into a homogeneous HSub instance.",
+      "name": "instHSub",
+      "reuse_sha256": "ccbdd5ce3779363286f65e5e9de8f087e59f2fc61339cf8cba930745ac59120f",
+      "semantic_sha256": "aa782f2b5af3d068f4c5340de4b32b193fece2c659a45582cc3024a19b550c87",
+      "source_dependency_id": "D011",
+      "source_direct_output_sha256": "7dc5ab10ad3b4c70134d0137006e86ef8603c34e3fecf99cb4dbfbe9f2d2ac31",
+      "source_task_id": "P03-T1"
+    }
+  ],
+  "role": "direct-dependency-reuse",
+  "schema_version": "highambench-faithfulness-0.2",
+  "target_task_id": "P03-T2"
+}

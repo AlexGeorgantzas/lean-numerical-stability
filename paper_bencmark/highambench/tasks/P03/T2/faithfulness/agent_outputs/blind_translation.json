@@ -1,0 +1,193 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "09cd89ee345fe1154ed27672fe5f47d98e7c78d20adf508cff044d8eb9353717",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "Given a type G with a DivInvMonoid structure self, this abbreviation returns its Div structure, exactly the projection self.3.",
+      "effect_on_target": "It extracts the real-number division operation used in the quotient (c1*kappa + c2)/(1 - c1*kappa*us).",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "HAdd.hAdd",
+      "meaning": "Given an HAdd structure from alpha and beta to gamma, this abbreviation returns its binary addition operation.",
+      "effect_on_target": "Together with the homogeneous real-addition instance, it makes every displayed hAdd an ordinary addition of real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "HDiv.hDiv",
+      "meaning": "Given an HDiv structure from alpha and beta to gamma, this abbreviation returns its binary division operation.",
+      "effect_on_target": "Together with the homogeneous real-division instance, it interprets the displayed fraction as division of real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "HMul.hMul",
+      "meaning": "Given an HMul structure from alpha and beta to gamma, this abbreviation returns its binary multiplication operation.",
+      "effect_on_target": "Together with the homogeneous real-multiplication instance, it makes every displayed hMul an ordinary product of real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "HSub.hSub",
+      "meaning": "Given an HSub structure from alpha and beta to gamma, this abbreviation returns its binary subtraction operation.",
+      "effect_on_target": "Together with the homogeneous real-subtraction instance, it interprets the denominator as 1 - c1*kappa*us.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LE.le",
+      "meaning": "Given an LE structure on a type, this abbreviation returns its binary less-than-or-equal relation.",
+      "effect_on_target": "With Real.instLE, it interprets all non-strict inequalities as the usual real order relation <=.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LT.lt",
+      "meaning": "Given an LT structure on a type, this abbreviation returns its binary strict-less-than relation.",
+      "effect_on_target": "With Real.instLT, it interprets the denominator hypothesis as the strict real inequality c1*kappa*us < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "OfNat.ofNat",
+      "meaning": "For a natural number x and an OfNat alpha x instance, this abbreviation returns the corresponding element of alpha.",
+      "effect_on_target": "It realizes every occurrence of the numeral 1 as an element of Real.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "One.toOfNat1",
+      "meaning": "Given a One structure on a type, it constructs the OfNat instance for the numeral 1 by using that structure's one element.",
+      "effect_on_target": "It ensures that every numeral 1 in the proposition is exactly the real multiplicative identity supplied by Real.instOne.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Real",
+      "meaning": "This is the scalar carrier type named Real; the packet declares it as a Type.",
+      "effect_on_target": "All thirteen universally quantified variables and all arithmetic expressions in the proposition have this real-number type.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "Real.instAdd",
+      "meaning": "This is the Add structure on Real whose addition operation is Real.add.",
+      "effect_on_target": "It supplies ordinary real addition for sums of bounds, errors, and coefficient terms.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This equips Real with multiplication, inversion, division, and integer-power operations; its division field is DivInvMonoid.div'.",
+      "effect_on_target": "Through DivInvMonoid.toDiv, it supplies the real division used to define the quotient appearing in the solve bound and conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Real.instLE",
+      "meaning": "This is the LE structure on Real whose relation is Real.le.",
+      "effect_on_target": "It gives the usual real <= interpretation to the four upper-bound hypotheses and the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Real.instLT",
+      "meaning": "This is the LT structure on Real whose relation is Real.lt.",
+      "effect_on_target": "It gives the usual real < interpretation to the sole strict hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instMul",
+      "meaning": "This is the Mul structure on Real whose multiplication operation is Real.mul.",
+      "effect_on_target": "It supplies all scalar products in the denominator condition, component bounds, and combined bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instOne",
+      "meaning": "This is the One structure on Real whose distinguished element is Real.one.",
+      "effect_on_target": "It supplies the exact real constant 1 in the strict hypothesis, denominator, and coefficient factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instSub",
+      "meaning": "This is the Sub structure on Real, defining a - b as a plus the real negation of b.",
+      "effect_on_target": "It supplies the subtraction in the denominator 1 - c1*kappa*us.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "instHAdd",
+      "meaning": "Given an Add structure on alpha, it constructs a homogeneous HAdd alpha alpha alpha structure using that same addition.",
+      "effect_on_target": "It connects HAdd.hAdd in the elaborated type to Real.instAdd, so all additions are homogeneous real additions.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "instHDiv",
+      "meaning": "Given a Div structure on alpha, it constructs a homogeneous HDiv alpha alpha alpha structure using that same division.",
+      "effect_on_target": "It connects HDiv.hDiv to the division extracted from Real.instDivInvMonoid.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "instHMul",
+      "meaning": "Given a Mul structure on alpha, it constructs a homogeneous HMul alpha alpha alpha structure using that same multiplication.",
+      "effect_on_target": "It connects HMul.hMul in every product to Real.instMul.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "instHSub",
+      "meaning": "Given a Sub structure on alpha, it constructs a homogeneous HSub alpha alpha alpha structure using that same subtraction.",
+      "effect_on_target": "It connects HSub.hSub in the denominator to Real.instSub.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "The proposition universally quantifies the thirteen atomic real scalars u, us, gammaR, c1, c2, kappa, R, D, Y, eRes, eSolve, eUpdate, and Rnext."
+    ],
+    "hypotheses": [
+      "c1*kappa*us < 1.",
+      "Rnext <= eRes + eSolve + eUpdate.",
+      "eRes <= us*R + (1 + us)*gammaR*D.",
+      "eSolve <= us*q*((1 + us)*R + (1 + us)*gammaR*D), where q = (c1*kappa + c2)/(1 - c1*kappa*us).",
+      "eUpdate <= u*Y."
+    ],
+    "conclusions": [
+      "Rnext <= us*(1 + (1 + us)*q)*R + (1 + us*q)*(1 + us)*gammaR*D + u*Y, where q = (c1*kappa + c2)/(1 - c1*kappa*us)."
+    ],
+    "mathematical_definitions": [
+      "Define q = (c1*kappa + c2)/(1 - c1*kappa*us).",
+      "Define B_res = us*R + (1 + us)*gammaR*D.",
+      "Define B_solve = us*q*((1 + us)*R + (1 + us)*gammaR*D).",
+      "Define B_update = u*Y.",
+      "Define B = us*(1 + (1 + us)*q)*R + (1 + us*q)*(1 + us)*gammaR*D + u*Y.",
+      "By distributivity, associativity, and commutativity of real arithmetic, B is exactly B_res + B_solve + B_update."
+    ],
+    "proposition_plain_english": "For every choice of the thirteen real scalars, let q = (c1*kappa + c2)/(1 - c1*kappa*us). If c1*kappa*us is strictly less than 1, Rnext is at most the sum eRes + eSolve + eUpdate, eRes is at most us*R + (1 + us)*gammaR*D, eSolve is at most us*q times ((1 + us)*R + (1 + us)*gammaR*D), and eUpdate is at most u*Y, then Rnext is at most us*(1 + (1 + us)*q)*R + (1 + us*q)*(1 + us)*gammaR*D + u*Y."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The only direct restriction on the universally quantified scalars is c1*kappa*us < 1. This implies that the denominator 1 - c1*kappa*us is strictly positive and hence nonzero.",
+    "No individual sign condition is imposed on u, us, gammaR, c1, c2, kappa, R, D, Y, any error variable, or Rnext. In particular, positivity of the denominator does not imply that q is nonnegative.",
+    "The strict denominator hypothesis is not needed for the algebraic implication as stated: the same quotient occurs in the solve hypothesis and conclusion, and the conclusion follows by adding upper bounds and rearranging terms. Its encoded effect is to restrict the domain and guarantee a positive denominator.",
+    "Because the proposition is a chain of implications, it is vacuously true for any assignment for which at least one hypothesis fails. It does not establish that assignments satisfying the hypotheses exist.",
+    "All quantities are real scalars. No vectors, matrices, dimensions, norms, absolute values, componentwise orders, or inner products are encoded.",
+    "The names eRes, eSolve, and eUpdate do not formally make these quantities nonnegative errors; they are unrestricted real numbers with upper bounds only.",
+    "The proposition does not encode whether any quantity is exact, computed, rounded, perturbed, or generated by an algorithm, and it contains no recurrence beyond the single scalar inequality involving Rnext.",
+    "The symbols c1 and c2 are universally quantified real variables, not fixed numerical constants. The only literal numerical constant is the real number 1.",
+    "There are no conjunction-valued conclusions, existential witnesses, uniqueness claims, lower bounds, or equalities connecting Rnext to the three error quantities."
+  ],
+  "ambiguities": [
+    "The intended applied meanings of the variable names are not specified by the formal proposition.",
+    "The identifiers us and gammaR are atomic Lean variables; the dossier does not specify their intended conventional notation or whether their names abbreviate compound concepts."
+  ]
+}
