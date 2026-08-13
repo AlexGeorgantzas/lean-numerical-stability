@@ -1,0 +1,16 @@
+import NumStability.Source.Higham.Chapter13.Table01.BackwardErrorBounds.Endpoints
+
+/-!
+# Canonical-only destination: NumStability.Source.Higham.Chapter13.Table01.BackwardErrorBounds.Endpoints
+
+Imports only the canonical destination and checks its exact routed public surface.
+-/
+
+#check @NumStability.higham13_table13_1_arbitrary_backward_error_from_growth
+#check @NumStability.higham13_table13_1_backward_error_from_product_bound
+#check @NumStability.higham13_table13_1_block_row_bdd_backward_error_from_growth
+#check @NumStability.higham13_table13_1_col_bdd_backward_error
+#check @NumStability.higham13_table13_1_implementation1_family_from_partitioned_computation_and_product_transfer
+#check @NumStability.higham13_table13_1_point_col_bdd_backward_error
+#check @NumStability.higham13_table13_1_point_row_backward_error_from_growth
+#check @NumStability.higham13_table13_1_spd_backward_error
