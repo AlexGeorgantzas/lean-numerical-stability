@@ -1,0 +1,365 @@
+{
+  "contracts": [
+    {
+      "ambiguities": [
+        {
+          "evidence": "Equation T1-E3 writes a minimum over epsilon while the perturbations occur as implicitly quantified conforming objects.",
+          "impact": "A formalization must make the existential quantification and conforming real dimensions explicit; it should not replace the common epsilon by independently minimized perturbation levels.",
+          "issue": "The display does not explicitly bind DeltaA, Deltab, their domains, or epsilon >= 0 inside the set-builder notation. [T1-E3]"
+        }
+      ],
+      "contract_plain_english": "For any computed candidate x_hat for the nonsingular real system Ax = b, the smallest common relative size of simultaneous Frobenius-norm perturbations to A and 2-norm perturbations to b that makes x_hat exact is precisely the 2-norm residual divided by ||A||_F||x_hat||_2 + ||b||_2. [T1-E1, T1-E3, T1-E4]",
+      "source_evidence": [
+        {
+          "anchor": "T1-E1: equation (1.1)",
+          "observation": "The standing problem is Ax = b with A in R^(n x n) nonsingular and 0 != b in R^n; x denotes its exact solution.",
+          "pdf_page": 1,
+          "printed_page": "1939"
+        },
+        {
+          "anchor": "T1-E2: opening paragraph of Section 2",
+          "observation": "The paper uses the standard floating-point model, fl(.) for a computed expression, and hats for computed quantities.",
+          "pdf_page": 4,
+          "printed_page": "1942"
+        },
+        {
+          "anchor": "T1-E3: normwise backward-error definition",
+          "observation": "For a computed solution x_hat, the paper defines the minimum common relative perturbation epsilon by (A + DeltaA)x_hat = b + Deltab, ||DeltaA||_F <= epsilon||A||_F, and ||Deltab||_2 <= epsilon||b||_2, and states that this minimum equals ||b - Ax_hat||_2/(||A||_F||x_hat||_2 + ||b||_2).",
+          "pdf_page": 4,
+          "printed_page": "1942"
+        },
+        {
+          "anchor": "T1-E4: norm conventions and final sentence of Section 2",
+          "observation": "Vector residuals use the 2-norm, matrix perturbations use the Frobenius norm, and the unqualified phrase 'backward error' subsequently means this normwise backward error.",
+          "pdf_page": 4,
+          "printed_page": "1942"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "The identity is an algorithm-independent definition for a computed solution of (1.1); it does not require a particular GMRES variant or iteration index. [T1-E1, T1-E3]",
+        "binders": [
+          "A in R^(n x n) is nonsingular, 0 != b in R^n, and x solves Ax = b. [T1-E1]",
+          "x_hat is a computed solution candidate; DeltaA and Deltab have the conforming matrix and vector dimensions, and epsilon is the common relative perturbation level. [T1-E2, T1-E3]"
+        ],
+        "conclusions": [
+          "min{epsilon : (A + DeltaA)x_hat = b + Deltab, ||DeltaA||_F <= epsilon||A||_F, ||Deltab||_2 <= epsilon||b||_2} = ||b - Ax_hat||_2/(||A||_F||x_hat||_2 + ||b||_2). [T1-E3]",
+          "Thus the normalized residual is exactly the simultaneous normwise backward error, not merely an upper bound. [T1-E3]"
+        ],
+        "constants_and_indexing": [
+          "There is one shared perturbation level epsilon; separate matrix and right-hand-side tolerances are not introduced. [T1-E3]",
+          "No iteration index or dimension-dependent generic constant appears in this identity. [T1-E3]"
+        ],
+        "definitions_and_conventions": [
+          "A hat marks a computed quantity, whereas x without a hat is the exact solution of Ax = b. [T1-E1, T1-E2]",
+          "After this definition, 'backward error' means 'normwise backward error' unless qualified otherwise. [T1-E4]"
+        ],
+        "error_notions": [
+          "The backward error permits simultaneous perturbations of both A and b, controlled by one relative tolerance epsilon. [T1-E3]",
+          "The right-hand side is the true residual norm ||b - Ax_hat||_2 normalized by ||A||_F||x_hat||_2 + ||b||_2. [T1-E3]"
+        ],
+        "exceptional_values": [
+          "The standing assumption b != 0 makes the denominator strictly positive; this follows from (1.1) and the denominator in the definition. [T1-E1, T1-E3]",
+          "The paper does not discuss NaNs, infinities, overflow, underflow, or subnormal behavior in this definition. [T1-E2, T1-E3]"
+        ],
+        "higher_order_terms": [
+          "No higher-order or big-O terms are omitted in the displayed identity. [T1-E3]"
+        ],
+        "hypotheses": [
+          "The admissible perturbations satisfy (A + DeltaA)x_hat = b + Deltab. [T1-E3]",
+          "The same epsilon bounds both perturbations: ||DeltaA||_F <= epsilon||A||_F and ||Deltab||_2 <= epsilon||b||_2. [T1-E3]"
+        ],
+        "implicit_context": [
+          "The linear system is the nonsingular square real system (1.1), with nonzero right-hand side. [T1-E1]"
+        ],
+        "norms": [
+          "DeltaA and A are measured in the Frobenius norm. [T1-E3, T1-E4]",
+          "Deltab, b, x_hat, and b - Ax_hat are measured in the vector 2-norm. [T1-E3, T1-E4]"
+        ],
+        "numerical_model": [
+          "The surrounding section adopts the standard floating-point model and hat notation, but the perturbation-to-residual identity itself is an exact mathematical equality and contains no unit-roundoff parameter. [T1-E2, T1-E3]"
+        ]
+      },
+      "task_id": "P16-T1",
+      "undebatable_constraints": [
+        "The perturbation equation must have the signs (A + DeltaA)x_hat = b + Deltab. [T1-E3]",
+        "The matrix norm is Frobenius and the vector norms are 2-norms. [T1-E3, T1-E4]",
+        "The denominator is ||A||_F||x_hat||_2 + ||b||_2. [T1-E3]",
+        "The claim is an equality with a minimum simultaneous perturbation, not an asymptotic estimate. [T1-E3]"
+      ]
+    },
+    {
+      "ambiguities": [
+        {
+          "evidence": "T2-E5 uses the norm comparison when deriving the displayed estimate from (4.18), whereas the lemma statement in T2-E4 lists only (4.1)-(4.3) and (4.14).",
+          "impact": "A literal formalization cannot derive the displayed lambda_2^(i) from the stated assumptions alone without adding this comparison or retaining an epsilon_r||x_hat_i||_2 term.",
+          "issue": "The proof invokes ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2, but Lemma 4.2 does not state this relation among its explicit hypotheses. [T2-E4, T2-E5]"
+        },
+        {
+          "evidence": "T2-E6 defines lesssim by the omission of 'negligible' second-order terms without a numerical threshold.",
+          "impact": "A formal theorem must either state an exact bound including omitted terms or introduce an explicit interpretation of lesssim.",
+          "issue": "The paper's lesssim relation is qualitative rather than a specified numerical inequality. [T2-E6]"
+        }
+      ],
+      "contract_plain_english": "In one generic iterative-refinement step, if the computed correction leaves a residual bounded by w_i times the current true residual plus an omega_i-scaled data term, then the next true residual is bounded, up to omitted second-order terms, by w_i times the current true residual plus (epsilon_r + epsilon_u + omega_i) times the next-iterate scaling term. Before norms are taken, the residuals compose through the exact identity (4.18). [T2-E2, T2-E4, T2-E5]",
+      "source_evidence": [
+        {
+          "anchor": "T2-E1: equation (1.1)",
+          "observation": "The underlying system Ax = b has A in R^(n x n) nonsingular and 0 != b in R^n.",
+          "pdf_page": 1,
+          "printed_page": "1939"
+        },
+        {
+          "anchor": "T2-E2: equations (4.1)-(4.3)",
+          "observation": "At restart iteration i, r_hat_i = b - Ax_hat_i + Delta r_i with ||Delta r_i||_2 <= epsilon_r(||b||_2 + ||A||_F||x_hat_i||_2), and x_hat_(i+1) = x_hat_i + d_hat_i + Delta x_i with ||Delta x_i||_2 <= epsilon_u||x_hat_(i+1)||_2; the parameters satisfy 0 <= epsilon_r, epsilon_u << 1.",
+          "pdf_page": 17,
+          "printed_page": "1955"
+        },
+        {
+          "anchor": "T2-E3: paragraph immediately before Lemma 4.2",
+          "observation": "Lemma 4.2 is stated for iterative refinement with a generic linear solver and does not assume that the correction system is solved by MOD-GMRES.",
+          "pdf_page": 18,
+          "printed_page": "1956"
+        },
+        {
+          "anchor": "T2-E4: Lemma 4.2, equations (4.14)-(4.15)",
+          "observation": "Independently of the lemma's forward-error clause, if nonnegative w_i and omega_i satisfy ||r_hat_i - Ad_hat_i||_2 <= w_i||b - Ax_hat_i||_2 + omega_i(||b||_2 + ||A||_F||x_hat_(i+1)||_2), then ||b - Ax_hat_(i+1)||_2 lesssim Lambda_2^(i)||b - Ax_hat_i||_2 + lambda_2^(i), where Lambda_2^(i) = w_i and lambda_2^(i) = (epsilon_r + epsilon_u + omega_i)(||b||_2 + ||A||_F||x_hat_(i+1)||_2).",
+          "pdf_page": 19,
+          "printed_page": "1957"
+        },
+        {
+          "anchor": "T2-E5: equation (4.18) and its following norm estimate",
+          "observation": "Before taking norms, the proof uses the exact identity Ax_hat_(i+1) - b = Delta r_i + Ad_hat_i - r_hat_i + A Delta x_i. The subsequent estimate also invokes ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2.",
+          "pdf_page": 20,
+          "printed_page": "1958"
+        },
+        {
+          "anchor": "T2-E6: Section 2 convention for lesssim",
+          "observation": "The paper uses lesssim and approximately-equal notation when dropping negligible second-order terms.",
+          "pdf_page": 4,
+          "printed_page": "1942"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "This is a one-step result for generic iterative refinement, not specifically GMRES or MOD-GMRES; the paper subsequently specializes it to restarted MOD-GMRES. [T2-E3]",
+        "binders": [
+          "A in R^(n x n) is nonsingular, b, x_hat_i, x_hat_(i+1), r_hat_i, d_hat_i, Delta r_i, and Delta x_i are conforming real vectors, and i >= 0. [T2-E1, T2-E2, T2-E4]",
+          "epsilon_r and epsilon_u are nonnegative small accuracy parameters; w_i and omega_i are nonnegative scalars. [T2-E2, T2-E4]"
+        ],
+        "conclusions": [
+          "Exactly, Ax_hat_(i+1) - b = Delta r_i + Ad_hat_i - r_hat_i + A Delta x_i. [T2-E5]",
+          "The next true residual satisfies ||b - Ax_hat_(i+1)||_2 lesssim Lambda_2^(i)||b - Ax_hat_i||_2 + lambda_2^(i). [T2-E4]",
+          "The recurrence coefficients are Lambda_2^(i) = w_i and lambda_2^(i) = (epsilon_r + epsilon_u + omega_i)(||b||_2 + ||A||_F||x_hat_(i+1)||_2). [T2-E4]"
+        ],
+        "constants_and_indexing": [
+          "The result is local to a fixed iteration i >= 0, and w_i, omega_i, Lambda_2^(i), and lambda_2^(i) may vary with i. [T2-E4]",
+          "Lambda_2^(i) is exactly w_i; lambda_2^(i) contains the sum epsilon_r + epsilon_u + omega_i with no dimension-dependent c(n,k) in Lemma 4.2 itself. [T2-E4]"
+        ],
+        "definitions_and_conventions": [
+          "r_hat_i is the computed residual, while b - Ax_hat_i is the true residual of the computed iterate; they differ by Delta r_i. [T2-E2]",
+          "d_hat_i is the computed correction for the correction system Ad_i = r_hat_i. [T2-E3, T2-E4]",
+          "The symbol lesssim denotes a bound after negligible second-order terms have been dropped. [T2-E6]"
+        ],
+        "error_notions": [
+          "Equation (4.14) controls the residual of the computed correction system, ||r_hat_i - Ad_hat_i||_2. [T2-E4]",
+          "Equation (4.15) controls the absolute 2-norm of the next true system residual; it is not itself the normalized normwise backward error. [T2-E4]"
+        ],
+        "exceptional_values": [
+          "The system matrix is nonsingular and epsilon_r and epsilon_u are assumed much smaller than one. [T2-E1, T2-E2]",
+          "No exceptional floating-point values, overflow, underflow, or subnormal cases are treated in the lemma. [T2-E2, T2-E4]"
+        ],
+        "higher_order_terms": [
+          "Equation (4.18) is exact. [T2-E5]",
+          "Equation (4.15) uses lesssim and therefore omits negligible second-order terms under the paper's convention. [T2-E4, T2-E6]"
+        ],
+        "hypotheses": [
+          "The computed residual obeys r_hat_i = b - Ax_hat_i + Delta r_i and ||Delta r_i||_2 <= epsilon_r(||b||_2 + ||A||_F||x_hat_i||_2). [T2-E2]",
+          "The computed update obeys x_hat_(i+1) = x_hat_i + d_hat_i + Delta x_i and ||Delta x_i||_2 <= epsilon_u||x_hat_(i+1)||_2. [T2-E2]",
+          "The accuracy parameters satisfy 0 <= epsilon_r, epsilon_u << 1. [T2-E2]",
+          "The correction-system residual satisfies ||r_hat_i - Ad_hat_i||_2 <= w_i||b - Ax_hat_i||_2 + omega_i(||b||_2 + ||A||_F||x_hat_(i+1)||_2). [T2-E4]"
+        ],
+        "implicit_context": [
+          "The backward-residual clause of Lemma 4.2 begins 'Independently'; it does not require the separate forward-error hypothesis (4.12) or conclusion (4.13). [T2-E4]",
+          "The proof's aggregation of the epsilon_r term uses ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2. [T2-E5]"
+        ],
+        "norms": [
+          "All vector residuals and vector errors use the 2-norm. [T2-E2, T2-E4]",
+          "A enters the scaling terms through its Frobenius norm ||A||_F. [T2-E2, T2-E4]"
+        ],
+        "numerical_model": [
+          "Residual and update errors are modeled normwise by epsilon_r and epsilon_u rather than being required to arise from particular componentwise floating-point kernels. [T2-E2]",
+          "The exact composition identity retains Delta r_i and A Delta x_i before any norm bound or second-order omission. [T2-E5]"
+        ]
+      },
+      "task_id": "P16-T2",
+      "undebatable_constraints": [
+        "The correction residual is measured against the computed right-hand side r_hat_i, but its leading comparison term is the true residual ||b - Ax_hat_i||_2. [T2-E4]",
+        "Both w_i and omega_i are nonnegative. [T2-E4]",
+        "The exact identity has the signs Delta r_i + Ad_hat_i - r_hat_i + A Delta x_i. [T2-E5]",
+        "The recurrence must retain both Lambda_2^(i) = w_i and the full additive term lambda_2^(i). [T2-E4]",
+        "The recurrence is a lesssim estimate, not an exact equality or unqualified <= inequality. [T2-E4, T2-E6]",
+        "No MOD-GMRES-specific hypothesis belongs to this generic lemma clause. [T2-E3]"
+      ]
+    },
+    {
+      "ambiguities": [
+        {
+          "evidence": "T3-E2 says c(n,k) hides unspecified low-degree polynomials and defines qualitative comparison notation; T3-E4 uses both in the theorem.",
+          "impact": "The theorem gives an asymptotic stability condition rather than a directly checkable sharp numerical threshold, and separate occurrences of c(n,k) need not denote an identical coefficient.",
+          "issue": "The generic polynomial c(n,k) and the threshold implicit in << 1 are not numerically specified. [T3-E2, T3-E4]"
+        },
+        {
+          "evidence": "T3-E3 defines bases of size k_i at restart i, but T3-E4 and T3-E6 use an unsubscripted generic k.",
+          "impact": "A formal version must decide whether k is fixed, denotes the current k_i, or is a uniform bound over all restart dimensions.",
+          "issue": "Theorem 6.3 writes c(n,k), while the restarted algorithm and proof use restart-dependent dimensions k_i. [T3-E3, T3-E6]"
+        },
+        {
+          "evidence": "The theorem uses the quoted wording, while the proof resolves the mathematical direction as max(Lambda_1^(i), Lambda_2^(i)) <= Lambda.",
+          "impact": "The faithful inequality interpretation is that each one-step multiplicative factor is bounded above by Lambda, not bounded below by Lambda.",
+          "issue": "The phrase 'reduce at each iteration by a factor (at least) Lambda' is linguistically ambiguous for Lambda < 1. [T3-E4, T3-E6]"
+        },
+        {
+          "evidence": "The surrounding Algorithm 2 and proof index the contraction by restart iteration i, while k_i indexes inner Arnoldi work.",
+          "impact": "The contraction claim should be attached to restart steps, not asserted for every inner Arnoldi step.",
+          "issue": "The theorem says 'iteration' although the method also has inner Arnoldi iterations. [T3-E3, T3-E6]"
+        },
+        {
+          "evidence": "The precisions are named high and low and assigned different roles, but no explicit u_high < u_low assumption appears in the theorem.",
+          "impact": "A formalization should not add a strict precision-order hypothesis unless it is separately declared as an interpretation of the terminology.",
+          "issue": "Theorem 6.3 does not explicitly state an inequality relating u_high and u_low. [T3-E3, T3-E4]"
+        },
+        {
+          "evidence": "T3-E7 records ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2 lesssim ||x||_2 in Theorem 4.1, while T3-E4 omits it and T3-E6 concludes by applying Theorem 4.1.",
+          "impact": "A literal formal derivation must either inherit this comparison as an additional hypothesis or replace the cited argument with a proof that avoids it.",
+          "issue": "Theorem 6.3 invokes Theorem 4.1 without restating or verifying its iterate-norm comparison assumption. [T3-E6, T3-E7]"
+        }
+      ],
+      "contract_plain_english": "For the specified unpreconditioned restarted MGS-GMRES implementation, compute residuals and updates in precision u_high and all inner GMRES work in precision u_low. If the low-precision conditioning scale c(n,k)u_low kappa_F(A) is much smaller than one, each restart contracts both errors with a factor bounded by that scale until the normwise backward error is of order c(n,k)u_high and the relative forward error is of order c(n,k)u_high kappa_F(A), subject to the paper's qualitative constant and second-order conventions. [T3-E3, T3-E4, T3-E6]",
+      "source_evidence": [
+        {
+          "anchor": "T3-E1: equation (1.1)",
+          "observation": "The standing problem is Ax = b with A in R^(n x n) nonsingular and 0 != b in R^n; x is the exact solution.",
+          "pdf_page": 1,
+          "printed_page": "1939"
+        },
+        {
+          "anchor": "T3-E2: Section 2 notation conventions",
+          "observation": "The paper defines kappa_F(A) using the Frobenius norm, treats c(n,k) as generic low-degree polynomials in n and k, and uses lesssim and much-less-than notation while suppressing modest constants or negligible second-order terms.",
+          "pdf_page": 4,
+          "printed_page": "1942"
+        },
+        {
+          "anchor": "T3-E3: opening of Section 6.3",
+          "observation": "The mixed-precision restarted method is unpreconditioned, with M_L^(i) = I and Z_(k_i)^(i) = V_hat_(k_i)^(i), where the fully stored basis is computed by MGS Arnoldi. Residual and update operations at lines 3 and 8 of Algorithm 2 are performed in high precision, while lines 4-7 are the MGS-GMRES operations performed in low precision. The analysis allows no fixed bound on the number of Arnoldi iterations at each restart.",
+          "pdf_page": 40,
+          "printed_page": "1978"
+        },
+        {
+          "anchor": "T3-E4: Theorem 6.3, equations (6.17)-(6.18)",
+          "observation": "If Lambda = c(n,k)u_low kappa_F(A) << 1, the backward and forward errors reduce at each iteration by a factor described as at least Lambda until ||b - Ax_hat||_2/(||b||_2 + ||A||_F||x_hat||_2) lesssim c(n,k)u_high and ||x_hat - x||_2/||x||_2 lesssim c(n,k)u_high kappa_F(A).",
+          "pdf_page": 40,
+          "printed_page": "1978"
+        },
+        {
+          "anchor": "T3-E5: equations (6.19)-(6.20)",
+          "observation": "The high-precision kernels satisfy r_hat_i = b - Ax_hat_i + Delta r_i with |Delta r_i| <= gamma_n^(high)(|b| + |A||x_hat_i|), and x_hat_(i+1) = x_hat_i + d_hat_i + Delta x_i with |Delta x_i| <= u_high|x_hat_(i+1)|; the proof identifies epsilon_r = gamma_n^(high) and epsilon_u = u_high.",
+          "pdf_page": 41,
+          "printed_page": "1979"
+        },
+        {
+          "anchor": "T3-E6: low-precision residual cast and conclusion of Theorem 6.3 proof",
+          "observation": "Casting the high-precision residual to low precision introduces Delta b^(i) with ||Delta b^(i)||_2 <= u_low||r_hat_i||_2. The proof obtains xi_1^(i) lesssim c(n,k)u_low and max(Lambda_1^(i), Lambda_2^(i)) <= Lambda = c(n,k)u_low kappa_F(A), then applies Theorem 4.1.",
+          "pdf_page": 41,
+          "printed_page": "1979"
+        },
+        {
+          "anchor": "T3-E7: hypotheses of Theorem 4.1",
+          "observation": "Theorem 4.1, used by Theorem 6.3, assumes for all restart iterations the residual and update models, the inner MOD-GMRES conditions, and ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2 lesssim ||x||_2.",
+          "pdf_page": 17,
+          "printed_page": "1955"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "The contract applies specifically to unpreconditioned restarted MGS-GMRES with fully stored MGS Arnoldi bases, high-precision residuals and updates, and low-precision inner GMRES work; it is not a statement about arbitrary mixed-precision or preconditioned GMRES. [T3-E3]",
+        "binders": [
+          "A in R^(n x n) is nonsingular, 0 != b in R^n, and x is the exact solution of Ax = b. [T3-E1]",
+          "u_high and u_low are the unit roundoffs assigned respectively to the high-precision residual/update kernels and the remaining low-precision operations. [T3-E3, T3-E4]",
+          "n is the system dimension; the surrounding algorithm uses restart-dependent basis dimensions k_i, while Theorem 6.3 writes the generic polynomial as c(n,k). [T3-E2, T3-E3, T3-E4]"
+        ],
+        "conclusions": [
+          "At each iteration, both the normwise backward error and relative forward error contract until their stated attainable bounds are reached. [T3-E4]",
+          "The attainable normwise backward error satisfies ||b - Ax_hat||_2/(||b||_2 + ||A||_F||x_hat||_2) lesssim c(n,k)u_high. [T3-E4]",
+          "The attainable relative forward error satisfies ||x_hat - x||_2/||x||_2 lesssim c(n,k)u_high kappa_F(A). [T3-E4]",
+          "The proof bounds both one-step factors by max(Lambda_1^(i), Lambda_2^(i)) <= Lambda. [T3-E6]"
+        ],
+        "constants_and_indexing": [
+          "Lambda is c(n,k)u_low kappa_F(A). [T3-E4]",
+          "The backward floor scales as c(n,k)u_high, while the forward floor has the additional factor kappa_F(A). [T3-E4]",
+          "The proof's separate forward and backward factors Lambda_1^(i) and Lambda_2^(i) are both bounded above by Lambda. [T3-E6]",
+          "c(n,k) hides low-degree dimension and basis-size polynomials rather than a stated numerical constant. [T3-E2, T3-E4]"
+        ],
+        "definitions_and_conventions": [
+          "The first displayed error is the paper's normwise backward error, expressed by its normalized-residual identity. [T3-E4]",
+          "kappa_F(A) is the Frobenius-norm condition number. [T3-E2, T3-E4]",
+          "c(n,k) denotes an unspecified generic polynomial of low degree in n and k. [T3-E2, T3-E4]"
+        ],
+        "error_notions": [
+          "Backward error is the normalized true residual with denominator ||b||_2 + ||A||_F||x_hat||_2. [T3-E4]",
+          "Forward error is the relative 2-norm error ||x_hat - x||_2/||x||_2. [T3-E4]",
+          "The displayed floors are upper bounds up to the paper's lesssim convention, not exact limiting values. [T3-E2, T3-E4]"
+        ],
+        "exceptional_values": [
+          "A is nonsingular and b is nonzero, so x is nonzero and both displayed relative-error denominators are nonzero. [T3-E1, T3-E4]",
+          "The theorem provides no contraction guarantee when c(n,k)u_low kappa_F(A) is not much smaller than one. [T3-E4]",
+          "The definition gamma_n^(high) = n u_high/(1 - n u_high) inherited from Section 2 requires a nonzero positive denominator in the standard model, although Theorem 6.3 does not restate n u_high < 1. [T3-E2, T3-E5]",
+          "Overflow, underflow, subnormal behavior, NaNs, and infinities are not discussed in Theorem 6.3. [T3-E3, T3-E5]"
+        ],
+        "higher_order_terms": [
+          "The contraction condition uses the qualitative relation << 1, and the error floors use lesssim. [T3-E2, T3-E4]",
+          "Under the Section 2 convention, lesssim suppresses negligible second-order terms and generic modest constants may be absorbed into c(n,k). [T3-E2]"
+        ],
+        "hypotheses": [
+          "The method is the unpreconditioned restarted mixed-precision MGS-GMRES variant with M_L^(i) = I and Z_(k_i)^(i) = V_hat_(k_i)^(i). [T3-E3]",
+          "The residual and solution update are computed in precision u_high; the basis construction, least-squares solve, correction construction, and other operations on lines 4-7 are computed in precision u_low. [T3-E3]",
+          "The analysis does not impose a fixed a priori cap on Arnoldi iterations at each restart. [T3-E3]",
+          "The contraction condition Lambda = c(n,k)u_low kappa_F(A) << 1 holds. [T3-E4]"
+        ],
+        "implicit_context": [
+          "The iteration index in the proof is the restart iteration i of Algorithm 2, with an inner key Arnoldi dimension k_i at each restart. [T3-E3, T3-E6]",
+          "The proof uses Theorem 4.1 and the low-precision MGS-GMRES analysis to establish its contraction factors. [T3-E6]",
+          "Theorem 4.1 includes the iterate-norm comparison ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2 lesssim ||x||_2. [T3-E7]"
+        ],
+        "norms": [
+          "Residuals, solution errors, b, and x_hat use the vector 2-norm. [T3-E4]",
+          "A is scaled in the Frobenius norm, and conditioning is measured by kappa_F(A). [T3-E2, T3-E4]",
+          "The kernel models (6.19)-(6.20) are componentwise absolute-value bounds before conversion to the theorem's normwise parameters. [T3-E5]"
+        ],
+        "numerical_model": [
+          "The high-precision residual uses the componentwise model |Delta r_i| <= gamma_n^(high)(|b| + |A||x_hat_i|). [T3-E5]",
+          "The high-precision update uses |Delta x_i| <= u_high|x_hat_(i+1)|. [T3-E5]",
+          "The high-precision residual is cast to low precision before the inner correction solve, with ||Delta b^(i)||_2 <= u_low||r_hat_i||_2. [T3-E6]",
+          "The remaining MGS-GMRES operations are analyzed in precision u_low. [T3-E3, T3-E6]"
+        ]
+      },
+      "task_id": "P16-T3",
+      "undebatable_constraints": [
+        "Both backward and forward error conclusions must be preserved. [T3-E4]",
+        "The contraction scale depends on u_low and kappa_F(A), whereas the attainable floors depend on u_high. [T3-E4]",
+        "The forward floor contains kappa_F(A), while the backward floor does not. [T3-E4]",
+        "The method is unpreconditioned and uses MGS Arnoldi with fully stored bases. [T3-E3]",
+        "Residual and update are high precision; all inner restarted-GMRES operations are low precision. [T3-E3]",
+        "The conclusions are conditional on c(n,k)u_low kappa_F(A) << 1. [T3-E4]",
+        "The lesssim and << relations must not be silently converted into exact equalities. [T3-E2, T3-E4]"
+      ]
+    }
+  ],
+  "paper_id": "P16",
+  "paper_sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a",
+  "role": "paper-source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_locator_sha256": "29399d42dec8e4d771178436cda1303a77490d8820b032eb370ddffe5e202bd7",
+  "task_ids": [
+    "P16-T1",
+    "P16-T2",
+    "P16-T3"
+  ]
+}

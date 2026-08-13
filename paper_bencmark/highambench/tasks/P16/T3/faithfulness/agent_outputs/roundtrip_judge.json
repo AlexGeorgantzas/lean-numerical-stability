@@ -1,0 +1,186 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P16-T3",
+  "paper_sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a",
+  "blind_translation_sha256": "e104660039d3b031f903f515e8f7296fde48c853ca781817491cbf15b54902a9",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF is the published IMA Journal of Numerical Analysis 46(4), 2026 version. Theorem 6.3 and equations (6.17)-(6.18) occur on printed page 1978 in Section 6.3, with the proof continuing on page 1979.",
+      "translation_evidence": "The translation's nominal contraction factor and two thresholds correspond structurally to the quantities displayed in Theorem 6.3.",
+      "reasoning": "The supplied source version, passage, and surrounding mixed-precision restarted-GMRES result are correctly selected."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Equation (1.1) has a nonsingular A in R^(n x n), nonzero b in R^n, and exact solution x; Theorem 6.3 concerns computed iterates of a particular restarted algorithm, unit roundoffs, and restart-dependent basis sizes k_i.",
+      "translation_evidence": "The translation quantifies over n including zero, arbitrary matrices A and Ainv, arbitrary real scalars c, uLow, and uHigh, and arbitrary real-valued error sequences. It has no b, x, computed iterate, or basis-size binder.",
+      "reasoning": "Essential problem, solution, computation, dimension, and inverse binders are absent or replaced by unrelated arbitrary objects."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "Theorem 6.3 derives one-step backward- and forward-error reductions for each restart iteration of the specified algorithm, using key inner dimensions k_i.",
+      "translation_evidence": "The translation universally quantifies arbitrary sequences, assumes both one-step recurrences, and concludes geometric bounds only under premises asserting that every earlier error remained above an exact threshold.",
+      "reasoning": "The substantive algorithmic conclusions have been moved into hypotheses, and the restart-dependent quantification has been replaced by a generic sequence-induction statement."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper requires the unpreconditioned restarted MGS-GMRES execution model and the qualitative condition c(n,k) uLow kappa_F(A) << 1. Its proof invokes Theorem 4.1, whose hypotheses include residual and update models, inner MOD-GMRES conditions, and an iterate-norm comparison.",
+      "translation_evidence": "The explicit assumptions are only nonnegativity of c and the unit-roundoff variables, q < 1, and the two conditional recurrences. Ainv need not invert A, A need not be nonsingular, and no algorithmic or iterate-norm hypotheses occur.",
+      "reasoning": "Most paper hypotheses are omitted, while q < 1 and assumed recurrences materially replace rather than express the paper's assumptions."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The theorem concludes that both actual errors contract at restart iterations until attaining a normwise backward-error floor lesssim c(n,k) uHigh and a relative forward-error floor lesssim c(n,k) uHigh kappa_F(A).",
+      "translation_evidence": "The conclusions assert threshold nonnegativity, q^i <= 1, and conditional geometric bounds for uninterpreted sequences. They do not identify actual GMRES errors or assert attainment of the paper's qualitative floors.",
+      "reasoning": "Although two named sequences are present, the paper's algorithmic error conclusions are missing and are replaced by auxiliary induction consequences not stated in Theorem 6.3."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "Section 2 defines kappa_F(A) using A inverse and Frobenius norms, c(n,k) as a generic low-degree polynomial, and the forward and normwise backward errors by explicit formulas.",
+      "translation_evidence": "K is defined as ||A||_F ||Ainv||_F with Ainv arbitrary, c is one scalar independent of n and k, and backwardError and forwardError are uninterpreted functions.",
+      "reasoning": "The Frobenius norm operation is identified, but the condition number, generic polynomial, and error definitions are not preserved."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "The paper distinguishes exact x from computed x-hat and gives perturbed high-precision residual and update equations (6.19)-(6.20), followed by a rounded cast to low precision.",
+      "translation_evidence": "No exact solution, computed iterate, computed residual, correction, or rounding perturbation appears; only arbitrary real error sequences and arbitrary matrices remain.",
+      "reasoning": "The translation removes rather than preserves the distinctions among exact, computed, and perturbed quantities."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Section 6.3 specializes Algorithm 2 to unpreconditioned restarted GMRES with M_L^(i) = I, Z_(k_i)^(i) equal to a fully formed and stored MGS-Arnoldi basis, high-precision lines 3 and 8, and low-precision lines 4-7.",
+      "translation_evidence": "The translation contains no restarted GMRES algorithm, MGS Arnoldi basis, preconditioner identity, residual or update operation, correction solve, restart dimension, or precision assignment to operations.",
+      "reasoning": "The statement is completely detached from the algorithm and execution model whose analysis is the substance of Theorem 6.3."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "The backward error is ||b-A x-hat||_2 divided by ||b||_2 + ||A||_F ||x-hat||_2, the forward error is ||x-hat-x||_2/||x||_2, and kappa_F uses Frobenius matrix norms.",
+      "translation_evidence": "Only the Frobenius-instance norms of A and Ainv occur. No vector 2-norm, normalized residual, solution norm, or explicit forward-error norm occurs.",
+      "reasoning": "The matrix norm product alone does not preserve the paper's normwise error semantics."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The paper uses generic c(n,k), restart-dependent k_i in the algorithm, separate one-step factors Lambda_1^(i) and Lambda_2^(i) bounded above by Lambda, and potentially different generic-polynomial constants at different occurrences.",
+      "translation_evidence": "A single scalar c is shared exactly by q and both thresholds, k and k_i are absent, both assumed recurrences use exactly q, and additional powers q^i are introduced.",
+      "reasoning": "Dimension dependence, generic-constant independence, restart indexing, and the distinction between actual factors and their common upper bound are lost."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Section 2 adopts the standard floating-point model. Equations (6.19)-(6.20) give high-precision componentwise residual and update bounds, and the proof bounds the low-precision residual cast before analyzing all inner MGS-GMRES work in low precision.",
+      "translation_evidence": "uHigh and uLow are merely nonnegative real parameters. No floating-point operations, gamma_n^(high), residual cast, rounding errors, exceptional-value convention, or operation-to-precision assignment is represented.",
+      "reasoning": "The two precision names do not encode the paper's mixed-precision floating-point model."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The contraction condition is qualitative, Lambda << 1, and both floors use lesssim. The proof resolves the one-step direction by max(Lambda_1^(i), Lambda_2^(i)) <= Lambda.",
+      "translation_evidence": "The condition is the exact inequality q < 1; floor guards are exact strict inequalities; recurrences and geometric bounds use exact <= with one fixed q.",
+      "reasoning": "The upper-bound direction of contraction is compatible with the proof, but qualitative smallness and comparison relations are improperly replaced by exact relations. In particular, q < 1 admits values not covered by << 1."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The paper explicitly defines normwise backward error as a normalized true residual and forward error as relative solution error.",
+      "translation_evidence": "The names backwardError and forwardError impose no definition, nonnegativity, residual identity, or relationship to A, b, x, or computed iterates.",
+      "reasoning": "Uninterpreted sequences cannot preserve either of the paper's error notions."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Section 2 states that lesssim and approximation notation suppress negligible second-order terms and that modest constants are absorbed into generic low-degree c(n,k).",
+      "translation_evidence": "Every threshold, factor, recurrence, and geometric estimate is expressed by exact multiplication and exact order relations, with a single fixed scalar c.",
+      "reasoning": "The paper's higher-order and generic-constant conventions are absent."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The result concerns a real nonsingular linear system and a particular finite-dimensional restarted MGS-GMRES computation.",
+      "translation_evidence": "The translation allows n = 0, singular A, arbitrary unrelated Ainv, and arbitrary real sequences, while specializing c(n,k) to one scalar and eliminating the algorithm.",
+      "reasoning": "This is an uncontrolled mixture of generalization and specialization, not a faithful specialization of the paper theorem."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "For a nonsingular system with nonzero b, the displayed errors are well-defined and the theorem concerns actual computed iterates under a contraction regime.",
+      "translation_evidence": "The recurrence assumptions are vacuous whenever a current arbitrary sequence value is at or below its threshold, and each geometric conclusion is vacuous once any earlier value fails its strict threshold test. No error nonnegativity or computational realization is required.",
+      "reasoning": "The proposition can be satisfied without representing any GMRES run and can avoid nearly all error bounds through false conditional antecedents."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translation assumes the two recurrences for arbitrary sequences and proves an induction lemma; it does not derive those recurrences, the attainable errors, or any floating-point property of mixed-precision restarted MGS-GMRES."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper only addresses errors generated by its specified algorithm under qualitative bounds. It does not assert the translation's universal exact statement for arbitrary A, unrelated Ainv, arbitrary real sequences, one shared scalar c, and every q < 1."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": true,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "algorithm-linkage",
+      "paper_evidence": "Theorem 6.3 analyzes unpreconditioned restarted MGS-GMRES with fully stored MGS-Arnoldi bases, high-precision residuals and updates, and low-precision inner operations.",
+      "translation_evidence": "No algorithmic object or execution-model condition appears, and the desired error contractions are simply assumed for arbitrary sequences.",
+      "impact": "The translation proves no property of the paper's algorithm and cannot establish the paper theorem."
+    },
+    {
+      "severity": "critical",
+      "category": "problem-and-error-semantics",
+      "paper_evidence": "The paper requires nonsingular A, nonzero b, exact x, computed x-hat, and explicit normwise backward- and relative forward-error formulas.",
+      "translation_evidence": "A may be singular, Ainv is unrelated to A, b and x are absent, and both errors are arbitrary real sequences.",
+      "impact": "K need not be kappa_F(A), and neither sequence need represent a backward or forward error."
+    },
+    {
+      "severity": "major",
+      "category": "constants-thresholds-and-relations",
+      "paper_evidence": "The theorem uses generic low-degree c(n,k), Lambda << 1, lesssim floors, restart dimensions k_i, and factors Lambda_1^(i), Lambda_2^(i) bounded by Lambda.",
+      "translation_evidence": "It uses one exact scalar c, omits k and k_i, assumes q < 1, and applies exact thresholds and one exact recurrence coefficient.",
+      "impact": "The translation changes the admissible contraction regime, attainable floors, parameter dependence, and generic-constant semantics."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point-model",
+      "paper_evidence": "The proof uses high-precision residual and update error models, a low-precision residual cast, and low-precision MGS-GMRES analysis.",
+      "translation_evidence": "The unit roundoffs are uninterpreted nonnegative reals with no associated operations or rounding model.",
+      "impact": "The mixed-precision numerical analysis has been erased."
+    },
+    {
+      "severity": "major",
+      "category": "quantifier-and-conclusion-substitution",
+      "paper_evidence": "The paper derives contraction of actual errors at restart iterations until qualitative attainable bounds.",
+      "translation_evidence": "It assumes conditional contraction and concludes threshold nonnegativity plus conditional geometric sequence bounds.",
+      "impact": "The main paper conclusion has been converted into a premise, and the resulting theorem has materially different content."
+    },
+    {
+      "severity": "major",
+      "category": "nonvacuity",
+      "paper_evidence": "The theorem concerns well-defined nonnegative errors of an actual nonsingular linear solve.",
+      "translation_evidence": "Arbitrary sequence values can falsify recurrence guards and historical threshold premises, leaving the hypotheses and most conclusions vacuous.",
+      "impact": "The proposition can hold for data unrelated to any numerical computation."
+    },
+    {
+      "severity": "note",
+      "category": "adjudication-needed",
+      "paper_evidence": "Theorem 6.3 invokes Theorem 4.1 without restating its iterate-norm comparison, while c(n,k), <<, and lesssim remain qualitative and restart k_i is written generically as k in the theorem.",
+      "translation_evidence": "The iterate-norm condition is absent, one scalar c is used everywhere, k is absent, and all qualitative relations are made exact.",
+      "impact": "Adjudication is required to fix the benchmark's intended treatment of the inherited iterate-norm hypothesis and qualitative constants. These unresolved conventions do not remove the independent critical mismatches."
+    }
+  ],
+  "rationale": "The source is correct, but the blind translation is an abstract geometric-sequence lemma rather than a translation of Theorem 6.3. It omits the linear system, exact and computed quantities, error definitions, restarted MGS-GMRES algorithm, mixed-precision execution model, restart dimensions, and floating-point kernel assumptions. It also replaces generic c(n,k), qualitative << and lesssim relations, and bounded one-step factors by one exact scalar and exact inequalities. Neither semantic implication holds, so the result is not-faithful-different and cannot be accepted. Adjudication remains necessary only for the paper's inherited iterate-norm hypothesis and qualitative-constant conventions; the rejection is otherwise decisive."
+}
