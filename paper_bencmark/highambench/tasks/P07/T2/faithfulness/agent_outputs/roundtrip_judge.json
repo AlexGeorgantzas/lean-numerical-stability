@@ -1,0 +1,172 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P07-T2",
+  "paper_sha256": "4c4d638b359719f47e2c4664a50e9fa8e4704e8b6b39923d73c41883a97c5790",
+  "blind_translation_sha256": "4419a27f0023ea41a685df98c525098c60d3ff4bb9a5df0ba7488f915d7e6023",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The supplied PDF has the stated SHA-256. PDF p. 16, printed p. 920, contains Theorem 3.5, the four-term definition of DeltaA, and the immediately following spectral-norm estimate.",
+      "translation_evidence": "The translation concerns the same four-term matrix expression and an operator bound for it.",
+      "reasoning": "The paper version, passage, and surrounding theorem are correctly identified."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper binds m, n, s, A, S, b, computed Y-hat, R-hat, z-hat, x-hat, DeltaY-hat, delta b, DeltaR-hat, and DeltaA, with m-by-n, s-by-m, n-by-n, and vector dimensions fixed by the algorithm.",
+      "translation_evidence": "The translation binds only m, n, arbitrary matrices Y, DeltaY, A, R, DeltaR, and scalar certificates e0, eY, r, y, eR. It has no s, S, b, z-hat, x-hat, or delta b.",
+      "reasoning": "The dimensions of the retained matrix subexpression match, but many essential paper binders and their algorithmic types are absent."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The paper is conditional on applying Algorithm 1.3 and on an LSQR termination iterate z-hat admitting perturbations DeltaY-hat and delta b with z-hat = (Y-hat + DeltaY-hat)^dagger(b + delta b).",
+      "translation_evidence": "All matrices and certificate constants are universally quantified, and each operator-bound predicate independently quantifies a test vector x. No algorithm-dependent witnesses or termination iterate occur.",
+      "reasoning": "The dependency of perturbations and computed quantities on an algorithm execution is replaced by an unconditional universal algebraic lemma."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes the full-rank least-squares setting, m > s > n, assumptions (3.6)-(3.7), an Algorithm 1.3 execution, the LSQR backward-error representation, row-dependent componentwise triangular-solve errors, and the final back-substitution perturbation bound.",
+      "translation_evidence": "The only explicit scalar conditions are 0 <= eY and 0 <= y, together with five abstract uniform operator-bound premises.",
+      "reasoning": "The paper's rank, dimensional, conditioning, roundoff, algorithmic, and LSQR hypotheses are not preserved or connected to the abstract certificates."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The paper defines DeltaA by four terms, derives x-hat = (A + DeltaA)^dagger(b + delta b), literally states (A + DeltaA)x-hat = b + delta b, proves the immediate compositional bound, and gives the final strict estimate with constants 6.04 and 2.01.",
+      "translation_evidence": "The translation concludes only a generic action bound for E = (YR - A) + DeltaY R + Y DeltaR + DeltaY DeltaR.",
+      "reasoning": "The four-term expansion is retained, but the perturbed-data solution relation and both paper-specific bounds are absent. The paper's equation-versus-pseudoinverse ambiguity does not alter this failure because neither relation appears in the translation."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "The paper uses the pseudoinverse, gamma_n, Q_A, induced spectral norms, componentwise absolute-value bounds, and algorithmically defined computed matrices and perturbations.",
+      "translation_evidence": "The dependency ledger correctly unfolds finite matrix multiplication, matrix-vector multiplication, Euclidean vector norm, and uniform operator-bound predicates, but contains no pseudoinverse, gamma_n, Q_A, or componentwise perturbation definition.",
+      "reasoning": "The operators actually present in the translation are well explained, but several nontrivial operators and definitions essential to the paper result are omitted entirely."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "The paper distinguishes exact A from computed Y-hat and R-hat, LSQR perturbation DeltaY-hat from the forward-substitution error DeltaY, and the final back-substitution perturbation DeltaR-hat.",
+      "translation_evidence": "Y, R, DeltaY, and DeltaR are arbitrary matrices with no exact, computed, rounded, or algorithmic provenance.",
+      "reasoning": "The distinctions are erased, including the paper's explicit warning that DeltaY-hat is not the earlier finite-precision DeltaY."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The result concerns SAA Blendenpik: explicitly formed Y, unpreconditioned LSQR, final back substitution, and no SAS initialization.",
+      "translation_evidence": "No sketch, QR factor, LSQR execution, triangular solve, initialization choice, or other algorithmic object occurs.",
+      "reasoning": "The statement is completely detached from the paper's algorithm and execution model."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "The conclusion uses spectral matrix 2-norms, while the rowwise premise uses componentwise absolute values. The paper dimensions satisfy n > 0.",
+      "translation_evidence": "Matrix bounds are represented by uniform unsquared Euclidean action inequalities. This agrees with induced spectral-norm upper bounds in the intended positive dimensions, but no componentwise premise is represented and n may equal zero.",
+      "reasoning": "The retained action norm is appropriate in positive dimensions, but the complete norm semantics do not match, and the zero-dimensional action predicate can be vacuous even for a negative certificate."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The immediate estimate has exactly (n + sqrt(n))gamma_n and 1 + sqrt(n)gamma_n, the mixed term has coefficient one, and the final strict estimate has constants 6.04 and 2.01.",
+      "translation_evidence": "The bound is e0 + eY r + y eR + eY eR, with no n, sqrt(n), gamma_n, row index, 6.04, or 2.01.",
+      "reasoning": "The generic formula can reproduce the immediate estimate only after supplying unstated identifications for all five certificates. The required constants and parameter dependence are not part of the translation."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The paper uses unit roundoff u, gamma_n = nu/(1 - nu), componentwise rounding bounds, and backward stability of triangular substitution; it does not model overflow, underflow, NaNs, infinities, or subnormals.",
+      "translation_evidence": "The translation contains no precision, roundoff, rounding operation, exceptional-value convention, or floating-point hypothesis.",
+      "reasoning": "The numerical model is omitted rather than preserved."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The four-term DeltaA identity is exact, the immediate compositional estimate is non-strict, the theorem's final numerical bound is strict, and the proof gives a pseudoinverse relation distinct from the theorem's literal linear-system equality.",
+      "translation_evidence": "The sole conclusion is a non-strict generic operator-action inequality; the matrix expansion is embedded in the definition of E.",
+      "reasoning": "The immediate inequality's direction is compatible after extra instantiation, but the paper's exact solution relations, strict final estimate, and full logical strength are missing."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "DeltaA is a composed backward perturbation linked to a perturbed least-squares problem with both matrix perturbation DeltaY-hat and right-hand-side perturbation delta b. Only the absolute spectral norm of DeltaA is bounded.",
+      "translation_evidence": "The translation proves an abstract residual-matrix operator bound and contains no perturbed right-hand side, least-squares solution, or backward-stability assertion.",
+      "reasoning": "An algebraic perturbation estimate is retained, but the paper's backward-error notion and its distinction from joint Frobenius backward error are not expressed."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The exact expansion retains the second-order term DeltaY-hat DeltaR-hat, whose norm contribution appears through (1 + sqrt(n)gamma_n)||DeltaY-hat||_2, with no omitted remainder.",
+      "translation_evidence": "The matrix E includes DeltaY DeltaR exactly, and the scalar bound includes the corresponding product eY eR.",
+      "reasoning": "The higher-order mixed product is preserved exactly rather than discarded or absorbed into big-O notation."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The paper concerns positive finite real dimensions with m > s > n and matrices arising from one specified SAA Blendenpik execution.",
+      "translation_evidence": "The translation generalizes to arbitrary finite real matrices and permits m = 0 or n = 0, while omitting s and all algorithmic restrictions.",
+      "reasoning": "This is not merely a faithful strengthening: the general algebraic lemma drops conclusions and semantic links required by the paper result."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The inherited setting has positive dimensions, full-column-rank matrices, and actual computed quantities satisfying nontrivial rounding and conditioning assumptions.",
+      "translation_evidence": "When n = 0 every action-bound premise and conclusion is automatic. For n > 0, negative e0, r, or eR make corresponding premises unsatisfiable, although their nonnegativity is not explicitly required.",
+      "reasoning": "The translation admits unintended vacuous cases excluded by the paper."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The universal algebraic bound can support the paper's immediate norm estimate only after adding paper-specific certificate identifications and rounding bounds. It does not establish the algorithm execution, LSQR backward-error representation, perturbed-data solution relation, or final numerical estimate."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper proves an algorithm-specific result under rank, conditioning, dimension, and floating-point hypotheses. It does not entail the translation's universal proposition for arbitrary matrices, arbitrary certificate constants, and zero-dimensional cases."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "backward-error-conclusion-omitted",
+      "paper_evidence": "Theorem 3.5 and its proof connect x-hat, b + delta b, and A + DeltaA through the perturbed least-squares pseudoinverse relation, while the theorem also prints a perturbed linear-system equality.",
+      "translation_evidence": "Neither x-hat, b, delta b, nor any pseudoinverse or perturbed-data equation appears.",
+      "impact": "The translation does not express the paper's backward-error result, irrespective of the source's equation-versus-pseudoinverse ambiguity."
+    },
+    {
+      "severity": "major",
+      "category": "algorithm-and-model-omitted",
+      "paper_evidence": "The result is conditional on SAA Blendenpik, assumptions (3.6)-(3.7), an LSQR backward-error representation, rowwise componentwise rounding bounds, and final back-substitution stability.",
+      "translation_evidence": "The proposition is an unconditional algebraic matrix lemma with abstract operator-bound premises.",
+      "impact": "The computed, rounded, and algorithm-dependent meaning of every perturbation is lost."
+    },
+    {
+      "severity": "major",
+      "category": "paper-specific-bound-omitted",
+      "paper_evidence": "The immediate estimate contains the exact n, sqrt(n), and gamma_n factors, and the theorem gives a strict bound with constants 6.04 and 2.01.",
+      "translation_evidence": "The conclusion uses only e0, eY, r, y, and eR, without stating how they correspond to the paper quantities.",
+      "impact": "The paper estimate cannot be recovered from the translated statement alone."
+    },
+    {
+      "severity": "minor",
+      "category": "unintended-vacuity",
+      "paper_evidence": "The paper assumes m > s > n in the full-rank least-squares setting.",
+      "translation_evidence": "Natural dimensions include zero, and n = 0 makes every action inequality automatic.",
+      "impact": "The formal proposition covers trivial cases that do not represent the paper setting."
+    },
+    {
+      "severity": "note",
+      "category": "four-term-algebraic-core-retained",
+      "paper_evidence": "DeltaA contains Y-hat R-hat - A, DeltaY-hat R-hat, Y-hat DeltaR-hat, and DeltaY-hat DeltaR-hat.",
+      "translation_evidence": "E contains the corresponding four terms, and eY eR retains the mixed term's contribution.",
+      "impact": "The translation faithfully captures the elementary submultiplicative estimate underlying one step of the proof, but not the complete result."
+    }
+  ],
+  "rationale": "The blind translation is a valid abstract operator-norm composition lemma matching the four-term perturbation expansion and retaining its higher-order product. It nevertheless omits the paper's algorithmic binders, hypotheses, floating-point model, computed-versus-exact distinctions, LSQR and right-hand-side backward errors, solution relation, and paper-specific constants. Conversely, the paper's restricted algorithmic theorem does not establish the translation's universal zero-dimension-permitting lemma. Both implications therefore fail, giving not-faithful-different. The known equation-versus-pseudoinverse source ambiguity is not outcome-determinative because the translation contains neither relation."
+}
