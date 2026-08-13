@@ -1,0 +1,76 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P18-T2",
+  "trigger": [
+    "round-trip judge requested adjudication",
+    "round-trip S09 is unclear",
+    "round-trip S15 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "The declaration is not-faithful-weaker. After unfolding its complete dossier, it is an unconditional Euclidean triangle inequality for a synthetic vector. It neither encodes nor implies the corrected midpoint algorithm, its stability premise, or its asymptotic global-error conclusion. Conversely, the declaration is independently true for all its binders, so the paper implies it only in a logically trivial, paper-independent sense.",
+      "primary_evidence": "The inspected PDF has SHA-256 b18628ffc348d7aeec2da02efb989b6e012f0b0fae09b27fbff735bb8a5877cd. Printed page 11 specifies stages (4.1a-c), the coefficient cancellations, and, conditionally on stability, Error = O(Delta t^2) + O(epsilon Delta t^2). Printed page 12 identifies the slope-two result as numerical evidence."
+    },
+    {
+      "item": "round-trip S09 is unclear",
+      "resolution": "The source genuinely leaves the norm undecided. Lean's unsquared Euclidean norm is therefore an unsupported norm specialization, not a demonstrated contradiction with the paper. This uncertainty does not affect the implication directions or classification because the Lean inequality is independently valid, while it still provides no implication to the paper's algorithmic global-error statement.",
+      "primary_evidence": "Printed page 11 writes only global Error = O(Delta t^2) + O(epsilon Delta t^2), and printed pages 11-12 label the plot axis Log10(Error), without defining a Euclidean, componentwise, relative, or other norm."
+    },
+    {
+      "item": "round-trip S15 is unclear",
+      "resolution": "The source does not determine a theorem-level state space or dimension. Lean's use of Fin n -> Real for every natural n, including n = 0, is an unsupported finite-dimensional modeling choice and dimension generalization, not a demonstrated contradiction. The two-dimensional experiment shows compatibility at n = 2 only. This uncertainty does not affect the implication directions or classification.",
+      "primary_evidence": "Printed pages 1-2 introduce u_t = F(u) and the Runge-Kutta stages without specifying the state space or its dimension. Printed page 3 defines the two-component van der Pol test, reused on printed page 11, but the theoretical corrected-method statement on page 11 gives no dimension restriction or universal finite-dimensional quantifier."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean target contains no F, F^epsilon, stages, update, numerical trajectory, global error, stability assumption, approximation hypothesis, asymptotic limit, or hidden constants. Its exact norm inequality cannot establish the paper's conditional global-error result for method (4.1)."
+    },
+    "paper_implies_lean": {
+      "verdict": "yes",
+      "reasoning": "The complete definitions reduce the target to ||h^2 scheme + epsilon h^2 perturbation||_2 <= h^2 (||scheme||_2 + |epsilon| ||perturbation||_2). Since h^2 is nonnegative, Euclidean homogeneity and the triangle inequality prove this for every finite n and all inputs, independently of the paper. Thus the implication is logically valid but carries no substantive paper content; the unresolved source norm and dimension do not affect it."
+    }
+  },
+  "classification": "not-faithful-weaker",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The PDF does not decide whether the theoretical or plotted Error uses the Euclidean norm; Lean's choice is unsupported but not contradicted.",
+    "The PDF does not specify the theorem-level state space or dimension, so it does not decide whether arbitrary finite real dimensions, particularly n = 0, are intended."
+  ],
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "algorithm-linkage-and-error-notion",
+      "evidence": "Equation (4.1) on printed page 11 defines a low-precision implicit stage, a full-precision correction, and a full-precision update. D001 instead defines the purported error exactly as h^2 times one arbitrary vector plus epsilon h^2 times another.",
+      "impact": "The declaration proves no property of the corrected implicit midpoint computation or its global numerical error."
+    },
+    {
+      "severity": "major",
+      "category": "asymptotic-scope-and-hypotheses",
+      "evidence": "Printed page 11 conditions the big-O global envelope on stability. The declaration has no hypotheses and asserts an exact coefficient-one inequality for every real h and epsilon.",
+      "impact": "Stability, operator approximation, small-step asymptotics, hidden constants, and local-to-global accumulation are absent."
+    },
+    {
+      "severity": "major",
+      "category": "unsupported-norm-specialization",
+      "evidence": "The PDF never identifies a norm, while D002, D005, and D026-D030 fix the square-root-of-sum-of-squares Euclidean norm.",
+      "impact": "The norm choice is not source-supported, although the PDF supplies no evidence that it is contradictory."
+    },
+    {
+      "severity": "minor",
+      "category": "unsupported-dimension-model",
+      "evidence": "The theoretical passages do not state a dimension, whereas Lean quantifies every Fin n -> Real, including the empty dimension; only the numerical van der Pol example is explicitly two-dimensional.",
+      "impact": "The dimensional scope cannot be validated from the source, but this does not repair or worsen the decisive algorithmic mismatch."
+    },
+    {
+      "severity": "note",
+      "category": "independent-validity",
+      "evidence": "For n > 0 and h != 0, the Lean target remains a genuine Euclidean triangle inequality, so its validity is not confined to the degenerate n = 0 or h = 0 cases.",
+      "impact": "Its paper-independent validity supports paper_implies_lean = yes, but it is strength about an unrelated synthetic quantity rather than the paper's numerical method."
+    }
+  ],
+  "rationale": "The SHA-verified paper states a conditional asymptotic global-error envelope for a specific corrected mixed-precision implicit midpoint method. The complete formal dossier instead defines an exact arbitrary vector combination and proves its Euclidean triangle bound. The PDF's omissions concerning norm and state dimension create genuine compatibility uncertainties, but only about unsupported modeling choices; they do not establish contradictions and do not affect the complete implications. Lean cannot imply the paper result, while the paper implies Lean only because Lean is independently valid. The consistent classification is therefore not-faithful-weaker."
+}
