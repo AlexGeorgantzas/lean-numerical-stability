@@ -1,0 +1,273 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "4bdb377e387528cd8d0aa9d347fbd04be79099d5b028dbd506f04bce89ff368c",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For vectors s and p indexed by Fin n, this defines the vector A with A_i = h^3 s_i + (epsilon h^2) p_i.",
+      "effect_on_target": "Its Euclidean norm is the left-hand side of the second asserted inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For vectors s and p indexed by Fin n, this defines the vector B with B_i = h^3 s_i + (epsilon h^3) p_i.",
+      "effect_on_target": "Its Euclidean norm is the left-hand side of the first asserted inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "For x : Fin n → Real, this is sqrt(sum over i in Fin n of x_i^2), namely the Euclidean 2-norm of x.",
+      "effect_on_target": "It interprets every occurrence involving scheme, perturbation, A, or B as an explicit Euclidean norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "This is pointwise vector addition: (x + y)_i = x_i + y_i.",
+      "effect_on_target": "It combines the two scaled vector terms in A and B.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "This is scalar multiplication of a vector: (a x)_i = a x_i.",
+      "effect_on_target": "It forms the h^3-scaled scheme vectors and the epsilon h^2- or epsilon h^3-scaled perturbation vectors.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "For x : Fin n → Real, this is the finite sum sum_i x_i^2 over all indices i in Fin n.",
+      "effect_on_target": "It supplies the sum of squares beneath each square root in D003.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "And",
+      "meaning": "And is logical conjunction.",
+      "effect_on_target": "The nested conjunction requires all three inequalities to hold simultaneously.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "Fin",
+      "meaning": "Fin n is the finite type of natural-number indices i satisfying 0 ≤ i < n.",
+      "effect_on_target": "It makes scheme and perturbation n-component real vectors and fixes the index set of every sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "HAdd.hAdd",
+      "meaning": "This selects the heterogeneous addition operation supplied by an HAdd instance.",
+      "effect_on_target": "With the supplied real instance, every use here is ordinary real addition; through D004 it also produces pointwise vector addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "HMul.hMul",
+      "meaning": "This selects the heterogeneous multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "With the supplied real instance, every use here is ordinary real multiplication, including coefficients, norm bounds, and pointwise scalar multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "HPow.hPow",
+      "meaning": "This selects exponentiation from an HPow instance.",
+      "effect_on_target": "It forms the exact real powers h^2 and h^3 and the component squares x_i^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LE.le",
+      "meaning": "This selects the less-than-or-equal relation supplied by an LE instance.",
+      "effect_on_target": "With the real instance, it expresses 0 ≤ h, h ≤ 1, 0 ≤ epsilon, and each of the three real inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Monoid.toNatPow",
+      "meaning": "This supplies natural-number powers in a monoid by repeated multiplication, with exponent zero giving the multiplicative identity.",
+      "effect_on_target": "For Real it gives the conventional natural powers used for h^2 and h^3.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Nat",
+      "meaning": "Nat is the type of natural numbers, including zero.",
+      "effect_on_target": "The dimension n is an arbitrary natural number, and the exponents 2 and 3 are natural numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "OfNat.ofNat",
+      "meaning": "This interprets a natural-number literal in a type equipped with the corresponding OfNat instance.",
+      "effect_on_target": "It supplies the real constants 0 and 1 and the natural exponents 2 and 3 appearing in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "One.toOfNat1",
+      "meaning": "This interprets the numeral 1 using a type's distinguished multiplicative identity.",
+      "effect_on_target": "For Real it supplies the upper endpoint 1 in the hypothesis h ≤ 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real",
+      "meaning": "Real is the type of real numbers.",
+      "effect_on_target": "All scalars, vector components, norms, coefficients, and inequalities in the proposition are over exact real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instAdd",
+      "meaning": "This is the ordinary addition operation on real numbers.",
+      "effect_on_target": "It interprets all scalar additions and the componentwise additions used to form A and B.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instLE",
+      "meaning": "This is the ordinary order relation ≤ on real numbers.",
+      "effect_on_target": "It gives the meanings of the three hypotheses and the three asserted bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instMonoid",
+      "meaning": "This is the multiplicative monoid structure on the real numbers.",
+      "effect_on_target": "It supports the natural powers used for h^2, h^3, and component squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instMul",
+      "meaning": "This is ordinary multiplication of real numbers.",
+      "effect_on_target": "It interprets every product of coefficients, components, and norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instOne",
+      "meaning": "This is the real number 1 as the multiplicative identity.",
+      "effect_on_target": "It supplies the constant in the assumption h ≤ 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instZero",
+      "meaning": "This is the real number 0 as the additive identity.",
+      "effect_on_target": "It supplies the constants in the assumptions 0 ≤ h and 0 ≤ epsilon and is also the value of empty sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Zero.toOfNat0",
+      "meaning": "This interprets the numeral 0 using a type's distinguished additive identity.",
+      "effect_on_target": "For Real it supplies the lower bound 0 in the nonnegativity hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "instHAdd",
+      "meaning": "This converts a homogeneous Add operation into the corresponding HAdd operation.",
+      "effect_on_target": "It ensures HAdd.hAdd on real operands is ordinary real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "instHMul",
+      "meaning": "This converts a homogeneous Mul operation into the corresponding HMul operation.",
+      "effect_on_target": "It ensures HMul.hMul on real operands is ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "instHPow",
+      "meaning": "This converts a Pow operation into the corresponding HPow operation.",
+      "effect_on_target": "It makes the real powers by natural exponents available through HPow.hPow.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "instOfNatNat",
+      "meaning": "This interprets each natural-number literal as that same natural number.",
+      "effect_on_target": "It supplies the natural exponents 2 and 3 to the power operations.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Real.sqrt",
+      "meaning": "Real.sqrt x is the nonnegative square root of the nonnegative part of x; for x ≥ 0 it is the ordinary nonnegative square root of x.",
+      "effect_on_target": "Its arguments here are sums of squares and hence nonnegative, so D003 is exactly the usual Euclidean norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Fin.fintype",
+      "meaning": "This equips Fin n with its finite enumeration of all n indices.",
+      "effect_on_target": "It permits the norm's sum to range over every vector coordinate exactly once.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Finset.sum",
+      "meaning": "This forms the finite sum of a function's values over a finite set using the additive commutative monoid operation.",
+      "effect_on_target": "It computes the exact sum of squared coordinates in D006.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, Finset.univ is the finite set containing every element of that type.",
+      "effect_on_target": "It makes D006 sum over all indices in Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This is the additive commutative monoid structure on the real numbers.",
+      "effect_on_target": "It defines finite real summation in D006, including the empty sum as 0.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "n is an arbitrary natural number, possibly 0.",
+      "h and epsilon are arbitrary real numbers.",
+      "scheme and perturbation are arbitrary functions Fin n → Real, equivalently arbitrary n-component real vectors."
+    ],
+    "hypotheses": [
+      "0 ≤ h.",
+      "h ≤ 1.",
+      "0 ≤ epsilon."
+    ],
+    "conclusions": [
+      "Let B_i = h^3 scheme_i + epsilon h^3 perturbation_i. Then ||B||_2 ≤ h^3(||scheme||_2 + epsilon ||perturbation||_2).",
+      "Let A_i = h^3 scheme_i + epsilon h^2 perturbation_i. Then ||A||_2 ≤ h^3 ||scheme||_2 + epsilon h^2 ||perturbation||_2.",
+      "h^3(||scheme||_2 + epsilon ||perturbation||_2) ≤ h^3 ||scheme||_2 + epsilon h^2 ||perturbation||_2."
+    ],
+    "mathematical_definitions": [
+      "For any x : Fin n → Real, ||x||_2 means sqrt(sum_{i in Fin n} x_i^2).",
+      "A is the pointwise vector h^3 scheme + (epsilon h^2) perturbation.",
+      "B is the pointwise vector h^3 scheme + (epsilon h^3) perturbation.",
+      "All additions, multiplications, powers, square roots, sums, and inequalities are exact real operations."
+    ],
+    "proposition_plain_english": "For every dimension n, every h in the closed interval [0,1], every nonnegative epsilon, and every pair of real n-vectors scheme and perturbation, three bounds hold simultaneously: the Euclidean norm of h^3 scheme + epsilon h^3 perturbation is at most h^3 times the sum of the norm of scheme and epsilon times the norm of perturbation; the Euclidean norm of h^3 scheme + epsilon h^2 perturbation is at most h^3 times the norm of scheme plus epsilon h^2 times the norm of perturbation; and the first bound's right-hand side is no greater than the second bound's right-hand side."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The bounds are asserted only under 0 ≤ h ≤ 1 and epsilon ≥ 0. Because these assumptions occur as implications, the declaration imposes no conclusion when any assumption fails.",
+    "The dimension n may be 0. In that case Fin 0 is empty, both vectors are empty, every displayed norm is 0, and all three inequalities reduce to 0 ≤ 0.",
+    "The endpoint h = 0 is allowed. Then every scaled vector and every displayed bound is 0, so all conclusions are degenerate equalities.",
+    "The case epsilon = 0 is allowed and removes every perturbation contribution.",
+    "There is no positive lower bound on h, no positive-dimension requirement, and no upper bound on epsilon.",
+    "Scheme and perturbation are completely arbitrary real vectors; no componentwise bounds, normalization, dependence, or relationship between them is encoded.",
+    "There are no existential quantifiers or witness choices; all data are universally quantified.",
+    "The proposition encodes only exact Euclidean-norm upper bounds. It does not encode floating-point rounding, an algorithm, approximation semantics, relative error, lower bounds, or equality claims."
+  ],
+  "ambiguities": []
+}
