@@ -1,0 +1,47 @@
+{
+  "evidence_policy": "Use only the referenced PDF and surrounding paper context as evidence. Produce an independent contract for every listed task.",
+  "paper_id": "P04",
+  "paper_path": "paper_bencmark/reference_papers/P04_MIXED PRECISION BLOCK FUSED MULTIPLY-ADD- ERRORANALYSIS AND APPLICATION TO GPU TENSOR CORES.pdf",
+  "paper_sha256": "7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862",
+  "paper_version": "published journal version; volume 42, issue 3, 2020, printed pages C124-C141",
+  "role": "paper-source-locator",
+  "schema_version": "highambench-faithfulness-0.2",
+  "tasks": [
+    {
+      "source_locations": [
+        {
+          "anchor": "displayed factorization immediately before equation (3.4), equation (3.4), and its same-precision specialization",
+          "pdf_page": 6,
+          "printed_page": "C129",
+          "role": "chained rounding factors and their gamma bound",
+          "section": "3.2. Rounding error analysis"
+        }
+      ],
+      "task_id": "P04-T1"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "Theorem 3.2 and equation (3.6)",
+          "pdf_page": 7,
+          "printed_page": "C130",
+          "role": "componentwise mixed-input matrix-product bound",
+          "section": "3.2. Rounding error analysis"
+        }
+      ],
+      "task_id": "P04-T2"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "Theorem 4.4 and equation (4.7)",
+          "pdf_page": 13,
+          "printed_page": "C136",
+          "role": "backward-error equation and exact factorization-plus-solve coefficient",
+          "section": "4.1. Rounding error analysis"
+        }
+      ],
+      "task_id": "P04-T3"
+    }
+  ]
+}
