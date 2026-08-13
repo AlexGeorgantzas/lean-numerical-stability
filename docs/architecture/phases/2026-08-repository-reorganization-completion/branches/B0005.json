@@ -10837,11 +10837,11 @@
       },
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0005-declaration-routes.tsv",
-        "sha256": "85B286E4D78B19814A68EDABA70A648EA3E2C394577E0CCBF4670FD0DD93C5D9"
+        "sha256": "2CAA0D7ECA00188112B9C05750E688D63FA1F52FD0199DBD0084A8D8310FC167"
       },
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0005-module-routes.tsv",
-        "sha256": "D430CD1D62D599F0DEF9F2E260D9B389048B5A7289189DACC7834DDD0B233972"
+        "sha256": "E1B5527CB8B8EE21172E8E2C682D40A038235908B330897D5A8B27621F3FDD1A"
       },
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0005-overlap-review.md",
@@ -10857,7 +10857,7 @@
       },
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0005-test-plan.tsv",
-        "sha256": "C319C48A3643BA0476A1F842A8B21C3C6C4D71CA9E3778CC12503DAE4AE3D4AB"
+        "sha256": "4E0BCD272D859E648D582AFA21B65B1E2E4D15A1412BD0938D3C9B74B48776FA"
       },
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0002-gates.md",
@@ -10906,6 +10906,10 @@
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R03-projection-replay.md",
         "sha256": "D2399C417DE20AB7187F948DE394CFCD3EE7F74ADEE80AFE6F1D05C19EA7BEF8"
+      },
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R03-route-amendment.md",
+        "sha256": "157A09272E3AD7DF1BC07059F9540A4F404005F56B5ED7361AADC3E39BF4E013"
       },
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R03-route-review.md",

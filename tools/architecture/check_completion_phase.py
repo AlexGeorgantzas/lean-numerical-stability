@@ -456,6 +456,12 @@ R03_OPERATOR_AUTH_REVIEW_PATH = (
 R03_OPERATOR_AUTH_REVIEW_SHA256 = (
     "F3ECCDACCB5762DD65C7020597F7BDC67990BC9CDB452103EB4B351ABF7E8E89"
 )
+R03_ROUTE_AMENDMENT_REVIEW_PATH = (
+    f"{R03_PHASE_PREFIX}/reviews/R03-route-amendment.md"
+)
+R03_ROUTE_AMENDMENT_REVIEW_SHA256 = (
+    "157A09272E3AD7DF1BC07059F9540A4F404005F56B5ED7361AADC3E39BF4E013"
+)
 R03_EVIDENCE_PATHS = {
     "baseline": f"{R03_PHASE_PREFIX}/baselines/C0002-combined.json",
     "baseline_summary": f"{R03_PHASE_PREFIX}/baselines/C0002-combined.md",
@@ -488,11 +494,14 @@ R03_ARTIFACT_SHA256: dict[str, str | None] = {
     "baseline_summary": C0002_COMBINED_SUMMARY_SHA256,
     "inventory": C0002_INVENTORY_SHA256,
     "gates": C0002_GATES_SHA256,
-    "declaration_routes": "85B286E4D78B19814A68EDABA70A648EA3E2C394577E0CCBF4670FD0DD93C5D9",
-    "module_routes": "D430CD1D62D599F0DEF9F2E260D9B389048B5A7289189DACC7834DDD0B233972",
+    # Re-pinned by the reviewed fanIn7 private-closure repair recorded in
+    # reviews/R03-route-amendment.md: one destination cell changed so the private
+    # lemma and both of its users share one module.
+    "declaration_routes": "2CAA0D7ECA00188112B9C05750E688D63FA1F52FD0199DBD0084A8D8310FC167",
+    "module_routes": "E1B5527CB8B8EE21172E8E2C682D40A038235908B330897D5A8B27621F3FDD1A",
     "private_map": "EB2729C65CCAFF1ED4FE6712C3373A78570088D2BCC07FB18DE72B7033721146",
     "private_closure": R03_PRIVATE_CLOSURE_SHA256,
-    "test_plan": "C319C48A3643BA0476A1F842A8B21C3C6C4D71CA9E3778CC12503DAE4AE3D4AB",
+    "test_plan": "4E0BCD272D859E648D582AFA21B65B1E2E4D15A1412BD0938D3C9B74B48776FA",
     "consumers": "3AFD072408026219BDB07D1004E3768B27576AEB88AFBC8312FA9D9467155400",
     "overlap_review": "EC3ADA8E009CCD9E0C8849F73FB8F248EED9FEB1C31A4B33D2C41A74A047CA67",
     "projection_record": "43F3343E1D8BDEFF81682FBFD068958D952D334EE3204E65A6923BAACE1617DB",
@@ -5611,6 +5620,7 @@ class CompletionValidator:
         if status == "active":
             expected_evidence_paths.add(R03_ACTIVATION_REVIEW_PATH)
             expected_evidence_paths.add(R03_OPERATOR_AUTH_REVIEW_PATH)
+            expected_evidence_paths.add(R03_ROUTE_AMENDMENT_REVIEW_PATH)
         self.problems.require(
             evidence_paths == sorted(evidence_paths)
             and len(evidence_paths) == len(set(evidence_paths))
@@ -5670,6 +5680,22 @@ class CompletionValidator:
                 ),
                 f"{R03_BRANCH_ID}.refresh.evidence",
                 "active packet must hash-pin the exact R03 operator-authorization review",
+            )
+            amendment_evidence = tuple(
+                artifact
+                for artifact in artifacts
+                if artifact.path == R03_ROUTE_AMENDMENT_REVIEW_PATH
+            )
+            self.problems.require(
+                amendment_evidence
+                == (
+                    Artifact(
+                        R03_ROUTE_AMENDMENT_REVIEW_PATH,
+                        R03_ROUTE_AMENDMENT_REVIEW_SHA256,
+                    ),
+                ),
+                f"{R03_BRANCH_ID}.refresh.evidence",
+                "active packet must hash-pin the exact R03 route-amendment review",
             )
 
         expected_owned = {selected_path for _module, selected_path in selector}
@@ -6292,12 +6318,22 @@ class CompletionValidator:
                     f"{row_context}.semantic_classification",
                     "mixed-owner module classification must equal its declaration-level reusable/source roles (internal support may be additional)",
                 )
+            # `approved_route_amendment` is accepted ONLY for the single owner whose
+            # route the hash-pinned reviews/R03-route-amendment.md repairs: the fanIn7
+            # private helper is used by both public declarations, so the pre-activation
+            # split was uncompilable and the primary-human amended it post-activation.
+            allowed_status = {"approved_before_activation"}
+            if row.get("owner_module") == (
+                "NumStability.Algorithms.HighamChapters1To9SourceClosure"
+            ):
+                allowed_status.add("approved_route_amendment")
             self.problems.require(
                 bool(row.get("compatibility_action", "").strip())
                 and DEFERRED_RE.search(row.get("compatibility_action", "")) is None
-                and row.get("review_status") == "approved_before_activation",
+                and row.get("review_status") in allowed_status,
                 row_context,
-                "compatibility action must be explicit and primary-human reviewed before activation",
+                "compatibility action must be explicit and primary-human reviewed "
+                "(before activation, or via the pinned R03 route amendment)",
             )
         self.problems.require(
             {
@@ -7403,6 +7439,7 @@ def run_self_test() -> int:
         )
         and SHA256_RE.fullmatch(R03_ACTIVATION_REVIEW_SHA256) is not None
         and SHA256_RE.fullmatch(R03_OPERATOR_AUTH_REVIEW_SHA256) is not None
+        and SHA256_RE.fullmatch(R03_ROUTE_AMENDMENT_REVIEW_SHA256) is not None
         and R03_OPERATOR_IDS == tuple(sorted(R03_OPERATOR_IDS))
         and R03_OPERATOR_ID in R03_OPERATOR_IDS
         and R03_SECOND_OPERATOR_ID in R03_OPERATOR_IDS

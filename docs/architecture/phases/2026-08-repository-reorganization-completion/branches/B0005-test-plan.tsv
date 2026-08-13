@@ -43,7 +43,6 @@ canonical_only	NumStability.Source.Higham.Chapter07.Equation26.RumpCycle.Results
 canonical_only	NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem03.RectangularResults	compile exact canonical destination without fallback through a historical owner
 canonical_only	NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.RowInfinityScaleCounterexample.Theorems	compile exact canonical destination without fallback through a historical owner
 canonical_only	NumStability.Source.Higham.Chapter08.Equation02.TriangularSubstitution.RelativeInfinityNormBounds.Theorems	compile exact canonical destination without fallback through a historical owner
-canonical_only	NumStability.Source.Higham.Chapter08.Equation15.FanInExecutor.FirstOrderResidual	compile exact canonical destination without fallback through a historical owner
 canonical_only	NumStability.Source.Higham.Chapter08.Equation15.GlobalEnvelopeCounterexample.LocalCancellationResults.Theorems	compile exact canonical destination without fallback through a historical owner
 canonical_only	NumStability.Source.Higham.Chapter08.Equation18.FanInExecutor.FirstOrderForwardError	compile exact canonical destination without fallback through a historical owner
 canonical_only	NumStability.Source.Higham.Chapter08.Problem02.ComparisonMatrixWitness.ArbitraryRatios.Theorems	compile exact canonical destination without fallback through a historical owner
