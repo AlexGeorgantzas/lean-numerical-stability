@@ -1,0 +1,151 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P14-T3",
+  "paper_sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd",
+  "blind_translation_sha256": "ac5a7d6abd764f7998a730d0b656c2815715ace28de263812bce106e10dea2ae",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF has the required SHA-256. Equation (1.2) on PDF p. 1 defines softmax, equation (1.4) on PDF p. 3 gives its shifted representation, PDF p. 4 states that the l1 norm of the gradient is 1, and PDF p. 17 uses the exact sum 1 as a diagnostic for computed vectors.",
+      "translation_evidence": "The translation defines normalized exponential coordinates and states common-shift invariance, ordinary normalization, and absolute-value normalization.",
+      "reasoning": "The selected passages and surrounding definition are the correct sources for all three exact conclusions."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "The paper has x in R^n, component indices j = 1,...,n, and a common real scalar shift a.",
+      "translation_evidence": "The binders are n : Nat, x : Fin n -> Real, a : Real, and j : Fin n.",
+      "reasoning": "Fin n is the zero-based representation of the paper's n coordinates. In every nonvacuous instance j : Fin n also enforces the paper's implicit positive dimension."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "Equation (1.4) holds componentwise for every index and for a common arbitrary real shift; a = max_i x_i is described only as typical.",
+      "translation_evidence": "The proposition universally quantifies x, a, and j, with the normalization conclusions conjoined under those binders.",
+      "reasoning": "For positive n, the normalization conclusions are independent of a and j, so their placement does not change their scope. No shift witness is improperly specialized."
+    },
+    {
+      "id": "S04",
+      "status": "pass",
+      "paper_evidence": "The inputs are real, n is implicitly positive, and every denominator is a sum of positive real exponentials. The same a shifts every term.",
+      "translation_evidence": "There are no explicit hypotheses, but j : Fin n makes nonvacuous instances positive-dimensional, Real.exp is positive, and the shifted vector uses x_i-a uniformly.",
+      "reasoning": "The necessary nonemptiness and denominator nonvanishing follow in every substantive instance. The translation correctly does not require a = max_i x_i."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "Equation (1.4) supplies shift invariance through equation (1.2); PDF p. 17 identifies 1 as the exact component sum; PDF p. 4 states ||grad f(x)||_1 = 1 by equation (1.2).",
+      "translation_evidence": "All three corresponding equalities are present: shifted-coordinate invariance, sum of coordinates equal to 1, and sum of absolute coordinate values equal to 1.",
+      "reasoning": "The exact mathematical conclusions are complete. The qualitative comparisons of floating-point algorithms on PDF p. 17 are experimental context, not additional universal theorem conclusions."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "Softmax is exp(x_j) divided by the sum of all n exponentials; shifting replaces every x_i by x_i-a. The l1 assertion uses ordinary absolute values and finite summation.",
+      "translation_evidence": "D001-D025 interpret the normalized coordinate, denominator, Fin n, universal finite sums, real subtraction, exact division, Real.exp, absolute value, conjunction, and equality.",
+      "reasoning": "The dependency ledger gives the standard exact-real meanings of every operator affecting the target, with no opaque imported definition left uninterpreted."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "Equations (1.2) and (1.4) and the normalization value are exact-real statements. PDF p. 17 separately discusses sums returned by floating-point algorithms.",
+      "translation_evidence": "All quantities use Real.exp, exact real division, and exact equality; the restrictions explicitly state that no computed or rounded quantities occur.",
+      "reasoning": "The translation captures the exact invariant without claiming that floating-point output sums exactly to 1."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "PDF p. 17 applies the invariant to outputs of Algorithms 3.1 and 4.1 and their alternatives, while equation (1.4) itself is algorithm-independent.",
+      "translation_evidence": "The proposition contains the exact softmax formula and normalization invariant but no algorithmic execution claim.",
+      "reasoning": "This preserves the mathematical result used by the experiments and appropriately omits the sample-dependent accuracy ranking from the universal proposition."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "The normalization diagnostic is the ordinary scalar sum, and PDF p. 4 additionally states ||grad f(x)||_1 = 1 by equation (1.2).",
+      "translation_evidence": "The second conclusion is the ordinary component sum; the third is explicitly the finite l1 norm, sum_i |S_i(x)|.",
+      "reasoning": "Both sum semantics are represented correctly. Since exact softmax coordinates are positive, the scalar sum and l1 sum coincide."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "Numerator index j and denominator index i both range over all n coordinates, one common a is used, and the normalization constant is exactly 1.",
+      "translation_evidence": "Finset.univ covers every element of Fin n, all shifted terms subtract the same a, and both normalization right-hand sides are the real numeral 1.",
+      "reasoning": "The zero-based Fin indexing is a harmless reindexing of 1,...,n; no term, offset, or coefficient changes."
+    },
+    {
+      "id": "S11",
+      "status": "pass",
+      "paper_evidence": "The exact identities use real arithmetic without rounding assumptions. The later experiments use simulated fp16 and bfloat16 and omit fp16 cases where Algorithm 3.1 overflowed.",
+      "translation_evidence": "The translation explicitly contains no precision, rounding, underflow, overflow, NaN, infinity, or floating-point operation.",
+      "reasoning": "No floating-point model belongs to the exact identity being formalized, and the translation does not promote the experimental behavior to exact arithmetic."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "The shifted representation and normalization invariant are exact equalities.",
+      "translation_evidence": "All three conclusions use exact equality, with no inequality, tolerance, or approximation.",
+      "reasoning": "The additional explicit l1 equality is already entailed by the paper's positive softmax definition and normalization, so it does not increase logical strength."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The source passage gives no forward, backward, mixed, residual, or normalization-error bound; deviation from 1 is only an empirical diagnostic.",
+      "translation_evidence": "No error quantity, perturbation, condition number, or stability predicate appears.",
+      "reasoning": "The translation does not substitute an error notion for the paper's exact invariant."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The shifted identity and normalization equalities have no first-order truncation, remainder, or big-O term.",
+      "translation_evidence": "Every conclusion is an exact real equality with no omitted higher-order contribution.",
+      "reasoning": "Higher-order treatment matches exactly."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The task concerns finite-dimensional real vectors x in R^n and real shifts.",
+      "translation_evidence": "The domain is Fin n -> Real with a : Real.",
+      "reasoning": "This is the standard equivalent formal representation of finite-dimensional real vectors. The paper's nearby complex observation concerns the log-sum-exp formula and does not generalize this real softmax task."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper implicitly works with n at least 1, where each exponential denominator is strictly positive and the identities are substantive.",
+      "translation_evidence": "For every n at least 1 there are indices j : Fin n and the denominator contains positive terms. For n = 0 the outer j binder has no inhabitants.",
+      "reasoning": "The proposition has abundant nonvacuous instances and is not true for an unintended trivial reason. Its zero-dimensional vacuity does not extend the paper's substantive domain."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "On the paper's implicit domain n at least 1, the first translated equality is equation (1.4) after unfolding the unshifted softmax definition, and the second equality is exactly the normalization invariant. The third equality adds no conflicting claim."
+    },
+    "paper_implies_translation": {
+      "verdict": "yes",
+      "reasoning": "Equations (1.2) and (1.4) imply coordinatewise shift invariance. Summing equation (1.2) gives normalization. Every exponential and the nonempty denominator are positive, so each softmax coordinate is positive and its absolute value equals itself, yielding the third equality. The n = 0 translated case is vacuous because j : Fin 0 has no inhabitant."
+    }
+  },
+  "classification": "faithful-equivalent",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "note",
+      "category": "explicit-l1-corollary",
+      "paper_evidence": "PDF p. 4 states ||grad f(x)||_1 = 1 by equation (1.2), and positivity also makes this follow from ordinary normalization.",
+      "translation_evidence": "The third conjunct explicitly states sum_i |S_i(x)| = 1.",
+      "impact": "This is a supported and logically redundant restatement, not an unsupported strengthening."
+    },
+    {
+      "severity": "note",
+      "category": "zero-dimensional-vacuity",
+      "paper_evidence": "The ranges 1,...,n implicitly presuppose n at least 1.",
+      "translation_evidence": "n is arbitrary, but the binder j : Fin n makes the complete proposition vacuous when n = 0.",
+      "impact": "No substantive zero-dimensional normalization claim is introduced, so the two results remain equivalent on the paper's intended domain."
+    }
+  ],
+  "rationale": "The PDF hash was verified exactly. After unfolding the normalized exponential definition, the translation reproduces the arbitrary common-shift identity and exact sum-to-one invariant over the same finite real domain. Its l1 conclusion is both stated in the surrounding paper and derivable from positivity. It correctly excludes floating-point algorithms, errors, and empirical accuracy rankings from the exact proposition. Both logical implications therefore hold without unresolved evidence."
+}

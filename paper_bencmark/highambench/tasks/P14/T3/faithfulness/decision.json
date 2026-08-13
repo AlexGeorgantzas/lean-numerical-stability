@@ -1,0 +1,49 @@
+{
+  "accepted": true,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "faithful-equivalent",
+  "completed_at_utc": "2026-08-13T17:21:44.546423+00:00",
+  "findings": [
+    {
+      "category": "derived-redundant-conclusion",
+      "impact": "This adds no logical strength on the intended nonempty domain because every exact softmax component is positive.",
+      "lean_evidence": "The target additionally asserts that the sum of component absolute values is 1.",
+      "paper_evidence": "The paper states ordinary softmax normalization, and equation (1.2) defines each component as a positive exponential divided by a positive exponential sum.",
+      "severity": "note"
+    },
+    {
+      "category": "explicit-l1-corollary",
+      "impact": "This is a supported and logically redundant restatement, not an unsupported strengthening.",
+      "paper_evidence": "PDF p. 4 states ||grad f(x)||_1 = 1 by equation (1.2), and positivity also makes this follow from ordinary normalization.",
+      "severity": "note",
+      "translation_evidence": "The third conjunct explicitly states sum_i |S_i(x)| = 1."
+    },
+    {
+      "category": "zero-dimensional-vacuity",
+      "impact": "No substantive zero-dimensional normalization claim is introduced, so the two results remain equivalent on the paper's intended domain.",
+      "paper_evidence": "The ranges 1,...,n implicitly presuppose n at least 1.",
+      "severity": "note",
+      "translation_evidence": "n is arbitrary, but the binder j : Fin n makes the complete proposition vacuous when n = 0."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "Unfolding p14Softmax and p14ExpSum makes the first Lean conjunct the symmetric form of equation (1.4), while the second conjunct is exactly sum_j g_j = 1. The exact-real, finite-dimensional binders match the paper's intended domain.",
+      "verdict": "yes"
+    },
+    "paper_implies_lean": {
+      "reasoning": "Equations (1.2) and (1.4) imply the Lean shift equality after unfolding definitions, and exact normalization gives the second conjunct. Since exponentials and their nonempty sum are positive, every softmax component is positive, so the paper's ordinary normalization also implies the target's absolute-value normalization.",
+      "verdict": "yes"
+    }
+  },
+  "judge_classifications": {
+    "direct": "faithful-equivalent",
+    "roundtrip": "faithful-equivalent"
+  },
+  "rationale": "The verified PDF directly supports an arbitrary common-shift identity and exact sum-to-one normalization for finite real softmax vectors. After unfolding the two local definitions, the Lean proposition expresses those claims exactly. Its absolute-value normalization is redundant by positivity, its j : Fin n binder correctly makes the unintended empty-vector case vacuous, and it does not conflate the exact invariant with the paper's fp16/bfloat16 experimental diagnostics.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P14-T3"
+}

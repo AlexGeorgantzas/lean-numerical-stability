@@ -1,0 +1,61 @@
+{
+  "evidence_policy": "Use only the referenced PDF and surrounding paper context as evidence. Produce an independent contract for every listed task.",
+  "paper_id": "P14",
+  "paper_path": "paper_bencmark/reference_papers/P14_Accurately computing the log-sum-exp and softmax functions.pdf",
+  "paper_sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd",
+  "paper_version": "published journal version; IMA Journal of Numerical Analysis 41(4), 2021, printed pages 2311-2330",
+  "role": "paper-source-locator",
+  "schema_version": "highambench-faithfulness-0.2",
+  "tasks": [
+    {
+      "source_locations": [
+        {
+          "anchor": "positive exponential sum and unnumbered recursive-summation bounds preceding equations (3.2)-(3.3)",
+          "pdf_page": 7,
+          "printed_page": "2317",
+          "role": "positive recursive-summation error stage",
+          "section": "3. Basic algorithms and error analysis"
+        }
+      ],
+      "task_id": "P14-T1"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "componentwise basic-softmax error derivation following equation (3.5)",
+          "pdf_page": 8,
+          "printed_page": "2318",
+          "role": "exponential, denominator, and division error composition",
+          "section": "3. Basic algorithms and error analysis"
+        },
+        {
+          "anchor": "Theorem 3.3, equation (3.6)",
+          "pdf_page": 9,
+          "printed_page": "2319",
+          "role": "basic softmax forward-error result",
+          "section": "3. Basic algorithms and error analysis"
+        }
+      ],
+      "task_id": "P14-T2"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "equation (1.4)",
+          "pdf_page": 3,
+          "printed_page": "2313",
+          "role": "shifted softmax identity",
+          "section": "1. Introduction"
+        },
+        {
+          "anchor": "discussion of the sum of each softmax vector, which should equal 1",
+          "pdf_page": 17,
+          "printed_page": "2327",
+          "role": "normalization invariant used in experiments",
+          "section": "5. Numerical experiments"
+        }
+      ],
+      "task_id": "P14-T3"
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "e87809090e017454b51990fdc55ac5eb3b80b62597dee9d55ff3c748714fbe37",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For a real vector x indexed by Fin n and an index j, this is the normalized exponential coordinate exp(x_j) / Z(x), where Z(x) is LocalDef002 x.",
+      "effect_on_target": "It is the quantity compared before and after the common shift, and it is also the summand in both normalization conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For x : Fin n → Real, this is the finite sum Z(x) = Σ_{i∈Fin n} exp(x_i).",
+      "effect_on_target": "It supplies the denominator of every normalized exponential coordinate, including Z(x) and Z(x-a·1) in the shift-invariance equality.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "And",
+      "meaning": "Logical conjunction of two propositions.",
+      "effect_on_target": "The nested conjunction requires all three displayed equalities to hold simultaneously.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "Eq",
+      "meaning": "Exact equality between two terms of the same type.",
+      "effect_on_target": "All three conclusions are exact real equalities, with no tolerance or approximation.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type consisting of the natural-number indices 0 through n-1.",
+      "effect_on_target": "It fixes the dimension and index set of x, the coordinate j, and all finite sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "Fin.fintype",
+      "meaning": "The canonical finite-type structure enumerating every element of Fin n exactly once.",
+      "effect_on_target": "It permits Finset.univ to represent all n coordinate indices in the sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "Finset.sum",
+      "meaning": "The additive finite sum of a function over the elements of a finite set.",
+      "effect_on_target": "It computes the exponential denominator, the sum of normalized coordinates, and the sum of their absolute values.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, this is the finite set containing every element of that type.",
+      "effect_on_target": "Each sum ranges over every index in Fin n, not over a proper subset.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "HSub.hSub",
+      "meaning": "The subtraction operation selected by an HSub instance.",
+      "effect_on_target": "With the supplied real instances, it forms the shifted coordinate x_i - a.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Nat",
+      "meaning": "The type of natural numbers, including zero.",
+      "effect_on_target": "The dimension n is arbitrary and may be zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "OfNat.ofNat",
+      "meaning": "It interprets a natural-number literal in a type having the corresponding OfNat instance.",
+      "effect_on_target": "It interprets each right-hand-side literal 1 as a real number.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "One.toOfNat1",
+      "meaning": "It constructs the interpretation of the numeral 1 from a type's distinguished one element.",
+      "effect_on_target": "It ensures that the numeral in both normalization equalities is the real multiplicative identity 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "Vector entries, the shift a, normalized coordinates, sums, and equality values are all exact real quantities.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The usual commutative additive-monoid structure on the real numbers, with zero as the empty sum.",
+      "effect_on_target": "It supplies real addition and finite summation for every Finset.sum in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instAddGroup",
+      "meaning": "The usual additive-group structure on the real numbers, including negation.",
+      "effect_on_target": "Together with the real lattice structure, it supplies the negation used in the definition of absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instOne",
+      "meaning": "The distinguished real number one.",
+      "effect_on_target": "It gives the exact right-hand side 1 in the two sum equalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instSub",
+      "meaning": "Usual real subtraction, defined by u - v = u + (-v).",
+      "effect_on_target": "It makes the shifted input vector have coordinates x_i - a.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Real.lattice",
+      "meaning": "The usual lattice order on the real numbers, providing minimum and maximum.",
+      "effect_on_target": "It supplies the maximum operation used to interpret abs on real normalized coordinates.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "abs",
+      "meaning": "For a real number r, abs(r) = max(r, -r), the ordinary absolute value |r|.",
+      "effect_on_target": "It makes the third conclusion the sum of the absolute values of all normalized exponential coordinates.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "instHSub",
+      "meaning": "It lifts a homogeneous subtraction operation Sub α to an HSub α α α instance.",
+      "effect_on_target": "It connects HSub.hSub in the shifted vector to ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "It extracts the division operation from a division-and-inverse monoid structure.",
+      "effect_on_target": "For Real, it supplies the real division used in each normalized exponential quotient.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "HDiv.hDiv",
+      "meaning": "The division operation selected by an HDiv instance.",
+      "effect_on_target": "It forms exp(x_j) divided by the sum of all exponential coordinates.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.exp",
+      "meaning": "The ordinary real exponential function, defined here as the real part of the complex exponential evaluated on a real argument.",
+      "effect_on_target": "It exponentiates every vector coordinate in the numerator and denominator of the normalized quantities.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The standard multiplication, inverse, integer-power, and division structure on the real numbers; Lean's real division is total, including at zero.",
+      "effect_on_target": "It provides the underlying real division operation used by LocalDef001.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "instHDiv",
+      "meaning": "It lifts a homogeneous division operation Div α to an HDiv α α α instance.",
+      "effect_on_target": "It connects HDiv.hDiv in LocalDef001 to ordinary real division.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "n is an arbitrary natural number.",
+      "x is a real vector indexed by Fin n, equivalently an n-coordinate real vector.",
+      "a is an arbitrary real scalar.",
+      "j is an arbitrary index in Fin n."
+    ],
+    "hypotheses": [],
+    "conclusions": [
+      "The j-th normalized exponential coordinate is invariant under subtracting the same scalar a from every coordinate: exp(x_j-a) / Σ_{i∈Fin n} exp(x_i-a) = exp(x_j) / Σ_{i∈Fin n} exp(x_i).",
+      "The normalized exponential coordinates of x sum to one: Σ_{i∈Fin n} exp(x_i) / Σ_{k∈Fin n} exp(x_k) = 1.",
+      "The absolute values of the normalized exponential coordinates of x sum to one: Σ_{i∈Fin n} |exp(x_i) / Σ_{k∈Fin n} exp(x_k)| = 1."
+    ],
+    "mathematical_definitions": [
+      "Define Z(x) = Σ_{k∈Fin n} exp(x_k).",
+      "Define S_i(x) = exp(x_i) / Z(x).",
+      "Define the common shifted vector x-a·1 by (x-a·1)_i = x_i-a.",
+      "The final sum is the finite ℓ1 norm Σ_{i∈Fin n} |S_i(x)|."
+    ],
+    "proposition_plain_english": "For every finite-dimensional real vector x, every real scalar a, and every available coordinate j, subtracting a from every coordinate leaves the j-th normalized exponential coordinate unchanged. Moreover, the normalized exponential coordinates of x have total sum exactly one and total absolute-value sum exactly one."
+  },
+  "restrictions_and_vacuity_risks": [
+    "There are no explicit hypotheses, including no stated assumption that n is positive or that an exponential denominator is nonzero.",
+    "When n = 0, Fin n has no element j, so the entire universally quantified proposition is vacuously true; in particular, the two normalization equalities are not substantively asserted for the empty vector.",
+    "In every nonvacuous instance, the binder j : Fin n forces n > 0. The positivity and nonvanishing of the exponential denominator are consequences of the definitions and standard real exponential properties, not encoded assumptions.",
+    "Real division is formally total even at denominator zero, although denominator zero cannot occur in a nonvacuous instance because the finite sum contains at least one positive exponential term.",
+    "The invariance conclusion concerns a common scalar shift applied to every coordinate, not an arbitrary coordinate-dependent perturbation.",
+    "The two sum conclusions are written only for the original vector x, not explicitly for the shifted vector.",
+    "The proposition does not explicitly state coordinatewise nonnegativity, strict positivity, upper bounds, or a separate vector-level equality, even though some such facts may follow from the definitions.",
+    "All quantities use exact real arithmetic and the exact real exponential; no floating-point computation, approximation, rounding, error bound, or algorithm is encoded."
+  ],
+  "ambiguities": []
+}

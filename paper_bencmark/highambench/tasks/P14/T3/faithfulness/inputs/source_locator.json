@@ -1,0 +1,23 @@
+{
+  "evidence_policy": "Use the referenced PDF and surrounding paper context as evidence. Do not use context.md or task.json paraphrases as semantic evidence.",
+  "paper_path": "paper_bencmark/reference_papers/P14_Accurately computing the log-sum-exp and softmax functions.pdf",
+  "paper_sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd",
+  "paper_version": "published journal version; IMA Journal of Numerical Analysis 41(4), 2021, printed pages 2311-2330",
+  "source_locations": [
+    {
+      "anchor": "equation (1.4)",
+      "pdf_page": 3,
+      "printed_page": "2313",
+      "role": "shifted softmax identity",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "discussion of the sum of each softmax vector, which should equal 1",
+      "pdf_page": 17,
+      "printed_page": "2327",
+      "role": "normalization invariant used in experiments",
+      "section": "5. Numerical experiments"
+    }
+  ],
+  "task_id": "P14-T3"
+}

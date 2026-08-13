@@ -1,0 +1,346 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P14-T3",
+  "paper_sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd",
+  "dossier_sha256": "0f753ee37ba0bd464c972fb141678cc91cda78602405bd385a8531e73efcf50b",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.p14Softmax",
+      "interpretation": "For a finite real vector x, p14Softmax x j is the exact-real quotient exp(x j) divided by the sum of exp(x i) over every index i.",
+      "effect_on_target": "Unfolding it turns the first conjunct into equality of shifted and unshifted exponential quotients and the remaining conjuncts into exact normalization statements.",
+      "paper_match": "This is the component definition in equation (1.2); applying it to i |-> x i - a gives the quotient in equation (1.4).",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p14ExpSum",
+      "interpretation": "p14ExpSum x is the exact finite sum of exp(x i) over all i in Fin n.",
+      "effect_on_target": "It supplies every softmax denominator, retaining all n components in both shifted and unshifted expressions.",
+      "paper_match": "It matches the denominators summed over i = 1,...,n in equations (1.2) and (1.4).",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "And",
+      "reuse_sha256": "24edb147e109a0dff877303ad1184aea3be0367245d532eae881829f302df1b8",
+      "effect_on_target": "Two nested And constructors require the shift identity, ordinary normalization, and absolute-value normalization simultaneously.",
+      "paper_match": "The first two are the selected exact paper claims; the third is a consequence of the nonnegativity of exact softmax components.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "Eq",
+      "reuse_sha256": "a9f337b4f0f615f8c81c9a0d21026425f78e7f96b580f4311ede47e8c4fbe3dd",
+      "effect_on_target": "All three conclusions are exact propositional equalities, with no approximation or floating-point tolerance.",
+      "paper_match": "Equation (1.4) is an exact identity, and the exact softmax normalization target is 1.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "Fin",
+      "reuse_sha256": "f833eed03b65dfa113a80221967b093f8af635c74508930591630ab4499abb29",
+      "effect_on_target": "Fin n provides the n component indices for x, j, and all finite sums; the presence of j makes the n = 0 case vacuous.",
+      "paper_match": "Fin n is a zero-based reindexing of the paper's indices 1,...,n and preserves every component and denominator term.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "Fin.fintype",
+      "reuse_sha256": "664c932a356e9873a3164c26bf0ff18c1d0edb1be4740722e6a9855db9ebc656",
+      "effect_on_target": "It enables summation over each component of Fin n exactly once.",
+      "paper_match": "This realizes the paper's sums over all n indices without omission or duplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "Finset.sum",
+      "reuse_sha256": "a76fee3ff20746f43f457c001a12b03c42f0845a861d55a233effdf4fc66f51d",
+      "effect_on_target": "It forms exact-real exponential denominators and exact-real sums of softmax components.",
+      "paper_match": "It matches the exact sums in equations (1.2), (1.4), and the normalization invariant, not floating-point accumulation in the experiments.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "Finset.univ",
+      "reuse_sha256": "2bfe1ff78a660dde8a87be42da6310385753d9af95f30d430b0054cb896d4399",
+      "effect_on_target": "It selects every index in Fin n for each denominator and normalization sum.",
+      "paper_match": "It corresponds exactly to summation over i or j from 1 through n.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "HSub.hSub",
+      "reuse_sha256": "7557f4de6e0cc4b6aec118b769a1c05c84489a818e5b1897c5bc7aaf7849137a",
+      "effect_on_target": "It applies subtraction in x i - a inside the single shifted vector supplied to p14Softmax.",
+      "paper_match": "The same scalar a therefore shifts the numerator component and every denominator component as required by equation (1.4).",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "Nat",
+      "reuse_sha256": "0d849bb90af9029ba46573301a6e413f7cdce60d846545a5aee220a5bb782e47",
+      "effect_on_target": "The dimension ranges over all natural numbers, but for n = 0 there is no j : Fin n, so no false empty-vector normalization is asserted.",
+      "paper_match": "The paper implicitly uses positive dimensions through j = 1,...,n; the Lean binder j enforces that condition whenever the conclusion is instantiated.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "OfNat.ofNat",
+      "reuse_sha256": "da7052ab80d54f5bb3bdaacd7703560baf648ca1316fed1691853c8993fe25aa",
+      "effect_on_target": "It interprets both normalization right-hand sides as the exact real number 1.",
+      "paper_match": "This matches the exact normalization constant stated on printed page 2327.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "One.toOfNat1",
+      "reuse_sha256": "204588d71772f6dd7630088071d44034799a20dfc32327da6658489e77c6779a",
+      "effect_on_target": "It connects the literal 1 to the real multiplicative identity.",
+      "paper_match": "No scaling or alternative normalization constant is introduced.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "Real",
+      "reuse_sha256": "ec21591c72e0d59a9b07d790dcc03264434defe02188ba4acb464299be4c972a",
+      "effect_on_target": "Inputs, shifts, exponentials, quotients, and sums all use exact real arithmetic.",
+      "paper_match": "This matches x in R^n and the real shift used in equations (1.2)-(1.4).",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Real.instAddCommMonoid",
+      "reuse_sha256": "66ed29605d482311b0f4287c2dd239fd34d18ffdca50d9c831bd4666f50300d1",
+      "effect_on_target": "It makes denominator and component sums exact, order-independent real sums.",
+      "paper_match": "That is the mathematical summation semantics of the paper's exact formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instAddGroup",
+      "reuse_sha256": "e38c1e96a88e4a3352172d2e7917539f965e556f9b5ca045bc83040b9d4b9461",
+      "effect_on_target": "It supplies standard real additive inverses used by subtraction and absolute value.",
+      "paper_match": "These are ordinary real operations and introduce no altered numerical model.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instOne",
+      "reuse_sha256": "ed57860d66650f3ebb09c0ece2c84683256beb7c82b1d93f8d0e9a241eaf3d03",
+      "effect_on_target": "It supplies the exact real normalization value 1.",
+      "paper_match": "It matches the paper's exact target value.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instSub",
+      "reuse_sha256": "c712703cb2f4163d93f7354190ac741e3e3a9fe9372a263bd1427988593d8c0b",
+      "effect_on_target": "It makes every shifted component the exact real difference x i - a.",
+      "paper_match": "This is precisely the common shift appearing in equation (1.4).",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "Real.lattice",
+      "reuse_sha256": "2b77f90121aabb95be86d03ed0fa455581a0e363bd58c89de9723fb548c216a2",
+      "effect_on_target": "It supplies the standard order structure used to evaluate absolute values in the third conjunct.",
+      "paper_match": "The induced absolute values are redundant because exact softmax components are positive.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "abs",
+      "reuse_sha256": "9f2383d9e00a51122043cbc3a603fe079c422ea2cd641144cf373a431f839c9c",
+      "effect_on_target": "It changes the third sum to the scalar l1 sum of the exact softmax components.",
+      "paper_match": "Although the paper states the ordinary component sum, equation (1.2) makes every component positive for n greater than zero, so abs(g_i) = g_i and this conjunct is equivalent to ordinary normalization.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "instHSub",
+      "reuse_sha256": "4fd969f28d81771a793607f477bd1aed61c5100b8462a584beff9d68fb7f3976",
+      "effect_on_target": "It routes the shifted-vector expression to ordinary homogeneous real subtraction.",
+      "paper_match": "No nonstandard subtraction or mixed type is introduced.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "DivInvMonoid.toDiv",
+      "reuse_sha256": "d10fc41d6a0da4d7312b4d57df805c426a1be8f3c71cc6f2580a931222e4704b",
+      "effect_on_target": "It supplies ordinary real division for each p14Softmax quotient.",
+      "paper_match": "This matches the numerator-over-denominator operation in equations (1.2) and (1.4).",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "HDiv.hDiv",
+      "reuse_sha256": "a56e9de8832095d15b3b690b40013116b0a92d188310b473e03d01d0cbcf12f0",
+      "effect_on_target": "It invokes the selected real division operation in p14Softmax.",
+      "paper_match": "The resulting operation is the paper's exact scalar quotient.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "Real.exp",
+      "interpretation": "Real.exp is mathlib's exact real exponential function; on real inputs it is the standard strictly positive function e^x.",
+      "effect_on_target": "It supplies every numerator and denominator term and ensures that an inhabited finite denominator is positive.",
+      "paper_match": "It matches every exponential in equations (1.2) and (1.4), with no rounded exponential evaluation.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instDivInvMonoid",
+      "reuse_sha256": "6d746f2875fc21bd03ae23a424725e4404a4460a28a75da800f82a4084e46192",
+      "effect_on_target": "It supplies exact real inversion and division; although Lean division is total, the denominator is strictly positive whenever j : Fin n exists.",
+      "paper_match": "Thus its behavior on this target coincides with the ordinary nonzero-denominator quotient intended by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "instHDiv",
+      "reuse_sha256": "88680b9843aa138caa8b3352ee05f98af532e3c9fb6f2ed05c25ff1d81d1cb1c",
+      "effect_on_target": "It routes p14Softmax's homogeneous quotient to ordinary real division.",
+      "paper_match": "No alternate division semantics or floating-point operation is introduced.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The inspected PDF is the IMA Journal of Numerical Analysis 41(4), 2021 version, and its verified SHA-256 is 7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd. Equation (1.4) is on PDF page 3, and the softmax-sum discussion is on PDF page 17.",
+      "lean_evidence": "The packet gives the exact source declaration and two elaborated forms for p14_t3_softmax_shift_and_normalization.",
+      "reasoning": "The selected version and passages directly contain the shifted identity and exact normalization invariant used by the target."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "Equation (1.2) takes x in R^n and j = 1,...,n; equation (1.4) uses the same component and denominator index ranges and a scalar shift a.",
+      "lean_evidence": "The target binds n : Nat, x : Fin n -> Real, a : Real, and j : Fin n.",
+      "reasoning": "Fin n is an equivalent zero-based indexing of n real components, and all binder types have the intended meanings."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "Equation (1.4) presents the shifted identity for the common shift a, while the following paragraph says a = max_i x_i is typical rather than required.",
+      "lean_evidence": "The target universally quantifies a independently of x and j and uses that same a in every shifted component.",
+      "reasoning": "The target preserves the arbitrary common-shift scope and componentwise universal scope without imposing a witness such as a maximum."
+    },
+    {
+      "id": "S04",
+      "status": "pass",
+      "paper_evidence": "The paper assumes real components and implicitly a positive dimension through j = 1,...,n; the exact exponential denominator is positive.",
+      "lean_evidence": "All scalars are Real. For any instantiated j : Fin n, n is nonzero, and the denominator is a nonempty sum of positive Real.exp terms.",
+      "reasoning": "The omitted nonzero-denominator condition follows internally, and the n = 0 branch is vacuous rather than an unintended empty normalization claim."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "Equation (1.4) supplies shifted softmax equality, and printed page 2327 states that the sum of each softmax vector should equal 1. The algorithm accuracy comparison there is explicitly evidence from figures, not a universal theorem.",
+      "lean_evidence": "The target contains shift invariance and ordinary normalization, plus the equivalent absolute-value normalization.",
+      "reasoning": "Every exact mathematical conclusion selected from the passages is present. The target appropriately does not turn the qualitative experimental ranking into a theorem."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "Equations (1.2) and (1.4) use ordinary real exponential, finite summation, subtraction, and division.",
+      "lean_evidence": "p14Softmax unfolds to Real.exp(x j) divided by p14ExpSum x, and p14ExpSum unfolds to the Finset.univ sum of Real.exp(x i); all remaining operators are interpreted in dependency coverage.",
+      "reasoning": "The definitions expose exactly the paper's quotient and full exponential sum."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "Equation (1.4) is exact. On printed page 2327, sums of computed fp16 vectors are compared against the value 1 as a diagnostic and are not claimed to equal 1 exactly.",
+      "lean_evidence": "The target uses exact Real operations and contains no computed vector, rounding operator, or floating-point equality.",
+      "reasoning": "The Lean statement formalizes only the exact invariant and does not conflate it with experimental floating-point outputs."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "Equation (1.4) is the formula used for shifted softmax, and printed page 2327 uses normalization to compare Algorithms 3.1 and 4.1 with their alternatives.",
+      "lean_evidence": "The first conjunct is the exact identity underlying the shifted formula, while the second is the exact reference invariant used by the experimental test.",
+      "reasoning": "The target preserves the mathematical linkage without asserting unsupported execution-level accuracy claims."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "The normalization passage uses the ordinary scalar sum of all softmax components; no norm occurs in equation (1.4) or that invariant.",
+      "lean_evidence": "The target retains the ordinary sum equality and additionally states sum_i abs(p14Softmax x i) = 1.",
+      "reasoning": "Because every exact softmax component is positive, the absolute-value sum equals the ordinary sum. No squared, componentwise-error, or normwise-error notion is substituted."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "Both indices range from 1 through n, every denominator retains all n terms, the shift is common, and the normalization constant is 1.",
+      "lean_evidence": "Finset.univ ranges over every Fin n index, the function i |-> x i - a uses one a throughout, and both right-hand sides are the exact real literal 1.",
+      "reasoning": "The zero-based reindexing changes no term, coefficient, or parameter dependence."
+    },
+    {
+      "id": "S11",
+      "status": "pass",
+      "paper_evidence": "The exact identities use real arithmetic. Section 5 separately uses simulated fp16 and bfloat16, and excludes fp16 cases where Algorithm 3.1 overflowed.",
+      "lean_evidence": "The target has exact Real.exp, exact summation, and exact division, with no NaN, infinity, underflow, overflow, precision, or rounding-mode semantics.",
+      "reasoning": "This matches the exact result's model and does not improperly generalize the experimental floating-point observations."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "Equation (1.4) and the normalization invariant are equalities.",
+      "lean_evidence": "All target relations are Eq. The shift equality is oriented shifted-to-unshifted, the symmetric orientation of equation (1.4) after unfolding definitions.",
+      "reasoning": "Equality orientation is immaterial, and the absolute-value conjunct is a derived equivalent consequence rather than an independent strengthening."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The page 2327 normalization departure is only an empirical accuracy diagnostic and supplies no forward-, backward-, mixed-, or residual-error bound.",
+      "lean_evidence": "The target states exact identities and introduces no error quantity or stability predicate.",
+      "reasoning": "No error notion is substituted for another or promoted from the figures into a theorem."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Equation (1.4) and exact normalization contain no O(u) term; the experimental normalization paragraph states no asymptotic bound.",
+      "lean_evidence": "The target consists solely of exact equalities.",
+      "reasoning": "There are no omitted higher-order terms or first-order approximations to reconcile."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The paper's result concerns finite real vectors in R^n and an arbitrary common real shift, with a = max_i x_i only a typical numerical choice.",
+      "lean_evidence": "The target uses finite functions Fin n -> Real and quantifies over every real a.",
+      "reasoning": "This is a direct finite-dimensional real formalization, not a restrictive specialization to the maximum shift or a broader unsupported domain."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The formulas apply for positive dimensions; for example, n = 1 gives a genuine softmax component equal to 1 for every finite real input.",
+      "lean_evidence": "For n = 1, x : Fin 1 -> Real, any a, and the unique j, all conjuncts are substantive and true. For general inhabited Fin n the denominator is positive.",
+      "reasoning": "The theorem is nonvacuous on the paper's intended domain. Its n = 0 branch is vacuous only because no component index exists, which reflects the paper's implicit positive-dimension convention."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "Unfolding p14Softmax and p14ExpSum makes the first Lean conjunct the symmetric form of equation (1.4), while the second conjunct is exactly sum_j g_j = 1. The exact-real, finite-dimensional binders match the paper's intended domain."
+    },
+    "paper_implies_lean": {
+      "verdict": "yes",
+      "reasoning": "Equations (1.2) and (1.4) imply the Lean shift equality after unfolding definitions, and exact normalization gives the second conjunct. Since exponentials and their nonempty sum are positive, every softmax component is positive, so the paper's ordinary normalization also implies the target's absolute-value normalization."
+    }
+  },
+  "classification": "faithful-equivalent",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "note",
+      "category": "derived-redundant-conclusion",
+      "paper_evidence": "The paper states ordinary softmax normalization, and equation (1.2) defines each component as a positive exponential divided by a positive exponential sum.",
+      "lean_evidence": "The target additionally asserts that the sum of component absolute values is 1.",
+      "impact": "This adds no logical strength on the intended nonempty domain because every exact softmax component is positive."
+    }
+  ],
+  "rationale": "The verified PDF directly supports an arbitrary common-shift identity and exact sum-to-one normalization for finite real softmax vectors. After unfolding the two local definitions, the Lean proposition expresses those claims exactly. Its absolute-value normalization is redundant by positivity, its j : Fin n binder correctly makes the unintended empty-vector case vacuous, and it does not conflate the exact invariant with the paper's fp16/bfloat16 experimental diagnostics."
+}
