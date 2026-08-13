@@ -17,7 +17,7 @@
     "rationale"
   ],
   "properties": {
-    "schema_version": {"const": "highambench-faithfulness-0.1"},
+    "schema_version": {"const": "highambench-faithfulness-0.2"},
     "role": {"const": "adjudicator"},
     "task_id": {"type": "string", "pattern": "^P[0-9]{2}-T[123]$"},
     "trigger": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},

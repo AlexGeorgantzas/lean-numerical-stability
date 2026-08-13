@@ -12,16 +12,20 @@ SCRIPT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import finalize_audit
-from common import SEMANTIC_CHECKS, implication_classification
+import split_paper_source_contract
+from apply_dependency_reuse import dossier_sections
+from common import AUDIT_SCHEMA_VERSION, SEMANTIC_CHECKS, implication_classification
 from prepare_audit import (
     HIGHAMBENCH_ROOT,
     archive_existing_output,
     collect_local_imports,
+    dependency_fingerprint,
     direct_imports,
     parse_task_id,
     parse_lean_report,
     theorem_source,
 )
+from prepare_paper_audit import paper_task_ids
 from validate_audit import output_requires_adjudication
 
 AUDIT_ROOT = SCRIPT_DIR.parent
@@ -93,6 +97,24 @@ class AuditSetupTests(unittest.TestCase):
             output_requires_adjudication(source, blind, direct, roundtrip),
         )
 
+    def test_source_ambiguity_alone_does_not_require_adjudication(self) -> None:
+        source = {"ambiguities": [{"issue": "notation"}]}
+        blind = {"ambiguities": ["binder name"], "dependency_coverage": []}
+        direct = {
+            "classification": "faithful-equivalent",
+            "requires_adjudication": False,
+            "dependency_coverage": [],
+            "semantic_checklist": [],
+        }
+        roundtrip = {
+            "classification": "faithful-equivalent",
+            "requires_adjudication": False,
+            "semantic_checklist": [],
+        }
+        self.assertEqual(
+            output_requires_adjudication(source, blind, direct, roundtrip), []
+        )
+
     def test_force_refresh_archives_instead_of_deleting(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary)
@@ -122,6 +144,108 @@ class AuditSetupTests(unittest.TestCase):
             [item["role"] for item in dependencies],
             ["local", "external-frontier"],
         )
+        self.assertTrue(
+            all(re.fullmatch(r"[0-9a-f]{64}", item["semantic_sha256"]) for item in dependencies)
+        )
+
+    def test_dependency_fingerprint_ignores_task_local_metadata(self) -> None:
+        dependency = {
+            "id": "D001",
+            "distance": 1,
+            "role": "local",
+            "name": "HighamBench.foo",
+            "owner_module": "HighamBench.Core",
+            "kind": "definition",
+            "type_readable": "Nat",
+            "type_explicit": "Nat",
+            "body_readable": "1",
+        }
+        moved = {**dependency, "id": "D019", "distance": 7}
+        changed = {**dependency, "body_readable": "2"}
+        self.assertEqual(
+            dependency_fingerprint(dependency), dependency_fingerprint(moved)
+        )
+        self.assertNotEqual(
+            dependency_fingerprint(dependency), dependency_fingerprint(changed)
+        )
+
+    def test_paper_batch_inventory_is_t1_through_t3(self) -> None:
+        self.assertEqual(paper_task_ids("p03"), ["P03-T1", "P03-T2", "P03-T3"])
+
+    def test_paper_source_contract_splits_to_hash_bound_task_outputs(self) -> None:
+        task_ids = ["P03-T1", "P03-T2", "P03-T3"]
+        paper_hash = "a" * 64
+        locator_hash = "b" * 64
+        contracts = [
+            {
+                "task_id": task_id,
+                "source_evidence": [],
+                "statement": {},
+                "undebatable_constraints": [],
+                "ambiguities": [],
+                "contract_plain_english": task_id,
+            }
+            for task_id in task_ids
+        ]
+        batch = {
+            "schema_version": AUDIT_SCHEMA_VERSION,
+            "role": "paper-source-contract",
+            "paper_id": "P03",
+            "paper_sha256": paper_hash,
+            "source_locator_sha256": locator_hash,
+            "task_ids": task_ids,
+            "contracts": contracts,
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            audit_dirs = {task_id: root / task_id for task_id in task_ids}
+            for audit_dir in audit_dirs.values():
+                (audit_dir / "agent_outputs").mkdir(parents=True)
+            input_path = root / "paper-source.json"
+            input_path.write_text(json.dumps(batch), encoding="utf-8")
+
+            manifest = {
+                "paper": {"sha256": paper_hash},
+                "paper_batch": {
+                    "task_ids": task_ids,
+                    "source_locator": {"sha256": locator_hash},
+                },
+            }
+            with (
+                patch.object(
+                    split_paper_source_contract,
+                    "validate_prepared",
+                    return_value=(manifest, []),
+                ),
+                patch.object(
+                    split_paper_source_contract,
+                    "task_paths",
+                    side_effect=lambda task_id: (
+                        audit_dirs[task_id],
+                        audit_dirs[task_id],
+                    ),
+                ),
+                patch.object(split_paper_source_contract, "validate_role"),
+            ):
+                outputs = split_paper_source_contract.split_contract(input_path)
+
+            self.assertEqual(len(outputs), 3)
+            batch_hashes = set()
+            for task_id, output in zip(task_ids, outputs, strict=True):
+                value = json.loads(output.read_text(encoding="utf-8"))
+                batch_hashes.add(value["paper_batch_sha256"])
+                self.assertEqual(value["task_id"], task_id)
+                self.assertEqual(value["contract_plain_english"], task_id)
+            self.assertEqual(len(batch_hashes), 1)
+
+    def test_dependency_dossier_sections_are_exact(self) -> None:
+        prefix, sections = dossier_sections(
+            "# Packet\n\n### D001: `A`\n\nfirst\n\n### D002: `B`\n\nsecond\n"
+        )
+        self.assertEqual(prefix, "# Packet\n\n")
+        self.assertEqual(list(sections), ["D001", "D002"])
+        self.assertIn("first", sections["D001"])
+        self.assertNotIn("D002", sections["D001"])
 
     def test_all_json_schemas_parse(self) -> None:
         schemas = sorted((AUDIT_ROOT / "schemas").glob("*.json"))
@@ -129,13 +253,19 @@ class AuditSetupTests(unittest.TestCase):
         for schema in schemas:
             parsed = json.loads(schema.read_text(encoding="utf-8"))
             self.assertEqual(parsed["$schema"], "https://json-schema.org/draft/2020-12/schema")
+            self.assertEqual(
+                parsed["properties"]["schema_version"]["const"],
+                AUDIT_SCHEMA_VERSION,
+            )
 
     def test_repository_skill_has_no_scaffold_markers(self) -> None:
         skill = AUDIT_ROOT / "skill" / "highambench-faithfulness-audit" / "SKILL.md"
         text = skill.read_text(encoding="utf-8")
         self.assertNotIn("TODO", text)
         self.assertIn("fork_context: false", text)
-        self.assertIn("declaration_dossier.md", text)
+        self.assertIn("prepare_paper_audit.py", text)
+        self.assertIn("direct_review_packet.md", text)
+        self.assertIn("--role direct", text)
 
     def test_finalizer_writes_decision_report_and_hashes(self) -> None:
         source = {"ambiguities": []}
@@ -175,6 +305,7 @@ class AuditSetupTests(unittest.TestCase):
             (audit_dir / "manifest.json").write_text(
                 json.dumps(
                     {
+                        "schema_version": AUDIT_SCHEMA_VERSION,
                         "target": {"sha256": "a" * 64},
                         "paper": {"sha256": "b" * 64},
                     }

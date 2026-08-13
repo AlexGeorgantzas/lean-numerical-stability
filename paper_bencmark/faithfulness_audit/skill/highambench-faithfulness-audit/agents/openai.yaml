@@ -1,4 +1,4 @@
 interface:
   display_name: "HighamBench Faithfulness Audit"
   short_description: "Audit Lean targets against source papers"
-  default_prompt: "Use $highambench-faithfulness-audit to run a complete faithfulness audit for P11-T1."
+  default_prompt: "Use $highambench-faithfulness-audit to run the fast paper-batch audit for P03."

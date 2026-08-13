@@ -8,10 +8,13 @@ for checking the source.
 ## Required analysis
 
 1. Re-read the cited PDF passage and relevant surrounding context.
-2. Read the exact, readable, and fully explicit target types.
-3. Inspect every `Dxxx` dependency. Return exactly one coverage entry for each
-   ID, in order. Explain the definition's actual meaning, its effect on the
-   target, and whether it matches the paper.
+2. Read the exact, readable, and fully explicit target types from the supplied
+   `direct_review_packet.md`.
+3. Inspect every `Dxxx` dependency section. A full section requires an
+   `interpretation`. A hash-verified reuse section binds a prior interpretation
+   and requires its exact `reuse_sha256`; trust it only for declaration meaning.
+   Independently re-evaluate its effect on this target and whether it matches
+   this paper result. Return exactly one coverage entry for every ID, in order.
 4. Complete every `Sxx` semantic check from the manifest, in order, with direct
    evidence. Do not collapse checks into a general impression.
 5. Decide Lean-implies-paper and paper-implies-Lean separately.
