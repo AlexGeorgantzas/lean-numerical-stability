@@ -1,0 +1,91 @@
+{
+  "accepted": false,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-13T11:16:36.593035+00:00",
+  "findings": [
+    {
+      "category": "algorithm-linkage",
+      "impact": "The formal theorem does not prove the paper's numerical-stability result; it proves only an algebraic symmetry extension after the substantive estimate has been supplied.",
+      "lean_evidence": "The target has no Cholesky execution relation and assumes hupper, which is already the upper-triangle portion of the rowwise componentwise bound.",
+      "paper_evidence": "Theorem 4.4 conditions on completed conventional Cholesky factorization without underflow or overflow, and its proof derives local residual estimates from the floating-point updates.",
+      "severity": "critical"
+    },
+    {
+      "category": "floating-point-model",
+      "impact": "The theorem ranges over a different class of objects and cannot express the paper's hypotheses.",
+      "lean_evidence": "A and R are arbitrary real matrices and u is any nonnegative real, with no representability, rounding, exceptional-value, or computedness predicates.",
+      "paper_evidence": "A and the computed factor belong to F^(n x n), u is the model's unit roundoff, and the arithmetic is round to nearest with underflow and overflow excluded.",
+      "severity": "major"
+    },
+    {
+      "category": "local-estimates",
+      "impact": "The distinct local bounds and the numerical derivation that produces them are missing.",
+      "lean_evidence": "No local estimate is concluded; hupper uniformly uses the looser row coefficient i.val+2 for all upper entries.",
+      "paper_evidence": "Equation (4.5a) gives coefficient i*u for upper off-diagonal entries, while equation (4.5b) gives (j+1)u on the diagonal.",
+      "severity": "major"
+    },
+    {
+      "category": "quantifier-domain",
+      "impact": "The two claims are logically incomparable rather than equivalent or a faithful strengthening.",
+      "lean_evidence": "The target universally quantifies every real matrix R satisfying hupper, whether or not it is upper triangular or produced by Cholesky.",
+      "paper_evidence": "The perturbation conclusion concerns the particular factor produced by a successful Cholesky run.",
+      "severity": "major"
+    },
+    {
+      "category": "algorithmic result replaced by residual premise",
+      "impact": "The proposition does not formalize the paper's substantive numerical-analysis claim.",
+      "paper_evidence": "Theorem 4.4 derives equation (4.4) from successful conventional Cholesky execution, using Lemmas 4.1 and 4.3 to establish equations (4.5a)-(4.5b).",
+      "severity": "critical",
+      "translation_evidence": "The translation assumes an upper-triangular rowwise residual bound and only derives its full-matrix extension."
+    },
+    {
+      "category": "floating-point execution model omitted",
+      "impact": "The translated statement has no semantic connection to the conditions under which the paper proves its bound.",
+      "paper_evidence": "A and R_hat have entries in F, R_hat is computed, factorization runs to completion, arithmetic rounds to nearest, and underflow and overflow are excluded.",
+      "severity": "major",
+      "translation_evidence": "A and R are arbitrary real matrices, u is merely nonnegative, and no computation or exceptional-value conditions appear."
+    },
+    {
+      "category": "local estimates missing",
+      "impact": "Required cases, constants, and algorithm-derived local information are lost.",
+      "paper_evidence": "Equation (4.5a) has the sharper off-diagonal coefficient i*u and sum endpoint i; equation (4.5b) has coefficient (j+1)u and sum endpoint j.",
+      "severity": "major",
+      "translation_evidence": "Neither estimate is concluded separately; a full-sum bound with coefficient i.val+2 is assumed for every upper-triangular pair."
+    },
+    {
+      "category": "unintended trivialization",
+      "impact": "The formal result can be established without reasoning about Cholesky factorization or floating-point error.",
+      "paper_evidence": "The difficult step is proving the computed residual bounds without dimension restrictions or quadratic terms.",
+      "severity": "major",
+      "translation_evidence": "After setting Delta A=R^T R-A, the exact equation is automatic and symmetry extends the assumed upper-triangular inequality to the lower triangle."
+    },
+    {
+      "category": "core equation and full-bound constants preserved",
+      "impact": "The algebraic form and componentwise interpretation of the main displayed conclusion are accurately represented despite the missing derivation and numerical context.",
+      "paper_evidence": "Equation (4.4) states R_hat^T R_hat=A+Delta A with rowwise coefficient (i+1)u and uniform coefficient (n+1)u.",
+      "severity": "note",
+      "translation_evidence": "The conclusion states R^T R=A+Delta A and uses i.val+2 and n+1, which correctly account for zero-based indexing."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean statement cannot establish Theorem 4.4 from successful floating-point Cholesky execution because it contains no execution model and requires the central upper residual estimate hupper as an additional premise.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper proves the conclusion only for computed floating-point Cholesky factors under its execution conditions; it does not assert Lean's universal algebraic implication for every arbitrary real A and R satisfying hupper.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "The target correctly encodes the exact identity R^T R = A + DeltaA, the componentwise majorant |R^T||R|, and the zero-based forms of the rowwise (i+1)u and uniform (n+1)u constants. However, it removes the floating-point Cholesky algorithm and its execution assumptions and replaces the substantive upper-triangle error analysis by hupper. It also omits the distinct local estimates (4.5a)-(4.5b) and quantifies arbitrary real matrices. Consequently it is an algebraic symmetry-extension result with neither implication to the paper theorem, so it is not faithful.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P05-T3"
+}

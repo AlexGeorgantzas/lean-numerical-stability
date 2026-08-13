@@ -1,0 +1,172 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P05-T3",
+  "paper_sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6",
+  "blind_translation_sha256": "cdc53949f20209460810b6aa91be140d279befb6c32d7f9151d394703bc0979a",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF states Theorem 4.4 on PDF page 11, printed page 694, with equation (4.4) and proof equations (4.5a)-(4.5b) on PDF page 12, printed page 695.",
+      "translation_evidence": "The translation concerns a symmetric matrix A, the Gram product R^T R, an exact perturbation Delta A, and the rowwise and uniform coefficients i.val+2 and n+1.",
+      "reasoning": "The selected result is the intended Cholesky backward-error theorem, and i.val+2 correctly converts the theorem's one-based coefficient i+1 to zero-based indexing."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Theorem 4.4 has A and the computed factor R_hat in F^(n x n); R_hat is the upper-triangular output of Cholesky factorization.",
+      "translation_evidence": "The translation quantifies n as an arbitrary natural number, u as an arbitrary real, and A and R as arbitrary real-valued matrices. It allows n=0 and imposes no triangularity or computed-factor status on R.",
+      "reasoning": "The matrix-entry types, dimension domain, status of u, and meaning of R differ materially from the paper."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The paper conditions on execution of Cholesky factorization and then asserts the backward-error properties of its computed output R_hat.",
+      "translation_evidence": "The translation universally quantifies an arbitrary R and adds an upper-triangular residual-bound hypothesis before existentially quantifying Delta A.",
+      "reasoning": "Although the dependence and scope of Delta A are reasonable, quantifying an arbitrary R under a new residual premise is not the paper's quantification over a computed algorithmic output."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The explicit hypotheses are symmetry of A, successful completion of Cholesky factorization, and absence of underflow and overflow. Positive definiteness is not an explicit theorem hypothesis.",
+      "translation_evidence": "The hypotheses are 0 <= u, symmetry of A, and an already-established upper-triangular residual bound. Completion, underflow, overflow, floating-point membership, and execution conditions are absent.",
+      "reasoning": "The translation correctly avoids adding positive definiteness, but it omits the operative numerical hypotheses and replaces them with a substantial part of the desired estimate."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Equation (4.4) gives the exact backward equation and both full componentwise bounds; equations (4.5a)-(4.5b) additionally give the off-diagonal i*u and diagonal (j+1)*u local estimates.",
+      "translation_evidence": "The conclusion contains the exact equation and both full bounds, but contains no separate conclusions corresponding to (4.5a) and (4.5b). A combined upper-triangular estimate instead appears as a hypothesis.",
+      "reasoning": "The main equation (4.4) is represented, but the required local estimates and their distinct cases are not preserved as results."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "In equation (4.4), R_hat^T R_hat is an exact matrix product, matrix absolute values are entrywise, and |R_hat^T||R_hat| is an ordinary matrix product of entrywise absolute values.",
+      "translation_evidence": "Dependencies D001-D003 explicitly define the absolute-product matrix, ordinary matrix product, and transpose; the ledger also explains pointwise matrix addition, finite sums, casts, order, and scalar absolute value.",
+      "reasoning": "The nontrivial operators that are actually represented are unfolded consistently with the paper."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "R_hat consists of values computed by rounded subtraction, division, and square-root operations, while the products and residuals in equations (4.4)-(4.5) are exact mathematical expressions involving those computed values.",
+      "translation_evidence": "All expressions are exact real arithmetic, and R is not identified as a computed floating-point matrix.",
+      "reasoning": "The exact treatment of R^T R is correct, but the essential distinction between an exact expression and its computed floating-point operands is lost."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Theorem 4.4 is tied to the conventional unpivoted columnwise upper-triangular Cholesky algorithm, successful completion, and the displayed subtraction/division and subtraction/square-root updates.",
+      "translation_evidence": "The translation explicitly states that no algorithm, floating-point operation, rounding function, or computed matrix is represented.",
+      "reasoning": "There is no statement-level bridge from the paper's algorithm to the residual hypothesis assumed by the translation."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Equation (4.4) uses entrywise absolute values and componentwise matrix inequalities, not a matrix or vector norm.",
+      "translation_evidence": "The translation gives scalar absolute-value inequalities separately for every matrix entry and states no normwise bound.",
+      "reasoning": "The componentwise semantics of the represented bounds are preserved."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The theorem's one-based row coefficient is (i+1)u and its uniform coefficient is (n+1)u. Locally, (4.5a) uses i*u with a sum through k=i, while (4.5b) uses (j+1)u with a sum through k=j.",
+      "translation_evidence": "The full-bound coefficients i.val+2 and n+1 correctly encode equation (4.4), but the hypothesis applies i.val+2 uniformly to all upper-triangular pairs and sums over every k in Fin n.",
+      "reasoning": "The principal theorem constants are correct after index conversion, but the sharper off-diagonal coefficient and the local sum endpoints from (4.5a)-(4.5b) are absent."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The paper uses finite floating-point numbers, round-to-nearest arithmetic, u=(1/2)beta^(1-p), arbitrary radix and tie breaking, arbitrary summation order, and exclusion of underflow and overflow.",
+      "translation_evidence": "The only numerical condition is that the arbitrary real parameter u is nonnegative.",
+      "reasoning": "Precision, radix, rounding, floating-point representability, exceptional-value behavior, and the relationship defining unit roundoff are not encoded."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper derives the componentwise backward-error bounds from algorithmic execution hypotheses.",
+      "translation_evidence": "The translation derives full bounds after assuming the rowwise bound on every upper-triangular residual.",
+      "reasoning": "The equality and inequality directions inside the conclusion match, but the logical strength does not: the central numerical estimate has been moved into the antecedent."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Delta A is the componentwise backward perturbation defined by the exact relation R_hat^T R_hat=A+Delta A.",
+      "translation_evidence": "Delta A is existentially introduced with the exact relation R^T R=A+Delta A and is bounded componentwise.",
+      "reasoning": "The represented error remains a componentwise backward error rather than a forward, normwise, or mixed error."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Theorem 4.4 has exact linear-in-u bounds, no O(u^2) remainder, and no condition such as (n+1)u<1.",
+      "translation_evidence": "The translation uses exact coefficients linear in u and imposes no smallness condition or higher-order remainder.",
+      "reasoning": "The higher-order treatment of the represented bounds matches."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The theorem applies to floating-point matrices and the computed factor produced by a particular Cholesky execution.",
+      "translation_evidence": "The translation ranges over arbitrary real matrices, arbitrary nonnegative real u, possibly zero dimension, and matrices R with no Cholesky structure.",
+      "reasoning": "This is a broad domain generalization combined with a stronger residual antecedent, not a faithful or explicitly classified specialization of the paper theorem."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The paper's nontrivial content is that the floating-point Cholesky computation itself satisfies the sharp residual and backward-error bounds.",
+      "translation_evidence": "For n=0 all conditions are vacuous. For general n, Delta A is uniquely R^T R-A, and symmetry propagates the assumed upper-triangular bound to the lower triangle.",
+      "reasoning": "The hypotheses are satisfiable, but the translated conclusion follows for an unintended elementary reason after the central numerical bound is assumed."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translation provides no result showing that a completed floating-point Cholesky computation satisfies its upper-triangular residual hypothesis. Therefore it cannot recover Theorem 4.4 from the paper's execution assumptions."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper only covers computed floating-point Cholesky factors under completion and exceptional-value assumptions. It does not assert the translated universal statement for arbitrary real A, R, nonnegative u, and zero dimension."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "algorithmic result replaced by residual premise",
+      "paper_evidence": "Theorem 4.4 derives equation (4.4) from successful conventional Cholesky execution, using Lemmas 4.1 and 4.3 to establish equations (4.5a)-(4.5b).",
+      "translation_evidence": "The translation assumes an upper-triangular rowwise residual bound and only derives its full-matrix extension.",
+      "impact": "The proposition does not formalize the paper's substantive numerical-analysis claim."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point execution model omitted",
+      "paper_evidence": "A and R_hat have entries in F, R_hat is computed, factorization runs to completion, arithmetic rounds to nearest, and underflow and overflow are excluded.",
+      "translation_evidence": "A and R are arbitrary real matrices, u is merely nonnegative, and no computation or exceptional-value conditions appear.",
+      "impact": "The translated statement has no semantic connection to the conditions under which the paper proves its bound."
+    },
+    {
+      "severity": "major",
+      "category": "local estimates missing",
+      "paper_evidence": "Equation (4.5a) has the sharper off-diagonal coefficient i*u and sum endpoint i; equation (4.5b) has coefficient (j+1)u and sum endpoint j.",
+      "translation_evidence": "Neither estimate is concluded separately; a full-sum bound with coefficient i.val+2 is assumed for every upper-triangular pair.",
+      "impact": "Required cases, constants, and algorithm-derived local information are lost."
+    },
+    {
+      "severity": "major",
+      "category": "unintended trivialization",
+      "paper_evidence": "The difficult step is proving the computed residual bounds without dimension restrictions or quadratic terms.",
+      "translation_evidence": "After setting Delta A=R^T R-A, the exact equation is automatic and symmetry extends the assumed upper-triangular inequality to the lower triangle.",
+      "impact": "The formal result can be established without reasoning about Cholesky factorization or floating-point error."
+    },
+    {
+      "severity": "note",
+      "category": "core equation and full-bound constants preserved",
+      "paper_evidence": "Equation (4.4) states R_hat^T R_hat=A+Delta A with rowwise coefficient (i+1)u and uniform coefficient (n+1)u.",
+      "translation_evidence": "The conclusion states R^T R=A+Delta A and uses i.val+2 and n+1, which correctly account for zero-based indexing.",
+      "impact": "The algebraic form and componentwise interpretation of the main displayed conclusion are accurately represented despite the missing derivation and numerical context."
+    }
+  ],
+  "rationale": "The translation accurately represents the algebraic backward equation and the two full componentwise bounds from equation (4.4), including the zero-based row offset. It does not represent the theorem that the conventional floating-point Cholesky algorithm produces a factor satisfying those bounds. Instead, it quantifies an arbitrary real matrix R, assumes the key upper-triangular residual estimate, and proves an elementary symmetry extension. It also omits the floating-point model, completion and exceptional-value hypotheses, computed upper-triangular structure, and the distinct local estimates (4.5a)-(4.5b). Consequently neither semantic implication holds, so the appropriate classification is not-faithful-different."
+}
