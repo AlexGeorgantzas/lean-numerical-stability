@@ -1,0 +1,431 @@
+{
+  "contracts": [
+    {
+      "ambiguities": [
+        {
+          "evidence": "Equation (3.15) divides by norm2(hat_Z_k hat_y_k), but neither that definition nor the use in (C.7) states a separate nonzero-denominator assumption (PDF p. 11, printed p. 10, anchor: equation (3.15); PDF p. 42, printed p. 41, anchor: equation (C.7)).",
+          "impact": "The exact bracket remains valid, but the relative correction estimate and the approximate-equality conclusion require an interpretation or exclusion of the zero-product case.",
+          "issue": "rho_A^R can be undefined when norm2(hat_Z_k hat_y_k) = 0."
+        },
+        {
+          "evidence": "Section 2 defines several 2-norm/Frobenius-based condition numbers and says the paper often writes simply kappa when the context does not require differentiation (PDF p. 6, printed p. 5, anchor: condition-number notation); equation (C.7) uses unqualified kappa(A) (PDF p. 42, printed p. 41, anchor: equation (C.7)).",
+          "impact": "This does not affect the exact triangle bracket, but an exact formalization of its conditional smallness consequence must choose the intended condition number or retain it abstractly.",
+          "issue": "The condition-number norm hidden by kappa(A) is not fixed locally."
+        }
+      ],
+      "contract_plain_english": "The stored product hat_Z_k hat_y_k and the analysis-only product tilde_Z_k hat_y_k differ by exactly Delta Z_k^(2)hat_y_k, so the latter's 2-norm is at most the former's 2-norm plus the correction's 2-norm, with the matching lower triangle bound also displayed. Only after bounding that correction by c(n,k)u_a kappa(A)rho_A^R and assuming it is small does the paper call the two product norms approximately equal (PDF p. 42, printed p. 41, anchor: equations (C.7)-(C.8) and following text).",
+      "source_evidence": [
+        {
+          "anchor": "Appendix C, equations (C.1)-(C.2)",
+          "observation": "For j <= k, the stored vector is hat_z_j = fl(M_R^-1 hat_v_j). Matrix-product rounding is represented by fl(A M_R^-1 hat_v_j) = (A + Delta A^(j))hat_z_j, with |Delta A^(j)| bounded componentwise by c(n,k)u_a|A|. The proof defines tilde_z_j = hat_z_j + A^-1 Delta A^(j)hat_z_j and tilde_Z_k = [tilde_z_1,...,tilde_z_k], so that fl(A M_R^-1 hat_v_j) = A tilde_z_j.",
+          "pdf_page": 41,
+          "printed_page": "40"
+        },
+        {
+          "anchor": "equation (C.5)",
+          "observation": "The matrix-product correction is Delta Z_k^(2) = [A^-1 Delta A^(1)hat_z_1,...,A^-1 Delta A^(k)hat_z_k], and tilde_Z_k = hat_Z_k + Delta Z_k^(2). The superscript (2) labels this correction component; it is not a square.",
+          "pdf_page": 42,
+          "printed_page": "41"
+        },
+        {
+          "anchor": "equations (C.7)-(C.8)",
+          "observation": "Equation (C.7) gives norm2(Delta Z_k^(2)hat_y_k) <= c(n,k)u_a kappa(A)rho_A^R norm2(hat_Z_k hat_y_k). Equation (C.8) gives the exact two-sided triangle bracket norm2(hat_Z_k hat_y_k) - norm2(Delta Z_k^(2)hat_y_k) <= norm2(tilde_Z_k hat_y_k) <= norm2(hat_Z_k hat_y_k) + norm2(Delta Z_k^(2)hat_y_k).",
+          "pdf_page": 42,
+          "printed_page": "41"
+        },
+        {
+          "anchor": "text immediately following equation (C.8)",
+          "observation": "Using u_a kappa(A)rho_A^R << 1 from condition (3.16), the authors combine (C.7) and (C.8) to deduce norm2(hat_Z_k hat_y_k) approximately equals norm2(tilde_Z_k hat_y_k). This approximation is a subsequent conditional consequence, not part of the exact bracket itself.",
+          "pdf_page": 42,
+          "printed_page": "41"
+        },
+        {
+          "anchor": "equations (3.15)-(3.16)",
+          "observation": "rho_A^R is defined as norm2(|hat_Z_k||hat_y_k|)/norm2(hat_Z_k hat_y_k), where absolute values are componentwise, and condition (3.16) includes u_a kappa(A)rho_A^R << 1.",
+          "pdf_page": 11,
+          "printed_page": "10"
+        },
+        {
+          "anchor": "Section 2, notation paragraphs",
+          "observation": "The paper uses vector and induced matrix 2-norms and Frobenius matrix norms. The symbol approximately equal and the symbol less-than-or-approximately-equal are used after dropping negligible second-order terms, while c(n,k) denotes an unspecified low-degree polynomial in n and k.",
+          "pdf_page": 6,
+          "printed_page": "5"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "In Algorithm 1 right-preconditioning, each basis vector is first mapped through M_R^-1 and then through A. Appendix C identifies hat_Z_k with the stored results of the former operation and tilde_Z_k with an analysis-only basis absorbing rounding from the latter; equation (C.8) compares their products with the computed least-squares vector hat_y_k (PDF p. 3, printed p. 2, anchor: Algorithm 1 right, lines 6-18; PDF p. 41, printed p. 40, anchor: equations (C.1)-(C.2); PDF p. 42, printed p. 41, anchor: equation (C.8)).",
+        "binders": [
+          "Let 1 <= k <= n and let A in R^(n x n) be nonsingular, as required by the construction using A^-1 in Appendix C (PDF p. 41, printed p. 40, anchor: equations (C.1)-(C.2)).",
+          "For j = 1,...,k, let hat_v_j in R^n be a computed Krylov vector, hat_z_j = fl(M_R^-1 hat_v_j), hat_Z_k = [hat_z_1,...,hat_z_k] in R^(n x k), and hat_y_k in R^k be the computed least-squares coefficient vector (PDF p. 41, printed p. 40, anchor: equations (C.1)-(C.2); PDF p. 11, printed p. 10, anchor: equation (3.15)).",
+          "Let Delta Z_k^(2) = [A^-1 Delta A^(1)hat_z_1,...,A^-1 Delta A^(k)hat_z_k] and tilde_Z_k = hat_Z_k + Delta Z_k^(2) (PDF p. 42, printed p. 41, anchor: equation (C.5))."
+        ],
+        "conclusions": [
+          "The selected upper branch is norm2(tilde_Z_k hat_y_k) <= norm2(hat_Z_k hat_y_k) + norm2(Delta Z_k^(2)hat_y_k) (PDF p. 42, printed p. 41, anchor: equation (C.8), upper inequality).",
+          "The same displayed equation also preserves the lower branch norm2(hat_Z_k hat_y_k) - norm2(Delta Z_k^(2)hat_y_k) <= norm2(tilde_Z_k hat_y_k) (PDF p. 42, printed p. 41, anchor: equation (C.8), lower inequality).",
+          "Conditionally, if the correction is small as prescribed by (C.7) and (3.16), the paper concludes norm2(hat_Z_k hat_y_k) approximately equals norm2(tilde_Z_k hat_y_k) (PDF p. 42, printed p. 41, anchor: text immediately following equation (C.8))."
+        ],
+        "constants_and_indexing": [
+          "The columns and perturbations are indexed j = 1,...,k; Delta Z_k^(2) is an n by k matrix and hat_y_k has k entries (PDF p. 42, printed p. 41, anchor: equation (C.5)).",
+          "c(n,k) is an unspecified polynomial of low degree in n and k; no numerical value is supplied (PDF p. 6, printed p. 5, anchor: Section 2 definition of c(n,k)).",
+          "The superscript (2) on Delta Z_k^(2) distinguishes the matrix-product correction from Delta Z_k^(1), the preconditioner-application correction (PDF p. 42, printed p. 41, anchor: equations (C.4)-(C.5))."
+        ],
+        "definitions_and_conventions": [
+          "hat_Z_k is the basis formed from stored computed applications of M_R^-1, whereas tilde_Z_k is a mathematical search-space artifact that additionally absorbs rounding from multiplication by A and is not algorithmically accessible (PDF p. 41, printed p. 40, anchor: discussion following equation (C.2)).",
+          "rho_A^R = norm2(|hat_Z_k||hat_y_k|)/norm2(hat_Z_k hat_y_k), with componentwise absolute values in the numerator (PDF p. 11, printed p. 10, anchor: equation (3.15)).",
+          "The paper's approximation symbol indicates that negligible second-order terms have been dropped; the inequalities in (C.8), by contrast, are displayed as ordinary non-asymptotic inequalities (PDF p. 6, printed p. 5, anchor: Section 2 notation; PDF p. 42, printed p. 41, anchor: equation (C.8))."
+        ],
+        "error_notions": [
+          "The selected claim bounds the norm of a perturbed basis product; it does not directly bound the solution's normalized forward error (PDF p. 42, printed p. 41, anchor: equation (C.8)).",
+          "The associated relative correction measure is controlled through c(n,k)u_a kappa(A)rho_A^R in (C.7) (PDF p. 42, printed p. 41, anchor: equation (C.7))."
+        ],
+        "exceptional_values": [
+          "A must be nonsingular because Delta Z_k^(2) is defined using A^-1 (PDF p. 41, printed p. 40, anchor: equation (C.2); PDF p. 42, printed p. 41, anchor: equation (C.5)).",
+          "The bracket remains meaningful when hat_Z_k hat_y_k is zero, but rho_A^R and the subsequent relative correction argument then have a zero denominator; the paper does not separately state how that case is handled (PDF p. 11, printed p. 10, anchor: equation (3.15); PDF p. 42, printed p. 41, anchor: equations (C.7)-(C.8)).",
+          "Overflow, underflow, NaN, and infinity are not discussed explicitly; the stated standard floating-point model presupposes that the modeled operations produce ordinary finite values (PDF p. 5, printed p. 4, anchor: standard floating-point model statement)."
+        ],
+        "higher_order_terms": [
+          "Equation (C.8) itself is an exact triangle-inequality bracket and contains no omitted term (PDF p. 42, printed p. 41, anchor: equation (C.8)).",
+          "The later approximate equality uses the paper's convention of neglecting second-order effects after imposing the smallness condition (PDF p. 6, printed p. 5, anchor: approximation convention; PDF p. 42, printed p. 41, anchor: text following equation (C.8))."
+        ],
+        "hypotheses": [
+          "The selected upper inequality requires only the exact relation tilde_Z_k hat_y_k = hat_Z_k hat_y_k + Delta Z_k^(2)hat_y_k and the triangle inequality; it does not itself require condition (3.16) (PDF p. 42, printed p. 41, anchor: equation (C.8)).",
+          "For the subsequent approximate-equality conclusion, the proof additionally uses norm2(Delta Z_k^(2)hat_y_k) <= c(n,k)u_a kappa(A)rho_A^R norm2(hat_Z_k hat_y_k) and u_a kappa(A)rho_A^R << 1 (PDF p. 42, printed p. 41, anchor: equation (C.7) and text following (C.8); PDF p. 11, printed p. 10, anchor: condition (3.16)).",
+          "The surrounding proof inherits the right-preconditioned GMRES setting and the assumptions of Theorem 3.3, but those assumptions are stronger than necessary for the algebraic bracket alone (PDF p. 41, printed p. 40, anchor: opening of Appendix C; PDF p. 42, printed p. 41, anchor: equation (C.8))."
+        ],
+        "implicit_context": [
+          "This bracket is an intermediate step in the proof of the conditional attainable-forward-error theorem for right-preconditioned GMRES, not a standalone forward-error theorem (PDF p. 41, printed p. 40, anchor: Appendix C heading; PDF p. 43, printed p. 42, anchor: conclusion of the proof of Theorem 3.3).",
+          "The correction Delta Z_k^(2) accounts for matrix-product rounding from applying A; preconditioner-application rounding is already present in the stored vectors hat_z_j and is represented separately by Delta Z_k^(1) elsewhere in the proof (PDF p. 41, printed p. 40, anchor: equations (C.1)-(C.2); PDF p. 42, printed p. 41, anchor: equations (C.4)-(C.5))."
+        ],
+        "norms": [
+          "Every norm in equation (C.8) is the Euclidean vector 2-norm (PDF p. 42, printed p. 41, anchor: equation (C.8)).",
+          "The surrounding perturbation model additionally uses componentwise absolute-value inequalities and Frobenius matrix norms (PDF p. 41, printed p. 40, anchor: equation (C.1); PDF p. 42, printed p. 41, anchor: equation (C.5))."
+        ],
+        "numerical_model": [
+          "The matrix product is modeled by fl(A M_R^-1 hat_v_j) = (A + Delta A^(j))hat_z_j with |Delta A^(j)| <= c(n,k)u_a|A|, where u_a is the unit roundoff used for multiplication by A (PDF p. 41, printed p. 40, anchor: equation (C.1)).",
+          "The paper globally adopts the standard floating-point model and assumes its unit roundoffs are substantially below one (PDF p. 5, printed p. 4, anchor: Section 2 opening notation paragraphs)."
+        ]
+      },
+      "task_id": "P19-T1",
+      "undebatable_constraints": [
+        "The upper inequality's middle quantity is norm2(tilde_Z_k hat_y_k), not norm2(hat_Z_k hat_y_k) (PDF p. 42, printed p. 41, anchor: equation (C.8)).",
+        "The additive correction is norm2(Delta Z_k^(2)hat_y_k); it is not merely norm2(Delta Z_k^(2)) or a scalar big-O term (PDF p. 42, printed p. 41, anchor: equation (C.8)).",
+        "The selected inequality is non-strict and exact once tilde_Z_k = hat_Z_k + Delta Z_k^(2) is fixed (PDF p. 42, printed p. 41, anchor: equations (C.5) and (C.8)).",
+        "The smallness assumption u_a kappa(A)rho_A^R << 1 is needed for the approximate-equality deduction, not for the triangle bracket itself (PDF p. 42, printed p. 41, anchor: text around equations (C.7)-(C.8)).",
+        "Both branches of the displayed two-sided result must be preserved even though the locator selects its upper branch (PDF p. 42, printed p. 41, anchor: equation (C.8))."
+      ]
+    },
+    {
+      "ambiguities": [
+        {
+          "evidence": "Section 2 defines kappa_F, kappa_2, and a Frobenius-to-smallest-singular-value condition measure, then says the paper often writes simply kappa because of norm equivalence (PDF p. 6, printed p. 5, anchor: condition-number notation). Equation (3.8) uses unqualified kappa (PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+          "impact": "A formal contract should either keep kappa abstract as the paper does or explicitly choose and justify one of the paper's normwise variants.",
+          "issue": "The exact normwise interpretation of unqualified kappa is not fixed throughout the theorem."
+        },
+        {
+          "evidence": "Theorem 3.1 supposes a basis of increasing dimension k <= n and then says there exists a dimension k <= n satisfying the result (PDF p. 9, printed p. 8, anchor: opening of Theorem 3.1).",
+          "impact": "The quantifier should be formalized as existence of an index in an increasing full-rank basis family, rather than treating one fixed k as both given and newly chosen.",
+          "issue": "The symbol k is used both for the varying family of basis dimensions and for the existentially selected dimension."
+        },
+        {
+          "evidence": "The paper defines c(n,k) only as a low-degree polynomial and defines its comparison symbol by dropping negligible second-order terms (PDF p. 6, printed p. 5, anchor: notation paragraphs); equation (3.8) uses both devices (PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+          "impact": "Equation (3.8) is not an exact inequality with a recoverable numerical constant from the displayed statement alone.",
+          "issue": "The forward-error comparison hides both unspecified constants and omitted second-order terms."
+        }
+      ],
+      "contract_plain_english": "At some dimension k no larger than n, the MGS-generated basis is controlled by the constants 4/3. If all four modular computations satisfy their normwise models and smallness conditions, then for any nonsingular analytical right preconditioner M_R the attainable normalized forward error is bounded, to first order and up to c(n,k), by kappa(M_L^-1 A M_R^-1) times xi. The quantity xi is precisely the weighted sum alpha epsilon_c + beta epsilon_b + beta u_g + lambda epsilon_x, corresponding respectively to matrix-product error, preconditioned-right-hand-side error, least-squares rounding, and solution-formation error (PDF p. 9, printed p. 8, anchor: Theorem 3.1 and equations (3.7)-(3.8)).",
+      "source_evidence": [
+        {
+          "anchor": "equation (1.1)",
+          "observation": "The standing problem is Ax = b with A in R^(n x n), A nonsingular, and nonzero b in R^n.",
+          "pdf_page": 2,
+          "printed_page": "1"
+        },
+        {
+          "anchor": "Algorithm 2 and equations (3.1)-(3.3)",
+          "observation": "Algorithm 2 forms C_k = M_L^-1 A tilde_Z_k, forms tilde_b = M_L^-1 b, solves a least-squares problem by MGS and Givens rotations, and forms x_k = tilde_Z_k y_k. Equations (3.2) and (3.3) define relative error parameters epsilon_c and epsilon_b.",
+          "pdf_page": 7,
+          "printed_page": "6"
+        },
+        {
+          "anchor": "least-squares error model and equations (3.4)-(3.6)",
+          "observation": "The MGS/Givens least-squares computation contributes errors of size c(n,k)u_g when hat_C_k is not numerically singular. Equation (3.4) defines epsilon_x through norm2(Delta x) <= epsilon_x norm2(tilde_Z_k hat_y_k). Conditions (3.5)-(3.6) require (epsilon_c + epsilon_b + u_g)kappa(M_L^-1 A tilde_Z_k) << 1 and epsilon_x << 1.",
+          "pdf_page": 8,
+          "printed_page": "7"
+        },
+        {
+          "anchor": "Theorem 3.1, equations (3.7)-(3.8)",
+          "observation": "For a full-rank basis of increasing dimension and nonsingular M_L, Theorem 3.1 asserts the existence of k <= n for which the computed Krylov basis satisfies sigma_min(hat_V_k)^(-1) <= 4/3 and sigma_max(hat_V_k) <= 4/3. Subject to the modular models and conditions, for any nonsingular M_R the normalized forward error is bounded by c(n,k)xi kappa(M_L^-1 A M_R^-1), where xi = alpha epsilon_c + beta epsilon_b + beta u_g + lambda epsilon_x.",
+          "pdf_page": 9,
+          "printed_page": "8"
+        },
+        {
+          "anchor": "definitions of alpha, beta, and lambda below equation (3.8)",
+          "observation": "alpha = [kappa(M_R)/sigma_min(M_R tilde_Z_k)] [normF(M_L^-1 A tilde_Z_k)/normF(M_L^-1 A M_R^-1)]; beta = max(1, [normF(M_L^-1 A tilde_Z_k)/normF(M_L^-1 A M_R^-1)]/sigma_min(M_R tilde_Z_k))kappa(M_R); and lambda = 1/kappa(M_L^-1 A M_R^-1).",
+          "pdf_page": 9,
+          "printed_page": "8"
+        },
+        {
+          "anchor": "Appendix A, equation (A.11) and closing sentence",
+          "observation": "The proof converts the split-preconditioned backward-error argument into a forward-error bound for the original system, drops second-order terms, obtains (A.11), and states that this recovers equation (3.8).",
+          "pdf_page": 39,
+          "printed_page": "38"
+        },
+        {
+          "anchor": "Section 2, equation (2.1) and notation paragraphs",
+          "observation": "The forward error is norm2(hat_x - x)/norm2(x). The paper defines 2-norm and Frobenius-based condition numbers, often abbreviates them by kappa, uses the less-than-or-approximately-equal symbol when dropping negligible second-order terms, and leaves c(n,k) as an unspecified low-degree polynomial.",
+          "pdf_page": 6,
+          "printed_page": "5"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "Algorithm 2 has four modules corresponding to the four terms in xi: forming M_L^-1 A tilde_Z_k contributes epsilon_c, forming M_L^-1 b contributes epsilon_b, solving the MGS/Givens least-squares problem contributes u_g, and forming tilde_Z_k hat_y_k contributes epsilon_x (PDF p. 7, printed p. 6, anchor: Algorithm 2 and equations (3.2)-(3.3); PDF p. 8, printed p. 7, anchor: least-squares model and equation (3.4); PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+        "binders": [
+          "Let A in R^(n x n) be nonsingular and let 0 != b in R^n, with exact solution x of Ax = b (PDF p. 2, printed p. 1, anchor: equation (1.1)).",
+          "Let tilde_Z_k in R^(n x k) be a full-rank search basis belonging to a family of increasing dimensions k <= n, and let M_L in R^(n x n) be nonsingular (PDF p. 9, printed p. 8, anchor: opening of Theorem 3.1).",
+          "The theorem first existentially selects a dimension k <= n at which the computed basis hat_V_k is well conditioned; for that dimension and the stated models, the bound then holds for any nonsingular M_R in R^(n x n) (PDF p. 9, printed p. 8, anchor: Theorem 3.1 and equations (3.7)-(3.8)).",
+          "epsilon_c, epsilon_b, and epsilon_x are nonnegative modular accuracy parameters, while u_g is the unit roundoff used for the remaining GMRES operations, including the MGS/Givens least-squares computation (PDF p. 7, printed p. 6, anchor: equations (3.2)-(3.3); PDF p. 8, printed p. 7, anchor: least-squares model and equation (3.4))."
+        ],
+        "conclusions": [
+          "There exists k <= n such that sigma_min(hat_V_k)^(-1) <= 4/3 and sigma_max(hat_V_k) <= 4/3 (PDF p. 9, printed p. 8, anchor: equation (3.7)).",
+          "For that k, under the modular models and conditions, norm2(hat_x_k - x)/norm2(x) is less than or approximately equal to c(n,k)xi kappa(M_L^-1 A M_R^-1) for every nonsingular M_R (PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+          "The aggregate is exactly xi = alpha epsilon_c + beta epsilon_b + beta u_g + lambda epsilon_x; the least-squares and right-hand-side sources share the coefficient beta, while the matrix-product and solution-formation sources use alpha and lambda respectively (PDF p. 9, printed p. 8, anchor: equation (3.8))."
+        ],
+        "constants_and_indexing": [
+          "The theorem is existential in an iteration or basis dimension k with k <= n, not universal over every k (PDF p. 9, printed p. 8, anchor: Theorem 3.1).",
+          "The basis-conditioning constants are exactly 4/3 in both inequalities of (3.7) (PDF p. 9, printed p. 8, anchor: equation (3.7)).",
+          "c(n,k) denotes unspecified low-degree polynomials in n and k, so no exact multiplicative constant is supplied (PDF p. 6, printed p. 5, anchor: definition of c(n,k); PDF p. 9, printed p. 8, anchor: sentence following equation (3.8))."
+        ],
+        "definitions_and_conventions": [
+          "alpha = [kappa(M_R)/sigma_min(M_R tilde_Z_k)] [normF(M_L^-1 A tilde_Z_k)/normF(M_L^-1 A M_R^-1)] (PDF p. 9, printed p. 8, anchor: alpha definition below equation (3.8)).",
+          "beta = max(1, [normF(M_L^-1 A tilde_Z_k)/normF(M_L^-1 A M_R^-1)]/sigma_min(M_R tilde_Z_k))kappa(M_R) (PDF p. 9, printed p. 8, anchor: beta definition below equation (3.8)).",
+          "lambda = 1/kappa(M_L^-1 A M_R^-1) (PDF p. 9, printed p. 8, anchor: lambda definition below equation (3.8)).",
+          "tilde_Z_k spans the search space and can differ from the stored computed basis hat_Z_k because it may be chosen to absorb rounding errors (PDF p. 7, printed p. 6, anchor: discussion preceding Algorithm 2)."
+        ],
+        "error_notions": [
+          "The theorem's final quantity is normalized forward error for the original system, norm2(hat_x_k - x)/norm2(x) (PDF p. 6, printed p. 5, anchor: equation (2.1); PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+          "epsilon_c is a relative Frobenius-norm matrix-product error, epsilon_b is a relative 2-norm right-hand-side error, and epsilon_x is a relative 2-norm solution-formation error (PDF p. 7, printed p. 6, anchor: equations (3.2)-(3.3); PDF p. 8, printed p. 7, anchor: equation (3.4)).",
+          "u_g represents the finite-precision error of the least-squares stage rather than an independently supplied modular epsilon parameter (PDF p. 8, printed p. 7, anchor: least-squares error-model paragraph; PDF p. 9, printed p. 8, anchor: equation (3.8))."
+        ],
+        "exceptional_values": [
+          "A, M_L, and M_R must be nonsingular, tilde_Z_k must be full column rank, and consequently M_R tilde_Z_k has positive smallest singular value so the definitions of alpha and beta are meaningful (PDF p. 2, printed p. 1, anchor: equation (1.1); PDF p. 9, printed p. 8, anchor: Theorem 3.1 and coefficient definitions; PDF p. 38, printed p. 37, anchor: text following equation (A.9)).",
+          "The standing assumption b != 0 with nonsingular A implies x != 0, making the normalized forward error denominator nonzero (PDF p. 2, printed p. 1, anchor: equation (1.1); PDF p. 6, printed p. 5, anchor: equation (2.1)).",
+          "The least-squares model excludes numerical singularity through u_g kappa(hat_C_k) << 1, and the paper does not specify behavior under overflow, underflow, NaN, or infinity (PDF p. 8, printed p. 7, anchor: least-squares error-model paragraph; PDF p. 5, printed p. 4, anchor: standard floating-point model statement)."
+        ],
+        "higher_order_terms": [
+          "The aggregate xi is an exact four-term definition, but the resulting forward-error relation uses the paper's less-than-or-approximately-equal symbol and therefore omits negligible second-order terms (PDF p. 9, printed p. 8, anchor: equation (3.8); PDF p. 6, printed p. 5, anchor: approximation convention).",
+          "Appendix A explicitly says second-order terms are dropped when deriving (A.11) and recovering (3.8) (PDF p. 39, printed p. 38, anchor: equation (A.11) and preceding sentence)."
+        ],
+        "hypotheses": [
+          "hat_C_k = fl(M_L^-1 A tilde_Z_k) = M_L^-1 A tilde_Z_k + Delta c with normF(Delta c) <= epsilon_c normF(M_L^-1 A tilde_Z_k) (PDF p. 7, printed p. 6, anchor: equation (3.2)).",
+          "hat_b = fl(M_L^-1 b) = tilde_b + Delta b with norm2(Delta b) <= epsilon_b norm2(tilde_b) (PDF p. 7, printed p. 6, anchor: equation (3.3)).",
+          "The least-squares stage is the specified MGS orthogonalization followed by Givens rotations and a triangular solve, with columnwise perturbations bounded by c(n,k)u_g when u_g kappa(hat_C_k) << 1 (PDF p. 8, printed p. 7, anchor: least-squares error-model paragraph).",
+          "hat_x_k = fl(tilde_Z_k hat_y_k) = tilde_Z_k hat_y_k + Delta x with norm2(Delta x) <= epsilon_x norm2(tilde_Z_k hat_y_k) (PDF p. 8, printed p. 7, anchor: equation (3.4)).",
+          "(epsilon_c + epsilon_b + u_g)kappa(M_L^-1 A tilde_Z_k) << 1 and epsilon_x << 1 (PDF p. 8, printed p. 7, anchor: equations (3.5)-(3.6))."
+        ],
+        "implicit_context": [
+          "Theorem 3.1 is specialized to MGS-GMRES and is an improved modular result used later to derive separate left-, right-, and flexible-preconditioned bounds (PDF p. 7, printed p. 6, anchor: Section 3.1 opening paragraphs).",
+          "The matrix M_R is introduced analytically even though Algorithm 2 is written using M_L and tilde_Z_k; in exact arithmetic the intended search basis is M_R^-1 V_k (PDF p. 7, printed p. 6, anchor: discussion preceding equation (3.1); PDF p. 9, printed p. 8, anchor: Theorem 3.1).",
+          "The proof obtains the result through a perturbed split-preconditioned system and then converts back to the original system Ax = b (PDF p. 37, printed p. 36, anchor: equations (A.4)-(A.6); PDF p. 39, printed p. 38, anchor: equation (A.11))."
+        ],
+        "norms": [
+          "The forward error and right-hand-side and solution perturbations use vector 2-norms (PDF p. 6, printed p. 5, anchor: equation (2.1); PDF p. 7, printed p. 6, anchor: equation (3.3); PDF p. 8, printed p. 7, anchor: equation (3.4)).",
+          "The matrix-product perturbation and the norm ratios defining alpha and beta use Frobenius norms (PDF p. 7, printed p. 6, anchor: equation (3.2); PDF p. 9, printed p. 8, anchor: alpha and beta definitions).",
+          "sigma_min denotes the smallest singular value, and the paper uses an unqualified kappa when it does not distinguish among its stated normwise condition-number variants (PDF p. 6, printed p. 5, anchor: singular-value and condition-number notation)."
+        ],
+        "numerical_model": [
+          "The framework uses relative normwise perturbation models for the matrix product, preconditioned right-hand side, and solution formation, together with a backward-error model for the MGS/Givens least-squares computation (PDF p. 7, printed p. 6, anchor: equations (3.2)-(3.3); PDF p. 8, printed p. 7, anchor: least-squares model and equation (3.4)).",
+          "The standard floating-point model is assumed, and the unit roundoffs are required to be substantially below one (PDF p. 5, printed p. 4, anchor: Section 2 opening notation paragraphs)."
+        ]
+      },
+      "task_id": "P19-T2",
+      "undebatable_constraints": [
+        "xi has four additive sources in the order alpha epsilon_c, beta epsilon_b, beta u_g, and lambda epsilon_x (PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+        "epsilon_b and u_g have the same coefficient beta; replacing either coefficient by alpha or lambda changes the source statement (PDF p. 9, printed p. 8, anchor: equation (3.8)).",
+        "The outer condition-number factor is kappa(M_L^-1 A M_R^-1), not kappa(M_L^-1 A) (PDF p. 9, printed p. 8, anchor: equation (3.8) and Remark 1).",
+        "The claim is conditional on models (3.2)-(3.4) and smallness conditions (3.5)-(3.6) (PDF pp. 7-9, printed pp. 6-8, anchors: equations (3.2)-(3.8)).",
+        "The theorem guarantees existence of a suitable k <= n; it does not assert the bound at every iteration (PDF p. 9, printed p. 8, anchor: Theorem 3.1).",
+        "alpha, beta, and lambda retain the displayed singular-value, Frobenius-norm, and condition-number factors (PDF p. 9, printed p. 8, anchor: definitions below equation (3.8))."
+      ]
+    },
+    {
+      "ambiguities": [
+        {
+          "evidence": "Equation (3.20) has no explicit u_m factor and Remark 4 says it removes dependence on u_m, but Theorem 3.4 still assumes condition (3.16), which contains u_m eta_R kappa(M_R), and rho_A^R is built from vectors computed by fl(M_R^-1 hat_v_j) in precision u_m (PDF p. 11, printed p. 10, anchors: equations (3.14)-(3.16); PDF p. 12, printed p. 11, anchors: equation (3.20) and Remark 4).",
+          "impact": "The safest reading is that flexible solution formation removes the explicit reapplication contribution from the envelope; it does not make theorem applicability or all computed intermediate quantities mathematically independent of u_m.",
+          "issue": "Remark 4's removal-of-u_m language is broader than the literal theorem statement."
+        },
+        {
+          "evidence": "Section 3.5 reports rho_A^R behaving like c(n,k) in the main experiments but also mentions extreme unreported cases where it was of order kappa(M_R), and says further investigation is needed (PDF p. 13, printed p. 12, anchor: rho_A^R simplification bullet).",
+          "impact": "Replacing rho_A^R by an order-one constant, or claiming complete u_m insensitivity through it, belongs only to the simplified or empirical discussion and not to the original theorem.",
+          "issue": "The magnitude and possible precision dependence of rho_A^R are not theoretically resolved."
+        },
+        {
+          "evidence": "Remark 3 says the u_a kappa(A M_R^-1)kappa(M_R) requirement is likely pessimistic and offers condition (3.18) involving tilde_Z_k; Remark 5 says the corresponding requirement and u_m eta_R kappa(M_R) are likely pessimistic for the flexible theorem (PDF pp. 11-12, printed pp. 10-11, anchors: Remarks 3 and 5).",
+          "impact": "The displayed theorems remain conditional on (3.16), while informal discussion may ignore those conditions; a formal contract must not silently drop them.",
+          "issue": "Some applicability requirements are explicitly described as likely pessimistic."
+        },
+        {
+          "evidence": "Section 2 defines several normwise condition numbers and then permits the generic notation kappa (PDF p. 6, printed p. 5, anchor: condition-number notation); equations (3.16), (3.17), and (3.20) use generic kappa (PDF pp. 11-12, printed pp. 10-11).",
+          "impact": "A formalization must either retain an abstract condition-number convention or select the appropriate 2-norm/Frobenius variant explicitly.",
+          "issue": "The exact condition-number norm is abbreviated."
+        },
+        {
+          "evidence": "Algorithm 1 forms x_k from x_0 plus a Krylov correction, while Algorithm 2 line 4 writes x_k = tilde_Z_k y_k and the theorem passages do not restate how x_0 is absorbed (PDF p. 3, printed p. 2, anchor: Algorithm 1 lines 17-18; PDF p. 7, printed p. 6, anchor: Algorithm 2 line 4).",
+          "impact": "The source formulas clearly govern the analyzed computed approximation, but a literal algorithm-level formalization should specify whether x_0 = 0 or whether the analyzed system is the correction system.",
+          "issue": "Algorithm 1 displays an initial guess x_0, whereas modular Algorithm 2 writes the approximation simply as tilde_Z_k y_k."
+        }
+      ],
+      "contract_plain_english": "Under the complete smallness condition (3.16), right-preconditioned GMRES attains at some k <= n a first-order forward-error envelope with three sources: ordinary GMRES rounding, a fresh low-precision right-preconditioner application during solution formation, and multiplication by A. Flexible-preconditioned GMRES stores the already preconditioned basis and therefore has the same conditional envelope with the middle term u_m eta_R kappa(M_R) removed. This is a proved difference in the displayed bounds, but the flexible theorem still retains u_m in its applicability condition and may retain implicit u_m effects through its computed basis and rho_A^R. Experiments support improved flexible robustness when preconditioner precision is lowered, while also showing increased iteration counts and some real-problem outliers (PDF pp. 11-12, printed pp. 10-11, anchors: equations (3.16), (3.17), (3.20), and Remark 4; PDF pp. 20-21 and 32, printed pp. 19-20 and 31, anchors: Sections 4.2.3 and 5.1).",
+      "source_evidence": [
+        {
+          "anchor": "Algorithm 1, right-preconditioned variant and surrounding text",
+          "observation": "Right-preconditioned MGS-GMRES applies M_R^-1 to hat_v_j in precision u_m, applies A in precision u_a, performs the remaining GMRES operations in precision u_g, and at solution formation computes hat_V_k hat_y_k before reapplying M_R^-1. Flexible-preconditioning instead stores the vectors z_j and forms the solution from Z_k y_k.",
+          "pdf_page": 3,
+          "printed_page": "2"
+        },
+        {
+          "anchor": "equations (3.14)-(3.17), Theorem 3.3",
+          "observation": "The preconditioner model is fl(M_R^-1 hat_v_j) = (M_R^-1 + Delta M_R^(j))hat_v_j with normF(Delta M_R^(j)) <= c(n,k)u_m eta_R normF(M_R^-1). rho_A^R is defined by (3.15). Under the five-term smallness condition (3.16), there exists k <= n satisfying the right-preconditioned forward-error bound (3.17).",
+          "pdf_page": 11,
+          "printed_page": "10"
+        },
+        {
+          "anchor": "condition (3.16)",
+          "observation": "The condition is max{u_g kappa(A M_R^-1), u_g kappa(M_R), u_m eta_R kappa(M_R), u_a kappa(A)rho_A^R, u_a kappa(A M_R^-1)kappa(M_R)} << 1.",
+          "pdf_page": 11,
+          "printed_page": "10"
+        },
+        {
+          "anchor": "Section 3.4 and equation (3.20), Theorem 3.4",
+          "observation": "Flexible-preconditioned GMRES uses a fixed M_R^(j) = M_R != I, stores hat_Z_k explicitly, and forms the approximation directly by a standard matrix-vector product with hat_Z_k in precision u_g without reapplying M_R^-1. Assuming (3.16), there exists k <= n satisfying bound (3.20), whose right-hand side omits u_m eta_R kappa(M_R).",
+          "pdf_page": 12,
+          "printed_page": "11"
+        },
+        {
+          "anchor": "Remarks 4-5",
+          "observation": "Remark 4 attributes removal of u_m eta_R kappa(M_R) to avoiding reapplication of M_R^-1 and says this removes dependence on precision u_m. Remark 5 nevertheless says the u_m eta_R kappa(M_R) and u_a kappa(A M_R^-1)kappa(M_R) requirements retained through condition (3.16) are likely pessimistic.",
+          "pdf_page": 12,
+          "printed_page": "11"
+        },
+        {
+          "anchor": "Section 3.5, equations (3.22)-(3.23)",
+          "observation": "After heuristically assuming eta_R and rho_A^R are order-constant, ignoring c(n,k), and ignoring the applicability conditions, the paper simplifies the right bound to u_g kappa(A M_R^-1)kappa(M_R) + u_m kappa(M_R) + u_a kappa(A), and the flexible bound to u_g kappa(A M_R^-1)kappa(M_R) + u_a kappa(A). It reports observed order-constant rho_A^R in its main experiments but also unreported extreme non-practical cases where rho_A^R was of order kappa(M_R).",
+          "pdf_page": 13,
+          "printed_page": "12"
+        },
+        {
+          "anchor": "Appendix D, equations (D.1)-(D.2)",
+          "observation": "For flexible-preconditioning, hat_x_k = fl(hat_Z_k hat_y_k) and the solution-formation perturbation satisfies norm2(Delta x) <= c(n,k)[u_g kappa(M_R) + u_a kappa(A)rho_A^R]norm2(tilde_Z_k hat_y_k). Comparing this with (C.11), the proof explicitly identifies the absent reapplication term.",
+          "pdf_page": 44,
+          "printed_page": "43"
+        },
+        {
+          "anchor": "Appendix D, closing recovery of equation (3.20)",
+          "observation": "The proof substitutes the new epsilon_x into the modular bound and states that it recovers forward-error bound (3.20).",
+          "pdf_page": 45,
+          "printed_page": "44"
+        },
+        {
+          "anchor": "Section 4.2.3, flexible-preconditioned experiments",
+          "observation": "In synthetic experiments for u_a = u_g << u_m, lowering preconditioner precision leaves flexible variants' observed robustness unchanged but significantly increases their iteration counts.",
+          "pdf_page": 20,
+          "printed_page": "19"
+        },
+        {
+          "anchor": "Section 4.2.3, right-preconditioned experiments",
+          "observation": "For right-preconditioning, the paper reports the additional u_m kappa(M_R) term becoming dominant in the low-preconditioner-precision strategy and observes reduced robustness, while noting that right-preconditioning uses less basis storage than flexible-preconditioning.",
+          "pdf_page": 21,
+          "printed_page": "20"
+        },
+        {
+          "anchor": "Section 5.1 discussion following Table 5",
+          "observation": "On SuiteSparse experiments, flexible-preconditioning usually has better robustness and iteration counts for the low-preconditioner-precision variants, but the paper explicitly records outliers and a more nuanced comparison between right and left preconditioning.",
+          "pdf_page": 32,
+          "printed_page": "31"
+        }
+      ],
+      "statement": {
+        "algorithm_linkage": "Both variants compute hat_z_j = fl(M_R^-1 hat_v_j) and Ahat_z_j during basis construction. Right-preconditioned GMRES later computes hat_V_k hat_y_k and applies M_R^-1 again, whereas flexible-preconditioned GMRES stores hat_Z_k and computes hat_Z_k hat_y_k directly; the removed final reapplication is the source of the missing u_m eta_R kappa(M_R) term (PDF p. 3, printed p. 2, anchor: Algorithm 1 and flexible modification; PDF pp. 11-12, printed pp. 10-11, anchors: Sections 3.3-3.4 and Remark 4).",
+        "binders": [
+          "Let A in R^(n x n) be nonsingular, let 0 != b in R^n, and let M_R in R^(n x n) be a nonsingular right preconditioner with M_L = I; the sections consider M_R != I (PDF p. 2, printed p. 1, anchor: equation (1.1); PDF p. 11, printed p. 10, anchor: opening of Section 3.3).",
+          "Let u_a, u_m, and u_g be the unit roundoffs for multiplication by A, application of M_R^-1, and the remaining GMRES operations respectively, and let eta_R quantify preconditioner-application error (PDF p. 3, printed p. 2, anchor: Algorithm 1; PDF p. 11, printed p. 10, anchor: equation (3.14)).",
+          "For j <= k, let hat_z_j = fl(M_R^-1 hat_v_j), hat_Z_k = [hat_z_1,...,hat_z_k], and let hat_y_k be the computed least-squares coefficient vector (PDF p. 11, printed p. 10, anchor: equations (3.14)-(3.15)).",
+          "For flexible-preconditioning, M_R^(j) = M_R is fixed for every j <= k, despite the method's ability in general to vary the preconditioner (PDF p. 12, printed p. 11, anchor: opening of Section 3.4)."
+        ],
+        "conclusions": [
+          "For right-preconditioned GMRES, there exists an iteration k <= n such that norm2(hat_x_k - x)/norm2(x) is less than or approximately equal to c(n,k)[u_g kappa(A M_R^-1)kappa(M_R) + u_m eta_R kappa(M_R) + u_a kappa(A)rho_A^R] (PDF p. 11, printed p. 10, anchor: equation (3.17)).",
+          "For flexible-preconditioned GMRES with fixed M_R, there exists an iteration k <= n such that norm2(hat_x_k - x)/norm2(x) is less than or approximately equal to c(n,k)[u_g kappa(A M_R^-1)kappa(M_R) + u_a kappa(A)rho_A^R] (PDF p. 12, printed p. 11, anchor: equation (3.20)).",
+          "The explicit difference between the displayed envelopes is precisely the right-preconditioned term u_m eta_R kappa(M_R) (PDF p. 12, printed p. 11, anchor: Remark 4).",
+          "The paper attributes this difference to flexible-preconditioning's reuse of stored preconditioned vectors rather than a fresh application of M_R^-1 during solution formation (PDF p. 12, printed p. 11, anchor: Section 3.4 and Remark 4; PDF p. 44, printed p. 43, anchor: equations (D.1)-(D.2))."
+        ],
+        "constants_and_indexing": [
+          "Both conclusions are existential: each asserts some k <= n, not all k and not a prescribed iteration (PDF pp. 11-12, printed pp. 10-11, anchors: Theorems 3.3-3.4).",
+          "Flexible-preconditioning uses the same fixed M_R for all j <= k (PDF p. 12, printed p. 11, anchor: opening of Section 3.4).",
+          "The five quantities inside the maximum in condition (3.16) must all be small (PDF p. 11, printed p. 10, anchor: equation (3.16)).",
+          "c(n,k) is an unspecified low-degree polynomial and may change between estimates (PDF p. 6, printed p. 5, anchor: Section 2 definition of c(n,k))."
+        ],
+        "definitions_and_conventions": [
+          "The normalized forward error is norm2(hat_x_k - x)/norm2(x) for the original system Ax = b (PDF p. 6, printed p. 5, anchor: equation (2.1); PDF pp. 11-12, printed pp. 10-11, anchors: equations (3.17) and (3.20)).",
+          "eta_R is a scalar measuring the magnitude of error in applying M_R^-1; the original theorems do not set eta_R to one or assume it is constant (PDF p. 11, printed p. 10, anchor: equation (3.14) and following sentence).",
+          "rho_A^R measures componentwise cancellation in the stored basis product through norm2(|hat_Z_k||hat_y_k|)/norm2(hat_Z_k hat_y_k) (PDF p. 11, printed p. 10, anchor: equation (3.15)).",
+          "The later equations (3.22)-(3.23) are simplified discussion bounds obtained only after additional assumptions; they are not the original theorem statements (PDF p. 13, printed p. 12, anchor: Section 3.5 and equations (3.22)-(3.23))."
+        ],
+        "error_notions": [
+          "Equations (3.17) and (3.20) bound attainable normalized forward error, not backward error and not residual norm (PDF pp. 11-12, printed pp. 10-11, anchors: Theorems 3.3-3.4; PDF p. 7, printed p. 6, anchor: statement that Section 3 focuses solely on forward error).",
+          "The u_m eta_R kappa(M_R) term represents error from reapplying the right preconditioner during right-preconditioned solution formation (PDF p. 12, printed p. 11, anchor: Remark 4; PDF p. 43, printed p. 42, anchor: equation (C.11)).",
+          "The u_a kappa(A)rho_A^R term captures error from multiplication by A together with componentwise cancellation in the stored basis product (PDF p. 11, printed p. 10, anchor: equations (3.15)-(3.17); PDF p. 42, printed p. 41, anchor: equation (C.7))."
+        ],
+        "exceptional_values": [
+          "A and M_R must be nonsingular, and b is nonzero, so x and the displayed normalized forward-error denominator are nonzero (PDF p. 2, printed p. 1, anchor: equation (1.1); PDF p. 11, printed p. 10, anchor: Theorem 3.3 and use of M_R^-1).",
+          "rho_A^R has denominator norm2(hat_Z_k hat_y_k); the paper does not explicitly exclude a zero denominator (PDF p. 11, printed p. 10, anchor: equation (3.15)).",
+          "The standard floating-point model does not explicitly describe overflow, underflow, NaN, or infinity, so the bounds presume ordinary finite modeled operations (PDF p. 5, printed p. 4, anchor: standard floating-point model statement)."
+        ],
+        "higher_order_terms": [
+          "Both envelopes use the paper's less-than-or-approximately-equal symbol, which denotes omission of negligible second-order terms (PDF p. 6, printed p. 5, anchor: approximation convention; PDF pp. 11-12, printed pp. 10-11, anchors: equations (3.17) and (3.20)).",
+          "The simplified envelopes (3.22)-(3.23) additionally discard c(n,k), treat eta_R and rho_A^R as order-constant, and ignore the theorem applicability conditions (PDF p. 13, printed p. 12, anchor: assumptions preceding equations (3.21)-(3.23))."
+        ],
+        "hypotheses": [
+          "For every relevant j, fl(M_R^-1 hat_v_j) = (M_R^-1 + Delta M_R^(j))hat_v_j and normF(Delta M_R^(j)) <= c(n,k)u_m eta_R normF(M_R^-1) (PDF p. 11, printed p. 10, anchor: equation (3.14)).",
+          "rho_A^R = norm2(|hat_Z_k||hat_y_k|)/norm2(hat_Z_k hat_y_k) (PDF p. 11, printed p. 10, anchor: equation (3.15)).",
+          "The full condition max{u_g kappa(A M_R^-1), u_g kappa(M_R), u_m eta_R kappa(M_R), u_a kappa(A)rho_A^R, u_a kappa(A M_R^-1)kappa(M_R)} << 1 is assumed for both Theorems 3.3 and 3.4 (PDF p. 11, printed p. 10, anchor: equation (3.16); PDF p. 12, printed p. 11, anchor: Theorem 3.4).",
+          "Right-preconditioned solution formation multiplies by hat_V_k in precision u_g and then reapplies M_R^-1 in precision u_m; flexible solution formation multiplies directly by the stored hat_Z_k in precision u_g (PDF p. 11, printed p. 10, anchor: paragraph preceding equation (3.15); PDF p. 12, printed p. 11, anchor: paragraphs preceding Theorem 3.4)."
+        ],
+        "implicit_context": [
+          "With fixed M_R, right- and flexible-preconditioned GMRES are mathematically equivalent in exact arithmetic, but their different solution-formation paths produce different rounding-error bounds (PDF p. 3, printed p. 2, anchor: text following Algorithm 1; PDF p. 12, printed p. 11, anchor: opening of Section 3.4).",
+          "The bounds are worst-case attainable-error results and do not provide a convergence-rate guarantee or a bound at every iteration (PDF p. 6, printed p. 5, anchor: opening of Section 3; PDF pp. 11-12, printed pp. 10-11, anchors: Theorems 3.3-3.4).",
+          "Synthetic experiments support robustness insensitivity of flexible-preconditioning to lower u_m but also show significantly more iterations, so omission of the u_m term is not a claim of unchanged convergence rate or runtime (PDF p. 20, printed p. 19, anchor: Section 4.2.3 flexible-preconditioned discussion).",
+          "Real-life experiments generally favor flexible-preconditioning for low-precision preconditioner application but contain explicit outliers, so the empirical preference is not universal (PDF p. 32, printed p. 31, anchor: Section 5.1 discussion following Table 5)."
+        ],
+        "norms": [
+          "The forward errors and rho_A^R use vector 2-norms (PDF pp. 11-12, printed pp. 10-11, anchors: equations (3.15), (3.17), and (3.20)).",
+          "The preconditioner perturbation model uses the Frobenius matrix norm (PDF p. 11, printed p. 10, anchor: equation (3.14)).",
+          "The condition numbers are written with generic kappa; Section 2 permits this abbreviation among its 2-norm/Frobenius-based condition measures (PDF p. 6, printed p. 5, anchor: condition-number notation)."
+        ],
+        "numerical_model": [
+          "Applications of M_R^-1 are modeled by normwise matrix perturbations proportional to c(n,k)u_m eta_R, while products with A are performed in precision u_a and other GMRES operations in precision u_g (PDF p. 3, printed p. 2, anchor: Algorithm 1; PDF p. 11, printed p. 10, anchor: equation (3.14)).",
+          "Right solution formation incurs a fresh preconditioner-application perturbation; flexible solution formation instead has the standard product model hat_x_k = fl(hat_Z_k hat_y_k) = (hat_Z_k + Delta Z_k^(3))hat_y_k with |Delta Z_k^(3)| bounded by c(n,k)u_g|hat_Z_k| (PDF p. 42, printed p. 41, anchor: equation (C.3); PDF p. 44, printed p. 43, anchor: equation (D.1)).",
+          "The paper adopts a traditional worst-case floating-point analysis and does not track exact values of all dimension-dependent constants (PDF p. 6, printed p. 5, anchor: Section 2 definition of c(n,k))."
+        ]
+      },
+      "task_id": "P19-T3",
+      "undebatable_constraints": [
+        "The right envelope contains all three terms u_g kappa(A M_R^-1)kappa(M_R), u_m eta_R kappa(M_R), and u_a kappa(A)rho_A^R (PDF p. 11, printed p. 10, anchor: equation (3.17)).",
+        "The flexible envelope contains the first and third of those terms but not u_m eta_R kappa(M_R) (PDF p. 12, printed p. 11, anchor: equation (3.20)).",
+        "Both theorem statements assume the same condition (3.16), including its explicit u_m eta_R kappa(M_R) requirement (PDF pp. 11-12, printed pp. 10-11, anchors: condition (3.16) and Theorem 3.4).",
+        "The missing term is linked specifically to avoiding reapplication of M_R^-1 during solution formation, not to eliminating preconditioner applications during Krylov-basis construction (PDF p. 12, printed p. 11, anchor: Section 3.4 and Remark 4).",
+        "The flexible theorem assumes a fixed preconditioner M_R^(j) = M_R for all j <= k (PDF p. 12, printed p. 11, anchor: opening of Section 3.4).",
+        "The envelopes are conditional, first-order, existential attainable-forward-error claims; they are not unconditional convergence or runtime claims (PDF pp. 11-12, printed pp. 10-11, anchors: Theorems 3.3-3.4; PDF p. 6, printed p. 5, anchor: approximation convention)."
+      ]
+    }
+  ],
+  "paper_id": "P19",
+  "paper_sha256": "67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad",
+  "role": "paper-source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_locator_sha256": "b2b71745c3ba0bc98613f67b2d754faf971558a1974b0f22e4456d4b88500ba1",
+  "task_ids": [
+    "P19-T1",
+    "P19-T2",
+    "P19-T3"
+  ]
+}
