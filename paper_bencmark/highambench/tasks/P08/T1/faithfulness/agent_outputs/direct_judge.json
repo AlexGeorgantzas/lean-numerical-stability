@@ -1,0 +1,386 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P08-T1",
+  "paper_sha256": "f520066b46331dcbf25e51345c5ff5ffffe8fcad573d7f46e68834f83b3a2c54",
+  "dossier_sha256": "81d37877068f45b249570b792ab98a9bf450ffe2ea1b6b3655b71b6af7909637",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.p08AbsAction",
+      "interpretation": "For component i, this is the finite sum over j of |A i j| * |x j|.",
+      "effect_on_target": "It makes the main right-hand term the i-th component of the nonnegative matrix-vector product |Ainv||q|.",
+      "paper_match": "This exactly matches the componentwise expression |A^{-1}||q_{m+1}| in Lemma 4.2 after the intended instantiation.",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p08MatVec",
+      "interpretation": "For component i, this is the exact real finite sum over j of A i j * x j.",
+      "effect_on_target": "It supplies the exact vector Ainv*q in both the update decomposition and rounding-error bound.",
+      "paper_match": "It matches the exact product A^{-1}q_{m+1} used in the paper's equivalent update equation, although the target does not constrain Ainv to be an inverse.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "Eq",
+      "interpretation": "Lean propositional equality between two values of the same type.",
+      "effect_on_target": "The update decomposition is an exact real equality, not an approximation or floating-point equality.",
+      "paper_match": "The proof on printed page 826 uses the exact identity x_{m+1}=A^{-1}q_{m+1}+x+h_{m+1}.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "Fin",
+      "interpretation": "Fin n is the finite type of component indices below n.",
+      "effect_on_target": "Matrices have n rows and columns and vectors have n components; the conclusion is quantified componentwise.",
+      "paper_match": "This represents the paper's n-by-n system and n-vectors faithfully, with the extra degenerate possibility n=0.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-dispatched heterogeneous addition, instantiated here as ordinary real addition.",
+      "effect_on_target": "It forms Ainv*q+x+h and the two sums on the right-hand sides.",
+      "paper_match": "All corresponding additions in Lemma 4.2 are ordinary real scalar additions componentwise.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched heterogeneous multiplication, instantiated here as ordinary real multiplication.",
+      "effect_on_target": "It forms u times absolute values, (1+u) times the absolute action, and matrix-vector summands.",
+      "paper_match": "These are the ordinary scalar and matrix-vector multiplications used in the displayed paper inequality.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-dispatched heterogeneous subtraction, instantiated here as ordinary real subtraction.",
+      "effect_on_target": "It forms the componentwise difference xNext i - x i on the left-hand side.",
+      "paper_match": "This matches the componentwise difference x_{m+1}-x.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "LE.le",
+      "interpretation": "Typeclass-dispatched non-strict order, instantiated here as the usual real less-than-or-equal relation.",
+      "effect_on_target": "Both the rounding premise and conclusion are non-strict real inequalities at each component.",
+      "paper_match": "The paper states non-strict componentwise upper bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "Nat",
+      "interpretation": "The natural-number type used for the finite dimension n.",
+      "effect_on_target": "It permits every finite dimension, including n=0.",
+      "paper_match": "It matches the paper's integer system dimension; admitting n=0 is an additional vacuous instance rather than a restriction.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "OfNat.ofNat",
+      "interpretation": "Conversion of natural-number literals to the target numeric type.",
+      "effect_on_target": "It supplies the real literals 0 in hu and 1 in the coefficient 1+u.",
+      "paper_match": "The resulting real constants are exactly the paper's zero and unit coefficient.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "One.toOfNat1",
+      "interpretation": "It constructs the numeral-one instance from the real multiplicative identity.",
+      "effect_on_target": "It gives the real 1 in the exact coefficient 1+u.",
+      "paper_match": "The paper's coefficient is exactly 1+u.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "Real",
+      "interpretation": "Mathlib's mathematical real-number type.",
+      "effect_on_target": "All matrix entries, vector components, errors, and bounds are exact real quantities.",
+      "paper_match": "The paper models floating-point values as a subset of the reals and conducts the error inequalities in real arithmetic; the target broadens the scalar domain to arbitrary reals satisfying its premises.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "Real.instAdd",
+      "interpretation": "The standard addition operation on real numbers.",
+      "effect_on_target": "It realizes every scalar sum in the update and bounds.",
+      "paper_match": "It has the ordinary real-addition meaning required by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Real.instAddGroup",
+      "interpretation": "The standard additive-group structure on the reals.",
+      "effect_on_target": "It provides real negation and the algebraic structure required by subtraction and absolute value.",
+      "paper_match": "This is ordinary real algebra and introduces no non-paper semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instLE",
+      "interpretation": "The standard total-order less-than-or-equal relation on the reals.",
+      "effect_on_target": "It interprets hu, hRound, and the conclusion as real inequalities.",
+      "paper_match": "It matches the componentwise real inequalities in Lemma 4.2.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instMul",
+      "interpretation": "The standard multiplication operation on real numbers.",
+      "effect_on_target": "It realizes scalar coefficients and matrix-vector products.",
+      "paper_match": "It matches the paper's ordinary real multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instOne",
+      "interpretation": "The standard multiplicative identity of the reals.",
+      "effect_on_target": "It supplies the unit term in 1+u.",
+      "paper_match": "It matches the exact unit coefficient in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instSub",
+      "interpretation": "Standard real subtraction, implemented as addition of the real negation.",
+      "effect_on_target": "It interprets xNext i - x i as the ordinary signed componentwise error before applying absolute value.",
+      "paper_match": "It matches the subtraction x_{m+1}-x in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instZero",
+      "interpretation": "The standard additive identity of the reals.",
+      "effect_on_target": "It supplies the lower bound 0 in the assumption on u.",
+      "paper_match": "The paper assumes the stronger condition u>0, which implies this target condition.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "Real.lattice",
+      "interpretation": "The standard lattice structure induced by the real order.",
+      "effect_on_target": "Together with the additive group, it gives the usual ordered absolute-value operation.",
+      "paper_match": "It supports the standard scalar absolute values used componentwise in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "Zero.toOfNat0",
+      "interpretation": "It constructs the numeral-zero instance from the real additive identity.",
+      "effect_on_target": "It interprets the literal 0 in hu as real zero.",
+      "paper_match": "This is the ordinary zero used in the paper's positivity assumption.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "abs",
+      "interpretation": "In an ordered additive group this is max(a,-a), hence the usual real absolute value.",
+      "effect_on_target": "It applies scalar absolute value to each vector or matrix component before pointwise comparison and finite summation.",
+      "paper_match": "The paper explicitly uses entrywise absolute values, so this is the required componentwise operation rather than a norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "instHAdd",
+      "interpretation": "Adapter turning a homogeneous Add instance into the corresponding HAdd instance.",
+      "effect_on_target": "It ensures HAdd.hAdd in the elaborated type is exactly Real.instAdd.",
+      "paper_match": "No alternative addition semantics are introduced.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "instHMul",
+      "interpretation": "Adapter turning a homogeneous Mul instance into the corresponding HMul instance.",
+      "effect_on_target": "It ensures HMul.hMul in the elaborated type is exactly Real.instMul.",
+      "paper_match": "No alternative multiplication semantics are introduced.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "instHSub",
+      "interpretation": "Adapter turning a homogeneous Sub instance into the corresponding HSub instance.",
+      "effect_on_target": "It ensures HSub.hSub in the elaborated type is exactly Real.instSub.",
+      "paper_match": "No alternative subtraction semantics are introduced.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "Fin.fintype",
+      "interpretation": "The finite enumeration of every element of Fin n.",
+      "effect_on_target": "It lets p08MatVec and p08AbsAction sum over all n component indices.",
+      "paper_match": "This realizes the full finite matrix-vector products in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "Finset.sum",
+      "interpretation": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It computes the row sums defining ordinary and absolute matrix-vector actions.",
+      "paper_match": "It matches the finite sums implicit in the paper's matrix-vector notation.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "Finset.univ",
+      "interpretation": "The finite set containing every element of a finite type.",
+      "effect_on_target": "The definitions sum over every column index j in Fin n.",
+      "paper_match": "This matches multiplication by all columns of the n-by-n matrix.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The standard additive commutative-monoid structure on the reals.",
+      "effect_on_target": "It supplies order-independent finite real sums and the zero value for an empty sum.",
+      "paper_match": "It gives the usual finite real summation used by matrix-vector multiplication.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF hash matches the packet. PDF page 11, printed page 826, contains Lemma 4.2, its second displayed inequality, and the proof; printed pages 824-827 supply the algorithm, q-definition context, and subsequent use.",
+      "lean_evidence": "The target conclusion has the same two-term componentwise bound and the dossier hash is the supplied authoritative hash.",
+      "reasoning": "The selected source and result are unambiguous and correspond to the requested second inequality rather than Lemma 4.2's first residual inequality."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper has an n-by-n nonsingular A, exact solution x=A^{-1}b, algorithmic vectors x_m and d_m, exact q_{m+1}, and an integer m>=0.",
+      "lean_evidence": "The target uses correctly shaped Fin n real matrices and vectors but quantifies arbitrary Ainv, x, q, h, and xNext and contains no A, b, m, x_m, or d_m.",
+      "reasoning": "The raw finite real types are suitable, but several binders lose their intended inverse, exact-solution, residual, computed-iterate, and iteration-index meanings inside the proposition."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "Lemma 4.2 quantifies every m=0,1,2,... within one fixed iterative-refinement execution and its standing matrix and arithmetic context.",
+      "lean_evidence": "The target universally quantifies an independent arbitrary one-step tuple and then assumes hUpdate and hRound.",
+      "reasoning": "There is no incorrect witness dependence, but the sequence-level quantification is replaced by a broader index-free conditional theorem. Each paper step is an instance, but the original quantifier structure is not represented."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper context requires A^{-1}, x=A^{-1}b, algorithm-generated iterates and corrections, q_{m+1}=A(x_m-d_m)-b, positive u with nu<=0.01, and well-defined floating-point operations.",
+      "lean_evidence": "The target assumes only 0<=u plus the exact update decomposition and the componentwise hRound majorant.",
+      "reasoning": "The paper context implies the Lean premises, but the target deliberately omits the inverse, solution, residual, algorithm, strict positivity, size, and well-definedness hypotheses. This is a genuine domain broadening, not an exact hypothesis match."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "The selected result is solely the second inequality of Lemma 4.2: |x_{m+1}-x| <= (1+u)|A^{-1}||q_{m+1}|+u|x|.",
+      "lean_evidence": "For every component i, the target concludes exactly the corresponding absolute-error inequality with p08AbsAction.",
+      "reasoning": "Both terms, both exact coefficients, the inequality, and componentwise scope are present. The first inequality of Lemma 4.2 is outside the selected task."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The paper uses ordinary A^{-1}q_{m+1}, entrywise absolute values, and the matrix-vector action |A^{-1}||q_{m+1}|.",
+      "lean_evidence": "p08MatVec unfolds to sum_j Ainv(i,j)q(j), while p08AbsAction unfolds to sum_j |Ainv(i,j)||q(j)|; the remaining operators are ordinary real operations.",
+      "reasoning": "All nontrivial local operators have the required matrix-vector and componentwise meanings."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "q_{m+1} is the exact residual of the unrounded corrected value, while x_{m+1} is the rounded update and h_{m+1} is its rounding error.",
+      "lean_evidence": "hUpdate separates an exact real Ainv*q+x term from h, but q and xNext are otherwise arbitrary real vectors with no exact-residual or computed-value predicates.",
+      "reasoning": "The algebraic decomposition can be instantiated correctly, but the proposition itself does not preserve the exact-versus-computed provenance of q and xNext."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Printed pages 824-826 define column-pivoted iterative refinement, the artificial m=0 initialization, and q_{m+1}=A(x_m-d_m)-b before stating Lemma 4.2.",
+      "lean_evidence": "The target contains only a one-step decomposition and rounding majorant and mentions neither the iterative-refinement process nor q's residual definition.",
+      "reasoning": "The target proves the algebraic kernel used by the paper, but it does not internally certify that its variables arise from the paper's algorithm."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "The paper states that absolute values and inequalities are componentwise, and no norm occurs in the selected inequality.",
+      "lean_evidence": "The target quantifies i:Fin n, applies scalar abs at i, and uses the row sum p08AbsAction rather than any norm.",
+      "reasoning": "The componentwise semantics and unsquared absolute values match exactly."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The coefficients are exactly 1+u and u, and the bound relates q_{m+1} to x_{m+1} for every m beginning at 0.",
+      "lean_evidence": "The coefficients are exactly 1+u and u, but q and xNext have no m+1 indexing and no explicit m=0 case.",
+      "reasoning": "There is no coefficient or off-by-one error under the intended instantiation, but the source indexing relation is erased rather than represented."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The paper uses positive unit roundoff u with nu<=0.01, assumes every floating-point operation is well-defined, and derives |h_{m+1}|<=u|x_m-d_m| for the final subtraction without specifying IEEE rounding.",
+      "lean_evidence": "The target works entirely over reals, assumes 0<=u, and directly assumes the derived split bound |h|<=u|Ainv*q|+u|x|.",
+      "reasoning": "The only rounding estimate needed by the paper proof is captured correctly, but the proposition does not encode the standing precision, strict positivity, size, or exceptional-value assumptions. Its abstract model is broader."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "Lemma 4.2 gives a non-strict componentwise upper bound.",
+      "lean_evidence": "The target concludes the same non-strict less-than-or-equal relation componentwise.",
+      "reasoning": "Direction, strictness, and additive form are unchanged; the expanded quantification strengthens scope rather than weakening the inequality."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The left side is the componentwise forward error between computed x_{m+1} and exact solution x.",
+      "lean_evidence": "The left side is |xNext i-x i|, but the target does not constrain x to be an exact solution or xNext to be an algorithmically computed iterate.",
+      "reasoning": "It becomes the paper's forward error under the intended instantiation, but that error notion is not intrinsic to arbitrary target instances."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The selected result is an exact finite inequality with no big-O or omitted higher-order remainder.",
+      "lean_evidence": "The target is an exact real inequality containing only the displayed coefficients and terms.",
+      "reasoning": "No approximation, truncation, or higher-order term has been added or removed."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The paper result concerns actual refinement steps with Ainv=A^{-1}, q=q_{m+1}, xNext=x_{m+1}, and h=h_{m+1}.",
+      "lean_evidence": "The target permits arbitrary real matrices and one-step tuples satisfying hUpdate and hRound.",
+      "reasoning": "This is explicitly classified as a broader algebraic generalization, not a specialization. The actual paper data form a direct instance, so the selected benchmark conclusion remains available."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper applies the inequality to well-defined nontrivial computed refinement steps.",
+      "lean_evidence": "For n=1, Ainv(0,0)=1, q(0)=1, x(0)=0, u=1/2, h(0)=1/2, and xNext(0)=3/2 satisfy both premises and make the conclusion an equality.",
+      "reasoning": "The target has satisfiable, tight nonzero instances. Although n=0 is also admitted and vacuous, the universally quantified theorem is not true only for that degenerate reason."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "For each paper index m, instantiate Ainv with A^{-1}, q with q_{m+1}, xNext with x_{m+1}, and h with h_{m+1}. The paper's proof supplies x_{m+1}=A^{-1}q_{m+1}+x+h_{m+1} and |h_{m+1}|<=u|A^{-1}q_{m+1}|+u|x|, while positive u supplies hu. The unfolded p08AbsAction is exactly |A^{-1}||q_{m+1}| componentwise, so the Lean conclusion is the selected paper inequality, including m=0."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper asserts the bound only for inverses and quantities arising from its iterative-refinement execution. It does not entail the target's universal claim for arbitrary matrices, including singular Ainv, arbitrary vectors, u=0, or tuples unrelated to any refinement process. Establishing those extra cases requires the independent real-algebra argument embodied by the Lean theorem."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "minor",
+      "category": "algorithmic-provenance-erasure",
+      "paper_evidence": "The surrounding text defines x_m, d_m, q_{m+1}, column-pivoted refinement, and the special m=0 initialization.",
+      "lean_evidence": "The target retains only the equivalent one-step update equation and rounding majorant.",
+      "impact": "The proposition proves the algebraic core sufficient for the paper bound but does not itself verify that a modeled algorithm supplies those premises."
+    },
+    {
+      "severity": "note",
+      "category": "genuine-domain-strengthening",
+      "paper_evidence": "The source uses A^{-1}, positive u, and actual refinement iterates.",
+      "lean_evidence": "The target permits arbitrary Ainv and vectors under local premises and only requires 0<=u.",
+      "impact": "This broader domain is nonvacuous and makes Lean imply the paper specialization while preventing the converse; it is not strength obtained from extra hypotheses or a narrower domain."
+    }
+  ],
+  "rationale": "After unfolding every dependency, the target conclusion is exactly the componentwise inequality on printed page 826. The target is not statement-equivalent because it removes the iteration index, inverse and exact-residual constraints, solution provenance, and the surrounding floating-point execution model. Nevertheless, those changes broaden rather than restrict the algebraic theorem: the paper's actual quantities satisfy hUpdate and hRound and therefore instantiate the target for every m>=0. The converse fails because the target also covers arbitrary matrices and unrelated one-step tuples. A concrete one-dimensional equality case establishes nonvacuity. The result is therefore a faithful but strictly stronger algebraic generalization, with the noted limitation that algorithmic provenance is not internalized."
+}
+

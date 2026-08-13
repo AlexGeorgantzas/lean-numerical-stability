@@ -1,0 +1,16 @@
+{
+  "evidence_policy": "Use the referenced PDF and surrounding paper context as evidence. Do not use context.md or task.json paraphrases as semantic evidence.",
+  "paper_path": "paper_bencmark/reference_papers/P08_Skeel-IterativeRefinementImplies-1980.pdf",
+  "paper_sha256": "f520066b46331dcbf25e51345c5ff5ffffe8fcad573d7f46e68834f83b3a2c54",
+  "paper_version": "published journal version; volume 35, issue 151, July 1980, printed pages 817-832",
+  "source_locations": [
+    {
+      "anchor": "Lemma 4.2, second displayed inequality and its proof",
+      "pdf_page": 11,
+      "printed_page": "826",
+      "role": "componentwise forward-error bound from q_(m+1)",
+      "section": "4. Error Bounds"
+    }
+  ],
+  "task_id": "P08-T1"
+}
