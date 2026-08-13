@@ -1,0 +1,54 @@
+{
+  "evidence_policy": "Use only the referenced PDF and surrounding paper context as evidence. Produce an independent contract for every listed task.",
+  "paper_id": "P16",
+  "paper_path": "paper_bencmark/reference_papers/P16_A modular framework for the backward error analysis of GMRES.pdf",
+  "paper_sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a",
+  "paper_version": "published open-access journal version; IMA Journal of Numerical Analysis 46(4), 2026, printed pages 1939-1993",
+  "role": "paper-source-locator",
+  "schema_version": "highambench-faithfulness-0.2",
+  "tasks": [
+    {
+      "source_locations": [
+        {
+          "anchor": "normwise backward-error perturbation definition and normalized-residual identity",
+          "pdf_page": 4,
+          "printed_page": "1942",
+          "role": "exact perturbation-to-residual bridge",
+          "section": "2. Notations"
+        }
+      ],
+      "task_id": "P16-T1"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "Lemma 4.2, correction residual (4.14) and next-residual recurrence (4.15)",
+          "pdf_page": 19,
+          "printed_page": "1957",
+          "role": "one-step backward-error recurrence",
+          "section": "4.1 The modular algorithm, error model, and error analysis"
+        },
+        {
+          "anchor": "exact iterative-refinement identity (4.18)",
+          "pdf_page": 20,
+          "printed_page": "1958",
+          "role": "finite residual composition used before norm bounds",
+          "section": "4.1 The modular algorithm, error model, and error analysis"
+        }
+      ],
+      "task_id": "P16-T2"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "Theorem 6.3, contraction condition (6.17) and attainable error floors (6.18)",
+          "pdf_page": 40,
+          "printed_page": "1978",
+          "role": "mixed-precision restarted-GMRES convergence statement",
+          "section": "6.3 Mixed precision restarted GMRES"
+        }
+      ],
+      "task_id": "P16-T3"
+    }
+  ]
+}
