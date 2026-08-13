@@ -1,0 +1,61 @@
+{
+  "evidence_policy": "Use only the referenced PDF and surrounding paper context as evidence. Produce an independent contract for every listed task.",
+  "paper_id": "P15",
+  "paper_path": "paper_bencmark/reference_papers/P15_Solving block low-rank linear systems by LU factorization is numerically stable.pdf",
+  "paper_sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7",
+  "paper_version": "published journal version; IMA Journal of Numerical Analysis 42(2), 2022, printed pages 951-980",
+  "role": "paper-source-locator",
+  "schema_version": "highambench-faithfulness-0.2",
+  "tasks": [
+    {
+      "source_locations": [
+        {
+          "anchor": "prose listing the Frobenius norm's first useful property, ||AB|| <= ||A|| ||B||",
+          "pdf_page": 3,
+          "printed_page": "953",
+          "role": "submultiplicative norm step used throughout the analysis",
+          "section": "2.1 Block low-rank matrices"
+        }
+      ],
+      "task_id": "P15-T1"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "Lemma 3.1, especially equation (3.2) and the final replacement Atilde = A + E",
+          "pdf_page": 6,
+          "printed_page": "956",
+          "role": "combined low-rank truncation and floating-point backward error",
+          "section": "3.1 LR matrix times vector or full matrix"
+        }
+      ],
+      "task_id": "P15-T2"
+    },
+    {
+      "source_locations": [
+        {
+          "anchor": "Theorem 4.5, equations (4.23)-(4.25)",
+          "pdf_page": 24,
+          "printed_page": "974",
+          "role": "BLR linear-system backward-error conclusion",
+          "section": "4.3 BLR linear systems"
+        },
+        {
+          "anchor": "proof of Theorem 4.5, exact products of factor and solve perturbations",
+          "pdf_page": 25,
+          "printed_page": "975",
+          "role": "exact perturbation composition before big-O simplification",
+          "section": "4.3 BLR linear systems"
+        },
+        {
+          "anchor": "Table 1 values of xi_p for local/global thresholds and recompression choices",
+          "pdf_page": 19,
+          "printed_page": "969",
+          "role": "factorization threshold coefficient referenced by Theorem 4.5",
+          "section": "4.1.3 Impact of intermediate recompressions"
+        }
+      ],
+      "task_id": "P15-T3"
+    }
+  ]
+}
