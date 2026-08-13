@@ -10624,6 +10624,7 @@
   },
   "lane_id": "codex-lane",
   "operator_ids": [
+    "claude-local",
     "codex-local"
   ],
   "owned_paths": [
@@ -10897,6 +10898,10 @@
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R03-activation.md",
         "sha256": "752B79BC9BBB2B492FA50DD43EC7E108DEF60D24D72B4F602CF2055B29189DB2"
+      },
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R03-operator-authorization.md",
+        "sha256": "F3ECCDACCB5762DD65C7020597F7BDC67990BC9CDB452103EB4B351ABF7E8E89"
       },
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R03-projection-replay.md",

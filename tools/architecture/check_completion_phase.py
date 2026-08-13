@@ -341,6 +341,14 @@ R03_REQUEST_ID = "R0005"
 R03_WAVE_ID = "R03"
 R03_LANE_ID = "codex-lane"
 R03_OPERATOR_ID = "codex-local"
+# Temporary primary-human expansion recorded in reviews/R03-operator-authorization.md:
+# claude-local is the second authorized executor solely for B0005/R03. The historical
+# activation review still attributes planning/activation to codex-local, so
+# R03_OPERATOR_ID stays the single historical operator while the authority set below
+# governs live branch/lane membership. The expansion expires at the next checkpoint or
+# when B0005 becomes terminal.
+R03_SECOND_OPERATOR_ID = "claude-local"
+R03_OPERATOR_IDS = (R03_SECOND_OPERATOR_ID, R03_OPERATOR_ID)
 R03_BRANCH_NAME = (
     "codex/reorg-completion-2026-08-r03-floating-point-foundations-ch01-ch12"
 )
@@ -441,6 +449,12 @@ R03_PHASE_PREFIX = (
 R03_ACTIVATION_REVIEW_PATH = f"{R03_PHASE_PREFIX}/reviews/R03-activation.md"
 R03_ACTIVATION_REVIEW_SHA256 = (
     "752B79BC9BBB2B492FA50DD43EC7E108DEF60D24D72B4F602CF2055B29189DB2"
+)
+R03_OPERATOR_AUTH_REVIEW_PATH = (
+    f"{R03_PHASE_PREFIX}/reviews/R03-operator-authorization.md"
+)
+R03_OPERATOR_AUTH_REVIEW_SHA256 = (
+    "F3ECCDACCB5762DD65C7020597F7BDC67990BC9CDB452103EB4B351ABF7E8E89"
 )
 R03_EVIDENCE_PATHS = {
     "baseline": f"{R03_PHASE_PREFIX}/baselines/C0002-combined.json",
@@ -956,10 +970,11 @@ def validate_r03_epoch_snapshot(
         f"route/hash drift: expected declaration-route SHA-256 {expected_route_sha256}",
     )
     problems.require(
-        snapshot.operator_ids == (R03_OPERATOR_ID,)
-        and snapshot.lane_operator_ids == (R03_OPERATOR_ID,),
+        snapshot.operator_ids == R03_OPERATOR_IDS
+        and snapshot.lane_operator_ids == R03_OPERATOR_IDS,
         f"{context}.authority",
-        "unauthorized operator: branch and codex-lane must authorize only codex-local",
+        "unauthorized operator: branch and codex-lane must authorize exactly the "
+        "reviewed claude-local/codex-local pair",
     )
     expected_activation = Artifact(
         R03_ACTIVATION_REVIEW_PATH, R03_ACTIVATION_REVIEW_SHA256
@@ -5398,9 +5413,10 @@ class CompletionValidator:
         self.problems.require(
             len(matches) == 1
             and lane.get("owner_id") == "primary-human"
-            and operators == (R03_OPERATOR_ID,),
+            and operators == R03_OPERATOR_IDS,
             f"phase.json.authority.lanes[{R03_LANE_ID}]",
-            "R03 requires one primary-human-owned codex-lane authorizing only codex-local",
+            "R03 requires one primary-human-owned codex-lane authorizing exactly the "
+            "reviewed claude-local/codex-local pair",
         )
         return operators
 
@@ -5540,7 +5556,7 @@ class CompletionValidator:
             "wave_id": R03_WAVE_ID,
             "branch_name": R03_BRANCH_NAME,
             "owner_id": "primary-human",
-            "operator_ids": [R03_OPERATOR_ID],
+            "operator_ids": list(R03_OPERATOR_IDS),
             "base_checkpoint_id": C0002_CHECKPOINT_ID,
             "base_sha": C0002_CODE_SHA,
             "baseline_projection_id": R03_PROJECTION_ID,
@@ -5594,6 +5610,7 @@ class CompletionValidator:
         expected_evidence_paths = set(R03_EVIDENCE_PATHS.values())
         if status == "active":
             expected_evidence_paths.add(R03_ACTIVATION_REVIEW_PATH)
+            expected_evidence_paths.add(R03_OPERATOR_AUTH_REVIEW_PATH)
         self.problems.require(
             evidence_paths == sorted(evidence_paths)
             and len(evidence_paths) == len(set(evidence_paths))
@@ -5637,6 +5654,22 @@ class CompletionValidator:
                 ),
                 f"{R03_BRANCH_ID}.refresh.evidence",
                 "active packet must hash-pin the exact R03 activation review",
+            )
+            authorization_evidence = tuple(
+                artifact
+                for artifact in artifacts
+                if artifact.path == R03_OPERATOR_AUTH_REVIEW_PATH
+            )
+            self.problems.require(
+                authorization_evidence
+                == (
+                    Artifact(
+                        R03_OPERATOR_AUTH_REVIEW_PATH,
+                        R03_OPERATOR_AUTH_REVIEW_SHA256,
+                    ),
+                ),
+                f"{R03_BRANCH_ID}.refresh.evidence",
+                "active packet must hash-pin the exact R03 operator-authorization review",
             )
 
         expected_owned = {selected_path for _module, selected_path in selector}
@@ -7369,6 +7402,11 @@ def run_self_test() -> int:
             for digest in R03_ARTIFACT_SHA256.values()
         )
         and SHA256_RE.fullmatch(R03_ACTIVATION_REVIEW_SHA256) is not None
+        and SHA256_RE.fullmatch(R03_OPERATOR_AUTH_REVIEW_SHA256) is not None
+        and R03_OPERATOR_IDS == tuple(sorted(R03_OPERATOR_IDS))
+        and R03_OPERATOR_ID in R03_OPERATOR_IDS
+        and R03_SECOND_OPERATOR_ID in R03_OPERATOR_IDS
+        and len(set(R03_OPERATOR_IDS)) == 2
         and SHA1_RE.fullmatch(R03_PLANNED_CONTROL_SHA) is not None
         and R03_PLANNED_CONTROL_CI_RUN.isdecimal()
         and R03_PLANNED_CONTROL_CI_JOB.isdecimal()
@@ -7388,8 +7426,8 @@ def run_self_test() -> int:
         branch_base_checkpoint_id=C0002_CHECKPOINT_ID,
         branch_base_sha=C0002_CODE_SHA,
         branch_status="planned",
-        operator_ids=(R03_OPERATOR_ID,),
-        lane_operator_ids=(R03_OPERATOR_ID,),
+        operator_ids=R03_OPERATOR_IDS,
+        lane_operator_ids=R03_OPERATOR_IDS,
         selector_sha256=R03_SELECTOR_SHA256,
         selector_rows=R03_OWNER_COUNT,
         selector_matches_inventory=True,
@@ -7515,6 +7553,19 @@ No implementation began before activation-control CI. The worker remains frozen 
         (
             "unauthorized operator",
             replace(r03_active, operator_ids=("claude-local",)),
+            ".authority:",
+        ),
+        (
+            "unauthorized third operator",
+            replace(
+                r03_active,
+                operator_ids=("claude-local", "codex-local", "intruder-local"),
+            ),
+            ".authority:",
+        ),
+        (
+            "stale single-operator authority",
+            replace(r03_active, lane_operator_ids=(R03_OPERATOR_ID,)),
             ".authority:",
         ),
         (

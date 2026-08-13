@@ -16,6 +16,7 @@
       {
         "lane_id": "codex-lane",
         "operator_ids": [
+          "claude-local",
           "codex-local"
         ],
         "owner_id": "primary-human"
