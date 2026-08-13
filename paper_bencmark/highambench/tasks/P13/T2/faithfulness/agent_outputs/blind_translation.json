@@ -1,0 +1,260 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "5321d6c6dd13dcb4c56fdaa5c7c79bb8b59ee5527c1a34d9d61652882c4f19b2",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For ell,f : Fin n -> R, this is the ratio (sum over all i of |ell_i f_i|) / |sum over all i of ell_i f_i|.",
+      "effect_on_target": "It is the sensitivity factor multiplied by epsilon on the right-hand side. The nonzero baseline hypothesis ensures that its denominator is nonzero.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For ell,f : Fin n -> R, this is the weighted linear functional S(ell,f) = sum over all i in Fin n of ell_i f_i.",
+      "effect_on_target": "It supplies the baseline value, the perturbed value S(ell,f+deltaF), their difference, the normalizing denominator, and the hypothesis that the baseline value is nonzero.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "This extracts the division operation packaged in a DivInvMonoid structure.",
+      "effect_on_target": "For the real numbers it supplies real division to the homogeneous division operation used in the normalized error ratio.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "Fin",
+      "meaning": "Fin n is the finite type of n coordinate indices, conventionally represented by 0 through n-1.",
+      "effect_on_target": "It fixes the dimension and is the common domain of ell, f, and deltaF, as well as the index set of every finite sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "HAdd.hAdd",
+      "meaning": "This projects the binary operation from a heterogeneous-addition structure.",
+      "effect_on_target": "Instantiated on real numbers, it is ordinary addition and forms each perturbed component f_i + deltaF_i.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "HDiv.hDiv",
+      "meaning": "This projects the binary operation from a heterogeneous-division structure.",
+      "effect_on_target": "Instantiated on real numbers, it forms the quotient of the absolute change by the absolute baseline value; it also underlies the quotient defining LocalDef001.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "HMul.hMul",
+      "meaning": "This projects the binary operation from a heterogeneous-multiplication structure.",
+      "effect_on_target": "Instantiated on real numbers, it forms ell_i f_i, epsilon |f_i|, and epsilon times the sensitivity factor.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "HSub.hSub",
+      "meaning": "This projects the binary operation from a heterogeneous-subtraction structure.",
+      "effect_on_target": "Instantiated on real numbers, it forms the exact difference between the perturbed and baseline weighted sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LE.le",
+      "meaning": "This projects the less-than-or-equal relation from an LE structure.",
+      "effect_on_target": "For real numbers it interprets both the componentwise perturbation assumptions and the final error bound as ordinary real inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Nat",
+      "meaning": "This is the type of natural numbers.",
+      "effect_on_target": "The universally quantified natural number n specifies the arbitrary finite dimension.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "Ne",
+      "meaning": "Ne a b means not (a = b).",
+      "effect_on_target": "It makes the second hypothesis assert that the baseline weighted sum is not equal to zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "OfNat.ofNat",
+      "meaning": "This interprets a natural-number literal in a type carrying the corresponding OfNat instance.",
+      "effect_on_target": "For the literal 0 in the real numbers, it supplies the zero against which the baseline weighted sum is compared.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Real",
+      "meaning": "This is Lean's type of real numbers.",
+      "effect_on_target": "All vector entries, epsilon, sums, products, absolute values, quotients, and inequalities in the proposition are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Real.instAdd",
+      "meaning": "This is the standard addition operation on real numbers.",
+      "effect_on_target": "It interprets f_i + deltaF_i as ordinary real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instAddGroup",
+      "meaning": "This is the additive-group structure of the real numbers, including addition, negation, subtraction-compatible structure, and zero.",
+      "effect_on_target": "It supplies the additive and negation structure required by every occurrence of the generic absolute-value operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This is the standard multiplicative, inverse, and division structure on the real numbers, with division represented through multiplication by an inverse.",
+      "effect_on_target": "It supplies ordinary real division for the two normalized ratios. Lean's division is total, although the target's nonzero hypothesis excludes a zero denominator in the asserted ratios.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instLE",
+      "meaning": "This is the standard less-than-or-equal ordering on the real numbers.",
+      "effect_on_target": "It gives the usual meaning to the coordinatewise bounds and to the concluding upper bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instMul",
+      "meaning": "This is the standard multiplication operation on real numbers.",
+      "effect_on_target": "It interprets all products in the weighted sums, perturbation bounds, and right-hand side.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instSub",
+      "meaning": "This is real subtraction, defined as addition of the additive inverse.",
+      "effect_on_target": "It computes the perturbed weighted sum minus the baseline weighted sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instZero",
+      "meaning": "This is the standard zero element of the real numbers.",
+      "effect_on_target": "It supplies the value 0 in the nonzero baseline hypothesis and the additive identity for real finite sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.lattice",
+      "meaning": "This is the lattice structure on the real numbers induced by their order.",
+      "effect_on_target": "Together with the real additive-group structure, it makes the generic definition max(a,-a) equal to the usual real absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Zero.toOfNat0",
+      "meaning": "This constructs the interpretation of the numeral 0 from a type's distinguished zero element.",
+      "effect_on_target": "It ensures that the literal 0 in the nonzero hypothesis is exactly real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "abs",
+      "meaning": "The supplied generic absolute value is abs(a) = max(a,-a); on the real numbers this is the usual scalar absolute value |a|.",
+      "effect_on_target": "It measures each component perturbation, each baseline component, the exact scalar output change, the baseline output magnitude, and each weighted summand in LocalDef001.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "instHAdd",
+      "meaning": "This converts an ordinary homogeneous addition operation into an HAdd operation with the same underlying binary function.",
+      "effect_on_target": "Applied to real addition, it makes the target's heterogeneous-addition syntax compute ordinary f_i + deltaF_i.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "instHDiv",
+      "meaning": "This converts an ordinary homogeneous division operation into an HDiv operation with the same underlying binary function.",
+      "effect_on_target": "Applied to real division, it interprets the quotient in the conclusion and the quotient defining LocalDef001.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "instHMul",
+      "meaning": "This converts an ordinary homogeneous multiplication operation into an HMul operation with the same underlying binary function.",
+      "effect_on_target": "Applied to real multiplication, it interprets every displayed product as ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "instHSub",
+      "meaning": "This converts an ordinary homogeneous subtraction operation into an HSub operation with the same underlying binary function.",
+      "effect_on_target": "Applied to real subtraction, it interprets the output difference in the numerator.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Fin.fintype",
+      "meaning": "This equips Fin n with a finite enumeration containing every one of its n elements exactly once.",
+      "effect_on_target": "It permits Finset.univ to enumerate all coordinates used by the definitions of the weighted sum and sensitivity factor.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Finset.sum",
+      "meaning": "This maps a function over a finite set and adds all resulting values using the additive commutative monoid operation.",
+      "effect_on_target": "It computes the finite sums sum_i ell_i f_i and sum_i |ell_i f_i|, including the corresponding sums for the perturbed vector.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, this is the finite set containing every element of that type.",
+      "effect_on_target": "For Fin n it makes each defining sum range over all n coordinates, with no omitted coordinate.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This is the additive commutative monoid structure of the real numbers.",
+      "effect_on_target": "It makes finite real sums well-defined, independent of enumeration order, and equal to zero when the index set is empty.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "n is an implicitly universally quantified natural number.",
+      "ell, f, and deltaF are universally quantified functions Fin n -> R, equivalently arbitrary real vectors with n coordinates.",
+      "epsilon is a universally quantified real number."
+    ],
+    "hypotheses": [
+      "For every coordinate i in Fin n, |deltaF_i| <= epsilon |f_i|.",
+      "The baseline weighted sum S(ell,f) = sum_i ell_i f_i is nonzero."
+    ],
+    "conclusions": [
+      "The normalized exact change satisfies |S(ell,f+deltaF) - S(ell,f)| / |S(ell,f)| <= epsilon (sum_i |ell_i f_i| / |S(ell,f)|)."
+    ],
+    "mathematical_definitions": [
+      "The coordinate set Fin n is the n-element set of indices i = 0, ..., n-1.",
+      "S(ell,x) denotes the exact weighted sum sum_i ell_i x_i.",
+      "The perturbed vector f+deltaF is defined coordinatewise by (f+deltaF)_i = f_i + deltaF_i.",
+      "The factor LocalDef001(ell,f) is K(ell,f) = (sum_i |ell_i f_i|) / |sum_i ell_i f_i|.",
+      "By exact distributivity of real finite sums, S(ell,f+deltaF) - S(ell,f) = sum_i ell_i deltaF_i, so the numerator is |sum_i ell_i deltaF_i|.",
+      "Every absolute value in the proposition is scalar real absolute value; no vector norm is used."
+    ],
+    "proposition_plain_english": "For every finite dimension n, every real weight vector ell, every real vector f, every real perturbation deltaF, and every real epsilon, if each perturbation component has magnitude at most epsilon times the magnitude of the corresponding component of f, and if the weighted sum sum_i ell_i f_i is nonzero, then the absolute change in that weighted sum, divided by the absolute baseline weighted sum, is at most epsilon times the ratio of sum_i |ell_i f_i| to the absolute baseline weighted sum. The assertion is purely conditional and contains no existentially quantified witness."
+  },
+  "restrictions_and_vacuity_risks": [
+    "There is no explicit hypothesis epsilon >= 0. Nevertheless, the two stated hypotheses force epsilon >= 0: a nonzero weighted sum implies that some f_i is nonzero, and for that coordinate a negative epsilon would make the nonnegative number |deltaF_i| bounded above by a negative number. Thus the proposition is vacuous for epsilon < 0.",
+    "Although n = 0 is universally included, the sum over Fin 0 is the empty sum 0, so the nonzero baseline hypothesis is impossible. The proposition is therefore vacuous in dimension zero.",
+    "Because the statement is a chain of implications, it asserts nothing when either the componentwise perturbation condition or the nonzero baseline condition fails.",
+    "If f_i = 0, the componentwise hypothesis forces deltaF_i = 0.",
+    "The nonzero hypothesis concerns only the baseline weighted sum. The perturbed weighted sum is not required to be nonzero.",
+    "No upper bound such as epsilon < 1 is imposed.",
+    "The weights ell_i and entries f_i are otherwise arbitrary real numbers; there are no positivity, normalization, or nonvanishing assumptions on individual coordinates.",
+    "The perturbation model is componentwise relative error, not a bound in a vector norm.",
+    "The proposition describes exact real arithmetic and an exact finite weighted sum. It encodes no floating-point format, rounding operation, algorithm, probabilistic model, or representability condition.",
+    "Lean's real division is total even at zero, but the nonzero baseline hypothesis ensures that both denominators relevant to the conclusion are genuinely nonzero."
+  ],
+  "ambiguities": []
+}

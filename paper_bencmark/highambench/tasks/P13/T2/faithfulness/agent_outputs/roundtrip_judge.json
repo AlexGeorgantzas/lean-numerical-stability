@@ -1,0 +1,165 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P13-T2",
+  "paper_sha256": "9ebf8adb699f96c82ccbb153dd6ca592c64475a8bc3e0703a50cb659b012c520",
+  "blind_translation_sha256": "30e5c90d3af02f5a3ab9fd4c7a2b9f311ce7428bd8bf6ac144225cf082d54743",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF is the published IMA Journal of Numerical Analysis 24(4) version. Printed page 548, Lemma 2.2 states the finite componentwise perturbation inequality following equation (2.2).",
+      "translation_evidence": "The translation presents a finite relative perturbation bound for a weighted sum and identifies it as an exact statement.",
+      "reasoning": "The selected source and surrounding result are correct for P13-T2."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Section 2 fixes degree parameter n, distinct nodes x_j for j=0,...,n, an evaluation point x, and data f_j; the coefficients are the associated Lagrange basis values ell_j(x).",
+      "translation_evidence": "The binders are a dimension n and arbitrary functions ell, f, deltaF : Fin n -> R, with no nodes or evaluation point.",
+      "reasoning": "The translation replaces n+1 interpolation coordinates by n arbitrary coordinates and replaces node-derived Lagrange coefficients by an unrestricted real weight vector."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "With nodes, x, and f fixed, Lemma 2.2 quantifies over every Delta f satisfying the componentwise bound.",
+      "translation_evidence": "The proposition universally quantifies deltaF and epsilon and makes the componentwise and nonzero conditions antecedents of the bound.",
+      "reasoning": "The perturbation is universally quantified, no witness is introduced, and the sensitivity factor depends on the original data rather than the perturbation."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes distinct interpolation nodes, coefficients defined by the Lagrange basis at fixed x, and p_f(x) != 0.",
+      "translation_evidence": "The only hypotheses are the componentwise perturbation inequality and nonvanishing of an arbitrary weighted sum.",
+      "reasoning": "The nonzero and perturbation hypotheses match algebraically, but the interpolation and Lagrange-basis hypotheses are absent because ell is unrestricted."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "Lemma 2.2 concludes |p_f(x)-p_{f+Delta f}(x)|/|p_f(x)| <= epsilon cond(x,n,f).",
+      "translation_evidence": "The conclusion is |S(ell,f+deltaF)-S(ell,f)|/|S(ell,f)| <= epsilon times sum_i |ell_i f_i|/|S(ell,f)|.",
+      "reasoning": "After substituting the closed form (2.2), the complete finite inequality is present. Reversing the subtraction is immaterial under absolute value."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "Equation (2.1) defines p_f(x) as a Lagrange weighted sum, and equation (2.2) gives cond as the ratio of the absolute weighted-term sum to |p_f(x)|.",
+      "translation_evidence": "LocalDef002 is unfolded as the exact weighted sum, LocalDef001 as the corresponding ratio, and the dependency ledger identifies real arithmetic, finite sums, division, ordering, and scalar absolute value.",
+      "reasoning": "Every operator occurring in the translated proposition is interpreted, and the condition-number factor is correctly unfolded algebraically."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The Section 2 result compares exact interpolants under an abstract exact data perturbation; floating-point computation begins only in the later error analyses.",
+      "translation_evidence": "The translation explicitly uses exact real finite sums and contains no rounding or computed quantity.",
+      "reasoning": "Exact perturbation and computed rounding error are not conflated."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The compared outputs are the exact interpolating-polynomial values p_f(x) and p_{f+Delta f}(x), with nodes and x fixed.",
+      "translation_evidence": "The compared outputs are values of an arbitrary weighted linear functional S(ell,f), with no interpolation polynomial, nodes, evaluation point, or Lagrange-basis constraint.",
+      "reasoning": "Although the same algebra applies, the proposition no longer retains explicit linkage to polynomial interpolation."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "The paper declares vector inequalities componentwise and uses scalar absolute values in both the input condition and output ratio.",
+      "translation_evidence": "The translation uses coordinatewise scalar absolute-value bounds and a scalar absolute-value output ratio, explicitly excluding a vector norm.",
+      "reasoning": "Componentwise versus normwise semantics match."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The factor is exactly epsilon cond(x,n,f), and all sums run over j=0,...,n, giving n+1 terms for degree parameter n.",
+      "translation_evidence": "The factor has the same coefficient one, but sums run over Fin n, namely i=0,...,n-1.",
+      "reasoning": "The numerical constant is correct, but the symbol n denotes vector length in the translation and polynomial degree in the paper; an explicit n+1 reindexing is required."
+    },
+    {
+      "id": "S11",
+      "status": "pass",
+      "paper_evidence": "Lemma 2.2 introduces no precision, rounding mode, underflow, overflow, or representability assumptions and excludes a zero output denominator.",
+      "translation_evidence": "The translation uses exact reals, states that no floating-point model is encoded, and assumes the baseline weighted sum is nonzero.",
+      "reasoning": "The absence of a floating-point model and the relevant exceptional-value treatment are preserved."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "The paper gives a non-strict upper bound with coefficient epsilon and no converse or equality claim.",
+      "translation_evidence": "The conclusion is the same non-strict upper bound after unfolding the condition number.",
+      "reasoning": "The inequality direction, strictness, and local conclusion strength match."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Input error is componentwise relative perturbation of f, and output error is relative forward change at the fixed evaluation point, scaled by the condition number at the original f.",
+      "translation_evidence": "Input error is componentwise relative perturbation of f, and output error is the relative exact change of the original weighted sum, scaled by K(ell,f).",
+      "reasoning": "The translation preserves the componentwise-input and relative-forward-output error notions."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The perturbation inequality in Lemma 2.2 is finite and exact, with no big-O or omitted higher-order term.",
+      "translation_evidence": "The translated conclusion is an exact inequality and contains no remainder or asymptotic qualification.",
+      "reasoning": "Higher-order treatment matches."
+    },
+    {
+      "id": "S15",
+      "status": "unclear",
+      "paper_evidence": "The PDF does not explicitly declare the scalar field. Its attainment proof uses sign(ell_j(x)), directly supporting a real interpretation, while the inequality itself also extends to complex scalars by absolute-value estimates.",
+      "translation_evidence": "All coefficients, data, perturbations, sums, and epsilon are explicitly real.",
+      "reasoning": "The unrestricted-weight generalization is clear, but whether the real scalar restriction preserves or narrows the paper's intended domain cannot be settled from the paper's explicit declarations."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's hypotheses are satisfiable whenever an interpolated value at x is nonzero.",
+      "translation_evidence": "For n >= 1, choices such as ell_0=f_0=1 and deltaF_0=0 satisfy the hypotheses. Dimension zero and negative epsilon are vacuous because the nonzero baseline and componentwise assumptions cannot then coexist.",
+      "reasoning": "The translated theorem has ordinary nonvacuous instances; its extra vacuous cases do not make the entire conclusion trivial."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "unclear",
+      "reasoning": "Under a real-only reading, instantiate the translation at dimension n+1 with ell_j equal to the paper's Lagrange basis values at x; its conclusion is exactly the paper inequality. If the paper's undeclared scalar domain includes complex data, the real-only translation does not cover the full paper claim."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper statement ranges over coefficients arising as Lagrange basis values for distinct nodes at an evaluation point, whereas the translation quantifies over every real weight vector. For example, Lagrange basis values satisfy sum_j ell_j(x)=1, a restriction absent from the translation, so the paper statement does not provide the translated universal coefficient scope directly."
+    }
+  },
+  "classification": "undetermined",
+  "accepted": false,
+  "requires_adjudication": true,
+  "findings": [
+    {
+      "severity": "major",
+      "category": "unrestricted coefficient generalization",
+      "paper_evidence": "The coefficients in equations (2.1)-(2.2) are ell_j(x), determined by distinct interpolation nodes and the fixed evaluation point.",
+      "translation_evidence": "ell is an arbitrary function Fin n -> R with no Lagrange-basis, partition-of-unity, node, or evaluation-point constraint.",
+      "impact": "The translation asserts a broader weighted-linear-functional theorem and loses the paper result's explicit interpolation linkage."
+    },
+    {
+      "severity": "minor",
+      "category": "dimension and indexing reparameterization",
+      "paper_evidence": "The degree parameter n gives indices j=0,...,n and therefore n+1 data values.",
+      "translation_evidence": "The parameter n is the cardinality of Fin n and gives indices 0,...,n-1.",
+      "impact": "Recovering a paper instance requires replacing the translation's dimension by n+1; the same parameter symbol does not retain its paper meaning."
+    },
+    {
+      "severity": "major",
+      "category": "scalar-domain ambiguity",
+      "paper_evidence": "No real or complex scalar domain is explicitly declared; the proof's sign-based attainment argument is directly real, while the perturbation inequality extends to complex scalars.",
+      "translation_evidence": "The dependency ledger and proposition explicitly specialize every quantity to Real.",
+      "impact": "Whether the translation covers the paper's full intended domain is unclear, preventing a definite translation-implies-paper verdict."
+    },
+    {
+      "severity": "note",
+      "category": "implicit nonnegative perturbation radius",
+      "paper_evidence": "Epsilon is used as the radius in |Delta f| <= epsilon |f| without a separately printed epsilon >= 0 hypothesis.",
+      "translation_evidence": "epsilon is any real, but a nonzero baseline ensures some f_i is nonzero, making the hypotheses inconsistent when epsilon < 0.",
+      "impact": "The missing explicit sign hypothesis introduces only vacuous negative-epsilon cases and does not alter nonvacuous instances."
+    }
+  ],
+  "rationale": "The translated inequality, its componentwise perturbation model, relative forward-error ratio, exact arithmetic, constant, and absence of higher-order terms agree with Lemma 2.2 after unfolding the condition number. However, it replaces the paper's n+1 Lagrange coefficients tied to distinct nodes and a fixed evaluation point by n arbitrary real weights. Under a real interpretation this would be a stronger algebraic generalization that specializes back to the paper result. The PDF does not explicitly settle whether the scalar domain is real or complex, so the real-only translation may fail to imply the full intended paper statement. That unresolved implication requires adjudication and forces the classification to undetermined."
+}

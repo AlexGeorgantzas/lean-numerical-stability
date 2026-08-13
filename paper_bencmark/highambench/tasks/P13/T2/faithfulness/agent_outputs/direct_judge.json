@@ -1,0 +1,408 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P13-T2",
+  "paper_sha256": "9ebf8adb699f96c82ccbb153dd6ca592c64475a8bc3e0703a50cb659b012c520",
+  "dossier_sha256": "99d5429aad39ffbd6da3acd68d2bba946c9ff380e95284731cbd1bfa49248053",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.p13Condition",
+      "interpretation": "This is the finite sum of |ell_i*f_i| over Fin n divided by the absolute value of the interpolation sum.",
+      "effect_on_target": "It supplies the condition-number multiplier on the right-hand side.",
+      "paper_match": "After ell_i is identified with ell_i(x), this is exactly equation (2.2). The target's nonzero-value hypothesis makes the denominator valid.",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p13InterpolationValue",
+      "reuse_sha256": "91651a431909eb18900aed94b174f42faeaf9eb340bc7bda4e2d4e78c2f2070c",
+      "effect_on_target": "It represents both the original sum and the sum after replacing f_i by f_i+deltaF_i.",
+      "paper_match": "With ell_i equal to the fixed Lagrange basis value ell_i(x), it is the paper's exact p_f(x).",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "DivInvMonoid.toDiv",
+      "reuse_sha256": "7d038def03b8b04afde21f875edb707b3ff548ef11d2da4fa55b6043d015b1e0",
+      "effect_on_target": "It exposes ordinary real division for the relative-error quotient and condition number.",
+      "paper_match": "The paper uses the same real quotients, with nonzero denominators ensured by p_f(x) != 0.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "Fin",
+      "interpretation": "Fin n is the finite index type containing the natural indices 0 through n-1.",
+      "effect_on_target": "All coefficient, data, and perturbation vectors have exactly n components.",
+      "paper_match": "The paper indexes n_paper+1 values by 0 through n_paper. Taking n_Lean=n_paper+1 gives the same index set.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "HAdd.hAdd",
+      "interpretation": "This projects the addition operation selected by an HAdd instance.",
+      "effect_on_target": "With the real instance it forms each perturbed datum f_i+deltaF_i.",
+      "paper_match": "This is the componentwise data perturbation f+Delta f used in Lemma 2.2.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "HDiv.hDiv",
+      "reuse_sha256": "95bbeabfe5a449f2ba09086bbe1d6364b401db913c8278859fe06ad567803d42",
+      "effect_on_target": "It dispatches the two displayed quotients to real division.",
+      "paper_match": "Those quotients are the relative output error and the closed-form condition number from the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "HMul.hMul",
+      "reuse_sha256": "604a960639af0efce7efa7efc6f134fe051b3c5dc1c48c78ffaa9ce8b9649dcc",
+      "effect_on_target": "It dispatches multiplication in epsilon*|f_i|, epsilon*p13Condition, and the condition-number summands.",
+      "paper_match": "These are ordinary real products corresponding to the paper's componentwise perturbation radius and epsilon*cond factor.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "HSub.hSub",
+      "interpretation": "This projects the subtraction operation selected by an HSub instance.",
+      "effect_on_target": "With the real instance it subtracts the original interpolation value from the perturbed value.",
+      "paper_match": "The paper writes the subtraction in the opposite order, but absolute value makes the two numerators equal.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "LE.le",
+      "reuse_sha256": "8fc86d4b46d47573c7084325585f71d53c2195bd6ef436faef4ed7aa61e99ee1",
+      "effect_on_target": "It supplies non-strict comparison in the componentwise hypothesis and final bound.",
+      "paper_match": "The paper also uses non-strict componentwise and scalar inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "Nat",
+      "interpretation": "Nat is the type of natural numbers.",
+      "effect_on_target": "The natural parameter n determines the cardinality of Fin n.",
+      "paper_match": "Lean's n counts data entries, whereas the paper's n is the degree bound and has n+1 entries; universal quantification permits the harmless shift n_Lean=n_paper+1.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "Ne",
+      "reuse_sha256": "b379281ac30d72322e40b97d7100066d7c3c750cf0a953ab0d40f3f1f1d1ec74",
+      "effect_on_target": "It makes hvalue assert that the original interpolation value is not zero.",
+      "paper_match": "Definition 2.1 explicitly restricts the relative condition number to p_f(x) != 0.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "OfNat.ofNat",
+      "reuse_sha256": "217c6c364afad38f28c563d138bedd706cd225dea80409f4bcf8f9a16838ef56",
+      "effect_on_target": "It interprets the numeral 0 as a real number in hvalue.",
+      "paper_match": "This is the zero excluded by the paper's p_f(x) != 0 condition.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "Real",
+      "reuse_sha256": "a8b1d6c8a236c9000a59f2eddfc4bb9eafa545405b21f06782cfbb22d6531335",
+      "effect_on_target": "All coefficients, data, perturbations, radii, sums, and bounds are real-valued.",
+      "paper_match": "The proof's use of sign(ell_j(x)) supports the real interpretation used by Lean.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Real.instAdd",
+      "interpretation": "This is ordinary addition on real numbers.",
+      "effect_on_target": "It implements f_i+deltaF_i.",
+      "paper_match": "It matches the exact componentwise addition f+Delta f.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instAddGroup",
+      "reuse_sha256": "f2e72b4b339dff0a5dbbcbc0ccd3af8d122f0604199b14886775db5e57dc5221",
+      "effect_on_target": "It supplies real zero, addition, and negation needed by subtraction and absolute value.",
+      "paper_match": "These operations have their standard real meanings in the paper's formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instDivInvMonoid",
+      "reuse_sha256": "7666c0953a2efc300f90fdd768e88421404d01fba675a21f058f5fc0f8a66dc7",
+      "effect_on_target": "It supplies ordinary real division for both ratios.",
+      "paper_match": "Under hvalue, the relevant denominator is nonzero exactly as required in Definition 2.1.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instLE",
+      "reuse_sha256": "ad12fb8bfe185a50548cde2b1fe4430aad1d1eb5e7fe6cf41615c4a56a579fb8",
+      "effect_on_target": "It interprets every <= as standard real order.",
+      "paper_match": "This is the order used by the paper's absolute-value inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instMul",
+      "reuse_sha256": "9226216e945c56e1f162c24801f8900aba95bcadd64b323b1fac2328074c418f",
+      "effect_on_target": "It supplies ordinary real multiplication throughout the target and p13Condition.",
+      "paper_match": "The corresponding paper factors and products are ordinary scalar multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instSub",
+      "interpretation": "This defines real subtraction as addition of the additive inverse.",
+      "effect_on_target": "It forms the exact difference between perturbed and original interpolation values.",
+      "paper_match": "It matches the paper's exact output difference; reversing its order under absolute value has no effect.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instZero",
+      "reuse_sha256": "1e61978cbbd3b176de599693b6db2ada4fe690d45638f7c75a3bd4b054dd6004",
+      "effect_on_target": "It supplies the real zero excluded by hvalue and used by additive structures.",
+      "paper_match": "It has the standard zero meaning required by p_f(x) != 0.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "Real.lattice",
+      "reuse_sha256": "a9ded547c0f64bfdaedff72c03dbb5e290c4f75262960fff2d5fd356320f4732",
+      "effect_on_target": "Together with the additive group, it supports the standard real absolute-value operation.",
+      "paper_match": "The resulting absolute value is the scalar absolute value used throughout Lemma 2.2.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "Zero.toOfNat0",
+      "reuse_sha256": "6f4d693d3279d6348a8beabfa01ca7ac2e6db5ec0904d145c0a3d72f15281a3a",
+      "effect_on_target": "It converts the real Zero instance into the interpretation of numeral 0.",
+      "paper_match": "It introduces no semantic difference from the paper's scalar zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "abs",
+      "reuse_sha256": "5600a951864c72f91f5551c89acab72b0c37a8a9e178e5335c0917eca73e1e9a",
+      "effect_on_target": "It measures every componentwise input magnitude, output difference, denominator, and condition-number summand.",
+      "paper_match": "For real arguments it is exactly the paper's scalar absolute value, not a vector norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "instHAdd",
+      "interpretation": "This converts a homogeneous Add operation into the corresponding HAdd operation.",
+      "effect_on_target": "It routes f_i+deltaF_i to ordinary real addition.",
+      "paper_match": "The resulting operation is the paper's componentwise addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "instHDiv",
+      "reuse_sha256": "3b34ef37f7beb75ebd0cda4c2464144e16d11cdad3fa2c07eacd02e6277977fc",
+      "effect_on_target": "It routes homogeneous real quotients through the HDiv syntax.",
+      "paper_match": "The resulting operation is ordinary division as used in the relative bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "instHMul",
+      "reuse_sha256": "c527b442abb61196db8a735ab550d0c90390f8e2c1b3f3936c52414a4c6c9578",
+      "effect_on_target": "It routes homogeneous real products through the HMul syntax.",
+      "paper_match": "The resulting products have the standard meanings used in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "instHSub",
+      "interpretation": "This converts a homogeneous Sub operation into the corresponding HSub operation.",
+      "effect_on_target": "It routes the difference of the two real interpolation values to real subtraction.",
+      "paper_match": "The resulting exact scalar difference matches the paper up to an immaterial reversal under absolute value.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "Fin.fintype",
+      "interpretation": "This gives Fin n its canonical finite enumeration containing every index exactly once.",
+      "effect_on_target": "It permits p13Condition and p13InterpolationValue to sum over all components.",
+      "paper_match": "After the cardinality shift, this enumerates exactly the paper's indices j=0,...,n_paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "Finset.sum",
+      "reuse_sha256": "2c83cd50974a10e9bfd9b166e086a82ede265eb6fd123d760d924382ca48b01b",
+      "effect_on_target": "It forms the finite interpolation sum and the numerator of the condition number.",
+      "paper_match": "These are exactly the two finite sums appearing in equations (2.1) and (2.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "Finset.univ",
+      "interpretation": "For a finite type, Finset.univ is the finite set containing all elements of that type.",
+      "effect_on_target": "It makes the sums range over every index in Fin n.",
+      "paper_match": "It corresponds to summing over all data indices, with no omitted endpoint.",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "Real.instAddCommMonoid",
+      "reuse_sha256": "61817d1b06dbd530df02033695349dedbd248eef070112791c2f7bb2cebe065a",
+      "effect_on_target": "It supplies associative and commutative real addition with zero for finite sums.",
+      "paper_match": "This is the ordinary order-independent finite summation used in the paper.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The SHA-verified PDF is the published IMA Journal of Numerical Analysis 24 (2004) paper. Section 2 on printed page 548 contains Definition 2.1, equation (2.2), and Lemma 2.2's finite perturbation inequality.",
+      "lean_evidence": "The target is P13-T2 and states a data-perturbation bound using p13InterpolationValue and p13Condition.",
+      "reasoning": "The selected source passage and target concern the same exact relative perturbation result."
+    },
+    {
+      "id": "S02",
+      "status": "pass",
+      "paper_evidence": "The paper fixes distinct nodes x_j and x, uses data and perturbations indexed by j=0,...,n, and evaluates real scalar sums.",
+      "lean_evidence": "Lean binds ell, f, and deltaF as Fin n -> Real and epsilon as Real.",
+      "reasoning": "ell directly stores the fixed values ell_j(x). Fin n has n entries, so Lean's dimension parameter corresponds to the paper's n+1 after a simple renaming. Arbitrary ell broadens the domain but does not mis-type any paper instance."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "Lemma 2.2 quantifies over every Delta f satisfying |Delta f| <= epsilon|f| componentwise, with the interpolation configuration and original data fixed.",
+      "lean_evidence": "The theorem universally quantifies ell, f, deltaF, and epsilon, then assumes hdelta for every i before concluding the bound.",
+      "reasoning": "The perturbation remains universally quantified and no witness dependence or quantifier reversal is introduced."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper's ell_j are Lagrange basis values generated by distinct interpolation nodes and a fixed evaluation point, and Definition 2.1 requires p_f(x) != 0.",
+      "lean_evidence": "Lean requires hdelta and hvalue but allows every real vector ell without requiring nodes, distinctness, or Lagrange-basis realizability.",
+      "reasoning": "The nonzero and componentwise hypotheses match, and epsilon >= 0 follows from hdelta plus hvalue, but the Lagrange-structure hypotheses are deliberately dropped. This is a genuine strengthening rather than an extra hypothesis or narrower domain."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "The selected conclusion is |p_f(x)-p_{f+Delta f}(x)|/|p_f(x)| <= cond(x,n,f) epsilon.",
+      "lean_evidence": "Lean concludes the absolute perturbed-minus-original difference divided by the original absolute value is at most epsilon*p13Condition ell f.",
+      "reasoning": "Absolute-value symmetry and commutativity of real multiplication make the two displayed conclusions identical after interpreting the definitions."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "Equation (2.1) defines p_f(x) as a finite linear sum and equation (2.2) defines cond as the sum of |ell_j(x)f_j| divided by |p_f(x)|.",
+      "lean_evidence": "D001 unfolds p13Condition to that ratio, D002 identifies p13InterpolationValue as the finite product sum, and D003-D031 give standard real arithmetic, order, absolute value, indexing, and summation.",
+      "reasoning": "Every nontrivial target operator and imported definition has a direct standard interpretation matching the paper."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "Section 2 compares the two exact interpolants p_f and p_{f+Delta f}; floating-point evaluation begins only in Section 3.",
+      "lean_evidence": "The target contains only exact real functions, finite sums, arithmetic, and inequalities.",
+      "reasoning": "No rounded or computed value is substituted for either exact interpolant."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "Lemma 2.2 concerns sensitivity of the exact interpolation map with fixed nodes and evaluation point, not execution of either barycentric formula.",
+      "lean_evidence": "p13InterpolationValue is the exact linear interpolation sum once ell is instantiated with the fixed Lagrange basis values.",
+      "reasoning": "The target preserves the result's exact-interpolant linkage. Its abstraction over ell does not introduce an unrelated numerical algorithm."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "The paper declares vector inequalities componentwise and uses scalar absolute values in both the input restriction and output ratio.",
+      "lean_evidence": "hdelta applies scalar abs separately to every Fin n component, while the conclusion uses scalar real abs.",
+      "reasoning": "No vector norm, squared norm, or normwise perturbation replaces the componentwise semantics."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "The factor is exactly epsilon*cond and the sums cover j=0,...,n, hence n+1 entries.",
+      "lean_evidence": "The right side is epsilon*p13Condition with no additional constant, and all sums range over Fin n.",
+      "reasoning": "Real multiplication commutes, and setting n_Lean=n_paper+1 preserves every index and coefficient."
+    },
+    {
+      "id": "S11",
+      "status": "pass",
+      "paper_evidence": "The selected Section 2 inequality contains no unit roundoff, rounding mode, overflow, or underflow model.",
+      "lean_evidence": "The target is over exact Real values and contains no floating-point operations or exceptional-value model.",
+      "reasoning": "Both statements are exact perturbation results rather than rounding-error statements."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "Lemma 2.2 gives a non-strict upper bound for every admissible perturbation.",
+      "lean_evidence": "Lean uses the same non-strict <= relation and the same bound after unfolding definitions.",
+      "reasoning": "The inequality direction and strictness match. Allowing arbitrary ell makes the theorem strictly more general but does not weaken the selected relation."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The hypothesis is componentwise relative input perturbation and the conclusion is relative forward change in the exact scalar output.",
+      "lean_evidence": "hdelta is |deltaF_i| <= epsilon|f_i|, and the conclusion divides the exact output difference by the original output magnitude.",
+      "reasoning": "Lean preserves the paper's input and output error notions and does not substitute backward, residual, mixed, or computed error."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The perturbation inequality in Lemma 2.2 is finite and exact, despite the limiting definition used to introduce cond.",
+      "lean_evidence": "The target states an exact inequality with no asymptotic notation or remainder.",
+      "reasoning": "No first-order truncation or omitted higher-order term is introduced."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The paper applies the result to coefficient vectors ell_j(x) arising from finite real Lagrange interpolation.",
+      "lean_evidence": "Lean remains finite and real but quantifies over arbitrary coefficient vectors ell and renames the number of entries from n+1 to n.",
+      "reasoning": "The scalar field and finite setting match the paper, the index change is cosmetic, and the unconstrained-coefficient extension is correctly classified as a strict strengthening."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's hypotheses are satisfiable whenever the chosen exact interpolated value is nonzero.",
+      "lean_evidence": "For n=1, ell_0=1, f_0=1, epsilon=0.1, and deltaF_0=0.05, hdelta and hvalue hold and the inequality is nontrivial. Moreover, hdelta and hvalue force epsilon >= 0 because some f_i must be nonzero.",
+      "reasoning": "The formal proposition has ordinary nonempty instances and does not obtain the intended result through inconsistent hypotheses or zero denominators."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "For a paper instance of degree at most n, instantiate Lean at Fin (n+1) and set ell_j to the fixed Lagrange basis values ell_j(x). Then p13InterpolationValue is p_f(x), p13Condition is equation (2.2), and the Lean conclusion is the paper inequality after absolute-value symmetry and multiplication commutativity."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper result directly quantifies only over coefficient vectors produced by Lagrange bases at fixed nodes and x; such vectors satisfy structural constraints including sum_j ell_j(x)=1. Lean asserts the inequality for every real coefficient vector without those constraints, so the paper statement does not directly entail the full Lean proposition."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "note",
+      "category": "coefficient-domain-generalization",
+      "paper_evidence": "In equations (2.1)-(2.2), ell_j(x) is specifically the Lagrange basis associated with distinct nodes and a fixed evaluation point.",
+      "lean_evidence": "The theorem quantifies over every ell : Fin n -> Real with no Lagrange-basis constraint.",
+      "impact": "Lean strictly strengthens the result while retaining every paper instance; this removes the converse implication but does not undermine the benchmark task."
+    },
+    {
+      "severity": "note",
+      "category": "index-parameter-renaming",
+      "paper_evidence": "The paper's degree parameter n yields indices j=0,...,n and therefore n+1 data values.",
+      "lean_evidence": "Fin n contains n indices.",
+      "impact": "The statements align under n_Lean=n_paper+1; no endpoint or case is lost."
+    },
+    {
+      "severity": "note",
+      "category": "implicit-radius-nonnegativity",
+      "paper_evidence": "Epsilon is used as a perturbation radius in |Delta f| <= epsilon|f|, without a separately displayed epsilon >= 0 hypothesis.",
+      "lean_evidence": "Lean likewise has no explicit epsilon >= 0 premise, but hvalue implies some f_i != 0 and hdelta at that index forces epsilon >= 0.",
+      "impact": "Negative epsilon creates no unintended accepted case, and the theorem is nonvacuous on the intended nonnegative domain."
+    }
+  ],
+  "rationale": "The Lean theorem exactly reproduces Lemma 2.2's finite componentwise-relative perturbation bound after unfolding its two local definitions, shifting the dimension parameter by one, and using symmetry of absolute value. It is stronger because it proves the same inequality for arbitrary real coefficient vectors rather than only Lagrange-basis values. This strengthening is nonvacuous and includes every paper instance, so the result is accepted as faithful-stronger."
+}
