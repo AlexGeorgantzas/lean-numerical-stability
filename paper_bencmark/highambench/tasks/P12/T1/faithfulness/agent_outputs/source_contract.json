@@ -1,0 +1,91 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "The paper says only that inequality (7) 'can be adapted' for mappings satisfying equation (10), without displaying the adapted condition. (PDF p. 6, printed p. 388, paragraph containing eq. (10))",
+      "impact": "No exact generalized FastTwoSum precondition may be reconstructed from this passage alone; only equation (10) itself has a precise contract. (PDF p. 6, printed p. 388, eq. (10) discussion)",
+      "issue": "The claimed adaptation beyond nearest-addition is not specified quantitatively. (PDF p. 6, printed p. 388, sentence following eq. (10))"
+    },
+    {
+      "evidence": "The definition requires minimum absolute distance but gives no tie-breaking convention. (PDF p. 2, printed p. 384, nearest-addition definition)",
+      "impact": "A formalization may choose any nearest result in a tie, but equation (10) must hold for that choice. (PDF p. 2, printed p. 384, nearest-addition definition; PDF p. 6, printed p. 388, eq. (10))",
+      "issue": "Nearest-rounding ties are left unspecified. (PDF p. 2, printed p. 384, nearest-rounding definition)"
+    }
+  ],
+  "contract_plain_english": "For floating-point x and y, a nearest evaluation of x+y is no farther from the exact sum than the already representable candidate x, so its absolute error is at most |y|. This is only an addition-error bound; the passage does not by itself claim an error-free FastTwoSum decomposition. (PDF p. 5, printed p. 387, eq. (9); PDF p. 6, printed p. 388, eq. (10))",
+  "paper_batch_sha256": "c14eaa2ba1c25d2284fb972ef8a21fb4aa3b9f4953061dea7bb0ea5b382a6321",
+  "paper_sha256": "0569d969cebaabe42de69fef10fa91002af12d62149af7485d0712414b53c2a1",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "Section 1, nearest-addition definition following equation (1)",
+      "observation": "A nearest-addition maps x,y in F to a floating-point number whose absolute distance from the exact real sum x+y is minimal among all members of F.",
+      "pdf_page": 2,
+      "printed_page": "384"
+    },
+    {
+      "anchor": "Theorem 2 proof, Case 3, equation (9)",
+      "observation": "For s=x\u2295y, nearest-addition and the admissible candidate x in F give |s-(x+y)|=min_{f in F}|f-(x+y)|\u2264|x-(x+y)|=|y|.",
+      "pdf_page": 5,
+      "printed_page": "387"
+    },
+    {
+      "anchor": "Paragraph following Theorem 2, equation (10)",
+      "observation": "The paper isolates |x\u2295y-(x+y)|\u2264|y| as the only property of nearest-addition used in the proof of Theorem 2.",
+      "pdf_page": 6,
+      "printed_page": "388"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "This contract concerns only the computed addition s=x\u2295y in FastTwoSum. By itself, equation (10) does not assert that the remaining FastTwoSum operations are exact or that an error-free decomposition is produced. (PDF p. 2, printed p. 384, FastTwoSum algorithm; PDF p. 6, printed p. 388, eq. (10) discussion)",
+    "binders": [
+      "For every pair of scalar floating-point values x,y in F and an operation \u2295:F\u00d7F\u2192F, let s=x\u2295y be the computed addition result. (PDF p. 2, printed p. 384, nearest-addition definition; PDF p. 6, printed p. 388, eq. (10))",
+      "F is the fixed-base floating-point set F={m beta^e : m,e integers, -beta^p<m<beta^p, e_min\u2264e\u2264e_max}. (PDF p. 2, printed p. 384, eq. (1))"
+    ],
+    "conclusions": [
+      "The computed addition obeys the non-strict absolute-error bound |x\u2295y-(x+y)|\u2264|y|. (PDF p. 6, printed p. 388, eq. (10); derivation in PDF p. 5, printed p. 387, eq. (9))",
+      "The paper additionally says that for any mapping \u2295:F\u00d7F\u2192F satisfying this bound, condition (7) can be adapted so that the FastTwoSum identity (3) remains valid; it does not state the adapted inequality. (PDF p. 6, printed p. 388, paragraph containing eq. (10))"
+    ],
+    "constants_and_indexing": [
+      "The coefficient multiplying |y| is exactly 1 and the inequality is inclusive. (PDF p. 6, printed p. 388, eq. (10))",
+      "The bound is operand-order-sensitive as written: it uses the second operand y, not a symmetric expression or an indexed collection. (PDF p. 6, printed p. 388, eq. (10))"
+    ],
+    "definitions_and_conventions": [
+      "The expression x+y is exact real addition, whereas x\u2295y is its floating-point approximation in F. (PDF p. 2, printed p. 384, operation model preceding the nearest-addition definition)",
+      "The bound follows by comparing the nearest result with the particular candidate f=x, whose error from x+y is exactly |y|. (PDF p. 5, printed p. 387, eq. (9))"
+    ],
+    "error_notions": [
+      "The error is the scalar forward error between the computed floating-point sum and the exact real sum. (PDF p. 6, printed p. 388, eq. (10))",
+      "Equation (10) bounds the magnitude of the error but does not itself assert that the signed residual x+y-(x\u2295y) belongs to F. (PDF p. 6, printed p. 388, eq. (10) and following discussion)"
+    ],
+    "exceptional_values": [
+      "The model F contains finite real values, including zero, and does not model infinities, NaNs, or distinct signed zeros. (PDF p. 2, printed p. 384, eq. (1))",
+      "No separate underflow or overflow exclusion is attached to equation (10) in the abstract nearest-member model fl:R\u2192F. (PDF p. 2, printed p. 384, rounding model; PDF p. 6, printed p. 388, eq. (10))"
+    ],
+    "higher_order_terms": [
+      "Equation (10) is an exact finite inequality with no big-O term, omitted higher-order term, or unit-roundoff expansion. (PDF p. 6, printed p. 388, eq. (10))"
+    ],
+    "hypotheses": [
+      "The operation \u2295 is nearest-addition, meaning its result minimizes absolute distance to the exact real sum over all f in F. (PDF p. 2, printed p. 384, nearest-addition definition)"
+    ],
+    "implicit_context": [
+      "Equation (10) itself requires no exponent ordering, magnitude ordering, or hypothesis (7). (PDF p. 6, printed p. 388, eq. (10))",
+      "Equation (10) is used for line 1 of the original FastTwoSum procedure, where s=x\u2295y. (PDF p. 2, printed p. 384, FastTwoSum line 1; PDF p. 6, printed p. 388, discussion of eq. (10))"
+    ],
+    "norms": [
+      "Only the ordinary absolute value on scalar real numbers is used; no vector or matrix norm appears. (PDF p. 5, printed p. 387, eq. (9); PDF p. 6, printed p. 388, eq. (10))"
+    ],
+    "numerical_model": [
+      "Rounding is to a nearest member of F; no tie-breaking rule is specified. (PDF p. 2, printed p. 384, standing rounding-to-nearest assumption)",
+      "Faithful rounding alone does not necessarily imply equation (10); the paper gives the case where y is smaller than half the distance from x to its nearest neighbor but the faithfully rounded sum is not x. (PDF p. 6, printed p. 388, paragraph following eq. (10))"
+    ]
+  },
+  "task_id": "P12-T1",
+  "undebatable_constraints": [
+    "The exact source inequality is |x\u2295y-(x+y)|\u2264|y|. (PDF p. 6, printed p. 388, eq. (10))",
+    "The computed quantity is x\u2295y and the reference quantity is the exact real sum x+y. (PDF p. 2, printed p. 384, operation model; PDF p. 6, printed p. 388, eq. (10))",
+    "Nearest-addition is sufficient because x itself is a candidate in F. (PDF p. 5, printed p. 387, eq. (9))",
+    "Faithful-addition without further conditions is not sufficient for equation (10). (PDF p. 6, printed p. 388, paragraph following eq. (10))",
+    "The passage does not replace |y| with |x|, min{|x|,|y|}, a relative error, or an ulp bound. (PDF p. 6, printed p. 388, eq. (10))"
+  ]
+}

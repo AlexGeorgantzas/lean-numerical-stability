@@ -1,0 +1,258 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P12-T1",
+  "paper_sha256": "0569d969cebaabe42de69fef10fa91002af12d62149af7485d0712414b53c2a1",
+  "dossier_sha256": "31b53aa6a7b35b6ea1d17173cf4798c250e752230891f95473a3d9dec44f3463",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.p12Nearest",
+      "interpretation": "p12Nearest representable exact rounded means that rounded is representable and has absolute distance from exact no greater than that of every representable candidate.",
+      "effect_on_target": "The hypothesis makes s a nearest representable value to x+y. Since hx makes x an admissible candidate, it yields |(x+y)-s| ≤ |(x+y)-x|; symmetry and simplification of real absolute value give |s-(x+y)| ≤ |y|.",
+      "paper_match": "This is the relational, tie-neutral form of the paper's nearest-addition definition. With representable identified with F, it requires the output to belong to F and minimize distance to the exact sum.",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "HAdd.hAdd",
+      "interpretation": "HAdd.hAdd projects the binary operation supplied by an HAdd instance.",
+      "effect_on_target": "Its explicit instance is instHAdd applied to Real.instAdd, so every occurrence denotes exact addition of real numbers.",
+      "paper_match": "It represents the exact real sum x+y, not the floating-point operation x⊕y.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HSub.hSub",
+      "interpretation": "HSub.hSub projects the binary operation supplied by an HSub instance.",
+      "effect_on_target": "Its explicit instance is instHSub applied to Real.instSub, so s-(x+y) and the differences inside p12Nearest are exact real differences.",
+      "paper_match": "The paper's error expression uses exact real subtraction between the rounded result and exact sum.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "LE.le",
+      "interpretation": "LE.le projects the binary order relation supplied by an LE instance.",
+      "effect_on_target": "The selected instance is Real.instLE, making the conclusion the ordinary non-strict real inequality.",
+      "paper_match": "Equation (10) is an inclusive ≤ inequality over real absolute values.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "Real",
+      "interpretation": "Real is mathlib's type of mathematical real numbers.",
+      "effect_on_target": "The exact operands, rounded result, distances, and bound all live in the real numbers; representability is imposed separately by a predicate.",
+      "paper_match": "The paper treats F as a subset of finite real numbers and evaluates exact reference expressions in R.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "Real.instAdd",
+      "interpretation": "Real.instAdd supplies the standard real addition operation.",
+      "effect_on_target": "It makes x+y the exact mathematical sum used both by p12Nearest and by the error expression.",
+      "paper_match": "This matches the unrounded reference quantity x+y in equation (10).",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "Real.instAddGroup",
+      "interpretation": "Real.instAddGroup supplies the additive-group structure of the reals, including negation and the associated algebraic laws.",
+      "effect_on_target": "It supports the definition of absolute value as max(a,-a) and the standard behavior of real differences.",
+      "paper_match": "These are the ordinary real-algebra semantics used by the paper's absolute-error expression.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "Real.instLE",
+      "interpretation": "Real.instLE supplies the standard ordering relation on real numbers.",
+      "effect_on_target": "It interprets nearest-distance comparisons and the final bound using ordinary real ≤.",
+      "paper_match": "This matches the order used in the paper's minimum-distance definition and equation (10).",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "Real.instSub",
+      "interpretation": "Real.instSub defines real subtraction as addition of the negation.",
+      "effect_on_target": "All error and distance terms are standard exact real differences.",
+      "paper_match": "It matches the signed differences whose magnitudes occur in equations (9) and (10).",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "Real.lattice",
+      "interpretation": "Real.lattice supplies max and min operations compatible with the standard real order.",
+      "effect_on_target": "It is used by abs to form max(a,-a), hence ordinary real absolute value.",
+      "paper_match": "The paper uses scalar real absolute value.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "abs",
+      "interpretation": "abs is defined as max(a,-a) in a lattice-ordered additive group.",
+      "effect_on_target": "With the real instances, it gives ordinary absolute values for the rounding error and for y.",
+      "paper_match": "This is exactly the scalar magnitude used in |x⊕y-(x+y)| ≤ |y|.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "instHAdd",
+      "interpretation": "instHAdd converts an Add instance into homogeneous HAdd notation by forwarding hAdd to the instance's add operation.",
+      "effect_on_target": "Together with Real.instAdd, it resolves every elaborated hAdd occurrence to exact real addition.",
+      "paper_match": "It preserves the distinction between the exact sum and the rounded output represented by s.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "instHSub",
+      "interpretation": "instHSub converts a Sub instance into homogeneous HSub notation by forwarding hSub to the instance's subtraction operation.",
+      "effect_on_target": "Together with Real.instSub, it resolves every elaborated hSub occurrence to exact real subtraction.",
+      "paper_match": "It gives the exact difference appearing inside the paper's absolute-error expression.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "And",
+      "interpretation": "And is logical conjunction: both component propositions must hold.",
+      "effect_on_target": "Inside p12Nearest it requires both representability of s and global minimality of its distance among representable candidates.",
+      "paper_match": "Both conditions are present in the paper because ⊕ maps into F and returns a nearest member of F.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF is the corrected publication of Lange and Oishi, A note on Dekker's FastTwoSum algorithm, Numerische Mathematik 145 (2020), pages 383-403. Equation (9) is on PDF page 5 and equation (10) with its discussion is on PDF page 6.",
+      "lean_evidence": "The target states the nearest-addition error bound identified as P12-T1, and the supplied dossier hash is recorded unchanged.",
+      "reasoning": "The selected source and surrounding argument are the correct source for this target."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper quantifies x,y∈F and has a nearest-addition map ⊕:F×F→F, with s=x⊕y.",
+      "lean_evidence": "Lean quantifies an arbitrary predicate representable and arbitrary reals x,y,s. It assumes representable x, while p12Nearest entails representable s, but it does not assume representable y.",
+      "reasoning": "The source binders embed both operands and the result in one floating-point set; Lean strictly broadens the domain by allowing any predicate and a nonrepresentable y."
+    },
+    {
+      "id": "S03",
+      "status": "pass",
+      "paper_evidence": "For each x,y∈F, a nearest-addition operation selects an output s; tie-breaking is unspecified.",
+      "lean_evidence": "The proposition is universal in s and conditional on p12Nearest representable (x+y) s.",
+      "reasoning": "The relational formulation covers every permissible nearest output, including ties, without reversing witness dependence. Any output of the paper's nearest-addition map instantiates s."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes x,y∈F and nearest-addition into the fixed floating-point set F.",
+      "lean_evidence": "Lean retains representability of x and nearest representability of s but omits representability of y and all structural restrictions on the representable predicate.",
+      "reasoning": "These source hypotheses do not match literally. Their removal is a valid strengthening because the proof of this bound uses only x as a representable comparison candidate."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "For this task, equation (10) concludes only |x⊕y-(x+y)|≤|y|. The subsequent statement that condition (7) can be adapted does not provide an adapted inequality or add a precise conclusion to equation (10).",
+      "lean_evidence": "The conclusion is exactly |s-(x+y)|≤|y|.",
+      "reasoning": "The complete precise conclusion selected for P12-T1 is present, with no erroneous FastTwoSum decomposition claim added."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "Nearest-addition means an output in F minimizing absolute distance from the exact real sum among all members of F.",
+      "lean_evidence": "D001 unfolds to representable s together with universal minimal-distance comparison; D002-D013 resolve the remaining operations to standard real addition, subtraction, order, and absolute value.",
+      "reasoning": "The nontrivial local definition and every imported operator affecting the target have the intended semantics."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes the computed result x⊕y from the exact real sum x+y.",
+      "lean_evidence": "s is constrained as a nearest representable result, whereas x+y uses Real.instAdd and is exact real addition.",
+      "reasoning": "The computed output and exact reference quantity are not conflated."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "FastTwoSum line 1 computes s←x⊕y, and equation (10) isolates the property required of that addition.",
+      "lean_evidence": "The hypothesis p12Nearest representable (x+y) s relates s directly to the exact sum as a nearest rounded output, although no operation function is explicitly bound.",
+      "reasoning": "For this line-1 result, the relational rounding specification preserves the observable algorithm linkage and accommodates the paper's unspecified tie-breaking."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Equations (9) and (10) use ordinary scalar absolute value.",
+      "lean_evidence": "D011 with the Real lattice and additive-group instances is ordinary real absolute value.",
+      "reasoning": "There is no vector, matrix, squared, or componentwise-norm substitution."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "Equation (10) has coefficient exactly 1 and bounds the error by the second operand's magnitude |y|.",
+      "lean_evidence": "The right-hand side is exactly |y|, with no coefficient, swapped operand, or index.",
+      "reasoning": "The operand-sensitive constant and parameter dependence match exactly."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The paper defines a fixed-base, finite-real floating-point set F using β, p, emin, and emax and assumes nearest rounding; infinities and NaNs are outside this model.",
+      "lean_evidence": "Lean uses mathematical reals, an arbitrary predicate Real→Prop, and the nearest relation p12Nearest, without encoding β, precision, or exponent limits.",
+      "reasoning": "Nearest rounding and finite-real semantics are preserved, but the concrete floating-point-system restrictions are generalized away. The paper model is recovered by instantiating the predicate with membership in F."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "The source relation is the inclusive inequality |x⊕y-(x+y)|≤|y|.",
+      "lean_evidence": "The target uses Real ≤ and concludes |s-(x+y)|≤|y|.",
+      "reasoning": "Direction, inclusiveness, and logical form match exactly after identifying s with the computed sum."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Equation (10) bounds the scalar forward error of the computed sum relative to the exact sum.",
+      "lean_evidence": "The target bounds the absolute forward error |s-(x+y)|.",
+      "reasoning": "No backward-error, residual-representability, relative-error, or ulp claim is substituted."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Equation (10) is an exact finite inequality with no asymptotic or omitted higher-order term.",
+      "lean_evidence": "The Lean conclusion is an exact inequality.",
+      "reasoning": "No approximation or remainder has been introduced or discarded."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The source statement is restricted to operands in the paper's floating-point set F.",
+      "lean_evidence": "The target applies to every real predicate, every representable x, every real y, and every nearest representable s.",
+      "reasoning": "This is a strict generalization, not a specialization: choosing representable z iff z∈F and s=x⊕y recovers the source statement."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's floating-point set contains x and a nearest output, so its hypotheses have ordinary FastTwoSum instances.",
+      "lean_evidence": "For example, let representable mean z=0 or z=2, take x=0, y=1, and s=0. Then s is a nearest representable value to 1 and the conclusion is the sharp equality 1≤1.",
+      "reasoning": "The hypotheses are satisfiable and the conclusion can attain the stated bound, so the theorem is not vacuous or true only through a degenerate contradiction."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "Instantiate representable with membership in the paper's F, take paper operands x,y∈F, and set s=x⊕y. Membership gives hx, while the nearest-addition definition and codomain give p12Nearest F (x+y) s. Lean then yields equation (10) exactly."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper states the result for its specific floating-point sets, with both operands in F and s produced by a map F×F→F. It does not quantify arbitrary real predicates or cover nonrepresentable y, both of which are included in the Lean proposition."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "note",
+      "category": "domain-and-model-generalization",
+      "paper_evidence": "The paper assumes x,y∈F for a fixed floating-point system and s=x⊕y∈F.",
+      "lean_evidence": "The theorem quantifies an arbitrary representability predicate, requires only x and s to be representable, and permits any real y.",
+      "impact": "This prevents the paper-to-Lean implication but does not lose or distort the benchmark result. The paper statement is a direct, nonvacuous specialization of the Lean theorem."
+    }
+  ],
+  "rationale": "The target captures the exact nearest-addition argument behind equations (9) and (10): x is a representable comparison candidate, so a nearest representable s cannot be farther from x+y than x is, and that comparison distance is |y|. All arithmetic and absolute-value dependencies have standard exact-real semantics. Lean strictly strengthens the source by abstracting F to an arbitrary predicate and dropping representability of y; these changes are valid because neither the floating-point structure nor y∈F is needed for this isolated inequality. Consequently Lean implies the paper result, the converse does not hold at the stated generality, and the appropriate accepted classification is faithful-stronger."
+}

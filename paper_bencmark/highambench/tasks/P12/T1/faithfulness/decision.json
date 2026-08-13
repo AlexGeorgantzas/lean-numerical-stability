@@ -1,0 +1,49 @@
+{
+  "accepted": true,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-13T16:29:09.170148+00:00",
+  "findings": [
+    {
+      "category": "domain-and-model-generalization",
+      "impact": "This prevents the paper-to-Lean implication but does not lose or distort the benchmark result. The paper statement is a direct, nonvacuous specialization of the Lean theorem.",
+      "lean_evidence": "The theorem quantifies an arbitrary representability predicate, requires only x and s to be representable, and permits any real y.",
+      "paper_evidence": "The paper assumes x,y\u2208F for a fixed floating-point system and s=x\u2295y\u2208F.",
+      "severity": "note"
+    },
+    {
+      "category": "binder-and-floating-point-model generalization",
+      "impact": "The translated theorem strictly generalizes the paper result, so the reverse implication fails, but every paper instance remains covered.",
+      "paper_evidence": "The paper fixes F by \u03b2, p, and exponent bounds and quantifies over x,y in F.",
+      "severity": "major",
+      "translation_evidence": "The translation permits every subset of the reals as representable and does not require y to belong to it."
+    },
+    {
+      "category": "algorithm linkage and quantifier packaging",
+      "impact": "Explicit computational provenance and global operation structure are lost, although the pointwise condition is exactly sufficient to derive the source inequality.",
+      "paper_evidence": "The source quantity is the FastTwoSum line-1 output s = x \u2295 y of a total nearest-addition operation.",
+      "severity": "minor",
+      "translation_evidence": "The translation assumes only that a freely quantified s is a pointwise nearest representable value to x + y."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "Instantiate representable with membership in the paper's F, take paper operands x,y\u2208F, and set s=x\u2295y. Membership gives hx, while the nearest-addition definition and codomain give p12Nearest F (x+y) s. Lean then yields equation (10) exactly.",
+      "verdict": "yes"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper states the result for its specific floating-point sets, with both operands in F and s produced by a map F\u00d7F\u2192F. It does not quantify arbitrary real predicates or cover nonrepresentable y, both of which are included in the Lean proposition.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "faithful-stronger",
+    "roundtrip": "faithful-stronger"
+  },
+  "rationale": "The target captures the exact nearest-addition argument behind equations (9) and (10): x is a representable comparison candidate, so a nearest representable s cannot be farther from x+y than x is, and that comparison distance is |y|. All arithmetic and absolute-value dependencies have standard exact-real semantics. Lean strictly strengthens the source by abstracting F to an arbitrary predicate and dropping representability of y; these changes are valid because neither the floating-point structure nor y\u2208F is needed for this isolated inequality. Consequently Lean implies the paper result, the converse does not hold at the stated generality, and the appropriate accepted classification is faithful-stronger.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P12-T1"
+}

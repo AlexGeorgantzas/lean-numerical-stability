@@ -1,0 +1,139 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "63cee7bad54cf877ef471adf469b4c721264a6c0a2c27ab20c07c7465b3d9dcb",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "LocalDef001 representable exact rounded means that rounded is representable and, for every representable real candidate, |exact - rounded| ≤ |exact - candidate|. Thus rounded is a globally nearest representable real to exact in absolute error, with ties allowed.",
+      "effect_on_target": "Applied with exact = x + y and rounded = s, it states that s is representable and minimizes absolute error from x + y among all representable reals. Since x is representable, choosing candidate = x gives |(x + y) - s| ≤ |(x + y) - x| = |y|, equivalent to the target inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "HAdd.hAdd",
+      "meaning": "HAdd.hAdd extracts and applies the binary addition-like operation supplied by an HAdd instance.",
+      "effect_on_target": "With the Real addition instance supplied through instHAdd, every occurrence denotes ordinary real addition, particularly x + y.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "HSub.hSub",
+      "meaning": "HSub.hSub extracts and applies the binary subtraction-like operation supplied by an HSub instance.",
+      "effect_on_target": "With the Real subtraction instance supplied through instHSub, it forms the real differences s - (x + y), (x + y) - s, and (x + y) - candidate.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LE.le",
+      "meaning": "LE.le extracts the non-strict comparison relation supplied by an LE instance.",
+      "effect_on_target": "With Real.instLE, it makes both the nearest-representable condition and the conclusion non-strict inequalities over real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "Real",
+      "meaning": "Real is the type of real numbers.",
+      "effect_on_target": "The variables x, y, and s, all candidates, and all exact and error quantities are scalar real numbers; no vector or matrix dimensions occur.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "Real.instAdd",
+      "meaning": "Real.instAdd equips the real numbers with their real addition operation.",
+      "effect_on_target": "It determines x + y and also supplies the addition used in the definition of real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "Real.instAddGroup",
+      "meaning": "Real.instAddGroup supplies the additive-group structure on the real numbers, including zero, addition, and additive negation.",
+      "effect_on_target": "It provides the negation required by absolute value and supports the standard identities used to read subtraction and simplify (x + y) - x to y.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "Real.instLE",
+      "meaning": "Real.instLE equips the real numbers with their standard less-than-or-equal relation.",
+      "effect_on_target": "It interprets the conclusion as |s - (x + y)| ≤ |y| and interprets the minimization comparison inside LocalDef001.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "Real.instSub",
+      "meaning": "Real.instSub defines real subtraction by a - b = a + (-b).",
+      "effect_on_target": "It gives the exact meanings of all error differences, including s - (x + y) and exact - candidate.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Real.lattice",
+      "meaning": "Real.lattice supplies the lattice structure on the real numbers, including the maximum operation compatible with the real order.",
+      "effect_on_target": "It supplies the maximum operation used to define absolute value as max(a, -a).",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "abs",
+      "meaning": "For an element a of a lattice-ordered additive group, abs a is defined as max(a, -a); over the reals this is the usual absolute value |a|.",
+      "effect_on_target": "It measures scalar absolute error. The target compares the absolute error of s as an approximation to x + y with |y|.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "instHAdd",
+      "meaning": "instHAdd converts a homogeneous Add instance into an HAdd instance by forwarding hAdd directly to the supplied addition operation.",
+      "effect_on_target": "Together with Real.instAdd, it ensures that the elaborated HAdd expression applied to x and y is ordinary real addition x + y.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "instHSub",
+      "meaning": "instHSub converts a homogeneous Sub instance into an HSub instance by forwarding hSub directly to the supplied subtraction operation.",
+      "effect_on_target": "Together with Real.instSub, it ensures that all elaborated HSub expressions are ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "And",
+      "meaning": "And is logical conjunction: And P Q holds exactly when both P and Q hold.",
+      "effect_on_target": "Inside LocalDef001 it requires both that s is representable and that s satisfies the nearest-representable error inequality against every representable candidate.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "representable is an arbitrary predicate on the real numbers, equivalently an arbitrary subset of the reals.",
+      "x, y, and s are arbitrary scalar real numbers."
+    ],
+    "hypotheses": [
+      "x is representable.",
+      "s is representable.",
+      "For every real candidate c, if c is representable, then |(x + y) - s| ≤ |(x + y) - c|; that is, s is a nearest representable real to the exact real number x + y."
+    ],
+    "conclusions": [
+      "The absolute error of s relative to x + y satisfies |s - (x + y)| ≤ |y|."
+    ],
+    "mathematical_definitions": [
+      "The exact quantity being approximated is the real sum x + y.",
+      "The rounded quantity is s.",
+      "Absolute value is |a| = max(a, -a).",
+      "Subtraction is a - b = a + (-b).",
+      "Nearest representable means minimizing absolute error over every real satisfying the predicate representable; minimizers need not be unique."
+    ],
+    "proposition_plain_english": "For every subset of the real numbers designated as representable and all real numbers x, y, and s, if x is representable and s is a representable real nearest to the exact sum x + y in absolute error, then |s - (x + y)| ≤ |y|. The result follows because x itself is an admissible representable candidate, whose distance from x + y is exactly |y|."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The predicate representable is completely arbitrary; the proposition encodes no floating-point format, precision, exponent range, spacing, closure property, or finiteness condition.",
+    "Only x and s are required to be representable. Neither y nor the exact sum x + y is required to be representable.",
+    "The hypothesis on s is a global nearest-point condition over all representable reals, not merely a local condition despite the definition's name.",
+    "Ties are allowed because the minimizing comparison uses ≤; uniqueness of s is not asserted.",
+    "All quantities are scalar real numbers, and the error measure is ordinary absolute value rather than a vector or matrix norm.",
+    "The addition x + y and all error computations are exact real arithmetic; no intermediate rounding, overflow, underflow, exceptional values, or relative-error interpretation is encoded.",
+    "For choices of x, y, and s where either x is not representable or s does not satisfy the nearest-representable condition, the implication is true vacuously.",
+    "When the hypotheses hold, representable cannot be empty because both x and s are representable.",
+    "The proposition asserts only the stated non-strict error bound; it does not assert that the bound is sharp, that s is unique, or that a nearest representable value exists for every exact real."
+  ],
+  "ambiguities": []
+}
