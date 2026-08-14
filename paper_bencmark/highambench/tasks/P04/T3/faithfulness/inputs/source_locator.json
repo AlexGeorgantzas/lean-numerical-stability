@@ -5,10 +5,31 @@
   "paper_version": "published journal version; volume 42, issue 3, 2020, printed pages C124-C141",
   "source_locations": [
     {
+      "anchor": "equations (2.3)-(2.6) and gamma notation",
+      "pdf_page": 4,
+      "printed_page": "C127",
+      "role": "standard relative-error model, precision roles, and gamma validity",
+      "section": "2.1. General framework for mixed precision block FMA"
+    },
+    {
+      "anchor": "Algorithm 4.1",
+      "pdf_page": 11,
+      "printed_page": "C134",
+      "role": "square dimensions, block partition, precision roles, and computed block LU factors",
+      "section": "4. Solution of linear systems with block FMA"
+    },
+    {
+      "anchor": "Lemma 4.2, Theorem 4.3, and equation (4.4)",
+      "pdf_page": 12,
+      "printed_page": "C135",
+      "role": "triangular-solve model and exact factorization-stage componentwise coefficient",
+      "section": "4.1. Rounding error analysis"
+    },
+    {
       "anchor": "Theorem 4.4 and equation (4.7)",
       "pdf_page": 13,
       "printed_page": "C136",
-      "role": "backward-error equation and exact factorization-plus-solve coefficient",
+      "role": "nearby-system equation, mandatory scale, and complete factorization-plus-solve coefficient",
       "section": "4.1. Rounding error analysis"
     }
   ],

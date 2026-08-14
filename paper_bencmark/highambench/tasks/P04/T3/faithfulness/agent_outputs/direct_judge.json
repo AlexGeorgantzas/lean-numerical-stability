@@ -3,547 +3,779 @@
   "role": "direct-judge",
   "task_id": "P04-T3",
   "paper_sha256": "7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862",
-  "dossier_sha256": "fbeb16df8ad4b21006181f6f1eb103b56f73acf21a7260d75860286a8feba576",
+  "dossier_sha256": "835702c3484a3db0e023c47015fb59958db4b16475180684532939f590710de6",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.gamma",
-      "interpretation": "gamma u n is ((n : Real) * u) / (1 - (n : Real) * u).",
-      "effect_on_target": "It defines every factorization and triangular-solve gamma coefficient.",
-      "paper_match": "The formula matches the paper's gamma_k on its stated domain ku < 1. The Lean target omits that condition and totalizes division at ku = 1, so its use extends beyond the paper model.",
+      "name": "HighamBench.P04BlockLUSolveRun",
+      "interpretation": "An indexed data type whose inhabitants are certificates assembled by D015 from matrices, precision parameters, global error witnesses, and proofs.",
+      "effect_on_target": "The theorem ranges over every such certificate and obtains all source quantities and analytical assumptions through its projections.",
+      "paper_match": "The paper ranges over successful executions of Algorithm 4.1 followed by substitution. This type has no operational execution relation and is instead defined by derived postconditions.",
       "status": "fail"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p04FactorizationCoeff",
-      "interpretation": "It is 2*uLow + uLow^2 plus max(gamma(uFma,q-1) + gamma(u,n-b+1) + their product, gamma(u,b)) times (1+uLow)^2, with Nat subtraction in the indices.",
-      "effect_on_target": "It supplies the factorization part of the final backward-error coefficient.",
-      "paper_match": "Its algebraic shape matches equation (4.4) only after identifying uFma with the effective FMA parameter and identifying the paper's internal precision with working precision u. Those identifications, q=n/b, and the required index-domain conditions are absent.",
-      "status": "fail"
+      "name": "HighamBench.P04BlockLUSolveRun.A",
+      "interpretation": "Projects an n by n real matrix represented as a function Fin n -> Fin n -> Real.",
+      "effect_on_target": "Supplies the unperturbed coefficient matrix in the nearby-system equation and scale.",
+      "paper_match": "Its type and algebraic role match the paper's A in R^(n x n), with provenance handled separately by D001 and D015.",
+      "status": "pass"
     },
     {
       "id": "D003",
-      "name": "HighamBench.p04MatMul",
-      "interpretation": "It is ordinary square real matrix multiplication over all k in Fin N.",
-      "effect_on_target": "It interprets LU, L*DeltaU, DeltaL*U, and DeltaL*DeltaU.",
-      "paper_match": "This is the ordinary matrix product used in the paper, subject to the separate failure to identify N with paper dimension n.",
+      "name": "HighamBench.P04BlockLUSolveRun.LHat",
+      "interpretation": "Projects an n by n real matrix used as the computed lower factor.",
+      "effect_on_target": "Appears in the scale through the matrix product |LHat||UHat|.",
+      "paper_match": "Its dimension and use match the paper's computed L-hat; the missing computation provenance is a run-level defect.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.p04MatVec",
-      "interpretation": "It is ordinary multiplication of an N-by-N real matrix by a length-N real vector.",
-      "effect_on_target": "It states the two perturbed triangular equations and the final nearby-system equation.",
-      "paper_match": "The operation matches the exact matrix-vector products in Theorem 4.4.",
+      "name": "HighamBench.P04BlockLUSolveRun.UHat",
+      "interpretation": "Projects an n by n real matrix used as the computed upper factor.",
+      "effect_on_target": "Appears in the scale through the matrix product |LHat||UHat|.",
+      "paper_match": "Its dimension and use match the paper's computed U-hat; the missing computation provenance is a run-level defect.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "HighamBench.p04FactorizationCoeff._proof_1",
-      "interpretation": "It is a proof used by numeral elaboration to establish that the natural numeral 2 is at least two.",
-      "effect_on_target": "It has no independent mathematical effect beyond constructing the literal 2.",
-      "paper_match": "It is elaboration infrastructure rather than paper-level content.",
-      "status": "not-applicable"
+      "name": "HighamBench.P04BlockLUSolveRun.rhs",
+      "interpretation": "Projects a real vector indexed by Fin n.",
+      "effect_on_target": "It is the unchanged right-hand side of the exact nearby-system equation.",
+      "paper_match": "This matches the paper's unperturbed right-hand side b in (A+Delta A)x-hat=b.",
+      "status": "pass"
     },
     {
       "id": "D006",
-      "name": "And",
-      "interpretation": "And requires both the exact backward equation and the componentwise bound.",
-      "effect_on_target": "It combines the two required properties of the existential perturbation DeltaA.",
-      "paper_match": "Theorem 4.4 asserts both properties.",
+      "name": "HighamBench.P04BlockLUSolveRun.uBar",
+      "interpretation": "Projects the real parameter used as the internal block-FMA unit roundoff.",
+      "effect_on_target": "It supplies the barred gamma term and participates in effective-roundoff case selection.",
+      "paper_match": "Its coefficient-level role matches the paper's internal precision bar-u.",
       "status": "pass"
     },
     {
       "id": "D007",
-      "name": "Eq",
-      "interpretation": "Eq is exact equality, including extensional equality for matrix- and vector-valued functions.",
-      "effect_on_target": "It makes the factorization, substitution, and nearby-system equations exact real equalities.",
-      "paper_match": "The paper's backward equations are exact equalities.",
-      "status": "pass"
+      "name": "HighamBench.P04BlockLUSolveRun.uFma",
+      "interpretation": "Projects a nonnegative real parameter used as the block-FMA output roundoff.",
+      "effect_on_target": "It controls the effective outer-rounding parameter through D018.",
+      "paper_match": "The paper requires u_FMA to be either u_low or u_high. The run has no u_high field and imposes no such choice constraint, so this field ranges over non-paper precision configurations.",
+      "status": "fail"
     },
     {
       "id": "D008",
-      "name": "Exists",
-      "interpretation": "Exists introduces a matrix perturbation DeltaA that may depend on all preceding parameters and hypotheses.",
-      "effect_on_target": "It encodes the backward perturbation witness.",
-      "paper_match": "The paper likewise asserts a perturbation satisfying the equation and bound, although the preceding Lean quantifiers do not match the paper.",
+      "name": "HighamBench.P04BlockLUSolveRun.uLow",
+      "interpretation": "Projects the real parameter used for low-precision conversion errors.",
+      "effect_on_target": "It contributes 2*uLow+uLow^2 and the multiplier (1+uLow)^2.",
+      "paper_match": "This matches the algebraic role of u_low in equation (4.7).",
       "status": "pass"
     },
     {
       "id": "D009",
-      "name": "Fin",
-      "interpretation": "Fin N is the finite index type with N entries.",
-      "effect_on_target": "All matrices and vectors have dimension N, independently of the coefficient parameter n.",
-      "paper_match": "The paper uses the same n both as matrix dimension and in gamma_n and n-b+1. Lean never equates N and n and permits N=0.",
-      "status": "fail"
+      "name": "HighamBench.P04BlockLUSolveRun.uWork",
+      "interpretation": "Projects the real working-precision unit roundoff.",
+      "effect_on_target": "It supplies gamma_b and the solve terms 2*gamma_n+gamma_n^2.",
+      "paper_match": "This matches the paper's working precision u in factorization, block solves, and substitution.",
+      "status": "pass"
     },
     {
       "id": "D010",
-      "name": "HAdd.hAdd",
-      "reuse_sha256": "2c99a1926bdac64e3a35f3fa155d689dc336fe4eb783a294540e765003beae74",
-      "effect_on_target": "It selects pointwise matrix addition, real coefficient addition, and natural addition according to the inferred instances.",
-      "paper_match": "These additions have their ordinary meanings in the paper formulas.",
+      "name": "HighamBench.P04BlockLUSolveRun.xHat",
+      "interpretation": "Projects a real vector indexed by Fin n and used as the computed solution.",
+      "effect_on_target": "It is the vector satisfying the exact nearby-system equation.",
+      "paper_match": "Its type and conclusion-level role match the paper's computed x-hat; execution provenance is not established by this projection.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "HMul.hMul",
-      "reuse_sha256": "8915b03a91c892e98db02c0973c28bad864cb016b465642b346d14f34e446a76",
-      "effect_on_target": "It selects ordinary real multiplication in products, coefficients, and bounds.",
-      "paper_match": "The resulting multiplication semantics match the paper.",
+      "name": "HighamBench.gamma",
+      "interpretation": "Defines gamma(u,k)=(k*u)/(1-k*u), casting k from Nat to Real.",
+      "effect_on_target": "Instantiates the unaccented gamma_b and gamma_n terms and, through other definitions, the accented terms.",
+      "paper_match": "This is exactly the gamma definition on PDF page 4/C127.",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "HPow.hPow",
-      "interpretation": "HPow.hPow selects the exponentiation operation supplied by the inferred instance.",
-      "effect_on_target": "With the displayed instances it forms uLow^2, gamma(u,n)^2, and (1+uLow)^2.",
-      "paper_match": "These are ordinary squares, matching equation (4.7).",
+      "name": "HighamBench.p04FactorizationCoeff",
+      "interpretation": "Defines 2*uLow+uLow^2+max(block-FMA coefficient,gamma(uWork,b))*(1+uLow)^2, using indices q-1 and n-b+1.",
+      "effect_on_target": "Provides the complete factorization-stage part of the final coefficient.",
+      "paper_match": "After unfolding D017 and D018, it exactly matches the factorization contribution in equations (4.4) and (4.7).",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "LE.le",
-      "reuse_sha256": "c476dc1b2ea074ec4bd39cbce7c0ff24c628f572b131686eb6963c3e7131fb19",
-      "effect_on_target": "It supplies each non-strict componentwise real inequality.",
-      "paper_match": "The paper uses non-strict componentwise upper bounds.",
+      "name": "HighamBench.p04LUSolveScale",
+      "interpretation": "Defines |A_ij| plus sum_k |LHat_ik|*|UHat_kj|.",
+      "effect_on_target": "Supplies the componentwise entry of |A|+|LHat||UHat| multiplied by the full coefficient.",
+      "paper_match": "This is exactly the mandatory scale in equation (4.7), with ordinary matrix multiplication of entrywise absolute values.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "Monoid.toNatPow",
-      "interpretation": "It defines natural-number powers using repeated multiplication in a monoid.",
-      "effect_on_target": "For Real it makes every exponent 2 an ordinary algebraic square.",
-      "paper_match": "This matches the squared terms in equation (4.7).",
+      "name": "HighamBench.p04MatVec",
+      "interpretation": "Defines ordinary finite real matrix-vector multiplication by summing A_ij*x_j over all j in Fin n.",
+      "effect_on_target": "Makes the equality in the conclusion the pointwise equation (A+deltaA)xHat=rhs.",
+      "paper_match": "This matches the exact nearby-system equation in Theorem 4.4.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "Nat",
-      "interpretation": "Nat is the type of nonnegative integers, including zero.",
-      "effect_on_target": "N, q, n, and bdim are unrestricted and mutually independent natural numbers.",
-      "paper_match": "The paper requires a positive matrix dimension and block size, b dividing n, and q=n/b. Lean encodes none of these relations.",
+      "name": "HighamBench.P04BlockLUSolveRun.mk",
+      "interpretation": "Constructs a run certificate from positive dimensions with n=q*b, triangular factors, symbolic nonnegative roundoffs, gamma-validity proofs, an already-bounded factorization error, and already-bounded perturbations for two triangular solves.",
+      "effect_on_target": "It assumes the factorization-stage conclusion of Theorem 4.3 and the global triangular-solve error models that constitute the main analytical premises used to derive Theorem 4.4.",
+      "paper_match": "It does not encode Algorithm 4.1's operations, conversions, block updates, representability, or substitution execution. It also omits u_FMA being u_low or u_high and the inherited no-underflow/no-overflow condition. Therefore it is not the paper's successful-execution hypothesis.",
       "status": "fail"
     },
     {
       "id": "D016",
-      "name": "Nat.instAtLeastTwoHAddOfNat",
-      "interpretation": "It proves that a successor-shaped natural numeral is at least two when needed for numeral elaboration.",
-      "effect_on_target": "It only supports constructing the literal 2.",
-      "paper_match": "It has no independent paper-level meaning.",
-      "status": "not-applicable"
+      "name": "HighamBench.p04AbsMatMul",
+      "interpretation": "Defines the ij entry of |L||U| as sum_k |L_ik|*|U_kj|.",
+      "effect_on_target": "Expands the nonnegative factor-product part of the scale.",
+      "paper_match": "This matches the paper's componentwise absolute-value matrix product.",
+      "status": "pass"
     },
     {
       "id": "D017",
-      "name": "Nat.instNeZeroSucc",
-      "interpretation": "It proves that every natural successor is nonzero.",
-      "effect_on_target": "It is used only by numeral elaboration.",
-      "paper_match": "It has no independent paper-level meaning.",
-      "status": "not-applicable"
+      "name": "HighamBench.p04BlockFmaCoeff",
+      "interpretation": "Defines gamma(uFma,q)+gamma(u,n)+gamma(uFma,q)*gamma(u,n).",
+      "effect_on_target": "With the supplied effective and internal roundoffs and shifted indices, it forms the update term inside the maximum.",
+      "paper_match": "It exactly matches tilde-gamma_(q-1)^FMA+bar-gamma_(n-b+1) plus their product.",
+      "status": "pass"
     },
     {
       "id": "D018",
-      "name": "OfNat.ofNat",
-      "reuse_sha256": "37f0ecf64bd742bcc93f38034359021b711500e02dfff8ff3c1f2db70c293777",
-      "effect_on_target": "It interprets the literals 0, 1, and 2 in Nat or Real as required.",
-      "paper_match": "The literals denote the same constants as in equation (4.7).",
+      "name": "HighamBench.p04EffectiveFmaRoundoff",
+      "interpretation": "Returns uOut if uFma<uOut; otherwise returns 0 if uFma<=uBar; otherwise returns uFma.",
+      "effect_on_target": "Implements the ordered cases determining the unit roundoff beneath tilde-gamma^FMA.",
+      "paper_match": "The case order and comparisons match equation (3.3): working u first when u>u_FMA, then zero when bar-u>=u_FMA, then u_FMA.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "Pi.instAdd",
-      "interpretation": "It defines addition of functions pointwise.",
-      "effect_on_target": "Matrix expressions A+DeltaF, L+DeltaL, U+DeltaU, and A+DeltaA are entrywise sums.",
-      "paper_match": "This is the paper's componentwise matrix addition.",
-      "status": "pass"
+      "name": "HighamBench.p04FactorizationCoeff._proof_1",
+      "interpretation": "A typeclass proof that the natural numeral 2 satisfies Nat.AtLeastTwo.",
+      "effect_on_target": "It only elaborates the exponent and numeral syntax in the coefficient.",
+      "paper_match": "This is proof-engineering infrastructure with no independent paper meaning.",
+      "status": "not-applicable"
     },
     {
       "id": "D020",
-      "name": "Real",
-      "reuse_sha256": "3483e25ab144d9f6b5fc2cc409de11ee2b17d27a19ada9ad855dd312dd9e9444",
-      "effect_on_target": "All matrix entries, vector entries, and precision parameters are exact real numbers.",
-      "paper_match": "The paper states the theorem for real matrices and uses real-valued error parameters.",
+      "name": "HighamBench.GammaValid",
+      "interpretation": "Defines validity as k*u<1.",
+      "effect_on_target": "The run requires this condition for every gamma index used by the coefficient.",
+      "paper_match": "This exactly matches the paper-wide gamma-denominator assumption on PDF page 4/C127.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "Real.instAdd",
-      "reuse_sha256": "2600632309109b9eef72c7a64a51bb9f19137f042a46f93146279b789a7082de",
-      "effect_on_target": "It supplies ordinary real addition in coefficients and entries.",
-      "paper_match": "It matches the paper's arithmetic.",
+      "name": "HighamBench.p04IsLowerTriangular",
+      "interpretation": "Requires L_ij=0 whenever the row index is strictly less than the column index.",
+      "effect_on_target": "Constrains LHat to be lower triangular in each run certificate.",
+      "paper_match": "This is the standard lower-triangular structure of the L factor produced by successful LU factorization.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "Real.instAddGroup",
-      "reuse_sha256": "1f5c2cb2573ac7ae1df7dd2fb4169025e230cf39eed10a3bb6015178c0a216f9",
-      "effect_on_target": "It supplies real negation used by subtraction and absolute value.",
-      "paper_match": "It yields ordinary real signed arithmetic.",
+      "name": "HighamBench.p04IsUpperTriangular",
+      "interpretation": "Requires U_ij=0 whenever the column index is strictly less than the row index.",
+      "effect_on_target": "Constrains UHat to be upper triangular in each run certificate.",
+      "paper_match": "This is the standard upper-triangular structure of the U factor produced by successful LU factorization.",
       "status": "pass"
     },
     {
       "id": "D023",
-      "name": "Real.instLE",
-      "reuse_sha256": "96f4d2c6a6ed1a6072650c127a11af0743154b941d6d0bf8072e93589cecd9d1",
-      "effect_on_target": "It makes every bound use the usual real order.",
-      "paper_match": "This matches the paper's inequalities.",
+      "name": "HighamBench.p04MatMul",
+      "interpretation": "Defines ordinary square matrix multiplication over Fin n by a finite sum.",
+      "effect_on_target": "Expresses LHat*UHat=A+factorError in the run constructor.",
+      "paper_match": "This matches the matrix product in Theorem 4.3 and equation (4.7).",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "Real.instMonoid",
-      "interpretation": "It supplies the multiplicative monoid structure of the reals.",
-      "effect_on_target": "It supports ordinary natural powers of real coefficients.",
-      "paper_match": "It gives the intended squares.",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "Requires both the nearby-system equality and the componentwise perturbation bound.",
+      "paper_match": "The paper asserts both conclusions together.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "Real.instMul",
-      "reuse_sha256": "cc1d87e896e40ca98beaba733d8981b2be417bf56b3cd139099a7fe33f462ebe",
-      "effect_on_target": "It supplies ordinary real multiplication.",
-      "paper_match": "It matches all scalar and entry products in the paper.",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "Makes the nearby-system relation an exact vector equality.",
+      "paper_match": "Theorem 4.4 states exact equality (A+Delta A)x-hat=b.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "Real.instNatCast",
-      "reuse_sha256": "11515d289291036cdc99fffdf3a5fc5b207622a159829c92fabab8dbc5d90b0b",
-      "effect_on_target": "It embeds natural gamma indices into Real.",
-      "paper_match": "This matches multiplication of the integer index k by a real unit roundoff.",
+      "name": "Exists",
+      "interpretation": "Existential quantification over a matrix-valued witness.",
+      "effect_on_target": "Introduces deltaA after the run data have been fixed.",
+      "paper_match": "This matches the existence of a coefficient perturbation in Theorem 4.4.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "Real.lattice",
-      "reuse_sha256": "094296f36b8f60f6e248ebe56a2c9cd0a87d2a95d53003f3fb7fc76713aa00a8",
-      "effect_on_target": "It supplies the usual real lattice operations used in absolute value.",
-      "paper_match": "It yields standard real absolute value.",
+      "name": "Fin",
+      "interpretation": "The finite index type with values 0 through n-1.",
+      "effect_on_target": "Indexes all matrix and vector entries and all componentwise bounds.",
+      "paper_match": "It is an equivalent zero-based representation of the paper's indices 1 through n.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "abs",
-      "reuse_sha256": "32a708fd3378d4db96640e2e6509634aa96151e94172fcf7f08b2b9a3e3d8a93",
-      "effect_on_target": "It takes scalar absolute values entry by entry in every bound.",
-      "paper_match": "This matches the paper's componentwise matrix absolute-value convention.",
+      "name": "HAdd.hAdd",
+      "interpretation": "Overloaded addition resolved here to real addition or pointwise function addition.",
+      "effect_on_target": "Forms A+deltaA and the sums among scalar coefficient terms.",
+      "paper_match": "The resolved operations are the ordinary additions used in equation (4.7).",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "instHAdd",
-      "reuse_sha256": "8f153af5aa1baf5f6424ff39c5d08323cd358ffeece5f9ced3043ad2cffa73b6",
-      "effect_on_target": "It lifts homogeneous addition to the HAdd notation used throughout the elaborated type.",
-      "paper_match": "It introduces no semantic deviation from ordinary addition.",
+      "name": "HMul.hMul",
+      "interpretation": "Overloaded multiplication resolved here to real multiplication.",
+      "effect_on_target": "Forms scalar products in gamma, coefficients, matrix entries, and the final bound.",
+      "paper_match": "The resolved multiplication has the paper's ordinary real-scalar meaning.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "instHMul",
-      "reuse_sha256": "46765db2b9c4e049bf61e51bed5aa60e6f7c8d1bae634a71be3cc3d75d34fb61",
-      "effect_on_target": "It lifts homogeneous multiplication to HMul.",
-      "paper_match": "It introduces no semantic deviation from ordinary multiplication.",
+      "name": "HPow.hPow",
+      "interpretation": "Overloaded exponentiation resolved to natural powers of real numbers.",
+      "effect_on_target": "Represents uLow^2, gamma_n^2, and (1+uLow)^2.",
+      "paper_match": "These are the exact squared terms retained in equation (4.7).",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "instHPow",
-      "interpretation": "It lifts a homogeneous Pow operation to HPow with the same result type.",
-      "effect_on_target": "It connects real natural powers to the displayed exponentiation syntax.",
-      "paper_match": "It preserves ordinary square semantics.",
+      "name": "LE.le",
+      "interpretation": "The non-strict order relation, resolved to the usual order on Real.",
+      "effect_on_target": "Expresses each componentwise upper bound.",
+      "paper_match": "The paper uses non-strict componentwise inequalities.",
       "status": "pass"
     },
     {
       "id": "D032",
-      "name": "instOfNatAtLeastTwo",
-      "interpretation": "It interprets a natural numeral at least two in a type by applying that type's NatCast.",
-      "effect_on_target": "It makes the real literal 2 equal the canonical real image of natural 2.",
-      "paper_match": "The coefficient 2 is interpreted correctly.",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Defines natural-number powers through repeated monoid multiplication.",
+      "effect_on_target": "Gives the standard real squares appearing in the coefficient.",
+      "paper_match": "It yields the ordinary algebraic squares in equation (4.7).",
       "status": "pass"
     },
     {
       "id": "D033",
-      "name": "instOfNatNat",
-      "interpretation": "It interprets a natural-number literal as that same natural number.",
-      "effect_on_target": "It supplies the natural literals used as exponents and in index arithmetic.",
-      "paper_match": "The literals themselves match the paper.",
+      "name": "Nat",
+      "interpretation": "The natural-number type.",
+      "effect_on_target": "Types dimensions, block size, block count, gamma indices, and exponents.",
+      "paper_match": "The paper's dimensions and gamma indices are nonnegative integers, with positivity supplied by D015.",
       "status": "pass"
     },
     {
       "id": "D034",
-      "name": "DivInvMonoid.toDiv",
-      "reuse_sha256": "df63d67be0a47651e461c7c0857bc6f06de6eb2312aa865ec12586eb832a6aa4",
-      "effect_on_target": "It extracts real division for the gamma denominator.",
-      "paper_match": "It is ordinary division on the paper's positive-denominator domain; the missing domain condition is recorded at D001.",
-      "status": "pass"
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "interpretation": "A theorem used to synthesize numeral typeclass evidence.",
+      "effect_on_target": "Supports elaboration of the numeral 2.",
+      "paper_match": "It has no independent numerical-analysis meaning.",
+      "status": "not-applicable"
     },
     {
       "id": "D035",
-      "name": "Fin.fintype",
-      "interpretation": "It provides the finite enumeration of every member of Fin N.",
-      "effect_on_target": "It enables matrix and matrix-vector sums over all N indices.",
-      "paper_match": "This is the intended finite summation once N is identified with paper dimension n; that missing identification is a binder defect rather than an enumeration defect.",
-      "status": "pass"
+      "name": "Nat.instNeZeroSucc",
+      "interpretation": "Provides nonzeroness evidence for a successor natural number.",
+      "effect_on_target": "Supports numeral typeclass synthesis.",
+      "paper_match": "It is elaboration infrastructure only.",
+      "status": "not-applicable"
     },
     {
       "id": "D036",
-      "name": "Finset.sum",
-      "interpretation": "It folds an additive commutative monoid operation over a finite set.",
-      "effect_on_target": "For Real it forms ordinary finite sums in matrix multiplication and matrix-vector multiplication.",
-      "paper_match": "It matches the finite sums defining ordinary products.",
-      "status": "pass"
+      "name": "OfNat.ofNat",
+      "interpretation": "Interprets natural-number literals in a target type.",
+      "effect_on_target": "Elaborates the constants 0, 1, and 2.",
+      "paper_match": "It introduces no independent source concept.",
+      "status": "not-applicable"
     },
     {
       "id": "D037",
-      "name": "Finset.univ",
-      "interpretation": "It is the finite set containing every element of a finite type.",
-      "effect_on_target": "It makes each product sum over every index in Fin N.",
-      "paper_match": "This matches summation over the full matrix dimension.",
+      "name": "Pi.instAdd",
+      "interpretation": "Defines addition of functions pointwise.",
+      "effect_on_target": "Makes matrix addition satisfy (A+deltaA)_ij=A_ij+deltaA_ij.",
+      "paper_match": "This is exactly the componentwise matrix addition used in the nearby system.",
       "status": "pass"
     },
     {
       "id": "D038",
-      "name": "HDiv.hDiv",
-      "reuse_sha256": "7cc520200fbbc81cb5af9bd69f23a7fa8d3c03985e9622d43e610579ec2d1769",
-      "effect_on_target": "It selects real division in gamma.",
-      "paper_match": "It matches the paper's quotient where the denominator is positive.",
+      "name": "Real",
+      "interpretation": "The mathematical real-number type.",
+      "effect_on_target": "Types all matrix entries, vector entries, roundoff parameters, and coefficients.",
+      "paper_match": "Theorem 4.4 is stated over real matrices and vectors.",
       "status": "pass"
     },
     {
       "id": "D039",
-      "name": "HSub.hSub",
-      "reuse_sha256": "b332fe28eda7461a55409befd08f414509b9cfcdfd7730a06048da7b83c87c62",
-      "effect_on_target": "It selects real subtraction in gamma and natural subtraction in q-1 and n-bdim.",
-      "paper_match": "Real subtraction matches; natural subtraction has the paper meaning only under omitted lower-bound hypotheses, addressed at D051.",
+      "name": "Real.instAdd",
+      "interpretation": "The usual addition operation on real numbers.",
+      "effect_on_target": "Provides scalar and pointwise matrix addition.",
+      "paper_match": "It matches ordinary real addition in the paper.",
       "status": "pass"
     },
     {
       "id": "D040",
-      "name": "Max.max",
-      "interpretation": "It selects the maximum operation supplied for a type.",
-      "effect_on_target": "With Real.instMax it chooses the larger of the update coefficient and gamma(u,bdim).",
-      "paper_match": "This matches the max in equations (4.4) and (4.7).",
+      "name": "Real.instAddGroup",
+      "interpretation": "The standard additive-group structure on Real.",
+      "effect_on_target": "Supports negation and absolute value.",
+      "paper_match": "It gives the ordinary real arithmetic underlying entrywise absolute values.",
       "status": "pass"
     },
     {
       "id": "D041",
-      "name": "Nat.cast",
-      "reuse_sha256": "fb2cb8ca958b6b9b06056213ea79965d590b2ebafdc4f8f0a3e9756bb034f7d8",
-      "effect_on_target": "It maps each natural gamma index to the corresponding real number.",
-      "paper_match": "This matches the paper's integer coefficient k in gamma_k.",
+      "name": "Real.instLE",
+      "interpretation": "The usual non-strict order on real numbers.",
+      "effect_on_target": "Interprets every bound as an ordinary real inequality.",
+      "paper_match": "This matches the paper's real componentwise inequalities.",
       "status": "pass"
     },
     {
       "id": "D042",
-      "name": "One.toOfNat1",
-      "reuse_sha256": "decd674803aac02ebd385212bdf204f6212acc91345ee72dc5ad8d7b3dfe3bb0",
-      "effect_on_target": "It interprets real literal 1 in denominators and (1+uLow)^2.",
-      "paper_match": "The literal has the intended value.",
+      "name": "Real.instMonoid",
+      "interpretation": "The multiplicative monoid structure on Real.",
+      "effect_on_target": "Supplies natural powers such as squares.",
+      "paper_match": "It gives the standard real powers used in equation (4.7).",
       "status": "pass"
     },
     {
       "id": "D043",
-      "name": "Real.instAddCommMonoid",
-      "interpretation": "It supplies the additive commutative monoid structure of Real.",
-      "effect_on_target": "It provides zero and ordinary addition for finite product sums.",
-      "paper_match": "This matches ordinary real summation.",
+      "name": "Real.instMul",
+      "interpretation": "The usual multiplication operation on real numbers.",
+      "effect_on_target": "Interprets all scalar products in the bound.",
+      "paper_match": "It matches ordinary real multiplication.",
       "status": "pass"
     },
     {
       "id": "D044",
-      "name": "Real.instDivInvMonoid",
-      "reuse_sha256": "ab4d730c0e1a3194e52e83a676c0de91daf486521f7cb16d7cf21b77a11bde44",
-      "effect_on_target": "It supplies real inverse and division used by gamma.",
-      "paper_match": "It matches ordinary division on the paper's admissible domain.",
+      "name": "Real.instNatCast",
+      "interpretation": "The canonical embedding of natural numbers into Real.",
+      "effect_on_target": "Converts gamma indices to real factors.",
+      "paper_match": "It yields the paper's real products k*u.",
       "status": "pass"
     },
     {
       "id": "D045",
-      "name": "Real.instMax",
-      "interpretation": "It supplies the usual maximum operation on real numbers.",
-      "effect_on_target": "It implements the coefficient's max between the update and local-block terms.",
-      "paper_match": "This is exactly the real maximum used in equation (4.7).",
+      "name": "Real.lattice",
+      "interpretation": "The standard lattice order structure on Real.",
+      "effect_on_target": "Supports real absolute value and maximum.",
+      "paper_match": "It induces the ordinary real order operations used by the paper.",
       "status": "pass"
     },
     {
       "id": "D046",
-      "name": "Real.instOne",
-      "reuse_sha256": "278b68069fb2dca8c3606f359ce8d431c0f9e00fb8e417d19697eed49e4fc22e",
-      "effect_on_target": "It supplies real 1 in gamma denominators and (1+uLow)^2.",
-      "paper_match": "It has the intended value.",
+      "name": "abs",
+      "interpretation": "Defines absolute value as max(a,-a), which on Real is the usual scalar absolute value.",
+      "effect_on_target": "Applies entrywise to deltaA, A, LHat, and UHat.",
+      "paper_match": "This matches the paper's componentwise matrix absolute-value convention.",
       "status": "pass"
     },
     {
       "id": "D047",
-      "name": "Real.instSub",
-      "reuse_sha256": "b749cd229005c3a1648902abc2bc67a4c2a7c085861f5f029cae4ef461a4036c",
-      "effect_on_target": "It makes gamma's denominator ordinary real 1-k*u.",
-      "paper_match": "The arithmetic expression matches the paper.",
-      "status": "pass"
+      "name": "instHAdd",
+      "interpretation": "Forwards homogeneous overloaded addition to the underlying Add instance.",
+      "effect_on_target": "Selects ordinary real or pointwise function addition.",
+      "paper_match": "This is transparent elaboration infrastructure and introduces no mismatch.",
+      "status": "not-applicable"
     },
     {
       "id": "D048",
-      "name": "instAddNat",
-      "reuse_sha256": "62b44b9ddca5bb499eb94e1c4dcea8170c8d2b20443add211beee7e2ca3209f3",
-      "effect_on_target": "It supplies ordinary natural addition for n-bdim+1.",
-      "paper_match": "The +1 is correct when the preceding subtraction represents paper integer subtraction.",
-      "status": "pass"
+      "name": "instHMul",
+      "interpretation": "Forwards homogeneous overloaded multiplication to the underlying Mul instance.",
+      "effect_on_target": "Selects ordinary real multiplication.",
+      "paper_match": "This is transparent elaboration infrastructure.",
+      "status": "not-applicable"
     },
     {
       "id": "D049",
-      "name": "instHDiv",
-      "reuse_sha256": "bf79a894f33a6eb637c4e4c038bf278981a5dc8a3e147af4deafafc35a9b734c",
-      "effect_on_target": "It lifts homogeneous real division to HDiv.",
-      "paper_match": "It preserves ordinary division semantics.",
-      "status": "pass"
+      "name": "instHPow",
+      "interpretation": "Forwards overloaded exponentiation to the underlying Pow instance.",
+      "effect_on_target": "Selects natural powers of real numbers.",
+      "paper_match": "This is transparent elaboration infrastructure.",
+      "status": "not-applicable"
     },
     {
       "id": "D050",
-      "name": "instHSub",
-      "reuse_sha256": "f39a60e5a7fdc34f852de226b72fe543dea9c623443daecb3a67b84708f713fb",
-      "effect_on_target": "It lifts homogeneous subtraction to HSub for Real and Nat.",
-      "paper_match": "It preserves the underlying operations; the Nat operation's domain mismatch is recorded at D051.",
-      "status": "pass"
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "Constructs numeral instances from a natural cast for numerals at least two.",
+      "effect_on_target": "Elaborates the real literal 2.",
+      "paper_match": "It has no independent paper meaning.",
+      "status": "not-applicable"
     },
     {
       "id": "D051",
-      "name": "instSubNat",
-      "interpretation": "It defines natural subtraction as truncated subtraction, so a-b is zero when b exceeds a.",
-      "effect_on_target": "It computes q-1 and n-bdim before the gamma calls.",
-      "paper_match": "The paper's indices presume q>=1 and n>=b through a valid positive block partition. Lean omits those conditions, so truncated values can represent no paper case.",
-      "status": "fail"
+      "name": "instOfNatNat",
+      "interpretation": "Interprets a natural numeral as itself.",
+      "effect_on_target": "Elaborates natural literals used for indices and exponents.",
+      "paper_match": "It is elaboration infrastructure only.",
+      "status": "not-applicable"
     },
     {
       "id": "D052",
-      "name": "Nat.AtLeastTwo",
-      "interpretation": "It is a proposition used to justify elaboration of natural numerals at least two.",
-      "effect_on_target": "It has no mathematical role after the literal 2 is constructed.",
-      "paper_match": "It is elaboration infrastructure rather than paper content.",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Provides division from the real division-inverse structure.",
+      "effect_on_target": "Interprets the quotient in gamma(u,k).",
+      "paper_match": "It gives ordinary real division in k*u/(1-k*u).",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "Fin.fintype",
+      "interpretation": "Provides the finite enumeration of Fin n.",
+      "effect_on_target": "Enables sums over every matrix or vector index.",
+      "paper_match": "It enumerates exactly n indices, equivalent to the paper's finite index range.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "Finset.sum",
+      "interpretation": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "Defines matrix-vector products, matrix products, and |LHat||UHat|.",
+      "paper_match": "It matches the finite sums in ordinary matrix multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "Finset.univ",
+      "interpretation": "The finite set containing every value of a finite type.",
+      "effect_on_target": "Sets each product sum's domain to all indices in Fin n.",
+      "paper_match": "This matches summation over the full shared matrix dimension.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "HDiv.hDiv",
+      "interpretation": "Overloaded division resolved here to real division.",
+      "effect_on_target": "Forms gamma denominators and quotients.",
+      "paper_match": "The resolved operation matches the paper's real division.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "HSub.hSub",
+      "interpretation": "Overloaded subtraction resolved to real subtraction in gamma and truncated natural subtraction in shifted indices.",
+      "effect_on_target": "Forms 1-k*u, q-1, and n-b.",
+      "paper_match": "Real subtraction matches directly. Natural truncation is harmless because D015 gives q>0 and n=q*b with b>0, hence q>=1 and n>=b.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "Max.max",
+      "interpretation": "Overloaded binary maximum resolved to the usual maximum on Real.",
+      "effect_on_target": "Selects the larger of the update coefficient and gamma_b.",
+      "paper_match": "This matches the exact maximum in equation (4.7).",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "Nat.cast",
+      "interpretation": "Casts a natural number into a type with a NatCast instance, here Real.",
+      "effect_on_target": "Converts gamma indices into real scalar factors.",
+      "paper_match": "This implements the paper's multiplication of integer indices by unit roundoffs.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "One.toOfNat1",
+      "interpretation": "Provides the numeral 1 from a One instance.",
+      "effect_on_target": "Elaborates constants in gamma and (1+uLow)^2.",
+      "paper_match": "It is numeral infrastructure without independent source content.",
       "status": "not-applicable"
+    },
+    {
+      "id": "D061",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative monoid structure on Real.",
+      "effect_on_target": "Supports order-independent finite real sums.",
+      "paper_match": "It gives ordinary finite real summation used in matrix products.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The standard real multiplication, inverse, and division structure.",
+      "effect_on_target": "Supplies the real quotient used by gamma.",
+      "paper_match": "It matches ordinary real division in the paper's gamma notation.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "Real.instMax",
+      "interpretation": "Defines real maximum as the lattice supremum.",
+      "effect_on_target": "Interprets the maximum in the factorization coefficient.",
+      "paper_match": "This is the ordinary maximum used in equations (4.4) and (4.7).",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "Real.instOne",
+      "interpretation": "The real multiplicative identity.",
+      "effect_on_target": "Supplies the constant 1 in gamma and conversion factors.",
+      "paper_match": "It has the standard real meaning required by the source formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "Real.instSub",
+      "interpretation": "The usual real subtraction operation.",
+      "effect_on_target": "Forms the gamma denominator 1-k*u.",
+      "paper_match": "It exactly matches the denominator in the paper's gamma definition.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "instAddNat",
+      "interpretation": "Natural-number addition.",
+      "effect_on_target": "Forms the index (n-b)+1.",
+      "paper_match": "Under D015's dimension constraints this equals the paper's n-b+1.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "instHDiv",
+      "interpretation": "Forwards homogeneous overloaded division to an underlying Div instance.",
+      "effect_on_target": "Selects ordinary real division for gamma.",
+      "paper_match": "This is transparent elaboration infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D068",
+      "name": "instHSub",
+      "interpretation": "Forwards homogeneous overloaded subtraction to an underlying Sub instance.",
+      "effect_on_target": "Selects real or natural subtraction according to context.",
+      "paper_match": "This is transparent elaboration infrastructure; the selected operations are assessed at D057.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D069",
+      "name": "instSubNat",
+      "interpretation": "Truncated subtraction on natural numbers.",
+      "effect_on_target": "Computes q-1 and n-b in coefficient indices.",
+      "paper_match": "Because q>0 and n=q*b with b>0, no unintended truncation occurs, so the indices match q-1 and n-b.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "LT.lt",
+      "interpretation": "Overloaded strict order.",
+      "effect_on_target": "Expresses positivity, gamma validity, triangular index relations, and the first effective-roundoff branch.",
+      "paper_match": "The resolved natural and real strict inequalities have their ordinary source meanings.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "Nat.AtLeastTwo",
+      "interpretation": "A proposition used to authorize numeral instances for natural numbers at least two.",
+      "effect_on_target": "Supports elaboration of the numeral 2.",
+      "paper_match": "It has no independent paper meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D072",
+      "name": "Ne",
+      "interpretation": "Logical inequality, defined as negated equality.",
+      "effect_on_target": "Requires every diagonal entry of UHat to be nonzero.",
+      "paper_match": "This is consistent with successful unpivoted LU factorization and substitution, although the paper states success conditionally rather than as a separate diagonal hypothesis.",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "Real.decidableLE",
+      "interpretation": "Decision procedure for real non-strict comparisons.",
+      "effect_on_target": "Allows evaluation of the second branch condition in D018.",
+      "paper_match": "It is implementation infrastructure and does not alter the mathematical cases.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D074",
+      "name": "Real.decidableLT",
+      "interpretation": "Decision procedure for real strict comparisons.",
+      "effect_on_target": "Allows evaluation of the first branch condition in D018.",
+      "paper_match": "It is implementation infrastructure and does not alter the mathematical cases.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D075",
+      "name": "Real.instLT",
+      "interpretation": "The usual strict order on Real.",
+      "effect_on_target": "Interprets gamma validity and uFma<uWork.",
+      "paper_match": "It matches the paper's strict comparisons.",
+      "status": "pass"
+    },
+    {
+      "id": "D076",
+      "name": "Real.instZero",
+      "interpretation": "The real additive identity.",
+      "effect_on_target": "Supplies nonnegativity bounds, nonzero tests, and the zero effective roundoff branch.",
+      "paper_match": "It has the standard real meaning in the source model.",
+      "status": "pass"
+    },
+    {
+      "id": "D077",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Provides the numeral 0 from a Zero instance.",
+      "effect_on_target": "Elaborates real and natural zero literals.",
+      "paper_match": "It is numeral infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D078",
+      "name": "instLTNat",
+      "interpretation": "The usual strict order on natural numbers.",
+      "effect_on_target": "Expresses positive dimensions and triangular index ordering.",
+      "paper_match": "It matches ordinary integer index ordering.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "instMulNat",
+      "interpretation": "Natural-number multiplication.",
+      "effect_on_target": "Expresses n=q*b in the run constructor.",
+      "paper_match": "This is equivalent to the paper's integral q=n/b condition for positive b.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "ite",
+      "interpretation": "An ordered if-then-else expression.",
+      "effect_on_target": "Implements precedence among the three effective-roundoff cases.",
+      "paper_match": "Its nesting correctly gives the working-precision case precedence, as required after equation (3.3).",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "Fin.val",
+      "interpretation": "Projects the natural-number value of a finite index.",
+      "effect_on_target": "Defines lower- and upper-triangular ordering using zero-based indices.",
+      "paper_match": "Zero-based order is an equivalent reindexing of the paper's one-based matrix indices.",
+      "status": "pass"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF is the published 2020 SIAM Journal version. PDF pp. 11-13, printed C134-C136, contain Algorithm 4.1, Theorem 4.3, Theorem 4.4, and equation (4.7).",
-      "lean_evidence": "The target coefficient and conclusion are plainly aimed at Theorem 4.4 and equation (4.7).",
-      "reasoning": "The selected source passage and surrounding result are correct."
+      "paper_evidence": "The verified PDF is the 2020 SIAM Journal on Scientific Computing version, volume 42 issue 3, pages C124-C141. PDF pages 11-13 contain Algorithm 4.1, Theorem 4.3, Theorem 4.4, and equation (4.7).",
+      "lean_evidence": "The target coefficient, nearby-system equation, and LU-solve scale identify Theorem 4.4 rather than the factorization-only Theorem 4.3.",
+      "reasoning": "The selected source version and result are unambiguous and correct."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "Theorem 4.4 uses A in R^(n x n), positive b-by-b blocks, and q=n/b; gamma_n and n-b+1 use that same n.",
-      "lean_evidence": "Matrices are indexed by Fin N, while q, n, and bdim are independent Nat binders. There is no N=n, q=n/b, divisibility, positivity, or block partition, and M is an arbitrary matrix.",
-      "reasoning": "The central dimensions, indices, and scale binder do not have the paper's intended constraints."
+      "paper_evidence": "Theorem 4.4 fixes A in R^(n x n), b by b blocks, q=n/b, computed L-hat and U-hat, computed x-hat, and inherited u_low, u_high, u_FMA, bar-u, and working u.",
+      "lean_evidence": "Matrices and vectors have correct Fin n real types and D015 enforces n=q*b, but the run omits u_high and permits any nonnegative uFma with uBar<=uFma rather than uFma being uLow or uHigh.",
+      "reasoning": "Dimensions match, but the precision binders and admissible parameter domain do not."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "After assuming Algorithm 4.1 produces computed factors and substitution produces x-hat, Theorem 4.4 asserts a combined perturbation DeltaA.",
-      "lean_evidence": "The target universally quantifies arbitrary DeltaF, DeltaL, DeltaU, M, and y, then requires seven algebraic equations or bounds before producing DeltaA.",
-      "reasoning": "The existential witness has an acceptable final scope, but it is conditional on extra universally supplied decomposition data absent from the paper theorem."
+      "status": "pass",
+      "paper_evidence": "After A, dimensions, precisions, computed factors, and computed solution are fixed, Theorem 4.4 introduces a coefficient perturbation Delta A.",
+      "lean_evidence": "The target has forall n b q and run, followed by Exists deltaA, with both conclusions depending on that witness.",
+      "reasoning": "The final perturbation witness has the intended scope and may depend on all fixed run data."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "C127 assumes k*u<1 for relevant gamma terms; C128 excludes underflow and overflow; C134-C136 require successful Algorithm 4.1 and substitution, with triangular nonsingularity underlying Lemma 4.2.",
-      "lean_evidence": "No positivity, denominator, precision, exceptional-value, divisibility, completion, or nonsingularity hypotheses occur. Instead, the desired factorization and solve-error relations are assumed directly.",
-      "reasoning": "Paper hypotheses are omitted and replaced by substantially stronger algebraic premises."
+      "paper_evidence": "The source conditions the result on Algorithm 4.1 producing factors and substitution yielding x-hat under the inherited floating-point model, gamma validity, precision roles, and absence of underflow and overflow.",
+      "lean_evidence": "D015 instead assumes the global factorization-error equation and bound and two global triangular-solve perturbation equations and bounds. It has no Algorithm 4.1 execution, representability, uFma choice, or exceptional-value hypothesis.",
+      "reasoning": "The source execution hypotheses are replaced by already-derived analytical postconditions and an altered precision domain."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "Equation (4.7) bounds the combined DeltaA by the exact coefficient times |A|+|L-hat||U-hat| and leaves the right-hand side unchanged.",
-      "lean_evidence": "The exact equation and coefficient-shaped expression appear, but their scale is arbitrary M; no premise defines M as |A|+|L||U|.",
-      "reasoning": "A mandatory part of the paper conclusion is missing."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.4 asserts both (A+Delta A)x-hat=b and the full componentwise bound (4.7).",
+      "lean_evidence": "The existential conclusion conjoins p04MatVec (A+deltaA) xHat=rhs with a bound for every i and j.",
+      "reasoning": "Both required conclusions are present, including the unchanged right-hand side."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The paper uses ordinary real matrix products, matrix-vector products, componentwise absolute value, real maximum, and gamma_k=k*u/(1-k*u).",
-      "lean_evidence": "The dossier unfolds p04MatMul and p04MatVec as full finite sums, matrix addition pointwise, abs and max as ordinary real operations, and gamma as the stated quotient.",
-      "reasoning": "The nontrivial operators are explicit and their underlying mathematical meanings are clear; separate parameter and domain mismatches are recorded elsewhere."
+      "paper_evidence": "The paper defines gamma_k=k*u/(1-k*u), componentwise absolute values, ordinary matrix products, and the ordered effective-roundoff cases.",
+      "lean_evidence": "D011-D018 and D023 unfold to those formulas; function addition is pointwise, products are finite sums, and real max, powers, order, and absolute value have their standard meanings.",
+      "reasoning": "All nontrivial operators used in the conclusion and coefficient have been unfolded and match."
     },
     {
       "id": "S07",
       "status": "fail",
-      "paper_evidence": "C134-C136 distinguish unperturbed A and rhs from computed L-hat, U-hat, and x-hat generated by the algorithm.",
-      "lean_evidence": "A, L, U, x, y, rhs, and all preliminary perturbations are arbitrary exact real functions; no predicate identifies L, U, or x as computed outputs.",
-      "reasoning": "Names and assumed equations do not preserve the paper's computed provenance."
+      "paper_evidence": "Hats in Algorithm 4.1 and Theorem 4.4 denote factors and a solution actually computed by the stated floating-point procedures; Delta A is an exact perturbation introduced afterward.",
+      "lean_evidence": "LHat, UHat, and xHat are arbitrary real arrays in a certificate. Their computed provenance is not defined; only global perturbed equations and bounds are supplied as constructor fields.",
+      "reasoning": "The exact perturbation is represented correctly, but arbitrary certificate data are not semantically identified with the paper's computed quantities."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Theorem 4.4 explicitly begins from Algorithm 4.1 producing computed LU factors and subsequent substitution producing the solution.",
-      "lean_evidence": "Algorithm 4.1, block updates, conversions, execution completion, and substitution procedures are absent; only their desired algebraic consequences are hypotheses.",
-      "reasoning": "The target is a generic perturbation-composition lemma, not the paper's algorithm-linked result."
+      "paper_evidence": "Theorem 4.4 explicitly refers to Algorithm 4.1, whose steps factor diagonal blocks, solve block rows and columns, convert update operands to u_low, and invoke Algorithm 3.1 for trailing updates.",
+      "lean_evidence": "P04BlockLUSolveRun contains no step relation, conversion operation, block update, FMA call, rounding event, or substitution execution. A field name cannot add those semantics.",
+      "reasoning": "The target is an abstract error-composition lemma rather than a proposition about the paper's algorithm."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Equation (4.7) is componentwise: matrix absolute values are entrywise and no norm appears.",
-      "lean_evidence": "The conclusion quantifies every i,j and compares the scalar absolute value |DeltaA i j| with an entrywise right-hand side.",
-      "reasoning": "The relation is componentwise rather than normwise. The incorrect arbitrary scale M is a conclusion-completeness defect, not a change to norm kind."
+      "paper_evidence": "PDF page 3/C126 defines matrix absolute value entrywise, and equation (4.7) uses |A|+|L-hat||U-hat| componentwise with no norm.",
+      "lean_evidence": "The bound quantifies over every i,j and D013 expands to |A_ij|+sum_k |LHat_ik||UHat_kj|.",
+      "reasoning": "The componentwise, non-normwise semantics and matrix-product scale match exactly."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "Equation (4.7) uses q-1, n-b+1, gamma_b, and two gamma_n solve terms, with q=n/b and separate effective-FMA, internal-FMA, and working precision roles.",
-      "lean_evidence": "The syntax contains those offsets and coefficients, but Nat subtraction is truncated without domain assumptions, N is unrelated to n, and the same u supplies both the n-bdim+1 term and working-precision gamma_b and gamma_n.",
-      "reasoning": "The numerical indices and precision dependence match only under unstated restrictions and identifications."
+      "status": "pass",
+      "paper_evidence": "Equation (4.7) uses q-1, n-b+1, b, and n; the maximum contains the complete update term and gamma_b; only that maximum is multiplied by (1+u_low)^2; the solve terms are outside the maximum.",
+      "lean_evidence": "D012 unfolds to exactly that structure, and the target adds 2*gamma(uWork,n)+gamma(uWork,n)^2 before multiplying D013.",
+      "reasoning": "All constants, offsets, associations, and parameter dependencies match."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "C127-C129 specify the standard floating-point model, separate internal and output/effective FMA precisions, positive gamma denominators, and the treatment of double rounding; C128 excludes underflow and overflow.",
-      "lean_evidence": "The target has only three unconstrained real parameters uLow, uFma, and u, no effective-precision equation, no rounding model, and no exceptional-value assumptions.",
-      "reasoning": "The paper's floating-point execution model is not represented."
+      "paper_evidence": "PDF pages 4-6 specify the relative-error model, u_FMA as u_low or u_high, internal bar-u<=u_FMA, ordered effective-roundoff cases, omission of one double rounding, and the assumption that underflow and overflow do not occur.",
+      "lean_evidence": "The proposition contains symbolic real parameters and gamma-validity inequalities but no floating-point operations, rounding relation, u_high, uFma choice, representability, underflow, overflow, NaN, or infinity semantics.",
+      "reasoning": "The coefficient models part of the source arithmetic, but the target does not state the source floating-point execution model."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.4 derives an exact nearby-system equality and a non-strict bound from algorithm completion.",
-      "lean_evidence": "The local equality and inequality directions match, but the result follows only after assuming the factorization equation, both perturbed solve equations, and four separate componentwise bounds.",
-      "reasoning": "The relation symbols are correct, but the theorem's logical strength and applicability are not preserved."
+      "status": "pass",
+      "paper_evidence": "The nearby system is an equality, and equation (4.7) is a non-strict upper bound on |Delta A|.",
+      "lean_evidence": "The target uses exact function equality and Real <= in the same direction.",
+      "reasoning": "Equality and inequality strength match."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Theorem 4.4 is a componentwise backward-error result: (A+DeltaA)x-hat=rhs with rhs unchanged.",
-      "lean_evidence": "The conclusion existentially perturbs A alone and states p04MatVec(A+DeltaA,x)=rhs.",
-      "reasoning": "The formal conclusion uses the same backward-error notion, not a forward, residual, or normwise substitute."
+      "paper_evidence": "Theorem 4.4 gives a componentwise coefficient-matrix backward error with the original right-hand side and no forward- or residual-error conclusion.",
+      "lean_evidence": "Only deltaA is existentially perturbed; rhs is unchanged and the bound is on entries of deltaA.",
+      "reasoning": "The error notion matches the paper."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Equation (4.7) retains uLow^2, the mixed gamma product, (1+uLow)^2, and gamma_n^2; dominant-term approximations occur only afterward.",
-      "lean_evidence": "The unfolded coefficient retains all four structures exactly and adds 2*gamma(u,n)+gamma(u,n)^2.",
-      "reasoning": "No displayed higher-order term is dropped or converted to big-O."
+      "paper_evidence": "Equation (4.7) retains u_low^2, the product of accented gamma terms, (1+u_low)^2, and gamma_n^2 without a big-O remainder.",
+      "lean_evidence": "All these exact terms occur after unfolding D012 and D017; no first-order simplification or big-O term is substituted.",
+      "reasoning": "Higher-order terms are handled faithfully."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The theorem allows the distinct precision roles used by Algorithm 4.1 and binds the matrix dimension and block parameters.",
-      "lean_evidence": "The coefficient matches only under an unstated specialization equating internal FMA precision with working precision and interpreting uFma as the effective FMA parameter; the theorem is also abstracted away from algorithm outputs.",
-      "reasoning": "This is not an explicitly delimited specialization that still states the benchmark's Algorithm 4.1 result."
+      "paper_evidence": "Theorem 4.4 is general in n, b, q, and admissible mixed precisions but remains restricted to outputs of the specified block-LU and substitution procedures.",
+      "lean_evidence": "The finite real dimensions remain general, but the run domain is generalized to arbitrary global error certificates and arbitrary uFma values while omitting the paper's execution restriction.",
+      "reasoning": "This is not a benign finite or dimensional specialization; it changes the class of objects to which the theorem applies."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "Successful block LU and substitution provide ordinary nonempty cases of Theorem 4.4.",
-      "lean_evidence": "For N=q=n=bdim=1, uLow=uFma=u=0, A=L=U=[1], all preliminary perturbations zero, M=[2], and x=y=rhs=[1], every premise and the conclusion with DeltaA=0 hold.",
-      "reasoning": "The Lean hypotheses are satisfiable in a nonzero example, so the statement is not vacuous, although it is overconditional."
+      "paper_evidence": "Successful exact or sufficiently well-behaved LU runs provide nonempty instances of the source hypotheses.",
+      "lean_evidence": "For example, n=b=q=1, A=LHat=UHat=[1], zero roundoffs and errors, and consistent vectors satisfy D015. The conclusion still requires combining factorization and solve perturbations rather than following from an empty type.",
+      "reasoning": "The Lean hypotheses are satisfiable and the existential conclusion is not vacuous, although much of the source analysis has been assumed in the certificate."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "The Lean proposition alone cannot recover Theorem 4.4: algorithm completion does not appear, the preliminary perturbation premises are not derived, M is not the paper scale, dimensions are unlinked, and the precision model is restricted or conflated."
+      "reasoning": "The Lean proposition proves a conclusion for inhabitants of an abstract global-error certificate. It contains no bridge showing that an execution of Algorithm 4.1 and substitution under the paper's floating-point model yields such an inhabitant, so it does not by itself establish the paper's algorithm-specific theorem."
     },
     "paper_implies_lean": {
       "verdict": "no",
-      "reasoning": "The paper theorem concerns outputs of one specified algorithm with a fixed componentwise scale and floating-point model. It does not establish the Lean proposition's universal conditional claim for arbitrary matrices, decompositions, M, unrelated dimensions, or unrestricted real parameters."
+      "reasoning": "The paper establishes the conclusion for factors and solutions produced by its algorithms. The Lean proposition ranges over every certificate satisfying selected global equations and bounds, including data and precision tuples that need not arise from those algorithms, so the paper does not establish that broader certificate theorem."
     }
   },
   "classification": "not-faithful-different",
@@ -552,32 +784,32 @@
   "findings": [
     {
       "severity": "critical",
-      "category": "algorithm-and-quantifier-linkage",
-      "paper_evidence": "Theorem 4.4 applies when Algorithm 4.1 produces computed L-hat and U-hat and substitution produces x-hat.",
-      "lean_evidence": "The target instead assumes arbitrary L, U, x, y and preliminary perturbations satisfying the factorization, solve, and error-bound relations.",
-      "impact": "The formal theorem proves only an algebraic composition step and does not establish the paper's algorithmic backward-stability result."
-    },
-    {
-      "severity": "critical",
-      "category": "missing-componentwise-scale",
-      "paper_evidence": "Equation (4.7) has the mandatory scale |A|+|L-hat||U-hat|.",
-      "lean_evidence": "Every bound uses an unconstrained matrix M, with no equality or lower-bound relation to |A|+|L||U|.",
-      "impact": "The stated Lean conclusion is not the paper's error bound and requires an external premise to recover it."
+      "category": "algorithm-linkage",
+      "paper_evidence": "Theorem 4.4 explicitly conditions its result on Algorithm 4.1 producing computed LU factors and substitution yielding the computed solution.",
+      "lean_evidence": "P04BlockLUSolveRun is constructed from global factorization and triangular-solve error equations and bounds, with no operational relation for Algorithm 4.1 or substitution.",
+      "impact": "The target proves an abstract perturbation-composition result over a different domain, so neither semantic implication holds."
     },
     {
       "severity": "major",
-      "category": "dimensions-and-indexing",
-      "paper_evidence": "A is n-by-n, b divides n, q=n/b, and the coefficient indices refer to that same dimension and block size.",
-      "lean_evidence": "A is N-by-N while n, q, and bdim are independent naturals; natural subtraction is truncated and all may be zero.",
-      "impact": "The target covers parameter combinations with no paper interpretation and fails to encode the intended matrix/block geometry."
+      "category": "assumed-intermediate-results",
+      "paper_evidence": "Theorem 4.4 obtains its result by combining Theorem 4.3 with triangular-system error analysis.",
+      "lean_evidence": "D015 makes the complete Theorem 4.3 factorization bound and both triangular-solve perturbation bounds constructor premises.",
+      "impact": "The benchmark target assumes the principal analytical results needed for the source theorem and measures only their algebraic composition."
     },
     {
       "severity": "major",
       "category": "floating-point-model",
-      "paper_evidence": "The paper separates working, internal-FMA, output/effective-FMA, and conversion precisions and assumes admissible gamma denominators with no underflow or overflow.",
-      "lean_evidence": "The target has unconstrained uLow, uFma, and u, uses u for both internal and working gamma roles, and supplies no rounding or exceptional-value hypotheses.",
-      "impact": "Even the otherwise recognizable coefficient is faithful only under unstated precision identifications and domain restrictions."
+      "paper_evidence": "The block-FMA model requires u_FMA to be u_low or u_high, specifies precision roles and ordered rounding cases, and inherits the exclusion of underflow and overflow.",
+      "lean_evidence": "There is no uHigh, no constraint tying uFma to uLow or uHigh, and no floating-point execution or exceptional-value model.",
+      "impact": "The formal domain includes unphysical precision configurations and does not express the numerical execution assumptions of the paper."
+    },
+    {
+      "severity": "note",
+      "category": "conclusion-formula",
+      "paper_evidence": "Equation (4.7) contains the exact complete coefficient and scale |A|+|L-hat||U-hat|, together with (A+Delta A)x-hat=b.",
+      "lean_evidence": "After unfolding D011-D018, the target reproduces the exact coefficient, indices, higher-order terms, componentwise scale, and unperturbed right-hand side.",
+      "impact": "The numerical conclusion is transcribed accurately once the abstract certificate premises are assumed."
     }
   ],
-  "rationale": "The declaration preserves the algebraic perturbation-composition identity, componentwise inequality form, and all displayed second-order coefficient terms. It nevertheless replaces Theorem 4.4's algorithm-generated quantities and hypotheses with strong arbitrary algebraic premises, leaves the required scale as an unconstrained M, disconnects matrix dimension N from n, and omits or conflates the floating-point model. These changes prevent implication in either direction. The result is nonvacuous but is a different generic lemma rather than a faithful formalization of the cited paper theorem."
+  "rationale": "The target accurately reproduces the algebraic conclusion of Theorem 4.4, including the nearby-system equality, componentwise scale, exact coefficient, accented gamma roles, indices, and higher-order terms. However, its sole run type is not an execution model for Algorithm 4.1 and substitution. It packages the factorization-stage theorem and triangular-solve backward-error results as global premises, omits essential precision and exceptional-value constraints, and admits certificates unrelated to the source algorithms. Consequently the Lean and paper propositions concern different domains, and neither directly implies the other."
 }

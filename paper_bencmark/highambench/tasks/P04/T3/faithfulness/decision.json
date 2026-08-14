@@ -1,96 +1,52 @@
 {
-  "accepted": false,
-  "adjudicated": false,
-  "adjudication_reasons": [],
-  "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T10:49:03.638377+00:00",
+  "accepted": true,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ"
+  ],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-14T16:16:00.456140+00:00",
   "findings": [
     {
-      "category": "algorithm-and-quantifier-linkage",
-      "impact": "The formal theorem proves only an algebraic composition step and does not establish the paper's algorithmic backward-stability result.",
-      "lean_evidence": "The target instead assumes arbitrary L, U, x, y and preliminary perturbations satisfying the factorization, solve, and error-bound relations.",
-      "paper_evidence": "Theorem 4.4 applies when Algorithm 4.1 produces computed L-hat and U-hat and substitution produces x-hat.",
-      "severity": "critical"
-    },
-    {
-      "category": "missing-componentwise-scale",
-      "impact": "The stated Lean conclusion is not the paper's error bound and requires an external premise to recover it.",
-      "lean_evidence": "Every bound uses an unconstrained matrix M, with no equality or lower-bound relation to |A|+|L||U|.",
-      "paper_evidence": "Equation (4.7) has the mandatory scale |A|+|L-hat||U-hat|.",
-      "severity": "critical"
-    },
-    {
-      "category": "dimensions-and-indexing",
-      "impact": "The target covers parameter combinations with no paper interpretation and fails to encode the intended matrix/block geometry.",
-      "lean_evidence": "A is N-by-N while n, q, and bdim are independent naturals; natural subtraction is truncated and all may be zero.",
-      "paper_evidence": "A is n-by-n, b divides n, q=n/b, and the coefficient indices refer to that same dimension and block size.",
+      "category": "algorithm-linkage-abstraction",
+      "evidence": "Algorithm 4.1 is operationally described on C134, whereas D015 contains only its derived factorization and solve error certificates.",
+      "impact": "The target is not an operational verification of Algorithm 4.1, but it is a broader certificate-level composition theorem from which Theorem 4.4 follows.",
       "severity": "major"
     },
     {
-      "category": "floating-point-model",
-      "impact": "Even the otherwise recognizable coefficient is faithful only under unstated precision identifications and domain restrictions.",
-      "lean_evidence": "The target has unconstrained uLow, uFma, and u, uses u for both internal and working gamma roles, and supplies no rounding or exceptional-value hypotheses.",
-      "paper_evidence": "The paper separates working, internal-FMA, output/effective-FMA, and conversion precisions and assumes admissible gamma denominators with no underflow or overflow.",
+      "category": "intermediate-results-as-premises",
+      "evidence": "D015 assumes the complete Theorem 4.3 bound and both triangular-solve backward-error bounds; the target must still construct the final perturbation, which is absent from the run.",
+      "impact": "The formal theorem measures the nontrivial algebraic composition step rather than deriving the intermediate numerical analyses.",
       "severity": "major"
     },
     {
-      "category": "dimension-and-index-parameter mismatch",
-      "impact": "Coefficient indices can be unrelated to the represented matrices, and the statement no longer describes a block LU factorization of the paper's dimensions.",
-      "paper_evidence": "Theorem 4.4 uses the matrix dimension n, block size b, and block count q=n/b.",
-      "severity": "critical",
-      "translation_evidence": "N is the matrix dimension while n, bdim, and q are independent arbitrary naturals."
+      "category": "precision-domain-generalization",
+      "evidence": "C127 restricts u_FMA to u_low or u_high, while D015 has no uHigh field or choice predicate.",
+      "impact": "All intended choices remain covered, and additional admissible certificate parameters make the theorem strictly more general.",
+      "severity": "minor"
     },
     {
-      "category": "mixed-precision coefficient mismatch",
-      "impact": "The exact paper coefficient cannot be represented when internal block-FMA precision differs from working precision, so the claimed error bound is a different bound.",
-      "paper_evidence": "Equation (4.7) uses tilde-gamma-FMA at q-1, barred gamma at n-b+1, and unaccented working-precision gamma at b and n.",
-      "severity": "critical",
-      "translation_evidence": "The q-1 term uses uFma, while the n-bdim+1, bdim, and n terms all use one parameter u."
-    },
-    {
-      "category": "bound-scale replacement",
-      "impact": "The translation neither states nor entails the paper's quantitative perturbation bound.",
-      "paper_evidence": "The mandatory scale is |A|+|L_hat||U_hat| componentwise.",
-      "severity": "critical",
-      "translation_evidence": "Every premise and the conclusion use raw entries of an arbitrary matrix M with no defining relation to A, L, or U."
-    },
-    {
-      "category": "algorithm-and-computed-semantics removed",
-      "impact": "The translation is a generic perturbation-composition lemma rather than the paper's backward-stability theorem for block LU.",
-      "paper_evidence": "Theorem 4.4 concerns computed factors from Algorithm 4.1 followed by triangular substitution.",
-      "severity": "major",
-      "translation_evidence": "Arbitrary real matrices and vectors are assumed to satisfy exact factorization and perturbed-solve equations; no algorithm or computed status is encoded."
-    },
-    {
-      "category": "missing-model-assumptions-and-vacuity",
-      "impact": "The statement includes unintended vacuous cases and lacks the hypotheses needed to interpret its constants as floating-point error bounds.",
-      "paper_evidence": "The analysis assumes relevant gamma denominators are positive, excludes underflow and overflow, and conditions the theorem on successful factorization and substitution.",
-      "severity": "major",
-      "translation_evidence": "No such conditions are present; N can be zero, real division is total, and M and all coefficients are unrestricted in sign."
-    },
-    {
-      "category": "preserved-semantic-core",
-      "impact": "These matching features identify the intended theorem, but they do not repair the dimensional, algorithmic, scale, or numerical-model discrepancies.",
-      "paper_evidence": "The paper concludes an exact nearby-system equation with unchanged right-hand side and an entrywise perturbation bound retaining all displayed second-order terms.",
-      "severity": "note",
-      "translation_evidence": "The translation has the same backward-equation form, uses entrywise absolute values, and retains the displayed squared and mixed terms."
+      "category": "conclusion-formula",
+      "evidence": "D011-D018 and the target reproduce (4.7)'s q-1, n-b+1, gamma_b, gamma_n, higher-order terms, unchanged right-hand side, and scale |A|+|LHat||UHat|.",
+      "impact": "Once the certificate premises are fixed, the numerical conclusion matches Theorem 4.4 exactly.",
+      "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean proposition alone cannot recover Theorem 4.4: algorithm completion does not appear, the preliminary perturbation premises are not derived, M is not the paper scale, dimensions are unlinked, and the precision model is restricted or conflated.",
-      "verdict": "no"
+      "reasoning": "Under the paper's context, a successful Algorithm 4.1 execution supplies the D015 factorization fields by Theorem 4.3, and the substitution analysis invoked in Theorem 4.4 supplies yHat, deltaL, deltaU, their equations, and gamma_n bounds. The selected u_FMA is stored directly as uFma. Applying the Lean theorem to that run gives exactly the paper's nearby-system equation and componentwise bound (4.7).",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper theorem concerns outputs of one specified algorithm with a fixed componentwise scale and floating-point model. It does not establish the Lean proposition's universal conditional claim for arbitrary matrices, decompositions, M, unrelated dimensions, or unrestricted real parameters.",
+      "reasoning": "Theorem 4.4 states its conclusion only for factors and solutions produced by Algorithm 4.1 and substitution under the paper's numerical model. It does not quantify over every abstract record satisfying the intermediate factorization and solve certificates, including records with no execution provenance or with uFma values outside the low/high choice.",
       "verdict": "no"
     }
   },
   "judge_classifications": {
     "direct": "not-faithful-different",
-    "roundtrip": "not-faithful-different"
+    "roundtrip": "faithful-stronger"
   },
-  "rationale": "The declaration preserves the algebraic perturbation-composition identity, componentwise inequality form, and all displayed second-order coefficient terms. It nevertheless replaces Theorem 4.4's algorithm-generated quantities and hypotheses with strong arbitrary algebraic premises, leaves the required scale as an unconstrained M, disconnects matrix dimension N from n, and omits or conflates the floating-point model. These changes prevent implication in either direction. The result is nonvacuous but is a different generic lemma rather than a faithful formalization of the cited paper theorem.",
+  "rationale": "The declaration is not equivalent to the paper's algorithm-specific statement because it abstracts away execution and admits additional precision configurations. Nevertheless, this abstraction retains the selected result without circularity: the run packages Theorem 4.3 and the triangular-solve certificates explicitly identified as the independent premises of Theorem 4.4's proof, while the final perturbation remains to be constructed. Every intended paper execution therefore instantiates the Lean theorem, and the run type has additional satisfiable instances outside the paper's operational domain. This is genuine nonvacuous strength, so faithful-stronger with accepted=true is the implication-consistent decision.",
   "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",

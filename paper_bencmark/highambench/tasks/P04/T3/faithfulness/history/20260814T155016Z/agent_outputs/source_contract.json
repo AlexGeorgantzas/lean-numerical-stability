@@ -1,0 +1,129 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "The same sentence refers to b x b blocks and to the system Ax=b. (PDF p. 13, printed C136, anchor: Theorem 4.4).",
+      "impact": "In q=n/b and n-b+1, b is the block size; in (A+Delta A)x_hat=b, it is the right-hand-side vector. (PDF p. 13, printed C136, anchor: Theorem 4.4 and equation (4.7)).",
+      "issue": "The printed theorem overloads the symbol b for both the block size and the right-hand side of Ax=b. (PDF p. 13, printed C136, anchor: Theorem 4.4)."
+    },
+    {
+      "evidence": "The proof only says that Theorem 4.3 is combined with standard triangular-system error analysis, while section 4 establishes u as the working precision. (PDF p. 11, printed C134, anchor: section 4 introduction; PDF p. 13, printed C136, anchor: proof of Theorem 4.4).",
+      "impact": "The contract may identify standard triangular substitution at working precision u, but cannot add an unstated rounding model for the original right-hand side. (PDF p. 13, printed C136, anchor: Theorem 4.4 and proof).",
+      "issue": "The word 'substitution' does not explicitly identify the sequence or storage precision of the right-hand side. (PDF p. 13, printed C136, anchor: Theorem 4.4)."
+    },
+    {
+      "evidence": "The stated algebra is A=LU and L_kk U_kk=A_kk. (PDF p. 11, printed C134, anchor: Algorithm 4.1 heading and line 2).",
+      "impact": "The source contract is the no-permutation A=LU formulation and should not silently generalize (4.7) to a pivoted PA=LU algorithm. (PDF p. 11, printed C134, anchor: Algorithm 4.1; PDF p. 13, printed C136, anchor: Theorem 4.4).",
+      "issue": "Algorithm 4.1 contains no permutation matrix, but line 2 does not separately discuss whether an implementation might pivot inside a diagonal block. (PDF p. 11, printed C134, anchor: Algorithm 4.1)."
+    },
+    {
+      "evidence": "Equation (4.7) adds 2gamma_n+(gamma_n)^2 to the factorization coefficient from (4.4). (PDF p. 12, printed C135, anchor: equation (4.4); PDF p. 13, printed C136, anchor: equation (4.7)).",
+      "impact": "The final perturbation must be treated existentially as the combined factorization-plus-substitution perturbation. (PDF p. 13, printed C136, anchor: Theorem 4.4 and proof).",
+      "issue": "The Delta A in Theorem 4.4 includes solve error and need not be the same perturbation as the Delta A used in Theorem 4.3. (PDF p. 12, printed C135, anchor: Theorem 4.3; PDF p. 13, printed C136, anchor: Theorem 4.4)."
+    }
+  ],
+  "contract_plain_english": "Provided the right-looking block LU factorization and subsequent triangular substitutions complete, the computed x_hat exactly solves a system with only A perturbed. Equation (4.7) bounds that perturbation componentwise using the computed factors and an exact coefficient containing low-precision conversion, block-FMA accumulation, local block factorization, and both substitution errors, with all mixed and squared terms retained. (PDF p. 13, printed C136, anchor: Theorem 4.4 and equation (4.7)).",
+  "paper_batch_sha256": "f23d1d2864ab683fc44d7b4dd917ebb13c36417400d3ee09d7d5a642c3a0d785",
+  "paper_sha256": "7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "standard floating-point model and gamma definitions",
+      "observation": "The paper defines unaccented, barred, and effective-FMA gamma quantities and assumes their denominators are positive.",
+      "pdf_page": 4,
+      "printed_page": "C127"
+    },
+    {
+      "anchor": "section 4 introduction and Algorithm 4.1",
+      "observation": "Algorithm 4.1 is a right-looking block LU factorization of an n x n matrix given in working precision u. Diagonal factorizations and block triangular solves use u, while trailing updates convert factor blocks to u_low and invoke Algorithm 3.1.",
+      "pdf_page": 11,
+      "printed_page": "C134"
+    },
+    {
+      "anchor": "Lemma 4.2, Theorem 4.3, and equation (4.4)",
+      "observation": "The local LU and triangular-solve results are componentwise backward-error statements. Theorem 4.3 supplies the factorization contribution later combined with substitution in Theorem 4.4.",
+      "pdf_page": 12,
+      "printed_page": "C135"
+    },
+    {
+      "anchor": "Theorem 4.4 and equation (4.7)",
+      "observation": "The theorem states the backward equation (A+Delta A)x_hat=b and the complete componentwise factorization-plus-solve coefficient, including conversion, block-FMA, local factorization, and substitution terms.",
+      "pdf_page": 13,
+      "printed_page": "C136"
+    },
+    {
+      "anchor": "paragraph following Algorithm 3.1",
+      "observation": "The matrix-update analysis inherited by Algorithm 4.1 assumes that underflow and overflow do not occur.",
+      "pdf_page": 5,
+      "printed_page": "C128"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "The result is for the right-looking block LU Algorithm 4.1 followed by substitution, with low-precision conversions confined to the factor blocks used by block-FMA trailing updates. (PDF p. 11, printed C134, anchor: Algorithm 4.1; PDF p. 13, printed C136, anchor: Theorem 4.4).",
+    "binders": [
+      "Let A be in R^(n x n), partitioned into b_blk x b_blk blocks with q=n/b_blk an integer; b_blk denotes the block size. (PDF p. 13, printed C136, anchor: Theorem 4.4).",
+      "Let b_rhs be the right-hand side in Ax=b_rhs and let x_hat be the solution produced by substitution; conformability implies b_rhs and x_hat are n-vectors, although the theorem does not state their spaces separately. (PDF p. 13, printed C136, anchor: Theorem 4.4).",
+      "Let L_hat and U_hat be the computed LU factors produced by Algorithm 4.1, and let Delta A be the backward perturbation asserted by Theorem 4.4. (PDF p. 13, printed C136, anchor: Theorem 4.4).",
+      "Let u be the working/output unit roundoff, u_low the conversion unit roundoff for update operands, bar_u the internal block-FMA unit roundoff, u_FMA the block-FMA output unit roundoff, and tilde_u_FMA the effective rounding parameter. (PDF p. 11, printed C134, anchor: section 4 introduction and Algorithm 4.1; PDF p. 6, printed C129, anchor: equation (3.3))."
+    ],
+    "conclusions": [
+      "There exists Delta A such that (A+Delta A)x_hat=b_rhs. (PDF p. 13, printed C136, anchor: Theorem 4.4).",
+      "|Delta A| <= K (|A|+|L_hat||U_hat|) componentwise, where K=2u_low+u_low^2+max(tilde_gamma_{q-1}^FMA+bar_gamma_{n-b_blk+1}+tilde_gamma_{q-1}^FMA bar_gamma_{n-b_blk+1}, gamma_{b_blk})(1+u_low)^2+2gamma_n+(gamma_n)^2. (PDF p. 13, printed C136, anchor: equation (4.7)).",
+      "The factorization coefficient through Theorem 4.3 is the part ending after max(...)(1+u_low)^2; combining triangular substitution adds exactly 2gamma_n+(gamma_n)^2. (PDF p. 12, printed C135, anchor: Theorem 4.3 and equation (4.4); PDF p. 13, printed C136, anchor: proof of Theorem 4.4 and equation (4.7))."
+    ],
+    "constants_and_indexing": [
+      "The number of preceding block updates is indexed by q-1. (PDF p. 13, printed C136, anchor: equation (4.7)).",
+      "The internal scalar-arithmetic index is n-b_blk+1, including the +1 from the initial subtraction in an update. (PDF p. 12, printed C135, anchor: Corollary 4.1 and Theorem 4.3; PDF p. 13, printed C136, anchor: equation (4.7)).",
+      "The competing local block factorization or solve term is gamma_{b_blk}. (PDF p. 13, printed C136, anchor: equation (4.7)).",
+      "The two full triangular substitutions contribute indices n through 2gamma_n+(gamma_n)^2. (PDF p. 13, printed C136, anchor: equation (4.7) and its proof)."
+    ],
+    "definitions_and_conventions": [
+      "gamma_k=ku/(1-ku), bar_gamma_k=k bar_u/(1-k bar_u), and tilde_gamma_k^FMA=k tilde_u_FMA/(1-k tilde_u_FMA). (PDF p. 4, printed C127, anchor: gamma and accent definitions).",
+      "All matrix absolute values are componentwise, and |L_hat||U_hat| is ordinary matrix multiplication of the componentwise absolute-value matrices. (PDF p. 3, printed C126, anchor: componentwise absolute-value convention; PDF p. 13, printed C136, anchor: equation (4.7)).",
+      "A and b_rhs are the unperturbed data in the backward equation; L_hat, U_hat, and x_hat are computed quantities. (PDF p. 13, printed C136, anchor: Theorem 4.4)."
+    ],
+    "error_notions": [
+      "Theorem 4.4 is a componentwise backward-error result: the computed x_hat exactly solves a nearby system with the matrix perturbed and the right-hand side unchanged. (PDF p. 13, printed C136, anchor: Theorem 4.4).",
+      "The theorem does not give a forward-error bound for x_hat or a normwise relative backward error. (PDF p. 13, printed C136, anchor: equation (4.7))."
+    ],
+    "exceptional_values": [
+      "The theorem is conditional on the algorithm producing factors and substitution producing a solution; breakdown cases are outside its conclusion. (PDF p. 13, printed C136, anchor: Theorem 4.4).",
+      "The triangular-solve result used in the proof assumes a nonsingular triangular coefficient matrix. (PDF p. 12, printed C135, anchor: Lemma 4.2).",
+      "Underflow and overflow are excluded in the inherited matrix-update analysis, and NaNs or infinities are not modeled. (PDF p. 5, printed C128, anchor: paragraph following Algorithm 3.1)."
+    ],
+    "higher_order_terms": [
+      "Equation (4.7) retains u_low^2, the mixed gamma product, (1+u_low)^2, and (gamma_n)^2. (PDF p. 13, printed C136, anchor: equation (4.7)).",
+      "The coefficient in (4.7) is not a dominant-term or big-O approximation; the dominant-term specializations appear only later in Table 4.1. (PDF p. 13, printed C136, anchor: equation (4.7) and paragraph introducing Table 4.1).",
+      "The inherited Algorithm 3.1 analysis simplifies possible double rounding by retaining one rounding and supplies no explicit remainder for the omitted one. (PDF p. 6, printed C129, anchor: double-rounding paragraph before (3.2))."
+    ],
+    "hypotheses": [
+      "A is supplied in working precision u and Algorithm 4.1 uses precision u for diagonal block factorization and block triangular solves. (PDF p. 11, printed C134, anchor: section 4 introduction and Algorithm 4.1 lines 2 and 4).",
+      "Algorithm 4.1 produces L_hat and U_hat, and subsequent substitution produces x_hat for Ax=b_rhs. (PDF p. 13, printed C136, anchor: Theorem 4.4).",
+      "Trailing updates convert computed factor blocks to u_low and evaluate the update with Algorithm 3.1 and a b_blk x b_blk block FMA. (PDF p. 11, printed C134, anchor: Algorithm 4.1 lines 8-9).",
+      "The standard floating-point model holds and k times each relevant unit roundoff is less than one. (PDF p. 4, printed C127, anchor: equations (2.3)-(2.4) and gamma definition).",
+      "The update analysis assumes no underflow or overflow. (PDF p. 5, printed C128, anchor: paragraph following Algorithm 3.1)."
+    ],
+    "implicit_context": [
+      "The proof combines the factorization backward error from Theorem 4.3 with the standard error analysis for solving triangular systems. (PDF p. 13, printed C136, anchor: proof of Theorem 4.4).",
+      "Successful production of the factors and solution implicitly requires the necessary block factorizations and triangular solves to complete; Lemma 4.2 states its solve result for a nonsingular triangular matrix. (PDF p. 12, printed C135, anchor: Lemma 4.2; PDF p. 13, printed C136, anchor: Theorem 4.4).",
+      "Algorithm 4.1 states the factorization as A=LU and introduces no permutation matrix. (PDF p. 11, printed C134, anchor: Algorithm 4.1 heading and body)."
+    ],
+    "norms": [
+      "No norm appears; |Delta A|, |A|, |L_hat|, and |U_hat| are componentwise absolute-value matrices. (PDF p. 13, printed C136, anchor: equation (4.7))."
+    ],
+    "numerical_model": [
+      "Unaccented gamma terms use working precision u, barred gamma terms use the internal block-FMA precision bar_u, and tilde_gamma^FMA uses the prioritized effective rounding parameter from (3.3). (PDF p. 4, printed C127, anchor: gamma accent convention; PDF p. 6, printed C129, anchor: equation (3.3)).",
+      "Converting L_hat and U_hat blocks to u_low contributes componentwise perturbations bounded by u_low and produces the exact term 2u_low+u_low^2. (PDF p. 12, printed C135, anchor: proof of Theorem 4.3; PDF p. 13, printed C136, anchor: equation (4.7)).",
+      "Block update arithmetic contributes tilde_gamma_{q-1}^FMA, bar_gamma_{n-b_blk+1}, and their product, while local block factorization or triangular solves contribute gamma_{b_blk}. (PDF p. 12, printed C135, anchor: Theorem 4.3 and proof; PDF p. 13, printed C136, anchor: equation (4.7))."
+    ]
+  },
+  "task_id": "P04-T3",
+  "undebatable_constraints": [
+    "The matrix is n x n, the block size divides n, and q=n/b_blk. (PDF p. 13, printed C136, anchor: Theorem 4.4).",
+    "The backward equation perturbs A but leaves the right-hand side unchanged. (PDF p. 13, printed C136, anchor: Theorem 4.4).",
+    "The bound is componentwise and is scaled by |A|+|L_hat||U_hat|. (PDF p. 13, printed C136, anchor: equation (4.7)).",
+    "The max term is max(tilde_gamma_{q-1}^FMA+bar_gamma_{n-b_blk+1}+tilde_gamma_{q-1}^FMA bar_gamma_{n-b_blk+1}, gamma_{b_blk}). (PDF p. 13, printed C136, anchor: equation (4.7)).",
+    "The exact solve contribution is 2gamma_n+(gamma_n)^2 and must not be omitted. (PDF p. 13, printed C136, anchor: equation (4.7)).",
+    "All second-order terms shown in (4.7) are part of the stated coefficient. (PDF p. 13, printed C136, anchor: equation (4.7))."
+  ]
+}

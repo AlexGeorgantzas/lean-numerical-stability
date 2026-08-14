@@ -1,0 +1,98 @@
+{
+  "accepted": false,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-13T10:49:03.638377+00:00",
+  "findings": [
+    {
+      "category": "algorithm-and-quantifier-linkage",
+      "impact": "The formal theorem proves only an algebraic composition step and does not establish the paper's algorithmic backward-stability result.",
+      "lean_evidence": "The target instead assumes arbitrary L, U, x, y and preliminary perturbations satisfying the factorization, solve, and error-bound relations.",
+      "paper_evidence": "Theorem 4.4 applies when Algorithm 4.1 produces computed L-hat and U-hat and substitution produces x-hat.",
+      "severity": "critical"
+    },
+    {
+      "category": "missing-componentwise-scale",
+      "impact": "The stated Lean conclusion is not the paper's error bound and requires an external premise to recover it.",
+      "lean_evidence": "Every bound uses an unconstrained matrix M, with no equality or lower-bound relation to |A|+|L||U|.",
+      "paper_evidence": "Equation (4.7) has the mandatory scale |A|+|L-hat||U-hat|.",
+      "severity": "critical"
+    },
+    {
+      "category": "dimensions-and-indexing",
+      "impact": "The target covers parameter combinations with no paper interpretation and fails to encode the intended matrix/block geometry.",
+      "lean_evidence": "A is N-by-N while n, q, and bdim are independent naturals; natural subtraction is truncated and all may be zero.",
+      "paper_evidence": "A is n-by-n, b divides n, q=n/b, and the coefficient indices refer to that same dimension and block size.",
+      "severity": "major"
+    },
+    {
+      "category": "floating-point-model",
+      "impact": "Even the otherwise recognizable coefficient is faithful only under unstated precision identifications and domain restrictions.",
+      "lean_evidence": "The target has unconstrained uLow, uFma, and u, uses u for both internal and working gamma roles, and supplies no rounding or exceptional-value hypotheses.",
+      "paper_evidence": "The paper separates working, internal-FMA, output/effective-FMA, and conversion precisions and assumes admissible gamma denominators with no underflow or overflow.",
+      "severity": "major"
+    },
+    {
+      "category": "dimension-and-index-parameter mismatch",
+      "impact": "Coefficient indices can be unrelated to the represented matrices, and the statement no longer describes a block LU factorization of the paper's dimensions.",
+      "paper_evidence": "Theorem 4.4 uses the matrix dimension n, block size b, and block count q=n/b.",
+      "severity": "critical",
+      "translation_evidence": "N is the matrix dimension while n, bdim, and q are independent arbitrary naturals."
+    },
+    {
+      "category": "mixed-precision coefficient mismatch",
+      "impact": "The exact paper coefficient cannot be represented when internal block-FMA precision differs from working precision, so the claimed error bound is a different bound.",
+      "paper_evidence": "Equation (4.7) uses tilde-gamma-FMA at q-1, barred gamma at n-b+1, and unaccented working-precision gamma at b and n.",
+      "severity": "critical",
+      "translation_evidence": "The q-1 term uses uFma, while the n-bdim+1, bdim, and n terms all use one parameter u."
+    },
+    {
+      "category": "bound-scale replacement",
+      "impact": "The translation neither states nor entails the paper's quantitative perturbation bound.",
+      "paper_evidence": "The mandatory scale is |A|+|L_hat||U_hat| componentwise.",
+      "severity": "critical",
+      "translation_evidence": "Every premise and the conclusion use raw entries of an arbitrary matrix M with no defining relation to A, L, or U."
+    },
+    {
+      "category": "algorithm-and-computed-semantics removed",
+      "impact": "The translation is a generic perturbation-composition lemma rather than the paper's backward-stability theorem for block LU.",
+      "paper_evidence": "Theorem 4.4 concerns computed factors from Algorithm 4.1 followed by triangular substitution.",
+      "severity": "major",
+      "translation_evidence": "Arbitrary real matrices and vectors are assumed to satisfy exact factorization and perturbed-solve equations; no algorithm or computed status is encoded."
+    },
+    {
+      "category": "missing-model-assumptions-and-vacuity",
+      "impact": "The statement includes unintended vacuous cases and lacks the hypotheses needed to interpret its constants as floating-point error bounds.",
+      "paper_evidence": "The analysis assumes relevant gamma denominators are positive, excludes underflow and overflow, and conditions the theorem on successful factorization and substitution.",
+      "severity": "major",
+      "translation_evidence": "No such conditions are present; N can be zero, real division is total, and M and all coefficients are unrestricted in sign."
+    },
+    {
+      "category": "preserved-semantic-core",
+      "impact": "These matching features identify the intended theorem, but they do not repair the dimensional, algorithmic, scale, or numerical-model discrepancies.",
+      "paper_evidence": "The paper concludes an exact nearby-system equation with unchanged right-hand side and an entrywise perturbation bound retaining all displayed second-order terms.",
+      "severity": "note",
+      "translation_evidence": "The translation has the same backward-equation form, uses entrywise absolute values, and retains the displayed squared and mixed terms."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean proposition alone cannot recover Theorem 4.4: algorithm completion does not appear, the preliminary perturbation premises are not derived, M is not the paper scale, dimensions are unlinked, and the precision model is restricted or conflated.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper theorem concerns outputs of one specified algorithm with a fixed componentwise scale and floating-point model. It does not establish the Lean proposition's universal conditional claim for arbitrary matrices, decompositions, M, unrelated dimensions, or unrestricted real parameters.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "The declaration preserves the algebraic perturbation-composition identity, componentwise inequality form, and all displayed second-order coefficient terms. It nevertheless replaces Theorem 4.4's algorithm-generated quantities and hypotheses with strong arbitrary algebraic premises, leaves the required scale as an unconstrained M, disconnects matrix dimension N from n, and omits or conflates the floating-point model. These changes prevent implication in either direction. The result is nonvacuous but is a different generic lemma rather than a faithful formalization of the cited paper theorem.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P04-T3"
+}

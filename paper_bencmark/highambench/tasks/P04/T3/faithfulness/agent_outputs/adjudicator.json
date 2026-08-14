@@ -1,0 +1,70 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P04-T3",
+  "trigger": [
+    "judge classifications differ"
+  ],
+  "resolved_items": [
+    {
+      "item": "judge classifications differ",
+      "resolution": "The round-trip implication pattern is correct. Under the paper's context, every successful Algorithm 4.1 execution and subsequent substitution supplies the factorization and triangular-solve certificates required by P04BlockLUSolveRun, so the Lean proposition retains Theorem 4.4. The converse fails because the Lean proposition covers certificate records without algorithmic provenance. The classification is faithful-stronger.",
+      "primary_evidence": "PDF C135, Theorem 4.3 and (4.4), supplies factorError with exactly the packaged factorization equation and bound. PDF C136 states that Theorem 4.4 is obtained by combining Theorem 4.3 with triangular-system solution error analysis. Declaration D015 packages precisely those factorization and solve certificates, while the target constructs a new final deltaA with equation (4.7)'s bound."
+    },
+    {
+      "item": "D001/D015 and semantic checks S03, S04, S07, S08, S12, S15, and S16: operational algorithm linkage versus certificate scope",
+      "resolution": "P04BlockLUSolveRun is not equivalent to an operational execution predicate, but it is a legitimate broader proof-premise abstraction rather than an unrelated or vacuous replacement. Its fields are the independent intermediate results explicitly used in the paper's proof, and it does not contain the final deltaA or nearby-system conclusion. Thus Algorithm 4.1 outputs form a subclass of its instances, while arbitrary factorization-and-solve certificates form a genuinely larger domain.",
+      "primary_evidence": "PDF C134 gives Algorithm 4.1's block factorization, solves, conversions, and trailing updates. PDF C135 derives the packaged factorization certificate in Theorem 4.3. PDF C136 invokes triangular-solve analysis to prove Theorem 4.4. D015 contains those two intermediate certificate families but no final perturbation witness. It is satisfiable, for example with n=b=q=1, identity factors, consistent vectors, and zero factor and solve errors."
+    },
+    {
+      "item": "D007/D018 and semantic checks S02/S11: missing uHigh and uFma-choice restriction",
+      "resolution": "The omission does not exclude any paper instance. For an intended execution, run.uFma stores the selected paper value u_FMA, whether u_low or u_high; the unselected u_high does not occur in (4.7). Removing the choice restriction instead enlarges the certificate theorem to other nonnegative uFma values satisfying the stated validity assumptions. This is additional nonvacuous scope, not reduced applicability.",
+      "primary_evidence": "PDF C127 states that u_FMA is either u_low or u_high and defines the internal-precision relation. PDF C129 defines the ordered effective-roundoff cases. D018 reproduces those ordered cases, and D015 supplies uLow, uBar, uFma, uWork, uBar<=uFma, and every gamma-validity condition used by the coefficient, but deliberately imposes no uFma=uLow-or-uHigh predicate."
+    },
+    {
+      "item": "Semantic check S11: exceptional-value and underflow/overflow hypotheses",
+      "resolution": "The paper's no-underflow/no-overflow assumption is needed to derive the certificate bounds from floating-point execution, but it is not needed by the subsequent algebraic composition theorem once those bounds are assumed. Lean's real-valued fields cannot represent NaNs or infinities, and the target makes no claim that exceptional executions produce a run. The missing operational hypothesis therefore broadens the finite certificate domain without losing the paper's intended finite executions.",
+      "primary_evidence": "PDF C128 explicitly assumes that underflow and overflow do not occur in Algorithm 3.1's analysis; the cited passages do not separately model NaNs or infinities. D015 uses only real matrices, vectors, roundoffs, exact equations, and componentwise bounds. Paper executions within the stated exclusion satisfy these fields through Theorem 4.3 and triangular-solve analysis."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "Under the paper's context, a successful Algorithm 4.1 execution supplies the D015 factorization fields by Theorem 4.3, and the substitution analysis invoked in Theorem 4.4 supplies yHat, deltaL, deltaU, their equations, and gamma_n bounds. The selected u_FMA is stored directly as uFma. Applying the Lean theorem to that run gives exactly the paper's nearby-system equation and componentwise bound (4.7)."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "Theorem 4.4 states its conclusion only for factors and solutions produced by Algorithm 4.1 and substitution under the paper's numerical model. It does not quantify over every abstract record satisfying the intermediate factorization and solve certificates, including records with no execution provenance or with uFma values outside the low/high choice."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "remaining_uncertainties": [],
+  "findings": [
+    {
+      "severity": "major",
+      "category": "algorithm-linkage-abstraction",
+      "evidence": "Algorithm 4.1 is operationally described on C134, whereas D015 contains only its derived factorization and solve error certificates.",
+      "impact": "The target is not an operational verification of Algorithm 4.1, but it is a broader certificate-level composition theorem from which Theorem 4.4 follows."
+    },
+    {
+      "severity": "major",
+      "category": "intermediate-results-as-premises",
+      "evidence": "D015 assumes the complete Theorem 4.3 bound and both triangular-solve backward-error bounds; the target must still construct the final perturbation, which is absent from the run.",
+      "impact": "The formal theorem measures the nontrivial algebraic composition step rather than deriving the intermediate numerical analyses."
+    },
+    {
+      "severity": "minor",
+      "category": "precision-domain-generalization",
+      "evidence": "C127 restricts u_FMA to u_low or u_high, while D015 has no uHigh field or choice predicate.",
+      "impact": "All intended choices remain covered, and additional admissible certificate parameters make the theorem strictly more general."
+    },
+    {
+      "severity": "note",
+      "category": "conclusion-formula",
+      "evidence": "D011-D018 and the target reproduce (4.7)'s q-1, n-b+1, gamma_b, gamma_n, higher-order terms, unchanged right-hand side, and scale |A|+|LHat||UHat|.",
+      "impact": "Once the certificate premises are fixed, the numerical conclusion matches Theorem 4.4 exactly."
+    }
+  ],
+  "rationale": "The declaration is not equivalent to the paper's algorithm-specific statement because it abstracts away execution and admits additional precision configurations. Nevertheless, this abstraction retains the selected result without circularity: the run packages Theorem 4.3 and the triangular-solve certificates explicitly identified as the independent premises of Theorem 4.4's proof, while the final perturbation remains to be constructed. Every intended paper execution therefore instantiates the Lean theorem, and the run type has additional satisfiable instances outside the paper's operational domain. This is genuine nonvacuous strength, so faithful-stronger with accepted=true is the implication-consistent decision."
+}
