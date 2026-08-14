@@ -10,6 +10,67 @@ noncomputable def p04BlockFmaCoeff
     (uFma u : ℝ) (q n : ℕ) : ℝ :=
   gamma uFma q + gamma u n + gamma uFma q * gamma u n
 
+/-- The prioritized effective output-rounding parameter in P04 equation (3.3).
+The first branch takes priority when the final output precision is coarser than
+the block-FMA output precision. -/
+noncomputable def p04EffectiveFmaRoundoff
+    (uBar uFma uOut : ℝ) : ℝ :=
+  if uFma < uOut then uOut
+  else if uFma ≤ uBar then 0
+  else uFma
+
+/-- Exact finite dot product used in the scalar-entry analysis of Algorithm
+3.1. -/
+noncomputable def p04Dot {n : ℕ} (x y : Fin n → ℝ) : ℝ :=
+  ∑ i : Fin n, x i * y i
+
+/-- The componentwise data scale `|x|ᵀ|y|` in P04 equation (3.4). This is a
+dot product of entrywise absolute values, not a norm. -/
+noncomputable def p04AbsDot {n : ℕ} (x y : Fin n → ℝ) : ℝ :=
+  ∑ i : Fin n, |x i| * |y i|
+
+/-- A scalar output of the chained block-FMA loop in Algorithm 3.1, represented
+by the compact perturbation factorization immediately preceding equation
+(3.4). The certificate is the paper's finite real standard-model semantics:
+underflow, overflow, exceptional IEEE values, and the omitted second output
+rounding are outside this model.
+
+The unconditional `beta_bound` records the paper's statement that (3.4) is
+valid for every evaluation order admitted by its analysis. `rightToLeft`
+marks the blocked right-to-left case for which the paper supplies the sharper
+`q+b-1` bound. -/
+structure P04BlockFmaDotRun (n b q : ℕ) where
+  dimension_pos : 0 < n
+  block_size_pos : 0 < b
+  block_count_pos : 0 < q
+  dimension_eq : n = q * b
+  x : Fin n → ℝ
+  y : Fin n → ℝ
+  computed : ℝ
+  uBar : ℝ
+  uFma : ℝ
+  uOut : ℝ
+  uBar_nonneg : 0 ≤ uBar
+  uFma_nonneg : 0 ≤ uFma
+  uOut_nonneg : 0 ≤ uOut
+  uBar_le_uFma : uBar ≤ uFma
+  effective_gamma_valid :
+    GammaValid (p04EffectiveFmaRoundoff uBar uFma uOut) q
+  internal_gamma_valid : GammaValid uBar n
+  alpha : Fin n → ℝ
+  beta : Fin n → ℝ
+  algorithm3_1_factorization :
+    computed = ∑ i : Fin n,
+      x i * y i * (1 + alpha i) * (1 + beta i)
+  alpha_bound : ∀ i,
+    |alpha i| ≤ gamma (p04EffectiveFmaRoundoff uBar uFma uOut) q
+  beta_bound : ∀ i, |beta i| ≤ gamma uBar n
+  rightToLeft : Prop
+  right_to_left_gamma_valid :
+    rightToLeft → GammaValid uBar (q + b - 1)
+  right_to_left_beta_bound :
+    rightToLeft → ∀ i, |beta i| ≤ gamma uBar (q + b - 1)
+
 /-- The factorization-stage coefficient in P04 equations (4.4) and (4.7). -/
 noncomputable def p04FactorizationCoeff
     (uLow uFma u : ℝ) (q n b : ℕ) : ℝ :=

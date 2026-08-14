@@ -63,7 +63,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P04Definitions.lean",
       "role": "P04-only block-FMA coefficients and finite matrix notation",
-      "sha256": "646a34423a78acdd51a626a6a78611c4ccb557188f7b25c1d324f0722c6c5ad9",
+      "sha256": "076a700d15b22a178325a9f063fbf44f0089643aba0382315bb03502995d5860",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -858,15 +858,17 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
+            "NumStability.summationComponentwisePerturbation_abs_error_le",
+            "NumStability.gamma_nonneg",
             "NumStability.gamma_mul"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs are kept under paper_bencmark/scratch_pad/private_gold/P04/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Use the triangle and product bounds on the two accumulated error factors, then apply the gamma addition identity.",
-          "informal_statement_paraphrase": "Two same-precision chained rounding factors collapse to one gamma factor at the sum of the operation counts.",
+          "informal_proof_paraphrase": "Expand the indexed alpha/beta factors, retain their mixed product, and apply the finite summation perturbation bound; then substitute the sharper right-to-left beta radius and unfold the zero-effective-roundoff same-precision branch.",
+          "informal_statement_paraphrase": "Algorithm 3.1's indexed perturbation factorization yields equation (3.4), its q+b-1 right-to-left refinement, and its zero-alpha same-precision reduction.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "05344d296907334bf9b974a52dfef6181f0c237ab808462d2f0ebc2ad1dd9887",
+            "controlled_file_sha256": "c26a9e4cde7e60be6bea67cf5b21aac6ed89138b78973be26394f9e75175c552",
             "declaration": "p04_t1_chained_rounding_factor",
             "file": "paper_bencmark/highambench/tasks/P04/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -874,22 +876,44 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P04Definitions.lean"
             ],
-            "statement_summary": "The same-precision gamma-factor core in P04 equation (3.4)."
+            "shared_model": "P04BlockFmaDotRun",
+            "statement_summary": "The full indexed scalar Algorithm 3.1 factorization and absolute forward-error result surrounding equation (3.4)."
           },
           "source_locations": [
             {
-              "anchor": "displayed factorization immediately before equation (3.4), equation (3.4), and its same-precision specialization",
+              "anchor": "componentwise absolute-value convention",
+              "journal_page": "C126",
+              "pdf_page": 3,
+              "role": "meaning of |x|^T|y|",
+              "section": "2. Block fused multiply-add"
+            },
+            {
+              "anchor": "equations (2.3)-(2.6) and gamma notation",
+              "journal_page": "C127",
+              "pdf_page": 4,
+              "role": "standard relative-error model, precision roles, and gamma validity",
+              "section": "2.1. General framework for mixed precision block FMA"
+            },
+            {
+              "anchor": "Algorithm 3.1 and following numerical-model paragraph",
+              "journal_page": "C128",
+              "pdf_page": 5,
+              "role": "block dimensions, chained computation, and exclusion of underflow and overflow",
+              "section": "3. Matrix multiplication using block FMAs"
+            },
+            {
+              "anchor": "equations (3.1)-(3.4), compact factorization, and following evaluation-order discussion",
               "journal_page": "C129",
               "pdf_page": 6,
-              "role": "chained rounding factors and their gamma bound",
+              "role": "computed recurrence, prioritized effective precision, indexed witnesses, exact forward-error bound, and specializations",
               "section": "3.2. Rounding error analysis"
             }
           ],
           "task_id": "P04-T1",
           "tier": "T1",
           "tier_name": "direct use",
-          "tier_reason": "The closest frozen result is NumStability.gamma_mul in NumStability/Analysis/Rounding.lean. It closes the mathematical core directly after a unit-roundoff and notation adapter.",
-          "title": "Chained rounding-factor collapse"
+          "tier_reason": "The L proof applies NumStability.summationComponentwisePerturbation_abs_error_le directly after a source-specific adapter turns the two indexed perturbation factors into one componentwise term error. The remaining work unfolds the exact mixed coefficient and the two explicit precision specializations; no new general numerical-analysis lemma is required.",
+          "title": "Algorithm 3.1 dot-product forward error"
         },
         {
           "availability": "available",

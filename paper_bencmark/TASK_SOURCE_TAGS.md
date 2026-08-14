@@ -45,7 +45,7 @@ the `theorem` command.
 | `P03-T1` | `EQN` | none | The selected result is equation (4.1). |
 | `P03-T2` | `THM` | `Theorem 4.1` | The paper explicitly names the selected result. |
 | `P03-T3` | `THM` | `Theorem 5.1` | The paper explicitly names the selected result. |
-| `P04-T1` | `EQN`, `TXT` | none | Equation (3.4), specialized by the paper's same-precision discussion. |
+| `P04-T1` | `EQN`, `TXT` | none | Equation (3.4), completed by the surrounding compact factorization and evaluation-order discussion. |
 | `P04-T2` | `THM` | `Theorem 3.2` | The paper explicitly names the selected result. |
 | `P04-T3` | `THM` | `Theorem 4.4` | The paper explicitly names the selected result. |
 | `P05-T1` | `LEM` | `Lemma 4.1` | The paper explicitly names the selected result. |

@@ -1,13 +1,18 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, same-precision specialization, tier label, and finite gamma-arithmetic formalization",
+    "kind": "source selection, Algorithm 3.1 execution certificate, equation (3.4), evaluation-order consequences, and tier label",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The unit roundoff u is nonnegative.",
-    "The accumulated gamma denominator is positive through q+n operations.",
-    "The two chained relative-error factors are bounded by gamma_q and gamma_n."
+    "The inner dimension n, block size b, and block count q are positive and satisfy n=q*b.",
+    "The vectors x and y define one exact scalar dot product, and computed is the corresponding output of Algorithm 3.1's chained block-FMA loop.",
+    "The internal, FMA-output, and final-output unit roundoffs are nonnegative, with uBar <= uFma.",
+    "The effective output-rounding parameter follows the prioritized cases in equation (3.3).",
+    "The relevant gamma denominators are positive.",
+    "The computed result has the paper's indexed compact factorization with |alpha_i| <= gamma_q(effective) and |beta_i| <= gamma_n(uBar).",
+    "A run marked right-to-left has the sharper |beta_i| <= gamma_(q+b-1)(uBar) certificate.",
+    "The finite real standard model excludes underflow, overflow, NaNs, and infinities and retains the paper's single modeled output rounding."
   ],
   "author_label": null,
   "classification_frozen_before_runs": false,
@@ -17,14 +22,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P04/T1/context.md",
   "formal_statement": {
-    "lean_header": "theorem p04_t1_chained_rounding_factor (u : \u211d) (q n : \u2115) (\u03b1 \u03b2 : \u211d) (hu : 0 \u2264 u) (hvalid : GammaValid u (q+n)) (h\u03b1 : |\u03b1| \u2264 gamma u q) (h\u03b2 : |\u03b2| \u2264 gamma u n) : |\u03b1+\u03b2+\u03b1*\u03b2| \u2264 gamma u (q+n)",
+    "lean_header": "theorem p04_t1_chained_rounding_factor {n b q : \u2115} (run : P04BlockFmaDotRun n b q) : \u2203 alpha beta : Fin n \u2192 \u211d, run.computed = \u2211 i : Fin n, run.x i * run.y i * (1 + alpha i) * (1 + beta i) \u2227 (\u2200 i, |alpha i| \u2264 gamma (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut) q) \u2227 (\u2200 i, |beta i| \u2264 gamma run.uBar n) \u2227 |p04Dot run.x run.y - run.computed| \u2264 p04BlockFmaCoeff (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut) run.uBar q n * p04AbsDot run.x run.y \u2227 (run.rightToLeft \u2192 (\u2200 i, |beta i| \u2264 gamma run.uBar (q + b - 1)) \u2227 |p04Dot run.x run.y - run.computed| \u2264 p04BlockFmaCoeff (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut) run.uBar q (q + b - 1) * p04AbsDot run.x run.y) \u2227 (run.uOut \u2264 run.uFma \u2227 run.uBar = run.uFma \u2192 (\u2200 i, alpha i = 0) \u2227 |p04Dot run.x run.y - run.computed| \u2264 gamma run.uBar n * p04AbsDot run.x run.y)",
     "namespace": "HighamBench",
-    "plain_language": "Two same-precision accumulated rounding factors collapse to one factor bounded by gamma at the sum of the operation counts.",
+    "plain_language": "Every certified scalar execution of Algorithm 3.1 exposes term-indexed perturbations satisfying the exact mixed-precision factorization and equation (3.4), the q+b-1 right-to-left refinement, and the zero-alpha same-precision reduction.",
     "target_file": "paper_bencmark/highambench/tasks/P04/T1/Target.lean",
     "theorem_name": "p04_t1_chained_rounding_factor"
   },
-  "informal_proof": "Apply the triangle and product bounds to \u03b1+\u03b2+\u03b1\u03b2, then use the gamma addition identity under the positive-denominator guard.",
-  "informal_statement": "The same-precision gamma-factor core used to derive equation (3.4).",
+  "informal_proof": "Expand each factor (1+alpha_i)(1+beta_i), retain alpha_i*beta_i, bound the resulting componentwise perturbation by the exact mixed gamma coefficient, and apply the finite summation perturbation bound. For right-to-left evaluation substitute the sharper beta radius. Under equal internal/FMA precision and no coarser final rounding, unfold the prioritized effective-roundoff definition to zero, force every alpha_i to zero, and simplify equation (3.4).",
+  "informal_statement": "The indexed Algorithm 3.1 factorization and absolute dot-product forward-error bound (3.4), including its right-to-left and same-precision consequences.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -40,21 +45,55 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
+      "NumStability.summationComponentwisePerturbation_abs_error_le",
+      "NumStability.gamma_nonneg",
       "NumStability.gamma_mul"
     ],
-    "note": "NumStability.gamma_mul in NumStability/Analysis/Rounding.lean directly supplies the stronger existential factor form; a small adapter exposes P04's polynomial error term and condition-neutral gamma notation."
+    "note": "The L proof directly reuses NumStability.summationComponentwisePerturbation_abs_error_le for the absolute finite-sum step. The library has no Algorithm 3.1 block-FMA execution model, prioritized effective-roundoff definition, mixed coefficient theorem, or evaluation-order specialization.",
+    "searched_locations": [
+      "NumStability/Analysis/Summation/ErrorBounds.lean",
+      "NumStability/Analysis/Rounding.lean",
+      "NumStability/Algorithms/DotProduct.lean",
+      "Mathlib/Algebra/Order/BigOperators"
+    ]
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "gamma",
-    "GammaValid"
+    "GammaValid",
+    "p04BlockFmaCoeff",
+    "p04EffectiveFmaRoundoff",
+    "p04Dot",
+    "p04AbsDot",
+    "P04BlockFmaDotRun"
   ],
   "source_locations": [
     {
-      "anchor": "displayed factorization immediately before equation (3.4), equation (3.4), and its same-precision specialization",
+      "anchor": "componentwise absolute-value convention",
+      "pdf_page": 3,
+      "printed_page": "C126",
+      "role": "meaning of |x|^T|y|",
+      "section": "2. Block fused multiply-add"
+    },
+    {
+      "anchor": "equations (2.3)-(2.6) and gamma notation",
+      "pdf_page": 4,
+      "printed_page": "C127",
+      "role": "standard relative-error model, precision roles, and gamma validity",
+      "section": "2.1. General framework for mixed precision block FMA"
+    },
+    {
+      "anchor": "Algorithm 3.1 and following numerical-model paragraph",
+      "pdf_page": 5,
+      "printed_page": "C128",
+      "role": "block dimensions, chained computation, and exclusion of underflow and overflow",
+      "section": "3. Matrix multiplication using block FMAs"
+    },
+    {
+      "anchor": "equations (3.1)-(3.4), compact factorization, and following evaluation-order discussion",
       "pdf_page": 6,
       "printed_page": "C129",
-      "role": "chained rounding factors and their gamma bound",
+      "role": "computed recurrence, prioritized effective precision, indexed witnesses, exact forward-error bound, and specializations",
       "section": "3.2. Rounding error analysis"
     }
   ],
@@ -65,7 +104,7 @@
   "task_id": "P04-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "The closest frozen result is NumStability.gamma_mul in NumStability/Analysis/Rounding.lean. It closes the mathematical core directly after identifying HighamBench.gamma with NumStability.gamma for an exact model carrying the same unit roundoff.",
+  "tier_rationale": "The L proof applies NumStability.summationComponentwisePerturbation_abs_error_le directly after a source-specific adapter turns the two indexed perturbation factors into one componentwise term error. The remaining work unfolds the exact mixed coefficient and the two explicit precision specializations; no new general numerical-analysis lemma is required.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P04/T1/Target.lean",
     "mode": "shared automatic validator",
