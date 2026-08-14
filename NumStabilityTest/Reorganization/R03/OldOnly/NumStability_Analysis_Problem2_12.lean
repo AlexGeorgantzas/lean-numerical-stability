@@ -1,0 +1,15 @@
+import NumStability.Analysis.Problem2_12
+
+/-!
+# R03 historical-only test — `Problem2_12`
+
+Imports exactly the historical path; checks its preserved public
+surface (6 declarations).
+-/
+
+#check @NumStability.FloatingPointFormat.problem2_12_ieeeDouble_final_rounding_options_of_mem_window
+#check @NumStability.FloatingPointFormat.problem2_12_ieeeDouble_reciprocal_finiteNormalRange_of_one_lt_x_lt_two
+#check @NumStability.FloatingPointFormat.problem2_12_ieeeDouble_reciprocal_product_mem_window_of_one_lt_x_lt_two
+#check @NumStability.FloatingPointFormat.problem2_12_ieeeDouble_reciprocal_product_rounding_options
+#check @NumStability.FloatingPointFormat.problem2_12_ieeeDouble_rounds_to_one_of_mem_upper_half_cell
+#check @NumStability.FloatingPointFormat.problem2_12_ieeeDouble_upper_midpoint_rounds_to_one

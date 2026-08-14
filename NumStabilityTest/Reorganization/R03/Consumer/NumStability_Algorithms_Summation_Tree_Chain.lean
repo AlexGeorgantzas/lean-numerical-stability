@@ -1,0 +1,8 @@
+import NumStability.Algorithms.Summation.Tree.Chain
+
+/-!
+# R03 protected consumer — `NumStability.Algorithms.Summation.Tree.Chain`
+
+Integrator-owned consumer compiled unedited against the R03 worker tree;
+its R0005 postimage is validated separately in a disposable checkout.
+-/
