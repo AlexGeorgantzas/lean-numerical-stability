@@ -89,8 +89,8 @@
         "P07"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P07Definitions.lean",
-      "role": "P07-only finite norms, operator certificates, matrix products, and backward-error expansion",
-      "sha256": "456801a246d914d7d5bd4fdb8c43f735ab409ae3d697f68cc9220f80637de59c",
+      "role": "P07-only finite norms, computed sketch-QR and forward-substitution models, exact spectral and pseudoinverse data, matrix products, and backward-error expansion",
+      "sha256": "a8e21e6e4a539d70da83e96373345ab0100d7d4a25e68b17c14e47017cdce9eb",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -1453,15 +1453,15 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.rectMatMulVec_injective_of_lower_bound_and_rectOpNorm2Le_lt"
+            "NumStability.wedinLemma20_11_rectOpNorm2Le_Bplus_of_Apenrose1_Bpenrose1_small_rectOpNorm2Le"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs are kept under paper_bencmark/scratch_pad/private_gold/P07/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Apply the exact frozen strict-perturbation injectivity theorem. Independently, subtract two equal outputs, split the perturbed action, and contradict eta < mu unless the input difference has zero Euclidean norm.",
-          "informal_statement_paraphrase": "The full-rank conclusion of Lemma 3.2 in lower/upper vector-action form.",
+          "informal_proof_paraphrase": "Write YHat=A*RHatInv+DeltaY. Use singular-value perturbation to preserve full column rank, bound the numerator norm by ||A*RHatInv||_2+||DeltaY||_2, and bound the pseudoinverse norm by ||(A*RHatInv)^dagger||_2/(1-epsilon_2). Multiply and substitute the exact epsilon_2 definition.",
+          "informal_statement_paraphrase": "All of Lemma 3.2: full rank and the displayed quantitative condition-number bound for the finite-precision forward-substitution output.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "a2c42582fa017f4bc27749ec721ce360de2774ec999b15e3c18f9c54dd10b3a4",
+            "controlled_file_sha256": "0685cd4d49fff279a72a0c648c291de38652a15a0970ed79ea7bdc60c027e7f4",
             "declaration": "p07_t1_perturbed_preconditioned_map_injective",
             "file": "paper_bencmark/highambench/tasks/P07/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -1469,22 +1469,36 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P07Definitions.lean"
             ],
-            "statement_summary": "An additive perturbation strictly smaller than a matrix's Euclidean lower margin preserves full column rank."
+            "statement_summary": "For the matrix computed by finite-precision forward substitution with the computed sketch-QR preconditioner, epsilon_2 below one implies full column rank and the complete Lemma 3.2 condition-number bound."
           },
           "source_locations": [
             {
-              "anchor": "Lemma 3.2, first conclusion that the computed matrix is full rank",
+              "anchor": "standing matrix dimensions and full-rank assumptions",
+              "journal_page": "906",
+              "pdf_page": 2,
+              "role": "m>s>n and full column rank of A and SA",
+              "section": "1. Introduction"
+            },
+            {
+              "anchor": "three finite-precision stages and Lemma 3.1",
+              "journal_page": "916",
+              "pdf_page": 12,
+              "role": "computed sketch, computed Householder QR factor, and the RHat inverse used by Lemma 3.2",
+              "section": "3.1. Bounding kappa_2(YHat) in terms of numerical errors"
+            },
+            {
+              "anchor": "Lemma 3.2",
               "journal_page": "917",
               "pdf_page": 13,
-              "role": "strict perturbation preserves full column rank",
-              "section": "3.1. Bounding kappa_2(Y-hat) in terms of numerical errors"
+              "role": "forward-substitution computation, exact DeltaY and epsilon_2 definitions, full-rank conclusion, and complete condition-number bound",
+              "section": "3.1. Bounding kappa_2(YHat) in terms of numerical errors"
             }
           ],
           "task_id": "P07-T1",
           "tier": "T1",
           "tier_name": "direct use",
-          "tier_reason": "NumStability.rectMatMulVec_injective_of_lower_bound_and_rectOpNorm2Le_lt in NumStability/Analysis/MatrixAlgebra.lean states the target directly; only exact notation adapters are required.",
-          "title": "Strict perturbation preserves full rank of the computed preconditioner"
+          "tier_reason": "The L proof specializes the single close frozen theorem NumStability.wedinLemma20_11_rectOpNorm2Le_Bplus_of_Apenrose1_Bpenrose1_small_rectOpNorm2Le for the decisive pseudoinverse perturbation step. The remaining work is exact P07 notation adaptation plus the elementary numerator norm and rank arguments, so the selected result remains a direct-use task rather than a composition of multiple library results.",
+          "title": "Full Lemma 3.2 bound for the computed preconditioner"
         },
         {
           "availability": "available",

@@ -39,6 +39,166 @@ def p07ConditionCertificate {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (lower upper : ℝ) : Prop :=
   p07RectLowerBound A lower ∧ p07RectOpNorm2Le A upper
 
+/-- Identity matrix in P07's finite real-matrix notation. -/
+noncomputable def p07FiniteId {n : ℕ} : Fin n → Fin n → ℝ :=
+  fun i j ↦ if i = j then 1 else 0
+
+/-- Pointwise addition of rectangular matrices. -/
+def p07RectAdd {m n : ℕ}
+    (A B : Fin m → Fin n → ℝ) : Fin m → Fin n → ℝ :=
+  fun i j ↦ A i j + B i j
+
+/-- Pointwise subtraction of rectangular matrices. -/
+def p07RectSub {m n : ℕ}
+    (A B : Fin m → Fin n → ℝ) : Fin m → Fin n → ℝ :=
+  fun i j ↦ A i j - B i j
+
+/-- Upper-triangularity of the computed factor inherited from Lemma 3.1. -/
+def p07UpperTriangular {n : ℕ} (R : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j, j.val < i.val → R i j = 0
+
+/-- Scalar floating-point operations used by the forward-substitution trace.
+Each operation has the standard relative-error semantics used in section 2. -/
+structure P07ScalarArithmeticModel where
+  unitRoundoff : ℝ
+  unitRoundoff_nonneg : 0 ≤ unitRoundoff
+  flAdd : ℝ → ℝ → ℝ
+  flSub : ℝ → ℝ → ℝ
+  flMul : ℝ → ℝ → ℝ
+  flDiv : ℝ → ℝ → ℝ
+  add_model : ∀ x y, ∃ delta, |delta| ≤ unitRoundoff ∧
+    flAdd x y = (x + y) * (1 + delta)
+  sub_model : ∀ x y, ∃ delta, |delta| ≤ unitRoundoff ∧
+    flSub x y = (x - y) * (1 + delta)
+  mul_model : ∀ x y, ∃ delta, |delta| ≤ unitRoundoff ∧
+    flMul x y = (x * y) * (1 + delta)
+  div_model : ∀ x y, y ≠ 0 → ∃ delta, |delta| ≤ unitRoundoff ∧
+    flDiv x y = (x / y) * (1 + delta)
+
+/-- Rounded dot product over the entries preceding column `j`. -/
+noncomputable def p07RoundedPrefixDot
+    (model : P07ScalarArithmeticModel) {m n : ℕ}
+    (Y : Fin m → Fin n → ℝ) (R : Fin n → Fin n → ℝ)
+    (i : Fin m) (j : Fin n) : ℝ :=
+  recursiveSum model.flAdd j.val fun k : Fin j.val ↦
+    let k' : Fin n := ⟨k.val, lt_trans k.isLt j.isLt⟩
+    model.flMul (Y i k') (R k' j)
+
+/-- A row-wise finite-precision forward-substitution execution for `Y R = A`.
+For upper triangular `R`, each output entry uses only earlier columns. -/
+structure P07ForwardSubstitutionTrace
+    (model : P07ScalarArithmeticModel) {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (R : Fin n → Fin n → ℝ) where
+  output : Fin m → Fin n → ℝ
+  diagonal_nonzero : ∀ j, R j j ≠ 0
+  recurrence : ∀ i j,
+    output i j =
+      model.flDiv
+        (model.flSub (A i j) (p07RoundedPrefixDot model output R i j))
+        (R j j)
+
+/-- The finite-precision sketch multiplication and Householder QR output from
+Lemma 3.1 whose computed inverse is used in Lemma 3.2. -/
+structure P07Lemma31ComputedPreconditioner (m s n : ℕ) where
+  columns_pos : 0 < n
+  sketch_gt_columns : n < s
+  rows_gt_sketch : s < m
+  A : Fin m → Fin n → ℝ
+  S : Fin s → Fin m → ℝ
+  computedSketch : Fin s → Fin n → ℝ
+  sketchError : Fin s → Fin n → ℝ
+  qrError : Fin s → Fin n → ℝ
+  Qtilde : Fin s → Fin n → ℝ
+  RHat : Fin n → Fin n → ℝ
+  RHatInv : Fin n → Fin n → ℝ
+  A_full_column_rank : Function.Injective (p07MatVec A)
+  sketch_full_column_rank :
+    Function.Injective (p07MatVec (p07RectMatMul S A))
+  sketch_multiplication :
+    computedSketch = p07RectAdd (p07RectMatMul S A) sketchError
+  computed_householder_qr :
+    p07RectMatMul Qtilde RHat = p07RectAdd computedSketch qrError
+  qtilde_isometry : p07Isometry Qtilde
+  rhat_upper_triangular : p07UpperTriangular RHat
+  rhat_inverse_left : p07RectMatMul RHat RHatInv = p07FiniteId
+  rhat_inverse_right : p07RectMatMul RHatInv RHat = p07FiniteId
+
+/-- The exact preconditioned matrix `A RHat^{-1}` in Lemma 3.2. -/
+noncomputable def p07ExactPreconditionedMatrix {m s n : ℕ}
+    (pre : P07Lemma31ComputedPreconditioner m s n) :
+    Fin m → Fin n → ℝ :=
+  p07RectMatMul pre.A pre.RHatInv
+
+/-- The finite-precision forward-substitution output and its exact additive
+error `DeltaY = YHat - A RHat^{-1}` from Lemma 3.2. -/
+structure P07Lemma32ForwardRun {m s n : ℕ}
+    (pre : P07Lemma31ComputedPreconditioner m s n)
+    (model : P07ScalarArithmeticModel) where
+  forwardSubstitution : P07ForwardSubstitutionTrace model pre.A pre.RHat
+  DeltaY : Fin m → Fin n → ℝ
+  deltaY_definition :
+    DeltaY = p07RectSub forwardSubstitution.output
+      (p07ExactPreconditionedMatrix pre)
+
+/-- Exact attained largest and smallest singular-value data for a finite
+rectangular matrix. The bound-plus-attainment pairs prevent the values from
+being arbitrary loose certificates. -/
+structure P07RectSpectralExtrema {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) where
+  upper : ℝ
+  lower : ℝ
+  upper_nonneg : 0 ≤ upper
+  lower_nonneg : 0 ≤ lower
+  upper_bound : p07RectOpNorm2Le A upper
+  lower_bound : p07RectLowerBound A lower
+  upper_attained : ∃ x : Fin n → ℝ,
+    p07VecNorm2 x = 1 ∧ p07VecNorm2 (p07MatVec A x) = upper
+  lower_attained : ∃ x : Fin n → ℝ,
+    p07VecNorm2 x = 1 ∧ p07VecNorm2 (p07MatVec A x) = lower
+
+/-- The four Penrose equations identifying an actual Moore--Penrose
+pseudoinverse, rather than an arbitrary left inverse. -/
+structure P07MoorePenrosePseudoinverse {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (Aplus : Fin n → Fin m → ℝ) : Prop where
+  reproduces_matrix :
+    p07RectMatMul (p07RectMatMul A Aplus) A = A
+  reproduces_pseudoinverse :
+    p07RectMatMul (p07RectMatMul Aplus A) Aplus = Aplus
+  range_projection_symmetric :
+    Matrix.transpose (p07RectMatMul A Aplus) = p07RectMatMul A Aplus
+  domain_projection_symmetric :
+    Matrix.transpose (p07RectMatMul Aplus A) = p07RectMatMul Aplus A
+
+/-- Exact spectral data for a matrix and its Moore--Penrose pseudoinverse.
+When the smallest singular value is nonzero, the final field records the
+standard identity `||A^dagger||_2 = 1 / sigma_min(A)`. -/
+structure P07MatrixPseudoinverseSpectralData {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) where
+  matrixSpectrum : P07RectSpectralExtrema A
+  pseudoinverse : Fin n → Fin m → ℝ
+  pseudoinverse_penrose :
+    P07MoorePenrosePseudoinverse A pseudoinverse
+  pseudoinverseSpectrum : P07RectSpectralExtrema pseudoinverse
+  pseudoinverse_norm_eq_reciprocal :
+    matrixSpectrum.lower ≠ 0 →
+      pseudoinverseSpectrum.upper = matrixSpectrum.lower⁻¹
+
+/-- Spectral 2-norm condition number represented using the actual
+Moore--Penrose pseudoinverse. -/
+noncomputable def p07ConditionNumber2 {m n : ℕ}
+    {A : Fin m → Fin n → ℝ}
+    (data : P07MatrixPseudoinverseSpectralData A) : ℝ :=
+  data.matrixSpectrum.upper * data.pseudoinverseSpectrum.upper
+
+/-- The exact perturbation parameter
+`epsilon_2 = ||DeltaY||_2 ||(A RHat^{-1})^dagger||_2`. -/
+noncomputable def p07Lemma32Epsilon {m n : ℕ}
+    {A : Fin m → Fin n → ℝ}
+    (exactData : P07MatrixPseudoinverseSpectralData A)
+    {DeltaY : Fin m → Fin n → ℝ}
+    (errorSpectrum : P07RectSpectralExtrema DeltaY) : ℝ :=
+  errorSpectrum.upper * exactData.pseudoinverseSpectrum.upper
+
 /-- Exact error matrix expanded in the proof of P07 Theorem 3.5. -/
 noncomputable def p07BackwardError {m n : ℕ}
     (Y ΔY : Fin m → Fin n → ℝ)

@@ -54,7 +54,7 @@
     },
     {
       "candidate": "Lemma 3.1",
-      "reason": "Its complete singular-value and pseudoinverse statement requires substantially more spectral infrastructure than the condition-neutral bundle; P07-T3 retains the paper's exact condition-number algebra and P07-T1 retains the strict-perturbation rank core."
+      "reason": "It is retained as the computed-preconditioner provenance for P07-T1, but its own two condition-number bounds are not separately selected as a target."
     },
     {
       "candidate": "Lemma 3.3 and Theorem 3.4",
@@ -76,7 +76,7 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use Lemma 3.2's strict-perturbation full-rank conclusion in lower/upper vector-action form.",
+      "decision": "Use all of Lemma 3.2: the full-rank conclusion and its complete quantitative condition-number bound for the finite-precision forward-substitution output.",
       "task_id": "P07-T1",
       "theorem_name": "p07_t1_perturbed_preconditioned_map_injective"
     },
