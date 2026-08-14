@@ -117,7 +117,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P10Definitions.lean",
       "role": "P10-only finite matrix products, the linked first-order product-error model, and the power-of-two SylR execution, Frobenius separation, recurrence, and equation-(20) definitions",
-      "sha256": "9e2a895c63c7d3637ccb335073731446801f7f331b4216f5338f94f0bd70208f",
+      "sha256": "f49e4d8aea5940088440cc81e8a85365243730ec35689bf1f3bb9434c1e80cc6",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -1961,15 +1961,16 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
+            "NumStability.matSeqProd_normwise_perturbation_bound",
             "NumStability.frobNorm_matMul_le"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P10/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Identify the paper-scoped explicit norm with the matrix Frobenius norm and apply Frobenius submultiplicativity.",
-          "informal_statement_paraphrase": "The inherited-right-input amplification term from equation (8), specialized to the Frobenius norm.",
+          "informal_proof_paraphrase": "Apply the selected consistent norm's submultiplicativity to A*dB, then multiply the supplied bound ||dB|| <= err(B,n) by the nonnegative norm ||A||. The exact additive-position identity unfolds the three named equation-(8) contributions.",
+          "informal_statement_paraphrase": "Equation (8)'s inherited-right first-order contribution, linked to the right operand's actual prior-computation error and retained as the middle term of the complete product-error budget.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "eb19fb0413ba12647774872f38496b584d03d5fa21d063d3b38a508c9f8dcdf0",
+            "controlled_file_sha256": "935474be1c1fede023141a23fc630c2234eb71c72df1c724133e29163e78a735",
             "declaration": "p10_t1_inherited_right_product_error",
             "file": "paper_bencmark/highambench/tasks/P10/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -1977,21 +1978,28 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P10Definitions.lean"
             ],
-            "statement_summary": "The Frobenius norm of the right-input error propagated through a matrix product is at most the product of the left-matrix and right-error norms."
+            "statement_summary": "For a linked first-order stable product, the actual inherited right perturbation propagates as A*dB, is bounded by ||A||*err(B,n), and this scalar is exactly equation (8)'s middle additive contribution."
           },
           "source_locations": [
             {
-              "anchor": "equation (8), term norm(A) times err(B,n)",
+              "anchor": "equation (1) and following norm-equivalence paragraph",
+              "journal_page": "60",
+              "pdf_page": 2,
+              "role": "stable matrix-multiplication model and unspecified norm convention",
+              "section": "Introduction"
+            },
+            {
+              "anchor": "equation (8), middle term ||A||*err(B,n)",
               "journal_page": "66",
               "pdf_page": 8,
-              "role": "amplification of error inherited from the right product input",
+              "role": "linked first-order amplification of error inherited from the right operand and its additive position",
               "section": "3.1 Recursive triangular matrix inversion"
             }
           ],
           "task_id": "P10-T1",
           "tier": "T1",
           "tier_name": "direct use",
-          "tier_reason": "NumStability.frobNorm_matMul_le in NumStability/Analysis/MatrixAlgebra.lean states the needed submultiplicative estimate; the L proof only bridges the paper-scoped Frobenius definition to the frozen wrapper and specializes the theorem to A and dB.",
+          "tier_reason": "After the source semantics are packaged in P10FirstOrderProductRun, the proof directly specializes one submultiplicativity certificate and the supplied right-inherited-error bound, then unfolds the additive budget identity. The frozen baseline has related generic and concrete product-norm results but no theorem preserving the selected unspecified-norm, linked-error semantics.",
           "title": "Inherited right-input product-error bound"
         },
         {

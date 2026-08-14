@@ -88,6 +88,39 @@ noncomputable def p10FirstOrderProductErrorBudget {n : ℕ}
     (run.matrixNorm.value run.exactLeft * run.rightInheritedError +
       run.leftInheritedError * run.matrixNorm.value run.exactRight)
 
+/-- The inherited-right error matrix produced to first order by multiplying
+the right operand perturbation on the left by the exact left operand. -/
+noncomputable def p10InheritedRightError {n : ℕ}
+    (run : P10FirstOrderProductRun n) : P10Matrix n :=
+  p10MatMul n run.exactLeft run.rightPerturbation
+
+/-- Equation (8)'s local stable-multiplication contribution. -/
+noncomputable def p10LocalProductErrorContribution {n : ℕ}
+    (run : P10FirstOrderProductRun n) : ℝ :=
+  run.mu n * run.epsilon * run.matrixNorm.value run.exactLeft *
+    run.matrixNorm.value run.exactRight
+
+/-- Equation (8)'s inherited-right contribution `||A||*err(B,n)`. -/
+noncomputable def p10InheritedRightErrorContribution {n : ℕ}
+    (run : P10FirstOrderProductRun n) : ℝ :=
+  run.matrixNorm.value run.exactLeft * run.rightInheritedError
+
+/-- Equation (8)'s inherited-left contribution `err(A,n)*||B||`. -/
+noncomputable def p10InheritedLeftErrorContribution {n : ℕ}
+    (run : P10FirstOrderProductRun n) : ℝ :=
+  run.leftInheritedError * run.matrixNorm.value run.exactRight
+
+/-- The selected inherited-right term, including both its propagated matrix
+bound and its exact additive position in equation (8)'s first-order budget. -/
+def P10InheritedRightEquation8Term {n : ℕ}
+    (run : P10FirstOrderProductRun n) : Prop :=
+  run.matrixNorm.value (p10InheritedRightError run) ≤
+      p10InheritedRightErrorContribution run ∧
+    p10FirstOrderProductErrorBudget run =
+      p10LocalProductErrorContribution run +
+        (p10InheritedRightErrorContribution run +
+          p10InheritedLeftErrorContribution run)
+
 /-- The one-level amplification factor in the Sylvester recurrence on printed page 86. -/
 noncomputable def p10SylvesterGrowth {n : ℕ}
     (A B : P10Matrix n) (sep : ℝ) : ℝ :=
