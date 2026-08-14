@@ -1,0 +1,97 @@
+test_class	target	purpose
+old_only	NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.EndToEnd.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.Closure	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ForwardError.ComputedOutput.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ForwardError.ActualOutput	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.Householder.EndToEnd	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.HouseholderClosure.Closure	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.Householder.Uniform	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.HouseholderClosure.Uniform	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.Higham21	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter21.Attainability.Results	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21Attainability	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter21.Equation11.UniformEnvelope.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21Eq21_11Uniform	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter21.Equation08.Results.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21Eq21_8	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter21.Equation09.Results.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21Eq21_9	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter21.Equation11.Results.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21Equation21_11	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter21.Equation11.ScalarCase.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21Equation21_11Scalar	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.Higham21Givens	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.EndToEnd.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21GivensClosure	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.Rounded.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21GivensRounded	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.Higham21MGS	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.QR.ModifiedGramSchmidt.Rounded.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21MGSRounded	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.Bounds.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21Perturbation	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.Radius.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21PerturbationRadius	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.Higham21ProjectorNorm	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.Higham21QRFoundations	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.Higham21RankStability	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.Higham21SNEActualOutput	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.EndToEnd.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21SNEClosure	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ConditionTransfer.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21SNEConditionTransfer	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.Higham21SNEEnvelopeTransfer	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.Higham21SNEForward	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.Higham21SNEQRMajorant	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.Higham21SNERemainderBounds	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.Higham21SNESigned	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.Uniform.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21SNEUniform	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter21.Theorem04.SourceClosure.Supplement.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.Higham21Theorem214SourceClosure	historical import path still elaborates
+canonical_only	NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.Executor.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Underdetermined.UnderdeterminedSolve	historical import path still elaborates
+old_only	NumStability.Algorithms.Underdetermined.UnderdeterminedSpec	historical import path still elaborates
+old_only	NumStability.Analysis.Perturbation.LeastSquares.BackwardError	historical import path still elaborates
+old_only	NumStability.Analysis.Perturbation.LeastSquares.Basic	historical import path still elaborates
+old_only	NumStability.Analysis.Perturbation.LeastSquares.Equality.MixedStability	historical import path still elaborates
+old_only	NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation	historical import path still elaborates
+old_only	NumStability.Analysis.Perturbation.LeastSquares.Equality.RowwiseBackwardError	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter20.Equations.Core.Results	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter20.Equations	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter20.Lemma11.Core.Results	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter20.Lemma11	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter20.Prose.Core.Results	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter20.Prose	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter20.Theorem03.Core.Results	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter20.Theorem03	historical import path still elaborates
+old_only	NumStability.Source.Higham.Chapter20.Theorem03.QRSolve	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter20.Theorem04.Core.Results	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter20.Theorem04	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter20.Theorem07.Core.Results	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter20.Theorem07	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter20.Theorem08.Core.Results	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter20.Theorem08	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter21.Corrections.CorrectedMGS.RoundedReplay	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter21.Corrections.Problem19_12.RoundedReplay	historical import path still elaborates
+protected_consumer	NumStability.Algorithms	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.LeastSquares.Higham20ZeroDeltaB	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.LinearSystems	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.QRTransfer.EnvelopeTransfer	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter20.Theorem03.ZeroDeltaB	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.Equation10.Closure	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.Equation11.ActualOutput	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.Equation11.Closure	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.RowScalingInvariance	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.Theorem03.Attainment	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.Theorem04.GivensQMethod.Closure	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.Theorem04.ModifiedGramSchmidtQMethod.RoundedReplay	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.Theorem04.RowwiseBackwardError	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.ActualOutput	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.Closure	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.EnvelopeTransfer	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.Uniform	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter21.Theorem04.SourceClosure.SourceClosure	retargeted consumer still elaborates
+aggregate_root	NumStability	global aggregate builds

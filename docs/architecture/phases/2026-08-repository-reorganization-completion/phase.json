@@ -16,6 +16,7 @@
       {
         "lane_id": "codex-lane",
         "operator_ids": [
+          "claude-local",
           "codex-local"
         ],
         "owner_id": "primary-human"
@@ -506,11 +507,159 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchActualSharpGrowthClosure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchExactTrace.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanActualSelector.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanExactGrowth.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanExactGrowthArithmetic.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanExactTrace.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanExplicitInverseSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanExplicitInverseTerminalClosedForm.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedAccumulated.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedBridge.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedClosure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedExecution.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedFactors.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedGlobal.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedGrowth.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedGrowthSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedMiddleSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedTerminal.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanRoundedTerminalClosedForm.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchKaufmanSourceCorrection.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchSharpGrowthBridge.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11BunchTraceHadamard.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11Chapter9ActualExecutorBridge.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11Chapter9BridgeClosure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11RookExactTrace.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11RookExecutorAdapter.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11RookRoundedGap.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11RookSourceClosure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11SkewActualSelector.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11SkewExactTrace.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/Cholesky/Higham11SkewSourceCorrection.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/HighamChapter9Theorem914Actual.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/HighamChapter9Theorem914DiagDominant.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/HighamChapter9Theorem914Primitive.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Algorithms/LeastSquares/Higham20Theorem20_7.lean"
     },
     {
       "match": "exact",
+      "path": "NumStability/Algorithms/LeastSquares/Higham20ZeroDeltaB.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Algorithms/LeastSquares/LSQRSolve.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems.lean"
     },
     {
       "match": "exact",
@@ -646,6 +795,10 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Algorithms/Sylvester.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/All.lean"
     },
     {
@@ -750,6 +903,18 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter09.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter11.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter11/BunchTridiagonalActualSolve.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Source/Higham/Chapter15.lean"
     },
     {
@@ -763,6 +928,22 @@
     {
       "match": "exact",
       "path": "NumStability/Source/Higham/Chapter15/Section02/Boyd/EndpointTermination/RectangularTermination.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter16/Section02/BartelsStewart/Equation09/Assembly.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter16/Section02/BartelsStewart/Equations04To08/Spectrum.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter16/Section03/PerturbationAndConditioning/SigmaMinCorollaries/SylvesterPerturbation.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter16/Section03/PerturbationAndConditioning/SigmaMinCorollaries/Vectorized.lean"
     },
     {
       "match": "exact",
@@ -810,6 +991,10 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter20/Theorem03/ZeroDeltaB.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Source/Higham/Chapter20/Theorem07/ActualBackSub.lean"
     },
     {
@@ -843,6 +1028,62 @@
     {
       "match": "exact",
       "path": "NumStability/Source/Higham/Chapter20/Theorem07/SourceTrace.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Equation10/Closure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Equation11/ActualOutput.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Equation11/Closure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/RowScalingInvariance.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Theorem03/Attainment.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Theorem04/GivensQMethod/Closure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Theorem04/ModifiedGramSchmidtQMethod/RoundedReplay.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Theorem04/RowwiseBackwardError.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/ActualOutput.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/Closure.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/EnvelopeTransfer.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/Uniform.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter21/Theorem04/SourceClosure/SourceClosure.lean"
     },
     {
       "match": "exact",

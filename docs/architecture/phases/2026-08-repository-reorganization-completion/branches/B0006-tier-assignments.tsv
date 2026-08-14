@@ -1,0 +1,63 @@
+module	tier	reason
+NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.EndToEnd.Core	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.Closure	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ForwardError.ComputedOutput.Core	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ForwardError.ActualOutput	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.Householder.EndToEnd	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.HouseholderClosure.Closure	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.Householder.Uniform	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.HouseholderClosure.Uniform	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.Underdetermined.Higham21	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Source.Higham.Chapter21.Attainability.Results	source	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21Attainability	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter21.Equation11.UniformEnvelope.Core	source	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21Eq21_11Uniform	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter21.Equation08.Results.Core	source	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21Eq21_8	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter21.Equation09.Results.Core	source	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21Eq21_9	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter21.Equation11.Results.Core	source	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21Equation21_11	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter21.Equation11.ScalarCase.Core	source	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21Equation21_11Scalar	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.Underdetermined.Higham21Givens	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.EndToEnd.Core	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21GivensClosure	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.Rounded.Core	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21GivensRounded	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.Underdetermined.Higham21MGS	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.LinearSystems.Underdetermined.QR.ModifiedGramSchmidt.Rounded.Core	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21MGSRounded	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.Bounds.Core	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21Perturbation	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.Radius.Core	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21PerturbationRadius	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.Underdetermined.Higham21ProjectorNorm	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Underdetermined.Higham21QRFoundations	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Underdetermined.Higham21RankStability	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Underdetermined.Higham21SNEActualOutput	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.EndToEnd.Core	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21SNEClosure	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ConditionTransfer.Core	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21SNEConditionTransfer	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.Underdetermined.Higham21SNEEnvelopeTransfer	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Underdetermined.Higham21SNEForward	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Underdetermined.Higham21SNEQRMajorant	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Underdetermined.Higham21SNERemainderBounds	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Underdetermined.Higham21SNESigned	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.Uniform.Core	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21SNEUniform	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter21.Theorem04.SourceClosure.Supplement.Core	source	new canonical destination
+NumStability.Algorithms.Underdetermined.Higham21Theorem214SourceClosure	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.Executor.Core	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Algorithms.Underdetermined.UnderdeterminedSolve	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.Underdetermined.UnderdeterminedSpec	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Source.Higham.Chapter20.Equations.Core.Results	source	new leaf under source umbrella
+NumStability.Source.Higham.Chapter20.Lemma11.Core.Results	source	new leaf under source umbrella
+NumStability.Source.Higham.Chapter20.Prose.Core.Results	source	new leaf under source umbrella
+NumStability.Source.Higham.Chapter20.Theorem03.Core.Results	source	new leaf under source umbrella
+NumStability.Source.Higham.Chapter20.Theorem04.Core.Results	source	new leaf under source umbrella
+NumStability.Source.Higham.Chapter20.Theorem07.Core.Results	source	new leaf under source umbrella
+NumStability.Source.Higham.Chapter20.Theorem08.Core.Results	source	new leaf under source umbrella
+NumStability.Source.Higham.Chapter21.Corrections.CorrectedMGS.RoundedReplay	source	new canonical destination
+NumStability.Source.Higham.Chapter21.Corrections.Problem19_12.RoundedReplay	compatibility	owner becomes declaration-free wrapper

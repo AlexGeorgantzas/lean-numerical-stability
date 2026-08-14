@@ -1,0 +1,152 @@
+{
+ "blocks": [
+  "R05"
+ ],
+ "created_at": "2026-08-15T00:00:00Z",
+ "depends_on": [],
+ "lane_id": "codex-lane",
+ "patch": {
+  "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006.patch",
+  "sha256": "03EDD5719A03DF152C1B33A207D1DE36D4787E3DD3947AF14C9E3EF4B1C56017"
+ },
+ "paths": [
+  "NumStability/Algorithms.lean",
+  "NumStability/Algorithms/LeastSquares/Higham20ZeroDeltaB.lean",
+  "NumStability/Algorithms/LinearSystems.lean",
+  "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/EnvelopeTransfer.lean",
+  "NumStability/Source/Higham/Chapter20/Theorem03/ZeroDeltaB.lean",
+  "NumStability/Source/Higham/Chapter21.lean",
+  "NumStability/Source/Higham/Chapter21/Equation10/Closure.lean",
+  "NumStability/Source/Higham/Chapter21/Equation11/ActualOutput.lean",
+  "NumStability/Source/Higham/Chapter21/Equation11/Closure.lean",
+  "NumStability/Source/Higham/Chapter21/RowScalingInvariance.lean",
+  "NumStability/Source/Higham/Chapter21/Theorem03/Attainment.lean",
+  "NumStability/Source/Higham/Chapter21/Theorem04/GivensQMethod/Closure.lean",
+  "NumStability/Source/Higham/Chapter21/Theorem04/ModifiedGramSchmidtQMethod/RoundedReplay.lean",
+  "NumStability/Source/Higham/Chapter21/Theorem04/RowwiseBackwardError.lean",
+  "NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/ActualOutput.lean",
+  "NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/Closure.lean",
+  "NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/EnvelopeTransfer.lean",
+  "NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/Uniform.lean",
+  "NumStability/Source/Higham/Chapter21/Theorem04/SourceClosure/SourceClosure.lean",
+  "NumStabilityTest.lean",
+  "docs/architecture/COMPATIBILITY.md",
+  "docs/architecture/layout-exceptions.json",
+  "docs/architecture/tiers.json"
+ ],
+ "phase_id": "repository-reorganization-completion-2026-08",
+ "preimage_blobs": [
+  {
+   "blob_oid": "92471cc9bddd007506bac87c206b8e58e0d891e9",
+   "path": "NumStability/Algorithms.lean"
+  },
+  {
+   "blob_oid": "ef8b32c967f00438f1e760563db8f3f959a45d74",
+   "path": "NumStability/Algorithms/LeastSquares/Higham20ZeroDeltaB.lean"
+  },
+  {
+   "blob_oid": "a59d3fc792897195032e1348c2f567775e2dfbb8",
+   "path": "NumStability/Algorithms/LinearSystems.lean"
+  },
+  {
+   "blob_oid": "ad882d8e808665435f01047dca0899cc39d5e29a",
+   "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/QRTransfer/EnvelopeTransfer.lean"
+  },
+  {
+   "blob_oid": "055e38bc391e2bf5115079abce518ccad281d8df",
+   "path": "NumStability/Source/Higham/Chapter20/Theorem03/ZeroDeltaB.lean"
+  },
+  {
+   "blob_oid": "df0c3ca0c92260450fa8085e81488d7e9aa91b92",
+   "path": "NumStability/Source/Higham/Chapter21.lean"
+  },
+  {
+   "blob_oid": "aaf8aa2b945485c9c7374b6406c8fe99646d9da6",
+   "path": "NumStability/Source/Higham/Chapter21/Equation10/Closure.lean"
+  },
+  {
+   "blob_oid": "8d18e2c6aae8b0aff553d298d6032047327e8d9c",
+   "path": "NumStability/Source/Higham/Chapter21/Equation11/ActualOutput.lean"
+  },
+  {
+   "blob_oid": "53a54987e7ab37b27f63989f72eb38acb23e5ac2",
+   "path": "NumStability/Source/Higham/Chapter21/Equation11/Closure.lean"
+  },
+  {
+   "blob_oid": "5d40d1a339bb4fd899eb8a7ea4c0606a52057fb7",
+   "path": "NumStability/Source/Higham/Chapter21/RowScalingInvariance.lean"
+  },
+  {
+   "blob_oid": "c96f016f179e4630d3748b39fbbc502f6bdcd8f3",
+   "path": "NumStability/Source/Higham/Chapter21/Theorem03/Attainment.lean"
+  },
+  {
+   "blob_oid": "1ba903158ead18b1f13bbc36b1e8995412f4acbb",
+   "path": "NumStability/Source/Higham/Chapter21/Theorem04/GivensQMethod/Closure.lean"
+  },
+  {
+   "blob_oid": "927294f7f9c2eca1ec6e06f04115a17e1eda72bd",
+   "path": "NumStability/Source/Higham/Chapter21/Theorem04/ModifiedGramSchmidtQMethod/RoundedReplay.lean"
+  },
+  {
+   "blob_oid": "a3d3555e58d46d520fa7dbcc358b0a371b6367b8",
+   "path": "NumStability/Source/Higham/Chapter21/Theorem04/RowwiseBackwardError.lean"
+  },
+  {
+   "blob_oid": "a6b8bd4b18e6f874cdddfed8e41c7f8710329146",
+   "path": "NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/ActualOutput.lean"
+  },
+  {
+   "blob_oid": "8e4ba8979d957df0167d282c636bb11f458f3bd3",
+   "path": "NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/Closure.lean"
+  },
+  {
+   "blob_oid": "b25cbc94771f000322e882c7f00d4128718af104",
+   "path": "NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/EnvelopeTransfer.lean"
+  },
+  {
+   "blob_oid": "4b22bc9bd49997723066cf5ed3b10a86fda7a17c",
+   "path": "NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/Uniform.lean"
+  },
+  {
+   "blob_oid": "ff551f3c11064e7deef996f96b213e4e86c82db8",
+   "path": "NumStability/Source/Higham/Chapter21/Theorem04/SourceClosure/SourceClosure.lean"
+  },
+  {
+   "blob_oid": "f8d1c0fefe3159b769309c882bab37baffb98b92",
+   "path": "NumStabilityTest.lean"
+  },
+  {
+   "blob_oid": "6471e29b6e463f3c4ea0d1be7cda424b18431f40",
+   "path": "docs/architecture/COMPATIBILITY.md"
+  },
+  {
+   "blob_oid": "0b75d46ea5c2a81c3b15f4189350f1eae5bce21f",
+   "path": "docs/architecture/layout-exceptions.json"
+  },
+  {
+   "blob_oid": "fa3152044960a5b5823d9504b298c9cb107397ed",
+   "path": "docs/architecture/tiers.json"
+  }
+ ],
+ "rationale": "Primary-human R05 shared-file postimages independently defined against exact C0003 code preimage e20de2f931caa12221e708c341e9cb4f64d29b25. Path-list SHA-256 266EC8F0D7A6E0BFE7EF071D2D4B77596D8B600D4D544BE30ADEB0CCBE050858. Retargeted consumers keep their full transitive surface because every destination carries its whole owner verbatim (1:1 whole-owner routes).",
+ "record_kind": "shared_file_request",
+ "request_id": "R0006",
+ "requester_id": "primary-human",
+ "resolution": {
+  "checkpoint_id": null,
+  "commit_sha": null,
+  "reason": null,
+  "resolved_at": null,
+  "resolved_by": null,
+  "validation_evidence": []
+ },
+ "schema_version": 1,
+ "status": "active",
+ "superseded_by": null,
+ "supersedes": null,
+ "target_base_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+ "target_checkpoint_id": "C0003",
+ "valid_through_checkpoint_id": "C0003",
+ "wave_id": "R05"
+}

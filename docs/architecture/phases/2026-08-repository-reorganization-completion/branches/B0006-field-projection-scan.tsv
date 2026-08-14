@@ -1,0 +1,6 @@
+consumer_path	dot_notation_token_matching_relocated_declaration	supply_after_retarget
+NumStability/Source/Higham/Chapter20/Theorem03/ZeroDeltaB.lean	upper	preserved: 1:1 whole-owner destination carries the full owner surface
+NumStability/Source/Higham/Chapter21/Theorem04/GivensQMethod/Closure.lean	mono	preserved: 1:1 whole-owner destination carries the full owner surface
+NumStability/Source/Higham/Chapter21/Theorem04/RowwiseBackwardError.lean	eta_nonneg	preserved: 1:1 whole-owner destination carries the full owner surface
+NumStability/Source/Higham/Chapter21/Theorem04/SeminormalEquations/Closure.lean	upper	preserved: 1:1 whole-owner destination carries the full owner surface
+NumStability/Source/Higham/Chapter21/Theorem04/SourceClosure/SourceClosure.lean	upper	preserved: 1:1 whole-owner destination carries the full owner surface

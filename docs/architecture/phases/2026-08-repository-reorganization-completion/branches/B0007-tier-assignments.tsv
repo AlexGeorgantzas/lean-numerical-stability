@@ -1,0 +1,118 @@
+module	tier	reason
+NumStability.Source.Higham.Chapter16.Foundations.Core	source	new canonical destination
+NumStability.Algorithms.Sylvester.Higham16	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AutomaticBounds.Results.Core	source	new canonical destination
+NumStability.Algorithms.Sylvester.Higham16AutoCondition	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.Sylvester.Higham16Eq9Assembly	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Sylvester.Higham16Eq9EndToEnd	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Source.Higham.Chapter16.HessenbergSchur.Rounded	source	new canonical destination
+NumStability.Algorithms.Sylvester.Higham16HessenbergRounded	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter16.HessenbergSchur.Results	source	new canonical destination
+NumStability.Algorithms.Sylvester.Higham16HessenbergSchur	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.Sylvester.Higham16Lyapunov	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Sylvester.Higham16LyapunovSigmaMin	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Source.Higham.Chapter16.Minimizers.Results	source	new canonical destination
+NumStability.Algorithms.Sylvester.Higham16Minimizers	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.Sylvester.Higham16NormEstimator	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Sylvester.Higham16PerturbationSigmaMin	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Sylvester.Higham16PivotedSmallBlocks	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Source.Higham.Chapter16.Problem02.Results.Core	source	new canonical destination
+NumStability.Algorithms.Sylvester.Higham16Problem16_2	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.Sylvester.Higham16Psi	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Sylvester.Higham16PsiSigmaMin	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Sylvester.Higham16QuasiQuasiRounded	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Sylvester.Higham16QuasiQuasiSylvester	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Source.Higham.Chapter16.QuasiRounded.Solve	source	new canonical destination
+NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSolve	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter16.QuasiRounded.Sylvester	source	new canonical destination
+NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSylvester	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.Sylvester.Higham16RoundedExecutor	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Sylvester.Higham16RoundedTriangular	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Source.Higham.Chapter16.Spectrum.Results	source	new canonical destination
+NumStability.Algorithms.Sylvester.Higham16Spectrum	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter16.Spectrum.Minimizers	source	new canonical destination
+NumStability.Algorithms.Sylvester.Higham16SpectrumMinimizers	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter16.VecNorm.Results	source	new canonical destination
+NumStability.Algorithms.Sylvester.Higham16VecNorm	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter16.VecPermutation.Notes	source	new canonical destination
+NumStability.Algorithms.Sylvester.Higham16VecPermutationNotes	compatibility	owner becomes declaration-free wrapper
+NumStability.Algorithms.Sylvester.SylvesterBackward	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Sylvester.SylvesterPerturbation	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Algorithms.Sylvester.SylvesterSpec	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Analysis.InverseOpNorm2	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Analysis.RealInvariantSubspace	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Analysis.RealQuasiSchur	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Analysis.RealSchurTriangulation	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Analysis.SchurTriangulation	compatibility	declaration-free legacy wrapper classified in place
+NumStability.Analysis.MatrixEquations.SylvesterExistence	per-imports at delivery (source if it imports Source, else reusable)	new canonical destination
+NumStability.Analysis.SylvesterSchurExistence	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter09.Theorem14.Actual	source	new canonical destination
+NumStability.Source.Higham.Chapter09.Theorem914Actual	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter09.Theorem14.DiagDominant	source	new canonical destination
+NumStability.Source.Higham.Chapter09.Theorem914DiagDominant	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter09.Theorem14.Primitive	source	new canonical destination
+NumStability.Source.Higham.Chapter09.Theorem914Primitive	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.Bunch.ActualSharpGrowthClosure	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchActualSharpGrowthClosure	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.Bunch.ExactTrace	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchExactTrace	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.ActualSelector	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanActualSelector	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Exact.Growth	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExactGrowth	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Exact.GrowthArithmetic	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExactGrowthArithmetic	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Exact.Trace	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExactTrace	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.ExplicitInverse.Solve	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExplicitInverseSolve	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.ExplicitInverse.TerminalClosedForm	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExplicitInverseTerminalClosedForm	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Accumulated	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedAccumulated	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Bridge	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedBridge	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Closure	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedClosure	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Execution	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedExecution	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Factors	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedFactors	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Global	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedGlobal	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Growth	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedGrowth	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.GrowthSolve	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedGrowthSolve	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.MiddleSolve	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedMiddleSolve	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Solve	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedSolve	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Terminal	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedTerminal	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.TerminalClosedForm	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedTerminalClosedForm	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.BunchKaufman.SourceCorrection	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanSourceCorrection	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.Bunch.SharpGrowthBridge	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchSharpGrowthBridge	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.Bunch.TraceHadamard	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11BunchTraceHadamard	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.CrossChapter.SymmetricIndefiniteLU.ActualExecutorBridge	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11Chapter9ActualExecutorBridge	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.CrossChapter.SymmetricIndefiniteLU.BridgeClosure	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11Chapter9BridgeClosure	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.Rook.ExactTrace	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11RookExactTrace	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.Rook.ExecutorAdapter	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11RookExecutorAdapter	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.Rook.RoundedGap	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11RookRoundedGap	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.Rook.SourceClosure	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11RookSourceClosure	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.Skew.ActualSelector	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11SkewActualSelector	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.Skew.ExactTrace	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11SkewExactTrace	compatibility	owner becomes declaration-free wrapper
+NumStability.Source.Higham.Chapter11.Skew.SourceCorrection	source	new canonical destination
+NumStability.Source.Higham.Chapter11.Higham11SkewSourceCorrection	compatibility	owner becomes declaration-free wrapper

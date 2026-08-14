@@ -984,6 +984,172 @@ class R03EpochSnapshot:
     request_unreserved_paths: tuple[str, ...]
 
 
+# --- C0003-rooted planned/active R05/R06 pair epoch (B0006/B0007) ---
+# Frozen by the fresh exact-C0003 successor review
+# (reviews/C0003-R05-R06-selection.md): the only authorizable pair, zero on
+# all seven overlap dimensions under the accepted R11/R12 standard.  Every
+# route is a whole-owner route, so no private-sharing component can split.
+R05R06_CODE_SHA = "e20de2f931caa12221e708c341e9cb4f64d29b25"
+R05R06_OPERATOR_PAIR = ("claude-local", "codex-local")
+R05R06_ROUTE_CLASSES = frozenset(
+    {
+        "relocate_whole",
+        "umbrella_extract",
+        "classify_compatibility",
+        "retain_document",
+    }
+)
+R05R06_PLANNED_FACTS: dict[str, dict[str, Any]] = {
+    "R05": {
+        "branch_id": "B0006",
+        "projection_id": "P0006",
+        "request_id": "R0006",
+        "lane_id": "codex-lane",
+        "operator_ids": ("claude-local", "codex-local"),
+        "branch_name": (
+            "codex/reorg-completion-2026-08-r05-least-squares-underdetermined-ch20-ch21"
+        ),
+        "planned_worktree": r"C:\Users\qed_s\higham-worktrees\completion-r05-claude",
+        "owner_count": 48,
+        "request_paths": 23,
+        "private_normalizations": 61,
+        "relocated_declarations": 574,
+        "counts": {
+            "declarations": 3171,
+            "signature_edges": 29704,
+            "body_edges": 38184,
+            "union_edges": 42013,
+        },
+        "selector_sha256": "F734301725BA895403624E0A587C06F2DD16F31AD13DCF31FA9B470F713D1EFE",
+        "projection_sha256": "9F46AC69A6B12D6A21EB5FAEE23D913E4E446C212906CA13CB9AB991E09E589C",
+        "patch_sha256": "03EDD5719A03DF152C1B33A207D1DE36D4787E3DD3947AF14C9E3EF4B1C56017",
+        "declaration_routes_sha256": "57F76A8A28454238E641EA2E9F4BB82349C80D17363C2C9D16D66158C4F72969",
+        "private_normalization_sha256": "39C57629D6881CFDA7091446895484BA6CE2BB10EF3C2D62412CA8202EA6E4CA",
+        "route_counts": {
+            "relocate_whole": 21,
+            "umbrella_extract": 7,
+            "classify_compatibility": 13,
+            "retain_document": 7,
+        },
+    },
+    "R06": {
+        "branch_id": "B0007",
+        "projection_id": "P0007",
+        "request_id": "R0007",
+        "lane_id": "codex-lane",
+        "operator_ids": ("codex-local",),
+        "branch_name": (
+            "codex/reorg-completion-2026-08-r06-schur-sylvester-pivoting-ch09-ch11-ch16"
+        ),
+        "planned_worktree": r"C:\Users\qed_s\higham-worktrees\completion-r06-codex",
+        "owner_count": 75,
+        "request_paths": 49,
+        "private_normalizations": 195,
+        "relocated_declarations": 2094,
+        "counts": {
+            "declarations": 9415,
+            "signature_edges": 81048,
+            "body_edges": 88795,
+            "union_edges": 103659,
+        },
+        "selector_sha256": "A420129415E778C0A681C4BEC538ADD447FBCD18F9564D5C9B4AEDE39C43E00A",
+        "projection_sha256": "0549B8A8FAF0196514C2054A5F0B144A8C11C30E0B825447AE5C384150F4E441",
+        "patch_sha256": "FB6F8E216AAAF74077E3D44989ECA18F75F1558DC320CFD08F18D9375A0B7C42",
+        "declaration_routes_sha256": "7E1762A392DFB71CE95F4DCE70AEC5B874ECB3FCBF36DE5168CEBF6376EA406B",
+        "private_normalization_sha256": "5EB26018D10DEB6C8C24BD6DAD4D7C93F091AC7737D3280EB52C5D5A9653AB0F",
+        "route_counts": {
+            "relocate_whole": 48,
+            "classify_compatibility": 21,
+            "retain_document": 6,
+        },
+    },
+}
+R05R06_UNION_PATCH_SHA256 = (
+    "639DA03437C3FBAA6934E71B55EFE7D85DF51835D94978790C59162585690D4E"
+)
+R05R06_UNION_PATH_COUNT = 67
+R05R06_REQUEST_OVERLAP = frozenset(
+    {
+        "NumStability/Algorithms.lean",
+        "NumStabilityTest.lean",
+        "docs/architecture/COMPATIBILITY.md",
+        "docs/architecture/layout-exceptions.json",
+        "docs/architecture/tiers.json",
+    }
+)
+R05R06_AUTH_REVIEW_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/R05-R06-operator-authorization.md"
+)
+R05R06_AUTH_REVIEW_SHA256 = (
+    "DE8653DD61107B632323B1DF0B5BEFF70A6F992D6475109943C7483B3AA1C93D"
+)
+R05R06_SELECTION_REVIEW_SHA256 = (
+    "786ED2B9A49F66CDE837B399D530824F57BB2A78E41934EC947653D4477E3181"
+)
+R05R06_REPLAY_REVIEW_SHA256 = (
+    "DE36CBF7B3F5C4A43AD4149FDD824B0B920C8AEAE9796070CF89C3143E6F3005"
+)
+R05R06_ADDED_SHARED_PATH_COUNT = 60
+
+
+def validate_r05r06_branch_record(
+    record: Any,
+    wave: str,
+    problems: "Problems",
+) -> None:
+    """Structural ratchets for a planned/active B0006/B0007 record.
+
+    Pure so the self-test can feed mutated records."""
+    facts = R05R06_PLANNED_FACTS[wave]
+    context = f"C0003-rooted R05/R06 epoch[{facts['branch_id']}]"
+    if not isinstance(record, dict):
+        problems.add(context, "branch record must be a JSON object")
+        return
+    for key, expected in (
+        ("branch_id", facts["branch_id"]),
+        ("wave_id", wave),
+        ("lane_id", facts["lane_id"]),
+        ("branch_name", facts["branch_name"]),
+        ("base_checkpoint_id", "C0003"),
+        ("base_sha", R05R06_CODE_SHA),
+        ("baseline_projection_id", facts["projection_id"]),
+        ("owner_id", "primary-human"),
+        ("shared_request_ids", [facts["request_id"]]),
+    ):
+        problems.require(
+            record.get(key) == expected,
+            f"{context}.{key}",
+            f"expected {expected!r}, found {record.get(key)!r}",
+        )
+    problems.require(
+        tuple(record.get("operator_ids", ())) == facts["operator_ids"],
+        f"{context}.operator_ids",
+        "unauthorized operator set: B0006 carries the reviewed claude-local/"
+        "codex-local pair (reviews/R05-R06-operator-authorization.md) and "
+        "B0007 carries codex-local alone",
+    )
+    problems.require(
+        record.get("status") in {"planned", "active", "delivered"},
+        f"{context}.status",
+        "pre-acceptance status must be planned, active, or delivered",
+    )
+    owned = record.get("owned_paths")
+    problems.require(
+        isinstance(owned, list) and len(owned) == facts["owner_count"],
+        f"{context}.owned_paths",
+        f"exactly {facts['owner_count']} exact owner paths are frozen",
+    )
+    dests = record.get("destination_prefixes")
+    problems.require(
+        isinstance(dests, list)
+        and all(rule.get("match") == "prefix" for rule in dests)
+        and all(str(rule.get("path", "")).endswith("/") for rule in dests),
+        f"{context}.destination_prefixes",
+        "every destination rule must be a new-directory prefix",
+    )
+
+
 def r03_activation_fact(text: str, label: str) -> str | None:
     """Read one exact-value row from the activation review's fact table."""
 
@@ -1120,15 +1286,18 @@ def validate_r03_epoch_snapshot(
         f"route/hash drift: expected declaration-route SHA-256 {expected_route_sha256}",
     )
     terminal = snapshot.branch_status in {"accepted", "retired"}
-    expected_lane_operators = (
-        (R03_OPERATOR_ID,) if terminal else R03_OPERATOR_IDS
+    allowed_lane_operators = (
+        # After R03 turns terminal the lane drops to codex-local alone until the
+        # reviewed R05/R06 planning control re-expands it for B0006 only.
+        {(R03_OPERATOR_ID,), R05R06_OPERATOR_PAIR} if terminal else {R03_OPERATOR_IDS}
     )
     problems.require(
         snapshot.operator_ids == R03_OPERATOR_IDS
-        and snapshot.lane_operator_ids == expected_lane_operators,
+        and snapshot.lane_operator_ids in allowed_lane_operators,
         f"{context}.authority",
         "unauthorized operator: branch history must retain the reviewed pair while "
-        "codex-lane must carry the pair before C0003 and codex-local alone after it",
+        "codex-lane must carry the pair before C0003 and codex-local alone after it "
+        "(or the reviewed B0006-scoped R05/R06 re-expansion)",
     )
     expected_activation = Artifact(
         R03_ACTIVATION_REVIEW_PATH, R03_ACTIVATION_REVIEW_SHA256
@@ -1762,6 +1931,7 @@ class CompletionValidator:
         self.validate_requests_and_postimages()
         self.validate_next_wave_controls()
         self.validate_r03_epoch()
+        self.validate_r05_r06_epoch()
         self.validate_milestone_dag()
         return self.problems
 
@@ -1911,12 +2081,17 @@ class CompletionValidator:
                 )
             else:
                 accepted_shared = accepted_phase.get("shared_paths")
+                live_shared = phase.get("shared_paths")
                 self.problems.require(
                     isinstance(accepted_shared, list)
                     and len(accepted_shared) == 160
-                    and phase.get("shared_paths") == accepted_shared,
+                    and isinstance(live_shared, list)
+                    and len(live_shared)
+                    == 160 + R05R06_ADDED_SHARED_PATH_COUNT
+                    and all(rule in live_shared for rule in accepted_shared),
                     "phase.json.shared_paths",
-                    "C0003 must restore the exact 160-rule C0002 accepted shared-path set",
+                    "C0003 must retain the exact 160-rule C0002 accepted shared-path "
+                    "set plus exactly the 60 reviewed R0006/R0007 consumer paths",
                 )
         readme = self.phase_dir / "README.md"
         try:
@@ -6162,6 +6337,185 @@ class CompletionValidator:
                 )
         return matches[0]
 
+    def validate_r05_r06_epoch(self) -> None:
+        """Ratchet the C0003-rooted planned/active R05/R06 pair (B0006/B0007)."""
+
+        context = "C0003-rooted R05/R06 epoch"
+        self.problems.require(
+            self.current_checkpoint_id == C0003_CHECKPOINT_ID,
+            context,
+            "R05/R06 controls require current checkpoint C0003",
+        )
+        request_path_sets: dict[str, set[str]] = {}
+        for wave in ("R05", "R06"):
+            facts = R05R06_PLANNED_FACTS[wave]
+            branch_id = facts["branch_id"]
+            wave_context = f"{context}[{branch_id}]"
+            record = self.read_json(
+                self.phase_dir / f"branches/{branch_id}.json", wave_context
+            )
+            if record is None:
+                continue
+            validate_r05r06_branch_record(record, wave, self.problems)
+            evidence = (record.get("refresh") or {}).get("evidence")
+            if not isinstance(evidence, list) or not evidence:
+                self.problems.add(
+                    f"{wave_context}.refresh.evidence", "evidence list is required"
+                )
+            else:
+                for entry in evidence:
+                    path = self.root / str(entry.get("path", ""))
+                    if not path.is_file():
+                        self.problems.add(
+                            f"{wave_context}.refresh.evidence",
+                            f"missing evidence file {entry.get('path')!r}",
+                        )
+                        continue
+                    self.problems.require(
+                        sha256_path(path) == entry.get("sha256"),
+                        f"{wave_context}.refresh.evidence",
+                        f"stale evidence hash for {entry.get('path')!r}",
+                    )
+            for rel, expected, label in (
+                (f"selectors/{wave}.tsv", facts["selector_sha256"], "selector"),
+                (
+                    f"projections/{facts['projection_id']}.tsv.gz",
+                    facts["projection_sha256"],
+                    "projection",
+                ),
+                (
+                    f"requests/{facts['request_id']}.patch",
+                    facts["patch_sha256"],
+                    "request patch",
+                ),
+                (
+                    f"branches/{branch_id}-declaration-routes.tsv",
+                    facts["declaration_routes_sha256"],
+                    "declaration routes",
+                ),
+                (
+                    f"branches/{branch_id}-private-normalization.tsv",
+                    facts["private_normalization_sha256"],
+                    "private normalization",
+                ),
+            ):
+                path = self.phase_dir / rel
+                if not path.is_file():
+                    self.problems.add(f"{wave_context}.{label}", f"missing {rel}")
+                    continue
+                self.problems.require(
+                    sha256_path(path) == expected,
+                    f"{wave_context}.{label}",
+                    f"route/hash drift: expected SHA-256 {expected}",
+                )
+            routes_path = self.phase_dir / f"branches/{branch_id}-declaration-routes.tsv"
+            if routes_path.is_file():
+                class_counts: Counter[str] = Counter()
+                bad_rows = 0
+                with routes_path.open(encoding="utf-8") as stream:
+                    header = stream.readline()
+                    for line in stream:
+                        fields = line.rstrip("\n").split("\t")
+                        if len(fields) != 8:
+                            bad_rows += 1
+                            continue
+                        route_class = fields[6]
+                        destination = fields[5]
+                        if route_class not in R05R06_ROUTE_CLASSES:
+                            bad_rows += 1
+                            continue
+                        if route_class in {"relocate_whole", "umbrella_extract"}:
+                            if not destination.startswith("NumStability.") or "," in destination:
+                                bad_rows += 1
+                        elif destination != "-":
+                            bad_rows += 1
+                self.problems.require(
+                    bad_rows == 0,
+                    f"{wave_context}.declaration-routes",
+                    "every declaration row must carry a frozen route class and a "
+                    "single whole-owner destination (or '-' for retained rows)",
+                )
+            module_routes = self.phase_dir / f"branches/{branch_id}-module-routes.tsv"
+            if module_routes.is_file():
+                counts: Counter[str] = Counter()
+                with module_routes.open(encoding="utf-8") as stream:
+                    stream.readline()
+                    for line in stream:
+                        fields = line.rstrip("\n").split("\t")
+                        if len(fields) >= 7:
+                            counts[fields[6]] += 1
+                self.problems.require(
+                    dict(counts) == facts["route_counts"],
+                    f"{wave_context}.module-routes",
+                    f"whole-owner route-class census must be exactly {facts['route_counts']}",
+                )
+            request = self.read_json(
+                self.phase_dir / f"requests/{facts['request_id']}.json", wave_context
+            )
+            if request is not None:
+                paths = request.get("paths")
+                request_path_sets[wave] = set(paths or ())
+                self.problems.require(
+                    isinstance(paths, list)
+                    and len(paths) == facts["request_paths"]
+                    and request.get("target_base_sha") == R05R06_CODE_SHA
+                    and request.get("target_checkpoint_id") == "C0003"
+                    and request.get("wave_id") == wave,
+                    f"{wave_context}.request",
+                    f"frozen {facts['request_id']} must pin exact C0003 with "
+                    f"{facts['request_paths']} paths",
+                )
+            projection = self.read_json(
+                self.phase_dir / f"projections/{facts['projection_id']}.json",
+                wave_context,
+            )
+            if projection is not None:
+                self.problems.require(
+                    projection.get("expected_counts") == facts["counts"]
+                    and (projection.get("projection_graph") or {}).get("sha256")
+                    == facts["projection_sha256"],
+                    f"{wave_context}.projection",
+                    "frozen projection counts or graph hash drifted",
+                )
+        if len(request_path_sets) == 2:
+            overlap = request_path_sets["R05"] & request_path_sets["R06"]
+            self.problems.require(
+                overlap == set(R05R06_REQUEST_OVERLAP),
+                f"{context}.request-overlap",
+                "R0006/R0007 may share exactly the five reviewed integrator paths",
+            )
+        for rel, expected, label in (
+            (
+                "requests/R0006-R0007-union.patch",
+                R05R06_UNION_PATCH_SHA256,
+                "reviewed union patch",
+            ),
+            (
+                "reviews/R05-R06-operator-authorization.md",
+                R05R06_AUTH_REVIEW_SHA256,
+                "operator authorization review",
+            ),
+            (
+                "reviews/C0003-R05-R06-selection.md",
+                R05R06_SELECTION_REVIEW_SHA256,
+                "pair selection review",
+            ),
+            (
+                "reviews/R05-R06-projection-replay.md",
+                R05R06_REPLAY_REVIEW_SHA256,
+                "projection replay review",
+            ),
+        ):
+            path = self.phase_dir / rel
+            if not path.is_file():
+                self.problems.add(f"{context}.{label}", f"missing {rel}")
+                continue
+            self.problems.require(
+                sha256_path(path) == expected,
+                f"{context}.{label}",
+                f"hash drift: expected SHA-256 {expected}",
+            )
+
     def validate_r03_epoch(self) -> None:
         """Ratchet the singleton exact-C0002 R03 packet through C0003."""
 
@@ -6338,7 +6692,7 @@ class CompletionValidator:
             else ()
         )
         expected_operators = (
-            (R03_OPERATOR_ID,)
+            R05R06_OPERATOR_PAIR
             if self.current_checkpoint_id == C0003_CHECKPOINT_ID
             else R03_OPERATOR_IDS
         )
@@ -6347,8 +6701,9 @@ class CompletionValidator:
             and lane.get("owner_id") == "primary-human"
             and operators == expected_operators,
             f"phase.json.authority.lanes[{R03_LANE_ID}]",
-            "R03 requires one primary-human-owned codex-lane with the reviewed pair "
-            "before C0003 and codex-local alone after temporary authority expiry",
+            "codex-lane requires the reviewed R03 pair before C0003 and, after the "
+            "R05/R06 planning control, the reviewed B0006-scoped pair recorded in "
+            "reviews/R05-R06-operator-authorization.md (expiring at C0004)",
         )
         return operators
 
@@ -8493,6 +8848,73 @@ def run_self_test() -> int:
         "C0002 code/merge/delivery SHA-1 constants are malformed",
     )
     problems.require(
+        R05R06_PLANNED_FACTS["R05"]["owner_count"] == 48
+        and R05R06_PLANNED_FACTS["R06"]["owner_count"] == 75
+        and R05R06_OPERATOR_PAIR == ("claude-local", "codex-local")
+        and R05R06_PLANNED_FACTS["R05"]["operator_ids"] == R05R06_OPERATOR_PAIR
+        and R05R06_PLANNED_FACTS["R06"]["operator_ids"] == (R03_OPERATOR_ID,)
+        and sum(R05R06_PLANNED_FACTS["R05"]["route_counts"].values()) == 48
+        and sum(R05R06_PLANNED_FACTS["R06"]["route_counts"].values()) == 75
+        and R05R06_UNION_PATH_COUNT == 67
+        and len(R05R06_REQUEST_OVERLAP) == 5
+        and R05R06_PLANNED_FACTS["R05"]["request_paths"]
+        + R05R06_PLANNED_FACTS["R06"]["request_paths"]
+        == R05R06_UNION_PATH_COUNT + len(R05R06_REQUEST_OVERLAP)
+        and R05R06_CODE_SHA == C0003_CODE_SHA,
+        "self-test R05/R06 constants",
+        "exact C0003 pair identities or reviewed union arithmetic drifted",
+    )
+    r05_record_fixture: dict[str, Any] = {
+        "branch_id": "B0006",
+        "wave_id": "R05",
+        "lane_id": "codex-lane",
+        "branch_name": R05R06_PLANNED_FACTS["R05"]["branch_name"],
+        "base_checkpoint_id": "C0003",
+        "base_sha": R05R06_CODE_SHA,
+        "baseline_projection_id": "P0006",
+        "owner_id": "primary-human",
+        "shared_request_ids": ["R0006"],
+        "operator_ids": list(R05R06_OPERATOR_PAIR),
+        "status": "planned",
+        "owned_paths": [
+            {"match": "exact", "path": f"NumStability/SelfTest{i}.lean"}
+            for i in range(48)
+        ],
+        "destination_prefixes": [
+            {"match": "prefix", "path": "NumStability/SelfTest/Dir/"}
+        ],
+    }
+    positive_pair = Problems()
+    validate_r05r06_branch_record(r05_record_fixture, "R05", positive_pair)
+    problems.require(
+        not positive_pair.messages,
+        "self-test R05/R06 record positive",
+        f"valid planned record rejected: {positive_pair.messages}",
+    )
+    for label, mutation in (
+        ("intruder lane", {"lane_id": "claude-lane"}),
+        ("dropped second operator", {"operator_ids": ["codex-local"]}),
+        ("operator order swap", {"operator_ids": ["codex-local", "claude-local"]}),
+        ("wrong base", {"base_sha": "0" * 40}),
+        ("owner-count drift", {"owned_paths": r05_record_fixture["owned_paths"][:47]}),
+        (
+            "non-prefix destination",
+            {"destination_prefixes": [
+                {"match": "exact", "path": "NumStability/SelfTest/Dir/File.lean"}
+            ]},
+        ),
+        ("terminal status leak", {"status": "retired"}),
+    ):
+        mutated = dict(r05_record_fixture)
+        mutated.update(mutation)
+        negative_pair = Problems()
+        validate_r05r06_branch_record(mutated, "R05", negative_pair)
+        problems.require(
+            bool(negative_pair.messages),
+            f"self-test R05/R06 {label}",
+            "adversarial planned-record mutation was not rejected",
+        )
+    problems.require(
         (R03_BRANCH_ID, R03_PROJECTION_ID, R03_REQUEST_ID, R03_WAVE_ID)
         == ("B0005", "P0005", "R0005", "R03")
         and R03_OWNER_COUNT == 47
@@ -8698,8 +9120,11 @@ def run_self_test() -> int:
             ".authority:",
         ),
         (
-            "terminal stale lane expansion",
-            replace(r03_accepted, lane_operator_ids=R03_OPERATOR_IDS),
+            # After the reviewed R05/R06 planning control the terminal lane may
+            # carry codex-local alone or the reviewed B0006-scoped pair, but
+            # never claude-local alone.
+            "terminal invalid lane operator",
+            replace(r03_accepted, lane_operator_ids=(R03_SECOND_OPERATOR_ID,)),
             ".authority:",
         ),
         (
@@ -9112,7 +9537,9 @@ No implementation began before activation-control CI. The worker remains frozen 
         "review plus missing/stale evidence, wrong-base/tip, selector, route/hash, "
         "authority, R07, shared-path, delivery, integration, resolution, and retirement "
         "mutations; disposable-index R0005 replay-tree match plus missing/wrong-tree "
-        "rejection"
+        "rejection; and exact C0003-rooted planned R05/R06 pair constants with "
+        "intruder-lane, operator, base, owner-count, destination-rule, and "
+        "terminal-status mutations rejected"
     )
     return 0
 
@@ -9155,7 +9582,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         "C0001-pinned synchronous R11/R12 planned/active/delivered or C0002/C0003 "
         "accepted/retired controls with exact checkpoint evidence; plus the singleton "
         "exact-C0002 B0005/P0005/R0005 planned/active or C0003 accepted/retired R03 "
-        "epoch with corrected 115+6 request identity and 21 bounded follow-ups"
+        "epoch with corrected 115+6 request identity and 21 bounded follow-ups; plus "
+        "the C0003-rooted planned R05/R06 pair epoch (B0006/B0007) with whole-owner "
+        "routes, the reviewed five-path request union, and the reviewed B0006-scoped "
+        "operator re-expansion"
     )
     return 0
 

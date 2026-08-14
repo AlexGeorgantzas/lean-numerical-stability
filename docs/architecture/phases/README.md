@@ -93,6 +93,15 @@ C0003 records 2,690 production modules and 310 distinct residual-debt rows:
 declaration-bearing-umbrella rows, with zero unsorted aggregate imports. The
 inventory has 2,356 complete rows, 334 in-scope rows, and 310 rows with debt.
 Bounded-phase and repository-wide completion remain incomplete.
+
+A fresh exact-C0003 successor review selects the R05+R06 pair — the only
+candidate pair zero on all seven overlap dimensions under the R11/R12
+standard. B0006/R05 and B0007/R06 are planned from exact C0003 code with
+whole-owner routes only, frozen shared requests R0006 (23 paths) and R0007
+(49 paths) intersecting on exactly five integrator-owned paths under a
+reviewed union, identity projection replays for P0006/P0007, and a reviewed
+temporary `claude-local` second-operator expansion scoped to B0006 expiring
+at C0004. C0003 stays current and its statistics do not change.
 The planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be`
 passed Lean CI run 31546978830 (job 93961477202) before the R11/R12 refs and
 clean named worktrees were created and activated.

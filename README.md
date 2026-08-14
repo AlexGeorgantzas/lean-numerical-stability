@@ -284,9 +284,14 @@ delivery branch remains preserved at
 `1f8ff4ca5b0b136901a2f47d43e1064dc09aa556`; the
 [`R03 retirement review`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R03-retirement.md)
 records the exact cleanup evidence. The temporary `claude-local`
-second-operator authority on `codex-lane` has expired. M05 and M06 are ready;
-M07/R07 and every other unaccepted milestone remain planned, and no successor
-wave is activated. The statistics above are the current C0003 ratchet. The
+second-operator authority on `codex-lane` expired at C0003. A fresh
+exact-C0003 review then selected the R05+R06 pair — the only candidate pair
+zero on all seven overlap dimensions — and planned B0006/R05 and B0007/R06
+from exact C0003 code with whole-owner routes only, frozen shared requests
+under a reviewed five-path union, identity projection replays, and a
+reviewed temporary `claude-local` second-operator re-expansion scoped to
+B0006 expiring at C0004. M07/R07 and every other unaccepted milestone remain
+planned. The statistics above are the current C0003 ratchet. The
 [`active phase registry`](docs/architecture/phases/2026-08-repository-reorganization-completion/README.md)
 is the authoritative status record; the predecessor C0008 phase remains
 immutable historical evidence.

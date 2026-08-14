@@ -1,0 +1,170 @@
+test_class	target	purpose
+canonical_only	NumStability.Source.Higham.Chapter16.Foundations.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Sylvester.Higham16	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AutomaticBounds.Results.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Sylvester.Higham16AutoCondition	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16Eq9Assembly	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16Eq9EndToEnd	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter16.HessenbergSchur.Rounded	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Sylvester.Higham16HessenbergRounded	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter16.HessenbergSchur.Results	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Sylvester.Higham16HessenbergSchur	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16Lyapunov	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16LyapunovSigmaMin	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter16.Minimizers.Results	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Sylvester.Higham16Minimizers	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16NormEstimator	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16PerturbationSigmaMin	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16PivotedSmallBlocks	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter16.Problem02.Results.Core	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Sylvester.Higham16Problem16_2	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16Psi	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16PsiSigmaMin	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16QuasiQuasiRounded	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16QuasiQuasiSylvester	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter16.QuasiRounded.Solve	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSolve	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter16.QuasiRounded.Sylvester	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSylvester	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16RoundedExecutor	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.Higham16RoundedTriangular	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter16.Spectrum.Results	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Sylvester.Higham16Spectrum	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter16.Spectrum.Minimizers	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Sylvester.Higham16SpectrumMinimizers	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter16.VecNorm.Results	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Sylvester.Higham16VecNorm	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter16.VecPermutation.Notes	destination imports alone supply the relocated surface
+old_only	NumStability.Algorithms.Sylvester.Higham16VecPermutationNotes	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.SylvesterBackward	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.SylvesterPerturbation	historical import path still elaborates
+old_only	NumStability.Algorithms.Sylvester.SylvesterSpec	historical import path still elaborates
+old_only	NumStability.Analysis.InverseOpNorm2	historical import path still elaborates
+old_only	NumStability.Analysis.RealInvariantSubspace	historical import path still elaborates
+old_only	NumStability.Analysis.RealQuasiSchur	historical import path still elaborates
+old_only	NumStability.Analysis.RealSchurTriangulation	historical import path still elaborates
+old_only	NumStability.Analysis.SchurTriangulation	historical import path still elaborates
+canonical_only	NumStability.Analysis.MatrixEquations.SylvesterExistence	destination imports alone supply the relocated surface
+old_only	NumStability.Analysis.SylvesterSchurExistence	historical import path still elaborates
+old_only	NumStability.Source.Higham.Chapter09.Problems	historical import path still elaborates
+old_only	NumStability.Source.Higham.Chapter09.Section06	historical import path still elaborates
+old_only	NumStability.Source.Higham.Chapter09.Section11	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter09.Theorem14.Actual	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter09.Theorem914Actual	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter09.Theorem14.DiagDominant	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter09.Theorem914DiagDominant	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter09.Theorem14.Primitive	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter09.Theorem914Primitive	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.Bunch.ActualSharpGrowthClosure	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchActualSharpGrowthClosure	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.Bunch.ExactTrace	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchExactTrace	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.ActualSelector	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanActualSelector	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Exact.Growth	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExactGrowth	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Exact.GrowthArithmetic	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExactGrowthArithmetic	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Exact.Trace	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExactTrace	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.ExplicitInverse.Solve	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExplicitInverseSolve	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.ExplicitInverse.TerminalClosedForm	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExplicitInverseTerminalClosedForm	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Accumulated	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedAccumulated	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Bridge	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedBridge	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Closure	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedClosure	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Execution	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedExecution	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Factors	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedFactors	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Global	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedGlobal	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Growth	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedGrowth	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.GrowthSolve	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedGrowthSolve	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.MiddleSolve	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedMiddleSolve	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Solve	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedSolve	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Terminal	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedTerminal	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.TerminalClosedForm	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedTerminalClosedForm	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.BunchKaufman.SourceCorrection	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanSourceCorrection	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.Bunch.SharpGrowthBridge	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchSharpGrowthBridge	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.Bunch.TraceHadamard	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11BunchTraceHadamard	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.CrossChapter.SymmetricIndefiniteLU.ActualExecutorBridge	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11Chapter9ActualExecutorBridge	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.CrossChapter.SymmetricIndefiniteLU.BridgeClosure	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11Chapter9BridgeClosure	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.Rook.ExactTrace	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11RookExactTrace	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.Rook.ExecutorAdapter	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11RookExecutorAdapter	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.Rook.RoundedGap	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11RookRoundedGap	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.Rook.SourceClosure	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11RookSourceClosure	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.Skew.ActualSelector	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11SkewActualSelector	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.Skew.ExactTrace	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11SkewExactTrace	historical import path still elaborates
+canonical_only	NumStability.Source.Higham.Chapter11.Skew.SourceCorrection	destination imports alone supply the relocated surface
+old_only	NumStability.Source.Higham.Chapter11.Higham11SkewSourceCorrection	historical import path still elaborates
+old_only	NumStability.Source.Higham.Chapter11.Section01.PartialPivoting	historical import path still elaborates
+old_only	NumStability.Source.Higham.Chapter11.Section01.Tridiagonal	historical import path still elaborates
+old_only	NumStability.Source.Higham.Chapter11.Section02.Aasen	historical import path still elaborates
+protected_consumer	NumStability.Algorithms	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchActualSharpGrowthClosure	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchExactTrace	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanActualSelector	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactGrowth	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactGrowthArithmetic	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactTrace	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExplicitInverseSolve	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExplicitInverseTerminalClosedForm	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedAccumulated	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedBridge	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedClosure	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedExecution	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedFactors	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGlobal	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGrowth	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGrowthSolve	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedMiddleSolve	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedSolve	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedTerminal	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedTerminalClosedForm	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchKaufmanSourceCorrection	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchSharpGrowthBridge	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11BunchTraceHadamard	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11Chapter9ActualExecutorBridge	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11Chapter9BridgeClosure	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11RookExactTrace	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11RookExecutorAdapter	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11RookRoundedGap	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11RookSourceClosure	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11SkewActualSelector	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11SkewExactTrace	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Cholesky.Higham11SkewSourceCorrection	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.HighamChapter9Theorem914Actual	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.HighamChapter9Theorem914DiagDominant	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.HighamChapter9Theorem914Primitive	retargeted consumer still elaborates
+protected_consumer	NumStability.Algorithms.Sylvester	retargeted consumer still elaborates
+protected_consumer	NumStability.Analysis	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter09	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter11	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter11.BunchTridiagonalActualSolve	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equation09.Assembly	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.Spectrum	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.SylvesterPerturbation	retargeted consumer still elaborates
+protected_consumer	NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.Vectorized	retargeted consumer still elaborates
+aggregate_root	NumStability	global aggregate builds
