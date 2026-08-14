@@ -44,9 +44,9 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
-      "NumStability.wedinLemma20_11_rectOpNorm2Le_Bplus_of_Apenrose1_Bpenrose1_small_rectOpNorm2Le"
+      "NumStability.rectMatMulVec_injective_of_lower_bound_and_rectOpNorm2Le_lt"
     ],
-    "note": "The frozen Wedin/Higham theorem supplies the decisive pseudoinverse perturbation bound. The L proof specializes that single close result and proves the numerator norm estimate, injectivity conclusion, and P07 notation adapters around it."
+    "note": "The mounted frozen MatrixAlgebra theorem directly supplies the full-rank conclusion from the exact lower singular value and DeltaY norm. The L proof supplies P07 notation adapters and proves the quantitative condition-number inequality from the attained spectral data."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
@@ -96,7 +96,7 @@
   "task_id": "P07-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "The L proof specializes the single close frozen theorem NumStability.wedinLemma20_11_rectOpNorm2Le_Bplus_of_Apenrose1_Bpenrose1_small_rectOpNorm2Le for the decisive pseudoinverse perturbation step. The remaining work is exact P07 notation adaptation plus the elementary numerator norm and rank arguments, so the selected result remains a direct-use task rather than a composition of multiple library results.",
+  "tier_rationale": "The L proof directly specializes the mounted frozen theorem NumStability.rectMatMulVec_injective_of_lower_bound_and_rectOpNorm2Le_lt for Lemma 3.2's full-rank conclusion. Exact P07 notation adapters and scalar consequences of the attained singular-value data supply the accompanying condition-number inequality without composing a second library theorem, so the task remains T1.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P07/T1/Target.lean",
     "mode": "shared automatic validator",
