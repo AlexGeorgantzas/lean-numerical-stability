@@ -54,7 +54,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P03Definitions.lean",
       "role": "P03-only models and finite matrix notation",
-      "sha256": "8187989501a568ea0d68608500696079d547d8b79cdd5f2ee6f74b9a7ec95973",
+      "sha256": "ccc48a0a3eab21e5835a7981f26f11b16ab49d96f35e80e2196e59f5be16e81b",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -738,17 +738,18 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
+            "NumStability.abs_matMulVec_le",
+            "NumStability.problem7_1_resolvent_componentwise_inequality_bound",
             "NumStability.correction_neumann_inequality",
-            "NumStability.nonneg_resolvent_infNormVec_bound",
-            "NumStability.refinement_backward_error_sigma"
+            "NumStability.nonneg_resolvent_infNormVec_bound"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs are kept under paper_bencmark/scratch_pad/private_gold/P03/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Subtract the P-action from the correction inequality, premultiply by the nonnegative inverse M\u2081, use its inverse-action identity, distribute M\u2081 over the old residual and data terms, and substitute the result into equation (5.2).",
-          "informal_statement_paraphrase": "The componentwise next residual is bounded by W_i times the previous residual plus y_i as in Theorem 5.1.",
+          "informal_proof_paraphrase": "Derive (5.1) from the rounded update; combine (3.3), (3.6), and (2.5) to obtain (5.2) and c_i <= P_i*c_i + P_i*q_i; resolve this with the nonnegative M_i and distribute exactly to obtain W_i and y_i.",
+          "informal_statement_paraphrase": "Every indexed Algorithm 1.1 execution satisfying the componentwise solver and rounding models plus (5.6) obeys Theorem 5.1's exact W_i/y_i residual recurrence.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "93c283a03101e253e657795229736e82264cbf585f42aabc9a69d40bbcc58d96",
+            "controlled_file_sha256": "53a5b8e85fc29f632f011ab6f1e06e35c15ebd74211a3015f754ae959f831fa6",
             "declaration": "p03_t3_componentwise_residual_recurrence",
             "file": "paper_bencmark/highambench/tasks/P03/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -756,30 +757,65 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P03Definitions.lean"
             ],
-            "shared_model": "P03ResolventInverse",
-            "statement_summary": "The exact componentwise W_i/y_i recurrence of Theorem 5.1."
+            "shared_model": "P03ComponentwiseIRRun",
+            "statement_summary": "The full indexed Algorithm 1.1 componentwise W_i/y_i recurrence of Theorem 5.1."
           },
           "source_locations": [
             {
-              "anchor": "equations (5.2)-(5.6) and Theorem 5.1",
+              "anchor": "equation (1.1) and precision definitions",
+              "journal_page": "A817",
+              "pdf_page": 1,
+              "role": "working, residual, factorization, and solver precision ordering",
+              "section": "1. Introduction"
+            },
+            {
+              "anchor": "Algorithm 1.1",
+              "journal_page": "A818",
+              "pdf_page": 2,
+              "role": "unscaled iterative-refinement execution and computed quantities",
+              "section": "1. Introduction"
+            },
+            {
+              "anchor": "equations (2.2) and (2.5)",
+              "journal_page": "A821",
+              "pdf_page": 5,
+              "role": "componentwise condition-number convention and correction-solver defect model",
+              "section": "2. Preliminaries"
+            },
+            {
+              "anchor": "equations (3.3) and (3.6)",
+              "journal_page": "A823",
+              "pdf_page": 7,
+              "role": "computed residual and rounded-update models",
+              "section": "3. Forward error analysis"
+            },
+            {
+              "anchor": "equations (5.1)-(5.6) and opening of Theorem 5.1",
               "journal_page": "A826",
               "pdf_page": 10,
-              "role": "componentwise base inequality, M-matrix resolvent, and theorem assumptions",
+              "role": "base inequality, Z_i, correction inequality, M_i facts, and uniform hypothesis",
               "section": "5. Componentwise backward error analysis"
             },
             {
-              "anchor": "continuation of Theorem 5.1 and equation (5.7)",
+              "anchor": "continuation of Theorem 5.1",
               "journal_page": "A827",
               "pdf_page": 11,
-              "role": "W\u1d62 and y\u1d62 conclusion and norm interpretation",
+              "role": "exact W_i and y_i componentwise recurrence",
               "section": "5. Componentwise backward error analysis"
+            },
+            {
+              "anchor": "opening of section 6",
+              "journal_page": "A828",
+              "pdf_page": 12,
+              "role": "explicit exclusion of underflow and overflow from the unscaled analysis",
+              "section": "6. Scaling"
             }
           ],
           "task_id": "P03-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "The closest reusable results are NumStability.correction_neumann_inequality, NumStability.nonneg_resolvent_infNormVec_bound, and NumStability.refinement_backward_error_sigma in NumStability/Algorithms/IterativeRefinement.lean. The frozen library has no P03 three-precision Z\u2081/M\u2081 model, no exact componentwise inverse-action bridge, and no theorem assembling W\u1d62 and y\u1d62. The searched NumStability iterative-refinement and perturbation modules plus mathlib matrix/norm directories therefore leave a new paper-specific model and connection proof.",
-          "title": "Componentwise M-matrix residual recurrence"
+          "tier_reason": "The L proof reuses NumStability.abs_matMulVec_le, while generic resolvent and iterative-refinement ingredients are also nearby. The frozen library has no P03 three-precision Algorithm 1.1 execution model, no iteration-dependent Z_i/M_i construction, and no exact W_i/y_i assembly, so substantial paper-specific extension remains.",
+          "title": "Full Theorem 5.1 componentwise residual recurrence"
         }
       ],
       "topic": "three-precision iterative refinement"

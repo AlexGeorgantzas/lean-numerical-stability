@@ -136,12 +136,126 @@ noncomputable def p03Beta {n : ℕ}
           p03MatInfNorm run.A * p03VecInfNorm (run.x i)) +
     run.u * p03MatInfNorm run.A * p03VecInfNorm (run.x (i + 1))
 
-/-- The inverse-action contract for the nonnegative M-matrix inverse `M₁`
-used in the proof of P03 Theorem 5.1. -/
-def P03ResolventInverse {n : ℕ}
-    (M P : Fin n → Fin n → ℝ) : Prop :=
-  (∀ i k : Fin n, 0 ≤ M i k) ∧
-    ∀ (z : Fin n → ℝ) (i : Fin n),
-      p03MatVec M (fun k => z k - p03MatVec P z k) i = z i
+/-- A proof-carrying execution of the unscaled Algorithm 1.1 refinement loop
+for the componentwise analysis in P03 Theorem 5.1. In addition to the exact
+models (3.3), (3.6), and (2.5), it records the iteration-dependent M-matrix
+inverse `M₁` whose
+existence, nonnegativity, and norm bound are derived from condition (5.6) in
+the paragraph preceding the theorem. -/
+structure P03ComponentwiseIRRun (n : ℕ) where
+  dimension_pos : 0 < n
+  A : Fin n → Fin n → ℝ
+  Ainv : Fin n → Fin n → ℝ
+  b : Fin n → ℝ
+  x : ℕ → Fin n → ℝ
+  rHat : ℕ → Fin n → ℝ
+  dHat : ℕ → Fin n → ℝ
+  deltaR : ℕ → Fin n → ℝ
+  deltaX : ℕ → Fin n → ℝ
+  G : ℕ → Fin n → Fin n → ℝ
+  uR : ℝ
+  u : ℝ
+  uS : ℝ
+  uF : ℝ
+  uR_nonneg : 0 ≤ uR
+  uR_le_u : uR ≤ u
+  u_le_uS : u ≤ uS
+  uS_le_uF : uS ≤ uF
+  gamma_valid : GammaValid uR (p03MaxAugmentedRowNnz A b)
+  G_nonneg : ∀ i j k, 0 ≤ G i j k
+  left_inverse_action : ∀ (z : Fin n → ℝ) (j : Fin n),
+    p03MatVec Ainv (p03MatVec A z) j = z j
+  right_inverse_action : ∀ (z : Fin n → ℝ) (j : Fin n),
+    p03MatVec A (p03MatVec Ainv z) j = z j
+  residual_equation : ∀ (i : ℕ) (j : Fin n),
+    rHat i j = b j - p03MatVec A (x i) j + deltaR i j
+  residual_error_bound : ∀ (i : ℕ) (j : Fin n),
+    |deltaR i j| ≤
+      uS * |b j - p03MatVec A (x i) j| +
+        (1 + uS) * gamma uR (p03MaxAugmentedRowNnz A b) *
+          (|b j| + p03MatVec (p03MatAbs A) (p03VecAbs (x i)) j)
+  correction_solver_bound : ∀ (i : ℕ) (j : Fin n),
+    |rHat i j - p03MatVec A (dHat i) j| ≤
+      uS * p03MatVec (G i) (p03VecAbs (dHat i)) j
+  update_equation : ∀ (i : ℕ) (j : Fin n),
+    x (i + 1) j = x i j + dHat i j + deltaX i j
+  update_error_bound : ∀ (i : ℕ) (j : Fin n),
+    |deltaX i j| ≤ u * |x (i + 1) j|
+  M1 : ℕ → Fin n → Fin n → ℝ
+  condition_5_6 : ∀ i : ℕ,
+    uS * p03MatInfNorm (p03MatMul (G i) (p03MatAbs Ainv)) +
+        (1 + uS) * gamma uR (p03MaxAugmentedRowNnz A b) *
+          p03MatInfNorm (p03MatMul (p03MatAbs A) (p03MatAbs Ainv)) ≤
+      (1 : ℝ) / 2
+  M1_nonneg : ∀ i j k, 0 ≤ M1 i j k
+  M1_resolvent_action : ∀ (i : ℕ) (z : Fin n → ℝ) (j : Fin n),
+    p03MatVec (M1 i)
+      (fun k => z k -
+        p03MatVec
+          (p03MatMul
+            (fun row col =>
+              uS * G i row col +
+                (1 + uS) * gamma uR (p03MaxAugmentedRowNnz A b) * |A row col|)
+            (p03MatAbs Ainv)) z k) j = z j
+  M1_norm_bound : ∀ i : ℕ, p03MatInfNorm (M1 i) ≤ 2
+
+/-- Exact original-system residual at a computed P03 componentwise iterate. -/
+noncomputable def p03ComponentwiseExactResidual {n : ℕ}
+    (run : P03ComponentwiseIRRun n) (i : ℕ) : Fin n → ℝ :=
+  fun j => run.b j - p03MatVec run.A (run.x i) j
+
+/-- The nonnegative data vector `|b| + |A||x̂ᵢ|` from P03 section 5. -/
+noncomputable def p03ComponentwiseData {n : ℕ}
+    (run : P03ComponentwiseIRRun n) (i : ℕ) : Fin n → ℝ :=
+  fun j => |run.b j| +
+    p03MatVec (p03MatAbs run.A) (p03VecAbs (run.x i)) j
+
+/-- The iteration-dependent matrix `Z₁ = uₛGᵢ + (1+uₛ)γₚʳ|A|` in (5.3).
+The paper's `Z₁` depends on `i` through `Gᵢ`; the Lean name exposes that
+dependency through its iteration argument. -/
+noncomputable def p03Z {n : ℕ}
+    (run : P03ComponentwiseIRRun n) (i : ℕ) : Fin n → Fin n → ℝ :=
+  fun j k =>
+    run.uS * run.G i j k +
+      (1 + run.uS) * gamma run.uR (p03MaxAugmentedRowNnz run.A run.b) *
+        |run.A j k|
+
+/-- The nonnegative matrix `Pᵢ = Zᵢ|A⁻¹|` used in (5.4)--(5.6). -/
+noncomputable def p03P {n : ℕ}
+    (run : P03ComponentwiseIRRun n) (i : ℕ) : Fin n → Fin n → ℝ :=
+  p03MatMul (p03Z run i) (p03MatAbs run.Ainv)
+
+/-- The bracketed source vector in equation (5.4). -/
+noncomputable def p03CorrectionSource {n : ℕ}
+    (run : P03ComponentwiseIRRun n) (i : ℕ) : Fin n → ℝ :=
+  fun j =>
+    (1 + run.uS) * |p03ComponentwiseExactResidual run i j| +
+      (1 + run.uS) * (1 + run.u) *
+        gamma run.uR (p03MaxAugmentedRowNnz run.A run.b) *
+          p03ComponentwiseData run (i + 1) j
+
+/-- The correction contribution `Zᵢ|d̂ᵢ|` in equations (5.2) and (5.4). -/
+noncomputable def p03CorrectionMagnitude {n : ℕ}
+    (run : P03ComponentwiseIRRun n) (i : ℕ) : Fin n → ℝ :=
+  p03MatVec (p03Z run i) (p03VecAbs (run.dHat i))
+
+/-- The exact matrix `Wᵢ = uₛI + (1+uₛ)MᵢZᵢ|A⁻¹|` in Theorem 5.1. -/
+noncomputable def p03W {n : ℕ}
+    (run : P03ComponentwiseIRRun n) (i : ℕ) : Fin n → Fin n → ℝ :=
+  fun j k =>
+    run.uS * (if j = k then 1 else 0) +
+      (1 + run.uS) * p03MatMul (run.M1 i) (p03P run i) j k
+
+/-- The exact additive vector `yᵢ` in Theorem 5.1. -/
+noncomputable def p03Y {n : ℕ}
+    (run : P03ComponentwiseIRRun n) (i : ℕ) : Fin n → ℝ :=
+  fun j =>
+    (1 + run.uS) * (1 + run.u) *
+        gamma run.uR (p03MaxAugmentedRowNnz run.A run.b) *
+      (p03ComponentwiseData run (i + 1) j +
+        p03MatVec (p03MatMul (run.M1 i) (p03P run i))
+          (p03ComponentwiseData run (i + 1)) j) +
+    run.u * p03MatVec (p03MatAbs run.A)
+      (p03VecAbs (run.x (i + 1))) j
 
 end HighamBench

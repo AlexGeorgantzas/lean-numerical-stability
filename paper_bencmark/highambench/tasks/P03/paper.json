@@ -69,7 +69,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 5.1's componentwise recurrence, which requires the paper-specific Z\u2081/M\u2081 resolvent model and a nonnegative inverse-action argument absent from the frozen library.",
+      "decision": "Use the full indexed Algorithm 1.1 recurrence in Theorem 5.1, retaining equations (2.5), (3.3), (3.6), the uniform condition (5.6), and the exact iteration-dependent Z_i, M_i, W_i, and y_i formulas rather than assuming abstract preassembled residual and correction inequalities.",
       "task_id": "P03-T3",
       "theorem_name": "p03_t3_componentwise_residual_recurrence"
     }
