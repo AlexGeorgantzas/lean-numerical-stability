@@ -2,88 +2,60 @@
   "accepted": false,
   "adjudicated": false,
   "adjudication_reasons": [],
-  "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T11:16:36.593035+00:00",
+  "classification": "not-faithful-weaker",
+  "completed_at_utc": "2026-08-14T20:53:55.769725+00:00",
   "findings": [
     {
-      "category": "algorithm-linkage",
-      "impact": "The formal theorem does not prove the paper's numerical-stability result; it proves only an algebraic symmetry extension after the substantive estimate has been supplied.",
-      "lean_evidence": "The target has no Cholesky execution relation and assumes hupper, which is already the upper-triangle portion of the rowwise componentwise bound.",
-      "paper_evidence": "Theorem 4.4 conditions on completed conventional Cholesky factorization without underflow or overflow, and its proof derives local residual estimates from the floating-point updates.",
+      "category": "conclusion-assumed-by-domain",
+      "impact": "The Lean theorem does not prove the central local error estimates from the execution model. It quantifies only over runs already certified with them, making the benchmark proposition substantially weaker and partly circular.",
+      "lean_evidence": "D036 takes general_residual_bound and unit_residual_bound as constructor arguments, D037 takes sqrt_residual_bound, and D011 requires those certified executions for every relevant entry.",
+      "paper_evidence": "Theorem 4.4 assumes symmetry, successful completion, and no underflow or overflow; its proof derives (4.5a)-(4.5b) by applying Lemmas 4.1 and 4.3.",
       "severity": "critical"
     },
     {
-      "category": "floating-point-model",
-      "impact": "The theorem ranges over a different class of objects and cannot express the paper's hypotheses.",
-      "lean_evidence": "A and R are arbitrary real matrices and u is any nonnegative real, with no representability, rounding, exceptional-value, or computedness predicates.",
-      "paper_evidence": "A and the computed factor belong to F^(n x n), u is the model's unit roundoff, and the arithmetic is round to nearest with underflow and overflow excluded.",
+      "category": "floating-point-model-mismatch",
+      "impact": "A P05CholeskyRun need not denote an execution in the paper's numerical model, so the formal domain is not a faithful encoding even apart from the embedded conclusions.",
+      "lean_evidence": "D017 permits arbitrary finite representable and safeRange predicates; the exponent fields are not connected to either predicate, symmetry of the floating set is absent, and D039 does not define overflow or inexact subnormal underflow.",
+      "paper_evidence": "The paper's F is the standard finite radix-beta, precision-p, exponent-bounded floating set, with a specific underflow definition and round-to-nearest arithmetic.",
       "severity": "major"
     },
     {
-      "category": "local-estimates",
-      "impact": "The distinct local bounds and the numerical derivation that produces them are missing.",
-      "lean_evidence": "No local estimate is concluded; hupper uniformly uses the looser row coefficient i.val+2 for all upper entries.",
-      "paper_evidence": "Equation (4.5a) gives coefficient i*u for upper off-diagonal entries, while equation (4.5b) gives (j+1)u on the diagonal.",
+      "category": "computed-output-property-assumed",
+      "impact": "Representability of the computed factor is shifted from an execution consequence into the theorem's input domain, further narrowing the claim.",
+      "lean_evidence": "D011 requires RHat_representable before P05CholeskyRun can be constructed.",
+      "paper_evidence": "Theorem 4.4 states that the computed factor RHat belongs to F^(n by n) as part of the successful floating-point computation.",
       "severity": "major"
     },
     {
-      "category": "quantifier-domain",
-      "impact": "The two claims are logically incomparable rather than equivalent or a faithful strengthening.",
-      "lean_evidence": "The target universally quantifies every real matrix R satisfying hupper, whether or not it is upper triangular or produced by Cholesky.",
-      "paper_evidence": "The perturbation conclusion concerns the particular factor produced by a successful Cholesky run.",
-      "severity": "major"
-    },
-    {
-      "category": "algorithmic result replaced by residual premise",
-      "impact": "The proposition does not formalize the paper's substantive numerical-analysis claim.",
-      "paper_evidence": "Theorem 4.4 derives equation (4.4) from successful conventional Cholesky execution, using Lemmas 4.1 and 4.3 to establish equations (4.5a)-(4.5b).",
+      "category": "local-error-bounds-assumed",
+      "impact": "The translation does not establish the central rounding-error result from the paper hypotheses; it reduces the proposition to repeating assumed local bounds and assembling them into a matrix bound.",
+      "paper_evidence": "The proof of Theorem 4.4 invokes Lemmas 4.1 and 4.3 to derive equations (4.5a)-(4.5b) from the floating-point execution.",
       "severity": "critical",
-      "translation_evidence": "The translation assumes an upper-triangular rowwise residual bound and only derives its full-matrix extension."
+      "translation_evidence": "D036 and D037 include the corresponding residual inequalities as fields required for every off-diagonal and diagonal execution witness."
     },
     {
-      "category": "floating-point execution model omitted",
-      "impact": "The translated statement has no semantic connection to the conditions under which the paper proves its bound.",
-      "paper_evidence": "A and R_hat have entries in F, R_hat is computed, factorization runs to completion, arithmetic rounds to nearest, and underflow and overflow are excluded.",
+      "category": "floating-point-model-mismatch",
+      "impact": "The translated run type admits numerical systems outside the paper's model and fails to express a required source hypothesis, so its apparent generality is not the same theorem.",
+      "paper_evidence": "The source assumes a standard radix-beta, precision-p floating-point set and excludes underflow and overflow, with round-to-nearest and arbitrary tie-breaking.",
       "severity": "major",
-      "translation_evidence": "A and R are arbitrary real matrices, u is merely nonnegative, and no computation or exceptional-value conditions appear."
-    },
-    {
-      "category": "local estimates missing",
-      "impact": "Required cases, constants, and algorithm-derived local information are lost.",
-      "paper_evidence": "Equation (4.5a) has the sharper off-diagonal coefficient i*u and sum endpoint i; equation (4.5b) has coefficient (j+1)u and sum endpoint j.",
-      "severity": "major",
-      "translation_evidence": "Neither estimate is concluded separately; a full-sum bound with coefficient i.val+2 is assumed for every upper-triangular pair."
-    },
-    {
-      "category": "unintended trivialization",
-      "impact": "The formal result can be established without reasoning about Cholesky factorization or floating-point error.",
-      "paper_evidence": "The difficult step is proving the computed residual bounds without dimension restrictions or quadratic terms.",
-      "severity": "major",
-      "translation_evidence": "After setting Delta A=R^T R-A, the exact equation is automatic and symmetry extends the assumed upper-triangular inequality to the lower triangle."
-    },
-    {
-      "category": "core equation and full-bound constants preserved",
-      "impact": "The algebraic form and componentwise interpretation of the main displayed conclusion are accurately represented despite the missing derivation and numerical context.",
-      "paper_evidence": "Equation (4.4) states R_hat^T R_hat=A+Delta A with rowwise coefficient (i+1)u and uniform coefficient (n+1)u.",
-      "severity": "note",
-      "translation_evidence": "The conclusion states R^T R=A+Delta A and uses i.val+2 and n+1, which correctly account for zero-based indexing."
+      "translation_evidence": "Rep and Safe are abstract predicates with weak axioms, exponent limits are disconnected from them, representability is not required to be symmetric, and Safe is not identified with absence of underflow and overflow."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean statement cannot establish Theorem 4.4 from successful floating-point Cholesky execution because it contains no execution model and requires the central upper residual estimate hupper as an additional premise.",
+      "reasoning": "The Lean proposition applies only after P05CholeskyRun has been built, and building it requires the Lemma 4.1 and Lemma 4.3 residual inequalities that the paper derives. It therefore cannot establish Theorem 4.4 for an arbitrary paper-valid successful execution without first assuming the core result; its abstract format also does not ensure the paper's floating-point semantics.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper proves the conclusion only for computed floating-point Cholesky factors under its execution conditions; it does not assert Lean's universal algebraic implication for every arbitrary real A and R satisfying hupper.",
-      "verdict": "no"
+      "reasoning": "For a paper-valid execution, equations (4.5a)-(4.5b) provide exactly the stored entry estimates after the zero-based index shift, and equation (4.4) provides the target's exact relation and both global bounds. For the additional abstract certified runs, the target obligation already follows from the certificates' supplied residual fields, so the Lean statement imposes no stronger substantive conclusion.",
+      "verdict": "yes"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-different",
-    "roundtrip": "not-faithful-different"
+    "direct": "not-faithful-weaker",
+    "roundtrip": "not-faithful-weaker"
   },
-  "rationale": "The target correctly encodes the exact identity R^T R = A + DeltaA, the componentwise majorant |R^T||R|, and the zero-based forms of the rowwise (i+1)u and uniform (n+1)u constants. However, it removes the floating-point Cholesky algorithm and its execution assumptions and replaces the substantive upper-triangle error analysis by hupper. It also omits the distinct local estimates (4.5a)-(4.5b) and quantifies arbitrary real matrices. Consequently it is an algebraic symmetry-extension result with neither implication to the paper theorem, so it is not faithful.",
+  "rationale": "The algebraic content of the target is carefully encoded: transpose and matrix multiplication are exact, absolute matrix multiplication is componentwise, the backward identity has the correct orientation, and every zero-based coefficient matches (4.4)-(4.5). The decisive defect is the meaning of run. Its off-diagonal and diagonal execution objects can be constructed only after supplying the same residual inequalities that the target advertises as conclusions. The theorem therefore covers pre-certified runs rather than deriving the paper's error bounds for every successful conventional Cholesky execution. The underconstrained floating-point format creates an additional model mismatch. Consequently the paper result entails the restricted target, but the target does not recover the paper result.",
   "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",

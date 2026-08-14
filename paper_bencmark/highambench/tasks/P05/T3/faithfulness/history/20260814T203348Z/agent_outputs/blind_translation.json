@@ -1,0 +1,307 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "8740a5009980963200c72465c2c36a8d3c670689db7ea8e8a7ae7b8da369ccd8",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For n-by-n real matrices X and Y, this defines the entrywise absolute-product matrix by LocalDef001(X,Y)_{ij} = sum over k in Fin n of |X_{ik}| |Y_{kj}|.",
+      "effect_on_target": "With X equal to the transpose of R and Y equal to R, it gives W_{ij} = sum_k |R_{ki}| |R_{kj}|, the nonnegative quantity appearing in every error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For n-by-n real matrices X and Y, this defines their ordinary matrix product: LocalDef002(X,Y)_{ij} = sum over k in Fin n of X_{ik}Y_{kj}.",
+      "effect_on_target": "With X equal to the transpose of R and Y equal to R, it is the Gram product P = R^T R, used in the hypothesis error and in the exact equation P = A + Delta A.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "This is matrix transposition: LocalDef003(R)_{ij} = R_{ji}.",
+      "effect_on_target": "It turns the products in D001 and D002 into |R|^T|R| and R^T R, respectively.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "And",
+      "meaning": "Logical conjunction: And(P,Q) asserts that both propositions P and Q hold.",
+      "effect_on_target": "It requires the exact matrix equation and both families of entrywise bounds to hold simultaneously for the same witness Delta A.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "Eq",
+      "meaning": "Equality of two terms of the same type.",
+      "effect_on_target": "It expresses symmetry of A entry by entry and the exact function equality R^T R = A + Delta A.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "Exists",
+      "meaning": "Existential quantification over a value satisfying a stated predicate.",
+      "effect_on_target": "It introduces one n-by-n real matrix Delta A that must satisfy the exact equation and both bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type whose elements have natural-number values from 0 through n-1.",
+      "effect_on_target": "It makes A, R, and Delta A square n-by-n matrices and restricts every matrix index and summation index to that finite range.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "Fin.val",
+      "meaning": "Fin.val extracts the underlying natural-number value of a finite index.",
+      "effect_on_target": "It supplies the zero-based row and column values used in the condition i <= j and in the coefficient i+2.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "HAdd.hAdd",
+      "meaning": "This applies the addition operation selected by the relevant HAdd instance.",
+      "effect_on_target": "It forms the natural-number offsets i+2 and n+1 and, for matrices, forms A + Delta A using pointwise addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "HMul.hMul",
+      "meaning": "This applies the multiplication operation selected by the relevant HMul instance.",
+      "effect_on_target": "For real numbers it forms matrix-product summands, absolute-product summands, and the products (i+2)uW_{ij} and (n+1)uW_{ij}.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "HSub.hSub",
+      "meaning": "This applies the subtraction operation selected by the relevant HSub instance.",
+      "effect_on_target": "It forms the entrywise residual (R^T R)_{ij} - A_{ij} inside the hypothesis's absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LE.le",
+      "meaning": "This applies the less-than-or-equal relation selected for a type.",
+      "effect_on_target": "It expresses 0 <= u, the natural-index condition i <= j, and all real-valued error inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Nat",
+      "meaning": "The type of natural numbers, including zero.",
+      "effect_on_target": "It supplies the arbitrary dimension n, finite-index values, and the exact integer offsets used in the bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Nat.cast",
+      "meaning": "This maps a natural number into a type equipped with a natural-number cast.",
+      "effect_on_target": "It converts i+2 and n+1 into real numbers before multiplying them by u and W_{ij}.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "OfNat.ofNat",
+      "meaning": "This interprets a natural-number literal in a type having the corresponding OfNat instance.",
+      "effect_on_target": "It supplies the exact literals 0, 1, and 2 used in 0 <= u, n+1, and i+2.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Pi.instAdd",
+      "meaning": "It equips function types with pointwise addition: (f+g)(i) = f(i)+g(i), recursively for nested function types.",
+      "effect_on_target": "It makes matrix addition pointwise, so the equality R^T R = A + Delta A means (R^T R)_{ij} = A_{ij} + Delta A_{ij} for every i,j.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "The parameter u and all entries of A, R, and Delta A are real-valued, and all arithmetic error bounds are real inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instAdd",
+      "meaning": "The standard addition operation on real numbers.",
+      "effect_on_target": "It underlies pointwise matrix addition in A + Delta A and real addition used by the supplied subtraction structure.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instAddGroup",
+      "meaning": "The standard additive-group structure on the real numbers.",
+      "effect_on_target": "It supplies real negation and the additive structure required by the definition of absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instLE",
+      "meaning": "The standard less-than-or-equal order on real numbers.",
+      "effect_on_target": "It gives the usual meanings to 0 <= u and to the three families of real absolute-error bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instMul",
+      "meaning": "The standard multiplication operation on real numbers.",
+      "effect_on_target": "It supplies all scalar products in the matrix sums and on the right-hand sides of the inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instNatCast",
+      "meaning": "The standard embedding of natural numbers into the real numbers.",
+      "effect_on_target": "It interprets the exact natural coefficients i+2 and n+1 as real coefficients.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instSub",
+      "meaning": "Real subtraction, defined by a-b = a+(-b).",
+      "effect_on_target": "It makes the residual in the hypothesis the ordinary real difference (R^T R)_{ij} - A_{ij}.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instZero",
+      "meaning": "The standard zero element of the real numbers.",
+      "effect_on_target": "It supplies the zero in the nonnegativity assumption 0 <= u.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "Real.lattice",
+      "meaning": "The standard lattice order structure on the real numbers.",
+      "effect_on_target": "Together with the additive-group structure, it supports the definition of real absolute value used throughout the bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Zero.toOfNat0",
+      "meaning": "It derives the interpretation of the numeral 0 from a type's distinguished zero element.",
+      "effect_on_target": "It ensures that the literal 0 in 0 <= u is the standard real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "abs",
+      "meaning": "In an ordered additive group, abs(a) is max(a,-a); on the reals this is the ordinary absolute value |a|.",
+      "effect_on_target": "It measures the scalar residual and each entry of Delta A, and it also forms the absolute-product weight W_{ij}.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "instAddNat",
+      "meaning": "The standard addition operation on natural numbers.",
+      "effect_on_target": "It computes the exact natural numbers i+2 and n+1 before their conversion to reals.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "instHAdd",
+      "meaning": "It turns an ordinary homogeneous addition operation into the corresponding HAdd operation.",
+      "effect_on_target": "It routes the displayed additions to natural addition for the offsets and to pointwise function addition for A + Delta A.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "instHMul",
+      "meaning": "It turns an ordinary homogeneous multiplication operation into the corresponding HMul operation.",
+      "effect_on_target": "It routes every displayed real multiplication to standard real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "instHSub",
+      "meaning": "It turns an ordinary homogeneous subtraction operation into the corresponding HSub operation.",
+      "effect_on_target": "It routes the residual expression to standard real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "instLENat",
+      "meaning": "The standard less-than-or-equal order on natural numbers.",
+      "effect_on_target": "It interprets i.val <= j.val, restricting the hypothesis's error bound to the upper-triangular index pairs.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "instOfNatNat",
+      "meaning": "It interprets each natural-number literal as that same natural number.",
+      "effect_on_target": "It gives the natural literals 1 and 2 their exact values in n+1 and i+2.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Fin.fintype",
+      "meaning": "It provides the finite enumeration of all elements of Fin n, corresponding to the indices 0 through n-1.",
+      "effect_on_target": "It makes the matrix-product sums over all k in Fin n finite and well-defined.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Finset.sum",
+      "meaning": "It sums a function over every element of a finite set using the additive commutative monoid structure.",
+      "effect_on_target": "It forms the exact finite sums defining (R^T R)_{ij} and W_{ij}.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, this is the finite set containing every element of that type.",
+      "effect_on_target": "It makes each defining sum range over every matrix index k in Fin n, with no omitted indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The standard additive commutative monoid structure on the real numbers, including zero and finite addition.",
+      "effect_on_target": "It supports the finite real sums in D001 and D002; when n=0, those sums are empty sums equal to zero.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "n is an arbitrary natural number, possibly zero.",
+      "u is an arbitrary real number.",
+      "A and R are arbitrary functions Fin n -> Fin n -> Real, interpreted as square n-by-n real matrices indexed from 0 to n-1.",
+      "The symmetry and error hypotheses universally quantify over all i,j in Fin n, with the error hypothesis conditional on i.val <= j.val.",
+      "The conclusion existentially quantifies an n-by-n real matrix Delta A; this witness may depend on n, u, A, R, and the supplied hypotheses."
+    ],
+    "hypotheses": [
+      "The real parameter u is nonnegative: 0 <= u.",
+      "A is symmetric: for every i,j in Fin n, A_{ij} = A_{ji}.",
+      "For every i,j in Fin n with i.val <= j.val, |sum over k in Fin n of R_{ki}R_{kj} - A_{ij}| <= (i.val+2)u times sum over k in Fin n of |R_{ki}||R_{kj}|."
+    ],
+    "conclusions": [
+      "There exists an n-by-n real matrix Delta A such that, exactly and entrywise, sum over k in Fin n of R_{ki}R_{kj} = A_{ij} + Delta A_{ij} for every i,j.",
+      "For every i,j in Fin n, |Delta A_{ij}| <= (i.val+2)u times sum over k in Fin n of |R_{ki}||R_{kj}|.",
+      "For every i,j in Fin n, |Delta A_{ij}| <= (n+1)u times sum over k in Fin n of |R_{ki}||R_{kj}|."
+    ],
+    "mathematical_definitions": [
+      "Write I_n = {0,1,...,n-1}; Fin n represents I_n, and i.val is the corresponding zero-based natural index.",
+      "The transpose is defined by (R^T)_{ij} = R_{ji}.",
+      "Let P = R^T R, so P_{ij} = sum_{k in I_n} R_{ki}R_{kj}.",
+      "Let W = |R|^T|R|, where absolute values are entrywise, so W_{ij} = sum_{k in I_n} |R_{ki}||R_{kj}|.",
+      "Matrix addition is pointwise, so P = A + Delta A means P_{ij} = A_{ij} + Delta A_{ij} for all i,j.",
+      "The natural quantities i.val+2 and n+1 are computed in the natural numbers and then embedded exactly into the real numbers."
+    ],
+    "proposition_plain_english": "For every dimension n, every nonnegative real u, every symmetric real n-by-n matrix A, and every real n-by-n matrix R, suppose that each upper-triangular entry of R^T R differs from the corresponding entry of A by at most (i+2)u times the corresponding entry of |R|^T|R|, where i is the zero-based row index. Then there is a real matrix Delta A for which R^T R = A + Delta A exactly, and every entry Delta A_{ij} is bounded in absolute value both by (i+2)u(|R|^T|R|)_{ij} and by (n+1)u(|R|^T|R|)_{ij}."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The dimension n is unrestricted and may be zero. When n=0 there are no indices, all entrywise hypotheses and bounds are vacuous, and the matrix equality is an equality between functions on an empty domain.",
+    "Matrix indices are zero-based. Thus i+2 ranges from 2 through n+1 when n is positive.",
+    "The assumed residual bound is only for upper-triangular pairs i <= j; no lower-triangular residual bound is directly assumed.",
+    "The conclusion is purely entrywise and uses scalar absolute values. It states no matrix-norm bound.",
+    "No triangularity, nonsingularity, positivity, definiteness, or other structural property of R is assumed.",
+    "The only condition on u is nonnegativity; no strict positivity, smallness condition, or upper bound is encoded.",
+    "Delta A is not explicitly required to be symmetric, although the exact equation together with symmetry of A and of R^T R mathematically forces it to be symmetric.",
+    "The exact equation uniquely determines Delta A as R^T R - A, even though the declaration presents it existentially.",
+    "The second bound with coefficient n+1 is asserted in addition to the row-dependent bound; it is not a separate norm statement.",
+    "No floating-point operations, rounding function, algorithm, or computed matrix are represented explicitly. All displayed sums and arithmetic operations are exact real quantities."
+  ],
+  "ambiguities": []
+}

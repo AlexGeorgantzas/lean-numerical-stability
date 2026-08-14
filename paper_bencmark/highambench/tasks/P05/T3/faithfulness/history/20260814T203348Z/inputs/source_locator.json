@@ -8,14 +8,14 @@
       "anchor": "Theorem 4.4 statement",
       "pdf_page": 11,
       "printed_page": "694",
-      "role": "symmetric floating input, successful Cholesky execution, range assumptions, and computed factor",
+      "role": "Cholesky backward-error theorem setup",
       "section": "4.3. An improved backward error bound for Cholesky factorization"
     },
     {
-      "anchor": "equation (4.4), conventional update formulas, equations (4.5a)-(4.5b), and the closing symmetry sentence",
+      "anchor": "equation (4.4), equations (4.5a)-(4.5b), and the closing symmetry sentence",
       "pdf_page": 12,
       "printed_page": "695",
-      "role": "exact backward relation, all componentwise constants, local execution estimates, and symmetry completion",
+      "role": "full componentwise bounds and their symmetry proof",
       "section": "4.3. An improved backward error bound for Cholesky factorization"
     }
   ],
