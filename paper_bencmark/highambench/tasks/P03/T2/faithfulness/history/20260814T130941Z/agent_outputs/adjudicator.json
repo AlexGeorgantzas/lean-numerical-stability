@@ -1,0 +1,55 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P03-T2",
+  "trigger": [
+    "judge classifications differ"
+  ],
+  "resolved_items": [
+    {
+      "item": "judge classifications differ",
+      "resolution": "The final classification is not-faithful-different. Both implication directions fail: the Lean declaration does not recover the paper's algorithmic theorem, and the paper establishes only Algorithm 1.1-realizable instances, not the declaration's universal proposition over arbitrary real scalars.",
+      "primary_evidence": "Algorithm 1.1 binds a nonsingular matrix system and indexed computed iterates (PDF p. 2, A818). Equations (2.4), (3.3), (3.6), and (4.1) derive the correction, residual, and update estimates for those iterates (PDF pp. 5, 7-8, A821 and A823-A824), and Theorem 4.1 states the resulting recurrence only for those computed iterates (PDF p. 9, A825). The declaration instead universally quantifies thirteen unrelated real scalars and assumes the derived estimates."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The declaration assumes hid, hres, hsolve, and hupdate and merely adds their scalar upper bounds. It contains no matrix, vector, infinity norm, nonsingularity condition, iteration index, Algorithm 1.1 execution, correction equation, or floating-point model from which those estimates could be obtained. Therefore it cannot establish Theorem 4.1."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "For quantities arising from Algorithm 1.1, the paper's derivation supplies intended instances of hid, hres, hsolve, and hupdate and yields the same final formula. That establishes only paper-realizable instances. The Lean declaration asserts the implication for every assignment of thirteen real scalars, including assignments with no matrix, norm, precision, or algorithmic realization. The paper neither quantifies over that enlarged domain nor proves that every such assignment is realizable, so an intended instance is insufficient to entail the universal declaration."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "remaining_uncertainties": [],
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "incomparable-quantifier-domains",
+      "evidence": "Theorem 4.1 ranges over computed iterates of Algorithm 1.1 for a nonsingular real matrix system (PDF pp. 2 and 9, A818 and A825), whereas the declaration ranges over arbitrary real values with no realizability predicate.",
+      "impact": "The paper does not imply the declaration's universal scalar theorem, ruling out not-faithful-weaker."
+    },
+    {
+      "severity": "critical",
+      "category": "algorithmic-estimates-assumed",
+      "evidence": "The paper obtains the residual contribution from (3.3), the update contribution from (3.6), and the correction-defect contribution from (2.4), (4.1), and the isolation of h_i (PDF pp. 5 and 7-9, A821 and A823-A825). The declaration postulates corresponding bounds as hres, hsolve, hupdate, and hid.",
+      "impact": "The declaration proves an order-arithmetic aggregation lemma and does not imply the numerical-analysis result."
+    },
+    {
+      "severity": "major",
+      "category": "semantic-erasure",
+      "evidence": "The paper distinguishes the exact residual, computed residual, correction defect, and update perturbation using infinity norms and indexed iterates. The declaration represents all of them as unrelated real scalars without definitions or nonnegativity conditions.",
+      "impact": "The declaration's broader scalar applicability is a change of mathematical subject, not genuine strengthening of the paper theorem."
+    },
+    {
+      "severity": "note",
+      "category": "algebraic-formula-preserved",
+      "evidence": "After the intended substitutions, the declaration retains the exact quotient, both 1+us factors, the residual-computation term using xhat_i, and the update term using xhat_(i+1), matching Theorem 4.1 (PDF p. 9, A825).",
+      "impact": "The disagreement is not caused by a coefficient or inequality-direction transcription error."
+    }
+  ],
+  "rationale": "The paper's one-step analysis is intrinsically about Algorithm 1.1: equations (3.3), (3.6), and (4.1), together with solver condition (2.4), establish three compatible estimates for the same indexed computation and then produce Theorem 4.1. The declaration accurately reproduces their final algebraic sum, but it promotes those estimates to independent hypotheses over arbitrary real scalars and erases every condition connecting them to an algorithmic execution. Consequently the declaration cannot yield the paper theorem. Conversely, the paper yields the scalar conclusion only under the intended algorithmic instantiation; it does not entail the declaration's universal implication for all real assignments. Since neither full proposition implies the other, the correct classification is not-faithful-different."
+}

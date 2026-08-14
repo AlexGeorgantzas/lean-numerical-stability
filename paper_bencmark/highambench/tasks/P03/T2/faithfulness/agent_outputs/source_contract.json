@@ -1,128 +1,182 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "The preliminaries call c_1 and c_2 functions of n, A, r\u0302_i, and u_s, while Theorem 4.1 states one condition c_1\u03ba\u221e(A)u_s<1 and then concludes the recurrence for every i\u22650. [PDF pp. 5 and 9, printed A821 and A825, solver-model explanation and Theorem 4.1]",
-      "impact": "If c_1 and c_2 vary with i, the solver bound and strict denominator condition must be read pointwise for every iteration, and \u03b1_i inherits that dependence; treating them as global constants requires an additional uniformity assumption. [PDF pp. 5 and 9, printed A821 and A825, equation (2.4) and Theorem 4.1]",
-      "issue": "The theorem writes c_1 and c_2 without iteration subscripts even though the preliminaries allow them to depend on r\u0302_i. [PDF pp. 5 and 9, printed A821 and A825, text after equations (2.3)-(2.5) and Theorem 4.1]"
-    },
-    {
-      "evidence": "\u03b3_p^r is defined with denominator 1\u2212pu_r, but the theorem explicitly states only nonsingularity, (2.4), and c_1\u03ba\u221e(A)u_s<1. [PDF pp. 5 and 9, printed A821 and A825, definition of \u03b3_k and Theorem 4.1]",
-      "impact": "A fully explicit formal statement must either assume pu_r<1 or bind \u03b3_p^r abstractly together with the residual-error premise. [PDF pp. 5 and 7, printed A821 and A823, definition of \u03b3_p^r and equation (3.3)]",
-      "issue": "The standard-model smallness requirement needed for finite \u03b3_p^r is implicit rather than included among Theorem 4.1's explicit hypotheses. [PDF pp. 5, 7, and 9, printed A821, A823, and A825, definition of \u03b3_k, equation (3.3), and Theorem 4.1]"
-    }
-  ],
-  "contract_plain_english": "If every correction solve has the normwise residual quality prescribed by (2.4) and c_1\u03ba\u221e(A)u_s is below one, then one refinement step satisfies an explicit infinity-norm residual recurrence. Its multiplicative coefficient contains the correction-solver instability, while its additive term contains residual-computation and update-rounding errors with all finite-precision factors retained. [PDF pp. 8-9, printed A824-A825, equation (4.1), displayed derivation, and Theorem 4.1]",
-  "paper_batch_sha256": "cc0f2d27697c7df47ddee702a54285359037d701ffa45ec71a92ca67f9cf3902",
-  "paper_sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P03-T2",
+  "paper_sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc",
   "source_evidence": [
     {
-      "anchor": "Algorithm 1.1",
-      "observation": "The theorem concerns the computed iterates of the unscaled mixed-precision iterative-refinement algorithm.",
+      "pdf_page": 1,
+      "printed_page": "A817",
+      "anchor": "precision bullets and equation (1.1)",
+      "observation": "The paper defines u as working precision, uf as factorization precision, ur as residual-computation precision, and assumes ur <= u <= uf."
+    },
+    {
       "pdf_page": 2,
-      "printed_page": "A818"
+      "printed_page": "A818",
+      "anchor": "Algorithm 1.1 and preceding us bullet",
+      "observation": "The effective correction-solve precision satisfies u <= us <= uf. Algorithm 1.1 computes an initial solution at uf, residuals at ur rounded to us, corrections at us stored at u, and updates at u."
     },
     {
-      "anchor": "equations (2.1) and (2.4)",
-      "observation": "The paper defines \u03ba\u221e(A)=\u2016A^{-1}\u2016\u221e\u2016A\u2016\u221e and assumes a normwise correction-solver residual bound involving nonnegative quantities c_1 and c_2.",
       "pdf_page": 5,
-      "printed_page": "A821"
+      "printed_page": "A821",
+      "anchor": "section 2 opening and equation (2.1)",
+      "observation": "The analysis invokes the standard floating-point model, defines gamma_k = ku/(1-ku) and gamma_k^r = k ur/(1-k ur), and defines kappa_infinity(A) = ||A^{-1}||_infinity ||A||_infinity."
     },
     {
-      "anchor": "equations (3.3) and (3.6)",
-      "observation": "The residual-computation and update-rounding errors have the componentwise models later converted to infinity-norm bounds.",
+      "pdf_page": 5,
+      "printed_page": "A821",
+      "anchor": "equation (2.4) and following paragraph",
+      "observation": "The step-4 solver contract is ||rhat_i-A dhat_i||_infinity <= us(c1||A||_infinity||dhat_i||_infinity+c2||rhat_i||_infinity). The paper says c1 and c2 are nonnegative functions of n, A, rhat_i, and us."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "A821",
+      "anchor": "normwise backward-error definition following equation (2.5)",
+      "observation": "For an approximate solution y, normwise backward error is defined as the least relative normwise perturbation of A and b, equivalently ||b-Ay||/(||A||||y||+||b||)."
+    },
+    {
       "pdf_page": 7,
-      "printed_page": "A823"
+      "printed_page": "A823",
+      "anchor": "equation (3.3) and preceding residual computation",
+      "observation": "The computed residual satisfies rhat_i=b-A xhat_i+Delta r_i with |Delta r_i| <= us|b-A xhat_i|+(1+us)gamma_p^r(|b|+|A||xhat_i|). Here p is the maximum number of nonzeros in a row of [A b], and p=n+1 in the dense case."
     },
     {
-      "anchor": "equation (4.1) and the h_i derivation",
-      "observation": "After defining h_i=r\u0302_i\u2212A d\u0302_i, the paper applies (2.4) and bounds d\u0302_i through A^{-1}(r\u0302_i\u2212h_i).",
+      "pdf_page": 7,
+      "printed_page": "A823",
+      "anchor": "equation (3.6)",
+      "observation": "The computed update satisfies xhat_{i+1}=xhat_i+dhat_i+Delta x_i with |Delta x_i| <= u|xhat_{i+1}|."
+    },
+    {
       "pdf_page": 8,
-      "printed_page": "A824"
+      "printed_page": "A824",
+      "anchor": "equation (4.1) and definition of h_i",
+      "observation": "The exact one-step identity is A xhat_{i+1}-b=Delta r_i+A dhat_i-rhat_i+A Delta x_i. The correction defect is h_i=rhat_i-A dhat_i."
     },
     {
-      "anchor": "displayed derivation immediately before Theorem 4.1 and Theorem 4.1",
-      "observation": "Under c_1\u03ba\u221e(A)u_s<1, the correction defect is isolated and then substituted into (4.1), yielding the residual recurrence and the exact displayed definitions of \u03b1_i and \u03b2_i.",
       "pdf_page": 9,
-      "printed_page": "A825"
+      "printed_page": "A825",
+      "anchor": "isolated correction-defect bound before Theorem 4.1",
+      "observation": "Assuming c1 kappa_infinity(A) us < 1, the derivation obtains ||h_i||_infinity <= us(c1 kappa_infinity(A)+c2)/(1-c1 kappa_infinity(A)us) ||rhat_i||_infinity."
     },
     {
-      "anchor": "section 6, Scaling",
-      "observation": "The analysis ignores underflow and overflow; scaling is proposed later as a modified algorithm.",
-      "pdf_page": 12,
-      "printed_page": "A828"
+      "pdf_page": 9,
+      "printed_page": "A825",
+      "anchor": "Theorem 4.1",
+      "observation": "For every i >= 0, Theorem 4.1 gives an exact infinity-norm residual recurrence with explicitly defined coefficients alpha_i and beta_i."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "A822",
+      "anchor": "paragraph following Table 2.1",
+      "observation": "The paper separately flags scaling to avoid underflow and overflow when half precision is used; Theorem 4.1 itself does not state an exceptional-value model."
     }
   ],
   "statement": {
-    "algorithm_linkage": "The result bounds one unscaled Algorithm 1.1 step by combining the residual rounding model, the normwise correction-solver defect model (2.4), and the precision-u update model. [PDF pp. 2, 7-9, printed A818 and A823-A825, Algorithm 1.1, equations (2.4), (3.3), (3.6), (4.1), and Theorem 4.1]",
     "binders": [
-      "Let A \u2208 \u211d^{n\u00d7n} be nonsingular and b \u2208 \u211d^n, and let Algorithm 1.1 produce x\u0302_i, r\u0302_i, d\u0302_i, and x\u0302_{i+1} for i \u2265 0. [PDF pp. 2 and 9, printed A818 and A825, Algorithm 1.1 and Theorem 4.1]",
-      "Let c_1 and c_2 be the nonnegative solver-bound quantities from (2.4), and define h_i := r\u0302_i\u2212A d\u0302_i. [PDF pp. 5 and 8, printed A821 and A824, equation (2.4) and the text after (4.1)]",
-      "Let \u03ba\u221e(A):=\u2016A^{-1}\u2016\u221e\u2016A\u2016\u221e, let p be the maximum row nonzero count of [A b], and let \u03b3_p^r:=pu_r/(1\u2212pu_r). [PDF pp. 5 and 7, printed A821 and A823, equation (2.1), definition of \u03b3_k, and text preceding (3.3)]"
-    ],
-    "conclusions": [
-      "The exact starting identity is A x\u0302_{i+1}\u2212b=\u0394r_i+A d\u0302_i\u2212r\u0302_i+A\u0394x_i. [PDF p. 8, printed A824, equation (4.1)]",
-      "The first correction-defect bound is \u2016h_i\u2016\u221e \u2264 u_s(c_1\u2016A\u2016\u221e\u2016d\u0302_i\u2016\u221e+c_2\u2016r\u0302_i\u2016\u221e) \u2264 u_s(c_1\u2016A\u2016\u221e\u2016A^{-1}\u2016\u221e(\u2016r\u0302_i\u2016\u221e+\u2016h_i\u2016\u221e)+c_2\u2016r\u0302_i\u2016\u221e). [PDF p. 8, printed A824, displayed h_i derivation]",
-      "Isolating h_i under c_1\u03ba\u221e(A)u_s<1 gives \u2016h_i\u2016\u221e \u2264 u_s[(c_1\u03ba\u221e(A)+c_2)/(1\u2212c_1\u03ba\u221e(A)u_s)]\u2016r\u0302_i\u2016\u221e. [PDF p. 9, printed A825, first displayed bound]",
-      "Before eliminating r\u0302_i, the one-step residual bound is \u2016b\u2212Ax\u0302_{i+1}\u2016\u221e \u2264 u_s\u2016b\u2212Ax\u0302_i\u2016\u221e+(1+u_s)\u03b3_p^r(\u2016b\u2016\u221e+\u2016A\u2016\u221e\u2016x\u0302_i\u2016\u221e)+u_s[(c_1\u03ba\u221e(A)+c_2)/(1\u2212c_1\u03ba\u221e(A)u_s)]\u2016r\u0302_i\u2016\u221e+u\u2016A\u2016\u221e\u2016x\u0302_{i+1}\u2016\u221e. [PDF p. 9, printed A825, first residual inequality before Theorem 4.1]",
-      "After a second use of (3.3), Theorem 4.1 concludes \u2016b\u2212Ax\u0302_{i+1}\u2016\u221e \u2264 \u03b1_i\u2016b\u2212Ax\u0302_i\u2016\u221e+\u03b2_i for every i\u22650. [PDF p. 9, printed A825, final displayed derivation and Theorem 4.1]",
-      "The coefficient is \u03b1_i=u_s(1+(1+u_s)(c_1\u03ba\u221e(A)+c_2)/(1\u2212c_1\u03ba\u221e(A)u_s)). [PDF p. 9, printed A825, Theorem 4.1]",
-      "The additive term is \u03b2_i=(1+u_s(c_1\u03ba\u221e(A)+c_2)/(1\u2212c_1\u03ba\u221e(A)u_s))(1+u_s)\u03b3_p^r(\u2016b\u2016\u221e+\u2016A\u2016\u221e\u2016x\u0302_i\u2016\u221e)+u\u2016A\u2016\u221e\u2016x\u0302_{i+1}\u2016\u221e. [PDF p. 9, printed A825, Theorem 4.1]"
-    ],
-    "constants_and_indexing": [
-      "The result is quantified for i\u22650 and relates residual i+1 to residual i. [PDF p. 9, printed A825, Theorem 4.1]",
-      "The strict condition is c_1\u03ba\u221e(A)u_s<1, and the same expression appears in the exact denominator 1\u2212c_1\u03ba\u221e(A)u_s. [PDF p. 9, printed A825, defect bound and Theorem 4.1]",
-      "\u03b1_i contains the factor 1+u_s outside the correction-defect ratio, while \u03b2_i contains both 1+u_s and the separate update term involving x\u0302_{i+1}. [PDF p. 9, printed A825, Theorem 4.1]",
-      "The residual-rounding contribution in \u03b2_i uses x\u0302_i, whereas the update-rounding contribution uses x\u0302_{i+1}. [PDF p. 9, printed A825, Theorem 4.1]"
-    ],
-    "definitions_and_conventions": [
-      "h_i is the computed correction-equation residual r\u0302_i\u2212A d\u0302_i, whereas b\u2212Ax\u0302_i is the exact residual of the current stored iterate for the original system. [PDF pp. 8-9, printed A824-A825, text after (4.1) and Theorem 4.1]",
-      "\u03ba\u221e(A)=\u2016A^{-1}\u2016\u221e\u2016A\u2016\u221e. [PDF p. 5, printed A821, equation (2.1)]",
-      "c_1 and c_2 are nonnegative functions of n, A, r\u0302_i, and u_s according to the preliminary solver model. [PDF p. 5, printed A821, text following equations (2.3)-(2.5)]",
-      "\u03b3_p^r=pu_r/(1\u2212pu_r), with p the maximum number of nonzeros in a row of [A b]. [PDF pp. 5 and 7, printed A821 and A823, definition of \u03b3_k and text preceding (3.3)]"
-    ],
-    "error_notions": [
-      "The recurrence controls the exact normwise residual \u2016b\u2212Ax\u0302_i\u2016\u221e of the original system, not the computed residual norm \u2016r\u0302_i\u2016\u221e. [PDF p. 9, printed A825, Theorem 4.1]",
-      "h_i measures the residual of the computed correction d\u0302_i in the correction equation A d=r\u0302_i. [PDF pp. 5 and 8, printed A821 and A824, equation (2.4) and definition of h_i]",
-      "Theorem 4.1 itself does not normalize the residual by \u2016A\u2016\u221e\u2016x\u0302_i\u2016\u221e+\u2016b\u2016\u221e and therefore does not by itself state a bound on the normwise relative backward error \u03b7. [PDF pp. 5 and 9, printed A821 and A825, definition of \u03b7 and Theorem 4.1]"
-    ],
-    "exceptional_values": [
-      "The strict denominator condition excludes 1\u2212c_1\u03ba\u221e(A)u_s\u22640. [PDF p. 9, printed A825, assumption preceding the isolated h_i bound and Theorem 4.1]",
-      "The \u03b3_p^r expression presupposes a finite standard-model bound, ordinarily pu_r<1; this side condition is not restated in Theorem 4.1. [PDF pp. 5 and 7, printed A821 and A823, definition and use of \u03b3_p^r]",
-      "Underflow and overflow are ignored by this analysis; the later scaling modification is outside Theorem 4.1 as stated. [PDF p. 12, printed A828, section 6, Scaling]"
-    ],
-    "higher_order_terms": [
-      "Theorem 4.1 is stated with exact rational factors in u_s and does not use big-O or \u2272 notation. [PDF p. 9, printed A825, Theorem 4.1]",
-      "Factors 1+u_s and the denominator 1\u2212c_1\u03ba\u221e(A)u_s are retained and must not be silently replaced by first-order approximations. [PDF p. 9, printed A825, displayed derivation and Theorem 4.1]"
+      "Fix a real linear system Ax=b with A in R^{n x n} and b in R^n; A and b are the working-precision data to which Algorithm 1.1 is applied. [PDF p. 2 (A818), Algorithm 1.1]",
+      "Fix unit roundoffs ur, u, us, and uf with ur <= u <= uf and u <= us <= uf; equivalently the combined ordering is ur <= u <= us <= uf. [PDF p. 1 (A817), equation (1.1); PDF p. 2 (A818), us bullet]",
+      "Let xhat_i, rhat_i, and dhat_i be the computed iterate, residual, and correction generated by Algorithm 1.1. [PDF p. 2 (A818), Algorithm 1.1; PDF p. 7 (A823), equations (3.3) and (3.6)]",
+      "For the fixed system and solver, quantify over every iteration index i >= 0 after imposing the solver and conditioning hypotheses. [PDF p. 9 (A825), Theorem 4.1]",
+      "The nonnegative solver quantities c1 and c2 may depend on n, A, rhat_i, and us even though their notation carries no i subscript. [PDF p. 5 (A821), paragraph following equations (2.3)-(2.5)]"
     ],
     "hypotheses": [
-      "The solver used in step 4 satisfies \u2016r\u0302_i\u2212A d\u0302_i\u2016\u221e \u2264 u_s(c_1\u2016A\u2016\u221e\u2016d\u0302_i\u2016\u221e+c_2\u2016r\u0302_i\u2016\u221e). [PDF p. 5, printed A821, equation (2.4)]",
-      "The denominator condition c_1\u03ba\u221e(A)u_s<1 holds. [PDF p. 9, printed A825, opening line of the derivation and Theorem 4.1]",
-      "The residual and update obey r\u0302_i=b\u2212Ax\u0302_i+\u0394r_i with the bound in (3.3), and x\u0302_{i+1}=x\u0302_i+d\u0302_i+\u0394x_i with |\u0394x_i|\u2264u|x\u0302_{i+1}|. [PDF p. 7, printed A823, equations (3.3) and (3.6)]",
-      "The unit roundoffs inherit u_r\u2264u\u2264u_s\u2264u_f from the algorithm's precision ordering. [PDF pp. 1-2, printed A817-A818, equation (1.1) and the definition of u_s]"
+      "Explicit in Theorem 4.1: A is nonsingular. [PDF p. 9 (A825), Theorem 4.1]",
+      "Explicit in Theorem 4.1: c1 kappa_infinity(A) us < 1. [PDF p. 9 (A825), Theorem 4.1]",
+      "Explicit in Theorem 4.1: the solver used in step 4 satisfies equation (2.4), namely ||rhat_i-A dhat_i||_infinity <= us(c1||A||_infinity||dhat_i||_infinity+c2||rhat_i||_infinity). [PDF p. 5 (A821), equation (2.4); PDF p. 9 (A825), Theorem 4.1]",
+      "Inherited from the surrounding analysis: residual formation obeys equation (3.3) and the update obeys equation (3.6) under the standard floating-point model. [PDF p. 5 (A821), section 2 opening; PDF p. 7 (A823), equations (3.3) and (3.6)]",
+      "Theorem 4.1 requires only solver condition (2.4), not the separate forward-error condition (2.3) or componentwise condition (2.5). [PDF p. 5 (A821), equations (2.3)-(2.5); PDF p. 9 (A825), Theorem 4.1]"
+    ],
+    "conclusions": [
+      "With h_i=rhat_i-A dhat_i, the enclosing derivation proves ||h_i||_infinity <= us[(c1 kappa_infinity(A)+c2)/(1-c1 kappa_infinity(A)us)]||rhat_i||_infinity. [PDF p. 8 (A824), definition of h_i; PDF p. 9 (A825), isolated correction-defect bound]",
+      "The exact one-step identity used is A xhat_{i+1}-b=Delta r_i+A dhat_i-rhat_i+A Delta x_i. [PDF p. 8 (A824), equation (4.1)]",
+      "For every i >= 0, ||b-A xhat_{i+1}||_infinity <= alpha_i||b-A xhat_i||_infinity+beta_i. [PDF p. 9 (A825), Theorem 4.1]",
+      "alpha_i = us[1+(1+us)(c1 kappa_infinity(A)+c2)/(1-c1 kappa_infinity(A)us)]. [PDF p. 9 (A825), Theorem 4.1 definition of alpha_i]",
+      "beta_i = [1+us(c1 kappa_infinity(A)+c2)/(1-c1 kappa_infinity(A)us)](1+us)gamma_p^r(||b||_infinity+||A||_infinity||xhat_i||_infinity)+u||A||_infinity||xhat_{i+1}||_infinity. [PDF p. 9 (A825), Theorem 4.1 definition of beta_i]"
+    ],
+    "definitions_and_conventions": [
+      "kappa_infinity(A)=||A^{-1}||_infinity||A||_infinity. [PDF p. 5 (A821), equation (2.1)]",
+      "gamma_k=ku/(1-ku), and a superscript r replaces u by ur; hence gamma_p^r=p ur/(1-p ur). [PDF p. 5 (A821), section 2 opening]",
+      "p is the maximum number of nonzeros in any row of the augmented matrix [A b]; p=n+1 when A and b are dense. [PDF p. 7 (A823), paragraph preceding equation (3.3)]",
+      "Absolute values of vectors and matrices are componentwise, and inequalities between vectors or matrices are interpreted componentwise. [PDF p. 5 (A821), paragraph following equation (2.2)]",
+      "Hatted quantities are computed quantities: rhat_i is the computed and rounded residual, dhat_i is the computed correction, and xhat_i is the computed iterate; b-A xhat_i is the exact residual of that computed iterate with respect to the stored data A and b. [PDF p. 5 (A821), equation (2.4); PDF p. 7 (A823), equations (3.3) and (3.6)]",
+      "h_i denotes the correction-equation defect rhat_i-A dhat_i, not a forward error in dhat_i. [PDF p. 8 (A824), text following equation (4.1)]"
     ],
     "implicit_context": [
-      "A and b are precision-u input data, residuals are computed at u_r and rounded to u_s, corrections are effectively solved at u_s and stored at u, and updates are performed at u. [PDF pp. 1-2, printed A817-A818, precision definitions and Algorithm 1.1]",
-      "Theorem 4.1 requires only solver condition (2.4), not the relative-forward-solve condition (2.3) or componentwise solver condition (2.5). [PDF pp. 5 and 9, printed A821 and A825, equations (2.3)-(2.5) and Theorem 4.1]",
-      "Although labeled \u03b1_i, its displayed formula depends on i only through any iteration dependence hidden in c_1 and c_2; \u03b2_i additionally contains x\u0302_i and x\u0302_{i+1}. [PDF pp. 5 and 9, printed A821 and A825, text after equations (2.3)-(2.5) and Theorem 4.1]"
+      "Theorem 4.1 is embedded in the normwise backward-error analysis, but its literal conclusion is a recurrence for the unnormalized residual norm. [PDF p. 8 (A824), section 4 heading; PDF p. 9 (A825), Theorem 4.1]",
+      "The initial solve may use a different solver from the correction solve; no accuracy hypothesis on the step-1 solver or xhat_0 appears in Theorem 4.1. [PDF p. 2 (A818), text following Algorithm 1.1; PDF p. 9 (A825), Theorem 4.1]",
+      "The factorization precision uf does not occur in alpha_i or beta_i; its role is inherited only through Algorithm 1.1 and any solver implementation. [PDF p. 2 (A818), Algorithm 1.1 and following text; PDF p. 9 (A825), Theorem 4.1]",
+      "The correction-defect estimate is derived from (2.4) using A^{-1} and the identity A dhat_i=rhat_i-h_i; it is not an additional independent hypothesis. [PDF p. 8 (A824), correction-defect derivation; PDF p. 9 (A825), isolated defect bound]"
+    ],
+    "algorithm_linkage": "The contract is specifically for Algorithm 1.1: solve initially at uf and store at u; for i=0,1,... compute b-A xhat_i at ur and round it to us; solve the correction equation effectively at us and store the correction at u; then form the update at u. Theorem 4.1 constrains only the step-4 solver through (2.4). [PDF p. 2 (A818), Algorithm 1.1; PDF p. 5 (A821), equation (2.4); PDF p. 9 (A825), Theorem 4.1]",
+    "numerical_model": [
+      "The paper invokes the standard floating-point arithmetic model rather than an exact-real implementation model. [PDF p. 5 (A821), section 2 opening]",
+      "Residual formation is two-stage: shat_i=fl_r(b-A xhat_i) is formed at ur, then rhat_i=fl_s(shat_i) is rounded to us. [PDF p. 7 (A823), residual-computation paragraph before equation (3.3)]",
+      "The resulting residual perturbation is |Delta r_i| <= us|b-A xhat_i|+(1+us)gamma_p^r(|b|+|A||xhat_i|). [PDF p. 7 (A823), equation (3.3)]",
+      "The correction solver is represented by its normwise backward-error contract (2.4), with no requirement in Theorem 4.1 that it be LU, GMRES, or another named solver. [PDF p. 5 (A821), equation (2.4); PDF p. 9 (A825), Theorem 4.1]",
+      "The update model is xhat_{i+1}=xhat_i+dhat_i+Delta x_i with |Delta x_i| <= u|xhat_{i+1}|; the error is bounded relative to the computed updated iterate. [PDF p. 7 (A823), equation (3.6)]"
+    ],
+    "error_notions": [
+      "The theorem controls the norm of the exact residual b-A xhat_i associated with a computed iterate. [PDF p. 9 (A825), Theorem 4.1]",
+      "The solver defect h_i=rhat_i-A dhat_i is the residual of the computed correction equation and is controlled by the normwise solver contract. [PDF p. 5 (A821), equation (2.4); PDF p. 8 (A824), definition of h_i]",
+      "The paper defines normwise backward error eta(y) by relative perturbations to both A and b, equivalently eta(y)=||b-Ay||/(||A||||y||+||b||). Theorem 4.1 does not itself state a bound on this normalized ratio. [PDF p. 5 (A821), definition of eta; PDF p. 9 (A825), Theorem 4.1]",
+      "No forward-error bound ||x-xhat_i|| occurs in Theorem 4.1. [PDF p. 9 (A825), Theorem 4.1]"
     ],
     "norms": [
-      "Every norm in the theorem and its displayed derivation is the vector or induced matrix infinity norm. [PDF pp. 8-9, printed A824-A825, h_i derivation and Theorem 4.1]",
-      "The passage uses \u03ba\u221e(A), not a two-norm condition number or the componentwise condition number cond(A). [PDF pp. 5 and 9, printed A821 and A825, equation (2.1) and Theorem 4.1]"
+      "Every norm displayed in the defect estimate, residual recurrence, alpha_i, and beta_i is the infinity norm. [PDF p. 9 (A825), isolated defect bound and Theorem 4.1]",
+      "The matrix condition number is the infinity-norm condition number ||A^{-1}||_infinity||A||_infinity. [PDF p. 5 (A821), equation (2.1)]",
+      "Componentwise absolute values occur only in the inherited rounding models before norms are taken; they are not a replacement for the theorem's infinity norms. [PDF p. 5 (A821), componentwise convention; PDF p. 7 (A823), equations (3.3) and (3.6); PDF p. 9 (A825), Theorem 4.1]"
     ],
-    "numerical_model": [
-      "The standard floating-point model is used at unit roundoffs u_r, u_s, and u; u_f does not enter the recurrence explicitly. [PDF pp. 1-2, 5, and 9, printed A817-A818, A821, and A825, precision definitions, section 2 model, and Theorem 4.1]",
-      "Residual computation contributes the \u03b3_p^r term and residual rounding contributes factors involving u_s; update rounding contributes u\u2016A\u2016\u221e\u2016x\u0302_{i+1}\u2016\u221e. [PDF pp. 7 and 9, printed A823 and A825, equations (3.3), (3.6), and Theorem 4.1]",
-      "The correction-solver model is a normwise residual/backward-error condition, not an exact-solve or relative-forward-error assumption. [PDF p. 5, printed A821, equation (2.4) and its explanation]"
+    "constants_and_indexing": [
+      "The recurrence holds for i >= 0 and relates iteration i+1 to iteration i. [PDF p. 9 (A825), Theorem 4.1]",
+      "The residual-rounding contribution in beta_i uses xhat_i, while the update-rounding contribution uses xhat_{i+1}; this index offset is explicit. [PDF p. 9 (A825), definition of beta_i]",
+      "The factors (1+us) occur both inside alpha_i and multiplying gamma_p^r in beta_i. [PDF p. 9 (A825), definitions of alpha_i and beta_i]",
+      "The denominator is exactly 1-c1 kappa_infinity(A)us, and the numerator paired with it is c1 kappa_infinity(A)+c2. [PDF p. 9 (A825), defect bound and Theorem 4.1]",
+      "gamma_p^r uses p from the augmented sparsity pattern [A b], not merely the row sparsity of A. [PDF p. 7 (A823), paragraph preceding equation (3.3)]"
+    ],
+    "higher_order_terms": [
+      "Theorem 4.1 retains the rational denominator 1-c1 kappa_infinity(A)us and all displayed products involving (1+us); these are not discarded as higher-order terms. [PDF p. 9 (A825), Theorem 4.1]",
+      "gamma_p^r is the rational quantity p ur/(1-p ur), not the first-order replacement p ur. [PDF p. 5 (A821), gamma definition; PDF p. 7 (A823), equation (3.3)]",
+      "The theorem uses ordinary <= inequalities and contains no big-O, approximately, or less-than-up-to-constants term. Such approximations first appear in the subsequent Corollary 4.2, not in Theorem 4.1. [PDF p. 9 (A825), Theorem 4.1 and Corollary 4.2]"
+    ],
+    "exceptional_values": [
+      "A must be nonsingular, so A^{-1} and kappa_infinity(A) are defined. [PDF p. 5 (A821), equation (2.1); PDF p. 9 (A825), Theorem 4.1]",
+      "The strict condition c1 kappa_infinity(A)us < 1 makes the correction-defect denominator positive. [PDF p. 9 (A825), line before the isolated defect bound and Theorem 4.1]",
+      "The cited theorem does not state behavior for NaNs, infinities, overflow, or underflow. The paper only invokes the standard model and separately notes that scaling is important to avoid underflow and overflow in half precision. [PDF p. 5 (A821), section 2 opening; PDF p. 6 (A822), paragraph following Table 2.1]",
+      "No hypothesis b != 0 is stated in Theorem 4.1; the residual recurrence itself remains the literal claim even when a normalized backward-error denominator would require separate interpretation. [PDF p. 9 (A825), Theorem 4.1; PDF p. 5 (A821), definition of eta]"
     ]
   },
-  "task_id": "P03-T2",
   "undebatable_constraints": [
-    "A is a nonsingular real n\u00d7n matrix and the theorem concerns Algorithm 1.1 iterates for every i\u22650. [PDF p. 9, printed A825, Theorem 4.1]",
-    "The required solver premise is exactly the normwise condition (2.4), together with c_1\u03ba\u221e(A)u_s<1. [PDF pp. 5 and 9, printed A821 and A825, equation (2.4) and Theorem 4.1]",
-    "The contraction coefficient \u03b1_i is independent of u_r explicitly; u_r occurs through \u03b3_p^r only in \u03b2_i. [PDF p. 9, printed A825, Theorem 4.1]",
-    "The theorem bounds the exact original-system residual in the infinity norm and makes no direct forward-error or componentwise-error claim. [PDF p. 9, printed A825, Theorem 4.1]",
-    "No factor, denominator, or i-to-i+1 offset in the displayed \u03b1_i and \u03b2_i formulas may be dropped. [PDF p. 9, printed A825, Theorem 4.1]"
-  ]
+    "The subject is the computed sequence from Algorithm 1.1, not arbitrary vectors satisfying a recurrence. [PDF p. 2 (A818), Algorithm 1.1; PDF p. 9 (A825), Theorem 4.1]",
+    "A is a real nonsingular n by n matrix, and the conclusion is universally quantified over i >= 0 after fixing the system and solver. [PDF p. 9 (A825), Theorem 4.1]",
+    "The step-4 solver must satisfy the exact two-term normwise condition (2.4), including both c1||A||||dhat_i|| and c2||rhat_i||. [PDF p. 5 (A821), equation (2.4)]",
+    "The condition c1 kappa_infinity(A)us < 1 cannot be weakened or omitted without changing the source claim. [PDF p. 9 (A825), Theorem 4.1]",
+    "The conclusion must include the residual recurrence and both complete coefficient formulas alpha_i and beta_i. [PDF p. 9 (A825), Theorem 4.1]",
+    "All theorem norms are infinity norms, and kappa_infinity(A) is ||A^{-1}||_infinity||A||_infinity. [PDF p. 5 (A821), equation (2.1); PDF p. 9 (A825), Theorem 4.1]",
+    "The beta_i formula must retain gamma_p^r, the factor (1+us), xhat_i in the residual term, and xhat_{i+1} in the update term. [PDF p. 9 (A825), definition of beta_i]",
+    "The exact rational coefficients and higher-order factors must not be replaced by first-order or big-O approximations. [PDF p. 9 (A825), Theorem 4.1]",
+    "Theorem 4.1 bounds an unnormalized residual; a backward-stability or limiting-accuracy conclusion belongs to the subsequent corollary and is not part of this theorem. [PDF p. 9 (A825), Theorem 4.1 and Corollary 4.2]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "c1 and c2 have no displayed iteration subscripts, although the preliminaries say they are functions of rhat_i. [PDF p. 5 (A821), paragraph following equations (2.3)-(2.5)]",
+      "evidence": "Theorem 4.1 writes c1 and c2 inside alpha_i and beta_i without clarifying whether one fixed pair works for every iteration or whether their dependence on i is suppressed. [PDF p. 9 (A825), Theorem 4.1]",
+      "impact": "A formalization must either bind iteration-dependent c1 and c2 or explicitly assume uniform constants; silently choosing one interpretation adds information not resolved by the displayed theorem. [PDF p. 5 (A821), solver-assumption paragraph; PDF p. 9 (A825), Theorem 4.1]"
+    },
+    {
+      "issue": "The standard floating-point model is cited rather than fully restated in the paper passage. [PDF p. 5 (A821), section 2 opening]",
+      "evidence": "The definition gamma_p^r=p ur/(1-p ur) is explicit, but the cited pages do not separately state p ur < 1 or enumerate rounding-mode and exceptional-value exclusions. [PDF p. 5 (A821), gamma definition; PDF p. 7 (A823), equation (3.3)]",
+      "impact": "Those domain and exceptional-value conditions should be labeled inherited or tacit, not presented as explicit hypotheses of Theorem 4.1. [PDF p. 9 (A825), Theorem 4.1]"
+    },
+    {
+      "issue": "us is described as an effective solve-accuracy parameter, not necessarily a distinct hardware format. [PDF p. 2 (A818), us bullet and following paragraph]",
+      "evidence": "The paper says us describes how accurately the correction equation is solved and takes uf or u in the cases of interest. [PDF p. 2 (A818), paragraph preceding Algorithm 1.1]",
+      "impact": "The source does not justify restricting Theorem 4.1 to a particular named arithmetic or solver implementation. [PDF p. 2 (A818), Algorithm 1.1; PDF p. 9 (A825), Theorem 4.1]"
+    },
+    {
+      "issue": "Algorithm 1.1 says the correction is solved at us and stored at u, but the analysis introduces no separate storage-rounding variable for dhat_i. [PDF p. 2 (A818), Algorithm 1.1 step 4; PDF p. 5 (A821), equation (2.4)]",
+      "evidence": "Equation (2.4) directly treats dhat_i as the computed correction supplied to the update, and equation (3.6) adds only the update error Delta x_i. [PDF p. 5 (A821), equation (2.4); PDF p. 7 (A823), equation (3.6)]",
+      "impact": "The faithful reading is that any solve-and-storage effects relevant to dhat_i are absorbed into the solver contract; inventing an additional correction-rounding term would alter the displayed result. [PDF p. 5 (A821), equation (2.4); PDF p. 9 (A825), Theorem 4.1]"
+    }
+  ],
+  "contract_plain_english": "Apply the paper's indexed Algorithm 1.1 to a real nonsingular system, using the stated working, residual, effective solve, and factorization precisions. [PDF pp. 1-2 (A817-A818), equation (1.1) and Algorithm 1.1] Assume only that the correction solver obeys the two-term infinity-norm backward-error condition (2.4) and that c1 kappa_infinity(A)us is strictly below one. [PDF p. 5 (A821), equation (2.4); PDF p. 9 (A825), Theorem 4.1] Then at every iteration the exact residual norm of the next computed iterate is bounded by alpha_i times the current exact residual norm plus beta_i, with alpha_i and beta_i exactly as displayed, including their denominators, (1+us) factors, gamma_p^r term, and the xhat_i versus xhat_{i+1} index placement. [PDF p. 9 (A825), Theorem 4.1] The surrounding derivation also gives the exact identity (4.1) and the isolated correction-defect bound. [PDF p. 8 (A824), equation (4.1); PDF p. 9 (A825), isolated defect bound] This theorem is an exact one-step infinity-norm residual recurrence, not by itself an approximate convergence-rate, limiting-residual, forward-error, or normalized backward-stability theorem. [PDF p. 9 (A825), Theorem 4.1 and subsequent Corollary 4.2]"
 }

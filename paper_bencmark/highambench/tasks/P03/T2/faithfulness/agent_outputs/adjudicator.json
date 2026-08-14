@@ -3,53 +3,46 @@
   "role": "adjudicator",
   "task_id": "P03-T2",
   "trigger": [
-    "judge classifications differ"
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip S03 is unclear",
+    "round-trip S10 is unclear"
   ],
   "resolved_items": [
     {
       "item": "judge classifications differ",
-      "resolution": "The final classification is not-faithful-different. Both implication directions fail: the Lean declaration does not recover the paper's algorithmic theorem, and the paper establishes only Algorithm 1.1-realizable instances, not the declaration's universal proposition over arbitrary real scalars.",
-      "primary_evidence": "Algorithm 1.1 binds a nonsingular matrix system and indexed computed iterates (PDF p. 2, A818). Equations (2.4), (3.3), (3.6), and (4.1) derive the correction, residual, and update estimates for those iterates (PDF pp. 5, 7-8, A821 and A823-A824), and Theorem 4.1 states the resulting recurrence only for those computed iterates (PDF p. 9, A825). The declaration instead universally quantifies thirteen unrelated real scalars and assumes the derived estimates."
+      "resolution": "The declaration is faithful-equivalent. P03NormwiseIRRun is a relational execution certificate for Algorithm 1.1, not an unrelated class of vectors assumed to satisfy the target recurrence. Its constructor records the residual equation and bound (3.3), correction-solver condition (2.4), update equation and bound (3.6), precision ordering, inverse, and denominator conditions. The apparent generalization from named floating-point operations to real perturbation witnesses is the standard error-model representation used in the paper's derivation, not a genuine theorem-strength increase.",
+      "primary_evidence": "PDF A821 states that the analysis uses the standard floating-point model and gives solver condition (2.4). PDF A823 derives the exact residual and update representations (3.3) and (3.6). PDF A824-A825 derives Theorem 4.1 from precisely those representations and (2.4). Declaration D008 bundles the same equations and inequalities, while D002-D004 state the resulting recurrence and coefficients."
+    },
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "The algorithm-linkage and floating-point-model objections do not establish a mismatch. The declaration encodes each theorem-relevant loop stage relationally. It does not merely quantify over arbitrary sequences satisfying the conclusion. Omitting a primitive rounding function, the intermediate residual shat_i, and a separate initial-solve condition is faithful at this theorem's abstraction level because the paper replaces those operations by (3.3) and (3.6), and Theorem 4.1 assumes no accuracy property of xhat_0.",
+      "primary_evidence": "Algorithm 1.1 on PDF A818 specifies residual formation, correction solving, and updating. PDF A823 compresses the two-stage residual computation into (3.3) and gives (3.6) for the update. PDF A824-A825 uses these aggregate relations in the complete proof calculation. D008 contains all three corresponding relational contracts for every iteration. A818 also says the step-1 solver may differ from the step-4 solver, and A825 places no step-1 accuracy hypothesis in Theorem 4.1."
+    },
+    {
+      "item": "round-trip S03 is unclear",
+      "resolution": "S03 resolves to pass. Iteration-indexed c1 and c2 are supported by the source. Their displayed subscripts are suppressed, but the paper explicitly allows them to depend on rhat_i. Representing the solver bounds by sequences c1(i) and c2(i) therefore exposes rather than changes that dependence. The source does not require a single uniform pair or a canonical extensional assignment when the same residual occurs twice.",
+      "primary_evidence": "Immediately after equations (2.3)-(2.5) on PDF A821, the paper says c1 and c2 are functions of n, A, rhat_i, and us. D008 quantifies c1,c2 : Nat -> Real and applies their values pointwise to the solver and denominator conditions. D014 uses the same pointwise values in the correction ratio."
+    },
+    {
+      "item": "round-trip S10 is unclear",
+      "resolution": "S10 resolves to pass. With the source-supported pointwise interpretation of c1 and c2, every constant, factor, denominator, and index in alpha_i and beta_i agrees exactly with Theorem 4.1.",
+      "primary_evidence": "PDF A825 gives numerator c1*kappa_infinity(A)+c2, denominator 1-c1*kappa_infinity(A)*us, both displayed 1+us factors, gamma_p^r, xhat_i in the residual-formation term, and xhat_(i+1) in the update term. D002, D003, D013, D014, D017, and D022 reproduce these expressions exactly with c1(i) and c2(i)."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The declaration assumes hid, hres, hsolve, and hupdate and merely adds their scalar upper bounds. It contains no matrix, vector, infinity norm, nonsingularity condition, iteration index, Algorithm 1.1 execution, correction equation, or floating-point model from which those estimates could be obtained. Therefore it cannot establish Theorem 4.1."
+      "verdict": "yes",
+      "reasoning": "Every Algorithm 1.1 execution covered by the paper supplies a P03NormwiseIRRun through equations (3.3), (2.4), and (3.6), the precision and gamma conditions, and Ainv=A^{-1}. Restricting the Lean universal statement to those certificates gives exactly Theorem 4.1."
     },
     "paper_implies_lean": {
-      "verdict": "no",
-      "reasoning": "For quantities arising from Algorithm 1.1, the paper's derivation supplies intended instances of hid, hres, hsolve, and hupdate and yields the same final formula. That establishes only paper-realizable instances. The Lean declaration asserts the implication for every assignment of thirteen real scalars, including assignments with no matrix, norm, precision, or algorithmic realization. The paper neither quantifies over that enlarged domain nor proves that every such assignment is realizable, so an intended instance is insufficient to entail the universal declaration."
+      "verdict": "yes",
+      "reasoning": "At the standard real error-model level used in the PDF, an arbitrary P03NormwiseIRRun contains exactly the hypotheses invoked in the A824-A825 derivation. That derivation is relational and uses no additional representability, primitive-rounding, initial-solve-accuracy, or solver-implementation premise. It therefore yields the Lean recurrence for every bundled run."
     }
   },
-  "classification": "not-faithful-different",
-  "accepted": false,
+  "classification": "faithful-equivalent",
+  "accepted": true,
   "remaining_uncertainties": [],
-  "findings": [
-    {
-      "severity": "critical",
-      "category": "incomparable-quantifier-domains",
-      "evidence": "Theorem 4.1 ranges over computed iterates of Algorithm 1.1 for a nonsingular real matrix system (PDF pp. 2 and 9, A818 and A825), whereas the declaration ranges over arbitrary real values with no realizability predicate.",
-      "impact": "The paper does not imply the declaration's universal scalar theorem, ruling out not-faithful-weaker."
-    },
-    {
-      "severity": "critical",
-      "category": "algorithmic-estimates-assumed",
-      "evidence": "The paper obtains the residual contribution from (3.3), the update contribution from (3.6), and the correction-defect contribution from (2.4), (4.1), and the isolation of h_i (PDF pp. 5 and 7-9, A821 and A823-A825). The declaration postulates corresponding bounds as hres, hsolve, hupdate, and hid.",
-      "impact": "The declaration proves an order-arithmetic aggregation lemma and does not imply the numerical-analysis result."
-    },
-    {
-      "severity": "major",
-      "category": "semantic-erasure",
-      "evidence": "The paper distinguishes the exact residual, computed residual, correction defect, and update perturbation using infinity norms and indexed iterates. The declaration represents all of them as unrelated real scalars without definitions or nonnegativity conditions.",
-      "impact": "The declaration's broader scalar applicability is a change of mathematical subject, not genuine strengthening of the paper theorem."
-    },
-    {
-      "severity": "note",
-      "category": "algebraic-formula-preserved",
-      "evidence": "After the intended substitutions, the declaration retains the exact quotient, both 1+us factors, the residual-computation term using xhat_i, and the update term using xhat_(i+1), matching Theorem 4.1 (PDF p. 9, A825).",
-      "impact": "The disagreement is not caused by a coefficient or inequality-direction transcription error."
-    }
-  ],
-  "rationale": "The paper's one-step analysis is intrinsically about Algorithm 1.1: equations (3.3), (3.6), and (4.1), together with solver condition (2.4), establish three compatible estimates for the same indexed computation and then produce Theorem 4.1. The declaration accurately reproduces their final algebraic sum, but it promotes those estimates to independent hypotheses over arbitrary real scalars and erases every condition connecting them to an algorithmic execution. Consequently the declaration cannot yield the paper theorem. Conversely, the paper yields the scalar conclusion only under the intended algorithmic instantiation; it does not entail the declaration's universal implication for all real assignments. Since neither full proposition implies the other, the correct classification is not-faithful-different."
+  "findings": [],
+  "rationale": "The declaration faithfully packages the theorem-relevant semantics of Algorithm 1.1 as exact real equations and perturbation bounds. This is the same abstraction used by the paper after deriving (3.3) and (3.6), not an unrelated axiomatic recurrence. The source explicitly supports iteration-dependent solver coefficients, and the complete alpha_i and beta_i formulas match pointwise. The claimed stronger theorem is therefore not a genuine additional result: it arises only from treating the paper's relational error model as though it had required an unformalized bit-level execution predicate. Both implication directions hold, so the final classification is faithful-equivalent."
 }

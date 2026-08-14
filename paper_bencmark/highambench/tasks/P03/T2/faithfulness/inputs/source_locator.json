@@ -5,17 +5,45 @@
   "paper_version": "published journal version; volume 40, issue 2, 2018, printed pages A817-A847",
   "source_locations": [
     {
-      "anchor": "equation (4.1) and the displayed derivation immediately before Theorem 4.1",
+      "anchor": "Algorithm 1.1",
+      "pdf_page": 2,
+      "printed_page": "A818",
+      "role": "indexed unscaled iterative-refinement computation and precision roles",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "equations (2.1) and (2.4)",
+      "pdf_page": 5,
+      "printed_page": "A821",
+      "role": "infinity-norm condition number and correction-solver contract",
+      "section": "2. Preliminaries"
+    },
+    {
+      "anchor": "equations (3.3) and (3.6)",
+      "pdf_page": 7,
+      "printed_page": "A823",
+      "role": "computed residual and update error models",
+      "section": "3. Rounding error analysis"
+    },
+    {
+      "anchor": "equation (4.1) and the correction-defect derivation",
+      "pdf_page": 8,
+      "printed_page": "A824",
+      "role": "exact one-step identity and inverse-based defect estimate",
+      "section": "4. Normwise backward error analysis"
+    },
+    {
+      "anchor": "isolated correction-defect bound and displayed derivation immediately before Theorem 4.1",
       "pdf_pages": "8-9",
       "printed_pages": "A824-A825",
-      "role": "three one-step norm bounds",
+      "role": "one-step norm bounds and exact coefficient derivation",
       "section": "4. Normwise backward error analysis"
     },
     {
       "anchor": "Theorem 4.1",
       "pdf_page": 9,
       "printed_page": "A825",
-      "role": "normwise residual recurrence with \u03b1\u1d62 and \u03b2\u1d62",
+      "role": "normwise residual recurrence with alpha_i and beta_i",
       "section": "4. Normwise backward error analysis"
     }
   ],

@@ -3,170 +3,163 @@
   "role": "roundtrip-judge",
   "task_id": "P03-T2",
   "paper_sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc",
-  "blind_translation_sha256": "7a709e23b4d0b6f0acf85e23575101b8c089346d402ad1f5fbde4d703a78ba1b",
+  "blind_translation_sha256": "57edd17f93741207b0541606237efb76e23820ac3950d8ebe2120c13f8172cc8",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF hash matches the supplied hash. The published 2018 SIAM version contains equation (4.1) on PDF page 8, printed A824, and Theorem 4.1 with the residual recurrence on PDF page 9, printed A825.",
-      "translation_evidence": "The translated quotient and expanded residual bound correspond algebraically to the displayed derivation and Theorem 4.1.",
-      "reasoning": "The selected paper version, section, and surrounding result are correct."
+      "paper_evidence": "The verified PDF is the 2018 SIAM Journal on Scientific Computing article, volume 40, issue 2, pages A817-A847. Algorithm 1.1 is on A818 and Theorem 4.1 is on A825.",
+      "translation_evidence": "The translation targets the one-step residual recurrence, solver contract, and coefficient formulas associated with Algorithm 1.1 and Theorem 4.1.",
+      "reasoning": "The source version, result, and surrounding derivation are correctly identified."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.1 concerns a nonsingular A in R^{n x n}, b in R^n, and Algorithm 1.1 iterates indexed by every i >= 0.",
-      "translation_evidence": "The translation quantifies only thirteen unrestricted real scalars and contains no n, matrix, vector, sequence, or iteration-index type.",
-      "reasoning": "The paper's binders, dimensions, and index set have been replaced by unrelated scalar binders."
+      "status": "pass",
+      "paper_evidence": "Algorithm 1.1 and Theorem 4.1 use a real n by n nonsingular matrix A, a real n-vector b, computed vector sequences, and iterations i >= 0.",
+      "translation_evidence": "The translation uses Fin n indexed real vectors and matrices, requires n > 0, and quantifies an arbitrary natural iteration index. Its witness B satisfies B(Az)=z.",
+      "reasoning": "For finite square real matrices, existence of the stated left inverse is equivalent to nonsingularity and B is necessarily A inverse. The positive-dimension encoding agrees with the paper's conventional use of n."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The conclusion is pointwise in i and relates the computed iterates xhat_i and xhat_{i+1}; the preliminary discussion permits c1 and c2 to depend on n, A, rhat_i, and us.",
-      "translation_evidence": "All thirteen scalars are universally quantified independently, with no index or dependence connecting c1, c2, R, D, Y, and Rnext.",
-      "reasoning": "Iteration dependence and the scope connecting algorithm data to the bound are not preserved."
+      "status": "unclear",
+      "paper_evidence": "After equations (2.3)-(2.5), A821 says c1 and c2 are functions of n, A, rHat_i, and u_S, but Theorem 4.1 writes them without iteration subscripts while asserting the result for every i.",
+      "translation_evidence": "The translation binds arbitrary sequences c1,c2: Nat -> Real and imposes their nonnegativity, solver bounds, and denominator guards globally for every iteration.",
+      "reasoning": "Iteration-dependent values are consistent with the stated dependence on rHat_i, but the paper does not resolve whether the theorem intends varying values or one uniform pair. The translation also permits values not functionally consistent when identical residuals recur."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The paper assumes nonsingularity, Algorithm 1.1, solver condition (2.4), c1*kappa_inf(A)*us < 1, nonnegative solver quantities, and the standard residual and update models from (3.3) and (3.6).",
-      "translation_evidence": "Only the strict scalar condition and four intermediate upper bounds are assumed. No scalar except the product in the strict condition has a sign restriction, and gammaR is unrestricted.",
-      "reasoning": "Essential structural, sign, solver, and floating-point hypotheses are absent, while inequalities derived in the paper are promoted to independent assumptions."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.1 requires nonsingular A, c1 kappa_infinity(A) u_S < 1, and solver condition (2.4). Equations (3.3) and (3.6) supply the inherited residual and update models.",
+      "translation_evidence": "The bundled run contains a left inverse, the exact two-term solver bound, componentwise residual and update perturbation bounds, precision ordering, nonnegative c1 and c2, and strict denominator guards.",
+      "reasoning": "The substantive algebraic hypotheses used in the paper's derivation are present. The explicit m u_R < 1 guard records the tacit domain condition needed by the standard gamma bound."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "Theorem 4.1 concludes one residual inequality with alpha_i = us*(1+(1+us)*q) and beta_i = (1+us*q)*(1+us)*gamma_p^r*(||b||_inf+||A||_inf*||xhat_i||_inf)+u*||A||_inf*||xhat_{i+1}||_inf.",
-      "translation_evidence": "Its conclusion is Rnext <= us*(1+(1+us)*q)*R + (1+us*q)*(1+us)*gammaR*D + u*Y.",
-      "reasoning": "Under the intended scalar substitutions, the final inequality is complete and no term or factor is omitted."
+      "paper_evidence": "Theorem 4.1 concludes ||b-A xHat_(i+1)||_infinity <= alpha_i ||b-A xHat_i||_infinity + beta_i and gives complete formulas for alpha_i and beta_i.",
+      "translation_evidence": "The conclusion inlines the full alpha_i and beta_i formulas, including every residual, data, current-iterate, and next-iterate term.",
+      "reasoning": "The complete literal conclusion of Theorem 4.1 is present. The preceding defect bound and identity (4.1) are derivation steps rather than additional conclusions of the theorem."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The paper defines kappa_inf(A)=||A^{-1}||_inf*||A||_inf, gamma_p^r=p*ur/(1-p*ur), and the residual and iterate-dependent norm expressions appearing in beta_i.",
-      "translation_evidence": "The dependency ledger correctly interprets ordinary real arithmetic primitives, but kappa, gammaR, R, D, and Y remain atomic real variables.",
-      "reasoning": "Low-level arithmetic operators are understood, but the nontrivial paper definitions they are meant to represent are not encoded."
+      "status": "pass",
+      "paper_evidence": "A821 defines gamma_k and kappa_infinity; A823 defines p from the row sparsity of [A b]; A823-A825 use matrix-vector multiplication, componentwise absolute values, and infinity norms.",
+      "translation_evidence": "The dependency ledger unfolds matrix-vector multiplication, vector and matrix infinity norms, entrywise absolute values, augmented row sparsity m, gamma_m, kappa, and eta_i.",
+      "reasoning": "The nontrivial operators and imported definitions have the intended mathematical interpretations, with m equal to the paper's p."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "The paper distinguishes the exact residual b-A*xhat_i, the computed residual rhat_i, the correction defect h_i=rhat_i-A*dhat_i, residual perturbation Delta r_i, and update perturbation Delta x_i.",
-      "translation_evidence": "R, Rnext, eRes, eSolve, and eUpdate are unrestricted scalars with upper bounds and no defining equalities or computational provenance.",
-      "reasoning": "Exact, computed, and perturbed quantities cannot be distinguished in the translation."
+      "status": "pass",
+      "paper_evidence": "Equation (3.3) distinguishes the computed residual rHat_i from the exact residual b-A xHat_i through Delta r_i; equation (3.6) similarly distinguishes the computed update and Delta x_i.",
+      "translation_evidence": "The run separately contains x, rHat, dHat, deltaR, and deltaX, while the conclusion uses the exact residual b-Ax of the represented iterate.",
+      "reasoning": "The aggregate equations preserve the distinctions among exact residuals, computed residuals, computed corrections, and perturbations."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Algorithm 1.1 computes residuals at ur, rounds them to us, solves the correction equation effectively at us, stores corrections at u, and updates at u.",
-      "translation_evidence": "The translation contains no algorithm, execution step, computed iterate, correction solve, or residual computation.",
-      "reasoning": "The proposition is a generic scalar aggregation lemma rather than a result about an execution of Algorithm 1.1."
+      "paper_evidence": "A818 states that Algorithm 1.1 performs an initial solve at u_F, forms residuals at u_R and rounds them to u_S, solves and stores corrections, and updates at u. Theorem 4.1 expressly concerns the computed iterates of that algorithm.",
+      "translation_evidence": "The target quantifies arbitrary real sequences satisfying aggregate equations and inequalities. It has no initial-solve condition and no predicate asserting that the sequences arise from Algorithm 1.1.",
+      "reasoning": "The algorithm's executions are included among the modeled runs, but the translated subject is strictly broader and is not literally linked to the named algorithm or its execution history."
     },
     {
       "id": "S09",
-      "status": "fail",
-      "paper_evidence": "All norms in the derivation and theorem are vector or induced matrix infinity norms, and the theorem controls a normwise residual.",
-      "translation_evidence": "Every quantity is scalar; there are no norms, matrices, vectors, absolute values, or componentwise relations.",
-      "reasoning": "Infinity-norm and normwise semantics are erased rather than preserved."
+      "status": "pass",
+      "paper_evidence": "Every norm in the defect estimate, condition number, recurrence, alpha_i, and beta_i is the infinity norm; equations (3.3) and (3.6) use componentwise absolute-value bounds.",
+      "translation_evidence": "Finite-product vector norms are maximum absolute-coordinate norms, matrix norms are maximum absolute row sums, and the perturbation assumptions remain componentwise.",
+      "reasoning": "Vector, matrix, componentwise, and normwise meanings match without squared-norm or norm-substitution errors."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The result holds for i >= 0, relates residual i+1 to residual i, uses xhat_i in the residual-computation term and xhat_{i+1} in the update term, and permits hidden iteration dependence in c1 and c2.",
-      "translation_evidence": "The coefficient factors are algebraically exact, but R, D, Y, and Rnext have no indices or dependencies.",
-      "reasoning": "Constants are retained, but index offsets and parameter dependence are not represented."
+      "status": "unclear",
+      "paper_evidence": "A825 retains the denominator 1-c1 kappa_infinity(A)u_S, numerator c1 kappa_infinity(A)+c2, both factors 1+u_S, gamma_p^r, xHat_i in the residual term, and xHat_(i+1) in the update term.",
+      "translation_evidence": "The inlined formula has exactly these factors and index offsets, but uses c1_i and c2_i from arbitrary sequences.",
+      "reasoning": "All numerical constants and offsets match under the iteration-dependent reading. Exact correspondence of the c1 and c2 indexing remains unclear because the paper suppresses their possible dependence on i."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The paper uses the standard floating-point model with ur <= u <= us <= uf, gamma_p^r from residual computation, residual rounding at us, update rounding at u, and ignored underflow and overflow.",
-      "translation_evidence": "u, us, and gammaR are arbitrary reals; ur, uf, p, precision ordering, rounding behavior, and exceptional-value assumptions are absent.",
-      "reasoning": "The numerical model cannot be recovered from the translated statement."
+      "paper_evidence": "A821 invokes the standard floating-point model, A823 describes residual formation as fl_R followed by rounding to u_S, and A822 separately discusses scaling to avoid underflow and overflow.",
+      "translation_evidence": "The translation uses real-valued sequences constrained only by deterministic perturbation envelopes. It does not encode floating-point representability, rounding operations, an intermediate residual, rounding mode, or exceptional-value exclusions.",
+      "reasoning": "The translated assumptions capture the bounds used in the proof but generalize away from the paper's actual floating-point execution model."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The paper derives the recurrence from algorithmic and solver assumptions, with a strict denominator condition and non-strict norm inequalities.",
-      "translation_evidence": "The inequality directions and strict product condition are reproduced, but the intermediate derived bounds are independent hypotheses over arbitrary scalars.",
-      "reasoning": "Local relation symbols match, but the overall logical strength and domain of the implication differ."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.1 uses a non-strict residual inequality and the strict guard c1 kappa_infinity(A)u_S < 1; equations (3.3) and (3.6) use exact identities plus non-strict perturbation bounds.",
+      "translation_evidence": "The corresponding equalities, non-strict inequalities, and strict denominator guards have the same directions and strictness.",
+      "reasoning": "No inequality is reversed, weakened to an approximation, or changed between strict and non-strict form."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.1 bounds the exact original-system residual in the infinity norm; it does not directly state forward error, computed-residual error, or normalized backward error.",
-      "translation_evidence": "R and Rnext have no formal residual meaning, and the error-named variables are unrestricted scalars.",
-      "reasoning": "The intended residual and normwise backward-error context is not encoded."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.1 bounds the unnormalized exact residual norm. The normalized backward-error interpretation appears only later, and no forward-error conclusion occurs in Theorem 4.1.",
+      "translation_evidence": "The target states only the one-step unnormalized exact-residual recurrence and makes no convergence, forward-error, or normalized backward-stability claim.",
+      "reasoning": "The residual error notion is preserved."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Theorem 4.1 retains the exact factors 1+us and 1-c1*kappa_inf(A)*us and uses no first-order or big-O approximation.",
-      "translation_evidence": "The same exact quotient, denominator, 1+us factors, and products occur in the hypotheses and conclusion.",
-      "reasoning": "The higher-order finite-precision factors are preserved exactly."
+      "paper_evidence": "A825 retains the rational gamma_p^r, the rational correction-defect denominator, and every displayed product involving 1+u_S. Approximate statements occur only in Corollary 4.2.",
+      "translation_evidence": "The translation uses gamma_m(u_R)=m u_R/(1-m u_R), the exact eta_i denominator, and all 1+u_S products.",
+      "reasoning": "No higher-order factor is discarded or replaced by big-O or first-order notation."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The paper result is finite-dimensional and real, involving an n by n matrix, n-vectors, and induced norms.",
-      "translation_evidence": "The statement is generalized to arbitrary real scalars without any dimensional or matrix realization conditions.",
-      "reasoning": "This scalarization changes the mathematical subject rather than providing a faithful specialization."
+      "status": "pass",
+      "paper_evidence": "The paper result concerns finite-dimensional real square systems and a specific class of floating-point algorithm executions.",
+      "translation_evidence": "The translation retains finite-dimensional real square systems but generalizes executions to arbitrary real runs satisfying the derived envelopes.",
+      "reasoning": "There is no field, scalar, or dimensional specialization error. The execution-domain generalization is explicitly accounted for by the one-way implication and faithful-stronger classification."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper's bounds arise from a concrete algorithmic execution and compatible rounding-error models.",
-      "translation_evidence": "The scalar hypotheses are satisfiable; for example, u=us=gammaR=0.1, c1=0, c2=kappa=R=D=Y=1, eRes=0.21, eSolve=0.121, eUpdate=0.1, and Rnext=0.4 satisfy them.",
-      "reasoning": "The scalar implication is nonvacuous and follows by adding the stated bounds, although the strict denominator hypothesis is unnecessary for that algebraic step."
+      "paper_evidence": "Algorithm 1.1 applies to ordinary positive-dimensional nonsingular systems; Theorem 4.1 is not based on an impossible premise.",
+      "translation_evidence": "Although n=0 has no runs, runs are satisfiable for n>0; for example, identity A and B with zero vectors, zero errors, zero roundoffs, and zero c1 and c2 satisfy the bundled conditions.",
+      "reasoning": "The empty n=0 fiber merely encodes the intended positive-dimension restriction. The translated proposition has substantive nonvacuous instances."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The translation proves only a generic scalar bound-combination lemma. It does not assert the existence of A, b, Algorithm 1.1 iterates, the solver model, the residual/update models, or the identifications needed to instantiate its scalars as the paper quantities. Those missing facts must be supplied separately to recover Theorem 4.1."
+      "verdict": "yes",
+      "reasoning": "Every Algorithm 1.1 execution covered by the paper's standard-model derivation can be represented as a translated run by taking B=A inverse and using the computed quantities and perturbations from equations (3.3) and (3.6). The translated conclusion then specializes exactly to Theorem 4.1."
     },
     "paper_implies_translation": {
       "verdict": "no",
-      "reasoning": "The paper proves a recurrence for quantities generated by Algorithm 1.1. It does not quantify over every arbitrary assignment of thirteen real scalars or establish the translation's generic implication outside paper-realizable instances."
+      "reasoning": "The paper theorem asserts the recurrence only for computed Algorithm 1.1 iterates. Its statement does not quantify over all arbitrary real sequences satisfying aggregate error envelopes, arbitrary initial iterates, or parameter choices that need not correspond to an executable floating-point run."
     }
   },
-  "classification": "not-faithful-different",
-  "accepted": false,
-  "requires_adjudication": false,
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": true,
   "findings": [
     {
-      "severity": "critical",
-      "category": "algorithm-and-domain-erasure",
-      "paper_evidence": "Theorem 4.1 is about computed iterates of Algorithm 1.1 for a nonsingular real matrix system.",
-      "translation_evidence": "Only unrestricted real scalars are quantified.",
-      "impact": "The translated proposition cannot by itself state or recover the paper theorem."
+      "severity": "major",
+      "category": "algorithm-linkage",
+      "paper_evidence": "Theorem 4.1 on A825 explicitly begins by applying Algorithm 1.1, whose precision-specific operations and initial solve are stated on A818.",
+      "translation_evidence": "The translated binder is an arbitrary bundled run constrained by equations and bounds, with no initial-solve or algorithm-execution predicate.",
+      "impact": "This changes the subject from computed algorithm executions to a broader axiomatic class. It strengthens the mathematical proposition but fails literal algorithm linkage and should be adjudicated against the benchmark's acceptance policy."
     },
     {
       "severity": "major",
-      "category": "missing-norm-and-error-semantics",
-      "paper_evidence": "The theorem distinguishes exact infinity-norm residuals, computed residuals, correction defects, and rounding perturbations.",
-      "translation_evidence": "R, Rnext, and the three error variables have no defining semantics.",
-      "impact": "The result no longer identifies what error is controlled or which quantities are exact or computed."
+      "category": "floating-point-model",
+      "paper_evidence": "A821 invokes the standard floating-point model, and A823 gives the two-stage residual computation before deriving equation (3.3).",
+      "translation_evidence": "Only the resulting real-valued perturbation identities and envelopes are retained; actual rounding operations, representability, and exceptional-value assumptions are absent.",
+      "impact": "The paper remains a specialization if its executions satisfy the envelopes, but the translation proves a broader deterministic error-model theorem rather than the same execution-model statement."
     },
     {
-      "severity": "major",
-      "category": "missing-floating-point-model",
-      "paper_evidence": "The recurrence depends on three precisions, gamma_p^r, solver condition (2.4), and residual/update rounding models.",
-      "translation_evidence": "Precision variables and gammaR are arbitrary reals, with no rounding model, precision ordering, or gamma definition.",
-      "impact": "Assignments allowed by the translation need not correspond to any floating-point execution covered by the paper."
-    },
-    {
-      "severity": "major",
-      "category": "changed-hypothesis-structure",
-      "paper_evidence": "The component bounds are derived from Algorithm 1.1 and equations (2.4), (3.3), and (3.6).",
-      "translation_evidence": "The component bounds are assumed independently.",
-      "impact": "The difficult numerical-analysis content is replaced by premises, leaving only algebraic aggregation."
+      "severity": "minor",
+      "category": "coefficient-quantification",
+      "paper_evidence": "A821 describes c1 and c2 as functions of rHat_i and other data, while A825 suppresses iteration subscripts.",
+      "translation_evidence": "c1 and c2 are arbitrary globally quantified sequences, and all related hypotheses hold for every natural iteration.",
+      "impact": "The formulas are correct pointwise, but the paper does not settle whether varying per-iteration values or uniform constants are intended. Adjudication is required for exact binder and scope faithfulness."
     },
     {
       "severity": "note",
-      "category": "exact-algebraic-skeleton",
-      "paper_evidence": "Theorem 4.1 retains all factors in alpha_i and beta_i.",
-      "translation_evidence": "The expanded conclusion reproduces those factors exactly under the intended scalar substitutions.",
-      "impact": "The final arithmetic combination is accurate, but this does not compensate for the missing theorem semantics."
+      "category": "gamma-domain",
+      "paper_evidence": "The paper defines gamma_p^r=p u_R/(1-p u_R) under the cited standard model but does not restate p u_R<1 in Theorem 4.1.",
+      "translation_evidence": "The run explicitly assumes m u_R<1, with m equal to the augmented row-sparsity parameter p.",
+      "impact": "This appears to expose a tacit standard-model domain condition rather than alter the intended theorem, but it is not an explicit hypothesis in the displayed theorem."
     }
   ],
-  "rationale": "The blind translation accurately captures the final distributive algebra and retains every finite-precision factor. It does not express the paper's matrix and vector binders, iteration, algorithm, norms, solver condition, floating-point execution model, exact-versus-computed distinctions, or parameter dependencies. It is therefore a generic scalar lemma that can serve as one algebraic step only after substantial paper-specific facts are supplied, not an equivalent or faithfully stronger statement of Theorem 4.1."
+  "rationale": "The translated recurrence, norms, sparsity parameter, precision roles, solver defect, exact residual, coefficient formulas, index placement, and higher-order factors match Theorem 4.1. Its quantified run class is broader than the paper's computed Algorithm 1.1 executions because only aggregate real perturbation conditions are retained. Consequently the translation implies the paper result as a specialization, while the paper statement does not imply the full abstract-run theorem, giving a provisional faithful-stronger classification. Adjudication is requested because the paper leaves c1 and c2 indexing unresolved and because acceptance of the deliberate loss of explicit algorithm and floating-point execution linkage is policy-sensitive."
 }
