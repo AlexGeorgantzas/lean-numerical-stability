@@ -28,6 +28,12 @@ All reusable audit material lives here:
 ```text
 paper_bencmark/faithfulness_audit/
   METHODOLOGY.md
+  history/
+    README.md
+    audit_NNN/
+      manifest.json
+      results.json
+      summary.md
   prompts/
   schemas/
   scripts/
@@ -64,6 +70,18 @@ paper_bencmark/highambench/tasks/P03/T1/faithfulness/
 
 No audit agent may edit `Target.lean`, `context.md`, `task.json`, shared Lean
 sources, or the reference PDF. Only the orchestrator writes audit artifacts.
+
+### Corpus audit history
+
+`history/audit_NNN/` records an immutable corpus-level snapshot after a set of
+task audits has completed. The task-local audit bundles remain authoritative;
+the history entry records aggregate results, exact artifact paths and hashes,
+and the repository commit from which the detailed evidence can be recovered.
+
+Audit IDs are allocated sequentially. A completed entry is never overwritten.
+Changed targets, refreshed task audits, or a later corpus review require a new
+entry. Before recording it, every included task bundle must pass complete-phase
+validation.
 
 ## Sources of authority
 
