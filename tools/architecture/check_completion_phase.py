@@ -1091,6 +1091,16 @@ R05R06_REPLAY_REVIEW_SHA256 = (
     "DE36CBF7B3F5C4A43AD4149FDD824B0B920C8AEAE9796070CF89C3143E6F3005"
 )
 R05R06_ADDED_SHARED_PATH_COUNT = 60
+R05R06_ACTIVATION_REVIEW_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/R05-R06-activation.md"
+)
+R05R06_ACTIVATION_REVIEW_SHA256 = (
+    "C8AAFB5F01E2A23C5A4C0EE18BBA44FEC8A972F5F1F78DC57C2B1AE550CA8735"
+)
+R05R06_PLANNED_CONTROL_SHA = "b6794f326313f8077c0c3433bb9c76b6e2ed5361"
+R05R06_PLANNED_CONTROL_CI_RUN = "31844203563"
+R05R06_PLANNED_CONTROL_CI_JOB = "94907208819"
 
 
 def validate_r05r06_branch_record(
@@ -6484,6 +6494,42 @@ class CompletionValidator:
                 f"{context}.request-overlap",
                 "R0006/R0007 may share exactly the five reviewed integrator paths",
             )
+        active_statuses = {
+            (self.read_json(
+                self.phase_dir / f"branches/{R05R06_PLANNED_FACTS[w]['branch_id']}.json",
+                context,
+            ) or {}).get("status")
+            for w in ("R05", "R06")
+        }
+        if active_statuses - {"planned"}:
+            activation = self.phase_dir / "reviews/R05-R06-activation.md"
+            if not activation.is_file():
+                self.problems.add(
+                    f"{context}.activation",
+                    "active/delivered controls require reviews/R05-R06-activation.md",
+                )
+            else:
+                self.problems.require(
+                    sha256_path(activation) == R05R06_ACTIVATION_REVIEW_SHA256,
+                    f"{context}.activation",
+                    "activation review hash drifted from "
+                    f"{R05R06_ACTIVATION_REVIEW_SHA256}",
+                )
+                text = activation.read_text(encoding="utf-8")
+                for token in (
+                    R05R06_CODE_SHA,
+                    R05R06_PLANNED_CONTROL_SHA,
+                    R05R06_PLANNED_CONTROL_CI_RUN,
+                    R05R06_PLANNED_FACTS["R05"]["branch_name"],
+                    R05R06_PLANNED_FACTS["R06"]["branch_name"],
+                    R05R06_PLANNED_FACTS["R05"]["planned_worktree"],
+                    R05R06_PLANNED_FACTS["R06"]["planned_worktree"],
+                ):
+                    self.problems.require(
+                        str(token) in text,
+                        f"{context}.activation",
+                        f"activation review is missing exact fact {token!r}",
+                    )
         for rel, expected, label in (
             (
                 "requests/R0006-R0007-union.patch",

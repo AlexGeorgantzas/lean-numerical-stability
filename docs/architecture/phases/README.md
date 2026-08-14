@@ -101,7 +101,11 @@ whole-owner routes only, frozen shared requests R0006 (23 paths) and R0007
 (49 paths) intersecting on exactly five integrator-owned paths under a
 reviewed union, identity projection replays for P0006/P0007, and a reviewed
 temporary `claude-local` second-operator expansion scoped to B0006 expiring
-at C0004. C0003 stays current and its statistics do not change.
+at C0004. Planned-control commit `b6794f326313f8077c0c3433bb9c76b6e2ed5361`
+passed Lean CI run 31844203563 (job 94907208819) before both worker refs were
+pushed with nonexistent-tip leases at exact C0003 code and activated with
+clean LF-configured named worktrees. C0003 stays current and its statistics
+do not change.
 The planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be`
 passed Lean CI run 31546978830 (job 93961477202) before the R11/R12 refs and
 clean named worktrees were created and activated.

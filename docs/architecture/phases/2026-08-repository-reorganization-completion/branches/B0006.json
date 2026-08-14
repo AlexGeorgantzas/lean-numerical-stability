@@ -10928,20 +10928,16 @@
     "sha256": "27456CE0FB150FF6B5D6ED3007FC8A9832F6170D6894755B901CA9FF74E9E910"
    },
    {
-    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
-    "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
-   },
-   {
-    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-inventory.tsv",
-    "sha256": "2FC73310A40763AA16AAC3D9EC1A0F3F6DF94AAEE188C4C4DB9BF62A34C67B33"
-   },
-   {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0006-consumers.tsv",
     "sha256": "8D90BFA1E638DC5D9DE9FBB3108F0A942A025057D7EE3014172F86192E543E60"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0006-declaration-routes.tsv",
     "sha256": "57F76A8A28454238E641EA2E9F4BB82349C80D17363C2C9D16D66158C4F72969"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0006-field-projection-scan.tsv",
+    "sha256": "B8438655DF4B80A202FD60DFEADFDB95E67473505AC5717D3761DE0993BB6035"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0006-module-routes.tsv",
@@ -10968,8 +10964,12 @@
     "sha256": "0588692282D403C9C6A8A7DE855771EED1A52FFFDA31FC4151F7EC39F6E6762F"
    },
    {
-    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0006-field-projection-scan.tsv",
-    "sha256": "B8438655DF4B80A202FD60DFEADFDB95E67473505AC5717D3761DE0993BB6035"
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+    "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-inventory.tsv",
+    "sha256": "2FC73310A40763AA16AAC3D9EC1A0F3F6DF94AAEE188C4C4DB9BF62A34C67B33"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0006.json",
@@ -10980,12 +10980,16 @@
     "sha256": "9F46AC69A6B12D6A21EB5FAEE23D913E4E446C212906CA13CB9AB991E09E589C"
    },
    {
-    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006.json",
-    "sha256": "E2A5633AD9ABA5DCE0159BF82188C7A618D51F85F6232171A02106B8BDB5265F"
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006-R0007-union-postimages.tsv",
+    "sha256": "D36AEB47BF5F09AF693CEC2EBACDB1566EC4ED91D0F301F6F11BC7603311BDB8"
    },
    {
-    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006.patch",
-    "sha256": "03EDD5719A03DF152C1B33A207D1DE36D4787E3DD3947AF14C9E3EF4B1C56017"
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006-R0007-union-review.md",
+    "sha256": "12D39C6AD934F144698412D70857AA4C3B550B025F248864254A6032433770D6"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006-R0007-union.patch",
+    "sha256": "639DA03437C3FBAA6934E71B55EFE7D85DF51835D94978790C59162585690D4E"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006-postimages.tsv",
@@ -10996,20 +11000,20 @@
     "sha256": "67FFACBB50653DAAE7987479C412D8C688A19B8C494CD5701CF6166E1E8F075C"
    },
    {
-    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006-R0007-union.patch",
-    "sha256": "639DA03437C3FBAA6934E71B55EFE7D85DF51835D94978790C59162585690D4E"
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006.json",
+    "sha256": "E2A5633AD9ABA5DCE0159BF82188C7A618D51F85F6232171A02106B8BDB5265F"
    },
    {
-    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006-R0007-union-postimages.tsv",
-    "sha256": "D36AEB47BF5F09AF693CEC2EBACDB1566EC4ED91D0F301F6F11BC7603311BDB8"
-   },
-   {
-    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006-R0007-union-review.md",
-    "sha256": "12D39C6AD934F144698412D70857AA4C3B550B025F248864254A6032433770D6"
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006.patch",
+    "sha256": "03EDD5719A03DF152C1B33A207D1DE36D4787E3DD3947AF14C9E3EF4B1C56017"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0003-R05-R06-selection.md",
     "sha256": "786ED2B9A49F66CDE837B399D530824F57BB2A78E41934EC947653D4477E3181"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R05-R06-activation.md",
+    "sha256": "C8AAFB5F01E2A23C5A4C0EE18BBA44FEC8A972F5F1F78DC57C2B1AE550CA8735"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R05-R06-operator-authorization.md",
@@ -11038,6 +11042,6 @@
  "shared_request_ids": [
   "R0006"
  ],
- "status": "planned",
+ "status": "active",
  "wave_id": "R05"
 }
