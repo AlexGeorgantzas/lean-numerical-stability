@@ -1,12 +1,16 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, and exact finite unrolling of the recursive Sylvester error recurrence behind equation (20)",
+    "kind": "faithfulness rebuild of the ordinary SylR execution, first-order recurrence, equation (20), and logarithmic-stability conclusion",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The Sylvester separation sep is positive.",
-    "At every level below the chosen finite depth, the error obeys the paper's displayed affine recurrence."
+    "The exact top problem is A*R-R*B=-C in real arithmetic and has positive Frobenius separation.",
+    "The dimension is the positive power of two n=2^depth, and A and B have the upper-triangular block structure used by SylR.",
+    "The proof-carrying execution records SylR's four recursive solves in the order R21, R11, R22, R12 and the exact right-hand sides (15)-(18).",
+    "Equation (19), the page-86 first-order product and right-hand-side error estimates, and the scalar base-case rounding bound hold for the recorded execution family.",
+    "The multiplication-error factor mu is nonnegative, monotone, at least one at positive dimensions, and polynomially bounded.",
+    "The model is the finite real-valued first-order regime; exceptional values and the higher-order terms suppressed by the source derivation are outside the claim."
   ],
   "author_label": null,
   "classification_frozen_before_runs": false,
@@ -16,14 +20,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P10/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p10_t3_recursive_sylvester_error_unroll {n depth : Nat} (A B C R : P10Matrix n) (sep epsilon mu : Real) (hsep : 0 < sep) (err : Nat -> Real) (hstep : forall k, k < depth -> err (k+1) <= p10SylvesterGrowth A B sep * err k + p10SylvesterForcing A B C R sep epsilon mu) : err depth <= (p10SylvesterGrowth A B sep)^depth * err 0 + p10SylvesterForcing A B C R sep epsilon mu * (sum k in Finset.range depth, (p10SylvesterGrowth A B sep)^k)",
+    "lean_header": "theorem p10_t3_sylr_logarithmic_stability {depth : Nat} (run : P10SylRRun depth) : P10SylRLogarithmicallyStable run",
     "namespace": "HighamBench",
-    "plain_language": "The recursive Sylvester error after any finite depth is bounded by the amplified initial error plus the forcing budget times a finite geometric sum.",
+    "plain_language": "For a proof-carrying first-order execution of the paper's power-of-two SylR algorithm, derive the four-block error recurrence, the explicit equation-(20) forward bound, its comparison with a conventional solver, and the logarithmic condition-number exponent.",
     "target_file": "paper_bencmark/highambench/tasks/P10/T3/Target.lean",
-    "theorem_name": "p10_t3_recursive_sylvester_error_unroll"
+    "theorem_name": "p10_t3_sylr_logarithmic_stability"
   },
-  "informal_proof": "Use nonnegativity of the Frobenius norms and positivity of sep to prove that the recurrence multiplier is nonnegative. Induct on the depth, multiply the induction hypothesis by that multiplier, apply the next recurrence step, and prove the finite geometric-sum identity by a second induction.",
-  "informal_statement": "The exact finite geometric unrolling of the Sylvester error recurrence displayed immediately before equation (20).",
+  "informal_proof": "Choose a node attaining the worst first-order error at each level. Sum its four algorithm-linked block estimates to derive the source recurrence with coefficients 4, 2, 3, and mu(n/2). The variational separation certificate gives (norm(A)+norm(B))/sep at least one, while A*R-R*B=-C gives norm(C) at most (norm(A)+norm(B))*norm(R). Unroll the affine recurrence, bound its geometric sum, identify 6^depth with n^(1+log_2(3)), and rewrite the result relative to the conventional forward-error scale.",
+  "informal_statement": "The ordinary SylR algorithm satisfies the first-order recurrence on printed page 86, the equation-(20) bound, and the paper's logarithmic-stability comparison.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -41,36 +45,61 @@
     "nearby_numstability_declarations": [
       "NumStability.frobNorm_nonneg"
     ],
-    "note": "The frozen NumStability object baseline contains Frobenius nonnegativity but no affine-recurrence or finite geometric-unrolling theorem. The complete mounted scope searched was the 24 modules recorded in metadata/library_olean.json, including NumStability/Analysis/MatrixAlgebra.lean; broader source-only declarations were not counted as available."
+    "note": "The frozen NumStability object baseline contains Frobenius nonnegativity but no declaration modeling SylR's four recursive calls, variational separation, page-86 block estimates, equation (20), or logarithmic-stability conclusion. The complete mounted scope searched was the 24 modules recorded in metadata/library_olean.json; source-only declarations were not counted as available."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
-    "P10Matrix",
-    "p10FrobNorm",
-    "p10SylvesterGrowth",
-    "p10SylvesterForcing"
+    "P10DyadicMatrix",
+    "P10SylvesterSeparation",
+    "P10SylRProblem",
+    "P10SylRLevelCertificate",
+    "P10SylRRun",
+    "p10SylRForwardError",
+    "p10SylRBlockError21",
+    "p10SylRBlockError11",
+    "p10SylRBlockError22",
+    "p10SylRBlockError12",
+    "p10SylRRecurrenceGrowth",
+    "p10SylRRecurrenceForcing",
+    "p10SylREquation20Bound",
+    "P10SylRLogarithmicallyStable"
   ],
   "source_locations": [
     {
-      "anchor": "affine recurrence immediately before equation (20), followed by its asymptotic solution",
+      "anchor": "ordinary Sylvester equation and exact block equations (13)-(18)",
+      "pdf_page": 26,
+      "printed_page": "84",
+      "role": "exact problem and block dependencies",
+      "section": "6.3 Solving the (generalized) Sylvester equation"
+    },
+    {
+      "anchor": "SylR pseudocode, power-of-two assumption, variational separation, and equation (19)",
+      "pdf_page": 27,
+      "printed_page": "85",
+      "role": "algorithm, recursion dimensions, solve order, and subproblem conditioning",
+      "section": "6.3 Solving the (generalized) Sylvester equation"
+    },
+    {
+      "anchor": "four block-error inequalities, affine recurrence, equation (20), and following logarithmic-stability comparison",
       "pdf_page": 28,
       "printed_page": "86",
-      "role": "recursive Sylvester forward-error amplification and forcing budget",
+      "role": "first-order recurrence, asymptotic forward bound, conventional comparison, and stability conclusion",
       "section": "6.3 Solving the (generalized) Sylvester equation"
     }
   ],
   "source_tags": [
-    "EQN"
+    "EQN",
+    "TXT"
   ],
   "task_id": "P10-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "NumStability.frobNorm_nonneg in NumStability/Analysis/MatrixAlgebra.lean supplies only nonnegativity needed for the recurrence multiplier. The proof must newly derive the finite geometric-sum identity and inductive affine-recurrence unrolling; searches across every module in the frozen metadata/library_olean.json found no mounted declaration providing that connection.",
+  "tier_rationale": "No mounted frozen-library declaration models the four-call SylR recursion or proves its page-86 recurrence, equation (20), or logarithmic stability. The proof must combine the four block estimates, establish the separation-ratio and exact-equation norm bounds, unroll the recurrence, and identify the power-of-two asymptotic factor; the closest mounted declaration is only Frobenius nonnegativity.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P10/T3/Target.lean",
     "mode": "shared automatic validator",
     "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
     "reject_statement_changes": true,
-    "required_declaration": "HighamBench.p10_t3_recursive_sylvester_error_unroll"
+    "required_declaration": "HighamBench.p10_t3_sylr_logarithmic_stability"
   }
 }

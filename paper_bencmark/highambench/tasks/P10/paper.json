@@ -83,9 +83,9 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use a new exact finite unrolling of the recursive Sylvester error recurrence whose asymptotic solution is equation (20).",
+      "decision": "Use the ordinary power-of-two SylR execution, derive its displayed first-order recurrence from the four block estimates, and prove a finite equation-(20) bound together with the paper's conventional-error comparison and logarithmic-stability conclusion.",
       "task_id": "P10-T3",
-      "theorem_name": "p10_t3_recursive_sylvester_error_unroll"
+      "theorem_name": "p10_t3_sylr_logarithmic_stability"
     }
   },
   "schema_version": "highambench-paper-0.2",

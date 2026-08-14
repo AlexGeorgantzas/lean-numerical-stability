@@ -116,8 +116,8 @@
         "P10"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P10Definitions.lean",
-      "role": "P10-only finite matrix products, an abstract consistent norm and linked first-order product-error model, explicit Frobenius norms, and Sylvester recurrence budgets",
-      "sha256": "e5bdbf8d4dd671fc35fc4ff87172c1319b65268fd122f2069161fb58d4d10e8e",
+      "role": "P10-only finite matrix products, the linked first-order product-error model, and the power-of-two SylR execution, Frobenius separation, recurrence, and equation-(20) definitions",
+      "sha256": "9e2a895c63c7d3637ccb335073731446801f7f331b4216f5338f94f0bd70208f",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -1947,7 +1947,7 @@
         "volume": "108"
       },
       "paper_id": "P10",
-      "paper_structure_note": "The paper mixes labelled lemmas and theorems with numbered error recurrences. The selected targets retain equation (8) at direct and combine tiers and the exact finite recurrence core immediately preceding equation (20) at the extend tier.",
+      "paper_structure_note": "The paper mixes labelled lemmas and theorems with numbered error recurrences. The selected targets retain equation (8) at direct and combine tiers, while the extend target retains the ordinary SylR algorithm, its displayed first-order recurrence, equation (20), and the following logarithmic-stability conclusion.",
       "paper_version": "published journal version, 2007",
       "source": {
         "journal_page_map": "PDF pages 1-33 are printed pages 59-91 respectively.",
@@ -2042,34 +2042,48 @@
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P10/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Use nonnegativity of the Frobenius norms and positivity of sep to prove that the recurrence multiplier is nonnegative. Induct on the depth, multiply the induction hypothesis by that multiplier, apply the next recurrence step, and prove the finite geometric-sum identity by a second induction.",
-          "informal_statement_paraphrase": "The exact finite geometric unrolling of the Sylvester error recurrence displayed immediately before equation (20).",
+          "informal_proof_paraphrase": "Choose a node attaining the worst first-order error at each level and sum its four algorithm-linked block estimates to obtain the printed recurrence. Use the variational separation and exact Sylvester equation to control the condition ratio and forcing term, unroll the recurrence, identify 6^depth with n^(1+log_2(3)), and rewrite equation (20) relative to the conventional forward-error scale.",
+          "informal_statement_paraphrase": "The ordinary power-of-two SylR execution satisfies the page-86 first-order recurrence, equation (20), and the paper's logarithmic-stability comparison.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "678e0d48115267a7b9ba48c8d8b0a31ca85c421c08147fa0377eb1d70612ae61",
-            "declaration": "p10_t3_recursive_sylvester_error_unroll",
+            "controlled_file_sha256": "3768d2f5a743618038ff91cf8dbe7e3882be20611078b6235b6a4abc7a6137f3",
+            "declaration": "p10_t3_sylr_logarithmic_stability",
             "file": "paper_bencmark/highambench/tasks/P10/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P10Definitions.lean"
             ],
-            "statement_summary": "The recursive Sylvester error after any finite depth is bounded by the amplified initial error plus the forcing budget times a finite geometric sum."
+            "statement_summary": "A proof-carrying first-order execution of the paper's SylR algorithm satisfies the four-block recurrence, an explicit equation-(20) bound, its conventional-error comparison, and the logarithmic condition-number exponent."
           },
           "source_locations": [
             {
-              "anchor": "affine recurrence immediately before equation (20), followed by its asymptotic solution",
+              "anchor": "ordinary Sylvester equation and exact block equations (13)-(18)",
+              "journal_page": "84",
+              "pdf_page": 26,
+              "role": "exact problem and block dependencies",
+              "section": "6.3 Solving the (generalized) Sylvester equation"
+            },
+            {
+              "anchor": "SylR pseudocode, power-of-two assumption, variational separation, and equation (19)",
+              "journal_page": "85",
+              "pdf_page": 27,
+              "role": "algorithm, recursion dimensions, solve order, and subproblem conditioning",
+              "section": "6.3 Solving the (generalized) Sylvester equation"
+            },
+            {
+              "anchor": "four block-error inequalities, affine recurrence, equation (20), and following logarithmic-stability comparison",
               "journal_page": "86",
               "pdf_page": 28,
-              "role": "recursive Sylvester forward-error amplification and forcing budget",
+              "role": "first-order recurrence, asymptotic forward bound, conventional comparison, and stability conclusion",
               "section": "6.3 Solving the (generalized) Sylvester equation"
             }
           ],
           "task_id": "P10-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "NumStability.frobNorm_nonneg in NumStability/Analysis/MatrixAlgebra.lean supplies only nonnegativity needed for the recurrence multiplier. The proof must newly derive the finite geometric-sum identity and inductive affine-recurrence unrolling; searches across every module in the frozen metadata/library_olean.json found no mounted declaration providing that connection.",
-          "title": "Finite Sylvester recurrence unrolling"
+          "tier_reason": "No mounted frozen-library declaration models the four-call SylR recursion or proves its page-86 recurrence, equation (20), or logarithmic stability. The closest mounted declaration is Frobenius nonnegativity; all algorithm linkage, separation reasoning, recurrence unrolling, and asymptotic-factor identification remain to be proved.",
+          "title": "Recursive Sylvester logarithmic stability"
         }
       ],
       "topic": "normwise stability of fast recursive linear algebra"
