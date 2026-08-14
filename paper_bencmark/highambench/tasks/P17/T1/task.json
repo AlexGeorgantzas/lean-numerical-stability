@@ -9,7 +9,7 @@
     "Every finite relative-error factor has magnitude at most B."
   ],
   "author_label": "Theorem 3.6",
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P17 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P17 shared files are present; no NumStability artifact is present."

@@ -16,7 +16,7 @@
     "sha256": "59dfc314d4f9afecbbc6131c3c693624b09cc9e908f0e157efa468675ff56915",
     "version": "0.2"
   },
-  "classification_frozen_before_runs": true,
+  "classification_frozen_before_runs": false,
   "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
   "included_tasks": [
     "P02-T1",

@@ -11,9 +11,9 @@
       "sha256": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a"
     },
     {
-      "bytes": 1279,
+      "bytes": 5670,
       "path": "shared/HighamBench/P03Definitions.lean",
-      "sha256": "25e5b0fc93004b684254c879d71dd789e3a2153c4517d5cfabdc617d84ead38a"
+      "sha256": "8187989501a568ea0d68608500696079d547d8b79cdd5f2ee6f74b9a7ec95973"
     },
     {
       "bytes": 518,
