@@ -3,170 +3,163 @@
   "role": "roundtrip-judge",
   "task_id": "P07-T1",
   "paper_sha256": "4c4d638b359719f47e2c4664a50e9fa8e4704e8b6b39923d73c41883a97c5790",
-  "blind_translation_sha256": "1a5f913a72fcc01f18ff98be99f154fe2bb7cc1f2b08e559ebf2c942dccd1c8e",
+  "blind_translation_sha256": "96f8509f803c4715f0d50c519e43ad5824dcfabbe42059b37e14766120a4758f",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The source packet identifies the exact PDF by SHA-256 and selects Lemma 3.2 on PDF page 13, printed page 917, with the relevant Lemma 3.1 context on the preceding page.",
-      "translation_evidence": "The translation concerns preservation of injectivity under an additive matrix perturbation, which corresponds to the first conclusion and perturbation argument of Lemma 3.2.",
-      "reasoning": "The selected source and surrounding result are unambiguous, although the translation does not preserve the whole selected result."
+      "paper_evidence": "The verified PDF is the 2024 SIAM Journal on Matrix Analysis and Applications version, volume 45, issue 2, pages 905-929. The selected result is Lemma 3.2 on PDF page 13, printed page 917.",
+      "translation_evidence": "The supplied translation targets the perturbation result for the computed sketch-and-apply matrix and uses the verified paper and translation hashes.",
+      "reasoning": "The paper version, result, and surrounding Lemma 3.1 context are correctly selected."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "The paper has A in R^{m x n}, computed R_hat in R^{n x n}, Y_hat and DeltaY in R^{m x n}, inherited dimensions m > s > n, and Y = A R_hat^{-1}.",
-      "translation_evidence": "The translation quantifies arbitrary natural m and n, including zero, arbitrary matrices Y and DeltaY, and arbitrary real constants mu and eta. It has no A, R_hat, sketch dimension s, inverse, or computed Y_hat binder.",
-      "reasoning": "The binders and dimensions have been substantially generalized and the matrices arising from the paper's construction have been replaced by unrelated arbitrary matrices."
+      "status": "pass",
+      "paper_evidence": "The standing assumptions on printed page 906 give A in R^(m by n), S in R^(s by m), m > s > n, and full column rank of A and SA; Lemma 3.2 uses m-by-n matrices Y_hat and DeltaY and an n-by-n computed factor.",
+      "translation_evidence": "D002 and D017 package 0 < n < s < m and matrices with exactly these dimensions; D012, D015, and D018 give Y, Y_hat, and DeltaY the required m-by-n types.",
+      "reasoning": "The dependent preprocessing binder makes invalid dimensions uninhabited, while all admissible dimensions, index sets, and real matrix types match the paper."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "DeltaY and epsilon_2 are derived from the particular computed Y_hat and the base matrix A R_hat^{-1}; they are not independent arbitrary data.",
-      "translation_evidence": "Y, DeltaY, mu, and eta are all universally quantified independently before universally quantified vector inequalities are assumed.",
-      "reasoning": "The translation changes derived quantities into arbitrary parameters and therefore changes quantifier scope and parameter dependence."
+      "status": "pass",
+      "paper_evidence": "Lemma 3.2 is a conditional statement for any admissible inherited factor and computed forward-substitution result.",
+      "translation_evidence": "The proposition universally quantifies preprocessing, model, run, and certificates, with each certificate indexed by the matrix it certifies and the conclusion scoped under eta < 1.",
+      "reasoning": "The extra certificate binders package canonical spectra and Moore-Penrose data; their constrained values, rather than witness identities, enter the conclusion, so their universal scope does not materially change the perturbation implication."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The local hypothesis is epsilon_2 < 1, where epsilon_2 = ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2. The inherited setup supplies invertibility of R_hat, full column rank of A R_hat^{-1}, and finite-precision forward-substitution provenance.",
-      "translation_evidence": "The hypotheses are a lower vector-norm bound for Y, an upper vector-norm bound for DeltaY, and eta < mu. No inherited construction, full-rank premise stated in paper terms, or exact definition of epsilon_2 appears.",
-      "reasoning": "The inequalities are sufficient for a generic rank-preservation theorem but do not reproduce the paper's explicit and inherited hypotheses."
+      "status": "pass",
+      "paper_evidence": "The standing assumptions give full column rank of A and SA. Lemma 3.1 supplies invertibility of R_hat and full column rank of A R_hat^(-1), while Lemma 3.2 explicitly assumes epsilon_2 < 1.",
+      "translation_evidence": "D017 assumes injectivity of A and SA and a two-sided inverse RHatInv for RHat; hence A RHatInv is injective. The target additionally assumes eta < 1.",
+      "reasoning": "The translation replaces the inherited epsilon_1 route with the permitted direct assumptions of invertibility and reference-matrix full rank, while retaining the explicit strict smallness hypothesis."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "Lemma 3.2 concludes both that Y_hat is full rank and that kappa_2(Y_hat) <= (kappa_2(A R_hat^{-1}) + epsilon_2)/(1 - epsilon_2).",
-      "translation_evidence": "The sole conclusion is injectivity of x mapped to (Y + DeltaY)x.",
-      "reasoning": "Injectivity represents the full-column-rank conclusion, but the entire condition-number conclusion is absent."
+      "status": "pass",
+      "paper_evidence": "Lemma 3.2 concludes both that Y_hat has full rank and that kappa_2(Y_hat) is at most (kappa_2(A R_hat^(-1)) + epsilon_2)/(1 - epsilon_2).",
+      "translation_evidence": "The conclusion is a conjunction of injectivity of the Y_hat linear map and the same condition-measure inequality with Y = A RHatInv and eta in place of epsilon_2.",
+      "reasoning": "Both paper conclusions are retained without an added LSQR, residual, or final-solution claim."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The paper uses the matrix spectral norm, pseudoinverse, inverse triangular factor, smallest-singular-value reasoning, and the spectral condition number kappa_2.",
-      "translation_evidence": "The dependency ledger correctly unfolds finite matrix-vector multiplication, Euclidean vector norms, exact addition, and injectivity, but contains no pseudoinverse, matrix operator norm, inverse, singular value, or condition number.",
-      "reasoning": "The imported definitions in the reduced target are understood, but several operators essential to the paper result have disappeared rather than been interpreted."
+      "status": "pass",
+      "paper_evidence": "The paper uses matrix multiplication, Euclidean induced norms, the matrix pseudoinverse, full column rank, and spectral condition number.",
+      "translation_evidence": "D008-D014, D019-D024, D026, D028-D038, and the dependency ledger unfold matrix action and multiplication, exact attained Euclidean gains, Moore-Penrose equations, injectivity, pseudoinverse norms, eta, and the condition measure.",
+      "reasoning": "The nontrivial operators affecting the proposition are interpreted sufficiently to recover their ordinary finite-dimensional real meanings."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "Y_hat is specifically the finite-precision result of computing A R_hat^{-1}, and DeltaY = Y_hat - A R_hat^{-1} is its additive forward error.",
-      "translation_evidence": "Y and DeltaY are arbitrary exact real matrices, and Y + DeltaY is formed using exact real addition with no computed quantity.",
-      "reasoning": "The translation conflates the paper's computed output and associated forward error with an arbitrary exact perturbation."
+      "status": "pass",
+      "paper_evidence": "Lemma 3.2 distinguishes the exact reference A R_hat^(-1), the finite-precision output Y_hat, and DeltaY = Y_hat - A R_hat^(-1).",
+      "translation_evidence": "D012 defines Y = A RHatInv, D001 and D015 identify Y_hat as the substitution output, and D018 requires DeltaY = Y_hat - A RHatInv.",
+      "reasoning": "The computed factor is used in the exact reference matrix, RHatInv is a certified mathematical inverse rather than a separately rounded inverse, and the perturbation identity is exact."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "The result analyzes the forward-substitution computation of A R_hat^{-1} in step 4 of the sketch-and-apply Blendenpik algorithm.",
-      "translation_evidence": "The translation contains no sketch, QR factor, triangular system, forward substitution, or algorithmic execution condition.",
-      "reasoning": "All linkage to the paper's algorithm and execution model has been removed."
+      "paper_evidence": "Algorithm 1.3 and Lemma 3.1 require R_hat to be the upper triangular factor computed by Householder QR of the computed sketch B_hat; Lemma 3.2 analyzes forward substitution using that inherited factor.",
+      "translation_evidence": "D017 requires only residual equations, an isometric Qtilde, upper triangularity, and a two-sided inverse. It contains no Householder QR execution or provenance condition for RHat.",
+      "reasoning": "The forward-substitution stage remains linked to the algorithm, but the preprocessing factor need not actually be a Householder-QR output. The translation therefore admits preprocessing instances outside the paper result's algorithmic setting."
     },
     {
       "id": "S09",
-      "status": "fail",
-      "paper_evidence": "The paper defines epsilon_2 using exact spectral matrix 2-norms and defines kappa_2 through singular values.",
-      "translation_evidence": "The translation uses Euclidean vector 2-norm inequalities with mu and eta as possibly nonoptimal lower and upper bounds.",
-      "reasoning": "The vector norm itself is the correct Euclidean norm, but arbitrary induced bounds are substituted for the paper's exact matrix norm and pseudoinverse norm quantities, and kappa_2 is omitted."
+      "status": "pass",
+      "paper_evidence": "The norms in epsilon_2 and kappa_2 in Lemma 3.2 are spectral matrix 2-norms, and the dagger denotes the matrix pseudoinverse.",
+      "translation_evidence": "D023 and D037 define exact extremal gains induced by the Euclidean vector norm; D011 and D013 use the resulting operator norms of a matrix and its Moore-Penrose pseudoinverse.",
+      "reasoning": "The translation uses unsquared induced Euclidean norms and no Frobenius or componentwise substitute."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The exact constant is epsilon_2 = ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2, the threshold is epsilon_2 < 1, and the second conclusion contains exactly +epsilon_2 and 1 - epsilon_2.",
-      "translation_evidence": "The translation instead introduces unrelated constants mu and eta and assumes eta < mu; it supplies neither exact identifications for these constants nor the rational condition-number expression.",
-      "reasoning": "The translated constants can encode a sufficient perturbation comparison, but they do not preserve the paper's constants or their exact dependence."
+      "status": "unclear",
+      "paper_evidence": "Section 2.3.3 describes row-wise systems R^T x_i = a_i, and Lemma 3.2 says forward substitution, but neither passage fixes the association order or base cases of the rounded inner-product accumulation.",
+      "translation_evidence": "D027 uses the correct k < j recurrence, while D041 and D045 fix an index-ordered recursive fold, including special zero-term and one-term behavior.",
+      "reasoning": "The displayed constants, strict threshold, denominator, and triangular indices match. The source does not determine whether the translation's particular rounded summation order is the intended implementation, so complete agreement cannot be established."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The lemma is deterministic conditional analysis of a matrix produced by finite-precision forward substitution. Unit roundoff is part of the surrounding analysis, although it is not explicit in this lemma; exceptional arithmetic is not discussed.",
-      "translation_evidence": "The translation explicitly concerns exact real arithmetic and encodes no computed approximation, rounding operation, unit roundoff, or floating-point execution.",
-      "reasoning": "Even though the paper's local perturbation inequality is exact and conditional, the computed finite-precision provenance is part of its numerical model and is lost."
+      "paper_evidence": "Section 2.3 assumes finite precision u much smaller than one and leaves rounding mode and exceptional-value behavior unspecified; Lemma 3.2 abstracts triangular-solve error into DeltaY.",
+      "translation_evidence": "D010 and D025 impose primitive-operation pure relative-error equations but require only u >= 0. They encode no overflow, underflow, subnormal, NaN, infinity, or rounding-mode behavior.",
+      "reasoning": "The translation both adds a particular operation-level relative-error semantics not stated in Lemma 3.2 and permits nonsmall unit roundoff contrary to the surrounding u much smaller than one regime."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The paper uses the strict condition epsilon_2 < 1 and concludes both full rank and a non-strict upper bound on kappa_2(Y_hat).",
-      "translation_evidence": "The translation correctly uses a strict eta < mu condition and non-strict norm bounds, but concludes only injectivity under a differently parameterized and more general premise.",
-      "reasoning": "Strictness is preserved for the generic rank argument, but the overall logical strength is changed by generalized premises and omission of the quantitative conclusion."
+      "status": "pass",
+      "paper_evidence": "The hypothesis is the strict inequality epsilon_2 < 1, the rank conclusion is unconditional under that hypothesis, and the condition-number relation is a non-strict upper bound.",
+      "translation_evidence": "The target uses eta < 1, injectivity, and a less-than-or-equal bound with numerator kappa(Y) + eta and denominator 1 - eta.",
+      "reasoning": "Strictness, inequality direction, conjunction, and coefficients are preserved."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "DeltaY is the forward additive matrix-computation error Y_hat - A R_hat^{-1}, distinct from the later least-squares backward-error perturbation.",
-      "translation_evidence": "DeltaY is merely an arbitrary matrix satisfying an operator bound and has no status as a computation error.",
-      "reasoning": "The translation does not substitute a different named stability notion, but it removes the defining forward-error interpretation."
+      "status": "pass",
+      "paper_evidence": "DeltaY is an additive forward error in the explicitly formed preconditioned matrix, scaled by the pseudoinverse norm; Lemma 3.2 controls rank and conditioning only.",
+      "translation_evidence": "D018 defines the same additive matrix error and D013 scales its spectral norm by the exact reference pseudoinverse norm. The target states no residual, solution error, or backward-stability result.",
+      "reasoning": "No forward, backward, residual, or stability notion is substituted for the paper's matrix perturbation measure."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Lemma 3.2 gives exact rank and condition-number statements in epsilon_2 with no big-O term or omitted higher-order remainder.",
-      "translation_evidence": "The translated inequalities and injectivity conclusion are exact and contain no first-order approximation, big-O term, or discarded remainder.",
-      "reasoning": "No higher-order approximation is introduced or mishandled; the missing condition-number conclusion is separately captured under conclusion completeness."
+      "paper_evidence": "Lemma 3.2 is an exact perturbation bound in epsilon_2 and contains no big-O term or discarded higher-order contribution.",
+      "translation_evidence": "The translated inequality is exact in eta and contains no asymptotic remainder or first-order truncation.",
+      "reasoning": "Higher-order treatment matches exactly."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The paper concerns finite real matrices in the constrained least-squares dimensions m > s > n and matrices produced by a particular sketch, QR, and forward-substitution construction.",
-      "translation_evidence": "The translation generalizes to all finite natural dimensions, including zero, and all exact real matrix pairs satisfying abstract norm bounds.",
-      "reasoning": "The real finite setting is retained, but the dimensional and algorithmic generalization is substantial and is not a faithful specialization of the paper statement."
+      "paper_evidence": "The paper result concerns finite-dimensional real matrices using a computed Householder-QR factor and an otherwise unspecified finite-precision forward substitution.",
+      "translation_evidence": "The translation preserves the real finite-dimensional setting but generalizes RHat beyond certified Householder-QR outputs while specializing forward substitution to one primitive-operation recurrence and accumulation order.",
+      "reasoning": "These cross-cutting generalization and specialization changes prevent the admissible computation classes from coinciding."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "The inherited setting has m > s > n and a full-column-rank base matrix, so the rank-preservation conclusion addresses a nontrivial rectangular problem.",
-      "translation_evidence": "When n = 0 the conclusion is automatic and the hypotheses reduce to trivial inequalities; when m = 0 and n > 0 the hypotheses are inconsistent.",
-      "reasoning": "The unrestricted dimensions introduce unintended trivial and vacuous cases absent from the paper's standing dimensional setting."
+      "status": "pass",
+      "paper_evidence": "The standing dimensions and full-rank assumptions describe ordinary nonempty tall-matrix instances, and epsilon_2 = 0 provides a valid small-error case.",
+      "translation_evidence": "Admissible instances exist, for example with m = 3, s = 2, n = 1, compatible nonzero A and SA, an identity scalar factor and inverse, exact operations satisfying a positive-u error bound, and DeltaY = 0. Finite real matrices possess the required spectra and Moore-Penrose data.",
+      "reasoning": "Although invalid dimensions yield no preprocessing object, valid paper dimensions have satisfiable objects and the implication is not vacuous or driven by a zero-dimensional case."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The translation can establish the paper's rank conclusion after additional identifications and spectral-norm facts, but it cannot yield the omitted condition-number bound or establish that the matrices arise from the paper's finite-precision algorithm."
+      "verdict": "unclear",
+      "reasoning": "The algebraic perturbation quantities and conclusions specialize correctly to a genuine Householder-QR factor. However, the translation applies only to its fixed primitive-operation recurrence and relative-error model, while the paper does not specify enough evaluation-order or floating-point detail to establish that every paper computation is represented."
     },
     "paper_implies_translation": {
       "verdict": "no",
-      "reasoning": "The paper proves its conclusions only for the inherited sketch-and-precondition construction and its computed forward-substitution result. It does not state the translation's universal theorem for arbitrary dimensions, matrices, and bound constants."
+      "reasoning": "The translation quantifies over preprocessing objects whose RHat is not required to arise from Householder QR and over models with arbitrary nonnegative u. Lemma 3.2, as stated in the paper, only covers the inherited computed Householder-QR setting and therefore does not imply all translated instances."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "undetermined",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
-      "severity": "critical",
-      "category": "conclusion-completeness",
-      "paper_evidence": "Lemma 3.2 includes the condition-number bound kappa_2(Y_hat) <= (kappa_2(A R_hat^{-1}) + epsilon_2)/(1 - epsilon_2).",
-      "translation_evidence": "Only injectivity of Y + DeltaY is concluded.",
-      "impact": "One of the paper lemma's two principal conclusions is entirely absent."
+      "severity": "major",
+      "category": "computed-factor provenance",
+      "paper_evidence": "Lemma 3.1 on printed page 916 identifies R_hat as the factor computed by Householder QR of B_hat, and Lemma 3.2 imports that factor.",
+      "translation_evidence": "D017 supplies algebraic factorization residuals, orthonormality, triangularity, and inverse equations but no Householder-QR provenance.",
+      "impact": "The translated proposition includes factors outside the algorithmic domain of the paper, preventing paper-implies-translation."
     },
     {
       "severity": "major",
-      "category": "algorithm-and-error-provenance",
-      "paper_evidence": "Y_hat is the finite-precision forward-substitution output for A R_hat^{-1}, with DeltaY defined as its forward additive error.",
-      "translation_evidence": "Y and DeltaY are arbitrary exact real matrices.",
-      "impact": "The proposition no longer describes the algorithmic quantity or numerical error analyzed by the paper."
+      "category": "forward-substitution execution order",
+      "paper_evidence": "Printed pages 915 and 917 specify row-wise transposed triangular solves and forward substitution but do not determine primitive-operation order or inner-product association.",
+      "translation_evidence": "D027, D041, and D045 prescribe each rounded operation and a particular recursive accumulation order.",
+      "impact": "It is unclear whether all computations denoted by the paper are covered by the translated run type; adjudication is required."
     },
     {
       "severity": "major",
-      "category": "constants-and-hypotheses",
-      "paper_evidence": "The exact condition is ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2 < 1, with a full-column-rank base inherited from Lemma 3.1.",
-      "translation_evidence": "The condition is expressed using arbitrary nonoptimal bounds eta < mu, with no pseudoinverse or exact operator-norm identification.",
-      "impact": "The translation proves a related sufficient rank-preservation principle rather than the paper's stated perturbation theorem."
-    },
-    {
-      "severity": "major",
-      "category": "binders-and-dimensions",
-      "paper_evidence": "The standing setting has m > s > n and matrices tied to A, the sketch, R_hat, and Y_hat.",
-      "translation_evidence": "All natural m and n, including zero, and arbitrary Y and DeltaY are admitted.",
-      "impact": "The changed scope prevents implication in either direction and introduces trivial or vacuous dimension cases."
+      "category": "floating-point model",
+      "paper_evidence": "Printed page 914 assumes u much smaller than one and otherwise leaves detailed floating-point semantics unspecified; Lemma 3.2 uses only the aggregate DeltaY.",
+      "translation_evidence": "D025 imposes pure relative-error axioms operation by operation, allows every u >= 0, and omits exceptional-value and rounding-mode semantics.",
+      "impact": "The translated and paper numerical-model domains do not demonstrably coincide."
     },
     {
       "severity": "note",
-      "category": "dependency-ledger",
-      "paper_evidence": "The rank argument uses Euclidean and spectral 2-norm structure.",
-      "translation_evidence": "All listed dependencies for matrix-vector multiplication, Euclidean norm, exact addition, order, and injectivity are marked understood and are interpreted coherently.",
-      "impact": "The dependency ledger is internally adequate for the reduced generic proposition, but cannot compensate for the paper concepts omitted from that proposition."
+      "category": "core perturbation content",
+      "paper_evidence": "Lemma 3.2 defines DeltaY and epsilon_2 and concludes full rank plus the exact condition-number fraction.",
+      "translation_evidence": "D012, D013, and D018 and the target conclusion reproduce the same reference matrix, perturbation size, strict threshold, rank conclusion, norms, pseudoinverse, and constants.",
+      "impact": "The mathematical perturbation formula itself is preserved; the unresolved issues concern execution and provenance."
     }
   ],
-  "rationale": "The blind translation is a mathematically coherent generic theorem that a perturbation smaller than a lower injectivity bound preserves injectivity. It captures the core argument behind only the full-rank portion of Lemma 3.2. It omits the condition-number bound, exact epsilon_2 definition, pseudoinverse and spectral condition number, inherited construction and dimensions, and finite-precision forward-substitution provenance. Its arbitrary binders and zero-dimensional cases also make it more general along dimensions where the paper is specialized. Because it is simultaneously broader in scope and weaker in conclusion, neither statement implies the other as stated, so the appropriate classification is not-faithful-different."
+  "rationale": "The translation faithfully reproduces the dimensions, exact-versus-computed distinction, spectral norms, pseudoinverse scaling, strict epsilon threshold, full-column-rank conclusion, and exact condition-number bound. It does not require RHat to be an actual Householder-QR output, while it imposes a specific rounded forward-substitution trace and operation-level model that the paper does not identify. These changes run in opposite logical directions. Because the source does not determine whether its forward-substitution computation matches the encoded recurrence, translation-implies-paper remains unclear and the judgment requires adjudication."
 }

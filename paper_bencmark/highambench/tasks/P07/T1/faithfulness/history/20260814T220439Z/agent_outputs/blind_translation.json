@@ -1,0 +1,247 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "7db258cd5b9d617d6b05e073fc3c93436c8e83d7adf962c05bedd42855fb5d1f",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For an m-by-n real matrix A and vector x indexed by Fin n, this is the matrix-vector product A x, whose i-th component is the finite sum over j in Fin n of A(i,j) times x(j).",
+      "effect_on_target": "It defines the maps represented by Y, ΔY, and their pointwise sum; the conclusion asserts injectivity of the map x ↦ (Y + ΔY)x.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "LocalDef002 A c states that for every real n-vector x, c times the Euclidean norm of x is at most the Euclidean norm of A x.",
+      "effect_on_target": "Applied to Y and μ, it supplies the global lower bound μ‖x‖₂ ≤ ‖Yx‖₂ for every x.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "LocalDef003 A c states that for every real n-vector x, the Euclidean norm of A x is at most c times the Euclidean norm of x.",
+      "effect_on_target": "Applied to ΔY and η, it supplies the global upper bound ‖ΔYx‖₂ ≤ η‖x‖₂ for every x.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "For a real vector x indexed by Fin n, this is the square root of the sum over all coordinates i of x(i) squared, namely its Euclidean 2-norm.",
+      "effect_on_target": "It gives the domain and codomain norms in both quantitative hypotheses, instantiated at dimensions n and m as appropriate.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "Fin",
+      "meaning": "Fin k is the finite index type with elements corresponding to the natural numbers strictly below k.",
+      "effect_on_target": "Fin m indexes matrix rows and output coordinates, while Fin n indexes columns and input coordinates.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "Function.Injective",
+      "meaning": "A function f is injective when, for all inputs a₁ and a₂, equality f(a₁) = f(a₂) implies a₁ = a₂.",
+      "effect_on_target": "It is the exact conclusion required of the perturbed matrix-vector map from real n-vectors to real m-vectors.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "HAdd.hAdd",
+      "meaning": "This selects the heterogeneous addition operation supplied by an HAdd instance.",
+      "effect_on_target": "With the supplied real-number instance, it combines Y(i,j) and ΔY(i,j) by ordinary real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LT.lt",
+      "meaning": "This selects the strict-order relation supplied by an LT instance.",
+      "effect_on_target": "With the real LT instance, it expresses the strict hypothesis η < μ.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "Nat",
+      "meaning": "Nat is the type of natural numbers.",
+      "effect_on_target": "The universally quantified dimensions m and n are natural numbers, and the exponent used in the norm is the natural number 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Real",
+      "meaning": "Real is the type of real numbers.",
+      "effect_on_target": "All matrix entries, vector coordinates, bounds, products, sums, orders, and square roots in the proposition are over the real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "Real.instAdd",
+      "meaning": "This is the ordinary addition operation on real numbers.",
+      "effect_on_target": "It makes the entrywise expression Y(i,j) + ΔY(i,j) ordinary exact real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Real.instLT",
+      "meaning": "This is the ordinary strict order on real numbers.",
+      "effect_on_target": "It gives η < μ its standard real-order meaning.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "instHAdd",
+      "meaning": "Given an addition operation on a type, this constructs the corresponding homogeneous HAdd operation by using that same addition.",
+      "effect_on_target": "It connects HAdd.hAdd in the perturbed entries to Real.instAdd, so the operation is real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Fin.fintype",
+      "meaning": "This provides a finite enumeration of every element of Fin n.",
+      "effect_on_target": "It permits the matrix products and squared-coordinate norms to be expressed as finite sums over all relevant row or column indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Finset.sum",
+      "meaning": "This forms the finite sum of a function over a finite set using the supplied commutative additive monoid structure.",
+      "effect_on_target": "It computes matrix-vector product coordinates and the sums of coordinate squares used by the Euclidean norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, Finset.univ is the finite set containing all elements of that type.",
+      "effect_on_target": "It makes each sum range over every coordinate in Fin n or Fin m, rather than over a proper subset.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "HMul.hMul",
+      "meaning": "This selects the heterogeneous multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "With real multiplication, it forms matrix-entry times vector-coordinate products and the scalar products μ‖x‖₂ and η‖x‖₂.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "LE.le",
+      "meaning": "This selects the non-strict order relation supplied by an LE instance.",
+      "effect_on_target": "With the real LE instance, it expresses both norm inequalities using the ordinary relation ≤.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This supplies the commutative additive monoid structure of the real numbers, including real addition and zero.",
+      "effect_on_target": "It supplies the algebraic structure used to evaluate all finite real sums, including empty sums as zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instLE",
+      "meaning": "This is the ordinary non-strict order on real numbers.",
+      "effect_on_target": "It gives the lower and upper norm bounds their standard real inequality meanings.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instMul",
+      "meaning": "This is ordinary multiplication on real numbers.",
+      "effect_on_target": "It supplies multiplication in matrix-vector products and in multiplication of the norms by μ or η.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "instHMul",
+      "meaning": "Given a multiplication operation on a type, this constructs the corresponding homogeneous HMul operation using that multiplication.",
+      "effect_on_target": "It connects HMul.hMul to Real.instMul, making all displayed products ordinary real products.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "HPow.hPow",
+      "meaning": "This selects the exponentiation operation supplied by an HPow instance.",
+      "effect_on_target": "It forms x(i) raised to the natural-number exponent 2 in the norm definition.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Monoid.toNatPow",
+      "meaning": "A monoid supplies natural-number powers by repeated monoid multiplication, with exponent zero giving the identity.",
+      "effect_on_target": "For real numbers it interprets x(i)^2 as the ordinary square x(i)·x(i).",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "OfNat.ofNat",
+      "meaning": "This extracts the interpretation of a natural-number numeral in a type from the corresponding OfNat instance.",
+      "effect_on_target": "It supplies the numeral 2 used as the exponent in each squared coordinate.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Real.instMonoid",
+      "meaning": "This supplies the multiplicative monoid structure of the real numbers.",
+      "effect_on_target": "It enables natural powers of real coordinates and therefore the exact squares appearing in the Euclidean norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Real.sqrt",
+      "meaning": "This returns the nonnegative real square root through the nonnegative-real square-root construction; on the nonnegative sum of squares used here it is the ordinary nonnegative square root.",
+      "effect_on_target": "It turns each finite sum of coordinate squares into the Euclidean 2-norm used in the hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "instHPow",
+      "meaning": "Given a power operation with exponent type β, this constructs the corresponding HPow operation with output in the base type.",
+      "effect_on_target": "It connects HPow.hPow on real coordinates and natural exponents to the real natural-power operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "instOfNatNat",
+      "meaning": "This interprets each natural-number numeral n as that same element n of Nat.",
+      "effect_on_target": "It ensures that the exponent written as 2 is exactly the natural number two.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "Universally quantify natural-number dimensions m and n; both may be zero.",
+      "Universally quantify real matrices Y and ΔY, each represented as a function Fin m → Fin n → Real.",
+      "Universally quantify real constants μ and η.",
+      "Each norm-bound hypothesis universally quantifies a real vector x : Fin n → Real.",
+      "The injectivity conclusion universally quantifies two real vectors x₁, x₂ : Fin n → Real."
+    ],
+    "hypotheses": [
+      "For every x in R^n, μ‖x‖₂ ≤ ‖Yx‖₂.",
+      "For every x in R^n, ‖ΔYx‖₂ ≤ η‖x‖₂.",
+      "η < μ in the strict real order."
+    ],
+    "conclusions": [
+      "The map from R^n to R^m given by x ↦ (Y + ΔY)x is injective.",
+      "Explicitly, for all x₁ and x₂, if for every row i the sums Σ_j (Y(i,j) + ΔY(i,j))x₁(j) and Σ_j (Y(i,j) + ΔY(i,j))x₂(j) are equal, then x₁ = x₂."
+    ],
+    "mathematical_definitions": [
+      "A matrix A : Fin m → Fin n → Real acts on x by (Ax)(i) = Σ_{j in Fin n} A(i,j)x(j).",
+      "For x : Fin k → Real, ‖x‖₂ = sqrt(Σ_{i in Fin k} x(i)^2).",
+      "The perturbed matrix has entries (Y + ΔY)(i,j) = Y(i,j) + ΔY(i,j), using exact real addition.",
+      "Injectivity means that equality of the two output functions implies equality of the two input functions."
+    ],
+    "proposition_plain_english": "For arbitrary finite dimensions m and n, let Y and ΔY be real m-by-n matrices. Suppose Y has the global lower Euclidean-norm bound μ‖x‖₂ ≤ ‖Yx‖₂ for every real n-vector x, while ΔY has the global upper Euclidean-norm bound ‖ΔYx‖₂ ≤ η‖x‖₂ for every x. If η is strictly smaller than μ, then the exact real matrix Y + ΔY defines an injective map from R^n to R^m."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The proposition concerns finite real matrices and exact real arithmetic; it encodes no floating-point format, rounding operation, computed approximation, or roundoff error.",
+    "The norm is specifically the Euclidean 2-norm defined by a square root of a finite sum of exact squares.",
+    "The dimensions m and n are unrestricted natural numbers, so zero-dimensional cases are included.",
+    "If n = 0, the domain contains only the empty vector. Both norm hypotheses reduce to 0 ≤ 0 regardless of μ and η, and the conclusion is automatically true because every function from a singleton domain is injective.",
+    "If m = 0 and n > 0, the three hypotheses are inconsistent: the perturbation bound forces η ≥ 0, strictness gives μ > 0, and the lower bound for Y would require μ‖x‖₂ ≤ 0 for every nonzero x. Thus this dimension case is vacuous.",
+    "No nonnegativity assumptions on μ or η are stated explicitly. When n > 0, the perturbation bound forces η ≥ 0, and η < μ consequently forces μ > 0.",
+    "The constants μ and η are only lower and upper bounds. The proposition does not assert that they are optimal, attained, singular values, or exact operator norms.",
+    "The matrix need not be square. Only injectivity is concluded; surjectivity, invertibility as a square matrix, rank equality, determinant bounds, and a quantitative lower bound for Y + ΔY are not stated.",
+    "All inequalities quantify over every vector x, with no separate unit-vector restriction or normalization assumption."
+  ],
+  "ambiguities": []
+}

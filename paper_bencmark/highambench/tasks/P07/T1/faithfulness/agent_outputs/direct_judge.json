@@ -3,397 +3,1054 @@
   "role": "direct-judge",
   "task_id": "P07-T1",
   "paper_sha256": "4c4d638b359719f47e2c4664a50e9fa8e4704e8b6b39923d73c41883a97c5790",
-  "dossier_sha256": "d2a3bb80810c1a942d56dbd0a2d95edc6c6d69fd249001206836a19b576e8a54",
+  "dossier_sha256": "534fc7bde3b41dfd68af113d1087d1c4460819e011b8f3be163574d188694e6e",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.p07MatVec",
-      "interpretation": "For an m-by-n real array A and n-vector x, this returns the m-vector whose i-th entry is the finite sum of A i j times x j.",
-      "effect_on_target": "The conclusion concerns injectivity of the exact matrix-vector map associated with the entrywise sum Y + DeltaY.",
-      "paper_match": "This is the standard linear map for the additive relation Y_hat = A R_hat^{-1} + DeltaY and correctly supports interpreting injectivity as full column rank.",
+      "name": "HighamBench.P07ForwardSubstitutionTrace.output",
+      "interpretation": "Projects the computed m-by-n output matrix from a forward-substitution trace.",
+      "effect_on_target": "This matrix is the formal Y-hat used in the injectivity and condition-number conclusions.",
+      "paper_match": "Matches the matrix obtained by finite-precision forward substitution in Lemma 3.2.",
       "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p07RectLowerBound",
-      "interpretation": "This asserts that every vector x satisfies mu times its Euclidean norm less than or equal to the Euclidean norm of Y x, so mu is a certified lower gain for Y.",
-      "effect_on_target": "Together with the perturbation upper bound and eta < mu, it yields a positive lower gain for Y + DeltaY and hence injectivity.",
-      "paper_match": "For full-column-rank Y, the best such mu is sigma_min(Y), equal to 1 divided by the spectral norm of Y's pseudoinverse. The paper uses that exact pseudoinverse quantity, whereas the target permits any certified lower bound and never binds mu to it.",
-      "status": "fail"
+      "name": "HighamBench.P07Lemma31ComputedPreconditioner",
+      "interpretation": "Packages dimensions, A, S, computed sketch and QR data, R-hat, its inverse, and inherited rank and structural facts.",
+      "effect_on_target": "Supplies the Lemma 3.1 context needed to define A times R-hat inverse.",
+      "paper_match": "Its constructor encodes the standing dimensions, full ranks, computed-stage equations, upper triangular R-hat, and invertibility required by the paper.",
+      "status": "pass"
     },
     {
       "id": "D003",
-      "name": "HighamBench.p07RectOpNorm2Le",
-      "interpretation": "This asserts that every vector x satisfies the Euclidean norm of A x less than or equal to c times the Euclidean norm of x, so c is an upper bound on the induced spectral operator norm.",
-      "effect_on_target": "Applied to DeltaY, it bounds the perturbation action by eta in the injectivity argument.",
-      "paper_match": "The best eta is the spectral norm of DeltaY, but the paper defines epsilon_2 using that exact norm while the target permits an arbitrary upper bound and does not define epsilon_2.",
-      "status": "fail"
+      "name": "HighamBench.P07Lemma31ComputedPreconditioner.A",
+      "interpretation": "Projects the real m-by-n matrix A.",
+      "effect_on_target": "A is used in the exact preconditioned matrix and the forward-substitution trace.",
+      "paper_match": "Matches A in the paper.",
+      "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.p07VecNorm2",
-      "interpretation": "This is the Euclidean vector 2-norm, the square root of the sum of the squares of all coordinates.",
-      "effect_on_target": "It gives both certificate predicates their induced Euclidean operator-norm semantics.",
-      "paper_match": "The resulting induced matrix norm is the spectral 2-norm used throughout Lemma 3.2; it is unsquared and normwise as required.",
+      "name": "HighamBench.P07Lemma31ComputedPreconditioner.RHat",
+      "interpretation": "Projects the computed n-by-n upper triangular factor R-hat.",
+      "effect_on_target": "It is the triangular coefficient matrix used by forward substitution.",
+      "paper_match": "Matches the computed Householder-QR triangular factor referenced by Lemma 3.2.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "Fin",
-      "interpretation": "Fin n is the finite coordinate type with n elements indexed from zero through n minus one.",
-      "effect_on_target": "Fin m and Fin n supply the row and column index sets for matrices and vectors.",
-      "paper_match": "Finite coordinate sets correctly model the paper's real matrices; the missing dimension inequalities arise from the target's binders and hypotheses, not from Fin itself.",
+      "name": "HighamBench.P07Lemma32ForwardRun",
+      "interpretation": "Packages a forward-substitution trace and its additive error DeltaY.",
+      "effect_on_target": "Links the computed output to the exact matrix and supplies DeltaY for epsilon2.",
+      "paper_match": "Matches the computed stage Y-hat = A R-hat inverse + DeltaY.",
       "status": "pass"
     },
     {
       "id": "D006",
-      "name": "Function.Injective",
-      "interpretation": "A function is injective when equality of two outputs implies equality of the corresponding inputs.",
-      "effect_on_target": "This is the target's sole conclusion for the map represented by Y + DeltaY.",
-      "paper_match": "For a real m-by-n matrix, injectivity of its map is equivalent to full column rank and therefore matches the first conclusion of Lemma 3.2. It does not encode the lemma's condition-number conclusion.",
-      "status": "fail"
+      "name": "HighamBench.P07Lemma32ForwardRun.DeltaY",
+      "interpretation": "Projects the m-by-n additive error matrix.",
+      "effect_on_target": "Its spectral norm is the first factor in epsilon2.",
+      "paper_match": "Matches DeltaY in Lemma 3.2.",
+      "status": "pass"
     },
     {
       "id": "D007",
-      "name": "HAdd.hAdd",
-      "interpretation": "This dispatches the selected heterogeneous addition operation, which here is ordinary real addition.",
-      "effect_on_target": "It forms the matrix entries Y i j + DeltaY i j before matrix-vector multiplication.",
-      "paper_match": "This correctly represents the additive perturbation relation between the exact base matrix and the computed matrix.",
+      "name": "HighamBench.P07Lemma32ForwardRun.forwardSubstitution",
+      "interpretation": "Projects the concrete forward-substitution computation trace.",
+      "effect_on_target": "Determines the computed output appearing in both conclusions.",
+      "paper_match": "Matches the paper's computation of A R-hat inverse by forward substitution.",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "LT.lt",
-      "interpretation": "This dispatches the selected strict-order relation, which here is strict real inequality.",
-      "effect_on_target": "It states the strict certificate separation eta < mu.",
-      "paper_match": "With eta chosen as the exact perturbation norm and mu as the exact minimum singular value, eta < mu is equivalent to epsilon_2 < 1. Those choices are not imposed by the target, so this is only a sufficient certificate formulation of the paper's exact condition.",
-      "status": "fail"
+      "name": "HighamBench.P07MatrixPseudoinverseSpectralData",
+      "interpretation": "Packages exact spectral extrema, a Moore-Penrose pseudoinverse, and its spectral extrema.",
+      "effect_on_target": "Provides the data used to define spectral condition numbers and the pseudoinverse norm in epsilon2.",
+      "paper_match": "Represents the matrix 2-norm, pseudoinverse, and condition-number quantities in Lemma 3.2.",
+      "status": "pass"
     },
     {
       "id": "D009",
-      "name": "Nat",
-      "interpretation": "Nat is the type of nonnegative natural numbers used for dimensions m and n.",
-      "effect_on_target": "The target quantifies over all m and n, including zero, square, and wide dimensions, without an m > n hypothesis.",
-      "paper_match": "The paper's inherited setting has positive dimensions m > s > n and hence m > n. The unrestricted target scope is broader and is not supplied by the paper result.",
-      "status": "fail"
+      "name": "HighamBench.P07RectSpectralExtrema",
+      "interpretation": "Packages attained nonnegative upper and lower Euclidean gains of a finite real matrix.",
+      "effect_on_target": "Its upper field is the exact spectral operator norm.",
+      "paper_match": "Matches largest and smallest singular-value semantics for finite real matrices.",
+      "status": "pass"
     },
     {
       "id": "D010",
-      "name": "Real",
-      "interpretation": "Real is Lean's exact real-number type.",
-      "effect_on_target": "All matrix entries, vector entries, bounds, arithmetic, and comparisons are exact real mathematics.",
-      "paper_match": "The paper represents A, R_hat, Y_hat, and their errors as real matrices, so the scalar field matches, although the target separately loses the computed finite-precision provenance.",
+      "name": "HighamBench.P07ScalarArithmeticModel",
+      "interpretation": "Packages unit roundoff and rounded scalar operations satisfying relative-error axioms.",
+      "effect_on_target": "Defines the arithmetic used by the forward-substitution recurrence.",
+      "paper_match": "Compatible with the paper's ideal finite-precision arithmetic context; Lemma 3.2 itself abstracts the resulting error into DeltaY.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "Real.instAdd",
-      "interpretation": "This is ordinary addition on real numbers.",
-      "effect_on_target": "It makes Y + DeltaY an entrywise real matrix sum.",
-      "paper_match": "It matches the paper's exact additive identity Y_hat = A R_hat^{-1} + DeltaY.",
+      "name": "HighamBench.p07ConditionNumber2",
+      "interpretation": "Defines condition number as the matrix spectral norm times the spectral norm of its Moore-Penrose pseudoinverse.",
+      "effect_on_target": "Forms both kappa2 terms in the stated inequality.",
+      "paper_match": "For the full-column-rank matrices at issue, this equals sigma_max divided by sigma_min, exactly the paper's kappa2.",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "Real.instLT",
-      "interpretation": "This is the standard strict linear order on real numbers.",
-      "effect_on_target": "It supplies the meaning of eta < mu.",
-      "paper_match": "The order and strictness themselves match the strict perturbation threshold used by the paper.",
+      "name": "HighamBench.p07ExactPreconditionedMatrix",
+      "interpretation": "Defines the exact reference matrix as A multiplied by the recorded exact inverse of R-hat.",
+      "effect_on_target": "This is the reference matrix in DeltaY, epsilon2, and the numerator condition number.",
+      "paper_match": "Matches A R-hat inverse, not A R inverse.",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "instHAdd",
-      "interpretation": "This lifts a homogeneous Add instance to heterogeneous-addition notation with the same input and output type.",
-      "effect_on_target": "It selects Real.instAdd for the entrywise sum.",
-      "paper_match": "It introduces no altered operation; the result remains ordinary real matrix addition.",
+      "name": "HighamBench.p07Lemma32Epsilon",
+      "interpretation": "Defines epsilon2 as the spectral norm of DeltaY times the spectral norm of the reference matrix pseudoinverse.",
+      "effect_on_target": "Appears in the strict hypothesis and both places in the bound.",
+      "paper_match": "Exactly matches epsilon2 in Lemma 3.2.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "Fin.fintype",
-      "interpretation": "This provides the finite enumeration of every element of Fin n.",
-      "effect_on_target": "It permits matrix-vector products and vector norms to sum over all coordinates.",
-      "paper_match": "This correctly realizes finite-dimensional coordinate sums.",
+      "name": "HighamBench.p07MatVec",
+      "interpretation": "Defines ordinary finite matrix-vector multiplication by summing over all columns.",
+      "effect_on_target": "Injectivity of this map expresses full column rank.",
+      "paper_match": "Matches the standard linear action of a real matrix.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "Finset.sum",
-      "interpretation": "This forms the finite additive sum of a function over a finite set.",
-      "effect_on_target": "It computes dot products and sums of squared vector coordinates.",
-      "paper_match": "These are the standard exact finite sums underlying the paper's matrix-vector operations and Euclidean norms.",
+      "name": "HighamBench.P07ForwardSubstitutionTrace",
+      "interpretation": "Represents a row-wise rounded forward-substitution computation for A times R inverse.",
+      "effect_on_target": "Restricts Y-hat to an algorithmically produced output rather than an unrelated perturbation.",
+      "paper_match": "Matches Algorithm 1.3 step 4 and the row-wise triangular solves described before Lemma 3.2.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "Finset.univ",
-      "interpretation": "This is the finite set containing every element of a finite type.",
-      "effect_on_target": "It ensures sums range over every row or column coordinate as appropriate.",
-      "paper_match": "It matches complete coordinate summation with no omitted or shifted indices.",
+      "name": "HighamBench.P07Lemma31ComputedPreconditioner.RHatInv",
+      "interpretation": "Projects the recorded two-sided inverse of R-hat.",
+      "effect_on_target": "Used to form the exact reference A R-hat inverse.",
+      "paper_match": "Matches the inverse whose existence is inherited from Lemma 3.1.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "HMul.hMul",
-      "interpretation": "This dispatches the selected heterogeneous multiplication operation, which here is ordinary real multiplication.",
-      "effect_on_target": "It multiplies matrix entries by vector entries in p07MatVec.",
-      "paper_match": "It gives the usual real dot-product semantics required for matrix-vector multiplication.",
+      "name": "HighamBench.P07Lemma31ComputedPreconditioner.mk",
+      "interpretation": "Requires 0<n<s<m, real A and S, full column rank of A and SA, the two finite-precision residual equations, isometric Q-tilde, upper triangular R-hat, and a two-sided R-hat inverse.",
+      "effect_on_target": "Ensures the exact reference is defined and full column rank while retaining the sketch and computed-QR context.",
+      "paper_match": "Matches the standing assumptions and the usable outcome of Lemma 3.1. The HHQR relation is represented extensionally by its residual equation rather than by an execution trace, which is sufficient for Lemma 3.2.",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "LE.le",
-      "interpretation": "This dispatches the selected non-strict order relation, which here is real less-than-or-equal.",
-      "effect_on_target": "It expresses the lower-gain and operator-upper-bound certificate inequalities.",
-      "paper_match": "Non-strict inequalities are appropriate for norm bounds; the paper's strictness occurs at the separate epsilon_2 < 1 threshold.",
+      "name": "HighamBench.P07Lemma32ForwardRun.mk",
+      "interpretation": "Requires DeltaY to equal computed output minus A R-hat inverse exactly.",
+      "effect_on_target": "Prevents DeltaY from being an arbitrary unrelated error matrix.",
+      "paper_match": "Exactly matches the definition DeltaY = Y-hat - A R-hat inverse.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "Real.instAddCommMonoid",
-      "interpretation": "This supplies real addition, zero, associativity, commutativity, and identity laws to finite sums.",
-      "effect_on_target": "It permits exact summation of real dot-product and squared-coordinate terms.",
-      "paper_match": "It is standard infrastructure for the intended real linear algebra and changes no paper semantics.",
+      "name": "HighamBench.P07MatrixPseudoinverseSpectralData.matrixSpectrum",
+      "interpretation": "Projects spectral extrema of the underlying matrix.",
+      "effect_on_target": "Its upper value supplies the matrix-norm factor in kappa2.",
+      "paper_match": "Matches the matrix spectral norm.",
       "status": "pass"
     },
     {
       "id": "D020",
-      "name": "Real.instLE",
-      "interpretation": "This is the standard non-strict order on real numbers.",
-      "effect_on_target": "It supplies the comparisons in hLower and hDelta.",
-      "paper_match": "It correctly represents ordinary real norm inequalities.",
+      "name": "HighamBench.P07MatrixPseudoinverseSpectralData.mk",
+      "interpretation": "Combines matrix extrema, a Moore-Penrose pseudoinverse, pseudoinverse extrema, and the reciprocal smallest-singular-value identity when the lower extremum is nonzero.",
+      "effect_on_target": "Makes condition-number and epsilon values mathematically tied to the represented matrices.",
+      "paper_match": "Matches the matrix pseudoinverse and full-rank spectral identities used by Lemma 3.2.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "Real.instMul",
-      "interpretation": "This is ordinary multiplication on real numbers.",
-      "effect_on_target": "It is used in dot products and in multiplying mu or eta by a vector norm.",
-      "paper_match": "These products have their standard real meanings and match the paper's norm scaling.",
+      "name": "HighamBench.P07MatrixPseudoinverseSpectralData.pseudoinverse",
+      "interpretation": "Projects the n-by-m Moore-Penrose pseudoinverse matrix.",
+      "effect_on_target": "Identifies the matrix whose upper spectral extremum occurs in epsilon2 and kappa2.",
+      "paper_match": "Matches the dagger operation in the paper.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "instHMul",
-      "interpretation": "This lifts a homogeneous Mul instance to heterogeneous-multiplication notation with the same input and output type.",
-      "effect_on_target": "It selects ordinary real multiplication for all displayed products.",
-      "paper_match": "It introduces no alternative multiplication semantics.",
+      "name": "HighamBench.P07MatrixPseudoinverseSpectralData.pseudoinverseSpectrum",
+      "interpretation": "Projects exact spectral extrema of the pseudoinverse.",
+      "effect_on_target": "Its upper value is the pseudoinverse spectral norm.",
+      "paper_match": "Matches the norm of the dagger matrix.",
       "status": "pass"
     },
     {
       "id": "D023",
-      "name": "HPow.hPow",
-      "interpretation": "This dispatches exponentiation, here raising a real coordinate to a natural-number power.",
-      "effect_on_target": "It squares each coordinate in p07VecNorm2.",
-      "paper_match": "Squaring coordinates is the correct construction of the Euclidean 2-norm.",
+      "name": "HighamBench.P07RectSpectralExtrema.mk",
+      "interpretation": "Requires nonnegative upper and lower gains, global upper and lower norm bounds, and unit-vector attainment of both.",
+      "effect_on_target": "Makes upper and lower the exact largest and smallest singular values in the nonempty finite-dimensional domains used here.",
+      "paper_match": "Matches spectral extrema of real finite matrices.",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "Monoid.toNatPow",
-      "interpretation": "This supplies natural-number powers from repeated multiplication in a monoid.",
-      "effect_on_target": "For exponent two it gives ordinary real squaring.",
-      "paper_match": "It matches the sum-of-squares norm formula without approximation.",
+      "name": "HighamBench.P07RectSpectralExtrema.upper",
+      "interpretation": "Projects the attained upper spectral extremum.",
+      "effect_on_target": "Represents every matrix 2-norm used by the target.",
+      "paper_match": "Matches the paper's spectral norm.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "OfNat.ofNat",
-      "interpretation": "This interprets a natural-number literal in the requested type.",
-      "effect_on_target": "It supplies the literal exponent 2 used in the vector norm.",
-      "paper_match": "The literal has the intended value and introduces no coefficient or indexing discrepancy.",
+      "name": "HighamBench.P07ScalarArithmeticModel.mk",
+      "interpretation": "Requires nonnegative unit roundoff and relative-error representations for addition, subtraction, multiplication, and nonzero-denominator division.",
+      "effect_on_target": "Provides an idealized real-valued finite-precision model for the explicit triangular-solve recurrence.",
+      "paper_match": "Consistent with the paper's finite-precision model; no exceptional-value or rounding-mode claim is added to Lemma 3.2.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "Real.instMonoid",
-      "interpretation": "This supplies real multiplication, one, and natural powers.",
-      "effect_on_target": "It supports squaring real vector coordinates.",
-      "paper_match": "It is standard exact real arithmetic consistent with the Euclidean norm.",
+      "name": "HighamBench.p07RectMatMul",
+      "interpretation": "Defines ordinary rectangular matrix multiplication by a finite inner-product sum.",
+      "effect_on_target": "Forms SA, Q-tilde R-hat, inverse identities, and A R-hat inverse.",
+      "paper_match": "Matches standard real matrix multiplication.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "Real.sqrt",
-      "interpretation": "This is the nonnegative real square-root function.",
-      "effect_on_target": "It converts the nonnegative sum of coordinate squares into the Euclidean norm.",
-      "paper_match": "It yields the unsquared vector 2-norm that induces the paper's spectral matrix norm.",
+      "name": "HighamBench.P07ForwardSubstitutionTrace.mk",
+      "interpretation": "Requires nonzero diagonal entries and the row-wise recurrence Y_ij = flDiv(flSub(A_ij, rounded sum over k<j of Y_ik R_kj), R_jj).",
+      "effect_on_target": "Links the output to a concrete forward-substitution execution for R-hat transpose times each row vector.",
+      "paper_match": "Matches the paper's row-wise solves R-hat transpose x_i = a_i. It selects the standard increasing-index summation order left unspecified in the prose.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "instHPow",
-      "interpretation": "This lifts a Pow instance to heterogeneous-power notation while retaining the same base and result type.",
-      "effect_on_target": "It selects natural exponentiation of real coordinates.",
-      "paper_match": "It preserves ordinary real squaring and therefore matches the intended norm.",
+      "name": "HighamBench.P07MoorePenrosePseudoinverse",
+      "interpretation": "States that a candidate matrix satisfies the four real Moore-Penrose equations.",
+      "effect_on_target": "Ensures dagger semantics are mathematical pseudoinverse semantics.",
+      "paper_match": "Matches the matrix pseudoinverse denoted by the dagger in footnote 3.",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "instOfNatNat",
-      "interpretation": "This interprets each natural-number literal as that same natural number.",
-      "effect_on_target": "It makes the exponent in x i raised to 2 exactly the natural number two.",
-      "paper_match": "There is no coefficient or index mismatch.",
+      "name": "HighamBench.P07RectSpectralExtrema.lower",
+      "interpretation": "Projects the attained lower Euclidean gain.",
+      "effect_on_target": "Represents the smallest singular value and controls the reciprocal pseudoinverse norm.",
+      "paper_match": "Matches sigma_min.",
       "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "HighamBench.p07FiniteId",
+      "interpretation": "Defines the finite identity matrix by one on equal indices and zero otherwise.",
+      "effect_on_target": "Appears in the two-sided inverse requirements for R-hat.",
+      "paper_match": "Matches the ordinary identity matrix.",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "HighamBench.p07Isometry",
+      "interpretation": "Requires Q to preserve the Euclidean norm of every vector.",
+      "effect_on_target": "Expresses that Q-tilde has orthonormal columns.",
+      "paper_match": "Matches the orthonormal-column property of Q-tilde in Lemma 3.1.",
+      "status": "pass"
+    },
+    {
+      "id": "D032",
+      "name": "HighamBench.p07RectAdd",
+      "interpretation": "Defines entrywise matrix addition.",
+      "effect_on_target": "Expresses the sketch and QR additive-error equations.",
+      "paper_match": "Matches B-hat = SA + E1 and Q-tilde R-hat = B-hat + E2.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "HighamBench.p07RectLowerBound",
+      "interpretation": "States c times the input Euclidean norm is at most the output Euclidean norm for every vector.",
+      "effect_on_target": "Defines the global lower gain used by spectral-extrema data.",
+      "paper_match": "Matches the smallest-singular-value lower bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "HighamBench.p07RectOpNorm2Le",
+      "interpretation": "States the output Euclidean norm is at most c times the input norm for every vector.",
+      "effect_on_target": "Defines an upper spectral operator-norm bound.",
+      "paper_match": "Matches the matrix spectral norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "HighamBench.p07RectSub",
+      "interpretation": "Defines entrywise matrix subtraction.",
+      "effect_on_target": "Defines DeltaY as computed output minus the exact reference.",
+      "paper_match": "Matches the subtraction in DeltaY = Y-hat - A R-hat inverse.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "HighamBench.p07UpperTriangular",
+      "interpretation": "Requires entries strictly below the diagonal to be zero.",
+      "effect_on_target": "Establishes the triangular structure required by forward substitution.",
+      "paper_match": "Matches R-hat being upper triangular.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "HighamBench.p07VecNorm2",
+      "interpretation": "Defines Euclidean norm as the square root of the sum of coordinate squares.",
+      "effect_on_target": "Underlies all formal spectral-norm and singular-value quantities.",
+      "paper_match": "Matches the vector 2-norm used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "HighamBench.P07MoorePenrosePseudoinverse.mk",
+      "interpretation": "Requires A Aplus A = A, Aplus A Aplus = Aplus, and symmetry of A Aplus and Aplus A.",
+      "effect_on_target": "Characterizes the real Moore-Penrose pseudoinverse exactly.",
+      "paper_match": "Matches the dagger matrix in Lemma 3.2.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "HighamBench.P07ScalarArithmeticModel.flDiv",
+      "interpretation": "Projects the modeled rounded division operation.",
+      "effect_on_target": "Performs each diagonal division in forward substitution.",
+      "paper_match": "Matches finite-precision division in the triangular solve.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "HighamBench.P07ScalarArithmeticModel.flSub",
+      "interpretation": "Projects the modeled rounded subtraction operation.",
+      "effect_on_target": "Computes each forward-substitution residual.",
+      "paper_match": "Matches finite-precision subtraction in the triangular solve.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "HighamBench.p07RoundedPrefixDot",
+      "interpretation": "Computes the rounded sum of Y_ik times R_kj over k<j.",
+      "effect_on_target": "Forms the previously computed contribution in each forward-substitution step.",
+      "paper_match": "Matches the prefix dot product in solving R-hat transpose x_i = a_i.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "HighamBench.P07ScalarArithmeticModel.flAdd",
+      "interpretation": "Projects the modeled rounded addition operation.",
+      "effect_on_target": "Combines terms in rounded prefix sums.",
+      "paper_match": "Matches finite-precision accumulation.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "HighamBench.P07ScalarArithmeticModel.flMul",
+      "interpretation": "Projects the modeled rounded multiplication operation.",
+      "effect_on_target": "Forms products in rounded prefix sums.",
+      "paper_match": "Matches finite-precision multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "HighamBench.p07RoundedPrefixDot._proof_1",
+      "interpretation": "Proves that a prefix index k<j is also a valid Fin n index.",
+      "effect_on_target": "Only discharges an index-safety obligation in the recurrence.",
+      "paper_match": "This is proof machinery with no independent paper-level claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D045",
+      "name": "HighamBench.recursiveSum",
+      "interpretation": "Defines a left-associated finite sum using the modeled addition, with zero for an empty sum.",
+      "effect_on_target": "Fixes the accumulation order for each prefix dot product.",
+      "paper_match": "It is a valid concrete implementation of the standard forward-substitution sum; Lemma 3.2 does not depend on the chosen order after DeltaY is defined.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "HighamBench.recursiveSum._proof_1",
+      "interpretation": "Proves an index bound used in the singleton branch of recursive summation.",
+      "effect_on_target": "Only supports well-typed finite indexing.",
+      "paper_match": "No independent paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D047",
+      "name": "HighamBench.recursiveSum.match_1",
+      "interpretation": "Eliminates the zero-versus-successor cases of a finite vector.",
+      "effect_on_target": "Implements recursion over the number of summands.",
+      "paper_match": "Lean recursion machinery has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D048",
+      "name": "And",
+      "interpretation": "Forms a conjunction of two propositions.",
+      "effect_on_target": "Requires both injectivity and the condition-number bound.",
+      "paper_match": "Matches the two conclusions stated together in Lemma 3.2.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Extracts division from the real division/inverse structure.",
+      "effect_on_target": "Supports real division in the bound.",
+      "paper_match": "Typeclass plumbing with no independent paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D050",
+      "name": "Fin",
+      "interpretation": "Represents indices 0 through n-1.",
+      "effect_on_target": "Gives finite row and column index sets for matrices and vectors.",
+      "paper_match": "Matches finite matrix dimensions, with zero-based formal indexing immaterial to the index-free lemma.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "Function.Injective",
+      "interpretation": "States that equal outputs of a function imply equal inputs.",
+      "effect_on_target": "For the matrix-vector map, it states a trivial kernel and hence full column rank.",
+      "paper_match": "Matches Y-hat having full column rank.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "HAdd.hAdd",
+      "interpretation": "Dispatches overloaded addition.",
+      "effect_on_target": "Implements real and matrix-entry additions.",
+      "paper_match": "Instantiated as ordinary real addition, matching the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "HDiv.hDiv",
+      "interpretation": "Dispatches overloaded division.",
+      "effect_on_target": "Implements the quotient in the condition-number bound.",
+      "paper_match": "Instantiated as ordinary real division.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "HSub.hSub",
+      "interpretation": "Dispatches overloaded subtraction.",
+      "effect_on_target": "Implements 1-epsilon2 and matrix-entry subtraction.",
+      "paper_match": "Instantiated as ordinary real subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "LE.le",
+      "interpretation": "Dispatches the non-strict order relation.",
+      "effect_on_target": "Expresses the condition-number upper bound.",
+      "paper_match": "Matches the paper's less-than-or-equal inequality.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "LT.lt",
+      "interpretation": "Dispatches the strict order relation.",
+      "effect_on_target": "Expresses epsilon2<1 and dimension inequalities.",
+      "paper_match": "Matches the strict threshold and strict standing dimensions.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "Nat",
+      "interpretation": "Represents natural-number dimensions.",
+      "effect_on_target": "Types m, s, and n.",
+      "paper_match": "Matches finite nonnegative matrix dimensions, with positivity supplied by the preconditioner constructor.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "OfNat.ofNat",
+      "interpretation": "Interprets numeric literals in the required type.",
+      "effect_on_target": "Supplies real and natural literals zero and one.",
+      "paper_match": "Elaboration machinery with the expected numeric meanings.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D059",
+      "name": "One.toOfNat1",
+      "interpretation": "Interprets literal one from a One instance.",
+      "effect_on_target": "Supplies the real one in epsilon2<1 and 1-epsilon2.",
+      "paper_match": "Matches the constant one in Lemma 3.2.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "Real",
+      "interpretation": "The scalar field of real numbers.",
+      "effect_on_target": "Types every matrix entry, norm value, and error parameter.",
+      "paper_match": "Exactly matches the paper's real matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "Real.instAdd",
+      "interpretation": "Provides ordinary real addition.",
+      "effect_on_target": "Used in the numerator, matrix sums, and arithmetic model.",
+      "paper_match": "Matches real addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "Provides real inverse and division operations.",
+      "effect_on_target": "Interprets the quotient in the bound.",
+      "paper_match": "Matches real division by the positive denominator 1-epsilon2.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "Real.instLE",
+      "interpretation": "Provides the usual real non-strict order.",
+      "effect_on_target": "Interprets the final inequality and nonnegativity fields.",
+      "paper_match": "Matches the paper's real inequality.",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "Real.instLT",
+      "interpretation": "Provides the usual strict real order.",
+      "effect_on_target": "Interprets epsilon2<1.",
+      "paper_match": "Matches the paper's strict small-error hypothesis.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "Real.instOne",
+      "interpretation": "Provides real one.",
+      "effect_on_target": "Used in the threshold and denominator.",
+      "paper_match": "Matches the coefficient and threshold constant one.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "Real.instSub",
+      "interpretation": "Provides ordinary real subtraction.",
+      "effect_on_target": "Interprets 1-epsilon2 and relative-error formulas.",
+      "paper_match": "Matches real subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "instHAdd",
+      "interpretation": "Lifts homogeneous addition into overloaded addition.",
+      "effect_on_target": "Connects notation to real addition.",
+      "paper_match": "Typeclass plumbing with no independent paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D068",
+      "name": "instHDiv",
+      "interpretation": "Lifts homogeneous division into overloaded division.",
+      "effect_on_target": "Connects quotient notation to real division.",
+      "paper_match": "Typeclass plumbing with no independent paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D069",
+      "name": "instHSub",
+      "interpretation": "Lifts homogeneous subtraction into overloaded subtraction.",
+      "effect_on_target": "Connects subtraction notation to real subtraction.",
+      "paper_match": "Typeclass plumbing with no independent paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D070",
+      "name": "Fin.fintype",
+      "interpretation": "Provides finite enumeration of Fin n.",
+      "effect_on_target": "Allows sums over all matrix or vector indices.",
+      "paper_match": "Implements finite-dimensional sums without changing their mathematical meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "Finset.sum",
+      "interpretation": "Defines commutative finite summation.",
+      "effect_on_target": "Used in exact matrix products, matrix-vector products, and squared norms.",
+      "paper_match": "Matches ordinary finite real sums.",
+      "status": "pass"
+    },
+    {
+      "id": "D072",
+      "name": "Finset.univ",
+      "interpretation": "Selects every element of a finite type.",
+      "effect_on_target": "Makes exact products and norms sum over every relevant coordinate.",
+      "paper_match": "Matches complete finite index ranges.",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "HMul.hMul",
+      "interpretation": "Dispatches overloaded multiplication.",
+      "effect_on_target": "Implements scalar products and products of spectral quantities.",
+      "paper_match": "Instantiated as ordinary real multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "Provides the algebraic structure used by finite real sums.",
+      "effect_on_target": "Supports exact finite summation.",
+      "paper_match": "Foundational algebraic machinery with no separate paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D075",
+      "name": "Real.instMul",
+      "interpretation": "Provides ordinary real multiplication.",
+      "effect_on_target": "Used in matrix products, norms, epsilon2, and kappa2.",
+      "paper_match": "Matches real multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D076",
+      "name": "instHMul",
+      "interpretation": "Lifts homogeneous multiplication into overloaded multiplication.",
+      "effect_on_target": "Connects multiplication notation to real multiplication.",
+      "paper_match": "Typeclass plumbing with no independent paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D077",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "Expresses computation equations, inverse identities, attainment, and injectivity.",
+      "paper_match": "Matches exact mathematical equality.",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "Exists",
+      "interpretation": "Existential quantification.",
+      "effect_on_target": "Expresses attained spectral extrema and per-operation rounding errors.",
+      "paper_match": "Matches existence of extremizing vectors and admissible relative errors.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "Inv.inv",
+      "interpretation": "Dispatches multiplicative inversion.",
+      "effect_on_target": "Expresses the reciprocal lower singular value in spectral data.",
+      "paper_match": "Matches reciprocal sigma_min for full-column-rank matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "Ne",
+      "interpretation": "Defines inequality as the negation of equality.",
+      "effect_on_target": "Requires nonzero triangular diagonals and guards reciprocal identities.",
+      "paper_match": "Matches nonsingularity and nonzero-denominator conditions.",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "Real.instAddGroup",
+      "interpretation": "Provides additive inverses and subtraction structure on reals.",
+      "effect_on_target": "Supports absolute value and subtraction.",
+      "paper_match": "Foundational real algebra with no independent paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D082",
+      "name": "Real.instInv",
+      "interpretation": "Provides ordinary real reciprocal.",
+      "effect_on_target": "Interprets the reciprocal spectral extremum.",
+      "paper_match": "Matches reciprocal sigma_min.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "Real.instZero",
+      "interpretation": "Provides real zero.",
+      "effect_on_target": "Used in nonnegativity, nonzero conditions, identities, and empty sums.",
+      "paper_match": "Matches real zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D084",
+      "name": "Real.lattice",
+      "interpretation": "Provides real min/max order structure used to define absolute value.",
+      "effect_on_target": "Supports the bound on scalar relative errors.",
+      "paper_match": "Foundational order machinery with no independent paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D085",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Interprets literal zero from a Zero instance.",
+      "effect_on_target": "Supplies real zero in spectral and arithmetic conditions.",
+      "paper_match": "Matches the ordinary zero constant.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "abs",
+      "interpretation": "Defines real absolute value.",
+      "effect_on_target": "Bounds each scalar relative error by unit roundoff.",
+      "paper_match": "Matches the standard magnitude bound on rounding error.",
+      "status": "pass"
+    },
+    {
+      "id": "D087",
+      "name": "instLTNat",
+      "interpretation": "Provides the usual strict order on natural numbers.",
+      "effect_on_target": "Interprets dimension and triangular-index inequalities.",
+      "paper_match": "Matches the ordering m>s>n and below-diagonal tests.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "instOfNatNat",
+      "interpretation": "Interprets natural-number literals.",
+      "effect_on_target": "Supplies zero and one in dimension and recursion expressions.",
+      "paper_match": "Elaboration machinery with standard numeral meanings.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D089",
+      "name": "Fin.val",
+      "interpretation": "Projects the natural-number value of a finite index.",
+      "effect_on_target": "Determines prefix ranges and below-diagonal comparisons.",
+      "paper_match": "Implements zero-based finite indexing without changing the matrix semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D090",
+      "name": "HPow.hPow",
+      "interpretation": "Dispatches exponentiation.",
+      "effect_on_target": "Squares vector coordinates in the Euclidean norm.",
+      "paper_match": "Matches squared-coordinate Euclidean norm semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D091",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Provides natural powers from multiplication.",
+      "effect_on_target": "Interprets coordinate squares.",
+      "paper_match": "Matches ordinary real squaring.",
+      "status": "pass"
+    },
+    {
+      "id": "D092",
+      "name": "Real.instMonoid",
+      "interpretation": "Provides multiplicative monoid structure on reals.",
+      "effect_on_target": "Supports natural powers and division infrastructure.",
+      "paper_match": "Foundational algebraic machinery with no independent paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D093",
+      "name": "Real.sqrt",
+      "interpretation": "The nonnegative real square root.",
+      "effect_on_target": "Completes the Euclidean norm definition.",
+      "paper_match": "Matches the unsquared vector 2-norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D094",
+      "name": "instDecidableEqFin",
+      "interpretation": "Decides equality of finite indices.",
+      "effect_on_target": "Allows construction of the finite identity matrix.",
+      "paper_match": "Computational logic machinery with no independent paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D095",
+      "name": "instHPow",
+      "interpretation": "Lifts power notation into heterogeneous power notation.",
+      "effect_on_target": "Connects square notation to real natural powers.",
+      "paper_match": "Typeclass plumbing with no independent paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D096",
+      "name": "ite",
+      "interpretation": "Ordinary if-then-else on a decidable proposition.",
+      "effect_on_target": "Defines diagonal versus off-diagonal entries of the identity matrix.",
+      "paper_match": "Correctly implements the ordinary identity matrix.",
+      "status": "pass"
+    },
+    {
+      "id": "D097",
+      "name": "Fin.mk",
+      "interpretation": "Constructs a finite index from a natural value and an in-range proof.",
+      "effect_on_target": "Builds prefix indices in rounded summation.",
+      "paper_match": "Index-construction machinery with no independent paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D098",
+      "name": "Matrix",
+      "interpretation": "Defines a matrix as a two-argument function of row and column indices.",
+      "effect_on_target": "Types matrices used in the pseudoinverse symmetry equations.",
+      "paper_match": "Matches finite real matrices extensionally.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "Matrix.transpose",
+      "interpretation": "Swaps matrix row and column indices.",
+      "effect_on_target": "Expresses symmetry in the real Moore-Penrose equations.",
+      "paper_match": "Matches ordinary transpose; no conjugation is needed because the paper uses real matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "Fin.castSucc",
+      "interpretation": "Embeds an index of Fin n into Fin (n+1) without changing its value.",
+      "effect_on_target": "Carries previous summation indices into the next recursion step.",
+      "paper_match": "Index bookkeeping with no change to the mathematical sum.",
+      "status": "pass"
+    },
+    {
+      "id": "D101",
+      "name": "Fin.last",
+      "interpretation": "Returns the final index n of Fin (n+1).",
+      "effect_on_target": "Selects the newly appended summand in recursive accumulation.",
+      "paper_match": "Correctly implements increasing-index summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D102",
+      "name": "Nat.below",
+      "interpretation": "Packages recursive results for smaller natural numbers.",
+      "effect_on_target": "Supports course-of-values recursion in recursiveSum.",
+      "paper_match": "Lean recursion machinery with no independent paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D103",
+      "name": "Nat.brecOn",
+      "interpretation": "Performs course-of-values recursion on a natural number.",
+      "effect_on_target": "Implements recursiveSum.",
+      "paper_match": "Lean recursion machinery with no independent paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D104",
+      "name": "Nat.instPreorder",
+      "interpretation": "Provides the standard preorder on natural numbers.",
+      "effect_on_target": "Supports a generated prefix-index proof.",
+      "paper_match": "Foundational order machinery with no independent paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D105",
+      "name": "Nat.succ",
+      "interpretation": "Constructs the successor natural number.",
+      "effect_on_target": "Represents one-more-element recursion cases.",
+      "paper_match": "Foundational recursion machinery with no independent paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D106",
+      "name": "Not",
+      "interpretation": "Defines logical negation as implication to false.",
+      "effect_on_target": "Underlies nonzero conditions.",
+      "paper_match": "Matches ordinary logical negation.",
+      "status": "pass"
+    },
+    {
+      "id": "D107",
+      "name": "Preorder.toLT",
+      "interpretation": "Extracts strict order from a preorder.",
+      "effect_on_target": "Supports a generated natural-index inequality.",
+      "paper_match": "Order-instance plumbing with no independent paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D108",
+      "name": "dite",
+      "interpretation": "Dependent if-then-else on a decidable proposition.",
+      "effect_on_target": "Supports branch-dependent proofs inside recursive summation.",
+      "paper_match": "Lean implementation machinery with no independent paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D109",
+      "name": "instAddNat",
+      "interpretation": "Provides ordinary natural-number addition.",
+      "effect_on_target": "Interprets n+1 in recursive index types.",
+      "paper_match": "Standard index arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D110",
+      "name": "instDecidableEqNat",
+      "interpretation": "Decides equality of natural numbers.",
+      "effect_on_target": "Selects recursion branches.",
+      "paper_match": "Computational logic machinery with no independent paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D111",
+      "name": "Nat.casesOn",
+      "interpretation": "Eliminates a natural number into zero and successor cases.",
+      "effect_on_target": "Implements the structural cases of recursiveSum.",
+      "paper_match": "Lean recursion machinery with no independent paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D112",
+      "name": "Nat.zero",
+      "interpretation": "The zero natural number constructor.",
+      "effect_on_target": "Provides the base case for finite dimensions and recursion.",
+      "paper_match": "Foundational data-constructor machinery with no independent paper claim.",
+      "status": "not-applicable"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "PDF page 13, printed page 917, contains Lemma 3.2; its setup is supplied by Lemma 3.1 across printed pages 916-917.",
-      "lean_evidence": "The supplied dossier gives the exact target p07_t1_perturbed_preconditioned_map_injective and its fully explicit type.",
-      "reasoning": "The paper version, cited lemma, and immediately relevant setup were directly verified."
+      "paper_evidence": "The verified PDF is the 2024 SIAM journal version, SHA-256 4c4d638b359719f47e2c4664a50e9fa8e4704e8b6b39923d73c41883a97c5790. Printed page 917 contains Lemma 3.2, with the standing and Lemma 3.1 context on printed pages 906 and 916-917.",
+      "lean_evidence": "The target is specifically parameterized by P07Lemma31ComputedPreconditioner and P07Lemma32ForwardRun and states the Lemma 3.2 rank and condition-number conclusions.",
+      "reasoning": "The selected source, passage, and surrounding inherited result are the correct ones."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "The paper has A in R^(m-by-n), an n-by-n computed R_hat, and m-by-n matrices A R_hat^{-1}, Y_hat, and DeltaY in the standing m > s > n setting.",
-      "lean_evidence": "The target quantifies arbitrary natural m and n, arbitrary real arrays Y and DeltaY, and free real certificates mu and eta; it has no A, S, R_hat, or dimension inequality.",
-      "reasoning": "The coordinate types are compatible, but the intended binders, inherited dimensions, and algorithm-specific objects are not preserved."
+      "status": "pass",
+      "paper_evidence": "The paper has A in R^(m by n), S in R^(s by m), SA in R^(s by n), R-hat in R^(n by n), and Y-hat and DeltaY in R^(m by n), with m>s>n.",
+      "lean_evidence": "The constructor for pre requires 0<n<s<m and assigns exactly Fin m by Fin n to A, Fin s by Fin m to S, Fin n by Fin n to R-hat and its inverse, and Fin m by Fin n to the output and DeltaY.",
+      "reasoning": "All binders and finite index types have the intended dimensions; explicit n>0 makes the conventional positive-dimension context precise."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "R_hat is inherited from Lemma 3.1, Y_hat is the particular computed output, DeltaY is determined by Y_hat - A R_hat^{-1}, and epsilon_2 is determined by those matrices.",
-      "lean_evidence": "Y, DeltaY, mu, and eta are universally quantified independently before the three certificate hypotheses.",
-      "reasoning": "The target generalizes from one algorithmically determined configuration to every pair of matrices and every pair of valid certificates, changing quantifier scope and dependence."
+      "status": "pass",
+      "paper_evidence": "Lemma 3.2 universally treats the inherited setup and computed Y-hat, then conditionally concludes both claims when epsilon2<1.",
+      "lean_evidence": "The target universally quantifies pre, model, run, and canonical spectral-data witnesses before the implication from hsmall to a conjunction.",
+      "reasoning": "No conclusion witness is moved outside its proper scope. Universal quantification over uniquely determined spectral values does not alter the mathematical assertion."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "Lemma 3.2 assumes the exact condition epsilon_2 = ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2 < 1 and inherits the full-column-rank base matrix and invertible R_hat from Lemma 3.1.",
-      "lean_evidence": "The target instead assumes p07RectLowerBound Y mu, p07RectOpNorm2Le DeltaY eta, and eta < mu, with no pseudoinverse, epsilon_1 setup, algorithmic provenance, or m > n condition.",
-      "reasoning": "The Lean hypotheses are sufficient abstract perturbation certificates, but they are not the paper's explicit and inherited hypotheses."
+      "status": "pass",
+      "paper_evidence": "The paper assumes full rank of A and SA, inherits invertible R-hat and full-rank A R-hat inverse from Lemma 3.1, and explicitly assumes epsilon2<1.",
+      "lean_evidence": "P07Lemma31ComputedPreconditioner requires injective A and SA, a two-sided inverse of upper triangular R-hat, and 0<n<s<m. The target assumes the exact strict inequality epsilon2<1.",
+      "reasoning": "The inherited epsilon1 route is replaced by its relevant established consequences, as permitted for a standalone rendering; no necessary rank, invertibility, or positivity condition is lost."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "Lemma 3.2 concludes both that Y_hat is full rank and that kappa_2(Y_hat) is at most (kappa_2(A R_hat^{-1}) + epsilon_2)/(1 - epsilon_2).",
-      "lean_evidence": "The sole Lean conclusion is Function.Injective of the matrix-vector map for Y + DeltaY.",
-      "reasoning": "Injectivity captures the full-column-rank conjunct, but the complete quantitative condition-number conjunct is absent."
+      "status": "pass",
+      "paper_evidence": "Lemma 3.2 concludes that Y-hat has full rank and that kappa2(Y-hat) is at most (kappa2(A R-hat inverse)+epsilon2)/(1-epsilon2).",
+      "lean_evidence": "The conclusion is an And of injectivity of the computed matrix-vector map and exactly that condition-number inequality.",
+      "reasoning": "Both conclusions are retained without adding an LSQR or final-solution claim."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The paper statement uses the spectral matrix norm, matrix pseudoinverse, smallest singular value through the inherited rank argument, and spectral condition number.",
-      "lean_evidence": "The dependencies define matrix-vector multiplication, Euclidean vector norm, lower-gain and operator-upper-bound predicates, and injectivity; there is no pseudoinverse, exact epsilon_2, or condition-number definition.",
-      "reasoning": "The Lean dependencies are readable and correctly interpreted, but central nontrivial operators from the paper result are omitted rather than unfolded."
+      "status": "pass",
+      "paper_evidence": "The paper uses ordinary real matrix multiplication, spectral norm, matrix pseudoinverse, condition number, and full column rank.",
+      "lean_evidence": "The packet unfolds matrix products and matrix-vector products as finite sums, Euclidean and spectral norms through exact extrema, the four Moore-Penrose equations, kappa2 as norm times pseudoinverse norm, and rank as injectivity.",
+      "reasoning": "Every nontrivial imported operator affecting the proposition has the intended interpretation."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "The paper distinguishes the exact base matrix A R_hat^{-1} from the finite-precision result Y_hat and defines DeltaY as their difference.",
-      "lean_evidence": "The target accepts arbitrary exact real matrices Y and DeltaY and concludes something about their sum without identifying either one as an exact product or computed output.",
-      "reasoning": "The additive algebra can be instantiated correctly, but the proposition itself does not preserve the exact-versus-computed distinction."
+      "status": "pass",
+      "paper_evidence": "Printed pages 916-917 distinguish exact A R-hat inverse, computed Y-hat, and DeltaY = Y-hat - A R-hat inverse.",
+      "lean_evidence": "p07ExactPreconditionedMatrix is A times RHatInv, while forwardSubstitution.output is computed through modeled arithmetic and run.deltaY_definition sets DeltaY to their difference.",
+      "reasoning": "The exact reference uses the computed factor's exact inverse and is not conflated with either the exact QR factor R or the rounded output."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "Algorithm 1.3 computes Y = A R^{-1} by forward substitution, and Lemma 3.2 analyzes the finite-precision output using the computed R_hat from Householder QR.",
-      "lean_evidence": "No sketch, A, R_hat, triangular solve, Householder QR result, forward-substitution execution, or computed-output predicate occurs in the target.",
-      "reasoning": "The target is an abstract matrix perturbation theorem with no formal linkage to the paper's algorithm or execution model."
+      "status": "pass",
+      "paper_evidence": "Algorithm 1.3 step 4 and section 2.3.3 compute A R-hat inverse row by row through forward substitution for R-hat transpose x_i = a_i.",
+      "lean_evidence": "P07ForwardSubstitutionTrace requires the corresponding increasing-column recurrence with rounded products, sums, subtraction, and division using pre.A and pre.RHat.",
+      "reasoning": "The target remains linked to the relevant algorithmic stage. Its explicit summation order is a standard concrete realization of the paper's underspecified forward substitution and does not change the perturbation result."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "All norms in Lemma 3.2 are unsquared spectral matrix 2-norms, induced by Euclidean vector norms.",
-      "lean_evidence": "p07VecNorm2 is sqrt(sum_i x_i^2), and the two matrix predicates quantify the corresponding lower and upper Euclidean gains for every vector.",
-      "reasoning": "The represented norm kind is the correct induced spectral 2-norm and is neither squared nor componentwise."
+      "paper_evidence": "The paper identifies the matrix 2-norm as the spectral norm and defines epsilon2 using unsquared norms; no Frobenius norm occurs in Lemma 3.2.",
+      "lean_evidence": "p07VecNorm2 is the square root of a sum of squares, P07RectSpectralExtrema defines induced Euclidean gains, and epsilon2 multiplies two unsquared upper extrema.",
+      "reasoning": "The formal statement uses spectral, normwise, unsquared quantities exactly as required."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The exact threshold is epsilon_2 < 1, and the quantitative conclusion has numerator kappa_2(A R_hat^{-1}) + epsilon_2 and denominator 1 - epsilon_2.",
-      "lean_evidence": "The target contains only eta < mu and no epsilon_2, unit constant, numerator, denominator, or condition-number expression.",
-      "reasoning": "The strict gap can recover the rank threshold after external exact choices, but the paper's constants and complete parameter dependence are not represented."
+      "status": "pass",
+      "paper_evidence": "The numerator is kappa2(A R-hat inverse)+epsilon2 and the denominator is 1-epsilon2, with unit coefficients and no indices.",
+      "lean_evidence": "The elaborated target contains precisely those additions, subtraction, and division operations.",
+      "reasoning": "No coefficient, power, offset, or parameter dependence is altered."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "Y_hat is explicitly obtained by forward substitution in finite precision; the surrounding analysis treats computed quantities with unit roundoff u, while exceptional arithmetic is not discussed.",
-      "lean_evidence": "The target is entirely over exact Real arrays and includes no computation relation, precision, rounding, unit roundoff, overflow, underflow, or exceptional-value assumptions.",
-      "reasoning": "The paper's conditional finite-precision provenance is erased rather than modeled."
+      "status": "pass",
+      "paper_evidence": "The surrounding section assumes finite precision u much smaller than one but Lemma 3.2 itself abstracts triangular-solve error into DeltaY and epsilon2 and states no rounding mode or exceptional-value policy.",
+      "lean_evidence": "P07ScalarArithmeticModel gives ideal relative-error scalar operations, while the target's effective smallness condition is epsilon2<1. It contains no NaN, infinity, overflow, underflow, subnormal, or rounding-mode assertion.",
+      "reasoning": "The explicit model is compatible with the paper's idealized finite-precision setting and does not substitute an exceptional-value claim for the selected lemma."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The paper uses a strict epsilon_2 < 1 hypothesis and concludes both full rank and a non-strict upper bound on kappa_2(Y_hat).",
-      "lean_evidence": "The target uses the strict but indirectly parameterized eta < mu condition and concludes only injectivity.",
-      "reasoning": "The rank relation is represented with the correct strict separation, but the complete logical strength and quantitative inequality are not preserved."
+      "status": "pass",
+      "paper_evidence": "The hypothesis is strictly epsilon2<1, the rank conclusion is affirmative, and the condition-number relation is a non-strict upper bound.",
+      "lean_evidence": "The target uses Real strict less-than for hsmall, Function.Injective for rank, and Real less-than-or-equal in the same direction for the bound.",
+      "reasoning": "Strictness, inequality direction, and conjunctive logical strength match."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "DeltaY is the additive forward error incurred while computing A R_hat^{-1} by triangular substitution, not a least-squares backward error or residual.",
-      "lean_evidence": "DeltaY is an arbitrary real matrix subject only to an induced-norm upper bound.",
-      "reasoning": "Its additive placement is compatible with a forward error, but the target does not require that error notion or its computational origin."
+      "status": "pass",
+      "paper_evidence": "DeltaY is an additive forward error in the computed preconditioned matrix, and the lemma controls rank and condition number rather than LS residual or backward solution error.",
+      "lean_evidence": "DeltaY is exactly output minus A R-hat inverse, and the target concludes only injectivity and a spectral condition-number bound.",
+      "reasoning": "No backward-error, residual, or final-solution notion is substituted."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Lemma 3.2 gives exact rank and condition-number conclusions with no big-O term or discarded remainder.",
-      "lean_evidence": "The Lean proposition and its norm inequalities are exact and contain no approximation notation or higher-order truncation.",
-      "reasoning": "No first-order or higher-order term is mishandled."
+      "paper_evidence": "Lemma 3.2 states an exact rational bound in epsilon2, without a big-O term or discarded higher-order terms.",
+      "lean_evidence": "The target reproduces the exact quotient with no approximation or remainder.",
+      "reasoning": "Higher-order terms are neither introduced nor omitted."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The paper result concerns a tall real matrix produced by one specified finite-precision algorithm in the inherited least-squares setting.",
-      "lean_evidence": "The target generalizes to all finite real matrix dimensions and arbitrary perturbations while retaining only the rank conclusion.",
-      "reasoning": "This is a genuine generalization of the qualitative perturbation core but a weakening by conclusion and a loss of algorithmic content, so it is not a faithful stronger version of the complete paper result."
+      "status": "pass",
+      "paper_evidence": "The paper result concerns finite real matrices and standard forward substitution.",
+      "lean_evidence": "The target uses finite real function matrices and formalizes one standard row-wise, increasing-index forward-substitution recurrence.",
+      "reasoning": "The real finite-dimensional setting is exact, not a specialization. The explicit evaluation order is an implementation-level specialization of the named algorithm, but the benchmarked perturbation statement and all paper instances of the standard recurrence remain represented."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper's setting supplies full-column-rank base matrices and permits perturbations strictly below the minimum-singular-value threshold.",
-      "lean_evidence": "For example, with m = 3 and n = 1, Y having column (1,0,0), DeltaY = 0, mu = 1, and eta = 0, all Lean hypotheses hold and the resulting map is injective.",
-      "reasoning": "The hypotheses are satisfiable in paper-compatible tall dimensions, and injectivity is not obtained through an unintended contradiction or empty-domain artifact."
+      "paper_evidence": "The paper's setting admits ordinary full-column-rank examples and epsilon2=0 in exact arithmetic.",
+      "lean_evidence": "For example, m=3, s=2, n=1; a nonzero one-column A; an S with nonzero SA; R-hat and its inverse equal to the 1-by-1 identity; zero sketch, QR, and solve errors; and the exact arithmetic model with unit roundoff zero satisfy the constructors and give epsilon2=0<1.",
+      "reasoning": "The hypotheses are satisfiable, and the conclusions are substantive rank and conditioning statements rather than consequences of an empty domain or false premise."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The Lean proposition can recover the paper's full-rank conclusion after externally identifying Y with A R_hat^{-1}, choosing exact norm certificates, and identifying Y + DeltaY with Y_hat. It cannot supply the condition-number bound or establish the required algorithmic finite-precision identities, so it does not imply Lemma 3.2 as stated."
+      "verdict": "yes",
+      "reasoning": "For a paper setup, the preconditioner record supplies the standing dimensions, full ranks, computed R-hat and its exact inverse; the run supplies the forward-substitution output and exact DeltaY relation; and the spectral records make epsilon2 and both kappa2 values identical to the paper's quantities. The Lean conjunction therefore yields both conclusions of Lemma 3.2."
     },
     "paper_implies_lean": {
-      "verdict": "no",
-      "reasoning": "Lemma 3.2 concerns the particular R_hat and Y_hat produced by the paper's algorithm and does not state the target's universally quantified perturbation theorem for arbitrary dimensions, matrices, and lower/upper norm certificates. The generic proof idea may extend, but the cited paper result itself does not imply that broader proposition."
+      "verdict": "yes",
+      "reasoning": "The paper's finite real setup and standard forward substitution instantiate the Lean records, while finite-dimensional spectral extrema and Moore-Penrose pseudoinverses supply the data records. The paper's perturbation argument depends on the full-rank reference, Y-hat = A R-hat inverse + DeltaY, and epsilon2<1, all of which the Lean hypotheses provide, so it yields the exact formal conjunction."
     }
   },
-  "classification": "not-faithful-different",
-  "accepted": false,
+  "classification": "faithful-equivalent",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "conclusion-completeness",
-      "paper_evidence": "Lemma 3.2 gives both full rank of Y_hat and the explicit rational upper bound on kappa_2(Y_hat).",
-      "lean_evidence": "The target concludes only injectivity of the map represented by Y + DeltaY.",
-      "impact": "The formal proposition omits the paper result's entire quantitative condition-number guarantee."
+      "severity": "note",
+      "category": "inherited-context encoding",
+      "paper_evidence": "Lemma 3.2 obtains invertible R-hat and full-rank A R-hat inverse through the Lemma 3.1 setup and epsilon1<1.",
+      "lean_evidence": "P07Lemma31ComputedPreconditioner records a two-sided R-hat inverse and full-column-rank A directly, from which full rank of A R-hat inverse follows.",
+      "impact": "This replaces the inherited sufficient route by exactly the consequences needed by Lemma 3.2 and does not weaken or alter its selected conclusion."
     },
     {
-      "severity": "major",
-      "category": "algorithm-linkage",
-      "paper_evidence": "Y_hat is the finite-precision forward-substitution output for A R_hat^{-1}, with R_hat inherited from the computed Householder QR construction in Lemma 3.1.",
-      "lean_evidence": "Y and DeltaY are arbitrary exact real matrices with no A, R_hat, forward substitution, or computed-output relation.",
-      "impact": "The target proves a generic perturbation fact without formalizing that it applies to the matrix produced by the analyzed algorithm."
+      "severity": "note",
+      "category": "forward-substitution detail",
+      "paper_evidence": "The paper names forward substitution and describes row-wise solves but does not fix a scalar accumulation order.",
+      "lean_evidence": "P07ForwardSubstitutionTrace uses an increasing-index recurrence with a left-associated rounded prefix sum.",
+      "impact": "This is a concrete standard implementation of the named computation. Since the selected lemma's conclusion depends only on the resulting DeltaY, it does not change the benchmarked perturbation theorem."
     },
     {
-      "severity": "major",
-      "category": "perturbation-parameter-semantics",
-      "paper_evidence": "epsilon_2 is exactly ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2 and is required to be strictly less than one.",
-      "lean_evidence": "The target replaces epsilon_2 with free certificates eta and mu satisfying operator and lower-gain bounds plus eta < mu.",
-      "impact": "The certificates form a valid sufficient rank-preservation condition, but the exact paper error measure and its pseudoinverse scaling are absent and require external reconstruction."
-    },
-    {
-      "severity": "major",
-      "category": "scope-and-dimensions",
-      "paper_evidence": "The inherited least-squares setting has m > s > n and fixes matrices arising from A, S, and the computed triangular factor.",
-      "lean_evidence": "The theorem ranges over every natural m and n and every pair of real matrices satisfying the abstract certificates.",
-      "impact": "The target is broader in domain while weaker in conclusion, making the two statements incomparable rather than a faithful strengthening or weakening."
+      "severity": "note",
+      "category": "floating-point abstraction",
+      "paper_evidence": "The paper assumes finite precision and does not specify rounding mode or exceptional-value behavior in Lemma 3.2.",
+      "lean_evidence": "P07ScalarArithmeticModel uses ideal real relative-error operations and likewise has no exceptional values or rounding-mode field.",
+      "impact": "The formal model makes one conventional idealization explicit, while the theorem retains the paper's DeltaY-level abstraction and exact epsilon2 hypothesis."
     }
   ],
-  "rationale": "The Lean target is a valid and nonvacuous generic perturbation theorem: its Euclidean lower-gain and operator-norm certificates imply injectivity of Y + DeltaY, and suitable exact choices recover the qualitative full-rank conjunct of Lemma 3.2. However, it does not encode the computed forward-substitution matrix, the exact epsilon_2 definition, the inherited algorithmic setup, or the lemma's condition-number bound. Because the Lean statement cannot imply the complete paper result and the algorithm-specific paper statement does not imply the target's universal generalization, the correct classification is not-faithful-different."
+  "rationale": "Direct inspection of printed pages 906 and 913-917 confirms that the target formalizes Lemma 3.2: the reference is A times the inverse of the computed R-hat; Y-hat is the finite-precision forward-substitution output; DeltaY and epsilon2 have the exact paper definitions; epsilon2<1 is strict; and both full column rank and the exact condition-number bound are concluded. The dependency definitions implement ordinary finite real linear algebra, spectral norms, Moore-Penrose pseudoinverses, and the relevant algorithmic recurrence. The direct replacement of the Lemma 3.1 epsilon1 route by recorded invertibility and rank consequences, and the concrete summation order for forward substitution, do not change the selected perturbation result. Both implication directions therefore hold."
 }

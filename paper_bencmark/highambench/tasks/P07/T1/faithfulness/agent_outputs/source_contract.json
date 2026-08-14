@@ -1,118 +1,161 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 first conclusion] The lemma says only that Y_hat is full rank; [PDF p. 2, printed p. 906; anchor: standing dimensions] Y_hat inherits dimensions m-by-n with m > n.",
-      "impact": "In the paper's setting it means full column rank n, but that interpretation depends on inherited dimensions.",
-      "issue": "The phrase \"full rank\" does not locally state whether row or column rank is intended."
-    },
-    {
-      "evidence": "[PDF p. 13, printed p. 917; anchor: opening of Lemma 3.2] It refers to R_hat^{-1} as defined in Lemma 3.1; [PDF p. 12, printed p. 916; anchor: Lemma 3.1] invertibility and full rank were concluded there under epsilon_1 < 1.",
-      "impact": "A standalone formalization must either import the Lemma 3.1 setup and epsilon_1 condition or explicitly assume that A R_hat^{-1} has full column rank.",
-      "issue": "Lemma 3.2 does not restate the hypothesis that makes R_hat invertible and A R_hat^{-1} full rank."
-    }
-  ],
-  "contract_plain_english": "[PDF p. 13, printed p. 917; anchor: Lemma 3.2] Starting from the full-column-rank matrix A R_hat^{-1} supplied by Lemma 3.1, the particular finite-precision forward-substitution result Y_hat remains full column rank whenever its scaled spectral perturbation epsilon_2 is strictly below one, and its 2-norm condition number obeys the stated rational bound.",
-  "paper_batch_sha256": "822fe7aa06960deeaa078b8ac855714c9b957ac1656f37de3dcbbaa9f707f076",
-  "paper_sha256": "4c4d638b359719f47e2c4664a50e9fa8e4704e8b6b39923d73c41883a97c5790",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P07-T1",
+  "paper_sha256": "4c4d638b359719f47e2c4664a50e9fa8e4704e8b6b39923d73c41883a97c5790",
   "source_evidence": [
     {
-      "anchor": "Lemma 3.2 statement",
-      "observation": "Lemma 3.2 defines Y_hat as the finite-precision result of computing A R_hat^{-1}, sets DeltaY = Y_hat - A R_hat^{-1} and epsilon_2 = ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2, and assumes epsilon_2 < 1.",
-      "pdf_page": 13,
-      "printed_page": "917"
-    },
-    {
-      "anchor": "Lemma 3.2 two conclusions",
-      "observation": "The lemma concludes both that Y_hat is full rank and that kappa_2(Y_hat) <= (kappa_2(A R_hat^{-1}) + epsilon_2)/(1 - epsilon_2).",
-      "pdf_page": 13,
-      "printed_page": "917"
-    },
-    {
-      "anchor": "Proof of Lemma 3.2",
-      "observation": "The proof invokes the additive relation Y_hat = A R_hat^{-1} + DeltaY and reasoning analogous to the singular-value perturbation argument in Lemma 3.1.",
-      "pdf_page": 13,
-      "printed_page": "917"
-    },
-    {
-      "anchor": "Lemma 3.1 statement",
-      "observation": "The cross-referenced construction assumes epsilon_1 < 1 and then establishes that R_hat is invertible and A R_hat^{-1} is full rank.",
-      "pdf_page": 12,
-      "printed_page": "916"
-    },
-    {
-      "anchor": "Subsection 2.3.3, computation of A P",
-      "observation": "Computing A R^{-1} by forward substitution is explained rowwise as solving R^T x_i = a_i for the rows of A R^{-1}.",
-      "pdf_page": 11,
-      "printed_page": "915"
-    },
-    {
-      "anchor": "Standing full-rank assumption after Algorithm 1.1",
-      "observation": "The paper's standing context has A in R^{m x n}, SA in R^{s x n}, m > s > n, with both A and SA full rank.",
       "pdf_page": 2,
-      "printed_page": "906"
+      "printed_page": "906",
+      "anchor": "Standing-assumptions paragraph after Algorithm 1.1",
+      "observation": "Throughout the paper, A is m by n, SA is s by n, m > s > n, and both A and SA have full rank."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "909",
+      "anchor": "Algorithm 1.3, steps 1-6",
+      "observation": "Sketch-and-apply forms B = SA, obtains R by Householder QR, computes Y = A R^{-1} with forward substitution, solves Yz = b by unpreconditioned LSQR, and recovers x by back substitution."
+    },
+    {
+      "pdf_page": 9,
+      "printed_page": "913",
+      "anchor": "Lemma 2.1",
+      "observation": "For economized QR factorizations A = Q_A R_A and SA = QR, the exact-arithmetic preconditioned matrix satisfies kappa_2(A R^{-1}) = kappa_2(S Q_A)."
+    },
+    {
+      "pdf_page": 10,
+      "printed_page": "914",
+      "anchor": "Section 2.3 and equation (2.2)",
+      "observation": "The paper assumes finite-precision computations with unit roundoff u much smaller than one and identifies the matrix 2-norm in its error bounds as the spectral norm."
+    },
+    {
+      "pdf_page": 11,
+      "printed_page": "915",
+      "anchor": "Section 2.3.3, equations (2.4)-(2.5)",
+      "observation": "For nonsingular upper triangular R, the paper describes computing A R^{-1} row by row by solving R^T x_i = a_i with substitution."
+    },
+    {
+      "pdf_page": 12,
+      "printed_page": "916",
+      "anchor": "Opening of Section 3 and its three numbered finite-precision stages",
+      "observation": "The computed stages are B_hat = SA + E_1, Q_tilde R_hat = B_hat + E_2, and Y_hat = A R_hat^{-1} + DeltaY; hats indicate rounding errors."
+    },
+    {
+      "pdf_page": 12,
+      "printed_page": "916",
+      "anchor": "Lemma 3.1",
+      "observation": "Lemma 3.1 defines the exact QR factors, computed B_hat and R_hat, E = Q_tilde R_hat - QR, and epsilon_1 = ||E||_2 ||R^{-1}||_2; under epsilon_1 < 1, R_hat is invertible and A R_hat^{-1} has full rank."
+    },
+    {
+      "pdf_page": 13,
+      "printed_page": "917",
+      "anchor": "Continuation of Lemma 3.1",
+      "observation": "The inherited bound is kappa_2(A R_hat^{-1}) <= kappa_2(S Q_A)(1 + epsilon_1)/(1 - epsilon_1)."
+    },
+    {
+      "pdf_page": 13,
+      "printed_page": "917",
+      "anchor": "Lemma 3.2 and footnote 3",
+      "observation": "For Y_hat computed from A R_hat^{-1} by forward substitution, DeltaY = Y_hat - A R_hat^{-1} and epsilon_2 = ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2. If epsilon_2 < 1, Y_hat has full rank and kappa_2(Y_hat) <= (kappa_2(A R_hat^{-1}) + epsilon_2)/(1 - epsilon_2). The dagger denotes the matrix pseudoinverse."
     }
   ],
   "statement": {
-    "algorithm_linkage": "[PDF p. 5, printed p. 909; anchor: Algorithm 1.3, step 4] This is the sketch-and-apply Blendenpik step that explicitly computes Y = A R^{-1} with forward substitution, here analyzed with the computed factors R_hat and Y_hat.",
     "binders": [
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 statement] R_hat^{-1} is the upper-triangular inverse arising from the finite-precision construction in Lemma 3.1, and Y_hat is the computed m-by-n matrix obtained from A R_hat^{-1}.",
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 definitions] DeltaY := Y_hat - A R_hat^{-1} and epsilon_2 := ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2.",
-      "[PDF p. 2, printed p. 906; anchor: standing full-rank assumption] The inherited dimensions are A in R^{m x n}, R_hat in R^{n x n}, and Y_hat and DeltaY in R^{m x n}, with m > n."
-    ],
-    "conclusions": [
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 first conclusion] Y_hat is full rank; under the inherited m-by-n dimensions with m > n, this means rank(Y_hat) = n, i.e. full column rank.",
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 displayed bound] kappa_2(Y_hat) <= (kappa_2(A R_hat^{-1}) + epsilon_2)/(1 - epsilon_2)."
-    ],
-    "constants_and_indexing": [
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 hypothesis and bound] The threshold is strictly epsilon_2 < 1; the condition estimate has exactly +epsilon_2 in the numerator and 1-epsilon_2 in the denominator.",
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 statement] The result has no iteration index, probabilistic constant, or index offset."
-    ],
-    "definitions_and_conventions": [
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 definitions] The perturbation relation is exactly Y_hat = A R_hat^{-1} + DeltaY.",
-      "[PDF p. 13, printed p. 917; anchor: footnote 3 beneath Lemma 3.3] The dagger superscript denotes the matrix pseudoinverse.",
-      "[PDF p. 2, printed p. 906; anchor: definition of kappa_2(A)] The 2-norm condition number is the largest singular value divided by the smallest singular value for a full-column-rank matrix.",
-      "[PDF p. 11, printed p. 915; anchor: rowwise triangular-system computation] Forward substitution for A R_hat^{-1} means solving R_hat^T x_i = a_i row by row."
-    ],
-    "error_notions": [
-      "[PDF p. 13, printed p. 917; anchor: definition of epsilon_2] epsilon_2 is a dimensionless spectral-norm perturbation size, scaling ||DeltaY||_2 by ||(A R_hat^{-1})^dagger||_2.",
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 proof] DeltaY is a forward/additive matrix-computation error, not the least-squares backward-error perturbation denoted DeltaY_hat later in Theorem 3.5."
-    ],
-    "exceptional_values": [
-      "[PDF p. 13, printed p. 917; anchor: epsilon_2 < 1 and displayed denominator] The strict inequality makes 1-epsilon_2 positive and excludes the singular-value perturbation threshold at epsilon_2 = 1.",
-      "[PDF p. 12, printed p. 916; anchor: Lemma 3.1 invertibility conclusion] Existence of R_hat^{-1} is inherited from the conclusion that R_hat is invertible.",
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 statement] Overflow, underflow, NaNs, infinities, and subnormal arithmetic are not discussed."
-    ],
-    "higher_order_terms": [
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 displayed bound] The rank and condition-number conclusions are exact inequalities in epsilon_2; no big-O term or omitted higher-order remainder appears."
+      "Dimensions m, s, n satisfy m > s > n; A is in R^{m x n}, S is in R^{s x m}, and SA is in R^{s x n}. [PDF p. 2, printed p. 906, standing-assumptions paragraph]",
+      "A = Q_A R_A and SA = QR are economized QR factorizations, with R in R^{n x n}. [PDF p. 12, printed p. 916, Lemma 3.1]",
+      "B_hat is the finite-precision result of forming SA, and R_hat in R^{n x n} is the upper triangular factor computed by Householder QR of B_hat. [PDF p. 12, printed p. 916, Lemma 3.1]",
+      "Y_hat and DeltaY are m by n matrices, with Y_hat obtained by finite-precision forward substitution applied to A R_hat^{-1}. [PDF p. 13, printed p. 917, Lemma 3.2]"
     ],
     "hypotheses": [
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 strict hypothesis] The explicit local hypothesis is epsilon_2 < 1.",
-      "[PDF p. 12, printed p. 916; anchor: Lemma 3.1 statement] The cross-referenced construction is in the regime epsilon_1 < 1, which makes R_hat invertible and the unperturbed matrix A R_hat^{-1} full column rank.",
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 statement] Y_hat is specifically obtained by forward substitution in finite precision; the result is not about an arbitrary matrix approximation.",
-      "[PDF p. 2, printed p. 906; anchor: standing full-rank assumption] The paper additionally assumes A and SA are full rank in its standing least-squares setting."
+      "A and SA have full column rank n under the standing dimensions. [PDF p. 2, printed p. 906, standing-assumptions paragraph]",
+      "R_hat^{-1} is the inverse arising from the Lemma 3.1 setup; Lemma 3.1 assumes epsilon_1 < 1 and thereby establishes that R_hat is invertible and A R_hat^{-1} has full column rank. [PDF p. 12, printed p. 916, Lemma 3.1]",
+      "Y_hat is computed from A R_hat^{-1} using forward substitution in finite precision. [PDF p. 13, printed p. 917, Lemma 3.2]",
+      "The explicit hypothesis of Lemma 3.2 is epsilon_2 < 1. [PDF p. 13, printed p. 917, Lemma 3.2]"
+    ],
+    "conclusions": [
+      "Y_hat has full rank, hence rank n because Y_hat is m by n with m > n. [PDF p. 13, printed p. 917, Lemma 3.2; PDF p. 2, printed p. 906, standing dimensions]",
+      "kappa_2(Y_hat) <= (kappa_2(A R_hat^{-1}) + epsilon_2)/(1 - epsilon_2). [PDF p. 13, printed p. 917, Lemma 3.2]"
+    ],
+    "definitions_and_conventions": [
+      "DeltaY is defined exactly as Y_hat - A R_hat^{-1}; its reference matrix uses the computed QR factor R_hat, not the exact factor R. [PDF p. 13, printed p. 917, Lemma 3.2]",
+      "epsilon_2 is defined exactly as ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2. [PDF p. 13, printed p. 917, Lemma 3.2]",
+      "The dagger superscript denotes the matrix pseudoinverse. [PDF p. 13, printed p. 917, footnote 3]",
+      "Hats denote quantities for which rounding errors are being accounted for. [PDF p. 12, printed p. 916, opening of Section 3]",
+      "For a tall m by n matrix in this setting, full rank means full column rank n. [PDF p. 2, printed p. 906, standing dimensions and rank assumptions]"
     ],
     "implicit_context": [
-      "[PDF p. 12, printed p. 916; anchor: three finite-precision steps at the start of section 3] R_hat is the computed triangular factor obtained after forming the sketch SA and applying Householder QR, and Y_hat is the computed preconditioned matrix.",
-      "[PDF p. 13, printed p. 917; anchor: paragraph following Lemma 3.2] The later discussion seeks to make epsilon_2 small from a condition such as kappa_2(A)u << 1, but that condition is not part of Lemma 3.2 itself.",
-      "[PDF p. 13, printed p. 917; anchor: proof of Lemma 3.2] The rank conclusion inherits the full-column-rank base matrix supplied by Lemma 3.1; epsilon_2 < 1 alone would not preserve rank from a rank-deficient base."
+      "Lemma 3.1 defines E = Q_tilde R_hat - QR and epsilon_1 = ||E||_2 ||R^{-1}||_2; epsilon_1 < 1 is the inherited route by which R_hat^{-1} and the full-rank reference matrix A R_hat^{-1} are available. [PDF p. 12, printed p. 916, Lemma 3.1]",
+      "Lemma 3.1 additionally gives kappa_2(A R_hat^{-1}) <= kappa_2(S Q_A)(1 + epsilon_1)/(1 - epsilon_1), but Lemma 3.2 leaves kappa_2(A R_hat^{-1}) unexpanded in its conclusion. [PDF p. 13, printed p. 917, continuation of Lemma 3.1 and Lemma 3.2]",
+      "In exact arithmetic with the exact QR factor R, kappa_2(A R^{-1}) = kappa_2(S Q_A). [PDF p. 9, printed p. 913, Lemma 2.1]",
+      "Although Algorithm 1.3 draws a random sketch, Lemma 3.2 is a deterministic perturbation statement and contains no probability or distributional conclusion. [PDF p. 5, printed p. 909, Algorithm 1.3; PDF p. 13, printed p. 917, Lemma 3.2]"
+    ],
+    "algorithm_linkage": "Lemma 3.2 analyzes step 4 of the sketch-and-apply algorithm: explicit finite-precision formation of the preconditioned matrix before unpreconditioned LSQR. It does not analyze repeated right-preconditioner applications, nor does it itself assert accuracy or backward stability of the later LSQR solution or recovered x. [PDF p. 5, printed p. 909, Algorithm 1.3; PDF p. 13, printed p. 917, Lemma 3.2]",
+    "numerical_model": [
+      "The surrounding numerical model assumes precision u much smaller than one and says arithmetic is exact up to that precision. [PDF p. 10, printed p. 914, Section 2.3]",
+      "The three relevant computed stages are B_hat = SA + E_1, Q_tilde R_hat = B_hat + E_2, and Y_hat = A R_hat^{-1} + DeltaY. [PDF p. 12, printed p. 916, opening of Section 3]",
+      "Forward substitution corresponds in the surrounding derivation to row-wise triangular solves R^T x_i = a_i; for the selected result, the factor is R_hat. [PDF p. 11, printed p. 915, Section 2.3.3; PDF p. 13, printed p. 917, Lemma 3.2]",
+      "Lemma 3.2 does not contain an explicit formula in u, gamma_n, or componentwise rounding errors; it abstracts all triangular-solve error into DeltaY and epsilon_2. [PDF p. 13, printed p. 917, Lemma 3.2]"
+    ],
+    "error_notions": [
+      "DeltaY is an additive forward error relative to the exact mathematical matrix A R_hat^{-1} formed from the computed factor R_hat. [PDF p. 13, printed p. 917, Lemma 3.2]",
+      "epsilon_2 scales ||DeltaY||_2 by ||(A R_hat^{-1})^dagger||_2, so the perturbation is measured relative to the smallest singular-value scale of the reference matrix. [PDF p. 13, printed p. 917, Lemma 3.2 and footnote 3]",
+      "The result controls rank preservation and the spectral condition number; it does not state a least-squares residual, forward solution error, normal residual, or normwise backward-error bound. [PDF p. 13, printed p. 917, Lemma 3.2]"
     ],
     "norms": [
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 definitions and bound] Every displayed norm in the lemma is the spectral matrix 2-norm, and kappa_2 is the corresponding singular-value condition number."
+      "Every norm displayed in the definition of epsilon_2 and in the condition number is the matrix 2-norm; the paper identifies this as the spectral norm. [PDF p. 10, printed p. 914, equation (2.2); PDF p. 13, printed p. 917, Lemma 3.2]",
+      "The paper defines kappa_2 by the largest singular value divided by the smallest singular value. [PDF p. 2, printed p. 906, discussion following Algorithm 1.1]",
+      "The pseudoinverse in epsilon_2 is the matrix pseudoinverse. [PDF p. 13, printed p. 917, footnote 3]",
+      "No Frobenius norm occurs in Lemma 3.2. [PDF p. 13, printed p. 917, Lemma 3.2]"
     ],
-    "numerical_model": [
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 statement] The only local numerical model is an additive finite-precision error DeltaY in the forward-substitution computation.",
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.3 opening sentence] The surrounding analysis treats finite-precision quantities as computed with unit roundoff u, although u does not occur explicitly in Lemma 3.2.",
-      "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 statement and proof] The lemma is deterministic conditional perturbation analysis; it contains no probability statement about the random sketch."
+    "constants_and_indexing": [
+      "The threshold is the strict inequality epsilon_2 < 1. [PDF p. 13, printed p. 917, Lemma 3.2]",
+      "The numerator is exactly kappa_2(A R_hat^{-1}) + epsilon_2 and the denominator is exactly 1 - epsilon_2; both coefficients of epsilon_2 are one. [PDF p. 13, printed p. 917, Lemma 3.2]",
+      "The formal standing dimension inequalities are m > s > n; the algorithmic notation m much greater than s is informal and supplies no additional numerical threshold. [PDF p. 2, printed p. 906, standing assumptions; PDF p. 5, printed p. 909, Algorithm 1.3]",
+      "Lemma 3.2 contains no summation indices, iteration indices, or index offsets. [PDF p. 13, printed p. 917, Lemma 3.2]"
+    ],
+    "higher_order_terms": [
+      "The Lemma 3.2 bound contains no big-O term and no omitted higher-order term; it is stated directly in terms of epsilon_2. [PDF p. 13, printed p. 917, Lemma 3.2]",
+      "The subsequent prose says the triangular-solve error is small under kappa_2(A)u much smaller than one, but that qualitative condition is not an explicit hypothesis of Lemma 3.2. [PDF p. 13, printed p. 917, paragraph following Lemma 3.2]"
+    ],
+    "exceptional_values": [
+      "The inherited epsilon_1 < 1 condition makes R_hat invertible, so R_hat^{-1} is defined. [PDF p. 12, printed p. 916, Lemma 3.1]",
+      "Because epsilon_2 is a product of norms, it is nonnegative; together with epsilon_2 < 1 this makes 1 - epsilon_2 positive. [PDF p. 13, printed p. 917, definition and hypothesis in Lemma 3.2]",
+      "The cited floating-point setup and Lemma 3.2 do not explicitly state assumptions about overflow, underflow, subnormal values, NaNs, infinities, or a particular rounding mode. [PDF p. 10, printed p. 914, Section 2.3; PDF p. 13, printed p. 917, Lemma 3.2]"
     ]
   },
-  "task_id": "P07-T1",
   "undebatable_constraints": [
-    "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 definitions] epsilon_2 must be exactly ||Y_hat - A R_hat^{-1}||_2 ||(A R_hat^{-1})^dagger||_2.",
-    "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 strict hypothesis] The preservation result requires the strict inequality epsilon_2 < 1.",
-    "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 two conclusions] A faithful contract must retain both full rank of Y_hat and the displayed condition-number bound.",
-    "[PDF p. 12, printed p. 916; anchor: Lemma 3.1 statement] The unperturbed matrix A R_hat^{-1} must be full column rank; this is inherited from Lemma 3.1 rather than proved solely from epsilon_2 < 1.",
-    "[PDF p. 13, printed p. 917; anchor: Lemma 3.2 statement] The matrix is the finite-precision forward-substitution output, not the exact product A R_hat^{-1}."
-  ]
+    "The reference matrix in DeltaY and epsilon_2 is A R_hat^{-1}, using the computed Householder-QR factor, not A R^{-1} using the exact QR factor. [PDF p. 13, printed p. 917, Lemma 3.2]",
+    "Y_hat must be the finite-precision forward-substitution result for A R_hat^{-1}; the source does not define it as an arbitrary perturbation unrelated to that computation. [PDF p. 13, printed p. 917, Lemma 3.2]",
+    "DeltaY = Y_hat - A R_hat^{-1} and epsilon_2 = ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2 exactly. [PDF p. 13, printed p. 917, Lemma 3.2]",
+    "The hypothesis is epsilon_2 < 1, with a strict inequality. [PDF p. 13, printed p. 917, Lemma 3.2]",
+    "Both conclusions must be retained: Y_hat has full column rank and satisfies the stated condition-number bound. [PDF p. 13, printed p. 917, Lemma 3.2]",
+    "The condition-number bound is kappa_2(Y_hat) <= (kappa_2(A R_hat^{-1}) + epsilon_2)/(1 - epsilon_2), with no altered constants, powers, or index shifts. [PDF p. 13, printed p. 917, Lemma 3.2]",
+    "All norms in epsilon_2 are spectral 2-norms, and the dagger is the matrix pseudoinverse. [PDF p. 10, printed p. 914, equation (2.2); PDF p. 13, printed p. 917, Lemma 3.2 and footnote 3]",
+    "The hard dimensional context is A in R^{m x n}, S in R^{s x m}, m > s > n, with A and SA full column rank. [PDF p. 2, printed p. 906, standing-assumptions paragraph]",
+    "Lemma 3.2 is deterministic and does not require a specified sketch distribution or assert a probabilistic bound. [PDF p. 13, printed p. 917, Lemma 3.2]",
+    "No explicit u-dependent smallness condition, big-O remainder, LSQR convergence claim, or final-solution backward-error claim belongs to Lemma 3.2 itself. [PDF p. 13, printed p. 917, Lemma 3.2 and following paragraph]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "Lemma 3.2 calls R_hat^{-1} the upper triangular matrix defined in Lemma 3.1, although Lemma 3.1 directly defines the computed factor R_hat and establishes its invertibility only under epsilon_1 < 1. [PDF p. 12, printed p. 916, Lemma 3.1; PDF p. 13, printed p. 917, Lemma 3.2]",
+      "evidence": "The cross-reference supplies an inverse of the computed R_hat, but Lemma 3.2 does not restate epsilon_1, its definition, or epsilon_1 < 1. [PDF p. 12, printed p. 916, Lemma 3.1; PDF p. 13, printed p. 917, Lemma 3.2]",
+      "impact": "A standalone rendering must either import the Lemma 3.1 setup or explicitly require R_hat to be invertible and A R_hat^{-1} to have full column rank; it must not invent a separately rounded inverse matrix. [PDF p. 12, printed p. 916, Lemma 3.1; PDF p. 13, printed p. 917, Lemma 3.2]"
+    },
+    {
+      "issue": "Lemma 3.2 says forward substitution without spelling out the individual triangular systems or evaluation order. [PDF p. 13, printed p. 917, Lemma 3.2]",
+      "evidence": "The surrounding triangular-solve section explains the operation row by row as R^T x_i = a_i, while the lemma itself only names forward substitution. [PDF p. 11, printed p. 915, Section 2.3.3; PDF p. 13, printed p. 917, Lemma 3.2]",
+      "impact": "The source supports linkage to row-wise transposed triangular solves but does not determine loop order, a matrix-right-hand-side implementation, or a more detailed rounding trace. [PDF p. 11, printed p. 915, Section 2.3.3; PDF p. 13, printed p. 917, Lemma 3.2]"
+    },
+    {
+      "issue": "The floating-point semantics are underspecified beyond finite precision and unit roundoff u. [PDF p. 10, printed p. 914, Section 2.3]",
+      "evidence": "Neither the general setup nor Lemma 3.2 names a rounding mode or exceptional-value policy, and Lemma 3.2 replaces detailed rounding behavior by DeltaY. [PDF p. 10, printed p. 914, Section 2.3; PDF p. 13, printed p. 917, Lemma 3.2]",
+      "impact": "No specific treatment of overflow, underflow, subnormals, NaNs, infinities, or rounding ties can be claimed as part of this source contract. [PDF p. 10, printed p. 914, Section 2.3; PDF p. 13, printed p. 917, Lemma 3.2]"
+    },
+    {
+      "issue": "Algorithm 1.3 uses the informal relation m much greater than s, whereas the standing mathematical assumptions state only m > s > n. [PDF p. 5, printed p. 909, Algorithm 1.3; PDF p. 2, printed p. 906, standing assumptions]",
+      "evidence": "No numerical meaning or threshold is assigned to the much-greater-than notation in the cited result. [PDF p. 5, printed p. 909, Algorithm 1.3]",
+      "impact": "Only m > s > n is an exact dimensional constraint; no stronger size ratio may be inferred. [PDF p. 2, printed p. 906, standing-assumptions paragraph]"
+    }
+  ],
+  "contract_plain_english": "For full-column-rank A and SA with dimensions m > s > n, form the sketch and its Householder-QR factor in finite precision, obtaining the computed upper triangular R_hat. [PDF p. 2, printed p. 906, standing assumptions; PDF p. 12, printed p. 916, Lemma 3.1] Compute Y_hat as the finite-precision forward-substitution result for A R_hat^{-1}, and define DeltaY = Y_hat - A R_hat^{-1} and epsilon_2 = ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2. [PDF p. 13, printed p. 917, Lemma 3.2] If epsilon_2 < 1, then Y_hat retains full column rank and kappa_2(Y_hat) is at most (kappa_2(A R_hat^{-1}) + epsilon_2)/(1 - epsilon_2). [PDF p. 13, printed p. 917, Lemma 3.2] This is a deterministic spectral-norm perturbation result for the matrix-formation stage of sketch-and-apply, not by itself a claim about LSQR convergence or final least-squares backward stability. [PDF p. 5, printed p. 909, Algorithm 1.3; PDF p. 13, printed p. 917, Lemma 3.2]"
 }

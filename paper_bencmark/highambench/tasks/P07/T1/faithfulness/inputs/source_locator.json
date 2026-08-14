@@ -5,11 +5,25 @@
   "paper_version": "published journal version; volume 45, issue 2, 2024, printed pages 905-929",
   "source_locations": [
     {
-      "anchor": "Lemma 3.2, first conclusion that the computed matrix is full rank",
+      "anchor": "standing matrix dimensions and full-rank assumptions",
+      "pdf_page": 2,
+      "printed_page": "906",
+      "role": "m>s>n and full column rank of A and SA",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "three finite-precision stages and Lemma 3.1",
+      "pdf_page": 12,
+      "printed_page": "916",
+      "role": "computed sketch, computed Householder QR factor, and the RHat inverse used by Lemma 3.2",
+      "section": "3.1. Bounding kappa_2(YHat) in terms of numerical errors"
+    },
+    {
+      "anchor": "Lemma 3.2",
       "pdf_page": 13,
       "printed_page": "917",
-      "role": "strict perturbation preserves full column rank",
-      "section": "3.1. Bounding kappa_2(Y-hat) in terms of numerical errors"
+      "role": "forward-substitution computation, exact DeltaY and epsilon_2 definitions, full-rank conclusion, and complete condition-number bound",
+      "section": "3.1. Bounding kappa_2(YHat) in terms of numerical errors"
     }
   ],
   "task_id": "P07-T1"

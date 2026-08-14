@@ -1,90 +1,53 @@
 {
-  "accepted": false,
-  "adjudicated": false,
-  "adjudication_reasons": [],
-  "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T13:54:36.146018+00:00",
+  "accepted": true,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "round-trip S10 is unclear"
+  ],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-14T22:36:47.015176+00:00",
   "findings": [
     {
-      "category": "conclusion-completeness",
-      "impact": "The formal proposition omits the paper result's entire quantitative condition-number guarantee.",
-      "lean_evidence": "The target concludes only injectivity of the map represented by Y + DeltaY.",
-      "paper_evidence": "Lemma 3.2 gives both full rank of Y_hat and the explicit rational upper bound on kappa_2(Y_hat).",
-      "severity": "critical"
+      "category": "genuine strengthening",
+      "evidence": "D017 replaces Lemma 3.1's epsilon_1 and HHQR derivation with a two-sided inverse and rank-sufficient algebraic data, and the supplied concrete instance satisfies the declaration while failing epsilon_1<1.",
+      "impact": "The theorem has strictly broader, nonvacuous applicability while preserving the selected conclusion.",
+      "severity": "note"
     },
     {
-      "category": "algorithm-linkage",
-      "impact": "The target proves a generic perturbation fact without formalizing that it applies to the matrix produced by the analyzed algorithm.",
-      "lean_evidence": "Y and DeltaY are arbitrary exact real matrices with no A, R_hat, forward substitution, or computed-output relation.",
-      "paper_evidence": "Y_hat is the finite-precision forward-substitution output for A R_hat^{-1}, with R_hat inherited from the computed Householder QR construction in Lemma 3.1.",
-      "severity": "major"
+      "category": "forward-substitution order",
+      "evidence": "D027, D041, and D045 prescribe an increasing-index left fold, whereas printed pp. 915 and 917 specify only row-wise forward substitution.",
+      "impact": "This is an implementation refinement; because Lemma 3.2 uses only the realized DeltaY, it does not change the perturbation statement.",
+      "severity": "note"
     },
     {
-      "category": "perturbation-parameter-semantics",
-      "impact": "The certificates form a valid sufficient rank-preservation condition, but the exact paper error measure and its pseudoinverse scaling are absent and require external reconstruction.",
-      "lean_evidence": "The target replaces epsilon_2 with free certificates eta and mu satisfying operator and lower-gain bounds plus eta < mu.",
-      "paper_evidence": "epsilon_2 is exactly ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2 and is required to be strictly less than one.",
-      "severity": "major"
-    },
-    {
-      "category": "scope-and-dimensions",
-      "impact": "The target is broader in domain while weaker in conclusion, making the two statements incomparable rather than a faithful strengthening or weakening.",
-      "lean_evidence": "The theorem ranges over every natural m and n and every pair of real matrices satisfying the abstract certificates.",
-      "paper_evidence": "The inherited least-squares setting has m > s > n and fixes matrices arising from A, S, and the computed triangular factor.",
-      "severity": "major"
-    },
-    {
-      "category": "conclusion-completeness",
-      "impact": "One of the paper lemma's two principal conclusions is entirely absent.",
-      "paper_evidence": "Lemma 3.2 includes the condition-number bound kappa_2(Y_hat) <= (kappa_2(A R_hat^{-1}) + epsilon_2)/(1 - epsilon_2).",
-      "severity": "critical",
-      "translation_evidence": "Only injectivity of Y + DeltaY is concluded."
-    },
-    {
-      "category": "algorithm-and-error-provenance",
-      "impact": "The proposition no longer describes the algorithmic quantity or numerical error analyzed by the paper.",
-      "paper_evidence": "Y_hat is the finite-precision forward-substitution output for A R_hat^{-1}, with DeltaY defined as its forward additive error.",
-      "severity": "major",
-      "translation_evidence": "Y and DeltaY are arbitrary exact real matrices."
-    },
-    {
-      "category": "constants-and-hypotheses",
-      "impact": "The translation proves a related sufficient rank-preservation principle rather than the paper's stated perturbation theorem.",
-      "paper_evidence": "The exact condition is ||DeltaY||_2 ||(A R_hat^{-1})^dagger||_2 < 1, with a full-column-rank base inherited from Lemma 3.1.",
-      "severity": "major",
-      "translation_evidence": "The condition is expressed using arbitrary nonoptimal bounds eta < mu, with no pseudoinverse or exact operator-norm identification."
-    },
-    {
-      "category": "binders-and-dimensions",
-      "impact": "The changed scope prevents implication in either direction and introduces trivial or vacuous dimension cases.",
-      "paper_evidence": "The standing setting has m > s > n and matrices tied to A, the sketch, R_hat, and Y_hat.",
-      "severity": "major",
-      "translation_evidence": "All natural m and n, including zero, and arbitrary Y and DeltaY are admitted."
-    },
-    {
-      "category": "dependency-ledger",
-      "impact": "The dependency ledger is internally adequate for the reduced generic proposition, but cannot compensate for the paper concepts omitted from that proposition.",
-      "paper_evidence": "The rank argument uses Euclidean and spectral 2-norm structure.",
-      "severity": "note",
-      "translation_evidence": "All listed dependencies for matrix-vector multiplication, Euclidean norm, exact addition, order, and injectivity are marked understood and are interpreted coherently."
+      "category": "floating-point abstraction",
+      "evidence": "D025 uses ideal relative-error operations with u >= 0, while printed p. 914 informally assumes small u and gives no exceptional-value or rounding-mode semantics.",
+      "impact": "The formal numerical-model domain is broader in u and should not be read as hardware-level IEEE coverage; neither point invalidates the selected algebraic lemma.",
+      "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean proposition can recover the paper's full-rank conclusion after externally identifying Y with A R_hat^{-1}, choosing exact norm certificates, and identifying Y + DeltaY with Y_hat. It cannot supply the condition-number bound or establish the required algorithmic finite-precision identities, so it does not imply Lemma 3.2 as stated.",
-      "verdict": "no"
+      "reasoning": "Restricting the formal theorem to the paper's Lemma 3.1 setup supplies D017's algebraic fields, while D027 is the row-wise forward-substitution recurrence and D018 identifies DeltaY exactly. The spectral records then make epsilon_2 and both condition numbers identical to the paper's quantities, so the formal conjunction yields both conclusions of Lemma 3.2.",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "Lemma 3.2 concerns the particular R_hat and Y_hat produced by the paper's algorithm and does not state the target's universally quantified perturbation theorem for arbitrary dimensions, matrices, and lower/upper norm certificates. The generic proof idea may extend, but the cited paper result itself does not imply that broader proposition.",
+      "reasoning": "The paper statement assumes the inherited computed-HHQR setting and epsilon_1<1 route. D017 instead permits additional invertible factors with arbitrary sketch and QR residuals, and D025 permits any nonnegative u. The explicit epsilon_1=2, DeltaY=0 instance demonstrates a substantive formal case not covered by the stated paper theorem.",
       "verdict": "no"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-different",
-    "roundtrip": "not-faithful-different"
+    "direct": "faithful-equivalent",
+    "roundtrip": "undetermined"
   },
-  "rationale": "The Lean target is a valid and nonvacuous generic perturbation theorem: its Euclidean lower-gain and operator-norm certificates imply injectivity of Y + DeltaY, and suitable exact choices recover the qualitative full-rank conjunct of Lemma 3.2. However, it does not encode the computed forward-substitution matrix, the exact epsilon_2 definition, the inherited algorithmic setup, or the lemma's condition-number bound. Because the Lean statement cannot imply the complete paper result and the algorithm-specific paper statement does not imply the target's universal generalization, the correct classification is not-faithful-different.",
-  "remaining_uncertainties": [],
+  "rationale": "Primary PDF evidence confirms exact agreement on the reference matrix, DeltaY, epsilon_2, strict threshold, full-column-rank conclusion, spectral norms, pseudoinverse, and condition-number bound. Constructor inspection confirms that the formal preprocessing record does not prove actual HHQR provenance or epsilon_1<1; instead it directly assumes the algebraic consequences needed by Lemma 3.2. That substitution strictly enlarges the domain, and an explicit epsilon_1-failing exact-run instance establishes nonvacuity. The concrete summation order and ideal relative-error model are compatible refinements whose unspecified details are absorbed into DeltaY for this selected result. Thus Lean implies the paper claim, the reverse implication fails, and the appropriate accepted classification is faithful-stronger.",
+  "remaining_uncertainties": [
+    "The PDF does not determine the primitive accumulation association or singleton behavior of forward substitution; the declaration's increasing-index left fold is a defensible concretization but is not source-confirmed operation detail.",
+    "The PDF does not specify a rounding mode or exceptional-value policy, so the declaration's real relative-error operations cannot be identified with a particular IEEE implementation."
+  ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P07-T1"
