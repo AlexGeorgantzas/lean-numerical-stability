@@ -209,4 +209,140 @@ noncomputable def p07BackwardError {m n : ℕ}
       (p07RectMatMul ΔY R i j +
         (p07RectMatMul Y ΔR i j + p07RectMatMul ΔY ΔR i j))
 
+/-- Pointwise vector addition for the perturbed right-hand side in P07
+Theorem 3.5. -/
+def p07VecAdd {n : ℕ} (x y : Fin n → ℝ) : Fin n → ℝ :=
+  fun i ↦ x i + y i
+
+/-- The normal equation characterizing a least-squares solution. This is the
+well-defined perturbed-data relation used for Theorem 3.5's tall system. -/
+def p07LeastSquaresNormalEquation {m n : ℕ}
+    (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) (x : Fin n → ℝ) : Prop :=
+  ∀ j : Fin n,
+    ∑ i : Fin m, A i j * (p07MatVec A x i - b i) = 0
+
+/-- The backward-error witness assumed for unpreconditioned LSQR in equation
+(3.9). `DeltaYHat` is distinct from the forward-substitution error in
+`P07Lemma32ForwardRun`. -/
+structure P07LSQRBackwardWitness {m n : ℕ}
+    (YHat : Fin m → Fin n → ℝ) (b : Fin m → ℝ) where
+  DeltaYHat : Fin m → Fin n → ℝ
+  deltaB : Fin m → ℝ
+  zHat : Fin n → ℝ
+  perturbedPseudoinverse : Fin n → Fin m → ℝ
+  pseudoinverse_penrose :
+    P07MoorePenrosePseudoinverse
+      (p07RectAdd YHat DeltaYHat) perturbedPseudoinverse
+  iterate_relation :
+    zHat = p07MatVec perturbedPseudoinverse (p07VecAdd b deltaB)
+
+/-- Equation (2.6) for the final back substitution in Algorithm 1.3. -/
+structure P07Equation26BackSubstitution {m s n : ℕ}
+    (pre : P07Lemma31ComputedPreconditioner m s n)
+    (u : ℝ) (rSpectrum : P07RectSpectralExtrema pre.RHat)
+    (zHat : Fin n → ℝ) where
+  DeltaRHat : Fin n → Fin n → ℝ
+  xHat : Fin n → ℝ
+  perturbedRInv : Fin n → Fin n → ℝ
+  inverse_left :
+    p07RectMatMul (p07RectAdd pre.RHat DeltaRHat) perturbedRInv =
+      p07FiniteId
+  inverse_right :
+    p07RectMatMul perturbedRInv (p07RectAdd pre.RHat DeltaRHat) =
+      p07FiniteId
+  backward_equation :
+    p07MatVec (p07RectAdd pre.RHat DeltaRHat) xHat = zHat
+  deltaR_bound :
+    p07RectOpNorm2Le DeltaRHat
+      (Real.sqrt n * gamma u n * rSpectrum.upper)
+
+/-- Rowwise forward-substitution error used in the proof of Theorem 3.5,
+including the exact spectral consequence stated immediately after it. -/
+structure P07ForwardFormationError {m s n : ℕ}
+    (pre : P07Lemma31ComputedPreconditioner m s n)
+    {model : P07ScalarArithmeticModel}
+    (forwardRun : P07Lemma32ForwardRun pre model)
+    (u : ℝ) (rSpectrum : P07RectSpectralExtrema pre.RHat)
+    (ySpectrum : P07RectSpectralExtrema
+      forwardRun.forwardSubstitution.output) where
+  rowPerturbation : Fin m → Fin n → Fin n → ℝ
+  row_relation : ∀ i j,
+    p07RectMatMul forwardRun.forwardSubstitution.output pre.RHat i j -
+        pre.A i j =
+      -∑ k : Fin n,
+        forwardRun.forwardSubstitution.output i k * rowPerturbation i k j
+  componentwise_bound : ∀ i j k,
+    |rowPerturbation i j k| ≤ gamma u n * |pre.RHat j k|
+  residual_bound :
+    p07RectOpNorm2Le
+      (fun i j ↦
+        p07RectMatMul forwardRun.forwardSubstitution.output pre.RHat i j -
+          pre.A i j)
+      ((n : ℝ) * gamma u n * rSpectrum.upper * ySpectrum.upper)
+
+/-- The Algorithm 1.3 execution data needed by the unnumbered backward-error
+result in the proof of Theorem 3.5. LSQR is applied directly to the explicitly
+formed `YHat`; no SAS initialization is represented. -/
+structure P07SAABlendenpikRun {m s n : ℕ}
+    (pre : P07Lemma31ComputedPreconditioner m s n)
+    (model : P07ScalarArithmeticModel)
+    (forwardRun : P07Lemma32ForwardRun pre model)
+    (u : ℝ) where
+  unit_roundoff : model.unitRoundoff = u
+  gamma_valid : GammaValid u n
+  b : Fin m → ℝ
+  rSpectrum : P07RectSpectralExtrema pre.RHat
+  ySpectrum : P07RectSpectralExtrema forwardRun.forwardSubstitution.output
+  formationError :
+    P07ForwardFormationError pre forwardRun u rSpectrum ySpectrum
+  lsqr : P07LSQRBackwardWitness forwardRun.forwardSubstitution.output b
+  lsqrDeltaSpectrum : P07RectSpectralExtrema lsqr.DeltaYHat
+  backSubstitution :
+    P07Equation26BackSubstitution pre u rSpectrum lsqr.zHat
+
+/-- The exact four-term `DeltaA` in the proof of P07 Theorem 3.5. -/
+noncomputable def p07Theorem35DeltaA {m s n : ℕ}
+    {pre : P07Lemma31ComputedPreconditioner m s n}
+    {model : P07ScalarArithmeticModel}
+    {forwardRun : P07Lemma32ForwardRun pre model} {u : ℝ}
+    (run : P07SAABlendenpikRun pre model forwardRun u) :
+    Fin m → Fin n → ℝ :=
+  p07BackwardError forwardRun.forwardSubstitution.output
+    run.lsqr.DeltaYHat pre.RHat run.backSubstitution.DeltaRHat pre.A
+
+/-- The perturbed matrix `A + DeltaA` associated with the SAA output. -/
+noncomputable def p07Theorem35PerturbedA {m s n : ℕ}
+    {pre : P07Lemma31ComputedPreconditioner m s n}
+    {model : P07ScalarArithmeticModel}
+    {forwardRun : P07Lemma32ForwardRun pre model} {u : ℝ}
+    (run : P07SAABlendenpikRun pre model forwardRun u) :
+    Fin m → Fin n → ℝ :=
+  p07RectAdd pre.A (p07Theorem35DeltaA run)
+
+/-- The matrix `YHat + DeltaYHat` in the assumed LSQR backward error. -/
+def p07Theorem35PerturbedY {m s n : ℕ}
+    {pre : P07Lemma31ComputedPreconditioner m s n}
+    {model : P07ScalarArithmeticModel}
+    {forwardRun : P07Lemma32ForwardRun pre model} {u : ℝ}
+    (run : P07SAABlendenpikRun pre model forwardRun u) :
+    Fin m → Fin n → ℝ :=
+  p07RectAdd forwardRun.forwardSubstitution.output run.lsqr.DeltaYHat
+
+/-- The matrix `RHat + DeltaRHat` in the final back substitution. -/
+def p07Theorem35PerturbedR {m s n : ℕ}
+    {pre : P07Lemma31ComputedPreconditioner m s n}
+    {model : P07ScalarArithmeticModel}
+    {forwardRun : P07Lemma32ForwardRun pre model} {u : ℝ}
+    (run : P07SAABlendenpikRun pre model forwardRun u) :
+    Fin n → Fin n → ℝ :=
+  p07RectAdd pre.RHat run.backSubstitution.DeltaRHat
+
+/-- The perturbed right-hand side `b + deltaB` retained by Theorem 3.5. -/
+def p07Theorem35PerturbedB {m s n : ℕ}
+    {pre : P07Lemma31ComputedPreconditioner m s n}
+    {model : P07ScalarArithmeticModel}
+    {forwardRun : P07Lemma32ForwardRun pre model} {u : ℝ}
+    (run : P07SAABlendenpikRun pre model forwardRun u) : Fin m → ℝ :=
+  p07VecAdd run.b run.lsqr.deltaB
+
 end HighamBench

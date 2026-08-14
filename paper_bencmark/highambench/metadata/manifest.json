@@ -89,8 +89,8 @@
         "P07"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P07Definitions.lean",
-      "role": "P07-only finite norms, computed sketch-QR and forward-substitution models, exact spectral and pseudoinverse data, matrix products, and backward-error expansion",
-      "sha256": "a8e21e6e4a539d70da83e96373345ab0100d7d4a25e68b17c14e47017cdce9eb",
+      "role": "P07-only finite norms, computed sketch-QR and forward-substitution models, exact spectral and pseudoinverse data, SAA LSQR and back-substitution witnesses, matrix products, and backward-error expansion",
+      "sha256": "6f0bad7f110b187ab3e04a0d3be457997ab16edb9414280f2f92ad2f12a059c8",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -1504,16 +1504,15 @@
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
             "NumStability.rectOpNorm2Le_rectMatMul",
-            "NumStability.rectMatMulVec_mat_add",
             "NumStability.vecNorm2_add_le"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs are kept under paper_bencmark/scratch_pad/private_gold/P07/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Compose the supplied operator certificates for DeltaY*R, Y*DeltaR, and DeltaY*DeltaR, then apply the Euclidean triangle inequality three times to the exact four-term expansion.",
-          "informal_statement_paraphrase": "The exact backward-error decomposition in Theorem 3.5's proof with its uncollapsed operator-norm budget.",
+          "informal_proof_paraphrase": "Expand (YHat+DeltaYHat)(RHat+DeltaRHat) to obtain A+DeltaA. Use the final triangular inverse and equation (3.9) for the factorized xHat relation. The symmetric Moore-Penrose range projection makes the residual orthogonal to the columns of YHat+DeltaYHat; the product factorization transfers this to the normal equation for A+DeltaA. Finally combine the fixed formation-error bound, equation (2.6), spectral submultiplicativity, and triangle inequalities, then collect the n, sqrt(n), and mixed-product coefficients exactly.",
+          "informal_statement_paraphrase": "The algorithm-linked exact DeltaA construction and immediate spectral-norm estimate in the proof of Theorem 3.5, with the perturbed right-hand side and least-squares relation retained.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "66cf9586215f93594421bb978c14317dd27fdc49556a45c3d13be036d45045ee",
+            "controlled_file_sha256": "6c74a35b9ccd229e305dde38e11b1e247bee8bef50a42a127e0a5bd8f977371a",
             "declaration": "p07_t2_backward_error_product_budget",
             "file": "paper_bencmark/highambench/tasks/P07/T2/Target.lean",
             "must_compile_without_numstability": true,
@@ -1521,22 +1520,43 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P07Definitions.lean"
             ],
-            "statement_summary": "The four-term final backward-error matrix has operator norm bounded by the sum of the base residual and three product budgets."
+            "statement_summary": "For the linked SAA Blendenpik execution, the exact four-term DeltaA factors the perturbed matrix, xHat satisfies the corresponding perturbed least-squares relation, and DeltaA obeys the fixed page-920 spectral bound."
           },
           "source_locations": [
             {
-              "anchor": "displayed definition of DeltaA and the immediately following norm bound in the proof of Theorem 3.5",
+              "anchor": "Algorithm 1.3",
+              "journal_page": "909",
+              "pdf_page": 5,
+              "role": "SAA Blendenpik stages: sketch, Householder QR, explicit forward-substitution preconditioned matrix, unpreconditioned LSQR, and final back substitution",
+              "section": "1.2. Sketch-and-apply methods"
+            },
+            {
+              "anchor": "equation (2.1)",
+              "journal_page": "914",
+              "pdf_page": 10,
+              "role": "gamma_n convention for the standard rounding model",
+              "section": "2.2. Numerical preliminaries"
+            },
+            {
+              "anchor": "equation (2.6)",
+              "journal_page": "915",
+              "pdf_page": 11,
+              "role": "final back-substitution perturbation equation and norm bound",
+              "section": "2.2. Numerical preliminaries"
+            },
+            {
+              "anchor": "equation (3.9), exact DeltaA definition, rowwise formation error, and immediate compositional estimate",
               "journal_page": "920",
               "pdf_page": 16,
-              "role": "exact backward-error expansion and compositional 2-norm estimate",
+              "role": "LSQR backward witness, perturbed-data linkage, exact four-term backward error, and fixed n/sqrt(n)/gamma_n spectral bound",
               "section": "3.4. The backward error of SAA Blendenpik"
             }
           ],
           "task_id": "P07-T2",
           "tier": "T2",
           "tier_name": "combine",
-          "tier_reason": "The L proof combines NumStability.rectOpNorm2Le_rectMatMul, NumStability.rectMatMulVec_mat_add, and NumStability.vecNorm2_add_le repeatedly; no single frozen theorem states the selected four-term result.",
-          "title": "Four-term backward-error product budget"
+          "tier_reason": "The L proof combines NumStability.rectOpNorm2Le_rectMatMul and NumStability.vecNorm2_add_le from the mounted MatrixAlgebra module. It additionally proves the P07-specific factorization, factorized computed-solution chain, Moore-Penrose normal equation, four-term assembly, and exact gamma coefficient collection; no single frozen declaration states the selected result.",
+          "title": "Algorithm-linked SAA backward-error construction"
         },
         {
           "availability": "available",
