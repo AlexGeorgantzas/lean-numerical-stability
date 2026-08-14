@@ -4,10 +4,10 @@
 This checker is deliberately independent of ``check_phase.py``.  The generic
 phase checker validates the reusable phase schema; this file enforces the
 one-off, exact activation-to-C0001 contract, its C0001-rooted successor
-controls, and C0002 acceptance/retirement.  It uses only the Python standard
-library and disposable Git indexes rooted at the applicable checkpoint to
-materialize and hash-check independent requests and their reviewed-union
-postimages.
+controls, C0002 acceptance/retirement, and the exact C0003 R03 transition.
+It uses only the Python standard library and disposable Git indexes rooted at
+the applicable checkpoint to materialize and hash-check independent requests
+and their reviewed-union postimages.
 """
 
 from __future__ import annotations
@@ -117,6 +117,147 @@ C0002_INTEGRATOR_LEDGER_SHA256 = (
 )
 C0002_GATES_SHA256 = (
     "4C5368D6CA295DD885B77CD6CC79A2519FFEE6926A5A0D21F968DA8F41C07361"
+)
+C0003_CHECKPOINT_ID = "C0003"
+C0003_CODE_SHA = "e20de2f931caa12221e708c341e9cb4f64d29b25"
+C0002_ACCEPTANCE_CONTROL_SHA = "c92c48a348a0e09e7d6ac9d4ff1db7673a027648"
+R03_ROUTE_SHA = "09b3962dc6ed18b6de6eea5dc4a0e0e7c8ba4bb7"
+R03_DELIVERY_SHA = "1f8ff4ca5b0b136901a2f47d43e1064dc09aa556"
+R03_MERGE_SHA = "0ee06b61ca1c12e8f9492d79b85d1a515c652f09"
+R03_EXPECTED_POSTIMAGE_TREE = "11b2a268de2a65d87da5d2681e2482e87e989494"
+C0003_METRICS = {
+    "production_modules": 2690,
+    "unclassified_modules": 254,
+    "mixed_modules": 0,
+    "missing_module_docstrings": 0,
+    "noncanonical_modules": 217,
+    "declaration_bearing_umbrellas": 15,
+    "unsorted_aggregate_imports": 0,
+}
+C0003_MILESTONES = ["M01", "M02", "M03", "M11", "M12"]
+C0003_COMBINED_BASELINE_SHA256 = (
+    "692A6834644BECABA4DB1C16FEB9B89CEB2DE1A2A5B8A1AF304F63F873433A5E"
+)
+C0003_COMBINED_SUMMARY_SHA256 = (
+    "27456CE0FB150FF6B5D6ED3007FC8A9832F6170D6894755B901CA9FF74E9E910"
+)
+C0003_INVENTORY_SHA256 = (
+    "2FC73310A40763AA16AAC3D9EC1A0F3F6DF94AAEE188C4C4DB9BF62A34C67B33"
+)
+C0003_INTEGRATOR_LEDGER_SHA256 = (
+    "FFD53CFFDC406EA62F2CB0380BD538CB5FE15DCBF4842377E01D990336030888"
+)
+C0003_GATES_SHA256 = (
+    "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+)
+C0003_RAW_DEPENDENCY_TSV_SHA256 = (
+    "98199873425E068D3B74F8595A6CFB9AFE5532974186FD760DFD122B0D273626"
+)
+C0003_SOURCE_FACTS = {
+    "module_count": 2690,
+    "line_count": 3985082,
+    "nonblank_line_count": 1454099,
+    "byte_count": 74663808,
+    "direct_import_count": 28305,
+    "internal_direct_import_count": 17193,
+    "external_direct_import_count": 11112,
+    "modules_missing_module_docstring_count": 0,
+}
+C0003_TIER_COUNTS = {
+    "aggregate": 377,
+    "compatibility": 420,
+    "internal": 2,
+    "mixed": 0,
+    "reusable": 544,
+    "source": 1088,
+    "upstream": 5,
+}
+C0003_INVENTORY_DISPOSITIONS = Counter(
+    {"already_complete": 2356, "in_scope": 334}
+)
+C0003_INVENTORY_DEBT_ROWS = 310
+C0003_I01_COUNTEREXAMPLE_ROW = {
+    "module": (
+        "NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding."
+        "Counterexample"
+    ),
+    "path": (
+        "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/"
+        "Counterexample.lean"
+    ),
+    "base_blob_oid": "4590bda01de2f052cd7208966beb19ff7e026b5b",
+    "current_tier": "source",
+    "debt_flags": "declaration_bearing_umbrellas",
+    "phase_scope": "in_scope",
+    "lane_id": "integration-lane",
+    "wave_id": "I01",
+    "planned_actions": "aggregate_cleanup;split",
+    "rationale": (
+        "C0003 integration follow-up retained the Problem09 counterexample "
+        "declarations to revert a delivered Counterexample/Results import "
+        "self-cycle; final integrator wave I01 owns the resulting "
+        "declaration-bearing umbrella split."
+    ),
+}
+C0003_ROUTE_STATUS_COUNTS = Counter({"A": 2209, "M": 184})
+C0003_ROUTE_CATEGORY_COUNTS = Counter(
+    {
+        "immutable_delivery": 2251,
+        "reviewed_request": 115,
+        "bounded_aggregate_followup": 11,
+        "bounded_test_followup": 3,
+        "integration_documentation": 4,
+        "milestone_dag_refresh": 3,
+        "request_aggregate_sort_followup": 2,
+        "request_dependency_supply_followup": 1,
+        "request_compatibility_reconciliation": 1,
+        "request_layout_ratchet_followup": 1,
+        "request_tier_reclassification_followup": 1,
+    }
+)
+C0003_REQUEST_DEVIATION_CATEGORIES = {
+    "NumStability/Algorithms.lean": "request_aggregate_sort_followup",
+    "NumStability/Analysis.lean": "request_aggregate_sort_followup",
+    (
+        "NumStability/Source/Higham/Chapter27/SoftwareEnvironment.lean"
+    ): "request_dependency_supply_followup",
+    "docs/architecture/COMPATIBILITY.md": (
+        "request_compatibility_reconciliation"
+    ),
+    "docs/architecture/layout-exceptions.json": (
+        "request_layout_ratchet_followup"
+    ),
+    "docs/architecture/tiers.json": "request_tier_reclassification_followup",
+}
+C0003_EXTRA_CATEGORIES = frozenset(
+    {
+        "bounded_aggregate_followup",
+        "bounded_test_followup",
+        "integration_documentation",
+        "milestone_dag_refresh",
+    }
+)
+R03_DELIVERY_REPORT = (
+    "docs/architecture/deliveries/R03/DELIVERY.md",
+    "2605C852D1CA448079D4851D40A0FA7832979972A1B914C1F08E1BD544518D74",
+)
+R03_DELIVERY_SCOPE = (
+    "docs/architecture/deliveries/R03/CHANGED_PATHS.md",
+    "ECB0FFC6A62A6CB7B1613C0373112A777FC043A056B487598CC0DC376BE0C0B7",
+)
+R03_ACCEPTED_PROJECTION_RECORD_SHA256 = (
+    "18AB5A8482A0A91C40E4BCBA3EAEFF52B275931F6CD9166A1D8932C1C865C5B8"
+)
+R03_APPLIED_REQUEST_RECORD_SHA256 = (
+    "09AEE132AE8BF034BC4E91C0C1FC6F943029EDAC3FE63DE387CE38494804949E"
+)
+R03_ACCEPTED_RESOLUTION_REASON = (
+    "Applied exactly once after the true R03 delivery merge as the independently "
+    "replayed exact-C0002 R0005 request, then accepted with the reviewed six "
+    "bounded request-path follow-ups: Algorithms and Analysis aggregate import "
+    "sorting, the Chapter27 Environment import-superset repair, compatibility-row "
+    "reconciliation, the layout ratchet, and the tier reclassifications, together "
+    "with the documented 21 additional integration follow-up paths."
 )
 C0002_RELEASED_SHARED_PATHS = frozenset(
     {
@@ -956,9 +1097,9 @@ def validate_r03_epoch_snapshot(
     *,
     expected_route_sha256: str,
 ) -> None:
-    """Enforce the exact planned/active lifecycle independently of file I/O."""
+    """Enforce the exact R03 lifecycle independently of file I/O."""
 
-    context = "C0002-rooted R03 planned/active epoch"
+    context = "C0002-rooted R03 epoch"
     problems.require(
         snapshot.branch_base_checkpoint_id == C0002_CHECKPOINT_ID
         and snapshot.branch_base_sha == C0002_CODE_SHA,
@@ -978,20 +1119,24 @@ def validate_r03_epoch_snapshot(
         f"{context}.routes",
         f"route/hash drift: expected declaration-route SHA-256 {expected_route_sha256}",
     )
+    terminal = snapshot.branch_status in {"accepted", "retired"}
+    expected_lane_operators = (
+        (R03_OPERATOR_ID,) if terminal else R03_OPERATOR_IDS
+    )
     problems.require(
         snapshot.operator_ids == R03_OPERATOR_IDS
-        and snapshot.lane_operator_ids == R03_OPERATOR_IDS,
+        and snapshot.lane_operator_ids == expected_lane_operators,
         f"{context}.authority",
-        "unauthorized operator: branch and codex-lane must authorize exactly the "
-        "reviewed claude-local/codex-local pair",
+        "unauthorized operator: branch history must retain the reviewed pair while "
+        "codex-lane must carry the pair before C0003 and codex-local alone after it",
     )
     expected_activation = Artifact(
         R03_ACTIVATION_REVIEW_PATH, R03_ACTIVATION_REVIEW_SHA256
     )
     problems.require(
-        snapshot.branch_status in {"planned", "active"},
+        snapshot.branch_status in {"planned", "active", "accepted", "retired"},
         f"{context}.activation",
-        "branch status must be exactly planned or active",
+        "branch status must be exactly planned, active, accepted, or retired",
     )
     if snapshot.branch_status == "planned":
         problems.require(
@@ -1004,6 +1149,12 @@ def validate_r03_epoch_snapshot(
             snapshot.activation_evidence == (expected_activation,),
             f"{context}.activation",
             "active epoch must hash-pin exactly the reviewed R03 activation evidence",
+        )
+    elif terminal:
+        problems.require(
+            snapshot.activation_evidence == (expected_activation,),
+            f"{context}.activation",
+            "accepted/retired epoch must retain the exact historical activation evidence",
         )
     expected_delivery = {
         "commit_sha": None,
@@ -1031,28 +1182,124 @@ def validate_r03_epoch_snapshot(
         "resolved_by": None,
         "validation_evidence": [],
     }
-    problems.require(
-        snapshot.delivery == expected_delivery
-        and snapshot.integration == expected_integration
-        and snapshot.retirement == expected_retirement
-        and snapshot.projection_base_checkpoint_id == C0002_CHECKPOINT_ID
-        and snapshot.projection_status == "active"
+    base_lifecycle = (
+        snapshot.projection_base_checkpoint_id == C0002_CHECKPOINT_ID
         and snapshot.request_target_checkpoint_id == C0002_CHECKPOINT_ID
         and snapshot.request_target_base_sha == C0002_CODE_SHA
-        and snapshot.request_status == "active"
-        and snapshot.request_resolution == expected_resolution,
-        f"{context}.lifecycle",
-        "invalid lifecycle transition: planned/active branch with null delivery+integration, not_due retirement, active projection, and unresolved active request required",
     )
+    if terminal:
+        expected_delivery = {
+            "commit_sha": R03_DELIVERY_SHA,
+            "report": {
+                "path": R03_DELIVERY_REPORT[0],
+                "sha256": R03_DELIVERY_REPORT[1],
+            },
+            "scope_evidence": {
+                "path": R03_DELIVERY_SCOPE[0],
+                "sha256": R03_DELIVERY_SCOPE[1],
+            },
+        }
+        expected_integration = {
+            "method": "merge",
+            "accepted_checkpoint_id": C0003_CHECKPOINT_ID,
+            "accepted_sha": C0003_CODE_SHA,
+        }
+        resolution = snapshot.request_resolution
+        resolution_time = resolution.get("resolved_at")
+        expected_resolution_without_time = {
+            "checkpoint_id": C0003_CHECKPOINT_ID,
+            "commit_sha": C0003_CODE_SHA,
+            "reason": R03_ACCEPTED_RESOLUTION_REASON,
+            "resolved_by": "primary-human",
+            "validation_evidence": [
+                {
+                    "path": (
+                        f"{R03_PHASE_PREFIX}/checkpoints/C0003-gates.md"
+                    ),
+                    "sha256": C0003_GATES_SHA256,
+                }
+            ],
+        }
+        actual_resolution_without_time = {
+            key: value for key, value in resolution.items() if key != "resolved_at"
+        }
+        problems.require(
+            snapshot.delivery == expected_delivery
+            and snapshot.integration == expected_integration
+            and base_lifecycle
+            and snapshot.projection_status == "retired"
+            and snapshot.request_status == "applied"
+            and actual_resolution_without_time == expected_resolution_without_time
+            and isinstance(resolution_time, str)
+            and RFC3339_RE.fullmatch(resolution_time) is not None,
+            f"{context}.lifecycle",
+            "accepted/retired lifecycle requires exact delivery, merge integration, "
+            "retired C0002 projection, and C0003/e20 applied-request resolution",
+        )
+        retirement_common = {
+            "remote_ref": R03_REMOTE_REF,
+            "rule": "delivery_ancestor_of_green_checkpoint",
+        }
+        if snapshot.branch_status == "accepted":
+            expected_terminal_retirement = {
+                **retirement_common,
+                "status": "due",
+                "retired_at": None,
+                "retired_by": None,
+                "ancestry_checkpoint_id": None,
+            }
+            problems.require(
+                snapshot.retirement == expected_terminal_retirement,
+                f"{context}.retirement",
+                "accepted B0005 must have exact due retirement state",
+            )
+        else:
+            retired_at = snapshot.retirement.get("retired_at")
+            expected_retired_without_time = {
+                **retirement_common,
+                "status": "retired",
+                "retired_by": "primary-human",
+                "ancestry_checkpoint_id": C0003_CHECKPOINT_ID,
+            }
+            actual_retired_without_time = {
+                key: value
+                for key, value in snapshot.retirement.items()
+                if key != "retired_at"
+            }
+            problems.require(
+                actual_retired_without_time == expected_retired_without_time
+                and isinstance(retired_at, str)
+                and RFC3339_RE.fullmatch(retired_at) is not None,
+                f"{context}.retirement",
+                "retired B0005 must record primary-human, C0003 ancestry, and RFC3339 time",
+            )
+    else:
+        problems.require(
+            snapshot.delivery == expected_delivery
+            and snapshot.integration == expected_integration
+            and snapshot.retirement == expected_retirement
+            and base_lifecycle
+            and snapshot.projection_status == "active"
+            and snapshot.request_status == "active"
+            and snapshot.request_resolution == expected_resolution,
+            f"{context}.lifecycle",
+            "invalid lifecycle transition: planned/active branch with null delivery+integration, not_due retirement, active projection, and unresolved active request required",
+        )
     problems.require(
         snapshot.r07_milestone_status == "planned",
         f"{context}.r07",
         "R07/M07 must remain unactivated and planned",
     )
     problems.require(
-        not snapshot.worker_shared_leaks and not snapshot.request_unreserved_paths,
+        not snapshot.worker_shared_leaks
+        and (
+            len(snapshot.request_unreserved_paths) == 91
+            if terminal
+            else not snapshot.request_unreserved_paths
+        ),
         f"{context}.shared_paths",
-        "shared-path leakage: worker paths must avoid shared controls and every request path must be reserved",
+        "shared-path leakage: worker paths must avoid shared controls; active requests "
+        "must be fully reserved and terminal requests must release exactly 91 request-only paths",
     )
 
 
@@ -1099,13 +1346,15 @@ def next_branch_statuses(checkpoint_id: str) -> set[str]:
         return {"planned", "active", "delivered"}
     if checkpoint_id == C0002_CHECKPOINT_ID:
         return {"accepted", "retired"}
+    if checkpoint_id == C0003_CHECKPOINT_ID:
+        return {"retired"}
     return set()
 
 
 def next_projection_status(checkpoint_id: str) -> str | None:
     if checkpoint_id == SUCCESSOR_CHECKPOINT_ID:
         return "active"
-    if checkpoint_id == C0002_CHECKPOINT_ID:
+    if checkpoint_id in {C0002_CHECKPOINT_ID, C0003_CHECKPOINT_ID}:
         return "retired"
     return None
 
@@ -1113,7 +1362,7 @@ def next_projection_status(checkpoint_id: str) -> str | None:
 def next_request_status(checkpoint_id: str) -> str | None:
     if checkpoint_id == SUCCESSOR_CHECKPOINT_ID:
         return "active"
-    if checkpoint_id == C0002_CHECKPOINT_ID:
+    if checkpoint_id in {C0002_CHECKPOINT_ID, C0003_CHECKPOINT_ID}:
         return "applied"
     return None
 
@@ -1121,7 +1370,7 @@ def next_request_status(checkpoint_id: str) -> str | None:
 def next_lane_operators(checkpoint_id: str) -> list[str]:
     if checkpoint_id == SUCCESSOR_CHECKPOINT_ID:
         return ["claude-local", "codex-local"]
-    if checkpoint_id == C0002_CHECKPOINT_ID:
+    if checkpoint_id in {C0002_CHECKPOINT_ID, C0003_CHECKPOINT_ID}:
         return ["claude-local"]
     return []
 
@@ -1462,6 +1711,7 @@ class CompletionValidator:
             CHECKPOINT_ID,
             SUCCESSOR_CHECKPOINT_ID,
             C0002_CHECKPOINT_ID,
+            C0003_CHECKPOINT_ID,
         }
         self.problems.require(
             current in allowed_checkpoints,
@@ -1548,6 +1798,31 @@ class CompletionValidator:
                 "phase.json.shared_paths",
                 "active R0005 must exactly re-reserve its four reviewed C0002 consumer paths",
             )
+        elif self.current_checkpoint_id == C0003_CHECKPOINT_ID:
+            try:
+                accepted_phase = json.loads(
+                    self.git(
+                        "show",
+                        (
+                            f"{C0002_ACCEPTANCE_CONTROL_SHA}:"
+                            f"{(DEFAULT_PHASE_DIR / 'phase.json').as_posix()}"
+                        ),
+                    ).stdout
+                )
+            except (RuntimeError, json.JSONDecodeError) as error:
+                self.problems.add(
+                    "phase.json.shared_paths",
+                    f"cannot load exact C0002 accepted shared-path set: {error}",
+                )
+            else:
+                accepted_shared = accepted_phase.get("shared_paths")
+                self.problems.require(
+                    isinstance(accepted_shared, list)
+                    and len(accepted_shared) == 160
+                    and phase.get("shared_paths") == accepted_shared,
+                    "phase.json.shared_paths",
+                    "C0003 must restore the exact 160-rule C0002 accepted shared-path set",
+                )
         readme = self.phase_dir / "README.md"
         try:
             text = readme.read_text(encoding="utf-8")
@@ -1601,10 +1876,16 @@ class CompletionValidator:
         if self.current_checkpoint_id in {
             SUCCESSOR_CHECKPOINT_ID,
             C0002_CHECKPOINT_ID,
+            C0003_CHECKPOINT_ID,
         }:
             self.validate_successor_checkpoint()
-        if self.current_checkpoint_id == C0002_CHECKPOINT_ID:
+        if self.current_checkpoint_id in {
+            C0002_CHECKPOINT_ID,
+            C0003_CHECKPOINT_ID,
+        }:
             self.validate_c0002_checkpoint()
+        if self.current_checkpoint_id == C0003_CHECKPOINT_ID:
+            self.validate_c0003_checkpoint()
         inventory_ref = self.artifact(
             checkpoint.get("inventory"), "checkpoints/C0000.json.inventory"
         )
@@ -2210,6 +2491,494 @@ class CompletionValidator:
                 f"{ancestor} must be an ancestor of exact C0002 code {C0002_CODE_SHA}",
             )
 
+    def validate_c0003_checkpoint(self) -> None:
+        """Validate the exact R03 acceptance checkpoint and integration audit."""
+
+        context = "checkpoints/C0003.json"
+        path = self.phase_dir / "checkpoints/C0003.json"
+        checkpoint = self.read_json(path, self.relative(path))
+        if checkpoint is None:
+            return
+        for key, expected in {
+            "schema_version": 1,
+            "record_kind": "phase_checkpoint",
+            "phase_id": PHASE_ID,
+            "checkpoint_id": C0003_CHECKPOINT_ID,
+            "parent_checkpoint_id": C0002_CHECKPOINT_ID,
+            "commit_sha": C0003_CODE_SHA,
+            "accepted_by": "primary-human",
+            "milestones_satisfied": C0003_MILESTONES,
+            "unblocks": [],
+            "metrics": C0003_METRICS,
+        }.items():
+            self.problems.require(
+                checkpoint.get(key) == expected,
+                f"{context}.{key}",
+                f"expected {expected!r}, found {checkpoint.get(key)!r}",
+            )
+        accepted_at = checkpoint.get("accepted_at")
+        self.problems.require(
+            isinstance(accepted_at, str)
+            and RFC3339_RE.fullmatch(accepted_at) is not None,
+            f"{context}.accepted_at",
+            "expected an RFC3339 timestamp with timezone",
+        )
+
+        inventory = self.artifact(checkpoint.get("inventory"), f"{context}.inventory")
+        inventory_path = self.phase_dir / "checkpoints/C0003-inventory.tsv"
+        expected_inventory = self.relative(inventory_path)
+        inventory_rows: list[dict[str, str]] = []
+        if inventory is not None:
+            self.problems.require(
+                inventory.path == expected_inventory
+                and inventory.sha256 == C0003_INVENTORY_SHA256,
+                f"{context}.inventory",
+                f"must pin {expected_inventory} at {C0003_INVENTORY_SHA256}",
+            )
+            _, inventory_rows = self.read_tsv(
+                self.root / inventory.path, inventory.path, SCOPE_HEADER
+            )
+            paths = [row.get("path", "") for row in inventory_rows]
+            self.problems.require(
+                len(inventory_rows) == C0003_METRICS["production_modules"]
+                and len(paths) == len(set(paths)),
+                inventory.path,
+                "must contain 2,690 unique production-module rows",
+            )
+            dispositions = Counter(
+                row.get("phase_scope", "") for row in inventory_rows
+            )
+            debt_rows = sum(
+                row.get("debt_flags", "") != "-" for row in inventory_rows
+            )
+            self.problems.require(
+                dispositions == C0003_INVENTORY_DISPOSITIONS
+                and debt_rows == C0003_INVENTORY_DEBT_ROWS,
+                inventory.path,
+                "must record exact C0003 2,356/334 disposition and 310-row debt accounting",
+            )
+            self.problems.require(
+                all(row.get("wave_id") != R03_WAVE_ID for row in inventory_rows),
+                inventory.path,
+                "accepted R03 may leave no C0003 inventory row in R03 scope",
+            )
+            i01_rows = [
+                row for row in inventory_rows if row.get("wave_id") == "I01"
+            ]
+            self.problems.require(
+                len(i01_rows) == 12
+                and C0003_I01_COUNTEREXAMPLE_ROW in i01_rows,
+                inventory.path,
+                "I01 must contain exactly 12 rows including the exact cycle-repair counterexample row",
+            )
+
+            c0002_inventory_path = self.phase_dir / "checkpoints/C0002-inventory.tsv"
+            _, c0002_rows = self.read_tsv(
+                c0002_inventory_path,
+                self.relative(c0002_inventory_path),
+                SCOPE_HEADER,
+            )
+            c0002_paths = {row.get("path", "") for row in c0002_rows}
+            c0003_by_path = {
+                row.get("path", ""): row for row in inventory_rows
+            }
+            new_paths = set(c0003_by_path) - c0002_paths
+            self.problems.require(
+                c0002_paths <= set(c0003_by_path) and len(new_paths) == 48,
+                inventory.path,
+                "C0003 inventory must retain every C0002 path and add exactly 48 production modules",
+            )
+            for new_path in sorted(new_paths):
+                row = c0003_by_path[new_path]
+                self.problems.require(
+                    row.get("phase_scope") == "already_complete"
+                    and row.get("debt_flags") == "-"
+                    and row.get("lane_id") == "-"
+                    and row.get("wave_id") == "-",
+                    f"{inventory.path}[{new_path}]",
+                    "every new R03 production module must be debt-free and already complete",
+                )
+
+            selector_path = self.phase_dir / "selectors/R03.tsv"
+            _, selector_rows = self.read_tsv(
+                selector_path, self.relative(selector_path), SELECTOR_HEADER
+            )
+            selector_paths = {row.get("path", "") for row in selector_rows}
+            self.problems.require(
+                len(selector_rows) == R03_OWNER_COUNT
+                and len(selector_paths) == R03_OWNER_COUNT,
+                inventory.path,
+                "the exact 47 R03 selector rows must remain identifiable at C0003",
+            )
+            for selected_path in sorted(selector_paths):
+                row = c0003_by_path.get(selected_path, {})
+                self.problems.require(
+                    row.get("phase_scope") == "already_complete"
+                    and row.get("debt_flags") == "-"
+                    and row.get("lane_id") == "-"
+                    and row.get("wave_id") == "-",
+                    f"{inventory.path}[{selected_path}]",
+                    "every accepted R03 owner must be debt-free and outside active scope",
+                )
+
+            code_blobs = self.git_tree_blobs(C0003_CODE_SHA)
+            for row in inventory_rows:
+                row_path = row.get("path", "")
+                self.problems.require(
+                    row.get("base_blob_oid") == code_blobs.get(row_path),
+                    f"{inventory.path}[{row_path}].base_blob_oid",
+                    "must pin the exact C0003 Git blob",
+                )
+            if (self.root / inventory.path).is_file():
+                self.problems.require(
+                    sha256_path(self.root / inventory.path)
+                    == C0003_INVENTORY_SHA256,
+                    inventory.path,
+                    "C0003 inventory content drifted",
+                )
+
+        baseline = checkpoint.get("combined_baseline")
+        if not isinstance(baseline, dict):
+            self.problems.add(f"{context}.combined_baseline", "expected an object")
+        else:
+            expected_command = (
+                "python -B tools/architecture/generate_baseline.py --output-dir "
+                "docs/architecture/phases/2026-08-repository-reorganization-"
+                "completion/baselines --name C0003-combined "
+                "--keep-dependency-tsv benchmark-results/C0003-combined.tsv"
+            )
+            self.problems.require(
+                baseline.get("format_version") == 2
+                and baseline.get("generation_command") == expected_command,
+                f"{context}.combined_baseline",
+                "requires the exact deterministic C0003 format-2 generation command",
+            )
+            artifact = self.artifact(
+                baseline.get("artifact"), f"{context}.combined_baseline.artifact"
+            )
+            summary = self.artifact(
+                baseline.get("summary_artifact"),
+                f"{context}.combined_baseline.summary_artifact",
+            )
+            expected_artifact = self.relative(
+                self.phase_dir / "baselines/C0003-combined.json"
+            )
+            expected_summary = self.relative(
+                self.phase_dir / "baselines/C0003-combined.md"
+            )
+            if artifact is not None:
+                self.problems.require(
+                    artifact.path == expected_artifact
+                    and artifact.sha256 == C0003_COMBINED_BASELINE_SHA256,
+                    f"{context}.combined_baseline.artifact",
+                    "must pin the exact C0003 format-2 JSON baseline",
+                )
+                document = self.read_json(
+                    self.root / artifact.path,
+                    f"{context}.combined_baseline.artifact",
+                )
+                metadata = document.get("metadata") if document is not None else None
+                source = document.get("source") if document is not None else None
+                tier_audit = source.get("tier_audit") if isinstance(source, dict) else None
+                self.problems.require(
+                    isinstance(metadata, dict)
+                    and metadata.get("commit") == C0003_CODE_SHA
+                    and metadata.get("library_source_clean") is True
+                    and metadata.get("library_source_dirty_paths") == [],
+                    f"{context}.combined_baseline.artifact.metadata",
+                    "must record the exact clean C0003 code commit",
+                )
+                self.problems.require(
+                    isinstance(source, dict)
+                    and all(
+                        source.get(key) == value
+                        for key, value in C0003_SOURCE_FACTS.items()
+                    ),
+                    f"{context}.combined_baseline.artifact.source",
+                    f"source totals must equal exact C0003 measurements {C0003_SOURCE_FACTS}",
+                )
+                self.problems.require(
+                    isinstance(tier_audit, dict)
+                    and tier_audit.get("module_counts_by_tier")
+                    == C0003_TIER_COUNTS
+                    and tier_audit.get("unclassified_module_count") == 254
+                    and tier_audit.get("classified_module_count") == 2436,
+                    f"{context}.combined_baseline.artifact.source.tier_audit",
+                    "tier counts must equal the exact C0003 2,436/254 classification",
+                )
+                if (self.root / artifact.path).is_file():
+                    self.problems.require(
+                        sha256_path(self.root / artifact.path)
+                        == C0003_COMBINED_BASELINE_SHA256,
+                        artifact.path,
+                        "C0003 baseline content drifted",
+                    )
+            if summary is not None:
+                self.problems.require(
+                    summary.path == expected_summary
+                    and summary.sha256 == C0003_COMBINED_SUMMARY_SHA256,
+                    f"{context}.combined_baseline.summary_artifact",
+                    "must pin the exact C0003 Markdown summary",
+                )
+                if (self.root / summary.path).is_file():
+                    self.problems.require(
+                        sha256_path(self.root / summary.path)
+                        == C0003_COMBINED_SUMMARY_SHA256,
+                        summary.path,
+                        "C0003 baseline summary content drifted",
+                    )
+
+        gates = checkpoint.get("gates")
+        expected_evidence = self.relative(
+            self.phase_dir / "checkpoints/C0003-gates.md"
+        )
+        if not isinstance(gates, list):
+            self.problems.add(f"{context}.gates", "expected a list")
+        else:
+            gate_ids = [
+                gate.get("gate_id") for gate in gates if isinstance(gate, dict)
+            ]
+            self.problems.require(
+                len(gate_ids) == len(gates)
+                and len(gate_ids) == len(set(gate_ids))
+                and set(gate_ids) == SUCCESSOR_GATE_IDS,
+                f"{context}.gates",
+                "must contain every and only the 12 exact C0003 acceptance gates",
+            )
+            for index, gate in enumerate(gates):
+                if not isinstance(gate, dict):
+                    self.problems.add(f"{context}.gates[{index}]", "expected an object")
+                    continue
+                gate_id = gate.get("gate_id")
+                gate_context = f"{context}.gates[{gate_id or index}]"
+                self.problems.require(
+                    gate.get("status") == "PASS"
+                    and gate.get("commit_sha") == C0003_CODE_SHA,
+                    gate_context,
+                    "must record PASS at the exact C0003 code commit",
+                )
+                evidence = self.artifact(
+                    gate.get("evidence"), f"{gate_context}.evidence"
+                )
+                if evidence is not None:
+                    self.problems.require(
+                        evidence.path == expected_evidence
+                        and evidence.sha256 == C0003_GATES_SHA256,
+                        f"{gate_context}.evidence",
+                        "must pin the exact C0003 gate report",
+                    )
+        gate_path = self.root / expected_evidence
+        if gate_path.is_file():
+            self.problems.require(
+                sha256_path(gate_path) == C0003_GATES_SHA256,
+                expected_evidence,
+                "C0003 gate report content drifted",
+            )
+            try:
+                gate_text = gate_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeError) as error:
+                self.problems.add(expected_evidence, f"cannot read gate report: {error}")
+            else:
+                for token in (
+                    C0003_CODE_SHA,
+                    R03_ROUTE_SHA,
+                    R03_DELIVERY_SHA,
+                    R03_MERGE_SHA,
+                    R03_EXPECTED_POSTIMAGE_TREE,
+                    C0003_RAW_DEPENDENCY_TSV_SHA256,
+                    "2,393 unique paths: 2,209 additions and 184 modifications",
+                    "115 request paths remain byte-identical",
+                    "exactly six have reviewed bounded follow-ups",
+                    "exactly 27 paths",
+                    "exactly 142 paths",
+                    "The 91 R0005-only",
+                    "shared reservations are released; all 30",
+                ):
+                    self.problems.require(
+                        token in gate_text,
+                        expected_evidence,
+                        f"gate report must record exact C0003 fact {token!r}",
+                    )
+        else:
+            self.problems.add(expected_evidence, "missing C0003 gate report")
+
+        ledger_path = self.phase_dir / "checkpoints/C0003-integrator-paths.tsv"
+        if ledger_path.is_file():
+            _, ledger = self.read_tsv(
+                ledger_path,
+                self.relative(ledger_path),
+                ("status", "category", "path"),
+            )
+            ledger_pairs = [
+                (row.get("status", ""), row.get("path", "")) for row in ledger
+            ]
+            changed_rows: list[tuple[str, str]] = []
+            for row in self.git(
+                "diff", "--name-status", R03_ROUTE_SHA, C0003_CODE_SHA
+            ).stdout.splitlines():
+                fields = row.split("\t")
+                if len(fields) == 2:
+                    changed_rows.append((fields[0], fields[1]))
+                else:
+                    self.problems.add(
+                        self.relative(ledger_path),
+                        f"route diff contains unsupported rename/copy row {row!r}",
+                    )
+            ledger_by_path = {
+                row.get("path", ""): row for row in ledger
+            }
+            self.problems.require(
+                len(ledger) == 2393
+                and len(ledger_by_path) == 2393
+                and ledger_pairs == changed_rows
+                and Counter(row.get("status", "") for row in ledger)
+                == C0003_ROUTE_STATUS_COUNTS
+                and Counter(row.get("category", "") for row in ledger)
+                == C0003_ROUTE_CATEGORY_COUNTS
+                and sha256_path(ledger_path) == C0003_INTEGRATOR_LEDGER_SHA256,
+                self.relative(ledger_path),
+                "must exactly ledger the 2,393-path 2,209A/184M route-to-integration range",
+            )
+
+            request_path = self.phase_dir / "requests/R0005.json"
+            request = self.read_json(request_path, self.relative(request_path))
+            request_paths = set(request.get("paths", [])) if request is not None else set()
+            reviewed_request = {
+                row.get("path", "")
+                for row in ledger
+                if row.get("category") == "reviewed_request"
+            }
+            deviation_paths = set(C0003_REQUEST_DEVIATION_CATEGORIES)
+            actual_deviation_categories = {
+                path_value: ledger_by_path.get(path_value, {}).get("category")
+                for path_value in deviation_paths
+            }
+            extra_paths = {
+                row.get("path", "")
+                for row in ledger
+                if row.get("category") in C0003_EXTRA_CATEGORIES
+            }
+            immutable_delivery = {
+                row.get("path", "")
+                for row in ledger
+                if row.get("category") == "immutable_delivery"
+            }
+            self.problems.require(
+                len(reviewed_request) == 115
+                and request_paths == reviewed_request | deviation_paths
+                and actual_deviation_categories
+                == C0003_REQUEST_DEVIATION_CATEGORIES,
+                self.relative(ledger_path),
+                "R0005 ledger split must be exactly 115 byte-identical paths plus the six corrected deviations",
+            )
+            self.problems.require(
+                len(extra_paths) == 21,
+                self.relative(ledger_path),
+                "integration follow-up allowlist must contain exactly 21 paths",
+            )
+            expected_diff = set(
+                self.git(
+                    "diff",
+                    "--name-only",
+                    R03_EXPECTED_POSTIMAGE_TREE,
+                    C0003_CODE_SHA,
+                ).stdout.splitlines()
+            )
+            merge_diff = set(
+                self.git(
+                    "diff", "--name-only", R03_MERGE_SHA, C0003_CODE_SHA
+                ).stdout.splitlines()
+            )
+            delivery_diff = set(
+                self.git(
+                    "diff", "--name-only", C0002_CODE_SHA, R03_DELIVERY_SHA
+                ).stdout.splitlines()
+            )
+            self.problems.require(
+                len(expected_diff) == 27
+                and expected_diff == deviation_paths | extra_paths,
+                self.relative(ledger_path),
+                "expected-postimage diff must be exactly six request deviations plus 21 extras",
+            )
+            self.problems.require(
+                len(merge_diff) == 142
+                and merge_diff == request_paths | extra_paths,
+                self.relative(ledger_path),
+                "merge-to-integration diff must be exactly 121 request paths plus 21 extras",
+            )
+            self.problems.require(
+                len(delivery_diff) == 2254
+                and immutable_delivery == delivery_diff - extra_paths,
+                self.relative(ledger_path),
+                "immutable-delivery category must equal the delivery diff minus its three bounded follow-ups",
+            )
+        else:
+            self.problems.add(self.relative(ledger_path), "missing C0003 integrator ledger")
+
+        milestones = self.phase.get("milestones")
+        milestone_map = {
+            item.get("milestone_id"): item
+            for item in milestones
+            if isinstance(item, dict) and isinstance(item.get("milestone_id"), str)
+        } if isinstance(milestones, list) else {}
+        for milestone_id in C0003_MILESTONES:
+            milestone = milestone_map.get(milestone_id)
+            expected_checkpoint = (
+                SUCCESSOR_CHECKPOINT_ID
+                if milestone_id in SUCCESSOR_MILESTONES
+                else C0002_CHECKPOINT_ID
+                if milestone_id in {"M11", "M12"}
+                else C0003_CHECKPOINT_ID
+            )
+            self.problems.require(
+                isinstance(milestone, dict)
+                and milestone.get("status") == "accepted"
+                and milestone.get("accepted_checkpoint_id") == expected_checkpoint,
+                f"phase.json.milestones[{milestone_id}]",
+                f"must be accepted at exact checkpoint {expected_checkpoint}",
+            )
+        for milestone_id in ("M05", "M06"):
+            milestone = milestone_map.get(milestone_id, {})
+            self.problems.require(
+                milestone.get("status") == "ready"
+                and milestone.get("accepted_checkpoint_id") is None,
+                f"phase.json.milestones[{milestone_id}]",
+                "must become dependency-ready without activation or acceptance",
+            )
+        self.problems.require(
+            milestone_map.get("M07", {}).get("status") == "planned"
+            and milestone_map.get("M07", {}).get("accepted_checkpoint_id") is None,
+            "phase.json.milestones[M07]",
+            "R07 must remain planned and unaccepted at C0003",
+        )
+        self.validate_c0003_history()
+
+    def validate_c0003_history(self) -> None:
+        expected_vectors = (
+            (R03_DELIVERY_SHA, [R03_DELIVERY_SHA, C0002_CODE_SHA], "delivery"),
+            (
+                R03_MERGE_SHA,
+                [R03_MERGE_SHA, R03_ROUTE_SHA, R03_DELIVERY_SHA],
+                "true merge",
+            ),
+            (C0003_CODE_SHA, [C0003_CODE_SHA, R03_MERGE_SHA], "integration"),
+        )
+        for commit, expected, label in expected_vectors:
+            process = self.git("rev-list", "--parents", "-n", "1", commit, check=False)
+            actual = process.stdout.strip().split()
+            self.problems.require(
+                process.returncode == 0 and actual == expected,
+                f"C0003 R03 {label} ancestry",
+                f"expected exact commit/parent vector {expected}, found {actual}",
+            )
+        tree = self.git("rev-parse", f"{R03_EXPECTED_POSTIMAGE_TREE}^{{tree}}", check=False)
+        self.problems.require(
+            tree.returncode == 0
+            and tree.stdout.strip() == R03_EXPECTED_POSTIMAGE_TREE,
+            "C0003 R0005 replay tree",
+            f"expected exact reachable tree {R03_EXPECTED_POSTIMAGE_TREE}",
+        )
+
     def validate_branches(self) -> None:
         base_paths = self.git_tree_paths(CODE_SHA)
         scope_rules = [PathRule(path, "exact") for path in self.scope_by_path]
@@ -2249,6 +3018,8 @@ class CompletionValidator:
             allowed_statuses = (
                 {"delivered"}
                 if self.current_checkpoint_id == CHECKPOINT_ID
+                else {"retired"}
+                if self.current_checkpoint_id == C0003_CHECKPOINT_ID
                 else {"accepted", "retired"}
             )
             self.problems.require(
@@ -3617,9 +4388,13 @@ class CompletionValidator:
         context = "C0001-rooted R11/R12 controls"
         self.problems.require(
             self.current_checkpoint_id
-            in {SUCCESSOR_CHECKPOINT_ID, C0002_CHECKPOINT_ID},
+            in {
+                SUCCESSOR_CHECKPOINT_ID,
+                C0002_CHECKPOINT_ID,
+                C0003_CHECKPOINT_ID,
+            },
             context,
-            "next-wave controls require current checkpoint C0001 or C0002",
+            "next-wave controls require current checkpoint C0001, C0002, or C0003",
         )
 
         inventory_path = self.phase_dir / "checkpoints/C0001-inventory.tsv"
@@ -5229,7 +6004,15 @@ class CompletionValidator:
             )
 
     def r03_expected_digest(self, key: str, context: str) -> str | None:
-        expected = R03_ARTIFACT_SHA256.get(key)
+        accepted_overrides = {
+            "projection_record": R03_ACCEPTED_PROJECTION_RECORD_SHA256,
+            "request_record": R03_APPLIED_REQUEST_RECORD_SHA256,
+        }
+        expected = (
+            accepted_overrides.get(key, R03_ARTIFACT_SHA256.get(key))
+            if self.current_checkpoint_id == C0003_CHECKPOINT_ID
+            else R03_ARTIFACT_SHA256.get(key)
+        )
         if expected is None:
             self.problems.add(
                 context,
@@ -5264,16 +6047,24 @@ class CompletionValidator:
                 f"{R03_BRANCH_ID}.refresh.evidence[{path}]",
                 f"expected exact SHA-256 {expected}",
             )
+            evidence_path = self.root / matches[0].path
+            if evidence_path.is_file():
+                self.problems.require(
+                    sha256_path(evidence_path) == expected,
+                    matches[0].path,
+                    f"R03 evidence content must equal exact SHA-256 {expected}",
+                )
         return matches[0]
 
     def validate_r03_epoch(self) -> None:
-        """Ratchet the singleton exact-C0002 R03 packet through activation."""
+        """Ratchet the singleton exact-C0002 R03 packet through C0003."""
 
-        context = "C0002-rooted R03 planned/active epoch"
+        context = "C0002-rooted R03 epoch"
         self.problems.require(
-            self.current_checkpoint_id == C0002_CHECKPOINT_ID,
+            self.current_checkpoint_id
+            in {C0002_CHECKPOINT_ID, C0003_CHECKPOINT_ID},
             context,
-            "R03 planned/active controls require current checkpoint C0002",
+            "R03 controls require current checkpoint C0002 or C0003",
         )
         r07_milestone_status = self.validate_r03_milestones()
         lane_operators = self.validate_r03_authority()
@@ -5294,7 +6085,11 @@ class CompletionValidator:
         )
         if branch is not None and branch.get("status") == "planned":
             self.validate_r03_ref_and_worktree_absence()
-        elif branch is not None and branch.get("status") == "active":
+        elif branch is not None and branch.get("status") in {
+            "active",
+            "accepted",
+            "retired",
+        }:
             self.validate_r03_activation_review()
 
         if branch is not None and projection is not None and request is not None:
@@ -5382,17 +6177,34 @@ class CompletionValidator:
             if isinstance(item, dict) and isinstance(item.get("milestone_id"), str)
         }
         m03 = by_id.get("M03", {})
-        self.problems.require(
-            m03.get("wave_ids") == [R03_WAVE_ID]
-            and m03.get("status") == "ready"
-            and m03.get("accepted_checkpoint_id") is None,
-            "phase.json.milestones[M03]",
-            "M03 alone must be ready for R03 with accepted_checkpoint_id null",
-        )
+        if self.current_checkpoint_id == C0003_CHECKPOINT_ID:
+            self.problems.require(
+                m03.get("wave_ids") == [R03_WAVE_ID]
+                and m03.get("status") == "accepted"
+                and m03.get("accepted_checkpoint_id") == C0003_CHECKPOINT_ID,
+                "phase.json.milestones[M03]",
+                "M03 must be accepted exactly at C0003",
+            )
+        else:
+            self.problems.require(
+                m03.get("wave_ids") == [R03_WAVE_ID]
+                and m03.get("status") == "ready"
+                and m03.get("accepted_checkpoint_id") is None,
+                "phase.json.milestones[M03]",
+                "M03 alone must be ready for R03 with accepted_checkpoint_id null",
+            )
         for milestone_id, milestone in sorted(by_id.items()):
             if milestone.get("accepted_checkpoint_id") is not None:
                 continue
-            expected = "ready" if milestone_id == "M03" else "planned"
+            expected = (
+                "ready"
+                if milestone_id == "M03"
+                or (
+                    self.current_checkpoint_id == C0003_CHECKPOINT_ID
+                    and milestone_id in {"M05", "M06"}
+                )
+                else "planned"
+            )
             self.problems.require(
                 milestone.get("status") == expected,
                 f"phase.json.milestones[{milestone_id}]",
@@ -5419,13 +6231,18 @@ class CompletionValidator:
             if isinstance(lane.get("operator_ids"), list)
             else ()
         )
+        expected_operators = (
+            (R03_OPERATOR_ID,)
+            if self.current_checkpoint_id == C0003_CHECKPOINT_ID
+            else R03_OPERATOR_IDS
+        )
         self.problems.require(
             len(matches) == 1
             and lane.get("owner_id") == "primary-human"
-            and operators == R03_OPERATOR_IDS,
+            and operators == expected_operators,
             f"phase.json.authority.lanes[{R03_LANE_ID}]",
-            "R03 requires one primary-human-owned codex-lane authorizing exactly the "
-            "reviewed claude-local/codex-local pair",
+            "R03 requires one primary-human-owned codex-lane with the reviewed pair "
+            "before C0003 and codex-local alone after temporary authority expiry",
         )
         return operators
 
@@ -5577,10 +6394,15 @@ class CompletionValidator:
                 f"expected {expected!r}, found {branch.get(key)!r}",
             )
         status = branch.get("status")
+        allowed_statuses = (
+            {"accepted", "retired"}
+            if self.current_checkpoint_id == C0003_CHECKPOINT_ID
+            else {"planned", "active"}
+        )
         self.problems.require(
-            status in {"planned", "active"},
+            status in allowed_statuses,
             f"{R03_BRANCH_ID}.status",
-            "expected exact planned or active R03 lifecycle state",
+            f"expected one of {sorted(allowed_statuses)} at {self.current_checkpoint_id}",
         )
 
         refresh = branch.get("refresh")
@@ -5617,7 +6439,7 @@ class CompletionValidator:
         self.branch_evidence[R03_BRANCH_ID] = artifacts
         evidence_paths = [artifact.path for artifact in artifacts]
         expected_evidence_paths = set(R03_EVIDENCE_PATHS.values())
-        if status == "active":
+        if status in {"active", "accepted", "retired"}:
             expected_evidence_paths.add(R03_ACTIVATION_REVIEW_PATH)
             expected_evidence_paths.add(R03_OPERATOR_AUTH_REVIEW_PATH)
             expected_evidence_paths.add(R03_ROUTE_AMENDMENT_REVIEW_PATH)
@@ -5653,7 +6475,7 @@ class CompletionValidator:
                 f"{R03_BRANCH_ID}.refresh.evidence",
                 "planned packet may not contain activation, base-tip, ref-tip, or worktree evidence",
             )
-        elif status == "active":
+        elif status in {"active", "accepted", "retired"}:
             self.problems.require(
                 activation_evidence
                 == (
@@ -5697,6 +6519,30 @@ class CompletionValidator:
                 f"{R03_BRANCH_ID}.refresh.evidence",
                 "active packet must hash-pin the exact R03 route-amendment review",
             )
+
+        if status in {"accepted", "retired"}:
+            delivery = branch.get("delivery")
+            if isinstance(delivery, dict):
+                for key, expected in (
+                    ("report", R03_DELIVERY_REPORT),
+                    ("scope_evidence", R03_DELIVERY_SCOPE),
+                ):
+                    artifact = self.artifact(
+                        delivery.get(key), f"{R03_BRANCH_ID}.delivery.{key}"
+                    )
+                    if artifact is not None:
+                        self.problems.require(
+                            (artifact.path, artifact.sha256) == expected,
+                            f"{R03_BRANCH_ID}.delivery.{key}",
+                            f"must pin exact R03 delivery artifact {expected}",
+                        )
+                        artifact_path = self.root / artifact.path
+                        if artifact_path.is_file():
+                            self.problems.require(
+                                sha256_path(artifact_path) == artifact.sha256,
+                                artifact.path,
+                                "delivery artifact content drifted",
+                            )
 
         expected_owned = {selected_path for _module, selected_path in selector}
         owned = self.parse_rules(branch.get("owned_paths"), f"{R03_BRANCH_ID}.owned_paths")
@@ -5806,7 +6652,11 @@ class CompletionValidator:
             "projection_id": R03_PROJECTION_ID,
             "wave_id": R03_WAVE_ID,
             "base_checkpoint_id": C0002_CHECKPOINT_ID,
-            "status": "active",
+            "status": (
+                "retired"
+                if self.current_checkpoint_id == C0003_CHECKPOINT_ID
+                else "active"
+            ),
             "superseded_by": None,
             "expected_counts": R03_COUNTS,
         }.items():
@@ -6564,7 +7414,11 @@ class CompletionValidator:
             "depends_on": [],
             "blocks": [R03_WAVE_ID],
             "valid_through_checkpoint_id": C0002_CHECKPOINT_ID,
-            "status": "active",
+            "status": (
+                "applied"
+                if self.current_checkpoint_id == C0003_CHECKPOINT_ID
+                else "active"
+            ),
             "supersedes": None,
             "superseded_by": None,
         }.items():
@@ -6608,11 +7462,19 @@ class CompletionValidator:
             rule.path for rule in self.shared_rules if rule.match == "exact"
         }
         unreserved = set(paths) - shared_exact
-        self.problems.require(
-            not unreserved,
-            f"{R03_REQUEST_ID}.paths",
-            f"active request paths lack exact shared reservations: {sorted(unreserved)}",
-        )
+        if self.current_checkpoint_id == C0003_CHECKPOINT_ID:
+            self.problems.require(
+                len(unreserved) == 91 and len(set(paths) & shared_exact) == 30,
+                f"{R03_REQUEST_ID}.paths",
+                "accepted request must release exactly 91 request-only reservations "
+                "and retain exactly 30 pre-existing controls",
+            )
+        else:
+            self.problems.require(
+                not unreserved,
+                f"{R03_REQUEST_ID}.paths",
+                f"active request paths lack exact shared reservations: {sorted(unreserved)}",
+            )
         for requested in paths:
             requested_rule = PathRule(requested, "exact")
             for worker in worker_rules:
@@ -6762,19 +7624,55 @@ class CompletionValidator:
             "every replacement path must be an exact graph-derived R03 consumer",
         )
 
-        expected_resolution = {
-            "checkpoint_id": None,
-            "commit_sha": None,
-            "reason": None,
-            "resolved_at": None,
-            "resolved_by": None,
-            "validation_evidence": [],
-        }
-        self.problems.require(
-            request.get("resolution") == expected_resolution,
-            f"{R03_REQUEST_ID}.resolution",
-            "planned request must remain active and completely unresolved",
-        )
+        if self.current_checkpoint_id == C0003_CHECKPOINT_ID:
+            resolution = request.get("resolution")
+            if not isinstance(resolution, dict):
+                self.problems.add(
+                    f"{R03_REQUEST_ID}.resolution", "expected an object"
+                )
+            else:
+                resolved_at = resolution.get("resolved_at")
+                expected_without_time = {
+                    "checkpoint_id": C0003_CHECKPOINT_ID,
+                    "commit_sha": C0003_CODE_SHA,
+                    "reason": R03_ACCEPTED_RESOLUTION_REASON,
+                    "resolved_by": "primary-human",
+                    "validation_evidence": [
+                        {
+                            "path": (
+                                f"{R03_PHASE_PREFIX}/checkpoints/C0003-gates.md"
+                            ),
+                            "sha256": C0003_GATES_SHA256,
+                        }
+                    ],
+                }
+                actual_without_time = {
+                    key: value
+                    for key, value in resolution.items()
+                    if key != "resolved_at"
+                }
+                self.problems.require(
+                    actual_without_time == expected_without_time
+                    and isinstance(resolved_at, str)
+                    and RFC3339_RE.fullmatch(resolved_at) is not None,
+                    f"{R03_REQUEST_ID}.resolution",
+                    "applied request must record exact C0003/e20 resolution, reason, "
+                    "gate evidence, primary-human authority, and RFC3339 time",
+                )
+        else:
+            expected_resolution = {
+                "checkpoint_id": None,
+                "commit_sha": None,
+                "reason": None,
+                "resolved_at": None,
+                "resolved_by": None,
+                "validation_evidence": [],
+            }
+            self.problems.require(
+                request.get("resolution") == expected_resolution,
+                f"{R03_REQUEST_ID}.resolution",
+                "planned request must remain active and completely unresolved",
+            )
         rationale = str(request.get("rationale", "")).upper()
         rationale_digests = [
             R03_REQUEST_PATH_SHA256,
@@ -7278,6 +8176,24 @@ def run_self_test() -> int:
         "exact C0002 checkpoint contract drifted",
     )
     problems.require(
+        C0003_METRICS
+        == {
+            "production_modules": 2690,
+            "unclassified_modules": 254,
+            "mixed_modules": 0,
+            "missing_module_docstrings": 0,
+            "noncanonical_modules": 217,
+            "declaration_bearing_umbrellas": 15,
+            "unsorted_aggregate_imports": 0,
+        }
+        and C0003_MILESTONES == ["M01", "M02", "M03", "M11", "M12"]
+        and C0003_INVENTORY_DISPOSITIONS
+        == Counter({"already_complete": 2356, "in_scope": 334})
+        and C0003_INVENTORY_DEBT_ROWS == 310,
+        "self-test",
+        "exact C0003 checkpoint contract drifted",
+    )
+    problems.require(
         R11_MERGE_PARENTS
         == (
             "de0ea2a54ea53d0e3724a72135d6da7d22739226",
@@ -7303,6 +8219,14 @@ def run_self_test() -> int:
         and next_retirement_status("retired") == "retired",
         "self-test",
         "C0002 lifecycle/authority negative-state ratchets drifted",
+    )
+    problems.require(
+        next_branch_statuses(C0003_CHECKPOINT_ID) == {"retired"}
+        and next_projection_status(C0003_CHECKPOINT_ID) == "retired"
+        and next_request_status(C0003_CHECKPOINT_ID) == "applied"
+        and next_lane_operators(C0003_CHECKPOINT_ID) == ["claude-local"],
+        "self-test",
+        "C0003 historical R11/R12 terminal ratchets drifted",
     )
     problems.require(
         len(C0002_RELEASED_SHARED_PATHS) == 11
@@ -7366,6 +8290,16 @@ def run_self_test() -> int:
         C0002_INVENTORY_SHA256,
         C0002_INTEGRATOR_LEDGER_SHA256,
         C0002_GATES_SHA256,
+        C0003_COMBINED_BASELINE_SHA256,
+        C0003_COMBINED_SUMMARY_SHA256,
+        C0003_INVENTORY_SHA256,
+        C0003_INTEGRATOR_LEDGER_SHA256,
+        C0003_GATES_SHA256,
+        C0003_RAW_DEPENDENCY_TSV_SHA256,
+        R03_DELIVERY_REPORT[1],
+        R03_DELIVERY_SCOPE[1],
+        R03_ACCEPTED_PROJECTION_RECORD_SHA256,
+        R03_APPLIED_REQUEST_RECORD_SHA256,
         NEXT_COMBINED_BASELINE_SHA256,
         NEXT_INVENTORY_SHA256,
         NEXT_PROJECTION_CHECKER_SHA256,
@@ -7409,7 +8343,16 @@ def run_self_test() -> int:
         )
         and all(
             SHA1_RE.fullmatch(value) is not None
-            for value in (C0002_CODE_SHA, R11_MERGE_SHA, R12_MERGE_SHA)
+            for value in (
+                C0002_CODE_SHA,
+                R11_MERGE_SHA,
+                R12_MERGE_SHA,
+                C0003_CODE_SHA,
+                R03_ROUTE_SHA,
+                R03_DELIVERY_SHA,
+                R03_MERGE_SHA,
+                R03_EXPECTED_POSTIMAGE_TREE,
+            )
         ),
         "self-test",
         "C0002 code/merge/delivery SHA-1 constants are malformed",
@@ -7431,6 +8374,21 @@ def run_self_test() -> int:
         and R03_PRIVATE_SELECTED_OWNER_ROWS == 2063,
         "self-test R03 constants",
         "exact C0002/R03 identities, graph counts, or closure arithmetic drifted",
+    )
+    problems.require(
+        sum(C0003_ROUTE_STATUS_COUNTS.values()) == 2393
+        and C0003_ROUTE_STATUS_COUNTS == Counter({"A": 2209, "M": 184})
+        and sum(C0003_ROUTE_CATEGORY_COUNTS.values()) == 2393
+        and C0003_ROUTE_CATEGORY_COUNTS["reviewed_request"] == 115
+        and len(C0003_REQUEST_DEVIATION_CATEGORIES) == 6
+        and sum(
+            count
+            for category, count in C0003_ROUTE_CATEGORY_COUNTS.items()
+            if category in C0003_EXTRA_CATEGORIES
+        )
+        == 21,
+        "self-test R03 C0003 audit constants",
+        "C0003 route, corrected request, or bounded-follow-up counts drifted",
     )
     problems.require(
         all(
@@ -7520,6 +8478,193 @@ def run_self_test() -> int:
             not positive_r03_problems.messages,
             f"self-test R03 {label} positive",
             f"valid {label} epoch rejected: {positive_r03_problems.messages}",
+        )
+
+    r03_terminal_delivery = {
+        "commit_sha": R03_DELIVERY_SHA,
+        "report": {
+            "path": R03_DELIVERY_REPORT[0],
+            "sha256": R03_DELIVERY_REPORT[1],
+        },
+        "scope_evidence": {
+            "path": R03_DELIVERY_SCOPE[0],
+            "sha256": R03_DELIVERY_SCOPE[1],
+        },
+    }
+    r03_terminal_integration = {
+        "method": "merge",
+        "accepted_checkpoint_id": C0003_CHECKPOINT_ID,
+        "accepted_sha": C0003_CODE_SHA,
+    }
+    r03_terminal_resolution = {
+        "checkpoint_id": C0003_CHECKPOINT_ID,
+        "commit_sha": C0003_CODE_SHA,
+        "reason": R03_ACCEPTED_RESOLUTION_REASON,
+        "resolved_at": "2026-08-14T19:02:24Z",
+        "resolved_by": "primary-human",
+        "validation_evidence": [
+            {
+                "path": f"{R03_PHASE_PREFIX}/checkpoints/C0003-gates.md",
+                "sha256": C0003_GATES_SHA256,
+            }
+        ],
+    }
+    r03_released_request_paths = tuple(
+        f"NumStability/TerminalFixture/{index:02d}.lean" for index in range(91)
+    )
+    r03_accepted = replace(
+        r03_active,
+        branch_status="accepted",
+        lane_operator_ids=(R03_OPERATOR_ID,),
+        delivery=r03_terminal_delivery,
+        integration=r03_terminal_integration,
+        retirement={
+            "remote_ref": R03_REMOTE_REF,
+            "rule": "delivery_ancestor_of_green_checkpoint",
+            "status": "due",
+            "retired_at": None,
+            "retired_by": None,
+            "ancestry_checkpoint_id": None,
+        },
+        projection_status="retired",
+        request_status="applied",
+        request_resolution=r03_terminal_resolution,
+        request_unreserved_paths=r03_released_request_paths,
+    )
+    r03_retired = replace(
+        r03_accepted,
+        branch_status="retired",
+        retirement={
+            "remote_ref": R03_REMOTE_REF,
+            "rule": "delivery_ancestor_of_green_checkpoint",
+            "status": "retired",
+            "retired_at": "2026-08-14T21:00:00Z",
+            "retired_by": "primary-human",
+            "ancestry_checkpoint_id": C0003_CHECKPOINT_ID,
+        },
+    )
+    for label, snapshot in (("accepted", r03_accepted), ("retired", r03_retired)):
+        positive_r03_problems = Problems()
+        validate_r03_epoch_snapshot(
+            snapshot,
+            positive_r03_problems,
+            expected_route_sha256=r03_test_route_sha,
+        )
+        problems.require(
+            not positive_r03_problems.messages,
+            f"self-test R03 {label} positive",
+            f"valid {label} epoch rejected: {positive_r03_problems.messages}",
+        )
+
+    r03_terminal_negative_cases: list[tuple[str, R03EpochSnapshot, str]] = [
+        (
+            "terminal operator history loss",
+            replace(r03_accepted, operator_ids=(R03_OPERATOR_ID,)),
+            ".authority:",
+        ),
+        (
+            "terminal stale lane expansion",
+            replace(r03_accepted, lane_operator_ids=R03_OPERATOR_IDS),
+            ".authority:",
+        ),
+        (
+            "terminal missing activation evidence",
+            replace(r03_accepted, activation_evidence=()),
+            ".activation:",
+        ),
+        (
+            "terminal delivery drift",
+            replace(
+                r03_accepted,
+                delivery={**r03_terminal_delivery, "commit_sha": C0003_CODE_SHA},
+            ),
+            ".lifecycle:",
+        ),
+        (
+            "terminal integration drift",
+            replace(
+                r03_accepted,
+                integration={
+                    **r03_terminal_integration,
+                    "accepted_sha": C0002_CODE_SHA,
+                },
+            ),
+            ".lifecycle:",
+        ),
+        (
+            "terminal live projection",
+            replace(r03_accepted, projection_status="active"),
+            ".lifecycle:",
+        ),
+        (
+            "terminal active request",
+            replace(r03_accepted, request_status="active"),
+            ".lifecycle:",
+        ),
+        (
+            "terminal resolution drift",
+            replace(
+                r03_accepted,
+                request_resolution={
+                    **r03_terminal_resolution,
+                    "reason": "insufficient acceptance evidence",
+                },
+            ),
+            ".lifecycle:",
+        ),
+        (
+            "terminal shared reservation not released",
+            replace(
+                r03_accepted,
+                request_unreserved_paths=r03_released_request_paths[:-1],
+            ),
+            ".shared_paths:",
+        ),
+        (
+            "accepted retirement not due",
+            replace(
+                r03_accepted,
+                retirement={**r03_accepted.retirement, "status": "not_due"},
+            ),
+            ".retirement:",
+        ),
+        (
+            "retired wrong ancestry",
+            replace(
+                r03_retired,
+                retirement={
+                    **r03_retired.retirement,
+                    "ancestry_checkpoint_id": C0002_CHECKPOINT_ID,
+                },
+            ),
+            ".retirement:",
+        ),
+        (
+            "retired missing timestamp",
+            replace(
+                r03_retired,
+                retirement={**r03_retired.retirement, "retired_at": None},
+            ),
+            ".retirement:",
+        ),
+        (
+            "terminal R07 activation",
+            replace(r03_accepted, r07_milestone_status="ready"),
+            ".r07:",
+        ),
+    ]
+    for label, mutated, diagnostic in r03_terminal_negative_cases:
+        mutation_problems = Problems()
+        validate_r03_epoch_snapshot(
+            mutated,
+            mutation_problems,
+            expected_route_sha256=r03_test_route_sha,
+        )
+        problems.require(
+            any(diagnostic in message for message in mutation_problems.messages),
+            f"self-test R03 {label}",
+            f"adversarial mutation was not rejected with {diagnostic}: "
+            f"{mutation_problems.messages}",
         )
 
     r03_review_text = f"""# R03 activation review
@@ -7824,12 +8969,14 @@ No implementation began before activation-control CI. The worker remains frozen 
             print(f"completion phase self-test failure: {message}", file=sys.stderr)
         return 1
     print(
-        "completion phase self-test passed: exact C0000/C0001/C0002 constants, shared "
+        "completion phase self-test passed: exact C0000/C0001/C0002/C0003 constants, shared "
         "consumers and releases, next-wave B/P/R lifecycle/authority ratchets, merge/SHA "
         "pins, path collisions, format-2 declaration/signature/body parsing, and DAG "
-        "cycle rejection; exact C0002-rooted R03 planned/active states and activation "
+        "cycle rejection; exact C0002-rooted R03 planned/active and C0003 accepted/retired "
+        "states and activation "
         "review plus missing/stale evidence, wrong-base/tip, selector, route/hash, "
-        "authority, R07, shared-path, and lifecycle mutations"
+        "authority, R07, shared-path, delivery, integration, resolution, and retirement "
+        "mutations"
     )
     return 0
 
@@ -7869,9 +9016,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         "C0000-pinned 2,593-row freeze, 492-row scope, exact R01/R02 98/145-path "
         "delivery evidence, projections, routes, private closure, tests, "
         "overlap proofs, postimages, reviewed union, milestone DAG, and exact "
-        "C0001-pinned synchronous R11/R12 planned/active/delivered or C0002 "
+        "C0001-pinned synchronous R11/R12 planned/active/delivered or C0002/C0003 "
         "accepted/retired controls with exact checkpoint evidence; plus the singleton "
-        "exact-C0002 B0005/P0005/R0005 planned/active R03 epoch"
+        "exact-C0002 B0005/P0005/R0005 planned/active or C0003 accepted/retired R03 "
+        "epoch with corrected 115+6 request identity and 21 bounded follow-ups"
     )
     return 0
 

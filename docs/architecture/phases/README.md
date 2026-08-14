@@ -4,9 +4,10 @@ The active operating contract is the
 [`2026-08 repository reorganization completion`](2026-08-repository-reorganization-completion/README.md),
 selected by [`active-phase.json`](active-phase.json). It is rooted at C0000 on
 accepted predecessor code commit
-`b1b18772d80185ec08f49c818919558645c330a1`; its current checkpoint is C0002
-at green code commit `9d2334d77f1a38f8a4caa81fe53eeb11a8e3e7cd`. C0002 accepts R11/R12 on top
-of C0001's accepted R01/R02 integration. This successor has precedence over
+`b1b18772d80185ec08f49c818919558645c330a1`; its current checkpoint is C0003
+at green code commit `e20de2f931caa12221e708c341e9cb4f64d29b25`. C0003 accepts R03 on top of
+C0002's accepted R11/R12 and C0001's accepted R01/R02 integrations. This
+successor has precedence over
 dated migration packets and historical handoffs.
 
 After C0001 acceptance-control commit
@@ -41,31 +42,42 @@ leases. Ignored delivery evidence is hash-verified under
 both clean named worker worktrees were removed without force, and local branch
 refs remain preserved at the immutable delivery tips. The temporary
 `codex-local` authorization expired at C0002 and `claude-lane` is restored to
-its single `claude-local` operator. C0002 records 2,642 production modules and 356 distinct
-residual-debt rows, including 277 unclassified modules, so neither bounded nor
-repository-wide completion is claimed. A fresh exact-C0002 singleton review
-advances M03/R03 to ready/active controls B0005/P0005/R0005. Planned-control
-commit `fb5a021b4640dd595a99f7560ce252ad9836a5b6` passed Lean CI run 31691727184
-(job 94420320315) before B0005 was created explicitly from exact C0002 code,
-pushed as a new remote ref with a nonexistent-tip lease, and activated with its
-clean LF-configured named worktree. A reviewed temporary second-operator
-expansion (`claude-local`, control `c4f66cbdf`) and a reviewed fanIn7
-private-closure route amendment (control `09b3962dc`) followed, each with green
-Lean CI. The R03 delivery landed at immutable tip `1f8ff4ca5` (parent exact
-C0002), is preserved by true merge, and the same-C0002 R0005 request was
-applied exactly once (121/121 postimages) with bounded documented integration
-follow-ups, including one consumer import-superset repair
-(`Chapter27.SoftwareEnvironment`) on top of its byte-exact postimage. Branch delivery/integration fields and retirement (`not_due`)
-transition at C0003 acceptance, which remains pending; the hash-pinned
+its single `claude-local` operator. C0002 recorded 2,642 production modules and
+356 distinct residual-debt rows, including 277 unclassified modules, so neither
+bounded nor repository-wide completion was claimed. A fresh exact-C0002
+singleton review advanced M03/R03 to ready/active controls B0005/P0005/R0005.
+Planned-control commit `fb5a021b4640dd595a99f7560ce252ad9836a5b6`
+passed Lean CI run 31691727184 (job 94420320315) before B0005 was created
+explicitly from exact C0002 code, pushed as a new remote ref with a
+nonexistent-tip lease, and activated with its clean LF-configured named
+worktree. A reviewed temporary second-operator expansion (`claude-local`,
+control `c4f66cbdf`) and a reviewed fanIn7 private-closure route amendment
+(control `09b3962dc`) followed, each with green Lean CI. The R03 delivery landed
+at immutable tip `1f8ff4ca5` (parent exact C0002), is preserved by true merge,
+and the same-C0002 R0005 request was applied exactly once.
+
+C0003 accepts M03/R03 at exact green code commit
+`e20de2f931caa12221e708c341e9cb4f64d29b25` (Lean CI run 31799323377). Against
+the expected R0005 postimage, 115 request paths are byte-exact and exactly six
+contain only their reviewed bounded deviations: two aggregate-sort
+reconciliations, tier and compatibility reconciliation, the layout ratchet,
+and the `Chapter27.SoftwareEnvironment` consumer import-superset repair. The
+complete merge-to-integration audit separately accounts for exactly 21
+additional paths: 11 aggregate follow-ups, 3 R03 test paths, 4 narrative
+documents, and 3 milestone-DAG/evidence paths. At C0003,
+B0005 is accepted with retirement due, P0005 is retired immutable evidence, and
+R0005 is applied. The temporary `claude-local` second-operator authority on
+`codex-lane` has expired, restoring that lane to `codex-local` alone. M05 and
+M06 are ready; M07/R07 and every other unaccepted milestone remain planned, and
+no successor wave is activated. The hash-pinned
 [`R03 activation review`](2026-08-repository-reorganization-completion/reviews/R03-activation.md)
-records the exact authority, refs, worktree, and tips. R03 removed all 9 mixed
-and all 13 missing-module-doc rows. M03 remains ready and unaccepted; M07/R07 and
-every other unaccepted milestone remain planned, and R07 is not activated. The
-exact graph has no direct owner-import or typed declaration edges between R03
-and R07, but it has 24/23 opposite-direction transitive owner-reachability
-pairs, 7 common direct dependencies, and 5 shared direct outside consumers, so
-no pair is authorized. C0002 stays current and its statistics, including 277
-unclassified modules, do not change.
+preserves the exact authority, refs, worktree, and tips.
+
+C0003 records 2,690 production modules and 310 distinct residual-debt rows:
+254 unclassified, zero mixed, zero missing-module-doc, 217 noncanonical, and 15
+declaration-bearing-umbrella rows, with zero unsorted aggregate imports. The
+inventory has 2,356 complete rows, 334 in-scope rows, and 310 rows with debt.
+Bounded-phase and repository-wide completion remain incomplete.
 The planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be`
 passed Lean CI run 31546978830 (job 93961477202) before the R11/R12 refs and
 clean named worktrees were created and activated.

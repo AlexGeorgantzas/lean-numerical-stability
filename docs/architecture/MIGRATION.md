@@ -5,24 +5,26 @@ only when its stated evidence is checked into the repository or recorded by CI.
 
 The active repository-wide operating contract is
 [`phases/2026-08-repository-reorganization-completion/`](phases/2026-08-repository-reorganization-completion/README.md).
-Its current C0002 checkpoint freezes the complete 2,642-module inventory,
+Its current C0003 checkpoint freezes the complete 2,690-module inventory,
 assigns every current debt row to a lane and dependency wave, distinguishes
 bounded-phase from repository-wide completion, and records branch, baseline,
 shared-request, build-lock, and checkpoint lifecycle rules. Validate it with
 `python tools/architecture/check_phase.py`. Dated packets and migration reports
 are evidence, not current worker instructions.
 
-C0002 accepts R11/R12 at exact code commit
-`9d2334d77f1a38f8a4caa81fe53eeb11a8e3e7cd`, but it does not claim bounded or
-repository-wide completion: 356 distinct residual-debt rows remain, including
-277 unclassified modules. A fresh C0002 review then selected M03/R03 as a
-singleton (M07/R07 remains a planned candidate, never an authorized pair): the
-R03 delivery landed at immutable tip
+C0003 accepts M03/R03 at exact code commit
+`e20de2f931caa12221e708c341e9cb4f64d29b25`, but it does not claim bounded or
+repository-wide completion: 310 distinct residual-debt rows remain, including
+254 unclassified modules. The R03 delivery landed at immutable tip
 `1f8ff4ca5b0b136901a2f47d43e1064dc09aa556` with parent exact C0002, is
 preserved by true merge, and the reviewed same-C0002 R0005 request was applied
-exactly once with bounded documented integration follow-ups. C0003 acceptance
-is pending its gate set and exact green code CI; the statistics above remain
-the C0002 ratchet until then.
+exactly once. Its expected-postimage comparison has 115 byte-exact request
+paths and exactly six reviewed bounded request-path deviations; a separate 21
+paths contain only the documented integration follow-ups. B0005 is accepted
+with retirement due, P0005 is retired, and R0005 is applied. The temporary
+`claude-local` authority on `codex-lane` has expired. M05/M06 are ready; M07 and
+every other unaccepted milestone remain planned, and no successor wave is
+activated.
 
 1. **Current baseline.** Regenerate and version the architecture and build
    report at the exact migration commit using tracked tooling.

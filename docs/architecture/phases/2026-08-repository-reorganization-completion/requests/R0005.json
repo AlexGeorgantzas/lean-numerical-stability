@@ -624,15 +624,20 @@
   "request_id": "R0005",
   "requester_id": "primary-human",
   "resolution": {
-    "checkpoint_id": null,
-    "commit_sha": null,
-    "reason": null,
-    "resolved_at": null,
-    "resolved_by": null,
-    "validation_evidence": []
+    "checkpoint_id": "C0003",
+    "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+    "reason": "Applied exactly once after the true R03 delivery merge as the independently replayed exact-C0002 R0005 request, then accepted with the reviewed six bounded request-path follow-ups: Algorithms and Analysis aggregate import sorting, the Chapter27 Environment import-superset repair, compatibility-row reconciliation, the layout ratchet, and the tier reclassifications, together with the documented 21 additional integration follow-up paths.",
+    "resolved_at": "2026-08-14T19:02:24Z",
+    "resolved_by": "primary-human",
+    "validation_evidence": [
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      }
+    ]
   },
   "schema_version": 1,
-  "status": "active",
+  "status": "applied",
   "superseded_by": null,
   "supersedes": null,
   "target_base_sha": "9d2334d77f1a38f8a4caa81fe53eeb11a8e3e7cd",

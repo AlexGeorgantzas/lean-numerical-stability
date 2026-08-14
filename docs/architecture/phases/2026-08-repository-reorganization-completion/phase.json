@@ -16,7 +16,6 @@
       {
         "lane_id": "codex-lane",
         "operator_ids": [
-          "claude-local",
           "codex-local"
         ],
         "owner_id": "primary-human"
@@ -103,7 +102,7 @@
     }
   },
   "created_at": "2026-08-11T09:20:00Z",
-  "current_checkpoint_id": "C0002",
+  "current_checkpoint_id": "C0003",
   "milestones": [
     {
       "acceptance_gate_ids": [
@@ -167,10 +166,10 @@
         "scope",
         "strict_source"
       ],
-      "accepted_checkpoint_id": null,
+      "accepted_checkpoint_id": "C0003",
       "depends_on": [],
       "milestone_id": "M03",
-      "status": "ready",
+      "status": "accepted",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -224,7 +223,7 @@
         "M11"
       ],
       "milestone_id": "M05",
-      "status": "planned",
+      "status": "ready",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -251,7 +250,7 @@
         "M11"
       ],
       "milestone_id": "M06",
-      "status": "planned",
+      "status": "ready",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -507,34 +506,6 @@
     },
     {
       "match": "exact",
-      "path": "NumStability/Algorithms/Ch10Theorem107FailureVacuity.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Algorithms/Ch14MethodsBC.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Algorithms/Ch5LejaProducer.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Algorithms/Ch5NewtonForm.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Algorithms/HighamChapter12.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Algorithms/IterativeRefinement.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Algorithms/LeastSquares/Higham20Equations.lean"
-    },
-    {
-      "match": "exact",
       "path": "NumStability/Algorithms/LeastSquares/Higham20Theorem20_7.lean"
     },
     {
@@ -615,10 +586,6 @@
     },
     {
       "match": "exact",
-      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/Closure.lean"
-    },
-    {
-      "match": "exact",
       "path": "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/StoredReplay/RoundedReplay.lean"
     },
     {
@@ -635,10 +602,6 @@
     },
     {
       "match": "exact",
-      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/ActualOutput.lean"
-    },
-    {
-      "match": "exact",
       "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/Forward.lean"
     },
     {
@@ -648,14 +611,6 @@
     {
       "match": "exact",
       "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/ForwardError/UnderdeterminedSolve.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Closure.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/HouseholderClosure/Uniform.lean"
     },
     {
       "match": "exact",
@@ -687,10 +642,6 @@
     },
     {
       "match": "exact",
-      "path": "NumStability/Algorithms/RandNLA/LowRankApprox.lean"
-    },
-    {
-      "match": "exact",
       "path": "NumStability/Algorithms/StationaryIterationSeries.lean"
     },
     {
@@ -703,43 +654,11 @@
     },
     {
       "match": "exact",
-      "path": "NumStability/Analysis/Counting.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Analysis/HighamChapter2GradualUnderflowExact.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Analysis/HighamChapter2Tablemaker.lean"
-    },
-    {
-      "match": "exact",
       "path": "NumStability/Analysis/MatrixAlgebra.lean"
     },
     {
       "match": "exact",
       "path": "NumStability/Analysis/Perturbation/LeastSquares/Contract.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Analysis/Problem2_15_16.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Analysis/Problem2_23.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Analysis/Problem2_26.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Analysis/Problem2_5.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Analysis/Problem2_6.lean"
     },
     {
       "match": "exact",
@@ -827,259 +746,7 @@
     },
     {
       "match": "exact",
-      "path": "NumStability/Source/DrineasMahoney/RandNLA2016/Equation09/LowRankApproximation/Endpoints.lean"
-    },
-    {
-      "match": "exact",
       "path": "NumStability/Source/Higham.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter01/Problem03/CancellationRewrites/Algebra.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter01/Problem07/SampleVarianceConditioning/ConditionNumbers.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter01/Problem10/TwoPassSampleVariance/Bounds.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter01/Section07/TrigonometricCancellation/Example.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter01/Section09/SampleVariance/Examples.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter01/Section16/ProblemDependentStability/ExactExample.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter01/Section16/ProblemDependentStability/Table13IeeeSingle.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter01/Section17/HornerEvaluation.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problem01/FloatingPointCounts/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problem02.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problem03/AdjacentPrecisionValues/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problem04.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problem05/BinaryOneTenth/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problem06/IntegerRepresentability/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problem09/DoubleRounding/Counterexample.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problem10/DivisionRoundTrip/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problem12/ReciprocalProduct/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problem19/GradualUnderflowExactness/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problem24/GuardDigitCancellation/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problem26/ExactProduct/Discrepancy.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Problems15And16/SpecialValueProbes/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Section03/DoubleRounding/Counterexample.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Section06/FusedMultiplyAdd/DotProductCount.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Section10/ArctangentRange/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Section10/Tablemaker/FiniteSeparation/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter02/Section10/Tablemaker/HermiteLindemann/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter03/Problem11/KahanAbsoluteValue/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter04/Equation07/SterbenzCounterexamples.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter04/Equation08/FiniteFamily.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter04/Equation08/FiniteRouteLimitations.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter04/Equation08/ReturnedSum.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter04/Problem10.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Equation14/MatrixPolynomialForms/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Problem01/DifferentiatedHorner/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Problem02/PowerBuilding/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Problem03/EvenOddSplitting/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Problem04/LejaOrdering/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Problem06/MatrixPolynomialHorner/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Section01/Horner/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Section01/RelativeError/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Section02/BidiagonalDerivativeAnalysis/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Section02/DerivativeError/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Section02/DerivativeEvaluation/Bidiagonal.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Section02/DerivativeEvaluation/SyntheticDivision.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Section03/DividedDifferences/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Section03/LejaOrdering/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Section03/NewtonEvaluation/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Section03/NewtonEvaluation/HornerBasis.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Section03/ResidualUnwind/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter05/Section05/FastPolynomialEvaluation/Basic.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter06/Theorem05/DistanceToSingularity/All.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter09/ComputedCorrection.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter09/Section02.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter09/Section03.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter09/Section06.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Theorem07/FailureVacuity/Vacuity.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter12.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter12/IterativeRefinement/All.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter12/OmegaDiscontinuity.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter12/Problem02.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter14/Section03/LUFactorInversion/MethodB/MethodsBC.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter14/Section03/LUFactorInversion/MethodC/MethodsBC.lean"
     },
     {
       "match": "exact",
@@ -1143,14 +810,6 @@
     },
     {
       "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter20/Equations.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter20/Theorem04/Refinement.lean"
-    },
-    {
-      "match": "exact",
       "path": "NumStability/Source/Higham/Chapter20/Theorem07/ActualBackSub.lean"
     },
     {
@@ -1184,22 +843,6 @@
     {
       "match": "exact",
       "path": "NumStability/Source/Higham/Chapter20/Theorem07/SourceTrace.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter22/Section03/ComplexConfluentRefinement.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter22/Section03/RealRefinement.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter26/IntervalArithmetic/DirectedRounding.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter27/SoftwareEnvironment.lean"
     },
     {
       "match": "exact",
@@ -1396,14 +1039,6 @@
     {
       "match": "exact",
       "path": "NumStability/Source/Higham/Chapter28/Section06/Companion/CompanionSpectral.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/CrossChapter/LUSolverWeights/Doolittle.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/CrossChapter/LUSolverWeights/Factorization.lean"
     },
     {
       "match": "exact",

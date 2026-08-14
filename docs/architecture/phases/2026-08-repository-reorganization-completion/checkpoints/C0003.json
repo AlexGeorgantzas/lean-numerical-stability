@@ -1,0 +1,201 @@
+{
+  "accepted_at": "2026-08-14T19:02:24Z",
+  "accepted_by": "primary-human",
+  "checkpoint_id": "C0003",
+  "combined_baseline": {
+    "artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0003-combined.json",
+      "sha256": "692A6834644BECABA4DB1C16FEB9B89CEB2DE1A2A5B8A1AF304F63F873433A5E"
+    },
+    "format_version": 2,
+    "generation_command": "python -B tools/architecture/generate_baseline.py --output-dir docs/architecture/phases/2026-08-repository-reorganization-completion/baselines --name C0003-combined --keep-dependency-tsv benchmark-results/C0003-combined.tsv",
+    "summary_artifact": {
+      "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/baselines/C0003-combined.md",
+      "sha256": "27456CE0FB150FF6B5D6ED3007FC8A9832F6170D6894755B901CA9FF74E9E910"
+    }
+  },
+  "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+  "gates": [
+    {
+      "command": "GitHub Lean CI 31799323377: architecture and source-graph step",
+      "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      },
+      "executor_id": "github-actions",
+      "gate_id": "architecture",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "R03 canonical matrix audit plus lake build NumStability NumStabilityTest",
+      "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "canonical_import",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python -B tools/architecture/generate_baseline.py --output-dir docs/architecture/phases/2026-08-repository-reorganization-completion/baselines --name C0003-combined --keep-dependency-tsv benchmark-results/C0003-combined.tsv",
+      "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "combined_baseline",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python -B tools/architecture/check_compatibility.py",
+      "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "compatibility",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "R03 focused, protected-consumer, aggregate-root audit plus full local build",
+      "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "focused_build",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "GitHub Lean CI 31799323377: lake build NumStability NumStabilityTest",
+      "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      },
+      "executor_id": "github-actions",
+      "gate_id": "full_build",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "lake test",
+      "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "full_tests",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python -B tools/architecture/check_layout.py",
+      "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "layout",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "R03 old-path-only matrix audit plus lake build NumStability NumStabilityTest",
+      "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "old_import",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    },
+    {
+      "command": "python -B tools/architecture/check_provenance.py",
+      "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "provenance",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --name-status 09b3962dc6ed18b6de6eea5dc4a0e0e7c8ba4bb7..e20de2f931caa12221e708c341e9cb4f64d29b25 and exact C0003 2,393-path ledger",
+      "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "scope",
+      "lock_name": null,
+      "requires_large_build_lock": false,
+      "status": "PASS"
+    },
+    {
+      "command": "python -B tools/architecture/generate_baseline.py --skip-declarations --strict-source --output-dir benchmark-results/C0003-strict-source --name source",
+      "commit_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+      "evidence": {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-gates.md",
+        "sha256": "DC1DD7F396FA1B27B7DCEA153B31A235041E66C8B9D9ADA1910B84DD9EEAD1BC"
+      },
+      "executor_id": "primary-human",
+      "gate_id": "strict_source",
+      "lock_name": "lean-reorganization-2026-08",
+      "requires_large_build_lock": true,
+      "status": "PASS"
+    }
+  ],
+  "inventory": {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0003-inventory.tsv",
+    "sha256": "2FC73310A40763AA16AAC3D9EC1A0F3F6DF94AAEE188C4C4DB9BF62A34C67B33"
+  },
+  "metrics": {
+    "declaration_bearing_umbrellas": 15,
+    "missing_module_docstrings": 0,
+    "mixed_modules": 0,
+    "noncanonical_modules": 217,
+    "production_modules": 2690,
+    "unclassified_modules": 254,
+    "unsorted_aggregate_imports": 0
+  },
+  "milestones_satisfied": [
+    "M01",
+    "M02",
+    "M03",
+    "M11",
+    "M12"
+  ],
+  "parent_checkpoint_id": "C0002",
+  "phase_id": "repository-reorganization-completion-2026-08",
+  "record_kind": "phase_checkpoint",
+  "schema_version": 1,
+  "unblocks": []
+}

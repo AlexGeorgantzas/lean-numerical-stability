@@ -5,9 +5,15 @@
   "branch_id": "B0005",
   "branch_name": "codex/reorg-completion-2026-08-r03-floating-point-foundations-ch01-ch12",
   "delivery": {
-    "commit_sha": null,
-    "report": null,
-    "scope_evidence": null
+    "commit_sha": "1f8ff4ca5b0b136901a2f47d43e1064dc09aa556",
+    "report": {
+      "path": "docs/architecture/deliveries/R03/DELIVERY.md",
+      "sha256": "2605C852D1CA448079D4851D40A0FA7832979972A1B914C1F08E1BD544518D74"
+    },
+    "scope_evidence": {
+      "path": "docs/architecture/deliveries/R03/CHANGED_PATHS.md",
+      "sha256": "ECB0FFC6A62A6CB7B1613C0373112A777FC043A056B487598CC0DC376BE0C0B7"
+    }
   },
   "destination_prefixes": [
     {
@@ -10618,9 +10624,9 @@
     }
   ],
   "integration": {
-    "accepted_checkpoint_id": null,
-    "accepted_sha": null,
-    "method": null
+    "accepted_checkpoint_id": "C0003",
+    "accepted_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",
+    "method": "merge"
   },
   "lane_id": "codex-lane",
   "operator_ids": [
@@ -10869,7 +10875,7 @@
       },
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0005.json",
-        "sha256": "43F3343E1D8BDEFF81682FBFD068958D952D334EE3204E65A6923BAACE1617DB"
+        "sha256": "18AB5A8482A0A91C40E4BCBA3EAEFF52B275931F6CD9166A1D8932C1C865C5B8"
       },
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0005.tsv.gz",
@@ -10885,7 +10891,7 @@
       },
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0005.json",
-        "sha256": "166864879AE95E091E8B945585BED92571CDAFD257E882E0A51D7F13DFB68567"
+        "sha256": "09AEE132AE8BF034BC4E91C0C1FC6F943029EDAC3FE63DE387CE38494804949E"
       },
       {
         "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0005.patch",
@@ -10928,12 +10934,12 @@
     "retired_at": null,
     "retired_by": null,
     "rule": "delivery_ancestor_of_green_checkpoint",
-    "status": "not_due"
+    "status": "due"
   },
   "schema_version": 1,
   "shared_request_ids": [
     "R0005"
   ],
-  "status": "active",
+  "status": "accepted",
   "wave_id": "R03"
 }
