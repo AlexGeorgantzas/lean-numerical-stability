@@ -77,7 +77,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 4.4's factorization-plus-two-solves perturbation bridge and exact additional 2*gamma_n+gamma_n^2 term, absent from the frozen library's block-FMA surface.",
+      "decision": "Use the complete Theorem 4.4 result for a successful Algorithm 4.1 run: preserve n=q*b, the distinct low/internal/FMA/working precisions, Theorem 4.3's exact cFact coefficient and |A|+|LHat||UHat| scale, both triangular-solve models, the nearby-system equation, and every 2*gamma_n+gamma_n^2 solve term.",
       "task_id": "P04-T3",
       "theorem_name": "p04_t3_block_lu_solve_backward_error"
     }

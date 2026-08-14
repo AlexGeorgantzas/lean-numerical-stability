@@ -261,7 +261,7 @@
       },
       "P04": {
         "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
-        "HighamBench/P04Definitions.olean": "1af88bdb44b34f638fc30def61b95ef2aeb126b292d4b4226ea9440296343bcc"
+        "HighamBench/P04Definitions.olean": "6ac2b67eadba1b745fea375daaea7be220687bce22389c65f6201b4d2966b3f4"
       },
       "P05": {
         "HighamBench/Core.olean": "f5a07f5bd1021c7565b5863278abe123a8796eeb482978ebade11579893d740b",
@@ -333,7 +333,7 @@
       "HighamBench/P01Definitions.lean": "f84e0fcd73a73392e539081c1ab832e76c71902085eaae4614d305d138ca7a29",
       "HighamBench/P02Definitions.lean": "803efe47eb37140c04ed8dad9fcdfe8470d0527aaedf9c60ff9333441ad5136b",
       "HighamBench/P03Definitions.lean": "25e5b0fc93004b684254c879d71dd789e3a2153c4517d5cfabdc617d84ead38a",
-      "HighamBench/P04Definitions.lean": "646a34423a78acdd51a626a6a78611c4ccb557188f7b25c1d324f0722c6c5ad9",
+      "HighamBench/P04Definitions.lean": "d5ff5fe4b6ca28e0637b0df7bbc91a7f199b95caf4f4a32532ee14de9613f836",
       "HighamBench/P05Definitions.lean": "8e8bb59f7812723c6db2adb54ee7c79a133ed8463c2c76b8a3fff363c77d12b7",
       "HighamBench/P06Definitions.lean": "80ab87e3785b274488c63c1e88e3895907493e271a0e0963907f8d8538bd6ae5",
       "HighamBench/P07Definitions.lean": "456801a246d914d7d5bd4fdb8c43f735ab409ae3d697f68cc9220f80637de59c",

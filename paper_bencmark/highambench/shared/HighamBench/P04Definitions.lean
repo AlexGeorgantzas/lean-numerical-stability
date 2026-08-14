@@ -143,12 +143,13 @@ structure P04MixedInputMatMulRun
 
 /-- The factorization-stage coefficient in P04 equations (4.4) and (4.7). -/
 noncomputable def p04FactorizationCoeff
-    (uLow uFma u : ℝ) (q n b : ℕ) : ℝ :=
+    (uLow uBar uFma uWork : ℝ) (q n b : ℕ) : ℝ :=
   2 * uLow + uLow ^ 2 +
     max
-      (gamma uFma (q - 1) + gamma u (n - b + 1) +
-        gamma uFma (q - 1) * gamma u (n - b + 1))
-      (gamma u b) * (1 + uLow) ^ 2
+      (p04BlockFmaCoeff
+        (p04EffectiveFmaRoundoff uBar uFma uWork)
+        uBar (q - 1) (n - b + 1))
+      (gamma uWork b) * (1 + uLow) ^ 2
 
 /-- Square matrix multiplication in the paper's finite-index notation. -/
 noncomputable def p04MatMul {n : ℕ}
@@ -159,5 +160,79 @@ noncomputable def p04MatMul {n : ℕ}
 noncomputable def p04MatVec {n : ℕ}
     (A : Fin n → Fin n → ℝ) (x : Fin n → ℝ) : Fin n → ℝ :=
   fun i => ∑ j : Fin n, A i j * x j
+
+/-- The componentwise absolute product `|L||U|` in P04 equations (4.4) and
+(4.7). -/
+noncomputable def p04AbsMatMul {n : ℕ}
+    (L U : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => ∑ k : Fin n, |L i k| * |U k j|
+
+/-- The mandatory componentwise scale `|A| + |Lhat||Uhat|` in P04 equations
+(4.4) and (4.7). -/
+noncomputable def p04LUSolveScale {n : ℕ}
+    (A LHat UHat : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
+  fun i j => |A i j| + p04AbsMatMul LHat UHat i j
+
+/-- Entrywise lower-triangularity for the computed factor in Algorithm 4.1. -/
+def p04IsLowerTriangular {n : ℕ} (L : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j, i.val < j.val → L i j = 0
+
+/-- Entrywise upper-triangularity for the computed factor in Algorithm 4.1. -/
+def p04IsUpperTriangular {n : ℕ} (U : Fin n → Fin n → ℝ) : Prop :=
+  ∀ i j, j.val < i.val → U i j = 0
+
+/-- A complete finite-real execution certificate for P04 Algorithm 4.1 followed
+by forward and backward substitution, as used in Theorem 4.4. The factorization
+fields record Theorem 4.3's consequence for the computed factors; the solve
+fields record the standard triangular-substitution backward errors invoked in
+the proof of Theorem 4.4. The final perturbation from equation (4.7) is not a
+field and must be constructed by the target theorem.
+
+The certificate represents successful execution in the paper's standard model.
+Underflow, overflow, exceptional IEEE values, and the double-rounding effect
+omitted by the paper are outside this finite-real model. -/
+structure P04BlockLUSolveRun (n b q : ℕ) where
+  dimension_pos : 0 < n
+  block_size_pos : 0 < b
+  block_count_pos : 0 < q
+  dimension_eq : n = q * b
+  A : Fin n → Fin n → ℝ
+  LHat : Fin n → Fin n → ℝ
+  UHat : Fin n → Fin n → ℝ
+  lower_triangular : p04IsLowerTriangular LHat
+  upper_triangular : p04IsUpperTriangular UHat
+  lower_unit_diagonal : ∀ i, LHat i i = 1
+  upper_diagonal_nonzero : ∀ i, UHat i i ≠ 0
+  uLow : ℝ
+  uBar : ℝ
+  uFma : ℝ
+  uWork : ℝ
+  uLow_nonneg : 0 ≤ uLow
+  uBar_nonneg : 0 ≤ uBar
+  uFma_nonneg : 0 ≤ uFma
+  uWork_nonneg : 0 ≤ uWork
+  uBar_le_uFma : uBar ≤ uFma
+  effective_factor_gamma_valid :
+    GammaValid (p04EffectiveFmaRoundoff uBar uFma uWork) (q - 1)
+  internal_factor_gamma_valid : GammaValid uBar (n - b + 1)
+  working_block_gamma_valid : GammaValid uWork b
+  working_solve_gamma_valid : GammaValid uWork n
+  factorError : Fin n → Fin n → ℝ
+  algorithm4_1_factorization : p04MatMul LHat UHat = A + factorError
+  factor_error_bound : ∀ i j,
+    |factorError i j| ≤
+      p04FactorizationCoeff uLow uBar uFma uWork q n b *
+        p04LUSolveScale A LHat UHat i j
+  xHat : Fin n → ℝ
+  yHat : Fin n → ℝ
+  rhs : Fin n → ℝ
+  deltaL : Fin n → Fin n → ℝ
+  deltaU : Fin n → Fin n → ℝ
+  forward_substitution : p04MatVec (LHat + deltaL) yHat = rhs
+  backward_substitution : p04MatVec (UHat + deltaU) xHat = yHat
+  deltaL_bound : ∀ i j,
+    |deltaL i j| ≤ gamma uWork n * |LHat i j|
+  deltaU_bound : ∀ i j,
+    |deltaU i j| ≤ gamma uWork n * |UHat i j|
 
 end HighamBench

@@ -63,7 +63,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P04Definitions.lean",
       "role": "P04-only block-FMA execution models, coefficients, and finite matrix notation",
-      "sha256": "c03761622990c6bfa6017ad4449e70ac577b4c0f9734b8d5f0db3016cb4754ef",
+      "sha256": "d5ff5fe4b6ca28e0637b0df7bbc91a7f199b95caf4f4a32532ee14de9613f836",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -988,17 +988,15 @@
           "candidate_library_dependencies_for_audit": [
             "NumStability.matMulVec_matMul",
             "NumStability.matMul_add_left",
-            "NumStability.matMul_add_right",
-            "NumStability.triangularSolve_backward_error",
-            "NumStability.diagDom_lu_solve_backward_stable"
+            "NumStability.matMul_add_right"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs are kept under paper_bencmark/scratch_pad/private_gold/P04/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Expand the perturbed factors, use matrix-vector associativity and both triangular-solve equations, then add the four componentwise perturbation bounds.",
-          "informal_statement_paraphrase": "The factorization and two triangular solves assemble into one backward error with the exact additional two-linear-plus-quadratic gamma term.",
+          "informal_proof_paraphrase": "Construct deltaA from the factorization error and all three solve cross terms, expand the perturbed factors, use matrix-vector associativity with both substitution equations, derive each componentwise product bound, and collect the exact coefficient on |A|+|LHat||UHat|.",
+          "informal_statement_paraphrase": "Every certified Algorithm 4.1 block-FMA factorization and triangular solve has the nearby system and complete componentwise bound stated in Theorem 4.4 and equation (4.7).",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "8d92998de2588ca675b513db902c36f7ca1d8689c81ad8d8b886c9b5371b4b7e",
+            "controlled_file_sha256": "0e18f38681cc3b6f670c6dffe237b8b91b85bbd17f9212a2ca845ee8becc20e1",
             "declaration": "p04_t3_block_lu_solve_backward_error",
             "file": "paper_bencmark/highambench/tasks/P04/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -1006,21 +1004,43 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P04Definitions.lean"
             ],
-            "statement_summary": "The exact perturbation equation and coefficient assembly of P04 Theorem 4.4."
+            "shared_model": "P04BlockLUSolveRun",
+            "statement_summary": "The complete Algorithm 4.1 nearby-system equation and exact componentwise coefficient of P04 Theorem 4.4 and equation (4.7)."
           },
           "source_locations": [
+            {
+              "anchor": "equations (2.3)-(2.6) and gamma notation",
+              "journal_page": "C127",
+              "pdf_page": 4,
+              "role": "standard relative-error model, precision roles, and gamma validity",
+              "section": "2.1. General framework for mixed precision block FMA"
+            },
+            {
+              "anchor": "Algorithm 4.1",
+              "journal_page": "C134",
+              "pdf_page": 11,
+              "role": "square dimensions, block partition, precision roles, and computed block LU factors",
+              "section": "4. Solution of linear systems with block FMA"
+            },
+            {
+              "anchor": "Lemma 4.2, Theorem 4.3, and equation (4.4)",
+              "journal_page": "C135",
+              "pdf_page": 12,
+              "role": "triangular-solve model and exact factorization-stage componentwise coefficient",
+              "section": "4.1. Rounding error analysis"
+            },
             {
               "anchor": "Theorem 4.4 and equation (4.7)",
               "journal_page": "C136",
               "pdf_page": 13,
-              "role": "backward-error equation and exact factorization-plus-solve coefficient",
+              "role": "nearby-system equation, mandatory scale, and complete factorization-plus-solve coefficient",
               "section": "4.1. Rounding error analysis"
             }
           ],
           "task_id": "P04-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "The searched NumStability matrix, LU, triangular-solve, and matrix-product modules provide separate conventional pieces only. No declaration models the mixed-precision block-FMA LU stage or proves the exact P04 perturbation bridge and equation (4.7) coefficient.",
+          "tier_reason": "The L construction proof uses the frozen library only for exact matrix distributivity and matrix-vector associativity. No declaration models Algorithm 4.1's mixed-precision block-FMA LU stage, proves Theorem 4.3's exact cFact bound, or constructs Theorem 4.4's complete perturbation and equation (4.7) coefficient.",
           "title": "Block-FMA LU solve backward-error assembly"
         }
       ],
