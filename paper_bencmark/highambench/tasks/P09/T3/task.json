@@ -1,12 +1,16 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, and explicit finite-remainder formalization of Theorem 2(a)",
+    "kind": "source selection, tier label, linked multidimensional complex FFT execution, and explicit finite-remainder formalization of Theorem 2(a)",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The total error is the finite sum of the propagated local errors from the paper's telescoping identity.",
-    "Each propagated local error has the stated first-order RMS budget and an explicit remainder."
+    "The number of dimensions is positive, every coordinate length is positive, and each coordinate has a certified one-dimensional mixed-radix FFT plan.",
+    "The complex product-indexed execution applies T_m first and T_1 last; its input, computed states, local errors, exact output, computed output, and exact telescoping identity are linked.",
+    "The scalar operations satisfy the common Wilkinson epsilon and gamma model, with no separate exceptional-value semantics.",
+    "Each local error satisfies equation (4.3) with the fixed K(N_l,gamma) and an explicit nonnegative C_l*epsilon^2 remainder; equation (4.4) supplies exact prefix RMS scaling.",
+    "Each propagated computed-intermediate RMS scale differs from the exact output RMS by at most an explicit nonnegative D_l*epsilon term, including the proof's exact-or-O(epsilon) input-RMS condition.",
+    "The exact output RMS is positive so that the paper's printed relative-error ratio is defined."
   ],
   "author_label": "Theorem 2",
   "classification_frozen_before_runs": false,
@@ -16,14 +20,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P09/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p09_t3_multidimensional_rms_error_budget {m n : Nat} (term : Fin m -> Fin n -> Real) (total : Fin n -> Real) (epsilon yRms : Real) (K remainder : Fin m -> Real) ... : p09Rms total <= epsilon * (sum i, K i) * yRms + sum i, remainder i",
+    "lean_header": "theorem p09_t3_multidimensional_rms_error_bound {m : Nat} [NeZero m] (plan : P09MultidimensionalFftPlan m) (model : P09WilkinsonModel) (run : P09MultidimensionalFftRun plan model) (certificate : P09TheoremTwoRmsCertificate run) (hexactOutput : 0 < p09MultiRms (p09MultiExactOutput run)) : p09MultiFftRoundoffError run = p09MultiVectorSum (fun i => p09PropagatedAxisError run i) and p09MultiRms (p09MultiFftRoundoffError run) / p09MultiRms (p09MultiExactOutput run) <= model.epsilon * (sum i, p09AxisK (plan.axis i) model.gamma) + (p09TheoremTwoRemainderCoeff certificate / p09MultiRms (p09MultiExactOutput run)) * model.epsilon^2",
     "namespace": "HighamBench",
-    "plain_language": "A finite telescoping decomposition of multidimensional FFT error has the sum of its first-order RMS budgets plus the sum of explicit remainders.",
+    "plain_language": "The linked nested complex FFT has the paper's exact m-term telescoping error decomposition and Theorem 2(a) relative RMS bound with first-order coefficient sum_l K(N_l,gamma) and an explicit finite second-order remainder.",
     "target_file": "paper_bencmark/highambench/tasks/P09/T3/Target.lean",
-    "theorem_name": "p09_t3_multidimensional_rms_error_budget"
+    "theorem_name": "p09_t3_multidimensional_rms_error_bound"
   },
-  "informal_proof": "Prove a new finite-family Euclidean triangle inequality by induction, divide by the RMS normalization, sum the supplied local bounds, and collect the first-order constants and explicit remainders.",
-  "informal_statement": "Theorem 2(a)'s multidimensional RMS estimate with every O(epsilon squared) term represented by an explicit finite remainder.",
+  "informal_proof": "Use the linked telescoping identity, extend the complex Euclidean triangle inequality to the finite family of all propagated local errors, apply equation (4.4) to each prefix, substitute each equation (4.3) local certificate, absorb the O(epsilon) intermediate and input RMS differences into the explicit epsilon-squared coefficient, sum the fixed K(N_l,gamma) terms, and divide by the positive exact-output RMS.",
+  "informal_statement": "Theorem 2(a)'s linked multidimensional complex FFT relative RMS estimate, including its exact telescoping identity, full-product normalization, fixed one-dimensional K constants, input condition, and explicit finite O(epsilon squared) remainder.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -39,22 +43,55 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
-      "NumStability.vecNorm2_add_le"
+      "NumStability.vecNorm2_add_le",
+      "NumStability.vecNorm2_le_of_abs_le"
     ],
-    "note": "The frozen MatrixAlgebra object supplies only the binary Euclidean triangle inequality. A finite-vector-sum theorem exists in NumStability/Analysis/BeneficialRounding.lean but that module is absent from metadata/library_olean.json and is unavailable in condition L; no mounted theorem tracks the explicit finite remainder sum."
+    "note": "The frozen MatrixAlgebra object supplies the binary real Euclidean triangle inequality and entrywise norm monotonicity used to establish one complex-array step. A finite-vector-sum theorem exists in NumStability/Analysis/BeneficialRounding.lean but that module is absent from metadata/library_olean.json and is unavailable in condition L; no mounted theorem tracks the linked complex multidimensional FFT or explicit remainder sum."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
-    "p09VecNorm2",
-    "p09Rms",
-    "p09VectorSum"
+    "P09FftAxis",
+    "p09AxisK",
+    "P09MultiIndex",
+    "P09MultiArray",
+    "p09MultiRms",
+    "p09CoordinateTransform",
+    "p09ApplyCoordinatePrefix",
+    "P09MultidimensionalFftPlan",
+    "P09MultidimensionalFftRun",
+    "p09MultiExactOutput",
+    "p09MultiFftRoundoffError",
+    "p09PropagatedAxisError",
+    "P09TheoremTwoRmsCertificate",
+    "p09TheoremTwoRemainderCoeff"
   ],
   "source_locations": [
     {
-      "anchor": "Theorem 2(a), its telescoping decomposition, and equation (4.2)",
+      "anchor": "Theorem 1 and the definition of K(N,gamma)",
+      "pdf_page": 3,
+      "printed_page": "759",
+      "role": "inherited mixed-radix floating-point model and per-coordinate constants",
+      "section": "3. Roundoff Errors in the Fast Fourier Transform"
+    },
+    {
+      "anchor": "equation (4.1) and multidimensional index convention",
+      "pdf_page": 7,
+      "printed_page": "763",
+      "role": "complex product-indexed multidimensional Fourier transform",
+      "section": "4. Roundoff Errors in Multidimensional Transformations"
+    },
+    {
+      "anchor": "multidimensional RMS definition, Theorem 2(a), nested computation, telescoping decomposition, and equations (4.2)-(4.4)",
       "pdf_page": 8,
       "printed_page": "764",
-      "role": "multidimensional RMS error accumulation",
+      "role": "selected relative RMS theorem and its exact local-error accumulation",
+      "section": "4. Roundoff Errors in Multidimensional Transformations"
+    },
+    {
+      "anchor": "continuation and completion of the proof of Theorem 2(a)",
+      "pdf_page": 9,
+      "printed_page": "765",
+      "role": "propagated scaling and exact-or-O(epsilon) input RMS condition",
       "section": "4. Roundoff Errors in Multidimensional Transformations"
     }
   ],
@@ -64,12 +101,12 @@
   "task_id": "P09-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "NumStability.vecNorm2_add_le in NumStability/Analysis/MatrixAlgebra.lean is only a binary adapter. The proof must newly establish the arbitrary finite-family Euclidean bound, transport it through RMS normalization, and collect explicit per-stage remainders. The searched NumStability/Analysis/BeneficialRounding.lean contains a related source theorem, but its object is absent from the frozen library_olean manifest and therefore unavailable.",
+  "tier_rationale": "The L proof uses NumStability.vecNorm2_add_le and NumStability.vecNorm2_le_of_abs_le from the frozen MatrixAlgebra module for one binary complex-array step after reindexing component magnitudes, then newly extends that step to all m propagated errors, transports it through the full-product RMS normalization, derives each propagated finite-remainder budget, and collects the fixed K(N_l,gamma) coefficients. No mounted declaration states the linked multidimensional theorem.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P09/T3/Target.lean",
     "mode": "shared automatic validator",
     "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
     "reject_statement_changes": true,
-    "required_declaration": "HighamBench.p09_t3_multidimensional_rms_error_budget"
+    "required_declaration": "HighamBench.p09_t3_multidimensional_rms_error_bound"
   }
 }

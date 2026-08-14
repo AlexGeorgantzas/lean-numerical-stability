@@ -85,9 +85,9 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 2(a)'s multidimensional telescoping bound with every O(epsilon squared) contribution exposed as an explicit finite remainder.",
+      "decision": "Use Theorem 2(a)'s linked product-indexed complex multidimensional FFT bound, retaining its nested computation, exact telescoping identity, fixed per-axis K constants, input RMS condition, and explicit finite second-order remainder.",
       "task_id": "P09-T3",
-      "theorem_name": "p09_t3_multidimensional_rms_error_budget"
+      "theorem_name": "p09_t3_multidimensional_rms_error_bound"
     }
   },
   "schema_version": "highambench-paper-0.2",

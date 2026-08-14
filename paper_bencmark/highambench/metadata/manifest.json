@@ -107,8 +107,8 @@
         "P09"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P09Definitions.lean",
-      "role": "P09-only real and complex FFT norms, fixed Fourier action, mixed-radix execution model, error certificates, and finite error sums",
-      "sha256": "962615a6b945612df880f02ea71f7196cd20d5405fd4382900c0f28a22ac2d6c",
+      "role": "P09-only real, complex one-dimensional, and product-indexed multidimensional FFT norms, fixed Fourier actions, linked mixed-radix execution models, error certificates, and finite propagated-error sums",
+      "sha256": "17346c26dd0150dbdb16b77fbbd7240745e9f95617f619267e13740105a92fa9",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -1871,38 +1871,60 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.vecNorm2_add_le"
+            "NumStability.vecNorm2_add_le",
+            "NumStability.vecNorm2_le_of_abs_le"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P09/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Prove a new finite-family Euclidean triangle inequality by induction, divide by the RMS normalization, sum the supplied local bounds, and collect the first-order constants and explicit remainders.",
-          "informal_statement_paraphrase": "Theorem 2(a)'s multidimensional RMS estimate with every O(epsilon squared) term represented by an explicit finite remainder.",
+          "informal_proof_paraphrase": "Use the linked telescoping identity, extend the complex Euclidean triangle inequality to all propagated local errors, apply the exact coordinate RMS scaling and fixed one-dimensional K bounds, absorb each O(epsilon) intermediate-scale difference into the explicit second-order coefficient, sum the m terms, and divide by the positive exact-output RMS.",
+          "informal_statement_paraphrase": "Theorem 2(a)'s linked product-indexed complex multidimensional FFT relative RMS estimate, retaining the nested execution, exact telescoping identity, fixed per-axis K constants, input condition, and explicit finite second-order remainder.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "455ee98894b739fbf2d0308f1aff3047d03d0c92bfe544980247882db102cbb8",
-            "declaration": "p09_t3_multidimensional_rms_error_budget",
+            "controlled_file_sha256": "5f4cdf4d102e37290628347ea4ad52baa30f3afcbf86fbc81313e0499dae3f36",
+            "declaration": "p09_t3_multidimensional_rms_error_bound",
             "file": "paper_bencmark/highambench/tasks/P09/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P09Definitions.lean"
             ],
-            "statement_summary": "A finite telescoping decomposition of multidimensional FFT error has the sum of its first-order RMS budgets plus the sum of explicit remainders."
+            "statement_summary": "The linked nested complex FFT error is its exact m-term propagated local-error sum and satisfies Theorem 2(a)'s relative RMS bound with coefficient sum_l K(N_l,gamma) plus an explicit finite second-order term."
           },
           "source_locations": [
             {
-              "anchor": "Theorem 2(a), its telescoping decomposition, and equation (4.2)",
+              "anchor": "Theorem 1 and the definition of K(N,gamma)",
+              "journal_page": "759",
+              "pdf_page": 3,
+              "role": "inherited mixed-radix floating-point model and per-coordinate constants",
+              "section": "3. Roundoff Errors in the Fast Fourier Transform"
+            },
+            {
+              "anchor": "equation (4.1) and multidimensional index convention",
+              "journal_page": "763",
+              "pdf_page": 7,
+              "role": "complex product-indexed multidimensional Fourier transform",
+              "section": "4. Roundoff Errors in Multidimensional Transformations"
+            },
+            {
+              "anchor": "multidimensional RMS definition, Theorem 2(a), nested computation, telescoping decomposition, and equations (4.2)-(4.4)",
               "journal_page": "764",
               "pdf_page": 8,
-              "role": "multidimensional RMS error accumulation",
+              "role": "selected relative RMS theorem and its exact local-error accumulation",
+              "section": "4. Roundoff Errors in Multidimensional Transformations"
+            },
+            {
+              "anchor": "continuation and completion of the proof of Theorem 2(a)",
+              "journal_page": "765",
+              "pdf_page": 9,
+              "role": "propagated scaling and exact-or-O(epsilon) input RMS condition",
               "section": "4. Roundoff Errors in Multidimensional Transformations"
             }
           ],
           "task_id": "P09-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "NumStability.vecNorm2_add_le in NumStability/Analysis/MatrixAlgebra.lean is only a binary adapter. The proof must newly establish the arbitrary finite-family Euclidean bound, transport it through RMS normalization, and collect explicit per-stage remainders. The related BeneficialRounding source theorem is absent from the frozen mounted object manifest.",
-          "title": "Multidimensional RMS error budget"
+          "tier_reason": "The L proof uses NumStability.vecNorm2_add_le and NumStability.vecNorm2_le_of_abs_le for one reindexed complex-array step, then newly extends that step to all m propagated errors, transports it through the full-product RMS normalization, derives each linked finite-remainder budget, and collects the fixed K(N_l,gamma) coefficients. No mounted declaration states the selected theorem.",
+          "title": "Linked multidimensional FFT RMS error bound"
         }
       ],
       "topic": "roundoff error analysis of one- and multidimensional fast Fourier transforms"

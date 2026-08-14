@@ -1,5 +1,6 @@
 import HighamBench.Core
 import Mathlib.Analysis.Fourier.ZMod
+import Mathlib.Analysis.InnerProductSpace.PiL2
 
 namespace HighamBench
 
@@ -241,5 +242,194 @@ structure P09TheoremOneRmsCertificate {n : ℕ} [NeZero n]
     model.epsilon * Real.sqrt (n : ℝ) * p09K plan model.gamma *
         p09ComplexRms run.input +
       secondOrderCoeff * model.epsilon ^ 2
+
+/-! ## Ramos's multidimensional FFT setting -/
+
+/-- One positive multidimensional axis together with the mixed-radix plan used
+to evaluate its one-dimensional FFT. -/
+structure P09FftAxis where
+  order : ℕ
+  order_pos : 0 < order
+  plan : @P09MixedRadixFftPlan order ⟨Nat.ne_of_gt order_pos⟩
+
+/-- The one-dimensional Theorem 1 constant for a packaged axis. -/
+noncomputable def p09AxisK (axis : P09FftAxis) (γ : ℝ) : ℝ :=
+  @p09K axis.order ⟨Nat.ne_of_gt axis.order_pos⟩ axis.plan γ
+
+/-- The product index set for an `m`-dimensional array. -/
+abbrev P09MultiIndex {m : ℕ} (axis : Fin m → P09FftAxis) :=
+  (i : Fin m) → ZMod (axis i).order
+
+noncomputable instance p09MultiIndexFintype {m : ℕ}
+    (axis : Fin m → P09FftAxis) : Fintype (P09MultiIndex axis) := by
+  letI (i : Fin m) : NeZero (axis i).order :=
+    ⟨Nat.ne_of_gt (axis i).order_pos⟩
+  infer_instance
+
+/-- Complex arrays on the product of the coordinate index sets. -/
+abbrev P09MultiArray {m : ℕ} (axis : Fin m → P09FftAxis) :=
+  P09MultiIndex axis → ℂ
+
+/-- The full number `N₁⋯Nₘ` of entries in a multidimensional array. -/
+def p09MultiCardinality {m : ℕ} (axis : Fin m → P09FftAxis) : ℕ :=
+  ∏ i : Fin m, (axis i).order
+
+/-- Euclidean norm of a complex multidimensional array. -/
+noncomputable def p09MultiNorm2 {m : ℕ} {axis : Fin m → P09FftAxis}
+    (x : P09MultiArray axis) : ℝ := by
+  letI (i : Fin m) : NeZero (axis i).order :=
+    ⟨Nat.ne_of_gt (axis i).order_pos⟩
+  exact ‖(WithLp.toLp 2 x : EuclideanSpace ℂ (P09MultiIndex axis))‖
+
+/-- Ramos's RMS norm, normalized by the full product `N₁⋯Nₘ`. -/
+noncomputable def p09MultiRms {m : ℕ} {axis : Fin m → P09FftAxis}
+    (x : P09MultiArray axis) : ℝ :=
+  p09MultiNorm2 x / Real.sqrt (p09MultiCardinality axis : ℝ)
+
+/-- Coordinatewise addition of multidimensional complex arrays. -/
+def p09MultiVecAdd {m : ℕ} {axis : Fin m → P09FftAxis}
+    (x y : P09MultiArray axis) : P09MultiArray axis :=
+  fun index ↦ x index + y index
+
+/-- Coordinatewise subtraction of multidimensional complex arrays. -/
+def p09MultiVecSub {m : ℕ} {axis : Fin m → P09FftAxis}
+    (x y : P09MultiArray axis) : P09MultiArray axis :=
+  fun index ↦ x index - y index
+
+/-- Pointwise sum of a finite family of multidimensional arrays. -/
+noncomputable def p09MultiVectorSum {r m : ℕ} {axis : Fin m → P09FftAxis}
+    (term : Fin r → P09MultiArray axis) : P09MultiArray axis :=
+  fun index ↦ ∑ i : Fin r, term i index
+
+/-- The exact positive-sign one-dimensional DFT in coordinate `i`. -/
+noncomputable def p09CoordinateTransform {m : ℕ}
+    (axis : Fin m → P09FftAxis) (i : Fin m)
+    (x : P09MultiArray axis) : P09MultiArray axis := by
+  letI : NeZero (axis i).order := ⟨Nat.ne_of_gt (axis i).order_pos⟩
+  exact fun index ↦ ∑ j : ZMod (axis i).order,
+    ZMod.stdAddChar (j * index i) * x (Function.update index i j)
+
+/-- A total natural-number interface to the coordinate transform. Values at
+indices outside `0,…,m-1` are the identity and are never used by a valid run. -/
+noncomputable def p09CoordinateTransformNat {m : ℕ}
+    (axis : Fin m → P09FftAxis) (i : ℕ)
+    (x : P09MultiArray axis) : P09MultiArray axis :=
+  if hi : i < m then p09CoordinateTransform axis ⟨i, hi⟩ x else x
+
+/-- Apply `Tₖ₋₁` first and `T₀` last. Thus prefix `m` is exactly the
+nested order `T₁(T₂(⋯(Tₘ X)))` used in Section 4. -/
+noncomputable def p09ApplyCoordinatePrefix {m : ℕ}
+    (axis : Fin m → P09FftAxis) : ℕ → P09MultiArray axis → P09MultiArray axis
+  | 0, x => x
+  | i + 1, x =>
+      p09ApplyCoordinatePrefix axis i (p09CoordinateTransformNat axis i x)
+
+/-- Product of the first `k` coordinate lengths. -/
+def p09PrefixOrderProduct {m : ℕ} (axis : Fin m → P09FftAxis)
+    (k : ℕ) (hk : k ≤ m) : ℕ :=
+  ∏ i : Fin k, (axis (Fin.castLE hk i)).order
+
+/-- The multidimensional transform plan, including equation `(4.4)` iterated
+over every valid prefix of coordinate transforms. -/
+structure P09MultidimensionalFftPlan (m : ℕ) [NeZero m] where
+  axis : Fin m → P09FftAxis
+  prefix_rms_scaling : ∀ (k : ℕ) (hk : k ≤ m) (x : P09MultiArray axis),
+    p09MultiRms (p09ApplyCoordinatePrefix axis k x) =
+      Real.sqrt (p09PrefixOrderProduct axis k hk : ℝ) * p09MultiRms x
+
+/-- A nested multidimensional FFT execution. `computedState m` is `X`, and
+`computedState i` is the rounded result after evaluating coordinate `i` on
+`computedState (i+1)`. The final field is the exact telescoping identity from
+the proof of Theorem 2. -/
+structure P09MultidimensionalFftRun {m : ℕ} [NeZero m]
+    (plan : P09MultidimensionalFftPlan m) (model : P09WilkinsonModel) where
+  input : P09MultiArray plan.axis
+  computedState : Fin (m + 1) → P09MultiArray plan.axis
+  localError : Fin m → P09MultiArray plan.axis
+  computed_input : computedState (Fin.last m) = input
+  stage_step : ∀ i : Fin m,
+    computedState i.castSucc =
+      p09MultiVecAdd
+        (p09CoordinateTransform plan.axis i (computedState i.succ))
+        (localError i)
+  input_rms_condition :
+    p09MultiRms (fun index ↦ model.flInput (input index)) = p09MultiRms input ∨
+      ∃ inputFirstOrderCoeff : ℝ,
+        0 ≤ inputFirstOrderCoeff ∧
+        |p09MultiRms (fun index ↦ model.flInput (input index)) -
+            p09MultiRms input| ≤ inputFirstOrderCoeff * model.epsilon
+  telescoping_error :
+    p09MultiVecSub (computedState 0)
+        (p09ApplyCoordinatePrefix plan.axis m input) =
+      p09MultiVectorSum fun i ↦
+        p09ApplyCoordinatePrefix plan.axis i.val (localError i)
+
+/-- The exact output `Y=T₁⋯TₘX`. -/
+noncomputable def p09MultiExactOutput {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
+    (run : P09MultidimensionalFftRun plan model) : P09MultiArray plan.axis :=
+  p09ApplyCoordinatePrefix plan.axis m run.input
+
+/-- The result of the linked nested floating-point execution. -/
+def p09MultiComputedOutput {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
+    (run : P09MultidimensionalFftRun plan model) : P09MultiArray plan.axis :=
+  run.computedState 0
+
+/-- The exact multidimensional output roundoff error `fl(Y)-Y`. -/
+noncomputable def p09MultiFftRoundoffError {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
+    (run : P09MultidimensionalFftRun plan model) : P09MultiArray plan.axis :=
+  p09MultiVecSub (p09MultiComputedOutput run) (p09MultiExactOutput run)
+
+/-- The local error from coordinate `i`, propagated through `T₁,…,Tᵢ₋₁`. -/
+noncomputable def p09PropagatedAxisError {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
+    (run : P09MultidimensionalFftRun plan model) (i : Fin m) :
+    P09MultiArray plan.axis :=
+  p09ApplyCoordinatePrefix plan.axis i.val (run.localError i)
+
+/-- The scale multiplying `K(Nᵢ,γ)` after propagating coordinate `i`'s
+one-dimensional Theorem 1 estimate through the preceding exact transforms. -/
+noncomputable def p09PropagatedStageInputRms {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
+    (run : P09MultidimensionalFftRun plan model) (i : Fin m) : ℝ :=
+  Real.sqrt
+      (p09PrefixOrderProduct plan.axis i.val (Nat.le_of_lt i.isLt) : ℝ) *
+    Real.sqrt ((plan.axis i).order : ℝ) *
+    p09MultiRms (run.computedState i.succ)
+
+/-- Equations `(4.3)` and `(4.4)` with every hidden remainder exposed. The
+`intermediate_rms_approx` field includes the paper's exact-or-`O(ε)` input
+RMS condition at the last coordinate and the analogous intermediate facts. -/
+structure P09TheoremTwoRmsCertificate {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
+    (run : P09MultidimensionalFftRun plan model) where
+  localSecondOrderCoeff : Fin m → ℝ
+  intermediateFirstOrderCoeff : Fin m → ℝ
+  local_second_order_nonneg : ∀ i, 0 ≤ localSecondOrderCoeff i
+  intermediate_first_order_nonneg : ∀ i, 0 ≤ intermediateFirstOrderCoeff i
+  local_error_bound : ∀ i : Fin m,
+    p09MultiRms (run.localError i) ≤
+      model.epsilon * Real.sqrt ((plan.axis i).order : ℝ) *
+          p09AxisK (plan.axis i) model.gamma *
+          p09MultiRms (run.computedState i.succ) +
+        localSecondOrderCoeff i * model.epsilon ^ 2
+  intermediate_rms_approx : ∀ i : Fin m,
+    |p09PropagatedStageInputRms run i - p09MultiRms (p09MultiExactOutput run)| ≤
+      intermediateFirstOrderCoeff i * model.epsilon
+
+/-- The explicit finite coefficient replacing Theorem 2(a)'s final
+`O(ε²)` term. -/
+noncomputable def p09TheoremTwoRemainderCoeff {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
+    {run : P09MultidimensionalFftRun plan model}
+    (certificate : P09TheoremTwoRmsCertificate run) : ℝ :=
+  ∑ i : Fin m, (
+    Real.sqrt
+          (p09PrefixOrderProduct plan.axis i.val (Nat.le_of_lt i.isLt) : ℝ) *
+        certificate.localSecondOrderCoeff i +
+      p09AxisK (plan.axis i) model.gamma *
+        certificate.intermediateFirstOrderCoeff i)
 
 end HighamBench
