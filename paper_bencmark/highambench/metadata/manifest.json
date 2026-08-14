@@ -71,8 +71,8 @@
         "P05"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P05Definitions.lean",
-      "role": "P05-only floating-point execution model, backward-error sources, and finite matrix notation",
-      "sha256": "0908e9cc1866fa3f22b4dedb0f3e76f27b683c68a5b56cbf6216fae987b24a43",
+      "role": "P05-only floating-point execution models, Doolittle certificates, backward-error sources, and finite matrix notation",
+      "sha256": "7f92d15637435e3aba844ddaf0a2440869de24ecec3e29a5d3d2671a7f3b6e3f",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -1117,47 +1117,47 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.Finset.sum_abs_mul",
-            "NumStability.matSeqProd_nonneg",
-            "NumStability.matSeqProd_componentwise_perturbation_bound"
+            "NumStability.higham9_2_rectMatMul_eq_prefix_add_upper",
+            "NumStability.higham9_2_rectMatMul_eq_prefix_add_lower",
+            "NumStability.rectMatMul"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs are kept under paper_bencmark/scratch_pad/private_gold/P05/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Set DeltaA=LU-A, retain the local rowwise bounds, and use i<=n-1 together with nonnegativity of |L||U| to obtain the uniform estimate.",
-          "informal_statement_paraphrase": "The square-case sharpening of Theorem 4.2 and equation (4.2).",
+          "informal_proof_paraphrase": "Apply Lemma 4.1's scalar residual consequences to every certified upper and lower Doolittle entry, use triangular support to recover full product entries, set DeltaA=LHat*UHat-A, and compare stage indices with n and then with the square row index.",
+          "informal_statement_paraphrase": "Theorem 4.2 in full: rectangular LU backward stability, local Doolittle estimates (4.3), and the sharper rowwise and uniform square bounds.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "2ad0285ce2bb990d3d8fe2709531887d27677205d670f26be9b509532d9e9fe2",
-            "declaration": "p05_t2_square_lu_backward_error",
+            "controlled_file_sha256": "429892a33ec0d2a62b6d40e3e4ca373ffe338533fe8d951823a298b483395182",
+            "declaration": "p05_t2_lu_backward_error",
             "file": "paper_bencmark/highambench/tasks/P05/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P05Definitions.lean"
             ],
-            "statement_summary": "The square Doolittle residuals assemble into the exact LU backward error with both the sharp rowwise and uniform (n-1)u bounds."
+            "statement_summary": "A completed range-safe rectangular Doolittle execution satisfies both local residual estimates, the exact LU backward relation, the general n*u componentwise bound, and both square-case sharpenings."
           },
           "source_locations": [
             {
               "anchor": "Theorem 4.2 and equation (4.2)",
               "journal_page": "693",
               "pdf_page": 10,
-              "role": "LU backward-error equation and sharp square rowwise/global bounds",
+              "role": "rectangular LU backward-error identity and n*u bound, followed by the sharp square rowwise and uniform bounds",
               "section": "4.2. An improved backward error bound for LU factorization"
             },
             {
-              "anchor": "equations (4.3a)-(4.3b) and the final coefficient comparison",
+              "anchor": "Doolittle formulas, equations (4.3a)-(4.3b), and the final coefficient comparison",
               "journal_page": "694",
               "pdf_page": 11,
-              "role": "local Doolittle residual estimates used by the target",
+              "role": "algorithm linkage, local residual estimates, and derivation of every global coefficient in the target",
               "section": "4.2. An improved backward error bound for LU factorization"
             }
           ],
           "task_id": "P05-T2",
           "tier": "T2",
           "tier_name": "combine",
-          "tier_reason": "The target combines P05's local Doolittle residual family, a finite-index perturbation assembly, nonnegativity of the componentwise absolute product, and the exact row-index comparison. The frozen library supplies separate absolute matrix-product ingredients but no declaration states the combined sharp result.",
-          "title": "Sharp square LU backward-error bound"
+          "tier_reason": "The L proof combines NumStability's upper and lower rectangular triangular-support decompositions with the paper-specific scalar execution residuals, stage-index bounds, exact perturbation assembly, and square row comparison. No frozen declaration states the local or global P05 result.",
+          "title": "Rectangular and sharp square LU backward-error bounds"
         },
         {
           "availability": "available",

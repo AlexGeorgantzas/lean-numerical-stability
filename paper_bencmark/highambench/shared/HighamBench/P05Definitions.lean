@@ -136,4 +136,107 @@ structure P05Lemma41Run (m : ℕ) where
       (m : ℝ) * format.unitRoundoff *
         (|yHat| + ∑ i : Fin m, |a i * b i|)
 
+/-- Exact rectangular matrix multiplication for P05 Theorem 4.2. -/
+noncomputable def p05RectMatMul {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  fun i j => ∑ k : Fin n, L i k * U k j
+
+/-- The componentwise absolute product `|L_hat||U_hat|` in Theorem 4.2. -/
+noncomputable def p05RectAbsMatMul {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ) :
+    Fin m → Fin n → ℝ :=
+  fun i j => ∑ k : Fin n, |L i k| * |U k j|
+
+/-- Embed a Doolittle pivot-row index into the rectangular row index. -/
+def p05RectRow {m n : ℕ} (hmn : n ≤ m) (k : Fin n) : Fin m :=
+  Fin.castLE hmn k
+
+/-- Embed an index strictly preceding Doolittle stage `k` into `Fin n`. -/
+def p05PrefixIndex {n : ℕ} (k : Fin n) (s : Fin k.val) : Fin n :=
+  ⟨s.val, lt_trans s.isLt k.isLt⟩
+
+/-- The exact dot product over entries strictly preceding Doolittle stage `k`. -/
+noncomputable def p05DoolittlePrefixDot {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j k : Fin n) : ℝ :=
+  ∑ s : Fin k.val, L i (p05PrefixIndex k s) * U (p05PrefixIndex k s) j
+
+/-- The corresponding absolute-value prefix dot product. -/
+noncomputable def p05DoolittlePrefixAbsDot {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j k : Fin n) : ℝ :=
+  ∑ s : Fin k.val,
+    |L i (p05PrefixIndex k s)| * |U (p05PrefixIndex k s) j|
+
+/-- The exact local product through stage `k`, matching the sums in (4.3). -/
+noncomputable def p05DoolittleThroughPivotDot {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j k : Fin n) : ℝ :=
+  p05DoolittlePrefixDot L U i j k + L i k * U k j
+
+/-- The absolute local product through stage `k`, matching the right sides of
+equations (4.3a) and (4.3b). -/
+noncomputable def p05DoolittleThroughPivotAbsDot {m n : ℕ}
+    (L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (j k : Fin n) : ℝ :=
+  p05DoolittlePrefixAbsDot L U i j k + |L i k| * |U k j|
+
+/-- One completed upper-row Doolittle evaluation at stage `k`. The nested
+Lemma 4.1 run computes `U_hat[k,j]` from the protected input `A[k,j]`, the
+already computed prefix products, and unit denominator. -/
+structure P05DoolittleUpperEntry {m n : ℕ}
+    (fmt : P05FiniteRoundToNearestFormat) (hmn : n ≤ m)
+    (A L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (k j : Fin n) where
+  execution : P05Lemma41Run k.val
+  format_eq : execution.format = fmt
+  left_input_eq : ∀ s,
+    execution.a s = L (p05RectRow hmn k) (p05PrefixIndex k s)
+  right_input_eq : ∀ s,
+    execution.b s = U (p05PrefixIndex k s) j
+  denominator_eq : execution.bK = 1
+  protected_input_eq : execution.c = A (p05RectRow hmn k) j
+  computed_output_eq : execution.yHat = U k j
+
+/-- One completed below-diagonal Doolittle evaluation at stage `k`. The nested
+Lemma 4.1 run computes `L_hat[i,k]` after division by the computed pivot
+`U_hat[k,k]`. -/
+structure P05DoolittleLowerEntry {m n : ℕ}
+    (fmt : P05FiniteRoundToNearestFormat)
+    (A L : Fin m → Fin n → ℝ) (U : Fin n → Fin n → ℝ)
+    (i : Fin m) (k : Fin n) where
+  execution : P05Lemma41Run k.val
+  format_eq : execution.format = fmt
+  left_input_eq : ∀ s,
+    execution.a s = L i (p05PrefixIndex k s)
+  right_input_eq : ∀ s,
+    execution.b s = U (p05PrefixIndex k s) k
+  denominator_eq : execution.bK = U k k
+  protected_input_eq : execution.c = A i k
+  computed_output_eq : execution.yHat = L i k
+
+/-- A completed rectangular floating-point Doolittle run used in the proof of
+P05 Theorem 4.2. Every stored upper and lower entry has its own arbitrary-order,
+range-certified Lemma 4.1 execution. Thus completion, round-to-nearest
+arithmetic, and the absence of underflow and overflow are explicit without
+storing a Doolittle-specific local estimate or the final matrix bound. -/
+structure P05DoolittleRun (m n : ℕ) where
+  format : P05FiniteRoundToNearestFormat
+  rows_ge_columns : n ≤ m
+  columns_pos : 0 < n
+  A : Fin m → Fin n → ℝ
+  LHat : Fin m → Fin n → ℝ
+  UHat : Fin n → Fin n → ℝ
+  A_representable : ∀ i j, format.representable (A i j)
+  LHat_representable : ∀ i j, format.representable (LHat i j)
+  UHat_representable : ∀ i j, format.representable (UHat i j)
+  LHat_diag : ∀ k : Fin n, LHat (p05RectRow rows_ge_columns k) k = 1
+  LHat_upper_zero : ∀ i j, i.val < j.val → LHat i j = 0
+  UHat_lower_zero : ∀ i j, j.val < i.val → UHat i j = 0
+  upper_entry : ∀ k j, k.val ≤ j.val →
+    P05DoolittleUpperEntry format rows_ge_columns A LHat UHat k j
+  lower_entry : ∀ i k, k.val < i.val →
+    P05DoolittleLowerEntry format A LHat UHat i k
+
 end HighamBench

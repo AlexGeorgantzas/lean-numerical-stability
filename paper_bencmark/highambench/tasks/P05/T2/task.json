@@ -1,13 +1,15 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, zero-based row adapter, and finite square-matrix formalization",
+    "kind": "source selection, Doolittle execution certificate, rectangular finite-matrix encoding, and zero-based index adapter",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The unit roundoff u is nonnegative.",
-    "The Doolittle local residual estimates (4.3a)-(4.3b) have already been established for the computed square factors.",
-    "The componentwise majorant is |L||U|."
+    "The matrix has dimensions m by n with m>=n and n>0.",
+    "A, LHat, and UHat belong to one finite radix format with round-to-nearest and unit roundoff u.",
+    "Gaussian elimination is represented by a completed Doolittle trace: LHat is unit lower trapezoidal, UHat is upper triangular, and every computed entry is linked to its scalar subtraction or pivot-division execution.",
+    "Every scalar execution records rounded products, an arbitrary permuted binary summation tree, and range checks excluding underflow and overflow.",
+    "The scalar trace carries the inherited generic residual consequences of Theorem 3.1 and Corollary 3.2 used in Lemma 4.1; those fields mention no Doolittle matrix entry or final matrix conclusion."
   ],
   "author_label": "Theorem 4.2",
   "classification_frozen_before_runs": false,
@@ -17,14 +19,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P05/T2/context.md",
   "formal_statement": {
-    "lean_header": "theorem p05_t2_square_lu_backward_error {n : Nat} ... : exists DeltaA, LU=A+DeltaA and |DeltaA_ij| <= i*u*(|L||U|)_ij and |DeltaA_ij| <= (n-1)*u*(|L||U|)_ij",
+    "lean_header": "theorem p05_t2_lu_backward_error {m n : Nat} (run : P05DoolittleRun m n) : the local (4.3a)-(4.3b) bounds and exists DeltaA, LHat*UHat=A+DeltaA, |DeltaA|<=n*u*|LHat||UHat|, with the square rowwise and (n-1)u refinements",
     "namespace": "HighamBench",
-    "plain_language": "The square Doolittle residuals assemble into the exact LU backward error with both the sharp rowwise and uniform (n-1)u bounds.",
+    "plain_language": "Every completed range-safe rectangular Doolittle execution has the two local residual bounds and the full componentwise LU backward-error conclusion of Theorem 4.2, including both square-case sharpenings.",
     "target_file": "paper_bencmark/highambench/tasks/P05/T2/Target.lean",
-    "theorem_name": "p05_t2_square_lu_backward_error"
+    "theorem_name": "p05_t2_lu_backward_error"
   },
-  "informal_proof": "Set DeltaA=LU-A, retain the local rowwise bounds, and use i<=n-1 together with nonnegativity of |L||U| to obtain the uniform estimate.",
-  "informal_statement": "The square-case sharpening of Theorem 4.2 and equation (4.2).",
+  "informal_proof": "Apply the scalar residual consequences of Lemma 4.1 to each certified upper-row and below-diagonal computation to obtain (4.3a) and (4.3b). Triangular support turns each through-pivot sum into the full entry of LHat*UHat. Set DeltaA=LHat*UHat-A. The local stage indices are at most n, giving the rectangular n*u bound; when m=n, each coefficient is at most the zero-based row index and then at most n-1.",
+  "informal_statement": "Theorem 4.2 in full: rectangular LU backward stability, the local Doolittle estimates used in its proof, and the sharper rowwise and uniform square bounds.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -40,30 +42,41 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
-      "NumStability.Finset.sum_abs_mul",
-      "NumStability.matSeqProd_nonneg",
-      "NumStability.matSeqProd_componentwise_perturbation_bound"
+      "NumStability.higham9_2_rectMatMul_eq_prefix_add_upper",
+      "NumStability.higham9_2_rectMatMul_eq_prefix_add_lower",
+      "NumStability.rectMatMul"
     ],
-    "note": "The frozen library has absolute-product and general matrix-product ingredients, but no Gaussian-elimination result with P05's unconditional rowwise coefficients or the sharp square (n-1)u conclusion."
+    "note": "The frozen library supplies the two rectangular triangular-support decompositions used by the L proof, but no Gaussian-elimination execution theorem, local residual estimate, or P05 componentwise backward-error result."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
-    "p05MatMul",
-    "p05AbsMatMul"
+    "P05FiniteRoundToNearestFormat",
+    "P05Lemma41Run",
+    "P05DoolittleUpperEntry",
+    "P05DoolittleLowerEntry",
+    "P05DoolittleRun",
+    "p05RectMatMul",
+    "p05RectAbsMatMul",
+    "p05RectRow",
+    "p05PrefixIndex",
+    "p05DoolittlePrefixDot",
+    "p05DoolittlePrefixAbsDot",
+    "p05DoolittleThroughPivotDot",
+    "p05DoolittleThroughPivotAbsDot"
   ],
   "source_locations": [
     {
       "anchor": "Theorem 4.2 and equation (4.2)",
       "pdf_page": 10,
       "printed_page": "693",
-      "role": "LU backward-error equation and sharp square rowwise/global bounds",
+      "role": "rectangular LU backward-error identity and n*u bound, followed by the sharp square rowwise and uniform bounds",
       "section": "4.2. An improved backward error bound for LU factorization"
     },
     {
-      "anchor": "equations (4.3a)-(4.3b) and the final coefficient comparison",
+      "anchor": "Doolittle formulas, equations (4.3a)-(4.3b), and the final coefficient comparison",
       "pdf_page": 11,
       "printed_page": "694",
-      "role": "local Doolittle residual estimates used by the target",
+      "role": "algorithm linkage, local residual estimates, and derivation of every global coefficient in the target",
       "section": "4.2. An improved backward error bound for LU factorization"
     }
   ],
@@ -73,12 +86,12 @@
   "task_id": "P05-T2",
   "tier": "T2",
   "tier_label": "combine",
-  "tier_rationale": "The target combines P05's local Doolittle residual family, a finite-index perturbation assembly, nonnegativity of the componentwise absolute product, and the exact row-index comparison. The frozen library supplies separate absolute matrix-product ingredients but no declaration states the combined sharp result.",
+  "tier_rationale": "The L proof combines NumStability's upper and lower rectangular triangular-support decompositions with the paper-specific scalar execution residuals, stage-index bounds, exact perturbation assembly, and square row comparison. No frozen declaration states the local or global P05 result.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P05/T2/Target.lean",
     "mode": "shared automatic validator",
     "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
     "reject_statement_changes": true,
-    "required_declaration": "HighamBench.p05_t2_square_lu_backward_error"
+    "required_declaration": "HighamBench.p05_t2_lu_backward_error"
   }
 }
