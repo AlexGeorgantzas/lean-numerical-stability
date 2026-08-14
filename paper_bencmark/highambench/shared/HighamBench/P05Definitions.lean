@@ -239,4 +239,100 @@ structure P05DoolittleRun (m n : ℕ) where
   lower_entry : ∀ i k, k.val < i.val →
     P05DoolittleLowerEntry format A LHat UHat i k
 
+/-- A range-certified execution of P05 Lemma 4.3's rounded square-root
+expression with `m` product terms. The residual field is the generic scalar
+consequence inherited from Corollary 3.2, before any Cholesky entry is
+substituted. -/
+structure P05Lemma43Run (m : ℕ) where
+  format : P05FiniteRoundToNearestFormat
+  a : Fin m → ℝ
+  b : Fin m → ℝ
+  c : ℝ
+  a_representable : ∀ i, format.representable (a i)
+  b_representable : ∀ i, format.representable (b i)
+  c_representable : format.representable c
+  product_safe : ∀ i, format.safeRange (a i * b i)
+  tree : P05SumTree (m + 1)
+  order : Equiv.Perm (Fin (m + 1))
+  tree_safe : p05SumTreeSafe format tree
+    (fun i => p05Lemma41Summands format a b c (order i))
+  numerator : ℝ
+  numerator_eq : numerator = p05SumTreeEval format tree
+    (fun i => p05Lemma41Summands format a b c (order i))
+  numerator_nonneg : 0 ≤ numerator
+  sqrt_safe : format.safeRange (Real.sqrt numerator)
+  yHat : ℝ
+  rounded_sqrt : yHat = format.round (Real.sqrt numerator)
+  yHat_nonneg : 0 ≤ yHat
+  sqrt_residual_bound :
+    |(c - ∑ i : Fin m, a i * b i) - yHat ^ 2| ≤
+      ((m + 2 : ℕ) : ℝ) * format.unitRoundoff *
+        (|yHat ^ 2| + ∑ i : Fin m, |a i * b i|)
+
+/-- Exact prefix Gram entry used by the conventional Cholesky algorithm. -/
+noncomputable def p05CholeskyPrefixDot {n : ℕ}
+    (R : Fin n → Fin n → ℝ) (i j : Fin n) : ℝ :=
+  ∑ k : Fin i.val,
+    R (p05PrefixIndex i k) i * R (p05PrefixIndex i k) j
+
+/-- Absolute-value counterpart of the Cholesky prefix Gram entry. -/
+noncomputable def p05CholeskyPrefixAbsDot {n : ℕ}
+    (R : Fin n → Fin n → ℝ) (i j : Fin n) : ℝ :=
+  ∑ k : Fin i.val,
+    |R (p05PrefixIndex i k) i| * |R (p05PrefixIndex i k) j|
+
+/-- Cholesky's Gram entry through row `i`, including the newly computed term. -/
+noncomputable def p05CholeskyThroughDot {n : ℕ}
+    (R : Fin n → Fin n → ℝ) (i j : Fin n) : ℝ :=
+  p05CholeskyPrefixDot R i j + R i i * R i j
+
+/-- Absolute Cholesky Gram entry through row `i`. -/
+noncomputable def p05CholeskyThroughAbsDot {n : ℕ}
+    (R : Fin n → Fin n → ℝ) (i j : Fin n) : ℝ :=
+  p05CholeskyPrefixAbsDot R i j + |R i i| * |R i j|
+
+/-- One computed off-diagonal entry in a conventional Cholesky column. -/
+structure P05CholeskyOffDiagonalEntry {n : ℕ}
+    (fmt : P05FiniteRoundToNearestFormat)
+    (A R : Fin n → Fin n → ℝ) (i j : Fin n) where
+  execution : P05Lemma41Run i.val
+  format_eq : execution.format = fmt
+  left_input_eq : ∀ k,
+    execution.a k = R (p05PrefixIndex i k) i
+  right_input_eq : ∀ k,
+    execution.b k = R (p05PrefixIndex i k) j
+  denominator_eq : execution.bK = R i i
+  protected_input_eq : execution.c = A i j
+  computed_output_eq : execution.yHat = R i j
+
+/-- One computed diagonal square-root entry in a conventional Cholesky column. -/
+structure P05CholeskyDiagonalEntry {n : ℕ}
+    (fmt : P05FiniteRoundToNearestFormat)
+    (A R : Fin n → Fin n → ℝ) (j : Fin n) where
+  execution : P05Lemma43Run j.val
+  format_eq : execution.format = fmt
+  left_input_eq : ∀ k,
+    execution.a k = R (p05PrefixIndex j k) j
+  right_input_eq : ∀ k,
+    execution.b k = R (p05PrefixIndex j k) j
+  protected_input_eq : execution.c = A j j
+  computed_output_eq : execution.yHat = R j j
+
+/-- A completed conventional floating-point Cholesky execution for P05
+Theorem 4.4. Each column entry is linked to its arbitrary-order, range-certified
+subtraction/division or subtraction/square-root execution. -/
+structure P05CholeskyRun (n : ℕ) where
+  format : P05FiniteRoundToNearestFormat
+  dimension_pos : 0 < n
+  A : Fin n → Fin n → ℝ
+  RHat : Fin n → Fin n → ℝ
+  A_representable : ∀ i j, format.representable (A i j)
+  RHat_representable : ∀ i j, format.representable (RHat i j)
+  A_symmetric : ∀ i j, A i j = A j i
+  RHat_lower_zero : ∀ i j, j.val < i.val → RHat i j = 0
+  off_diagonal_entry : ∀ i j, i.val < j.val →
+    P05CholeskyOffDiagonalEntry format A RHat i j
+  diagonal_entry : ∀ j,
+    P05CholeskyDiagonalEntry format A RHat j
+
 end HighamBench

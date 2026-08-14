@@ -78,7 +78,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 4.4's symmetry bridge from local upper-triangle Cholesky estimates to the full diag((i+1)u) and (n+1)u bounds.",
+      "decision": "Use all of Theorem 4.4: the conventional Cholesky execution, local estimates (4.5), exact backward relation, and full diag((i+1)u) and (n+1)u bounds.",
       "task_id": "P05-T3",
       "theorem_name": "p05_t3_cholesky_backward_error"
     }

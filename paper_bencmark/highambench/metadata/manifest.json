@@ -71,8 +71,8 @@
         "P05"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P05Definitions.lean",
-      "role": "P05-only floating-point execution models, Doolittle certificates, backward-error sources, and finite matrix notation",
-      "sha256": "7f92d15637435e3aba844ddaf0a2440869de24ecec3e29a5d3d2671a7f3b6e3f",
+      "role": "P05-only floating-point execution models, Doolittle and Cholesky certificates, backward-error sources, and finite matrix notation",
+      "sha256": "1a399e16e2453fdb7b05d46e0f4e348e6c74ccf10944ed28b411722811f7875a",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -1162,17 +1162,17 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.matTranspose_matMul",
-            "NumStability.matTranspose_involutive",
-            "NumStability.matSeqProd_componentwise_perturbation_bound"
+            "NumStability.rectMatMul_transpose_self_symmetric",
+            "NumStability.rectMatMul",
+            "NumStability.finiteTranspose"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs are kept under paper_bencmark/scratch_pad/private_gold/P05/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Show that R^T R and |R^T||R| are symmetric. Use the upper-triangle estimate directly when i<=j and its transposed copy otherwise, loosen the smaller row factor, then use i+1<=n+1.",
-          "informal_statement_paraphrase": "The symmetry completion and two componentwise estimates in Theorem 4.4 and equation (4.4).",
+          "informal_proof_paraphrase": "Apply Lemma 4.1's scalar residual consequence to every off-diagonal division and Lemma 4.3's consequence to every diagonal square root, recover full Gram entries by triangular support, extend by symmetry, and compare each row coefficient with n+1.",
+          "informal_statement_paraphrase": "Theorem 4.4 in full: conventional Cholesky execution, local estimates (4.5), exact backward relation, and both componentwise bounds in (4.4).",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "c7f9b7ce7d229dbc4ad8209d2a2f863c20aab142c8417b57ca3c4c7392b1a760",
+            "controlled_file_sha256": "aa6e36344de4982006edfc069bd22907e1349339b4ed3e19b5e240693a262f38",
             "declaration": "p05_t3_cholesky_backward_error",
             "file": "paper_bencmark/highambench/tasks/P05/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -1180,29 +1180,29 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P05Definitions.lean"
             ],
-            "statement_summary": "The upper-triangle Cholesky residual estimates extend by symmetry to the full displayed rowwise bound and its uniform (n+1)u consequence."
+            "statement_summary": "A completed range-safe conventional Cholesky execution satisfies both distinct local residual estimates, the exact backward relation, and the full rowwise and uniform componentwise bounds."
           },
           "source_locations": [
             {
               "anchor": "Theorem 4.4 statement",
               "journal_page": "694",
               "pdf_page": 11,
-              "role": "Cholesky backward-error theorem setup",
+              "role": "symmetric floating input, successful Cholesky execution, range assumptions, and computed factor",
               "section": "4.3. An improved backward error bound for Cholesky factorization"
             },
             {
-              "anchor": "equation (4.4), equations (4.5a)-(4.5b), and the closing symmetry sentence",
+              "anchor": "equation (4.4), conventional update formulas, equations (4.5a)-(4.5b), and the closing symmetry sentence",
               "journal_page": "695",
               "pdf_page": 12,
-              "role": "full componentwise bounds and their symmetry proof",
+              "role": "exact backward relation, all componentwise constants, local execution estimates, and symmetry completion",
               "section": "4.3. An improved backward error bound for Cholesky factorization"
             }
           ],
           "task_id": "P05-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "The frozen library supplies transpose-of-product algebra only. The target still requires a new paper-specific bridge from Cholesky's upper-triangle local estimates to a full symmetric perturbation with the exact rowwise and global coefficients.",
-          "title": "Symmetric Cholesky backward-error completion"
+          "tier_reason": "NumStability directly proves symmetry of a generic transpose-self Gram product. The L proof extends that declaration with P05-specific rounded division and square-root traces, two distinct local residual families, triangular truncation, exact perturbation assembly, row-dependent coefficient transport, and the uniform comparison.",
+          "title": "Conventional Cholesky backward-error theorem"
         }
       ],
       "topic": "unconditional backward error bounds for LU and Cholesky factorizations"
