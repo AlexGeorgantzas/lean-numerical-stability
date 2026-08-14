@@ -3,262 +3,486 @@
   "role": "direct-judge",
   "task_id": "P04-T1",
   "paper_sha256": "7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862",
-  "dossier_sha256": "b86392f54544415bf8073873faa53f4baa70a6737c64eb414aa667507b29af05",
+  "dossier_sha256": "e86eb6dd51eaec87d3ea99722efbd73014248d1795ffa568ec03d162cc7c0969",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.GammaValid",
-      "interpretation": "GammaValid u k means that the real product k*u is strictly less than 1.",
-      "effect_on_target": "At k=q+n, hvalid makes the denominator of gamma u (q+n) positive and, together with u>=0, also makes the q and n denominators positive.",
-      "paper_match": "The paper assumes k*v<1 for each relevant gamma index and its own precision. It does not impose (q+n)*u<1 for one shared precision; this is an extra restriction on a different coefficient.",
+      "name": "HighamBench.P04BlockFmaDotRun",
+      "interpretation": "An indexed certificate type whose constructor packages dimensions, operands, precisions, a claimed computed value, perturbation witnesses, their factorization, and their bounds.",
+      "effect_on_target": "The theorem ranges only over already certified records, so the source factorization and perturbation bounds are effectively hypotheses of the target.",
+      "paper_match": "This is not the paper's block-FMA execution or recurrence. It omits the arithmetic process and assumes central conclusions needed to certify a record.",
       "status": "fail"
     },
     {
       "id": "D002",
-      "name": "HighamBench.gamma",
-      "interpretation": "gamma u k is (k*u)/(1-k*u), with k cast from Nat to Real.",
-      "effect_on_target": "The target uses gamma at q, n, and q+n, all with the same u.",
-      "paper_match": "The formula matches the paper's gamma convention, but the paper uses gamma_q at tilde_u_FMA and gamma_n at bar_u and retains their sum and product. It has no gamma_(q+n) replacement in (3.4).",
+      "name": "HighamBench.P04BlockFmaDotRun.computed",
+      "interpretation": "The seventh stored Real field of a run certificate.",
+      "effect_on_target": "It is used as the purported rounded result in the factorization and forward-error inequalities.",
+      "paper_match": "The paper's computed value is produced by recurrence (3.1) under the rounding model. This field is not linked to that recurrence; only a supplied factorization constrains it.",
       "status": "fail"
     },
     {
       "id": "D003",
-      "name": "HAdd.hAdd",
-      "interpretation": "HAdd.hAdd selects the heterogeneous-addition operation supplied by its typeclass instance.",
-      "effect_on_target": "It resolves to Nat addition in q+n and to Real addition in alpha+beta+alpha*beta.",
-      "paper_match": "These are ordinary additions. The operators themselves agree with the paper, although the target's q+n index is not the paper's coefficient.",
-      "status": "pass"
+      "name": "HighamBench.P04BlockFmaDotRun.rightToLeft",
+      "interpretation": "The twenty-second stored field, an arbitrary proposition supplied when constructing the certificate.",
+      "effect_on_target": "When it holds, the target asserts the sharper beta and forward-error bounds.",
+      "paper_match": "The paper means a particular right-to-left evaluation of every recurrence right-hand side. The field contains no such execution-order semantics.",
+      "status": "fail"
     },
     {
       "id": "D004",
-      "name": "HMul.hMul",
-      "interpretation": "HMul.hMul selects the heterogeneous-multiplication operation supplied by its typeclass instance.",
-      "effect_on_target": "It resolves to Real multiplication in alpha*beta and in the bodies of GammaValid and gamma.",
-      "paper_match": "Ordinary real multiplication matches the products in the paper's mixed term and gamma definition.",
+      "name": "HighamBench.P04BlockFmaDotRun.uBar",
+      "interpretation": "A stored real parameter constrained by the constructor to be nonnegative and no greater than uFma.",
+      "effect_on_target": "It supplies the internal unit roundoff to gamma, the coefficient, and the effective-roundoff definition.",
+      "paper_match": "As a real unit-roundoff parameter with uBar less than or equal to uFma, it matches the paper's internal precision parameter, although the run does not connect it to operations.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "LE.le",
-      "interpretation": "LE.le selects the non-strict order relation supplied for the type.",
-      "effect_on_target": "It gives every displayed <= in the hypotheses and conclusion the standard Real-order meaning.",
-      "paper_match": "The paper's perturbation and forward-error bounds are also non-strict inequalities.",
+      "name": "HighamBench.P04BlockFmaDotRun.uFma",
+      "interpretation": "A stored nonnegative real representing the block-FMA output unit roundoff.",
+      "effect_on_target": "It determines branches of the effective outer-rounding parameter and the exact-output specialization.",
+      "paper_match": "Its mathematical role matches u_FMA in sections 2.1 and 3.2.",
       "status": "pass"
     },
     {
       "id": "D006",
-      "name": "Nat",
-      "interpretation": "Nat is the natural-number type and includes zero.",
-      "effect_on_target": "The indices q and n range independently over all natural numbers, including zero.",
-      "paper_match": "The paper uses positive matrix/block dimensions with q=n/b. Allowing zero and omitting b and divisibility are binder-level mismatches.",
-      "status": "fail"
+      "name": "HighamBench.P04BlockFmaDotRun.uOut",
+      "interpretation": "A stored nonnegative real representing the requested final output unit roundoff.",
+      "effect_on_target": "It receives priority in the effective-roundoff definition when it is greater than uFma.",
+      "paper_match": "Its role matches the final output precision u in Algorithm 3.1 and equation (3.3).",
+      "status": "pass"
     },
     {
       "id": "D007",
-      "name": "OfNat.ofNat",
-      "interpretation": "OfNat.ofNat interprets a natural-number literal in the requested type.",
-      "effect_on_target": "It supplies the literal 0 as a Real in the hypothesis 0<=u.",
-      "paper_match": "This is the ordinary real zero used in the paper's nonnegative unit-roundoff setting and zero-precision idealization.",
+      "name": "HighamBench.P04BlockFmaDotRun.x",
+      "interpretation": "The fifth stored field, a real-valued function on Fin n.",
+      "effect_on_target": "It supplies the first length-n operand to the exact dot product, absolute dot product, and perturbation factorization.",
+      "paper_match": "Up to the standard zero-based reindexing of Fin n, this matches the selected row x.",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "Real",
-      "interpretation": "Real is mathlib's type of real numbers.",
-      "effect_on_target": "The unit roundoff u and perturbations alpha and beta are exact real scalars.",
-      "paper_match": "The paper models these scalar parameters and error factors as real quantities.",
+      "name": "HighamBench.P04BlockFmaDotRun.y",
+      "interpretation": "The sixth stored field, a real-valued function on Fin n.",
+      "effect_on_target": "It supplies the second length-n operand to the exact dot product, absolute dot product, and perturbation factorization.",
+      "paper_match": "Up to zero-based reindexing, this matches the selected column y.",
       "status": "pass"
     },
     {
       "id": "D009",
-      "name": "Real.instAdd",
-      "interpretation": "Real.instAdd supplies ordinary real addition.",
-      "effect_on_target": "It evaluates alpha+beta and the subsequent addition of alpha*beta.",
-      "paper_match": "This is the exact expansion of the scalar relative factor (1+alpha)(1+beta)-1 used in deriving (3.4).",
+      "name": "HighamBench.gamma",
+      "interpretation": "gamma u k is the real quotient k*u divided by 1-k*u.",
+      "effect_on_target": "It defines all perturbation bounds and the three terms of the forward-error coefficient.",
+      "paper_match": "This is exactly the paper's gamma_k(u), with GammaValid supplying k*u<1.",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "Real.instAddGroup",
-      "interpretation": "Real.instAddGroup supplies the additive-group structure on Real, including negation.",
-      "effect_on_target": "It is used by abs to form max(a,-a).",
-      "paper_match": "This yields the standard scalar absolute value appearing in the paper.",
+      "name": "HighamBench.p04AbsDot",
+      "interpretation": "The finite sum over all i in Fin n of abs(x i)*abs(y i).",
+      "effect_on_target": "It is the data-dependent scale multiplying both forward-error coefficients.",
+      "paper_match": "It exactly represents the componentwise quantity |x|^T|y|, not a norm or |x^T y|.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "Real.instLE",
-      "interpretation": "Real.instLE supplies the usual non-strict order on Real.",
-      "effect_on_target": "All target bounds are interpreted in the ordinary real order.",
-      "paper_match": "This agrees with the order used for the paper's absolute-value bounds.",
+      "name": "HighamBench.p04BlockFmaCoeff",
+      "interpretation": "The coefficient gamma(uFma,q)+gamma(u,n)+gamma(uFma,q)*gamma(u,n).",
+      "effect_on_target": "Applied to the effective outer roundoff and uBar, it gives the generic and right-to-left forward-error constants.",
+      "paper_match": "It retains exactly the three terms in equation (3.4), including their product.",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "Real.instMul",
-      "interpretation": "Real.instMul supplies ordinary real multiplication.",
-      "effect_on_target": "It interprets alpha*beta and the products in gamma and GammaValid.",
-      "paper_match": "The multiplication semantics agree with the paper's exact mixed product and gamma formula.",
+      "name": "HighamBench.p04Dot",
+      "interpretation": "The exact finite real sum over Fin n of x i*y i.",
+      "effect_on_target": "It is the exact value compared with run.computed.",
+      "paper_match": "It matches s_n=x^T y after zero-based reindexing.",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "Real.instZero",
-      "interpretation": "Real.instZero supplies the additive identity 0 in Real.",
-      "effect_on_target": "It interprets the lower bound 0<=u.",
-      "paper_match": "The value is the same real zero used in the paper's precision cases.",
+      "name": "HighamBench.p04EffectiveFmaRoundoff",
+      "interpretation": "It returns uOut if uFma<uOut; otherwise it returns zero if uFma<=uBar, and uFma otherwise.",
+      "effect_on_target": "It controls the alpha bound and the outer-rounding part of every coefficient.",
+      "paper_match": "This is the prioritized three-case definition in equation (3.3): uOut first, then zero when uBar is at least uFma, otherwise uFma.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "Real.lattice",
-      "interpretation": "Real.lattice supplies max and min under the usual real order.",
-      "effect_on_target": "It supports the definition abs a=max(a,-a).",
-      "paper_match": "The induced magnitude is the paper's ordinary scalar absolute value.",
-      "status": "pass"
+      "name": "HighamBench.P04BlockFmaDotRun.mk",
+      "interpretation": "The sole constructor requires positive n,b,q, n=q*b, nonnegative ordered roundoffs, gamma validity, and supplied alpha and beta satisfying the factorization and generic bounds; it also takes an arbitrary rightToLeft proposition and assumes its sharper beta bound.",
+      "effect_on_target": "It makes the theorem's existential witnesses and most conclusions available before the theorem is invoked.",
+      "paper_match": "Although its dimension and gamma side conditions match the paper, it omits recurrence (3.1), local model (3.2), operation-level rounding, exceptional-value assumptions, and evaluation order. Assuming the factorization and bounds is circular relative to the paper result.",
+      "status": "fail"
     },
     {
       "id": "D015",
-      "name": "Zero.toOfNat0",
-      "interpretation": "Zero.toOfNat0 turns a Zero instance into the OfNat instance for the literal 0.",
-      "effect_on_target": "It routes the target's numeral 0 to Real.instZero.",
-      "paper_match": "This is typeclass plumbing only and does not alter the mathematical zero.",
+      "name": "HighamBench.GammaValid",
+      "interpretation": "GammaValid u k is the strict inequality k*u<1 after casting k to Real.",
+      "effect_on_target": "Constructor fields ensure nonzero positive gamma denominators for every coefficient used, including the conditional right-to-left coefficient.",
+      "paper_match": "It exactly matches the paper's standing validity condition for gamma constants.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "abs",
-      "interpretation": "abs a is max(a,-a), hence standard absolute value on Real.",
-      "effect_on_target": "It measures alpha, beta, and alpha+beta+alpha*beta.",
-      "paper_match": "The paper uses the same scalar magnitude for alpha_i, beta_i, and the dot-product error, though the target omits the latter quantity.",
+      "name": "And",
+      "interpretation": "Ordinary logical conjunction.",
+      "effect_on_target": "It requires all factorization, bound, error, and conditional-specialization clauses simultaneously.",
+      "paper_match": "Conjunction faithfully combines the corresponding source conclusions.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "instAddNat",
-      "interpretation": "instAddNat supplies ordinary natural-number addition.",
-      "effect_on_target": "It forms the index q+n.",
-      "paper_match": "The addition is standard, but q+n is a target-created gamma index rather than an index in the paper's displayed result.",
+      "name": "Eq",
+      "interpretation": "Propositional equality at the indicated type.",
+      "effect_on_target": "It states the exact perturbation factorization and the alpha=0 specialization.",
+      "paper_match": "These uses have the source's intended exact equality semantics.",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "instHAdd",
-      "interpretation": "instHAdd lifts a homogeneous Add operation to HAdd.",
-      "effect_on_target": "It connects Nat addition and Real addition to HAdd.hAdd in the elaborated type.",
-      "paper_match": "This adapter preserves the underlying ordinary additions and introduces no semantic change.",
+      "name": "Exists",
+      "interpretation": "Ordinary existential quantification.",
+      "effect_on_target": "It presents alpha and beta as witnesses after run is bound.",
+      "paper_match": "Existential witnesses are appropriate for the paper's compact factorization, but the run constructor has already stored equivalent witnesses.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "instHMul",
-      "interpretation": "instHMul lifts a homogeneous Mul operation to HMul.",
-      "effect_on_target": "It connects Real multiplication to HMul.hMul.",
-      "paper_match": "This adapter preserves ordinary real multiplication and introduces no semantic change.",
+      "name": "Fin",
+      "interpretation": "Fin n is the finite index type with values 0 through n-1.",
+      "effect_on_target": "It indexes operands and perturbations.",
+      "paper_match": "It is a faithful reindexing of the paper's indices 1 through n.",
       "status": "pass"
     },
     {
       "id": "D020",
-      "name": "DivInvMonoid.toDiv",
-      "interpretation": "DivInvMonoid.toDiv extracts the division operation from a division/inverse monoid.",
-      "effect_on_target": "It supplies Real division in the body of gamma.",
-      "paper_match": "The target's validity hypotheses keep the used denominators positive, so this realizes the paper's ordinary fraction k*u/(1-k*u).",
+      "name": "Fin.fintype",
+      "interpretation": "The canonical finite enumeration of Fin n.",
+      "effect_on_target": "It permits summation over every operand index.",
+      "paper_match": "It introduces no semantic change to the finite source sums.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "HDiv.hDiv",
-      "interpretation": "HDiv.hDiv selects the heterogeneous-division operation supplied by its instance.",
-      "effect_on_target": "It divides k*u by 1-k*u in gamma.",
-      "paper_match": "With Real division this exactly implements the paper's gamma quotient.",
+      "name": "Finset.sum",
+      "interpretation": "Exact commutative-monoid summation of a function over a finite set.",
+      "effect_on_target": "It forms the exact dot products and perturbation factorization in Real.",
+      "paper_match": "It matches the mathematical finite sums in the compact representation and |x|^T|y|.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "HSub.hSub",
-      "interpretation": "HSub.hSub selects the heterogeneous-subtraction operation supplied by its instance.",
-      "effect_on_target": "It forms 1-k*u in gamma.",
-      "paper_match": "This is the denominator in the paper's gamma definition.",
+      "name": "Finset.univ",
+      "interpretation": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It makes each sum range over all indices in Fin n.",
+      "paper_match": "It corresponds to summing all n product terms.",
       "status": "pass"
     },
     {
       "id": "D023",
-      "name": "LT.lt",
-      "interpretation": "LT.lt selects the strict-order relation supplied for the type.",
-      "effect_on_target": "It interprets GammaValid as k*u<1 over Real.",
-      "paper_match": "The paper states the same strict positivity condition for relevant gamma denominators.",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-dispatched addition, instantiated here as ordinary Real or Nat addition.",
+      "effect_on_target": "It forms 1+alpha, 1+beta, coefficient sums, and q+b.",
+      "paper_match": "All uses resolve to the intended standard additions.",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "Nat.cast",
-      "interpretation": "Nat.cast maps a natural number to the corresponding value in a type with NatCast.",
-      "effect_on_target": "It converts q, n, and q+n to Real before multiplication by u.",
-      "paper_match": "This is the standard interpretation of integer gamma indices in the paper.",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched multiplication, instantiated here as ordinary Real or Nat multiplication.",
+      "effect_on_target": "It forms products, coefficient cross terms, error scales, and q*b.",
+      "paper_match": "All uses resolve to the intended standard multiplications.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "One.toOfNat1",
-      "interpretation": "One.toOfNat1 turns a One instance into the OfNat instance for the literal 1.",
-      "effect_on_target": "It supplies the real numeral 1 in GammaValid and gamma.",
-      "paper_match": "This is the same unit used in 1-k*u in the paper.",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-dispatched subtraction, instantiated as Real subtraction in errors and Nat subtraction in q+b-1.",
+      "effect_on_target": "It forms exact-minus-computed and the right-to-left index offset.",
+      "paper_match": "Real subtraction matches the source error. Positive q and b ensure Nat q+b-1 has the intended ordinary value rather than an unintended truncated value.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "Real.instDivInvMonoid",
-      "interpretation": "Real.instDivInvMonoid supplies real multiplication, inverse, and division.",
-      "effect_on_target": "It provides the division used by gamma.",
-      "paper_match": "Under GammaValid the relevant denominators are nonzero and positive, so its field division matches the paper's fraction.",
+      "name": "LE.le",
+      "interpretation": "The non-strict order relation supplied by the relevant type instance.",
+      "effect_on_target": "It states all perturbation and forward-error bounds and precision-order conditions.",
+      "paper_match": "For Real it is the intended less-than-or-equal relation used by the paper.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "Real.instLT",
-      "interpretation": "Real.instLT supplies the usual strict order on Real.",
-      "effect_on_target": "It gives hvalid the meaning (q+n)*u<1.",
-      "paper_match": "The order itself matches the paper; the mismatching q+n index is recorded under D001.",
+      "name": "Nat",
+      "interpretation": "The natural-number type including zero.",
+      "effect_on_target": "It types n,b,q and all gamma indices.",
+      "paper_match": "Algorithmic dimensions are naturally numbered; constructor positivity excludes zero dimensions.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "Real.instNatCast",
-      "interpretation": "Real.instNatCast supplies the canonical embedding of Nat into Real.",
-      "effect_on_target": "It interprets natural indices as nonnegative real coefficients in k*u.",
-      "paper_match": "This agrees with the paper's use of integer k in gamma_k.",
+      "name": "OfNat.ofNat",
+      "interpretation": "Typeclass interpretation of numeric literals.",
+      "effect_on_target": "It supplies the literal zero and one values appearing in dimensions and real formulas.",
+      "paper_match": "The instances resolve to the ordinary source constants.",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "Real.instOne",
-      "interpretation": "Real.instOne supplies the multiplicative identity 1 in Real.",
-      "effect_on_target": "It interprets the numerator-independent constant in 1-k*u and the validity bound.",
-      "paper_match": "This is the same real one in the paper's gamma formula.",
+      "name": "One.toOfNat1",
+      "interpretation": "It interprets literal 1 using the type's One instance.",
+      "effect_on_target": "It supplies the real one in each perturbation factor and denominator.",
+      "paper_match": "It has the intended ordinary value one.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "Real.instSub",
-      "interpretation": "Real.instSub supplies ordinary real subtraction a-b=a+(-b).",
-      "effect_on_target": "It forms the denominator 1-k*u.",
-      "paper_match": "This exactly matches the subtraction in the paper's gamma definition.",
+      "name": "Real",
+      "interpretation": "Mathlib's exact real-number type.",
+      "effect_on_target": "It types operands, perturbations, roundoffs, exact sums, and claimed computed values.",
+      "paper_match": "The scalar analysis is stated over real operands and real error parameters.",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "instHDiv",
-      "interpretation": "instHDiv lifts homogeneous division to HDiv.",
-      "effect_on_target": "It connects Real division to HDiv.hDiv in gamma.",
-      "paper_match": "The adapter preserves real division and introduces no additional paper-level semantics.",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary real addition.",
+      "effect_on_target": "It implements additive expressions in factors and coefficients.",
+      "paper_match": "It matches exact real addition in the source formulas.",
       "status": "pass"
     },
     {
       "id": "D032",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative-monoid structure on Real.",
+      "effect_on_target": "It provides the algebra used by Finset.sum.",
+      "paper_match": "It gives the intended order-independent exact mathematical sum.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "Real.instAddGroup",
+      "interpretation": "The additive-group structure on Real.",
+      "effect_on_target": "It supports negation and the generic absolute-value definition.",
+      "paper_match": "It introduces standard real algebra only.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "Real.instLE",
+      "interpretation": "The ordinary real less-than-or-equal relation.",
+      "effect_on_target": "It interprets every real inequality.",
+      "paper_match": "Its direction and non-strictness match the paper's bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary real multiplication.",
+      "effect_on_target": "It implements products in dots, perturbation factors, gamma, and coefficients.",
+      "paper_match": "It matches exact real multiplication in the mathematical statement.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "Real.instOne",
+      "interpretation": "The multiplicative identity of Real.",
+      "effect_on_target": "It supplies the one in 1+alpha, 1+beta, and gamma denominators.",
+      "paper_match": "It has the intended source meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction defined by addition of the negation.",
+      "effect_on_target": "It computes exact dot minus claimed computed value and 1-k*u.",
+      "paper_match": "It matches the paper's real subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "Real.instZero",
+      "interpretation": "The additive identity of Real.",
+      "effect_on_target": "It supplies exact-zero roundoff and the alpha=0 conclusion.",
+      "paper_match": "Zero is the intended exact-arithmetic parameter and witness value.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "Real.lattice",
+      "interpretation": "The lattice order structure on Real.",
+      "effect_on_target": "It supports defining absolute value as max(a,-a).",
+      "paper_match": "It yields the ordinary scalar absolute value used in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "Zero.toOfNat0",
+      "interpretation": "It interprets literal 0 using the type's Zero instance.",
+      "effect_on_target": "It supplies natural and real zero literals.",
+      "paper_match": "It has the intended ordinary value zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "abs",
+      "interpretation": "For Real, abs(a) is max(a,-a).",
+      "effect_on_target": "It measures perturbation magnitudes, scalar forward error, and component magnitudes.",
+      "paper_match": "It is exactly the scalar absolute value used in equations (3.2)-(3.4).",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "instAddNat",
+      "interpretation": "Ordinary natural-number addition.",
+      "effect_on_target": "It forms q+b before subtracting one.",
+      "paper_match": "It matches the right-to-left offset q+b-1.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "instHAdd",
+      "interpretation": "It lifts a homogeneous Add instance to HAdd.",
+      "effect_on_target": "It routes overloaded addition to ordinary Real or Nat addition.",
+      "paper_match": "It is elaboration machinery with no change in mathematical meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "instHMul",
+      "interpretation": "It lifts a homogeneous Mul instance to HMul.",
+      "effect_on_target": "It routes overloaded multiplication to ordinary Real or Nat multiplication.",
+      "paper_match": "It is elaboration machinery with no change in mathematical meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
       "name": "instHSub",
-      "interpretation": "instHSub lifts homogeneous subtraction to HSub.",
-      "effect_on_target": "It connects Real subtraction to HSub.hSub in gamma.",
-      "paper_match": "The adapter preserves the denominator 1-k*u exactly.",
+      "interpretation": "It lifts a homogeneous Sub instance to HSub.",
+      "effect_on_target": "It routes overloaded subtraction to Real subtraction or Nat truncated subtraction.",
+      "paper_match": "Together with dimension positivity, it gives the intended source subtractions.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "instOfNatNat",
+      "interpretation": "The canonical interpretation of a natural literal as itself.",
+      "effect_on_target": "It supplies 0 and 1 in natural dimension expressions.",
+      "paper_match": "It introduces no semantic discrepancy.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "instSubNat",
+      "interpretation": "Natural-number subtraction truncated at zero.",
+      "effect_on_target": "It interprets q+b-1 in the sharper gamma index.",
+      "paper_match": "Because q>0 and b>0 are constructor requirements, q+b is at least two and truncation does not alter the paper's offset.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "The division operation supplied by a division-inverse monoid.",
+      "effect_on_target": "It supplies Real division to gamma.",
+      "paper_match": "Under GammaValid, it computes the intended nonzero-denominator quotient.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-dispatched heterogeneous division, instantiated homogeneously on Real.",
+      "effect_on_target": "It forms the gamma quotient.",
+      "paper_match": "It resolves to ordinary real division.",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "LT.lt",
+      "interpretation": "The strict order relation supplied by the relevant type instance.",
+      "effect_on_target": "It expresses positive dimensions, gamma validity, and the first effective-roundoff branch.",
+      "paper_match": "Its strictness matches positivity, k*u<1, and uOut>uFma.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "Nat.cast",
+      "interpretation": "The canonical cast of a natural number into a type with NatCast, here Real.",
+      "effect_on_target": "It turns gamma indices into real factors.",
+      "paper_match": "It represents the integer multiplier k in k*u exactly.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "Real.decidableLE",
+      "interpretation": "A decision procedure for real less-than-or-equal propositions.",
+      "effect_on_target": "It selects the second branch of the effective-roundoff conditional without changing the proposition tested.",
+      "paper_match": "It is computational support for the exact paper comparison and adds no mathematical condition.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "Real.decidableLT",
+      "interpretation": "A decision procedure for real strict-order propositions.",
+      "effect_on_target": "It selects the priority branch of the effective-roundoff conditional.",
+      "paper_match": "It is computational support for the exact comparison uFma<uOut.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The standard multiplicative, inverse, and division structure on Real.",
+      "effect_on_target": "It provides the division operation used in gamma.",
+      "paper_match": "With GammaValid excluding a zero denominator, it gives the source quotient exactly.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "Real.instLT",
+      "interpretation": "The ordinary strict order on Real.",
+      "effect_on_target": "It interprets gamma validity and the priority effective-roundoff comparison.",
+      "paper_match": "It matches the paper's strict inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "Real.instNatCast",
+      "interpretation": "The canonical embedding of Nat into Real.",
+      "effect_on_target": "It interprets q, n, and q+b-1 in gamma formulas.",
+      "paper_match": "It preserves the integer indices exactly.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "instHDiv",
+      "interpretation": "It lifts a homogeneous Div instance to HDiv.",
+      "effect_on_target": "It routes gamma's overloaded division to Real division.",
+      "paper_match": "It is elaboration machinery with no semantic change.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "ite",
+      "interpretation": "A proposition-controlled if-then-else that selects its first value when the condition is true.",
+      "effect_on_target": "Nested uses implement the priority order in the effective-roundoff definition.",
+      "paper_match": "The nesting gives the paper's first branch priority over the overlapping uBar comparison.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "instLTNat",
+      "interpretation": "The ordinary strict order on natural numbers.",
+      "effect_on_target": "It interprets constructor requirements 0<n, 0<b, and 0<q.",
+      "paper_match": "It makes the algorithmic dimensions and block count positive as intended.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "instMulNat",
+      "interpretation": "Ordinary natural-number multiplication.",
+      "effect_on_target": "It interprets the constructor equation n=q*b.",
+      "paper_match": "It exactly expresses q=n/b with q complete blocks of width b.",
       "status": "pass"
     }
   ],
@@ -266,158 +490,165 @@
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The published 2020 SIAM paper, PDF p. 6 (printed C129), Section 3.2, contains the factorization immediately before (3.4), equation (3.4), and the evaluation-order paragraph; C127-C128 supply the gamma model and Algorithm 3.1 context.",
-      "lean_evidence": "The supplied target is p04_t1_chained_rounding_factor with the exact, elaborated, and fully explicit types shown in the dossier.",
-      "reasoning": "The cited version and passage are the correct source for P04-T1."
+      "paper_evidence": "The inspected PDF has the authorized SHA-256 and is the 2020 SIAM journal version. Printed pages C126-C129 contain the componentwise convention, model, Algorithm 3.1, and equations (3.1)-(3.4).",
+      "lean_evidence": "The target consistently refers to the scalar block-FMA factorization, effective roundoff, and equation (3.4) coefficient.",
+      "reasoning": "The selected source and cited surrounding passage are correct."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "C128-C129 use matrix dimensions, positive block size b, q=n/b, vectors x and y of length n, block partial sums, and indices i=1,...,q.",
-      "lean_evidence": "Lean binds only u:Real, q n:Nat, and alpha beta:Real; q and n may be zero and independent, and b, x, y, dimensions, and partial sums are absent.",
-      "reasoning": "The target's binders do not encode the paper's dimensions or index relationships."
+      "paper_evidence": "C128-C129 use positive block dimensions, q=n/b, a row x and column y of length n, and a computed recurrence output.",
+      "lean_evidence": "Fin n, positivity, and n=q*b are represented, but the main binder is a P04BlockFmaDotRun certificate whose computed and rightToLeft fields are not an execution or evaluation order.",
+      "reasoning": "The scalar and dimension types are suitable, but the run binder does not have the intended algorithm-run meaning."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "The C129 factorization supplies term-dependent alpha_i and beta_i arising from the rounding history, with one pair for every i=1,...,n.",
-      "lean_evidence": "Lean universally quantifies arbitrary scalar alpha and beta before assuming their bounds; there is no index i and no existential family tied to x, y, or a computation.",
-      "reasoning": "Universal arbitrary perturbations form a useful algebraic lemma but do not preserve the paper's witness dependence or quantifier scope."
+      "paper_evidence": "After operands, precisions, recurrence, and computed output are fixed, C129 derives the existence of alpha_i and beta_i.",
+      "lean_evidence": "P04BlockFmaDotRun.mk requires alpha, beta, their factorization, and their bounds before a run can be constructed; the target then existentially returns witnesses from that certificate.",
+      "reasoning": "The apparent forall-run then exists-witness order hides prior Skolemization of the source witnesses into the input."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The paper assumes q=n/b, relevant k*v<1 at the accented precisions, the priority cases in (3.3), the block-FMA execution model, and no underflow or overflow.",
-      "lean_evidence": "Lean assumes only u>=0, (q+n)*u<1, and two scalar magnitude bounds.",
-      "reasoning": "It omits the structural and floating-point hypotheses and adds a non-paper q+n validity restriction at one shared precision."
+      "paper_evidence": "C127-C129 require the relative-error model, valid gamma denominators, the block recurrence, the stated precision behavior, no underflow or overflow, and the single-rounding simplification.",
+      "lean_evidence": "The constructor includes positivity, n=q*b, roundoff nonnegativity and ordering, and gamma validity, but no recurrence, operation-level model, exceptional-value exclusion, or double-rounding convention. It instead assumes the factorization and bounds.",
+      "reasoning": "Several essential source hypotheses are absent and are replaced by assumptions equivalent to central conclusions."
     },
     {
       "id": "S05",
       "status": "fail",
-      "paper_evidence": "C129 concludes the full factorization, separate alpha_i and beta_i bounds, forward bound (3.4), the q+b-1 right-to-left refinement, and validity for all orders; substitution also gives the zero-alpha same-precision reduction.",
-      "lean_evidence": "Lean concludes only |alpha+beta+alpha*beta|<=gamma u (q+n).",
-      "reasoning": "None of the computed-dot-product conclusions, evaluation-order conclusions, or the paper's actual specialization is stated."
+      "paper_evidence": "C129 gives local perturbation equation (3.2), the compact alpha-beta factorization, equation (3.4), the right-to-left sharpening, and validity of the original bound for all evaluation orders.",
+      "lean_evidence": "The target includes the compact factorization, witness bounds, generic inequality, and a right-to-left conditional, but has no local theta formula and no formal all-evaluation-orders assertion.",
+      "reasoning": "The displayed algebraic conclusion is substantially represented, but the complete cited result is not."
     },
     {
       "id": "S06",
-      "status": "pass",
-      "paper_evidence": "C127 defines gamma_k(v)=k*v/(1-k*v); C129 uses ordinary real addition, multiplication, order, and scalar absolute value.",
-      "lean_evidence": "D001-D032 unfold GammaValid, gamma, abs, numeral casts, and all arithmetic/order instances; they yield the standard real operations and the same gamma formula.",
-      "reasoning": "The imported operators are unambiguous and correctly interpreted. The mismatch is in their arguments and the omitted paper quantities, not hidden operator semantics."
+      "status": "fail",
+      "paper_evidence": "The paper defines gamma, componentwise absolute value, the prioritized effective roundoff, and the recurrence-generated computed output.",
+      "lean_evidence": "gamma, p04Dot, p04AbsDot, p04BlockFmaCoeff, and p04EffectiveFmaRoundoff unfold correctly, but P04BlockFmaDotRun unfolds to a conclusion-carrying certificate rather than a recurrence execution.",
+      "reasoning": "Most numerical definitions match exactly, but the principal imported run definition has the wrong semantic boundary."
     },
     {
       "id": "S07",
       "status": "fail",
-      "paper_evidence": "The paper distinguishes exact s_n=x^T y, computed hat_s_n, local computed hat_s_i, and perturbations alpha_i and beta_i.",
-      "lean_evidence": "Lean contains only abstract real alpha and beta and their combined magnitude; neither s_n nor hat_s_n appears.",
-      "reasoning": "The exact-versus-computed relationship that gives the perturbations meaning is absent."
+      "paper_evidence": "C129 distinguishes exact s_n=x^T y from the rounded recurrence output hat(s)_n.",
+      "lean_evidence": "p04Dot is an exact real sum, but run.computed is an arbitrary Real field constrained only by a supplied perturbation factorization.",
+      "reasoning": "The expressions are syntactically separate, yet the purported computed quantity is not established as computed by the paper's process."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "C128 Algorithm 3.1 line 6 chains q block FMAs, and C129 explicitly derives (3.1)-(3.4) from that execution.",
-      "lean_evidence": "The target has no algorithm, recurrence, block size, rounding operation, or computed output.",
-      "reasoning": "The proposition is detached from the algorithm whose error the benchmark task claims to formalize."
+      "paper_evidence": "Equation (3.4) is derived from q chained block FMAs in Algorithm 3.1 via recurrences (3.1) and (3.2).",
+      "lean_evidence": "No constructor field describes intermediate states, block products, rounded operations, or recurrence steps.",
+      "reasoning": "The proposition is an algebraic certificate lemma and is not linked to Algorithm 3.1's execution model."
     },
     {
       "id": "S09",
-      "status": "fail",
-      "paper_evidence": "Equation (3.4) multiplies the coefficient by |x|^T|y|, the dot product of componentwise absolute values; it is not |x^T y| and not a norm.",
-      "lean_evidence": "Lean has scalar absolute values only and no x, y, componentwise absolute value, dot product, or norm expression.",
-      "reasoning": "The key componentwise scale factor is omitted rather than preserved."
+      "status": "pass",
+      "paper_evidence": "C126 defines absolute value componentwise, and C129 uses the scalar quantity |x|^T|y| in (3.4).",
+      "lean_evidence": "p04AbsDot is sum_i abs(x_i)*abs(y_i), while the left side is scalar absolute value.",
+      "reasoning": "No normwise, squared, or absolute-dot substitution occurs."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "The paper uses q=n/b for the chained-rounding factor, n for internal arithmetic, q+b-1 for right-to-left evaluation, and coefficient gamma_q(tilde_u_FMA)+gamma_n(bar_u)+their product.",
-      "lean_evidence": "Lean uses q, n, and q+n under a single u and has no b or q+b-1.",
-      "reasoning": "The q+n bound is a same-u gamma-composition identity, not the constants or indexing of (3.4)."
+      "paper_evidence": "C129 uses the exact three-term coefficient, q blocks, n=q*b, the right-to-left offset q+b-1, and the special first-block theta index b rather than b+1.",
+      "lean_evidence": "The coefficient, q, n, n=q*b, and q+b-1 all match, but the target has no theta-indexed local formula and therefore omits the first-block indexing condition.",
+      "reasoning": "The final constants are correct, but the cited result's full indexing content is not preserved."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "C127-C129 specify internal precision bar_u, FMA-output precision u_FMA, final precision u, branch-prioritized tilde_u_FMA, a standard relative-error model, one retained output rounding, and exclusion of underflow and overflow.",
-      "lean_evidence": "Lean has one abstract nonnegative real u and bounded abstract perturbations; it states no rounding operation, precision relationship, branch, exceptional-value policy, or underflow/overflow assumption.",
-      "reasoning": "The paper's mixed-precision floating-point model is not represented."
+      "paper_evidence": "C127 states the relative-error model; C128 excludes underflow and overflow; C129 specifies internal and output roundings and deliberately collapses a possible double rounding.",
+      "lean_evidence": "The target contains real-valued roundoff parameters and gamma bounds but no floating-point operations, rounding mode, recurrence, exceptional-value assumptions, or single-rounding model.",
+      "reasoning": "The numerical execution model that justifies the perturbations is absent."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The paper gives a non-strict absolute forward-error inequality for the computed dot product, after asserting an exact perturbation factorization.",
-      "lean_evidence": "Lean gives a non-strict inequality for every abstract alpha and beta, under the additional (q+n)*u<1 hypothesis.",
-      "reasoning": "Although <= itself matches, the related quantities and logical strength do not. The narrower validity domain cannot make this a stronger version of the paper result."
+      "paper_evidence": "The source derives existential perturbations and non-strict upper bounds for every modeled block-FMA computation.",
+      "lean_evidence": "The displayed equalities and inequality directions match, but they are asserted only for records that already assume the factorization and perturbation bounds.",
+      "reasoning": "The narrower, conclusion-certified domain makes the proposition logically weaker as a statement about block-FMA computations."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "Equation (3.4) is an absolute forward-error bound |s_n-hat_s_n| controlled by a componentwise data scale.",
-      "lean_evidence": "Lean bounds only a scalar relative-factor combination and never mentions a forward error or computed result.",
-      "reasoning": "An auxiliary perturbation-coefficient lemma has been substituted for the paper's forward-error statement."
+      "status": "pass",
+      "paper_evidence": "Equation (3.4) is an absolute forward-error bound, and the preceding factorization gives componentwise multiplicative perturbations.",
+      "lean_evidence": "The target compares the exact dot product with computed and scales by p04AbsDot while separately bounding alpha and beta.",
+      "reasoning": "It does not substitute a normwise, backward, residual, or relative-error claim."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "Equation (3.4) explicitly retains gamma_q(tilde_u_FMA)*gamma_n(bar_u); only the possible second output rounding is omitted, with no explicit remainder bound.",
-      "lean_evidence": "Lean retains alpha*beta but absorbs a same-u coefficient into gamma u (q+n).",
-      "reasoning": "The mixed product is not dropped, but its exact mixed-precision dependence is replaced by an inapplicable common-u composition."
+      "status": "pass",
+      "paper_evidence": "Equation (3.4) retains gamma_tilde_q*gamma_bar_n and has no big-O remainder; the two-rounding implementation is deliberately simplified separately.",
+      "lean_evidence": "p04BlockFmaCoeff contains both linear gamma terms and their product exactly.",
+      "reasoning": "The final bound does not discard higher-order terms or introduce an unsupported asymptotic remainder."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "Under the paper's same-precision substitution bar_u=u_FMA=v with final u<=u_FMA, (3.3) gives tilde_u_FMA=0, alpha_i may be zero, and (3.4) reduces to gamma_n(v)|x|^T|y|.",
-      "lean_evidence": "Lean assumes both |alpha|<=gamma u q and |beta|<=gamma u n and concludes gamma u (q+n).",
-      "reasoning": "This is not the paper's same-precision specialization: it keeps a nonzero q contribution and still omits the dot-product theorem."
+      "paper_evidence": "C129 is already a scalar row-by-column result over real vectors and therefore supports a Fin n scalar formalization.",
+      "lean_evidence": "The Real and Fin n specialization is appropriate, but restricting inputs to certificates that contain the desired factorization is an additional, undeclared specialization.",
+      "reasoning": "The scalarization is acceptable; the pre-certified-run restriction is not an acceptable benchmark specialization of the algorithmic theorem."
     },
     {
       "id": "S16",
-      "status": "pass",
-      "paper_evidence": "The paper's model is nonvacuous for ordinary positive dimensions and sufficiently small positive unit roundoffs.",
-      "lean_evidence": "For example u=1/100, q=n=1, alpha=beta=1/200 satisfies u>=0, 2u<1, and both gamma bounds, while alpha+beta+alpha*beta is nonzero and below gamma u 2.",
-      "reasoning": "The Lean proposition is satisfiable and genuinely constrains nonzero perturbations; its failure is semantic mismatch, not vacuity."
+      "status": "fail",
+      "paper_evidence": "The paper's conclusion is nontrivial because it derives perturbation witnesses from an actual rounded block recurrence.",
+      "lean_evidence": "The run type is inhabited, for example with n=b=q=1, zero operands, zero computed value, zero roundoffs, zero witnesses, and false rightToLeft. Nevertheless, every run already carries the factorization and bounds needed by the theorem.",
+      "reasoning": "The domain is not empty, but the theorem is true for the unintended circular reason that its principal conclusions are constructor premises."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "The scalar same-u composition bound supplies neither the perturbation factorization nor any statement about x, y, s_n, hat_s_n, Algorithm 3.1, distinct precisions, or evaluation orders. It therefore cannot yield (3.4) or its stated refinements."
+      "reasoning": "The Lean proposition cannot establish that an output of recurrence (3.1) satisfies the factorization or error bound, because constructing its run input already requires those facts. It therefore does not imply the paper's algorithmic result."
     },
     "paper_implies_lean": {
-      "verdict": "no",
-      "reasoning": "The paper bounds the particular alpha_i and beta_i generated by the algorithm at generally distinct precisions and does not assert a universal theorem for arbitrary alpha and beta under one u or a gamma_(q+n) conclusion. Its actual same-precision branch instead has alpha_i=0 and gamma_n(v)."
+      "verdict": "yes",
+      "reasoning": "For a genuine paper execution, the paper supplies alpha and beta and all generic or right-to-left bounds needed to construct the Lean certificate. The extra zero-effective-roundoff clause follows from gamma(0,q)=0 and the same factorization. Synthetic Lean runs satisfy these premises by construction, so the target is no stronger than the source result."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "not-faithful-weaker",
   "accepted": false,
   "requires_adjudication": false,
   "findings": [
     {
       "severity": "critical",
-      "category": "result-substitution",
-      "paper_evidence": "C129 factors hat_s_n termwise and proves the absolute forward-error bound (3.4) with the factor |x|^T|y|.",
-      "lean_evidence": "The target proves only |alpha+beta+alpha*beta|<=gamma u (q+n) for two abstract scalars.",
-      "impact": "The formal declaration is an auxiliary gamma-composition lemma, not the selected paper result, so it does not provide the benchmark task claimed."
+      "category": "circular-certification",
+      "paper_evidence": "C129 derives the alpha-beta factorization and both witness bounds from the rounded recurrence.",
+      "lean_evidence": "P04BlockFmaDotRun.mk takes alpha, beta, the factorization, and both generic bounds as constructor arguments.",
+      "impact": "The target re-extracts assumed conclusions instead of formalizing the error analysis the benchmark claims to measure."
     },
     {
       "severity": "major",
-      "category": "precision-model",
-      "paper_evidence": "C129 uses gamma_q at tilde_u_FMA and gamma_n at bar_u, with tilde_u_FMA selected by the priority rule (3.3).",
-      "lean_evidence": "All three gamma occurrences use one u, and hvalid is imposed at q+n.",
-      "impact": "The distinct mixed-precision factors are collapsed into a common-u identity. In the paper's actual equal internal/FMA-precision case tilde_u_FMA is zero, so the Lean q contribution is not that specialization."
+      "category": "missing-algorithm-model",
+      "paper_evidence": "Algorithm 3.1 and equations (3.1)-(3.2) define chained block FMAs, intermediate rounded values, and local theta and delta errors.",
+      "lean_evidence": "The run certificate has no recurrence states, rounded operations, block indexing, theta factors, or relation between computed and an execution.",
+      "impact": "The theorem cannot be applied to an implementation or modeled execution without first proving the omitted paper result externally."
     },
     {
       "severity": "major",
-      "category": "quantifiers-and-algorithm-linkage",
-      "paper_evidence": "The alpha_i and beta_i are term-indexed perturbations derived from the chained block-FMA recurrence for a specific computed dot product.",
-      "lean_evidence": "Alpha and beta are arbitrary universally quantified reals, with no term index, data, recurrence, or computed value.",
-      "impact": "The proposition loses witness dependence and all connection to Algorithm 3.1."
+      "category": "missing-floating-point-hypotheses",
+      "paper_evidence": "C127-C129 specify the relative-error model, precision roles, no underflow or overflow, and a deliberate single-rounding simplification.",
+      "lean_evidence": "Only real roundoff parameters, ordering, and gamma-validity inequalities are stored.",
+      "impact": "The formal statement does not identify which numerical behaviors justify its perturbation certificate."
     },
     {
       "severity": "major",
-      "category": "dimensions-and-evaluation-cases",
-      "paper_evidence": "C128-C129 require q=n/b and state the q+b-1 right-to-left refinement and all-evaluation-order validity.",
-      "lean_evidence": "q and n are independent Nat values, may be zero, and b and every evaluation-order case are absent.",
-      "impact": "Core indexing constraints and advertised cases of the paper result are not formalized."
+      "category": "incomplete-source-conclusion",
+      "paper_evidence": "The cited result includes local equation (3.2), the first-block theta adjustment, and the claim that the unsharpened bound covers every evaluation order.",
+      "lean_evidence": "The target contains neither a local theta representation nor a formal evaluation-order domain beyond an unconstrained rightToLeft proposition.",
+      "impact": "Important execution and indexing content of the selected result is absent."
+    },
+    {
+      "severity": "note",
+      "category": "matching-final-algebra",
+      "paper_evidence": "Equation (3.3), the compact factorization, equation (3.4), and the following paragraph specify the prioritized roundoff, exact coefficient, componentwise scale, and q+b-1 sharpening.",
+      "lean_evidence": "p04EffectiveFmaRoundoff, gamma, p04BlockFmaCoeff, p04Dot, p04AbsDot, and the conditional sharper coefficient match those formulas.",
+      "impact": "Once the perturbation certificate is assumed, the target's final algebraic consequences faithfully reproduce the paper's constants and error notion."
     }
   ],
-  "rationale": "The declaration is nonvacuous and its real arithmetic, absolute value, and gamma definition are sound, but it proves only a generic same-precision perturbation-composition inequality. The paper result is a mixed-precision, algorithm-linked factorization and absolute forward-error bound with distinct gamma factors, data scaling, block indexing, and evaluation-order conclusions. Neither statement directly implies the other under the intended source correspondence, so the fixed classification is not-faithful-different."
+  "rationale": "The final factorization, gamma definitions, effective-roundoff branches, forward-error coefficient, componentwise scale, and right-to-left offset are algebraically accurate. However, P04BlockFmaDotRun is not a block-FMA execution: its constructor requires the perturbation witnesses, factorization, and bounds that the paper derives. The target consequently proves only a weaker certificate-extraction lemma, with no recurrence or floating-point model, so it is not a faithful benchmark statement of the paper result."
 }

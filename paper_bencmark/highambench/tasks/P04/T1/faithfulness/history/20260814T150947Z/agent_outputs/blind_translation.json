@@ -1,0 +1,266 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "93ef79dd73803cb2fa496bfe95bf92844648367ad706b4fb9f886fe42e61165e",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "LocalDef001(u,k) is the proposition that the real product of the natural number k, cast to a real, with u is strictly less than 1: ku < 1.",
+      "effect_on_target": "It makes the validity hypothesis exactly (q+n)u < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "LocalDef002(u,k) is the real number ku/(1-ku), where k is cast from a natural number to a real.",
+      "effect_on_target": "It supplies the upper bounds qu/(1-qu), nu/(1-nu), and (q+n)u/(1-(q+n)u).",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "HAdd.hAdd",
+      "meaning": "This is the binary heterogeneous-addition operation selected from an HAdd instance.",
+      "effect_on_target": "With the supplied instances, it denotes natural-number addition in q+n and ordinary real addition in (α+β)+(αβ).",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "HMul.hMul",
+      "meaning": "This is the binary heterogeneous-multiplication operation selected from an HMul instance.",
+      "effect_on_target": "With the supplied real instance, it denotes ordinary real multiplication in αβ and in each product ku occurring in the local definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LE.le",
+      "meaning": "This is the non-strict order relation selected from an LE instance.",
+      "effect_on_target": "With the real-order instance, it interprets 0 ≤ u, the two assumed absolute-value bounds, and the concluding absolute-value bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "Nat",
+      "meaning": "Nat is the type of natural numbers, including zero.",
+      "effect_on_target": "It is the domain of the universally quantified parameters q and n and of their sum q+n.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "OfNat.ofNat",
+      "meaning": "This operation interprets a natural-number literal in a type through an OfNat instance.",
+      "effect_on_target": "It interprets the literals 0 and 1 as real zero and real one through the supplied instances.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "Real",
+      "meaning": "Real is the type of real numbers.",
+      "effect_on_target": "The parameters u, α, and β and every computed bound are real scalars.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "Real.instAdd",
+      "meaning": "This is the standard addition operation on real numbers.",
+      "effect_on_target": "It gives the real additions α+β and (α+β)+αβ.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Real.instAddGroup",
+      "meaning": "This is the additive-group structure on the real numbers, including real addition, zero, and additive inverses.",
+      "effect_on_target": "It supplies the additive inverse used by the definition of real absolute value and supports ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "Real.instLE",
+      "meaning": "This is the standard less-than-or-equal relation on real numbers.",
+      "effect_on_target": "All occurrences of ≤ in the hypotheses and conclusion are ordinary real inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Real.instMul",
+      "meaning": "This is the standard multiplication operation on real numbers.",
+      "effect_on_target": "It interprets αβ and all products between a cast natural number and u as ordinary real products.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Real.instZero",
+      "meaning": "This supplies the standard zero element of the real numbers.",
+      "effect_on_target": "It makes the literal 0 in the hypothesis 0 ≤ u equal to real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Real.lattice",
+      "meaning": "This is the standard lattice structure on the real numbers, supplying maximum and minimum operations compatible with their order.",
+      "effect_on_target": "It supplies the maximum operation used to define |x| as max(x,-x).",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Zero.toOfNat0",
+      "meaning": "This constructs the interpretation of the numeral 0 from a type's distinguished zero element.",
+      "effect_on_target": "It connects the target's real numeral 0 to standard real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "abs",
+      "meaning": "For an ordered additive group, abs(a) is max(a,-a); on the reals this is the ordinary absolute value |a|.",
+      "effect_on_target": "It turns the assumptions into bounds on |α| and |β| and the conclusion into a bound on |(α+β)+αβ|.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "instAddNat",
+      "meaning": "This is the usual addition operation on natural numbers.",
+      "effect_on_target": "It makes q+n the ordinary natural-number sum of q and n.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "instHAdd",
+      "meaning": "This converts a homogeneous Add operation into an HAdd operation with the same input and output type.",
+      "effect_on_target": "It routes HAdd to ordinary natural addition for q+n and ordinary real addition for the expression involving α and β.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "instHMul",
+      "meaning": "This converts a homogeneous Mul operation into an HMul operation with the same input and output type.",
+      "effect_on_target": "It routes HMul to ordinary real multiplication in αβ and in the products ku.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "This projects the binary division operation from a DivInvMonoid structure.",
+      "effect_on_target": "For the reals, it supplies the division used in ku/(1-ku).",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "HDiv.hDiv",
+      "meaning": "This is the binary heterogeneous-division operation selected from an HDiv instance.",
+      "effect_on_target": "With the real instance, it denotes ordinary real division in every LocalDef002 bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "HSub.hSub",
+      "meaning": "This is the binary heterogeneous-subtraction operation selected from an HSub instance.",
+      "effect_on_target": "With the real instance, it denotes ordinary real subtraction in each denominator 1-ku.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "LT.lt",
+      "meaning": "This is the strict-order relation selected from an LT instance.",
+      "effect_on_target": "With the real strict-order instance, it interprets the validity condition as the strict inequality (q+n)u < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Nat.cast",
+      "meaning": "This maps a natural number into another type through that type's NatCast operation.",
+      "effect_on_target": "It embeds q, n, and q+n into the reals before multiplying them by u.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "One.toOfNat1",
+      "meaning": "This constructs the interpretation of the numeral 1 from a type's distinguished one element.",
+      "effect_on_target": "It makes every occurrence of 1 in the local definitions equal to real one.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This is the real-number multiplicative structure carrying inversion and division, with division supplied by the standard division operation derived from multiplication and inversion.",
+      "effect_on_target": "It determines the real quotients in all three rational bounds ku/(1-ku).",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Real.instLT",
+      "meaning": "This is the standard strict less-than relation on real numbers.",
+      "effect_on_target": "It makes the validity hypothesis an ordinary strict real inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Real.instNatCast",
+      "meaning": "This is the standard embedding of natural numbers into the real numbers.",
+      "effect_on_target": "It gives the real values of q, n, and q+n used in the validity condition and rational bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Real.instOne",
+      "meaning": "This supplies the standard multiplicative identity 1 of the real numbers.",
+      "effect_on_target": "It supplies real one in the condition ku < 1 and denominators 1-ku.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Real.instSub",
+      "meaning": "This defines real subtraction by a-b = a+(-b).",
+      "effect_on_target": "It interprets each denominator 1-ku as ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "instHDiv",
+      "meaning": "This converts a homogeneous Div operation into an HDiv operation with the same input and output type.",
+      "effect_on_target": "It routes the division in LocalDef002 to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "instHSub",
+      "meaning": "This converts a homogeneous Sub operation into an HSub operation with the same input and output type.",
+      "effect_on_target": "It routes the subtraction in each denominator to ordinary real subtraction.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "u is universally quantified over the real numbers.",
+      "q and n are universally quantified over the natural numbers, including zero.",
+      "α and β are universally quantified over the real numbers."
+    ],
+    "hypotheses": [
+      "u is nonnegative: 0 ≤ u.",
+      "The total index satisfies the strict validity condition (q+n)u < 1, with q+n cast to a real.",
+      "α satisfies |α| ≤ qu/(1-qu).",
+      "β satisfies |β| ≤ nu/(1-nu)."
+    ],
+    "conclusions": [
+      "The combined quantity satisfies |(α+β)+αβ| ≤ (q+n)u/(1-(q+n)u)."
+    ],
+    "mathematical_definitions": [
+      "For a natural number k, define B_k(u) = ku/(1-ku), where k is embedded into the real numbers.",
+      "The validity predicate at index k is ku < 1.",
+      "All addition, multiplication, subtraction, division, and order relations are the standard real operations when their operands are real.",
+      "For a real x, |x| = max(x,-x)."
+    ],
+    "proposition_plain_english": "For every real u, natural numbers q and n, and real numbers α and β, if u ≥ 0, (q+n)u < 1, |α| ≤ qu/(1-qu), and |β| ≤ nu/(1-nu), then |(α+β)+αβ| ≤ (q+n)u/(1-(q+n)u)."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The assertion is scalar: α and β are real numbers, and the only norm-like operation is ordinary real absolute value. No vectors, matrices, or dimensions are encoded.",
+    "The natural numbers q and n may be zero; the proposition does not require them to be positive or assign them an interpretation beyond being natural-number indices.",
+    "The hypotheses 0 ≤ u and (q+n)u < 1 imply qu < 1 and nu < 1, so all three denominators 1-qu, 1-nu, and 1-(q+n)u are strictly positive and hence nonzero.",
+    "Although Lean's real division is total, including at a zero denominator, the validity hypotheses prevent zero denominators in every non-vacuous application.",
+    "As a chain of implications, the proposition is vacuously true for a choice of parameters if 0 ≤ u or (q+n)u < 1 fails; it imposes no conclusion in those cases.",
+    "Once 0 ≤ u and (q+n)u < 1 hold, the two absolute-value assumptions are jointly satisfiable, for example by α=β=0, so there is no inherent vacuity from negative right-hand sides.",
+    "If q=0, the α-bound forces α=0; if n=0, the β-bound forces β=0. In particular, q=n=0 forces α=β=0.",
+    "No floating-point format, rounding operation, machine arithmetic, error provenance, independence assumption, or interpretation of u, q, n, α, or β is encoded.",
+    "The conclusion is only an upper bound; it does not assert equality, optimality, or a converse."
+  ],
+  "ambiguities": []
+}

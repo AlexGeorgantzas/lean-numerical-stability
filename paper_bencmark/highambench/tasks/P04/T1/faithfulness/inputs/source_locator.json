@@ -5,10 +5,31 @@
   "paper_version": "published journal version; volume 42, issue 3, 2020, printed pages C124-C141",
   "source_locations": [
     {
-      "anchor": "displayed factorization immediately before equation (3.4), equation (3.4), and its same-precision specialization",
+      "anchor": "componentwise absolute-value convention",
+      "pdf_page": 3,
+      "printed_page": "C126",
+      "role": "meaning of |x|^T|y|",
+      "section": "2. Block fused multiply-add"
+    },
+    {
+      "anchor": "equations (2.3)-(2.6) and gamma notation",
+      "pdf_page": 4,
+      "printed_page": "C127",
+      "role": "standard relative-error model, precision roles, and gamma validity",
+      "section": "2.1. General framework for mixed precision block FMA"
+    },
+    {
+      "anchor": "Algorithm 3.1 and following numerical-model paragraph",
+      "pdf_page": 5,
+      "printed_page": "C128",
+      "role": "block dimensions, chained computation, and exclusion of underflow and overflow",
+      "section": "3. Matrix multiplication using block FMAs"
+    },
+    {
+      "anchor": "equations (3.1)-(3.4), compact factorization, and following evaluation-order discussion",
       "pdf_page": 6,
       "printed_page": "C129",
-      "role": "chained rounding factors and their gamma bound",
+      "role": "computed recurrence, prioritized effective precision, indexed witnesses, exact forward-error bound, and specializations",
       "section": "3.2. Rounding error analysis"
     }
   ],
