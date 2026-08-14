@@ -1,13 +1,19 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, and exact finite affine-recurrence formalization of Lemma 4.3",
+    "kind": "source selection, tier label, algorithm linkage, exact residual semantics, source constants, and full finite Lemma 4.3 reconstruction",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The residual recurrence is q_(m+1)=B*q_m+d_m.",
-    "The propagation matrix B is componentwise nonnegative.",
-    "Every source term satisfies abs(d_m)<=s, with s nonnegative."
+    "The system dimension n is positive, A is nonsingular with a two-sided inverse Ainv, and x is the exact solution of A*x=b.",
+    "The iterates, computed residuals, and corrections form the paper's column-pivoted iterative-refinement run, including x_0=0, r_0=-b, d_0=-x_1, and computed x_(m+1)=x_m-d_m.",
+    "The residual subtraction is performed last; residual accumulation is single precision with ubar=u or double precision with ubar=u^2 followed by conversion to working precision.",
+    "The positive working unit roundoff satisfies n*u<=0.01, every represented operation is a well-defined real result, and the operation and conversion traces satisfy the paper's relative-error model.",
+    "Every column-pivoted solve has the source componentwise backward-error certificate with the nonnegative matrix C_1.",
+    "The chosen vector norm is absolute, monotone, normalized on basis vectors, and extended to its induced matrix norm; kappa(Ainv)=||abs(A)*abs(Ainv)||.",
+    "C_2,C_6,...,C_12 and c_1,c_3,c_4,c_5,c_8 satisfy the exact definitions and nonnegativity properties printed in the Notes on pages 823, 826, and 827.",
+    "The exact Lemma 4.1 estimate and forward-error half of Lemma 4.2 are available as prior proved bounds; the page-827 recurrence and Lemma 4.3 conclusion are not assumed.",
+    "The final smallness condition is c_8*u*kappa(Ainv)<=1/2; c_1<=c_8 supplies the earlier Lemma 4.1 condition."
   ],
   "author_label": "Lemma 4.3",
   "classification_frozen_before_runs": false,
@@ -17,14 +23,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P08/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p08_t3_componentwise_affine_recurrence {n : Nat} (B : Fin n -> Fin n -> Real) (q d : Nat -> Fin n -> Real) ... : forall m i, abs (q (m+1) i) <= p08MatVec (p08MatPow B (m+1)) (abs (q 0)) i + sum k in range (m+1), p08MatVec (p08MatPow B k) s i",
+    "lean_header": "theorem p08_t3_lemma_4_3_exact_residual_bound {n : Nat} (run : P08IterativeRefinementRun n) (norm : P08AbsoluteMonotoneNorm n) (constants : P08Lemma43Constants run norm) (prior : P08Lemma43PriorBounds run norm constants) (hsmall : constants.c8 * run.u * p08KappaInverse run norm <= 1/2) : forall m i, abs (p08ExactResidualAfterCorrection run m i) <= p08Lemma43Bound constants m i",
     "namespace": "HighamBench",
-    "plain_language": "A nonnegative componentwise affine residual recurrence is bounded by the exact finite matrix-geometric propagation of its initial value and source budget.",
+    "plain_language": "For every iteration m, the exact residual q_(m+1) of the linked column-pivoted iterative-refinement run satisfies Lemma 4.3's complete four-term componentwise finite bound under the source c_8*u*kappa(A^{-1}) threshold.",
     "target_file": "paper_bencmark/highambench/tasks/P08/T3/Target.lean",
-    "theorem_name": "p08_t3_componentwise_affine_recurrence"
+    "theorem_name": "p08_t3_lemma_4_3_exact_residual_bound"
   },
-  "informal_proof": "First turn the signed recurrence into an absolute componentwise inequality. Build its nonnegative affine envelope, prove domination by induction, and separately unroll the envelope into the displayed matrix-power sum.",
-  "informal_statement": "The finite induction certificate at the core of Lemma 4.3's all-iteration residual bound.",
+  "informal_proof": "Use c_1<=c_8 to discharge Lemma 4.1's smallness condition. Its m=0 instance and x_0=0 give the q_1 base coefficient C_10. For the induction step, substitute Lemma 4.2's bound for |x_(m+1)-x| into Lemma 4.1 at m+1, obtaining the source recurrence with propagation u*C_8*|A|*|Ainv| and forcing terms containing C_9 and C_7. The resolvent identities for C_11 and C_12 make the three stationary terms a fixed supersolution. Componentwise monotonicity of the nonnegative propagation matrix and matrix-power induction then yield exactly the exponent-m four-term bound.",
+  "informal_statement": "The full algorithm-linked, precision-sensitive, componentwise exact-residual bound of Lemma 4.3, with q_1 as the base case and no artificial q_0.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -40,23 +46,89 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
-      "NumStability.abs_matMulVec_le"
+      "NumStability.matMulVec_matMul",
+      "NumStability.matPow_nonneg"
     ],
-    "note": "The frozen baseline supplies only the one-step absolute matrix-action inequality. It has no theorem connecting a signed time-indexed residual recurrence to this componentwise finite matrix-geometric envelope."
+    "note": "The mounted MatrixAlgebra module supplies generic matrix-action associativity and matrix-power nonnegativity. It does not contain Skeel's iterative-refinement execution, exact q residual, precision-dependent ubar, source constants, Lemma 4.1/4.2 substitution, or four-term Lemma 4.3 induction."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "p08MatVec",
     "p08MatMul",
     "p08MatPow",
-    "p08AffineEnvelope"
+    "p08AbsMatrix",
+    "p08AbsVec",
+    "p08ResidualUnitRoundoff",
+    "P08ScalarArithmeticModel",
+    "P08SubtractionLastResidualTrace",
+    "P08ColumnPivotedSolveCertificate",
+    "P08IterativeRefinementRun",
+    "p08ExactResidualAfterCorrection",
+    "P08AbsoluteMonotoneNorm",
+    "p08KappaInverse",
+    "P08Lemma43Constants",
+    "p08Lemma43Propagation",
+    "p08Lemma43InitialVector",
+    "p08Lemma43RecurrenceForcing",
+    "p08Lemma43StationaryVector",
+    "p08Lemma43Bound",
+    "P08Lemma43PriorBounds"
   ],
   "source_locations": [
     {
-      "anchor": "Lemma 4.3 and the recurrence displayed in its proof",
+      "anchor": "Section 2 floating-point and componentwise conventions",
+      "pdf_page": 3,
+      "printed_page": "818",
+      "role": "positive roundoff, n*u<=0.01, well-defined operations, and componentwise interpretation",
+      "section": "2. Numerical Stability"
+    },
+    {
+      "anchor": "absolute monotone norm convention",
+      "pdf_page": 4,
+      "printed_page": "819",
+      "role": "normalized absolute vector norm and induced matrix norm",
+      "section": "2. Numerical Stability"
+    },
+    {
+      "anchor": "definition of kappa(A^{-1})",
+      "pdf_page": 5,
+      "printed_page": "820",
+      "role": "nonstandard conditioning quantity ||abs(A)*abs(A^{-1})||",
+      "section": "2. Numerical Stability"
+    },
+    {
+      "anchor": "equation (3.1) and following Note",
+      "pdf_page": 8,
+      "printed_page": "823",
+      "role": "column-pivoted solve certificate and definitions of c_1 and C_2",
+      "section": "3. Gaussian Elimination With Column Pivoting"
+    },
+    {
+      "anchor": "Section 4 algorithm and residual-precision paragraph",
+      "pdf_page": 9,
+      "printed_page": "824",
+      "role": "iterative-refinement indexing, initialization, subtraction order, and single/double residual accumulation",
+      "section": "4. Error Bounds"
+    },
+    {
+      "anchor": "Lemma 4.1",
+      "pdf_page": 10,
+      "printed_page": "825",
+      "role": "definition of exact q_(m+1), its base estimate, and precision-dependent ubar",
+      "section": "4. Error Bounds"
+    },
+    {
+      "anchor": "Note following Lemma 4.1 and Lemma 4.2",
+      "pdf_page": 11,
+      "printed_page": "826",
+      "role": "definitions of c_3,c_4,c_5,C_6,C_7 and forward-error bound used in the recurrence",
+      "section": "4. Error Bounds"
+    },
+    {
+      "anchor": "Lemma 4.3, following Note, and recurrence in its proof",
       "pdf_page": 12,
       "printed_page": "827",
-      "role": "finite componentwise residual recurrence and induction bound",
+      "role": "selected four-term finite bound, C_8 through C_12, smallness hypothesis, recurrence, and induction",
       "section": "4. Error Bounds"
     }
   ],
@@ -66,12 +138,12 @@
   "task_id": "P08-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "NumStability.abs_matMulVec_le supplies a useful one-step adapter, but the L proof must newly construct the nonnegative affine envelope, prove absolute-value domination for every iterate, and derive the exact finite matrix-power sum.",
+  "tier_rationale": "Condition L can reuse generic matrix-vector product associativity and matrix-power infrastructure from the mounted MatrixAlgebra module. It must still establish every P08-specific step: the Lemma 4.1/4.2 substitution, exact C_8/C_9/C_7 recurrence, q_1 base case, C_10 expansion, C_11/C_12 stationary identities, and complete exponent-m four-term induction.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P08/T3/Target.lean",
     "mode": "shared automatic validator",
     "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
     "reject_statement_changes": true,
-    "required_declaration": "HighamBench.p08_t3_componentwise_affine_recurrence"
+    "required_declaration": "HighamBench.p08_t3_lemma_4_3_exact_residual_bound"
   }
 }

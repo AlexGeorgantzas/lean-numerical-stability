@@ -98,8 +98,8 @@
         "P08"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P08Definitions.lean",
-      "role": "P08-only finite matrix actions, absolute-action budgets, matrix powers, and affine envelopes",
-      "sha256": "00378095eeb77b9b2386b0319478cf06e31ed9fe90b7dd554ce1a7a5749f7cc5",
+      "role": "P08-only matrix actions, Section 4 arithmetic and iterative-refinement traces, exact residual semantics, absolute norms, Lemma 4.3 constants, and finite four-term bound",
+      "sha256": "64149b9a6617083dd7dd78f55692760290ebb53614063091c7f017e2087cf837",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -1615,7 +1615,7 @@
         "volume": "35"
       },
       "paper_id": "P08",
-      "paper_structure_note": "The paper labels three theorems and four lemmas and also gives unlabelled stability identities. The selected targets split Lemma 4.2 into honest direct and combine tiers and retain Lemma 4.3's finite induction core.",
+      "paper_structure_note": "The paper labels three theorems and four lemmas and also gives unlabelled stability identities. The selected targets split Lemma 4.2 into direct and combine tiers and retain the complete finite, algorithm-linked statement of Lemma 4.3.",
       "paper_version": "published journal version, July 1980",
       "source": {
         "journal_page_map": "PDF page 1 is a JSTOR cover; PDF page 2 is printed page 817 and PDF page 17 is printed page 832.",
@@ -1702,23 +1702,24 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.abs_matMulVec_le"
+            "NumStability.matMulVec_matMul",
+            "NumStability.matPow_nonneg"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P08/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "First turn the signed recurrence into an absolute componentwise inequality. Build its nonnegative affine envelope, prove domination by induction, and separately unroll the envelope into the displayed matrix-power sum.",
-          "informal_statement_paraphrase": "The finite induction certificate at the core of Lemma 4.3's all-iteration residual bound.",
+          "informal_proof_paraphrase": "Use c1<=c8 to invoke Lemma 4.1, derive the source C8/C9/C7 recurrence by substituting Lemma 4.2, obtain q1 from the m=0 Lemma 4.1 case, use the C11/C12 resolvent identities for the stationary terms, and perform the exact matrix-power induction.",
+          "informal_statement_paraphrase": "The complete finite Lemma 4.3 componentwise bound for the algorithmic exact residual q_(m+1), including the precision-dependent four terms and source conditioning threshold.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "1af1bf1c6a340c6b5b01e2b2b060fdb129105cc115e7865a9ba0d9634fab3d20",
-            "declaration": "p08_t3_componentwise_affine_recurrence",
+            "controlled_file_sha256": "3e2146203b4b72c536a5f0354845ccd4c8d1113eedeb5765186e57631c052057",
+            "declaration": "p08_t3_lemma_4_3_exact_residual_bound",
             "file": "paper_bencmark/highambench/tasks/P08/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P08Definitions.lean"
             ],
-            "statement_summary": "A nonnegative componentwise affine residual recurrence is bounded by the exact finite matrix-geometric propagation of its initial value and source budget."
+            "statement_summary": "Every exact q_(m+1) residual of the linked column-pivoted iterative-refinement run satisfies Lemma 4.3's exponent-m, precision-sensitive four-term componentwise bound."
           },
           "source_locations": [
             {
@@ -1732,8 +1733,8 @@
           "task_id": "P08-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "NumStability.abs_matMulVec_le supplies a useful one-step adapter, but the L proof must newly construct the nonnegative affine envelope, prove absolute-value domination for every iterate, and derive the exact finite matrix-power sum.",
-          "title": "Finite componentwise affine-recurrence certificate"
+          "tier_reason": "The mounted MatrixAlgebra module supplies generic matrix-action associativity and matrix-power infrastructure. The L proof must still derive the P08-specific recurrence, q1 base case, source-constant expansions, stationary resolvent identities, and full four-term induction.",
+          "title": "Exact-residual bound from Lemma 4.3"
         }
       ],
       "topic": "componentwise stability of Gaussian elimination with iterative refinement"
