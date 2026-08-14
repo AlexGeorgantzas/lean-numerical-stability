@@ -1,269 +1,1015 @@
 {
   "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "0eca6fe917dec5f3c7d8bbd77124abb1d9d9dbaa468e2da59011882beb385de6",
+  "dossier_sha256": "ad1b9bcf26c22644b67e0f4967e8ef7473f25840b43f4cd1dc2d16935c5e28bd",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "This defines the m-by-n matrix E entrywise by E_ij = ((YR)_ij - A_ij) + ((DeltaY R)_ij + ((Y DeltaR)_ij + (DeltaY DeltaR)_ij)). By distributivity, E = (Y + DeltaY)(R + DeltaR) - A.",
-      "effect_on_target": "It is the matrix whose operator action is bounded in the conclusion.",
+      "meaning": "Projects the n-by-n perturbed inverse matrix from a back-substitution certificate.",
+      "effect_on_target": "Provides the outer matrix in the asserted formula xHat = perturbedRInv times perturbedPseudoinverse times the perturbed right-hand side.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "This is ordinary finite matrix multiplication: for an m-by-n matrix B and an n-by-p matrix C, (BC)_ij = sum over k in Fin n of B_ik C_kj.",
-      "effect_on_target": "It defines YR, DeltaY R, Y DeltaR, and DeltaY DeltaR, including the base residual YR - A.",
+      "meaning": "Projects the computed n-vector xHat from a back-substitution certificate.",
+      "effect_on_target": "This is the vector appearing in the solution formula and in the normal equations.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "For an m-by-n real matrix B and real c, this is the proposition that for every x in R^n, ||Bx||_2 <= c||x||_2.",
-      "effect_on_target": "It interprets every matrix hypothesis and the conclusion as a uniform Euclidean operator-bound inequality; it does not assert that c equals the operator norm.",
+      "meaning": "Projects the m-by-n output matrix from a certified floating-point triangular-substitution computation.",
+      "effect_on_target": "Provides the matrix Y used in the aggregate perturbation, perturbed factorization, spectra, and LSQR data.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "This is matrix-vector multiplication: for an m-by-n matrix B and x in R^n, (Bx)_i = sum over j in Fin n of B_ij x_j.",
-      "effect_on_target": "It specifies the matrix action appearing inside every bound represented by LocalDef003.",
+      "meaning": "Projects the m-by-n matrix perturbation DeltaYHat from the LSQR certificate.",
+      "effect_on_target": "This perturbation forms Y tilde = Y + DeltaYHat and contributes to the aggregate matrix perturbation and its bound.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "This is the Euclidean norm of a finite real vector: ||x||_2 = sqrt(sum over i in Fin n of x_i^2).",
-      "effect_on_target": "It supplies both the output and input norms in all hypotheses and in the conclusion.",
+      "meaning": "Projects the n-by-m perturbed pseudoinverse from the LSQR certificate.",
+      "effect_on_target": "It maps the perturbed right-hand side to zHat and appears explicitly in the asserted formula for xHat.",
       "status": "understood"
     },
     {
       "id": "D006",
-      "name": "Fin",
-      "meaning": "Fin q is the finite index type consisting of the natural-number indices below q.",
-      "effect_on_target": "It gives the row, column, and summation index sets and thereby fixes all matrix and vector dimensions.",
+      "name": "LocalDef006",
+      "meaning": "Projects the n-vector zHat from the LSQR certificate.",
+      "effect_on_target": "The back-substitution certificate solves the perturbed triangular system with this vector as its right-hand side; the LSQR certificate identifies it with the pseudoinverse solution.",
       "status": "understood"
     },
     {
       "id": "D007",
-      "name": "HAdd.hAdd",
-      "meaning": "This projects the addition operation supplied by an HAdd instance.",
-      "effect_on_target": "With the supplied real instances, every occurrence is ordinary real addition, including entrywise matrix-expression addition and addition in the final scalar bound.",
+      "name": "LocalDef007",
+      "meaning": "A preprocessing-data type indexed by dimensions m, s, and n; its constructor D036 bundles strict dimension inequalities, matrices, rank conditions, factorization-error identities, an isometry, triangularity, and a two-sided inverse.",
+      "effect_on_target": "The universally quantified pre argument supplies A, RHat, RHatInv, the dimension restrictions, and the preprocessing assumptions underlying every later certificate.",
       "status": "understood"
     },
     {
       "id": "D008",
-      "name": "HMul.hMul",
-      "meaning": "This projects the multiplication operation supplied by an HMul instance.",
-      "effect_on_target": "With the supplied real instances, every occurrence is ordinary real multiplication in matrix products, matrix-vector products, norm bounds, and the scalar expression.",
+      "name": "LocalDef008",
+      "meaning": "Projects the original m-by-n matrix A from the preprocessing data.",
+      "effect_on_target": "A is the unperturbed matrix used to define the aggregate perturbation and A tilde = A + E.",
       "status": "understood"
     },
     {
       "id": "D009",
-      "name": "HSub.hSub",
-      "meaning": "This projects the subtraction operation supplied by an HSub instance.",
-      "effect_on_target": "With the real subtraction instance, it makes the base residual entry equal to (YR)_ij - A_ij.",
+      "name": "LocalDef009",
+      "meaning": "Projects the n-by-n upper-triangular matrix RHat from the preprocessing data.",
+      "effect_on_target": "RHat is used in the triangular computation, the aggregate perturbation, R tilde, and the spectral factor in the perturbation bound.",
       "status": "understood"
     },
     {
       "id": "D010",
-      "name": "LE.le",
-      "meaning": "This projects the binary order relation supplied by an LE instance.",
-      "effect_on_target": "With the real-order instance, it interprets all displayed inequalities as ordinary non-strict real inequalities.",
+      "name": "LocalDef010",
+      "meaning": "A certified forward-run type containing a floating-point triangular-substitution result and an exact matrix measuring its difference from A times RHatInv.",
+      "effect_on_target": "The forwardRun binder supplies the computed matrix Y and the computation certificate on which the overall run depends.",
       "status": "understood"
     },
     {
       "id": "D011",
-      "name": "Nat",
-      "meaning": "This is the type of natural numbers, including zero.",
-      "effect_on_target": "The dimensions m and n may be any finite natural dimensions, including zero-dimensional cases.",
+      "name": "LocalDef011",
+      "meaning": "Projects the certified triangular-substitution computation from a forward run.",
+      "effect_on_target": "Its output is the matrix Y used throughout the target.",
       "status": "understood"
     },
     {
       "id": "D012",
-      "name": "OfNat.ofNat",
-      "meaning": "This converts a natural-number literal to the corresponding value supplied by an OfNat instance.",
-      "effect_on_target": "It interprets the literal 0 in the explicit nonnegativity assumptions as real zero and participates in interpreting numerical literals used by the definitions.",
+      "name": "LocalDef012",
+      "meaning": "Projects the nonnegative upper spectral value from a matrix spectrum certificate.",
+      "effect_on_target": "Supplies the exact upper values for RHat, Y, and DeltaYHat used in the final perturbation-bound constant.",
       "status": "understood"
     },
     {
       "id": "D013",
-      "name": "Real",
-      "meaning": "This is the type of real numbers.",
-      "effect_on_target": "All matrix entries, vector entries, constants, operations, norms, and inequalities are real-valued.",
+      "name": "LocalDef013",
+      "meaning": "The complete certified-run type, indexed by preprocessing data, arithmetic model, forward run, and real parameter u.",
+      "effect_on_target": "The run binder packages b, spectra, forward-error evidence, the LSQR result, and the back-substitution result from which all four conclusions are formed.",
       "status": "understood"
     },
     {
       "id": "D014",
-      "name": "Real.instAdd",
-      "meaning": "This supplies ordinary addition on the real numbers.",
-      "effect_on_target": "It fixes all real additions in the residual matrix and scalar error bound to be standard real addition.",
+      "name": "LocalDef014",
+      "meaning": "Projects the original m-vector b from the complete run.",
+      "effect_on_target": "It is combined with the LSQR perturbation deltaB to form the perturbed right-hand side.",
       "status": "understood"
     },
     {
       "id": "D015",
-      "name": "Real.instLE",
-      "meaning": "This supplies the usual order relation on the real numbers.",
-      "effect_on_target": "It makes heY and hy the assumptions 0 <= eY and 0 <= y and gives the usual order in each norm inequality.",
+      "name": "LocalDef015",
+      "meaning": "Projects the certified back-substitution result from the complete run.",
+      "effect_on_target": "Supplies DeltaRHat, xHat, and the perturbed inverse used in the conclusions.",
       "status": "understood"
     },
     {
       "id": "D016",
-      "name": "Real.instMul",
-      "meaning": "This supplies ordinary multiplication on the real numbers.",
-      "effect_on_target": "It fixes products of entries and products of scalar bounds to be standard real multiplication.",
+      "name": "LocalDef016",
+      "meaning": "Projects the certified LSQR result from the complete run.",
+      "effect_on_target": "Supplies DeltaYHat, deltaB, zHat, and the perturbed pseudoinverse.",
       "status": "understood"
     },
     {
       "id": "D017",
-      "name": "Real.instSub",
-      "meaning": "This supplies real subtraction, defined as addition of the additive inverse.",
-      "effect_on_target": "It gives the exact residual term YR - A.",
+      "name": "LocalDef017",
+      "meaning": "Projects a spectrum certificate for the LSQR matrix perturbation DeltaYHat.",
+      "effect_on_target": "Its upper spectral value is the final term in the aggregate perturbation bound.",
       "status": "understood"
     },
     {
       "id": "D018",
-      "name": "Real.instZero",
-      "meaning": "This supplies the additive identity 0 of the real numbers.",
-      "effect_on_target": "It fixes the zero in the assumptions 0 <= eY and 0 <= y and the zero values arising from empty sums.",
+      "name": "LocalDef018",
+      "meaning": "Projects a spectrum certificate for RHat from the complete run.",
+      "effect_on_target": "Its upper value multiplies the entire final perturbation bound.",
       "status": "understood"
     },
     {
       "id": "D019",
-      "name": "Zero.toOfNat0",
-      "meaning": "This turns a Zero instance into the interpretation of the numeral 0.",
-      "effect_on_target": "It ensures that the literal 0 used in the real inequalities is precisely real zero.",
+      "name": "LocalDef019",
+      "meaning": "Projects a spectrum certificate for the computed matrix Y.",
+      "effect_on_target": "Its upper value occurs in the first summand of the final perturbation bound.",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "instHAdd",
-      "meaning": "This lifts a homogeneous Add operation on a type to the corresponding HAdd operation.",
-      "effect_on_target": "Together with Real.instAdd, it resolves all heterogeneous-addition notation here to ordinary addition of real numbers.",
+      "name": "LocalDef020",
+      "meaning": "A floating-point arithmetic-model type whose constructor D040 stores a nonnegative unit roundoff, four binary arithmetic operations, and relative-error axioms for them.",
+      "effect_on_target": "The model binder constrains how the forward computation was produced and, through the run certificate, identifies its unit roundoff with u.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "instHMul",
-      "meaning": "This lifts a homogeneous Mul operation on a type to the corresponding HMul operation.",
-      "effect_on_target": "Together with Real.instMul, it resolves all multiplication notation here to ordinary multiplication of real numbers.",
+      "name": "LocalDef021",
+      "meaning": "Defines gamma_n(u) = n u divided by 1 - n u, with n coerced to a real number.",
+      "effect_on_target": "This exact real quantity appears in every coefficient of the final perturbation bound.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "instHSub",
-      "meaning": "This lifts a homogeneous Sub operation on a type to the corresponding HSub operation.",
-      "effect_on_target": "Together with Real.instSub, it resolves the subtraction in YR - A to ordinary real subtraction.",
+      "name": "LocalDef022",
+      "meaning": "For an m-by-n matrix A, m-vector b, and n-vector x, asserts that for every column j, sum over i of A(i,j) times ((A x)(i) - b(i)) equals zero; equivalently, A^T(Ax-b)=0.",
+      "effect_on_target": "The third conclusion asserts these normal equations for A tilde, b tilde, and xHat.",
       "status": "understood"
     },
     {
       "id": "D023",
-      "name": "Fin.fintype",
-      "meaning": "This equips Fin q with a finite enumeration containing every index exactly once.",
-      "effect_on_target": "It permits universal finite sums over all row, column, and inner-product indices, including empty sums when q = 0.",
+      "name": "LocalDef023",
+      "meaning": "Defines matrix-vector multiplication: (A x)(i) = sum over all j in Fin n of A(i,j)x(j).",
+      "effect_on_target": "Used in the solution formula, the normal equations, all operator bounds, injectivity assumptions, and several bundled computation identities.",
       "status": "understood"
     },
     {
       "id": "D024",
-      "name": "Finset.sum",
-      "meaning": "This forms the finite sum of a function over a finite set using the additive commutative monoid operation.",
-      "effect_on_target": "It defines all matrix products, matrix-vector products, and sums of coordinate squares.",
+      "name": "LocalDef024",
+      "meaning": "Defines matrix multiplication: (A B)(i,j) = sum over all intermediate indices k of A(i,k)B(k,j).",
+      "effect_on_target": "Used directly in the perturbed factorization and indirectly in all factorization, inverse, and pseudoinverse certificates.",
       "status": "understood"
     },
     {
       "id": "D025",
-      "name": "Finset.univ",
-      "meaning": "For a finite type, this is the finite set containing all of its elements.",
-      "effect_on_target": "It makes every sum in the definitions range over every index of the appropriate Fin type.",
+      "name": "LocalDef025",
+      "meaning": "For a matrix A and real c, asserts the operator upper bound ||A x||_2 <= c ||x||_2 for every vector x.",
+      "effect_on_target": "The fourth conclusion is precisely this bound for the aggregate perturbation E and the displayed constant.",
       "status": "understood"
     },
     {
       "id": "D026",
-      "name": "Real.instAddCommMonoid",
-      "meaning": "This supplies the additive commutative monoid structure of the real numbers, including associative and commutative addition and zero.",
-      "effect_on_target": "It provides the operation used by finite real sums and makes an empty finite sum equal to zero.",
+      "name": "LocalDef026",
+      "meaning": "Defines the aggregate m-by-n perturbation E from Y, DeltaYHat, RHat, DeltaRHat, and A via LocalDef041.",
+      "effect_on_target": "E is the perturbation added to A, is constrained by the normal equations, and is bounded in the final conclusion.",
       "status": "understood"
     },
     {
       "id": "D027",
-      "name": "HPow.hPow",
-      "meaning": "This projects the exponentiation operation supplied by an HPow instance.",
-      "effect_on_target": "In the Euclidean norm definition, it interprets each coordinate expression x_i^2.",
+      "name": "LocalDef027",
+      "meaning": "Defines A tilde as the pointwise matrix sum A + E.",
+      "effect_on_target": "A tilde is the left side of the factorization equality and the matrix in the normal equations.",
       "status": "understood"
     },
     {
       "id": "D028",
-      "name": "Monoid.toNatPow",
-      "meaning": "This supplies natural-number exponentiation in a monoid by repeated multiplication.",
-      "effect_on_target": "For real numbers and exponent 2, it makes x_i^2 the ordinary square x_i x_i.",
+      "name": "LocalDef028",
+      "meaning": "Defines b tilde as the pointwise vector sum b + deltaB.",
+      "effect_on_target": "b tilde is the argument of the perturbed pseudoinverse and the right-hand side in the normal equations.",
       "status": "understood"
     },
     {
       "id": "D029",
-      "name": "Real.instMonoid",
-      "meaning": "This supplies the multiplicative monoid structure of the real numbers.",
-      "effect_on_target": "It underlies natural powers of real coordinates in the Euclidean norm.",
+      "name": "LocalDef029",
+      "meaning": "Defines R tilde as the pointwise matrix sum RHat + DeltaRHat.",
+      "effect_on_target": "R tilde is the right factor in the asserted perturbed factorization.",
       "status": "understood"
     },
     {
       "id": "D030",
-      "name": "Real.sqrt",
-      "meaning": "This is the nonnegative real square-root operation; its definition extends square root to all reals through the nonnegative part.",
-      "effect_on_target": "It turns the nonnegative sum of coordinate squares into the ordinary Euclidean norm.",
+      "name": "LocalDef030",
+      "meaning": "Defines Y tilde as the pointwise matrix sum Y + DeltaYHat.",
+      "effect_on_target": "Y tilde is the left factor in the asserted perturbed factorization.",
       "status": "understood"
     },
     {
       "id": "D031",
-      "name": "instHPow",
-      "meaning": "This lifts a Pow operation to the corresponding HPow operation.",
-      "effect_on_target": "Together with natural real powers, it resolves the coordinate exponentiation in x_i^2.",
+      "name": "LocalDef031",
+      "meaning": "A back-substitution certificate indexed by preprocessing data, u, an RHat spectrum, and zHat; its constructor supplies DeltaRHat, xHat, a two-sided inverse of RHat + DeltaRHat, the equation (RHat + DeltaRHat)xHat = zHat, and an operator bound on DeltaRHat.",
+      "effect_on_target": "It supplies the final computed vector and triangular-factor perturbation, including the inverse used in the explicit solution formula.",
       "status": "understood"
     },
     {
       "id": "D032",
+      "name": "LocalDef032",
+      "meaning": "Projects the n-by-n perturbation DeltaRHat from a back-substitution certificate.",
+      "effect_on_target": "DeltaRHat contributes to E and defines R tilde.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "LocalDef033",
+      "meaning": "A certified floating-point triangular-substitution result for an m-by-n matrix A and n-by-n matrix R under a floating arithmetic model.",
+      "effect_on_target": "Its output is Y, while its constructor records nonzero diagonal entries of R and the floating recurrence used to compute Y.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "LocalDef034",
+      "meaning": "An LSQR-result type for a matrix YHat and vector b; its constructor stores perturbations DeltaYHat and deltaB, a vector zHat, and a Moore-Penrose pseudoinverse of YHat + DeltaYHat mapping b + deltaB to zHat.",
+      "effect_on_target": "This package supplies both perturbations and the inner pseudoinverse computation in the asserted formula for xHat.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "LocalDef035",
+      "meaning": "Projects the m-vector perturbation deltaB from an LSQR result.",
+      "effect_on_target": "It forms b tilde = b + deltaB.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "LocalDef036",
+      "meaning": "Constructs preprocessing data from 0 < n < s < m; matrices A, S, computedSketch, sketchError, qrError, Qtilde, RHat, and RHatInv of the stated dimensions; injectivity of x maps to Ax and x maps to SAx; computedSketch = SA + sketchError; Qtilde RHat = computedSketch + qrError; norm preservation by Qtilde; upper triangularity of RHat; and RHat RHatInv = RHatInv RHat = I.",
+      "effect_on_target": "These bundled assumptions ensure positive dimensions, full column rank of A and SA, and an invertible triangular RHat, although only selected fields occur explicitly in the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "LocalDef037",
+      "meaning": "Constructs a forward run from a certified triangular-substitution result with output Y and a matrix DeltaY satisfying DeltaY = Y - A RHatInv.",
+      "effect_on_target": "It connects the computed Y to the preprocessing matrices and makes Y available to the complete run.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "LocalDef038",
+      "meaning": "A spectrum certificate for a real matrix; its constructor records nonnegative upper and lower values, global upper and lower Euclidean operator inequalities, and unit vectors attaining each value.",
+      "effect_on_target": "Its upper field is therefore an attained exact largest operator value and is used for RHat, Y, and DeltaYHat in the final bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "LocalDef039",
+      "meaning": "Constructs a complete run by requiring model.unitRoundoff = u, n u < 1, an m-vector b, spectrum certificates for RHat and Y, a certified forward-error package, an LSQR result, a spectrum certificate for its DeltaYHat, and a back-substitution certificate.",
+      "effect_on_target": "This constructor packages all data and side conditions needed by the target, including the condition that makes 1 - n u positive.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "LocalDef040",
+      "meaning": "Constructs a floating arithmetic model with unit roundoff epsilon >= 0 and operations flAdd, flSub, flMul, and flDiv such that each result equals the exact operation times 1 + delta for some |delta| <= epsilon; the division axiom applies when the divisor is nonzero.",
+      "effect_on_target": "Together with the run equality epsilon = u, it implies u >= 0 and specifies the modeled arithmetic behind the certified forward computation.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "LocalDef041",
+      "meaning": "Defines E = (Y R - A) + DeltaY R + Y DeltaR + DeltaY DeltaR entrywise.",
+      "effect_on_target": "With DeltaY = DeltaYHat and DeltaR = DeltaRHat, this is exactly the expansion making A + E = (Y + DeltaYHat)(RHat + DeltaRHat).",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "LocalDef042",
+      "meaning": "Defines pointwise addition of two equally sized matrices.",
+      "effect_on_target": "Used to form A tilde, Y tilde, R tilde, and several perturbed matrices in the certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "LocalDef043",
+      "meaning": "Defines pointwise addition of two real vectors.",
+      "effect_on_target": "Used to form b tilde = b + deltaB.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "LocalDef044",
+      "meaning": "Defines the Euclidean norm ||x||_2 = sqrt(sum_i x(i)^2) on finite real vectors.",
+      "effect_on_target": "Determines the exact norm used in operator bounds, spectra, isometry, and the normal-error certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "LocalDef045",
+      "meaning": "Asserts n u < 1, with n coerced to a real number.",
+      "effect_on_target": "This condition is stored in every complete run and ensures the denominator in gamma_n is positive.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "LocalDef046",
+      "meaning": "Constructs a back-substitution certificate from DeltaRHat, xHat, and perturbedRInv satisfying two-sided inverse identities for RHat + DeltaRHat, the equation (RHat + DeltaRHat)xHat = zHat, and ||DeltaRHat x||_2 <= sqrt(n) gamma_n rUpper ||x||_2 for all x.",
+      "effect_on_target": "It justifies replacing the perturbed triangular solve by multiplication with perturbedRInv and controls the DeltaRHat contribution to E.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "LocalDef047",
+      "meaning": "A forward-error certificate type for preprocessing data, a forward run, u, and spectrum certificates for RHat and Y.",
+      "effect_on_target": "Its constructor supplies the rowwise perturbation model and operator bound for Y RHat - A used in deriving the final bound on E.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "LocalDef048",
+      "meaning": "Constructs a triangular-substitution result with output Y when every diagonal R(j,j) is nonzero and Y(i,j) = flDiv(flSub(A(i,j), floating_sum_{k<j} flMul(Y(i,k),R(k,j))), R(j,j)) for every i,j.",
+      "effect_on_target": "Specifies exactly how the forward matrix Y was computed under the floating model.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "LocalDef049",
+      "meaning": "Constructs an LSQR result from DeltaYHat, deltaB, zHat, and a perturbedPseudoinverse that is a Moore-Penrose pseudoinverse of YHat + DeltaYHat and satisfies zHat = perturbedPseudoinverse times (b + deltaB).",
+      "effect_on_target": "Provides the inner equality needed to express xHat as the composition of the perturbed inverse and perturbed pseudoinverse.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "LocalDef050",
+      "meaning": "Constructs a matrix spectrum certificate from nonnegative upper and lower values, the bounds ||Ax||_2 <= upper ||x||_2 and lower ||x||_2 <= ||Ax||_2 for every x, and unit vectors attaining upper and lower.",
+      "effect_on_target": "Makes each stored upper value an attained sharp operator upper value; the target uses the upper values for RHat, Y, and DeltaYHat.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "LocalDef051",
+      "meaning": "Projects the unit-roundoff real number from a floating arithmetic model.",
+      "effect_on_target": "The complete-run certificate equates this value with u.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "LocalDef052",
+      "meaning": "Defines the preconditioned m-by-n matrix A RHatInv.",
+      "effect_on_target": "The forward-run perturbation is defined as Y minus this matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "LocalDef053",
+      "meaning": "Defines the n-by-n identity matrix, with entry 1 when the indices are equal and 0 otherwise.",
+      "effect_on_target": "Appears in the two-sided inverse identities and the Moore-Penrose-related preprocessing assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "LocalDef054",
+      "meaning": "Asserts that Q preserves the Euclidean norm of every vector: ||Qx||_2 = ||x||_2.",
+      "effect_on_target": "This is a bundled preprocessing assumption on Qtilde, though Qtilde does not occur explicitly in the four conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "LocalDef055",
+      "meaning": "Defines pointwise subtraction of two equally sized matrices.",
+      "effect_on_target": "Used to define the forward-run difference Y - A RHatInv.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "LocalDef056",
+      "meaning": "Asserts upper triangularity: R(i,j) = 0 whenever the column index j is strictly smaller than the row index i.",
+      "effect_on_target": "This is a preprocessing assumption on RHat supporting the triangular solves.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "LocalDef057",
+      "meaning": "Constructs the forward-error certificate from a row-dependent perturbation tensor satisfying (Y RHat - A)(i,j) = -sum_k Y(i,k) rowPerturbation(i,k,j), the entrywise bounds |rowPerturbation(i,j,k)| <= gamma_n |RHat(j,k)|, and ||(Y RHat-A)x||_2 <= n gamma_n rUpper yUpper ||x||_2.",
+      "effect_on_target": "The final operator bound for E uses the supplied bound on the residual Y RHat - A.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "LocalDef058",
+      "meaning": "Projects the n-by-n inverse RHatInv from the preprocessing data.",
+      "effect_on_target": "Used to define A RHatInv and constrained by the preprocessing two-sided inverse identities.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "LocalDef059",
+      "meaning": "A proposition certifying that an n-by-m matrix is a Moore-Penrose pseudoinverse of an m-by-n matrix, constructed from the four Moore-Penrose identities in D064.",
+      "effect_on_target": "Certifies the perturbed pseudoinverse stored in the LSQR result.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "LocalDef060",
+      "meaning": "Projects the floating division operation from the arithmetic model.",
+      "effect_on_target": "Used in the certified triangular-substitution recurrence.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "LocalDef061",
+      "meaning": "Projects the floating subtraction operation from the arithmetic model.",
+      "effect_on_target": "Used in the certified triangular-substitution recurrence.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "LocalDef062",
+      "meaning": "For a matrix A and real c, asserts the operator lower bound c ||x||_2 <= ||Ax||_2 for every vector x.",
+      "effect_on_target": "Forms the lower half of each spectrum certificate; the target itself uses only upper fields.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "LocalDef063",
+      "meaning": "Computes the floating inner sum over k < j of Y(i,k)R(k,j), multiplying each term with model.flMul and combining terms sequentially with model.flAdd; the empty sum is 0.",
+      "effect_on_target": "This is the previously computed triangular contribution subtracted in each forward-substitution recurrence.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "LocalDef064",
+      "meaning": "Constructs the pseudoinverse certificate from (A Aplus)A = A, (Aplus A)Aplus = Aplus, transpose(A Aplus) = A Aplus, and transpose(Aplus A) = Aplus A.",
+      "effect_on_target": "Gives the exact Moore-Penrose conditions required of the LSQR perturbed pseudoinverse.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "LocalDef065",
+      "meaning": "Projects the floating addition operation from the arithmetic model.",
+      "effect_on_target": "Used to accumulate the floating inner sums in the triangular computation.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "LocalDef066",
+      "meaning": "Projects the floating multiplication operation from the arithmetic model.",
+      "effect_on_target": "Used to form terms in the floating inner sums of the triangular computation.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "LocalDef067",
+      "meaning": "Proves that if k is an index below j.val and j is an index below n, then k.val < n.",
+      "effect_on_target": "Justifies converting the prefix index k into a valid Fin n index in the computed triangular sum; it adds no numerical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "LocalDef068",
+      "meaning": "Defines a sequential reduction of a finite real vector using a supplied binary addition: the empty vector gives 0, a singleton gives its sole value, and longer vectors combine the reduction of the initial segment with the last value.",
+      "effect_on_target": "Implements the order-sensitive floating summation used by LocalDef063.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "LocalDef069",
+      "meaning": "Proves 0 < n + 1 under the branch assumption n = 0.",
+      "effect_on_target": "Supplies an index-validity proof for the singleton branch of the sequential reduction and has no independent mathematical effect on the target.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "LocalDef070",
+      "meaning": "A dependent natural-number case splitter for finite vectors, dispatching length zero to one branch and successor length to another.",
+      "effect_on_target": "Implements the empty-versus-nonempty split in the floating reduction without adding a mathematical condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "And",
+      "meaning": "Logical conjunction of two propositions.",
+      "effect_on_target": "Combines the four target assertions into nested conjunctions, so all four must hold simultaneously.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "Eq",
+      "meaning": "Propositional equality of two terms of the same type.",
+      "effect_on_target": "Expresses the matrix and vector identities in the target and in the bundled certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type consisting of natural numbers strictly below n.",
+      "effect_on_target": "Determines all vector and matrix dimensions and the finite ranges of sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "HAdd.hAdd",
+      "meaning": "Applies the heterogeneous-addition operation supplied by an HAdd instance.",
+      "effect_on_target": "With real instances, denotes ordinary real addition in the bound and pointwise definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "HMul.hMul",
+      "meaning": "Applies the heterogeneous-multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "With real instances, denotes ordinary real multiplication in the bound and all matrix formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "Supplies the dimensions m, s, and n and the finite-index sizes.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "Nat.cast",
+      "meaning": "Casts a natural number into a type with a natural-number cast operation.",
+      "effect_on_target": "Casts n to a real number in gamma_n and in the coefficient n + sqrt(n).",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "OfNat.ofNat",
+      "meaning": "Interprets a natural-number literal in a type carrying the corresponding OfNat instance.",
+      "effect_on_target": "Interprets the real literal 1 in the final coefficient and related definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "One.toOfNat1",
+      "meaning": "Builds the interpretation of the numeral 1 from a type's multiplicative-one operation.",
+      "effect_on_target": "Makes the literal 1 in real expressions denote real one.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "All matrix entries, vector entries, norms, perturbation constants, and u are real.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "Real.instAdd",
+      "meaning": "The ordinary addition operation on real numbers.",
+      "effect_on_target": "Determines every real addition appearing in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "Real.instMul",
+      "meaning": "The ordinary multiplication operation on real numbers.",
+      "effect_on_target": "Determines every real product appearing in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "Real.instNatCast",
+      "meaning": "The standard embedding of natural numbers into the real numbers.",
+      "effect_on_target": "Makes n.cast the real number n.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "Real.instOne",
+      "meaning": "The multiplicative identity 1 in the real numbers.",
+      "effect_on_target": "Supplies the real constant 1 in gamma_n, identity matrices, and the final coefficient.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "Real.sqrt",
+      "meaning": "The nonnegative real square root.",
+      "effect_on_target": "Defines the Euclidean norm and the factors sqrt(n) in the perturbation bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "instHAdd",
+      "meaning": "Lifts an ordinary Add operation to homogeneous HAdd.",
+      "effect_on_target": "Connects HAdd.hAdd on real arguments to ordinary real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "instHMul",
+      "meaning": "Lifts an ordinary Mul operation to homogeneous HMul.",
+      "effect_on_target": "Connects HMul.hMul on real arguments to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "Extracts division from a division-inverse monoid structure.",
+      "effect_on_target": "Supplies ordinary real division in the definition of gamma_n.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "Fin.fintype",
+      "meaning": "Provides the finite-type structure enumerating all elements of Fin n.",
+      "effect_on_target": "Makes sums over every finite matrix or vector index well-defined.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "Finset.sum",
+      "meaning": "Sums a function over a finite set in an additive commutative monoid.",
+      "effect_on_target": "Defines matrix products, matrix-vector products, Euclidean norms, and normal-equation sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "Specifies that each sum ranges over all valid finite indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "HDiv.hDiv",
+      "meaning": "Applies the heterogeneous-division operation supplied by an HDiv instance.",
+      "effect_on_target": "Denotes real division in gamma_n.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "HSub.hSub",
+      "meaning": "Applies the heterogeneous-subtraction operation supplied by an HSub instance.",
+      "effect_on_target": "Denotes real subtraction in residuals, perturbations, and gamma_n's denominator.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "LE.le",
+      "meaning": "Applies the less-than-or-equal relation supplied by an LE instance.",
+      "effect_on_target": "Expresses all real norm and magnitude bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative-monoid structure of the real numbers.",
+      "effect_on_target": "Provides finite real summation and its zero element.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The real-number division and inverse structure.",
+      "effect_on_target": "Determines the division in gamma_n.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "Real.instLE",
+      "meaning": "The standard less-than-or-equal order on real numbers.",
+      "effect_on_target": "Gives the usual interpretation to every inequality in the certificates and conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "Real.instSub",
+      "meaning": "Real subtraction, defined as addition of the additive inverse.",
+      "effect_on_target": "Determines residuals, pointwise differences, and 1 - n u.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "Real.instZero",
+      "meaning": "The additive identity 0 in the real numbers.",
+      "effect_on_target": "Supplies zero in normal equations, empty sums, and nonnegativity statements.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "Zero.toOfNat0",
+      "meaning": "Builds the interpretation of the numeral 0 from a type's zero operation.",
+      "effect_on_target": "Makes literal zero denote real or natural zero where required.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "instHDiv",
+      "meaning": "Lifts an ordinary Div operation to homogeneous HDiv.",
+      "effect_on_target": "Connects HDiv.hDiv on real arguments to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "instHSub",
+      "meaning": "Lifts an ordinary Sub operation to homogeneous HSub.",
+      "effect_on_target": "Connects HSub.hSub on real arguments to ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "Occurs in bundled floating-error axioms and spectrum-attainment conditions; the target's four conclusions introduce no new existential witness.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "Function.Injective",
+      "meaning": "A function f is injective when f(a1) = f(a2) implies a1 = a2.",
+      "effect_on_target": "Expresses the preprocessing full-column-rank assumptions for multiplication by A and by S A.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "HPow.hPow",
+      "meaning": "Applies a heterogeneous exponentiation operation.",
+      "effect_on_target": "Squares each vector component in the Euclidean norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D106",
+      "name": "LT.lt",
+      "meaning": "Applies the strict-order relation supplied by an LT instance.",
+      "effect_on_target": "Expresses dimension inequalities and n u < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D107",
+      "name": "Monoid.toNatPow",
+      "meaning": "Provides natural-number exponentiation in a monoid.",
+      "effect_on_target": "Interprets x(i)^2 in the Euclidean norm as the ordinary real square.",
+      "status": "understood"
+    },
+    {
+      "id": "D108",
+      "name": "Ne",
+      "meaning": "Disequality, defined as the negation of equality.",
+      "effect_on_target": "Requires nonzero diagonal entries in the triangular solve and nonzero divisors in the floating-division axiom.",
+      "status": "understood"
+    },
+    {
+      "id": "D109",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive-group structure of the real numbers.",
+      "effect_on_target": "Supports subtraction, negation, and absolute value in the bundled assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D110",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative-monoid structure of the real numbers.",
+      "effect_on_target": "Supports natural powers, especially component squares in the norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D111",
+      "name": "Real.lattice",
+      "meaning": "The lattice-order structure of the real numbers.",
+      "effect_on_target": "Supports the real absolute-value operation in error bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D112",
+      "name": "abs",
+      "meaning": "Defines absolute value as max(a, -a) in a lattice-ordered additive group.",
+      "effect_on_target": "Measures scalar floating errors and entries of the rowwise perturbation tensor.",
+      "status": "understood"
+    },
+    {
+      "id": "D113",
+      "name": "instHPow",
+      "meaning": "Lifts a Pow operation to HPow.",
+      "effect_on_target": "Connects exponentiation in the norm definition to real natural powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D114",
+      "name": "instLTNat",
+      "meaning": "The standard strict less-than relation on natural numbers.",
+      "effect_on_target": "Interprets 0 < n < s < m and finite-index bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D115",
       "name": "instOfNatNat",
-      "meaning": "This interprets each natural-number literal n as the natural number n itself.",
-      "effect_on_target": "It makes the exponent literal 2 in the norm definition exactly the natural number two.",
+      "meaning": "Interprets each natural-number literal as itself in Nat.",
+      "effect_on_target": "Supplies natural constants such as 0 and 1 in dimension and recursion conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D116",
+      "name": "Fin.val",
+      "meaning": "Projects the underlying natural number from a Fin n index.",
+      "effect_on_target": "Used to compare row and column positions and to set the prefix length in triangular sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D117",
+      "name": "Real.instLT",
+      "meaning": "The standard strict less-than relation on real numbers.",
+      "effect_on_target": "Interprets the run condition n u < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D118",
+      "name": "instDecidableEqFin",
+      "meaning": "Decides equality of two Fin n indices by comparing their natural values.",
+      "effect_on_target": "Allows the identity matrix to choose between entries 1 and 0.",
+      "status": "understood"
+    },
+    {
+      "id": "D119",
+      "name": "ite",
+      "meaning": "A nondependent if-then-else selected by a decidable proposition.",
+      "effect_on_target": "Defines identity-matrix entries and branches inside the floating reduction.",
+      "status": "understood"
+    },
+    {
+      "id": "D120",
+      "name": "Fin.mk",
+      "meaning": "Constructs a Fin n index from a natural value together with a proof that it is below n.",
+      "effect_on_target": "Builds indices used by the floating prefix sum and identity-related definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D121",
+      "name": "Neg.neg",
+      "meaning": "Applies the negation operation supplied by a Neg instance.",
+      "effect_on_target": "Provides scalar negation in the forward-error identity and subtraction definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D122",
+      "name": "Real.instNeg",
+      "meaning": "The ordinary additive inverse on real numbers.",
+      "effect_on_target": "Determines real negation in residual and absolute-value formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D123",
+      "name": "Fin.castSucc",
+      "meaning": "Embeds Fin n into Fin (n + 1) while preserving the underlying index.",
+      "effect_on_target": "Embeds indices of an initial segment when recursively reducing a nonempty finite vector.",
+      "status": "understood"
+    },
+    {
+      "id": "D124",
+      "name": "Fin.last",
+      "meaning": "Returns the final index n of Fin (n + 1).",
+      "effect_on_target": "Selects the last term in each recursive floating-sum step.",
+      "status": "understood"
+    },
+    {
+      "id": "D125",
+      "name": "Matrix",
+      "meaning": "A matrix with row type m, column type n, and entries in alpha is the function type m to n to alpha.",
+      "effect_on_target": "Provides the matrix interpretation needed for transpose in the Moore-Penrose identities.",
+      "status": "understood"
+    },
+    {
+      "id": "D126",
+      "name": "Matrix.transpose",
+      "meaning": "Transposes a matrix by exchanging its row and column arguments.",
+      "effect_on_target": "Expresses the two symmetry conditions in the Moore-Penrose pseudoinverse certificate.",
+      "status": "understood"
+    },
+    {
+      "id": "D127",
+      "name": "Nat.below",
+      "meaning": "Packages strong-recursion results for all natural numbers below a given natural number.",
+      "effect_on_target": "Provides the recursive result for the shorter prefix in the implementation of sequential floating summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D128",
+      "name": "Nat.brecOn",
+      "meaning": "Performs strong recursion on a natural number using access to results for all smaller numbers.",
+      "effect_on_target": "Implements the recursive finite-vector reduction used by the computed triangular sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D129",
+      "name": "Nat.instPreorder",
+      "meaning": "The standard preorder structure on natural numbers.",
+      "effect_on_target": "Supplies the natural strict order used in the index-validity theorem D067.",
+      "status": "understood"
+    },
+    {
+      "id": "D130",
+      "name": "Nat.succ",
+      "meaning": "The natural-number successor operation n maps to n + 1.",
+      "effect_on_target": "Represents nonzero finite-vector lengths in the recursive floating summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D131",
+      "name": "Not",
+      "meaning": "Logical negation: Not P means P implies False.",
+      "effect_on_target": "Defines disequality and negative branches of decidable conditions used in supporting certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D132",
+      "name": "Preorder.toLT",
+      "meaning": "Extracts the strict-order relation from a preorder.",
+      "effect_on_target": "Connects the natural preorder to the less-than relation in D067.",
+      "status": "understood"
+    },
+    {
+      "id": "D133",
+      "name": "dite",
+      "meaning": "A dependent if-then-else whose branches may use proofs of the condition or its negation.",
+      "effect_on_target": "Supports proof-dependent branching in the floating-sum implementation without adding a target-level assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D134",
+      "name": "instAddNat",
+      "meaning": "The standard addition operation on natural numbers.",
+      "effect_on_target": "Interprets n + 1 in finite-index and recursion types.",
+      "status": "understood"
+    },
+    {
+      "id": "D135",
+      "name": "instDecidableEqNat",
+      "meaning": "The standard decision procedure for equality of natural numbers.",
+      "effect_on_target": "Selects the n = 0 branch in the sequential floating reduction.",
+      "status": "understood"
+    },
+    {
+      "id": "D136",
+      "name": "Nat.casesOn",
+      "meaning": "Eliminates a natural number by separate zero and successor cases.",
+      "effect_on_target": "Implements the vector-length case split in LocalDef070.",
+      "status": "understood"
+    },
+    {
+      "id": "D137",
+      "name": "Nat.zero",
+      "meaning": "The natural number zero.",
+      "effect_on_target": "Represents empty dimensions and the base case of the recursive floating summation; preprocessing ultimately excludes n = 0.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "m and n are universally quantified natural numbers.",
-      "Y, DeltaY, and A are universally quantified real m-by-n matrices, represented as functions Fin m -> Fin n -> Real.",
-      "R and DeltaR are universally quantified real n-by-n matrices, represented as functions Fin n -> Fin n -> Real.",
-      "e0, eY, r, y, and eR are universally quantified real constants.",
-      "Within each matrix-bound hypothesis and within the conclusion, the vector x is independently universally quantified over R^n; there are no existentially quantified witnesses."
+      "Natural numbers m, s, and n, and a real number u.",
+      "A preprocessing certificate pre of dimensions m, s, n.",
+      "A floating-point arithmetic model model.",
+      "A certified forward run forwardRun for pre and model.",
+      "A complete certified run run for pre, model, forwardRun, and u."
     ],
     "hypotheses": [
-      "0 <= eY.",
-      "0 <= y.",
-      "For every x in R^n, ||(YR - A)x||_2 <= e0||x||_2.",
-      "For every x in R^n, ||DeltaY x||_2 <= eY||x||_2.",
-      "For every x in R^n, ||R x||_2 <= r||x||_2.",
-      "For every x in R^n, ||Y x||_2 <= y||x||_2.",
-      "For every x in R^n, ||DeltaR x||_2 <= eR||x||_2."
+      "The preprocessing certificate contains strict inequalities 0 < n < s < m; an m-by-n matrix A; an s-by-m matrix S; s-by-n matrices computedSketch, sketchError, qrError, and Qtilde; and n-by-n matrices RHat and RHatInv.",
+      "Multiplication by A and multiplication by S A are injective. The identities computedSketch = S A + sketchError and Qtilde RHat = computedSketch + qrError hold. Qtilde preserves the Euclidean norm, RHat is upper triangular, and RHatInv is a two-sided inverse of RHat.",
+      "The arithmetic model has a nonnegative unit roundoff and modeled addition, subtraction, multiplication, and division satisfying componentwise relative-error axioms with error magnitude at most that unit roundoff; division is specified for nonzero divisors.",
+      "The forward run contains a computed m-by-n matrix Y obtained by the stated floating triangular-substitution recurrence using A and RHat, whose diagonal entries are nonzero. It also contains a matrix equal to Y - A RHatInv.",
+      "The complete run identifies model.unitRoundoff with u and includes the condition n u < 1. Hence u >= 0 and gamma_n = n u/(1-n u) has a positive denominator.",
+      "The run contains attained upper and lower Euclidean operator-value certificates for RHat and Y. It also contains a rowwise forward-error representation and the operator bound ||(Y RHat-A)x||_2 <= n gamma_n rho_R rho_Y ||x||_2 for every x, where rho_R and rho_Y are the stored upper spectral values.",
+      "The LSQR certificate contains an m-by-n perturbation DeltaYHat, an m-vector perturbation deltaB, an n-vector zHat, and an n-by-m Moore-Penrose pseudoinverse Pplus of Y + DeltaYHat satisfying zHat = Pplus(b + deltaB). The run also contains an attained spectrum certificate for DeltaYHat with upper value rho_DeltaY.",
+      "The back-substitution certificate contains an n-by-n perturbation DeltaRHat, an n-vector xHat, and a two-sided inverse T of RHat + DeltaRHat. It satisfies (RHat + DeltaRHat)xHat = zHat and ||DeltaRHat x||_2 <= sqrt(n) gamma_n rho_R ||x||_2 for every x."
     ],
     "conclusions": [
-      "For every x in R^n, ||Ex||_2 <= (e0 + (eY r + (y eR + eY eR)))||x||_2, where E = (YR - A) + (DeltaY R + (Y DeltaR + DeltaY DeltaR)), equivalently E = (Y + DeltaY)(R + DeltaR) - A."
+      "Let E = (Y RHat - A) + DeltaYHat RHat + Y DeltaRHat + DeltaYHat DeltaRHat. Then A + E = (Y + DeltaYHat)(RHat + DeltaRHat) as m-by-n matrices.",
+      "The computed vector satisfies xHat = T(Pplus(b + deltaB)), where T is the stored inverse of RHat + DeltaRHat and Pplus is the stored Moore-Penrose pseudoinverse of Y + DeltaYHat.",
+      "The vector xHat satisfies the normal equations for the perturbed least-squares problem: for every j in Fin n, sum over i in Fin m of (A+E)(i,j) times (((A+E)xHat)(i) - (b+deltaB)(i)) equals 0.",
+      "For every n-vector x, ||E x||_2 <= rho_R ((n + sqrt(n)) gamma_n rho_Y + (1 + sqrt(n) gamma_n) rho_DeltaY) ||x||_2."
     ],
     "mathematical_definitions": [
-      "For B in R^(m-by-n) and C in R^(n-by-p), (BC)_ij = sum from k in Fin n of B_ik C_kj.",
-      "For B in R^(m-by-n) and x in R^n, (Bx)_i = sum from j in Fin n of B_ij x_j.",
-      "For x in R^q, ||x||_2 = sqrt(sum from i in Fin q of x_i^2), using the nonnegative square root.",
-      "The predicate represented by LocalDef003(B,c) means exactly that ||Bx||_2 <= c||x||_2 for every x in the domain of B."
+      "All vectors and matrices are finite real-valued functions: an m-by-n matrix has entries indexed by Fin m times Fin n.",
+      "Matrix-vector and matrix-matrix multiplication use exact finite real sums.",
+      "The norm is the Euclidean norm ||x||_2 = sqrt(sum_i x_i^2).",
+      "gamma_n = n u/(1 - n u), where n is interpreted as a real number.",
+      "Y is the output of the certified triangular-substitution computation; DeltaYHat is the LSQR matrix perturbation; RHat is the preprocessing triangular factor; and DeltaRHat is the back-substitution perturbation.",
+      "A tilde = A + E, Y tilde = Y + DeltaYHat, R tilde = RHat + DeltaRHat, and b tilde = b + deltaB.",
+      "rho_R, rho_Y, and rho_DeltaY are the stored nonnegative attained upper operator values of RHat, Y, and DeltaYHat, respectively.",
+      "The final bound constant is C = rho_R ((n + sqrt(n)) gamma_n rho_Y + (1 + sqrt(n) gamma_n) rho_DeltaY)."
     ],
-    "proposition_plain_english": "For arbitrary finite-dimensional real matrices of the stated dimensions, suppose eY and y are nonnegative and e0, eY, r, y, and eR respectively provide uniform Euclidean operator bounds for YR - A, DeltaY, R, Y, and DeltaR. Then the expanded perturbed residual (Y + DeltaY)(R + DeltaR) - A has the uniform Euclidean operator bound e0 + eY r + y eR + eY eR."
+    "proposition_plain_english": "For every collection of dimensions, preprocessing data, floating arithmetic model, forward computation, and complete run satisfying all of the bundled certificates above, the already stored perturbations produce an exact factorization A tilde = Y tilde R tilde. The stored computed solution is exactly obtained by applying the perturbed pseudoinverse to the perturbed right-hand side and then applying the inverse of the perturbed triangular factor. This solution satisfies the normal equations for A tilde and b tilde, and the aggregate matrix perturbation E has Euclidean operator action bounded by the explicitly displayed constant C."
   },
   "restrictions_and_vacuity_risks": [
-    "The dimensions m and n may be zero; no positivity assumption on either dimension is encoded.",
-    "If n = 0, the only input vector is the empty vector, all relevant matrix-vector products and norms are zero, every LocalDef003 bound is automatically 0 <= 0, and the conclusion is automatic regardless of the bound constants, subject only to the separately supplied assumptions 0 <= eY and 0 <= y.",
-    "If n > 0, any hypothesis LocalDef003(B,c) forces c >= 0 because it must hold for a vector with positive Euclidean norm. Thus negative choices of e0, r, or eR make their corresponding premises impossible and the implication vacuous, even though their nonnegativity is not stated separately.",
-    "The constants are only upper-bound certificates. The proposition does not assert that any of e0, eY, r, y, or eR equals an induced operator norm or is a minimal bound.",
-    "Only finite-dimensional real matrices and the Euclidean vector norm are represented.",
-    "No invertibility, nonsingularity, triangularity, orthogonality, rank condition, relative-error condition, floating-point model, algorithmic origin, or relationship between the perturbations and computed quantities is encoded beyond the displayed dimensions and norm bounds.",
-    "The conclusion is one uniform matrix-action bound; it does not provide entrywise bounds, lower bounds, equality, or an existential construction."
+    "The proposition is universal over inhabitants of several dependent certificate types. It is vacuously true for parameters for which no preprocessing, model, forward-run, or complete-run certificate exists.",
+    "A preprocessing certificate can exist only when 0 < n < s < m, so zero or incorrectly ordered dimensions are excluded through the binder type rather than by explicit implications in the target.",
+    "The conditions u >= 0 and n u < 1 are encoded inside the model and run packages rather than displayed as top-level hypotheses.",
+    "The perturbations and inverse or pseudoinverse matrices are already selected fields of the run; the target does not existentially assert that suitable perturbations can be found from less structured input.",
+    "No magnitude bound on deltaB is encoded, and no relative bound comparing E with A or deltaB with b is asserted.",
+    "DeltaYHat has an exact stored upper operator value, but the target gives no separate formula bounding that value in terms of u.",
+    "The final LocalDef025 statement is an upper bound on ||E x||_2 for every x. It does not assert that the displayed constant is the smallest possible bound or equals ||E||_2.",
+    "The normal equations do not by themselves assert uniqueness of xHat, a residual bound, or closeness of xHat to a solution of the original unperturbed problem.",
+    "All conclusion equalities and norms use exact real arithmetic. Floating-point behavior is represented only through the bundled arithmetic-model and computation certificates.",
+    "The sketch dimension s and sketching matrix S constrain preprocessing but do not occur explicitly in the four final conclusions."
   ],
   "ambiguities": []
 }

@@ -3,428 +3,1254 @@
   "role": "direct-judge",
   "task_id": "P07-T2",
   "paper_sha256": "4c4d638b359719f47e2c4664a50e9fa8e4704e8b6b39923d73c41883a97c5790",
-  "dossier_sha256": "483fd7812562ba6afecb548b0204d376788c3b9986e115aced1ad936fb2a3737",
+  "dossier_sha256": "f299fb575eb664dc2797125be847814abc7ff6b2ca351e0e8ff28a1ace1b3df1",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.p07BackwardError",
-      "interpretation": "For each entry, this is (Y R - A) + DeltaY R + Y DeltaR + DeltaY DeltaR, using ordinary matrix products and pointwise real addition and subtraction.",
-      "effect_on_target": "It fixes the matrix whose operator 2-norm is bounded in the conclusion and retains all four perturbation terms.",
-      "paper_match": "It exactly matches the paper's displayed four-term definition of DeltaA, including the base reconstruction error and mixed product.",
+      "name": "HighamBench.P07Equation26BackSubstitution.perturbedRInv",
+      "interpretation": "Projection of the explicitly supplied two-sided inverse of RHat plus DeltaRHat.",
+      "effect_on_target": "It appears in the factorized formula for xHat.",
+      "paper_match": "The proof on printed page 920 writes xHat using the inverse of RHat plus DeltaRHat.",
       "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p07RectMatMul",
-      "interpretation": "This is ordinary finite real matrix multiplication, summing A(i,k)B(k,j) over k in Fin n.",
-      "effect_on_target": "It determines every product in the base-error hypothesis and four-term backward-error expression.",
-      "paper_match": "It matches the ordinary products of the paper's m-by-n and n-by-n matrices.",
+      "name": "HighamBench.P07Equation26BackSubstitution.xHat",
+      "interpretation": "Projection of the final computed n-vector produced by back substitution.",
+      "effect_on_target": "This is the candidate perturbed least-squares solution in two target conjuncts.",
+      "paper_match": "It represents the final computed xHat in Algorithm 1.3 and Theorem 3.5.",
       "status": "pass"
     },
     {
       "id": "D003",
-      "name": "HighamBench.p07RectOpNorm2Le",
-      "interpretation": "This asserts that for every vector x, the Euclidean norm of A x is at most c times the Euclidean norm of x; it is a relational encoding of an induced matrix 2-norm upper bound.",
-      "effect_on_target": "Every matrix-norm premise and the conclusion is expressed through this upper-bound predicate rather than a norm-valued function.",
-      "paper_match": "For the paper's finite real matrices and nonnegative bounds, it has the intended spectral matrix 2-norm semantics.",
+      "name": "HighamBench.P07ForwardSubstitutionTrace.output",
+      "interpretation": "Projection of the computed m-by-n matrix produced by rowwise forward substitution.",
+      "effect_on_target": "It supplies YHat throughout the LSQR witness, perturbation formula, and norm budget.",
+      "paper_match": "Algorithm 1.3 and the proof identify this quantity as the explicitly formed YHat.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.p07MatVec",
-      "reuse_sha256": "2c57ade87344bcd23c15d60d29e08d8e736d0b39921a84f5f6eae43a2cebef3c",
-      "effect_on_target": "It supplies the matrix-vector action used to define every induced operator-norm bound.",
-      "paper_match": "This is the standard action underlying the paper's spectral matrix 2-norm.",
+      "name": "HighamBench.P07LSQRBackwardWitness.DeltaYHat",
+      "interpretation": "Projection of the LSQR backward matrix perturbation.",
+      "effect_on_target": "It forms perturbedY, DeltaA, and the second term of the norm budget.",
+      "paper_match": "It is the DeltaYHat in equation (3.9), distinct from the forward-formation error.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "HighamBench.p07VecNorm2",
-      "reuse_sha256": "7b95691578028c3cbc7bdfea5d3bf7a47abc942b755f9b237c7c74cbb6bf2862",
-      "effect_on_target": "It supplies both vector norms in the induced operator-norm inequality.",
-      "paper_match": "The Euclidean vector norm induces the paper's spectral matrix 2-norm.",
+      "name": "HighamBench.P07LSQRBackwardWitness.perturbedPseudoinverse",
+      "interpretation": "Projection of a Moore-Penrose pseudoinverse of YHat plus DeltaYHat.",
+      "effect_on_target": "It maps perturbedB to zHat in the factorized xHat equation.",
+      "paper_match": "This realizes the dagger operator in equation (3.9).",
       "status": "pass"
     },
     {
       "id": "D006",
-      "name": "Fin",
-      "reuse_sha256": "f53009fa223bbdaf32a11aabafd6ae3905217db5e5485a58ba85a5a9bbeabf26",
-      "effect_on_target": "It represents finite row, column, and contraction index sets for the matrices and vectors.",
-      "paper_match": "Fin m and Fin n correctly model the paper's finite dimensions, although Lean additionally permits zero dimensions.",
+      "name": "HighamBench.P07LSQRBackwardWitness.zHat",
+      "interpretation": "Projection of the terminal LSQR iterate.",
+      "effect_on_target": "It links the LSQR witness to the final back substitution.",
+      "paper_match": "It is the zHat appearing in equation (3.9) and the final triangular solve.",
       "status": "pass"
     },
     {
       "id": "D007",
-      "name": "HAdd.hAdd",
-      "reuse_sha256": "4735d44aa1c8d5538ec3e2f96011a3779a892715d104b019269f656a4cb8b285",
-      "effect_on_target": "It combines the four matrix terms pointwise and the scalar budget terms in the conclusion.",
-      "paper_match": "Ordinary real addition is the intended operation in both the expansion and norm estimate.",
+      "name": "HighamBench.P07Lemma31ComputedPreconditioner",
+      "interpretation": "A bundled computed-preconditioner specification carrying dimensions, matrices, rank facts, computed sketch and QR data, and an invertible RHat.",
+      "effect_on_target": "It fixes A, S, RHat, and their dimensions for all later records.",
+      "paper_match": "Its constructor models the sketch and Householder-QR stages needed by Algorithm 1.3.",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "HMul.hMul",
-      "reuse_sha256": "1762e1a6d37464af56133510a8e2f8d2d3a2f73f280ffc8c3b9782bc83c4f5db",
-      "effect_on_target": "It forms matrix-product summands and products of scalar norm budgets.",
-      "paper_match": "Ordinary real multiplication matches the paper's products.",
+      "name": "HighamBench.P07Lemma31ComputedPreconditioner.A",
+      "interpretation": "Projection of the original real m-by-n least-squares matrix.",
+      "effect_on_target": "It is the unperturbed matrix in DeltaA and perturbedA.",
+      "paper_match": "It has exactly the dimensions and role of A in the paper.",
       "status": "pass"
     },
     {
       "id": "D009",
-      "name": "HSub.hSub",
-      "interpretation": "This dispatches heterogeneous subtraction; with the selected instances here it is ordinary subtraction of real numbers.",
-      "effect_on_target": "It forms each entry of the base reconstruction error Y R - A.",
-      "paper_match": "It matches the subtraction in the paper's Y-hat R-hat minus A term.",
+      "name": "HighamBench.P07Lemma31ComputedPreconditioner.RHat",
+      "interpretation": "Projection of the computed n-by-n upper-triangular QR factor.",
+      "effect_on_target": "It is the unperturbed factor in perturbedR, formation error, and back substitution.",
+      "paper_match": "It matches the computed RHat used on printed pages 917-920.",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "LE.le",
-      "reuse_sha256": "1d6c5538d176983f9f66a5e8b158177e8e77312bfb5c479547f1aa6803644b14",
-      "effect_on_target": "It expresses scalar nonnegativity and every non-strict norm upper bound.",
-      "paper_match": "The selected immediate compositional estimate in the proof is non-strict.",
+      "name": "HighamBench.P07Lemma32ForwardRun",
+      "interpretation": "A bundled forward-substitution execution and its separately named formation error.",
+      "effect_on_target": "It fixes the computed YHat used by the run.",
+      "paper_match": "It models the explicit formation YHat approximately equal to A RHat inverse without identifying its formation error with DeltaYHat.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "Nat",
-      "interpretation": "This is Lean's natural-number type, including zero.",
-      "effect_on_target": "It parameterizes the matrix dimensions m and n.",
-      "paper_match": "It includes the paper's positive integer dimensions but also extends the theorem to degenerate zero-dimensional cases.",
+      "name": "HighamBench.P07Lemma32ForwardRun.forwardSubstitution",
+      "interpretation": "Projection of the forward-substitution trace.",
+      "effect_on_target": "Its output is the YHat used by LSQR and the composed perturbation.",
+      "paper_match": "It corresponds to step 4 of Algorithm 1.3.",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "OfNat.ofNat",
-      "reuse_sha256": "9f4ae78e268f549f9fa054e8a40dc22788e317dd074a667cdbf8b9f9a04c9e0f",
-      "effect_on_target": "It interprets the literal zero used in the nonnegativity assumptions.",
-      "paper_match": "This has the ordinary numerical meaning required for nonnegative norm budgets.",
+      "name": "HighamBench.P07RectSpectralExtrema.upper",
+      "interpretation": "Projection of an attained nonnegative operator-norm upper extremum.",
+      "effect_on_target": "It supplies exact spectral-norm values for RHat, YHat, and DeltaYHat.",
+      "paper_match": "These values play the roles of the corresponding spectral norms in the immediate estimate.",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "Real",
-      "reuse_sha256": "0494ec48a9b90eb653272c5d824dd315471ba96930fec5ed804c46889b610589",
-      "effect_on_target": "All matrix entries and scalar budgets are exact real numbers.",
-      "paper_match": "The paper states its matrices and perturbations over the reals.",
+      "name": "HighamBench.P07SAABlendenpikRun",
+      "interpretation": "A valid SAA Blendenpik execution specification bundling unit roundoff, data, norm certificates, formation error, LSQR witnesses, and back substitution.",
+      "effect_on_target": "All target quantities and local error certificates depend on this run.",
+      "paper_match": "It captures the stages and local hypotheses used in the unnumbered construction on printed page 920.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "Real.instAdd",
-      "reuse_sha256": "55ec683888ef424087b3c22991e754a8e5b90baebaa3f3bc29fb9149cf1f6338",
-      "effect_on_target": "It realizes the additions in the expansion and scalar budget.",
-      "paper_match": "It matches ordinary real addition.",
+      "name": "HighamBench.P07SAABlendenpikRun.b",
+      "interpretation": "Projection of the original m-vector right-hand side.",
+      "effect_on_target": "It is perturbed by the LSQR deltaB to form perturbedB.",
+      "paper_match": "It matches b in the original and preconditioned least-squares problems.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "Real.instLE",
-      "reuse_sha256": "2ed855b976956890f6711c98a5bc63a243beeefa08dc5896af2afad348a74bd8",
-      "effect_on_target": "It realizes all nonnegativity and upper-bound relations.",
-      "paper_match": "It matches the ordinary real ordering used in the paper's estimates.",
+      "name": "HighamBench.P07SAABlendenpikRun.backSubstitution",
+      "interpretation": "Projection of the certified final triangular solve.",
+      "effect_on_target": "It supplies xHat, DeltaRHat, and the inverse of perturbedR.",
+      "paper_match": "It models the single final back substitution in Algorithm 1.3 and equation (2.6).",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "Real.instMul",
-      "reuse_sha256": "b5ca9ce66e8e0587bfc928482989109c5e9fb5d61c08cd29b8cd647786c9f0bb",
-      "effect_on_target": "It realizes coordinate products and products of norm budgets.",
-      "paper_match": "It matches ordinary real multiplication.",
+      "name": "HighamBench.P07SAABlendenpikRun.lsqr",
+      "interpretation": "Projection of the LSQR backward-error witness.",
+      "effect_on_target": "It supplies DeltaYHat, deltaB, zHat, and the perturbed pseudoinverse.",
+      "paper_match": "It represents equation (3.9), which is a hypothesis rather than an LSQR theorem.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "Real.instSub",
-      "interpretation": "This is ordinary real subtraction, implemented as addition of the real additive inverse.",
-      "effect_on_target": "It supplies the subtraction in Y R - A.",
-      "paper_match": "It exactly matches the paper's base-error subtraction.",
+      "name": "HighamBench.P07SAABlendenpikRun.lsqrDeltaSpectrum",
+      "interpretation": "Projection of exact spectral-extrema data for DeltaYHat.",
+      "effect_on_target": "Its upper field is used as the norm of the LSQR matrix perturbation.",
+      "paper_match": "It matches the spectral norm of DeltaYHat in the immediate estimate.",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "Real.instZero",
-      "interpretation": "This supplies the exact real number zero.",
-      "effect_on_target": "It is the lower bound in the assumptions 0 <= eY and 0 <= y.",
-      "paper_match": "Norm quantities in the paper are nonnegative relative to the ordinary real zero.",
+      "name": "HighamBench.P07SAABlendenpikRun.rSpectrum",
+      "interpretation": "Projection of exact spectral-extrema data for RHat.",
+      "effect_on_target": "Its upper field multiplies the complete compositional budget.",
+      "paper_match": "It matches the outer factor norm of RHat on printed page 920.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "Zero.toOfNat0",
-      "interpretation": "This turns the selected Zero instance into the interpretation of the numeral 0.",
-      "effect_on_target": "It connects the syntactic zero literals to exact real zero.",
-      "paper_match": "It introduces no semantic deviation from the paper.",
+      "name": "HighamBench.P07SAABlendenpikRun.ySpectrum",
+      "interpretation": "Projection of exact spectral-extrema data for YHat.",
+      "effect_on_target": "Its upper field occurs in the formation and DeltaR contributions.",
+      "paper_match": "It matches the spectral norm of YHat in the immediate estimate.",
       "status": "pass"
     },
     {
       "id": "D020",
-      "name": "instHAdd",
-      "reuse_sha256": "fc3a9dc5bf82509a928c929795409ec170fd84f45c7d62e1469b4cba24ec9f78",
-      "effect_on_target": "It makes homogeneous real addition available through HAdd notation.",
-      "paper_match": "It preserves ordinary real addition.",
+      "name": "HighamBench.P07ScalarArithmeticModel",
+      "interpretation": "A scalar floating-point specification with a nonnegative unit roundoff and rounded arithmetic operations.",
+      "effect_on_target": "It governs the forward-substitution trace from which YHat is obtained.",
+      "paper_match": "It instantiates the relative-error precision-u convention used in section 2.3.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "instHMul",
-      "reuse_sha256": "82fca9b6c172b8aeabc0990e33296f4c8cefd3de30cc36f77b5ad630a722f8aa",
-      "effect_on_target": "It makes homogeneous real multiplication available through HMul notation.",
-      "paper_match": "It preserves ordinary real multiplication.",
+      "name": "HighamBench.gamma",
+      "interpretation": "The exact real expression n*u divided by 1-n*u.",
+      "effect_on_target": "It appears with the same dimension n in every local rounding-error coefficient.",
+      "paper_match": "It exactly matches gamma_n in equation (2.1), including the denominator.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "instHSub",
-      "interpretation": "This lifts a homogeneous subtraction instance to heterogeneous subtraction with identical real input and output types.",
-      "effect_on_target": "It connects HSub.hSub in the base-error expression to Real.instSub.",
-      "paper_match": "It preserves ordinary real subtraction.",
-      "status": "pass"
+      "name": "HighamBench.p07LeastSquaresNormalEquation",
+      "interpretation": "The proposition A transpose times (A*x-b) equals zero componentwise.",
+      "effect_on_target": "It states that xHat is a least-squares stationary point for perturbedA and perturbedB.",
+      "paper_match": "It matches the exact-minimizer meaning of backward error in equation (1.2), but it is weaker than both the literal consistent-system equation in Theorem 3.5 and the minimum-norm pseudoinverse identity asserted in its proof when the perturbed matrix is rank deficient.",
+      "status": "unclear"
     },
     {
       "id": "D023",
-      "name": "Fin.fintype",
-      "reuse_sha256": "39d9783de210591165f8499841e03d99a0a0b62255eb37f35a73bb01a49c2398",
-      "effect_on_target": "It permits enumeration of all finite contraction and vector-coordinate indices.",
-      "paper_match": "It implements the finite sums used by ordinary finite-dimensional matrices and Euclidean norms.",
+      "name": "HighamBench.p07MatVec",
+      "interpretation": "Ordinary finite real matrix-vector multiplication.",
+      "effect_on_target": "It interprets every application of a matrix, inverse, or pseudoinverse.",
+      "paper_match": "It has the standard matrix-vector semantics used by the paper.",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "Finset.sum",
-      "reuse_sha256": "a63cd30eebffc4e76d0571b9ebf5db7feee1cfd30b57b048e28ebe78c96ac2cf",
-      "effect_on_target": "It forms matrix-product sums and coordinate-square sums.",
-      "paper_match": "These are the standard finite sums implicit in the paper.",
+      "name": "HighamBench.p07RectMatMul",
+      "interpretation": "Ordinary finite real rectangular matrix multiplication.",
+      "effect_on_target": "It interprets perturbedY times perturbedR and all inverse and Penrose equations.",
+      "paper_match": "Its index order and dimensions match the paper's products.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "Finset.univ",
-      "reuse_sha256": "8d3033a348432d628aa39091e52f7667d26e9f28843d61f06169d3818f9bc98c",
-      "effect_on_target": "It selects every coordinate for matrix products and Euclidean norms.",
-      "paper_match": "It matches summation over all relevant matrix or vector indices.",
+      "name": "HighamBench.p07RectOpNorm2Le",
+      "interpretation": "The operator inequality that every x satisfies norm(A*x) at most c times norm(x).",
+      "effect_on_target": "It is the formal spectral-norm upper bound for DeltaA.",
+      "paper_match": "For the nonnegative target coefficient, this is equivalent to the paper's spectral-norm inequality.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "Real.instAddCommMonoid",
-      "reuse_sha256": "2436f37fe5f5b335500c23bb11b11d3cd2846daac0a0cf97783d3ecaa14c4a74",
-      "effect_on_target": "It supplies the algebraic structure used by finite real sums.",
-      "paper_match": "It implements ordinary finite addition without changing the mathematical meaning.",
+      "name": "HighamBench.p07Theorem35DeltaA",
+      "interpretation": "The composed DeltaA obtained from YHat, DeltaYHat, RHat, DeltaRHat, and A.",
+      "effect_on_target": "It is the matrix bounded in the last conjunct and added to A in perturbedA.",
+      "paper_match": "After unfolding p07BackwardError it is exactly the four-term DeltaA construction on printed page 920.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "HPow.hPow",
-      "reuse_sha256": "952e5795ef7760dad834bbcc3b861fae368185e0dd6070f16dd7164291a4fc5b",
-      "effect_on_target": "It squares vector coordinates inside the Euclidean norm.",
-      "paper_match": "Coordinate squares are the intended ingredients of the Euclidean 2-norm.",
+      "name": "HighamBench.p07Theorem35PerturbedA",
+      "interpretation": "The pointwise matrix sum A plus DeltaA.",
+      "effect_on_target": "It is equated to perturbedY times perturbedR and used in the normal equation.",
+      "paper_match": "It matches A plus DeltaA in the perturbed original least-squares problem.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "Monoid.toNatPow",
-      "reuse_sha256": "a177366079d99333be27eafbc37babf4ee79482cd37f3837ae3662025699994f",
-      "effect_on_target": "It supplies repeated real multiplication for the coordinate square operation.",
-      "paper_match": "It gives the ordinary square of each real coordinate.",
+      "name": "HighamBench.p07Theorem35PerturbedB",
+      "interpretation": "The pointwise vector sum b plus deltaB.",
+      "effect_on_target": "It is fed to the perturbed pseudoinverse and used in the normal equation.",
+      "paper_match": "It preserves the same delta b from equation (3.9).",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "Real.instMonoid",
-      "reuse_sha256": "5ecabffed05500c8ce16d7e7757c9f1a4b160004e0f0616f03a7ddefa43f8efa",
-      "effect_on_target": "It supplies real multiplication and powers used by the Euclidean norm.",
-      "paper_match": "It preserves ordinary real arithmetic.",
+      "name": "HighamBench.p07Theorem35PerturbedR",
+      "interpretation": "The pointwise matrix sum RHat plus DeltaRHat.",
+      "effect_on_target": "It is the right factor of perturbedA.",
+      "paper_match": "It matches the perturbed triangular factor in equation (2.6) and the proof.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "Real.sqrt",
-      "reuse_sha256": "0817c22961009afbc31736125fe57848bc41bcfcd5f650dab32ca6cb7a9331fd",
-      "effect_on_target": "It converts the sum of coordinate squares into the Euclidean vector norm.",
-      "paper_match": "The nonnegative square root is the intended 2-norm convention.",
+      "name": "HighamBench.p07Theorem35PerturbedY",
+      "interpretation": "The pointwise matrix sum YHat plus DeltaYHat.",
+      "effect_on_target": "It is the left factor of perturbedA and the LSQR perturbed matrix.",
+      "paper_match": "It matches YHat plus DeltaYHat in equation (3.9).",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "instHPow",
-      "reuse_sha256": "8957e4a97b00059c55dc6f45409d20d173c0b722eca8c932ec27934e2b6c0331",
-      "effect_on_target": "It exposes real natural powers through HPow notation.",
-      "paper_match": "It introduces no change to the coordinate-square semantics.",
+      "name": "HighamBench.P07Equation26BackSubstitution",
+      "interpretation": "A certified back-substitution result containing DeltaRHat, xHat, an inverse, the perturbed equation, and the DeltaRHat bound.",
+      "effect_on_target": "It makes the final triangular-solve relation available to the composition theorem.",
+      "paper_match": "Its substantive fields reproduce equation (2.6) as used on printed page 920.",
       "status": "pass"
     },
     {
       "id": "D032",
-      "name": "instOfNatNat",
-      "reuse_sha256": "9fa32deaa97ab2beed5a53804c107f2ed5a722fbf240731dd537975f9920a6b9",
-      "effect_on_target": "It interprets the natural exponent used for coordinate squaring.",
-      "paper_match": "The exponent has its ordinary natural-number meaning.",
+      "name": "HighamBench.P07Equation26BackSubstitution.DeltaRHat",
+      "interpretation": "Projection of the backward perturbation to RHat.",
+      "effect_on_target": "It enters perturbedR and the two DeltaRHat terms of DeltaA.",
+      "paper_match": "It is the DeltaRHat supplied by the back-substitution error model.",
       "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "HighamBench.P07ForwardSubstitutionTrace",
+      "interpretation": "A trace type for computing YHat rowwise using rounded substitution against RHat.",
+      "effect_on_target": "It links the computed matrix to the scalar arithmetic execution.",
+      "paper_match": "It models explicit forward substitution for A RHat inverse.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "HighamBench.P07LSQRBackwardWitness",
+      "interpretation": "A witness package for DeltaYHat, deltaB, zHat, and a Moore-Penrose pseudoinverse.",
+      "effect_on_target": "It Skolemizes equation (3.9) with the required dependencies.",
+      "paper_match": "It accurately represents the conditional LSQR backward-witness hypothesis.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "HighamBench.P07LSQRBackwardWitness.deltaB",
+      "interpretation": "Projection of the LSQR right-hand-side perturbation.",
+      "effect_on_target": "It forms perturbedB and is carried unchanged to the original perturbed problem.",
+      "paper_match": "This is the same delta b used in equation (3.9) and Theorem 3.5.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "HighamBench.P07Lemma31ComputedPreconditioner.mk",
+      "interpretation": "Constructor requiring 0<n<s<m, full column rank of A and SA, computed sketch and QR relations, an isometric Qtilde, upper-triangular RHat, and a two-sided RHat inverse.",
+      "effect_on_target": "It ensures meaningful dimensions and a nonsingular triangular preconditioner.",
+      "paper_match": "These are the local rank and computed-factor properties needed for Algorithm 1.3; the omitted global conditioning inequalities belong to the later specialized bound, not the immediate composition.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "HighamBench.P07Lemma32ForwardRun.mk",
+      "interpretation": "Constructor pairing a forward-substitution trace with DeltaY defined as YHat minus A RHat inverse.",
+      "effect_on_target": "It records the formation error separately from the LSQR perturbation.",
+      "paper_match": "This separation matches Lemma 3.2 and footnote 5.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "HighamBench.P07RectSpectralExtrema",
+      "interpretation": "A certificate type for attained upper and lower Euclidean operator extrema of a finite matrix.",
+      "effect_on_target": "It lets the target use exact norm values as projections.",
+      "paper_match": "Finite-dimensional spectral norms and smallest singular values have these extrema.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "HighamBench.P07SAABlendenpikRun.mk",
+      "interpretation": "Constructor for a valid run requiring unit-roundoff agreement, gamma validity, b, spectral certificates, a formation-error certificate, an LSQR witness, and a back-substitution certificate.",
+      "effect_on_target": "It packages all local hypotheses used in the product identity and immediate estimate.",
+      "paper_match": "The package corresponds to the execution facts invoked between equation (3.9) and the immediate compositional estimate; it does not add smallness assumptions on DeltaYHat or deltaB.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "HighamBench.P07ScalarArithmeticModel.mk",
+      "interpretation": "Constructor imposing a relative-error model with absolute relative error at most u for addition, subtraction, multiplication, and nonzero-denominator division.",
+      "effect_on_target": "It constrains the rounded operations used in the forward-substitution trace.",
+      "paper_match": "It is a standard formal version of the precision-u model used in section 2.3; neither source specifies exceptional IEEE values.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "HighamBench.p07BackwardError",
+      "interpretation": "The matrix (Y*R-A) + DeltaY*R + Y*DeltaR + DeltaY*DeltaR.",
+      "effect_on_target": "It preserves every term, including the DeltaY*DeltaR cross term.",
+      "paper_match": "It exactly matches the displayed DeltaA definition on printed page 920.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "HighamBench.p07RectAdd",
+      "interpretation": "Pointwise addition of equally shaped real matrices.",
+      "effect_on_target": "It forms all perturbed matrices.",
+      "paper_match": "It implements ordinary matrix addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "HighamBench.p07VecAdd",
+      "interpretation": "Pointwise addition of real vectors.",
+      "effect_on_target": "It forms b plus deltaB.",
+      "paper_match": "It implements the right-hand-side perturbation in equation (3.9).",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "HighamBench.p07VecNorm2",
+      "interpretation": "The square root of the finite sum of component squares.",
+      "effect_on_target": "It supplies the Euclidean vector norm underlying all operator bounds.",
+      "paper_match": "It is exactly the real Euclidean 2-norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "HighamBench.GammaValid",
+      "interpretation": "The condition n*u<1.",
+      "effect_on_target": "Together with nonnegative u it makes gamma_n finite and nonnegative.",
+      "paper_match": "It is the local denominator condition for equation (2.1); the stronger n^2*u<1/201 is only needed for later numerical constants.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "HighamBench.P07Equation26BackSubstitution.mk",
+      "interpretation": "Constructor requiring a two-sided inverse of RHat+DeltaRHat, the equation (RHat+DeltaRHat)xHat=zHat, and the bound on DeltaRHat by sqrt(n)*gamma_n*norm(RHat).",
+      "effect_on_target": "It supplies both the exact factorization of xHat and the DeltaRHat contribution to the budget.",
+      "paper_match": "The equation and bound match equation (2.6); invertibility is also used explicitly in the proof.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "HighamBench.P07ForwardFormationError",
+      "interpretation": "A certificate type for the rowwise formation relation, its componentwise perturbation bound, and the resulting spectral residual bound.",
+      "effect_on_target": "It provides the norm estimate for YHat*RHat-A.",
+      "paper_match": "It collects the three consecutive formation-error statements on printed page 920.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "HighamBench.P07ForwardSubstitutionTrace.mk",
+      "interpretation": "Constructor requiring nonzero diagonal entries and the rounded recurrence output(i,j)=(A(i,j)-prefix)/R(j,j).",
+      "effect_on_target": "It ties YHat to an actual rowwise forward-substitution computation.",
+      "paper_match": "The prefix k<j is the recurrence for solving RHat transpose times each output row transpose equals the corresponding row of A.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "HighamBench.P07LSQRBackwardWitness.mk",
+      "interpretation": "Constructor requiring Penrose equations for the supplied pseudoinverse and zHat=P*(b+deltaB).",
+      "effect_on_target": "It gives the exact equation (3.9) witness.",
+      "paper_match": "It preserves both the perturbed matrix and the same perturbed right-hand side.",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "HighamBench.P07RectSpectralExtrema.mk",
+      "interpretation": "Constructor requiring nonnegative attained upper and lower operator bounds.",
+      "effect_on_target": "It ensures upper is the actual spectral norm rather than an arbitrary loose bound.",
+      "paper_match": "This is valid for the finite real matrices used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "HighamBench.P07ScalarArithmeticModel.unitRoundoff",
+      "interpretation": "Projection of the arithmetic model's nonnegative precision parameter.",
+      "effect_on_target": "The run equates it to u.",
+      "paper_match": "It corresponds to the paper's unit roundoff u.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "HighamBench.p07ExactPreconditionedMatrix",
+      "interpretation": "The exact product A times the supplied inverse of RHat.",
+      "effect_on_target": "It defines the reference matrix used to distinguish formation error from LSQR error.",
+      "paper_match": "It is the exact A RHat inverse in Lemma 3.2.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "HighamBench.p07FiniteId",
+      "interpretation": "The finite identity matrix with entries one on equal indices and zero otherwise.",
+      "effect_on_target": "It states two-sided inverse equations.",
+      "paper_match": "It has the standard identity-matrix meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "HighamBench.p07Isometry",
+      "interpretation": "The property that Q preserves every Euclidean vector norm.",
+      "effect_on_target": "It gives the computed Qtilde orthonormal-column semantics in the preconditioner record.",
+      "paper_match": "It matches the economy Householder-Q isometry used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "HighamBench.p07RectSub",
+      "interpretation": "Pointwise subtraction of equally shaped real matrices.",
+      "effect_on_target": "It defines the forward-formation error.",
+      "paper_match": "It implements YHat-A RHat inverse.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "HighamBench.p07UpperTriangular",
+      "interpretation": "The condition that entries strictly below the diagonal are zero.",
+      "effect_on_target": "It identifies RHat as an upper-triangular factor.",
+      "paper_match": "It matches the triangular R factor from Householder QR.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "HighamBench.P07ForwardFormationError.mk",
+      "interpretation": "Constructor requiring YHat*RHat-A=-YHat times a row-dependent perturbation, the entrywise bound by gamma_n*abs(RHat), and the operator bound n*gamma_n*norm(RHat)*norm(YHat).",
+      "effect_on_target": "Its final field supplies the first contribution to the DeltaA budget while retaining the rowwise evidence.",
+      "paper_match": "Its signs, indices, gamma factor, and spectral coefficient agree with the display and following line on printed page 920.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "HighamBench.P07Lemma31ComputedPreconditioner.RHatInv",
+      "interpretation": "Projection of a supplied two-sided inverse of RHat.",
+      "effect_on_target": "It defines the exact preconditioned matrix A RHat inverse.",
+      "paper_match": "It represents RHat inverse used in Algorithm 1.3.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "HighamBench.P07MoorePenrosePseudoinverse",
+      "interpretation": "A proposition asserting that a supplied matrix is a Moore-Penrose pseudoinverse.",
+      "effect_on_target": "It gives semantic content to the pseudoinverse used by the LSQR witness.",
+      "paper_match": "It matches the dagger convention stated in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "HighamBench.P07ScalarArithmeticModel.flDiv",
+      "interpretation": "Projection of the model's rounded division operation.",
+      "effect_on_target": "It computes each forward-substitution quotient.",
+      "paper_match": "It represents finite-precision division under the paper's scalar model.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "HighamBench.P07ScalarArithmeticModel.flSub",
+      "interpretation": "Projection of the model's rounded subtraction operation.",
+      "effect_on_target": "It computes the numerator in each substitution step.",
+      "paper_match": "It represents finite-precision subtraction under the paper's scalar model.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "HighamBench.p07RectLowerBound",
+      "interpretation": "The operator lower bound c*norm(x)<=norm(A*x) for every x.",
+      "effect_on_target": "It supports exact lower spectral extrema, although the target uses only upper fields.",
+      "paper_match": "It is the finite-dimensional smallest-singular-value inequality.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "HighamBench.p07RoundedPrefixDot",
+      "interpretation": "A recursively rounded sum of products Y(i,k)*R(k,j) over k<j.",
+      "effect_on_target": "It gives the already-computed prefix in forward substitution.",
+      "paper_match": "Its bounds and orientation match solving the transposed triangular row system.",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "HighamBench.P07MoorePenrosePseudoinverse.mk",
+      "interpretation": "Constructor imposing the four Penrose equations, including symmetry of both projections.",
+      "effect_on_target": "It ensures the supplied perturbedPseudoinverse is genuinely Moore-Penrose.",
+      "paper_match": "These are the standard semantics of the dagger operator.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "HighamBench.P07ScalarArithmeticModel.flAdd",
+      "interpretation": "Projection of the model's rounded addition operation.",
+      "effect_on_target": "It combines terms in the rounded prefix sum.",
+      "paper_match": "It represents finite-precision addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "HighamBench.P07ScalarArithmeticModel.flMul",
+      "interpretation": "Projection of the model's rounded multiplication operation.",
+      "effect_on_target": "It forms products in the rounded prefix sum.",
+      "paper_match": "It represents finite-precision multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "HighamBench.p07RoundedPrefixDot._proof_1",
+      "interpretation": "A proof that an index k<j<n also indexes the ambient n-dimensional matrix.",
+      "effect_on_target": "It only discharges a dependent-type bounds obligation.",
+      "paper_match": "It has no independent mathematical claim in the paper.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D068",
+      "name": "HighamBench.recursiveSum",
+      "interpretation": "A sequential rounded sum, returning zero for an empty list and otherwise accumulating terms in index order.",
+      "effect_on_target": "It fixes the arithmetic order of each triangular-solve prefix.",
+      "paper_match": "It is a valid explicit model of standard sequential summation used in substitution.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "HighamBench.recursiveSum._proof_1",
+      "interpretation": "A proof that zero indexes a one-element Fin type in the recursive base branch.",
+      "effect_on_target": "It only validates an internal index construction.",
+      "paper_match": "It has no paper-level semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D070",
+      "name": "HighamBench.recursiveSum.match_1",
+      "interpretation": "The dependent eliminator distinguishing zero-length and successor-length sums.",
+      "effect_on_target": "It implements recursiveSum's control flow.",
+      "paper_match": "It is Lean implementation machinery rather than a numerical claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D071",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "It combines the four asserted properties.",
+      "paper_match": "It is ordinary logical structure with no independent paper-specific content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D072",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "It expresses exact matrix, vector, and scalar identities.",
+      "paper_match": "It gives the intended exact-equality semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "Fin",
+      "interpretation": "The finite index type containing natural indices below a specified dimension.",
+      "effect_on_target": "It represents rows and columns of all finite vectors and matrices.",
+      "paper_match": "Fin m and Fin n correctly model the paper's finite dimensions.",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-dispatched addition.",
+      "effect_on_target": "For the instantiated types it reduces to real or natural addition.",
+      "paper_match": "It is elaboration machinery with no independent paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D075",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "For the instantiated expressions it reduces to real multiplication.",
+      "paper_match": "It is elaboration machinery with no independent paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D076",
+      "name": "Nat",
+      "interpretation": "The natural-number type.",
+      "effect_on_target": "It indexes dimensions m, s, and n.",
+      "paper_match": "Natural dimensions are appropriate for the finite matrix problem.",
+      "status": "pass"
+    },
+    {
+      "id": "D077",
+      "name": "Nat.cast",
+      "interpretation": "Canonical casting of a natural number into the target numeric type.",
+      "effect_on_target": "It interprets n as a real coefficient.",
+      "paper_match": "It correctly represents the real-valued dimension factors n and sqrt(n).",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "OfNat.ofNat",
+      "interpretation": "Typeclass interpretation of numeric literals.",
+      "effect_on_target": "It supplies literals such as one.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D079",
+      "name": "One.toOfNat1",
+      "interpretation": "The conversion from a One instance to the literal-one instance.",
+      "effect_on_target": "It interprets the coefficient 1 in the norm budget.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D080",
+      "name": "Real",
+      "interpretation": "The mathematical real-number type.",
+      "effect_on_target": "It is the scalar field for all matrices, vectors, and bounds.",
+      "paper_match": "The paper's theorem is stated over real matrices and vectors.",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary real addition.",
+      "effect_on_target": "It interprets all scalar sums.",
+      "paper_match": "It has standard real-arithmetic semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D082",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary real multiplication.",
+      "effect_on_target": "It interprets products in matrices and bounds.",
+      "paper_match": "It has standard real-arithmetic semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "Real.instNatCast",
+      "interpretation": "The canonical embedding of natural numbers into the reals.",
+      "effect_on_target": "It interprets n and other dimension literals as real scalars.",
+      "paper_match": "It preserves the intended numerical coefficients.",
+      "status": "pass"
+    },
+    {
+      "id": "D084",
+      "name": "Real.instOne",
+      "interpretation": "The real multiplicative identity.",
+      "effect_on_target": "It supplies the coefficient one.",
+      "paper_match": "It has standard real-arithmetic semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "Real.sqrt",
+      "interpretation": "The nonnegative real square root.",
+      "effect_on_target": "It supplies sqrt(n) in the DeltaRHat and cross-term coefficients.",
+      "paper_match": "It matches every square-root-of-n factor in equations (2.6) and the immediate estimate.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "instHAdd",
+      "interpretation": "The homogeneous-addition typeclass adapter.",
+      "effect_on_target": "It routes hAdd to ordinary addition.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D087",
+      "name": "instHMul",
+      "interpretation": "The homogeneous-multiplication typeclass adapter.",
+      "effect_on_target": "It routes hMul to ordinary multiplication.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D088",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Projection of division from a division-and-inverse monoid structure.",
+      "effect_on_target": "It supplies real division for gamma and the arithmetic model.",
+      "paper_match": "It is typeclass implementation detail.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D089",
+      "name": "Fin.fintype",
+      "interpretation": "The finite enumeration instance for Fin n.",
+      "effect_on_target": "It permits sums over all matrix and vector indices.",
+      "paper_match": "It realizes the finite sums implicit in matrix algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D090",
+      "name": "Finset.sum",
+      "interpretation": "A finite commutative sum.",
+      "effect_on_target": "It defines matrix products, matrix-vector products, normal equations, and Euclidean norms.",
+      "paper_match": "It gives the standard finite-sum semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D091",
+      "name": "Finset.univ",
+      "interpretation": "The finite set of every element of a finite type.",
+      "effect_on_target": "It ranges sums over every row or column index.",
+      "paper_match": "It matches complete finite-index summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D092",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-dispatched division.",
+      "effect_on_target": "It interprets real divisions in gamma and floating-point relations.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D093",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "It interprets residuals, perturbations, and the gamma denominator.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D094",
+      "name": "LE.le",
+      "interpretation": "Typeclass-dispatched non-strict order.",
+      "effect_on_target": "It expresses all componentwise and norm upper bounds.",
+      "paper_match": "For Real it is the usual non-strict inequality used by the immediate estimate.",
+      "status": "pass"
+    },
+    {
+      "id": "D095",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative-monoid instance for reals.",
+      "effect_on_target": "It supports finite real sums.",
+      "paper_match": "It is algebraic typeclass infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D096",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The standard real division and inverse structure.",
+      "effect_on_target": "It interprets exact real division.",
+      "paper_match": "It supplies the ordinary division used in gamma_n.",
+      "status": "pass"
+    },
+    {
+      "id": "D097",
+      "name": "Real.instLE",
+      "interpretation": "The usual non-strict order on reals.",
+      "effect_on_target": "It interprets all real bounds.",
+      "paper_match": "It matches the paper's inequality order.",
+      "status": "pass"
+    },
+    {
+      "id": "D098",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction.",
+      "effect_on_target": "It interprets residuals and perturbation differences.",
+      "paper_match": "It has standard real-arithmetic semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "Real.instZero",
+      "interpretation": "The real additive identity.",
+      "effect_on_target": "It appears in normal equations, rank conditions, and model hypotheses.",
+      "paper_match": "It has standard real-arithmetic semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "Zero.toOfNat0",
+      "interpretation": "The conversion from a Zero instance to literal zero.",
+      "effect_on_target": "It interprets zero-valued literals.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D101",
+      "name": "instHDiv",
+      "interpretation": "The homogeneous-division typeclass adapter.",
+      "effect_on_target": "It routes hDiv to ordinary division.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D102",
+      "name": "instHSub",
+      "interpretation": "The homogeneous-subtraction typeclass adapter.",
+      "effect_on_target": "It routes hSub to ordinary subtraction.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D103",
+      "name": "Exists",
+      "interpretation": "Logical existential quantification.",
+      "effect_on_target": "It expresses rounding witnesses and attainment of spectral extrema.",
+      "paper_match": "It gives the intended existence semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D104",
+      "name": "Function.Injective",
+      "interpretation": "The property that equal outputs imply equal inputs.",
+      "effect_on_target": "For matrix-vector maps it encodes full column rank.",
+      "paper_match": "It correctly formalizes full column rank of A and SA.",
+      "status": "pass"
+    },
+    {
+      "id": "D105",
+      "name": "HPow.hPow",
+      "interpretation": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "It interprets component squares in the Euclidean norm.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D106",
+      "name": "LT.lt",
+      "interpretation": "Typeclass-dispatched strict order.",
+      "effect_on_target": "It expresses dimension inequalities and gamma validity.",
+      "paper_match": "It has the required strict-inequality semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D107",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-number powers in a monoid.",
+      "effect_on_target": "It makes x squared mean ordinary real multiplication by itself.",
+      "paper_match": "It correctly implements squared components of the Euclidean norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D108",
+      "name": "Ne",
+      "interpretation": "Logical inequality defined as the negation of equality.",
+      "effect_on_target": "It requires nonzero divisors and nonzero triangular diagonal entries.",
+      "paper_match": "It matches nonsingularity requirements for substitution.",
+      "status": "pass"
+    },
+    {
+      "id": "D109",
+      "name": "Real.instAddGroup",
+      "interpretation": "The additive-group instance for reals.",
+      "effect_on_target": "It supports negation and absolute value.",
+      "paper_match": "It is algebraic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D110",
+      "name": "Real.instMonoid",
+      "interpretation": "The multiplicative-monoid instance for reals.",
+      "effect_on_target": "It supports products and powers.",
+      "paper_match": "It is algebraic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D111",
+      "name": "Real.lattice",
+      "interpretation": "The lattice-order instance for reals.",
+      "effect_on_target": "It supports real absolute value.",
+      "paper_match": "It is order-theoretic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D112",
+      "name": "abs",
+      "interpretation": "The ordinary absolute value on reals.",
+      "effect_on_target": "It gives componentwise magnitudes in rounding bounds.",
+      "paper_match": "It matches the entrywise absolute-value bars in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D113",
+      "name": "instHPow",
+      "interpretation": "The homogeneous-power typeclass adapter.",
+      "effect_on_target": "It routes hPow to real natural powers.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D114",
+      "name": "instLTNat",
+      "interpretation": "The usual strict order on natural numbers.",
+      "effect_on_target": "It interprets 0<n<s<m and finite index bounds.",
+      "paper_match": "It matches the intended dimension ordering.",
+      "status": "pass"
+    },
+    {
+      "id": "D115",
+      "name": "instOfNatNat",
+      "interpretation": "The natural-number literal instance.",
+      "effect_on_target": "It supplies natural literals in dimensions and recursion.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D116",
+      "name": "Fin.val",
+      "interpretation": "Projection of the underlying natural index from Fin n.",
+      "effect_on_target": "It compares and manipulates triangular and prefix indices.",
+      "paper_match": "It preserves the conventional zero-based formal indexing of finite coordinates.",
+      "status": "pass"
+    },
+    {
+      "id": "D117",
+      "name": "Real.instLT",
+      "interpretation": "The usual strict order on reals.",
+      "effect_on_target": "It interprets n*u<1.",
+      "paper_match": "It gives the correct strict gamma-validity condition.",
+      "status": "pass"
+    },
+    {
+      "id": "D118",
+      "name": "instDecidableEqFin",
+      "interpretation": "A decision procedure for equality of finite indices.",
+      "effect_on_target": "It permits construction of the finite identity matrix.",
+      "paper_match": "It is computational infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D119",
+      "name": "ite",
+      "interpretation": "A proposition-controlled if-then-else.",
+      "effect_on_target": "It selects one or zero in the finite identity matrix.",
+      "paper_match": "It is implementation machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D120",
+      "name": "Fin.mk",
+      "interpretation": "Constructor of a bounded finite index from a value and proof of its bound.",
+      "effect_on_target": "It builds indices used in rounded prefix sums.",
+      "paper_match": "It is dependent-type infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D121",
+      "name": "Neg.neg",
+      "interpretation": "Typeclass-dispatched negation.",
+      "effect_on_target": "It interprets the negative sign in the rowwise formation relation.",
+      "paper_match": "It is elaboration machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D122",
+      "name": "Real.instNeg",
+      "interpretation": "Ordinary real negation.",
+      "effect_on_target": "It supplies the sign in the rowwise formation relation.",
+      "paper_match": "It matches the paper's negative rowwise perturbation term.",
+      "status": "pass"
+    },
+    {
+      "id": "D123",
+      "name": "Fin.castSucc",
+      "interpretation": "Embedding of Fin n into Fin (n+1) without changing its value.",
+      "effect_on_target": "It reuses earlier indices during recursive summation.",
+      "paper_match": "It is index-management infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D124",
+      "name": "Fin.last",
+      "interpretation": "The final index of Fin (n+1).",
+      "effect_on_target": "It selects the next term in recursive summation.",
+      "paper_match": "It is index-management infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D125",
+      "name": "Matrix",
+      "interpretation": "A matrix represented as a two-argument function.",
+      "effect_on_target": "It supplies the ambient type used by transpose in the Penrose equations.",
+      "paper_match": "It has standard finite-matrix semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D126",
+      "name": "Matrix.transpose",
+      "interpretation": "Matrix transposition by exchanging row and column arguments.",
+      "effect_on_target": "It states symmetry of the two Penrose projection matrices.",
+      "paper_match": "It is the standard transpose used in the Moore-Penrose definition.",
+      "status": "pass"
+    },
+    {
+      "id": "D127",
+      "name": "Nat.below",
+      "interpretation": "The dependent package of recursive results for smaller natural numbers.",
+      "effect_on_target": "It supports implementation of recursiveSum.",
+      "paper_match": "It is recursion infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D128",
+      "name": "Nat.brecOn",
+      "interpretation": "Strong recursion on natural numbers.",
+      "effect_on_target": "It implements recursiveSum.",
+      "paper_match": "It is recursion infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D129",
+      "name": "Nat.instPreorder",
+      "interpretation": "The standard preorder structure on natural numbers.",
+      "effect_on_target": "It supports generated index-bound proofs.",
+      "paper_match": "It is order infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D130",
+      "name": "Nat.succ",
+      "interpretation": "The natural-number successor constructor.",
+      "effect_on_target": "It represents successor-sized recursive sums.",
+      "paper_match": "It is datatype infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D131",
+      "name": "Not",
+      "interpretation": "Logical negation.",
+      "effect_on_target": "It underlies non-equality and conditional branches.",
+      "paper_match": "It is logical infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D132",
+      "name": "Preorder.toLT",
+      "interpretation": "Projection of strict order from a preorder.",
+      "effect_on_target": "It supports a generated finite-index proof.",
+      "paper_match": "It is order-typeclass infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D133",
+      "name": "dite",
+      "interpretation": "A dependent proposition-controlled conditional.",
+      "effect_on_target": "It implements branches whose results depend on the branch proof.",
+      "paper_match": "It is implementation machinery.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D134",
+      "name": "instAddNat",
+      "interpretation": "Ordinary natural-number addition.",
+      "effect_on_target": "It forms successor cardinalities in recursive indexing.",
+      "paper_match": "It is datatype infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D135",
+      "name": "instDecidableEqNat",
+      "interpretation": "A decision procedure for equality of natural numbers.",
+      "effect_on_target": "It controls a recursiveSum base-case branch.",
+      "paper_match": "It is computational infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D136",
+      "name": "Nat.casesOn",
+      "interpretation": "The eliminator separating zero and successor natural numbers.",
+      "effect_on_target": "It implements the recursiveSum pattern match.",
+      "paper_match": "It is recursion infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D137",
+      "name": "Nat.zero",
+      "interpretation": "The zero constructor of natural numbers.",
+      "effect_on_target": "It supplies the empty-sum recursion case.",
+      "paper_match": "It is datatype infrastructure.",
+      "status": "not-applicable"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "PDF page 16, printed page 920, displays Theorem 3.5, the four-term DeltaA definition, and the immediate compositional norm estimate; page 17 continues the proof and interpretation.",
-      "lean_evidence": "The dossier identifies P07-T2 and exposes p07BackwardError together with the product-budget theorem.",
-      "reasoning": "The supplied paper version, passage, and surrounding theorem are the correct source for the intended comparison."
+      "paper_evidence": "The inspected PDF is the 2024 SIAM Journal on Matrix Analysis and Applications version, volume 45 issue 2, pages 905-929. Algorithm 1.3 is on printed page 909, equations (2.1) and (2.6) on pages 914-915, Theorem 3.4 on page 918, and the selected construction and estimate on page 920.",
+      "lean_evidence": "The target is P07-T2 and uses the supplied paper and dossier hashes. Its names and constants point specifically to the Theorem 3.5 construction.",
+      "reasoning": "The source version and all cited passages match the selected result."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "The paper context includes m, n, s, A, S, b, computed Y-hat and R-hat, LSQR iterate z-hat, computed x-hat, DeltaY-hat, DeltaR-hat, deltab, and row-dependent Delta_i R-hat.",
-      "lean_evidence": "Lean binds only m, n, Y, DeltaY, R, DeltaR, A, and five abstract scalar budgets; S, s, b, z-hat, x-hat, deltab, and rowwise perturbations are absent.",
-      "reasoning": "The represented matrix shapes are correct, but the source binders needed to make this a backward-error statement are not preserved."
+      "status": "pass",
+      "paper_evidence": "The paper uses A and YHat in R^(m by n), S in R^(s by m), RHat and DeltaRHat in R^(n by n), b in R^m, and xHat and zHat in R^n, with m>s>n.",
+      "lean_evidence": "The constructor for pre requires 0<n<s<m. Fin-indexed types assign exactly these dimensions to A, S, YHat, RHat, b, xHat, and zHat.",
+      "reasoning": "The finite index sets and matrix orientations agree with the algorithm and proof."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The result is conditional on an Algorithm 1.3 execution and an LSQR iterate for which DeltaY-hat and deltab witness equation (3.9); subsequent perturbations depend on computed Y-hat and R-hat.",
-      "lean_evidence": "Lean universally quantifies arbitrary matrices and budgets and assumes independent norm-bound propositions.",
-      "reasoning": "The source's execution-dependent witness scope is replaced by a generic universally quantified product lemma."
+      "status": "pass",
+      "paper_evidence": "Equation (3.9) supplies DeltaYHat and delta b for the terminal zHat; equation (2.6) then supplies DeltaRHat, after which the proof defines DeltaA from those witnesses.",
+      "lean_evidence": "The LSQR, back-substitution, and run records bundle witnesses in that dependency order, and DeltaA is a deterministic function of YHat, DeltaYHat, RHat, DeltaRHat, and A.",
+      "reasoning": "The Skolemized witnesses retain their dependence on the same execution data, and the same deltaB is carried into perturbedB."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "Theorem 3.5 imports assumptions (3.6)-(3.7), full-rank and dimension conditions, the LSQR representation, the rowwise bound for Y-hat R-hat minus A, and the back-substitution bound on DeltaR-hat.",
-      "lean_evidence": "Lean assumes the base, factor, perturbation, and matrix norm bounds directly and contains none of the paper's rank, dimension, gamma, conditioning, or LSQR hypotheses.",
-      "reasoning": "The numerical-analysis hypotheses that produce the component bounds have been assumed away rather than represented."
+      "status": "pass",
+      "paper_evidence": "The immediate estimate on printed page 920 uses the local LSQR relation, back-substitution bound, and formation bound. The inherited conditions (3.6)-(3.7) are used afterward to replace RHat and YHat norms and derive the numerical constants 6.04 and 2.01.",
+      "lean_evidence": "The records require 0<n<s<m, rank and invertibility facts, gamma validity, the formation certificate, equation (3.9), and equation (2.6). They do not require the later global conditioning inequalities.",
+      "reasoning": "For the source-located unnumbered construction and immediate estimate, the omitted global assumptions are not used; they belong to the later specialized theorem bound."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "The passage identifies DeltaA as a backward perturbation through x-hat = (A + DeltaA)^dagger(b + deltab), gives the exact four-term expansion, and derives the displayed n- and sqrt(n)-dependent estimate.",
-      "lean_evidence": "Lean concludes only an abstract operator-norm budget for p07BackwardError and has no x-hat, b, deltab, pseudoinverse relation, or explicit paper RHS.",
-      "reasoning": "The algebraic expansion is present by definition, but consequential backward-error and source-specific conclusions are missing."
+      "status": "unclear",
+      "paper_evidence": "The selected proof gives the product expansion, an explicit xHat factorization, the assertion xHat=(A+DeltaA)^dagger(b+delta b), the rowwise formation relation, and the immediate norm estimate. The theorem text instead displays the stronger consistent-system equation.",
+      "lean_evidence": "The target gives the product identity, xHat factorization, a normal equation, and the immediate norm estimate. The rowwise relation is retained in the run certificate, but neither explicit paper solution identity appears as a target conjunct.",
+      "reasoning": "The algebraic and norm conclusions are present, but conclusion completeness depends on how the paper's internally inconsistent perturbed-solution relation is adjudicated."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The selected formula uses ordinary matrix products, real arithmetic, and spectral matrix 2-norms.",
-      "lean_evidence": "D001-D032 unfold to finite real matrix multiplication, induced Euclidean operator-norm bounds, and ordinary real arithmetic.",
-      "reasoning": "Every nontrivial operator actually imported by the Lean target has a clear and correct interpretation."
+      "paper_evidence": "The paper uses ordinary real matrix products, Euclidean and spectral norms, a Moore-Penrose pseudoinverse, and gamma_n=n*u/(1-n*u).",
+      "lean_evidence": "The dossier unfolds matrix multiplication, matrix-vector multiplication, Euclidean norm, operator bounds, the four Penrose equations, gamma, perturbation additions, and the normal equation.",
+      "reasoning": "Every operator affecting the target has an explicit standard interpretation; the relation-strength issue is isolated in S12."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The paper distinguishes computed Y-hat and R-hat, the LSQR perturbation DeltaY-hat, the triangular-solve perturbation DeltaR-hat, and the separate formation error Y-hat R-hat minus A.",
-      "lean_evidence": "The Lean expression keeps Y R - A, DeltaY R, Y DeltaR, and DeltaY DeltaR as separate terms.",
-      "reasoning": "Under the natural mapping Y = Y-hat, R = R-hat, and DeltaY = DeltaY-hat, the algebra does not conflate the LSQR perturbation with the base formation error."
+      "paper_evidence": "The paper distinguishes A, RHat, and exact A RHat inverse from computed YHat, the formation error DeltaY, LSQR perturbation DeltaYHat, back-substitution perturbation DeltaRHat, and composed DeltaA.",
+      "lean_evidence": "Separate fields and definitions represent all of these quantities; p07Theorem35PerturbedY uses only the LSQR DeltaYHat, while the forwardRun carries the distinct formation error.",
+      "reasoning": "No exact, computed, or perturbed quantity is conflated."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "The paper explicitly applies SAA Algorithm 1.3 with formed Y, unpreconditioned LSQR, final back substitution, no SAS initialization, and arbitrary starting point.",
-      "lean_evidence": "No algorithm, sketch S, QR computation, LSQR execution, triangular solve, initialization condition, or computed solution occurs in the target.",
-      "reasoning": "The proposition is disconnected from the algorithm and execution model."
+      "status": "pass",
+      "paper_evidence": "Algorithm 1.3 sketches A, computes RHat by Householder QR, explicitly forms YHat by forward substitution, applies unpreconditioned LSQR, and performs one final back substitution.",
+      "lean_evidence": "The preconditioner, forward trace, LSQR witness, and back-substitution records occur in precisely this dependency chain.",
+      "reasoning": "The proposition remains tied to SAA Blendenpik rather than sketch-and-precondition LSQR."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "The selected DeltaA estimate is in the spectral matrix 2-norm; the rowwise precursor is componentwise but yields a spectral-norm bound.",
-      "lean_evidence": "p07RectOpNorm2Le is the induced Euclidean operator-norm upper-bound predicate.",
-      "reasoning": "The norm used in the Lean conclusion has the correct spectral 2-norm semantics and is neither squared nor Frobenius."
+      "paper_evidence": "The immediate estimate uses unsquared spectral matrix norms and Euclidean vector norms; the formation premise also has an entrywise absolute-value bound.",
+      "lean_evidence": "p07VecNorm2 is the square root of a sum of squares, p07RectOpNorm2Le is an induced 2-norm bound, and the row certificate separately uses scalar absolute values.",
+      "reasoning": "Squared, unsquared, componentwise, and operator-norm meanings are not interchanged."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The immediate estimate has exactly (n + sqrt(n)) gamma_n multiplying ||Y-hat||_2 and (1 + sqrt(n) gamma_n) multiplying ||DeltaY-hat||_2, all multiplied by ||R-hat||_2.",
-      "lean_evidence": "The RHS is e0 + eY*r + y*eR + eY*eR, with no n, sqrt(n), gamma_n, or required dependence among the budgets.",
-      "reasoning": "The paper coefficients are recoverable only after externally choosing budgets and supplying omitted component bounds; they are not stated by the proposition."
+      "status": "pass",
+      "paper_evidence": "The immediate estimate is norm(RHat)*(((n+sqrt(n))*gamma_n*norm(YHat))+(1+sqrt(n)*gamma_n)*norm(DeltaYHat)).",
+      "lean_evidence": "The target has exactly rSpectrum.upper times (((n+Real.sqrt n)*gamma u n*ySpectrum.upper)+(1+Real.sqrt n*gamma u n)*lsqrDeltaSpectrum.upper).",
+      "reasoning": "Every coefficient, parenthesization, index dimension, and parameter dependence matches the selected estimate."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "The paper uses unit roundoff u, gamma_n = nu/(1-nu), n^2 u < 1/201, rowwise rounding perturbations, and a backward-stable triangular solve; it states no exceptional-value model.",
-      "lean_evidence": "The target is an exact-real algebraic theorem with no unit roundoff, gamma constant, rounding operation, precision, overflow, underflow, or exceptional-value assumptions.",
-      "reasoning": "The floating-point model responsible for the paper's component estimates is absent."
+      "status": "pass",
+      "paper_evidence": "Section 2.3 assumes precision u and standard relative rounding bounds but does not specify rounding mode, overflow, underflow, subnormals, NaNs, or infinities.",
+      "lean_evidence": "P07ScalarArithmeticModel gives relative-error equations for four scalar operations and likewise has no exceptional-value semantics. GammaValid enforces n*u<1.",
+      "reasoning": "The Lean model matches the explicit scope of the paper's idealized arithmetic convention and does not invent exceptional-value claims."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The proof gives an exact four-term definition and a specific non-strict compositional inequality, while the theorem later states a strict numerical bound and a perturbed-data relation.",
-      "lean_evidence": "Lean gives only a non-strict inequality against freely parameterized budgets.",
-      "reasoning": "The local inequality direction is compatible, but the proposition does not have the logical strength to establish the paper's backward-error relation or exact source bound."
+      "status": "unclear",
+      "paper_evidence": "Theorem 3.5 writes (A+DeltaA)xHat=b+delta b, whereas its proof writes xHat=(A+DeltaA)^dagger(b+delta b). These are not equivalent for a general overdetermined or rank-deficient perturbed matrix.",
+      "lean_evidence": "The target asserts only A_perturbed^T(A_perturbed*xHat-b_perturbed)=0, together with a factorized formula for xHat.",
+      "reasoning": "The Lean normal equation is equivalent to being an exact least-squares minimizer, but it does not imply either displayed paper relation without additional range or rank assumptions. The authoritative PDF does not resolve which strength is intended."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "DeltaA is a matrix backward perturbation linked to b + deltab and the LSQR pseudoinverse relation; only its absolute spectral norm is bounded.",
-      "lean_evidence": "p07BackwardError is merely the name of a four-term matrix expression, with no perturbed problem or solution relation.",
-      "reasoning": "Lean proves a perturbation-product norm budget, not that the matrix is a backward error for the computed least-squares solution."
+      "status": "pass",
+      "paper_evidence": "Equation (1.2) defines backward error by making the candidate an exact minimizer of a perturbed least-squares residual. Theorem 3.5 bounds only DeltaA and assumes, rather than bounds, LSQR perturbations.",
+      "lean_evidence": "The target uses a perturbed least-squares normal equation and an operator bound on DeltaA; it adds no smallness bound for DeltaYHat or deltaB.",
+      "reasoning": "The forward-formation, LSQR backward, triangular-solve backward, and composed original-data errors remain distinct. The unresolved issue concerns relation strength, not substitution of an error notion."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "The exact expansion retains DeltaY-hat DeltaR-hat, and the estimate retains its contribution through the factor 1 + sqrt(n) gamma_n.",
-      "lean_evidence": "D001 includes DeltaY DeltaR and the RHS includes the product budget eY*eR.",
-      "reasoning": "The second-order mixed term is retained exactly rather than discarded as higher order."
+      "paper_evidence": "The exact DeltaA retains DeltaYHat*DeltaRHat, and the immediate estimate retains the factor 1+sqrt(n)*gamma_n. Gamma_n retains its denominator.",
+      "lean_evidence": "p07BackwardError contains all four terms, and the target contains the exact cross-term coefficient and exact gamma definition.",
+      "reasoning": "No higher-order contribution is discarded and no big-O replacement is introduced."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The source result concerns computed matrices generated by a particular floating-point least-squares algorithm under stated rank and conditioning assumptions.",
-      "lean_evidence": "The target is a general exact-real matrix inequality for arbitrary natural dimensions, matrices, and admissible budgets.",
-      "reasoning": "This is a genuine algebraic generalization of one proof step, but it does not by itself preserve the source-specific backward-error task and therefore is not an acceptable faithful generalization of the whole selected result."
+      "status": "pass",
+      "paper_evidence": "The selected construction is for finite real matrices. The subsequent 6.04/2.01 estimate specializes the local budget using global conditioning assumptions.",
+      "lean_evidence": "The target uses finite real matrices and states the local budget directly from certified norm bounds, without claiming the later numerical estimate or probabilistic statement.",
+      "reasoning": "The finite-real setting is exact, and the broader local applicability is an algebraically justified generalization of the selected immediate estimate rather than a purported formalization of all of Theorem 3.5."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper's assumptions describe a nonempty small-roundoff, full-rank regime.",
-      "lean_evidence": "For m = n = 1, Y = 1, R = 2, A = 1, DeltaY = 1, DeltaR = 1, and budgets e0 = 1, eY = 1, r = 2, y = 1, eR = 1, all hypotheses hold and both sides of the conclusion equal 5.",
-      "reasoning": "The Lean theorem has nondegenerate satisfying instances and its conclusion is not true only because of empty dimensions or zero matrices."
+      "paper_evidence": "Algorithm 1.3 applies to full-rank tall systems with 0<n<s<m; exact arithmetic and zero perturbations provide a nonempty limiting case.",
+      "lean_evidence": "For example, positive dimensions with m>s>n, coordinate-embedding full-rank A and SA, identity RHat, exact arithmetic u=0, zero formation and solve perturbations, and the corresponding exact inverses and pseudoinverse satisfy the record interfaces.",
+      "reasoning": "The hypotheses are satisfiable, and the target is not true merely because an input type is empty or a norm coefficient is vacuous."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The generic budget can reproduce the paper's immediate inequality after externally supplying e0 = n gamma_n ||R-hat||_2 ||Y-hat||_2, eR = sqrt(n) gamma_n ||R-hat||_2, and exact norm budgets. Those source-specific bounds, the LSQR hypothesis, and the relation making DeltaA a backward perturbation are not consequences of the Lean proposition, so it does not imply the selected paper result."
+      "verdict": "unclear",
+      "reasoning": "Lean implies that xHat is an exact minimizer for the perturbed least-squares problem and proves the selected product and norm budget. It does not generally imply either the literal consistent-system equation or the minimum-norm pseudoinverse identity displayed in the paper. Whether the paper result is instead intended only in the equation-(1.2) minimizer sense requires adjudication."
     },
     "paper_implies_lean": {
-      "verdict": "no",
-      "reasoning": "The paper establishes the estimate for matrices and perturbations arising from SAA Blendenpik under its numerical assumptions. It does not assert the Lean theorem's universal product-budget statement for arbitrary finite real matrices and arbitrary admissible scalar bounds."
+      "verdict": "yes",
+      "reasoning": "Under either displayed paper relation, xHat satisfies the perturbed normal equation. The exact four-term DeltaA definition gives the Lean product identity, equation (3.9) and back substitution give the factorized xHat equation, and the paper's immediate estimate is exactly the Lean norm budget."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "undetermined",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "backward-error-linkage-omitted",
-      "paper_evidence": "The proof identifies x-hat with (A + DeltaA)^dagger(b + deltab), while the theorem literally states the perturbed equation involving x-hat, b, and deltab.",
-      "lean_evidence": "The target contains no solution, right-hand side, right-hand-side perturbation, pseudoinverse, or perturbed-system relation.",
-      "impact": "The bounded matrix is not established to be a backward perturbation for the computed least-squares solution."
-    },
-    {
-      "severity": "major",
-      "category": "numerical-analysis-assumed-away",
-      "paper_evidence": "The n gamma_n base bound and sqrt(n) gamma_n triangular-solve bound arise from rowwise floating-point analysis and equation (2.6).",
-      "lean_evidence": "hBase and hDeltaR assume arbitrary upper bounds e0 and eR directly.",
-      "impact": "The proposition bypasses the source-specific reasoning that creates the displayed compositional estimate."
-    },
-    {
-      "severity": "major",
-      "category": "algorithm-linkage-missing",
-      "paper_evidence": "The result is conditional on Algorithm 1.3, unpreconditioned LSQR on the explicitly formed Y-hat, and no SAS initialization.",
-      "lean_evidence": "The proposition is an algorithm-independent exact-real matrix lemma.",
-      "impact": "It cannot support claims about the numerical stability of SAA Blendenpik."
-    },
-    {
-      "severity": "major",
-      "category": "exact-coefficients-not-stated",
-      "paper_evidence": "The selected estimate explicitly contains both n and sqrt(n), gamma_n, ||R-hat||_2, ||Y-hat||_2, and ||DeltaY-hat||_2 in a fixed expression.",
-      "lean_evidence": "The conclusion contains only independent budget variables e0, eY, r, y, and eR.",
-      "impact": "Recovering the paper formula requires additional substitutions and hypotheses not present in the target."
+      "category": "perturbed-solution-relation",
+      "paper_evidence": "Printed page 920 gives a literal consistent-system equation in Theorem 3.5 but a Moore-Penrose pseudoinverse identity in the proof, while equation (1.2) defines backward error only through exact least-squares minimization.",
+      "lean_evidence": "The target formalizes the minimizer interpretation through the perturbed normal equation and does not assert either stronger displayed relation.",
+      "impact": "Paper-implies-Lean is stable, but Lean-implies-paper and therefore the final classification depend on which paper relation is authoritative."
     },
     {
       "severity": "note",
-      "category": "correct-nonvacuous-algebraic-core",
-      "paper_evidence": "The paper expands DeltaA into four terms and applies triangle inequality and operator-norm submultiplicativity.",
-      "lean_evidence": "D001 contains exactly those four terms, including DeltaY DeltaR, and the target proves the corresponding general product budget.",
-      "impact": "The target is a meaningful and nonvacuous supporting lemma, but that does not make it equivalent to or stronger than the full selected paper result."
+      "category": "selected-result-scope",
+      "paper_evidence": "The n/sqrt(n)/gamma_n budget precedes substitution of the global RHat and YHat bounds; the 6.04 and 2.01 constants arise only afterward.",
+      "lean_evidence": "The target stops at the immediate product budget and does not claim the later Theorem 3.5 numerical bound.",
+      "impact": "Omission of conditions (3.6)-(3.7), the 6.04/2.01 estimate, and the later O(u) interpretation is appropriate for the source-located local result and is not itself a faithfulness defect."
+    },
+    {
+      "severity": "note",
+      "category": "execution-witness-packaging",
+      "paper_evidence": "The proof invokes the rowwise formation and triangular-solve error facts as consequences of the stated numerical algorithms.",
+      "lean_evidence": "A valid run bundles corresponding formation-error and back-substitution certificates as dependent fields.",
+      "impact": "The target proves the composition uniformly for every certified execution; this packaging is semantically adequate for the selected local estimate but does not independently establish existence of such certificates from raw machine execution."
     }
   ],
-  "rationale": "The declaration faithfully formalizes the algebraic four-term perturbation expansion and a general induced-2-norm product budget. It can be instantiated to the paper's immediate displayed inequality once the paper-specific rowwise and triangular-solve bounds are supplied. However, the proposition neither derives those bounds nor represents the LSQR assumption, algorithm execution, computed solution, deltab, or the relation that makes the matrix a backward error. Conversely, the paper's algorithm-specific result does not imply the universal Lean budget theorem. The paper's literal-equation versus pseudoinverse ambiguity does not require adjudication here because Lean states neither relation. The implications are therefore both negative and the result is not-faithful-different."
+  "rationale": "The Lean declaration faithfully captures the selected four-term perturbation product, the LSQR-to-back-substitution factorization, the exact gamma_n convention, and the immediate spectral-norm budget with all higher-order terms. Its dimensions, algorithm linkage, and local hypotheses are nonvacuous and match the source passage. The unresolved issue is the perturbed-solution conclusion: the PDF alternates between a consistent-system equation, a Moore-Penrose pseudoinverse identity, and the general exact-minimizer notion from equation (1.2), while Lean chooses the normal-equation formulation. Because those readings yield different Lean-implies-paper judgments, adjudication is required."
 }
