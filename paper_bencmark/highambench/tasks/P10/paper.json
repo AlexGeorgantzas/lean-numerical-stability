@@ -45,7 +45,7 @@
     },
     {
       "candidate": "the recursive triangular and dense matrix-inversion conclusions after equation (8)",
-      "reason": "Their displayed solutions are asymptotic and invoke an external recurrence theorem. T1 and T2 instead preserve equation (8)'s exact reusable error-propagation content."
+      "reason": "Their displayed solutions are asymptotic and invoke an external recurrence theorem. T2 instead preserves equation (8)'s complete reusable first-order error-propagation content."
     },
     {
       "candidate": "Lemma 4.1 on recursive QR and Lemma 4.2 on LU decomposition",
@@ -77,9 +77,9 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use an exact finite completion of equation (8), combining local, inherited-left, inherited-right, and explicit cross-term budgets.",
+      "decision": "Use equation (8)'s complete three-term first-order bound for a linked stable computed product under its otherwise unspecified consistent matrix norm; retain the inherited cross term and local epsilon-squared remainder only in the full execution model and remove them explicitly from the selected first-order error.",
       "task_id": "P10-T2",
-      "theorem_name": "p10_t2_product_error_with_cross_term"
+      "theorem_name": "p10_t2_first_order_product_error"
     },
     "T3": {
       "available": true,
@@ -92,7 +92,7 @@
   "selection_policy": [
     "Use exact finite claims made or algebraically completed from displayed arguments in this paper.",
     "Reject definitions, experiments, complexity-only statements, delegated results, sketches, and claims whose literal content is vague asymptotics.",
-    "Expose the second-order inherited-error product explicitly when exactifying the first-order product rule.",
+    "Represent every omitted higher-order term explicitly in the computation model while keeping equation (8)'s selected first-order bound free of those terms.",
     "Keep the fixed Lean setting condition-neutral and paper-scoped.",
     "Assign tiers only after checking the mounted frozen object baseline, not merely the broader source tree."
   ],

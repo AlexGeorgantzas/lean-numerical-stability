@@ -1,10 +1,17 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, and exact finite completion of the first-order product-error propagation rule in equation (8)",
+    "kind": "source selection, tier label, linked stable product computation, and explicit first-order projection for equation (8)",
     "performed_by": "Codex"
   },
-  "assumptions": [],
+  "assumptions": [
+    "The matrix dimension is positive and the exact and computed operands are real square n-by-n matrices, as in equation (1) and the recursive-inversion application of equation (8).",
+    "One otherwise unspecified matrix norm is used throughout and satisfies nonnegativity, definiteness, homogeneity, subadditivity, and submultiplicativity.",
+    "Machine epsilon is positive; mu is nonnegative and has a finite polynomial-growth certificate, matching the normwise stable-multiplication model surrounding equation (1).",
+    "The computed product is linked exactly to the two perturbed operands, one local first-order multiplication error, and one explicitly bounded epsilon-squared remainder.",
+    "The left and right operand perturbation norms are bounded by their respective nonnegative inherited absolute errors.",
+    "The selected first-order error removes the inherited-error cross product and local higher-order remainder from the full realized product error; no exceptional-value semantics are added beyond the paper's real-valued normwise model."
+  ],
   "author_label": null,
   "classification_frozen_before_runs": false,
   "conditions": {
@@ -13,14 +20,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P10/T2/context.md",
   "formal_statement": {
-    "lean_header": "theorem p10_t2_product_error_with_cross_term {n : Nat} (A dA B dB E : P10Matrix n) : p10FrobNorm (p10ProductErrorExpansion n A dA B dB E) <= p10FrobNorm E + p10FrobNorm A * p10FrobNorm dB + p10FrobNorm dA * p10FrobNorm B + p10FrobNorm dA * p10FrobNorm dB",
+    "lean_header": "theorem p10_t2_first_order_product_error {n : Nat} (run : P10FirstOrderProductRun n) : run.matrixNorm.value (p10FirstOrderProductError run) <= p10FirstOrderProductErrorBudget run",
     "namespace": "HighamBench",
-    "plain_language": "The exact product-error expansion is bounded by the local error, the two inherited first-order terms, and the explicit inherited-error cross term.",
+    "plain_language": "For one linked stable matrix-product computation, the realized first-order absolute normwise error is bounded by exactly the local multiplication term and the two cross-oriented inherited-input terms printed in equation (8).",
     "target_file": "paper_bencmark/highambench/tasks/P10/T2/Target.lean",
-    "theorem_name": "p10_t2_product_error_with_cross_term"
+    "theorem_name": "p10_t2_first_order_product_error"
   },
-  "informal_proof": "Expand the exact four-term error expression, apply the Frobenius triangle inequality three times, and apply Frobenius submultiplicativity to each matrix product.",
-  "informal_statement": "Equation (8)'s local and inherited product-error terms with the suppressed second-order cross term made explicit in an exact finite bound.",
+  "informal_proof": "Use the linked computed-product equation to cancel the inherited cross term and explicit epsilon-squared remainder, obtaining the exact first-order sum localError + A*dB + dA*B. Apply the selected norm's triangle inequality twice and submultiplicativity to the two propagated products, then substitute the local and inherited-error certificates.",
+  "informal_statement": "Equation (8)'s complete three-term first-order absolute normwise product-error rule, with exact/computed operands linked and every omitted higher-order term represented outside the bounded first-order projection.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -36,17 +43,23 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
+      "NumStability.matMul_add_left",
+      "NumStability.matMul_add_right",
+      "NumStability.matSeqProd_normwise_perturbation_bound",
+      "NumStability.rectMatMul_entry_abs_sub_computed_le_of_component_sums",
       "NumStability.frobNorm_add_le",
       "NumStability.frobNorm_matMul_le"
     ],
-    "note": "The frozen MatrixAlgebra object supplies binary Frobenius addition and product bounds, but no declaration states the four-term finite completion of Demmel-Dumitriu-Holtz equation (8) or exposes its inherited-error cross term."
+    "note": "All 24 compiled modules in metadata/library_olean.json were searched. The mounted MatrixAlgebra object supplies exact matrix distributivity, concrete Frobenius bounds, a generic finite-product perturbation theorem, and an entrywise computed-product composition theorem. The L construction proof uses the frozen distributivity declarations for the paper-specific first-order extraction. The other mounted results fix different norm or componentwise semantics and cannot be substituted for the target's unnamed norm. A closer MatMulFirstOrderSpec exists only in the source-visible NumStability/Algorithms/LU/BlockLU.lean module, which is absent from the compiled baseline and is not counted as available. No mounted declaration states the linked three-term bound."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "P10Matrix",
     "p10MatMul",
-    "p10FrobNorm",
-    "p10ProductErrorExpansion"
+    "P10ConsistentMatrixNorm",
+    "P10FirstOrderProductRun",
+    "p10FirstOrderProductError",
+    "p10FirstOrderProductErrorBudget"
   ],
   "source_locations": [
     {
@@ -63,12 +76,12 @@
   "task_id": "P10-T2",
   "tier": "T2",
   "tier_label": "combine",
-  "tier_rationale": "The L proof repeatedly combines NumStability.frobNorm_add_le and NumStability.frobNorm_matMul_le from NumStability/Analysis/MatrixAlgebra.lean, then performs paper-specific reassociation to retain all four exact terms. No one frozen theorem gives this completed error budget.",
+  "tier_rationale": "The proof combines the local stable-multiplication certificate, both inherited-error certificates, two abstract submultiplicative bounds, and repeated subadditivity after a paper-specific noncommutative first-order extraction. The L proof obtains that extraction through NumStability.matMul_add_left and NumStability.matMul_add_right from the frozen MatrixAlgebra module. Searches across all 24 mounted modules found no declaration giving equation (8)'s linked three-term bound; the closer source-only MatMulFirstOrderSpec is not mounted, while the mounted Frobenius and entrywise results would improperly change the source's unnamed norm semantics.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P10/T2/Target.lean",
     "mode": "shared automatic validator",
     "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
     "reject_statement_changes": true,
-    "required_declaration": "HighamBench.p10_t2_product_error_with_cross_term"
+    "required_declaration": "HighamBench.p10_t2_first_order_product_error"
   }
 }

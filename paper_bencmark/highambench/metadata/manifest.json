@@ -116,8 +116,8 @@
         "P10"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P10Definitions.lean",
-      "role": "P10-only finite matrix products, explicit Frobenius norms, product-error expansions, and Sylvester recurrence budgets",
-      "sha256": "fe10c0868a161a26b4cd39e18b9dd21121fff955cca9888d7b854960cae02671",
+      "role": "P10-only finite matrix products, an abstract consistent norm and linked first-order product-error model, explicit Frobenius norms, and Sylvester recurrence budgets",
+      "sha256": "e5bdbf8d4dd671fc35fc4ff87172c1319b65268fd122f2069161fb58d4d10e8e",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -1997,24 +1997,28 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
+            "NumStability.matMul_add_left",
+            "NumStability.matMul_add_right",
+            "NumStability.matSeqProd_normwise_perturbation_bound",
+            "NumStability.rectMatMul_entry_abs_sub_computed_le_of_component_sums",
             "NumStability.frobNorm_add_le",
             "NumStability.frobNorm_matMul_le"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P10/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Expand the exact four-term error expression, apply the Frobenius triangle inequality three times, and apply Frobenius submultiplicativity to each matrix product.",
-          "informal_statement_paraphrase": "Equation (8)'s local and inherited product-error terms with the suppressed second-order cross term made explicit in an exact finite bound.",
+          "informal_proof_paraphrase": "Use the linked computed-product equation to remove the inherited cross term and explicit epsilon-squared remainder, obtaining the exact first-order sum. Apply the selected norm's subadditivity and submultiplicativity, then substitute the local and inherited-error certificates.",
+          "informal_statement_paraphrase": "Equation (8)'s complete three-term first-order absolute normwise product-error rule for a linked stable computation under its otherwise unspecified matrix norm.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "90fdf84b3b59fe01d3c2e850d61d4c50cf9d5c47195270fb1d7cea2379e37518",
-            "declaration": "p10_t2_product_error_with_cross_term",
+            "controlled_file_sha256": "f56d9d29c88782c5d68a355e935a7fe695114305d019209ecfb4438dc36ff3a4",
+            "declaration": "p10_t2_first_order_product_error",
             "file": "paper_bencmark/highambench/tasks/P10/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P10Definitions.lean"
             ],
-            "statement_summary": "The exact product-error expansion is bounded by the local error, the two inherited first-order terms, and the explicit inherited-error cross term."
+            "statement_summary": "The realized first-order computed-product error is bounded by exactly the local multiplication term and the two cross-oriented inherited-input terms; the full computation retains the excluded higher-order terms explicitly."
           },
           "source_locations": [
             {
@@ -2028,8 +2032,8 @@
           "task_id": "P10-T2",
           "tier": "T2",
           "tier_name": "combine",
-          "tier_reason": "The L proof repeatedly combines NumStability.frobNorm_add_le and NumStability.frobNorm_matMul_le from NumStability/Analysis/MatrixAlgebra.lean, then performs paper-specific reassociation to retain all four exact terms. No one frozen theorem gives this completed error budget.",
-          "title": "Exact finite product-error budget with cross term"
+          "tier_reason": "The proof combines the local stable-multiplication certificate, both inherited-error certificates, abstract submultiplicativity and subadditivity, and a paper-specific first-order extraction. The L proof uses NumStability.matMul_add_left and NumStability.matMul_add_right from the frozen MatrixAlgebra module for that extraction. Searches across all 24 mounted modules found no declaration giving the linked three-term bound; the closer source-only MatMulFirstOrderSpec is not mounted, while the mounted Frobenius and entrywise results would improperly change the source's unnamed norm semantics.",
+          "title": "First-order stable product-error budget"
         },
         {
           "availability": "available",
