@@ -21,12 +21,12 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.CondEstimation
 import NumStability.Algorithms.DotProduct
-import NumStability.Algorithms.LU.Doolittle
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.LU.LUSolve
 import NumStability.Algorithms.LinearSystems.Cholesky.Factorization.Spec
 import NumStability.Algorithms.LinearSystems.Cholesky.Solve.Basic
+import NumStability.Algorithms.LinearSystems.LU.Doolittle.Assembly.Core
 import NumStability.Algorithms.LinearSystems.LU.Doolittle.Basic
 import NumStability.Algorithms.LinearSystems.LU.Doolittle.Certificates
 import NumStability.Algorithms.LinearSystems.LeastSquares.AugmentedSystem
@@ -38,10 +38,10 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.StoredQR
 import NumStability.Algorithms.LinearSystems.QR.GivensQR
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 import NumStability.Algorithms.LinearSystems.QR.Householder.PanelApplication
-import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.Householder.StoredQR
-import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.Householder.TrailingPanels
+import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+import NumStability.Algorithms.LinearSystems.QR.HouseholderSpec
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance

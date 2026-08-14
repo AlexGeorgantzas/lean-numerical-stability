@@ -1,6 +1,6 @@
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
-import NumStability.Algorithms.Horner
+import NumStability.Algorithms.PolynomialEvaluation.DerivativeEvaluation.ErrorBounds
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
 import NumStability.Source.Higham.Chapter05.Section03.NewtonEvaluation.Basic

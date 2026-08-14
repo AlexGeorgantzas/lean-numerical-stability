@@ -3,7 +3,6 @@ import NumStabilityTest.Import.Algorithms.Arithmetic.DotProduct.NoGuard
 import NumStabilityTest.Import.Algorithms.Arithmetic.DotProduct.NoGuard.Core
 import NumStabilityTest.Import.Algorithms.Arithmetic.DotProduct.NoGuard.Tree
 import NumStabilityTest.Import.Algorithms.LinearSystems
-import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.ArbitraryNorm
@@ -27,6 +26,7 @@ import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.RecursiveFactorization
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.SchurComplement
 import NumStabilityTest.Import.Algorithms.LinearSystems.LU.BlockLU.VaryingBlocks.Uniqueness
+import NumStabilityTest.Import.Algorithms.LinearSystems.LeastSquares
 import NumStabilityTest.Import.Algorithms.StationaryIteration
 import NumStabilityTest.Import.Algorithms.TestMatrices.UpperTriangularStress
 import NumStabilityTest.Import.All
@@ -79,19 +79,19 @@ import NumStabilityTest.Import.Analysis.VectorNorms.Basic
 import NumStabilityTest.Import.Analysis.VectorNorms.Duality
 import NumStabilityTest.Import.Analysis.VectorNorms.Interpolation
 import NumStabilityTest.Import.Compatibility.Algorithms.HighamChapter8StressUpper
-import NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLU
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUArbitraryNormSourceClosure
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUComputationSourceClosure
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUFirstOrderFamilies
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUPointRowGrowthSourceClosure
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLURowSourceClosure
-import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUScalarGrowthBridge
-import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUSourceClosure
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUSPDFamilies
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUSPDSourceClosure
+import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUScalarGrowthBridge
+import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUSourceClosure
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.BlockLUVarying
 import NumStabilityTest.Import.Compatibility.Algorithms.LU.GrowthFactor
+import NumStabilityTest.Import.Compatibility.Algorithms.LeastSquares
 import NumStabilityTest.Import.Compatibility.Analysis.Norms
 import NumStabilityTest.Import.Compatibility.Analysis.Probability.AlgorithmsTestMatricesHigham28GaussianAbsoluteMoment
 import NumStabilityTest.Import.Compatibility.Analysis.Probability.AlgorithmsTestMatricesHigham28HaarFibers
@@ -344,8 +344,8 @@ import NumStabilityTest.Import.Source.Chapter13.Section03
 import NumStabilityTest.Import.Source.Chapter13.Section03.ArbitraryNormDominance
 import NumStabilityTest.Import.Source.Chapter13.Section03.ColumnDominanceClosure
 import NumStabilityTest.Import.Source.Chapter13.Section03.RowDominanceClosure
-import NumStabilityTest.Import.Source.Chapter13.Section03.SchurStageAnalysis
 import NumStabilityTest.Import.Source.Chapter13.Section03.SPDFactorBounds
+import NumStabilityTest.Import.Source.Chapter13.Section03.SchurStageAnalysis
 import NumStabilityTest.Import.Source.Chapter13.Table01
 import NumStabilityTest.Import.Source.Chapter13.Table01.Families
 import NumStabilityTest.Import.Source.Chapter13.Theorem02
@@ -522,6 +522,7 @@ import NumStabilityTest.Import.TriangularMigration
 import NumStabilityTest.Import.TridiagonalCondCanonical
 import NumStabilityTest.Reorganization.R01
 import NumStabilityTest.Reorganization.R02
+import NumStabilityTest.Reorganization.R03.All
 import NumStabilityTest.Reorganization.R11.All
 import NumStabilityTest.Reorganization.R12.All
 import NumStabilityTest.Reorganization.W01.Canonical.ExactSubtraction
@@ -530,8 +531,8 @@ import NumStabilityTest.Reorganization.W01.Canonical.IeeeExceptions
 import NumStabilityTest.Reorganization.W01.Canonical.IeeeOperations
 import NumStabilityTest.Reorganization.W01.Canonical.IeeeValue
 import NumStabilityTest.Reorganization.W01.Canonical.NearestRoundingError
-import NumStabilityTest.Reorganization.W01.Canonical.Rounding
 import NumStabilityTest.Reorganization.W01.Canonical.RoundToEvenLocalError
+import NumStabilityTest.Reorganization.W01.Canonical.Rounding
 import NumStabilityTest.Reorganization.W01.Canonical.StandardModel
 import NumStabilityTest.Reorganization.W01.Chapter01.CancellationOfRoundingErrors
 import NumStabilityTest.Reorganization.W01.Chapter01.IncreasingPrecision

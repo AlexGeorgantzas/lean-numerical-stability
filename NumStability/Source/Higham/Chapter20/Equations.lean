@@ -13,7 +13,7 @@ import NumStability.Analysis.Rounding
 import NumStability.Analysis.SingularValues.Basic
 import NumStability.Analysis.SingularValues.Realification
 import NumStability.FloatingPoint.Model
-import NumStability.Source.Higham.Chapter12.IterativeRefinement
+import NumStability.Source.Higham.Chapter12.IterativeRefinement.Results.Theorems
 
 namespace NumStability
 

@@ -48,11 +48,18 @@ advances M03/R03 to ready/active controls B0005/P0005/R0005. Planned-control
 commit `fb5a021b4640dd595a99f7560ce252ad9836a5b6` passed Lean CI run 31691727184
 (job 94420320315) before B0005 was created explicitly from exact C0002 code,
 pushed as a new remote ref with a nonexistent-tip lease, and activated with its
-clean LF-configured named worktree. Delivery and integration remain null and
-retirement remains `not_due`; the hash-pinned
+clean LF-configured named worktree. A reviewed temporary second-operator
+expansion (`claude-local`, control `c4f66cbdf`) and a reviewed fanIn7
+private-closure route amendment (control `09b3962dc`) followed, each with green
+Lean CI. The R03 delivery landed at immutable tip `1f8ff4ca5` (parent exact
+C0002), is preserved by true merge, and the same-C0002 R0005 request was
+applied exactly once (121/121 postimages) with bounded documented integration
+follow-ups, including one consumer import-superset repair
+(`Chapter27.SoftwareEnvironment`) on top of its byte-exact postimage. Branch delivery/integration fields and retirement (`not_due`)
+transition at C0003 acceptance, which remains pending; the hash-pinned
 [`R03 activation review`](2026-08-repository-reorganization-completion/reviews/R03-activation.md)
-records the exact authority, refs, worktree, and tips. R03 owns all 9 mixed and
-all 13 missing-module-doc rows. M03 remains ready and unaccepted; M07/R07 and
+records the exact authority, refs, worktree, and tips. R03 removed all 9 mixed
+and all 13 missing-module-doc rows. M03 remains ready and unaccepted; M07/R07 and
 every other unaccepted milestone remain planned, and R07 is not activated. The
 exact graph has no direct owner-import or typed declaration edges between R03
 and R07, but it has 24/23 opposite-direction transitive owner-reachability

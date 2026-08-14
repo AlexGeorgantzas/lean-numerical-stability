@@ -1,6 +1,6 @@
 import NumStability.Algorithms.Ch14MethodDUpperCertificate
 import NumStability.Algorithms.DotProduct
-import NumStability.Algorithms.LU.Doolittle
+import NumStability.Algorithms.LinearSystems.LU.Doolittle.Assembly.Core
 import NumStability.Algorithms.LinearSystems.LU.Doolittle.Basic
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Source.Higham.Chapter14.Section03.LUFactorInversion.MethodB.MethodsBC

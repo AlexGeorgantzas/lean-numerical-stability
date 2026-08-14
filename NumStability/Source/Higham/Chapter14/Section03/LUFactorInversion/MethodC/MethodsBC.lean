@@ -7,10 +7,10 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.DotProduct
-import NumStability.Algorithms.LU.Doolittle
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.LU.LUSolve
+import NumStability.Algorithms.LinearSystems.LU.Doolittle.Assembly.Core
 import NumStability.Algorithms.LinearSystems.LU.Doolittle.Basic
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution

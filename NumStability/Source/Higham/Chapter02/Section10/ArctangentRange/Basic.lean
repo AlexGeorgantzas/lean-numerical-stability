@@ -1,6 +1,6 @@
 import Mathlib.Analysis.Real.Pi.Bounds
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 
 /-!
 # Chapter02 Section10 ArctangentRange Basic

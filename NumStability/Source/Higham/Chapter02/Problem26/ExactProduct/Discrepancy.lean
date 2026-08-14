@@ -1,5 +1,5 @@
-import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Analysis.FloatingPointArithmetic.Format
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
 import NumStability.Analysis.FloatingPointArithmetic.Rounding
 import NumStability.FloatingPoint.FusedMultiplyAdd.Core

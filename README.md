@@ -247,10 +247,27 @@ R0003/R0004 are applied. Acceptance-control commit
 leases and both clean named worker worktrees were removed without force after
 evidence archival. Local delivery refs remain at their immutable tips. The
 temporary `codex-local` authorization on `claude-lane` expired at C0002 and the
-lane's single-operator boundary is restored. M03/R03 and M07/R07 are only
-candidates for a fresh C0002 graph review, not an authorized pair; other
-unaccepted milestones remain planned. The statistics above are the current
-C0002 ratchet. The
+lane's single-operator boundary is restored. A fresh C0002 review selected
+M03/R03 as a singleton: B0005 was planned at control commit
+`fb5a021b4640dd595a99f7560ce252ad9836a5b6`, activated at
+`1166874cb986d09f357d092f1171a31d7f8b2332`, expanded to a reviewed temporary
+second operator (`claude-local`) at `c4f66cbdfdce6cf64d484be13290e7d2e60547f5`,
+and route-amended for the fanIn7 private-closure repair at
+`09b3962dc6ed18b6de6eea5dc4a0e0e7c8ba4bb7` — each with its own green Lean CI.
+The R03 delivery (47 owners; 2,389 declarations, 2,132 relocated into 47
+canonical destinations plus one documented bridge; 398 private
+normalizations; 2,150 isolated tests) landed at immutable tip
+`1f8ff4ca5b0b136901a2f47d43e1064dc09aa556` with parent exact C0002 and is
+preserved by a true merge. The reviewed same-C0002 R0005 request (121 paths)
+was applied exactly once after the merge, together with its bounded documented
+integration follow-ups (aggregate wiring, two source reclassifications,
+compatibility-row reconciliation, ratchet baselines, the milestone-DAG
+refresh, and one consumer import-superset repair restoring a non-owner
+transitive supply invisible to the typed declaration graph). C0003 acceptance
+is pending its gate set and exact green code CI.
+M07/R07 and other unaccepted milestones remain planned. The statistics above
+are the current C0002 ratchet and remain pinned to C0002 until C0003 is
+recorded. The
 [`active phase registry`](docs/architecture/phases/2026-08-repository-reorganization-completion/README.md)
 is the authoritative status record; the predecessor C0008 phase remains
 immutable historical evidence.

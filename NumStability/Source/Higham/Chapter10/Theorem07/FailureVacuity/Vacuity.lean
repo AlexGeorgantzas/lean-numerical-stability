@@ -1,6 +1,7 @@
-import NumStability.Algorithms.HighamChapters1To9SourceClosure
 import NumStability.Algorithms.LinearSystems.Cholesky.ErrorAnalysis.Demmel
 import NumStability.Analysis.MatrixNorms.SpectralExtrema.Basic
+import NumStability.Source.Higham.Chapter08.Equation15.FanInExecutor.FirstOrderResidual
+import NumStability.Source.Higham.Chapter08.Equation18.FanInExecutor.FirstOrderForwardError
 
 /-!
 # Chapter10 Theorem07 FailureVacuity Vacuity

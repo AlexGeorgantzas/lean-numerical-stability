@@ -1,5 +1,5 @@
 import Mathlib.Tactic.NormNum
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 
 namespace NumStability
 

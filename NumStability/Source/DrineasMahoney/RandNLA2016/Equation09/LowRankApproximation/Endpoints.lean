@@ -3,8 +3,8 @@ import Mathlib.Analysis.InnerProductSpace.Subspace
 import Mathlib.Analysis.Matrix.PosDef
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 import Mathlib.Tactic.Ring
-import NumStability.Algorithms.LU.Doolittle
 import NumStability.Algorithms.LU.GaussianElimination
+import NumStability.Algorithms.LinearSystems.LU.Doolittle.Assembly.Core
 import NumStability.Algorithms.LinearSystems.LU.Doolittle.Basic
 import NumStability.Algorithms.LinearSystems.LU.Doolittle.Certificates
 import NumStability.Algorithms.MatMul

@@ -4,12 +4,12 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Positivity
 import Mathlib.Tactic.Ring
-import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Algorithms.Summation.Compensated.Kahan.Coefficients.Coupled
 import NumStability.Algorithms.Summation.Compensated.Kahan.Core
 import NumStability.Algorithms.Summation.Compensated.Kahan.ErrorBounds
 import NumStability.Algorithms.Summation.Compensated.Kahan.Finite
 import NumStability.Algorithms.Summation.Compensated.Kahan.LocalCoefficients
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 
 namespace NumStability
 

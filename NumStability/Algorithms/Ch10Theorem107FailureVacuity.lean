@@ -1,4 +1,5 @@
-import NumStability.Algorithms.HighamChapters1To9SourceClosure
+import NumStability.Source.Higham.Chapter08.Equation15.FanInExecutor.FirstOrderResidual
+import NumStability.Source.Higham.Chapter08.Equation18.FanInExecutor.FirstOrderForwardError
 import NumStability.Source.Higham.Chapter10.Theorem07.FailureVacuity.Vacuity
 
 /-!

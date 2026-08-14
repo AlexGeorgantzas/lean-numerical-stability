@@ -1,6 +1,6 @@
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mathlib.Topology.Algebra.InfiniteSum.Real
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 import NumStability.Source.Higham.Chapter02.Problem05.BinaryOneTenth.Basic
 
 /-!

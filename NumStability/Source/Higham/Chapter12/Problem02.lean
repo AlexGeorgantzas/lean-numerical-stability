@@ -3,10 +3,10 @@
 -- Higham, "Accuracy and Stability of Numerical Algorithms", 2nd ed.,
 -- Problem 12.2 and its Appendix A solution (printed pp. 242 and 556).
 
-import NumStability.Source.Higham.Chapter12.IterativeRefinement
 import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.ConditionNumbers
 import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.ForwardErrorKernels
 import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem04
+import NumStability.Source.Higham.Chapter12.IterativeRefinement.Results.Theorems
 
 /-!
 # Higham Chapter 12, Problem 12.2

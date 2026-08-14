@@ -5,10 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
-import NumStability.Source.Higham.Chapter12.IterativeRefinement
-import NumStability.Algorithms.Horner
-import NumStability.Source.Higham.Chapter22.VandermondeSystems
+import NumStability.Algorithms.PolynomialEvaluation.DerivativeEvaluation.ErrorBounds
 import NumStability.Analysis.ComplexArithmetic
+import NumStability.Source.Higham.Chapter12.IterativeRefinement.Results.Theorems
+import NumStability.Source.Higham.Chapter22.VandermondeSystems
 
 /-! # Complex confluent Vandermonde residual/refinement bridge
 

@@ -1,4 +1,4 @@
-import NumStability.Source.Higham.Chapter12.IterativeRefinement
+import NumStability.Source.Higham.Chapter12.IterativeRefinement.Results.Theorems
 import NumStability.Source.Higham.Chapter12.OmegaDiscontinuity
 import NumStability.Source.Higham.Chapter12.Problem02
 

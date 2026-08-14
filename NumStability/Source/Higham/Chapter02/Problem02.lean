@@ -2,7 +2,7 @@
 --
 -- Problem-specific theorem surface for Higham Chapter 2, Problem 2.2.
 
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 
 namespace NumStability
 

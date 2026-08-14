@@ -3,7 +3,7 @@
 -- The literal Chapter 9 -> Chapter 12 handoff for equation (12.6).
 
 import NumStability.Source.Higham.Chapter09.DoolittleClosure
-import NumStability.Source.Higham.Chapter12.IterativeRefinement
+import NumStability.Source.Higham.Chapter12.IterativeRefinement.Results.Theorems
 
 namespace NumStability
 

@@ -12,10 +12,6 @@ import Mathlib.LinearAlgebra.Matrix.Charpoly.Coeff
 import Mathlib.LinearAlgebra.Matrix.SchurComplement
 import Mathlib.Order.Interval.Finset.Fin
 import Mathlib.Order.Interval.Finset.Nat
-import NumStability.Algorithms.LinearSystems.LU.BlockLU.BlockMatrices
-import NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite
-import NumStability.Algorithms.LU.Doolittle
-import NumStability.Algorithms.LinearSystems.LU.Doolittle.Budgets
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.GrowthFactor
 import NumStability.Algorithms.LU.LUSolve
@@ -23,6 +19,10 @@ import NumStability.Algorithms.LU.SpecialMatrices
 import NumStability.Algorithms.LU.Tridiagonal
 import NumStability.Algorithms.LU.TridiagonalCond
 import NumStability.Algorithms.LU.TridiagonalRecurrence
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.BlockMatrices
+import NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite
+import NumStability.Algorithms.LinearSystems.LU.Doolittle.Assembly.Core
+import NumStability.Algorithms.LinearSystems.LU.Doolittle.Budgets
 import NumStability.Analysis.FirstOrder.FixedPrecision
 import NumStability.Analysis.MatrixNorms.EntrywiseMaximum
 import NumStability.Source.Higham.Chapter09.Section01

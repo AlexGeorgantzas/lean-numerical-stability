@@ -9,7 +9,7 @@ import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
 import Mathlib.Topology.Basic
 import NumStability.Analysis.Error.Measures.ScalarDefinitions
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Statistics.SampleVariance.Core
 import NumStability.Analysis.Statistics.SampleVariance.Updating

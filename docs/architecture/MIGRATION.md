@@ -15,8 +15,14 @@ are evidence, not current worker instructions.
 C0002 accepts R11/R12 at exact code commit
 `9d2334d77f1a38f8a4caa81fe53eeb11a8e3e7cd`, but it does not claim bounded or
 repository-wide completion: 356 distinct residual-debt rows remain, including
-277 unclassified modules. M03/R03 and M07/R07 are only candidates for a fresh
-C0002 graph review, not an authorized concurrent pair.
+277 unclassified modules. A fresh C0002 review then selected M03/R03 as a
+singleton (M07/R07 remains a planned candidate, never an authorized pair): the
+R03 delivery landed at immutable tip
+`1f8ff4ca5b0b136901a2f47d43e1064dc09aa556` with parent exact C0002, is
+preserved by true merge, and the reviewed same-C0002 R0005 request was applied
+exactly once with bounded documented integration follow-ups. C0003 acceptance
+is pending its gate set and exact green code CI; the statistics above remain
+the C0002 ratchet until then.
 
 1. **Current baseline.** Regenerate and version the architecture and build
    report at the exact migration commit using tracked tooling.

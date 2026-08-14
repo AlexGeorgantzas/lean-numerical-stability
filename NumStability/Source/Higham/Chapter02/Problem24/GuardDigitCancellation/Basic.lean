@@ -1,5 +1,5 @@
 import Mathlib.Algebra.Group.Nat.Even
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 
 /-!
 # Chapter02 Problem24 GuardDigitCancellation Basic

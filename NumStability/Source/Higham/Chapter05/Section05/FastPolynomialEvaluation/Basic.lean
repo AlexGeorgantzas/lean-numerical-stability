@@ -3,7 +3,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 import NumStability.Analysis.ForwardError
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding

@@ -12,8 +12,8 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import NumStability.Algorithms.DotProduct
-import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LinearSystems.IterativeRefinement.Core
+import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.MatVec
 import NumStability.Analysis.ForwardError
 import NumStability.Analysis.MatrixAlgebra

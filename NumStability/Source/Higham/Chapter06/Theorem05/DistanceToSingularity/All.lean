@@ -1,5 +1,5 @@
 import NumStability.Analysis.Conditioning.DistanceToSingularity
-import NumStability.Source.Higham.Chapter06.Theorem05.DistanceToSingularity.Chapter07Equation26
+import NumStability.Source.Higham.Chapter07.Equation26.DistanceToSingularity.Results
 
 /-!
 # Source.Higham.Chapter06.Theorem05.DistanceToSingularity.All

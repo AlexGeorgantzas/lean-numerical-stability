@@ -6,7 +6,7 @@ See LICENSES/Apache-2.0.txt.
 Authors: QED
 -/
 
-import NumStability.Source.Higham.Chapter12.IterativeRefinement
+import NumStability.Source.Higham.Chapter12.IterativeRefinement.Results.Theorems
 
 namespace NumStability
 

@@ -1,4 +1,4 @@
-import NumStability.Analysis.DoubleRounding
+import NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Results
 
 /-!
 # Chapter02 Problem10 DivisionRoundTrip Basic

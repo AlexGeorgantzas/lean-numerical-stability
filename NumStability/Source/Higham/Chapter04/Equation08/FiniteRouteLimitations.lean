@@ -1,7 +1,7 @@
 import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.NormNum
-import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Algorithms.Summation.Compensated.Kahan.Finite
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 
 namespace NumStability
 

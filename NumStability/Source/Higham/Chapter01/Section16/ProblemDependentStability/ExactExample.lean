@@ -4,7 +4,7 @@ import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
 import NumStability.Analysis.Error.Measures.ScalarDefinitions
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.ProblemDependentStability.HessenbergDeterminant
 import NumStability.Analysis.Rounding

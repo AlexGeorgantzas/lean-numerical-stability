@@ -4,8 +4,8 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
-import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Algorithms.Summation.Compensated.Kahan.Finite
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 import NumStability.FloatingPoint.Model
 import NumStability.Source.Higham.Chapter04.Equation08.ReturnedSum
 

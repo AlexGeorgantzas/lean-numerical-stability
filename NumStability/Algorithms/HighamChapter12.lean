@@ -1,4 +1,4 @@
-import NumStability.Source.Higham.Chapter12.IterativeRefinement
+import NumStability.Source.Higham.Chapter12.IterativeRefinement.Results.Theorems
 
 /-!
 # Compatibility import for Higham Chapter 12 iterative-refinement results

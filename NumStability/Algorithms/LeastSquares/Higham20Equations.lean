@@ -3,7 +3,7 @@ import Mathlib.Tactic.Ring
 import NumStability.Algorithms.LeastSquares.LSNormalEquations
 import NumStability.Algorithms.LeastSquares.LSQRSolve
 import NumStability.Analysis.Perturbation.LeastSquares.Basic
-import NumStability.Source.Higham.Chapter12.IterativeRefinement
+import NumStability.Source.Higham.Chapter12.IterativeRefinement.Results.Theorems
 import NumStability.Source.Higham.Chapter20.Equations
 
 /-!

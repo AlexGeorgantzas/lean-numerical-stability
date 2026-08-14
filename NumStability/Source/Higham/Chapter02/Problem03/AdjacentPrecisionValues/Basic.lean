@@ -1,7 +1,7 @@
 import Mathlib.Data.Nat.Log
 import Mathlib.Order.Interval.Finset.Nat
 import Mathlib.Tactic.NormNum
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 
 /-!
 # Chapter02 Problem03 AdjacentPrecisionValues Basic

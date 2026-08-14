@@ -1,4 +1,4 @@
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 import NumStability.Source.Higham.Chapter02.Problem25.NonzeroEvaluation.Basic
 
 /-!

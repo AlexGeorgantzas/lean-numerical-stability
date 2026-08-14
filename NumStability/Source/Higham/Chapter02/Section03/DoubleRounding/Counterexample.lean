@@ -1,5 +1,5 @@
-import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Analysis.FloatingPointArithmetic.DoubleRounding.ToyBinary
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 import NumStability.Analysis.FloatingPointArithmetic.NearestRoundingError
 
 -- Analysis/DoubleRounding.lean

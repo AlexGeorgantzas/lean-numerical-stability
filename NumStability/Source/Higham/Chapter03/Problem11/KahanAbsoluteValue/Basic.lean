@@ -1,6 +1,6 @@
 import Mathlib.Tactic
-import NumStability.Analysis.DoubleRounding
-import NumStability.Analysis.InstabilityWithoutCancellation
+import NumStability.Source.Higham.Chapter01.Section12.InstabilityWithoutCancellation.PivotingExample
+import NumStability.Source.Higham.Chapter02.Problem09.DoubleRounding.Counterexample.Results
 
 /-!
 # Chapter03 Problem11 KahanAbsoluteValue Basic

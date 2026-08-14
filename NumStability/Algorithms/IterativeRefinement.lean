@@ -1,5 +1,5 @@
 import NumStability.Algorithms.LinearSystems.IterativeRefinement.Core
-import NumStability.Source.Higham.Chapter12.IterativeRefinement.Chapter12Bounds
+import NumStability.Source.Higham.Chapter12.IterativeRefinement.ForwardErrorBounds.Results
 import NumStability.Source.Higham.Chapter12.IterativeRefinement.LegacyChapter11Surface
 
 /-!

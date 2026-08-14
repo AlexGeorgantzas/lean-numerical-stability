@@ -1,6 +1,6 @@
 import Mathlib.Analysis.SpecialFunctions.Exp
 import Mathlib.RingTheory.Algebraic.Basic
-import NumStability.Analysis.FloatingPointArithmetic
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 import NumStability.Source.Higham.Chapter02.Section10.Tablemaker.FiniteSeparation.Basic
 
 /-!

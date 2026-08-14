@@ -1,5 +1,5 @@
-import NumStability.Analysis.FloatingPointArithmetic
 import NumStability.Analysis.FloatingPointArithmetic.Format
+import NumStability.Analysis.FloatingPointArithmetic.IeeeSpecialValueOperations.Results
 import NumStability.FloatingPoint.FusedMultiplyAdd.DotProductCounts
 
 -- Analysis/FusedMultiplyAdd.lean

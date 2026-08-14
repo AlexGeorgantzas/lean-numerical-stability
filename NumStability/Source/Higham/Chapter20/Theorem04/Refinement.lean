@@ -12,7 +12,7 @@ import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Basic
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
-import NumStability.Source.Higham.Chapter12.IterativeRefinement
+import NumStability.Source.Higham.Chapter12.IterativeRefinement.Results.Theorems
 import NumStability.Source.Higham.Chapter20.Equations
 import NumStability.Source.Higham.Chapter20.Theorem03.QRSolve
 
