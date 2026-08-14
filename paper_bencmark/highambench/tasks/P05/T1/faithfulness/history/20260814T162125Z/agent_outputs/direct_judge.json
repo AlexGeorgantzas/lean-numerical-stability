@@ -1,0 +1,517 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P05-T1",
+  "paper_sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6",
+  "dossier_sha256": "2655aad3e60f6016b0d840eca3eaae82ec8e1c4a74c4b3c3f73356a7aa940ded",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.p05CoefficientSource",
+      "interpretation": "This function returns c at Option.none, computed at Option.some Option.none, and products i at Option.some (Option.some i).",
+      "effect_on_target": "The source sum in herror is exactly |c| + |computed| + sum_i |products i|.",
+      "paper_match": "Lemma 4.1 and its supporting residual bound exclude c from the perturbable sources: c is explicitly unperturbed. After aligning computed with b_k*y_hat, the paper uses |computed| plus the product magnitudes, not |c|.",
+      "status": "fail"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p05CoefficientSource.match_1",
+      "interpretation": "This is the dependent three-way eliminator for outer none, inner none, and an inner Fin index.",
+      "effect_on_target": "It implements the three branches of D001 without adding any further arithmetic semantics.",
+      "paper_match": "The eliminator is implementation machinery with no independent paper-level claim; the mismatching branch values are assessed under D001.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D003",
+      "name": "And",
+      "interpretation": "And requires all nested coefficient bounds and the final identity simultaneously.",
+      "effect_on_target": "It combines the bounds on theta0, theta_c, and theta_p with the exact equality.",
+      "paper_match": "The paper likewise requires its coefficient bounds and exact backward identity simultaneously.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "Eq",
+      "interpretation": "Eq is exact equality over Real.",
+      "effect_on_target": "The final perturbed relation is an exact real identity.",
+      "paper_match": "Lemma 4.1 also states an exact real backward identity, although the two identities differ because Lean perturbs c.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "Exists",
+      "interpretation": "Exists introduces witnesses theta0, theta_c, and the indexed family theta_p.",
+      "effect_on_target": "All witnesses may depend on the universally quantified data and herror.",
+      "paper_match": "Existential real backward coefficients are appropriate, but the additional theta_c witness has no paper counterpart.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "Fin",
+      "interpretation": "Fin k indexes exactly k values, represented by indices 0 through k-1.",
+      "effect_on_target": "It indexes k product values and k product coefficients.",
+      "paper_match": "The paper has K-1 products. These ranges align through the reindexing K = k + 1.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "Fin.fintype",
+      "interpretation": "This supplies the finite enumeration of Fin k.",
+      "effect_on_target": "It permits summation over every product index.",
+      "paper_match": "Finite enumeration matches the paper's finite product range after reindexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "Finset.sum",
+      "interpretation": "Finset.sum adds the image of every member of a finite set in the real additive commutative monoid.",
+      "effect_on_target": "It forms the product sum, perturbed product sum, and absolute source sum.",
+      "paper_match": "Ordinary finite real summation matches the exact sums appearing in the paper identities.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "Finset.univ",
+      "interpretation": "Finset.univ contains every value of the relevant finite type.",
+      "effect_on_target": "Each displayed sum covers all Fin k indices or all nested Option indices.",
+      "paper_match": "Coverage of all product indices is correct; coverage of the extra c sentinel is separately a mismatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "HAdd.hAdd",
+      "interpretation": "This resolves to natural addition for k + 1 and real addition for 1 + theta.",
+      "effect_on_target": "It constructs the coefficient multiplier k + 1 and each relative perturbation factor.",
+      "paper_match": "These are the intended ordinary additions.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "HMul.hMul",
+      "interpretation": "This resolves to ordinary real multiplication.",
+      "effect_on_target": "It forms bounds, relative perturbations, and all terms in the final identity.",
+      "paper_match": "The paper uses exact real multiplication in its displayed backward identity.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "HSub.hSub",
+      "interpretation": "This resolves to ordinary real subtraction.",
+      "effect_on_target": "It forms computed - (c - sum products) and the right side of the perturbed identity.",
+      "paper_match": "The subtraction operations themselves match the paper's exact residual and identity.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "LE.le",
+      "interpretation": "This is the non-strict order relation.",
+      "effect_on_target": "It expresses u nonnegativity, herror, and every absolute coefficient bound.",
+      "paper_match": "The paper also uses non-strict absolute-value bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Nat",
+      "interpretation": "Nat permits k = 0 and all positive natural values.",
+      "effect_on_target": "k counts Lean product terms; k + 1 is always positive.",
+      "paper_match": "Using paper K = k + 1 reconciles Lean's possible k = 0 with the paper's requirement K > 0.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "Nat.cast",
+      "interpretation": "Nat.cast embeds k + 1 into Real.",
+      "effect_on_target": "It makes the real coefficient (k + 1)u.",
+      "paper_match": "Under K = k + 1, this is the paper's general-case coefficient Ku.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "OfNat.ofNat",
+      "interpretation": "This supplies the numeric literals 0 and 1 in their inferred types.",
+      "effect_on_target": "It provides the zero in hu and the ones in k + 1 and 1 + theta.",
+      "paper_match": "The literals have their ordinary paper meanings.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "One.toOfNat1",
+      "interpretation": "This derives the real numeral 1 from Real's multiplicative identity.",
+      "effect_on_target": "It supplies the 1 in each relative factor 1 + theta.",
+      "paper_match": "This matches the paper's relative perturbation factors.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "Option",
+      "interpretation": "Option (Option (Fin k)) has k + 2 values: outer none, some none, and some (some i) for each product index.",
+      "effect_on_target": "It creates separate source slots for c, computed, and all k products.",
+      "paper_match": "After K = k + 1, the paper needs a computed slot and k product slots but no perturbable c slot.",
+      "status": "fail"
+    },
+    {
+      "id": "D019",
+      "name": "Real",
+      "interpretation": "All numerical inputs, products, computed, c, u, and witnesses are unrestricted real numbers.",
+      "effect_on_target": "The target has no floating-point subtype or membership predicates for its data.",
+      "paper_match": "The paper's witnesses are real, but a_i, b_i, b_K, c, and y_hat are finite floating-point values. Lean does not preserve those input types.",
+      "status": "fail"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instAdd",
+      "interpretation": "This is ordinary addition on Real.",
+      "effect_on_target": "It interprets every real addition in the proposition.",
+      "paper_match": "Ordinary exact real addition is appropriate for the displayed mathematical identities.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "This supplies Real's associative, commutative addition with zero for finite sums.",
+      "effect_on_target": "It defines all Finset sums, including empty sums.",
+      "paper_match": "This matches ordinary finite real summation, including the empty product list at K = 1.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instAddGroup",
+      "interpretation": "This supplies real addition, negation, subtraction, and the group structure used by abs.",
+      "effect_on_target": "It supports residual subtraction and real absolute values.",
+      "paper_match": "These are the intended scalar real operations.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instLE",
+      "interpretation": "This is the usual total order on Real.",
+      "effect_on_target": "All inequalities use the standard real ordering.",
+      "paper_match": "The paper's scalar inequalities use the same ordering.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instMul",
+      "interpretation": "This is ordinary multiplication on Real.",
+      "effect_on_target": "It interprets all products in bounds and the exact identity.",
+      "paper_match": "The displayed paper identity also uses exact real multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "Real.instNatCast",
+      "interpretation": "This maps a natural number to its corresponding nonnegative real integer.",
+      "effect_on_target": "It interprets k + 1 as a real coefficient.",
+      "paper_match": "This is the intended interpretation of the paper's integer coefficient K.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "Real.instOne",
+      "interpretation": "This supplies the real multiplicative identity.",
+      "effect_on_target": "It provides the base of every relative factor 1 + theta.",
+      "paper_match": "This matches the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "Real.instSub",
+      "interpretation": "Real subtraction is addition of the additive inverse.",
+      "effect_on_target": "It gives the standard meanings of both nested residual subtraction and the final right-hand subtraction.",
+      "paper_match": "This matches the paper's exact scalar subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "Real.instZero",
+      "interpretation": "This supplies real zero.",
+      "effect_on_target": "It is used in the hypothesis 0 <= u and in empty real sums.",
+      "paper_match": "Zero has its ordinary paper meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "Real.lattice",
+      "interpretation": "This supplies the real lattice operations used to define absolute value.",
+      "effect_on_target": "It contributes to every occurrence of abs.",
+      "paper_match": "It yields the usual scalar real absolute value required by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "Zero.toOfNat0",
+      "interpretation": "This derives the numeral 0 from the relevant Zero instance.",
+      "effect_on_target": "It supplies the zero in hu.",
+      "paper_match": "The literal has its standard meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "abs",
+      "interpretation": "For Real, abs a is max(a, -a), the standard scalar absolute value.",
+      "effect_on_target": "It measures the residual, source magnitudes, and coefficient magnitudes.",
+      "paper_match": "The paper uses scalar absolute values, not a vector or matrix norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D032",
+      "name": "instAddNat",
+      "interpretation": "This is ordinary natural-number addition.",
+      "effect_on_target": "It computes k + 1 before casting to Real.",
+      "paper_match": "The resulting value matches paper K after the reindexing K = k + 1, though the unit-denominator sharper case is absent elsewhere.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "instFintypeOption",
+      "interpretation": "This enumerates none and every some value, recursively for the nested Option type.",
+      "effect_on_target": "The herror source sum enumerates both sentinel values and all product indices exactly once.",
+      "paper_match": "That enumeration includes the extra c source, contrary to the paper's explicit exclusion of c from perturbation.",
+      "status": "fail"
+    },
+    {
+      "id": "D034",
+      "name": "instHAdd",
+      "interpretation": "This converts homogeneous Add instances into HAdd operations.",
+      "effect_on_target": "It dispatches Lean notation to standard Nat or Real addition.",
+      "paper_match": "It adds no nonstandard semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "instHMul",
+      "interpretation": "This converts homogeneous Mul instances into HMul operations.",
+      "effect_on_target": "It dispatches Lean notation to ordinary real multiplication.",
+      "paper_match": "It adds no nonstandard semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "instHSub",
+      "interpretation": "This converts homogeneous Sub instances into HSub operations.",
+      "effect_on_target": "It dispatches Lean notation to ordinary real subtraction.",
+      "paper_match": "It adds no nonstandard semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "instOfNatNat",
+      "interpretation": "This interprets a natural numeral as that same natural number.",
+      "effect_on_target": "It supplies the natural numeral 1 in k + 1.",
+      "paper_match": "The numeral is interpreted conventionally.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "Unit",
+      "interpretation": "Unit is a one-element type used only as a dummy argument in nullary match branches.",
+      "effect_on_target": "It has no mathematical effect on the proposition.",
+      "paper_match": "There is no paper-level analogue or claim to assess.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D039",
+      "name": "Option.casesOn",
+      "interpretation": "This performs case analysis between none and some.",
+      "effect_on_target": "Nested uses implement D002 and ultimately select the D001 branch.",
+      "paper_match": "It is implementation machinery; the selected branch meanings are assessed separately.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D040",
+      "name": "Option.none",
+      "interpretation": "The outer Option.none constructor is the D001 index whose value is c; inner none under some selects computed.",
+      "effect_on_target": "The outer-none case inserts |c| into the herror source sum.",
+      "paper_match": "The paper expressly keeps c unperturbed, so this concrete use does not match.",
+      "status": "fail"
+    },
+    {
+      "id": "D041",
+      "name": "Option.some",
+      "interpretation": "Option.some embeds the computed sentinel and each Fin k product index into the nested source type.",
+      "effect_on_target": "Some none selects computed, while some (some i) selects products i.",
+      "paper_match": "Computed and product source slots are compatible with the paper; the additional outer-none c slot is the separate defect.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "Unit.unit",
+      "interpretation": "Unit.unit is the sole dummy value passed to nullary match branches.",
+      "effect_on_target": "It contributes no data or condition to the target.",
+      "paper_match": "There is no paper-level semantic claim.",
+      "status": "not-applicable"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified published SIAM PDF contains Lemma 4.1 in section 4.1 on PDF page 10, printed page 693, with its proof and subsequent application.",
+      "lean_evidence": "The supplied declaration is explicitly identified as P05-T1 and concerns uniform backward coefficients.",
+      "reasoning": "The selected paper version and cited source passage are the correct source result."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Lemma 4.1 binds positive K, floating-point a_i, b_i, b_K, and c, with K-1 product terms, b_K nonzero, and coefficients indexed from 0 through K-1.",
+      "lean_evidence": "Lean binds arbitrary k : Nat, unrestricted real u, computed, c, and products : Fin k -> Real, and introduces theta0, theta_c, and theta_p.",
+      "reasoning": "K = k + 1 reconciles the product count and general bound, but the floating-point binders, denominator, and intended coefficient family are missing, while an extra coefficient for c is added."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "For each valid floating-point evaluation and order, the paper concludes that suitable coefficients exist for the resulting y_hat.",
+      "lean_evidence": "Lean first universally quantifies arbitrary real data and then assumes herror before producing witnesses, without quantifying an evaluation, denominator, rounding function, or order.",
+      "reasoning": "Witness existence is scoped under a generic residual hypothesis rather than under the paper's computation, so the quantifier structure and witness dependence are not preserved."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper requires K > 0, all supplied scalars in F, b_K != 0, round-to-nearest evaluation, and absence of underflow and overflow for any binary-tree summation order.",
+      "lean_evidence": "The only explicit hypotheses are 0 <= u and the real residual inequality herror.",
+      "reasoning": "The nonzero denominator, floating-point membership, execution assumptions, and exceptional-value conditions are absent."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Lemma 4.1 gives the general division identity with Ku bounds and the sharper no-division case with (K-1)u bounds while keeping c unperturbed.",
+      "lean_evidence": "Lean has one (k+1)u case, no denominator or b_K = 1 branch, and concludes an identity containing c*(1+theta_c).",
+      "reasoning": "The special case and the defining unperturbed-c conclusion are omitted, and a different perturbation is introduced."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "The supporting residual estimate treats b_K*y_hat and each a_i*b_i as coefficient sources and excludes c.",
+      "lean_evidence": "Unfolding p05CoefficientSource makes its sum |c| + |computed| + sum_i |products i|.",
+      "reasoning": "The custom imported definition has a clear but paper-incompatible meaning because it adds c to the perturbable source set."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "The paper distinguishes the exact expression y, the stored floating-point result y_hat, and the exact real product b_K*y_hat in the backward identity.",
+      "lean_evidence": "computed is an arbitrary Real, and products are arbitrary real atoms; no relation to rounded operations or stored floating-point values is stated.",
+      "reasoning": "The exact/computed distinction and the role of b_K*y_hat are not represented."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Lemma 4.1 is explicitly about evaluating products, a subtraction/sum in any rooted binary-tree order, and a final division by nonzero b_K.",
+      "lean_evidence": "The target contains only a residual inequality over real inputs and no algorithm, operation sequence, evaluation tree, or division.",
+      "reasoning": "The proposition is disconnected from the paper's algorithm and execution model."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "All bars in Lemma 4.1 and its proof are scalar absolute values; no matrix or vector norm occurs.",
+      "lean_evidence": "Every magnitude is Real absolute value, and product magnitudes are combined by a finite scalar sum.",
+      "reasoning": "The scalar absolute-value semantics match, although the Lean source family incorrectly includes c."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "With K-1 products, the general bound is exactly Ku for coefficients 0 through K-1, and the b_K = 1 bound is exactly (K-1)u.",
+      "lean_evidence": "With k products, Lean uses (k+1)u for theta0, theta_c, and every theta_p and supplies no sharper case.",
+      "reasoning": "K = k + 1 correctly aligns the general numerical constant for theta0 and theta_p, but Lean adds theta_c and omits the sharper unit-denominator indexing and constant."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Sections 2.1-2.2 define finite radix-beta floating-point values, round-to-nearest with arbitrary tie breaking, u = beta^(1-p)/2 with u <= 1/2, and explicit underflow and overflow conditions.",
+      "lean_evidence": "u is any nonnegative Real, and no radix, precision, rounding function, floating-point set, tie rule, underflow, overflow, infinity, or subnormal condition appears.",
+      "reasoning": "The paper's floating-point model is entirely absent."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper's exact equality leaves c fixed and allows bounded relative perturbations only on b_K*y_hat and the product terms.",
+      "lean_evidence": "Lean's exact equality also permits a bounded relative perturbation theta_c on c, and herror is weakened by the additional |c| source.",
+      "reasoning": "Although equality and non-strict inequality symbols are used correctly, the Lean conclusion is materially weaker and its premise has different strength."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The main result is a coefficientwise backward-error theorem for a specified floating-point computation, with c deliberately unperturbed.",
+      "lean_evidence": "Lean states a generic conversion from an assumed all-source absolute residual bound to an identity perturbing every source, including c.",
+      "reasoning": "A generic residual-allocation lemma is substituted for the paper's algorithmic coefficientwise backward-error result."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The paper emphasizes exact Ku and (K-1)u bounds with no O(u^2) term and no smallness condition such as Ku < 1.",
+      "lean_evidence": "The displayed Lean bounds are linear in u and impose no smallness condition.",
+      "reasoning": "For the general case after K = k + 1, the higher-order-term treatment is consistent, even though the bound is merely assumed in herror and the sharper case is missing."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The paper result ranges over finite floating-point inputs and executions of the subtraction/product/division expression.",
+      "lean_evidence": "Lean ranges over arbitrary real tuples satisfying an abstract residual inequality and has no denominator or execution.",
+      "reasoning": "This is neither a faithful specialization nor a clean generalization: it broadens the data domain, replaces the algorithmic premise, and weakens the conclusion by perturbing c."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The substantive content of Lemma 4.1 is deriving the residual and backward coefficients from actual floating-point evaluation without exceptional events.",
+      "lean_evidence": "The hypotheses are satisfiable, for example by exact data with computed = c - sum products, but herror already assumes the central residual estimate over every term that the conclusion may perturb.",
+      "reasoning": "The target is not vacuous, but its conclusion follows by generic residual distribution after the numerical-analysis content has been assumed, so it does not nontrivially provide the benchmark task claimed by the paper result."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "Even under the favorable alignment K = k + 1 and computed = b_K*y_hat, Lean produces an extra theta_c and cannot force c to remain unperturbed. For example, with k = 0, u = 1/2, computed = 1/2, and c = 1, herror holds and the Lean identity has theta0 = 0 and theta_c = -1/2, but an unperturbed-c identity computed*(1+theta0) = c would require theta0 = 1, outside the bound. Lean also supplies no derivation of herror from the paper's floating-point execution."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "On valid paper instances, the paper's stronger result can yield a restricted Lean-style identity by taking theta_c = 0 after K = k + 1 and computed = b_K*y_hat. However, the paper does not establish the full Lean proposition for arbitrary real tuples and arbitrary nonnegative u satisfying Lean's different all-source herror premise. Thus it does not imply the universal Lean statement."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "unperturbed-c violation",
+      "paper_evidence": "Printed page 686 explains that c is kept unperturbed, and Lemma 4.1 on printed page 693 has c with no coefficient.",
+      "lean_evidence": "The target introduces theta_c, places c*(1+theta_c) in the conclusion, and includes |c| in herror through p05CoefficientSource.",
+      "impact": "Residual can be absorbed into c, so the target does not provide the paper's required coefficientwise backward identity or its downstream interpretation for fixed input data."
+    },
+    {
+      "severity": "critical",
+      "category": "algorithmic result assumed away",
+      "paper_evidence": "Lemma 4.1 derives its identity from round-to-nearest evaluation in any summation-tree order without underflow or overflow.",
+      "lean_evidence": "Lean assumes herror directly and contains no floating-point operations, evaluation order, or exceptional-event hypotheses.",
+      "impact": "The target proves only an algebraic residual-distribution fact and does not formalize the central numerical-analysis claim."
+    },
+    {
+      "severity": "major",
+      "category": "denominator and computed linkage",
+      "paper_evidence": "The general result requires nonzero b_K, computes y_hat from division by b_K, and places the exact product b_K*y_hat on the left.",
+      "lean_evidence": "There is no b_K binder, nonzero condition, division, or statement relating computed to b_K*y_hat.",
+      "impact": "The general division case cannot be recovered from the Lean proposition without adding external definitions and hypotheses."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point model omitted",
+      "paper_evidence": "The paper fixes finite floating-point inputs, a radix and precision, round-to-nearest, and absence of underflow and overflow.",
+      "lean_evidence": "All data and u are unrestricted reals subject only to u >= 0 and herror.",
+      "impact": "The target has unsupported scope and does not preserve the theorem's numerical model or exceptional-value conditions."
+    },
+    {
+      "severity": "major",
+      "category": "unit-denominator case omitted",
+      "paper_evidence": "Lemma 4.1 separately states the sharper (K-1)u coefficient bound when b_K = 1 and no division is performed.",
+      "lean_evidence": "Lean has only the general (k+1)u bound and no denominator or case split.",
+      "impact": "A required conclusion of the selected paper result is absent."
+    },
+    {
+      "severity": "note",
+      "category": "index reparameterization",
+      "paper_evidence": "The paper has K-1 products and general coefficient Ku.",
+      "lean_evidence": "Lean has k products and general coefficient (k+1)u.",
+      "impact": "These two features align under K = k + 1 and are not independently defective, but this reindexing does not repair the other semantic differences."
+    }
+  ],
+  "rationale": "The PDF hash, cited passage, and surrounding definitions were checked directly. The best index alignment is paper K = Lean k + 1, which reconciles the number of products and the general linear coefficient. The substantive statements nevertheless differ: Lean assumes a generic real residual estimate, includes c among its coefficient sources, permits c to be perturbed, omits b_K and the floating-point execution model, and omits the sharper b_K = 1 case. Its assumptions are satisfiable, but the theorem reduces to an all-source residual allocation rather than the paper's algorithmic backward-error result. Because neither full proposition implies the other, the appropriate classification is not-faithful-different."
+}

@@ -5,7 +5,7 @@
     "judge classifications differ"
   ],
   "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-14T16:48:44.877392+00:00",
+  "completed_at_utc": "2026-08-14T16:42:58.832698+00:00",
   "findings": [
     {
       "category": "core-residual-result-assumed",

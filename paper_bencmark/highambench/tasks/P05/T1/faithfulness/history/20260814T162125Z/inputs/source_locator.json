@@ -5,7 +5,7 @@
   "paper_version": "published journal version; volume 35, issue 2, 2014, printed pages 684-698",
   "source_locations": [
     {
-      "anchor": "Lemma 4.1, including its general and b_k=1 conclusions and sign-aligned coefficient construction",
+      "anchor": "Lemma 4.1 and its sign-aligned coefficient construction",
       "pdf_page": 10,
       "printed_page": "693",
       "role": "uniform componentwise coefficients for the computed subtraction/division expression",

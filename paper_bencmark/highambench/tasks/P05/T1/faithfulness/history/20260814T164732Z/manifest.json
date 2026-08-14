@@ -121,7 +121,7 @@
     "module_count": 5158,
     "sorted_module_names_sha256": "2c21a92a81f312ee9212b46cd92c11e181b044a15cd735e2080e69aa12260f8d"
   },
-  "completed_at_utc": "2026-08-14T16:48:44.877392+00:00",
+  "completed_at_utc": "2026-08-14T16:42:58.832698+00:00",
   "context": {
     "path": "paper_bencmark/highambench/tasks/P05/T1/context.md",
     "semantic_evidence": false,
@@ -3106,7 +3106,7 @@
     },
     "declaration_dossier": {
       "path": "paper_bencmark/highambench/tasks/P05/T1/faithfulness/inputs/declaration_dossier.md",
-      "sha256": "13edcf44d3625c4bb7a22ea5b36a39b6cc9650fc152c67ef4b02d14026296038"
+      "sha256": "40cd4b82f349f01de5370d46c1281bc75826cdf2f677aee2ce7c53b8890fb539"
     },
     "dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P05/T1/faithfulness/inputs/dependency_inventory.json",
@@ -3149,7 +3149,7 @@
       ],
       "module": "HighamBench.P05Definitions",
       "path": "paper_bencmark/highambench/shared/HighamBench/P05Definitions.lean",
-      "sha256": "1a399e16e2453fdb7b05d46e0f4e348e6c74ccf10944ed28b411722811f7875a"
+      "sha256": "7f92d15637435e3aba844ddaf0a2440869de24ecec3e29a5d3d2671a7f3b6e3f"
     }
   ],
   "outputs": {
@@ -3163,7 +3163,7 @@
     },
     "decision": {
       "path": "paper_bencmark/highambench/tasks/P05/T1/faithfulness/decision.json",
-      "sha256": "c9fe08a1c79ad26b0d0431e9da4e9ab66dd2803c699dfee3c6195a579c0a5fcf"
+      "sha256": "350965c331ce4235b30a4c5a3a1bcd26100fe9a455eb1d4713c44da545037c84"
     },
     "direct_judge": {
       "path": "paper_bencmark/highambench/tasks/P05/T1/faithfulness/agent_outputs/direct_judge.json",
@@ -3171,7 +3171,7 @@
     },
     "report": {
       "path": "paper_bencmark/highambench/tasks/P05/T1/faithfulness/report.md",
-      "sha256": "aebd100f0a29dc2ce4f185f6e5a536306ee9473191fb604a2d84e74c7d467f13"
+      "sha256": "8555108cb40019dc2af125f6b4581d439b650fcb72c34bc804116226ceaadb7a"
     },
     "roundtrip_judge": {
       "path": "paper_bencmark/highambench/tasks/P05/T1/faithfulness/agent_outputs/roundtrip_judge.json",
@@ -3195,7 +3195,7 @@
       }
     ]
   },
-  "prepared_at_utc": "2026-08-14T16:47:32.693177+00:00",
+  "prepared_at_utc": "2026-08-14T16:21:25.223265+00:00",
   "schema_version": "highambench-faithfulness-0.2",
   "semantic_checks": [
     {
