@@ -267,8 +267,23 @@ one consumer import-superset repair restoring a non-owner transitive supply
 invisible to the typed declaration graph. The full merge-to-integration audit
 separately accounts for exactly 21 additional paths: 11 aggregate follow-ups,
 3 R03 test paths, 4 narrative documents, and 3 milestone-DAG/evidence paths.
-At C0003, B0005 is accepted with retirement due, P0005 is
-retired immutable evidence, and R0005 is applied. The temporary `claude-local`
+At C0003, P0005 is retired immutable evidence and R0005 is applied. After exact
+green control-chain head `a61438448beb02773ef6b0f4f50cbedf8d675d29`
+passed Lean CI run 31833811860 (job 94875463331), `primary-human` retired B0005
+at `2026-08-14T19:44:43Z`. Its exact remote delivery ref
+`refs/heads/codex/reorg-completion-2026-08-r03-floating-point-foundations-ch01-ch12`
+was deleted under an expected-tip lease and verified absent; seven ignored material artifacts
+totaling 117,422,618 bytes were archived and verified under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0003-R03-20260814`.
+The named worktree
+`C:\Users\qed_s\higham-worktrees\completion-r03-codex` was removed without
+force after its `.lake`-only residue was moved recoverably under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0003-R03-20260814\disposable-worktree-residue\completion-r03-codex`.
+The local
+delivery branch remains preserved at
+`1f8ff4ca5b0b136901a2f47d43e1064dc09aa556`; the
+[`R03 retirement review`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R03-retirement.md)
+records the exact cleanup evidence. The temporary `claude-local`
 second-operator authority on `codex-lane` has expired. M05 and M06 are ready;
 M07/R07 and every other unaccepted milestone remain planned, and no successor
 wave is activated. The statistics above are the current C0003 ratchet. The
@@ -682,9 +697,12 @@ retired: their exact remote refs were deleted after acceptance-control CI went
 green, their named worker worktrees were removed after evidence archival, and
 their local delivery refs remain preserved. C0003 now accepts the exact-C0002
 R03 delivery, reorganizing 47 residual owners into canonical floating-point
-foundations and Higham Chapters 1--12 surfaces. B0005 is accepted with
-retirement due, P0005 is retired, and R0005 is applied. The current C0003 counts
-are authoritative. Subsequent accepted batches must reduce the current 254
+foundations and Higham Chapters 1--12 surfaces. B0005 is retired after exact
+green control-chain CI, expected-tip remote-ref deletion, evidence archival,
+and removal of its named worktree without force; its local delivery branch
+remains preserved at `1f8ff4ca5b0b136901a2f47d43e1064dc09aa556`. P0005 is
+retired and R0005 is applied. The current C0003 counts are authoritative.
+Subsequent accepted batches must reduce the current 254
 unclassified modules, 217 noncanonical names, 15 declaration-bearing
 umbrellas, and the remaining reviewed giant-file outliers; mixed-tier and
 missing-module-documentation debt are both zero.

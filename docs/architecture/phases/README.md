@@ -64,14 +64,29 @@ reconciliations, tier and compatibility reconciliation, the layout ratchet,
 and the `Chapter27.SoftwareEnvironment` consumer import-superset repair. The
 complete merge-to-integration audit separately accounts for exactly 21
 additional paths: 11 aggregate follow-ups, 3 R03 test paths, 4 narrative
-documents, and 3 milestone-DAG/evidence paths. At C0003,
-B0005 is accepted with retirement due, P0005 is retired immutable evidence, and
-R0005 is applied. The temporary `claude-local` second-operator authority on
-`codex-lane` has expired, restoring that lane to `codex-local` alone. M05 and
-M06 are ready; M07/R07 and every other unaccepted milestone remain planned, and
-no successor wave is activated. The hash-pinned
+documents, and 3 milestone-DAG/evidence paths. At C0003, P0005 is retired
+immutable evidence and R0005 is applied. After exact green control-chain head
+`a61438448beb02773ef6b0f4f50cbedf8d675d29` passed Lean CI run 31833811860
+(job 94875463331), `primary-human` retired B0005 at
+`2026-08-14T19:44:43Z`. Its exact remote delivery ref
+`refs/heads/codex/reorg-completion-2026-08-r03-floating-point-foundations-ch01-ch12`
+was deleted under an expected-tip lease and verified absent. Seven ignored material artifacts
+totaling 117,422,618 bytes were archived and verified at
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0003-R03-20260814`;
+the named worktree `C:\Users\qed_s\higham-worktrees\completion-r03-codex` was
+removed without force after its `.lake`-only residue was moved recoverably to
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0003-R03-20260814\disposable-worktree-residue\completion-r03-codex`.
+The local
+delivery branch remains preserved at
+`1f8ff4ca5b0b136901a2f47d43e1064dc09aa556`. The
+[`R03 retirement review`](2026-08-repository-reorganization-completion/reviews/R03-retirement.md)
+records the exact lease, archive, residue, worktree, and local-ref evidence;
+the hash-pinned
 [`R03 activation review`](2026-08-repository-reorganization-completion/reviews/R03-activation.md)
-preserves the exact authority, refs, worktree, and tips.
+preserves the earlier authority and activation facts. The temporary
+`claude-local` second-operator authority on `codex-lane` has expired, restoring
+that lane to `codex-local` alone. M05 and M06 are ready; M07/R07 and every other
+unaccepted milestone remain planned, and no successor wave is activated.
 
 C0003 records 2,690 production modules and 310 distinct residual-debt rows:
 254 unclassified, zero mixed, zero missing-module-doc, 217 noncanonical, and 15

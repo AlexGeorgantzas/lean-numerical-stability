@@ -20,11 +20,24 @@ repository-wide completion: 310 distinct residual-debt rows remain, including
 preserved by true merge, and the reviewed same-C0002 R0005 request was applied
 exactly once. Its expected-postimage comparison has 115 byte-exact request
 paths and exactly six reviewed bounded request-path deviations; a separate 21
-paths contain only the documented integration follow-ups. B0005 is accepted
-with retirement due, P0005 is retired, and R0005 is applied. The temporary
-`claude-local` authority on `codex-lane` has expired. M05/M06 are ready; M07 and
-every other unaccepted milestone remain planned, and no successor wave is
-activated.
+paths contain only the documented integration follow-ups. P0005 is retired and
+R0005 is applied. After exact green control-chain head
+`a61438448beb02773ef6b0f4f50cbedf8d675d29` passed Lean CI run 31833811860
+(job 94875463331), `primary-human` retired B0005 at
+`2026-08-14T19:44:43Z`. The exact remote delivery ref
+`refs/heads/codex/reorg-completion-2026-08-r03-floating-point-foundations-ch01-ch12`
+was deleted under an expected-tip lease and verified absent. Seven ignored material artifacts
+totaling 117,422,618 bytes were archived and verified at
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0003-R03-20260814`;
+the named worktree `C:\Users\qed_s\higham-worktrees\completion-r03-codex` was
+removed without force after its `.lake`-only residue was moved recoverably to
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0003-R03-20260814\disposable-worktree-residue\completion-r03-codex`.
+The local
+delivery branch remains at `1f8ff4ca5b0b136901a2f47d43e1064dc09aa556`.
+The [`R03 retirement review`](phases/2026-08-repository-reorganization-completion/reviews/R03-retirement.md)
+records the exact cleanup evidence. The temporary `claude-local` authority on
+`codex-lane` has expired. M05/M06 are ready; M07 and every other unaccepted
+milestone remain planned, and no successor wave is activated.
 
 1. **Current baseline.** Regenerate and version the architecture and build
    report at the exact migration commit using tracked tooling.
