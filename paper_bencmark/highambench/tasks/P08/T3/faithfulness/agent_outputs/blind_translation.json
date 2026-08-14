@@ -1,330 +1,1047 @@
 {
   "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "ff29c3f51276b219aba1a6012871be09ad25566633ab9c8ac77970a265d943d2",
+  "dossier_sha256": "f48089a5d4b9b9e92462355712e713a034db249b15ab4315392e4564aa8d942d",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "For a fixed square matrix B, this defines matrices P_r recursively by P_0 = I and P_{r+1} = B P_r, using the supplied identity and matrix multiplication definitions. Thus P_r is the nonnegative integer matrix power B^r.",
-      "effect_on_target": "It makes the first term of the bound (B^(m+1) |q_0|)_i and the summand indexed by k equal to (B^k s)_i.",
+      "meaning": "For dimension n, this is the type of norm packages constructed by D011: a vector norm and a matrix norm satisfying positivity, definiteness, triangle, homogeneity, absolute-value invariance, componentwise monotonicity, basis normalization, subordination, and minimality of the matrix norm.",
+      "effect_on_target": "The chosen package supplies the matrix norm used to define the condition quantity and the scalar c8 in the smallness hypothesis.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "For a matrix A, vector x, and row i, it returns the matrix-vector product (A x)_i = sum over j in Fin n of A(i,j) x(j).",
-      "effect_on_target": "It expresses both the recurrence q_{m+1} = B q_m + d_m and every matrix-vector product on the right-hand side of the conclusion.",
+      "meaning": "For dimension n, this is the type of complete computational-run packages constructed by D017, containing the precision, rounding models, matrices, vectors, solves, residual computations, iterates, and correction sequence together with their stated laws.",
+      "effect_on_target": "Almost every quantity in the proposition, including u, A, Ainv, b, the exact solution, iterates, corrections, and constants derived from them, is selected from this package.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "It is the n by n identity matrix: its (i,j) entry is 1 when i = j and 0 otherwise.",
-      "effect_on_target": "It supplies the zero-th matrix power B^0 = I, so the k = 0 disturbance term is s itself.",
+      "meaning": "This is the third field of a run package, namely its real unit roundoff u.",
+      "effect_on_target": "It is a multiplicative factor in the smallness assumption c8*u*kappa <= 1/2 and in the bound's defining matrices and vectors.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "It is ordinary square-matrix multiplication: (A C)(i,j) = sum over k in Fin n of A(i,k) C(k,j).",
-      "effect_on_target": "It defines the recursive step P_{r+1} = B P_r used for all powers of B in the bound.",
+      "meaning": "Given a run and norm package, this is the type of auxiliary-constant packages constructed by D018, containing matrices C2 and C6 through C12, scalars c1, c5, c8, and resolvent inverses satisfying explicit equations and nonnegativity conditions.",
+      "effect_on_target": "It supplies c8 for the smallness condition and C8, C10, C11, and C12 for the right-hand side.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "It performs a case split on a natural number x: at x = 0 it returns the supplied base value, and at x = k+1 it returns the supplied successor value for k.",
-      "effect_on_target": "Within LocalDef001 it selects the identity matrix at exponent zero and multiplication of B by the preceding power at a positive exponent.",
+      "meaning": "This is field 11 of the constants package, the scalar c8, which D018 requires to equal the selected matrix norm of the matrix C8.",
+      "effect_on_target": "The target assumes c8*u*|| |A||Ainv| ||_M <= 1/2.",
       "status": "understood"
     },
     {
       "id": "D006",
-      "name": "Eq",
-      "meaning": "It is propositional equality.",
-      "effect_on_target": "It requires the update q_{m+1}(i) = (B q_m)(i) + d_m(i) to hold exactly; it also supplies the equality test used in the identity matrix definition.",
+      "name": "LocalDef006",
+      "meaning": "This is the proposition packaging the two prior estimates supplied by D019: a conditional componentwise bound on the exact post-correction residual and an unconditional componentwise relation between the next iterate's error and that residual.",
+      "effect_on_target": "A proof of this proposition is an explicit hypothesis used together with the stronger c8 smallness condition to obtain the stated closed-form residual bound.",
       "status": "understood"
     },
     {
       "id": "D007",
-      "name": "Fin",
-      "meaning": "Fin n is the finite index type with elements corresponding to 0 through n-1.",
-      "effect_on_target": "It makes B an n by n matrix and q_m, d_m, and s vectors with exactly n components.",
+      "name": "LocalDef007",
+      "meaning": "For iteration m, this is the vector r_m = A(x_m-d_m)-b, where x_m is run.iterate m and d_m is run.correction m; all operations in this definition are exact real matrix-vector arithmetic.",
+      "effect_on_target": "Its componentwise absolute value is the left-hand side of the conclusion.",
       "status": "understood"
     },
     {
       "id": "D008",
-      "name": "Finset.range",
-      "meaning": "Finset.range r is the finite set of natural numbers 0, 1, ..., r-1.",
-      "effect_on_target": "With r = m+1, it makes the accumulated term sum over exactly k = 0, ..., m.",
+      "name": "LocalDef008",
+      "meaning": "This is kappa = || |A| |Ainv| ||_M, where absolute values are entrywise, juxtaposition is matrix multiplication, and ||.||_M is the matrix norm from the norm package.",
+      "effect_on_target": "It appears in the smallness assumption multiplied by c8 and u.",
       "status": "understood"
     },
     {
       "id": "D009",
-      "name": "Finset.sum",
-      "meaning": "It forms the finite additive sum of a function over a finite set.",
-      "effect_on_target": "It implements the sums in matrix-vector products, matrix products, and the accumulated disturbance bound.",
+      "name": "LocalDef009",
+      "meaning": "At iteration m this is the vector B^m q+s, where B=u C8(|A||Ainv|), q=u(C10|A|)|x*|, and s=n*ubar |A||x*| + u^2(C11|A|)|x*| + ubar*u(C12(|A||Ainv|)|A|)|x*|.",
+      "effect_on_target": "Its ith component is the right-hand side of the final componentwise inequality.",
       "status": "understood"
     },
     {
       "id": "D010",
-      "name": "HAdd.hAdd",
-      "meaning": "It invokes the applicable addition operation for its operands.",
-      "effect_on_target": "It denotes natural-number additions such as m+1 and real additions in the recurrence and between the two terms of the final bound.",
+      "name": "LocalDef010",
+      "meaning": "This projects the second functional from a norm package, namely its matrix norm.",
+      "effect_on_target": "It evaluates the condition quantity kappa and the norm defining c8.",
       "status": "understood"
     },
     {
       "id": "D011",
-      "name": "LE.le",
-      "meaning": "It invokes the applicable less-than-or-equal relation.",
-      "effect_on_target": "For real operands it expresses entrywise nonnegativity, the perturbation bounds, and the final componentwise upper bound.",
+      "name": "LocalDef011",
+      "meaning": "This constructs a norm package from vector and matrix functionals. The vector functional is nonnegative, vanishes exactly on the zero vector, satisfies triangle and absolute homogeneity, is invariant under entrywise absolute value, is monotone under componentwise absolute-value domination, and assigns norm 1 to every coordinate basis vector. The matrix functional is nonnegative, bounds ||Ax|| by ||A||_M||x||, and is no larger than every nonnegative constant having that subordinate-bound property.",
+      "effect_on_target": "These axioms make the matrix norm in kappa and c8 a normalized induced norm with the monotonicity properties required by the packaged estimates.",
       "status": "understood"
     },
     {
       "id": "D012",
-      "name": "Nat",
-      "meaning": "It is the type of natural numbers, including zero.",
-      "effect_on_target": "It indexes the dimension n, time steps m and k, and all nonnegative integer powers of B.",
+      "name": "LocalDef012",
+      "meaning": "This is field 12 of a run package, the n by n real matrix A.",
+      "effect_on_target": "A defines the exact residual, the condition matrix, all solve equations, and many auxiliary constants.",
       "status": "understood"
     },
     {
       "id": "D013",
-      "name": "OfNat.ofNat",
-      "meaning": "It interprets a natural-number literal in the required type using that type's numeral instance.",
-      "effect_on_target": "It supplies the literals 0 and 1 used for real inequalities, natural indices, and the identity matrix.",
+      "name": "LocalDef013",
+      "meaning": "This is field 13 of a run package, the n by n real matrix Ainv.",
+      "effect_on_target": "The run requires it to be a two-sided inverse of A, and its entrywise absolute value enters kappa and the final bound.",
       "status": "understood"
     },
     {
       "id": "D014",
-      "name": "Real",
-      "meaning": "It is the type of real numbers.",
-      "effect_on_target": "All matrix entries, vector components, additions, products, absolute values, and inequalities are over exact real numbers.",
+      "name": "LocalDef014",
+      "meaning": "This is field 16 of a run package, the right-hand-side vector b.",
+      "effect_on_target": "It is subtracted in the exact residual r_m=A(x_m-d_m)-b and is used in the residual computations and exact system Ax*=b.",
       "status": "understood"
     },
     {
       "id": "D015",
-      "name": "Real.instAdd",
-      "meaning": "It is ordinary addition on real numbers.",
-      "effect_on_target": "It supplies the addition in q_{m+1}(i) = (B q_m)(i) + d_m(i) and in the sum of the two final bound terms.",
+      "name": "LocalDef015",
+      "meaning": "This is field 24 of a run package, the correction sequence d_m indexed by natural iterations.",
+      "effect_on_target": "The exact post-correction residual uses x_m-d_m.",
       "status": "understood"
     },
     {
       "id": "D016",
-      "name": "Real.instAddCommMonoid",
-      "meaning": "It equips the real numbers with their additive commutative monoid structure, including additive identity zero.",
-      "effect_on_target": "It permits all finite real sums and makes an empty finite sum equal to zero.",
+      "name": "LocalDef016",
+      "meaning": "This is field 22 of a run package, the iterate sequence x_m indexed by natural iterations.",
+      "effect_on_target": "It enters the exact residual, the prior error estimates, and the construction of computed residuals and corrections.",
       "status": "understood"
     },
     {
       "id": "D017",
-      "name": "Real.instAddGroup",
-      "meaning": "It equips the real numbers with their additive group structure, including negation.",
-      "effect_on_target": "It provides the negation operation needed by the supplied absolute-value definition.",
+      "name": "LocalDef017",
+      "meaning": "This constructs a run package. It requires n>0, u>0, n*u<=1/100, a working rounding model with unit roundoff u, a residual model with unit roundoff ubar, a conversion function with relative error at most u, exact two-sided inverse identities for A and Ainv, Ax*=b, entrywise nonnegative C1, backward-stable initial and correction solves, the stated initial values, modeled residual traces, and componentwise rounded updates x_(m+1)=flSub(x_m,d_m).",
+      "effect_on_target": "It encodes all structural and numerical assumptions silently carried by the universally quantified run argument.",
       "status": "understood"
     },
     {
       "id": "D018",
-      "name": "Real.instLE",
-      "meaning": "It is the usual order relation on the real numbers.",
-      "effect_on_target": "It gives the standard meanings of nonnegativity, |d_m(i)| <= s(i), and the asserted final inequality.",
+      "name": "LocalDef018",
+      "meaning": "This constructs the constants package. With H=|A||Ainv|, it requires two-sided inverses R2 of I-u C1 H and R11 of I-u C8 H; sets C2=R2 C1, c1=||C1||_M, c5=n+((alpha+beta)u^2)/ubar, C6=C2+(1+c5*ubar/u)(I+u C2H), C7=(n+alpha*u^2/ubar)C2, C8=(1+u)C6, c8=||C8||_M, C9=C6+alpha I, C10=C6+(n*ubar/u+alpha*u)I+ubar C7H, C11=R11C9, and C12=R11(n C8+C7). It also requires the corresponding fixed-point equations, entrywise nonnegativity of C2 and C6 through C12, and 0<=c1<=c8.",
+      "effect_on_target": "These equations determine every matrix and scalar occurring in the smallness assumption and closed-form bound.",
       "status": "understood"
     },
     {
       "id": "D019",
-      "name": "Real.instZero",
-      "meaning": "It is the real number zero.",
-      "effect_on_target": "It supplies the zero in the nonnegativity hypotheses and the off-diagonal entries of the identity matrix.",
+      "name": "LocalDef019",
+      "meaning": "This constructs the prior-estimate proposition from two estimates. If c1*u*kappa<=1/2, then |r_m(i)| is bounded by u[C6|A||x_m-x*|]_i +(n*ubar+alpha*u^2)[|A||x*|]_i +ubar*u[C7(|A||Ainv|)|A||x*|]_i. Independently, |x_(m+1)(i)-x*(i)| <= (1+u)[|Ainv||r_m|]_i+u|x*(i)|.",
+      "effect_on_target": "It supplies the one-step inequalities whose recurrence is summarized by B^m q+s.",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "Real.lattice",
-      "meaning": "It equips the real numbers with lattice operations, including the maximum operation.",
-      "effect_on_target": "It enables the definition |a| = max(a,-a) used for perturbations, the initial vector, and the conclusion.",
+      "name": "LocalDef020",
+      "meaning": "This maps a matrix A to its entrywise absolute-value matrix |A|, with |A|_ij=|A_ij|.",
+      "effect_on_target": "It is used throughout kappa, B, q, s, and the prior estimates.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "Zero.toOfNat0",
-      "meaning": "It interprets the numeral 0 as the zero supplied by a type's Zero instance.",
-      "effect_on_target": "For real numbers it supplies the exact real zero in the hypotheses and identity-matrix definition.",
+      "name": "LocalDef021",
+      "meaning": "This is the vector q=u(C10|A|)|x*|.",
+      "effect_on_target": "It is the initial vector multiplied by B^m in the final bound.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "abs",
-      "meaning": "For an ordered additive group it defines abs(a) = max(a,-a); over the reals this is the usual absolute value.",
-      "effect_on_target": "It gives the componentwise quantities |d_m(i)|, |q_0(j)|, and |q_{m+1}(i)|.",
+      "name": "LocalDef022",
+      "meaning": "This is the matrix B=u C8(|A||Ainv|).",
+      "effect_on_target": "Its exact natural matrix power B^m propagates the recurrence in the final bound.",
       "status": "understood"
     },
     {
       "id": "D023",
-      "name": "instAddNat",
-      "meaning": "It is ordinary addition on natural numbers.",
-      "effect_on_target": "It makes m+1 the natural-number successor index used in the recurrence, power, range, and conclusion.",
+      "name": "LocalDef023",
+      "meaning": "This is the forcing vector s=n*ubar |A||x*| + u^2(C11|A|)|x*| + ubar*u(C12(|A||Ainv|)|A|)|x*|.",
+      "effect_on_target": "It is added without an iteration-dependent geometric sum in the stated right-hand side.",
       "status": "understood"
     },
     {
       "id": "D024",
-      "name": "instHAdd",
-      "meaning": "It turns a homogeneous Add operation into the corresponding homogeneous HAdd operation.",
-      "effect_on_target": "It connects HAdd.hAdd to natural addition for indices and real addition for scalar expressions.",
+      "name": "LocalDef024",
+      "meaning": "This is ordinary n by n matrix multiplication: (AB)_ij=sum_k A_ik B_kj over all k in Fin n.",
+      "effect_on_target": "It defines all matrix products in kappa, the constants, B, q, and s.",
       "status": "understood"
     },
     {
       "id": "D025",
-      "name": "instOfNatNat",
-      "meaning": "It interprets each natural-number literal n as that same natural number.",
-      "effect_on_target": "It supplies the natural indices 0 and 1 in q_0, m+1, and the range endpoint.",
+      "name": "LocalDef025",
+      "meaning": "This recursively defines the exact matrix power B^m, with B^0=I and B^(m+1)=B B^m.",
+      "effect_on_target": "It produces the B^m factor in the final bound.",
       "status": "understood"
     },
     {
       "id": "D026",
-      "name": "Fin.fintype",
-      "meaning": "It gives Fin n its finite enumeration containing every one of its elements.",
-      "effect_on_target": "It permits sums over all row or column indices in Fin n.",
+      "name": "LocalDef026",
+      "meaning": "This is ordinary matrix-vector multiplication: (Ax)_i=sum_j A_ij x_j over Fin n.",
+      "effect_on_target": "It defines the residual and every matrix-vector expression in the estimates.",
       "status": "understood"
     },
     {
       "id": "D027",
-      "name": "Finset.univ",
-      "meaning": "For a finite type, it is the finite set containing every element of that type.",
-      "effect_on_target": "In matrix-vector and matrix products it makes each inner sum range over every index in Fin n.",
+      "name": "LocalDef027",
+      "meaning": "This is componentwise vector addition, (x+y)_i=x_i+y_i.",
+      "effect_on_target": "It combines the propagated and forcing vectors in the right-hand side and appears in solve equations.",
       "status": "understood"
     },
     {
       "id": "D028",
-      "name": "HMul.hMul",
-      "meaning": "It invokes the applicable multiplication operation for its operands.",
-      "effect_on_target": "With real operands it gives the scalar products A(i,j)x(j) and A(i,k)C(k,j) in matrix-vector and matrix multiplication.",
+      "name": "LocalDef028",
+      "meaning": "This is componentwise vector subtraction, (x-y)_i=x_i-y_i.",
+      "effect_on_target": "It defines x_m-d_m, the exact residual, and iterate errors.",
       "status": "understood"
     },
     {
       "id": "D029",
-      "name": "Nat.below",
-      "meaning": "For a motive indexed by natural numbers, Nat.below r is a nested product carrying motive values from earlier indices; at r+1 its first component is the value at r.",
-      "effect_on_target": "It lets the recursive construction of B^(r+1) access the previously constructed matrix B^r.",
+      "name": "LocalDef029",
+      "meaning": "This is a solve-result package for A, rhs, C1, and u, constructed by D060 from an output and backward-error vector satisfying an exact perturbed-system equation and a componentwise backward-error bound.",
+      "effect_on_target": "Such packages constrain the initial solution and every correction in the run.",
       "status": "understood"
     },
     {
       "id": "D030",
-      "name": "Nat.brecOn",
-      "meaning": "It is course-of-values recursion on a natural number, providing the defining function with the stored values at preceding indices.",
-      "effect_on_target": "It implements the recursive family of matrices P_0 = I and P_{r+1} = B P_r.",
+      "name": "LocalDef030",
+      "meaning": "This projects field 1 of a solve-result package, its output vector.",
+      "effect_on_target": "The initial output is x_1, and each correction d_m equals the output of its corresponding solve package.",
       "status": "understood"
     },
     {
       "id": "D031",
-      "name": "Nat.succ",
-      "meaning": "It maps a natural number k to its successor k+1.",
-      "effect_on_target": "It distinguishes and indexes the positive-exponent branch in the recursive definition of the matrix powers.",
+      "name": "LocalDef031",
+      "meaning": "This is field 19 of a run package, the entrywise nonnegative matrix C1 controlling solve backward errors.",
+      "effect_on_target": "Its norm is c1 and it participates in the resolvent defining C2 and hence all later constants.",
       "status": "understood"
     },
     {
       "id": "D032",
-      "name": "Real.instMul",
-      "meaning": "It is ordinary multiplication on real numbers.",
-      "effect_on_target": "It supplies all scalar multiplications inside matrix-vector products and matrix products.",
+      "name": "LocalDef032",
+      "meaning": "This is field 17 of a run package, the exact solution vector x*.",
+      "effect_on_target": "The run requires Ax*=b, and |x*| enters q, s, and prior estimates.",
       "status": "understood"
     },
     {
       "id": "D033",
-      "name": "Unit",
-      "meaning": "It is a singleton type.",
-      "effect_on_target": "It provides the dummy argument used to select the exponent-zero branch of the natural-number case split.",
+      "name": "LocalDef033",
+      "meaning": "This is field 2 of a run package, its two-valued precision selector.",
+      "effect_on_target": "It selects the formulas for ubar, alpha, beta, and whether computed residuals undergo conversion.",
       "status": "understood"
     },
     {
       "id": "D034",
-      "name": "instHMul",
-      "meaning": "It turns a homogeneous Mul operation into the corresponding homogeneous HMul operation.",
-      "effect_on_target": "It connects HMul.hMul to ordinary real multiplication in the definitions of matrix-vector and matrix multiplication.",
+      "name": "LocalDef034",
+      "meaning": "This is field 6 of the constants package, the matrix C10.",
+      "effect_on_target": "It occurs in q=u(C10|A|)|x*|.",
       "status": "understood"
     },
     {
       "id": "D035",
-      "name": "Nat.casesOn",
-      "meaning": "It eliminates a natural number by choosing one value at zero and a supplied value at each successor k+1.",
-      "effect_on_target": "It is the underlying zero-versus-successor split used by LocalDef005 in the matrix-power definition.",
+      "name": "LocalDef035",
+      "meaning": "This is field 7 of the constants package, the matrix C11.",
+      "effect_on_target": "It occurs in the u^2(C11|A|)|x*| term of s.",
       "status": "understood"
     },
     {
       "id": "D036",
-      "name": "One.toOfNat1",
-      "meaning": "It interprets the numeral 1 as the one supplied by a type's One instance.",
-      "effect_on_target": "For real numbers it supplies the diagonal value 1 in the identity matrix.",
+      "name": "LocalDef036",
+      "meaning": "This is field 8 of the constants package, the matrix C12.",
+      "effect_on_target": "It occurs in the ubar*u(C12H|A|)|x*| term of s.",
       "status": "understood"
     },
     {
       "id": "D037",
-      "name": "Real.instOne",
-      "meaning": "It is the real number one.",
-      "effect_on_target": "It provides the diagonal entries of the identity matrix B^0.",
+      "name": "LocalDef037",
+      "meaning": "This is field 2 of the constants package, the matrix C6.",
+      "effect_on_target": "It appears in the prior residual estimate and determines C8, C9, and C10.",
       "status": "understood"
     },
     {
       "id": "D038",
-      "name": "Unit.unit",
-      "meaning": "It is the unique inhabitant of Unit.",
-      "effect_on_target": "It is passed to the base-case function when the matrix-power exponent is zero.",
+      "name": "LocalDef038",
+      "meaning": "This is field 3 of the constants package, the matrix C7.",
+      "effect_on_target": "It appears in the prior residual estimate and determines C10 and C12.",
       "status": "understood"
     },
     {
       "id": "D039",
-      "name": "instDecidableEqFin",
-      "meaning": "It decides equality of two Fin n indices by comparing their underlying natural-number values.",
-      "effect_on_target": "It makes the condition i = j computable for selecting the diagonal or off-diagonal identity-matrix entry.",
+      "name": "LocalDef039",
+      "meaning": "This is field 4 of the constants package, the matrix C8=(1+u)C6.",
+      "effect_on_target": "Its norm is c8, and B=u C8(|A||Ainv|).",
       "status": "understood"
     },
     {
       "id": "D040",
+      "name": "LocalDef040",
+      "meaning": "This is field 9 of the constants package, the scalar c1=||C1||_M.",
+      "effect_on_target": "It is the coefficient in the conditional smallness premise of the first prior estimate; 0<=c1<=c8 lets the target's c8 condition imply it.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "LocalDef041",
+      "meaning": "This is a two-constructor precision type with constructors D062 and D061. Its eliminator treats D062 as the first or single branch and D061 as the second or double branch.",
+      "effect_on_target": "It selects all precision-dependent constants and residual-conversion behavior.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "LocalDef042",
+      "meaning": "This is the type of scalar floating-point-operation models constructed by D063, containing a nonnegative unit roundoff and modeled addition, subtraction, multiplication, and division satisfying relative-error equations.",
+      "effect_on_target": "A run contains working and residual models that govern its updates and computed residuals.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "LocalDef043",
+      "meaning": "This projects field 4 of a floating-point model, its modeled subtraction operation flSub.",
+      "effect_on_target": "It defines the rounded iterate update and subtraction of b during residual computation.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "LocalDef044",
+      "meaning": "This projects field 1 of a floating-point model, its unit-roundoff scalar.",
+      "effect_on_target": "The run equates the working value to u and the residual-model value to ubar.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "LocalDef045",
+      "meaning": "This is a residual-computation trace package for a precision, residual model, conversion, A, b, and x. It records a rounded matrix-vector product, a modeled subtraction of b, and the precision-dependent output.",
+      "effect_on_target": "Run residual traces determine computedResidual_(m+1), which is used as the right-hand side for correction solves.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "LocalDef046",
+      "meaning": "This projects field 3 of a residual-computation trace, its output vector.",
+      "effect_on_target": "The run requires computedResidual_(m+1) to equal this output.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "LocalDef047",
+      "meaning": "This is the nonnegative matrix-vector expression (|A||x|)_i=sum_j |A_ij||x_j|.",
+      "effect_on_target": "It occurs in backward-error bounds and in the prior relation [|Ainv||r_m|]_i.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "LocalDef048",
+      "meaning": "This maps a vector x to its componentwise absolute-value vector |x|.",
+      "effect_on_target": "It appears in norm axioms and throughout all componentwise majorants.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "LocalDef049",
+      "meaning": "For j in Fin n, this is the coordinate basis vector e_j, equal to 1 at j and 0 elsewhere.",
+      "effect_on_target": "The norm package requires every coordinate basis vector to have vector norm 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "LocalDef050",
+      "meaning": "This is the n by n identity matrix I, with entries 1 on the diagonal and 0 off the diagonal.",
+      "effect_on_target": "It occurs in inverse identities, resolvents, matrix powers at exponent zero, and constants formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "LocalDef051",
+      "meaning": "This defines alpha. In precision D062, alpha=(1+u)((1+u)^n-1)/u^2-n/u. In precision D061, alpha=(1+u)(1+u^2)((1+u^2)^n-1)/u^2-n.",
+      "effect_on_target": "Alpha enters c5, C7, C9, C10, and the prior forcing terms.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "LocalDef052",
+      "meaning": "This defines beta: beta=0 in precision D062 and beta=1+u in precision D061.",
+      "effect_on_target": "Beta appears in c5 and thereby affects C6, C8, and the final recurrence matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "LocalDef053",
+      "meaning": "This is entrywise matrix addition, (A+B)_ij=A_ij+B_ij.",
+      "effect_on_target": "It combines terms in the auxiliary matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "LocalDef054",
+      "meaning": "This asserts that a matrix is entrywise nonnegative: A_ij>=0 for every i and j.",
+      "effect_on_target": "The run requires C1 nonnegative, and the constants package requires C2 and C6 through C12 nonnegative, supporting componentwise majorization.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "LocalDef055",
+      "meaning": "This is a dependent natural-number case splitter choosing a supplied zero case at 0 and a supplied successor case at k+1.",
+      "effect_on_target": "It implements the base and successor equations of the matrix power used in the bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "LocalDef056",
+      "meaning": "This is scalar multiplication of a matrix: (aA)_ij=a A_ij.",
+      "effect_on_target": "It forms all scaled matrices in the constants, resolvents, and B.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "LocalDef057",
+      "meaning": "This is entrywise matrix subtraction, (A-B)_ij=A_ij-B_ij.",
+      "effect_on_target": "It forms the resolvent matrices I-u C1H and I-u C8H.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "LocalDef058",
+      "meaning": "This defines ubar from the precision selector: ubar=u in precision D062 and ubar=u^2 in precision D061.",
+      "effect_on_target": "Ubar is the residual-model unit roundoff and appears throughout the constants, prior estimates, and forcing vector s.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "LocalDef059",
+      "meaning": "This is scalar multiplication of a vector: (ax)_i=a x_i.",
+      "effect_on_target": "It forms q, s, and other componentwise majorants.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "LocalDef060",
+      "meaning": "This constructs a solve package from output y and backward error e satisfying Ay=rhs+e and |e_i|<=u[C1(|A||y|)]_i for every i.",
+      "effect_on_target": "It makes each initial or correction solve a componentwise backward-stable solve with an error witness dependent on that solve.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "LocalDef061",
+      "meaning": "This is the second constructor of the precision type, called the double branch by the supplied eliminator argument names; it selects ubar=u^2, beta=1+u, the second alpha formula, and output conversion.",
+      "effect_on_target": "Choosing it changes the constants and residual-computation path but not the quantified form of the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "LocalDef062",
+      "meaning": "This is the first constructor of the precision type, called the single branch by the supplied eliminator argument names; it selects ubar=u, beta=0, the first alpha formula, and no final residual conversion.",
+      "effect_on_target": "Choosing it changes the constants and residual-computation path but not the quantified form of the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "LocalDef063",
+      "meaning": "This constructs a floating-point model with unit roundoff epsilon>=0 and operations satisfying flAdd(x,y)=(x+y)(1+delta), flSub(x,y)=(x-y)(1+delta), flMul(x,y)=xy(1+delta), and, for y!=0, flDiv(x,y)=(x/y)(1+delta), with a separately existential delta satisfying |delta|<=epsilon for every operation and input pair.",
+      "effect_on_target": "These relative-error assumptions constrain the working updates and every rounded operation used to compute residuals.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "LocalDef064",
+      "meaning": "This constructs a residual trace with roundedAx_i equal to the model-computed dot product of row i of A with x, beforeConversion_i=flSub(roundedAx_i,b_i), and output equal to beforeConversion in precision D062 or to convert(beforeConversion_i) componentwise in precision D061.",
+      "effect_on_target": "It fixes the precise computed-residual process whose outputs feed the correction solves.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "LocalDef065",
+      "meaning": "This is the case eliminator for precision: it returns the first supplied branch for D062 and the second supplied branch for D061.",
+      "effect_on_target": "It selects ubar, alpha, beta, and residual output behavior.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "LocalDef066",
+      "meaning": "This is the same two-case precision elimination operation expressed through the recursor, with a D062 branch and a D061 branch.",
+      "effect_on_target": "It implements the precision-dependent definitions used by the proposition's packages.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "LocalDef067",
+      "meaning": "This computes a modeled row dot product by applying model.flMul to each A_ij and x_j and combining the products with the ordered modeled summation D071.",
+      "effect_on_target": "It defines roundedAx inside each residual-computation trace.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "LocalDef068",
+      "meaning": "This is the dependent recursor for the two-constructor precision type, selecting a value for D062 or D061.",
+      "effect_on_target": "It is the low-level mechanism behind all precision case distinctions.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "LocalDef069",
+      "meaning": "This projects field 3 of a floating-point model, its modeled addition flAdd.",
+      "effect_on_target": "It combines products in modeled dot products.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "LocalDef070",
+      "meaning": "This projects field 5 of a floating-point model, its modeled multiplication flMul.",
+      "effect_on_target": "It computes each product A_ij*x_j in modeled dot products.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "LocalDef071",
+      "meaning": "Given flAdd and a vector of length n, this returns 0 for n=0, the sole entry for n=1, and for larger n left-associatively combines the first n entries recursively and the last entry using flAdd.",
+      "effect_on_target": "It fixes the summation order used in every modeled matrix-vector product of a residual trace.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "LocalDef072",
+      "meaning": "This proves that if n=0 then 0<n+1.",
+      "effect_on_target": "It supplies the index-validity proof for the one-entry branch of the modeled summation; it adds no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "LocalDef073",
+      "meaning": "This is dependent case analysis on a natural dimension together with a vector of that dimension, choosing either the zero-dimensional or successor-dimensional branch.",
+      "effect_on_target": "It implements the dimension split in the modeled summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "This extracts the division operation from a division-inverse monoid structure.",
+      "effect_on_target": "For reals it supplies ordinary division, including the literal 1/2 and divisions in auxiliary constants.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type consisting of natural indices strictly less than n.",
+      "effect_on_target": "Vectors have domain Fin n, matrices have two Fin n indices, and the conclusion is componentwise over i in Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "HDiv.hDiv",
+      "meaning": "This is the heterogeneous division operation selected by an HDiv instance.",
+      "effect_on_target": "With real instances it denotes ordinary real division in 1/2 and all displayed formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "HMul.hMul",
+      "meaning": "This is the heterogeneous multiplication operation selected by an HMul instance.",
+      "effect_on_target": "With real instances it denotes ordinary real multiplication, including c8*u*kappa.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "LE.le",
+      "meaning": "This is the less-than-or-equal relation selected by an LE instance.",
+      "effect_on_target": "With the real instance it gives every non-strict real inequality in the assumptions and conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "Nat",
+      "meaning": "This is the type of natural numbers, including zero.",
+      "effect_on_target": "It indexes the dimension n and every iteration m.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "meaning": "For nonzero n, this proves that n+1 is at least two and hence supports a numeral instance.",
+      "effect_on_target": "Applied in elaborating the real numeral 2 in the threshold 1/2; it contributes no extra hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "Nat.instNeZeroSucc",
+      "meaning": "This supplies a proof that every natural successor n+1 is nonzero.",
+      "effect_on_target": "It supports elaboration of the numeral 2 and does not alter the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "OfNat.ofNat",
+      "meaning": "This extracts a type's interpretation of a natural-number literal.",
+      "effect_on_target": "It interprets 0, 1, 2, and other numerals appearing in the formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "One.toOfNat1",
+      "meaning": "This derives interpretation of the numeral 1 from a type's multiplicative identity.",
+      "effect_on_target": "It makes the numerator 1 in 1/2 the ordinary real one.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "Real",
+      "meaning": "This is the type of real numbers.",
+      "effect_on_target": "All scalar, vector-component, matrix-entry, norm, and bound values are real.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "Real.instAddGroup",
+      "meaning": "This supplies the additive-group structure on the reals.",
+      "effect_on_target": "It supports negation, subtraction, and the ordered-group definition of real absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This supplies real multiplication, inversion, division, and integer powers as a division-inverse monoid.",
+      "effect_on_target": "It gives the real division used in 1/2 and the auxiliary formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "Real.instLE",
+      "meaning": "This supplies the standard order relation <= on the reals.",
+      "effect_on_target": "It interprets the smallness assumption and final inequality as ordinary real inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "Real.instMul",
+      "meaning": "This supplies ordinary multiplication on the reals.",
+      "effect_on_target": "It interprets all scalar products in the target and dependencies.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "Real.instNatCast",
+      "meaning": "This supplies the canonical cast of natural numbers into the reals.",
+      "effect_on_target": "It interprets n as the real scalar n in conditions and constants.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "Real.instOne",
+      "meaning": "This supplies the multiplicative identity 1 in the reals.",
+      "effect_on_target": "It interprets occurrences of 1, including the threshold 1/2 and relative-error factors 1+delta.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "Real.lattice",
+      "meaning": "This supplies maximum and minimum operations for the real order.",
+      "effect_on_target": "Together with the additive group it defines ordinary real absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "abs",
+      "meaning": "In the real instance, abs(a)=max(a,-a), the ordinary absolute value |a|.",
+      "effect_on_target": "It is applied to the residual component in the conclusion and entrywise throughout the majorants.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "instHDiv",
+      "meaning": "This converts an ordinary same-type division operation into an HDiv operation.",
+      "effect_on_target": "It ensures every elaborated real hDiv expression is ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "instHMul",
+      "meaning": "This converts an ordinary same-type multiplication operation into an HMul operation.",
+      "effect_on_target": "It ensures every elaborated real hMul expression is ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "This interprets any natural numeral known to be at least two through the target type's natural-number cast.",
+      "effect_on_target": "It interprets the real literal 2 in 1/2 as the real number two.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "instOfNatNat",
+      "meaning": "This interprets each natural literal n in Nat as n itself.",
+      "effect_on_target": "It supplies natural literals used in dimensions, iteration indices, and numeral elaboration.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "And",
+      "meaning": "This is logical conjunction.",
+      "effect_on_target": "It joins each existential relative-error witness's magnitude bound with its exact operation equation.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "Eq",
+      "meaning": "This is propositional equality.",
+      "effect_on_target": "It expresses exact inverse, solve, trace, update, projection, and defining equations in the packages.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "Exists",
+      "meaning": "This is existential quantification.",
+      "effect_on_target": "It permits input-dependent relative-error witnesses for conversion and modeled arithmetic operations.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "Fin.fintype",
+      "meaning": "This equips Fin n with its finite enumeration of all n indices.",
+      "effect_on_target": "It allows matrix and vector products to sum over every finite index.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "Finset.sum",
+      "meaning": "This sums a function over a finite set using the additive commutative monoid operation.",
+      "effect_on_target": "For reals it forms exact finite sums in matrix multiplication and matrix-vector multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "Finset.univ",
+      "meaning": "This is the finite set containing every element of a finite type.",
+      "effect_on_target": "For Fin n it makes each exact matrix or vector product sum over all indices 0 through n-1.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "HAdd.hAdd",
+      "meaning": "This is the heterogeneous addition operation selected by an HAdd instance.",
+      "effect_on_target": "With real or natural instances it denotes ordinary addition in formulas and successor indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "HPow.hPow",
+      "meaning": "This is exponentiation selected by an HPow instance.",
+      "effect_on_target": "It interprets real powers such as u^2, (1+u)^n, and (1+u^2)^n.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "HSub.hSub",
+      "meaning": "This is the heterogeneous subtraction operation selected by an HSub instance.",
+      "effect_on_target": "It denotes ordinary real subtraction in residuals, errors, and auxiliary formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D106",
+      "name": "Iff",
+      "meaning": "This is logical equivalence.",
+      "effect_on_target": "It states the norm definiteness axiom ||x||=0 if and only if x is the zero vector.",
+      "status": "understood"
+    },
+    {
+      "id": "D107",
+      "name": "LT.lt",
+      "meaning": "This is the strict-order relation selected by an LT instance.",
+      "effect_on_target": "It expresses n>0, u>0, and finite-index bounds inside the run and Fin values.",
+      "status": "understood"
+    },
+    {
+      "id": "D108",
+      "name": "Monoid.toNatPow",
+      "meaning": "This supplies natural-number exponentiation in a monoid.",
+      "effect_on_target": "For reals it gives the exact powers occurring in alpha and ubar formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D109",
+      "name": "Nat.below",
+      "meaning": "This is the nested dependent collection of values for all smaller natural indices used by course-of-values recursion.",
+      "effect_on_target": "It provides recursive predecessors for the matrix-power and modeled-summation definitions, without adding an assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D110",
+      "name": "Nat.brecOn",
+      "meaning": "This is course-of-values recursion on natural numbers.",
+      "effect_on_target": "It implements exact matrix powers and the dimension-recursive modeled sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D111",
+      "name": "Nat.cast",
+      "meaning": "This maps a natural number to a type with a natural-cast structure.",
+      "effect_on_target": "For reals it produces the scalar n used in n*u, c5, C7, C10, and s.",
+      "status": "understood"
+    },
+    {
+      "id": "D112",
+      "name": "Nat.succ",
+      "meaning": "This maps n to its successor n+1.",
+      "effect_on_target": "It underlies iteration shifts and the recursive dimension cases.",
+      "status": "understood"
+    },
+    {
+      "id": "D113",
+      "name": "Neg.neg",
+      "meaning": "This is unary negation selected by a Neg instance.",
+      "effect_on_target": "For reals it defines -b, -x_1, subtraction, and absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D114",
+      "name": "Pi.instZero",
+      "meaning": "This equips a function type with the pointwise zero function.",
+      "effect_on_target": "It interprets x_0=0 and equalities asserting a vector is zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D115",
+      "name": "Real.instAdd",
+      "meaning": "This supplies ordinary addition on the reals.",
+      "effect_on_target": "It interprets all scalar additions in matrix, vector, and constant formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D116",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This supplies the additive commutative monoid structure of the reals.",
+      "effect_on_target": "It supports finite real sums in exact matrix and matrix-vector products.",
+      "status": "understood"
+    },
+    {
+      "id": "D117",
+      "name": "Real.instLT",
+      "meaning": "This supplies the standard strict order < on the reals.",
+      "effect_on_target": "It interprets the run condition u>0.",
+      "status": "understood"
+    },
+    {
+      "id": "D118",
+      "name": "Real.instMonoid",
+      "meaning": "This supplies the multiplicative monoid structure of the reals.",
+      "effect_on_target": "It supports exact natural powers in the precision-dependent constants.",
+      "status": "understood"
+    },
+    {
+      "id": "D119",
+      "name": "Real.instNeg",
+      "meaning": "This supplies ordinary negation on the reals.",
+      "effect_on_target": "It interprets negative vectors and real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D120",
+      "name": "Real.instSub",
+      "meaning": "This supplies real subtraction as addition of the negation.",
+      "effect_on_target": "It interprets residuals, errors, resolvent matrices, and differences in alpha.",
+      "status": "understood"
+    },
+    {
+      "id": "D121",
+      "name": "Real.instZero",
+      "meaning": "This supplies the real number zero.",
+      "effect_on_target": "It interprets zero vectors, nonnegativity, identity off-diagonal entries, and empty sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D122",
+      "name": "Unit",
+      "meaning": "This is a one-element type used for branches that require no substantive input.",
+      "effect_on_target": "It is administrative data in case eliminators and contributes no mathematical condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D123",
+      "name": "Zero.toOfNat0",
+      "meaning": "This derives interpretation of the numeral 0 from a type's zero element.",
+      "effect_on_target": "It interprets real and functional zeros in all package equations.",
+      "status": "understood"
+    },
+    {
+      "id": "D124",
+      "name": "instAddNat",
+      "meaning": "This supplies ordinary addition on natural numbers.",
+      "effect_on_target": "It interprets m+1, n+1, and related index arithmetic.",
+      "status": "understood"
+    },
+    {
+      "id": "D125",
+      "name": "instHAdd",
+      "meaning": "This converts an ordinary same-type addition operation into an HAdd operation.",
+      "effect_on_target": "It makes elaborated real and natural hAdd expressions ordinary addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D126",
+      "name": "instHPow",
+      "meaning": "This converts an ordinary power operation into an HPow operation.",
+      "effect_on_target": "It makes elaborated real powers ordinary natural exponentiation.",
+      "status": "understood"
+    },
+    {
+      "id": "D127",
+      "name": "instHSub",
+      "meaning": "This converts an ordinary same-type subtraction operation into an HSub operation.",
+      "effect_on_target": "It makes elaborated real hSub expressions ordinary subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D128",
+      "name": "instLTNat",
+      "meaning": "This supplies the standard strict order on natural numbers.",
+      "effect_on_target": "It interprets n>0 and the bounds carried by Fin indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D129",
+      "name": "Nat.casesOn",
+      "meaning": "This performs case analysis on a natural number, selecting a zero case or successor case.",
+      "effect_on_target": "It implements helper case distinctions for powers and modeled summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D130",
+      "name": "Unit.unit",
+      "meaning": "This is the unique inhabitant of Unit.",
+      "effect_on_target": "It supplies the dummy argument to zero and precision branches and has no mathematical effect.",
+      "status": "understood"
+    },
+    {
+      "id": "D131",
+      "name": "instDecidableEqFin",
+      "meaning": "This decides equality between two Fin n indices.",
+      "effect_on_target": "It makes the diagonal tests in identity matrices and coordinate basis vectors computable.",
+      "status": "understood"
+    },
+    {
+      "id": "D132",
       "name": "ite",
-      "meaning": "It is conditional selection: if proposition c holds it returns the first value, and otherwise it returns the second.",
-      "effect_on_target": "It defines the identity-matrix entry as 1 when i = j and 0 otherwise.",
+      "meaning": "This is ordinary if-then-else selected by a decidable proposition.",
+      "effect_on_target": "It defines identity-matrix and coordinate-basis entries as 1 when indices agree and 0 otherwise.",
+      "status": "understood"
+    },
+    {
+      "id": "D133",
+      "name": "Ne",
+      "meaning": "This defines a!=b as the negation of a=b.",
+      "effect_on_target": "It states the nonzero-denominator restriction in the modeled division error law.",
+      "status": "understood"
+    },
+    {
+      "id": "D134",
+      "name": "Fin.castSucc",
+      "meaning": "This embeds an index in Fin n into the corresponding initial index of Fin (n+1).",
+      "effect_on_target": "It lets the recursive modeled sum access the first n entries of an (n+1)-entry vector.",
+      "status": "understood"
+    },
+    {
+      "id": "D135",
+      "name": "Fin.last",
+      "meaning": "This is the final index n in Fin (n+1).",
+      "effect_on_target": "It selects the last term added by the recursive modeled sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D136",
+      "name": "Fin.mk",
+      "meaning": "This constructs a Fin n value from a natural value together with a proof that it is less than n.",
+      "effect_on_target": "It constructs the sole index used in the one-entry modeled-sum case.",
+      "status": "understood"
+    },
+    {
+      "id": "D137",
+      "name": "Not",
+      "meaning": "This defines logical negation as implication to false.",
+      "effect_on_target": "It underlies non-equality assumptions and the false branch of dependent conditionals.",
+      "status": "understood"
+    },
+    {
+      "id": "D138",
+      "name": "dite",
+      "meaning": "This is dependent if-then-else, whose selected value may depend on a proof of the condition or its negation.",
+      "effect_on_target": "It implements the n=0 versus n!=0 branch in the successor case of modeled summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D139",
+      "name": "instDecidableEqNat",
+      "meaning": "This decides equality of natural numbers.",
+      "effect_on_target": "It decides whether the predecessor dimension is zero in the modeled-summation definition.",
+      "status": "understood"
+    },
+    {
+      "id": "D140",
+      "name": "Nat.zero",
+      "meaning": "This is the natural number zero.",
+      "effect_on_target": "It is the base dimension, base iteration, and base exponent used throughout the definitions.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "n is an arbitrary natural number, and Fin n is the common row and column index set.",
-      "B is an arbitrary real n by n matrix, represented by B : Fin n -> Fin n -> Real.",
-      "q is an arbitrary sequence of real n-vectors indexed by natural-number time steps.",
-      "d is an arbitrary sequence of real n-vectors indexed by natural-number time steps.",
-      "s is an arbitrary fixed real n-vector.",
-      "In the conclusion, m is an arbitrary natural number and i is an arbitrary element of Fin n.",
-      "There are no existentially quantified objects or witnesses."
+      "n is an implicitly quantified natural-number dimension.",
+      "run is an arbitrary n-dimensional computational-run package; write A for run.A, Ainv for run.Ainv, b for run.b, x* for run.exactSolution, u for run.u, x_m for run.iterate m, and d_m for run.correction m.",
+      "norm is an arbitrary n-dimensional norm package associated with the run; write ||.||_v for its vector norm and ||.||_M for its matrix norm.",
+      "constants is an arbitrary auxiliary-constant package associated with run and norm, containing C2, C6, C7, C8, C9, C10, C11, C12 and scalars c1, c5, c8.",
+      "prior is a proof of the packaged prior estimates described below.",
+      "The conclusion universally quantifies m over all natural numbers and i over Fin n."
     ],
     "hypotheses": [
-      "For every i,j in Fin n, B(i,j) >= 0.",
-      "For every i in Fin n, s(i) >= 0.",
-      "For every natural number t and every i in Fin n, |d_t(i)| <= s(i).",
-      "For every natural number t and every i in Fin n, q_{t+1}(i) = sum over j in Fin n of B(i,j)q_t(j) + d_t(i)."
+      "The norm package satisfies: ||x||_v>=0; ||x||_v=0 iff x=0; ||x+y||_v<=||x||_v+||y||_v; ||a x||_v=|a| ||x||_v; || |x| ||_v=||x||_v; componentwise |x_i|<=|y_i| implies ||x||_v<=||y||_v; ||e_j||_v=1; ||M||_M>=0; ||Mx||_v<=||M||_M||x||_v; and if c>=0 bounds ||Mx||_v by c||x||_v for every x, then ||M||_M<=c.",
+      "The run package entails n>0, u>0, and n*u<=1/100. Its working arithmetic model has unit roundoff u. Its residual arithmetic model has unit roundoff ubar, where ubar=u in precision D062 and ubar=u^2 in precision D061.",
+      "Every modeled scalar addition, subtraction, and multiplication has the exact result multiplied by 1+delta for some input-dependent delta with |delta| bounded by that model's unit roundoff; modeled division has the analogous property for nonzero denominators. For every real y, convert(y)=y(1+delta) for some y-dependent delta with |delta|<=u.",
+      "Ainv*A=I and A*Ainv=I exactly, and A*x*=b exactly. The matrix C1 is entrywise nonnegative.",
+      "The initial solve carries a backward-error vector e_init such that A*x_1=b+e_init and |e_init_i|<=u[C1(|A||x_1|)]_i. Also x_0=0, computedResidual_0=-b, and d_0=-x_1.",
+      "For each m, computedResidual_(m+1) is the output of a modeled residual trace for A*x_(m+1)-b: each row product is computed using modeled multiplications and a fixed left-associated modeled summation, b is subtracted with modeled subtraction, and the result is either retained in precision D062 or converted componentwise in precision D061.",
+      "For each m, d_m is the output of a solve carrying a backward-error vector e_m such that A*d_m=computedResidual_m+e_m and |e_m(i)|<=u[C1(|A||d_m|)]_i. The update satisfies x_(m+1)(i)=workingModel.flSub(x_m(i),d_m(i)) for every i.",
+      "Let alpha=(1+u)((1+u)^n-1)/u^2-n/u and beta=0 in precision D062. Let alpha=(1+u)(1+u^2)((1+u^2)^n-1)/u^2-n and beta=1+u in precision D061.",
+      "With H=|A||Ainv|, the constants package contains two-sided inverses R2 of I-u C1H and R11 of I-u C8H, and satisfies C2=R2C1, c1=||C1||_M, c5=n+((alpha+beta)u^2)/ubar, C6=C2+(1+c5*ubar/u)(I+u C2H), C7=(n+alpha*u^2/ubar)C2, C8=(1+u)C6, c8=||C8||_M, C9=C6+alpha I, C10=C6+(n*ubar/u+alpha*u)I+ubar C7H, C11=R11C9, and C12=R11(n C8+C7).",
+      "The constants additionally satisfy C11=C9+(u C8H)C11 and C12=(n C8+C7)+(u C8H)C12; C2 and C6 through C12 are entrywise nonnegative; and 0<=c1<=c8.",
+      "Writing r_m=A(x_m-d_m)-b and kappa=||H||_M, prior supplies the following implication: if c1*u*kappa<=1/2, then for every m and i, |r_m(i)|<=u[C6|A||x_m-x*|]_i+(n*ubar+alpha*u^2)[|A||x*|]_i+ubar*u[C7H|A||x*|]_i.",
+      "Prior also supplies, for every m and i, |x_(m+1)(i)-x*(i)|<=(1+u)[|Ainv||r_m|]_i+u|x*(i)|.",
+      "The explicit smallness hypothesis is c8*u*kappa<=1/2."
     ],
     "conclusions": [
-      "For every natural number m and every i in Fin n, |q_{m+1}(i)| <= sum over j in Fin n of (B^(m+1))(i,j)|q_0(j)| + sum from k = 0 through m of the sum over j in Fin n of (B^k)(i,j)s(j)."
+      "For every natural iteration m and every i in Fin n, |[A(x_m-d_m)-b]_i| <= [B^m q+s]_i, where B=u C8H, q=u(C10|A|)|x*|, and s=n*ubar |A||x*|+u^2(C11|A|)|x*|+ubar*u(C12H|A|)|x*|."
     ],
     "mathematical_definitions": [
-      "For a vector x, (A x)(i) means sum over j in Fin n of A(i,j)x(j).",
-      "For matrices A and C, (A C)(i,j) means sum over k in Fin n of A(i,k)C(k,j).",
-      "I(i,j) is 1 if i = j and 0 otherwise.",
-      "The powers used here are defined by B^0 = I and B^(r+1) = B B^r.",
-      "The vector |q_0| is componentwise: its j-th component is |q_0(j)|.",
-      "The accumulated sum over Finset.range(m+1) is exactly the sum over k = 0,1,...,m.",
-      "Equivalently, the right-hand side is (B^(m+1)|q_0|)(i) + sum from k = 0 through m of (B^k s)(i)."
+      "Fin n is the index set {0,...,n-1}; vectors are functions Fin n -> Real and matrices are functions Fin n -> Fin n -> Real.",
+      "For vectors and matrices, absolute-value bars denote entrywise real absolute value. Vector addition, subtraction, and scalar multiplication are componentwise.",
+      "Matrix multiplication and matrix-vector multiplication are the exact finite sums (MN)_ij=sum_k M_ik N_kj and (Mx)_i=sum_j M_ij x_j.",
+      "I is the identity matrix. B^0=I and B^(m+1)=B B^m, so B^m is an exact matrix power.",
+      "H=|A||Ainv| and kappa=||H||_M.",
+      "r_m=A(x_m-d_m)-b is an exact-real residual of the exact subtraction x_m-d_m, not the separately stored computedResidual_m.",
+      "B=u C8H, q=u(C10|A|)|x*|, and s=n*ubar |A||x*|+u^2(C11|A|)|x*|+ubar*u(C12H|A|)|x*|.",
+      "The right-hand side LocalDef009(constants,m,i) is exactly the ith component of B^m q+s.",
+      "The numeral 1/2 is ordinary real division and hence equals one half."
     ],
-    "proposition_plain_english": "Given an entrywise nonnegative real square matrix B, a vector sequence satisfying the exact recurrence q_{t+1} = Bq_t + d_t, and perturbations whose components are uniformly bounded in absolute value by a fixed nonnegative vector s, every component of q after m+1 steps is bounded in absolute value by the corresponding component of B^(m+1)|q_0| plus the accumulated componentwise bound sum_{k=0}^m B^k s."
+    "proposition_plain_english": "For every admissible positive-dimensional run, every admissible induced norm package, and every auxiliary-constant package satisfying the displayed resolvent equations, nonnegativity properties, and norm relations, assume the two packaged prior estimates. If the stronger smallness condition c8*u*|| |A||Ainv| ||_M <= 1/2 holds, then at every natural iteration m and every component i, the exact residual of the exact post-correction vector x_m-d_m is bounded in absolute value by the ith component of B^m q+s, with B, q, and s defined exactly above."
   },
   "restrictions_and_vacuity_risks": [
-    "The dimension n may be zero. When n = 0, Fin n has no elements, so all indexwise hypotheses and the universally indexed conclusion are vacuous.",
-    "The statement is conditional and gives no conclusion for data that fail any of the four hypotheses.",
-    "B is fixed across all time steps and must be entrywise nonnegative; no result is encoded for matrices with negative entries.",
-    "The perturbation bound s is fixed and independent of time, although d_t may vary arbitrarily with t.",
-    "The result is componentwise and uses scalar absolute values; it does not state a vector-norm or matrix-norm inequality.",
-    "All quantities and operations are over exact real numbers. No floating-point format, rounding operation, unit roundoff, relative-error model, or computed-versus-exact distinction is encoded.",
-    "No assumptions such as symmetry, invertibility, stochasticity, bounded norm, or contractivity of B are present.",
-    "No convergence, asymptotic stability, optimality, sharpness, or lower bound is asserted.",
-    "The initial vector q_0 is unrestricted.",
-    "The conclusion holds for every natural-number time m, with no finite time horizon."
+    "Although n is universally quantified over all naturals, every run package carries a proof n>0. Thus no run can be constructed at n=0 from the supplied constructor; independently, Fin 0 would make the componentwise conclusion empty.",
+    "The theorem does not assert existence of a run, norm package, constants package, or prior-estimate proof. It is conditional and therefore vacuous for parameters for which any required package is uninhabited.",
+    "The implication is also vacuous when the explicit c8 smallness assumption is false.",
+    "The first estimate inside prior is itself conditional on c1*u*kappa<=1/2. Under a valid constants package and run, 0<=c1<=c8 and u*kappa>=0, so the target's c8 smallness condition implies that premise.",
+    "All conclusions are componentwise and hold for every natural m, including m=0. No convergence, decay of B^m, spectral-radius bound, limiting result, or normwise residual estimate is stated.",
+    "The bounded quantity is the exact-real vector A(x_m-d_m)-b. It is not directly the stored computed residual, nor necessarily A*x_(m+1)-b because x_(m+1) is obtained by modeled subtraction.",
+    "All matrix products, powers, and expressions in the final bound are exact real computations. Only operations explicitly stored in the working and residual models, and the conversion function, carry relative-error witnesses.",
+    "Relative-error deltas and solve backward-error vectors may depend on their respective inputs, operation calls, iterations, and solves; no single uniform witness is asserted.",
+    "The rounding model encodes only multiplicative relative-error equations. It does not encode overflow, underflow, subnormal behavior, exceptional values, or a concrete hardware format.",
+    "The precision type has only two abstract constructors. No bit widths, radix, or external identification of those constructors is encoded.",
+    "The matrices A and Ainv must be exact two-sided inverses, and x* must solve Ax*=b exactly. The resolvent matrices I-u C1H and I-u C8H must also possess explicitly supplied exact two-sided inverses.",
+    "Lean's real division is total even at zero, but constructed runs have u>0 and the two precision branches give ubar>0, so the divisions by u and ubar in the displayed constants have nonzero denominators.",
+    "The selected matrix norm is abstract: it is characterized by the supplied induced-norm axioms but is not identified as a particular standard norm such as the 1-, 2-, or infinity norm.",
+    "The proposition asserts only an upper bound. It does not assert nontriviality, sharpness, equality, or optimality of B^m q+s."
   ],
-  "ambiguities": []
+  "ambiguities": [
+    "The precision constructors have no intrinsic human-facing names in the dossier. Calling D062 the single branch and D061 the double branch follows only the argument labels of the supplied eliminator; their exact branch formulas are nevertheless unambiguous.",
+    "Names such as iterate, correction, residual, and exactSolution suggest an algorithmic interpretation, but the translation relies only on the explicit constructor equations. In particular, no unstated sign convention or application-specific meaning is assumed."
+  ]
 }

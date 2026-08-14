@@ -1,0 +1,98 @@
+{
+  "accepted": false,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-13T14:31:54.915560+00:00",
+  "findings": [
+    {
+      "category": "selected-result-substitution",
+      "impact": "The Lean proposition does not state the selected paper result; it states a generic recurrence-unrolling fact that could at most be one auxiliary ingredient in a different reconstruction.",
+      "lean_evidence": "The target is a universal algebraic lemma for arbitrary B,q,d,s satisfying q_{m+1}=Bq_m+d_m.",
+      "paper_evidence": "PDF p.12/printed p.827, Lemma 4.3, is a finite componentwise bound for the algorithmic exact residual q_{m+1}, with a propagated initial term and three explicit source-defined accumulation terms.",
+      "severity": "critical"
+    },
+    {
+      "category": "recurrence-semantics",
+      "impact": "The paper recurrence does not establish the Lean hypotheses, so the abstract theorem cannot be directly instantiated with the paper residuals.",
+      "lean_evidence": "hStep is the exact signed equality q_{m+1}=Bq_m+d_m and hd requires |d_m|<=s.",
+      "paper_evidence": "The proof of Lemma 4.3 gives only |q_{m+1}|<=uC8|A||A^-1||q_m| plus nonnegative forcing terms.",
+      "severity": "major"
+    },
+    {
+      "category": "constants-and-indexing",
+      "impact": "The selected finite-m formula, base case, coefficient identities, and precision-sensitive orders are absent.",
+      "lean_evidence": "The target starts from q_0, uses power m+1, and replaces all forcing structure by sum_{k=0}^m B^k s.",
+      "paper_evidence": "Lemma 4.3 starts with q_1 at m=0, uses power m, and concludes with uC10, n ubar, u^2C11, and ubar u C12 terms.",
+      "severity": "major"
+    },
+    {
+      "category": "algorithm-and-model-omission",
+      "impact": "The theorem is disconnected from the execution model and conditioning regime that give the paper claim its numerical meaning.",
+      "lean_evidence": "No A,b,x,u,ubar, norm, kappa, pivoting, floating-point operation, precision variant, or smallness condition appears.",
+      "paper_evidence": "Sections 2 and 4 require a nonsingular real system, column-pivoted iterative refinement, residual subtraction last, s.p.r.a. or d.p.r.a., roundoff assumptions, and c8u kappa(A^-1)<=1/2.",
+      "severity": "major"
+    },
+    {
+      "category": "error-notion",
+      "impact": "The formal statement does not measure the paper's residual or preserve the exact/computed distinction.",
+      "lean_evidence": "q is an arbitrary real sequence and d is merely an affine disturbance.",
+      "paper_evidence": "The paper defines q_{m+1}=A(x_m-d_m)-b as an exact residual and explicitly distinguishes it from the computed residual r_m.",
+      "severity": "major"
+    },
+    {
+      "category": "statement-substitution",
+      "impact": "The two propositions have different mathematical subjects, and neither semantically implies the other.",
+      "paper_evidence": "Lemma 4.3 is a specific finite-iteration componentwise residual bound for column-pivoted iterative refinement.",
+      "severity": "critical",
+      "translation_evidence": "The translation is a generic unrolling bound for an exact affine recurrence with uniformly bounded disturbances."
+    },
+    {
+      "category": "algorithm-and-numerical-model",
+      "impact": "The theorem is disconnected from the algorithm and numerical model whose error is being bounded.",
+      "paper_evidence": "The result depends on computed iterates, column-pivoted solves, residual precision, subtraction order, u, ubar, and well-defined floating-point execution.",
+      "severity": "major",
+      "translation_evidence": "Only exact real arithmetic and arbitrary recurrence data are present."
+    },
+    {
+      "category": "bound-shape-and-indexing",
+      "impact": "The conclusion cannot be identified with the paper bound by a harmless notation change.",
+      "paper_evidence": "The paper uses q_{m+1}, exponent m, the q_1 base case, and four terms involving C10, C11, and C12.",
+      "severity": "major",
+      "translation_evidence": "The translation uses q_0, exponent m+1, and a finite geometric disturbance sum."
+    },
+    {
+      "category": "hypotheses-norms-and-constants",
+      "impact": "Applicability and parameter dependence differ from the paper.",
+      "paper_evidence": "The paper requires c8*u*kappa(A^{-1})<=1/2 under a normalized absolute monotone norm and defines C8 through C12 from earlier error quantities.",
+      "severity": "major",
+      "translation_evidence": "These conditions and definitions are absent and replaced by nonnegativity and exact-recurrence assumptions."
+    },
+    {
+      "category": "zero-dimensional-vacuity",
+      "impact": "The translation includes an unintended trivial specialization.",
+      "paper_evidence": "The source setting is a positive-dimensional linear system.",
+      "severity": "minor",
+      "translation_evidence": "The arbitrary natural dimension permits n=0, where every indexed assertion is vacuous."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean theorem requires an exact signed affine recurrence with a uniformly bounded additive disturbance, which the paper's one-sided recurrence for residual magnitudes does not supply. It also yields B^(m+1)|q_0| plus a finite sum, not Lemma 4.3's q_1-based B_p^m term and explicit C10/C11/C12 four-term formula, and it contains no algorithmic or floating-point premises from which those quantities could be recovered.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "Lemma 4.3 concerns one source-defined residual sequence and one propagation matrix under its numerical-algorithm hypotheses. It neither quantifies arbitrary nonnegative B, arbitrary affine sequences q,d, and arbitrary majorants s nor proves the target's universal exact-recurrence unrolling statement.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "The dependency meanings are clear and the target is a valid, nonvacuous finite-dimensional affine-recurrence bound. Direct comparison with the verified Lemma 4.3 passage shows that it replaces the paper's algorithmic exact-residual theorem by a different abstract proposition: the source's one-sided magnitude recurrence cannot supply hStep, the q_1 base and power m become q_0 and power m+1, the C10/C11/C12 four-term bound is replaced by a generic finite sum, and all numerical-model and conditioning hypotheses disappear. Neither proposition represents or entails the other in the required paper-to-Lean sense, so the result is not-faithful-different.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P08-T3"
+}

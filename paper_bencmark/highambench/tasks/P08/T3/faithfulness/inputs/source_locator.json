@@ -5,10 +5,59 @@
   "paper_version": "published journal version; volume 35, issue 151, July 1980, printed pages 817-832",
   "source_locations": [
     {
-      "anchor": "Lemma 4.3 and the recurrence displayed in its proof",
+      "anchor": "Section 2 floating-point and componentwise conventions",
+      "pdf_page": 3,
+      "printed_page": "818",
+      "role": "positive roundoff, n*u<=0.01, well-defined operations, and componentwise interpretation",
+      "section": "2. Numerical Stability"
+    },
+    {
+      "anchor": "absolute monotone norm convention",
+      "pdf_page": 4,
+      "printed_page": "819",
+      "role": "normalized absolute vector norm and induced matrix norm",
+      "section": "2. Numerical Stability"
+    },
+    {
+      "anchor": "definition of kappa(A^{-1})",
+      "pdf_page": 5,
+      "printed_page": "820",
+      "role": "nonstandard conditioning quantity ||abs(A)*abs(A^{-1})||",
+      "section": "2. Numerical Stability"
+    },
+    {
+      "anchor": "equation (3.1) and following Note",
+      "pdf_page": 8,
+      "printed_page": "823",
+      "role": "column-pivoted solve certificate and definitions of c_1 and C_2",
+      "section": "3. Gaussian Elimination With Column Pivoting"
+    },
+    {
+      "anchor": "Section 4 algorithm and residual-precision paragraph",
+      "pdf_page": 9,
+      "printed_page": "824",
+      "role": "iterative-refinement indexing, initialization, subtraction order, and single/double residual accumulation",
+      "section": "4. Error Bounds"
+    },
+    {
+      "anchor": "Lemma 4.1",
+      "pdf_page": 10,
+      "printed_page": "825",
+      "role": "definition of exact q_(m+1), its base estimate, and precision-dependent ubar",
+      "section": "4. Error Bounds"
+    },
+    {
+      "anchor": "Note following Lemma 4.1 and Lemma 4.2",
+      "pdf_page": 11,
+      "printed_page": "826",
+      "role": "definitions of c_3,c_4,c_5,C_6,C_7 and forward-error bound used in the recurrence",
+      "section": "4. Error Bounds"
+    },
+    {
+      "anchor": "Lemma 4.3, following Note, and recurrence in its proof",
       "pdf_page": 12,
       "printed_page": "827",
-      "role": "finite componentwise residual recurrence and induction bound",
+      "role": "selected four-term finite bound, C_8 through C_12, smallness hypothesis, recurrence, and induction",
       "section": "4. Error Bounds"
     }
   ],

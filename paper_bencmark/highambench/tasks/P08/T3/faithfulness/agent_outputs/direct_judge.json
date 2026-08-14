@@ -3,326 +3,1126 @@
   "role": "direct-judge",
   "task_id": "P08-T3",
   "paper_sha256": "f520066b46331dcbf25e51345c5ff5ffffe8fcad573d7f46e68834f83b3a2c54",
-  "dossier_sha256": "b4334fc81066015a6dd45f92082aa02961f73a807ad01a2a94cdcce29027d507",
+  "dossier_sha256": "38c87221fa8c220de3326c72a138763a34713d5ec0150278f7be1d329b6bcc09",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.p08MatPow",
-      "interpretation": "Standard finite square-matrix power: p08MatPow B 0 is the identity and p08MatPow B (k+1) is B multiplied on the left by p08MatPow B k.",
-      "effect_on_target": "It makes the target's initial-state contribution B^(m+1)|q_0|.",
-      "paper_match": "Lemma 4.3 uses ordinary matrix powers, but its corresponding term is (u C8 |A||A^-1|)^m u C10 |A||x|. The target has exponent m+1 and an arbitrary |q_0| instead of the paper's exponent m and source-defined initial majorant.",
-      "status": "fail"
-    },
-    {
-      "id": "D002",
-      "name": "HighamBench.p08MatVec",
-      "reuse_sha256": "a9d79755c0b741985d1e1e0ca415db594fe3f827e5671d0f293263ace774c268",
-      "effect_on_target": "It interprets every occurrence of Bq, B^k|q_0|, and B^k s as an exact real row-by-vector finite sum.",
-      "paper_match": "This operator matches the paper's ordinary matrix-vector multiplication. The target nevertheless does not identify B, q, or s with the paper's propagation matrix, exact residual, and source-defined forcing terms.",
+      "name": "HighamBench.P08AbsoluteMonotoneNorm",
+      "interpretation": "A normalized absolute vector norm with its induced matrix norm; D011 supplies its laws.",
+      "effect_on_target": "It fixes the norm used by c1, c8, and kappa.",
+      "paper_match": "PDF p. 819 requires an absolute normalized norm extended to matrices; D011 encodes those properties.",
       "status": "pass"
     },
     {
+      "id": "D002",
+      "name": "HighamBench.P08IterativeRefinementRun",
+      "interpretation": "A package of dimension, precision, arithmetic models, A, Ainv, data, iterates, residual traces, and solve certificates; D017 is its constructor.",
+      "effect_on_target": "It supplies the algorithmic and numerical data quantified by the theorem.",
+      "paper_match": "Most paper context is represented, but solves are only error certificates and C1 has no uniform dependence on n, so actual column-pivoted execution is not enforced.",
+      "status": "fail"
+    },
+    {
       "id": "D003",
-      "name": "HighamBench.p08IdMatrix",
-      "interpretation": "The n-by-n real identity matrix: entry (i,j) is 1 when i=j and 0 otherwise.",
-      "effect_on_target": "It supplies B^0, so the k=0 summand is s and the zero-th matrix power has the standard action.",
-      "paper_match": "This is the identity used by ordinary matrix powers and is compatible with the paper's matrix-power and resolvent algebra.",
+      "name": "HighamBench.P08IterativeRefinementRun.u",
+      "interpretation": "Projection of the run's real unit-roundoff parameter.",
+      "effect_on_target": "It supplies every occurrence of u in the hypothesis and bound.",
+      "paper_match": "It matches the paper's positive single-precision roundoff u.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.p08MatMul",
-      "interpretation": "Ordinary finite real matrix multiplication, (A B)_{ij} = sum_k A_{ik} B_{kj}.",
-      "effect_on_target": "Together with p08MatPow it fixes B^(k+1)=B B^k and the multiplication order in the propagated bounds.",
-      "paper_match": "This multiplication order is the ordinary order used for powers of u C8 |A||A^-1| in Lemma 4.3.",
-      "status": "pass"
+      "name": "HighamBench.P08Lemma43Constants",
+      "interpretation": "A run- and norm-indexed package for C2,C6,C7,C8,C9,C10,C11,C12,c1,c5,c8 and resolvent witnesses; D018 gives its fields.",
+      "effect_on_target": "It fixes every anonymous constant used by the bound.",
+      "paper_match": "The formulas match pp. 823 and 826-827, but the package has no uniform bounded-by-a-function-of-n field.",
+      "status": "fail"
     },
     {
       "id": "D005",
-      "name": "HighamBench.p08MatPow.match_1",
-      "interpretation": "A natural-number case eliminator selecting the zero branch at 0 and the successor branch at k+1.",
-      "effect_on_target": "It implements the base and successor equations of p08MatPow without adding a mathematical hypothesis.",
-      "paper_match": "The paper has no independent analogue of this Lean recursion mechanism; its effect is only to realize standard matrix powers.",
-      "status": "not-applicable"
+      "name": "HighamBench.P08Lemma43Constants.c8",
+      "interpretation": "Projection of scalar c8 from the constants package.",
+      "effect_on_target": "It is the scalar in the smallness hypothesis.",
+      "paper_match": "It matches c8=||C8|| on PDF p. 827.",
+      "status": "pass"
     },
     {
       "id": "D006",
-      "name": "Eq",
-      "reuse_sha256": "4738cba5cc594bbac3846d1c19e331eb0252249c7384087d8d0e03e992b0abe2",
-      "effect_on_target": "It makes hStep an exact signed affine equality q_{m+1}=B q_m+d_m for every m and component.",
-      "paper_match": "The proof of Lemma 4.3 supplies only a one-sided componentwise inequality for |q_{m+1}| in terms of B|q_m| and positive forcing terms, not an equality for signed residuals.",
+      "name": "HighamBench.P08Lemma43PriorBounds",
+      "interpretation": "A proposition packaging the Lemma 4.1 estimate and the second Lemma 4.2 estimate; D019 gives the formulas.",
+      "effect_on_target": "It is an explicit premise from which the target induction follows.",
+      "paper_match": "The formulas match pp. 825-826, but the paper proves and uses those lemmas rather than adding their conclusions as a Lemma 4.3 hypothesis.",
       "status": "fail"
     },
     {
       "id": "D007",
-      "name": "Fin",
-      "reuse_sha256": "96e15d871d236cbc25d682c9f570695df429e2face86e6d3528c4bce81cf3b23",
-      "effect_on_target": "It gives B and the vectors exactly n finite component indices.",
-      "paper_match": "Fin n is a faithful representation of components of an n-vector and rows or columns of an n-by-n matrix. The separate omission of n>0 is caused by the target's hypotheses, not by Fin itself.",
+      "name": "HighamBench.p08ExactResidualAfterCorrection",
+      "interpretation": "The exact real vector A*(iterate m-correction m)-b.",
+      "effect_on_target": "It is q_(m+1), evaluated componentwise on the left side.",
+      "paper_match": "It exactly matches q_(m+1)=A(x_m-d_m)-b on PDF p. 825 and does not conflate q with computed r.",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "Finset.range",
-      "interpretation": "Finset.range r is the finite set of natural numbers 0,1,...,r-1.",
-      "effect_on_target": "Finset.range (m+1) makes the accumulated term run over k=0,...,m.",
-      "paper_match": "Lemma 4.3 does not conclude with this finite sum; it concludes with three explicit non-iteration terms involving n ubar, C11, and C12 after resolvent bounds. Its propagated initial term also uses m transitions from q_1, not m+1 transitions from q_0.",
-      "status": "fail"
+      "name": "HighamBench.p08KappaInverse",
+      "interpretation": "The selected matrix norm of |A|*|Ainv|.",
+      "effect_on_target": "It is the nonstandard kappa factor in hsmall.",
+      "paper_match": "It matches kappa(A^-1)=|| |A| |A^-1| || on PDF p. 820.",
+      "status": "pass"
     },
     {
       "id": "D009",
-      "name": "Finset.sum",
-      "reuse_sha256": "43dbdf9bda2f29d93880e1dba6eeb528312c1541af4765b62b6df2ecd0f56459",
-      "effect_on_target": "It adds the generic forcing majorants B^k s for every k from 0 through m.",
-      "paper_match": "A finite geometric forcing sum is a possible intermediate recurrence-unrolling object, but it is not the selected paper conclusion, which retains the exact four displayed terms and source-defined C10, C11, and C12.",
-      "status": "fail"
+      "name": "HighamBench.p08Lemma43Bound",
+      "interpretation": "The sum Propagation^m*InitialVector+StationaryVector.",
+      "effect_on_target": "It expands to the four terms on the target's right side.",
+      "paper_match": "Its expansion through D021-D023 is exactly Lemma 4.3's displayed bound on PDF p. 827.",
+      "status": "pass"
     },
     {
       "id": "D010",
-      "name": "HAdd.hAdd",
-      "reuse_sha256": "f13ed12686614b6b31fc7607b2d23f1e6345c9af7590f67f762968a359a927c3",
-      "effect_on_target": "It is ordinary real addition in hStep and in the two-part upper bound, and natural addition in m+1 through the relevant instance.",
-      "paper_match": "Ordinary addition itself matches the paper's scalar and vector component formulas; it does not restore the omitted paper-specific terms.",
+      "name": "HighamBench.P08AbsoluteMonotoneNorm.matrixNorm",
+      "interpretation": "Projection of the matrix norm from the norm package.",
+      "effect_on_target": "It evaluates kappa, c1, and c8.",
+      "paper_match": "It is the paper's matrix extension of the selected absolute norm.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "LE.le",
-      "reuse_sha256": "e434ed303905a7af228ce4b9d1a15569ffa23968bcfe5126a8808f75a8ac6fbb",
-      "effect_on_target": "It makes hB and hs nonnegativity conditions, hd a non-strict disturbance bound, and the conclusion a componentwise non-strict upper bound.",
-      "paper_match": "The non-strict real order agrees with the componentwise upper bounds in Lemma 4.3, although hd is an extra target hypothesis with no paper counterpart.",
+      "name": "HighamBench.P08AbsoluteMonotoneNorm.mk",
+      "interpretation": "Constructor requiring positivity, definiteness, triangle and scaling laws, absoluteness, monotonicity, basis normalization, and the induced matrix-norm property.",
+      "effect_on_target": "It prevents the norm parameter from being an arbitrary function.",
+      "paper_match": "These laws faithfully render the normalized absolute norm convention on PDF p. 819.",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "Nat",
-      "reuse_sha256": "426cf73e510c14035682ac468bdf1b9cf2b3f9df8af96c0b89108ec6b97b7bc8",
-      "effect_on_target": "It quantifies both the dimension n and every iteration index m over all natural numbers, including n=0.",
-      "paper_match": "Natural m correctly represents m=0,1,2,..., but the paper's system dimension is positive whereas the Lean proposition admits the empty dimension without an n>0 hypothesis.",
-      "status": "fail"
+      "name": "HighamBench.P08IterativeRefinementRun.A",
+      "interpretation": "Projection of the n by n real coefficient matrix.",
+      "effect_on_target": "It occurs in q, kappa, constants, traces, and the bound.",
+      "paper_match": "It matches the paper's coefficient matrix A.",
+      "status": "pass"
     },
     {
       "id": "D013",
-      "name": "OfNat.ofNat",
-      "reuse_sha256": "3454ad265d13962382c545c60fc41a17008f880814dce746a3fbfc561629609f",
-      "effect_on_target": "It gives the literal indices 0 and 1 and the real zero used in nonnegativity hypotheses.",
-      "paper_match": "The numeric literals have their ordinary meanings and agree with the paper's indexing and zero bounds.",
+      "name": "HighamBench.P08IterativeRefinementRun.Ainv",
+      "interpretation": "Projection of the n by n real two-sided inverse witness.",
+      "effect_on_target": "It occurs in kappa, propagation, and stationary terms.",
+      "paper_match": "Together with D017's inverse equations it matches A^-1 for nonsingular A.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "Real",
-      "reuse_sha256": "3273e6ddd8bd4a8443707638cde935852e5da6c599a38a8fe3930f2970ac1f22",
-      "effect_on_target": "All matrix entries, vector components, recurrence values, and bounds are exact mathematical real numbers.",
-      "paper_match": "The paper studies real linear systems and uses exact real quantities in its error bounds, so the scalar carrier matches.",
+      "name": "HighamBench.P08IterativeRefinementRun.b",
+      "interpretation": "Projection of the real right-hand-side vector.",
+      "effect_on_target": "It occurs in exact and computed residuals.",
+      "paper_match": "It matches b in Ax=b.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "Real.instAdd",
-      "reuse_sha256": "7e0ddf4261b358fe7b8c14711ff101f8751ed922fe7477e2df915734becc8a90",
-      "effect_on_target": "It supplies ordinary real addition for the affine step and final bound.",
-      "paper_match": "This operation agrees with ordinary addition in the paper's componentwise formulas.",
+      "name": "HighamBench.P08IterativeRefinementRun.correction",
+      "interpretation": "Projection of the Nat-indexed correction vectors.",
+      "effect_on_target": "It supplies d_m in q and in the rounded update.",
+      "paper_match": "It matches the paper's d_m, including d_0=-x_1 through D017.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "Real.instAddCommMonoid",
-      "reuse_sha256": "de26263ef3d85bea98d73430409944d56d7056e9e81a8b238a6dead7fd589944",
-      "effect_on_target": "It supplies zero and associative commutative real addition to Finset.sum.",
-      "paper_match": "It gives standard finite real summation and introduces no altered numerical semantics, though the selected paper bound is not stated as this sum.",
+      "name": "HighamBench.P08IterativeRefinementRun.iterate",
+      "interpretation": "Projection of the Nat-indexed iterate vectors.",
+      "effect_on_target": "It supplies x_m in q, residual traces, and prior estimates.",
+      "paper_match": "It matches x_m with x_0=0 and x_1 initialized by the solve.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "Real.instAddGroup",
-      "reuse_sha256": "ff0528324617b8360c8762e233843aae601952bd850aaffbb43e9c41e8131cd4",
-      "effect_on_target": "It provides real negation and subtraction structure used by real absolute value.",
-      "paper_match": "This is standard real algebra and is compatible with the paper's componentwise absolute values.",
-      "status": "pass"
+      "name": "HighamBench.P08IterativeRefinementRun.mk",
+      "interpretation": "Constructor enforcing n>0, u>0, n*u<=0.01, arithmetic models, inverse/system equations, initialization, residual traces, solve certificates, and rounded updates.",
+      "effect_on_target": "It defines which runs the theorem covers and makes most paper hypotheses implicit in run.",
+      "paper_match": "Arithmetic, indexing, and residual rules match pp. 818 and 824, but no pivot choices or Gaussian-elimination trace is required and C1 is not uniform in n.",
+      "status": "fail"
     },
     {
       "id": "D018",
-      "name": "Real.instLE",
-      "reuse_sha256": "def617339f069ce01d94636c7b9c556e50dfc215659e7b4ee9b5aae462d53615",
-      "effect_on_target": "It interprets every displayed target inequality as the usual real <= relation component by component.",
-      "paper_match": "This is the order relation used by the paper's componentwise bounds.",
-      "status": "pass"
+      "name": "HighamBench.P08Lemma43Constants.mk",
+      "interpretation": "Constructor imposing the paper's algebraic definitions, two-sided resolvents, fixed-point equations, and nonnegativity for the constants.",
+      "effect_on_target": "It determines all matrices in p08Lemma43Bound and supplies c1<=c8.",
+      "paper_match": "The formulas and factor order match pp. 823 and 826-827; the missing n-only uniform boundedness is a material mismatch.",
+      "status": "fail"
     },
     {
       "id": "D019",
-      "name": "Real.instZero",
-      "reuse_sha256": "ebc699a0ada091fb712ded556742b0e7d49aaf0bbe071cac139061ca9d6e2f2c",
-      "effect_on_target": "It supplies the real zero in hB and hs and in matrix identities.",
-      "paper_match": "The standard real zero is compatible with the paper's nonnegative matrices and majorants.",
-      "status": "pass"
+      "name": "HighamBench.P08Lemma43PriorBounds.mk",
+      "interpretation": "Constructor whose premises are a conditional Lemma 4.1 bound and the forward-error part of Lemma 4.2.",
+      "effect_on_target": "It turns those estimates into the explicit prior hypothesis.",
+      "paper_match": "The estimates match pp. 825-826, but making them assumptions weakens the target relative to Lemma 4.3 under its standing context.",
+      "status": "fail"
     },
     {
       "id": "D020",
-      "name": "Real.lattice",
-      "reuse_sha256": "e3ae9be753d2d5bb3d635ed3eb9a07b4912ede6780709f00522a9ce1aa5f0a1f",
-      "effect_on_target": "It supplies the ordered lattice used to define the real absolute values of q and d.",
-      "paper_match": "It yields the usual scalar absolute value, matching componentwise absolute values in the paper.",
+      "name": "HighamBench.p08AbsMatrix",
+      "interpretation": "Entrywise real absolute value of a matrix.",
+      "effect_on_target": "It realizes every |A| and |Ainv| factor.",
+      "paper_match": "It matches the paper's componentwise matrix absolute value.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "Zero.toOfNat0",
-      "reuse_sha256": "f96c37bd331eb23dd809632bd2891f417408c19de2b341340340563a78eb24d4",
-      "effect_on_target": "It interprets the literal 0 as the real additive identity.",
-      "paper_match": "This is standard numeral infrastructure with no discrepancy from the paper.",
+      "name": "HighamBench.p08Lemma43InitialVector",
+      "interpretation": "The vector u*C10*|A|*|x|.",
+      "effect_on_target": "It is multiplied by the m-th propagation power in the first term.",
+      "paper_match": "It matches the iteration-dependent initial vector on PDF p. 827.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "abs",
-      "reuse_sha256": "47d8fbad79913ded62d049d8aba1c2b66e36e59e6bd2ff5b7e4d95a04f5a1e23",
-      "effect_on_target": "It is the usual scalar real absolute value, applied separately to q_0, q_{m+1}, and each d_m component.",
-      "paper_match": "Scalar absolute value matches the paper's componentwise |q| convention. Applying it to an arbitrary affine disturbance d is target-specific and does not identify q as the paper's exact residual.",
+      "name": "HighamBench.p08Lemma43Propagation",
+      "interpretation": "The matrix u*C8*|A|*|Ainv|.",
+      "effect_on_target": "It is raised to m in the geometric term.",
+      "paper_match": "It exactly matches the ordered propagation factor on PDF p. 827.",
       "status": "pass"
     },
     {
       "id": "D023",
-      "name": "instAddNat",
-      "interpretation": "The standard addition operation on natural numbers.",
-      "effect_on_target": "It interprets every m+1 in hStep, the conclusion, the exponent, and the summation range.",
-      "paper_match": "The outer q_{m+1} notation agrees with Lemma 4.3, but hStep is asserted already at m=0 and therefore requires q_0. The paper defines q_1 first and uses its displayed q_{m+1}-from-q_m recurrence only after that base case.",
-      "status": "fail"
+      "name": "HighamBench.p08Lemma43StationaryVector",
+      "interpretation": "The sum n*ubar*|A|*|x|+u^2*C11*|A|*|x|+ubar*u*C12*|A|*|Ainv|*|A|*|x|.",
+      "effect_on_target": "It supplies the three non-geometric terms.",
+      "paper_match": "All coefficients and noncommutative factor orders match PDF p. 827.",
+      "status": "pass"
     },
     {
       "id": "D024",
-      "name": "instHAdd",
-      "reuse_sha256": "c0a6a190798a2d1228f4f0bb8bbb90617d8a43deedb47658cd8c8c23ddcd20b1",
-      "effect_on_target": "It merely exposes the existing homogeneous natural and real additions through HAdd notation.",
-      "paper_match": "This is Lean typeclass plumbing with no independent paper-level mathematical content.",
-      "status": "not-applicable"
+      "name": "HighamBench.p08MatMul",
+      "interpretation": "Finite matrix multiplication using a sum over Fin n.",
+      "effect_on_target": "It gives the ordered products in kappa, constants, propagation, and the bound.",
+      "paper_match": "It is standard n by n matrix multiplication as used in the paper.",
+      "status": "pass"
     },
     {
       "id": "D025",
-      "name": "instOfNatNat",
-      "interpretation": "For each natural literal n, this instance interprets that literal as the same natural number n.",
-      "effect_on_target": "It gives the natural literals 0 and 1 used for q_0 and m+1.",
-      "paper_match": "The literal meanings are standard; the target's problematic use of q_0 is an indexing choice rather than a numeral-definition error.",
+      "name": "HighamBench.p08MatPow",
+      "interpretation": "Natural matrix power with B^0=I and B^(k+1)=B*B^k.",
+      "effect_on_target": "It makes the propagation exponent exactly m, including identity at m=0.",
+      "paper_match": "It matches the matrix power in Lemma 4.3.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "Fin.fintype",
-      "reuse_sha256": "8748c06d8f32dae7dc9ed5034f3e3bc762877aeb2dc067994584210549352429",
-      "effect_on_target": "It permits exact finite enumeration of all n component indices in matrix products.",
-      "paper_match": "Summing over all n components matches ordinary finite matrix multiplication in the paper.",
+      "name": "HighamBench.p08MatVec",
+      "interpretation": "Finite matrix-vector multiplication.",
+      "effect_on_target": "It interprets each matrix expression as a componentwise vector bound.",
+      "paper_match": "It matches ordinary matrix-vector action in the paper.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "Finset.univ",
-      "reuse_sha256": "a061e3638d96f1a31253c20b9ffa2eeb99276b1fe129ade0c88026022301173d",
-      "effect_on_target": "It is the set of every Fin n index used in each matrix product and matrix-vector product.",
-      "paper_match": "This matches summation over every matrix inner index in the paper's finite-dimensional products.",
+      "name": "HighamBench.p08VecAdd",
+      "interpretation": "Pointwise vector addition.",
+      "effect_on_target": "It combines bound terms.",
+      "paper_match": "It matches addition of the four componentwise terms.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "HMul.hMul",
-      "reuse_sha256": "e466488d860a5eb0bad0d927ad481fd0e7c12861a111ea87d5f95c1bcd3dedf5",
-      "effect_on_target": "It is ordinary real multiplication inside matrix products and matrix-vector products.",
-      "paper_match": "Ordinary real multiplication matches the paper's matrix and scalar products.",
+      "name": "HighamBench.p08VecSub",
+      "interpretation": "Pointwise exact real subtraction.",
+      "effect_on_target": "It defines x_m-d_m and A(...)-b in q.",
+      "paper_match": "It matches the exact mathematical subtractions in q_(m+1).",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "Nat.below",
-      "interpretation": "For a motive over naturals, Nat.below t packages the motive values at all smaller natural indices for course-of-values recursion.",
-      "effect_on_target": "It supplies the previously computed matrix power needed by the recursive definition of p08MatPow.",
-      "paper_match": "This is an implementation device for recursion and has no independent paper-level counterpart.",
-      "status": "not-applicable"
+      "name": "HighamBench.P08ColumnPivotedSolveCertificate",
+      "interpretation": "A type indexed by A,rhs,C1,u whose constructor records only an output, equation, and componentwise backward-error bound.",
+      "effect_on_target": "It is the sole semantic condition on every purported column-pivoted solve.",
+      "paper_match": "PDF pp. 818 and 823-824 require Gaussian elimination with column pivoting; this records its error consequence but not the algorithm or pivot rule.",
+      "status": "fail"
     },
     {
       "id": "D030",
-      "name": "Nat.brecOn",
-      "interpretation": "Course-of-values recursion on a natural number, returning the motive value at the requested index from a function given all smaller values.",
-      "effect_on_target": "It computes p08MatPow at the requested exponent and exposes the preceding power in the successor case.",
-      "paper_match": "The paper assumes ordinary matrix powers rather than a recursion implementation; this mechanism adds no mathematical discrepancy.",
-      "status": "not-applicable"
-    },
-    {
-      "id": "D031",
-      "name": "Nat.succ",
-      "interpretation": "The natural-number successor constructor, sending k to k+1.",
-      "effect_on_target": "It distinguishes the successor case in the matrix-power recursion.",
-      "paper_match": "Successor indexing has the standard meaning used for finite iteration counts.",
+      "name": "HighamBench.P08ColumnPivotedSolveCertificate.output",
+      "interpretation": "Projection of a certified solve's output vector.",
+      "effect_on_target": "It defines x_1 and each d_m.",
+      "paper_match": "It has the intended role of a computed solve result, conditional on the certificate abstraction.",
       "status": "pass"
     },
     {
+      "id": "D031",
+      "name": "HighamBench.P08IterativeRefinementRun.C1",
+      "interpretation": "Projection of the nonnegative solve-bound matrix C1.",
+      "effect_on_target": "It feeds solve certificates and every later constant.",
+      "paper_match": "The paper requires C1 bounded by a function of n only; this projection is per-run and has no uniform restriction.",
+      "status": "fail"
+    },
+    {
       "id": "D032",
-      "name": "Real.instMul",
-      "reuse_sha256": "aaec7186856181049f8d1bbf0329e413c2961f70d69ca90a7251c23b1b81760e",
-      "effect_on_target": "It supplies ordinary real multiplication for all entries in p08MatMul and p08MatVec.",
-      "paper_match": "This agrees with the paper's real matrix multiplication.",
+      "name": "HighamBench.P08IterativeRefinementRun.exactSolution",
+      "interpretation": "Projection of the exact real solution vector.",
+      "effect_on_target": "It supplies x in all bound vectors and prior errors.",
+      "paper_match": "With D017's A*x=b and inverse equations it matches x=A^-1*b.",
       "status": "pass"
     },
     {
       "id": "D033",
-      "name": "Unit",
-      "interpretation": "The singleton type PUnit, used only as the argument type of the zero branch in a generated natural-number matcher.",
-      "effect_on_target": "It carries no data and only enables the p08MatPow zero branch.",
-      "paper_match": "There is no independent paper concept corresponding to this recursion artifact.",
-      "status": "not-applicable"
+      "name": "HighamBench.P08IterativeRefinementRun.precision",
+      "interpretation": "Projection of the residual precision case.",
+      "effect_on_target": "It chooses ubar, c3, c4, and conversion behavior.",
+      "paper_match": "It matches the paper's s.p.r.a./d.p.r.a. choice.",
+      "status": "pass"
     },
     {
       "id": "D034",
-      "name": "instHMul",
-      "reuse_sha256": "c666e179ff29ed06a9928f75c04d36f7c4c995624033bd602aed763680d886fd",
-      "effect_on_target": "It exposes homogeneous real multiplication through HMul notation.",
-      "paper_match": "This is typeclass plumbing and has no independent paper-level content.",
-      "status": "not-applicable"
+      "name": "HighamBench.P08Lemma43Constants.C10",
+      "interpretation": "Projection of matrix C10.",
+      "effect_on_target": "It occurs in the first bound term.",
+      "paper_match": "Its defining equation in D018 matches PDF p. 827.",
+      "status": "pass"
     },
     {
       "id": "D035",
-      "name": "Nat.casesOn",
-      "interpretation": "The standard eliminator for naturals, choosing a zero result or a successor result according to the input.",
-      "effect_on_target": "It implements the generated zero/successor matcher used by p08MatPow.",
-      "paper_match": "This recursion mechanism has no independent counterpart in the paper.",
-      "status": "not-applicable"
+      "name": "HighamBench.P08Lemma43Constants.C11",
+      "interpretation": "Projection of matrix C11.",
+      "effect_on_target": "It occurs in the u^2 stationary term.",
+      "paper_match": "Its resolvent definition in D018 matches PDF p. 827.",
+      "status": "pass"
     },
     {
       "id": "D036",
-      "name": "One.toOfNat1",
-      "reuse_sha256": "bb5b876a912f9c6a4aabbb5754b837aadf9b7c265c27370e71b7fa93ce9e46e6",
-      "effect_on_target": "It interprets the literal 1 in the real identity matrix as the multiplicative identity.",
-      "paper_match": "This gives the standard identity-matrix diagonal entry used by ordinary matrix powers.",
+      "name": "HighamBench.P08Lemma43Constants.C12",
+      "interpretation": "Projection of matrix C12.",
+      "effect_on_target": "It occurs in the ubar*u stationary term.",
+      "paper_match": "Its resolvent definition and factor order in D018 match PDF p. 827.",
       "status": "pass"
     },
     {
       "id": "D037",
-      "name": "Real.instOne",
-      "reuse_sha256": "2531b1f004d9b2976d427df59a82a9232c1cab3fde82db6151d75632c5114a83",
-      "effect_on_target": "It supplies the real multiplicative identity in p08IdMatrix.",
-      "paper_match": "The standard real one matches the paper's identity matrix.",
+      "name": "HighamBench.P08Lemma43Constants.C6",
+      "interpretation": "Projection of matrix C6.",
+      "effect_on_target": "It enters C8,C9,C10 and the prior Lemma 4.1 estimate.",
+      "paper_match": "Its definition in D018 matches PDF p. 826.",
       "status": "pass"
     },
     {
       "id": "D038",
-      "name": "Unit.unit",
-      "interpretation": "The unique inhabitant of the singleton Unit type.",
-      "effect_on_target": "It invokes the zero branch of the generated matrix-power matcher and contributes no mathematical data.",
-      "paper_match": "This is a Lean implementation artifact with no paper-level counterpart.",
-      "status": "not-applicable"
+      "name": "HighamBench.P08Lemma43Constants.C7",
+      "interpretation": "Projection of matrix C7.",
+      "effect_on_target": "It enters C10,C12 and the last prior and stationary terms.",
+      "paper_match": "Its definition in D018 matches PDF p. 826.",
+      "status": "pass"
     },
     {
       "id": "D039",
-      "name": "instDecidableEqFin",
-      "interpretation": "A decision procedure for equality of Fin n values, obtained by comparing their underlying natural values.",
-      "effect_on_target": "It lets p08IdMatrix decide whether i=j when choosing a diagonal or off-diagonal entry.",
-      "paper_match": "Decidability is implementation detail; it realizes the ordinary identity matrix without changing its paper-level meaning.",
-      "status": "not-applicable"
+      "name": "HighamBench.P08Lemma43Constants.C8",
+      "interpretation": "Projection of matrix C8.",
+      "effect_on_target": "It determines c8 and the propagation and resolvent matrices.",
+      "paper_match": "Its definition C8=(1+u)C6 matches PDF p. 827.",
+      "status": "pass"
     },
     {
       "id": "D040",
+      "name": "HighamBench.P08Lemma43Constants.c1",
+      "interpretation": "Projection of scalar c1.",
+      "effect_on_target": "It is the smallness coefficient required by packaged Lemma 4.1.",
+      "paper_match": "Its definition as ||C1|| in D018 matches PDF p. 823.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "HighamBench.P08ResidualPrecision",
+      "interpretation": "A two-case type with single and double constructors.",
+      "effect_on_target": "It controls residual roundoff and conversion branches.",
+      "paper_match": "It represents the two residual-accumulation variants on pp. 824-825.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "HighamBench.P08ScalarArithmeticModel",
+      "interpretation": "A package for unit roundoff and rounded add, subtract, multiply, and divide operations; D063 supplies the laws.",
+      "effect_on_target": "It defines working and residual arithmetic used by traces and updates.",
+      "paper_match": "It is an admissible explicit relative-error model for the paper's assumed well-defined operations.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "HighamBench.P08ScalarArithmeticModel.flSub",
+      "interpretation": "Projection of rounded subtraction.",
+      "effect_on_target": "It defines updates and the subtraction-last residual step.",
+      "paper_match": "It matches the paper's rounded subtraction operations.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "HighamBench.P08ScalarArithmeticModel.unitRoundoff",
+      "interpretation": "Projection of an arithmetic model's error bound.",
+      "effect_on_target": "It is constrained to u for working arithmetic and ubar for residual arithmetic.",
+      "paper_match": "It matches the paper's u and u^2 precision bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "HighamBench.P08SubtractionLastResidualTrace",
+      "interpretation": "A trace type for rounded A*x, final subtraction of b, and optional conversion.",
+      "effect_on_target": "It links computedResidual_(m+1) to the selected residual model.",
+      "paper_match": "It represents the subtraction-last s.p.r.a./d.p.r.a. rule on PDF p. 824.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "HighamBench.P08SubtractionLastResidualTrace.output",
+      "interpretation": "Projection of the trace's final residual vector.",
+      "effect_on_target": "It is identified with computedResidual_(m+1).",
+      "paper_match": "It matches r_m as the computed residual, distinct from q.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "HighamBench.p08AbsAction",
+      "interpretation": "The vector with entries sum_j |A_ij|*|x_j|.",
+      "effect_on_target": "It realizes |A|*|x| without requiring x nonnegative.",
+      "paper_match": "It matches componentwise absolute matrix action.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "HighamBench.p08AbsVec",
+      "interpretation": "Pointwise real absolute value of a vector.",
+      "effect_on_target": "It realizes every |x| and |q| vector.",
+      "paper_match": "It matches the paper's componentwise vector absolute value.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "HighamBench.p08BasisVector",
+      "interpretation": "The standard basis vector e_j.",
+      "effect_on_target": "It appears only in the norm-normalization law.",
+      "paper_match": "It matches ||e_j||=1 on PDF p. 819.",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "HighamBench.p08IdMatrix",
+      "interpretation": "The Kronecker-delta identity matrix.",
+      "effect_on_target": "It supplies matrix powers and resolvent definitions.",
+      "paper_match": "It matches the conformable identity I in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "HighamBench.p08Lemma43c3",
+      "interpretation": "The precision-dependent explicit scalar c3 formula.",
+      "effect_on_target": "It determines c5,C7,C9,C10 and prior terms.",
+      "paper_match": "Both single and double formulas match the Note on PDF p. 826.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "HighamBench.p08Lemma43c4",
+      "interpretation": "The precision-dependent scalar 0 for single and 1+u for double.",
+      "effect_on_target": "It contributes to c5.",
+      "paper_match": "It matches the Note on PDF p. 826.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "HighamBench.p08MatAdd",
+      "interpretation": "Entrywise matrix addition.",
+      "effect_on_target": "It builds C6,C9,C10,C12 and fixed-point equations.",
+      "paper_match": "It is standard matrix addition used by the paper's formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "HighamBench.p08MatNonnegative",
+      "interpretation": "The proposition that every matrix entry is at least zero.",
+      "effect_on_target": "It enforces positivity needed for componentwise monotonic bounds.",
+      "paper_match": "It matches the paper's nonnegative anonymous matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "HighamBench.p08MatPow.match_1",
+      "interpretation": "A generated Nat case matcher selecting zero and successor branches.",
+      "effect_on_target": "It only implements p08MatPow's recursion.",
+      "paper_match": "It has no independent paper-level content beyond the reviewed power definition.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D056",
+      "name": "HighamBench.p08MatScale",
+      "interpretation": "Entrywise scalar multiplication of a matrix.",
+      "effect_on_target": "It represents uC8, nC8, and other scalar-matrix products.",
+      "paper_match": "It matches scalar multiplication in the paper's formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "HighamBench.p08MatSub",
+      "interpretation": "Entrywise matrix subtraction.",
+      "effect_on_target": "It forms I-uC1|A||Ainv| and I-uC8|A||Ainv|.",
+      "paper_match": "It matches the paper's resolvent matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "HighamBench.p08ResidualUnitRoundoff",
+      "interpretation": "The function returning u in the single case and u^2 in the double case.",
+      "effect_on_target": "It is ubar throughout constants, traces, prior bounds, and stationary terms.",
+      "paper_match": "It exactly matches bar-u on PDF p. 825.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "HighamBench.p08VecScale",
+      "interpretation": "Pointwise scalar multiplication of a vector.",
+      "effect_on_target": "It applies u, n*ubar, u^2, and ubar*u coefficients.",
+      "paper_match": "It matches scalar-vector multiplication in the componentwise bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "HighamBench.P08ColumnPivotedSolveCertificate.mk",
+      "interpretation": "Constructor asserting A*output=rhs+error and |error|<=u*C1*|A|*|output|.",
+      "effect_on_target": "It replaces actual initial and correction executions by the basic solve-error property.",
+      "paper_match": "The inequality matches PDF p. 823, but it does not assert Gaussian elimination or column pivoting and does not make C1 n-only.",
+      "status": "fail"
+    },
+    {
+      "id": "D061",
+      "name": "HighamBench.P08ResidualPrecision.double",
+      "interpretation": "The double-residual-accumulation case.",
+      "effect_on_target": "It selects ubar=u^2 and conversion to working precision.",
+      "paper_match": "It matches d.p.r.a. on pp. 824-825.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "HighamBench.P08ResidualPrecision.single",
+      "interpretation": "The single-residual-accumulation case.",
+      "effect_on_target": "It selects ubar=u and no conversion.",
+      "paper_match": "It matches s.p.r.a. on pp. 824-825.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "HighamBench.P08ScalarArithmeticModel.mk",
+      "interpretation": "Constructor requiring nonnegative unit roundoff and standard relative-error equations for four total real operations.",
+      "effect_on_target": "It supplies the numerical assumptions used by residual traces and updates.",
+      "paper_match": "It instantiates the paper's relative-error assumptions for well-defined operations, though globally over reals rather than only encountered floating values.",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "HighamBench.P08SubtractionLastResidualTrace.mk",
+      "interpretation": "Constructor computing rounded dot products, subtracting b last, and converting only in the double case.",
+      "effect_on_target": "It fixes residual evaluation order and output semantics.",
+      "paper_match": "It matches the subtraction-last and double-then-convert paragraph on PDF p. 824.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "HighamBench.p08ResidualUnitRoundoff.match_1",
+      "interpretation": "Case matcher mapping single and double precision to their respective branches.",
+      "effect_on_target": "It implements ubar and conversion case distinctions.",
+      "paper_match": "Its branch meanings match s.p.r.a. and d.p.r.a.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "HighamBench.P08ResidualPrecision.casesOn",
+      "interpretation": "Generated eliminator for the two precision cases.",
+      "effect_on_target": "It only dispatches the reviewed single/double semantics.",
+      "paper_match": "It has no additional paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D067",
+      "name": "HighamBench.p08RoundedDot",
+      "interpretation": "A recursively accumulated dot product using rounded multiplication and addition.",
+      "effect_on_target": "It computes each component of the pre-subtraction residual product A*x.",
+      "paper_match": "It is an admissible concrete accumulation order; the paper fixes subtraction last but not a complete IEEE evaluation order.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "HighamBench.P08ResidualPrecision.rec",
+      "interpretation": "Generated recursor for the precision enumeration.",
+      "effect_on_target": "It supports case-defined quantities only.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D069",
+      "name": "HighamBench.P08ScalarArithmeticModel.flAdd",
+      "interpretation": "Projection of rounded addition.",
+      "effect_on_target": "It is used by recursive dot-product accumulation.",
+      "paper_match": "It matches floating addition under the paper's relative-error model.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "HighamBench.P08ScalarArithmeticModel.flMul",
+      "interpretation": "Projection of rounded multiplication.",
+      "effect_on_target": "It is used for each dot-product product.",
+      "paper_match": "It matches floating multiplication under the paper's relative-error model.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "HighamBench.recursiveSum",
+      "interpretation": "A left-recursive finite sum, returning the sole term for length one and rounded additions thereafter.",
+      "effect_on_target": "It fixes the accumulation order in p08RoundedDot.",
+      "paper_match": "It is consistent with a sequential residual accumulation allowed by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D072",
+      "name": "HighamBench.recursiveSum._proof_1",
+      "interpretation": "An internal index-bound theorem used to construct Fin values in recursiveSum.",
+      "effect_on_target": "It affects only type correctness.",
+      "paper_match": "There is no independent paper-level proposition to compare.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D073",
+      "name": "HighamBench.recursiveSum.match_1",
+      "interpretation": "A generated Nat case matcher for recursiveSum.",
+      "effect_on_target": "It only implements zero/successor recursion.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D074",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Typeclass projection supplying real division.",
+      "effect_on_target": "It interprets 1/2 and scalar quotients in constant formulas.",
+      "paper_match": "It is ordinary real division and adds no numerical-analysis content.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "Fin",
+      "interpretation": "The finite index type with n elements.",
+      "effect_on_target": "It types vector components and matrix rows and columns.",
+      "paper_match": "It faithfully represents the paper's n-dimensional indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D076",
+      "name": "HDiv.hDiv",
+      "interpretation": "Generic division resolved to real division here.",
+      "effect_on_target": "It forms 1/2 and constant-formula quotients.",
+      "paper_match": "It matches ordinary scalar division.",
+      "status": "pass"
+    },
+    {
+      "id": "D077",
+      "name": "HMul.hMul",
+      "interpretation": "Generic multiplication resolved to real multiplication here.",
+      "effect_on_target": "It forms scalar products in hsmall and bounds.",
+      "paper_match": "It matches ordinary real multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "LE.le",
+      "interpretation": "Generic non-strict order resolved to real <= here.",
+      "effect_on_target": "It is the relation in smallness and componentwise bounds.",
+      "paper_match": "It matches every non-strict inequality in Lemma 4.3.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "Nat",
+      "interpretation": "The natural-number type.",
+      "effect_on_target": "It types n and m.",
+      "paper_match": "With n positivity stored in run, it matches positive dimension and m=0,1,2,... .",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "interpretation": "Numeral-instance proof used to elaborate literal 2.",
+      "effect_on_target": "It only constructs a real numeral.",
+      "paper_match": "There is no independent paper concept.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D081",
+      "name": "Nat.instNeZeroSucc",
+      "interpretation": "Numeral-instance proof supporting positive successor numerals.",
+      "effect_on_target": "It only supports numeral elaboration.",
+      "paper_match": "There is no independent paper concept.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D082",
+      "name": "OfNat.ofNat",
+      "interpretation": "Generic numeral projection.",
+      "effect_on_target": "It elaborates numeric literals in the dossier.",
+      "paper_match": "It adds no meaning beyond ordinary numerals.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D083",
+      "name": "One.toOfNat1",
+      "interpretation": "Instance turning one into numeral 1.",
+      "effect_on_target": "It helps elaborate 1/2 and identity entries.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D084",
+      "name": "Real",
+      "interpretation": "The type of mathematical real numbers.",
+      "effect_on_target": "It is the scalar domain for matrices, vectors, parameters, and inequalities.",
+      "paper_match": "The paper models floating-point values as a subset of reals and analytical quantities as real.",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "Real.instAddGroup",
+      "interpretation": "The standard additive-group structure on reals.",
+      "effect_on_target": "It supports subtraction, negation, and absolute value.",
+      "paper_match": "It contributes ordinary real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The standard division and inversion structure on reals.",
+      "effect_on_target": "It interprets scalar divisions in formulas.",
+      "paper_match": "It contributes ordinary real division.",
+      "status": "pass"
+    },
+    {
+      "id": "D087",
+      "name": "Real.instLE",
+      "interpretation": "The standard non-strict order on reals.",
+      "effect_on_target": "It interprets scalar and componentwise inequalities.",
+      "paper_match": "It matches the paper's real order.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "Real.instMul",
+      "interpretation": "The standard multiplication on reals.",
+      "effect_on_target": "It interprets scalar products.",
+      "paper_match": "It matches ordinary multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D089",
+      "name": "Real.instNatCast",
+      "interpretation": "The standard embedding of naturals into reals.",
+      "effect_on_target": "It interprets n in n*u and n*ubar.",
+      "paper_match": "It matches the paper's scalar coefficient n.",
+      "status": "pass"
+    },
+    {
+      "id": "D090",
+      "name": "Real.instOne",
+      "interpretation": "The standard real number one.",
+      "effect_on_target": "It appears in 1/2, 1+u, and identities.",
+      "paper_match": "It matches the paper's numeral 1.",
+      "status": "pass"
+    },
+    {
+      "id": "D091",
+      "name": "Real.lattice",
+      "interpretation": "The lattice structure used to define real absolute value.",
+      "effect_on_target": "It supports scalar abs.",
+      "paper_match": "It adds no nonstandard semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D092",
+      "name": "abs",
+      "interpretation": "Real absolute value, max(a,-a).",
+      "effect_on_target": "It gives each component |q_(m+1)| and entrywise absolute values.",
+      "paper_match": "It matches the paper's scalar and componentwise absolute value.",
+      "status": "pass"
+    },
+    {
+      "id": "D093",
+      "name": "instHDiv",
+      "interpretation": "Adapter from homogeneous division to HDiv.",
+      "effect_on_target": "It is elaboration plumbing for real division.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D094",
+      "name": "instHMul",
+      "interpretation": "Adapter from homogeneous multiplication to HMul.",
+      "effect_on_target": "It is elaboration plumbing for real multiplication.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D095",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "Instance interpreting numerals at least two through NatCast.",
+      "effect_on_target": "It elaborates 2 and 100 as reals.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D096",
+      "name": "instOfNatNat",
+      "interpretation": "The canonical numeral instance for Nat.",
+      "effect_on_target": "It elaborates natural-number literals.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D097",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "It packages simultaneous model equations and error bounds.",
+      "paper_match": "It is standard logic with no altered semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D098",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "It states inverse, system, initialization, trace, and constant-definition equations.",
+      "paper_match": "It is ordinary exact equality as required by the analytical definitions.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "Exists",
+      "interpretation": "Existential quantification.",
+      "effect_on_target": "It witnesses per-operation relative errors delta.",
+      "paper_match": "It matches the standard existence form of the roundoff model.",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "Fin.fintype",
+      "interpretation": "The finite enumeration instance for Fin n.",
+      "effect_on_target": "It enables sums over all n indices.",
+      "paper_match": "It faithfully supports finite-dimensional matrix operations.",
+      "status": "pass"
+    },
+    {
+      "id": "D101",
+      "name": "Finset.sum",
+      "interpretation": "Finite commutative sum over matrix and vector indices.",
+      "effect_on_target": "It defines exact matrix products and actions.",
+      "paper_match": "It matches ordinary finite sums in real linear algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D102",
+      "name": "Finset.univ",
+      "interpretation": "The set of every Fin n index.",
+      "effect_on_target": "It makes products and actions range over all components.",
+      "paper_match": "It matches full n-dimensional products.",
+      "status": "pass"
+    },
+    {
+      "id": "D103",
+      "name": "HAdd.hAdd",
+      "interpretation": "Generic addition resolved to real or natural addition.",
+      "effect_on_target": "It forms bound sums, m+1, and scalar formulas.",
+      "paper_match": "It matches ordinary addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D104",
+      "name": "HPow.hPow",
+      "interpretation": "Generic power resolved to natural powers of reals.",
+      "effect_on_target": "It forms u^2 and scalar powers in c3.",
+      "paper_match": "It matches the paper's exact exponents.",
+      "status": "pass"
+    },
+    {
+      "id": "D105",
+      "name": "HSub.hSub",
+      "interpretation": "Generic subtraction resolved to real subtraction.",
+      "effect_on_target": "It forms exact differences and constant formulas.",
+      "paper_match": "It matches ordinary subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D106",
+      "name": "Iff",
+      "interpretation": "Logical equivalence.",
+      "effect_on_target": "It states norm zero iff the vector is zero.",
+      "paper_match": "It is standard logic supporting the norm axioms.",
+      "status": "pass"
+    },
+    {
+      "id": "D107",
+      "name": "LT.lt",
+      "interpretation": "Generic strict order resolved to Nat or Real order.",
+      "effect_on_target": "It expresses n>0, u>0, and nonzero divisor conditions.",
+      "paper_match": "It matches the paper's positivity assumptions.",
+      "status": "pass"
+    },
+    {
+      "id": "D108",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-power instance for a monoid, here the reals.",
+      "effect_on_target": "It interprets u^2 and (1+u)^n.",
+      "paper_match": "It matches ordinary natural exponentiation.",
+      "status": "pass"
+    },
+    {
+      "id": "D109",
+      "name": "Nat.below",
+      "interpretation": "Auxiliary type carrying course-of-values recursion results.",
+      "effect_on_target": "It only implements p08MatPow and recursiveSum.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D110",
+      "name": "Nat.brecOn",
+      "interpretation": "Course-of-values recursion on naturals.",
+      "effect_on_target": "It only implements matrix powers and recursive sums.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D111",
+      "name": "Nat.cast",
+      "interpretation": "Generic natural-to-scalar cast.",
+      "effect_on_target": "It converts n to a real coefficient.",
+      "paper_match": "It matches use of n as a real multiplier.",
+      "status": "pass"
+    },
+    {
+      "id": "D112",
+      "name": "Nat.succ",
+      "interpretation": "Natural successor.",
+      "effect_on_target": "It represents successor indices such as m+1.",
+      "paper_match": "It matches the paper's index offset.",
+      "status": "pass"
+    },
+    {
+      "id": "D113",
+      "name": "Neg.neg",
+      "interpretation": "Generic negation resolved to real negation.",
+      "effect_on_target": "It defines r_0=-b and d_0=-x_1.",
+      "paper_match": "It matches the paper's initialization convention.",
+      "status": "pass"
+    },
+    {
+      "id": "D114",
+      "name": "Pi.instZero",
+      "interpretation": "Pointwise zero for functions.",
+      "effect_on_target": "It defines the zero-vector iterate x_0.",
+      "paper_match": "It matches x_0=0.",
+      "status": "pass"
+    },
+    {
+      "id": "D115",
+      "name": "Real.instAdd",
+      "interpretation": "The standard real addition operation.",
+      "effect_on_target": "It interprets scalar and entrywise sums.",
+      "paper_match": "It matches ordinary real addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D116",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The real additive commutative monoid used by finite sums.",
+      "effect_on_target": "It makes matrix products and actions exact finite sums.",
+      "paper_match": "It matches standard real summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D117",
+      "name": "Real.instLT",
+      "interpretation": "The standard strict order on reals.",
+      "effect_on_target": "It interprets u>0.",
+      "paper_match": "It matches the paper's positive u.",
+      "status": "pass"
+    },
+    {
+      "id": "D118",
+      "name": "Real.instMonoid",
+      "interpretation": "The real multiplicative monoid.",
+      "effect_on_target": "It supports natural powers.",
+      "paper_match": "It matches standard real multiplication and powers.",
+      "status": "pass"
+    },
+    {
+      "id": "D119",
+      "name": "Real.instNeg",
+      "interpretation": "The standard real negation operation.",
+      "effect_on_target": "It interprets negative initial residual and correction.",
+      "paper_match": "It matches the paper's minus signs.",
+      "status": "pass"
+    },
+    {
+      "id": "D120",
+      "name": "Real.instSub",
+      "interpretation": "The standard real subtraction operation.",
+      "effect_on_target": "It interprets exact vector and matrix differences.",
+      "paper_match": "It matches mathematical subtraction in q and resolvents.",
+      "status": "pass"
+    },
+    {
+      "id": "D121",
+      "name": "Real.instZero",
+      "interpretation": "The standard real zero.",
+      "effect_on_target": "It defines zero vectors, matrices, and nonnegativity bounds.",
+      "paper_match": "It matches the paper's zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D122",
+      "name": "Unit",
+      "interpretation": "A one-element auxiliary type used by generated matchers.",
+      "effect_on_target": "It has no effect on mathematical content.",
+      "paper_match": "There is no paper-level counterpart.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D123",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Instance turning zero into numeral 0.",
+      "effect_on_target": "It elaborates zero literals.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D124",
+      "name": "instAddNat",
+      "interpretation": "The standard addition operation on naturals.",
+      "effect_on_target": "It interprets m+1 and n+1 in recursion.",
+      "paper_match": "It matches ordinary index addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D125",
+      "name": "instHAdd",
+      "interpretation": "Adapter from homogeneous addition to HAdd.",
+      "effect_on_target": "It is elaboration plumbing.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D126",
+      "name": "instHPow",
+      "interpretation": "Adapter from Pow to HPow.",
+      "effect_on_target": "It is elaboration plumbing for natural powers.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D127",
+      "name": "instHSub",
+      "interpretation": "Adapter from homogeneous subtraction to HSub.",
+      "effect_on_target": "It is elaboration plumbing.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D128",
+      "name": "instLTNat",
+      "interpretation": "The standard strict order on naturals.",
+      "effect_on_target": "It interprets n>0 and Fin bounds.",
+      "paper_match": "It matches positive dimensions and valid indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D129",
+      "name": "Nat.casesOn",
+      "interpretation": "The zero/successor eliminator for naturals.",
+      "effect_on_target": "It only implements generated recursive definitions.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D130",
+      "name": "Unit.unit",
+      "interpretation": "The unique inhabitant used by generated matchers.",
+      "effect_on_target": "It has no mathematical effect.",
+      "paper_match": "There is no paper-level counterpart.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D131",
+      "name": "instDecidableEqFin",
+      "interpretation": "Decidable equality for finite indices.",
+      "effect_on_target": "It selects diagonal identity and basis entries.",
+      "paper_match": "It has no independent numerical-analysis content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D132",
       "name": "ite",
-      "interpretation": "A decidable if-then-else expression: it returns the first branch when its proposition is true and the second otherwise.",
-      "effect_on_target": "It defines identity-matrix entries as 1 on the diagonal and 0 off the diagonal.",
-      "paper_match": "This faithfully implements the ordinary identity matrix used in matrix powers.",
+      "interpretation": "If-then-else on a decidable proposition.",
+      "effect_on_target": "It defines identity and basis entries as 1 at the selected index and 0 otherwise.",
+      "paper_match": "That use matches standard identity and basis definitions.",
+      "status": "pass"
+    },
+    {
+      "id": "D133",
+      "name": "Ne",
+      "interpretation": "Inequality defined as negated equality.",
+      "effect_on_target": "It supplies the nonzero denominator premise for modeled division.",
+      "paper_match": "It matches the requirement that division have a nonzero divisor.",
+      "status": "pass"
+    },
+    {
+      "id": "D134",
+      "name": "Fin.castSucc",
+      "interpretation": "Embedding Fin n into Fin (n+1).",
+      "effect_on_target": "It preserves earlier indices in recursive summation.",
+      "paper_match": "It only implements the selected finite accumulation order.",
+      "status": "pass"
+    },
+    {
+      "id": "D135",
+      "name": "Fin.last",
+      "interpretation": "The final index of Fin (n+1).",
+      "effect_on_target": "It selects the last summand in recursiveSum.",
+      "paper_match": "It only implements the selected finite accumulation order.",
+      "status": "pass"
+    },
+    {
+      "id": "D136",
+      "name": "Fin.mk",
+      "interpretation": "Constructor pairing a natural value with an in-range proof.",
+      "effect_on_target": "It constructs valid component indices.",
+      "paper_match": "It faithfully enforces finite dimensions.",
+      "status": "pass"
+    },
+    {
+      "id": "D137",
+      "name": "Not",
+      "interpretation": "Logical negation.",
+      "effect_on_target": "It defines non-equality and false branches in dependent conditionals.",
+      "paper_match": "It is standard logic with no paper-specific effect.",
+      "status": "pass"
+    },
+    {
+      "id": "D138",
+      "name": "dite",
+      "interpretation": "Dependent if-then-else.",
+      "effect_on_target": "It implements proof-dependent recursion branches.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D139",
+      "name": "instDecidableEqNat",
+      "interpretation": "Decidable equality on naturals.",
+      "effect_on_target": "It selects the n=0 branch in recursiveSum.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D140",
+      "name": "Nat.zero",
+      "interpretation": "The natural number zero.",
+      "effect_on_target": "It is the base index for m, powers, sums, and x_0.",
+      "paper_match": "It matches the paper's m=0 base case and initialization.",
       "status": "pass"
     }
   ],
@@ -330,124 +1130,124 @@
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The SHA-256-verified PDF is Skeel, 'Iterative Refinement Implies Numerical Stability for Gaussian Elimination.' PDF p.12/printed p.827 contains Lemma 4.3, its definitions of C8-C12, the displayed recurrence, and the induction proof; pp.9-11/printed pp.824-826 provide the algorithm and Lemmas 4.1-4.2.",
-      "lean_evidence": "The reviewed declaration is exactly p08_t3_componentwise_affine_recurrence from the hash-verified direct review packet b4334fc81066015a6dd45f92082aa02961f73a807ad01a2a94cdcce29027d507.",
-      "reasoning": "The cited version, passage, and surrounding source results are the correct comparison target."
+      "paper_evidence": "The inspected published PDF has SHA-256 f520066b46331dcbf25e51345c5ff5ffffe8fcad573d7f46e68834f83b3a2c54; printed pp. 818-827 contain the cited conventions, Lemmas 4.1-4.3, and Lemma 4.3's Note and proof.",
+      "lean_evidence": "The supplied dossier identifies target P08-T3 and gives dossier SHA-256 38c87221fa8c220de3326c72a138763a34713d5ec0150278f7be1d329b6bcc09.",
+      "reasoning": "The selected source is the correct journal passage and surrounding context."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Section 2 and Section 4 fix a positive dimension n, a real nonsingular n-by-n A, b, x=A^-1b, positive u, the algorithmic residual sequence q, and source-defined C_i/c_i quantities.",
-      "lean_evidence": "Lean quantifies n:Nat with no positivity condition, an arbitrary nonnegative B, arbitrary real sequences q and d, and an arbitrary nonnegative vector s. It has no A, b, x, u, ubar, C_i, c_i, or precision variant.",
-      "reasoning": "Finite real components are represented correctly, but the principal binders and their intended meanings are replaced rather than preserved."
+      "status": "pass",
+      "paper_evidence": "PDF pp. 818 and 824-827 use positive dimension n, real n-vectors and n by n matrices, and m=0,1,2,... .",
+      "lean_evidence": "D017 requires 0<n; matrices have type Fin n -> Fin n -> Real, vectors have type Fin n -> Real, m is Nat, and i is Fin n.",
+      "reasoning": "Dimensions, scalar domain, components, and iteration indices agree; the syntactic n=0 branch has no run inhabitant."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "After the problem, arithmetic model, constants, algorithm, and smallness condition are fixed, Lemma 4.3 states the bound for every m=0,1,2,...; q_1 is supplied by the base case and later q values are algorithm-determined.",
-      "lean_evidence": "Lean universally quantifies arbitrary B,q,d,s first, assumes an exact affine step for every m including m=0, and then concludes its generic bound for every m and i.",
-      "reasoning": "The universal iteration quantifier remains, but the source-determined residuals and coefficients become arbitrary universally quantified data subject to a different recurrence, changing scope and dependence."
+      "paper_evidence": "Lemma 4.3 fixes the system, algorithm, precision, norm, and anonymous constants in the section, then quantifies m=0,1,2,... .",
+      "lean_evidence": "The target universally quantifies run, norm, constants, and prior:P08Lemma43PriorBounds before m and i.",
+      "reasoning": "Constant dependence is typed correctly, but the proposition has broader abstract-run scope and an additional prior-bound premise."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "Lemma 4.3 assumes c8 u kappa(A^-1)<=1/2 and inherits A nonsingular, u>0, n u<=.01, an admissible absolute monotone norm, well-defined floating-point operations, column-pivoted solves, and the s.p.r.a./d.p.r.a. residual model.",
-      "lean_evidence": "The only assumptions are B>=0, s>=0, |d_m|<=s, and q_{m+1}=Bq_m+d_m.",
-      "reasoning": "Nearly all paper hypotheses are absent, while the exact affine equality and symmetric disturbance bound are extra restrictive hypotheses not established by the paper."
+      "paper_evidence": "PDF p. 827 states Lemma 4.3 under c8*u*kappa(A^-1)<=1/2 with standing positivity, small roundoff, nonsingularity, and algorithm context; Lemmas 4.1 and 4.2 are already proved.",
+      "lean_evidence": "D017 encodes most standing assumptions and hsmall is exact, but the target additionally assumes D006/D019 prior bounds and a constants package carrying resolvent and nonnegativity witnesses.",
+      "reasoning": "Treating preceding estimates and constant-existence facts as supplied hypotheses makes the formal proposition conditionally weaker."
     },
     {
       "id": "S05",
       "status": "fail",
-      "paper_evidence": "Lemma 4.3 concludes |q_{m+1}| <= B_p^m u C10|A||x| + n ubar|A||x| + u^2 C11|A||x| + ubar u C12|A||A^-1||A||x|, where B_p=u C8|A||A^-1|.",
-      "lean_evidence": "Lean concludes |q_{m+1}| <= B^(m+1)|q_0| + sum_{k=0}^m B^k s.",
-      "reasoning": "The source's four terms, coefficients, parameter dependence, and base majorant are not present; a generic recurrence-unrolling bound is substituted."
+      "paper_evidence": "PDF p. 827 states the four-term inequality and says C8,c8,C9,C10,C11,C12 are bounded above by functions of n only; p. 823 gives the same convention for C1.",
+      "lean_evidence": "D009 and D021-D023 preserve all four terms, but D004/D018 and D031 contain no uniform bounded-by-n-only property.",
+      "reasoning": "The numerical inequality is complete, but the paper's essential n-only constant dependence is omitted."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The paper defines q_{m+1}=A(x_m-d_m)-b, B_p=uC8|A||A^-1|, C8=(1+u)C6, C9=C6+c3I, C10 explicitly, and C11/C12 through (I-B_p)^-1.",
-      "lean_evidence": "The imported operators unfold to ordinary finite matrix multiplication, matrix-vector multiplication, matrix powers, finite ranges, sums, real order, and scalar absolute value, but B,q,d,s are left arbitrary and no source C_i or resolvent definition occurs.",
-      "reasoning": "The Lean operators themselves are clear, but the nontrivial source-defined quantities that give Lemma 4.3 its meaning are omitted."
+      "status": "pass",
+      "paper_evidence": "PDF pp. 819-827 define absolute norms, kappa, q, ubar, C2,C6,C7,C8,C9,C10,C11,C12, matrix products, and powers.",
+      "lean_evidence": "D007-D011, D018-D028, and D047-D059 explicitly unfold these operators and formulas.",
+      "reasoning": "The nontrivial operators in the displayed inequality are explicit with correct meanings and factor order."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "PDF pp.9-10/printed pp.824-825 distinguishes the computed residual r_m from q_{m+1}=A(x_m-d_m)-b, the exact residual of the unrounded corrected value, while x_m and d_m arise from rounded computations.",
-      "lean_evidence": "q is an arbitrary real sequence and d an arbitrary affine disturbance. No computed iterates, corrections, computed residual r, exact residual definition, or rounding operation appears.",
-      "reasoning": "The target does not preserve the paper's exact-versus-computed distinction or even identify q as a residual."
+      "status": "pass",
+      "paper_evidence": "PDF pp. 824-825 distinguish computed residual r_m, rounded update x_(m+1), and exact q_(m+1)=A(x_m-d_m)-b.",
+      "lean_evidence": "D007 uses exact real operations, while D017 and D045-D046 separately model computed residual traces and rounded updates.",
+      "reasoning": "The exact residual is not conflated with r_m or A*x_(m+1)-b."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Section 4 links Lemma 4.3 to column-pivoted iterative refinement, x_0=0, r_0=-b, d_0=-x_1, subtraction-last residual computation, and the s.p.r.a./d.p.r.a. execution choices.",
-      "lean_evidence": "No algorithm, A,b,x, iterates x_m, computed residuals r_m, solves, pivots, or precision choices occur in the target.",
-      "reasoning": "The proposition is an abstract recurrence lemma and has no linkage to the selected algorithm or execution model."
+      "paper_evidence": "PDF pp. 818 and 824 require initial and correction solves to use Gaussian elimination with column pivoting, choosing the largest next-column element.",
+      "lean_evidence": "D029/D060 require only A*output=rhs+error and a componentwise error certificate; no elimination operations, pivot comparisons, or pivot trace occur.",
+      "reasoning": "The solve-bound consequence is represented, but semantic linkage to the paper's algorithm is absent."
     },
     {
       "id": "S09",
-      "status": "fail",
-      "paper_evidence": "The residual conclusion is componentwise, while c8=||C8|| and kappa(A^-1)=|||A||A^-1||| use a chosen absolute monotone norm normalized by ||e_i||=1.",
-      "lean_evidence": "Lean uses scalar abs and pointwise <=, so its displayed bound is componentwise, but it contains no norm, c8, kappa, norm choice, normalization, or smallness condition.",
-      "reasoning": "The componentwise aspect matches, but the norm-dependent hypothesis essential to the paper result is missing."
+      "status": "pass",
+      "paper_evidence": "PDF p. 819 fixes a normalized absolute norm and matrix extension; p. 820 defines kappa(A^-1)=|| |A| |A^-1| ||; p. 827 leaves the conclusion componentwise.",
+      "lean_evidence": "D011 encodes the absolute normalized induced norm, D008 uses it for kappa, and the target quantifies i:Fin n with scalar abs and <=.",
+      "reasoning": "Normwise and componentwise assertions are correctly separated, with no squared-norm substitution."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "The paper bounds q_{m+1} with propagation power m; q_1 is the m=0 base. The recurrence uses C8, C9, and C7, while the closed bound uses C10, C11, and C12 and the three explicit non-iteration terms.",
-      "lean_evidence": "Lean uses q_0, power m+1, an hStep asserted at m=0, and sum_{k in range(m+1)} B^k s. None of C7-C12, u, ubar, n's coefficient, or the paper's multiplication factors is present.",
-      "reasoning": "The base index, exponent, accumulation form, coefficients, and parameter dependence all differ from Lemma 4.3."
+      "paper_evidence": "PDF pp. 823 and 826-827 give exact definitions and require anonymous constants bounded by functions of n only; Lemma 4.3 uses q_(m+1) and exponent m.",
+      "lean_evidence": "D018 and D021-D025 preserve every coefficient, definition, product order, and index offset, but constants and C1 are selected per run without a uniform n-only bound.",
+      "reasoning": "Formulas and indexing pass; parameter dependence fails."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "The standing model has positive unit roundoff u, n u<=.01, well-defined floating-point operations, double-precision relative error u^2 for d.p.r.a., conversion error u, and subtraction performed last; ubar=u or u^2 by variant.",
-      "lean_evidence": "The proposition is entirely over exact Real operations and contains no precision, rounding, exceptional-value, underflow/overflow, conversion, or residual-accumulation assumptions.",
-      "reasoning": "The source floating-point model and its variant-sensitive ubar are absent."
+      "status": "pass",
+      "paper_evidence": "PDF pp. 818 and 824 assume relative roundoff u, n*u<=0.01, well-defined operations, double residual roundoff u^2, conversion error u, and subtraction last.",
+      "lean_evidence": "D017, D041-D046, D058, and D063-D071 encode working roundoff u, residual roundoff u or u^2, conversion, rounded dots, subtraction last, and total operations.",
+      "reasoning": "The formal total-real model is a concrete idealized instance of the paper's well-defined-operation model and adds no IEEE-specific semantics."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The proof provides a one-sided componentwise inequality |q_{m+1}|<=B_p|q_m|+s_p, and Lemma 4.3 provides a one-sided componentwise upper bound.",
-      "lean_evidence": "Although the final relation is <=, hStep requires exact signed equality q_{m+1}=Bq_m+d_m together with the two-sided bound |d_m|<=s.",
-      "reasoning": "A source magnitude inequality does not imply this exact affine model. For example in one component, q_m=1, q_{m+1}=-1, B=1, and s=0 satisfies |q_{m+1}|<=B|q_m|+s but forces d=-2, violating |d|<=s."
+      "paper_evidence": "The paper asserts Lemma 4.3 for its algorithm under the c8 smallness condition and retains n-only anonymous constants.",
+      "lean_evidence": "The Lean target has the same <= direction but assumes prior estimates, omits uniform constant bounds, and ranges over certificate-based runs not restricted semantically to column pivoting.",
+      "reasoning": "The scalar inequality direction is correct, but the whole proposition is neither equivalent nor uniformly stronger or weaker."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "Lemma 4.3 is specifically a finite componentwise bound on the exact residual q_{m+1}; the paper separately names computed residual r_m and later derives forward-error and normwise residual consequences.",
-      "lean_evidence": "q has no residual definition and can be any affine-recursive state sequence.",
-      "reasoning": "The selected exact-residual error notion is replaced by an untyped abstract state bound."
+      "status": "pass",
+      "paper_evidence": "PDF p. 825 calls q_(m+1) the exact residual of x_m-d_m, and Lemma 4.3 is a residual bound.",
+      "lean_evidence": "D007 is exactly that residual and the target bounds its componentwise absolute value.",
+      "reasoning": "No forward, backward, mixed, or stability notion is substituted."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "Lemma 4.3 has no big-O remainder and explicitly retains the u-scaled propagated term, n ubar term, u^2 term, and ubar u term, with different orders for s.p.r.a. and d.p.r.a.",
-      "lean_evidence": "The target has no u or ubar and collapses every forcing contribution into an arbitrary vector s and its finite geometric sum.",
-      "reasoning": "The paper's explicit higher-order structure and precision-dependent orders are not represented."
+      "status": "pass",
+      "paper_evidence": "PDF p. 827 gives a finite four-term inequality with explicit u^2 and ubar*u terms and no O-notation.",
+      "lean_evidence": "D021-D023 preserve the geometric term and all stationary terms exactly.",
+      "reasoning": "No higher-order term is dropped or replaced by asymptotic notation."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The selected result concerns every finite iteration of a real positive-dimensional nonsingular linear system under a specific iterative-refinement algorithm and conditioning threshold.",
-      "lean_evidence": "Lean is more general in arbitrary B,q,d,s and even n=0, but more restrictive in demanding an exact signed affine recurrence; it cannot be instantiated from the paper's one-sided magnitude recurrence without an additional unproved condition.",
-      "reasoning": "This is neither a faithful specialization nor a genuine generalization retaining Lemma 4.3; it is a different abstract theorem."
+      "paper_evidence": "The paper result is for finite real systems executed by the stated column-pivoted refinement algorithm and either residual-precision variant.",
+      "lean_evidence": "Lean correctly uses finite real matrices and both precision cases, but generalizes solves to arbitrary certificates while specializing arithmetic to globally total relative-error operations and adding prior-bound witnesses.",
+      "reasoning": "These scope changes are substantive and are not an equivalent specialization."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper assumptions have ordinary examples, such as a nonsingular identity system at sufficiently small positive u with well-defined arithmetic, and Lemma 4.3 addresses nonzero residual/error data as well as zero cases.",
-      "lean_evidence": "The target hypotheses are satisfiable nontrivially: for n=1, B=1/2, q_m=(1/2)^m, d_m=0, and s=0, hStep holds and the propagated bound is attained. The n=0 instance is vacuous, but the universal theorem also has nonempty nontrivial instances.",
-      "reasoning": "The Lean theorem is not vacuous; its failure is semantic substitution, not inconsistency or a conclusion true only from an impossible premise."
+      "paper_evidence": "The paper permits n=1, sufficiently small u>0, nonsingular A, and well-defined arithmetic.",
+      "lean_evidence": "D017/D063 admit exact arithmetic with delta=0; n=1, small u, A=Ainv=I, b=x=0, zero solve errors and iterates give a run, with nonnegative invertible resolvents and valid prior bounds.",
+      "reasoning": "The premises are satisfiable and the theorem is not vacuous; n=0 is excluded by the run constructor."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "The Lean theorem requires an exact signed affine recurrence with a uniformly bounded additive disturbance, which the paper's one-sided recurrence for residual magnitudes does not supply. It also yields B^(m+1)|q_0| plus a finite sum, not Lemma 4.3's q_1-based B_p^m term and explicit C10/C11/C12 four-term formula, and it contains no algorithmic or floating-point premises from which those quantities could be recovered."
+      "reasoning": "Although the Lean bound expands to the paper's four terms for paper-like instances, it does not establish that C1 and C8-C12 are bounded uniformly by functions of n, and its solve certificate does not establish column-pivoted Gaussian-elimination provenance. It therefore does not entail the full paper result."
     },
     "paper_implies_lean": {
       "verdict": "no",
-      "reasoning": "Lemma 4.3 concerns one source-defined residual sequence and one propagation matrix under its numerical-algorithm hypotheses. It neither quantifies arbitrary nonnegative B, arbitrary affine sequences q,d, and arbitrary majorants s nor proves the target's universal exact-recurrence unrolling statement."
+      "reasoning": "The paper asserts Lemma 4.3 for its specified column-pivoted refinement algorithm. It does not assert the Lean theorem's universal claim over arbitrary certificate-based runs and preselected prior-bound and constant packages with globally total arithmetic operations."
     }
   },
   "classification": "not-faithful-different",
@@ -455,41 +1255,33 @@
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "selected-result-substitution",
-      "paper_evidence": "PDF p.12/printed p.827, Lemma 4.3, is a finite componentwise bound for the algorithmic exact residual q_{m+1}, with a propagated initial term and three explicit source-defined accumulation terms.",
-      "lean_evidence": "The target is a universal algebraic lemma for arbitrary B,q,d,s satisfying q_{m+1}=Bq_m+d_m.",
-      "impact": "The Lean proposition does not state the selected paper result; it states a generic recurrence-unrolling fact that could at most be one auxiliary ingredient in a different reconstruction."
+      "severity": "major",
+      "category": "constant-parameter-dependence",
+      "paper_evidence": "PDF p. 823 defines anonymous C_j/c_j as bounded above by functions of n only, and the Note after Lemma 4.3 on p. 827 repeats this for C8,c8,C9,C10,C11,C12.",
+      "lean_evidence": "P08IterativeRefinementRun.C1 and P08Lemma43Constants are selected separately for each run; neither D017 nor D018 contains a uniform bound or independence from A,b, and the target concludes only the inequality.",
+      "impact": "The formal result can use data-dependent or arbitrarily large constants, losing a central quantitative assertion needed for the paper's stability interpretation."
     },
     {
       "severity": "major",
-      "category": "recurrence-semantics",
-      "paper_evidence": "The proof of Lemma 4.3 gives only |q_{m+1}|<=uC8|A||A^-1||q_m| plus nonnegative forcing terms.",
-      "lean_evidence": "hStep is the exact signed equality q_{m+1}=Bq_m+d_m and hd requires |d_m|<=s.",
-      "impact": "The paper recurrence does not establish the Lean hypotheses, so the abstract theorem cannot be directly instantiated with the paper residuals."
+      "category": "algorithm-linkage",
+      "paper_evidence": "PDF pp. 818 and 824 specify Gaussian elimination with column pivoting for x1 and every d_m, with the next-column maximum used as pivot.",
+      "lean_evidence": "D060 defines P08ColumnPivotedSolveCertificate solely by a residual equation and error bound; no field records Gaussian elimination or pivot selection.",
+      "impact": "The formal theorem ranges over a different abstract class of solvers and cannot itself certify the paper's algorithmic provenance."
     },
     {
       "severity": "major",
-      "category": "constants-and-indexing",
-      "paper_evidence": "Lemma 4.3 starts with q_1 at m=0, uses power m, and concludes with uC10, n ubar, u^2C11, and ubar u C12 terms.",
-      "lean_evidence": "The target starts from q_0, uses power m+1, and replaces all forcing structure by sum_{k=0}^m B^k s.",
-      "impact": "The selected finite-m formula, base case, coefficient identities, and precision-sensitive orders are absent."
+      "category": "additional-premises",
+      "paper_evidence": "Lemma 4.3 on PDF p. 827 states only the c8 smallness assumption in addition to standing context; Lemmas 4.1 and 4.2 are preceding proved lemmas used in its proof.",
+      "lean_evidence": "The target explicitly requires prior:P08Lemma43PriorBounds, whose D019 constructor assumes the Lemma 4.1 and Lemma 4.2 inequalities, and also requires constants carrying resolvent and nonnegativity witnesses.",
+      "impact": "The target is conditional on substantial intermediate results rather than stating Lemma 4.3 under the paper's own hypotheses, so these added hypotheses cannot count as theorem strength."
     },
     {
-      "severity": "major",
-      "category": "algorithm-and-model-omission",
-      "paper_evidence": "Sections 2 and 4 require a nonsingular real system, column-pivoted iterative refinement, residual subtraction last, s.p.r.a. or d.p.r.a., roundoff assumptions, and c8u kappa(A^-1)<=1/2.",
-      "lean_evidence": "No A,b,x,u,ubar, norm, kappa, pivoting, floating-point operation, precision variant, or smallness condition appears.",
-      "impact": "The theorem is disconnected from the execution model and conditioning regime that give the paper claim its numerical meaning."
-    },
-    {
-      "severity": "major",
-      "category": "error-notion",
-      "paper_evidence": "The paper defines q_{m+1}=A(x_m-d_m)-b as an exact residual and explicitly distinguishes it from the computed residual r_m.",
-      "lean_evidence": "q is an arbitrary real sequence and d is merely an affine disturbance.",
-      "impact": "The formal statement does not measure the paper's residual or preserve the exact/computed distinction."
+      "severity": "note",
+      "category": "core-formula",
+      "paper_evidence": "PDF p. 827 gives |q_(m+1)| <= (uC8|A||A^-1|)^m uC10|A||x| + n*ubar|A||x| + u^2 C11|A||x| + ubar*u C12|A||A^-1||A||x|.",
+      "lean_evidence": "D007, D009, and D021-D025 expand to the same exact residual, exponent, four coefficients, and ordered matrix products componentwise.",
+      "impact": "The displayed finite inequality itself, including precision cases and m=0 indexing, is faithfully represented."
     }
   ],
-  "rationale": "The dependency meanings are clear and the target is a valid, nonvacuous finite-dimensional affine-recurrence bound. Direct comparison with the verified Lemma 4.3 passage shows that it replaces the paper's algorithmic exact-residual theorem by a different abstract proposition: the source's one-sided magnitude recurrence cannot supply hStep, the q_1 base and power m become q_0 and power m+1, the C10/C11/C12 four-term bound is replaced by a generic finite sum, and all numerical-model and conditioning hypotheses disappear. Neither proposition represents or entails the other in the required paper-to-Lean sense, so the result is not-faithful-different."
+  "rationale": "Direct inspection of printed pp. 818-827 confirms that the exact residual, smallness condition, precision cases, componentwise relation, four-term finite bound, algebraic constant formulas, and indices are rendered correctly. The proposition nevertheless changes the result in three independent ways: it assumes the prior Lemma 4.1/4.2 bounds, abstracts column-pivoted Gaussian elimination to an error certificate, and omits the paper's uniform bounded-by-n-only meaning of the anonymous constants. These create mixed weakening and generalization, so neither implication holds and the fixed classification is not-faithful-different."
 }
-
