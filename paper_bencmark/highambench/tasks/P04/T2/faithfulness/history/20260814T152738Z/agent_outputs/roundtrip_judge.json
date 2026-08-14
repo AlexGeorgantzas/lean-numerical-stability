@@ -1,0 +1,172 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P04-T2",
+  "paper_sha256": "7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862",
+  "blind_translation_sha256": "4d71a7009e4cb29d27a134339ecf7b18c5220d2507c972f2cd793f26b9d8fbf8",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The inspected source is the 2020 SIAM Journal on Scientific Computing version, volume 42, issue 3, pages C124-C141. The relevant result is Theorem 3.2 and equation (3.6) on printed page C130, following Algorithm 3.1 and equations (3.3)-(3.5).",
+      "translation_evidence": "The translated coefficient 2*uLow + uLow^2 + Gamma*(1+uLow)^2, with Gamma equal to two gamma factors plus their product, matches the algebraic coefficient displayed in equation (3.6), rather than the comparison bound (3.7).",
+      "reasoning": "The source version and target passage are correctly selected."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Theorem 3.2 binds A in R^(m x n), B in R^(n x t), C=AB, and the matrix computed by Algorithm 3.1. Its algorithmic context includes block dimensions b1, b, b2 and q=n/b.",
+      "translation_evidence": "All mathematical data except q and n are real scalars. There are no matrices, dimensions m or t, block size b, outer block dimensions, or matrix index sets; q and n are unrelated natural numbers.",
+      "reasoning": "The matrix and block-dimensional binders have been replaced by a scalar multiplication problem, and the intended meanings of q and n are lost."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The converted operands, conversion perturbations, arithmetic error, and computed matrix arise dependently from applying conversion and Algorithm 3.1 to A and B.",
+      "translation_evidence": "Delta_a, Delta_b, e, and computed are independently universally quantified scalars, with their intended dependence represented only by conditional bounds and an equality.",
+      "reasoning": "Universalizing arbitrary error variables produces an abstract error-propagation lemma rather than preserving the witness dependence of the paper's algorithmic computation."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper requires q=n/b in the block partition, compatible integral block counts, the standard floating-point model, positive gamma denominators, conversion without underflow or overflow, and the effective FMA rounding parameter determined by equation (3.3).",
+      "translation_evidence": "The translation assumes nonnegative scalar parameters, q*uFma<1, n*u<1, two perturbation bounds, an assumed bound on e, and an exact scalar decomposition. It permits q and n to be zero and unrelated and has no block, conversion, or exceptional-value assumptions.",
+      "reasoning": "Some algebraic bounds are present, but essential dimensional, execution-model, and exceptional-value hypotheses are absent."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Equation (3.6) concludes a componentwise inequality between m-by-t matrices, with right-hand side given by the ordinary matrix product |A||B|.",
+      "translation_evidence": "The sole conclusion is a scalar inequality bounded by the scalar product |a|*|b|.",
+      "reasoning": "The numerical coefficient is retained, but the theorem's full matrix conclusion for every output entry is not expressed."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The paper defines gamma_k(v)=kv/(1-kv), combines the two gamma factors by addition and multiplication, uses componentwise absolute value, and retains ordinary products and squares.",
+      "translation_evidence": "The dependency ledger unfolds both local gamma definitions, equality, order, real arithmetic, natural casts, powers, division, and scalar absolute value. Gamma is correctly expanded as gamma_q(uFma)+gamma_n(u)+gamma_q(uFma)*gamma_n(u).",
+      "reasoning": "The operators actually present in the translated proposition are fully interpreted. The missing matrix and effective-precision definitions are separate semantic omissions covered by S09-S11."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes exact C=AB, converted operands A+Delta A and B+Delta B, arithmetic error Delta C, and computed C-hat.",
+      "translation_evidence": "The translation distinguishes exact a*b, perturbed factors a+Delta_a and b+Delta_b, arithmetic error e, and computed=(a+Delta_a)*(b+Delta_b)+e.",
+      "reasoning": "Within its scalar setting, the translation does not conflate exact, perturbed, error, and computed quantities."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Theorem 3.2 explicitly applies to Algorithm 3.1: optional conversion to u_low, q chained block FMAs for each output block, and optional final rounding.",
+      "translation_evidence": "The translation explicitly records that there is no fused multiply-add operation, floating-point computation, or execution semantics and treats computed as an arbitrary real satisfying an equality.",
+      "reasoning": "The proposition has no linkage to Algorithm 3.1 or to any execution producing computed."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "Absolute values in equation (3.6) are componentwise matrix absolute values, and |A||B| is an ordinary matrix product; no matrix norm is used.",
+      "translation_evidence": "Every absolute value is ordinary scalar real absolute value, and the right-hand side contains scalar multiplication |a|*|b|.",
+      "reasoning": "The translation does not confuse a norm with an absolute value, but it removes the paper's componentwise matrix semantics and matrix-product majorant."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The coefficient is 2*u_low+u_low^2+(tilde_gamma_q^FMA+bar_gamma_n+tilde_gamma_q^FMA*bar_gamma_n)*(1+u_low)^2, where q=n/b, n is the inner matrix dimension, and the accented gamma parameters have precision-specific meanings.",
+      "translation_evidence": "The same algebraic coefficient is present, but q and n are arbitrary unrelated naturals, b is absent, and uFma and u are arbitrary reals without the paper's accented-precision relationships.",
+      "reasoning": "The constants are algebraically correct, but their indexing and precision dependence are not preserved."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The analysis uses the standard relative-error floating-point model, conversion by fl_low without underflow or overflow, block-FMA internal and output precisions, optional final rounding, and the prioritized effective parameter in equation (3.3).",
+      "translation_evidence": "The proposition is entirely over real arithmetic and contains no rounding operation, floating-point format, rounding mode, representability condition, block FMA, underflow, overflow, infinity, or NaN semantics.",
+      "reasoning": "The numerical model underlying Theorem 3.2 has been replaced by assumed real inequalities."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper asserts the final inequality for the output produced by Algorithm 3.1 after deriving the arithmetic-error estimate from the chained-FMA analysis.",
+      "translation_evidence": "Although the local equality and inequality directions match, the arithmetic-error estimate is an antecedent imposed on arbitrary e and computed rather than a consequence of an algorithm.",
+      "reasoning": "Moving the central algorithmic error guarantee into an assumed scalar premise changes the logical strength and subject of the result."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Equation (3.6) is a componentwise absolute forward-error bound comparing computed C-hat with exact C=AB.",
+      "translation_evidence": "The conclusion bounds the absolute forward error |computed-a*b| and does not present it as backward error, residual error, or entrywise relative error.",
+      "reasoning": "The forward-error notion is preserved within the translated scalar setting, despite the dimensional mismatch."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Equation (3.6) retains u_low^2, the product of the two gamma factors, and the complete square (1+u_low)^2; it is not a first-order or big-O statement.",
+      "translation_evidence": "The conclusion retains uLow^2, gamma_q(uFma)*gamma_n(u), and Gamma*(1+uLow)^2 exactly, with no first-order truncation or big-O replacement.",
+      "reasoning": "All higher-order terms displayed in Theorem 3.2 are faithfully retained. Loss of the surrounding double-rounding modeling caveat is accounted for under the algorithm and floating-point checks."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "Theorem 3.2 is a result for arbitrary compatible real matrices and block matrix multiplication, with each output entry formed from an n-term inner product.",
+      "translation_evidence": "The translation is solely a scalar two-factor multiplication lemma, while still allowing arbitrary unrelated q and n.",
+      "reasoning": "This is not a faithful scalar instance of the paper theorem: a genuine one-dimensional inner-product specialization would constrain the dimensions and operation counts, whereas this proposition detaches them."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's assumptions describe ordinary finite block-matrix computations for sufficiently small unit roundoffs and compatible positive dimensions.",
+      "translation_evidence": "The hypotheses are satisfiable, for example with zero error parameters, zero perturbations, e=0, and computed=a*b; nonzero-error instances also exist when the strict gamma restrictions hold.",
+      "reasoning": "The scalar implication is nonvacuous and follows from substantive perturbation inequalities, even though it is not the paper's algorithmic matrix theorem."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "A scalar perturbation lemma with unrelated q and n cannot establish the componentwise matrix bound for Algorithm 3.1, its n-term inner products, block structure, conversions, or floating-point execution."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper controls only matrices computed by Algorithm 3.1 with q=n/b and precision-dependent gamma parameters. It does not assert the translated universally quantified scalar implication for arbitrary q, n, errors, and computed values."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "dimension-and-result-domain",
+      "paper_evidence": "Theorem 3.2 concerns A in R^(m x n), B in R^(n x t), and a componentwise m-by-t matrix inequality with majorant |A||B|.",
+      "translation_evidence": "The translation contains only real scalars a and b and the scalar majorant |a|*|b|.",
+      "impact": "The translated proposition cannot express or entail the paper's matrix-product result."
+    },
+    {
+      "severity": "critical",
+      "category": "algorithm-and-floating-point-model",
+      "paper_evidence": "The result is explicitly for conversion followed by chained block FMAs in Algorithm 3.1 under a standard rounding model and no underflow or overflow.",
+      "translation_evidence": "No algorithm, FMA, conversion operation, rounding, format, or exceptional-value model is represented.",
+      "impact": "The theorem has been changed from an error analysis of a specified computation into an abstract real-algebra implication."
+    },
+    {
+      "severity": "major",
+      "category": "index-and-precision-dependence",
+      "paper_evidence": "The paper requires q=n/b and gives distinct meanings to the inner-arithmetic, FMA-output, final-output, and effective rounding parameters.",
+      "translation_evidence": "q and n are arbitrary unrelated naturals, while uFma and u are arbitrary nonnegative reals with no link to block dimensions or equation (3.3).",
+      "impact": "The coefficient has the correct shape but no longer has the parameter dependence asserted by the paper."
+    },
+    {
+      "severity": "major",
+      "category": "quantifier-and-premise-shift",
+      "paper_evidence": "Conversion and arithmetic errors arise from executing the rounding operations and block-FMA chain.",
+      "translation_evidence": "Delta_a, Delta_b, e, and computed are arbitrary universally quantified scalars, and the arithmetic-error guarantee is assumed.",
+      "impact": "The central computational claim is moved into a premise and therefore is not formalized."
+    },
+    {
+      "severity": "note",
+      "category": "preserved-coefficient",
+      "paper_evidence": "Equation (3.6) retains 2*u_low, u_low^2, the two gamma factors, their product, and (1+u_low)^2.",
+      "translation_evidence": "The scalar conclusion retains the same complete algebraic coefficient without a first-order truncation.",
+      "impact": "The coefficient-propagation algebra is accurate, but this does not repair the missing matrix, algorithmic, and floating-point semantics."
+    }
+  ],
+  "rationale": "The blind translation accurately captures a scalar perturbation inequality and preserves every displayed term in the coefficient of equation (3.6). It does not translate Theorem 3.2 itself: matrices and dimensions are absent, q and n lose their indexing relationship, the block-FMA algorithm and rounding model disappear, and the algorithmic arithmetic-error result is assumed as a scalar premise. Neither statement entails the other under the intended binder correspondence, so the result is not-faithful-different."
+}

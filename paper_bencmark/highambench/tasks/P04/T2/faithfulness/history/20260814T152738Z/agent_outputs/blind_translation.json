@@ -1,0 +1,333 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "96abb59a7a2442174b606f193289f5d5c707fc22ba390a60dd00ae71a96c4955",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For a real v and natural number k, LocalDef001(v,k) is the proposition (k cast to the reals) times v is strictly less than 1.",
+      "effect_on_target": "It makes the hypotheses hq and hn exactly q*uFma < 1 and n*u < 1, ensuring the denominators in the two gamma quantities are positive and nonzero.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For real uFma,u and natural q,n, LocalDef002 is gamma_q(uFma) + gamma_n(u) + gamma_q(uFma)*gamma_n(u), where each gamma is defined by D003.",
+      "effect_on_target": "This is the coefficient Gamma that bounds e and contributes Gamma*(1+uLow)^2 to the final relative-error coefficient.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "For a real v and natural k, LocalDef003(v,k) is gamma_k(v) = (k*v)/(1-k*v), with k canonically cast to a real.",
+      "effect_on_target": "It defines gamma_q(uFma) and gamma_n(u), the two rational error factors from which Gamma is formed.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "Eq",
+      "meaning": "Eq is propositional equality: Eq x y asserts that x and y are equal.",
+      "effect_on_target": "It requires computed to equal exactly (a+Delta_a)*(b+Delta_b)+e.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "HAdd.hAdd",
+      "meaning": "This operation selects the addition function from an HAdd instance.",
+      "effect_on_target": "With the supplied real and natural-number instances, it denotes ordinary addition in all sums, including perturbed inputs, Gamma, and the final coefficient.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "HMul.hMul",
+      "meaning": "This operation selects the multiplication function from an HMul instance.",
+      "effect_on_target": "With the real multiplication instance, it denotes every product in the hypotheses, definitions, computed value, and conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "HPow.hPow",
+      "meaning": "This operation selects exponentiation from an HPow instance.",
+      "effect_on_target": "With real base and natural exponent, it gives the squares uLow^2 and (1+uLow)^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "HSub.hSub",
+      "meaning": "This operation selects subtraction from an HSub instance.",
+      "effect_on_target": "It denotes computed-a*b in the final absolute error and 1-k*v in each gamma denominator.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LE.le",
+      "meaning": "This operation selects the less-than-or-equal relation from an LE instance.",
+      "effect_on_target": "With the real order instance, it supplies all nonnegativity assumptions, perturbation bounds, the bound on e, and the final inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Monoid.toNatPow",
+      "meaning": "A monoid supplies natural-number exponentiation x^k by repeated monoid multiplication.",
+      "effect_on_target": "For the multiplicative monoid of reals, it interprets exponent 2 as ordinary real squaring.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "Nat",
+      "meaning": "Nat is the type of natural numbers, including zero.",
+      "effect_on_target": "The parameters q and n are arbitrary natural numbers; natural numbers also provide the exponent 2 and numeral elaboration.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "meaning": "For a nonzero natural number k, this theorem establishes that k+1 is at least two.",
+      "effect_on_target": "Applied to k=1, it supplies the proof needed to interpret the numeral 2 as a real through natural casting; it adds no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Nat.instNeZeroSucc",
+      "meaning": "For every natural k, this theorem states that k+1 is nonzero.",
+      "effect_on_target": "Applied to k=0, it proves that 1 is nonzero as part of the typeclass construction for the real numeral 2; it adds no hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "OfNat.ofNat",
+      "meaning": "This operation interprets a natural-number literal in a type having the corresponding OfNat instance.",
+      "effect_on_target": "It interprets the literals 0, 1, and 2 as real or natural numbers at their occurrences.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "One.toOfNat1",
+      "meaning": "A type with a distinguished one obtains an interpretation of the numeral 1 as that element.",
+      "effect_on_target": "It makes the real literal 1 the ordinary real number one in denominators, strict bounds, and (1+uLow)^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Real",
+      "meaning": "Real is the type of real numbers.",
+      "effect_on_target": "All parameters except q and n, and all arithmetic quantities in the proposition, are real scalars.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instAdd",
+      "meaning": "This is the addition operation on real numbers.",
+      "effect_on_target": "It makes HAdd on real arguments ordinary real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instAddGroup",
+      "meaning": "This supplies the additive-group structure of the real numbers, including zero, addition, negation, subtraction laws, and their algebraic properties.",
+      "effect_on_target": "It supplies the negation structure used by scalar absolute value and supports the standard additive interpretation of the target.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instLE",
+      "meaning": "This is the standard less-than-or-equal relation on real numbers.",
+      "effect_on_target": "It gives the ordinary real ordering used in every non-strict inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instMonoid",
+      "meaning": "This supplies the multiplicative monoid structure of the real numbers.",
+      "effect_on_target": "It provides natural powers of real numbers, specifically the two squares in the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instMul",
+      "meaning": "This is the multiplication operation on real numbers.",
+      "effect_on_target": "It makes HMul on real arguments ordinary real multiplication throughout the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instNatCast",
+      "meaning": "This is the canonical embedding of natural numbers into the real numbers.",
+      "effect_on_target": "It interprets q and n as real factors in q*uFma and n*u and also supports the real literal 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instOne",
+      "meaning": "This supplies the multiplicative identity 1 of the real numbers.",
+      "effect_on_target": "It supplies the real constant 1 used in the gamma restrictions, gamma denominators, and (1+uLow)^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instSub",
+      "meaning": "Real subtraction is defined as addition of the additive inverse.",
+      "effect_on_target": "It interprets 1-k*v in gamma denominators and computed-a*b in the final error.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "Real.instZero",
+      "meaning": "This supplies the additive identity 0 of the real numbers.",
+      "effect_on_target": "It supplies the real zero in the three nonnegativity hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Real.lattice",
+      "meaning": "This supplies the lattice order structure of the real numbers, including maximum and minimum.",
+      "effect_on_target": "Together with the additive-group structure, it permits absolute value to be defined as max(x,-x).",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Zero.toOfNat0",
+      "meaning": "A type with a distinguished zero obtains an interpretation of the numeral 0 as that element.",
+      "effect_on_target": "It makes each real literal 0 in the nonnegativity assumptions the ordinary real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "abs",
+      "meaning": "For an ordered additive group, abs(x) is max(x,-x); on the reals this is ordinary scalar absolute value.",
+      "effect_on_target": "It measures the magnitudes of Delta_a, Delta_b, e, a, b, perturbed inputs, and the final scalar error.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "instHAdd",
+      "meaning": "An ordinary homogeneous Add operation induces an HAdd operation with the same function.",
+      "effect_on_target": "It routes every homogeneous real addition to Real.instAdd and the relevant natural-number additions to natural addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "instHMul",
+      "meaning": "An ordinary homogeneous Mul operation induces an HMul operation with the same function.",
+      "effect_on_target": "It routes every homogeneous real product to Real.instMul.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "instHPow",
+      "meaning": "A Pow operation induces the corresponding homogeneous HPow operation.",
+      "effect_on_target": "It routes real-to-natural exponentiation to the monoid natural-power operation used for exponent 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "instHSub",
+      "meaning": "An ordinary homogeneous Sub operation induces an HSub operation with the same function.",
+      "effect_on_target": "It routes real subtraction expressions to Real.instSub.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "For a natural literal k known to be at least two, a NatCast structure interprets that literal by casting k.",
+      "effect_on_target": "It interprets the real numeral 2 as the canonical real cast of the natural number 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "instOfNatNat",
+      "meaning": "For every natural k, the natural-number literal k is interpreted as k itself.",
+      "effect_on_target": "It supplies the natural literals 0, 1, and 2 used in numeral and exponent elaboration.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "LT.lt",
+      "meaning": "This operation selects the strict less-than relation from an LT instance.",
+      "effect_on_target": "It expresses the strict restrictions q*uFma < 1 and n*u < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Nat.cast",
+      "meaning": "Nat.cast maps a natural number into a type with a NatCast instance.",
+      "effect_on_target": "With the real NatCast instance, it embeds q and n into the reals in LocalDef001 and LocalDef003.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instLT",
+      "meaning": "This is the standard strict less-than relation on real numbers.",
+      "effect_on_target": "It gives the ordinary real meaning of q*uFma < 1 and n*u < 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "A divisive inverse monoid supplies its division operation.",
+      "effect_on_target": "For the reals, it supplies the division used in gamma_k(v) = k*v/(1-k*v).",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "HDiv.hDiv",
+      "meaning": "This operation selects division from an HDiv instance.",
+      "effect_on_target": "It denotes the quotient in each LocalDef003 gamma factor.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This supplies the real multiplicative, inverse, and division structure, with division given by multiplication by an inverse.",
+      "effect_on_target": "It provides ordinary real division for the rational gamma expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "instHDiv",
+      "meaning": "An ordinary homogeneous Div operation induces an HDiv operation with the same function.",
+      "effect_on_target": "It routes the quotients in LocalDef003 to ordinary real division.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "uLow, uFma, and u are arbitrary real numbers.",
+      "q and n are arbitrary natural numbers, possibly zero.",
+      "a, b, Delta_a, Delta_b, e, and computed are arbitrary real numbers."
+    ],
+    "hypotheses": [
+      "uLow >= 0, uFma >= 0, and u >= 0.",
+      "q*uFma < 1 and n*u < 1, where q and n are canonically embedded in the reals.",
+      "|Delta_a| <= uLow*|a|.",
+      "|Delta_b| <= uLow*|b|.",
+      "|e| <= Gamma*|a+Delta_a|*|b+Delta_b|.",
+      "computed = (a+Delta_a)*(b+Delta_b)+e exactly in the real numbers."
+    ],
+    "conclusions": [
+      "|computed-a*b| <= (2*uLow + uLow^2 + Gamma*(1+uLow)^2)*|a|*|b|."
+    ],
+    "mathematical_definitions": [
+      "For a natural k and real v satisfying k*v < 1, define gamma_k(v) = (k*v)/(1-k*v), with k embedded in the reals.",
+      "Define Gamma = gamma_q(uFma) + gamma_n(u) + gamma_q(uFma)*gamma_n(u).",
+      "Equivalently, Gamma = (1+gamma_q(uFma))*(1+gamma_n(u))-1.",
+      "All absolute-value signs denote ordinary scalar real absolute value, not a vector or matrix norm.",
+      "The exact final coefficient is 2*uLow + uLow^2 + Gamma*(1+uLow)^2."
+    ],
+    "proposition_plain_english": "For every choice of the stated real scalars and natural parameters, assume the three error parameters are nonnegative, q*uFma and n*u are strictly below one, Delta_a and Delta_b are relative perturbations of a and b bounded by uLow, and e is bounded by Gamma times the magnitudes of the two perturbed factors. If computed is exactly the real number (a+Delta_a)(b+Delta_b)+e, then its absolute error relative to the exact product a*b is at most [2*uLow + uLow^2 + Gamma*(1+uLow)^2]|a||b|, where Gamma is formed from the two rational factors q*uFma/(1-q*uFma) and n*u/(1-n*u)."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The declaration is a universally quantified implication. For any values that fail one of the hypotheses, it imposes no conclusion and is vacuously true.",
+    "The strict assumptions q*uFma < 1 and n*u < 1, together with nonnegativity, make both gamma denominators strictly positive. Lean division is total even at zero, but denominator-zero cases cannot satisfy these hypotheses.",
+    "No upper bound such as uLow < 1 is assumed; only uLow >= 0 is required.",
+    "The natural parameters q and n may be zero. If q=0, the condition q*uFma < 1 imposes no upper bound on uFma beyond nonnegativity and gamma_q(uFma)=0; the analogous statement holds for n=0.",
+    "If a=0, the Delta_a bound forces Delta_a=0; if b=0, the Delta_b bound forces Delta_b=0. The remaining hypotheses then force the corresponding final absolute error to be zero.",
+    "All quantities are scalar real numbers. There are no vectors, matrices, dimensions, or general norms encoded.",
+    "Despite the names uFma and computed, the proposition contains no fused multiply-add operation, floating-point type, rounding mode, representability condition, overflow or underflow model, or machine arithmetic semantics.",
+    "Delta_a, Delta_b, and e are arbitrary real errors constrained only by the displayed magnitude bounds; no independence, sign, probability, or origin assumptions are encoded.",
+    "computed is universally quantified and constrained by an exact equality; it is not an existentially produced value.",
+    "There is no stated relationship between q and n, and neither is asserted to count a dimension or a number of operations."
+  ],
+  "ambiguities": []
+}

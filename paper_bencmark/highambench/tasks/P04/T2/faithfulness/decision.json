@@ -1,96 +1,52 @@
 {
   "accepted": false,
-  "adjudicated": false,
-  "adjudication_reasons": [],
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ"
+  ],
   "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T10:48:19.512408+00:00",
+  "completed_at_utc": "2026-08-14T15:48:21.495115+00:00",
   "findings": [
     {
-      "category": "matrix-domain-collapse",
-      "impact": "The target cannot express the general matrix product, its inner summation, or the theorem's componentwise matrix conclusion.",
-      "lean_evidence": "All operands, perturbations, error, and computed output are Real, and |a|*|b| is scalar multiplication.",
-      "paper_evidence": "Theorem 3.2 quantifies A in R^(m x n), B in R^(n x t), and gives a componentwise matrix bound involving |A||B|.",
+      "category": "algorithm-linkage",
+      "evidence": "Theorem 3.2 explicitly concerns Algorithm 3.1, while D013 assumes the factorization derived from that algorithm and contains no execution relation or bridge.",
+      "impact": "The declaration does not formalize the paper's guarantee that Algorithm 3.1 produces an output satisfying equation (3.6).",
       "severity": "critical"
     },
     {
-      "category": "algorithmic-result-assumed",
-      "impact": "The target formalizes only the final scalar perturbation algebra and omits the main algorithm-to-error guarantee measured by the benchmark task.",
-      "lean_evidence": "he assumes the block-FMA coefficient bound for an arbitrary e, while hcomputed assumes the perturbed-product decomposition; no algorithm appears.",
-      "paper_evidence": "The paper derives the arithmetic-error estimate from q chained block FMAs in Algorithm 3.1 before proving equation (3.6).",
-      "severity": "critical"
-    },
-    {
-      "category": "precision-parameter-mismatch",
-      "impact": "The exact-looking coefficient is not linked to the paper's actual FMA-output, internal, and final-output precision semantics.",
-      "lean_evidence": "p04BlockFmaCoeff directly applies gamma to unconstrained parameters uFma and u.",
-      "paper_evidence": "The first gamma factor uses the effective tilde_u_FMA defined by the prioritized cases in equation (3.3), while the second uses the internal precision bar_u.",
+      "category": "reduced-proof-obligation",
+      "evidence": "On printed C129 the alpha/beta representation follows from recurrence (3.1), rounding equation (3.2), and effective parameter (3.3); D013 accepts that representation and its bounds as hypotheses.",
+      "impact": "The target proves only the final algebraic propagation step and cannot be counted as genuinely stronger merely because its certificate domain contains nonalgorithm objects.",
       "severity": "major"
     },
     {
-      "category": "dimension-and-indexing-omission",
-      "impact": "The gamma indices can describe combinations that do not correspond to any execution covered by the paper.",
-      "lean_evidence": "q and n are independent Nat binders; b, m, t, b1, b2, p, and r are absent.",
-      "paper_evidence": "Theorem 3.2 requires q=n/b in the compatible block partition inherited from Algorithm 3.1.",
+      "category": "floating-point-model",
+      "evidence": "The PDF specifies actual conversions, block-FMA precision roles, final rounding, and exclusion of underflow and overflow. D013 replaces these with arbitrary real perturbations and factor bounds.",
+      "impact": "The formal premise describes a different extensional numerical model and permits configurations outside the source theorem.",
       "severity": "major"
     },
     {
-      "category": "floating-point-model-omission",
-      "impact": "The proposition cannot establish that actual mixed-precision block-FMA computation satisfies its hypotheses.",
-      "lean_evidence": "The target has abstract real perturbation inequalities but no rounding or exceptional-value model.",
-      "paper_evidence": "The derivation uses explicit conversions to u_low, the standard rounding model, output rounding, and assumptions excluding underflow and overflow.",
-      "severity": "major"
-    },
-    {
-      "category": "dimension-and-result-domain",
-      "impact": "The translated proposition cannot express or entail the paper's matrix-product result.",
-      "paper_evidence": "Theorem 3.2 concerns A in R^(m x n), B in R^(n x t), and a componentwise m-by-t matrix inequality with majorant |A||B|.",
-      "severity": "critical",
-      "translation_evidence": "The translation contains only real scalars a and b and the scalar majorant |a|*|b|."
-    },
-    {
-      "category": "algorithm-and-floating-point-model",
-      "impact": "The theorem has been changed from an error analysis of a specified computation into an abstract real-algebra implication.",
-      "paper_evidence": "The result is explicitly for conversion followed by chained block FMAs in Algorithm 3.1 under a standard rounding model and no underflow or overflow.",
-      "severity": "critical",
-      "translation_evidence": "No algorithm, FMA, conversion operation, rounding, format, or exceptional-value model is represented."
-    },
-    {
-      "category": "index-and-precision-dependence",
-      "impact": "The coefficient has the correct shape but no longer has the parameter dependence asserted by the paper.",
-      "paper_evidence": "The paper requires q=n/b and gives distinct meanings to the inner-arithmetic, FMA-output, final-output, and effective rounding parameters.",
-      "severity": "major",
-      "translation_evidence": "q and n are arbitrary unrelated naturals, while uFma and u are arbitrary nonnegative reals with no link to block dimensions or equation (3.3)."
-    },
-    {
-      "category": "quantifier-and-premise-shift",
-      "impact": "The central computational claim is moved into a premise and therefore is not formalized.",
-      "paper_evidence": "Conversion and arithmetic errors arise from executing the rounding operations and block-FMA chain.",
-      "severity": "major",
-      "translation_evidence": "Delta_a, Delta_b, e, and computed are arbitrary universally quantified scalars, and the arithmetic-error guarantee is assumed."
-    },
-    {
-      "category": "preserved-coefficient",
-      "impact": "The coefficient-propagation algebra is accurate, but this does not repair the missing matrix, algorithmic, and floating-point semantics.",
-      "paper_evidence": "Equation (3.6) retains 2*u_low, u_low^2, the two gamma factors, their product, and (1+u_low)^2.",
-      "severity": "note",
-      "translation_evidence": "The scalar conclusion retains the same complete algebraic coefficient without a first-order truncation."
+      "category": "formula-fidelity",
+      "evidence": "The target retains the exact componentwise coefficient, gamma indices and denominators, prioritized effective-roundoff definition, higher-order terms, and |A||B| matrix-product scale from equation (3.6).",
+      "impact": "The defect is the theorem's subject and hypotheses, not an error in the displayed bound.",
+      "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The scalar algebraic proposition cannot derive the general componentwise matrix theorem, cannot establish its assumed he from Algorithm 3.1, and contains neither the matrix dimensions nor the block-FMA precision model.",
+      "reasoning": "The declaration proves the bound only after a P04MixedInputMatMulRun containing the derived conversion and alpha/beta certificates has been supplied. It contains no execution semantics or theorem mapping an Algorithm 3.1 output to such a record, so it does not by itself establish Theorem 3.2 for the algorithm.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper theorem concerns outputs of Algorithm 3.1 with q=n/b and paper-defined precisions. It does not assert the target's universal implication for arbitrary independent scalar perturbations, errors, computed values, q, and n. A 1-by-1 paper specialization overlaps only a restricted subset of Lean instances.",
+      "reasoning": "Theorem 3.2 covers actual Algorithm 3.1 outputs under the paper's floating-point model. It does not quantify over every arbitrary real-valued certificate, perturbation choice, computed matrix, or precision tuple satisfying only D013's extensional postconditions.",
       "verdict": "no"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-different",
+    "direct": "faithful-stronger",
     "roundtrip": "not-faithful-different"
   },
-  "rationale": "The target retains the exact higher-order scalar coefficient and proves a nonvacuous scalar perturbation bound, but it is not Theorem 3.2. It replaces matrices and Algorithm 3.1 by arbitrary real variables, assumes the key arithmetic-error estimate, omits q=n/b and the floating-point execution model, and leaves the effective FMA precision undefined. Because neither proposition covers the other's full quantified domain and execution semantics, the appropriate classification is not-faithful-different.",
+  "rationale": "Primary PDF evidence distinguishes the operational algorithm from the factorization derived during its analysis: C128 defines the conversion and chained block-FMA execution, C129 derives the alpha/beta representation, and C130 states the bound for the result of that algorithm. The Lean record assumes the derived representation and bounds without encoding or connecting to the execution. Although the resulting algebraic lemma is exact and nonvacuous and ranges over additional certificates, that wider certificate domain does not supply the missing algorithm guarantee. The paper likewise does not prove the lemma for all such certificates. Therefore neither implication holds and the declaration is not-faithful-different.",
   "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",

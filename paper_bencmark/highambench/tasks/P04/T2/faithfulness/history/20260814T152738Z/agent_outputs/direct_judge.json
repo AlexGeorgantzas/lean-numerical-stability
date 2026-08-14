@@ -1,0 +1,502 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P04-T2",
+  "paper_sha256": "7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862",
+  "dossier_sha256": "89ea80907b3d9155fd60c79a2d5db9e0ae3b17f16e1514dd17f5ff2cf20b716e",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.GammaValid",
+      "interpretation": "GammaValid v k means that the real product of k and v is strictly less than 1.",
+      "effect_on_target": "The hq and hn hypotheses make the denominators of gamma uFma q and gamma u n positive.",
+      "paper_match": "This matches the paper's standing assumption k*v<1 for every relevant gamma term, although it does not identify the Lean parameters with the paper's effective precisions.",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p04BlockFmaCoeff",
+      "interpretation": "p04BlockFmaCoeff uFma u q n is gamma_q(uFma)+gamma_n(u)+gamma_q(uFma)*gamma_n(u).",
+      "effect_on_target": "It is the entire arithmetic-error coefficient in he and in the final bound.",
+      "paper_match": "Its algebraic shape matches equation (3.6) only if uFma denotes the effective tilde_u_FMA and u denotes the internal bar_u. The target neither states those identifications nor encodes the prioritized cases of equation (3.3).",
+      "status": "fail"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.gamma",
+      "interpretation": "gamma v k is ((k:Real)*v)/(1-(k:Real)*v).",
+      "effect_on_target": "It supplies both rational gamma factors in p04BlockFmaCoeff.",
+      "paper_match": "This is exactly the paper's gamma_k(v)=kv/(1-kv) definition.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "Eq",
+      "interpretation": "Eq is propositional equality between two values of the same type.",
+      "effect_on_target": "hcomputed asserts the exact scalar identity computed=(a+Delta a)*(b+Delta b)+e.",
+      "paper_match": "Equality is the correct relation for the paper's decomposition C_hat=A_tilde*B_tilde+Delta C. The target's scalar domain and arbitrary error variable are separate mismatches.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "HAdd.hAdd",
+      "reuse_sha256": "2c99a1926bdac64e3a35f3fa155d689dc336fe4eb783a294540e765003beae74",
+      "effect_on_target": "It dispatches every addition in the perturbations, coefficient, computed-value equation, and final constant.",
+      "paper_match": "The selected real additions have the ordinary algebraic meaning used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "HMul.hMul",
+      "reuse_sha256": "8915b03a91c892e98db02c0973c28bad864cb016b465642b346d14f34e446a76",
+      "effect_on_target": "It dispatches products in gamma, perturbation bounds, the computed-value equation, and the conclusion.",
+      "paper_match": "The dispatch operation is semantically standard, but the Real instance later makes the purported matrix products scalar.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "HPow.hPow",
+      "interpretation": "HPow.hPow selects exponentiation from the supplied heterogeneous-power instance.",
+      "effect_on_target": "It interprets uLow^2 and (1+uLow)^2.",
+      "paper_match": "These are the two exact squares retained in equation (3.6).",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "HSub.hSub",
+      "reuse_sha256": "b332fe28eda7461a55409befd08f414509b9cfcdfd7730a06048da7b83c87c62",
+      "effect_on_target": "It forms computed-a*b and the denominator 1-k*u in gamma.",
+      "paper_match": "Ordinary subtraction matches both the forward-error difference and the gamma denominator; the reversed C_hat-C orientation is immaterial under absolute value.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "LE.le",
+      "reuse_sha256": "c476dc1b2ea074ec4bd39cbce7c0ff24c628f572b131686eb6963c3e7131fb19",
+      "effect_on_target": "It supplies all non-strict real inequalities.",
+      "paper_match": "The non-strict inequality direction matches the conversion, arithmetic-error, and final bounds in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Monoid.toNatPow supplies repeated monoid multiplication as natural-number exponentiation.",
+      "effect_on_target": "For Real and exponent 2 it makes both displayed powers ordinary real squares.",
+      "paper_match": "This matches u_low^2 and (1+u_low)^2 in equation (3.6).",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "Nat",
+      "interpretation": "Nat is the type of natural numbers, including zero.",
+      "effect_on_target": "q and n are independent naturals, and the power exponents are naturals.",
+      "paper_match": "Natural indices are appropriate, but Nat itself does not supply the omitted positive-dimension conditions or q=n/b relation.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "interpretation": "This declaration constructs proof that a successor n+1 is at least two when n is nonzero.",
+      "effect_on_target": "It provides elaborator evidence needed to interpret the literal 2 through a NatCast.",
+      "paper_match": "It leaves the literal's value equal to 2, as required by the coefficient 2*u_low.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "Nat.instNeZeroSucc",
+      "interpretation": "This declaration proves that every natural-number successor is nonzero.",
+      "effect_on_target": "It supports the typeclass construction used for the literal 2.",
+      "paper_match": "It is elaboration infrastructure and does not alter the paper-level numerical constant.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "OfNat.ofNat",
+      "reuse_sha256": "37f0ecf64bd742bcc93f38034359021b711500e02dfff8ff3c1f2db70c293777",
+      "effect_on_target": "It interprets the literals 0, 1, and 2 in Nat or Real as requested.",
+      "paper_match": "The resulting constants are the ordinary constants used in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "One.toOfNat1",
+      "reuse_sha256": "decd674803aac02ebd385212bdf204f6212acc91345ee72dc5ad8d7b3dfe3bb0",
+      "effect_on_target": "It makes the Real literal 1 the multiplicative identity in GammaValid, gamma, and (1+uLow)^2.",
+      "paper_match": "This matches every occurrence of 1 in the paper's formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "Real",
+      "reuse_sha256": "3483e25ab144d9f6b5fc2cc409de11ee2b17d27a19ada9ad855dd312dd9e9444",
+      "effect_on_target": "Not only the precision parameters but also a, b, Delta a, Delta b, e, and computed are single real numbers.",
+      "paper_match": "The paper uses real precision parameters and real matrix entries, but Theorem 3.2 quantifies matrices A, B, their matrix perturbations, and a computed matrix. Replacing all of those matrices by Real collapses the theorem to a scalar setting.",
+      "status": "fail"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instAdd",
+      "reuse_sha256": "2600632309109b9eef72c7a64a51bb9f19137f042a46f93146279b789a7082de",
+      "effect_on_target": "It makes every instantiated addition ordinary real addition.",
+      "paper_match": "This is the correct scalar and entrywise addition operation, although the target lacks the required matrix lifting.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instAddGroup",
+      "reuse_sha256": "1f5c2cb2573ac7ae1df7dd2fb4169025e230cf39eed10a3bb6015178c0a216f9",
+      "effect_on_target": "It supplies real negation for subtraction and absolute value.",
+      "paper_match": "The induced scalar negation is standard and agrees with real entry arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instLE",
+      "reuse_sha256": "96f4d2c6a6ed1a6072650c127a11af0743154b941d6d0bf8072e93589cecd9d1",
+      "effect_on_target": "It makes all non-strict comparisons use the usual real order.",
+      "paper_match": "This matches the scalar order used for unit roundoffs and componentwise bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instMonoid",
+      "interpretation": "Real.instMonoid supplies the multiplicative monoid structure on Real.",
+      "effect_on_target": "It determines natural powers of Real, especially exponent 2.",
+      "paper_match": "It gives the ordinary real squares appearing in equation (3.6).",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instMul",
+      "reuse_sha256": "cc1d87e896e40ca98beaba733d8981b2be417bf56b3cd139099a7fe33f462ebe",
+      "effect_on_target": "It makes a*b, the perturbed product, and |a|*|b| ordinary scalar products, as well as supplying scalar coefficient arithmetic.",
+      "paper_match": "Scalar multiplication is correct for coefficient arithmetic but cannot represent the general matrix products AB or |A||B| in Theorem 3.2.",
+      "status": "fail"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instNatCast",
+      "reuse_sha256": "11515d289291036cdc99fffdf3a5fc5b207622a159829c92fabab8dbc5d90b0b",
+      "effect_on_target": "It embeds q and n into Real in gamma and supplies the Real literal 2.",
+      "paper_match": "This gives the required real factors q and n in the gamma definitions.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instOne",
+      "reuse_sha256": "278b68069fb2dca8c3606f359ce8d431c0f9e00fb8e417d19697eed49e4fc22e",
+      "effect_on_target": "It supplies the ordinary real value 1.",
+      "paper_match": "The value matches the gamma denominator and (1+u_low)^2.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instSub",
+      "reuse_sha256": "b749cd229005c3a1648902abc2bc67a4c2a7c085861f5f029cae4ef461a4036c",
+      "effect_on_target": "It supplies ordinary real subtraction.",
+      "paper_match": "This is the correct scalar subtraction for gamma denominators and absolute forward errors.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "Real.instZero",
+      "reuse_sha256": "ca3e97a9097116b9d22990f2a068cbdfe0d452830107525cf6415bfebfc4c640",
+      "effect_on_target": "It supplies zero in the nonnegativity assumptions.",
+      "paper_match": "Ordinary real zero is appropriate for nonnegative unit roundoffs.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "Real.lattice",
+      "reuse_sha256": "094296f36b8f60f6e248ebe56a2c9cd0a87d2a95d53003f3fb7fc76713aa00a8",
+      "effect_on_target": "Together with the additive group, it determines scalar absolute value through max.",
+      "paper_match": "It produces standard real absolute value, which agrees with each component of the paper's componentwise absolute-value matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "Zero.toOfNat0",
+      "reuse_sha256": "dcd0bbc3c9d1e1b585248a4bf599d7d44121a8aebc485d3a81d91f3be94fc097",
+      "effect_on_target": "It interprets the Real literal 0 as the additive identity.",
+      "paper_match": "This is the intended value of zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "abs",
+      "reuse_sha256": "32a708fd3378d4db96640e2e6509634aa96151e94172fcf7f08b2b9a3e3d8a93",
+      "effect_on_target": "It takes ordinary scalar absolute values of all error and operand variables.",
+      "paper_match": "It matches the absolute value of an individual real entry, but the target does not construct the paper's componentwise absolute-value matrices or their matrix product.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "instHAdd",
+      "reuse_sha256": "8f153af5aa1baf5f6424ff39c5d08323cd358ffeece5f9ced3043ad2cffa73b6",
+      "effect_on_target": "It lifts Real addition into the HAdd operations in the elaborated type.",
+      "paper_match": "The lifting preserves ordinary real addition without changing its meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "instHMul",
+      "reuse_sha256": "46765db2b9c4e049bf61e51bed5aa60e6f7c8d1bae634a71be3cc3d75d34fb61",
+      "effect_on_target": "It lifts Real multiplication into every HMul occurrence, including the purported exact and absolute-value products.",
+      "paper_match": "The lifting is correct for scalar coefficients but confirms that the target uses scalar multiplication where the paper requires general matrix multiplication.",
+      "status": "fail"
+    },
+    {
+      "id": "D031",
+      "name": "instHPow",
+      "interpretation": "instHPow lifts a homogeneous Pow operation into HPow with the same result type.",
+      "effect_on_target": "It routes Real-to-Nat powers to ordinary Real natural powers.",
+      "paper_match": "This preserves the intended squares exactly.",
+      "status": "pass"
+    },
+    {
+      "id": "D032",
+      "name": "instHSub",
+      "reuse_sha256": "f39a60e5a7fdc34f852de226b72fe543dea9c623443daecb3a67b84708f713fb",
+      "effect_on_target": "It lifts ordinary Real subtraction into HSub.",
+      "paper_match": "The lifting preserves the intended subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "instOfNatAtLeastTwo interprets a natural literal at least two through the target type's NatCast.",
+      "effect_on_target": "It turns the literal 2 in 2*uLow into the real number obtained by casting Nat 2.",
+      "paper_match": "The result is exactly the coefficient 2 required by equation (3.6).",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "instOfNatNat",
+      "interpretation": "instOfNatNat interprets each natural literal n in Nat as n itself.",
+      "effect_on_target": "It supplies the Nat literals used for exponents and typeclass evidence.",
+      "paper_match": "It leaves the exponent and auxiliary literals at their ordinary natural values.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "LT.lt",
+      "reuse_sha256": "8b6f0ef55849bf1625a675effbde90e63e8db4a1f7a2a09442af8969b6e8c3b6",
+      "effect_on_target": "It selects the strict relation used by GammaValid.",
+      "paper_match": "Strict k*u<1 is exactly the paper's gamma-validity condition.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "Nat.cast",
+      "reuse_sha256": "fb2cb8ca958b6b9b06056213ea79965d590b2ebafdc4f8f0a3e9756bb034f7d8",
+      "effect_on_target": "It converts q and n to real factors in GammaValid and gamma.",
+      "paper_match": "This matches multiplication of the integer index by a real unit roundoff.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instLT",
+      "reuse_sha256": "03d17dba89598f99d38453fd511ae8ed17b425a007576df0a782595ade0fc63c",
+      "effect_on_target": "It makes GammaValid use the usual strict order on Real.",
+      "paper_match": "This gives the intended strict inequality.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "DivInvMonoid.toDiv",
+      "reuse_sha256": "df63d67be0a47651e461c7c0857bc6f06de6eb2312aa865ec12586eb832a6aa4",
+      "effect_on_target": "It extracts Real division for the gamma quotient.",
+      "paper_match": "Ordinary division is required by gamma_k(v)=kv/(1-kv).",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "HDiv.hDiv",
+      "reuse_sha256": "7cc520200fbbc81cb5af9bd69f23a7fa8d3c03985e9622d43e610579ec2d1769",
+      "effect_on_target": "It dispatches the division in gamma to the supplied instance.",
+      "paper_match": "The dispatched operation is ordinary real division and matches the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "Real.instDivInvMonoid",
+      "reuse_sha256": "ab4d730c0e1a3194e52e83a676c0de91daf486521f7cb16d7cf21b77a11bde44",
+      "effect_on_target": "It supplies the real division and inverse structure used in gamma.",
+      "paper_match": "It gives the ordinary real quotient used in the paper's gamma definition.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "instHDiv",
+      "reuse_sha256": "bf79a894f33a6eb637c4e4c038bf278981a5dc8a3e147af4deafafc35a9b734c",
+      "effect_on_target": "It lifts homogeneous Real division into HDiv.",
+      "paper_match": "The lifting preserves ordinary real division.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF is the published 2020 SIAM Journal on Scientific Computing version. PDF page 7, printed C130, contains Theorem 3.2 and equation (3.6), preceded by the conversion and error decomposition.",
+      "lean_evidence": "The target is named p04_t2_mixed_input_product_bound and contains the coefficient and conversion terms associated with equation (3.6).",
+      "reasoning": "The selected paper version and passage are the correct source result, even though the Lean proposition does not faithfully encode it."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Theorem 3.2 binds A in R^(m x n), B in R^(n x t), C=AB, and q=n/b; Algorithm 3.1 also supplies block dimensions b1, b, b2 and integral p, q, r.",
+      "lean_evidence": "The target binds a, b, Delta a, Delta b, e, and computed as Real. It has no m, t, block size, matrix type, or index sets, and q and n are independent Nat values.",
+      "reasoning": "The matrix and dimensional binders are replaced by unrelated scalar binders."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The paper first fixes input matrices and their Algorithm 3.1 execution; the converted matrices, arithmetic error, and computed output depend on that execution.",
+      "lean_evidence": "The target universally quantifies arbitrary scalar perturbations, error e, and computed value, then assumes he and hcomputed.",
+      "reasoning": "The algorithm-dependent quantities have been generalized into independent universally quantified values guarded by strong hypotheses, so the original dependence and scope are not preserved."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes compatible block dimensions, q=n/b, valid gamma denominators, conversion without underflow or overflow, and the block-FMA precision model including the effective tilde_u_FMA.",
+      "lean_evidence": "The target has nonnegativity, two GammaValid hypotheses, conversion inequalities, he, and hcomputed, but no dimensions, q=n/b, no-underflow/overflow condition, actual unit-roundoff condition, or effective-precision definition.",
+      "reasoning": "Some algebraic side conditions are present, but essential algorithmic and floating-point hypotheses are omitted while the key arithmetic estimate is added as an assumption."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Equation (3.6) concludes a componentwise matrix inequality for the complete computed product C_hat and the matrix product |A||B|.",
+      "lean_evidence": "The target concludes a scalar inequality involving |computed-a*b| and |a|*|b|.",
+      "reasoning": "The exact scalar coefficient is present, but the theorem's matrix-valued conclusion and general componentwise coverage are absent."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "The paper defines gamma_k(v), componentwise matrix absolute value, ordinary matrix multiplication of |A| and |B|, and tilde_u_FMA through equation (3.3).",
+      "lean_evidence": "gamma is correctly unfolded, but p04BlockFmaCoeff takes an unconstrained first precision argument, and Real instances make every operand product and absolute value scalar.",
+      "reasoning": "The elementary real operators are understood, but their instantiation and the missing effective-precision definition do not reproduce the paper's nontrivial matrix and floating-point definitions."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes exact C=AB, converted A_tilde=A+Delta A and B_tilde=B+Delta B, arithmetic error Delta C, and computed C_hat.",
+      "lean_evidence": "The target distinguishes exact a*b, perturbed (a+Delta a)*(b+Delta b), error e, and computed through hcomputed.",
+      "reasoning": "Within its scalar model, the target does not conflate exact, perturbed, and computed quantities."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Theorem 3.2 explicitly applies to Algorithm 3.1: conversion to u_low, q chained block FMAs, and optional final output rounding.",
+      "lean_evidence": "No algorithm, block FMA, conversion function, rounding operation, or execution trace appears. The arithmetic bound and computed-value decomposition are hypotheses.",
+      "reasoning": "The proposition is an algebraic perturbation lemma, not a result about Algorithm 3.1."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "The paper's absolute values are componentwise matrix absolute values and the right side is the ordinary matrix product |A||B|; no norm is used.",
+      "lean_evidence": "Every absolute value is scalar Real.abs and the right side contains scalar |a|*|b|.",
+      "reasoning": "The target is not normwise, but it still fails to encode the general componentwise matrix semantics and the summation inherent in |A||B|."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "Equation (3.6) uses q=n/b for tilde_gamma_q^FMA and n for bar_gamma_n, with coefficient 2*u_low+u_low^2+(tilde_gamma_q^FMA+bar_gamma_n+their product)*(1+u_low)^2.",
+      "lean_evidence": "The same polynomial form occurs, but q and n are independent, b is absent, and uFma and u are not linked to tilde_u_FMA and bar_u.",
+      "reasoning": "The numerical expression is syntactically complete, but its indexing and parameter dependence are not the paper's."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Pages C127-C130 use the standard relative-error model, distinguish internal, FMA-output, and final-output precisions, define tilde_u_FMA by prioritized cases, and assume no underflow or overflow.",
+      "lean_evidence": "The target contains only real inequalities and abstract perturbations. It does not model rounding, precision formats, exceptional values, underflow, overflow, or equation (3.3).",
+      "reasoning": "The floating-point execution model has been replaced by assumed error bounds."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "Theorem 3.2 directly asserts a non-strict bound for the output produced by Algorithm 3.1.",
+      "lean_evidence": "The conclusion uses the correct non-strict direction, but it is conditional on he, which already assumes the central block-FMA arithmetic-error bound, and on hcomputed.",
+      "reasoning": "The inequality direction is correct, but the proposition has substantially weaker theorem-level force because it assumes what the paper derives from the algorithm."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Equation (3.6) is an absolute componentwise forward-error bound for C_hat relative to exact C=AB.",
+      "lean_evidence": "The conclusion bounds the absolute forward difference between computed and exact a*b.",
+      "reasoning": "The target preserves the forward-error notion; its scalar domain is assessed separately."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Equation (3.6) retains u_low^2, the product of the two gamma terms, and the full square (1+u_low)^2, with no big-O truncation.",
+      "lean_evidence": "The target contains 2*uLow+uLow^2+p04BlockFmaCoeff*(1+uLow)^2, and p04BlockFmaCoeff includes the gamma product.",
+      "reasoning": "All displayed higher-order terms in the theorem's coefficient are retained exactly."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "Theorem 3.2 is a general rectangular matrix result for compatible dimensions and arbitrary q=n/b.",
+      "lean_evidence": "The target is scalar but does not constrain n=q=1 or otherwise state a coherent 1-by-1 specialization; it instead retains arbitrary independent q and n only inside the coefficient.",
+      "reasoning": "This is neither the general matrix theorem nor an explicitly delimited faithful specialization that supplies the benchmark task."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "Algorithm 3.1 and its standard floating-point model provide ordinary nonexceptional executions satisfying the paper's assumptions.",
+      "lean_evidence": "For example, uLow=1/10, uFma=u=0, q=n=1, a=b=1, Delta a=Delta b=1/10, e=0, and computed=121/100 satisfy the hypotheses, and the conclusion holds sharply with both sides 21/100.",
+      "reasoning": "The Lean proposition is satisfiable and can be nontrivial; its failure is semantic coverage, not vacuity."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The scalar algebraic proposition cannot derive the general componentwise matrix theorem, cannot establish its assumed he from Algorithm 3.1, and contains neither the matrix dimensions nor the block-FMA precision model."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper theorem concerns outputs of Algorithm 3.1 with q=n/b and paper-defined precisions. It does not assert the target's universal implication for arbitrary independent scalar perturbations, errors, computed values, q, and n. A 1-by-1 paper specialization overlaps only a restricted subset of Lean instances."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "matrix-domain-collapse",
+      "paper_evidence": "Theorem 3.2 quantifies A in R^(m x n), B in R^(n x t), and gives a componentwise matrix bound involving |A||B|.",
+      "lean_evidence": "All operands, perturbations, error, and computed output are Real, and |a|*|b| is scalar multiplication.",
+      "impact": "The target cannot express the general matrix product, its inner summation, or the theorem's componentwise matrix conclusion."
+    },
+    {
+      "severity": "critical",
+      "category": "algorithmic-result-assumed",
+      "paper_evidence": "The paper derives the arithmetic-error estimate from q chained block FMAs in Algorithm 3.1 before proving equation (3.6).",
+      "lean_evidence": "he assumes the block-FMA coefficient bound for an arbitrary e, while hcomputed assumes the perturbed-product decomposition; no algorithm appears.",
+      "impact": "The target formalizes only the final scalar perturbation algebra and omits the main algorithm-to-error guarantee measured by the benchmark task."
+    },
+    {
+      "severity": "major",
+      "category": "precision-parameter-mismatch",
+      "paper_evidence": "The first gamma factor uses the effective tilde_u_FMA defined by the prioritized cases in equation (3.3), while the second uses the internal precision bar_u.",
+      "lean_evidence": "p04BlockFmaCoeff directly applies gamma to unconstrained parameters uFma and u.",
+      "impact": "The exact-looking coefficient is not linked to the paper's actual FMA-output, internal, and final-output precision semantics."
+    },
+    {
+      "severity": "major",
+      "category": "dimension-and-indexing-omission",
+      "paper_evidence": "Theorem 3.2 requires q=n/b in the compatible block partition inherited from Algorithm 3.1.",
+      "lean_evidence": "q and n are independent Nat binders; b, m, t, b1, b2, p, and r are absent.",
+      "impact": "The gamma indices can describe combinations that do not correspond to any execution covered by the paper."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point-model-omission",
+      "paper_evidence": "The derivation uses explicit conversions to u_low, the standard rounding model, output rounding, and assumptions excluding underflow and overflow.",
+      "lean_evidence": "The target has abstract real perturbation inequalities but no rounding or exceptional-value model.",
+      "impact": "The proposition cannot establish that actual mixed-precision block-FMA computation satisfies its hypotheses."
+    }
+  ],
+  "rationale": "The target retains the exact higher-order scalar coefficient and proves a nonvacuous scalar perturbation bound, but it is not Theorem 3.2. It replaces matrices and Algorithm 3.1 by arbitrary real variables, assumes the key arithmetic-error estimate, omits q=n/b and the floating-point execution model, and leaves the effective FMA precision undefined. Because neither proposition covers the other's full quantified domain and execution semantics, the appropriate classification is not-faithful-different."
+}

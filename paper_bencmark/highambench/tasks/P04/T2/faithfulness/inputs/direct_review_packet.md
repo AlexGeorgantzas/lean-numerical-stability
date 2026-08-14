@@ -7,100 +7,65 @@ Judges must interpret every dependency entry and may not infer semantics from na
 
 ```lean
 theorem p04_t2_mixed_input_product_bound
-    (uLow uFma u : ℝ) (q n : ℕ)
-    (a b Δa Δb e computed : ℝ)
-    (huLow : 0 ≤ uLow) (huFma : 0 ≤ uFma) (hu : 0 ≤ u)
-    (hq : GammaValid uFma q) (hn : GammaValid u n)
-    (hΔa : |Δa| ≤ uLow * |a|)
-    (hΔb : |Δb| ≤ uLow * |b|)
-    (he : |e| ≤ p04BlockFmaCoeff uFma u q n * |a + Δa| * |b + Δb|)
-    (hcomputed : computed = (a + Δa) * (b + Δb) + e) :
-    |computed - a * b| ≤
-      (2 * uLow + uLow ^ 2 +
-          p04BlockFmaCoeff uFma u q n * (1 + uLow) ^ 2) *
-        |a| * |b|
+    {m n t b1 b b2 p q r : ℕ}
+    (run : P04MixedInputMatMulRun m n t b1 b b2 p q r) :
+    ∀ i j,
+      |run.computed i j - p04RectMatMul run.A run.B i j| ≤
+        (2 * run.uLow + run.uLow ^ 2 +
+            p04BlockFmaCoeff
+                (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut)
+                run.uBar q n * (1 + run.uLow) ^ 2) *
+          p04AbsRectMatMul run.A run.B i j
 ```
 
 ## Elaborated target type
 
 ```lean
-∀ (uLow uFma u : Real) (q n : Nat) (a b Δa Δb e computed : Real),
-  Real.instLE.le 0 uLow →
-    Real.instLE.le 0 uFma →
-      Real.instLE.le 0 u →
-        HighamBench.GammaValid uFma q →
-          HighamBench.GammaValid u n →
-            Real.instLE.le (abs Δa) (instHMul.hMul uLow (abs a)) →
-              Real.instLE.le (abs Δb) (instHMul.hMul uLow (abs b)) →
-                Real.instLE.le (abs e)
-                    (instHMul.hMul (instHMul.hMul (HighamBench.p04BlockFmaCoeff uFma u q n) (abs (instHAdd.hAdd a Δa)))
-                      (abs (instHAdd.hAdd b Δb))) →
-                  Eq computed (instHAdd.hAdd (instHMul.hMul (instHAdd.hAdd a Δa) (instHAdd.hAdd b Δb)) e) →
-                    Real.instLE.le (abs (instHSub.hSub computed (instHMul.hMul a b)))
-                      (instHMul.hMul
-                        (instHMul.hMul
-                          (instHAdd.hAdd (instHAdd.hAdd (instHMul.hMul 2 uLow) (instHPow.hPow uLow 2))
-                            (instHMul.hMul (HighamBench.p04BlockFmaCoeff uFma u q n)
-                              (instHPow.hPow (instHAdd.hAdd 1 uLow) 2)))
-                          (abs a))
-                        (abs b))
+∀ {m n t b1 b b2 p q r : Nat} (run : HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r) (i : Fin m) (j : Fin t),
+  Real.instLE.le (abs (instHSub.hSub (run.computed i j) (HighamBench.p04RectMatMul run.A run.B i j)))
+    (instHMul.hMul
+      (instHAdd.hAdd (instHAdd.hAdd (instHMul.hMul 2 run.uLow) (instHPow.hPow run.uLow 2))
+        (instHMul.hMul
+          (HighamBench.p04BlockFmaCoeff (HighamBench.p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut) run.uBar q n)
+          (instHPow.hPow (instHAdd.hAdd 1 run.uLow) 2)))
+      (HighamBench.p04AbsRectMatMul run.A run.B i j))
 ```
 
 ## Fully explicit elaborated target type
 
 ```lean
-∀ (uLow uFma u : Real) (q n : Nat) (a b Δa Δb e computed : Real)
-  (huLow : @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) uLow)
-  (huFma : @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) uFma)
-  (hu : @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) u)
-  (hq : HighamBench.GammaValid uFma q) (hn : HighamBench.GammaValid u n)
-  (hΔa :
-    @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup Δa)
-      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) uLow
-        (@abs.{0} Real Real.lattice Real.instAddGroup a)))
-  (hΔb :
-    @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup Δb)
-      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) uLow
-        (@abs.{0} Real Real.lattice Real.instAddGroup b)))
-  (he :
-    @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup e)
-      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) (HighamBench.p04BlockFmaCoeff uFma u q n)
-          (@abs.{0} Real Real.lattice Real.instAddGroup
-            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) a Δa)))
-        (@abs.{0} Real Real.lattice Real.instAddGroup
-          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) b Δb))))
-  (hcomputed :
-    @Eq.{1} Real computed
-      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) a Δa)
-          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) b Δb))
-        e)),
+∀ {m n t b1 b b2 p q r : Nat} (run : HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r) (i : Fin m) (j : Fin t),
   @LE.le.{0} Real Real.instLE
     (@abs.{0} Real Real.lattice Real.instAddGroup
-      (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub) computed
-        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) a b)))
+      (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
+        (@HighamBench.P04MixedInputMatMulRun.computed m n t b1 b b2 p q r run i j)
+        (@HighamBench.p04RectMatMul m n t (@HighamBench.P04MixedInputMatMulRun.A m n t b1 b b2 p q r run)
+          (@HighamBench.P04MixedInputMatMulRun.B m n t b1 b b2 p q r run) i j)))
     (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
         (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-              (@OfNat.ofNat.{0} Real (nat_lit 2)
-                (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
-                  (@Nat.instAtLeastTwoHAddOfNat (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
-                    (@Nat.instNeZeroSucc (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))))
-              uLow)
-            (@HPow.hPow.{0, 0, 0} Real Nat Real (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-              uLow (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))
           (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-            (HighamBench.p04BlockFmaCoeff uFma u q n)
-            (@HPow.hPow.{0, 0, 0} Real Nat Real (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) uLow)
-              (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2))))))
-        (@abs.{0} Real Real.lattice Real.instAddGroup a))
-      (@abs.{0} Real Real.lattice Real.instAddGroup b))
+            (@OfNat.ofNat.{0} Real (nat_lit 2)
+              (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
+                (@Nat.instAtLeastTwoHAddOfNat (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
+                  (@Nat.instNeZeroSucc (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))))
+            (@HighamBench.P04MixedInputMatMulRun.uLow m n t b1 b b2 p q r run))
+          (@HPow.hPow.{0, 0, 0} Real Nat Real (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
+            (@HighamBench.P04MixedInputMatMulRun.uLow m n t b1 b b2 p q r run)
+            (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))
+        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+          (HighamBench.p04BlockFmaCoeff
+            (HighamBench.p04EffectiveFmaRoundoff (@HighamBench.P04MixedInputMatMulRun.uBar m n t b1 b b2 p q r run)
+              (@HighamBench.P04MixedInputMatMulRun.uFma m n t b1 b b2 p q r run)
+              (@HighamBench.P04MixedInputMatMulRun.uOut m n t b1 b b2 p q r run))
+            (@HighamBench.P04MixedInputMatMulRun.uBar m n t b1 b b2 p q r run) q n)
+          (@HPow.hPow.{0, 0, 0} Real Nat Real (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
+            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+              (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
+              (@HighamBench.P04MixedInputMatMulRun.uLow m n t b1 b b2 p q r run))
+            (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2))))))
+      (@HighamBench.p04AbsRectMatMul m n t (@HighamBench.P04MixedInputMatMulRun.A m n t b1 b b2 p q r run)
+        (@HighamBench.P04MixedInputMatMulRun.B m n t b1 b b2 p q r run) i j))
 ```
 
 ## Local import graph
@@ -113,33 +78,235 @@ theorem p04_t2_mixed_input_product_bound
 
 `local` entries are recursively followed through their types and bodies. `external-frontier` entries are the exact Lean/mathlib declarations where that recursive traversal stops; their types and one-level bodies are still shown.
 
-### D001: `HighamBench.GammaValid`
+### D001: `HighamBench.P04MixedInputMatMulRun`
 
 - Role: `local`
-- Owner module: `HighamBench.Core`
-- Declaration kind: `def`
+- Owner module: `HighamBench.P04Definitions`
+- Declaration kind: `inductive`
 - Distance from target type: `1`
-- Semantic SHA-256: `651ef903a8d9a3c8f539284f6c70325cebe6e199aad808cb56d9123f31e258c9`
+- Semantic SHA-256: `8ae2ef854acc321e6e6d95641cb08a5763d64700fdd30848ee345c6ac8224cc4`
 
 Type:
 
 ```lean
-Real → Nat → Prop
+Nat → Nat → Nat → Nat → Nat → Nat → Nat → Nat → Nat → Type
 ```
 
 Fully explicit type:
 
 ```lean
-(u : Real) → (n : Nat) → Prop
+(m n t b1 b b2 p q r : Nat) → Type
+```
+
+### D002: `HighamBench.P04MixedInputMatMulRun.A`
+
+- Role: `local`
+- Owner module: `HighamBench.P04Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `18fb2b9b5e1109288d30e0f1ad3e88df54732ee32f4abe36b7f4630566aeec55`
+
+Type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r → Fin m → Fin n → Real
+```
+
+Fully explicit type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → (self : HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r) → Fin m → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun u n => Real.instLT.lt (instHMul.hMul n.cast u) 1
+fun m n t b1 b b2 p q r self => self.13
 ```
 
-### D002: `HighamBench.p04BlockFmaCoeff`
+### D003: `HighamBench.P04MixedInputMatMulRun.B`
+
+- Role: `local`
+- Owner module: `HighamBench.P04Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `fe3b8d54c52db95212f7a1127fee1a100aac5e464b83cbdb822154f64244ec0e`
+
+Type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r → Fin n → Fin t → Real
+```
+
+Fully explicit type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → (self : HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r) → Fin n → Fin t → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m n t b1 b b2 p q r self => self.14
+```
+
+### D004: `HighamBench.P04MixedInputMatMulRun.computed`
+
+- Role: `local`
+- Owner module: `HighamBench.P04Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `2db83e67ed0f4b343886dc530f2ae659f575d383674a57ca1710e8db391acef9`
+
+Type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r → Fin m → Fin t → Real
+```
+
+Fully explicit type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → (self : HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r) → Fin m → Fin t → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m n t b1 b b2 p q r self => self.19
+```
+
+### D005: `HighamBench.P04MixedInputMatMulRun.uBar`
+
+- Role: `local`
+- Owner module: `HighamBench.P04Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `b816d4fd064e18635320626f03a49294cf4c38199b11b5f6c7d723fa6b003be3`
+
+Type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r → Real
+```
+
+Fully explicit type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → (self : HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m n t b1 b b2 p q r self => self.21
+```
+
+### D006: `HighamBench.P04MixedInputMatMulRun.uFma`
+
+- Role: `local`
+- Owner module: `HighamBench.P04Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `33648da71c8359e6873bd0fce638510cf06a320fcfc721f68e6f574f2a2844ab`
+
+Type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r → Real
+```
+
+Fully explicit type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → (self : HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m n t b1 b b2 p q r self => self.22
+```
+
+### D007: `HighamBench.P04MixedInputMatMulRun.uLow`
+
+- Role: `local`
+- Owner module: `HighamBench.P04Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `59e825914c4e8911fb4e859ae2c7b8f64a1e1650aa1ad95e689f30605bd814d4`
+
+Type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r → Real
+```
+
+Fully explicit type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → (self : HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m n t b1 b b2 p q r self => self.20
+```
+
+### D008: `HighamBench.P04MixedInputMatMulRun.uOut`
+
+- Role: `local`
+- Owner module: `HighamBench.P04Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `95971c7200cb28ed38c6d06ccc2e449f4af364b37c2eebe77b650f46e5684826`
+
+Type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r → Real
+```
+
+Fully explicit type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} → (self : HighamBench.P04MixedInputMatMulRun m n t b1 b b2 p q r) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m n t b1 b b2 p q r self => self.23
+```
+
+### D009: `HighamBench.p04AbsRectMatMul`
+
+- Role: `local`
+- Owner module: `HighamBench.P04Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `2d006bb6e8aec54f4309d854f49b6dd5f9cd3ea823ff13b4597fb00c73871b66`
+
+Type:
+
+```lean
+{m n t : Nat} → (Fin m → Fin n → Real) → (Fin n → Fin t → Real) → Fin m → Fin t → Real
+```
+
+Fully explicit type:
+
+```lean
+{m n t : Nat} → (A : Fin m → Fin n → Real) → (B : Fin n → Fin t → Real) → Fin m → Fin t → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m n t} A B i j => Finset.univ.sum fun k => instHMul.hMul (abs (A i k)) (abs (B k j))
+```
+
+### D010: `HighamBench.p04BlockFmaCoeff`
 
 - Role: `local`
 - Owner module: `HighamBench.P04Definitions`
@@ -167,7 +334,267 @@ fun uFma u q n =>
     (instHMul.hMul (HighamBench.gamma uFma q) (HighamBench.gamma u n))
 ```
 
-### D003: `HighamBench.gamma`
+### D011: `HighamBench.p04EffectiveFmaRoundoff`
+
+- Role: `local`
+- Owner module: `HighamBench.P04Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `6f93bd3a032348a15ab4816595eda68a279e901560d58e515296e667cdd7f14f`
+
+Type:
+
+```lean
+Real → Real → Real → Real
+```
+
+Fully explicit type:
+
+```lean
+(uBar uFma uOut : Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun uBar uFma uOut => ite (Real.instLT.lt uFma uOut) uOut (ite (Real.instLE.le uFma uBar) 0 uFma)
+```
+
+### D012: `HighamBench.p04RectMatMul`
+
+- Role: `local`
+- Owner module: `HighamBench.P04Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `20407f56205320bfb1147fc957c5423309a7133f4d19d5a22e997c76cf5939f0`
+
+Type:
+
+```lean
+{m n t : Nat} → (Fin m → Fin n → Real) → (Fin n → Fin t → Real) → Fin m → Fin t → Real
+```
+
+Fully explicit type:
+
+```lean
+{m n t : Nat} → (A : Fin m → Fin n → Real) → (B : Fin n → Fin t → Real) → Fin m → Fin t → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m n t} A B i j => Finset.univ.sum fun k => instHMul.hMul (A i k) (B k j)
+```
+
+### D013: `HighamBench.P04MixedInputMatMulRun.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P04Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `89dd9106be74d15e03530c9edc5123b348054e085b30aab6d6552a47ed9e4a40`
+
+Type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} →
+  instLTNat.lt 0 m →
+    instLTNat.lt 0 n →
+      instLTNat.lt 0 t →
+        instLTNat.lt 0 b1 →
+          instLTNat.lt 0 b →
+            instLTNat.lt 0 b2 →
+              instLTNat.lt 0 p →
+                instLTNat.lt 0 q →
+                  instLTNat.lt 0 r →
+                    Eq m (instHMul.hMul p b1) →
+                      Eq n (instHMul.hMul q b) →
+                        Eq t (instHMul.hMul r b2) →
+                          (A : Fin m → Fin n → Real) →
+                            (B : Fin n → Fin t → Real) →
+                              (convertedA : Fin m → Fin n → Real) →
+                                (convertedB : Fin n → Fin t → Real) →
+                                  (deltaA : Fin m → Fin n → Real) →
+                                    (deltaB : Fin n → Fin t → Real) →
+                                      (computed : Fin m → Fin t → Real) →
+                                        (uLow uBar uFma uOut : Real) →
+                                          Real.instLE.le 0 uLow →
+                                            Real.instLE.le 0 uBar →
+                                              Real.instLE.le 0 uFma →
+                                                Real.instLE.le 0 uOut →
+                                                  Real.instLE.le uBar uFma →
+                                                    HighamBench.GammaValid
+                                                        (HighamBench.p04EffectiveFmaRoundoff uBar uFma uOut) q →
+                                                      HighamBench.GammaValid uBar n →
+                                                        (∀ (i : Fin m) (k : Fin n),
+                                                            Eq (convertedA i k) (instHAdd.hAdd (A i k) (deltaA i k))) →
+                                                          (∀ (k : Fin n) (j : Fin t),
+                                                              Eq (convertedB k j)
+                                                                (instHAdd.hAdd (B k j) (deltaB k j))) →
+                                                            (∀ (i : Fin m) (k : Fin n),
+                                                                Real.instLE.le (abs (deltaA i k))
+                                                                  (instHMul.hMul uLow (abs (A i k)))) →
+                                                              (∀ (k : Fin n) (j : Fin t),
+                                                                  Real.instLE.le (abs (deltaB k j))
+                                                                    (instHMul.hMul uLow (abs (B k j)))) →
+                                                                (alpha beta : Fin m → Fin t → Fin n → Real) →
+                                                                  (∀ (i : Fin m) (j : Fin t),
+                                                                      Eq (computed i j)
+                                                                        (Finset.univ.sum fun k =>
+                                                                          instHMul.hMul
+                                                                            (instHMul.hMul
+                                                                              (instHMul.hMul (convertedA i k)
+                                                                                (convertedB k j))
+                                                                              (instHAdd.hAdd 1 (alpha i j k)))
+                                                                            (instHAdd.hAdd 1 (beta i j k)))) →
+                                                                    (∀ (i : Fin m) (j : Fin t) (k : Fin n),
+                                                                        Real.instLE.le (abs (alpha i j k))
+                                                                          (HighamBench.gamma
+                                                                            (HighamBench.p04EffectiveFmaRoundoff uBar
+                                                                              uFma uOut)
+                                                                            q)) →
+                                                                      (∀ (i : Fin m) (j : Fin t) (k : Fin n),
+                                                                          Real.instLE.le (abs (beta i j k))
+                                                                            (HighamBench.gamma uBar n)) →
+                                                                        HighamBench.P04MixedInputMatMulRun m n t b1 b b2
+                                                                          p q r
+```
+
+Fully explicit type:
+
+```lean
+{m n t b1 b b2 p q r : Nat} →
+  (row_dimension_pos : @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) m) →
+    (inner_dimension_pos : @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n) →
+      (column_dimension_pos :
+          @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) t) →
+        (row_block_size_pos :
+            @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) b1) →
+          (inner_block_size_pos :
+              @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) b) →
+            (column_block_size_pos :
+                @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) b2) →
+              (row_block_count_pos :
+                  @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) p) →
+                (inner_block_count_pos :
+                    @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) q) →
+                  (column_block_count_pos :
+                      @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) r) →
+                    (row_partition :
+                        @Eq.{1} Nat m (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) p b1)) →
+                      (inner_partition :
+                          @Eq.{1} Nat n (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) q b)) →
+                        (column_partition :
+                            @Eq.{1} Nat t (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) r b2)) →
+                          (A : Fin m → Fin n → Real) →
+                            (B : Fin n → Fin t → Real) →
+                              (convertedA : Fin m → Fin n → Real) →
+                                (convertedB : Fin n → Fin t → Real) →
+                                  (deltaA : Fin m → Fin n → Real) →
+                                    (deltaB : Fin n → Fin t → Real) →
+                                      (computed : Fin m → Fin t → Real) →
+                                        (uLow uBar uFma uOut : Real) →
+                                          (uLow_nonneg :
+                                              @LE.le.{0} Real Real.instLE
+                                                (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                  (@Zero.toOfNat0.{0} Real Real.instZero))
+                                                uLow) →
+                                            (uBar_nonneg :
+                                                @LE.le.{0} Real Real.instLE
+                                                  (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                    (@Zero.toOfNat0.{0} Real Real.instZero))
+                                                  uBar) →
+                                              (uFma_nonneg :
+                                                  @LE.le.{0} Real Real.instLE
+                                                    (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                      (@Zero.toOfNat0.{0} Real Real.instZero))
+                                                    uFma) →
+                                                (uOut_nonneg :
+                                                    @LE.le.{0} Real Real.instLE
+                                                      (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                        (@Zero.toOfNat0.{0} Real Real.instZero))
+                                                      uOut) →
+                                                  (uBar_le_uFma : @LE.le.{0} Real Real.instLE uBar uFma) →
+                                                    (effective_gamma_valid :
+                                                        HighamBench.GammaValid
+                                                          (HighamBench.p04EffectiveFmaRoundoff uBar uFma uOut) q) →
+                                                      (internal_gamma_valid : HighamBench.GammaValid uBar n) →
+                                                        (convertedA_eq :
+                                                            ∀ (i : Fin m) (k : Fin n),
+                                                              @Eq.{1} Real (convertedA i k)
+                                                                (@HAdd.hAdd.{0, 0, 0} Real Real Real
+                                                                  (@instHAdd.{0} Real Real.instAdd) (A i k)
+                                                                  (deltaA i k))) →
+                                                          (convertedB_eq :
+                                                              ∀ (k : Fin n) (j : Fin t),
+                                                                @Eq.{1} Real (convertedB k j)
+                                                                  (@HAdd.hAdd.{0, 0, 0} Real Real Real
+                                                                    (@instHAdd.{0} Real Real.instAdd) (B k j)
+                                                                    (deltaB k j))) →
+                                                            (deltaA_bound :
+                                                                ∀ (i : Fin m) (k : Fin n),
+                                                                  @LE.le.{0} Real Real.instLE
+                                                                    (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                                      (deltaA i k))
+                                                                    (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                      (@instHMul.{0} Real Real.instMul) uLow
+                                                                      (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                                        (A i k)))) →
+                                                              (deltaB_bound :
+                                                                  ∀ (k : Fin n) (j : Fin t),
+                                                                    @LE.le.{0} Real Real.instLE
+                                                                      (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                                        (deltaB k j))
+                                                                      (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                        (@instHMul.{0} Real Real.instMul) uLow
+                                                                        (@abs.{0} Real Real.lattice Real.instAddGroup
+                                                                          (B k j)))) →
+                                                                (alpha beta : Fin m → Fin t → Fin n → Real) →
+                                                                  (algorithm3_1_factorization :
+                                                                      ∀ (i : Fin m) (j : Fin t),
+                                                                        @Eq.{1} Real (computed i j)
+                                                                          (@Finset.sum.{0, 0} (Fin n) Real
+                                                                            Real.instAddCommMonoid
+                                                                            (@Finset.univ.{0} (Fin n) (Fin.fintype n))
+                                                                            fun (k : Fin n) =>
+                                                                            @HMul.hMul.{0, 0, 0} Real Real Real
+                                                                              (@instHMul.{0} Real Real.instMul)
+                                                                              (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                                (@instHMul.{0} Real Real.instMul)
+                                                                                (@HMul.hMul.{0, 0, 0} Real Real Real
+                                                                                  (@instHMul.{0} Real Real.instMul)
+                                                                                  (convertedA i k) (convertedB k j))
+                                                                                (@HAdd.hAdd.{0, 0, 0} Real Real Real
+                                                                                  (@instHAdd.{0} Real Real.instAdd)
+                                                                                  (@OfNat.ofNat.{0} Real (nat_lit 1)
+                                                                                    (@One.toOfNat1.{0} Real
+                                                                                      Real.instOne))
+                                                                                  (alpha i j k)))
+                                                                              (@HAdd.hAdd.{0, 0, 0} Real Real Real
+                                                                                (@instHAdd.{0} Real Real.instAdd)
+                                                                                (@OfNat.ofNat.{0} Real (nat_lit 1)
+                                                                                  (@One.toOfNat1.{0} Real Real.instOne))
+                                                                                (beta i j k)))) →
+                                                                    (alpha_bound :
+                                                                        ∀ (i : Fin m) (j : Fin t) (k : Fin n),
+                                                                          @LE.le.{0} Real Real.instLE
+                                                                            (@abs.{0} Real Real.lattice
+                                                                              Real.instAddGroup (alpha i j k))
+                                                                            (HighamBench.gamma
+                                                                              (HighamBench.p04EffectiveFmaRoundoff uBar
+                                                                                uFma uOut)
+                                                                              q)) →
+                                                                      (beta_bound :
+                                                                          ∀ (i : Fin m) (j : Fin t) (k : Fin n),
+                                                                            @LE.le.{0} Real Real.instLE
+                                                                              (@abs.{0} Real Real.lattice
+                                                                                Real.instAddGroup (beta i j k))
+                                                                              (HighamBench.gamma uBar n)) →
+                                                                        HighamBench.P04MixedInputMatMulRun m n t b1 b b2
+                                                                          p q r
+```
+
+### D014: `HighamBench.gamma`
 
 - Role: `local`
 - Owner module: `HighamBench.Core`
@@ -193,55 +620,105 @@ Definition body (one-level semantic boundary):
 fun u n => instHDiv.hDiv (instHMul.hMul n.cast u) (instHSub.hSub 1 (instHMul.hMul n.cast u))
 ```
 
-### D004: `Eq`
+### D015: `HighamBench.GammaValid`
 
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
-- Semantic SHA-256: `63e9afa87e04d13393a2fe09e8e76489d96be3982734b4b40a52fc6ebea863d7`
+- Role: `local`
+- Owner module: `HighamBench.Core`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `651ef903a8d9a3c8f539284f6c70325cebe6e199aad808cb56d9123f31e258c9`
 
 Type:
 
 ```lean
-{α : Sort u_1} → α → α → Prop
+Real → Nat → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Sort u_1} → α → α → Prop
+(u : Real) → (n : Nat) → Prop
 ```
 
-### D005: `HAdd.hAdd`
+Definition body (one-level semantic boundary):
+
+```lean
+fun u n => Real.instLT.lt (instHMul.hMul n.cast u) 1
+```
+
+### D016: `Fin`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `59788903be5da78a88e4dc3844df38effdaabdfa82bb364602790d2271da7fda`
+
+Type:
+
+```lean
+Nat → Type
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → Type
+```
+
+### D017: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `abbrev`
+- Distance from target type: `1`
 - Semantic SHA-256: `e0bf2a92addd6ea713343e4ef69f67e4e1155781d08f46957b9f71412d865f59`
-- Reuse SHA-256: `2c99a1926bdac64e3a35f3fa155d689dc336fe4eb783a294540e765003beae74`
 
-Hash-verified prior interpretation:
+Type:
 
-HAdd.hAdd selects the heterogeneous-addition operation supplied by its typeclass instance.
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HAdd α β γ] → α → β → γ
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D006: `HMul.hMul`
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HAdd.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HAdd α β γ] => self.1
+```
+
+### D018: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `abbrev`
+- Distance from target type: `1`
 - Semantic SHA-256: `4e00447a4a8ef4c2ce13e307c56a1fbcd7fa8c732fe039a452b42477a50df2c6`
-- Reuse SHA-256: `8915b03a91c892e98db02c0973c28bad864cb016b465642b346d14f34e446a76`
 
-Hash-verified prior interpretation:
+Type:
 
-HMul.hMul selects the heterogeneous-multiplication operation supplied by its typeclass instance.
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HMul α β γ] → α → β → γ
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D007: `HPow.hPow`
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HMul.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HMul α β γ] => self.1
+```
+
+### D019: `HPow.hPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -267,35 +744,59 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HPow α β γ] => self.1
 ```
 
-### D008: `HSub.hSub`
+### D020: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `abbrev`
+- Distance from target type: `1`
 - Semantic SHA-256: `98025b38d523c0eadea77ba4961a20b2a913b23c079c4bfeba24a7bfaa24a4bc`
-- Reuse SHA-256: `b332fe28eda7461a55409befd08f414509b9cfcdfd7730a06048da7b83c87c62`
 
-Hash-verified prior interpretation:
+Type:
 
-HSub.hSub selects the heterogeneous-subtraction operation supplied by its instance.
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HSub α β γ] → α → β → γ
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D009: `LE.le`
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HSub.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HSub α β γ] => self.1
+```
+
+### D021: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `abbrev`
+- Distance from target type: `1`
 - Semantic SHA-256: `54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48`
-- Reuse SHA-256: `c476dc1b2ea074ec4bd39cbce7c0ff24c628f572b131686eb6963c3e7131fb19`
 
-Hash-verified prior interpretation:
+Type:
 
-LE.le selects the non-strict order relation supplied for the type.
+```lean
+{α : Type u} → [self : LE α] → α → α → Prop
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D010: `Monoid.toNatPow`
+```lean
+{α : Type u} → [self : LE.{u} α] → α → α → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : LE α] => self.1
+```
+
+### D022: `Monoid.toNatPow`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -321,7 +822,7 @@ Definition body (one-level semantic boundary):
 fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
 ```
 
-### D011: `Nat`
+### D023: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -341,7 +842,7 @@ Fully explicit type:
 Type
 ```
 
-### D012: `Nat.instAtLeastTwoHAddOfNat`
+### D024: `Nat.instAtLeastTwoHAddOfNat`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Init`
@@ -364,7 +865,7 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D013: `Nat.instNeZeroSucc`
+### D025: `Nat.instNeZeroSucc`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Nat.Basic`
@@ -387,91 +888,157 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D014: `OfNat.ofNat`
+### D026: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `abbrev`
+- Distance from target type: `1`
 - Semantic SHA-256: `6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead`
-- Reuse SHA-256: `37f0ecf64bd742bcc93f38034359021b711500e02dfff8ff3c1f2db70c293777`
 
-Hash-verified prior interpretation:
+Type:
 
-OfNat.ofNat interprets a natural-number literal in the requested type.
+```lean
+{α : Type u} → (x : Nat) → [self : OfNat α x] → α
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D015: `One.toOfNat1`
+```lean
+{α : Type u} → (x : Nat) → [self : OfNat.{u} α x] → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α x [self : OfNat α x] => self.1
+```
+
+### D027: `One.toOfNat1`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5`
-- Reuse SHA-256: `decd674803aac02ebd385212bdf204f6212acc91345ee72dc5ad8d7b3dfe3bb0`
 
-Hash-verified prior interpretation:
+Type:
 
-One.toOfNat1 turns a One instance into the OfNat instance for the literal 1.
+```lean
+{α : Type u_1} → [One α] → OfNat α 1
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D016: `Real`
+```lean
+{α : Type u_1} → [One.{u_1} α] → OfNat.{u_1} α (nat_lit 1)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : One α] => { ofNat := inst.one }
+```
+
+### D028: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `inductive`
+- Distance from target type: `1`
 - Semantic SHA-256: `38529f0578472feffc4c79d5d0755fa10fc3edafb232ab5e442336d13630ee90`
-- Reuse SHA-256: `3483e25ab144d9f6b5fc2cc409de11ee2b17d27a19ada9ad855dd312dd9e9444`
 
-Hash-verified prior interpretation:
+Type:
 
-Real is mathlib's type of real numbers.
+```lean
+Type
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D017: `Real.instAdd`
+```lean
+Type
+```
+
+### D029: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `f99208c181266311bec9c890b688378f329076f9e6be38fe93d9cedf4d7f50ce`
-- Reuse SHA-256: `2600632309109b9eef72c7a64a51bb9f19137f042a46f93146279b789a7082de`
 
-Hash-verified prior interpretation:
+Type:
 
-Real.instAdd supplies ordinary real addition.
+```lean
+Add Real
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D018: `Real.instAddGroup`
+```lean
+Add.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ add := Real.add✝ }
+```
+
+### D030: `Real.instAddGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0`
-- Reuse SHA-256: `1f5c2cb2573ac7ae1df7dd2fb4169025e230cf39eed10a3bb6015178c0a216f9`
 
-Hash-verified prior interpretation:
+Type:
 
-Real.instAddGroup supplies the additive-group structure on Real, including negation.
+```lean
+AddGroup Real
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D019: `Real.instLE`
+```lean
+AddGroup.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D031: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3`
-- Reuse SHA-256: `96f4d2c6a6ed1a6072650c127a11af0743154b941d6d0bf8072e93589cecd9d1`
 
-Hash-verified prior interpretation:
+Type:
 
-Real.instLE supplies the usual non-strict order on Real.
+```lean
+LE Real
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D020: `Real.instMonoid`
+```lean
+LE.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ le := Real.le✝ }
+```
+
+### D032: `Real.instMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -497,147 +1064,216 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D021: `Real.instMul`
+### D033: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `459ccbe28a1d29ccd2b329ea29e1a84b329b8064b8a8ecc52764b69b23e229ed`
-- Reuse SHA-256: `cc1d87e896e40ca98beaba733d8981b2be417bf56b3cd139099a7fe33f462ebe`
 
-Hash-verified prior interpretation:
+Type:
 
-Real.instMul supplies ordinary real multiplication.
+```lean
+Mul Real
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D022: `Real.instNatCast`
+```lean
+Mul.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ mul := Real.mul✝ }
+```
+
+### D034: `Real.instNatCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15`
-- Reuse SHA-256: `11515d289291036cdc99fffdf3a5fc5b207622a159829c92fabab8dbc5d90b0b`
 
-Hash-verified prior interpretation:
+Type:
 
-Real.instNatCast supplies the canonical embedding of Nat into Real.
+```lean
+NatCast Real
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D023: `Real.instOne`
+```lean
+NatCast.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ natCast := fun n => { cauchy := n.cast } }
+```
+
+### D035: `Real.instOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81`
-- Reuse SHA-256: `278b68069fb2dca8c3606f359ce8d431c0f9e00fb8e417d19697eed49e4fc22e`
 
-Hash-verified prior interpretation:
+Type:
 
-Real.instOne supplies the multiplicative identity 1 in Real.
+```lean
+One Real
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D024: `Real.instSub`
+```lean
+One.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ one := Real.one✝ }
+```
+
+### D036: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `926d9e8fcca2819a885d446e168b20c7c8aac2e542d59ed2b48e32c9a4659a36`
-- Reuse SHA-256: `b749cd229005c3a1648902abc2bc67a4c2a7c085861f5f029cae4ef461a4036c`
 
-Hash-verified prior interpretation:
+Type:
 
-Real.instSub supplies ordinary real subtraction a-b=a+(-b).
+```lean
+Sub Real
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D025: `Real.instZero`
+```lean
+Sub.{0} Real
+```
 
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Semantic SHA-256: `860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882`
-- Reuse SHA-256: `ca3e97a9097116b9d22990f2a068cbdfe0d452830107525cf6415bfebfc4c640`
+Definition body (one-level semantic boundary):
 
-Hash-verified prior interpretation:
+```lean
+{ sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
+```
 
-Real.instZero supplies the additive identity 0 in Real.
-
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
-
-### D026: `Real.lattice`
+### D037: `Real.lattice`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510`
-- Reuse SHA-256: `094296f36b8f60f6e248ebe56a2c9cd0a87d2a95d53003f3fb7fc76713aa00a8`
 
-Hash-verified prior interpretation:
+Type:
 
-Real.lattice supplies max and min under the usual real order.
+```lean
+Lattice Real
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D027: `Zero.toOfNat0`
+```lean
+Lattice.{0} Real
+```
 
-- Role: `external-frontier`
-- Owner module: `Init.Data.Zero`
-- Declaration kind: `def`
-- Semantic SHA-256: `f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a`
-- Reuse SHA-256: `dcd0bbc3c9d1e1b585248a4bf599d7d44121a8aebc485d3a81d91f3be94fc097`
+Definition body (one-level semantic boundary):
 
-Hash-verified prior interpretation:
+```lean
+inferInstance
+```
 
-Zero.toOfNat0 turns a Zero instance into the OfNat instance for the literal 0.
-
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
-
-### D028: `abs`
+### D038: `abs`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b`
-- Reuse SHA-256: `32a708fd3378d4db96640e2e6509634aa96151e94172fcf7f08b2b9a3e3d8a93`
 
-Hash-verified prior interpretation:
+Type:
 
-abs a is max(a,-a), hence standard absolute value on Real.
+```lean
+{α : Type u_1} → [Lattice α] → [AddGroup α] → α → α
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D029: `instHAdd`
+```lean
+{α : Type u_1} → [Lattice.{u_1} α] → [AddGroup.{u_1} α] → (a : α) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [Lattice α] [AddGroup α] a =>
+  SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
+```
+
+### D039: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `38066efd17aeeca52ec2890d9aafca2fa3cce8fda7f5843c1b8e5da130d93981`
-- Reuse SHA-256: `8f153af5aa1baf5f6424ff39c5d08323cd358ffeece5f9ced3043ad2cffa73b6`
 
-Hash-verified prior interpretation:
+Type:
 
-instHAdd lifts a homogeneous Add operation to HAdd.
+```lean
+{α : Type u_1} → [Add α] → HAdd α α α
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D030: `instHMul`
+```lean
+{α : Type u_1} → [Add.{u_1} α] → HAdd.{u_1, u_1, u_1} α α α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
+```
+
+### D040: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `1fd375514ac68e29e7941c94ba308ea936395db23d0fee63a5c69dcccd3b2bdc`
-- Reuse SHA-256: `46765db2b9c4e049bf61e51bed5aa60e6f7c8d1bae634a71be3cc3d75d34fb61`
 
-Hash-verified prior interpretation:
+Type:
 
-instHMul lifts a homogeneous Mul operation to HMul.
+```lean
+{α : Type u_1} → [Mul α] → HMul α α α
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D031: `instHPow`
+```lean
+{α : Type u_1} → [Mul.{u_1} α] → HMul.{u_1, u_1, u_1} α α α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
+```
+
+### D041: `instHPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -663,21 +1299,33 @@ Definition body (one-level semantic boundary):
 fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
 ```
 
-### D032: `instHSub`
+### D042: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `def`
+- Distance from target type: `1`
 - Semantic SHA-256: `aa782f2b5af3d068f4c5340de4b32b193fece2c659a45582cc3024a19b550c87`
-- Reuse SHA-256: `f39a60e5a7fdc34f852de226b72fe543dea9c623443daecb3a67b84708f713fb`
 
-Hash-verified prior interpretation:
+Type:
 
-instHSub lifts homogeneous subtraction to HSub.
+```lean
+{α : Type u_1} → [Sub α] → HSub α α α
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D033: `instOfNatAtLeastTwo`
+```lean
+{α : Type u_1} → [Sub.{u_1} α] → HSub.{u_1, u_1, u_1} α α α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
+```
+
+### D043: `instOfNatAtLeastTwo`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
@@ -703,7 +1351,7 @@ Definition body (one-level semantic boundary):
 fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
 ```
 
-### D034: `instOfNatNat`
+### D044: `instOfNatNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -729,100 +1377,492 @@ Definition body (one-level semantic boundary):
 fun n => { ofNat := n }
 ```
 
-### D035: `LT.lt`
+### D045: `Fin.fintype`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Fintype.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `e7038d0981813ab904ddadd5c858e1d87d6d42413a72872c71b6e0413db6bb44`
+
+Type:
+
+```lean
+(n : Nat) → Fintype (Fin n)
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → Fintype.{0} (Fin n)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
+```
+
+### D046: `Finset.sum`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `931ceac4e9efb5833f58970d10ced4621362e020ea1119492a8d379b7e692372`
+
+Type:
+
+```lean
+{ι : Type u_1} → {M : Type u_3} → [AddCommMonoid M] → Finset ι → (ι → M) → M
+```
+
+Fully explicit type:
+
+```lean
+{ι : Type u_1} → {M : Type u_3} → [AddCommMonoid.{u_3} M] → (s : Finset.{u_1} ι) → (f : ι → M) → M
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
+```
+
+### D047: `Finset.univ`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Fintype.Defs`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `194413a784fbc0b27d0cb6b1ab67ed060210172bf16ba24045aa439e58f9a8c7`
+
+Type:
+
+```lean
+{α : Type u_1} → [Fintype α] → Finset α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Fintype.{u_1} α] → Finset.{u_1} α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Fintype α] => inst.elems
+```
+
+### D048: `LT.lt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `abbrev`
+- Distance from target type: `2`
 - Semantic SHA-256: `fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009`
-- Reuse SHA-256: `8b6f0ef55849bf1625a675effbde90e63e8db4a1f7a2a09442af8969b6e8c3b6`
 
-Hash-verified prior interpretation:
+Type:
 
-LT.lt selects the strict-order relation supplied for the type.
+```lean
+{α : Type u} → [self : LT α] → α → α → Prop
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D036: `Nat.cast`
+```lean
+{α : Type u} → [self : LT.{u} α] → α → α → Prop
+```
 
-- Role: `external-frontier`
-- Owner module: `Init.Data.Cast`
-- Declaration kind: `def`
-- Semantic SHA-256: `6e24327ea908b1837083bb15aef27d593e950a2ff8ade81d8aa94bfe33b64450`
-- Reuse SHA-256: `fb2cb8ca958b6b9b06056213ea79965d590b2ebafdc4f8f0a3e9756bb034f7d8`
+Definition body (one-level semantic boundary):
 
-Hash-verified prior interpretation:
+```lean
+fun α [self : LT α] => self.1
+```
 
-Nat.cast maps a natural number to the corresponding value in a type with NatCast.
-
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
-
-### D037: `Real.instLT`
+### D049: `Real.decidableLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `5ad021b20f1dc17f5e341bc278e2f4c546324ba782b37f6f6690b632da927ead`
+
+Type:
+
+```lean
+(a b : Real) → Decidable (Real.instLE.le a b)
+```
+
+Fully explicit type:
+
+```lean
+(a b : Real) → Decidable (@LE.le.{0} Real Real.instLE a b)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun a b => inferInstance
+```
+
+### D050: `Real.decidableLT`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `def93575a13821d7d42b557cb9b973eede26ae12bbb8b60b1f0a302bf95a5a42`
+
+Type:
+
+```lean
+(a b : Real) → Decidable (Real.instLT.lt a b)
+```
+
+Fully explicit type:
+
+```lean
+(a b : Real) → Decidable (@LT.lt.{0} Real Real.instLT a b)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun a b => inferInstance
+```
+
+### D051: `Real.instAddCommMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `11a549e6c9caa007a4627570dd86aea756ada755f141da0356b8766788f2eef7`
+
+Type:
+
+```lean
+AddCommMonoid Real
+```
+
+Fully explicit type:
+
+```lean
+AddCommMonoid.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D052: `Real.instLT`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
 - Semantic SHA-256: `573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a`
-- Reuse SHA-256: `03d17dba89598f99d38453fd511ae8ed17b425a007576df0a782595ade0fc63c`
 
-Hash-verified prior interpretation:
+Type:
 
-Real.instLT supplies the usual strict order on Real.
+```lean
+LT Real
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D038: `DivInvMonoid.toDiv`
+```lean
+LT.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ lt := Real.lt✝ }
+```
+
+### D053: `Real.instZero`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882`
+
+Type:
+
+```lean
+Zero Real
+```
+
+Fully explicit type:
+
+```lean
+Zero.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ zero := Real.zero✝ }
+```
+
+### D054: `Zero.toOfNat0`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Zero`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a`
+
+Type:
+
+```lean
+{α : Type u_1} → [Zero α] → OfNat α 0
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Zero.{u_1} α] → OfNat.{u_1} α (nat_lit 0)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Zero α] => { ofNat := inst.zero }
+```
+
+### D055: `ite`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `3029bae29d2d16b5aeb879ad3c12a1b3c4e78998083bf1ab4614942fafdece0e`
+
+Type:
+
+```lean
+{α : Sort u} → (c : Prop) → [h : Decidable c] → α → α → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → (c : Prop) → [h : Decidable c] → (t e : α) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} c [h : Decidable c] t e => Decidable.casesOn h (fun x => e) fun x => t
+```
+
+### D056: `DivInvMonoid.toDiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
 - Declaration kind: `abbrev`
+- Distance from target type: `3`
 - Semantic SHA-256: `cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea`
-- Reuse SHA-256: `df63d67be0a47651e461c7c0857bc6f06de6eb2312aa865ec12586eb832a6aa4`
 
-Hash-verified prior interpretation:
+Type:
 
-DivInvMonoid.toDiv extracts the division operation from a division/inverse monoid.
+```lean
+{G : Type u} → [self : DivInvMonoid G] → Div G
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D039: `HDiv.hDiv`
+```lean
+{G : Type u} → [self : DivInvMonoid.{u} G] → Div.{u} G
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun G [self : DivInvMonoid G] => self.3
+```
+
+### D057: `Eq`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `63e9afa87e04d13393a2fe09e8e76489d96be3982734b4b40a52fc6ebea863d7`
+
+Type:
+
+```lean
+{α : Sort u_1} → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u_1} → α → α → Prop
+```
+
+### D058: `HDiv.hDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `abbrev`
+- Distance from target type: `3`
 - Semantic SHA-256: `10d75d9f08ad8c923109392866fba5fb3645de144bc824cefdd353658fe9f06b`
-- Reuse SHA-256: `7cc520200fbbc81cb5af9bd69f23a7fa8d3c03985e9622d43e610579ec2d1769`
 
-Hash-verified prior interpretation:
+Type:
 
-HDiv.hDiv selects the heterogeneous-division operation supplied by its instance.
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HDiv α β γ] → α → β → γ
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D040: `Real.instDivInvMonoid`
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HDiv.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HDiv α β γ] => self.1
+```
+
+### D059: `Nat.cast`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Cast`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `6e24327ea908b1837083bb15aef27d593e950a2ff8ade81d8aa94bfe33b64450`
+
+Type:
+
+```lean
+{R : Type u} → [NatCast R] → Nat → R
+```
+
+Fully explicit type:
+
+```lean
+{R : Type u} → [NatCast.{u} R] → Nat → R
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {R} [inst : NatCast R] => inst.natCast
+```
+
+### D060: `Real.instDivInvMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
+- Distance from target type: `3`
 - Semantic SHA-256: `166f2abb65bf1271e5e8d70fdb78c55672c7e366b30439e83b517f803cdefac3`
-- Reuse SHA-256: `ab4d730c0e1a3194e52e83a676c0de91daf486521f7cb16d7cf21b77a11bde44`
 
-Hash-verified prior interpretation:
+Type:
 
-Real.instDivInvMonoid supplies real multiplication, inverse, and division.
+```lean
+DivInvMonoid Real
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
 
-### D041: `instHDiv`
+```lean
+DivInvMonoid.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ toMonoid := Real.instMonoid, toInv := Real.instInv, div := DivInvMonoid.div',
+  div_eq_mul_inv := Real.instDivInvMonoid._proof_1, zpow := zpowRec, zpow_zero' := Real.instDivInvMonoid._proof_2,
+  zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
+```
+
+### D061: `instHDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `def`
+- Distance from target type: `3`
 - Semantic SHA-256: `ea3478ce3daf37e2cbdcd4bfaf7b5142fd7d274b56d75d2fae007c15e1b89871`
-- Reuse SHA-256: `bf79a894f33a6eb637c4e4c038bf278981a5dc8a3e147af4deafafc35a9b734c`
 
-Hash-verified prior interpretation:
+Type:
 
-instHDiv lifts homogeneous division to HDiv.
+```lean
+{α : Type u_1} → [Div α] → HDiv α α α
+```
 
-Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Div.{u_1} α] → HDiv.{u_1, u_1, u_1} α α α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
+```
+
+### D062: `instLTNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `4054f2341fdda887b2040c624c0867866ab56eabf3441d6ffc9451c94ae1663c`
+
+Type:
+
+```lean
+LT Nat
+```
+
+Fully explicit type:
+
+```lean
+LT.{0} Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ lt := Nat.lt }
+```
+
+### D063: `instMulNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `15abc50804fa78aecc5a807f82f13a6b67bcdff9061558426471fc4b606841aa`
+
+Type:
+
+```lean
+Mul Nat
+```
+
+Fully explicit type:
+
+```lean
+Mul.{0} Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ mul := Nat.mul }
+```
