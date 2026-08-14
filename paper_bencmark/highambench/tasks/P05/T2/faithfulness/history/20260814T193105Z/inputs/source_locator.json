@@ -8,14 +8,14 @@
       "anchor": "Theorem 4.2 and equation (4.2)",
       "pdf_page": 10,
       "printed_page": "693",
-      "role": "rectangular LU backward-error identity and n*u bound, followed by the sharp square rowwise and uniform bounds",
+      "role": "LU backward-error equation and sharp square rowwise/global bounds",
       "section": "4.2. An improved backward error bound for LU factorization"
     },
     {
-      "anchor": "Doolittle formulas, equations (4.3a)-(4.3b), and the final coefficient comparison",
+      "anchor": "equations (4.3a)-(4.3b) and the final coefficient comparison",
       "pdf_page": 11,
       "printed_page": "694",
-      "role": "algorithm linkage, local residual estimates, and derivation of every global coefficient in the target",
+      "role": "local Doolittle residual estimates used by the target",
       "section": "4.2. An improved backward error bound for LU factorization"
     }
   ],

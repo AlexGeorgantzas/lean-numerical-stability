@@ -3,170 +3,156 @@
   "role": "roundtrip-judge",
   "task_id": "P05-T2",
   "paper_sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6",
-  "blind_translation_sha256": "36fa2ad1734a9feea8493c522b1daa289e652077460a92100b12fff0c6a26383",
+  "blind_translation_sha256": "61ef2692b2f2d08e242053b56cab9409355c1257620a14b7628b52f2de03bfe3",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The published SIAM Journal version contains Theorem 4.2 and equation (4.2) on printed page 693, followed by the Doolittle proof and equations (4.3a)-(4.3b) on printed page 694.",
-      "translation_evidence": "The translation contains the exact square matrix product, the row-dependent coefficient, and the uniform predecessor coefficient corresponding to the square part of equation (4.2).",
-      "reasoning": "The source packet selects the correct paper version and passage, although the translation represents only a reduced algebraic fragment of that result."
+      "paper_evidence": "The PDF is the published SIAM Journal on Matrix Analysis and Applications volume 35, issue 2, 2014 version. Printed pages 693-694 contain Theorem 4.2, equation (4.2), the Doolittle proof, and equations (4.3a)-(4.3b).",
+      "translation_evidence": "The translation describes the rectangular LU backward-error result, its square refinements, and the two Doolittle local residual families.",
+      "reasoning": "The selected paper version and passages are the correct source for the translated result."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.2 binds dimensions m and n with m>=n, A and computed L in F^(m x n), and computed U in F^(n x n); its algorithmic indices are one-based.",
-      "translation_evidence": "The translation binds only one arbitrary natural n, permits n=0, and takes A, L, and U to be arbitrary real n by n matrices indexed by Fin n.",
-      "reasoning": "The rectangular dimensions, floating-point entry types, computed-factor roles, and positive algorithmic index domain are not preserved."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.2 has A in F^(m-by-n), m at least n, LHat in F^(m-by-n), UHat in F^(n-by-n), and an m-by-n perturbation. Paper indices run from 1.",
+      "translation_evidence": "The run contains m-by-n matrices A and LHat, an n-by-n matrix UHat, and an m-by-n real Delta A. Fin indices are explicitly zero-based, with Fin n embedded into Fin m using n at most m.",
+      "reasoning": "The matrix types and dimensions match. Zero-based k and i correspond respectively to the paper's one-based k-1 and i-1 coefficients."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "Under completion and arithmetic assumptions, the paper concludes that the computed factors have a backward perturbation satisfying the stated bounds.",
-      "translation_evidence": "The translation universally quantifies arbitrary A, L, and U, assumes the decisive square rowwise residual bound, and only then introduces DeltaA existentially.",
-      "reasoning": "The computed outputs become free inputs and a principal paper conclusion is moved into the antecedent, changing quantifier scope and logical content."
+      "status": "pass",
+      "paper_evidence": "Admissible dimensions and A precede a completing computation that produces LHat and UHat; Delta A is then determined by the exact factorization identity.",
+      "translation_evidence": "m and n are quantified before a run containing A, LHat, UHat, and the format, after which one Delta A depending on that run is existentially quantified and used in all bounds.",
+      "reasoning": "The witness dependence and the requirement that the same perturbation satisfy the identity and every applicable bound are preserved."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "Theorem 4.2 assumes Gaussian elimination runs to completion and that no underflow or overflow occurs, within the paper's round-to-nearest floating-point model.",
-      "translation_evidence": "Its only scalar condition is 0<=u, and its other hypothesis is the square rowwise residual estimate itself.",
-      "reasoning": "Algorithmic success and floating-point execution hypotheses are omitted, while the central estimate they support is assumed."
+      "paper_evidence": "Theorem 4.2 assumes that Gaussian elimination runs to completion and that no underflow or overflow occurs. The residual estimates are consequences obtained in the proof from Lemma 4.1.",
+      "translation_evidence": "A valid run requires per-entry scalar executions, and D032 already carries the k*u and (k+1)*u residual estimates. It uses an abstract safe-range predicate instead of a globally defined absence-of-underflow-and-overflow hypothesis.",
+      "reasoning": "The core local error estimates have been moved into the run hypotheses, while the paper's explicit exceptional-value hypothesis is not represented with its stated semantics."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "The paper gives the rectangular n*u bound, the square rowwise and (n-1)*u bounds, and the distinct local estimates (k-1)*u and k*u with their respective index ranges.",
-      "translation_evidence": "It concludes only an exact square identity plus the square rowwise and uniform bounds; it contains neither the rectangular n*u result nor either local Doolittle estimate.",
-      "reasoning": "Substantial cases and conclusions required by the source contract are absent."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.2 gives LHat*UHat=A+Delta A and the n*u bound; equation (4.2) gives the rowwise and uniform square bounds. Equations (4.3a)-(4.3b) give the local upper and lower residual bounds.",
+      "translation_evidence": "The translation includes both local bound families and one existential Delta A satisfying the identity, rectangular bound, and simultaneous square-case rowwise and uniform bounds.",
+      "reasoning": "Every conclusion in the cited theorem and supporting coefficient derivation is represented."
     },
     {
       "id": "S06",
-      "status": "pass",
-      "paper_evidence": "The displayed products are exact matrix products of computed entries, absolute values are entrywise, and the square diagonal coefficient acts rowwise.",
-      "translation_evidence": "The dependency ledger correctly unfolds exact finite matrix products, products of entrywise magnitudes, pointwise matrix addition, scalar absolute value, Fin indexing, casts, and truncated Nat subtraction.",
-      "reasoning": "Every operator actually present in the translated proposition is explicitly and correctly interpreted."
+      "status": "fail",
+      "paper_evidence": "The paper defines F through base, precision, and exponent range, requires symmetry and zero, and defines normal and subnormal ranges, round-to-nearest, underflow, and overflow.",
+      "translation_evidence": "Matrix products, scalar absolute values, finite sums, and componentwise order are unfolded correctly, but D019 leaves the representable set and safe-range predicate abstract and does not connect them to the radix, precision, exponent bounds, symmetry, or the paper's exceptional-value definitions.",
+      "reasoning": "The algebraic operators are interpreted, but the imported floating-point and safe-range definitions do not express the paper's definitions."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "The factors are produced by rounded Gaussian-elimination updates, while L*U, DeltaA, and the residual sums in the theorem and proof are exact mathematical quantities formed afterward.",
-      "translation_evidence": "All matrices and sums are exact real objects, and L and U have no status as computed quantities.",
-      "reasoning": "Although its matrix product is correctly exact, the translation removes the distinction between computed factors and arbitrary exact matrices."
+      "status": "pass",
+      "paper_evidence": "Hatted factors are computed floating-point values, while their displayed product and Delta A relation are exact mathematical equalities.",
+      "translation_evidence": "A, LHat, and UHat store real values with representability and computation evidence; rounding occurs inside scalar executions, while the displayed products and Delta A are exact real operations.",
+      "reasoning": "Computed factors, rounded intermediate operations, exact products, and the exact residual are not conflated."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "The theorem concerns completed Gaussian elimination, and its proof uses Doolittle row and column updates, division by the computed pivot, L_kk=1, and arbitrary summation order.",
-      "translation_evidence": "No algorithm, update schedule, pivot, triangular structure, completion condition, or computed-output relation is represented.",
-      "reasoning": "The proposition is an abstract residual lemma with no linkage to Gaussian elimination."
+      "status": "unclear",
+      "paper_evidence": "Section 4.2 says the result concerns any variant of Gaussian elimination, while the proof analyzes Doolittle as a mathematically equivalent formulation. The passage does not delimit whether pivoted or otherwise reorganized variants are included.",
+      "translation_evidence": "LocalDef001 requires Doolittle-shaped upper and lower scalar executions with arbitrary permutations and binary associations of each scalar numerator, but contains no broader Gaussian-elimination variant or permutation-matrix model.",
+      "reasoning": "The translation is linked to the proof's Doolittle algorithm, but the paper does not provide enough information to decide whether this run type covers the full algorithmic scope claimed by 'any variant.'"
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Theorem 4.2 and equations (4.2)-(4.3) use scalar absolute values, entrywise matrix absolute values, and componentwise inequalities rather than matrix or vector norms.",
-      "translation_evidence": "Every bound is entrywise, and S(i,j) is sum_k |L(i,k)||U(k,j)|.",
-      "reasoning": "On the represented square fragment, the componentwise magnitude semantics agree exactly."
+      "paper_evidence": "Theorem 4.2 uses entrywise absolute-value matrices, componentwise inequalities, and ordinary multiplication of |LHat| and |UHat|; no matrix or vector norm occurs.",
+      "translation_evidence": "Every estimate is a scalar absolute-value inequality, and the magnitude product is explicitly the entrywise sum of |LHat_ik||UHat_kj| rather than a norm.",
+      "reasoning": "The componentwise, non-normwise semantics match."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The general coefficient is n*u; the square coefficients are (i-1)*u and (n-1)*u; the local coefficients are respectively (k-1)*u and k*u.",
-      "translation_evidence": "Zero-based i.val correctly represents the square coefficient i-1, and Nat n-1 represents the square uniform coefficient, but no n*u, (k-1)*u, or k*u bound is present.",
-      "reasoning": "The retained square offsets are correct, but several required constants and their parameter dependencies are missing; n=0 also introduces truncated-subtraction behavior absent from the paper."
+      "status": "pass",
+      "paper_evidence": "The coefficients are (k-1)u in (4.3a), k*u in (4.3b), n*u generally, and (i-1)u and (n-1)u in the square case, using one-based indices.",
+      "translation_evidence": "With zero-based indices, the corresponding coefficients are k*u, (k+1)*u, n*u, i*u, and (n-1)*u.",
+      "reasoning": "All constants and offsets agree after the explicit one-based to zero-based conversion, including the zero coefficient for the first square row."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The paper uses finite floating-point inputs and computed factors, round-to-nearest arithmetic, unit roundoff, arbitrary radix and tie breaking, and excludes underflow and overflow.",
-      "translation_evidence": "It uses arbitrary real matrices and an arbitrary nonnegative real u, with no floating-point set, rounding operation, radix, precision, tie rule, underflow, or overflow condition.",
-      "reasoning": "The numerical model is entirely absent."
+      "paper_evidence": "The paper uses a finite base-beta, precision-p floating-point set with exponent range, symmetry, round-to-nearest with arbitrary tie-breaking, u=(1/2)beta^(1-p), and explicit IEEE-style overflow and Kahan underflow exclusions.",
+      "translation_evidence": "D019 has the correct unit-roundoff equation and a nearest-value axiom on an abstract safe range, but its finite representable set and safe-range predicate need not be the stated floating-point set or exceptional-value model. No global no-underflow/no-overflow condition appears.",
+      "reasoning": "The unit-roundoff constant and nearest-rounding idea match, but the admitted formats and executions are not constrained to the paper's numerical model."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The rowwise residual/backward-error inequality is a substantive conclusion derived for computed factors.",
-      "translation_evidence": "That inequality is an antecedent, after which the same inequality for DeltaA follows by defining DeltaA=L*U-A and the uniform bound follows from i.val<=n-1.",
-      "reasoning": "The equality signs and inequality directions are locally correct, but the proposition has much weaker logical force because it assumes the key estimate."
+      "paper_evidence": "The paper derives the local residual inequalities and then the global backward-error inequalities from completion and exception-free floating-point evaluation.",
+      "translation_evidence": "The displayed equality and inequality directions are correct, but D032 makes the local residual inequalities part of the scalar-execution evidence required by the run.",
+      "reasoning": "Although each displayed relation has the right direction and strictness, the overall conditional has different logical strength because essential error bounds are hypotheses rather than derived consequences."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "DeltaA is the exact componentwise backward perturbation L*U-A, and the bounds majorize its individual entries.",
-      "translation_evidence": "The exact identity L*U=A+DeltaA forces DeltaA=L*U-A, and all bounds apply entrywise to that residual.",
-      "reasoning": "The represented error remains a componentwise backward error; it is not replaced by a normwise or forward-error quantity."
+      "paper_evidence": "Delta A is an input backward error defined by LHat*UHat=A+Delta A and bounded componentwise relative to |LHat||UHat|.",
+      "translation_evidence": "The same exact identity determines Delta A=LHat*UHat-A, and every global estimate uses the corresponding component of the magnitude product.",
+      "reasoning": "The translation preserves the backward-error and local-residual notions without substituting a forward or normwise error."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "The improved coefficients contain no O(u^2) term and require no condition such as n*u<1.",
-      "translation_evidence": "Its bounds are exactly linear in u, with no remainder term or dimension-dependent smallness hypothesis.",
-      "reasoning": "Higher-order treatment agrees on the fragment represented."
+      "paper_evidence": "The paper emphasizes exact linear multiples of u, with no quadratic remainder, gamma factor, denominator, or smallness condition such as n*u<1.",
+      "translation_evidence": "The constants are exactly k*u, (k+1)*u, n*u, i*u, and (n-1)*u, and the translation includes no higher-order term or smallness assumption.",
+      "reasoning": "Higher-order treatment matches the improved bounds."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The source result covers rectangular floating-point matrices and has a sharper square computed-factor case.",
-      "translation_evidence": "It specializes dimensions to square matrices while generalizing entries and factors to arbitrary reals and explicitly includes the empty n=0 case.",
-      "reasoning": "This mixed specialization and generalization is not the paper's stated applicability and does not constitute faithful strengthening because the substantive estimate is assumed."
+      "paper_evidence": "The theorem concerns computations over the paper's specified finite floating-point system and states the result for any completing Gaussian-elimination variant in its intended scope.",
+      "translation_evidence": "The proposition generalizes to abstract D019 format packages while restricting application to Doolittle-shaped runs already certified with scalar residual inequalities.",
+      "reasoning": "This is a mixed generalization and restriction, not a faithful specialization or a uniform strengthening of the paper result."
     },
     {
       "id": "S16",
       "status": "fail",
-      "paper_evidence": "The paper derives nontrivial error bounds from the behavior of a completed floating-point Gaussian-elimination computation.",
-      "translation_evidence": "The witness is uniquely and immediately DeltaA=L*U-A, its principal bound repeats the hypothesis, and n=0 makes all indexed claims vacuous.",
-      "reasoning": "The conclusion is true for an unintended elementary residual-repackaging reason rather than by establishing the numerical result."
+      "paper_evidence": "The substantive content of the proof is that actual exception-free floating-point evaluations satisfy (4.3a)-(4.3b), from which the global bounds follow.",
+      "translation_evidence": "D017 and D018 supply D032 executions whose stored fields already assert those local inequalities; the target local clauses are obtained directly from these fields, and the global bounds follow algebraically from them and triangularity.",
+      "reasoning": "Even if valid runs are inhabitable, the central error estimates are true for an unintended assumption-driven reason. The translation does not carry the paper's burden of deriving them from the execution model."
     }
   ],
   "implications": {
     "translation_implies_paper": {
       "verdict": "no",
-      "reasoning": "The translation cannot establish the paper's Gaussian-elimination residual estimate, rectangular n*u theorem, local Doolittle bounds, or floating-point execution claim because it assumes the square rowwise estimate and contains none of that model."
+      "reasoning": "The translation proves conclusions only for LocalDef001 runs whose scalar-execution records already contain the local residual bounds. It does not establish from the paper's hypotheses of completion and absence of underflow and overflow that every admissible Gaussian-elimination computation supplies such a certified run. Thus it does not entail the paper theorem."
     },
     "paper_implies_translation": {
-      "verdict": "yes",
-      "reasoning": "The translation is a weaker algebraic conditional: once its rowwise residual premise holds, choose DeltaA=L*U-A, retain the same bound, and use i.val<=n-1 with u and S nonnegative for the uniform bound. The paper supplies that premise and conclusion for its square computed-factor case, while the translation's extra arbitrary-real instances follow from the premise alone."
+      "verdict": "no",
+      "reasoning": "The paper establishes the result for its specified base-beta floating-point system and exception-free computations. The translation quantifies over abstract format packages whose representable sets and safe-range predicates can fall outside that model, and it asserts conclusions for those runs. The paper does not entail that generalized statement."
     }
   },
-  "classification": "not-faithful-weaker",
+  "classification": "not-faithful-different",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "core-result-moved-to-hypothesis",
-      "paper_evidence": "Theorem 4.2 derives the square rowwise residual/backward-error estimate from completed floating-point Gaussian elimination.",
-      "translation_evidence": "The proposition assumes exactly that rowwise residual estimate before constructing DeltaA.",
-      "impact": "The translated statement does not prove the central numerical-stability result and reduces it to an elementary residual-repackaging lemma."
+      "category": "assumption leakage",
+      "paper_evidence": "Lemma 4.1 and equations (4.3a)-(4.3b) derive the local residual estimates from exception-free floating-point evaluation, and those estimates are then used to prove Theorem 4.2.",
+      "translation_evidence": "D032 stores the same scalar residual estimates inside every valid scalar execution, and D013 requires such execution evidence for all computed factor entries.",
+      "impact": "The central analytical result is assumed by the run abstraction, so the translated proposition does not establish the paper guarantee from the paper's computation hypotheses."
     },
     {
       "severity": "major",
-      "category": "dimension-and-conclusion-loss",
-      "paper_evidence": "The theorem covers m by n matrices with m>=n and gives the general coefficient n*u in addition to the square sharpening.",
-      "translation_evidence": "Only square n by n matrices and the square coefficients are represented.",
-      "impact": "The full rectangular theorem and its distinct general bound are absent."
+      "category": "floating-point model",
+      "paper_evidence": "Sections 2.1-2.2 specify a base-beta, precision-p finite floating-point set with exponent range, symmetry, round-to-nearest, and explicit underflow and overflow semantics.",
+      "translation_evidence": "D019 permits an abstract finite representable set and arbitrary safe-range predicate with no required connection to radix, precision, exponent bounds, symmetry, or the paper's underflow and overflow definitions.",
+      "impact": "The translation admits numerical systems and nominally safe executions outside the paper's model, so the reverse implication fails."
     },
     {
       "severity": "major",
-      "category": "algorithm-and-floating-point-model",
-      "paper_evidence": "A and the computed factors belong to F, Gaussian elimination must run to completion, and underflow and overflow are excluded under round-to-nearest arithmetic.",
-      "translation_evidence": "A, L, and U are arbitrary real matrices and no computation or rounding model appears.",
-      "impact": "The statement no longer asserts anything about the accuracy or backward stability of an implemented factorization."
-    },
-    {
-      "severity": "major",
-      "category": "local-doolittle-estimates",
-      "paper_evidence": "Equations (4.3a) and (4.3b) preserve distinct coefficients (k-1)*u and k*u, their different index ranges, and the convention L_kk=1.",
-      "translation_evidence": "There is no step index k, local update expression, pivot division, triangular convention, or local estimate.",
-      "impact": "The proof-level numerical content required by the task source contract is entirely omitted."
-    },
-    {
-      "severity": "minor",
-      "category": "empty-dimension-vacuity",
-      "paper_evidence": "The algorithm and notation use indices 1 through n and do not state an empty-dimensional Gaussian-elimination case.",
-      "translation_evidence": "n is any Nat, so n=0 has empty index types, vacuous bounds, and truncated n-1=0.",
-      "impact": "The translation adds an unintended vacuous case and subtraction semantics not present in the source result."
+      "category": "algorithm scope",
+      "paper_evidence": "The theorem announces any variant of Gaussian elimination, but the proof only states that a mathematically equivalent Doolittle formulation suffices and does not delimit pivoting or permutation behavior.",
+      "translation_evidence": "The run model requires Doolittle-shaped entry computations and has no general variant or permutation-matrix interface.",
+      "impact": "Whether the translated run model covers the paper's entire claimed algorithmic scope is unresolved and requires adjudication."
     }
   ],
-  "rationale": "The translation correctly unfolds its dependencies and accurately represents the exact componentwise square residual algebra, including the zero-based form of the paper's (i-1)*u coefficient. It is nevertheless not a translation of Theorem 4.2: it assumes the theorem's decisive square rowwise estimate, removes Gaussian elimination and the floating-point model, omits the rectangular n*u result and both local Doolittle estimates, and obtains DeltaA by the tautological choice L*U-A. It is therefore a nonfaithful weaker consequence rather than an equivalent or genuinely stronger statement."
+  "rationale": "The translation accurately reproduces the dimensions, exact residual sign, local and global componentwise formulas, zero-based index offsets, square-case same-witness bounds, and exact linear constants. It is nevertheless not the same result. Valid-run evidence already contains the local residual estimates that constitute the paper's main analytical input, while the paper assumes only a completing exception-free computation and derives those estimates. At the same time, the translation's abstract representability and safe-range axioms do not encode the paper's floating-point set or exceptional-value semantics, so the paper does not cover every translated format. These opposite premise and domain changes make both semantic implications fail. Adjudication is requested for the separately unresolved scope of 'any variant of Gaussian elimination.'"
 }

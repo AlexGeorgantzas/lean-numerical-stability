@@ -1,132 +1,144 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "Section 4.2 says any variant, while the proof analyzes a mathematically equivalent Doolittle formulation and the displayed factorization contains no permutation matrix. [PDF p. 10, printed p. 693; anchor: Section 4.2 opening and Theorem 4.2; PDF p. 11, printed p. 694; anchor: proof opening]",
-      "impact": "The passage does not explicitly resolve whether pivoting implementations are included or how a row permutation would enter. A formal contract should not silently insert or remove a permutation; it should either model the stated equality as written or separately define the intended variant class. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 equality]",
-      "issue": "The phrase any variant of Gaussian elimination is not formally enumerated."
-    },
-    {
-      "evidence": "The theorem uses that phrase without separately listing nonzero pivots, while the Doolittle formula divides by U_hat_kk. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 hypothesis; PDF p. 11, printed p. 694; anchor: Doolittle update formulas]",
-      "impact": "Nonzero usable pivots and any other operational success requirements remain implicit in completion and should not be replaced by an unstated nonsingularity hypothesis. [PDF p. 10, printed p. 693; anchor: Theorem 4.2; PDF p. 11, printed p. 694; anchor: Doolittle division]",
-      "issue": "Runs to completion is not formally expanded into pivot conditions."
-    },
-    {
-      "evidence": "The local proof uses the displayed product, sum, and division expressions and says whatever the order of evaluation; the paper's formal order convention is a binary summation tree. [PDF p. 3, printed p. 686; anchor: whatever-order convention; PDF p. 11, printed p. 694; anchor: equations (4.3)]",
-      "impact": "The contract directly covers reassociation of the stated sums, not an independently specified fused or algebraically transformed LU implementation. [PDF p. 3, printed p. 686; anchor: summation-tree definition]",
-      "issue": "Arbitrary evaluation order is defined for the sums, but fused multiply-add implementations are not discussed."
-    }
-  ],
-  "contract_plain_english": "For a floating-point m-by-n matrix with m>=n, completed Gaussian elimination without underflow or overflow produces computed factors satisfying the exact backward equation L_hat U_hat=A+DeltaA and the componentwise bound |DeltaA|<=n*u*|L_hat||U_hat|. [PDF p. 10, printed p. 693; anchor: Theorem 4.2] In the square case the bound sharpens rowwise to diag((i-1)u)|L_hat||U_hat| and globally to (n-1)u|L_hat||U_hat|. [PDF p. 10, printed p. 693; anchor: equation (4.2)] The Doolittle proof preserves two distinct local coefficients, (k-1)u for row-k U updates and k*u for below-diagonal column-k L updates, and obtains the square result from k*u<=(i-1)u<=(n-1)u. [PDF p. 11, printed p. 694; anchor: equations (4.3a)-(4.3b) and final comparison] These are componentwise, O(u^2)-free bounds with no n*u<1 restriction. [PDF p. 4, printed p. 687; anchor: improved-bound discussion]",
-  "paper_batch_sha256": "90bcb3f32112e46567a1fde6c0c742ef1d157d1829c1eb2b2cb5ebb4d58d4c1d",
-  "paper_sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P05-T2",
+  "paper_sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6",
   "source_evidence": [
     {
-      "anchor": "Theorem 4.2 and equation (4.2)",
-      "observation": "For A in F^(m x n), m>=n, completed Gaussian elimination produces L_hat in F^(m x n) and U_hat in F^(n x n) with L_hat U_hat=A+DeltaA and |DeltaA|<=n u |L_hat||U_hat|; when m=n, the rowwise and global bounds sharpen to diag((i-1)u)|L_hat||U_hat| and (n-1)u|L_hat||U_hat|.",
-      "pdf_page": 10,
-      "printed_page": "693"
+      "pdf_page": 5,
+      "printed_page": "688",
+      "anchor": "Sections 2.1-2.2, floating-point definitions and equation (2.1)",
+      "observation": "F is a symmetric set of finite base-beta, precision-p floating-point numbers containing zero; fl rounds to nearest with arbitrary tie-breaking, and u = (1/2) beta^(1-p) is the unit roundoff. Underflow and overflow are excluded where stated."
     },
     {
-      "anchor": "Doolittle update formulas in the proof of Theorem 4.2",
-      "observation": "The proof analyzes the mathematically equivalent Doolittle formulation, computing row k of U_hat and column k of L_hat from the displayed subtraction and subtraction-then-division expressions, with L_hat_kk set to 1.",
-      "pdf_page": 11,
-      "printed_page": "694"
-    },
-    {
-      "anchor": "Equations (4.3a)-(4.3b)",
-      "observation": "The local residual for row-k U entries has coefficient (k-1)u, while the local residual for below-diagonal column-k L entries has coefficient k u, with the precise index ranges stated in the equations.",
-      "pdf_page": 11,
-      "printed_page": "694"
-    },
-    {
-      "anchor": "Final coefficient comparison in the proof of Theorem 4.2",
-      "observation": "The proof obtains the global n u bound from k<=n and, in the square case, uses k u<=(i-1)u<=(n-1)u for i>k to obtain the rowwise and global square bounds.",
-      "pdf_page": 11,
-      "printed_page": "694"
-    },
-    {
-      "anchor": "Notation paragraph before Section 4.1",
-      "observation": "diag(f(i)) denotes the n x n diagonal matrix with diagonal entry f(i), with i implicitly ranging from 1 through n.",
       "pdf_page": 9,
-      "printed_page": "692"
+      "printed_page": "692",
+      "anchor": "Final paragraph before section 4.1, diag convention",
+      "observation": "diag(f(i)) denotes the n-by-n diagonal matrix with diagonal entry f(i), with the index i implicitly ranging from 1 through n."
     },
     {
-      "anchor": "Discussion following equation (1.8)",
-      "observation": "The improved LU bound is stated to hold for any dimension, radix, tie-breaking rule, and summation order, without quadratic terms, when underflow and overflow are absent.",
+      "pdf_page": 10,
+      "printed_page": "693",
+      "anchor": "Theorem 4.2 and equation (4.2)",
+      "observation": "For A in F^(m-by-n), m >= n, completed Gaussian elimination without underflow or overflow produces L_hat in F^(m-by-n) and U_hat in F^(n-by-n) such that L_hat U_hat = A + Delta A and |Delta A| <= n u |L_hat||U_hat|. If m = n, the sharper bounds are |Delta A| <= diag((i-1)u)|L_hat||U_hat| <= (n-1)u|L_hat||U_hat|."
+    },
+    {
+      "pdf_page": 11,
+      "printed_page": "694",
+      "anchor": "Doolittle formulas and equations (4.3a)-(4.3b)",
+      "observation": "The proof analyzes Doolittle's mathematically equivalent formulation. At step k, upper-factor residuals have coefficient (k-1)u and lower-factor residuals have coefficient ku, independently of summation order."
+    },
+    {
+      "pdf_page": 11,
+      "printed_page": "694",
+      "anchor": "Final coefficient comparison in the proof of Theorem 4.2",
+      "observation": "The rectangular coefficient follows from k <= n. In the square case, an entry below the diagonal has k < i, hence ku <= (i-1)u <= (n-1)u; together with the upper-factor coefficient this yields the rowwise and uniform bounds."
+    },
+    {
       "pdf_page": 4,
-      "printed_page": "687"
+      "printed_page": "687",
+      "anchor": "Discussion following equations (1.7)-(1.8)",
+      "observation": "The improved constants are exact multiples of u, contain no quadratic-in-u remainder, and impose no dimension condition analogous to nu < 1."
     }
   ],
   "statement": {
-    "algorithm_linkage": "The theorem is stated for Gaussian elimination generally. The proof analyzes the Doolittle schedule: at step k it computes row k of U_hat by subtraction updates, sets L_hat_kk=1, and computes the below-diagonal part of column k of L_hat by subtraction followed by division by U_hat_kk. The paper says this suffices because the formulations are mathematically equivalent, and the local estimates hold for any summation order. [PDF p. 10, printed p. 693; anchor: Section 4.2 opening; PDF p. 11, printed p. 694; anchor: Doolittle proof and equations (4.3)]",
     "binders": [
-      "m and n are matrix dimensions with m>=n, and A belongs to F^(m x n). [PDF p. 10, printed p. 693; anchor: Theorem 4.2 statement]",
-      "L_hat belongs to F^(m x n), U_hat belongs to F^(n x n), and both are the computed factors. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 statement]",
-      "For the local Doolittle estimates, k=1,...,n; equation (4.3a) has j=k,...,n, and equation (4.3b) has i=k+1,...,m. [PDF p. 11, printed p. 694; anchor: equations (4.3a)-(4.3b)]"
-    ],
-    "conclusions": [
-      "L_hat*U_hat = A+DeltaA exactly. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 displayed conclusion]",
-      "|DeltaA| <= n*u*|L_hat|*|U_hat| componentwise. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 displayed conclusion]",
-      "If m=n, |DeltaA| <= diag((i-1)u)*|L_hat|*|U_hat| <= (n-1)u*|L_hat|*|U_hat| componentwise. [PDF p. 10, printed p. 693; anchor: equation (4.2)]",
-      "For j=k,...,n, |a_kj-sum_{i=1}^{k} L_hat_ki U_hat_ij| <= (k-1)u*sum_{i=1}^{k}|L_hat_ki||U_hat_ij|. [PDF p. 11, printed p. 694; anchor: equation (4.3a)]",
-      "For i=k+1,...,m, |a_ik-sum_{j=1}^{k} L_hat_ij U_hat_jk| <= k*u*sum_{j=1}^{k}|L_hat_ij||U_hat_jk|. [PDF p. 11, printed p. 694; anchor: equation (4.3b)]",
-      "The proof derives the general matrix bound using k<=n and, when m=n, derives the sharper row bound using k*u<=(i-1)u<=(n-1)u. [PDF p. 11, printed p. 694; anchor: final coefficient comparison]"
-    ],
-    "constants_and_indexing": [
-      "The general theorem coefficient is n*u. [PDF p. 10, printed p. 693; anchor: Theorem 4.2]",
-      "For square A, row i has coefficient (i-1)u and the resulting uniform coefficient is (n-1)u. [PDF p. 10, printed p. 693; anchor: equation (4.2)]",
-      "The local row-k U residual uses (k-1)u, whereas the below-diagonal column-k L residual uses k*u. [PDF p. 11, printed p. 694; anchor: equations (4.3a)-(4.3b)]",
-      "The first row of the square rowwise bound has coefficient zero because i ranges from 1 to n. [PDF p. 9, printed p. 692; anchor: diag notation; PDF p. 10, printed p. 693; anchor: equation (4.2)]"
-    ],
-    "definitions_and_conventions": [
-      "Doolittle computes y_kj=a_kj-sum_{i=1}^{k-1}L_hat_ki U_hat_ij for j=k,...,n and y_ik=(a_ik-sum_{j=1}^{k-1}L_hat_ij U_hat_jk)/U_hat_kk for i=k+1,...,m. [PDF p. 11, printed p. 694; anchor: Doolittle update formulas]",
-      "U_hat_kk is the computed value of y_kk, U_hat_kj and L_hat_ik are the computed update values, and L_hat_kk is set to 1. [PDF p. 11, printed p. 694; anchor: paragraph preceding (4.3)]",
-      "diag((i-1)u) is left multiplication by a diagonal matrix and therefore gives a rowwise coefficient; its implicit square-case index range is i=1,...,n. [PDF p. 9, printed p. 692; anchor: diag notation; PDF p. 10, printed p. 693; anchor: equation (4.2)]",
-      "DeltaA is the exact backward perturbation L_hat U_hat-A; the displayed matrix product and local residual sums are mathematical products of already computed entries, not an additional rounded matrix multiplication. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 equality; PDF p. 11, printed p. 694; anchor: equations (4.3)]"
-    ],
-    "error_notions": [
-      "DeltaA is a componentwise backward error in the exact identity L_hat U_hat=A+DeltaA. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 conclusion]",
-      "Equations (4.3a)-(4.3b) are local absolute residual bounds for individual matrix entries. [PDF p. 11, printed p. 694; anchor: equations (4.3a)-(4.3b)]",
-      "The global majorant is formed from the ordinary matrix product of the entrywise absolute-value matrices |L_hat| and |U_hat|. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 and (4.2); PDF p. 11, printed p. 694; anchor: derivation from (4.3)]"
-    ],
-    "exceptional_values": [
-      "Underflow and overflow are excluded. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 statement]",
-      "The only stated algorithmic success condition is that Gaussian elimination runs to completion; the theorem does not separately assume that A is nonsingular. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 statement]",
-      "Inputs and computed factors lie in the finite floating-point set F. [PDF p. 5, printed p. 688; anchor: definition of F; PDF p. 10, printed p. 693; anchor: Theorem 4.2 dimensions]"
-    ],
-    "higher_order_terms": [
-      "The coefficients n*u and (n-1)u contain no added O(u^2) term. [PDF p. 4, printed p. 687; anchor: discussion of the improved bounds; PDF p. 10, printed p. 693; anchor: Theorem 4.2]",
-      "No condition n*u<1 is present. [PDF p. 4, printed p. 687; anchor: no-dimension-restriction discussion; PDF p. 10, printed p. 693; anchor: Theorem 4.2]"
+      "Inherited floating-point context: beta >= 2 and p >= 1 determine a finite floating-point set F and unit roundoff u = (1/2) beta^(1-p). [PDF p. 5 (printed 688), Sections 2.1-2.2]",
+      "Let m and n be matrix dimensions with m >= n, and let A belong to F^(m-by-n). Positivity and integrality of the dimensions are implicit in the matrix notation and the loop k = 1,...,n. [PDF p. 10 (printed 693), Theorem 4.2; PDF p. 11 (printed 694), Doolittle formulas]",
+      "Gaussian elimination returns computed factors L_hat in F^(m-by-n) and U_hat in F^(n-by-n). [PDF p. 10 (printed 693), Theorem 4.2]",
+      "Delta A is the m-by-n backward-error matrix determined by the exact identity L_hat U_hat = A + Delta A, equivalently Delta A = L_hat U_hat - A. [PDF p. 10 (printed 693), Theorem 4.2]"
     ],
     "hypotheses": [
-      "Gaussian elimination runs to completion. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 statement]",
-      "No underflow or overflow occurs. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 statement]",
-      "The local proof uses Doolittle's mathematically equivalent formulation and permits any order of evaluating the sums. [PDF p. 11, printed p. 694; anchor: proof of Theorem 4.2 and equations (4.3)]"
+      "Gaussian elimination runs to completion. [PDF p. 10 (printed 693), Theorem 4.2]",
+      "No underflow or overflow occurs during the floating-point computation. [PDF p. 10 (printed 693), Theorem 4.2]",
+      "The surrounding section states that the result concerns computation by any variant of Gaussian elimination. [PDF p. 10 (printed 693), opening of Section 4.2]",
+      "The sharper rowwise and uniform conclusions additionally assume m = n. [PDF p. 10 (printed 693), equation (4.2)]"
+    ],
+    "conclusions": [
+      "The computed factors obey the exact backward-error identity L_hat U_hat = A + Delta A. [PDF p. 10 (printed 693), Theorem 4.2]",
+      "For m >= n, the componentwise backward error satisfies |Delta A| <= n u |L_hat||U_hat|. [PDF p. 10 (printed 693), Theorem 4.2]",
+      "If m = n, the same residual satisfies the sharper rowwise bound |Delta A| <= diag((i-1)u)|L_hat||U_hat|. [PDF p. 10 (printed 693), equation (4.2)]",
+      "If m = n, the rowwise bound implies the uniform bound |Delta A| <= (n-1)u|L_hat||U_hat|. [PDF p. 10 (printed 693), equation (4.2)]"
+    ],
+    "definitions_and_conventions": [
+      "F consists of finite floating-point numbers in base beta and precision p, with a finite exponent range; it is symmetric and contains zero. [PDF p. 5 (printed 688), Section 2.1]",
+      "fl is round-to-nearest with no prescribed tie-breaking rule, and u = (1/2) beta^(1-p), so u <= 1/2. [PDF p. 5 (printed 688), equations (2.1a)-(2.1b)]",
+      "diag((i-1)u) is the n-by-n diagonal matrix whose ith diagonal entry is (i-1)u, with i = 1,...,n. [PDF p. 9 (printed 692), diag convention; PDF p. 10 (printed 693), equation (4.2)]",
+      "Hats distinguish computed floating-point factors from exact input data; the displayed factor product and residual identity are mathematical equalities formed from those computed values. [PDF p. 10 (printed 693), Theorem 4.2]"
     ],
     "implicit_context": [
-      "The subsection introduces the theorem as applying to any variant of Gaussian elimination, while its proof selects Doolittle as a mathematically equivalent formulation. [PDF p. 10, printed p. 693; anchor: Section 4.2 opening; PDF p. 11, printed p. 694; anchor: proof opening]",
-      "The paper's standing arithmetic is round-to-nearest with arbitrary radix and tie-breaking rule. [PDF p. 4, printed p. 687; anchor: discussion following equation (1.8); PDF p. 5, printed p. 688; anchor: Section 2.1]",
-      "The input entries a_ij remain unperturbed in the local residual expressions; errors are bounded through products of computed factor entries. [PDF p. 11, printed p. 694; anchor: equations (4.3a)-(4.3b)]"
+      "The theorem's quantifier order is: choose admissible dimensions and A; run a completing Gaussian-elimination computation under the stated arithmetic exclusions; obtain L_hat and U_hat; then define or assert Delta A and its bounds. [PDF p. 10 (printed 693), Theorem 4.2]",
+      "The standard reading of |Delta A|, |L_hat|, and |U_hat| is entrywise absolute value, with matrix inequalities interpreted componentwise and |L_hat||U_hat| denoting ordinary matrix multiplication of the absolute-value matrices; the inspected pages do not separately define this notation. [PDF p. 10 (printed 693), Theorem 4.2 and equation (4.2)]",
+      "The first row of the square rowwise bound has coefficient zero because i starts at 1. [PDF p. 9 (printed 692), diag convention; PDF p. 10 (printed 693), equation (4.2)]"
+    ],
+    "algorithm_linkage": "The section announces any variant of Gaussian elimination, while the proof uses Doolittle's method as one mathematically equivalent formulation. For k = 1,...,n it computes y_kj = a_kj - sum_(r=1)^(k-1) l_hat_kr u_hat_rj for j = k,...,n and y_ik = (a_ik - sum_(r=1)^(k-1) l_hat_ir u_hat_rk)/u_hat_kk for i = k+1,...,m, takes their computed values as u_hat_kj and l_hat_ik, and sets l_hat_kk = 1. Lemma 4.1 then gives the local residual bounds (4.3a)-(4.3b) for whatever order of evaluation. [PDF p. 10 (printed 693), Section 4.2; PDF p. 11 (printed 694), Doolittle formulas and equations (4.3a)-(4.3b)]",
+    "numerical_model": [
+      "Floating-point arithmetic uses round-to-nearest in base beta and precision p, with arbitrary tie-breaking. [PDF p. 5 (printed 688), Section 2.1]",
+      "The unit roundoff is exactly u = (1/2) beta^(1-p). [PDF p. 5 (printed 688), equation (2.1)]",
+      "The Doolittle scalar expressions are evaluated in floating-point arithmetic, and the local estimates hold whatever the order used to evaluate their sums. [PDF p. 11 (printed 694), Doolittle formulas and equations (4.3a)-(4.3b)]"
+    ],
+    "error_notions": [
+      "Delta A is a backward error on the input matrix: the computed factors exactly factor A + Delta A. [PDF p. 10 (printed 693), Theorem 4.2]",
+      "The error is bounded componentwise relative to the magnitude product |L_hat||U_hat|, rather than relative to |A| or by a normwise condition. [PDF p. 10 (printed 693), Theorem 4.2 and equation (4.2)]",
+      "For square matrices, the first sharper estimate is row-dependent: row i is scaled by (i-1)u. [PDF p. 9 (printed 692), diag convention; PDF p. 10 (printed 693), equation (4.2)]"
     ],
     "norms": [
-      "No induced, operator, or vector norm is used; scalar bars in (4.3) are absolute values, matrix bars are entrywise absolute values, and matrix inequalities are componentwise. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 and (4.2); PDF p. 11, printed p. 694; anchor: equations (4.3)]"
+      "No vector or matrix norm occurs in Theorem 4.2 or equation (4.2); the displayed bounds use absolute-value matrices and matrix order. [PDF p. 10 (printed 693), Theorem 4.2 and equation (4.2)]",
+      "The componentwise interpretation of the absolute values and inequalities is conventional but is not explicitly defined in the inspected passage. [PDF p. 10 (printed 693), Theorem 4.2 and equation (4.2)]"
     ],
-    "numerical_model": [
-      "All input and computed factor entries are in F, with round-to-nearest arithmetic and unit roundoff u=(1/2)beta^(1-p). [PDF p. 5, printed p. 688; anchor: Sections 2.1-2.2; PDF p. 10, printed p. 693; anchor: Theorem 4.2]",
-      "The result allows arbitrary tie breaking, radix beta, dimension, and summation order. [PDF p. 4, printed p. 687; anchor: discussion following equation (1.8)]",
-      "The analysis excludes underflow and overflow but imposes no n*u<1 condition. [PDF p. 10, printed p. 693; anchor: Theorem 4.2; PDF p. 4, printed p. 687; anchor: no-restriction discussion]"
+    "constants_and_indexing": [
+      "The general rectangular coefficient is exactly n u. [PDF p. 10 (printed 693), Theorem 4.2]",
+      "For square matrices, the row-i coefficient is exactly (i-1)u for i = 1,...,n, and its uniform maximum is exactly (n-1)u. [PDF p. 9 (printed 692), diag convention; PDF p. 10 (printed 693), equation (4.2)]",
+      "Locally, equation (4.3a) uses (k-1)u for j = k,...,n, whereas equation (4.3b) uses k u for i = k+1,...,m. [PDF p. 11 (printed 694), equations (4.3a)-(4.3b)]",
+      "The rectangular bound uses k <= n; the square refinement uses k < i to obtain k u <= (i-1)u <= (n-1)u. [PDF p. 11 (printed 694), final paragraph of the proof]"
+    ],
+    "higher_order_terms": [
+      "The stated bounds contain only exact linear multiples of u; no O(u^2), gamma_n, denominator, or omitted remainder occurs. [PDF p. 10 (printed 693), Theorem 4.2 and equation (4.2)]",
+      "The paper explicitly presents these improved constants as O(u^2)-free and unconditional, without a restriction such as n u < 1. [PDF p. 4 (printed 687), discussion following equation (1.8)]"
+    ],
+    "exceptional_values": [
+      "Underflow and overflow are excluded. [PDF p. 10 (printed 693), Theorem 4.2]",
+      "Underflow is defined as an inexact rounding of a real number lying in the subnormal range; floating-point addition cannot underflow under this definition, while multiplication and division can. [PDF p. 5 (printed 688), Section 2.1]",
+      "F contains only finite floating-point numbers, and overflow to infinity is outside the admitted execution. [PDF p. 5 (printed 688), Section 2.1]",
+      "The phrase 'runs to completion' excludes algorithmic breakdown, but the theorem does not explicitly enumerate zero pivots, division by zero, NaNs, or other failure modes. [PDF p. 10 (printed 693), Theorem 4.2; PDF p. 11 (printed 694), division by u_hat_kk in the Doolittle formula]"
     ]
   },
-  "task_id": "P05-T2",
   "undebatable_constraints": [
-    "Preserve the rectangular dimensions A,L_hat in F^(m x n), U_hat in F^(n x n), with m>=n. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 statement]",
-    "The general backward coefficient is n*u, not (n-1)u. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 statement]",
-    "The (n-1)u and diag((i-1)u) bounds are stated only under m=n. [PDF p. 10, printed p. 693; anchor: equation (4.2)]",
-    "Preserve both local estimates: (k-1)u in (4.3a) and k*u in (4.3b), with their distinct index ranges. [PDF p. 11, printed p. 694; anchor: equations (4.3a)-(4.3b)]",
-    "Keep L_hat_kk=1 in the Doolittle proof convention. [PDF p. 11, printed p. 694; anchor: paragraph preceding (4.3)]",
-    "Interpret all matrix error inequalities componentwise, not as norm bounds. [PDF p. 10, printed p. 693; anchor: Theorem 4.2 and (4.2); PDF p. 11, printed p. 694; anchor: equations (4.3)]",
-    "Do not add O(u^2) terms or a restriction n*u<1. [PDF p. 4, printed p. 687; anchor: improved-bound discussion]"
-  ]
+    "The input is rectangular A in F^(m-by-n) with m >= n, and the computed factor dimensions are L_hat in F^(m-by-n) and U_hat in F^(n-by-n). [PDF p. 10 (printed 693), Theorem 4.2]",
+    "Completion of Gaussian elimination and absence of both underflow and overflow are mandatory hypotheses. [PDF p. 10 (printed 693), Theorem 4.2]",
+    "The factorization relation is L_hat U_hat = A + Delta A, so the sign convention is Delta A = L_hat U_hat - A. [PDF p. 10 (printed 693), Theorem 4.2]",
+    "The general bound is componentwise |Delta A| <= n u |L_hat||U_hat|. [PDF p. 10 (printed 693), Theorem 4.2]",
+    "The rowwise diag((i-1)u) and uniform (n-1)u bounds require m = n. [PDF p. 10 (printed 693), equation (4.2)]",
+    "The row index in diag((i-1)u) runs from 1 through n; the offset is i-1, not i. [PDF p. 9 (printed 692), diag convention; PDF p. 10 (printed 693), equation (4.2)]",
+    "The coefficients are exact multiples of u with no higher-order remainder and no smallness condition on n u. [PDF p. 4 (printed 687), discussion following equation (1.8); PDF p. 10 (printed 693), Theorem 4.2]",
+    "The proof's local coefficients are (k-1)u for the kth upper row and k u for lower entries in column k; these index offsets generate the global coefficients. [PDF p. 11 (printed 694), equations (4.3a)-(4.3b) and final comparison]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The scope of 'any variant of Gaussian elimination' is not formally delimited. [PDF p. 10 (printed 693), opening of Section 4.2]",
+      "evidence": "The proof says that one mathematically equivalent formulation may be analyzed and chooses unit-lower-triangular Doolittle formulas, while the displayed theorem has no permutation matrix. [PDF p. 11 (printed 694), opening proof paragraph and Doolittle formulas]",
+      "impact": "The passage supports variants mathematically equivalent to the displayed unpermuted LU computation, but it does not explicitly establish whether algorithms with row or column pivoting are included or how their permutations would enter the identity."
+    },
+    {
+      "issue": "The condition that Gaussian elimination 'runs to completion' is not formally expanded. [PDF p. 10 (printed 693), Theorem 4.2]",
+      "evidence": "Doolittle's lower-column formula divides by u_hat_kk, but the passage does not separately state a nonzero-pivot hypothesis or list all breakdown conditions. [PDF p. 11 (printed 694), Doolittle formulas]",
+      "impact": "A formal contract must either retain 'runs to completion' as an opaque algorithmic precondition or explicitly model the nonzero computed pivots and any other conditions needed for every operation to be defined."
+    },
+    {
+      "issue": "Matrix absolute-value and inequality notation is not explicitly defined on the inspected pages. [PDF p. 10 (printed 693), Theorem 4.2 and equation (4.2)]",
+      "evidence": "The theorem writes |Delta A| <= n u |L_hat||U_hat| and its row-scaled variant without introducing a norm or defining matrix order. [PDF p. 10 (printed 693), Theorem 4.2 and equation (4.2)]",
+      "impact": "The standard and contextually required reading is entrywise absolute values with componentwise inequalities, but a formalization should make that convention explicit."
+    },
+    {
+      "issue": "Delta A is not separately quantified or assigned a scalar field in the prose. [PDF p. 10 (printed 693), Theorem 4.2]",
+      "evidence": "It first appears in the identity L_hat U_hat = A + Delta A and is immediately bounded. [PDF p. 10 (printed 693), Theorem 4.2]",
+      "impact": "The natural formal reading is an existential m-by-n real matrix, equivalently the uniquely defined exact residual L_hat U_hat - A; it should not be treated as an independently computed floating-point output."
+    },
+    {
+      "issue": "The theorem does not enumerate which intermediate operations are covered by the absence of underflow and overflow. [PDF p. 10 (printed 693), Theorem 4.2]",
+      "evidence": "The proof evaluates products, sums, and divisions in floating-point arithmetic, while the preliminaries note that multiplication and division can underflow or overflow. [PDF p. 5 (printed 688), Section 2.1; PDF p. 11 (printed 694), Doolittle formulas]",
+      "impact": "A formal model should apply the exclusion to all relevant rounded intermediate operations rather than only to final factor entries."
+    }
+  ],
+  "contract_plain_english": "For any finite floating-point matrix A with m rows and n columns, m >= n, run a completing Gaussian-elimination variant in round-to-nearest arithmetic without underflow or overflow. Its computed m-by-n lower factor L_hat and n-by-n upper factor U_hat exactly factor a perturbed matrix A + Delta A, where the componentwise residual is at most n u times |L_hat||U_hat|. When A is square, row i has the sharper coefficient (i-1)u, yielding the uniform coefficient (n-1)u. These constants are exact, contain no O(u^2) term, impose no condition such as n u < 1, and arise from the Doolittle local coefficients (k-1)u and k u. [PDF p. 10 (printed 693), Theorem 4.2 and equation (4.2); PDF p. 11 (printed 694), equations (4.3a)-(4.3b) and final coefficient comparison]"
 }

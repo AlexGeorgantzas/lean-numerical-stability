@@ -3,411 +3,1155 @@
   "role": "direct-judge",
   "task_id": "P05-T2",
   "paper_sha256": "dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6",
-  "dossier_sha256": "f6d7622f8a53de126a8ab2a435148c8f81cd2a30c3989d70ac37b0069d129121",
+  "dossier_sha256": "969325ea2447cafdd902d1197a52d7eb950e038a62f07ed37a8a69b998427d5f",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.p05AbsMatMul",
-      "interpretation": "For square real matrices it returns the sum over k in Fin n of |L i k|*|U k j|, the (i,j) entry of |L||U|.",
-      "effect_on_target": "It is the componentwise majorant in hlocal and both bounds on DeltaA.",
-      "paper_match": "This exactly matches the ordinary matrix product of entrywise absolute-value matrices in the square case of (4.2).",
-      "status": "pass"
+      "name": "HighamBench.P05DoolittleRun",
+      "interpretation": "An evidence-bearing type indexed by row and column counts; its constructor packages a format, matrices, triangularity, and certified scalar entry executions.",
+      "effect_on_target": "It replaces the paper's premise 'a Gaussian-elimination computation runs to completion' with one preassembled run object.",
+      "paper_match": "It covers a Doolittle specialization, but only after local residual certificates have already been supplied, so it is narrower than the paper's execution premise.",
+      "status": "fail"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p05MatMul",
-      "interpretation": "For square real matrices it returns the exact sum over k in Fin n of L i k*U k j.",
-      "effect_on_target": "It represents the exact mathematical product LU in the residual and backward identity.",
-      "paper_match": "This matches the paper's exact product of the already computed factors, not a newly rounded multiplication.",
+      "name": "HighamBench.P05DoolittleRun.A",
+      "interpretation": "Projection of the run's fourth field, a real-valued function on Fin m x Fin n.",
+      "effect_on_target": "It is the input matrix used in every local residual and in A + DeltaA.",
+      "paper_match": "With the run's representability field, this has the dimensions and finite-floating-point membership required for A in F^(m x n).",
       "status": "pass"
     },
     {
       "id": "D003",
-      "name": "And",
-      "reuse_sha256": "fa901ab9fa0851be14d6c05cbed6852eb24e26e6b3b98733e1851c1a112b1589",
-      "effect_on_target": "It requires the exact identity, rowwise bound, and uniform bound simultaneously.",
-      "paper_match": "The square conclusion in (4.2) asserts these properties simultaneously.",
+      "name": "HighamBench.P05DoolittleRun.LHat",
+      "interpretation": "Projection of the run's fifth field, a real-valued Fin m x Fin n matrix.",
+      "effect_on_target": "It supplies the computed lower factor in local dots and global products.",
+      "paper_match": "Its dimensions and computed-factor role match L-hat in Theorem 4.2.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "Eq",
-      "reuse_sha256": "fac5876e66a474abbf232195a72044922c72557d6a8d69c191072cfc1228777d",
-      "effect_on_target": "At function type it states the exact entrywise identity LU=A+DeltaA.",
-      "paper_match": "Theorem 4.2 states this as an exact backward equation.",
+      "name": "HighamBench.P05DoolittleRun.UHat",
+      "interpretation": "Projection of the run's sixth field, a real-valued Fin n x Fin n matrix.",
+      "effect_on_target": "It supplies the computed upper factor in local dots and global products.",
+      "paper_match": "Its dimensions and computed-factor role match U-hat in Theorem 4.2.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "Exists",
-      "reuse_sha256": "b5a7d2275af795dac08bd22691293caf3334e383a8eafdd5f6e52e683ee6a012",
-      "effect_on_target": "It introduces one matrix witness DeltaA depending on n,u,A,L,U and hlocal.",
-      "paper_match": "The paper likewise introduces a backward perturbation DeltaA for the computed factors.",
+      "name": "HighamBench.P05DoolittleRun.format",
+      "interpretation": "Projection of the format stored in a run.",
+      "effect_on_target": "It supplies representability, rounding, safe-range data, and unit roundoff.",
+      "paper_match": "The paper also fixes one floating-point format for the computation, although the projected formal format is more abstract as detailed at D019.",
       "status": "pass"
     },
     {
       "id": "D006",
-      "name": "Fin",
-      "reuse_sha256": "5875692f026d76e62fc26485858e7b1d9ce65ee66bb941ec5fd2061f377be9ce",
-      "effect_on_target": "All row, column, and contraction indices have size n, so A,L,U are square n-by-n matrices with zero-based indices.",
-      "paper_match": "This models the m=n branch of Theorem 4.2 but excludes its general m-by-n setting with m>=n.",
-      "status": "fail"
+      "name": "HighamBench.P05DoolittleRun.rows_ge_columns",
+      "interpretation": "Projection of a proof of n <= m.",
+      "effect_on_target": "It permits square-row indices to be embedded into the rectangular row type.",
+      "paper_match": "This is exactly the paper's m >= n dimension hypothesis.",
+      "status": "pass"
     },
     {
       "id": "D007",
-      "name": "Fin.val",
-      "interpretation": "Fin.val extracts the zero-based natural index in the range 0 through n-1.",
-      "effect_on_target": "It makes the row coefficient i.val*u and hence maps Lean row i to the paper's one-based coefficient (i-1)u.",
-      "paper_match": "The zero-based value is exactly the paper's one-based row number minus one.",
+      "name": "HighamBench.P05FiniteRoundToNearestFormat.unitRoundoff",
+      "interpretation": "Projection of the real-valued unit-roundoff field.",
+      "effect_on_target": "It is the u multiplying every local and global coefficient.",
+      "paper_match": "The constructor equation makes it 1/(2 beta^(p-1)), equivalent to the paper's u=(1/2)beta^(1-p).",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "HAdd.hAdd",
-      "reuse_sha256": "9f056b2e5cbaaa14948afde8edde9e167324c8484cd74f28d83347c55207ccfe",
-      "effect_on_target": "Here it resolves to pointwise addition of the matrix-valued functions A and DeltaA.",
-      "paper_match": "Pointwise matrix addition is the addition in LU=A+DeltaA.",
+      "name": "HighamBench.p05DoolittleThroughPivotAbsDot",
+      "interpretation": "The prefix absolute dot product for indices below k plus |L_ik||U_kj|.",
+      "effect_on_target": "It is the magnitude sum through the current pivot in the two local residual bounds.",
+      "paper_match": "With zero-based k, it is the paper's sum through one-based pivot k+1 in (4.3a)-(4.3b).",
       "status": "pass"
     },
     {
       "id": "D009",
-      "name": "HMul.hMul",
-      "reuse_sha256": "40f0ae6adce5bf8c57f51853d941cb5d59710267fa6c2d315060276f9fa7a8ec",
-      "effect_on_target": "It performs ordinary real multiplication in matrix terms and coefficient majorants.",
-      "paper_match": "These are the exact scalar products used in the paper's componentwise bounds.",
+      "name": "HighamBench.p05DoolittleThroughPivotDot",
+      "interpretation": "The prefix dot product for indices below k plus L_ik U_kj.",
+      "effect_on_target": "It expresses the partial factor product through the current pivot in local residuals.",
+      "paper_match": "It matches the sums through the current one-based pivot in equations (4.3a)-(4.3b).",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "HSub.hSub",
-      "reuse_sha256": "19755e479ca7ef887f1af40be30d133d231eae8b917ff77854bc7bdf6acf37cc",
-      "effect_on_target": "It dispatches to real subtraction in LU-A and to natural subtraction in n-1.",
-      "paper_match": "The real residual has the opposite sign from A-LU but the same absolute value; natural n-1 is the square uniform coefficient.",
+      "name": "HighamBench.p05RectAbsMatMul",
+      "interpretation": "The sum over all Fin n indices of |L_ik||U_kj|.",
+      "effect_on_target": "It interprets |LHat||UHat| entrywise in all global inequalities.",
+      "paper_match": "This is the ordinary matrix product of entrywise absolute-value matrices used by Theorem 4.2.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "LE.le",
-      "reuse_sha256": "eeaf8c7a4905aea616484883fcf3053f921ba69a29aff63d5a44c9d2289c2fa5",
-      "effect_on_target": "It makes hu and all error bounds non-strict inequalities.",
-      "paper_match": "The paper uses non-strict componentwise upper bounds.",
+      "name": "HighamBench.p05RectMatMul",
+      "interpretation": "The sum over all Fin n indices of L_ik U_kj.",
+      "effect_on_target": "It interprets the rectangular matrix product in the exact residual identity.",
+      "paper_match": "It is the ordinary m-by-n times n-by-n product L-hat U-hat in the paper.",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "Nat",
-      "reuse_sha256": "61ae1daf69f8e4e7332ddb1d499aab6977055cde931ebdc603af911f52b20238",
-      "effect_on_target": "It permits every natural dimension, including the vacuous n=0 case.",
-      "paper_match": "It covers all positive square dimensions; n=0 adds only a vacuous edge case and does not change positive-dimensional instances.",
+      "name": "HighamBench.p05RectRow",
+      "interpretation": "Fin.castLE embedding a Fin n index into Fin m under n <= m, preserving its value.",
+      "effect_on_target": "It selects rectangular row k for an upper-factor equation.",
+      "paper_match": "It is the correct zero-based embedding of pivot row k+1 when m >= n.",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "Nat.cast",
-      "reuse_sha256": "642f2a2071ee54aac6186174cd81113a34f1a3f56a3d00c5c7b67f0106b81029",
-      "effect_on_target": "It embeds i.val and n-1 into Real before multiplication by u.",
-      "paper_match": "This gives the real coefficients (i-1)u and (n-1)u after translating from one-based paper indices.",
-      "status": "pass"
+      "name": "HighamBench.P05DoolittleRun.mk",
+      "interpretation": "The sole run constructor requires n>0, n<=m, representable A/LHat/UHat, unit-lower and upper triangular structure, and a P05DoolittleUpperEntry or LowerEntry certificate for every computed entry.",
+      "effect_on_target": "It makes the theorem conditional on a certified Doolittle execution, including certificates whose nested constructor already requires the local residual inequalities.",
+      "paper_match": "The dimensions, triangular forms, and nonzero-column condition fit completed Doolittle elimination, but assuming the key Lemma 4.1 bounds and omitting a coverage theorem for every completing Gaussian-elimination variant do not match Theorem 4.2's hypotheses.",
+      "status": "fail"
     },
     {
       "id": "D014",
-      "name": "OfNat.ofNat",
-      "reuse_sha256": "7b725188cc5e00e20f6ebfa4ce4bcaf3cbe9ad773d385f0d46939a775a35d805",
-      "effect_on_target": "It supplies real zero in hu and natural one in n-1.",
-      "paper_match": "These literals have their standard meanings in the paper's positivity condition and square coefficient.",
-      "status": "pass"
+      "name": "HighamBench.P05FiniteRoundToNearestFormat",
+      "interpretation": "An abstract format type whose constructor supplies radix, precision, exponent bounds, a finite representability predicate, safeRange, rounding, and u.",
+      "effect_on_target": "It determines what counts as floating-point data and safe rounded operations in a run.",
+      "paper_match": "It can represent the paper's format, but also permits finite sets unrelated to a base-beta exponent grid and does not require symmetry; therefore it is not an exact model of F.",
+      "status": "fail"
     },
     {
       "id": "D015",
-      "name": "Pi.instAdd",
-      "interpretation": "It defines addition of functions pointwise, recursively through both matrix indices.",
-      "effect_on_target": "A+DeltaA denotes the matrix whose (i,j) entry is A i j+DeltaA i j.",
-      "paper_match": "This is standard entrywise matrix addition in the exact backward identity.",
+      "name": "HighamBench.p05DoolittlePrefixAbsDot",
+      "interpretation": "The sum over Fin k.val of |L_i,r||U_r,j| using the value-preserving prefix embedding.",
+      "effect_on_target": "It gives the magnitude contribution from all pivots strictly before k.",
+      "paper_match": "This is exactly the absolute prefix sum over one-based indices 1,...,k in the translated zero-based notation.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "Real",
-      "interpretation": "This is Mathlib's exact real-number type.",
-      "effect_on_target": "The target quantifies u and every entry of A,L,U,DeltaA over arbitrary reals, with no floating-point subtype or computed-value predicate.",
-      "paper_match": "Exact reals are appropriate for interpreting the displayed identity, but unrestricted real inputs and factors do not match the paper's F-valued inputs and computed factors.",
-      "status": "fail"
+      "name": "HighamBench.p05DoolittlePrefixDot",
+      "interpretation": "The sum over Fin k.val of L_i,r U_r,j using the prefix embedding.",
+      "effect_on_target": "It gives the exact prefix dot product before pivot k.",
+      "paper_match": "This matches the prefix sums in the Doolittle formulas on printed page 694.",
+      "status": "pass"
     },
     {
       "id": "D017",
-      "name": "Real.instAdd",
-      "reuse_sha256": "2d930d4b5acf4034ea9ee6d8b9abdf4599e207555e4835885739be5400145ed2",
-      "effect_on_target": "It supplies exact real addition inside pointwise matrix addition and finite sums.",
-      "paper_match": "This matches the exact arithmetic used to state the backward relation.",
-      "status": "pass"
+      "name": "HighamBench.P05DoolittleLowerEntry",
+      "interpretation": "An evidence type asserting that a lower entry is tied to a P05Lemma41Run.",
+      "effect_on_target": "It is the per-entry premise for each position below the diagonal.",
+      "paper_match": "The linkage to c=A_ik, bK=U_kk, and yHat=L_ik is right, but the nested execution type already contains the residual bound that should follow from arithmetic.",
+      "status": "fail"
     },
     {
       "id": "D018",
-      "name": "Real.instAddGroup",
-      "reuse_sha256": "d3c51d07544cc34f1f42a0e704106411aa4811e3ae1c7abcf6a7f969e8c06700",
-      "effect_on_target": "It supplies real negation and subtraction structure used by residuals and absolute value.",
-      "paper_match": "This gives the standard real residual and scalar absolute value used in (4.2).",
-      "status": "pass"
+      "name": "HighamBench.P05DoolittleUpperEntry",
+      "interpretation": "An evidence type asserting that an upper entry is tied to a unit-denominator P05Lemma41Run.",
+      "effect_on_target": "It is the per-entry premise for each upper-triangular position.",
+      "paper_match": "The Doolittle linkage is right, but the nested execution certificate assumes the local bound later returned by the target.",
+      "status": "fail"
     },
     {
       "id": "D019",
-      "name": "Real.instLE",
-      "reuse_sha256": "1d7220e5efc4be1f955289cc55805de717ccfc4582dcc205501c1be282a13533",
-      "effect_on_target": "It orders hu and all scalar componentwise inequalities by the usual real order.",
-      "paper_match": "This is the order intended by the paper's scalar and componentwise inequalities.",
-      "status": "pass"
+      "name": "HighamBench.P05FiniteRoundToNearestFormat.mk",
+      "interpretation": "The format constructor requires beta>=2, p>0, a nonempty integer exponent interval, finite representables containing 0 and 1, a nearest representable round result on safeRange, exact rounding of representables, u>=0, and u*2*beta^(p-1)=1.",
+      "effect_on_target": "It supplies the numerical-model axioms used by all scalar execution records.",
+      "paper_match": "The u formula and nearest-rounding rule match, but representables need not be the paper's base-beta finite set or symmetric, and safeRange is not defined as absence of the paper's underflow and overflow events.",
+      "status": "fail"
     },
     {
       "id": "D020",
-      "name": "Real.instMul",
-      "reuse_sha256": "5bb3ef339a1edc6e149ecc012091103f2d31bed0c15fa04ae85afb2fa3b7b68f",
-      "effect_on_target": "It supplies exact real multiplication in products and error coefficients.",
-      "paper_match": "This matches the paper's exact scalar multiplication in its displayed bounds.",
+      "name": "HighamBench.P05FiniteRoundToNearestFormat.representable",
+      "interpretation": "Projection of the predicate identifying represented real values.",
+      "effect_on_target": "It constrains every entry of A, LHat, and UHat and scalar execution inputs.",
+      "paper_match": "For a format instantiated with the paper's F it expresses membership in F; its abstraction is harmless at this projection.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "Real.instNatCast",
-      "reuse_sha256": "f94e129edc87824e7c814e74a0289f409e0aa69bffa0dff5a8758e92c4f3bbb4",
-      "effect_on_target": "It realizes row and dimension coefficients as nonnegative real integers.",
-      "paper_match": "This is the intended interpretation of i-1 and n-1 in the paper.",
+      "name": "HighamBench.p05PrefixIndex",
+      "interpretation": "It maps s:Fin(k.val) to Fin n with the same natural value, justified by s<k<n.",
+      "effect_on_target": "It realizes the set of indices strictly preceding pivot k.",
+      "paper_match": "This correctly translates the paper's prefix indices to zero-based Fin indices.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "Real.instSub",
-      "reuse_sha256": "15d7f43dd3752ca576ca23d2889ed914e19652df1a82de1049f67d3f06602d01",
-      "effect_on_target": "It forms the exact residual LU-A.",
-      "paper_match": "Its absolute value equals the paper's |A-LU| entrywise.",
-      "status": "pass"
+      "name": "HighamBench.P05DoolittleLowerEntry.mk",
+      "interpretation": "The constructor ties a scalar run to L_i,r, U_r,k, denominator U_kk, protected input A_ik, and output L_ik.",
+      "effect_on_target": "It models the rounded lower-column division in Doolittle's formula.",
+      "paper_match": "The data mapping and nonzero denominator match completion, but requiring a P05Lemma41Run also imports its already-assumed general residual bound.",
+      "status": "fail"
     },
     {
       "id": "D023",
-      "name": "Real.instZero",
-      "reuse_sha256": "4506affb4026db816ad3e51d1fd339303d70b1621c4ae39272b7a1a098d3c479",
-      "effect_on_target": "It supplies zero in the hypothesis 0<=u.",
-      "paper_match": "The paper's unit roundoff is positive and therefore satisfies this weaker nonnegativity condition.",
-      "status": "pass"
+      "name": "HighamBench.P05DoolittleUpperEntry.mk",
+      "interpretation": "The constructor ties a scalar run to L_k,r, U_r,j, denominator 1, protected input A_kj, and output U_kj.",
+      "effect_on_target": "It models the rounded upper-row evaluation without division.",
+      "paper_match": "The data mapping matches Doolittle, but requiring a P05Lemma41Run imports its already-assumed unit residual bound.",
+      "status": "fail"
     },
     {
       "id": "D024",
-      "name": "Real.lattice",
-      "reuse_sha256": "a1906d0e20cf585ff30c2128111859b93cad2725355e2abd58a0333ba1b7b9fa",
-      "effect_on_target": "It supplies the lattice operations underlying real absolute value.",
-      "paper_match": "It yields the standard scalar absolute value used entrywise by the paper.",
-      "status": "pass"
+      "name": "HighamBench.p05PrefixIndex._proof_1",
+      "interpretation": "A proof that a prefix index s satisfies s.val<n.",
+      "effect_on_target": "It only discharges the bound needed to construct a Fin n value.",
+      "paper_match": "This is type-correctness plumbing and adds no mathematical condition beyond s<k<n.",
+      "status": "not-applicable"
     },
     {
       "id": "D025",
-      "name": "Zero.toOfNat0",
-      "reuse_sha256": "d437ddea9ddcc208b0277e361d9364995316017678010c4dd60ad81b88ee3207",
-      "effect_on_target": "It interprets the zero in hu as real zero.",
-      "paper_match": "This has the standard intended meaning.",
-      "status": "pass"
+      "name": "HighamBench.P05Lemma41Run",
+      "interpretation": "An evidence-bearing scalar-evaluation type for a c-minus-dot-product expression, optional division, and residual postconditions.",
+      "effect_on_target": "It underlies every upper and lower entry certificate.",
+      "paper_match": "It models the scalar computation, but its constructor includes the very Lemma 4.1 residual estimates as fields instead of deriving them.",
+      "status": "fail"
     },
     {
       "id": "D026",
-      "name": "abs",
-      "reuse_sha256": "890b5f59077062794363238e8ced83e50aa0c0570caeaefb6aa5236aa634c169",
-      "effect_on_target": "It applies standard scalar real absolute value to residuals, perturbation entries, and factor entries.",
-      "paper_match": "The paper's scalar bars and entrywise matrix bars have exactly this meaning.",
+      "name": "HighamBench.P05Lemma41Run.a",
+      "interpretation": "Projection of the left vector of scalar dot-product inputs.",
+      "effect_on_target": "It is identified with a row of LHat over prior pivots.",
+      "paper_match": "This matches the a_i inputs in Lemma 4.1 and the Doolittle formulas.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "instHAdd",
-      "reuse_sha256": "20abbb44bbcb68937f620b7fcc50bdce795434a0f82b07010307717206e150a0",
-      "effect_on_target": "It routes homogeneous matrix-function addition to the pointwise Add instance.",
-      "paper_match": "This preserves ordinary entrywise matrix addition.",
+      "name": "HighamBench.P05Lemma41Run.b",
+      "interpretation": "Projection of the right vector of scalar dot-product inputs.",
+      "effect_on_target": "It is identified with a column of UHat over prior pivots.",
+      "paper_match": "This matches the b_i inputs in Lemma 4.1 and the Doolittle formulas.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "instHMul",
-      "reuse_sha256": "4bde0db7e9151831dc5e088a81232b0ba20e704022902636b8109a25bfb2a49d",
-      "effect_on_target": "It routes homogeneous real multiplication to ordinary multiplication.",
-      "paper_match": "This preserves all scalar products and coefficient products in the paper formulas.",
+      "name": "HighamBench.P05Lemma41Run.bK",
+      "interpretation": "Projection of the scalar denominator or final multiplier.",
+      "effect_on_target": "It is 1 for upper entries and U_kk for lower entries.",
+      "paper_match": "This matches b_k in Lemma 4.1 and the computed pivot in Doolittle's lower formula.",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "instHSub",
-      "reuse_sha256": "6ed943d80a53918e83f3ea24f37167757326a223caac9d7a61342a07460f1b94",
-      "effect_on_target": "It routes subtraction to real subtraction for the residual and natural subtraction for n-1.",
-      "paper_match": "Both resolved operations have the intended meanings for the square formula.",
+      "name": "HighamBench.P05Lemma41Run.c",
+      "interpretation": "Projection of the protected scalar input c.",
+      "effect_on_target": "It is identified with A_kj or A_ik.",
+      "paper_match": "This matches the matrix entry c used in the paper's scalar expression.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "instOfNatNat",
-      "reuse_sha256": "d9ec66b2bc5079ce59d7730deafdad176327901bffaf63a29eb3c87a2deea0ac",
-      "effect_on_target": "It supplies the natural numeral one in n-1.",
-      "paper_match": "This gives the intended dimension decrement.",
+      "name": "HighamBench.P05Lemma41Run.format",
+      "interpretation": "Projection of the format used by one scalar evaluation.",
+      "effect_on_target": "It is equated to the encompassing Doolittle run format.",
+      "paper_match": "This correctly enforces one arithmetic format across the computation.",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "instSubNat",
-      "interpretation": "This is truncated natural subtraction Nat.sub.",
-      "effect_on_target": "The uniform coefficient is Nat.sub n 1, equal to n-1 for n>=1 and zero for n=0.",
-      "paper_match": "It exactly represents the paper's (n-1) coefficient on positive dimensions; the saturated n=0 case is vacuous.",
+      "name": "HighamBench.P05Lemma41Run.yHat",
+      "interpretation": "Projection of the computed scalar output.",
+      "effect_on_target": "It is identified with U_kj or L_ik.",
+      "paper_match": "This matches the computed y-hat in Lemma 4.1 and the computed factor entry.",
       "status": "pass"
     },
     {
       "id": "D032",
-      "name": "Fin.fintype",
-      "reuse_sha256": "78cd10ac8520667ba7f35186fb24822b31325439e82f0e8b2d352377fddaea63",
-      "effect_on_target": "It supplies the finite contraction-index enumeration for both matrix-product definitions.",
-      "paper_match": "It enumerates every square inner-product index exactly once.",
-      "status": "pass"
+      "name": "HighamBench.P05Lemma41Run.mk",
+      "interpretation": "The scalar-run constructor records representable inputs, nonzero denominator, safe rounded products, an arbitrary permutation and binary summation tree, rounded numerator/division equations, and both the general and unit-denominator residual inequalities.",
+      "effect_on_target": "For upper entries, unit_residual_bound is algebraically the target's first conjunct; for lower entries, general_residual_bound is algebraically the second conjunct. Those assumed inequalities then drive the global bound.",
+      "paper_match": "In the paper Lemma 4.1 derives these inequalities from round-to-nearest arithmetic without underflow/overflow. Making them constructor premises is circular relative to this target and strictly narrows applicability.",
+      "status": "fail"
     },
     {
       "id": "D033",
-      "name": "Finset.sum",
-      "reuse_sha256": "eed7b114f9de337dd3cf7ae0edbccfcba2dd7e93f80ccebdcfd96decc16746b0",
-      "effect_on_target": "It forms exact finite sums for LU and |L||U|.",
-      "paper_match": "These are the ordinary exact matrix-product sums used in Theorem 4.2.",
+      "name": "HighamBench.P05FiniteRoundToNearestFormat.round",
+      "interpretation": "Projection of the real-to-real rounding map.",
+      "effect_on_target": "It rounds products, internal additions, and nonunit divisions in scalar executions.",
+      "paper_match": "On safeRange the constructor gives nearest rounding with arbitrary ties, matching the paper's fl for admitted finite operations.",
       "status": "pass"
     },
     {
       "id": "D034",
-      "name": "Finset.univ",
-      "reuse_sha256": "e31a8b1776a43e8485e6b6b2830177742bc6f9698a444f766faefda853c2f8ac",
-      "effect_on_target": "It makes each matrix-product sum range over every k in Fin n.",
-      "paper_match": "This is the full contraction range for square matrix multiplication.",
-      "status": "pass"
+      "name": "HighamBench.P05FiniteRoundToNearestFormat.safeRange",
+      "interpretation": "Projection of an unconstrained real predicate used to authorize rounded operations.",
+      "effect_on_target": "It is required for products, internal sums, and nonunit divisions.",
+      "paper_match": "The paper gives concrete underflow and overflow exclusions; no axiom identifies this predicate with those concrete conditions, so the execution hypothesis is not the same one.",
+      "status": "fail"
     },
     {
       "id": "D035",
-      "name": "Real.instAddCommMonoid",
-      "reuse_sha256": "96216297869121a481f2d2074c4d60a9f2b7f7a87338e5f32994911e0606e446",
-      "effect_on_target": "It supplies exact associative and commutative real summation with zero.",
-      "paper_match": "This correctly models the mathematical sums in LU and |L||U|.",
+      "name": "HighamBench.P05SumTree",
+      "interpretation": "An indexed binary-tree type with one leaf and binary nodes whose sizes add.",
+      "effect_on_target": "It represents a parenthesization of all numerator summands.",
+      "paper_match": "Together with a permutation it supports the paper's arbitrary summation order.",
       "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "HighamBench.p05Lemma41Summands",
+      "interpretation": "A length m+1 vector whose first term is c and whose remaining terms are negatives of individually rounded products a_i b_i.",
+      "effect_on_target": "It turns c-sum(a_i b_i) into a permutable addition problem.",
+      "paper_match": "This reflects floating-point evaluation of the paper's scalar expression, including rounded products.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "HighamBench.p05SumTreeEval",
+      "interpretation": "Recursive evaluation returning a leaf unchanged and rounding the sum at every internal node.",
+      "effect_on_target": "It computes the rounded numerator for an arbitrary binary evaluation tree.",
+      "paper_match": "This matches round-to-nearest evaluation of the sum in any parenthesization.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "HighamBench.p05SumTreeSafe",
+      "interpretation": "Recursive predicate requiring representable leaves, safe subtrees, and safe exact inputs to every internal rounded addition.",
+      "effect_on_target": "It rules out exceptional internal summation operations according to safeRange.",
+      "paper_match": "Given the intended safeRange interpretation it models the paper's admitted evaluation; the deficiency is the unconstrained predicate itself at D034.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "HighamBench.P05SumTree.below",
+      "interpretation": "A recursion-support family collecting motives and recursive data below a sum tree.",
+      "effect_on_target": "It only implements the evaluators and safety predicate.",
+      "paper_match": "It has no independent numerical meaning to compare with the paper.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D040",
+      "name": "HighamBench.P05SumTree.brecOn",
+      "interpretation": "A course-of-values recursor returning a motive for a sum tree from data for each node.",
+      "effect_on_target": "It is implementation machinery for recursive tree functions.",
+      "paper_match": "It has no independent paper-level semantic content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D041",
+      "name": "HighamBench.P05SumTree.leaf",
+      "interpretation": "The one-summand constructor of P05SumTree.",
+      "effect_on_target": "It is the base case for an evaluation order.",
+      "paper_match": "A single unrounded representable leaf is the correct base of a summation tree.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "HighamBench.P05SumTree.node",
+      "interpretation": "The constructor joining trees of m and n leaves into one of m+n leaves.",
+      "effect_on_target": "It encodes a binary addition and parenthesization choice.",
+      "paper_match": "It faithfully represents combining two partial sums in an arbitrary evaluation order.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "HighamBench.p05RoundedProducts",
+      "interpretation": "The function i maps to round(a_i*b_i).",
+      "effect_on_target": "It supplies the product terms used in the rounded numerator.",
+      "paper_match": "This is the floating-point multiplication step in the Doolittle scalar expressions.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "HighamBench.p05SumTreeEval._proof_1",
+      "interpretation": "A proof of 0<1 used to select the sole leaf index.",
+      "effect_on_target": "It only constructs the Fin 1 index in the evaluator.",
+      "paper_match": "It adds no paper-level condition.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D045",
+      "name": "HighamBench.p05SumTreeEval.match_1",
+      "interpretation": "The generated dependent matcher for leaf and node cases.",
+      "effect_on_target": "It dispatches recursive tree evaluation and safety definitions.",
+      "paper_match": "It is eliminator plumbing with no independent numerical semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D046",
+      "name": "HighamBench.P05SumTree.brecOn.go",
+      "interpretation": "The helper returning both a recursively computed motive and all below-data.",
+      "effect_on_target": "It implements course-of-values recursion.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D047",
+      "name": "HighamBench.P05SumTree.casesOn",
+      "interpretation": "The nonrecursive dependent case eliminator for sum trees.",
+      "effect_on_target": "It supports generated matching code.",
+      "paper_match": "It contributes no numerical assumption or conclusion.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D048",
+      "name": "HighamBench.P05SumTree.rec",
+      "interpretation": "The induction recursor for leaf/node trees.",
+      "effect_on_target": "It implements recursive definitions over evaluation trees.",
+      "paper_match": "It has no independent paper-level semantic content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D049",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "Combines all target claims.",
+      "paper_match": "Matches simultaneous paper conclusions.",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "Eq",
+      "interpretation": "Exact propositional equality.",
+      "effect_on_target": "States matrix and linkage identities.",
+      "paper_match": "Matches exact paper equalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "Exists",
+      "interpretation": "Existential quantification.",
+      "effect_on_target": "Introduces DeltaA after the run.",
+      "paper_match": "Matches the residual witness.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "Fin",
+      "interpretation": "Naturals below a bound.",
+      "effect_on_target": "Indexes matrices and sums.",
+      "paper_match": "Correct zero-based finite indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "Fin.val",
+      "interpretation": "Underlying natural index.",
+      "effect_on_target": "Supplies orders and coefficients.",
+      "paper_match": "Correctly translates one-based offsets.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-selected addition.",
+      "effect_on_target": "Provides Nat, Real, and pointwise matrix addition.",
+      "paper_match": "Resolved additions match the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-selected multiplication.",
+      "effect_on_target": "Provides real products.",
+      "paper_match": "Matches paper multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-selected subtraction.",
+      "effect_on_target": "Provides real subtraction and Nat n-1.",
+      "paper_match": "Correct because n>0.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "LE.le",
+      "interpretation": "Typeclass-selected non-strict order.",
+      "effect_on_target": "States dimensions and bounds.",
+      "paper_match": "Resolved orders match.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "LT.lt",
+      "interpretation": "Typeclass-selected strict order.",
+      "effect_on_target": "States positivity and index conditions.",
+      "paper_match": "Resolved orders match.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "Nat",
+      "interpretation": "Natural numbers.",
+      "effect_on_target": "Represents dimensions, indices, radix, and precision.",
+      "paper_match": "Matches positive-integer paper parameters after constraints.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "Nat.cast",
+      "interpretation": "Natural-number coercion.",
+      "effect_on_target": "Converts integer coefficients to Real.",
+      "paper_match": "Matches paper scalar coefficients.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "OfNat.ofNat",
+      "interpretation": "Typeclass interpretation of numerals.",
+      "effect_on_target": "Supplies 0, 1, and 2.",
+      "paper_match": "Resolved values are standard.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "Pi.instAdd",
+      "interpretation": "Pointwise function addition.",
+      "effect_on_target": "Makes A+DeltaA entrywise.",
+      "paper_match": "Matches matrix addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "Real",
+      "interpretation": "Real-number type.",
+      "effect_on_target": "Carries exact matrix and error arithmetic.",
+      "paper_match": "Matches the paper's exact real quantities.",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary real addition.",
+      "effect_on_target": "Builds sums and matrix addition.",
+      "paper_match": "Matches paper addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "Real.instAddGroup",
+      "interpretation": "Real additive-group structure.",
+      "effect_on_target": "Supports subtraction, negation, and abs.",
+      "paper_match": "Matches standard real algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "Real.instLE",
+      "interpretation": "Ordinary real order.",
+      "effect_on_target": "Interprets numerical bounds.",
+      "paper_match": "Matches paper inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary real multiplication.",
+      "effect_on_target": "Builds products and coefficients.",
+      "paper_match": "Matches paper multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "Real.instNatCast",
+      "interpretation": "Canonical Nat-to-Real embedding.",
+      "effect_on_target": "Interprets integer coefficients.",
+      "paper_match": "Matches paper coefficients.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "Real.instSub",
+      "interpretation": "Real subtraction as addition of negation.",
+      "effect_on_target": "Forms residuals.",
+      "paper_match": "Matches exact subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "Real.lattice",
+      "interpretation": "Real lattice structure.",
+      "effect_on_target": "Supports generic abs.",
+      "paper_match": "Yields standard real absolute value.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "abs",
+      "interpretation": "Maximum of x and -x on Real.",
+      "effect_on_target": "Measures scalar residuals and factors.",
+      "paper_match": "Matches entrywise absolute value.",
+      "status": "pass"
+    },
+    {
+      "id": "D072",
+      "name": "instAddNat",
+      "interpretation": "Natural addition.",
+      "effect_on_target": "Forms successors and tree sizes.",
+      "paper_match": "Matches zero-based indexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "instHAdd",
+      "interpretation": "Homogeneous addition adapter.",
+      "effect_on_target": "Routes overloaded addition.",
+      "paper_match": "No semantic change.",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "instHMul",
+      "interpretation": "Homogeneous multiplication adapter.",
+      "effect_on_target": "Routes overloaded multiplication.",
+      "paper_match": "No semantic change.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "instHSub",
+      "interpretation": "Homogeneous subtraction adapter.",
+      "effect_on_target": "Routes overloaded subtraction.",
+      "paper_match": "No semantic change.",
+      "status": "pass"
+    },
+    {
+      "id": "D076",
+      "name": "instLENat",
+      "interpretation": "Natural <=.",
+      "effect_on_target": "Expresses n<=m and k<=j.",
+      "paper_match": "Matches paper conditions.",
+      "status": "pass"
+    },
+    {
+      "id": "D077",
+      "name": "instLTNat",
+      "interpretation": "Natural <.",
+      "effect_on_target": "Expresses positivity and strict positions.",
+      "paper_match": "Matches paper conditions.",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "instOfNatNat",
+      "interpretation": "Natural numeral instance.",
+      "effect_on_target": "Provides natural literals.",
+      "paper_match": "Standard values match.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "instSubNat",
+      "interpretation": "Truncated natural subtraction.",
+      "effect_on_target": "Forms n-1.",
+      "paper_match": "Since n>0, it matches paper n-1.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "Fin.castLE",
+      "interpretation": "Value-preserving Fin embedding under <=.",
+      "effect_on_target": "Implements rectangular row inclusion.",
+      "paper_match": "Correctly embeds pivot rows.",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "Fin.fintype",
+      "interpretation": "Finite enumeration of Fin n.",
+      "effect_on_target": "Enables complete index sums.",
+      "paper_match": "Enumerates exactly n indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D082",
+      "name": "Finset.sum",
+      "interpretation": "Finite commutative sum.",
+      "effect_on_target": "Defines dots and matrix products.",
+      "paper_match": "Matches ordinary finite sums.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "Finset.univ",
+      "interpretation": "All elements of a finite type.",
+      "effect_on_target": "Selects every inner index.",
+      "paper_match": "Matches full paper ranges.",
+      "status": "pass"
+    },
+    {
+      "id": "D084",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "Real additive commutative monoid.",
+      "effect_on_target": "Supports Finset.sum.",
+      "paper_match": "Matches exact real summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "One.toOfNat1",
+      "interpretation": "Literal 1 from One.",
+      "effect_on_target": "Supplies unit diagonal/denominator.",
+      "paper_match": "Matches Doolittle's exact one.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "Real.instOne",
+      "interpretation": "Real multiplicative identity.",
+      "effect_on_target": "Interprets real 1.",
+      "paper_match": "Matches paper one.",
+      "status": "pass"
+    },
+    {
+      "id": "D087",
+      "name": "Real.instZero",
+      "interpretation": "Real additive identity.",
+      "effect_on_target": "Interprets real 0.",
+      "paper_match": "Matches paper zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Literal 0 from Zero.",
+      "effect_on_target": "Supplies real zero.",
+      "paper_match": "Matches paper zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D089",
+      "name": "Fin.mk",
+      "interpretation": "Bounded-index constructor.",
+      "effect_on_target": "Builds prefix/tree indices.",
+      "paper_match": "Preserves intended ranges.",
+      "status": "pass"
+    },
+    {
+      "id": "D090",
+      "name": "HPow.hPow",
+      "interpretation": "Typeclass-selected power.",
+      "effect_on_target": "Forms beta^(p-1).",
+      "paper_match": "Resolved real power matches.",
+      "status": "pass"
+    },
+    {
+      "id": "D091",
+      "name": "Int",
+      "interpretation": "Integer type.",
+      "effect_on_target": "Represents exponent bounds.",
+      "paper_match": "Matches integer exponent range.",
+      "status": "pass"
+    },
+    {
+      "id": "D092",
+      "name": "Int.instLTInt",
+      "interpretation": "Standard integer strict order.",
+      "effect_on_target": "Orders exponent bounds.",
+      "paper_match": "Compatible with paper range.",
+      "status": "pass"
+    },
+    {
+      "id": "D093",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural exponentiation from a monoid.",
+      "effect_on_target": "Computes real beta^(p-1).",
+      "paper_match": "Matches the u formula.",
+      "status": "pass"
+    },
+    {
+      "id": "D094",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "interpretation": "Proof that a suitable successor is at least two.",
+      "effect_on_target": "Only enables numeral elaboration.",
+      "paper_match": "No independent paper meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D095",
+      "name": "Nat.instNeZeroSucc",
+      "interpretation": "Proof that a successor is nonzero.",
+      "effect_on_target": "Only supports elaboration.",
+      "paper_match": "No independent paper meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D096",
+      "name": "Real.instMonoid",
+      "interpretation": "Real multiplicative monoid.",
+      "effect_on_target": "Supplies natural powers.",
+      "paper_match": "Matches real exponentiation.",
+      "status": "pass"
+    },
+    {
+      "id": "D097",
+      "name": "Set.Finite",
+      "interpretation": "Finiteness of a set's subtype.",
+      "effect_on_target": "Requires finitely many representables.",
+      "paper_match": "Matches finite F.",
+      "status": "pass"
+    },
+    {
+      "id": "D098",
+      "name": "instHPow",
+      "interpretation": "Homogeneous power adapter.",
+      "effect_on_target": "Routes real natural powers.",
+      "paper_match": "No semantic change.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "Numeral construction from NatCast.",
+      "effect_on_target": "Interprets real 2.",
+      "paper_match": "Matches paper 2.",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "setOf",
+      "interpretation": "Set defined by a predicate.",
+      "effect_on_target": "Forms the representable set.",
+      "paper_match": "Matches set membership in F.",
+      "status": "pass"
+    },
+    {
+      "id": "D101",
+      "name": "Nat.instPreorder",
+      "interpretation": "Natural preorder.",
+      "effect_on_target": "Used only in an index proof.",
+      "paper_match": "No independent paper meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D102",
+      "name": "Preorder.toLT",
+      "interpretation": "Strict-order projection.",
+      "effect_on_target": "Used only in an index proof.",
+      "paper_match": "No independent paper meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D103",
+      "name": "DFunLike.coe",
+      "interpretation": "Function-like coercion.",
+      "effect_on_target": "Applies the summand permutation.",
+      "paper_match": "Faithfully realizes reordering.",
+      "status": "pass"
+    },
+    {
+      "id": "D104",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Division projection.",
+      "effect_on_target": "Forms numerator/bK.",
+      "paper_match": "Matches exact real division.",
+      "status": "pass"
+    },
+    {
+      "id": "D105",
+      "name": "Equiv.Perm",
+      "interpretation": "Self-equivalences of an index type.",
+      "effect_on_target": "Represents summand permutations.",
+      "paper_match": "Matches arbitrary evaluation order.",
+      "status": "pass"
+    },
+    {
+      "id": "D106",
+      "name": "Equiv.instEquivLike",
+      "interpretation": "Function/inverse structure for equivalences.",
+      "effect_on_target": "Lets permutations act on indices.",
+      "paper_match": "Preserves bijective reordering.",
+      "status": "pass"
+    },
+    {
+      "id": "D107",
+      "name": "EquivLike.toFunLike",
+      "interpretation": "Function-like view of an equivalence.",
+      "effect_on_target": "Applies the chosen permutation.",
+      "paper_match": "No semantic change.",
+      "status": "pass"
+    },
+    {
+      "id": "D108",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-selected division.",
+      "effect_on_target": "Forms the lower-entry quotient.",
+      "paper_match": "Matches paper division.",
+      "status": "pass"
+    },
+    {
+      "id": "D109",
+      "name": "Ne",
+      "interpretation": "Negation of equality.",
+      "effect_on_target": "Requires a nonzero pivot and tests bK=1.",
+      "paper_match": "Matches completion's implicit nonzero pivot.",
+      "status": "pass"
+    },
+    {
+      "id": "D110",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "Standard real division structure.",
+      "effect_on_target": "Interprets scalar division.",
+      "paper_match": "Matches division for nonzero bK.",
+      "status": "pass"
+    },
+    {
+      "id": "D111",
+      "name": "instHDiv",
+      "interpretation": "Homogeneous division adapter.",
+      "effect_on_target": "Routes real division.",
+      "paper_match": "No semantic change.",
+      "status": "pass"
+    },
+    {
+      "id": "D112",
+      "name": "Fin.cases",
+      "interpretation": "Zero/successor case split on Fin(n+1).",
+      "effect_on_target": "Places c then negative products.",
+      "paper_match": "Correctly forms c minus products.",
+      "status": "pass"
+    },
+    {
+      "id": "D113",
+      "name": "Fin.castAdd",
+      "interpretation": "Embedding into a sum type's left index block.",
+      "effect_on_target": "Indexes the left tree.",
+      "paper_match": "Correctly partitions summands.",
+      "status": "pass"
+    },
+    {
+      "id": "D114",
+      "name": "Fin.natAdd",
+      "interpretation": "Offset embedding into the right index block.",
+      "effect_on_target": "Indexes the right tree.",
+      "paper_match": "Correctly partitions summands.",
+      "status": "pass"
+    },
+    {
+      "id": "D115",
+      "name": "Neg.neg",
+      "interpretation": "Typeclass-selected negation.",
+      "effect_on_target": "Negates rounded products.",
+      "paper_match": "Matches subtraction of products.",
+      "status": "pass"
+    },
+    {
+      "id": "D116",
+      "name": "Real.instNeg",
+      "interpretation": "Ordinary real negation.",
+      "effect_on_target": "Interprets negative products.",
+      "paper_match": "Matches paper negation.",
+      "status": "pass"
+    },
+    {
+      "id": "D117",
+      "name": "Eq.ndrec",
+      "interpretation": "Dependent equality transport.",
+      "effect_on_target": "Used only in generated matching.",
+      "paper_match": "No independent paper meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D118",
+      "name": "Eq.refl",
+      "interpretation": "Equality reflexivity.",
+      "effect_on_target": "Discharges generated obligations.",
+      "paper_match": "No independent paper meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D119",
+      "name": "Eq.symm",
+      "interpretation": "Equality symmetry.",
+      "effect_on_target": "Used only in generated matching.",
+      "paper_match": "No independent paper meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D120",
+      "name": "HEq",
+      "interpretation": "Heterogeneous equality.",
+      "effect_on_target": "Supports indexed-tree matching.",
+      "paper_match": "No numerical meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D121",
+      "name": "HEq.refl",
+      "interpretation": "Heterogeneous reflexivity.",
+      "effect_on_target": "Discharges generated obligations.",
+      "paper_match": "No numerical meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D122",
+      "name": "Nat.instPartialOrder",
+      "interpretation": "Natural partial order.",
+      "effect_on_target": "Used only to prove 0<1.",
+      "paper_match": "No independent paper meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D123",
+      "name": "PProd",
+      "interpretation": "Universe-polymorphic pair.",
+      "effect_on_target": "Stores recursive auxiliary data.",
+      "paper_match": "No paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D124",
+      "name": "PUnit",
+      "interpretation": "One-element type.",
+      "effect_on_target": "Stores empty leaf auxiliary data.",
+      "paper_match": "No paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D125",
+      "name": "PartialOrder.toPreorder",
+      "interpretation": "Preorder projection.",
+      "effect_on_target": "Resolves a generated order instance.",
+      "paper_match": "No paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D126",
+      "name": "eq_of_heq",
+      "interpretation": "Conversion from homogeneous HEq to Eq.",
+      "effect_on_target": "Used in generated matching.",
+      "paper_match": "No paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D127",
+      "name": "PProd.mk",
+      "interpretation": "Pair constructor.",
+      "effect_on_target": "Assembles recursive auxiliary data.",
+      "paper_match": "No paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D128",
+      "name": "PUnit.unit",
+      "interpretation": "Sole PUnit value.",
+      "effect_on_target": "Supplies empty leaf data.",
+      "paper_match": "No paper-level meaning.",
+      "status": "not-applicable"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF has SHA-256 dd8b525c0eabc509a68b325ee5008cf6f1d4ef262bef8ba54e1947fe3cdb3db6; Theorem 4.2 and (4.2) are on PDF page 10, with the Doolittle proof and (4.3) on page 11.",
-      "lean_evidence": "The target is the LU declaration p05_t2_square_lu_backward_error and expresses the square rowwise and uniform coefficients discussed in (4.2).",
-      "reasoning": "The selected paper, version, and cited LU passages are correct."
+      "paper_evidence": "The verified PDF is the 2014 SIAM Journal on Matrix Analysis and Applications article, volume 35(2), and printed pages 693-694 contain Theorem 4.2, (4.2), Doolittle formulas, (4.3a)-(4.3b), and the final comparison.",
+      "lean_evidence": "The task binds the same verified paper SHA-256 and the supplied dossier SHA-256; the target is p05_t2_lu_backward_error.",
+      "reasoning": "The selected source and surrounding result are unambiguous and hash-consistent."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.2 binds A and L_hat in F^(m x n), U_hat in F^(n x n), and m>=n; only the sharper branch assumes m=n.",
-      "lean_evidence": "A,L,U all have type Fin n -> Fin n -> Real, with no dimension m, floating-point membership, triangular structure, or computed-factor type.",
-      "reasoning": "Zero-based Fin indices correctly encode the square branch, but the binders omit the rectangular theorem and broaden entries from F to arbitrary reals."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.2 has A in F^(m x n), m>=n, L-hat in F^(m x n), U-hat in F^(n x n), with positive n implicit in k=1,...,n.",
+      "lean_evidence": "Lean uses m n:Nat, n<=m and 0<n in P05DoolittleRun.mk; A/LHat are Fin m -> Fin n -> Real and UHat is Fin n -> Fin n -> Real, with representability proofs.",
+      "reasoning": "Dimensions and finite index sets match; Fin values are consistently zero-based."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "For each eligible floating-point input and completed elimination, the computed factors are concluded to admit DeltaA and the stated bounds.",
-      "lean_evidence": "The target universally quantifies arbitrary real A,L,U and assumes hlocal before existentially introducing DeltaA.",
-      "reasoning": "The strongest square residual bound has moved from the paper's conclusion into a premise, materially changing quantifier scope and witness conditions."
+      "paper_evidence": "The paper chooses admissible A, runs Gaussian elimination to completion without underflow/overflow, obtains computed factors, and then asserts the residual and bounds.",
+      "lean_evidence": "Lean first quantifies over a P05DoolittleRun that already contains all computed matrices plus P05Lemma41Run certificates whose constructor fields include both local residual bounds; only DeltaA is subsequently existential.",
+      "reasoning": "The scope shifts the key numerical estimates from consequences of execution to prerequisites for inhabiting the quantified run type."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "Theorem 4.2 assumes Gaussian elimination runs to completion and excludes underflow and overflow under the standing round-to-nearest floating-point model.",
-      "lean_evidence": "The only hypotheses are 0<=u and hlocal; there is no completion, pivot, rounding, underflow, overflow, F-membership, or computed-factor condition.",
-      "reasoning": "The paper's operational hypotheses are absent, while hlocal assumes the key numerical estimate the paper proves."
+      "paper_evidence": "Theorem 4.2 assumes m>=n, completion, and absence of underflow and overflow; nonzero pivots are implicit in completion.",
+      "lean_evidence": "P05DoolittleRun additionally requires unit/triangular structure and per-entry P05Lemma41Run objects; P05Lemma41Run.mk explicitly requires general_residual_bound and unit_residual_bound. safeRange is an arbitrary predicate rather than the paper's exceptional-value condition.",
+      "reasoning": "The added residual certificates are substantive extra hypotheses, not harmless elaborations of completion."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "The paper gives the rectangular n*u bound, the square rowwise and (n-1)u bounds, and local estimates (k-1)u and k*u in (4.3a)-(4.3b).",
-      "lean_evidence": "The conclusion contains only an exact square identity, the assumed square rowwise bound, and its (n-1)u uniform consequence.",
-      "reasoning": "The general rectangular result and both local Doolittle estimates are missing, and the strongest retained estimate is a hypothesis rather than a derived conclusion."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.2 gives LHat*UHat=A+DeltaA and the n*u componentwise bound; for m=n, (4.2) gives the rowwise (i-1)u and uniform (n-1)u bounds. Printed page 694 also states (4.3a)-(4.3b).",
+      "lean_evidence": "The target contains both translated local inequalities, then one DeltaA with the exact identity, rectangular bound, and both square bounds under m=n.",
+      "reasoning": "Every selected global conclusion is present, and the extra local conjuncts correspond to displayed proof equations."
     },
     {
       "id": "S06",
-      "status": "pass",
-      "paper_evidence": "The paper uses exact LU, entrywise absolute values, and the ordinary product |L||U| in its componentwise inequalities.",
-      "lean_evidence": "p05MatMul unfolds to a full exact contraction sum, p05AbsMatMul to the sum of absolute products, and A+DeltaA to pointwise addition.",
-      "reasoning": "The nontrivial operators used in the retained square algebra have the intended meanings."
+      "status": "fail",
+      "paper_evidence": "The paper's nontrivial objects are ordinary matrix products, entrywise absolute values/order, a row diagonal scaling, and rounded Doolittle evaluations.",
+      "lean_evidence": "p05RectMatMul, p05RectAbsMatMul, through-pivot dots, Fin sums, abs, and pointwise addition unfold correctly; however P05DoolittleRun and P05Lemma41Run unfold to proof-carrying premises that include the desired local estimates.",
+      "reasoning": "The ordinary operators match, but the main imported execution abstraction changes the proposition's meaning by assuming the key numerical postconditions."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "L_hat and U_hat are stored factors computed in floating-point arithmetic, while the displayed products and backward identity are exact real operations on their values.",
-      "lean_evidence": "L and U are arbitrary exact real-valued functions with no predicate identifying them as computed floating-point quantities.",
-      "reasoning": "The exact matrix product is modeled correctly, but the essential computed-versus-arbitrary distinction is not represented."
+      "status": "pass",
+      "paper_evidence": "A and the hatted factors are floating-point data/computed factors, while DeltaA is the exact mathematical residual satisfying LHat*UHat=A+DeltaA.",
+      "lean_evidence": "Lean stores A/LHat/UHat as reals with representability proofs and quantifies DeltaA over real matrices; p05RectMatMul uses exact real sums.",
+      "reasoning": "The formal statement does not conflate computed entries with the exact residual identity."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "The proof links the bounds to completed Gaussian elimination and the Doolittle updates, including L_hat_kk=1 and separate subtraction and division computations.",
-      "lean_evidence": "No algorithm, execution trace, completion predicate, pivot condition, summation order, or Doolittle invariant occurs; only hlocal connects A,L,U.",
-      "reasoning": "The target is an algebraic residual-packaging lemma rather than a backward-error theorem about Gaussian elimination."
+      "paper_evidence": "Theorem 4.2 covers a completing Gaussian-elimination computation; its proof analyzes Doolittle as a mathematically equivalent formulation and allows any sum evaluation order.",
+      "lean_evidence": "Lean covers only objects constructible as P05DoolittleRun, with explicit Doolittle upper/lower entry records, but provides no proposition that every paper-admissible completing Gaussian-elimination execution yields such a run; construction additionally needs residual certificates.",
+      "reasoning": "The target is linked to Doolittle formulas but not to the full algorithmic execution class asserted by the paper."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "All matrix inequalities in Theorem 4.2 and (4.2) are componentwise, with |L_hat||U_hat| the ordinary product of entrywise absolute-value matrices.",
-      "lean_evidence": "Each bound is quantified over i,j and uses scalar abs with p05AbsMatMul's sum of absolute products.",
-      "reasoning": "The target does not substitute a matrix norm or alter squared versus unsquared quantities."
+      "paper_evidence": "Theorem 4.2 and (4.2) are componentwise matrix inequalities; |LHat||UHat| is a matrix product of entrywise magnitudes, not a norm.",
+      "lean_evidence": "Lean states forall i j scalar inequalities and p05RectAbsMatMul sums |L_ik||U_kj| over all k.",
+      "reasoning": "The componentwise, unsquared, non-norm semantics match."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The general coefficient is n*u; the square row coefficient is (i-1)u and uniform coefficient (n-1)u; local coefficients are (k-1)u and k*u.",
-      "lean_evidence": "Fin.val correctly encodes the square row offset and Nat.sub n 1 encodes the square uniform coefficient, but n*u and both local coefficients are absent.",
-      "reasoning": "The constants present are correct for the square branch, but the task's full constant and indexing structure is incomplete."
+      "status": "pass",
+      "paper_evidence": "Printed pages 693-694 give n*u globally, (k-1)u for one-based upper pivot k, k*u below the diagonal, row coefficient (i-1)u, and uniform (n-1)u.",
+      "lean_evidence": "Lean uses n*u, k.val*u, (k.val+1)*u, i.val*u, and Nat (n-1)*u, with n>0.",
+      "reasoning": "The zero-based translations and all offsets are exact."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The standing model uses F, round-to-nearest, unit roundoff u=(1/2)beta^(1-p), arbitrary tie breaking and radix, and excludes underflow and overflow.",
-      "lean_evidence": "u is any nonnegative real and A,L,U are arbitrary real matrices; no rounding or exceptional-value assumptions are present.",
-      "reasoning": "The floating-point model has been replaced by an abstract nonnegative parameter and an assumed residual inequality."
+      "paper_evidence": "Printed page 688 defines a finite symmetric base-beta precision-p format with exponent range, nearest rounding, arbitrary ties, and concrete underflow/overflow exclusions; u=(1/2)beta^(1-p).",
+      "lean_evidence": "P05FiniteRoundToNearestFormat gets u and nearest rounding right, but representable is only an arbitrary finite predicate containing 0 and 1, need not be symmetric or radix/exponent generated, and safeRange is not characterized as the absence of underflow/overflow.",
+      "reasoning": "The abstraction includes the paper model but does not itself preserve the paper's floating-point and exceptional-value semantics."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The paper derives exact LU=A+DeltaA and non-strict componentwise bounds from the algorithmic hypotheses.",
-      "lean_evidence": "The target's exact equality and inequality directions are correct, but hlocal already states the strongest rowwise residual bound needed to construct DeltaA.",
-      "reasoning": "Moving the principal conclusion into the antecedent makes the relation substantially weaker despite preserving local equality and inequality syntax."
+      "paper_evidence": "The paper derives local residual inequalities and then the exact identity and non-strict global inequalities from the stated execution hypotheses.",
+      "lean_evidence": "Lean has the same equality and inequality directions, but the local inequalities are constructor premises of every scalar execution record and are reasserted as conclusions.",
+      "reasoning": "Surface relations match while logical strength does not: the theorem is conditional on core facts the paper proves."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "DeltaA is a componentwise backward perturbation in the exact identity LU=A+DeltaA, and |L||U| is its componentwise majorant.",
-      "lean_evidence": "The witness DeltaA satisfies the same exact identity and componentwise absolute bounds.",
-      "reasoning": "The retained conclusion uses the correct backward-error notion, although its estimate is assumed rather than obtained from the algorithm."
+      "paper_evidence": "DeltaA is a componentwise backward error on A because the computed factors exactly factor A+DeltaA.",
+      "lean_evidence": "Lean's existential DeltaA satisfies p05RectMatMul LHat UHat=A+DeltaA and is bounded against p05RectAbsMatMul.",
+      "reasoning": "The formal error is the same input backward error, not a forward or normwise substitute."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "The improved coefficients contain no O(u^2) term and require no condition n*u<1.",
-      "lean_evidence": "The target uses exact linear coefficients i.val*u and (n-1)*u and imposes no smallness condition.",
-      "reasoning": "No higher-order term or gamma-style restriction has been introduced."
+      "paper_evidence": "The paper emphasizes exact linear multiples of u, no O(u^2) remainder, and no condition such as n*u<1.",
+      "lean_evidence": "Lean uses exact products of natural coefficients and unitRoundoff with no remainder, denominator, gamma term, or smallness premise.",
+      "reasoning": "Higher-order and smallness semantics match."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "Theorem 4.2 covers rectangular m-by-n matrices and computed F-valued factors, with an additional sharper square case.",
-      "lean_evidence": "The target retains only square matrices, generalizes entries to arbitrary reals, and conditions on the square residual estimate.",
-      "reasoning": "This is not an acceptable standalone specialization of the benchmark result because it omits the general theorem and assumes the numerical content that should be measured."
+      "paper_evidence": "The theorem applies to any completing Gaussian-elimination variant in the stated floating-point setting; Doolittle is the proof formulation.",
+      "lean_evidence": "Lean specializes to certificate-bearing Doolittle runs and simultaneously generalizes the format carrier beyond the paper's F.",
+      "reasoning": "The Doolittle/certificate restriction reduces applicability and is not converted into a theorem covering the selected paper class; the unrelated format generalization does not make this faithful-stronger."
     },
     {
       "id": "S16",
       "status": "fail",
-      "paper_evidence": "The paper's conclusion is nontrivial because it follows from completed floating-point Gaussian elimination via the local estimates (4.3).",
-      "lean_evidence": "The hypotheses are satisfiable, but choosing DeltaA=LU-A immediately gives the identity and hlocal gives the first bound; i.val<=n-1 with u>=0 gives the last bound.",
-      "reasoning": "The proposition is not logically vacuous, but it is true for the unintended trivial reason that its key backward-error estimate is already assumed."
+      "paper_evidence": "The paper's claim is nonvacuous and obtains (4.3) from Lemma 4.1 before deriving the global bounds.",
+      "lean_evidence": "Formal runs are satisfiable, for example a 1x1 exact run with LHat=UHat=A=1 in a valid format, but P05Lemma41Run.mk requires the exact local residual inequalities that the target's first two conjuncts restate.",
+      "reasoning": "The proposition is not empty-domain vacuous, yet its central numerical content is true for an unintended assumption-by-certificate reason."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "The Lean theorem cannot derive hlocal from Gaussian elimination, does not model floating-point execution, and says nothing about the rectangular n*u result or the local estimates; therefore it does not imply Theorem 4.2."
+      "reasoning": "The Lean proposition applies only after a certificate-bearing DoolittleRun has been supplied. In particular, each nested P05Lemma41Run already assumes the local residual inequality from which the global bounds are assembled, and the proposition does not show that every completing Gaussian-elimination computation covered by Theorem 4.2 yields such a run. Therefore it cannot recover the paper theorem from the paper's stated hypotheses alone."
     },
     "paper_implies_lean": {
       "verdict": "yes",
-      "reasoning": "After specializing Theorem 4.2 to m=n and translating one-based row i to Fin.val+1, equation (4.2) supplies the exact DeltaA identity and both target bounds. The target's broader arbitrary-real cases require no additional numerical claim because hlocal itself algebraically supplies the retained rowwise result."
+      "reasoning": "Under the paper context, Lemma 4.1 and equations (4.3a)-(4.3b) provide the local estimates for a Doolittle evaluation, while Theorem 4.2 and (4.2) provide the exact residual identity and all global bounds. After the exact one-based to zero-based translations, these establish every target conjunct for any corresponding formal run; the formal run's extra certificate hypotheses only make that conditional proposition easier to obtain."
     }
   },
   "classification": "not-faithful-weaker",
@@ -416,25 +1160,32 @@
   "findings": [
     {
       "severity": "critical",
-      "category": "assumed-core-result",
-      "paper_evidence": "Theorem 4.2 derives the square rowwise residual bound from completed Gaussian elimination using (4.3a)-(4.3b).",
-      "lean_evidence": "hlocal is exactly |LU-A| <= i.val*u*|L||U|, the zero-based form of the strongest square rowwise bound.",
-      "impact": "The formal theorem only packages DeltaA=LU-A and derives the uniform coefficient; it does not formalize the numerical-stability result."
+      "category": "assumed-local-error-bounds",
+      "paper_evidence": "On printed page 694, Lemma 4.1 is invoked to derive (4.3a)-(4.3b), and those estimates are then used to prove the global bounds.",
+      "lean_evidence": "P05Lemma41Run.mk takes general_residual_bound and unit_residual_bound as constructor arguments. Via P05DoolittleUpperEntry.mk and LowerEntry.mk, they are algebraically the target's first and second conjuncts.",
+      "impact": "The target assumes the central floating-point estimates it presents as conclusions, so it proves only the later algebraic assembly for a restricted proof-carrying run class."
     },
     {
       "severity": "major",
-      "category": "missing-floating-point-algorithm",
-      "paper_evidence": "The result concerns F-valued inputs and computed factors, successful Gaussian elimination, round-to-nearest arithmetic, and absence of underflow and overflow.",
-      "lean_evidence": "The target has arbitrary real matrices and no execution, completion, pivot, rounding, underflow, overflow, or computed-value predicate.",
-      "impact": "There is no semantic linkage between the formal proposition and an LU algorithm run."
+      "category": "restricted-algorithm-linkage",
+      "paper_evidence": "Theorem 4.2 states the result for Gaussian elimination running to completion; Doolittle is selected in the proof as one mathematically equivalent formulation.",
+      "lean_evidence": "The sole premise is P05DoolittleRun with Doolittle-specific entry certificates, and no statement maps every paper-admissible completing Gaussian-elimination execution into this type.",
+      "impact": "Lean does not imply the selected theorem over its stated algorithmic domain."
     },
     {
       "severity": "major",
-      "category": "incomplete-theorem-scope",
-      "paper_evidence": "Theorem 4.2 includes rectangular m>=n with coefficient n*u, then a square refinement, and its proof records distinct local coefficients (k-1)u and k*u.",
-      "lean_evidence": "The target is square-only and contains neither the rectangular conclusion nor either local estimate.",
-      "impact": "Even apart from the circular hlocal premise, the declaration does not cover the full benchmark task claimed by the source contract."
+      "category": "floating-point-model-mismatch",
+      "paper_evidence": "Printed page 688 fixes a symmetric finite base-beta, precision-p floating-point set with an exponent range and concrete underflow/overflow semantics.",
+      "lean_evidence": "P05FiniteRoundToNearestFormat permits any finite representability predicate containing 0 and 1 and any safeRange predicate; neither symmetry nor a radix/exponent-generated set nor the exceptional-value interpretation is required.",
+      "impact": "The formal execution model is not extensionally the paper's numerical model, even though its nearest-rounding axiom and unit-roundoff formula agree."
+    },
+    {
+      "severity": "note",
+      "category": "surface-statement-match",
+      "paper_evidence": "Theorem 4.2, (4.2), and (4.3) use coefficients n, i-1, n-1, k-1, and k with componentwise magnitude products.",
+      "lean_evidence": "The target's zero-based coefficients n, i.val, n-1, k.val, and k.val+1, its exact residual sign, dimensions, and magnitude products all unfold correctly.",
+      "impact": "The rejection is caused by hidden premise and execution-model semantics, not by constants, indexing, dimensions, residual sign, or matrix operators."
     }
   ],
-  "rationale": "The matrix-product, absolute-value, exact-identity, and square coefficients are encoded correctly. Nevertheless, the declaration assumes the paper's principal square residual estimate, omits the floating-point Gaussian-elimination model, and drops the rectangular and local results. It is therefore a nonvacuous but essentially algebraic corollary of the paper, not a faithful formalization of Theorem 4.2."
+  "rationale": "The readable target has the correct displayed LU residual identity, componentwise products, dimensions, zero-based coefficient translations, square refinements, and O(u^2)-free constants. Dependency unfolding changes the judgment: P05Lemma41Run.mk requires as constructor fields the general and unit residual inequalities that become the target's two local conclusions, and P05DoolittleRun quantifies only over executions already carrying those certificates. The target therefore does not prove Theorem 4.2 from completion plus absence of underflow and overflow; it proves a conditional aggregation result on a narrower Doolittle run type. The paper passage supplies the target for corresponding runs, but the Lean proposition does not recover the paper's stated execution-domain theorem, so the fixed classification is not-faithful-weaker."
 }

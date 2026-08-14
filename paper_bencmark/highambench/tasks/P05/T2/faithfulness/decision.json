@@ -1,83 +1,57 @@
 {
   "accepted": false,
-  "adjudicated": false,
-  "adjudication_reasons": [],
-  "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-13T11:16:36.602027+00:00",
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip S08 is unclear"
+  ],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-14T19:59:30.136975+00:00",
   "findings": [
     {
-      "category": "assumed-core-result",
-      "impact": "The formal theorem only packages DeltaA=LU-A and derives the uniform coefficient; it does not formalize the numerical-stability result.",
-      "lean_evidence": "hlocal is exactly |LU-A| <= i.val*u*|L||U|, the zero-based form of the strongest square rowwise bound.",
-      "paper_evidence": "Theorem 4.2 derives the square rowwise residual bound from completed Gaussian elimination using (4.3a)-(4.3b).",
+      "category": "assumption-leakage",
+      "evidence": "PDF page 11 derives (4.3a)-(4.3b) from Lemma 4.1. D032 instead accepts the corresponding general and unit residual bounds as constructor fields, which D022 and D023 attach to every entry required by D013.",
+      "impact": "The central floating-point analysis is a prerequisite of the formal run rather than a consequence of the paper's execution hypotheses.",
       "severity": "critical"
     },
     {
-      "category": "missing-floating-point-algorithm",
-      "impact": "There is no semantic linkage between the formal proposition and an LU algorithm run.",
-      "lean_evidence": "The target has arbitrary real matrices and no execution, completion, pivot, rounding, underflow, overflow, or computed-value predicate.",
-      "paper_evidence": "The result concerns F-valued inputs and computed factors, successful Gaussian elimination, round-to-nearest arithmetic, and absence of underflow and overflow.",
+      "category": "abstract-numerical-domain",
+      "evidence": "PDF page 5 requires a symmetric base-beta floating-point set and defines underflow and overflow concretely. D019 requires neither symmetry nor a radix/exponent-generated representable set and leaves safeRange uninterpreted.",
+      "impact": "Lean makes a nonvacuous universal claim about certified runs outside the paper's domain, so the paper does not imply Lean.",
       "severity": "major"
     },
     {
-      "category": "incomplete-theorem-scope",
-      "impact": "Even apart from the circular hlocal premise, the declaration does not cover the full benchmark task claimed by the source contract.",
-      "lean_evidence": "The target is square-only and contains neither the rectangular conclusion nor either local estimate.",
-      "paper_evidence": "Theorem 4.2 includes rectangular m>=n with coefficient n*u, then a square refinement, and its proof records distinct local coefficients (k-1)u and k*u.",
+      "category": "execution-model-linkage",
+      "evidence": "PDF page 11 authorizes Doolittle as a mathematically equivalent formulation, but D013 requires D017 and D018 entry records backed by D032 residual certificates.",
+      "impact": "Doolittle itself is an appropriate algorithmic representative, but the formal execution object is substantially stronger than a completing exception-free execution.",
       "severity": "major"
     },
     {
-      "category": "core-result-moved-to-hypothesis",
-      "impact": "The translated statement does not prove the central numerical-stability result and reduces it to an elementary residual-repackaging lemma.",
-      "paper_evidence": "Theorem 4.2 derives the square rowwise residual/backward-error estimate from completed floating-point Gaussian elimination.",
-      "severity": "critical",
-      "translation_evidence": "The proposition assumes exactly that rowwise residual estimate before constructing DeltaA."
-    },
-    {
-      "category": "dimension-and-conclusion-loss",
-      "impact": "The full rectangular theorem and its distinct general bound are absent.",
-      "paper_evidence": "The theorem covers m by n matrices with m>=n and gives the general coefficient n*u in addition to the square sharpening.",
-      "severity": "major",
-      "translation_evidence": "Only square n by n matrices and the square coefficients are represented."
-    },
-    {
-      "category": "algorithm-and-floating-point-model",
-      "impact": "The statement no longer asserts anything about the accuracy or backward stability of an implemented factorization.",
-      "paper_evidence": "A and the computed factors belong to F, Gaussian elimination must run to completion, and underflow and overflow are excluded under round-to-nearest arithmetic.",
-      "severity": "major",
-      "translation_evidence": "A, L, and U are arbitrary real matrices and no computation or rounding model appears."
-    },
-    {
-      "category": "local-doolittle-estimates",
-      "impact": "The proof-level numerical content required by the task source contract is entirely omitted.",
-      "paper_evidence": "Equations (4.3a) and (4.3b) preserve distinct coefficients (k-1)*u and k*u, their different index ranges, and the convention L_kk=1.",
-      "severity": "major",
-      "translation_evidence": "There is no step index k, local update expression, pivot division, triangular convention, or local estimate."
-    },
-    {
-      "category": "empty-dimension-vacuity",
-      "impact": "The translation adds an unintended vacuous case and subtraction semantics not present in the source result.",
-      "paper_evidence": "The algorithm and notation use indices 1 through n and do not state an empty-dimensional Gaussian-elimination case.",
-      "severity": "minor",
-      "translation_evidence": "n is any Nat, so n=0 has empty index types, vacuous bounds, and truncated n-1=0."
+      "category": "surface-formulas",
+      "evidence": "The target correctly represents the dimensions, residual sign, exact matrix products, componentwise magnitude product, and zero-based coefficients corresponding to (4.2) and (4.3).",
+      "impact": "The rejection is caused by hidden premise and numerical-domain semantics, not by constants, indexing, matrix operators, or the backward-error conclusion.",
+      "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean theorem cannot derive hlocal from Gaussian elimination, does not model floating-point execution, and says nothing about the rectangular n*u result or the local estimates; therefore it does not imply Theorem 4.2.",
+      "reasoning": "Lean applies only to certificate-bearing P05DoolittleRun objects. Constructing such an object from the paper's hypotheses already requires the local residual estimates that the paper derives through Lemma 4.1. The proposition therefore does not establish the paper theorem from completion and absence of underflow and overflow.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "After specializing Theorem 4.2 to m=n and translating one-based row i to Fin.val+1, equation (4.2) supplies the exact DeltaA identity and both target bounds. The target's broader arbitrary-real cases require no additional numerical claim because hlocal itself algebraically supplies the retained rowwise result.",
-      "verdict": "yes"
+      "reasoning": "Lean universally quantifies over abstract formats whose representable sets and safeRange predicates may fall outside the paper's symmetric base-beta floating-point model. The paper makes no claim over those nonpaper runs. Their stored residual certificates make the Lean conclusion assumption-driven but do not supply source-domain coverage.",
+      "verdict": "no"
     }
   },
   "judge_classifications": {
     "direct": "not-faithful-weaker",
-    "roundtrip": "not-faithful-weaker"
+    "roundtrip": "not-faithful-different"
   },
-  "rationale": "The matrix-product, absolute-value, exact-identity, and square coefficients are encoded correctly. Nevertheless, the declaration assumes the paper's principal square residual estimate, omits the floating-point Gaussian-elimination model, and drops the rectangular and local results. It is therefore a nonvacuous but essentially algebraic corollary of the paper, not a faithful formalization of Theorem 4.2.",
-  "remaining_uncertainties": [],
+  "rationale": "The paper explicitly licenses Doolittle as sufficient for the intended Gaussian-elimination analysis, so the algorithm-name disagreement is resolvable. The formal run nevertheless assumes the local residual estimates that the paper derives, preventing Lean from recovering the paper theorem from its stated hypotheses. Conversely, the formal format admits nonpaper, non-symmetric representable systems with arbitrary safe-range semantics, so the paper does not cover every Lean run. Because the target combines reduced applicability with a nonvacuous source-external domain, neither implication holds and the correct classification is not-faithful-different.",
+  "remaining_uncertainties": [
+    "The PDF does not enumerate the exact outer boundary of \"any variant of Gaussian elimination,\" especially pivoted formulations with permutation matrices. This does not affect the classification because the PDF explicitly authorizes Doolittle for its intended unpermuted LU analysis, while the decisive mismatches are the residual certificates and abstract numerical model."
+  ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P05-T2"
