@@ -79,9 +79,9 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use the final fictional-input backward-error construction for the positively scaled orthogonal real-equivalent Fourier action.",
+      "decision": "Use the final complex fictional-input backward-error construction, linked to the mixed-radix FFT and retaining both finite-remainder norm certificates.",
       "task_id": "P09-T2",
-      "theorem_name": "p09_t2_scaled_orthogonal_backward_error"
+      "theorem_name": "p09_t2_fictional_input_backward_error"
     },
     "T3": {
       "available": true,
