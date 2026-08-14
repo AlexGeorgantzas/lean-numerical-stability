@@ -36,7 +36,7 @@
   "rejected_candidates": [
     {
       "candidate": "Theorem 3.1",
-      "reason": "It is the paper's main summation framework, but formalizing arbitrary floating-point evaluation trees and underflow exclusions would dominate the benchmark setting; its coefficient consequence is retained in P05-T1."
+      "reason": "It is the paper's general summation framework rather than the selected quotient application. P05-T1 records its scalar residual consequence inside an arbitrary-order, range-certified execution and targets Lemma 4.1's protected-input coefficient conclusion."
     },
     {
       "candidate": "Corollary 3.2",
@@ -66,7 +66,7 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use Lemma 4.1's exact sign-aligned conversion from a scalar residual bound to uniform per-source coefficients.",
+      "decision": "Use Lemma 4.1's complete protected-c coefficient result for the computed quotient, including the general k*u bound and the division-free (k-1)*u case.",
       "task_id": "P05-T1",
       "theorem_name": "p05_t1_uniform_backward_coefficients"
     },
