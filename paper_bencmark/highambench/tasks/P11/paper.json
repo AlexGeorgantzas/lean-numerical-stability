@@ -75,7 +75,7 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use equation (16)'s first-column residual-action estimate under a Frobenius certificate, which the frozen library proves directly.",
+      "decision": "Use the computed CGS-P first-column normalization relation, exact residual identity, and complete induced-2-norm chain displayed in equation (16).",
       "task_id": "P11-T1",
       "theorem_name": "p11_t1_first_column_residual_action"
     },

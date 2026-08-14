@@ -125,8 +125,8 @@
         "P11"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean",
-      "role": "P11-only finite matrix products, vector and Frobenius norms, normal-equation residuals, and orthogonality defects",
-      "sha256": "d30af6550e76d4083f8958fd38563533a67d33dbfaf20349679d355a37a5e8f1",
+      "role": "P11-only CGS-P first-column execution model, Euclidean, spectral, and Frobenius norms, matrix products, normal-equation residuals, and orthogonality defects",
+      "sha256": "06a47e036b5267ab5b6fecef9451dc752a606abd91feb28ca809519cb1169b60",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -2120,15 +2120,15 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.vecNorm2_rectMatMulVec_le_frobNormRect_mul"
+            "NumStability.opNorm2Le_opNorm2"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P11/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Apply the frozen rectangular matrix-vector Frobenius estimate and multiply the supplied norm bound for G by the nonnegative vector norm.",
-          "informal_statement_paraphrase": "Equation (16)'s first-column factorization-residual action bound, with the perturbation certified in Frobenius norm.",
+          "informal_proof_paraphrase": "Substitute the computed normalization relation into A1-Q1*R1 and cancel the positive r11 to obtain -G1*a1. Identify the one-column matrix norm with the Euclidean norm of its column, remove the minus sign, apply the exact spectral operator-norm action bound, and multiply ||G1||_2 <= epsilonM by the nonnegative norm of a1.",
+          "informal_statement_paraphrase": "The exact computed CGS-P first-column residual identity and complete induced-2-norm chain in equation (16).",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "ce563f7e0fd0548b6c559904eba5a7710896861762c06917f37de966cecf59f8",
+            "controlled_file_sha256": "cce293127384ae51b7929f9bc9e0c80139057f1c877763204b151e172e362fc3",
             "declaration": "p11_t1_first_column_residual_action",
             "file": "paper_bencmark/highambench/tasks/P11/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -2136,22 +2136,50 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean"
             ],
-            "statement_summary": "A first-column residual represented as a small matrix acting on the input is bounded by epsilon times the input Euclidean norm."
+            "statement_summary": "For the computed first column of any admissible CGS-P run, derive the exact normalization and factorization-residual identities and the complete equation-(16) spectral/Euclidean norm chain ending at epsilonM times the input-column norm."
           },
           "source_locations": [
             {
-              "anchor": "equation (16)",
+              "anchor": "opening matrix setting and column notation",
+              "pdf_page": 2,
+              "printed_page": "300",
+              "role": "positive rectangular dimensions, full column rank, and A/Q/R notation",
+              "section": "Introduction and Algorithm 1 setup"
+            },
+            {
+              "anchor": "Algorithm 2 and following floating-point model",
+              "pdf_page": 3,
+              "printed_page": "301",
+              "role": "CGS-P first-column computation and normalized-range IEEE model",
+              "section": "Algorithm 2 (CGS-P)"
+            },
+            {
+              "anchor": "Theorem 1, condition (3)",
+              "pdf_page": 4,
+              "printed_page": "302",
+              "role": "inherited leading-block conditioning hypothesis",
+              "section": "Theorem 1"
+            },
+            {
+              "anchor": "nonsingularity paragraph after equations (14)-(15)",
+              "pdf_page": 9,
+              "printed_page": "307",
+              "role": "positivity of every computed diagonal, including r11",
+              "section": "Appendix: Proof of Lemma 2"
+            },
+            {
+              "anchor": "standard-error-bound display, exact residual identity, and equation (16)",
               "pdf_page": 10,
               "printed_page": "308",
-              "role": "first-column residual as a small matrix action and its norm estimate",
+              "role": "computed normalization relation, exact residual, and complete norm chain",
               "section": "Appendix: Proof of Theorem 1"
             }
           ],
           "task_id": "P11-T1",
           "tier": "T1",
           "tier_name": "direct use",
-          "tier_reason": "NumStability.vecNorm2_rectMatMulVec_le_frobNormRect_mul in NumStability/Analysis/MatrixAlgebra.lean is the close frozen theorem; the L proof only bridges the paper-scoped norms and applies the hypothesis p11FrobNorm G <= epsilon.",
-          "title": "First-column residual-action bound"
+          "tier_reason": "NumStability.opNorm2Le_opNorm2 in the frozen NumStability/Analysis/MatrixAlgebra.lean module is the close theorem for equation (16)'s only nontrivial norm step. The L proof directly specializes it to G1 and a1, then performs the source's exact one-column substitution, cancellation, norm identification, and supplied ||G1||_2 bound; no frozen declaration models the whole CGS-P result.",
+          "title": "CGS-P first-column residual identity and bound"
         },
         {
           "availability": "available",
