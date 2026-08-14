@@ -19,18 +19,23 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Iterable, Mapping
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+import hashlib
 import json
+import os
 from pathlib import Path
 import platform
 import re
 import shutil
 import sys
+import tempfile
 from typing import Any, Callable
 
 try:
     from .common import (
         BenchmarkToolError,
+        SCHEMA_VERSION,
         run_captured,
         sha256_file,
         temporary_directory,
@@ -43,6 +48,7 @@ try:
 except ImportError:  # Direct script execution.
     from common import (  # type: ignore
         BenchmarkToolError,
+        SCHEMA_VERSION,
         run_captured,
         sha256_file,
         temporary_directory,
@@ -56,6 +62,20 @@ except ImportError:  # Direct script execution.
 
 CENTRAL_MANIFEST_RELATIVE = Path("metadata/manifest.json")
 GOLD_PROOF_FILENAME_RE = re.compile(r"^T[0-9]+_[NL]\.lean$")
+CURRENT_CONSTRUCTION_EVIDENCE_RELATIVE = Path(
+    "metadata/evidence/construction_validation_full_current.json"
+)
+CONDITION_N_POINTER_RELATIVE = Path("metadata/evidence/condition_n_preflight.json")
+LIBRARY_DEPENDENCY_POINTER_RELATIVE = Path(
+    "metadata/evidence/library_dependency_probe.json"
+)
+CURRENT_CONSTRUCTION_EVIDENCE_PROJECT_PATH = (
+    "paper_bencmark/highambench/metadata/evidence/"
+    "construction_validation_full_current.json"
+)
+EXPECTED_FULL_PAPER_COUNT = 20
+EXPECTED_FULL_TASK_COUNT = 60
+EXPECTED_FULL_RESULT_COUNT = 120
 
 CONSTRUCTION_TOOL_RELATIVES = (
     "tools/check_construction.py",
@@ -1212,15 +1232,18 @@ def check_one(
 def run_checks(
     environment: ConstructionEnvironment,
     *,
+    jobs: int = 1,
     command_runner: CommandRunner = run_captured,
     validator_fn: Validator = validate,
     preflight_fn: Preflight = run_preflight,
 ) -> dict[str, Any]:
+    if jobs <= 0:
+        raise BenchmarkToolError("construction jobs must be positive")
     basis = verification_basis(environment)
-    results: list[dict[str, Any]] = []
-    for spec in environment.specs:
+
+    def run_one(spec: ConstructionSpec) -> dict[str, Any]:
         try:
-            result = check_one(
+            return check_one(
                 environment,
                 spec,
                 command_runner=command_runner,
@@ -1228,7 +1251,7 @@ def run_checks(
                 preflight_fn=preflight_fn,
             )
         except (OSError, BenchmarkToolError, ValueError) as error:
-            result = {
+            return {
                 "task_id": spec.task_id,
                 "paper_id": spec.paper_id,
                 "tier": spec.tier,
@@ -1239,16 +1262,25 @@ def run_checks(
                 "condition_n_library_arguments_omitted": spec.condition == "N",
                 "validation": None,
             }
-        results.append(result)
+
+    if jobs == 1:
+        results = [run_one(spec) for spec in environment.specs]
+    else:
+        with ThreadPoolExecutor(max_workers=jobs) as executor:
+            results = list(executor.map(run_one, environment.specs))
 
     passed = sum(bool(result.get("pass")) for result in results)
     n_results = [result for result in results if result["condition"] == "N"]
     l_results = [result for result in results if result["condition"] == "L"]
     expected = len(environment.specs)
-    return {
+    evidence = {
         "schema_version": 1,
         "kind": "highambench-private-construction-check",
         "generated_at_utc": utc_now(),
+        "execution": {
+            "jobs": jobs,
+            "result_order": "central manifest order, N then L per task",
+        },
         "pass": passed == len(results) == expected,
         "scope": _scope_record(
             central_manifest=environment.central_manifest,
@@ -1276,6 +1308,622 @@ def run_checks(
         },
         "verification_basis": basis,
         "results": results,
+    }
+    evidence["record_status"] = (
+        "current_final"
+        if evidence["pass"] and evidence["scope"]["complete_manifest_scope"]
+        else "partial_construction_check"
+    )
+    return evidence
+
+
+def _hex_digest(value: Any, label: str) -> str:
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+        raise BenchmarkToolError(f"{label} must be a lowercase SHA-256 digest")
+    return value
+
+
+def _positive_integer(value: Any, label: str) -> int:
+    if type(value) is not int or value <= 0:
+        raise BenchmarkToolError(f"{label} must be a positive integer")
+    return value
+
+
+def _canonical_json_bytes(value: Any) -> bytes:
+    return (json.dumps(value, indent=2, sort_keys=True) + "\n").encode("utf-8")
+
+
+def _current_controlled_manifest_hashes(
+    benchmark_root: Path, specs: tuple[ConstructionSpec, ...]
+) -> dict[str, str]:
+    """Authenticate every live task package and return its manifest digest."""
+
+    hashes: dict[str, str] = {}
+    for spec in specs:
+        if spec.task_id in hashes:
+            continue
+        path = benchmark_root / "metadata" / "controlled" / f"{spec.task_id}.json"
+        _required_file(path, f"current controlled manifest {spec.task_id}")
+        manifest = load_manifest(path)
+        if manifest.get("label") != f"{spec.task_id}-controlled":
+            raise BenchmarkToolError(
+                f"current controlled manifest {spec.task_id} has the wrong label"
+            )
+        for raw_entry in _manifest_list(
+            manifest.get("files"), f"current controlled manifest {spec.task_id} files"
+        ):
+            entry = _manifest_mapping(
+                raw_entry, f"current controlled manifest {spec.task_id} file"
+            )
+            relative = _manifest_string(
+                entry.get("path"), f"current controlled manifest {spec.task_id} path"
+            )
+            staged_source = benchmark_root / relative
+            if staged_source.is_symlink():
+                raise BenchmarkToolError(
+                    f"current controlled source may not be a symlink: {relative}"
+                )
+        verification = verify_manifest(benchmark_root, manifest)
+        if (
+            verification.get("ok") is not True
+            or verification.get("changed") != []
+            or verification.get("missing") != []
+            or verification.get("verified") != verification.get("expected")
+        ):
+            raise BenchmarkToolError(
+                f"current controlled manifest {spec.task_id} does not verify"
+            )
+        hashes[spec.task_id] = sha256_file(path)
+    return hashes
+
+
+def _validate_validation_summary(
+    result: Mapping[str, Any], *, condition: str, target_theorem: str
+) -> tuple[bool, bool]:
+    """Validate one hidden result and return its N-preflight/L-use flags."""
+
+    task_id = str(result.get("task_id"))
+    validation = _manifest_mapping(
+        result.get("validation"), f"construction result {task_id}/{condition} validation"
+    )
+    required_validation = {
+        "compile_exit_code": 0,
+        "compile_timed_out": False,
+        "controlled_after_audit_ok": True,
+        "controlled_after_compile_ok": True,
+        "controlled_after_expected_compile_ok": True,
+        "controlled_before_ok": True,
+        "controlled_hidden_ok": True,
+        "failure_code": None,
+        "pass": True,
+        "semantic_statement_equal": True,
+        "statement_unchanged": True,
+        "static_finding_count": 0,
+    }
+    if any(validation.get(field) != expected for field, expected in required_validation.items()):
+        raise BenchmarkToolError(
+            f"construction result {task_id}/{condition} did not pass complete hidden validation"
+        )
+    if not isinstance(validation.get("note"), str) or not validation["note"].strip():
+        raise BenchmarkToolError(
+            f"construction result {task_id}/{condition} has no validation note"
+        )
+    dependency = _manifest_mapping(
+        validation.get("dependency_audit"),
+        f"construction result {task_id}/{condition} dependency audit",
+    )
+    semantic = _manifest_mapping(
+        dependency.get("semantic_type_check"),
+        f"construction result {task_id}/{condition} semantic type check",
+    )
+    if (
+        dependency.get("complete") is not True
+        or dependency.get("exit_code") != 0
+        or dependency.get("format_version") != 2
+        or dependency.get("forbidden_dependency_count") != 0
+        or dependency.get("missing_helper_modules") != []
+        or semantic.get("candidate") != target_theorem
+        or semantic.get("equal") is not True
+        or not isinstance(semantic.get("expected"), str)
+        or not semantic["expected"]
+    ):
+        raise BenchmarkToolError(
+            f"construction result {task_id}/{condition} has an incomplete dependency audit"
+        )
+
+    helpers = _manifest_list(
+        result.get("helpers"), f"construction result {task_id}/{condition} helpers"
+    )
+    for index, raw_helper in enumerate(helpers):
+        helper = _manifest_mapping(
+            raw_helper, f"construction result {task_id}/{condition} helper {index}"
+        )
+        build = _manifest_mapping(
+            helper.get("build"),
+            f"construction result {task_id}/{condition} helper {index} build",
+        )
+        _manifest_string(
+            helper.get("path"),
+            f"construction result {task_id}/{condition} helper {index} path",
+        )
+        _manifest_string(
+            helper.get("module"),
+            f"construction result {task_id}/{condition} helper {index} module",
+        )
+        _hex_digest(
+            helper.get("source_sha256"),
+            f"construction result {task_id}/{condition} helper {index}",
+        )
+        if (
+            build.get("exit_code") != 0
+            or build.get("olean_created") is not True
+            or build.get("timed_out") is not False
+            or build.get("system_error") is not None
+        ):
+            raise BenchmarkToolError(
+                f"construction result {task_id}/{condition} has a failed helper build"
+            )
+
+    declarations = _manifest_list(
+        dependency.get("library_declarations"),
+        f"construction result {task_id}/{condition} library declarations",
+    )
+    if condition == "N":
+        preflight = _manifest_mapping(
+            result.get("n_preflight"),
+            f"construction result {task_id}/N preflight",
+        )
+        controlled = _manifest_mapping(
+            preflight.get("controlled_files_verified_after_staging"),
+            f"construction result {task_id}/N controlled staging",
+        )
+        probe = _manifest_mapping(
+            preflight.get("import_probe"),
+            f"construction result {task_id}/N import probe",
+        )
+        if (
+            result.get("condition_n_library_arguments_omitted") is not True
+            or preflight.get("ok") is not True
+            or preflight.get("complete") is not True
+            or preflight.get("controlled_manifest_sha256")
+            != result.get("manifest_sha256")
+            or preflight.get("filesystem_leaks") != []
+            or controlled.get("ok") is not True
+            or controlled.get("changed") != []
+            or controlled.get("missing") != []
+            or controlled.get("verified") != controlled.get("expected")
+            or type(controlled.get("verified")) is not int
+            or controlled["verified"] <= 0
+            or probe.get("attempted") is not True
+            or probe.get("reliable") is not True
+            or probe.get("importable") is not False
+            or probe.get("timed_out") is not False
+            or probe.get("system_error") is not None
+            or dependency.get("library_use") is not False
+            or declarations != []
+        ):
+            raise BenchmarkToolError(
+                f"construction result {task_id}/N has an incomplete isolation preflight"
+            )
+        return True, False
+
+    if (
+        result.get("condition_n_library_arguments_omitted") is not False
+        or result.get("n_preflight") is not None
+        or dependency.get("library_use") is not True
+        or not declarations
+    ):
+        raise BenchmarkToolError(
+            f"construction result {task_id}/L has no authenticated NumStability use"
+        )
+    for index, raw_declaration in enumerate(declarations):
+        declaration = _manifest_mapping(
+            raw_declaration,
+            f"construction result {task_id}/L library declaration {index}",
+        )
+        name = _manifest_string(
+            declaration.get("name"),
+            f"construction result {task_id}/L library declaration {index} name",
+        )
+        module = _manifest_string(
+            declaration.get("module"),
+            f"construction result {task_id}/L library declaration {index} module",
+        )
+        if "NumStability" not in name or not module.startswith("NumStability"):
+            raise BenchmarkToolError(
+                f"construction result {task_id}/L cites a non-NumStability declaration"
+            )
+    return False, True
+
+
+def validate_current_construction_evidence(
+    environment: ConstructionEnvironment, evidence: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Authenticate one promotable, complete 20-paper/60-task N/L certificate."""
+
+    raw_root = Path(environment.benchmark_root)
+    if raw_root.is_symlink():
+        raise BenchmarkToolError("benchmark root may not be a symlink during promotion")
+    root = _required_directory(raw_root, "benchmark root")
+    central_manifest = _required_file(
+        root / CENTRAL_MANIFEST_RELATIVE, "central benchmark manifest"
+    )
+    specs = tuple(construction_specs(root))
+    task_ids = _task_ids(specs)
+    paper_ids = _paper_ids(specs)
+    if (
+        len(specs) != EXPECTED_FULL_RESULT_COUNT
+        or len(task_ids) != EXPECTED_FULL_TASK_COUNT
+        or len(paper_ids) != EXPECTED_FULL_PAPER_COUNT
+    ):
+        raise BenchmarkToolError(
+            "construction promotion requires exactly 20 papers, 60 tasks, and 120 N/L results"
+        )
+    if (
+        tuple(environment.specs) != specs
+        or environment.manifest_task_ids != task_ids
+        or environment.manifest_paper_ids != paper_ids
+        or environment.selected_paper_ids != paper_ids
+    ):
+        raise BenchmarkToolError(
+            "construction promotion requires the resolved complete current environment"
+        )
+    expected_top_level = {
+        "schema_version",
+        "kind",
+        "generated_at_utc",
+        "execution",
+        "pass",
+        "record_status",
+        "scope",
+        "summary",
+        "isolation",
+        "verification_basis",
+        "results",
+    }
+    if set(evidence) != expected_top_level:
+        raise BenchmarkToolError(
+            "construction promotion certificate has a noncanonical top-level schema"
+        )
+    if (
+        evidence.get("schema_version") != 1
+        or evidence.get("kind") != "highambench-private-construction-check"
+        or evidence.get("pass") is not True
+        or evidence.get("record_status") != "current_final"
+    ):
+        raise BenchmarkToolError(
+            "construction promotion requires a passing current_final certificate"
+        )
+    _manifest_string(evidence.get("generated_at_utc"), "construction generation time")
+
+    expected_summary = {
+        "expected": EXPECTED_FULL_RESULT_COUNT,
+        "checked": EXPECTED_FULL_RESULT_COUNT,
+        "passed": EXPECTED_FULL_RESULT_COUNT,
+        "condition_n_passed": EXPECTED_FULL_TASK_COUNT,
+        "condition_l_passed": EXPECTED_FULL_TASK_COUNT,
+    }
+    summary = _manifest_mapping(evidence.get("summary"), "construction summary")
+    if dict(summary) != expected_summary:
+        raise BenchmarkToolError("construction promotion requires exact 120/120 summary counts")
+
+    scope = _manifest_mapping(evidence.get("scope"), "construction scope")
+    expected_scope = {
+        "central_manifest": CENTRAL_MANIFEST_RELATIVE.as_posix(),
+        "central_manifest_sha256": sha256_file(central_manifest),
+        "manifest_paper_ids": list(paper_ids),
+        "manifest_available_task_ids": list(task_ids),
+        "selected_paper_ids": list(paper_ids),
+        "selected_task_ids": list(task_ids),
+        "complete_manifest_scope": True,
+    }
+    if dict(scope) != expected_scope:
+        raise BenchmarkToolError(
+            "construction promotion scope is not bound to the complete current manifest"
+        )
+    execution = _manifest_mapping(evidence.get("execution"), "construction execution")
+    _positive_integer(execution.get("jobs"), "construction jobs")
+    if execution.get("result_order") != "central manifest order, N then L per task":
+        raise BenchmarkToolError("construction promotion has the wrong result order")
+
+    required_isolation = {
+        "condition_l_numstability_mounts_configured": True,
+        "condition_n_numstability_mounts_configured": False,
+        "condition_n_preflight_after_complete_controlled_staging": True,
+        "controlled_task_staged_under": "task/",
+        "fresh_workspace_per_result": True,
+        "private_gold_staged_as": "Submission.lean",
+        "private_helper_oleans_reused": False,
+        "validator_hidden_rebuild": True,
+    }
+    isolation = _manifest_mapping(evidence.get("isolation"), "construction isolation")
+    if dict(isolation) != required_isolation:
+        raise BenchmarkToolError("construction promotion lacks its required isolation controls")
+
+    basis = _manifest_mapping(
+        evidence.get("verification_basis"), "construction verification basis"
+    )
+    expected_basis = verification_basis(environment)
+    tools = _manifest_mapping(basis.get("tools"), "construction tool digests")
+    if set(tools) != set(CONSTRUCTION_TOOL_RELATIVES):
+        raise BenchmarkToolError("construction promotion has the wrong validator tool set")
+    for relative in CONSTRUCTION_TOOL_RELATIVES:
+        expected = sha256_file(
+            _required_file(root / relative, f"current construction tool {relative}")
+        )
+        if _hex_digest(tools.get(relative), f"construction tool {relative}") != expected:
+            raise BenchmarkToolError(
+                f"construction tool changed after certification: {relative}"
+            )
+    if dict(basis) != expected_basis:
+        raise BenchmarkToolError(
+            "construction verification basis does not exactly match the current environment"
+        )
+
+    controlled_hashes = _current_controlled_manifest_hashes(root, specs)
+    raw_results = _manifest_list(evidence.get("results"), "construction results")
+    if len(raw_results) != EXPECTED_FULL_RESULT_COUNT:
+        raise BenchmarkToolError("construction promotion requires exactly 120 results")
+    n_preflights = 0
+    l_library_dependencies = 0
+    for index, (raw_result, spec) in enumerate(zip(raw_results, specs, strict=True)):
+        result = _manifest_mapping(raw_result, f"construction result {index}")
+        expected_identity = {
+            "task_id": spec.task_id,
+            "paper_id": spec.paper_id,
+            "tier": spec.tier,
+            "condition": spec.condition,
+            "target_theorem": spec.target_theorem,
+        }
+        if any(result.get(field) != value for field, value in expected_identity.items()):
+            raise BenchmarkToolError(
+                f"construction result {index} does not match central-manifest N/L order"
+            )
+        if (
+            result.get("pass") is not True
+            or result.get("reasons") != []
+            or result.get("manifest_sha256") != controlled_hashes[spec.task_id]
+        ):
+            raise BenchmarkToolError(
+                f"construction result {spec.task_id}/{spec.condition} is failed or stale"
+            )
+        _hex_digest(
+            result.get("gold_source_sha256"),
+            f"construction result {spec.task_id}/{spec.condition} gold proof",
+        )
+        n_ok, l_ok = _validate_validation_summary(
+            result,
+            condition=spec.condition,
+            target_theorem=spec.target_theorem,
+        )
+        n_preflights += int(n_ok)
+        l_library_dependencies += int(l_ok)
+    if (
+        n_preflights != EXPECTED_FULL_TASK_COUNT
+        or l_library_dependencies != EXPECTED_FULL_TASK_COUNT
+    ):
+        raise BenchmarkToolError(
+            "construction promotion requires 60 N preflights and 60 L library dependencies"
+        )
+    return {
+        "paper_count": len(paper_ids),
+        "task_count": len(task_ids),
+        "result_count": len(raw_results),
+        "condition_n_preflight_count": n_preflights,
+        "condition_l_library_dependency_count": l_library_dependencies,
+        "central_manifest_sha256": sha256_file(central_manifest),
+        "controlled_manifest_sha256": controlled_hashes,
+    }
+
+
+def _construction_pointer_documents(certificate_sha256: str) -> dict[Path, dict[str, Any]]:
+    return {
+        CONDITION_N_POINTER_RELATIVE: {
+            "schema_version": SCHEMA_VERSION,
+            "kind": "highambench-condition-n-preflight-evidence-pointer",
+            "status": "current complete-corpus construction evidence",
+            "current_evidence": CURRENT_CONSTRUCTION_EVIDENCE_PROJECT_PATH,
+            "current_evidence_sha256": certificate_sha256,
+            "reason": (
+                "The complete construction record contains one fresh N preflight for "
+                "each of all sixty tasks. Each preflight scans the fully staged "
+                "controlled task before private proof material is copied, verifies "
+                "the controlled manifest, and confirms with a real Lean import probe "
+                "that NumStability is unavailable."
+            ),
+            "current_result": {
+                "condition_n_tasks_checked": EXPECTED_FULL_TASK_COUNT,
+                "complete_staged_task_scans_passed": EXPECTED_FULL_TASK_COUNT,
+                "reliable_failed_import_probes": EXPECTED_FULL_TASK_COUNT,
+                "filesystem_leaks": 0,
+            },
+        },
+        LIBRARY_DEPENDENCY_POINTER_RELATIVE: {
+            "schema_version": SCHEMA_VERSION,
+            "kind": "highambench-library-dependency-evidence-pointer",
+            "status": "current complete-corpus construction evidence",
+            "current_evidence": CURRENT_CONSTRUCTION_EVIDENCE_PROJECT_PATH,
+            "current_evidence_sha256": certificate_sha256,
+            "reason": (
+                "The current evidence rebuilds and audits every T1, T2, and T3 proof "
+                "in both N and L against the complete sixty-task construction snapshot."
+            ),
+            "current_result": {
+                "proofs_checked": EXPECTED_FULL_RESULT_COUNT,
+                "proofs_passed": EXPECTED_FULL_RESULT_COUNT,
+                "condition_n_library_use": False,
+                "condition_l_passed_proofs_using_numstability": EXPECTED_FULL_TASK_COUNT,
+                "dependency_audit_format": 2,
+                "forbidden_dependencies": 0,
+            },
+        },
+    }
+
+
+def _stage_promotion_payload(path: Path, payload: bytes, *, mode: int) -> Path:
+    with tempfile.NamedTemporaryFile(
+        prefix=f".{path.name}.promote-",
+        dir=path.parent,
+        delete=False,
+    ) as stream:
+        temporary = Path(stream.name)
+        stream.write(payload)
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.chmod(temporary, mode)
+    return temporary
+
+
+def _replace_promoted_documents(payloads: Mapping[Path, bytes]) -> None:
+    """Stage every payload first, then replace all destinations with rollback."""
+
+    if not payloads:
+        raise BenchmarkToolError("construction promotion has no documents")
+    raw_parents = {path.parent for path in payloads}
+    if len(raw_parents) != 1:
+        raise BenchmarkToolError("construction promotion documents must share one directory")
+    raw_evidence_dir = next(iter(raw_parents))
+    if raw_evidence_dir.is_symlink() or not raw_evidence_dir.is_dir():
+        raise BenchmarkToolError("construction evidence directory is missing or unsafe")
+    evidence_dir = raw_evidence_dir.resolve()
+
+    staged: dict[Path, Path] = {}
+    backups: dict[Path, Path | None] = {}
+    replaced: list[Path] = []
+    try:
+        for destination, payload in payloads.items():
+            if destination.parent.resolve() != evidence_dir:
+                raise BenchmarkToolError("construction promotion destination escapes evidence directory")
+            if destination.is_symlink():
+                raise BenchmarkToolError(
+                    f"construction promotion destination may not be a symlink: {destination}"
+                )
+            if destination.exists() and not destination.is_file():
+                raise BenchmarkToolError(
+                    f"construction promotion destination is not a regular file: {destination}"
+                )
+            mode = destination.stat().st_mode & 0o777 if destination.exists() else 0o644
+            staged[destination] = _stage_promotion_payload(
+                destination, payload, mode=mode
+            )
+            backups[destination] = (
+                _stage_promotion_payload(
+                    destination,
+                    destination.read_bytes(),
+                    mode=mode,
+                )
+                if destination.exists()
+                else None
+            )
+
+        for destination in payloads:
+            if destination.is_symlink() or (
+                destination.exists() and not destination.is_file()
+            ):
+                raise BenchmarkToolError(
+                    f"construction promotion destination changed while staging: {destination}"
+                )
+            os.replace(staged[destination], destination)
+            replaced.append(destination)
+        directory_fd = os.open(evidence_dir, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+    except Exception as error:
+        rollback_errors: list[str] = []
+        for destination in reversed(replaced):
+            backup = backups.get(destination)
+            try:
+                if backup is None:
+                    destination.unlink(missing_ok=True)
+                else:
+                    os.replace(backup, destination)
+                    backups[destination] = None
+            except OSError as rollback_error:
+                rollback_errors.append(f"{destination}: {rollback_error}")
+        if rollback_errors:
+            raise BenchmarkToolError(
+                "construction promotion failed and rollback was incomplete: "
+                + "; ".join(rollback_errors)
+            ) from error
+        if isinstance(error, BenchmarkToolError):
+            raise
+        raise BenchmarkToolError(f"construction promotion failed: {error}") from error
+    finally:
+        for temporary in (*staged.values(), *(item for item in backups.values() if item)):
+            temporary.unlink(missing_ok=True)
+
+
+def _reject_duplicate_json_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON key {key!r}")
+        result[key] = value
+    return result
+
+
+def promote_current_evidence(
+    environment: ConstructionEnvironment, candidate_path: Path
+) -> dict[str, Any]:
+    """Validate and transactionally promote one complete construction certificate."""
+
+    candidate = Path(candidate_path)
+    if candidate.is_symlink() or not candidate.is_file():
+        raise BenchmarkToolError(
+            "construction promotion candidate must be a regular non-symlink file"
+        )
+    root = Path(environment.benchmark_root).resolve()
+    metadata_dir = root / "metadata"
+    evidence_dir = metadata_dir / "evidence"
+    if metadata_dir.is_symlink() or evidence_dir.is_symlink():
+        raise BenchmarkToolError(
+            "construction promotion metadata paths may not contain symlinked directories"
+        )
+    destinations = (
+        root / CURRENT_CONSTRUCTION_EVIDENCE_RELATIVE,
+        root / CONDITION_N_POINTER_RELATIVE,
+        root / LIBRARY_DEPENDENCY_POINTER_RELATIVE,
+    )
+    resolved_candidate = candidate.resolve()
+    if resolved_candidate in {path.resolve() for path in destinations}:
+        raise BenchmarkToolError(
+            "construction promotion candidate must be a separate temporary file"
+        )
+    try:
+        raw = candidate.read_bytes()
+        evidence = json.loads(
+            raw.decode("utf-8"), object_pairs_hook=_reject_duplicate_json_keys
+        )
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+        raise BenchmarkToolError(
+            f"construction promotion candidate is invalid JSON: {error}"
+        ) from error
+    certificate = _manifest_mapping(evidence, "construction promotion candidate")
+    validation = validate_current_construction_evidence(environment, certificate)
+    certificate_payload = _canonical_json_bytes(certificate)
+    certificate_sha256 = hashlib.sha256(certificate_payload).hexdigest()
+    pointer_documents = _construction_pointer_documents(certificate_sha256)
+    payloads = {
+        destinations[0]: certificate_payload,
+        destinations[1]: _canonical_json_bytes(
+            pointer_documents[CONDITION_N_POINTER_RELATIVE]
+        ),
+        destinations[2]: _canonical_json_bytes(
+            pointer_documents[LIBRARY_DEPENDENCY_POINTER_RELATIVE]
+        ),
+    }
+    _replace_promoted_documents(payloads)
+    return {
+        "status": "current_final",
+        "certificate_path": CURRENT_CONSTRUCTION_EVIDENCE_RELATIVE.as_posix(),
+        "certificate_sha256": certificate_sha256,
+        "pointer_paths": [
+            CONDITION_N_POINTER_RELATIVE.as_posix(),
+            LIBRARY_DEPENDENCY_POINTER_RELATIVE.as_posix(),
+        ],
+        **validation,
     }
 
 
@@ -1313,7 +1961,22 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--bwrap", type=Path, default=Path("/bin/bwrap"))
     parser.add_argument("--shared-root-relative", default="task/shared")
     parser.add_argument("--timeout-seconds", type=float, default=180.0)
+    parser.add_argument(
+        "--jobs",
+        type=int,
+        default=1,
+        help="number of independent construction workspaces to validate concurrently",
+    )
     parser.add_argument("--output", type=Path)
+    parser.add_argument(
+        "--promote-current",
+        action="store_true",
+        help=(
+            "after a successful complete 20-paper/60-task check written to a "
+            "separate --output file, independently authenticate and transactionally "
+            "promote its 120/120 certificate plus both derived evidence pointers"
+        ),
+    )
     return parser
 
 
@@ -1344,9 +2007,39 @@ def main() -> int:
     if args.timeout_seconds <= 0:
         print("construction-check error: timeout must be positive", file=sys.stderr)
         return 2
+    if args.jobs <= 0:
+        print("construction-check error: jobs must be positive", file=sys.stderr)
+        return 2
+    if args.promote_current:
+        if args.output is None:
+            print(
+                "construction-check error: --promote-current requires a separate --output file",
+                file=sys.stderr,
+            )
+            return 2
+        if args.paper_id:
+            print(
+                "construction-check error: --promote-current forbids partial --paper-id checks",
+                file=sys.stderr,
+            )
+            return 2
+        output = Path(args.output)
+        if output.is_symlink() or output.exists():
+            print(
+                "construction-check error: promoted --output must be a new non-symlink file",
+                file=sys.stderr,
+            )
+            return 2
+        parent = output.parent
+        if parent.is_symlink() or not parent.is_dir():
+            print(
+                "construction-check error: promoted --output parent must be an existing non-symlink directory",
+                file=sys.stderr,
+            )
+            return 2
     try:
         environment = resolve_environment(args)
-        evidence = run_checks(environment)
+        evidence = run_checks(environment, jobs=args.jobs)
     except (OSError, BenchmarkToolError, ValueError) as error:
         evidence = {
             "schema_version": 1,
@@ -1370,6 +2063,13 @@ def main() -> int:
         write_json(args.output, evidence)
     else:
         print(json.dumps(evidence, indent=2, sort_keys=True))
+    if args.promote_current:
+        try:
+            promoted = promote_current_evidence(environment, args.output)
+        except (OSError, BenchmarkToolError, ValueError) as error:
+            print(f"construction-check promotion error: {error}", file=sys.stderr)
+            return 2
+        print(json.dumps({"promotion": promoted}, indent=2, sort_keys=True))
     return 0 if evidence["pass"] else 1
 
 

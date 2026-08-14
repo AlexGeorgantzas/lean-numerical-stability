@@ -5,8 +5,14 @@ access to the NumStability Lean library helps an agent finish fixed Lean proofs.
 A fixed proof means that the theorem statement is chosen before a run and the
 agent may change only the proof.
 
-The current corpus contains 60 tasks drawn from papers P01--P20. It may still
-change before the measurement-ready snapshot is created.
+The current corpus contains 60 tasks drawn from papers P01--P20, with three
+fixed tasks per paper. The current snapshot is measurement-ready: its complete
+private construction check passed all 120 N/L proofs, and two fresh-context
+Codex review records cover all 60 tasks. Exact-target novelty rejections are
+retained and are ignored only under the recorded private-measurement exception;
+they still block public release. Paper titles, source hashes, exact task
+locations, and the ordered task catalog are recorded in
+`metadata/manifest.json`.
 
 ## Task types
 
@@ -52,7 +58,7 @@ uses short paraphrases instead of copying long passages from the papers.
 
 ## One construction workflow for every paper
 
-P01, P02, and every later P0X entry use the same task schema, source-tag rules,
+P01 through P20 use the same task schema, source-tag rules,
 construction checker, run-order rule, report builder, and hash refresh command.
 No paper ID is special-cased by an operational script.
 
@@ -64,12 +70,13 @@ contains the core plus its own paper file. Each trusted compiled bundle follows
 the same rule, so a P01 run cannot import the P02 module and a P02 run cannot
 import the P01 module.
 
-While the corpus is being built, every paper and task has
-`classification_frozen_before_runs` set to `false`. This means its metadata may
-be reviewed and corrected. The selected P01 and P02 results and their Lean
-statements have not been changed.
+Every paper and task in the measurement snapshot has
+`classification_frozen_before_runs` set to `true`. The selected results, task
+statements, contexts, and Lean targets are fixed and must not change during the
+experiment. Any controlled change requires a new snapshot and a complete rerun.
 
-After any paper or task edit, refresh all derived metadata with:
+After any controlled benchmark, metadata, or tool edit, refresh all derived
+metadata with:
 
 ```text
 python3 paper_bencmark/highambench/tools/refresh_snapshot.py \
@@ -89,8 +96,10 @@ construction-state tasks, so a partial corpus cannot be measured accidentally.
   local use and local search.
 
 Both conditions for a task use the same fixed statement, source material,
-paper-scoped task definitions, Lean version, mathlib revision, agent prompt, tools, time limit,
-token limit, and machine class. Each attempt starts in a new bubblewrap
+paper-scoped task definitions, Lean version, mathlib revision, common agent
+prompt, tools, time limit, token limit, and machine class. The controlled
+condition-L supplement described below is the only intended prompt difference.
+Each attempt starts in a new bubblewrap
 namespace, meaning a fresh restricted view of files and processes, and a new
 conversation. Model-generated shell commands cannot create network sockets.
 The shell supervisor records denied socket activity in a per-run marker. The
@@ -106,16 +115,303 @@ source files plus each package's base `.olean` files and the matching
 No other package-build files are staged. The original `.lake/packages`
 checkout, its Git data, build traces, and caches are not mounted in an attempt.
 
-The Codex control process still needs its provider connection. This setup uses
-no frozen OCI container image, so its measurements must be labeled as an
-observational pilot rather than an official reference-protocol score.
+### Frozen condition-L prompt supplement
 
-The fixed limit is 900 seconds and 120,000 total model tokens per run. A model
-token is a small piece of text counted by the model service. Failed runs receive
-900 seconds in the main time comparison, while their real stop time is also kept.
-The frozen Codex binary lists the `rollout_budget` feature. Strict configuration
-turns it on with the 120,000-token limit and weight 1 for both input and
-generated tokens; adapter tests check that each setting is supplied once.
+Prompt protocol `signposted-library-v1` uses `agent_prompt.md` as the common
+prompt and appends the byte-frozen `condition_prompts/L.md` only in condition
+L. Condition N receives no condition supplement: the L file is not passed to
+its adapter and is not staged or mounted in its namespace.
+
+The L supplement explicitly says that the agent may search and use the frozen
+NumStability snapshot at commit
+`45813a95dacf577461bae13f033af0dbc985a225`. Inside the L namespace its exact
+read-only locations are:
+
+- source tree: `/library/NumStability`;
+- root source file: `/library/NumStability.lean`;
+- compiled Lean tree: `/library-olean`.
+
+The supplement explains that `/library-olean` is already on `LEAN_PATH`, that
+only modules with a corresponding `.olean` below that tree are importable, and
+how a compiled path maps to a dotted Lean import. It gives generic local
+`find`, `rg`, `import`, `#check`, and `#print` command templates. It supplies no
+target-relevant theorem, module, declaration, search term, adapter, or private
+proof hint; the agent must discover relevance itself. Source-only files may be
+searched but are not added to the importable object set.
+
+The trusted adapter composes the L request in this order: common prompt, L-only
+supplement, task context, fixed target. The condition supplement changes
+neither `context.md` nor `Target.lean`, and it changes no task statement or
+shared definition. An L submission may add a NumStability import, but the
+controlled target remains byte-identical to N. Any supplement edit changes the
+controlled hashes and environment identity and requires a fresh measurement.
+
+The Codex control process still needs its provider connection, and this setup
+uses fresh bubblewrap namespaces rather than a frozen OCI container image.
+Those concrete limitations are recorded with the measurements. All results are
+private preparation artifacts and are not approved for public release.
+
+The frozen agent preset is `gpt-5.6-sol` with reasoning effort `ultra`. Full
+Ultra V2 automatic task delegation is enabled. At most four root/subagent
+inference threads may run concurrently in one attempt. Every child is locked
+to `gpt-5.6-sol`/`ultra`; the model and reasoning-effort override fields are
+hidden from `spawn_agent`, as is spawn-agent metadata. These locks are part of
+the environment identity, not choices left to an evaluated agent.
+
+The same configuration presents an exact usage hint: `fork_turns` must be
+omitted (the full-history default), `"all"`, or `"none"`; positive integers
+and every other value are unavailable. A synchronous pre-tool-use hook enforces
+that rule before child creation. Its generated helper and `hooks.json` are
+SHA-256-frozen, staged under the private per-attempt state root, and mounted
+read-only at their recorded paths in the temporary Codex home. The CLI carries
+the frozen hook-trust-bypass flag, while the pinned app-server obtains the
+effective bypass from `thread/start.params.config={"bypass_hook_trust":true}`.
+Those two trust inputs and the effective source are separate frozen fields.
+
+The fixed measured limit is 1,800 seconds and 5,000,000 total model tokens per
+run. The 5,000,000-token cap is the current user-authorized protocol deviation
+from the earlier 2,000,000-token project freeze and is applied identically to N
+and L. A separate 120-second prompt-startup timeout does not consume that measured
+wall-clock allowance. A model token is a small piece of text counted by the
+model service. Failed runs receive 1,800 seconds in the main time comparison,
+while their real stop time is also kept.
+
+Every attempt uses the authenticated `highambench-prompt-release-v1` READY/GO/
+RELEASED handshake. The isolated adapter first seals a READY record before it
+starts the model turn. The runner verifies READY and authorizes GO only when at
+least five seconds of the startup window remain. Immediately before writing the
+exact `turn/start` request, the adapter records RELEASED with a monotonic
+timestamp, then records the post-flush timestamp. The runner reconstructs and
+hash-checks the request wire, identities, prompt bytes, nonce, and command-line
+paths, and re-reads all three canonical JSON artifacts as regular, non-symlink,
+mode-0444 files. The measured 1,800-second deadline is derived only from the
+authenticated RELEASED pre-write timestamp. A timeout before GO starts no useful
+work; missing or invalid evidence after GO is retained as an unscored system
+incident rather than retried as if no work occurred.
+
+The only automatic retry is one failure proven to occur before prompt release.
+Its incident record is canonically self-hashed and binds the exact normalized
+attempt record, raw transcript, frozen assignment/environment/hardware, and
+attempt-specific immutable log copies. On every resumption these records are
+replayed before any provider subprocess starts. A terminal, unscorable, or
+incomplete retry incident remains a hard stop even if an active-run marker was
+removed.
+
+The adapter consumes `rawResponse/completed` events from Codex app-server and
+sums the provider usage of every completed response in the rooted attempt
+thread tree. Response IDs are deduplicated across the root and all recursively
+linked Ultra children. A response's input total already includes its cached
+input portion, so cached input is charged once rather than added a second time.
+Projection schema v4 binds each child to the exact raw `spawn_agent` function
+call by requiring `raw_function_call.call_id = subAgentActivity.id`. For a
+`fork_turns=all` child, the expected inherited cumulative baseline is the
+parent's expected baseline plus all completed parent responses preceding the
+spawn response; `fork_turns=none` has the exact zero baseline. The runner, the
+result-set checker, and the report renderer separately recompute the expected
+baseline, full and boundary-adjusted projection, final cumulative observation,
+spawn-ID sets, and graph-completeness Booleans. It also requires exactly one
+authenticated `hook/started` and one authenticated `hook/completed` event for
+every raw spawn call. Omitted, `"all"`, and `"none"` calls must be allowed;
+positive-integer or malformed calls must be policy-blocked, recorded as failed,
+and have no activity, collaboration record, or child. The adapter, runner,
+result-set checker, and both report renderers independently authenticate the
+policy fingerprint and rederive those per-call decisions. Every naturally
+drained thread must match its full app-server projection. Schema v4 uses the
+authenticated provider-gate response ledger as the authoritative token total
+and reconciles every response either to a direct app-server delivery or to the
+narrow suppressed collaboration-wait case with successor child-result evidence.
+The raw app-server response and cumulative ledgers remain unchanged structural
+evidence; suppressed-response tokens are not folded into them. Only the accepted
+root response may use the narrow
+authenticated nested-submission exception; a token-limit endpoint uses the
+separate sealed provider-gate crossing described below.
+The adapter atomically writes the live cumulative ledger to a trusted result-log
+path outside the model's workspace. For an Ultra pass, the coordinator first
+waits until every descendant is quiescent, develops and checks the fixed
+`Candidate.lean`, and then emits one sole/final outer custom `exec` item with the
+exact 98-byte program
+`// @exec: {"yield_time_ms": 2400000}` followed by a newline and
+`await tools.submit_proof({candidate_path:"Candidate.lean"});` followed by a
+newline. App-server starts
+the nested root-only `submit_proof` dynamic call while that outer exec remains
+unresolved. The adapter snapshots the candidate bytes at the inner call and
+authenticates both the outer and inner identities, their ordering, the run nonce,
+validator contract, root thread, response, and current deduplicated usage ledger.
+Only the root coordinator may submit. The hidden runner validates that immutable
+snapshot in a pristine frozen workspace.
+
+Every accepted or rejected hidden-validation record is bound to the run, task,
+candidate bytes, target theorem, controlled manifest, validator contract, and,
+for Ultra, the authenticated request hash and sequence. The record has a
+canonical self-hash, while the run separately records the validation file's
+byte hash. Passing records therefore authenticate the exact immutable candidate
+that reached the blocked boundary; a rejected candidate remains auditable even
+when the attempt later ends without an accepted proof.
+
+On acceptance, the runner deliberately leaves the inner dynamic call blocked:
+it sends no inner tool response, emits no outer exec output, and terminates the
+app-server out of band. The root turn therefore remains blocked, all descendants
+remain quiescent, and no later model response is possible. The exact passing
+total includes the completed outer response containing that custom exec item and
+stops there. `drain_complete=false` is therefore expected for a pass: exactness
+comes from the authenticated schema-v5 nested boundary, not a natural tree drain.
+Schema v5 records exactly one of two asynchronous observation orders:
+`inner_dynamic_call_before_raw_response_completed` or
+`raw_response_completed_before_inner_dynamic_call`. The matching two Boolean
+flags must be exclusive, the monotonic timestamps must agree with that enum,
+and both the inner-call observation and raw-response completion must precede
+boundary publication.
+The exact 2,400,000-ms yield is transport-only: it does not extend the measured
+deadline. Its timer begins no earlier than authenticated prompt release, and it
+strictly exceeds the 1,800-second measured interval plus the 369-second
+validation/teardown reserve by 231 seconds. Any outer progress output remains
+forbidden and invalidates the boundary.
+First-valid time is the interval from the authenticated RELEASED pre-write
+timestamp to publication of that boundary after completion of the same outer raw
+response. The retained request record is self-hashed and its publication
+timestamp is cross-bound to the usage-boundary summary; the earlier candidate
+capture at inner-call start is not the scored endpoint. Hidden validation time
+is recorded separately.
+The allocation gate reserves a separate, non-scored 369 seconds for every
+unfinished run: two 120-second Lean compilations, one 120-second dependency
+audit, the five-second accepted-boundary close, and two two-second forced-stop
+grace windows. Together with two possible 120-second pre-prompt startup
+windows and the 1,800-second measured interval, an untouched N/L pair requires
+5,418 seconds including the separate 600-second general-overhead guard. The
+matrix stops before starting the pair when the enclosing Slurm allocation has
+less time remaining.
+
+Every counted `POST /responses` request passes through the frozen loopback
+provider gate under `highambench-provider-token-gate-v6`. The gate authenticates
+the model catalog, Ultra effort, 272,000-token response bound, request metadata,
+direct TLS transport, and each app-server usage notification. It admits
+concurrent work only while
+`completed_tokens + (open_request_count + 1) * response_bound < token_limit`.
+When that reservation would reach the cap, it first drains existing provider
+requests and then admits at most one exclusive response.
+
+Gate v6 requests `Accept: text/event-stream`, requires status 200 and identity
+content encoding, and accepts at most one `Content-Type` and one
+`Content-Encoding` occurrence. A declared content type must be exactly
+`text/event-stream` with at most an optional UTF-8 charset. A missing
+`Content-Type` is compatible only after the complete upstream body passes the
+frozen strict byte-level SSE parser; the receipt binds the parser, event counts,
+completion position, optional `[DONE]`, body byte count/hash, response ID,
+header-presence bases, and downstream synthesized-content-type flag. Endpoint
+or request headers alone never authenticate an untyped body. This transport
+compatibility amendment and every gate check remain identical for N and L.
+
+At the first completed total greater than or equal to 5,000,000, that response
+must therefore be the sole in-flight request. The gate seals the exact crossing
+and releases no action-capable model output: an ordinary turn receives only a
+minimal sanitized completion, while a compaction request receives exactly one
+inert `Compaction` completion item followed by the minimal completion needed by
+the pinned app-server collector. It then closes with reason `token_limit`.
+Projection v6 authenticates each gate call's response-output manifest and
+delivery record, then reconciles provider-authoritative totals against direct
+app-server responses, authenticated suppressed collaboration waits,
+collaboration-message supersessions, and child responses discarded only after
+an exact parent `interrupt_agent` sequence. It also authenticates the
+interrupt chronology without assuming which provider request was admitted
+first: both the child and interrupting parent requests must be admitted before
+the parent response commits, that response must be directly bound before the
+child response commits, the child must have been admitted before the first
+interrupt lifecycle event, and every such event's full millisecond interval
+must precede the child commit. It also authenticates the
+event-ordered response IDs, final mode-0444 gate artifact, and immediate clean
+adapter teardown. A scoreable `TOKEN_LIMIT`
+endpoint need not claim a natural tree drain;
+provider requests and handlers are quiescent even though the model tree remains
+active. Overshoot is bounded by the one frozen-bound exclusive response, and no
+concurrent response tail is possible. Other unsuccessful outcomes still require
+the exact natural-drain endpoint; missing or inconsistent gate evidence is an
+unscored system incident.
+
+The frozen Codex binary also lists `rollout_budget`. Strict configuration enables
+it with the same limit and weights input and generated tokens by 1, but this is
+only an advisory provider-side guard. Cached-inclusive benchmark enforcement
+comes from the authenticated provider gate and its completed-response ledger;
+runner polling is an independent fail-closed observer.
+
+Each run also starts a new materialized Codex root thread in a unique temporary
+state directory with `history.persistence=none`, memories disabled, and no
+thread resume or fork. Materialization is required because the frozen Codex
+0.146 MultiAgentV2 runtime cannot resolve an ephemeral coordinator during child
+spawn. The state directory is deleted on normal adapter exit and is never
+reused or mounted by another attempt, including if abnormal termination leaves private
+rollout bytes behind. Thus Ultra children and stored history cannot enter a
+later attempt.
+The workspace contains no prior submission or result. Provider prompt caching,
+when reported as cached input tokens, reuses computation for an exact input
+prefix; it does not retrieve a previous answer or proof and carries no
+conversation history between runs. Cached input is nevertheless charged at full
+weight against the 5,000,000-token benchmark limit.
+
+Two independent private live canaries are required before a scored run. The
+synthetic Ultra orchestration canary has ID
+`ULTRA-ORCHESTRATION-SUBMISSION-CANARY-V12`; it is not a matrix assignment and does not use
+or edit a benchmark task: its authenticated prompt first requires a completed
+root response, a deliberately denied root `fork_turns="3"` call, and then one
+allowed `fork_turns="all"` delegation. That child deliberately attempts one
+`fork_turns="3"` grandchild, which must also be denied before it returns its
+marker. Offline replay must authenticate both denials with no corresponding
+child activity, match the one allowed raw spawn call to its subagent activity,
+rederive a positive inherited child baseline and a complete projection-v6
+ledger, and prove the same exact
+authenticated submission boundary used by a passing run. Its root remains
+blocked (`drain_complete=false`) while descendants are quiescent and the retained
+challenge/call/request/ack/snapshot chain is read-only and authenticated. The
+synthetic candidate must also pass the real hidden semantic/dependency audit
+through the frozen `tools/dependency_audit.lean` helper; the exact audit command
+is bound into the validator contract and the retained helper copy is hashed.
+The separate 14-artifact token canary has ID
+`TOKEN-CONTROL-SYNTHETIC-PROVIDER-GATE-V8` and prompt protocol
+`synthetic-inert-sanitized-provider-gate-compaction-crossing-v8`. It uses a
+private synthetic non-matrix target and inert prompt, so it tests the production
+gate without exposing any benchmark task, context, target bytes, or proof
+prefix. At the fixed 180,000-token cap its first root-turn response must finish
+below the cap and be released byte-for-byte. The adapter then explicitly sends
+`thread/compact/start`; the second, distinct compaction-turn response must be the
+sole crossing and may release only the canonical inert `Compaction` item and
+minimal completed event. Its event-ordered projection-v6 evidence authenticates
+both responses, the gate calls and direct app-server deliveries, the closed
+`token_limit` endpoint, and the mode-0444 final gate artifact. Tree drain and
+cumulative projection completion are deliberately false at this endpoint;
+spawn/hook sets remain empty and the independent gate endpoint makes token
+measurement exact. Its attestation states `scored=false`,
+`matrix_assignment=false`, `synthetic_input=true`, and
+`benchmark_task_bytes_used=false`. Both frozen
+canaries must independently reauthenticate the same READY/GO/RELEASED protocol
+and derive their timing deadlines from RELEASED. Both frozen
+descriptors currently remain `replacement_required`, so matrix startup fails
+closed.
+
+Run `tools/run_ultra_orchestration_canary.py` first with the same frozen host,
+binary, authentication, toolchain, and mount arguments used by `run_matrix.py`.
+Explicitly promote its generated `ultra_orchestration_canary_attestation.json`
+with `tools/promote_live_canary.py --ultra-orchestration-attestation ...`; mere
+file presence never changes a descriptor to `passed`. Next run
+`tools/run_token_control_canary.py` and explicitly promote its
+`token_control_canary_attestation.json` with
+`--token-control-attestation ...`. Promotion authenticates every referenced
+artifact, updates only the named evidence/descriptors and frozen hashes, and
+does not rewrite task, target, context, or shared files. This repository and all
+resulting measurements remain private pre-publication work; nothing is
+authorized for public release yet.
+
+## Protocol-governance disclosure
+
+These measurements must not be labeled a strict implementation of the
+reference-PDF HighamBench 0.2 protocol. They use the previously disclosed
+`signposted-library-v1` condition-L prompt, lack a demonstrated backend random
+seed, and do not run from a frozen OCI image. They also add a HighamBench
+execution-protocol amendment: an external trusted provider gate buffers
+responses, reserves the frozen worst-case response bound, and makes the token
+endpoint call-atomic by switching to one exclusive request before a possible
+crossing. This is not behavior supplied by the frozen Codex binary. The same
+gate, configuration, and verification rules are applied to N and L, so the
+paired comparison remains symmetric, but results must be described as produced
+by this explicitly amended HighamBench-derived protocol.
 
 ## Repetitions and run order
 
@@ -133,6 +429,16 @@ The first condition in each pair was selected by the fixed SHA-256 rule recorded
 in `metadata/run_order.json`. SHA-256 is a repeatable text-to-number calculation.
 It makes the order reproducible without presenting repetition IDs as random
 seeds.
+
+### Separation from the raw-access P01 measurements
+
+The completed P01 measurements made before `signposted-library-v1` used the
+earlier raw-access protocol, in which the L mount was available without this
+explicit library notice. Those records remain preserved as a separate
+experiment. They must not be overwritten, pooled with, or used
+as repetitions of a signposted run. A signposted P01 measurement uses fresh
+agent contexts and its own prompt hash, environment identity, result root, and
+report; the task statements and task contexts stay unchanged.
 
 ## Files
 
@@ -156,10 +462,16 @@ seeds.
   evidence from earlier snapshots, not final immutable approvals; final review
   records must be regenerated for every task before measurement.
 
-The review files distinguish completed checks from pending checks. A pending
-check is not a pass. Measurement readiness requires current full-corpus
-construction evidence and two current final reviews for every task. The
-complete measured matrix is also still required.
+The review files distinguish completed checks from pending or rejected checks;
+pending and rejected checks are not rewritten as passes. All 60 public target
+skeletons have paper-scoped source and compiled bundles, and
+`metadata/evidence/construction_validation_full_current.json` records 120/120
+successful private N/L construction checks, including construction proofs for
+P02. Two fresh-context Codex reviews remain part of the frozen evidence. Their
+exact-target novelty rejections for the union of thirteen T1 tasks are ignored
+only by `private_measurement_review_override` for this private, pre-publication
+measurement. Source-fidelity defects are not ignored. The complete 360-run
+measured matrix is still required before the final report can be built.
 
 ## Frozen source versions
 
@@ -170,13 +482,14 @@ complete measured matrix is also still required.
 - Paper PDF SHA-256 values and lawful source locators are recorded for every
   corpus paper in `metadata/manifest.json`.
 - Specification PDF SHA-256:
-  `25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8`
+  `59dfc314d4f9afecbbc6131c3c693624b09cc9e908f0e157efa468675ff56915`
 
 ## What a result may say
 
-This pilot may show whether library access changed proof success, time, token
-use, or actual library use for these 60 fixed tasks and one fixed agent setup.
-It does not test translation from English into Lean or human proof development.
-Any uncertainty interval obtained by resampling the 20 papers describes this
-corpus and must not be presented as certainty about all numerical analysis
-papers.
+Once all internal freeze and measurement gates pass, this experiment may show
+whether library access
+changed proof success, time, token use, or actual library use for these sixty
+fixed tasks and one fixed agent setup. It does not test translation from
+English into Lean or human proof development. Uncertainty intervals resample
+the twenty whole papers as clusters; they must not be presented as certainty
+beyond this corpus and setup.

@@ -12,7 +12,7 @@
     "Overflow, underflow, and other exceptional machine behavior are outside the mathematical model."
   ],
   "author_label": null,
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and shared files are present; no NumStability artifact is present."
@@ -28,13 +28,13 @@
   "informal_proof": "Induct over the inputs. At each later addition, equation (5.1) makes the new error equal to the old error plus S_hat*alpha and x*beta. Bound those two new terms by u*|S_hat| and u*|x| and add them to the earlier running budget.",
   "informal_statement": "Under the no-guard rule, the recursive-summation error is bounded by u times the sum over steps k=2 through n of the size of the computed previous sum plus the size of the new input.",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P01",
   "paper_proof_status": "Equations (5.2) and (5.3) print the accumulated local-error identity and its absolute-value bound.",
   "paper_source": {
-    "local_path": "paper_bencmark/reference_papers/THE ACCURACY OF FLOATING POINT SUMMATION.pdf",
+    "local_path": "paper_bencmark/reference_papers/P01_THE ACCURACY OF FLOATING POINT SUMMATION.pdf",
     "sha256": "d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7"
   },
   "paper_version": "journal version; volume 14, issue 4, July 1993, printed pages 783-799",

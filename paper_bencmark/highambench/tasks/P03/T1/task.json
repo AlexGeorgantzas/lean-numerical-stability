@@ -10,7 +10,7 @@
     "No nonsingularity assumption is needed for this exact identity."
   ],
   "author_label": null,
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P03 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P03 shared files are present; no NumStability artifact is present."
@@ -26,8 +26,8 @@
   "informal_proof": "Expand the updated iterate inside A, then replace the computed residual by the exact residual plus its computation error and collect terms.",
   "informal_statement": "Equation (4.1), component by component.",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P03",
   "paper_source": {

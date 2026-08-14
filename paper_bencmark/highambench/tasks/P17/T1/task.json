@@ -9,7 +9,7 @@
     "Every finite relative-error factor has magnitude at most B."
   ],
   "author_label": "Theorem 3.6",
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P17 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P17 shared files are present; no NumStability artifact is present."
@@ -25,8 +25,8 @@
   "informal_proof": "Each factor lies between 1-B and 1+B. Since B is at most one, the lower factors are nonnegative, so monotonicity of finite products gives both bounds.",
   "informal_statement": "The deterministic one-atom specialization of Theorem 3.6's expectation envelope for accumulated limited-precision stochastic-rounding errors.",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P17",
   "paper_source": {

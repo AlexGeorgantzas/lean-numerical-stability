@@ -4,7 +4,7 @@
 
 The source is Takeshi Ogita, Siegfried M. Rump, and Shin'ichi Oishi,
 *Accurate Sum and Dot Product*, 2005. The local file is
-`paper_bencmark/reference_papers/ACCURATE SUM AND DOT PRODUCT.pdf`. Its SHA-256
+`paper_bencmark/reference_papers/P02_ACCURATE SUM AND DOT PRODUCT.pdf`. Its SHA-256
 hash is `e7b8523c793ad7345dfc76f681c44d1afbbc3a810fb948912451432ae616512d`.
 
 The target is equation (4.7)(i) and Algorithm 4.3 (`VecSum`) on PDF page 11,

@@ -9,7 +9,7 @@
     "Each of the four error-vector norms is bounded by its corresponding source magnitude."
   ],
   "author_label": null,
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P19 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P19 shared files are present; no NumStability artifact is present."
@@ -25,8 +25,8 @@
   "informal_proof": "Apply Euclidean homogeneity to each weighted source, use its supplied norm bound, and combine the four contributions with three applications of the triangle inequality.",
   "informal_statement": "An exact finite-vector certificate for the four weighted terms collected in xi in the modular forward-error bound (3.8).",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P19",
   "paper_source": {

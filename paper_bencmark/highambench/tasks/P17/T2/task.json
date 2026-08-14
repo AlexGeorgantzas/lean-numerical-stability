@@ -9,7 +9,7 @@
     "Every effective expected suffix-product factor differs from one by at most gamma."
   ],
   "author_label": "Theorem 4.1",
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P17 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P17 shared files are present; no NumStability artifact is present."
@@ -25,8 +25,8 @@
   "informal_proof": "Rewrite each effective term as the original input plus a componentwise perturbation a_i(factor_i-1), bound that perturbation by gamma times |a_i|, apply the summation condition-number theorem, and divide by the nonzero exact sum.",
   "informal_statement": "Exact coefficientwise condition-number step in the proof of Theorem 4.1, before instantiating gamma with gamma_{n-1}(u_{p+r}).",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P17",
   "paper_source": {

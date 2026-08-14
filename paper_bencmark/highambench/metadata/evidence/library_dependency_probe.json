@@ -1,16 +1,16 @@
 {
-  "schema_version": "0.1.0",
-  "kind": "highambench-library-dependency-evidence-pointer",
-  "status": "superseded by the complete six-proof construction check",
-  "current_evidence": "paper_bencmark/highambench/metadata/evidence/construction_validation.json",
-  "current_evidence_sha256": "f746727d22efe7704bd869b1880af7aca93c147ff13d1c76fc88d3c2ddb3165b",
-  "reason": "The earlier file recorded only a preliminary T1/L probe against an older controlled manifest. The current construction evidence rebuilds and audits T1, T2, and T3 in both N and L against the final controlled manifests.",
+  "current_evidence": "paper_bencmark/highambench/metadata/evidence/construction_validation_full_current.json",
+  "current_evidence_sha256": "fd817189dc9d4e6e5f7262ad04fabb874b6c4223b2a0bb55212e4df74cfc0d37",
   "current_result": {
-    "proofs_checked": 6,
-    "proofs_passed": 6,
+    "condition_l_passed_proofs_using_numstability": 60,
     "condition_n_library_use": false,
-    "condition_l_passed_proofs_using_numstability": 3,
     "dependency_audit_format": 2,
-    "forbidden_dependencies": 0
-  }
+    "forbidden_dependencies": 0,
+    "proofs_checked": 120,
+    "proofs_passed": 120
+  },
+  "kind": "highambench-library-dependency-evidence-pointer",
+  "reason": "The current evidence rebuilds and audits every T1, T2, and T3 proof in both N and L against the complete sixty-task construction snapshot.",
+  "schema_version": 1,
+  "status": "current complete-corpus construction evidence"
 }

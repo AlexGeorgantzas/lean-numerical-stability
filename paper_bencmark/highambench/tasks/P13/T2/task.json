@@ -9,7 +9,7 @@
     "The unperturbed interpolation value is nonzero."
   ],
   "author_label": "Lemma 2.2",
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P13 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P13 shared files are present; no NumStability artifact is present."
@@ -25,8 +25,8 @@
   "informal_proof": "Multiply each data perturbation bound by the magnitude of its Lagrange coefficient, invoke the generic finite-sum componentwise perturbation theorem, and identify its condition number with equation (2.2).",
   "informal_statement": "The componentwise perturbation inequality in Lemma 2.2.",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P13",
   "paper_source": {

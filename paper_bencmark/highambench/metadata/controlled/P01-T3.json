@@ -1,9 +1,9 @@
 {
   "files": [
     {
-      "bytes": 1771,
+      "bytes": 2668,
       "path": "agent_prompt.md",
-      "sha256": "5c99c5e5812f4b3c5dc2be4e673f8baff5ad96b5babfbbe9b0b5a9a81e593758"
+      "sha256": "3024ed126d13331029add14475ed64e37802c6bd3d42abf9ee97c286603514da"
     },
     {
       "bytes": 1328,
@@ -21,9 +21,9 @@
       "sha256": "e5badc1d71efe1d99f4d211edb7eff96ceb893628641ed140494f380de284cda"
     },
     {
-      "bytes": 2989,
+      "bytes": 2993,
       "path": "tasks/P01/T3/context.md",
-      "sha256": "81666fb071643e9cbb83f5f23a282606702103869307206989d1df7d7302dfef"
+      "sha256": "95e54f735acdc15b45f7110627c371d48fc2b01473bf894260adee60ff0ea98e"
     }
   ],
   "kind": "highambench-controlled-files",

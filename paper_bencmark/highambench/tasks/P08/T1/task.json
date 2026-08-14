@@ -9,7 +9,7 @@
     "The update error obeys the paper's componentwise relative bound with nonnegative u."
   ],
   "author_label": "Lemma 4.2",
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P08 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P08 shared files are present; no NumStability artifact is present."
@@ -25,8 +25,8 @@
   "informal_proof": "Rewrite xNext-x as Ainv*q+h, apply the frozen componentwise absolute matrix-action theorem to Ainv*q, and combine it with the update-rounding hypothesis and the scalar triangle inequality.",
   "informal_statement": "The forward-error conclusion of Lemma 4.2, with the absolute inverse action expanded as a finite sum.",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P08",
   "paper_source": {

@@ -10,7 +10,7 @@
     "The factorization, two linear solve terms, and quadratic solve term satisfy the componentwise majorants used in equation (4.7)."
   ],
   "author_label": "Theorem 4.4",
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "conditions": {
     "L": "The identical fixed statement and P04 shared files are present; the frozen NumStability library is also present.",
     "N": "The fixed statement and P04 shared files are present; no NumStability artifact is present."
@@ -26,8 +26,8 @@
   "informal_proof": "Expand (L+\u0394L)(U+\u0394U), replace L*U by A+\u0394F, use associativity on the two perturbed triangular solves, and sum the four componentwise perturbation bounds.",
   "informal_statement": "The exact algebraic and componentwise assembly in Theorem 4.4 and equation (4.7).",
   "limits": {
-    "total_model_tokens": 120000,
-    "wall_clock_seconds": 900
+    "total_model_tokens": 5000000,
+    "wall_clock_seconds": 1800
   },
   "paper_id": "P04",
   "paper_source": {

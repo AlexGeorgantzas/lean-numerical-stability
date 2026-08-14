@@ -31,7 +31,7 @@ noncomputable def p17EffectiveExpectedSum {n : ℕ}
   ∑ i, a i * factor i
 
 /-- A lightweight finite probability law, kept paper-scoped so the public
-benchmark package does not import NumStability. -/
+benchmark package remains independent of the evaluated formal library. -/
 structure P17FiniteProbability (Ω : Type*) [Fintype Ω] where
   prob : Ω → ℝ
   prob_nonneg : ∀ ω, 0 ≤ prob ω

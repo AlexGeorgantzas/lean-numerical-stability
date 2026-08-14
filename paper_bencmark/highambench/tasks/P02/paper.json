@@ -13,10 +13,10 @@
   "benchmark_specification": {
     "local_path": "paper_bencmark/scratch_pad/HighamBench_Simple_Two_Condition_Specification.pdf",
     "name": "HighamBench Simple Two-Condition Specification",
-    "sha256": "25a8a72d62e2ad9d131004b871f5ccc58438d488dbd64afcd0a8839e9e4d78a8",
+    "sha256": "59dfc314d4f9afecbbc6131c3c693624b09cc9e908f0e157efa468675ff56915",
     "version": "0.2"
   },
-  "classification_frozen_before_runs": false,
+  "classification_frozen_before_runs": true,
   "corpus_membership": "This paper is part of the current corpus listed in metadata/manifest.json.",
   "included_tasks": [
     "P02-T1",
@@ -83,7 +83,7 @@
   "short_name": "Ogita, Rump, Oishi (2005)",
   "source": {
     "lawful_source_locator": "https://doi.org/10.1137/030601818",
-    "local_path": "paper_bencmark/reference_papers/ACCURATE SUM AND DOT PRODUCT.pdf",
+    "local_path": "paper_bencmark/reference_papers/P02_ACCURATE SUM AND DOT PRODUCT.pdf",
     "page_map": "PDF page 1 is printed page 1955; add 1954 to a PDF page number to get the printed page number.",
     "pdf_pages": 34,
     "rights_note": "The local PDF was supplied for benchmark construction and shows a SIAM redistribution notice. The benchmark should publish its locator, hash, and short paraphrases unless redistribution permission is confirmed.",

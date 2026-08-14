@@ -97,6 +97,24 @@ class ValidatorTests(unittest.TestCase):
     def write_submission(self, value: str = SIGNATURE) -> None:
         (self.workspace / "Submission.lean").write_text(value, encoding="utf-8")
 
+    def audit_reporting_local_modules(self, *modules: str) -> Path:
+        audit = self.root / "fake_local_module_audit.py"
+        module_rows = "".join(
+            f"print('localmodule\\t{module}')\n" for module in modules
+        )
+        audit.write_text(
+            "import sys\n"
+            "candidate, expected = sys.argv[1:]\n"
+            "print('format\\t2')\n"
+            "print(f'typeeq\\t{candidate}\\t{expected}\\ttrue')\n"
+            "print(f'target\\t{candidate}\\tHighamBenchChecked')\n"
+            + module_rows
+            + "print('visited\\t1')\n"
+            "print('summary\\t0\\t0')\n",
+            encoding="utf-8",
+        )
+        return audit
+
     def real_audit_config(self, *, condition: str = "N") -> ValidationConfig:
         elan = shutil.which("elan")
         if elan is not None:
@@ -207,11 +225,213 @@ class ValidatorTests(unittest.TestCase):
         self.assertEqual(helper_findings[0]["kind"], "forbidden import")
         self.assertEqual(helper_findings[0]["import"], "NumStability")
 
+    def test_authenticated_submit_rejects_generated_helper_import(self) -> None:
+        (self.workspace / "Helper.lean").write_text(
+            "theorem helper (n : Nat) : n = n := by rfl\n", encoding="utf-8"
+        )
+        self.write_submission("import Helper\n" + SIGNATURE)
+        result = validate(
+            replace(
+                self.config(),
+                reject_workspace_local_module_imports=True,
+            )
+        )
+        self.assertEqual(result["failure_code"], "RULE_VIOLATION", result)
+        local_imports = [
+            finding
+            for finding in result["static_findings"]
+            if finding["kind"] == "workspace-local module import"
+        ]
+        self.assertEqual(
+            local_imports,
+            [
+                {
+                    "path": str(self.workspace / "Submission.lean"),
+                    "kind": "workspace-local module import",
+                    "import": "Helper",
+                    "candidate_sources": ["Helper.lean"],
+                    "resolution": "candidate",
+                    "detail": (
+                        "authenticated submissions may not import a "
+                        "candidate-created module"
+                    ),
+                }
+            ],
+        )
+
+    def test_authenticated_submit_accepts_same_file_helper(self) -> None:
+        self.write_submission(
+            "lemma sameFileHelper (n : Nat) : n = n := by rfl\n\n"
+            "theorem target (n : Nat) : n = n := by\n"
+            "  exact sameFileHelper n\n"
+        )
+        result = validate(
+            replace(
+                self.config(),
+                reject_workspace_local_module_imports=True,
+            )
+        )
+        self.assertTrue(result["pass"], result)
+        self.assertTrue(result["reject_workspace_local_module_imports"])
+
+    def test_authenticated_submit_accepts_controlled_shared_import(self) -> None:
+        controlled = self.task / "shared" / "HighamBench" / "Core.lean"
+        controlled.parent.mkdir(parents=True)
+        controlled.write_text(
+            "namespace HighamBench\n"
+            "theorem controlledHelper : True := by trivial\n"
+            "end HighamBench\n",
+            encoding="utf-8",
+        )
+        write_json(self.manifest_path, create_manifest(self.task))
+        self.write_submission("import HighamBench.Core\n" + SIGNATURE)
+        result = validate(
+            replace(
+                self.config(),
+                reject_workspace_local_module_imports=True,
+            )
+        )
+        self.assertTrue(result["pass"], result)
+        self.assertFalse(
+            any(
+                finding["kind"] == "workspace-local module import"
+                for finding in result["static_findings"]
+            )
+        )
+
+    def test_authenticated_submit_does_not_misclassify_numstability(self) -> None:
+        self.write_submission("import NumStability\n" + SIGNATURE)
+        result = validate(
+            replace(
+                self.config(condition="L"),
+                reject_workspace_local_module_imports=True,
+            )
+        )
+        self.assertTrue(result["pass"], result)
+        self.assertFalse(
+            any(
+                finding["kind"] == "workspace-local module import"
+                for finding in result["static_findings"]
+            )
+        )
+
+    def test_authenticated_submit_accepts_mathlib_and_lean_imports(self) -> None:
+        self.write_submission("import Mathlib\nimport Lean\n" + SIGNATURE)
+        result = validate(
+            replace(
+                self.config(),
+                reject_workspace_local_module_imports=True,
+            )
+        )
+        self.assertTrue(result["pass"], result)
+        self.assertFalse(
+            any(
+                finding["kind"] == "workspace-local module import"
+                for finding in result["static_findings"]
+            )
+        )
+
+    def test_legacy_submit_allows_generated_helper_import_by_default(self) -> None:
+        (self.workspace / "Helper.lean").write_text(
+            "theorem helper (n : Nat) : n = n := by rfl\n", encoding="utf-8"
+        )
+        self.write_submission("import Helper\n" + SIGNATURE)
+        result = validate(
+            self.config(audit=self.audit_reporting_local_modules("Helper"))
+        )
+        self.assertTrue(result["pass"], result)
+        self.assertFalse(result["reject_workspace_local_module_imports"])
+
+    def test_authenticated_submit_fails_closed_on_ambiguous_local_import(self) -> None:
+        for directory in ("left", "right"):
+            source = self.workspace / directory / "Helper.lean"
+            source.parent.mkdir()
+            source.write_text(
+                "theorem helper (n : Nat) : n = n := by rfl\n",
+                encoding="utf-8",
+            )
+        self.write_submission("import Helper\n" + SIGNATURE)
+        result = validate(
+            replace(
+                self.config(),
+                reject_workspace_local_module_imports=True,
+            )
+        )
+        self.assertEqual(result["failure_code"], "RULE_VIOLATION", result)
+        local_import = next(
+            finding
+            for finding in result["static_findings"]
+            if finding["kind"] == "workspace-local module import"
+        )
+        self.assertEqual(local_import["resolution"], "ambiguous")
+        self.assertEqual(
+            local_import["candidate_sources"],
+            ["left/Helper.lean", "right/Helper.lean"],
+        )
+
     def test_candidate_olean_without_scanned_source_is_rejected(self) -> None:
         (self.workspace / "HiddenHelper.olean").write_bytes(b"not a trusted module")
         self.write_submission()
         result = validate(self.config())
         self.assertEqual(result["failure_code"], "RULE_VIOLATION")
+        self.assertIn(
+            "candidate olean without scanned source",
+            {finding["kind"] for finding in result["static_findings"]},
+        )
+
+    def test_lake_build_oleans_are_discarded_before_hidden_rebuild(self) -> None:
+        generated = (
+            self.workspace
+            / ".lake"
+            / "build"
+            / "lib"
+            / "lean"
+            / "HighamBench"
+            / "Core.olean"
+        )
+        generated.parent.mkdir(parents=True)
+        generated.write_bytes(b"ephemeral lake build output")
+        self.write_submission()
+        result = validate(self.config())
+        self.assertTrue(result["pass"], result)
+        self.assertEqual(result["candidate_inventory"]["candidate_oleans"], [])
+        self.assertEqual(result["candidate_inventory"]["ignored_build_roots"], [".lake"])
+
+    def test_hidden_validation_copy_does_not_contain_lake_cache(self) -> None:
+        generated = self.workspace / ".lake" / "build" / "Hidden.olean"
+        generated.parent.mkdir(parents=True)
+        generated.write_bytes(b"untrusted cache bytes")
+        compiler = self.root / "reject_lake_compile.py"
+        compiler.write_text(
+            "from pathlib import Path\n"
+            "import sys\n"
+            "if (Path.cwd() / '.lake').exists():\n"
+            "    print('hidden copy retained .lake')\n"
+            "    raise SystemExit(1)\n"
+            "Path(sys.argv[2]).write_bytes(b'test olean')\n"
+            "print('axioms: []')\n",
+            encoding="utf-8",
+        )
+        self.write_submission()
+        config = replace(
+            self.config(),
+            compile_command=[
+                sys.executable,
+                str(compiler),
+                "{checked_submission}",
+                "{checked_olean}",
+            ],
+        )
+        result = validate(config)
+        self.assertTrue(result["pass"], result)
+
+    def test_lake_name_exception_is_exact(self) -> None:
+        forged = self.workspace / ".lake-evil" / "HiddenHelper.olean"
+        forged.parent.mkdir(parents=True)
+        forged.write_bytes(b"untrusted candidate module")
+        self.write_submission()
+        result = validate(self.config())
+        self.assertEqual(result["failure_code"], "RULE_VIOLATION", result)
         self.assertIn(
             "candidate olean without scanned source",
             {finding["kind"] for finding in result["static_findings"]},
@@ -336,6 +556,17 @@ class ValidatorTests(unittest.TestCase):
         self.write_submission(SIGNATURE.replace("rfl", "BAD_PROOF"))
         self.assertEqual(validate(self.config())["failure_code"], "PROOF_ERROR")
         self.assertEqual(classify_lean_failure("error: unsolved goals"), "PROOF_ERROR")
+        for diagnostic in (
+            "error: expected token",
+            "unexpected identifier; expected command",
+            "error: invalid syntax",
+            "application type mismatch: function expected at f",
+            "an unfamiliar compiler rejection",
+        ):
+            with self.subTest(diagnostic=diagnostic):
+                self.assertEqual(
+                    classify_lean_failure(diagnostic), "SYNTAX_OR_ELAB"
+                )
 
     def test_condition_l_records_transitive_library_use(self) -> None:
         audit = self.root / "fake_audit.py"
