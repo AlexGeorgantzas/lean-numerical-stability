@@ -1333,6 +1333,24 @@ def path_list_sha256(paths: Iterable[str]) -> str:
     return hashlib.sha256(payload).hexdigest().upper()
 
 
+def validate_reconstructed_r03_tree(
+    actual: str | None,
+    problems: Problems,
+    *,
+    context: str = "C0003 R0005 replay tree",
+) -> bool:
+    """Require the disposable-index replay to reproduce the audited tree."""
+
+    matches = actual == R03_EXPECTED_POSTIMAGE_TREE
+    problems.require(
+        matches,
+        context,
+        "disposable-index R0005 replay must produce exact tree "
+        f"{R03_EXPECTED_POSTIMAGE_TREE}, found {actual!r}",
+    )
+    return matches
+
+
 def path_from_module(module: str) -> str:
     return module.replace(".", "/") + ".lean"
 
@@ -1469,6 +1487,8 @@ class CompletionValidator:
         self.requests: dict[str, dict[str, Any]] = {}
         self.current_checkpoint_id = CHECKPOINT_ID
         self._git_tree_blobs: dict[str, dict[str, str]] = {}
+        self._r03_expected_tree_attempted = False
+        self._r03_expected_tree: str | None = None
 
     def relative(self, path: Path) -> str:
         try:
@@ -1655,6 +1675,81 @@ class CompletionValidator:
                 break
             payloads[requested_oid] = payload
         return payloads
+
+    def reconstruct_r03_expected_tree(self) -> str | None:
+        """Replay R0005 from its reachable merge in a disposable Git index."""
+
+        if self._r03_expected_tree_attempted:
+            return self._r03_expected_tree
+        self._r03_expected_tree_attempted = True
+        context = "C0003 R0005 replay tree"
+        patch_path = self.root / R03_EVIDENCE_PATHS["request_patch"]
+        if not patch_path.is_file():
+            self.problems.add(
+                context,
+                f"missing committed replay patch {self.relative(patch_path)}",
+            )
+            return None
+        expected_patch_sha256 = R03_ARTIFACT_SHA256["request_patch"]
+        actual_patch_sha256 = sha256_path(patch_path)
+        if not isinstance(expected_patch_sha256, str):
+            self.problems.add(context, "R0005 patch digest constant is not ratcheted")
+            return None
+        if actual_patch_sha256 != expected_patch_sha256:
+            self.problems.add(
+                context,
+                "committed R0005 patch drifted: expected SHA-256 "
+                f"{expected_patch_sha256}, found {actual_patch_sha256}",
+            )
+            return None
+
+        with tempfile.TemporaryDirectory(
+            prefix="completion-r03-expected-tree-"
+        ) as directory:
+            index = Path(directory) / "index"
+            env = os.environ.copy()
+            env["GIT_INDEX_FILE"] = str(index)
+            read = self.git(
+                "read-tree", R03_MERGE_SHA, check=False, env=env
+            )
+            if read.returncode:
+                self.problems.add(
+                    context,
+                    "cannot initialize disposable index from reachable R03 merge "
+                    f"{R03_MERGE_SHA}: {read.stderr.strip() or read.stdout.strip()}",
+                )
+                return None
+            applied = self.git(
+                "apply",
+                "--cached",
+                "--unidiff-zero",
+                "--whitespace=nowarn",
+                str(patch_path),
+                check=False,
+                env=env,
+            )
+            if applied.returncode:
+                self.problems.add(
+                    context,
+                    "R0005 patch does not replay from exact R03 merge: "
+                    f"{applied.stderr.strip() or applied.stdout.strip()}",
+                )
+                return None
+            written = self.git("write-tree", check=False, env=env)
+            actual_tree = written.stdout.strip()
+            if written.returncode or SHA1_RE.fullmatch(actual_tree) is None:
+                self.problems.add(
+                    context,
+                    "cannot write disposable R0005 postimage tree: "
+                    f"{written.stderr.strip() or written.stdout.strip()}",
+                )
+                return None
+            if not validate_reconstructed_r03_tree(
+                actual_tree, self.problems, context=context
+            ):
+                return None
+            self._r03_expected_tree = actual_tree
+            return actual_tree
 
     def run(self) -> Problems:
         self.validate_pointer()
@@ -2876,14 +2971,24 @@ class CompletionValidator:
                 self.relative(ledger_path),
                 "integration follow-up allowlist must contain exactly 21 paths",
             )
-            expected_diff = set(
-                self.git(
+            reconstructed_tree = self.reconstruct_r03_expected_tree()
+            expected_diff: set[str] = set()
+            if reconstructed_tree is not None:
+                expected_process = self.git(
                     "diff",
                     "--name-only",
-                    R03_EXPECTED_POSTIMAGE_TREE,
+                    reconstructed_tree,
                     C0003_CODE_SHA,
-                ).stdout.splitlines()
-            )
+                    check=False,
+                )
+                if expected_process.returncode:
+                    self.problems.add(
+                        self.relative(ledger_path),
+                        "cannot diff reconstructed R0005 postimage tree against "
+                        f"C0003: {expected_process.stderr.strip() or expected_process.stdout.strip()}",
+                    )
+                else:
+                    expected_diff = set(expected_process.stdout.splitlines())
             merge_diff = set(
                 self.git(
                     "diff", "--name-only", R03_MERGE_SHA, C0003_CODE_SHA
@@ -2894,12 +2999,13 @@ class CompletionValidator:
                     "diff", "--name-only", C0002_CODE_SHA, R03_DELIVERY_SHA
                 ).stdout.splitlines()
             )
-            self.problems.require(
-                len(expected_diff) == 27
-                and expected_diff == deviation_paths | extra_paths,
-                self.relative(ledger_path),
-                "expected-postimage diff must be exactly six request deviations plus 21 extras",
-            )
+            if reconstructed_tree is not None:
+                self.problems.require(
+                    len(expected_diff) == 27
+                    and expected_diff == deviation_paths | extra_paths,
+                    self.relative(ledger_path),
+                    "expected-postimage diff must be exactly six request deviations plus 21 extras",
+                )
             self.problems.require(
                 len(merge_diff) == 142
                 and merge_diff == request_paths | extra_paths,
@@ -2971,13 +3077,13 @@ class CompletionValidator:
                 f"C0003 R03 {label} ancestry",
                 f"expected exact commit/parent vector {expected}, found {actual}",
             )
-        tree = self.git("rev-parse", f"{R03_EXPECTED_POSTIMAGE_TREE}^{{tree}}", check=False)
-        self.problems.require(
-            tree.returncode == 0
-            and tree.stdout.strip() == R03_EXPECTED_POSTIMAGE_TREE,
-            "C0003 R0005 replay tree",
-            f"expected exact reachable tree {R03_EXPECTED_POSTIMAGE_TREE}",
-        )
+        reconstructed_tree = self.reconstruct_r03_expected_tree()
+        if reconstructed_tree is not None:
+            self.problems.require(
+                reconstructed_tree == R03_EXPECTED_POSTIMAGE_TREE,
+                "C0003 R0005 replay tree",
+                f"expected exact reconstructed tree {R03_EXPECTED_POSTIMAGE_TREE}",
+            )
 
     def validate_branches(self) -> None:
         base_paths = self.git_tree_paths(CODE_SHA)
@@ -8135,6 +8241,35 @@ def run_self_test() -> int:
     problems.require(exact.matches("NumStability/A.lean"), "self-test", "exact path match missed")
     problems.require(prefix.matches("NumStability/A.lean"), "self-test", "prefix path match missed")
     problems.require(not exact.intersects(distant), "self-test", "false path collision")
+    replay_positive = Problems()
+    problems.require(
+        validate_reconstructed_r03_tree(
+            R03_EXPECTED_POSTIMAGE_TREE,
+            replay_positive,
+            context="self-test R03 replay tree",
+        )
+        and not replay_positive.messages,
+        "self-test R03 replay tree positive",
+        f"exact reconstructed tree was rejected: {replay_positive.messages}",
+    )
+    for label, tree_value in (("missing", None), ("wrong", "0" * 40)):
+        replay_negative = Problems()
+        accepted = validate_reconstructed_r03_tree(
+            tree_value,
+            replay_negative,
+            context="self-test R03 replay tree",
+        )
+        problems.require(
+            not accepted
+            and any(
+                R03_EXPECTED_POSTIMAGE_TREE in message
+                and repr(tree_value) in message
+                for message in replay_negative.messages
+            ),
+            f"self-test R03 replay tree {label}",
+            f"{label} reconstructed tree was not rejected exactly: "
+            f"{replay_negative.messages}",
+        )
     problems.require(len(R01_PATHS) == 16, "self-test", "R01 constant drift")
     problems.require(len(R02_PATHS) == 28, "self-test", "R02 constant drift")
     problems.require(len(SHARED_CONSUMERS) == 11, "self-test", "shared consumer constant drift")
@@ -8976,7 +9111,8 @@ No implementation began before activation-control CI. The worker remains frozen 
         "states and activation "
         "review plus missing/stale evidence, wrong-base/tip, selector, route/hash, "
         "authority, R07, shared-path, delivery, integration, resolution, and retirement "
-        "mutations"
+        "mutations; disposable-index R0005 replay-tree match plus missing/wrong-tree "
+        "rejection"
     )
     return 0
 
