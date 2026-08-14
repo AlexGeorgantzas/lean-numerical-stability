@@ -71,6 +71,76 @@ structure P04BlockFmaDotRun (n b q : ℕ) where
   right_to_left_beta_bound :
     rightToLeft → ∀ i, |beta i| ≤ gamma uBar (q + b - 1)
 
+/-- Rectangular matrix multiplication in the notation of P04 Theorem 3.2. -/
+noncomputable def p04RectMatMul {m n t : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin t → ℝ) :
+    Fin m → Fin t → ℝ :=
+  fun i j ↦ ∑ k : Fin n, A i k * B k j
+
+/-- The ordinary matrix product `|A||B|` in P04 equation (3.6), with absolute
+values taken componentwise. This is not a matrix norm. -/
+noncomputable def p04AbsRectMatMul {m n t : ℕ}
+    (A : Fin m → Fin n → ℝ) (B : Fin n → Fin t → ℝ) :
+    Fin m → Fin t → ℝ :=
+  fun i j ↦ ∑ k : Fin n, |A i k| * |B k j|
+
+/-- An execution of P04 Algorithm 3.1 for inputs not necessarily stored in the
+low precision, represented by the standard-model certificates used to derive
+Theorem 3.2. The `deltaA` and `deltaB` fields record line 1's componentwise
+rounding errors. The indexed `alpha` and `beta` fields record the compact
+factorization of every output entry derived from the chained block FMAs.
+
+All values are finite reals. Thus this certificate has exactly the paper's
+stated analysis scope: underflow, overflow, exceptional IEEE values, and the
+second output rounding omitted in section 3.2 are outside the model. -/
+structure P04MixedInputMatMulRun
+    (m n t b1 b b2 p q r : ℕ) where
+  row_dimension_pos : 0 < m
+  inner_dimension_pos : 0 < n
+  column_dimension_pos : 0 < t
+  row_block_size_pos : 0 < b1
+  inner_block_size_pos : 0 < b
+  column_block_size_pos : 0 < b2
+  row_block_count_pos : 0 < p
+  inner_block_count_pos : 0 < q
+  column_block_count_pos : 0 < r
+  row_partition : m = p * b1
+  inner_partition : n = q * b
+  column_partition : t = r * b2
+  A : Fin m → Fin n → ℝ
+  B : Fin n → Fin t → ℝ
+  convertedA : Fin m → Fin n → ℝ
+  convertedB : Fin n → Fin t → ℝ
+  deltaA : Fin m → Fin n → ℝ
+  deltaB : Fin n → Fin t → ℝ
+  computed : Fin m → Fin t → ℝ
+  uLow : ℝ
+  uBar : ℝ
+  uFma : ℝ
+  uOut : ℝ
+  uLow_nonneg : 0 ≤ uLow
+  uBar_nonneg : 0 ≤ uBar
+  uFma_nonneg : 0 ≤ uFma
+  uOut_nonneg : 0 ≤ uOut
+  uBar_le_uFma : uBar ≤ uFma
+  effective_gamma_valid :
+    GammaValid (p04EffectiveFmaRoundoff uBar uFma uOut) q
+  internal_gamma_valid : GammaValid uBar n
+  convertedA_eq : ∀ i k, convertedA i k = A i k + deltaA i k
+  convertedB_eq : ∀ k j, convertedB k j = B k j + deltaB k j
+  deltaA_bound : ∀ i k, |deltaA i k| ≤ uLow * |A i k|
+  deltaB_bound : ∀ k j, |deltaB k j| ≤ uLow * |B k j|
+  alpha : Fin m → Fin t → Fin n → ℝ
+  beta : Fin m → Fin t → Fin n → ℝ
+  algorithm3_1_factorization : ∀ i j,
+    computed i j = ∑ k : Fin n,
+      convertedA i k * convertedB k j *
+        (1 + alpha i j k) * (1 + beta i j k)
+  alpha_bound : ∀ i j k,
+    |alpha i j k| ≤
+      gamma (p04EffectiveFmaRoundoff uBar uFma uOut) q
+  beta_bound : ∀ i j k, |beta i j k| ≤ gamma uBar n
+
 /-- The factorization-stage coefficient in P04 equations (4.4) and (4.7). -/
 noncomputable def p04FactorizationCoeff
     (uLow uFma u : ℝ) (q n b : ℕ) : ℝ :=

@@ -71,7 +71,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use Theorem 3.2's exact mixed-input coefficient, combining two conversion errors with the block-FMA multiplication bound.",
+      "decision": "Use the full rectangular Algorithm 3.1 run model and Theorem 3.2's componentwise equation (3.6), combining both low-precision input conversions with the indexed mixed-precision block-FMA bound.",
       "task_id": "P04-T2",
       "theorem_name": "p04_t2_mixed_input_product_bound"
     },
