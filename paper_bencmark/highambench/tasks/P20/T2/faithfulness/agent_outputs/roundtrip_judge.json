@@ -1,0 +1,179 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P20-T2",
+  "paper_sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2",
+  "blind_translation_sha256": "096f66df2a5c2c8874ccf6722fc12b9ae49a4f9fbb2f05368fbe1358a57d5cf2",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "PDF p. 7, printed B791, equation (3.26) and the paragraph beginning 'Several comments are in order' contain the cited underflow-envelope comparison.",
+      "translation_evidence": "The translation compares the accumulation term 4 n^2 theta^-2 Gmin with the input term 4 n^2 theta^-1 gmin.",
+      "reasoning": "The selected passage and surrounding single-word mixed-precision result are the correct source for the translated inequality."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Theorem 3.1 binds real matrices A in R^(m x n), B in R^(n x q), a Model 1 MMA unit, format parameters, scaling matrices, and theta = min(fmax,sqrt(Fmax/n)).",
+      "translation_evidence": "The translation binds m,n,q, A, B, and arbitrary independent real numbers theta, gmin, and Gmin, with no formats, scaling matrices, or computed result.",
+      "reasoning": "Matrix dimensions match, but the paper-defined dependencies and several essential binders are erased."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "In the paper, theta depends on n, fmax, and Fmax, while gmin and Gmin depend on the two floating-point formats and their subnormal modes.",
+      "translation_evidence": "theta, gmin, and Gmin are universally quantified as mutually independent real parameters.",
+      "reasoning": "The translation changes dependent format quantities into unrestricted independent binders."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes Model 1, the format definitions (2.1)-(2.2), suitable power-of-two scaling, and conditionally theta >= 1; it claims Gmin <= gmin from U <= u and Fmin <= fmin.",
+      "translation_evidence": "The only hypotheses are 1 <= theta, 0 <= Gmin, and Gmin <= gmin.",
+      "reasoning": "The translation omits the numerical and algorithmic hypotheses and directly assumes Gmin <= gmin, which is the model-dependent step invoked by the paper."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Equation (3.26) is a complete first-order forward-error envelope containing 2u+nU, the input-underflow term, and the accumulation-underflow term; the following discussion also limits the practical conclusion to most cases.",
+      "translation_evidence": "The sole conclusion compares the two underflow terms and contains no bound on ||C_hat-AB||_infinity, rounding terms, theta < 1 caveat, or practical qualification.",
+      "reasoning": "It captures the local term comparison but not the surrounding paper result or its dependencies."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "Equations (2.1)-(2.2) define gmin and Gmin piecewise from format minima, unit roundoffs, and subnormal availability; Theorem 3.1 defines theta from format maxima.",
+      "translation_evidence": "The dependency ledger correctly unfolds arithmetic and the maximum absolute row-sum norm, but treats theta, gmin, and Gmin as primitive reals.",
+      "reasoning": "Formal operators are interpreted, but the paper's nontrivial floating-point definitions are absent."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "Equations (3.25)-(3.26) bound the computed C_hat against the exact real product AB.",
+      "translation_evidence": "No C_hat, AB, exact product, rounded input, or computed quantity occurs.",
+      "reasoning": "There is no conflation, but the exact-versus-computed distinction central to the source result is removed entirely."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Theorem 3.1 links the terms to Lambda^-1(fl(Lambda A)fl(BM))M^-1 with input-format conversion and accumulation-format inner products.",
+      "translation_evidence": "The proposition contains only matrices, scalar parameters, norms, and an order inequality.",
+      "reasoning": "The translated statement has no linkage to the scaled mixed-precision MMA algorithm or its execution model."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "The compared contributions in (3.26) are multiplied by ||A||_infinity||B||_infinity, using the matrix infinity norm.",
+      "translation_evidence": "LocalDef003 is the maximum absolute row-sum norm, and both sides use its unsquared values for A and B.",
+      "reasoning": "The norm kind and placement in the two compared envelope terms match."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "Equation (3.26) uses 4n^2 theta^-1 gmin for input underflow and 4n^2 theta^-2 Gmin for accumulation underflow.",
+      "translation_evidence": "The right and left sides respectively use exactly those coefficients and parameter powers, with the same norm factors.",
+      "reasoning": "The local constants, inner dimension, and theta exponents are reproduced exactly."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Model 1 specifies input and accumulation precisions and exponent ranges, equations (2.3)-(2.4) specify rounding and underflow, and overflow is excluded by scaling.",
+      "translation_evidence": "No precision, exponent range, rounding mode, overflow condition, subnormal mode, or floating-point operation is represented.",
+      "reasoning": "The numerical model is replaced by abstract sign and order assumptions."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "Under theta >= 1, the comparison paragraph states the exact non-strict relation theta^-2 Gmin <= theta^-1 gmin.",
+      "translation_evidence": "The conclusion is a non-strict inequality in the same direction after multiplication by common nonnegative factors.",
+      "reasoning": "The translation does not promote the approximate full bound (3.26) to an exact bound; its exact relation is limited to the local envelope comparison."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The two quantities are contributions to a normwise forward-error bound for ||C_hat-AB||_infinity.",
+      "translation_evidence": "The translation presents them only as scalar products and contains no forward-error quantity.",
+      "reasoning": "Although the numerical envelope terms match, their status as components of a computed-versus-exact forward error is not expressed."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Equation (3.26) is obtained by dropping second-order terms from the exact inequality (3.25) and uses an undefined lesssim relation.",
+      "translation_evidence": "No exact bound (3.25), dropped terms, first-order qualification, or lesssim relation is present.",
+      "reasoning": "The isolated term comparison is exact, but the translation does not preserve its first-order provenance or distinguish the complete exact error theorem from the simplified envelope."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The parameters arise from actual input and accumulation formats satisfying Model 1, and theta is fixed by their ranges and n.",
+      "translation_evidence": "The proposition ranges over arbitrary real theta, gmin, and Gmin and permits zero dimensions and empty matrices.",
+      "reasoning": "This is an unclassified generalization beyond the paper's format-derived parameter domain."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The paper's substantive comparison relies on deriving the relation between the two underflow envelopes from format properties, with a possible mixed-subnormal-mode gap.",
+      "translation_evidence": "Gmin <= gmin is assumed directly, reducing the conclusion to monotonicity under theta >= 1 and nonnegative common factors; zero dimensions or zero norms also make it 0 <= 0.",
+      "reasoning": "The hypotheses are satisfiable, but the key model-dependent content is bypassed by an assumption, and many admitted instances are trivially zero."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translated algebraic lemma cannot recover the Model 1 derivation of Gmin <= gmin, the scaled MMA forward-error bound, its computed-versus-exact quantities, or its first-order and practical qualifications."
+    },
+    "paper_implies_translation": {
+      "verdict": "unclear",
+      "reasoning": "For paper-defined parameters using compatible underflow regimes, the stated scalar comparison multiplied by the common nonnegative factors yields the translation. The paper does not establish Gmin <= gmin for every mixed choice of subnormal availability, while the translation also quantifies arbitrary real parameters outside the paper model."
+    }
+  },
+  "classification": "undetermined",
+  "accepted": false,
+  "requires_adjudication": true,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "hypothesis-substitution",
+      "paper_evidence": "The paper claims Gmin <= gmin from U <= u, Fmin <= fmin, and the format definitions.",
+      "translation_evidence": "Gmin <= gmin is introduced as an explicit hypothesis.",
+      "impact": "The translation assumes the model-dependent relation needed for the comparison instead of expressing or deriving it."
+    },
+    {
+      "severity": "major",
+      "category": "algorithm-and-error-omission",
+      "paper_evidence": "Equations (3.25)-(3.26) concern the normwise forward error of a scaled mixed-precision MMA computation.",
+      "translation_evidence": "No algorithm, scaling, floating-point operation, C_hat, AB, or error quantity is present.",
+      "impact": "The proposition is an abstract order lemma rather than a statement about the paper's computation."
+    },
+    {
+      "severity": "major",
+      "category": "parameter-semantics",
+      "paper_evidence": "theta, gmin, and Gmin are determined by n and the two floating-point formats.",
+      "translation_evidence": "They are independent arbitrary reals constrained only by three inequalities.",
+      "impact": "The scope includes parameter combinations with no correspondence to the paper and loses the dependencies needed for the paper interpretation."
+    },
+    {
+      "severity": "major",
+      "category": "higher-order-provenance",
+      "paper_evidence": "The complete exact inequality is (3.25), whereas (3.26) drops second-order terms and uses lesssim.",
+      "translation_evidence": "Only an exact inequality between two selected terms is retained, with no record of (3.25), lesssim, or omitted terms.",
+      "impact": "The local exact comparison is numerically correct, but its role inside a first-order error summary cannot be reconstructed."
+    },
+    {
+      "severity": "major",
+      "category": "mixed-subnormal-mode-ambiguity",
+      "paper_evidence": "gmin and Gmin are independently piecewise-defined according to subnormal availability, but the comparison invokes only U <= u and Fmin <= fmin.",
+      "translation_evidence": "The potentially problematic relation Gmin <= gmin is assumed without any subnormal-mode condition.",
+      "impact": "Whether the paper entails the translated premise for all Model 1 configurations is unresolved and requires adjudication."
+    },
+    {
+      "severity": "note",
+      "category": "local-envelope-match",
+      "paper_evidence": "The compared terms are 4n^2 theta^-2 Gmin and 4n^2 theta^-1 gmin, multiplied by ||A||_infinity||B||_infinity.",
+      "translation_evidence": "The conclusion reproduces exactly these constants, powers, parameters, and maximum absolute row-sum norms.",
+      "impact": "The isolated algebraic comparison is accurate once the translation's stronger explicit premises are accepted."
+    }
+  ],
+  "rationale": "The blind translation accurately reproduces the two local underflow-envelope terms, their constants, matrix infinity norms, inequality direction, and theta >= 1 condition. It does not express the paper's format-defined parameter dependencies, scaled MMA algorithm, computed forward error, complete simplified envelope, or higher-order provenance, and it assumes Gmin <= gmin rather than deriving that relation from Model 1. Because the paper's derivation of Gmin <= gmin is itself unclear for mixed subnormal-mode choices, translation-implies-paper is false while paper-implies-translation remains unclear; adjudication is therefore required."
+}
