@@ -26,6 +26,13 @@ history. When two documents disagree, use the precedence order below.
   not the authority for module placement; canonical paths come from the
   architecture and compatibility documents above.
 
+## Research evidence
+
+- [`autoformalization-trust/README.md`](autoformalization-trust/README.md)
+  reviews the strongest current evidence on English-to-Lean semantic
+  faithfulness, its limitations, and the resulting benchmark design for
+  measuring the contribution of NumStability.
+
 ## Migration and generated evidence
 
 - [`architecture/migrations/`](architecture/migrations/) records reviewed path
