@@ -5,18 +5,53 @@
   "paper_version": "published journal version; volume 40, issue 2, 2018, printed pages A817-A847",
   "source_locations": [
     {
-      "anchor": "equations (5.2)-(5.6) and Theorem 5.1",
+      "anchor": "equation (1.1) and precision definitions",
+      "pdf_page": 1,
+      "printed_page": "A817",
+      "role": "working, residual, factorization, and solver precision ordering",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "Algorithm 1.1",
+      "pdf_page": 2,
+      "printed_page": "A818",
+      "role": "unscaled iterative-refinement execution and computed quantities",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "equations (2.2) and (2.5)",
+      "pdf_page": 5,
+      "printed_page": "A821",
+      "role": "componentwise condition number convention and correction-solver defect model",
+      "section": "2. Preliminaries"
+    },
+    {
+      "anchor": "equations (3.3) and (3.6)",
+      "pdf_page": 7,
+      "printed_page": "A823",
+      "role": "computed residual and rounded-update models",
+      "section": "3. Forward error analysis"
+    },
+    {
+      "anchor": "equations (5.1)-(5.6) and opening of Theorem 5.1",
       "pdf_page": 10,
       "printed_page": "A826",
-      "role": "componentwise base inequality, M-matrix resolvent, and theorem assumptions",
+      "role": "base inequality, Z_i, correction inequality, M_i, M-matrix facts, and uniform hypothesis",
       "section": "5. Componentwise backward error analysis"
     },
     {
-      "anchor": "continuation of Theorem 5.1 and equation (5.7)",
+      "anchor": "continuation of Theorem 5.1",
       "pdf_page": 11,
       "printed_page": "A827",
-      "role": "W\u1d62 and y\u1d62 conclusion and norm interpretation",
+      "role": "exact W_i and y_i componentwise recurrence",
       "section": "5. Componentwise backward error analysis"
+    },
+    {
+      "anchor": "opening of section 6",
+      "pdf_page": 12,
+      "printed_page": "A828",
+      "role": "explicit exclusion of underflow and overflow from the unscaled analysis",
+      "section": "6. Scaling"
     }
   ],
   "task_id": "P03-T3"

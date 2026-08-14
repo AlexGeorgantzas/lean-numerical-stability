@@ -3,177 +3,178 @@
   "role": "roundtrip-judge",
   "task_id": "P03-T3",
   "paper_sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc",
-  "blind_translation_sha256": "08b50e6c847c83f0fce1bffba6f46baecb673551e64c5a963a8d5bec7998d440",
+  "blind_translation_sha256": "c57d8a2af85c56519232d3152ae6bf5ae10b6600ac2fdcefe2dcee103b1ed481",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The hash-verified PDF is the published SIAM Journal on Scientific Computing volume 40, issue 2 version, pages A817-A847. Equations (5.2)-(5.6) and the opening of Theorem 5.1 occur on A826; its conclusion and equation (5.7) occur on A827.",
-      "translation_evidence": "The translation concerns a componentwise residual-elimination inequality involving matrices named M1 and P, matching the broad subject of the selected passage.",
-      "reasoning": "The supplied paper version and source passage are correct. The later semantic failures arise from the translated proposition, not from selecting the wrong source."
+      "paper_evidence": "The published SIAM Journal version states Theorem 5.1 on printed pages A826-A827, following equations (5.1)-(5.6), for Algorithm 1.1.",
+      "translation_evidence": "The translation targets the exact one-step componentwise residual recurrence and definitions corresponding to Theorem 5.1.",
+      "reasoning": "The selected paper, passage, and surrounding result are the correct source for the translated proposition."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Theorem 5.1 binds a nonsingular A in R^{n×n}, b in R^n, Algorithm 1.1's computed iterates, residuals and corrections, an iteration-dependent nonnegative G_i, and i≥0.",
-      "translation_evidence": "The translation binds arbitrary real scalars, two arbitrary matrices M1 and P, and five arbitrary vectors. It has no A, b, G_i, computed iterate, computed residual, correction solve, or iteration index, and it explicitly allows n=0.",
-      "reasoning": "The binders and their types do not represent the paper's linear system or algorithm-generated quantities."
+      "status": "pass",
+      "paper_evidence": "Theorem 5.1 uses nonsingular A in R^(n x n), b in R^n, iteration indices i >= 0, and dimensionally conforming n-vectors and n-by-n matrices.",
+      "translation_evidence": "The translation uses positive natural n, n-by-n real matrices, n-vectors, arbitrary i in Nat, and component j in Fin(n).",
+      "reasoning": "The finite real dimensions and index sets match, and universal component indices correctly scalarize the paper's componentwise vector inequality."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "Condition (5.6) is required for all iterations i, and the recurrence is concluded for every i≥0; Z_1 and M_1 depend locally on i through G_i.",
-      "translation_evidence": "The proposition universally quantifies one unrelated snapshot of arbitrary matrices and vectors and concludes an inequality for each component index in Fin n. It has no iteration quantifier or iteration-dependent objects.",
-      "reasoning": "Uniform iteration scope and the dependence of G_i, Z_i, M_i, and the computed quantities on i are lost."
+      "status": "unclear",
+      "paper_evidence": "The condition (5.6) holds for all i, but the paper literally names the matrices Z_1 and M_1 even though Z_1 contains the iteration-dependent G_i.",
+      "translation_evidence": "The run packages full sequences P_k, Q_k, and M_k and imposes their conditions for every natural k.",
+      "reasoning": "The global iteration scope otherwise matches, but the translation resolves the paper's unexplained Z_1/M_1 dependence as explicitly iteration-indexed data. The source does not determine whether that Skolemization is exact."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The paper assumes nonsingularity, the componentwise solver defect (2.5), Algorithm 1.1's residual and update rounding models, the precision hierarchy, and the uniform one-half condition (5.6). These imply existence and nonnegativity of the resolvent.",
-      "translation_evidence": "The translation instead assumes an abstract nonnegative left inverse M1, an abstract correction inequality, and an abstract base inequality. It imposes no sign conditions on us, u, gammaR, P, data, update, or correction.",
-      "reasoning": "Essential source hypotheses are omitted and replaced by already-abstracted inequalities that are not the same as the paper's derived correction inequality."
+      "status": "unclear",
+      "paper_evidence": "The theorem assumes Algorithm 1.1, nonsingular A, solver defect model (2.5), and uniform condition (5.6). The standard model defines gamma_p^r but the theorem does not locally restate p u_r < 1 or make the derived M-matrix facts separate hypotheses.",
+      "translation_evidence": "The run explicitly requires 0 < n, 0 <= uR <= u <= uS <= uF, m uR < 1, exact inverse identities, all local error models, uniform smallness, and nonnegativity, inverse action, and norm bounds for M_k.",
+      "reasoning": "The central hypotheses agree, but the translation adds an explicit gamma-domain restriction and promotes derived M-matrix properties to packaged assumptions. Whether the gamma restriction is inherited implicitly by the paper is unresolved."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "With P=Z_1|A^{-1}| and M_1=(I-P)^{-1}, Theorem 5.1 has W_i=u_sI+(1+u_s)M_1P and y_i=(1+u_s)(1+u)gamma_p^r(I+M_1P)(|b|+|A||x̂_{i+1}|)+u|A||x̂_{i+1}|.",
-      "translation_evidence": "Its conclusion contains (1+us)M1|oldResidual| and gammaR(data+M1 data), with no P following M1.",
-      "reasoning": "Under the source-compatible identification of P, the translation omits P from both resolvent contributions. It therefore gives a different and generally looser recurrence rather than the exact W_i and y_i formulas."
+      "status": "pass",
+      "paper_evidence": "For every i >= 0, Theorem 5.1 concludes |b-A xhat_(i+1)| <= W_i |b-A xhat_i| + y_i with exact displayed formulas for W_i and y_i.",
+      "translation_evidence": "For every i and j, the conclusion expands B_i|r_i| and E_i using B_i=uS I+(1+uS)M_iQ_i and the complete additive expression based on c_(i+1).",
+      "reasoning": "Universal quantification over j is equivalent to the paper's componentwise vector inequality, and every term of W_i and y_i is present."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The passage defines entrywise absolute values, Z_1=u_sG_i+(1+u_s)gamma_p^r|A|, P=Z_1|A^{-1}|, M_1=(I-P)^{-1}, cond(A^{-1})=|| |A||A^{-1}| ||_infinity, and gamma_p^r=pu_r/(1-pu_r).",
-      "translation_evidence": "The dependency ledger correctly unfolds its own matrix-vector product, componentwise absolute value, and identity M1(I-P)=I, but leaves P, data, update, correction, and residual vectors without paper-level definitions.",
-      "reasoning": "Internal operators are explained, but the nontrivial source definitions and the correspondence of abstract terms to them are absent."
+      "status": "unclear",
+      "paper_evidence": "The paper uses ordinary matrix multiplication, entrywise absolute values, the identity, matrix inversion, and the infinity norm.",
+      "translation_evidence": "The dependency ledger unfolds the algebraic operations but leaves D024/D080 as the norm selected by Matrix.linftyOpNormedRing without a closed mathematical formula.",
+      "reasoning": "Most imported definitions are understood, but one operator essential to the hypotheses remains semantically unresolved."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "The solver premise uses the computed residual r̂_i, whereas the theorem recurrence uses the exact original-system residual b-Ax̂_i of a computed iterate.",
-      "translation_evidence": "oldResidual and newResidual are arbitrary vectors, and no computed residual or relation to A, b, and computed iterates is asserted.",
-      "reasoning": "The essential distinction between a computed residual and the exact residual of a computed iterate is not represented."
+      "status": "pass",
+      "paper_evidence": "Equation (3.3) distinguishes the computed residual rhat_i from the true residual b-A xhat_i, while equation (3.6) distinguishes the rounded iterate and update error.",
+      "translation_evidence": "The run separately contains rHat_k, deltaR_k, dHat_k, deltaX_k, x_k, and the exact residual r_k=b-Ax_k.",
+      "reasoning": "Exact, computed, and perturbation quantities are kept distinct, and the conclusion uses the true residual as required."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Theorem 5.1 explicitly begins by applying Algorithm 1.1 to Ax=b and relies on its residual computation, correction solve, and rounded update.",
-      "translation_evidence": "The restrictions explicitly state that the vector names encode no recurrence or computational relationship and need not arise from an algorithm.",
-      "reasoning": "Algorithm linkage and the execution model are completely removed."
+      "paper_evidence": "Theorem 5.1 is explicitly about the unscaled Algorithm 1.1, whose first step computes xhat_0 at u_f and whose loop stores data and computed quantities at specified precisions.",
+      "translation_evidence": "The translation quantifies over abstract exact-real run packages satisfying local residual, correction, and update equations, but it has no initial-solve condition or representability/storage requirement.",
+      "reasoning": "The loop error relations are represented, but the proposition is no longer restricted to executions of the complete paper algorithm."
     },
     {
       "id": "S09",
-      "status": "fail",
-      "paper_evidence": "The recurrence is componentwise, while the sufficient condition (5.6), the resolvent bound ||M_1||_infinity≤2, and interpretation (5.7) use the infinity norm.",
-      "translation_evidence": "The conclusion is correctly componentwise, but the translation contains no infinity norm, condition number, one-half threshold, or resolvent norm bound.",
-      "reasoning": "It preserves only the componentwise form of the final inequality and omits the norm semantics that justify the paper's resolvent."
+      "status": "unclear",
+      "paper_evidence": "Condition (5.6) uses the matrix infinity norm in both ||G_i|A^(-1)||||_infinity and cond(A^(-1))=|||A||A^(-1)||||_infinity; the conclusion itself is componentwise.",
+      "translation_evidence": "The conclusion is componentwise, but its smallness condition uses the unresolved norm N supplied by D024/D080.",
+      "reasoning": "The componentwise-versus-normwise roles are correct, but equality of N with the paper's infinity operator norm cannot be established from the dependency ledger."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The exact constants include the threshold 1/2, resolvent bound 2, gamma_p^r with p the maximum row nonzero count of [A b], and factors (1+u_s), (1+u), and M_1Z_1|A^{-1}| in fixed order.",
-      "translation_evidence": "It preserves the scalar product (1+us)(1+u)gammaR but omits p, the definition of gammaR, 1/2, 2, iteration indexing, and the P factor in the M1 terms.",
-      "reasoning": "Several constants, dependencies, and noncommutative factors are missing even though some scalar coefficients are retained."
+      "status": "unclear",
+      "paper_evidence": "The paper uses threshold 1/2, the i-to-i+1 residual step, gamma_p^r, factors 1+u_s and 1+u, and literal symbols Z_1 and M_1 containing G_i.",
+      "translation_evidence": "The translation preserves the numerical constants, factors, product order, and i+1 offset, but replaces Z_1 and M_1 by iteration-indexed P_i and M_i.",
+      "reasoning": "All numerical coefficients and offsets match. The dependency indexing remains unclear because the paper's literal notation is itself unexplained."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The paper uses the standard floating-point model with residual precision u_r, working precision u, solver precision u_s, residual rounding to u_s, update rounding at u, and ignored underflow and overflow.",
-      "translation_evidence": "us, u, and gammaR are unrestricted real numbers. No precisions, rounding operations, standard-model constraints, exceptional-value assumptions, underflow, or overflow treatment appear.",
-      "reasoning": "The numerical model has been replaced by unconstrained real arithmetic."
+      "paper_evidence": "The paper invokes the standard floating-point model with four precisions and explicitly states that the unscaled analysis ignores underflow and overflow.",
+      "translation_evidence": "Floating-point effects are represented only by exact-real equations and inequalities; the run does not require an actual unscaled floating-point execution or explicitly exclude underflow and overflow.",
+      "reasoning": "The local error bounds match, but the complete execution and exceptional-value model is not preserved."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "Writing c=Z_1|d̂_i|, P=Z_1|A^{-1}|, and s=(1+u_s)|b-Ax̂_i|+(1+u_s)(1+u)gamma_p^r data, the paper derives (I-P)c≤Ps and hence c≤M_1Ps.",
-      "translation_evidence": "Its correction hypothesis is (I-P)correction≤s, and its left-inverse assumption yields correction≤M1s.",
-      "reasoning": "The inequality direction is unchanged, but omission of P on the source term changes its strength and produces M1 rather than M1P in the conclusion. The signed correction also differs from the paper's nonnegative Z_1|d̂_i|."
+      "status": "pass",
+      "paper_evidence": "The source uses exact residual and update equations, componentwise non-strict error bounds, strict gamma-domain arithmetic only through the standard-model convention, and a non-strict threshold of 1/2.",
+      "translation_evidence": "The corresponding equations, inequality directions, componentwise bounds, and 1/2 threshold have the same relations and coefficients.",
+      "reasoning": "Within the encoded local model and conclusion, equality, inequality direction, and strictness are reproduced correctly."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "Theorem 5.1 is an exact componentwise recurrence for the original-system residual; it does not itself assert a bound on componentwise backward error omega.",
-      "translation_evidence": "The proposition also does not assert an omega bound, but its residual-named vectors are arbitrary and are not established to be residuals of any system.",
-      "reasoning": "It avoids substituting a normwise or backward-error conclusion, but it fails to preserve the actual exact-residual error notion."
+      "status": "pass",
+      "paper_evidence": "Theorem 5.1 gives an exact componentwise absolute true-residual recurrence; the later componentwise relative backward-error estimate (5.8) is not its conclusion.",
+      "translation_evidence": "The proposition bounds each component of |b-Ax_(i+1)| and does not state forward error, convergence, a scalar norm bound, or omega.",
+      "reasoning": "The residual error notion is preserved without substitution by the later backward-error interpretation."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Equations (5.2)-(5.6) and Theorem 5.1 are exact. Only the subsequent interpretation uses M_1=I+O(u_s) and the approximate relation in (5.7).",
-      "translation_evidence": "The translated implication uses exact equalities and inequalities and contains no big-O or approximate relation.",
-      "reasoning": "The translation does not incorrectly turn the paper's first-order interpretation into an exact assertion. Its failure is in the exact algebraic formula and omitted context, not in conflating higher-order terms."
+      "paper_evidence": "The theorem retains all factors exactly; O(u_s) and lesssim occur only in the discussion and equations (5.7)-(5.8) after the theorem.",
+      "translation_evidence": "The definitions of B_i and E_i retain gamma, 1+uS, 1+u, M_iQ_i, and the final u|A||x_(i+1)| term exactly.",
+      "reasoning": "No exact term is dropped or replaced by a first-order, big-O, or asymptotic estimate."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The source concerns a real nonsingular n-by-n linear system and quantities generated by a specified finite-precision iterative-refinement algorithm.",
-      "translation_evidence": "The proposition generalizes to arbitrary abstract finite vectors and matrices, unrestricted signed scalars, arbitrary P, and the empty dimension.",
-      "reasoning": "This is not a faithful specialization or harmless abstraction because the generalized objects are no longer tied to the source definitions and satisfy a different correction relation."
+      "status": "unclear",
+      "paper_evidence": "The paper concerns finite-dimensional real systems and computed executions of Algorithm 1.1, with a dimension n conventionally understood as positive.",
+      "translation_evidence": "The translation remains finite-dimensional and real and explicitly requires n>0, but generalizes from computed executions to arbitrary exact-real histories satisfying selected local constraints.",
+      "reasoning": "The scalar field and dimensions match, while the execution-domain generalization and explicit positivity restriction prevent a fully determined specialization judgment."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "The paper's hypotheses describe realizable algorithm executions and use condition (5.6) to guarantee an admissible nonnegative resolvent.",
-      "translation_evidence": "Nontrivial models exist, for example P=0 and M1=I, but n=0 makes every indexed clause vacuous, and no condition ensures that any abstract vectors arise from an execution. Unrestricted signs can also make the premises inconsistent for many parameter choices.",
-      "reasoning": "The proposition is not globally vacuous, but it admits unintended vacuous instances and supplies no nonvacuity or realizability connection to the paper."
+      "status": "pass",
+      "paper_evidence": "The paper's hypotheses describe ordinary nonsingular systems satisfying a conditional smallness requirement; the theorem is not based on an impossible case.",
+      "translation_evidence": "Although no run existence is asserted, the packaged assumptions are jointly satisfiable, for example with positive dimension, identity A and Ainv, zero error parameters and sequences, G=0, Q=0, and M=I.",
+      "reasoning": "The universal packaging creates vacuous instances when no run exists, as any conditional theorem does, but the run type is not globally empty and the target is not universally trivial for that reason."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "Under the natural correspondence P=Z_i|A^{-1}| and M1=(I-P)^{-1}, the translation assumes (I-P)c≤s and derives c≤M1s. The paper needs (I-P)c≤Ps and the sharper c≤M1Ps. The translated conclusion consequently lacks P in both resolvent terms and cannot yield the exact paper recurrence; it also cannot supply the missing algorithmic and floating-point hypotheses."
+      "verdict": "unclear",
+      "reasoning": "The exact recurrence and local error models would cover the paper result if N is the paper's infinity norm and the explicit gamma-domain and M_k requirements follow from the paper's inherited standard-model assumptions. The supplied dependency ledger and source passage do not establish those points."
     },
     "paper_implies_translation": {
       "verdict": "no",
-      "reasoning": "The paper establishes a result only for Algorithm 1.1's linked quantities. Its derived premise (I-P)c≤Ps does not generally imply the translation's (I-P)c≤s componentwise, since ||P||_infinity≤1/2 does not imply Ps≤s for every nonnegative vector s. Nor does the paper assert the translation's universally quantified abstract implication for arbitrary signed scalars, matrices, and vectors."
+      "reasoning": "The paper theorem is restricted to computed executions of unscaled Algorithm 1.1. The translation quantifies over abstract exact-real histories without the initial solve, storage or representability constraints, or an explicit underflow/overflow exclusion, so the paper statement alone does not establish the translated claim for every such package."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "undetermined",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
-      "severity": "critical",
-      "category": "exact-recurrence",
-      "paper_evidence": "The exact recurrence contains M_1Z_1|A^{-1}| in W_i and I+M_1Z_1|A^{-1}| in y_i.",
-      "translation_evidence": "The conclusion contains M1 directly, without P, in both the old-residual and data contributions.",
-      "impact": "The central noncommutative factor is omitted, so the translated bound is not Theorem 5.1's recurrence."
+      "severity": "major",
+      "category": "norm-semantics",
+      "paper_evidence": "Theorem 5.1 and condition (5.6) specifically use the matrix infinity norm.",
+      "translation_evidence": "D024 and D080 preserve an imported norm instance named Matrix.linftyOpNormedRing but explicitly leave its mathematical formula unclear.",
+      "impact": "The central smallness hypothesis and the M_k norm bound cannot be compared definitively, so translation-implies-paper remains unresolved."
     },
     {
-      "severity": "critical",
+      "severity": "major",
       "category": "algorithm-linkage",
-      "paper_evidence": "Theorem 5.1 concerns computed iterates produced by Algorithm 1.1 for a nonsingular system Ax=b.",
-      "translation_evidence": "All vectors are arbitrary and explicitly need not arise from an algorithm.",
-      "impact": "The proposition proves only an abstract elimination lemma, not a result about iterative refinement."
+      "paper_evidence": "The source result assumes the complete unscaled Algorithm 1.1, including the initial solve at u_f and precision-specific storage and execution.",
+      "translation_evidence": "The run contains only abstract real sequences and local loop equations, with no constraint connecting x_0 to step 1 or requiring values to be stored at the stated precisions.",
+      "impact": "The translated proposition ranges over histories outside the source theorem's stated execution domain."
     },
     {
       "severity": "major",
-      "category": "hypotheses-and-numerical-model",
-      "paper_evidence": "The source requires solver condition (2.5), residual and update rounding models, precision relationships, and uniform condition (5.6).",
-      "translation_evidence": "These are replaced by two assumed inequalities and unrestricted real scalar parameters.",
-      "impact": "The source's floating-point assumptions and sufficient convergence condition cannot be recovered."
+      "category": "exceptional-values",
+      "paper_evidence": "At the opening of section 6, the paper explicitly says the unscaled analysis ignores underflow and overflow.",
+      "translation_evidence": "No hypothesis explicitly excludes underflow or overflow; only real-valued error equations and inequalities are packaged.",
+      "impact": "The floating-point execution model is incomplete relative to the paper."
     },
     {
       "severity": "major",
-      "category": "correction-inequality",
-      "paper_evidence": "After premultiplication by Z_1, the additive residual and data terms are themselves multiplied by P=Z_1|A^{-1}|.",
-      "translation_evidence": "The correction hypothesis adds the residual and data terms without multiplication by P.",
-      "impact": "The hypotheses are not source consequences under the natural variable identification, preventing either semantic implication."
+      "category": "index-dependence",
+      "paper_evidence": "The PDF literally defines Z_1 and M_1 while Z_1 contains G_i, and gives no explanation of that mixed indexing.",
+      "translation_evidence": "The translation resolves the quantities into sequences P_k, Q_k, and M_k without recording the choice as an unresolved source interpretation.",
+      "impact": "Dependence of the auxiliary matrices on the iteration is not source-determined and requires adjudication."
     },
     {
-      "severity": "major",
-      "category": "exact-versus-computed",
-      "paper_evidence": "The computed residual r̂_i occurs in the solver premise, while b-Ax̂_i is the exact residual used in the theorem.",
-      "translation_evidence": "Only arbitrary oldResidual and newResidual vectors occur.",
-      "impact": "The translation loses a central distinction in the finite-precision analysis."
+      "severity": "minor",
+      "category": "gamma-domain",
+      "paper_evidence": "The standard model defines gamma_p^r=p u_r/(1-p u_r), but Theorem 5.1 does not locally state p u_r<1.",
+      "translation_evidence": "Every admissible run must satisfy m uR<1.",
+      "impact": "The translation may exclude parameter cases admitted by a literal reading of the theorem, though the restriction may be implicit in the paper's standard-model convention."
     },
     {
       "severity": "note",
-      "category": "higher-order-treatment",
-      "paper_evidence": "The theorem recurrence is exact, while equation (5.7) is explicitly an asymptotic interpretation.",
-      "translation_evidence": "The proposition makes only exact assertions and does not encode equation (5.7).",
-      "impact": "No approximate statement is falsely strengthened to an exact one; this does not repair the other semantic mismatches."
+      "category": "derived-properties-as-hypotheses",
+      "paper_evidence": "Nonnegativity, existence, and the norm bound for M_1 are derived from the smallness condition using the M-matrix argument.",
+      "translation_evidence": "Nonnegativity, left-inverse action, and N(M_k)<=2 are fields required when constructing a run.",
+      "impact": "These assumptions are redundant if the norm and M-matrix reasoning match the paper, but otherwise they narrow the translated domain."
     }
   ],
-  "rationale": "The source passage is unambiguous, but the blind translation is a generic matrix-order elimination lemma rather than Theorem 5.1. Its natural identification with the paper's resolvent exposes a decisive algebraic discrepancy: the paper has M_1P where the translation has M1, because the translation also omits P from the correction source terms. The algorithm, exact/computed distinction, iteration dependence, norm condition, precision model, and source definitions are additionally absent. Since neither statement entails the other under the source-compatible correspondence, the result is not-faithful-different."
+  "rationale": "The translation reproduces the exact componentwise true-residual recurrence, matrix-product order, constants, sparsity-dependent gamma factor, solver defect model, residual and update error bounds, and higher-order factors. Equivalence cannot be certified because the dependency ledger does not determine the imported matrix norm, the paper's Z_1/M_1 indexing is resolved without source authority, and the translation replaces executions of the complete unscaled algorithm with abstract exact-real histories. The latter prevents paper-implies-translation, while the norm and gamma-domain uncertainties prevent deciding translation-implies-paper; adjudication is therefore required."
 }
+

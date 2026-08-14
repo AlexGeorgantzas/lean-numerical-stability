@@ -3,420 +3,864 @@
   "role": "direct-judge",
   "task_id": "P03-T3",
   "paper_sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc",
-  "dossier_sha256": "db9f8a5f225bf9a670778a9b2d9d796c127d3521ba99660aaf35baaadfa778e8",
+  "dossier_sha256": "36cb0f1d4f35b61c8caac2ee898c3c5c098e872da65ec5aecedcfa19ab76052a",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.P03ResolventInverse",
-      "interpretation": "M1 is entrywise nonnegative and satisfies M1(z - Pz) = z for every vector z, so its matrix action is a left inverse of I - P.",
-      "effect_on_target": "Its nonnegativity permits order-preserving multiplication of hcorrection, while the inverse identity turns correction <= P correction + q into correction <= M1 q. It does not identify P with Z1|A^-1| or impose the paper's one-half norm condition.",
-      "paper_match": "For P = Z1|A^-1|, the paper's M1 = (I-P)^-1 has these properties. However, the dependency admits unrelated P and omits the construction and norm conditions that link the resolvent to Theorem 5.1; the target also uses M1 where the paper recurrence uses M1P.",
-      "status": "fail"
+      "name": "HighamBench.P03ComponentwiseIRRun",
+      "interpretation": "A dimension-indexed one-constructor package of the real-valued iteration data and analytic assumptions detailed by D010.",
+      "effect_on_target": "The run binder restricts the target to traces carrying the residual, correction, update, inverse, condition, and resolvent assumptions.",
+      "paper_match": "It represents the modeled loop of Algorithm 1.1 and the hypotheses used in Theorem 5.1.",
+      "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p03MatVec",
-      "reuse_sha256": "3f3e080f083006263af0420142bb13cab74424b883a0dbb86672ce9986c4f184",
-      "effect_on_target": "It gives the standard matrix-vector meanings of P correction, M1|oldResidual|, and M1 data, preserving row-column multiplication order.",
-      "paper_match": "Finite matrix-vector multiplication matches the paper's products. The target-level omission of P from M1P is not caused by this dependency.",
+      "name": "HighamBench.p03ComponentwiseExactResidual",
+      "interpretation": "The component j of the mathematical residual b minus A times x_i.",
+      "effect_on_target": "Both sides of the recurrence use the true residual of a computed iterate, not the separately computed residual rHat.",
+      "paper_match": "This is exactly the quantity |b-A xhat_i| in Theorem 5.1.",
       "status": "pass"
     },
     {
       "id": "D003",
-      "name": "HighamBench.p03VecAbs",
-      "interpretation": "p03VecAbs x is the vector whose coordinate i is the ordinary real absolute value |x i|.",
-      "effect_on_target": "It makes the argument of M1 in the old-residual term entrywise nonnegative.",
-      "paper_match": "This matches the paper's entrywise absolute value of the exact residual vector.",
+      "name": "HighamBench.p03MatVec",
+      "interpretation": "Ordinary finite real matrix-vector multiplication, with component i equal to the sum over j of A_ij x_j.",
+      "effect_on_target": "It interprets A x, W_i applied to a residual vector, and all auxiliary matrix actions.",
+      "paper_match": "It has the standard multiplication order used in the paper.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "Fin",
-      "reuse_sha256": "d6ff16e3d0dd2d5208f716846c88566e2cda555104a5ef994744bbc9fe3b964c",
-      "effect_on_target": "Fin n indexes vector coordinates and both matrix dimensions. It does not supply the separate unbounded iteration index from Theorem 5.1.",
-      "paper_match": "It correctly represents the n coordinates of real vectors and matrices, although Lean also permits n = 0.",
+      "name": "HighamBench.p03VecAbs",
+      "interpretation": "Entrywise real absolute value of a vector.",
+      "effect_on_target": "It turns the old true residual into the nonnegative vector multiplied by W_i.",
+      "paper_match": "The paper explicitly uses entrywise absolute values.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "HAdd.hAdd",
-      "reuse_sha256": "f0a208134f0be8d9c4f62fed752e833defbeaa7d7355a7f0eb97527b52a769f8",
-      "effect_on_target": "All displayed sums in the hypotheses and conclusion are ordinary real sums.",
-      "paper_match": "Ordinary real addition matches the scalar expansion of the paper's componentwise recurrence.",
+      "name": "HighamBench.p03W",
+      "interpretation": "The matrix uS I plus (1+uS) times M1_i times P_i, where P_i is Z_i times |Ainv|.",
+      "effect_on_target": "It is the exact recurrence matrix multiplying the previous residual magnitude.",
+      "paper_match": "After unfolding P_i, it is exactly W_i = u_s I + (1+u_s) M_1 Z_1 |A^-1|.",
       "status": "pass"
     },
     {
       "id": "D006",
-      "name": "HMul.hMul",
-      "reuse_sha256": "043f9e8718f9e88882d760a34b86e7840facb49adb85e336d277391509a74cc5",
-      "effect_on_target": "All coefficient products, including (1+us)(1+u)gammaR, are ordinary real products.",
-      "paper_match": "This matches the paper's scalar multiplication, but does not enforce that these scalars are unit roundoffs or gamma_p^r.",
+      "name": "HighamBench.p03Y",
+      "interpretation": "The vector (1+uS)(1+u) gamma times (I+M1_i P_i) applied to |b|+|A||x_(i+1)|, plus u|A||x_(i+1)|.",
+      "effect_on_target": "It supplies the complete additive term in the componentwise residual recurrence.",
+      "paper_match": "All factors, matrix order, both summands, and the dependence on x_(i+1) match the displayed y_i.",
       "status": "pass"
     },
     {
       "id": "D007",
-      "name": "LE.le",
-      "interpretation": "LE.le selects the less-than-or-equal relation supplied by the chosen order instance; here it is the ordinary order on real numbers.",
-      "effect_on_target": "Quantification over each Fin n coordinate turns the scalar inequalities into componentwise vector inequalities.",
-      "paper_match": "The non-strict componentwise inequality direction matches equations (5.2)-(5.6) and Theorem 5.1.",
+      "name": "HighamBench.P03ComponentwiseIRRun.A",
+      "interpretation": "Projection of the real n by n system matrix from a run.",
+      "effect_on_target": "It fixes the matrix used by residuals and all auxiliary definitions.",
+      "paper_match": "It corresponds to the paper's stored input matrix A.",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "Nat",
-      "reuse_sha256": "a9b35dc65f8fe1414c7c158021712de6bc81e36dfed74f53b6ef0e77d99649a9",
-      "effect_on_target": "Nat supplies the shared finite dimension n.",
-      "paper_match": "A natural-number dimension is appropriate for the paper's n-dimensional system, subject to Lean's additional n = 0 case.",
+      "name": "HighamBench.P03ComponentwiseIRRun.M1",
+      "interpretation": "Projection of an iteration-indexed family of real n by n resolvent matrices.",
+      "effect_on_target": "M1_i enters W_i and y_i and is constrained by the constructor to act as the required inverse.",
+      "paper_match": "It exposes the dependence on G_i that is implicit despite the paper's literal subscript 1.",
       "status": "pass"
     },
     {
       "id": "D009",
-      "name": "OfNat.ofNat",
-      "interpretation": "OfNat.ofNat interprets the numeral 1 through the selected real-number instance.",
-      "effect_on_target": "It supplies the real constant 1 in the factors 1+us and 1+u.",
-      "paper_match": "These are the ordinary real constants occurring in the paper's finite-precision factors.",
+      "name": "HighamBench.P03ComponentwiseIRRun.b",
+      "interpretation": "Projection of the real right-hand-side vector.",
+      "effect_on_target": "It enters the true residual and the componentwise data vector.",
+      "paper_match": "It corresponds to the paper's stored input vector b.",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "One.toOfNat1",
-      "interpretation": "One.toOfNat1 constructs the numeral-one interpretation from the multiplicative identity of the type.",
-      "effect_on_target": "Together with Real.instOne, it ensures every displayed numeral 1 is real one.",
-      "paper_match": "This agrees with the paper's scalar constant one.",
+      "name": "HighamBench.P03ComponentwiseIRRun.mk",
+      "interpretation": "The constructor requires n>0; A with a two-sided inverse; b and complete x, rHat, dHat, deltaR, and deltaX sequences; nonnegative G; ordered nonnegative precision parameters; gamma validity; equations and bounds (3.3), (2.5), and (3.6); condition (5.6); and a nonnegative bounded M1 satisfying M1_i(I-Z_i|Ainv|)=I.",
+      "effect_on_target": "These fields are the complete antecedent under which the target recurrence is asserted.",
+      "paper_match": "The fields reproduce every analytic premise used for Theorem 5.1. The constructor abstracts away concrete storage and step-1 provenance, thereby admitting additional model traces, but it retains all paper executions and does not narrow the theorem.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "Real",
-      "reuse_sha256": "ea1c9703299f6b4a3989c797f2a9a0a1b79aaf14813b3322023661d8f3fd7482",
-      "effect_on_target": "All matrices, vectors, coefficients, absolute values, and inequalities are over exact mathematical reals.",
-      "paper_match": "The paper models its real matrices, vectors, computed values, and error bounds as real quantities, so this carrier is appropriate.",
+      "name": "HighamBench.P03ComponentwiseIRRun.u",
+      "interpretation": "Projection of the working-precision unit-roundoff parameter.",
+      "effect_on_target": "It appears in the update-error bound and both factors of y_i.",
+      "paper_match": "It matches the paper's working precision u.",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "Real.instAdd",
-      "reuse_sha256": "b99f49fd674e6c7b3215be434e704ba83bdf1057272a73d2ff3a7bde1d80f163",
-      "effect_on_target": "It provides ordinary real addition to all additive expressions.",
-      "paper_match": "The operation itself matches the paper.",
+      "name": "HighamBench.P03ComponentwiseIRRun.uR",
+      "interpretation": "Projection of the residual-computation unit-roundoff parameter.",
+      "effect_on_target": "It is the precision argument of gamma_p^r.",
+      "paper_match": "It matches the paper's residual precision u_r.",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "Real.instAddGroup",
-      "interpretation": "Real.instAddGroup supplies the usual additive group on the real numbers, including ordinary negation.",
-      "effect_on_target": "It supplies the negation operation used by the generic definition of absolute value.",
-      "paper_match": "This produces the standard real absolute value required for entrywise magnitudes.",
+      "name": "HighamBench.P03ComponentwiseIRRun.uS",
+      "interpretation": "Projection of the effective correction-solve precision parameter.",
+      "effect_on_target": "It occurs in the solver and residual bounds, condition (5.6), Z_i, W_i, and y_i.",
+      "paper_match": "It matches the paper's u_s.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "Real.instLE",
-      "interpretation": "Real.instLE is the ordinary linear less-than-or-equal order on real numbers.",
-      "effect_on_target": "It determines the meaning of nonnegativity in the resolvent and every hypothesis and conclusion inequality.",
-      "paper_match": "This is the correct scalar order for componentwise inequalities over real vectors and matrices.",
+      "name": "HighamBench.P03ComponentwiseIRRun.x",
+      "interpretation": "Projection of the sequence of real computed-iterate vectors indexed by natural numbers.",
+      "effect_on_target": "It determines the true residuals and the x_(i+1)-dependent additive term.",
+      "paper_match": "It represents the paper's computed iterates xhat_i.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "Real.instMul",
-      "reuse_sha256": "fc791f7590243b52a697d21d3fbd5944209c68022bbf93965ff90e52c8064ff0",
-      "effect_on_target": "It provides ordinary multiplication for all real coefficients and matrix-vector summands.",
-      "paper_match": "The multiplication operation and its order match the paper where the same operands are present.",
+      "name": "HighamBench.gamma",
+      "interpretation": "The exact rational expression k*u/(1-k*u), with k cast from Nat to Real.",
+      "effect_on_target": "With uR and the augmented-row count, it supplies gamma_p^r without approximation.",
+      "paper_match": "It exactly matches the definition of gamma_p^r on PDF page A821.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "Real.instOne",
-      "interpretation": "Real.instOne supplies the real multiplicative identity 1.",
-      "effect_on_target": "It determines the constants in 1+us and 1+u.",
-      "paper_match": "This matches the paper's factors exactly.",
+      "name": "HighamBench.p03ComponentwiseData",
+      "interpretation": "The vector |b|+|A||x_i|, evaluated componentwise.",
+      "effect_on_target": "At index i+1 it is the data vector acted on by I+M1_i P_i in y_i.",
+      "paper_match": "It is exactly the vector appearing in the displayed y_i.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "Real.lattice",
-      "interpretation": "Real.lattice supplies the usual lattice operations induced by the real order.",
-      "effect_on_target": "It allows abs to be defined as the maximum of a real number and its negation.",
-      "paper_match": "The resulting magnitude is the standard absolute value used entrywise in the paper.",
+      "name": "HighamBench.p03MatAbs",
+      "interpretation": "Entrywise real absolute value of a matrix.",
+      "effect_on_target": "It constructs |A| and |Ainv| throughout the condition and recurrence coefficients.",
+      "paper_match": "This matches the paper's entrywise matrix absolute value.",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "abs",
-      "interpretation": "For reals, abs a is max(a,-a), the ordinary nonnegative absolute value.",
-      "effect_on_target": "It is applied to oldResidual and newResidual coordinates and through p03VecAbs. The target does not apply it to correction, data, or update.",
-      "paper_match": "Its applications to residuals match the paper's entrywise residual magnitudes. The absence of semantic definitions making correction, data, and update nonnegative is a target-level omission.",
+      "name": "HighamBench.p03MatMul",
+      "interpretation": "Ordinary finite real matrix multiplication with the contracted index in the middle.",
+      "effect_on_target": "It fixes the order Z_i|Ainv| and M1_i(Z_i|Ainv|).",
+      "paper_match": "The multiplication order matches equations (5.3), (5.5), and Theorem 5.1.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "instHAdd",
-      "reuse_sha256": "562d1a77e6f0776269d696792195dd2231b029682f446a852186626214a6bcea",
-      "effect_on_target": "It routes homogeneous overloaded addition to Real.instAdd.",
-      "paper_match": "It introduces no semantic difference from ordinary real addition.",
+      "name": "HighamBench.p03MaxAugmentedRowNnz",
+      "interpretation": "The maximum, over all rows, of the nonzero count in that row of the augmented matrix [A b].",
+      "effect_on_target": "It supplies the accumulation parameter p in gamma_p^r.",
+      "paper_match": "This is the paper's definition of p; it yields n+1 for dense A and b.",
       "status": "pass"
     },
     {
       "id": "D020",
-      "name": "instHMul",
-      "reuse_sha256": "5cb07b0c605f9c2b2762be4698a32090340f3fde3d71d965a362602ee4972b70",
-      "effect_on_target": "It routes homogeneous overloaded multiplication to Real.instMul.",
-      "paper_match": "It introduces no semantic difference from ordinary real multiplication.",
+      "name": "HighamBench.p03P",
+      "interpretation": "The matrix product Z_i times |Ainv|.",
+      "effect_on_target": "It abbreviates the repeated factor Z_i|A^-1| in W_i, y_i, and the resolvent.",
+      "paper_match": "It preserves the paper's exact matrix order.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "And",
-      "interpretation": "And is logical conjunction: a value of P03ResolventInverse contains both entrywise nonnegativity of M1 and the inverse identity.",
-      "effect_on_target": "Both clauses of the resolvent abstraction are simultaneously available.",
-      "paper_match": "Conjoining these two properties is logically appropriate, although the properties do not constitute all of the paper's resolvent hypotheses.",
+      "name": "HighamBench.GammaValid",
+      "interpretation": "The strict domain condition p*uR<1.",
+      "effect_on_target": "It makes the denominator of gamma_p^r positive and ensures gamma_p^r and Z_i are nonnegative.",
+      "paper_match": "The paper does not restate this beside Theorem 5.1, but its standard-model gamma bound and explicit claim that Z_1 is nonnegative require it.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "Eq",
-      "reuse_sha256": "32b960214ea75a7ddf0ac041367800a710306055c759f30a565b31620dab305a",
-      "effect_on_target": "The resolvent identity M1(z-Pz)=z is exact for every vector and coordinate.",
-      "paper_match": "Exact equality is appropriate for the mathematical inverse defining M1.",
+      "name": "HighamBench.P03ComponentwiseIRRun.Ainv",
+      "interpretation": "Projection of the supplied real inverse matrix.",
+      "effect_on_target": "Its entrywise absolute value enters condition (5.6), P_i, W_i, and y_i.",
+      "paper_match": "The constructor's two inverse-action laws make it exactly A^-1 for nonsingular A.",
       "status": "pass"
     },
     {
       "id": "D023",
-      "name": "Fin.fintype",
-      "reuse_sha256": "9778af6807090f8be77da7856f20df1359a48e3eabbf5177f68b8be8f96a9e7b",
-      "effect_on_target": "It supplies the complete finite coordinate enumeration used by matrix-vector products.",
-      "paper_match": "This matches summation over all n columns.",
+      "name": "HighamBench.p03AugmentedRowNnz",
+      "interpretation": "The number of nonzero entries in one row of A plus one exactly when the corresponding b entry is nonzero.",
+      "effect_on_target": "It computes each row's nonzero count before D019 takes the maximum.",
+      "paper_match": "It exactly counts nonzeros in a row of [A b].",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "Finset.sum",
-      "reuse_sha256": "6baae77808ea118cc1051b8c696d042b6b9355aebb6ea48b33ab2fd4b3154686",
-      "effect_on_target": "It forms each matrix-vector coordinate as a finite sum and makes the n = 0 sum zero.",
-      "paper_match": "For positive n this is the standard finite sum used in matrix multiplication.",
+      "name": "HighamBench.p03MatInfNorm",
+      "interpretation": "The matrix infinity operator norm supplied by Mathlib's linfty matrix normed-ring structure.",
+      "effect_on_target": "It interprets every norm in condition (5.6) and the bound on M1.",
+      "paper_match": "For finite real square matrices this is the maximum absolute row-sum norm used by the paper.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "Finset.univ",
-      "reuse_sha256": "656630b2582fd6cba8097035767a9c99111e207d64db5ae8aed7d38a9c748437",
-      "effect_on_target": "It makes p03MatVec sum over every column index in Fin n.",
-      "paper_match": "This matches full matrix-vector multiplication.",
+      "name": "HighamBench.p03Z",
+      "interpretation": "The iteration-indexed matrix uS*G_i+(1+uS)*gamma_p^r*|A|.",
+      "effect_on_target": "It determines P_i and hence the exact W_i, y_i, and M1 resolvent.",
+      "paper_match": "It exactly unfolds equation (5.3), with explicit dependence on i through G_i.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "HSub.hSub",
-      "reuse_sha256": "9017c277d92c5358fe64cc0ef2804adaebdf76bdd631d915f904d1c3979a83da",
-      "effect_on_target": "It interprets z-Pz in the resolvent identity as ordinary real coordinate subtraction.",
-      "paper_match": "This correctly represents the action of I-P.",
+      "name": "HighamBench.P03ComponentwiseIRRun.G",
+      "interpretation": "Projection of the iteration-indexed family of nonnegative solver-defect matrices.",
+      "effect_on_target": "It controls the correction-solver bound and contributes to condition (5.6) and Z_i.",
+      "paper_match": "It corresponds to G_i in the componentwise defect model (2.5).",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "Real.instAddCommMonoid",
-      "reuse_sha256": "45d4fe3a9ca198b001b264d2e14a6ccc6b85181a512993edb6d0f479bda740b1",
-      "effect_on_target": "It supplies the zero and commutative addition used to evaluate finite real sums.",
-      "paper_match": "This is the usual algebra underlying real matrix-vector multiplication.",
+      "name": "Fin",
+      "interpretation": "The finite index type containing exactly the natural indices below n.",
+      "effect_on_target": "It enforces n-component vectors and n by n matrices and makes the conclusion componentwise.",
+      "paper_match": "It faithfully represents indices of vectors and matrices in R^n.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "Real.instSub",
-      "reuse_sha256": "03ad41775b4bca106588bd3e220fadb0dbf2a8375d5ebfe25f82138c181b8bf6",
-      "effect_on_target": "It defines each coordinate of z-Pz by ordinary real subtraction.",
-      "paper_match": "This matches the subtraction in I-P.",
-      "status": "pass"
+      "name": "HAdd.hAdd",
+      "interpretation": "Generic notation elaboration for addition using the selected typeclass operation.",
+      "effect_on_target": "It dispatches i+1 to natural addition and scalar or vector-component sums to real addition.",
+      "paper_match": "It adds no independent mathematical convention.",
+      "status": "not-applicable"
     },
     {
       "id": "D029",
-      "name": "Real.instZero",
-      "interpretation": "Real.instZero supplies the ordinary real number 0.",
-      "effect_on_target": "It supplies the lower bound 0 in the entrywise nonnegativity clause for M1 and the identity element for empty sums.",
-      "paper_match": "The paper's claim that M1 has nonnegative entries uses this ordinary zero.",
+      "name": "LE.le",
+      "interpretation": "The less-than-or-equal relation selected by a typeclass.",
+      "effect_on_target": "With Real.instLE it gives the ordinary real inequality in each component.",
+      "paper_match": "It matches the paper's non-strict componentwise inequality.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "Zero.toOfNat0",
-      "interpretation": "Zero.toOfNat0 constructs the numeral-zero interpretation from the type's zero element.",
-      "effect_on_target": "It ensures the nonnegativity clause means 0 <= M1 i k over the reals.",
-      "paper_match": "This matches ordinary entrywise nonnegativity.",
+      "name": "Nat",
+      "interpretation": "The natural-number type including zero.",
+      "effect_on_target": "It indexes dimensions and iterations; positivity of the dimension is supplied by the run.",
+      "paper_match": "It matches i=0,1,... and a positive finite dimension n.",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "instHSub",
-      "reuse_sha256": "ccbdd5ce3779363286f65e5e9de8f087e59f2fc61339cf8cba930745ac59120f",
-      "effect_on_target": "It routes homogeneous overloaded subtraction to Real.instSub.",
-      "paper_match": "It introduces no semantic difference from ordinary real subtraction.",
+      "name": "OfNat.ofNat",
+      "interpretation": "Generic elaboration of numeric literals through an OfNat instance.",
+      "effect_on_target": "It supplies literals such as 0, 1, and 2 in the relevant types.",
+      "paper_match": "It introduces no independent paper-level semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D032",
+      "name": "Real",
+      "interpretation": "Mathlib's real-number type.",
+      "effect_on_target": "All matrix, vector, precision, and error quantities are real-valued.",
+      "paper_match": "The paper states A in R^(n by n) and b in R^n.",
       "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary addition on real numbers.",
+      "effect_on_target": "It forms recurrence sums and the exact scalar factors.",
+      "paper_match": "It matches ordinary real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "Real.instAddGroup",
+      "interpretation": "The additive-group structure of the real numbers.",
+      "effect_on_target": "It supplies negation and subtraction support used by absolute value.",
+      "paper_match": "This is typeclass infrastructure with no separate source choice.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instLE",
+      "interpretation": "The standard order relation on real numbers.",
+      "effect_on_target": "It interprets all scalar and componentwise bounds.",
+      "paper_match": "It matches the usual real order used in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "Real.lattice",
+      "interpretation": "The lattice structure induced by the linear order on real numbers.",
+      "effect_on_target": "It supports the generic absolute-value definition.",
+      "paper_match": "It is implementation infrastructure for ordinary real absolute value.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D037",
+      "name": "abs",
+      "interpretation": "For reals, the maximum of a and -a, hence the ordinary nonnegative absolute value.",
+      "effect_on_target": "It interprets every scalar entry of the paper's entrywise absolute values.",
+      "paper_match": "It exactly matches scalar absolute value in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "instAddNat",
+      "interpretation": "Ordinary natural-number addition.",
+      "effect_on_target": "It makes i+1 the next iteration index.",
+      "paper_match": "It matches the paper's transition from i to i+1.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "instHAdd",
+      "interpretation": "Adapter turning a homogeneous Add operation into HAdd.",
+      "effect_on_target": "It connects overloaded addition notation to natural or real addition.",
+      "paper_match": "It introduces no independent mathematical content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D040",
+      "name": "instOfNatNat",
+      "interpretation": "The canonical interpretation of a natural-number literal as itself.",
+      "effect_on_target": "It supplies the natural literal 1 in i+1.",
+      "paper_match": "It is elaboration infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D041",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "It expresses inverse actions, residual and update equations, and diagonal-index equality.",
+      "paper_match": "It represents the paper's exact displayed identities.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "Fin.fintype",
+      "interpretation": "The finite enumeration of all members of Fin n.",
+      "effect_on_target": "It permits sums and maxima over every vector or matrix index.",
+      "paper_match": "It realizes finite n-dimensional summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "Finset.sum",
+      "interpretation": "Finite commutative addition of the values of a function over a finite set.",
+      "effect_on_target": "It implements the contracted sums in matrix-vector and matrix-matrix products.",
+      "paper_match": "It matches ordinary finite-dimensional linear algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "Finset.univ",
+      "interpretation": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It makes matrix contractions and row maxima range over all Fin n indices.",
+      "paper_match": "It matches summation or maximization over all components.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "HMul.hMul",
+      "interpretation": "Generic notation elaboration for multiplication using a selected typeclass operation.",
+      "effect_on_target": "It dispatches products to real multiplication.",
+      "paper_match": "It adds no independent source semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D046",
+      "name": "HSub.hSub",
+      "interpretation": "Generic notation elaboration for subtraction using a selected typeclass operation.",
+      "effect_on_target": "It dispatches residual and resolvent differences to real subtraction.",
+      "paper_match": "It adds no independent source semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D047",
+      "name": "One.toOfNat1",
+      "interpretation": "The canonical interpretation of literal 1 from a One instance.",
+      "effect_on_target": "It supplies real one in factors and identity-matrix entries.",
+      "paper_match": "It is numeral infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D048",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative-monoid structure of the real numbers.",
+      "effect_on_target": "It enables finite real sums.",
+      "paper_match": "It is algebraic infrastructure for standard summation.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D049",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary multiplication on real numbers.",
+      "effect_on_target": "It interprets all scalar products and matrix-entry products.",
+      "paper_match": "It matches ordinary real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "Real.instOne",
+      "interpretation": "The real multiplicative identity.",
+      "effect_on_target": "It appears in 1+uS, 1+u, identity matrices, and gamma denominators.",
+      "paper_match": "It matches the paper's scalar and matrix identities.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction, implemented as addition of a negation.",
+      "effect_on_target": "It forms b-Ax, solver defects, and I-P actions.",
+      "paper_match": "It matches the displayed differences in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "Real.instZero",
+      "interpretation": "The real additive identity.",
+      "effect_on_target": "It expresses nonnegativity and off-diagonal zero entries of the identity matrix.",
+      "paper_match": "It matches ordinary real zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "Zero.toOfNat0",
+      "interpretation": "The canonical interpretation of literal 0 from a Zero instance.",
+      "effect_on_target": "It supplies typed zero values.",
+      "paper_match": "It is numeral infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D054",
+      "name": "instDecidableEqFin",
+      "interpretation": "A decision procedure for equality of finite indices.",
+      "effect_on_target": "It selects whether an identity-matrix entry is one or zero.",
+      "paper_match": "It is computational infrastructure for the Kronecker delta.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D055",
+      "name": "instHMul",
+      "interpretation": "Adapter turning homogeneous multiplication into HMul.",
+      "effect_on_target": "It connects overloaded notation to real multiplication.",
+      "paper_match": "It introduces no independent mathematical content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D056",
+      "name": "instHSub",
+      "interpretation": "Adapter turning homogeneous subtraction into HSub.",
+      "effect_on_target": "It connects overloaded notation to real subtraction.",
+      "paper_match": "It introduces no independent mathematical content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D057",
+      "name": "ite",
+      "interpretation": "A conditional expression selecting its first branch when the proposition holds and its second otherwise.",
+      "effect_on_target": "In p03W it produces the identity entry delta_jk.",
+      "paper_match": "It exactly implements the identity matrix I in W_i.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Projection of division from a division-and-inverse algebraic structure.",
+      "effect_on_target": "It supplies real division to gamma and the constant 1/2.",
+      "paper_match": "It is typeclass infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D059",
+      "name": "Finset.sup",
+      "interpretation": "The finite supremum, which for Nat is the maximum with default bottom zero.",
+      "effect_on_target": "It takes the maximum augmented-row nonzero count.",
+      "paper_match": "Because runs require n>0, it exactly implements the paper's maximum over rows.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "HDiv.hDiv",
+      "interpretation": "Generic notation elaboration for division.",
+      "effect_on_target": "It dispatches gamma and 1/2 to real division.",
+      "paper_match": "It introduces no independent source convention.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D061",
+      "name": "LT.lt",
+      "interpretation": "The strict less-than relation selected by a typeclass.",
+      "effect_on_target": "It expresses n>0 and p*uR<1.",
+      "paper_match": "Those strict conditions formalize positivity of dimension and validity of the standard gamma bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "Lattice.toSemilatticeSup",
+      "interpretation": "Projection of a supremum semilattice from a lattice.",
+      "effect_on_target": "It supports maximum-based definitions such as absolute value.",
+      "paper_match": "It is order-theoretic infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D063",
+      "name": "Nat.cast",
+      "interpretation": "The canonical cast of a natural number into another type, here Real.",
+      "effect_on_target": "It converts p into a real coefficient in gamma_p^r.",
+      "paper_match": "It matches multiplication of the integer p by the real unit roundoff.",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "interpretation": "A proof-producing instance that a successor numeral of a nonzero natural is at least two.",
+      "effect_on_target": "It permits elaboration of the real literal 2.",
+      "paper_match": "It is numeral typeclass infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D065",
+      "name": "Nat.instLattice",
+      "interpretation": "The max/min lattice structure on natural numbers.",
+      "effect_on_target": "It supports the supremum used for the maximum row count.",
+      "paper_match": "It is standard infrastructure for taking a natural maximum.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D066",
+      "name": "Nat.instNeZeroSucc",
+      "interpretation": "A proof-producing instance that every natural successor is nonzero.",
+      "effect_on_target": "It supports elaboration of numerals at least two.",
+      "paper_match": "It has no independent paper-level meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D067",
+      "name": "Nat.instOrderBot",
+      "interpretation": "The natural-number order with bottom element zero.",
+      "effect_on_target": "It provides the initial value for a finite supremum.",
+      "paper_match": "The run has a positive dimension, so the default does not alter the maximum over actual rows.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The standard real multiplication, inversion, and division structure.",
+      "effect_on_target": "It supplies the division in gamma and 1/2.",
+      "paper_match": "It matches ordinary real rational expressions.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "Real.instNatCast",
+      "interpretation": "The canonical embedding of natural numbers into the reals.",
+      "effect_on_target": "It interprets p and real numerals exactly.",
+      "paper_match": "It matches the paper's use of integer counts as real coefficients.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "instHDiv",
+      "interpretation": "Adapter turning homogeneous division into HDiv.",
+      "effect_on_target": "It connects overloaded division notation to real division.",
+      "paper_match": "It introduces no independent mathematical content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D071",
+      "name": "instLTNat",
+      "interpretation": "The standard strict order on natural numbers.",
+      "effect_on_target": "It interprets the dimension requirement 0<n.",
+      "paper_match": "It matches the intended positive matrix dimension.",
+      "status": "pass"
+    },
+    {
+      "id": "D072",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "The generic construction of numerals at least two by natural-number casting.",
+      "effect_on_target": "It supplies the real literal 2 in 1/2 and the M1 norm bound.",
+      "paper_match": "It is numeral infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D073",
+      "name": "DFunLike.coe",
+      "interpretation": "Coercion from a function-like object to its underlying function.",
+      "effect_on_target": "It permits the matrix equivalence used by the norm definition to be applied as a function.",
+      "paper_match": "It is representational infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D074",
+      "name": "Equiv",
+      "interpretation": "The type of bijective correspondences.",
+      "effect_on_target": "It supports the definitional equivalence between matrix functions and Matrix values.",
+      "paper_match": "It has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D075",
+      "name": "Equiv.instEquivLike",
+      "interpretation": "The function-like interface for an equivalence.",
+      "effect_on_target": "It supports coercion of Matrix.of when applying the matrix norm.",
+      "paper_match": "It is implementation infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D076",
+      "name": "EquivLike.toFunLike",
+      "interpretation": "Conversion of an equivalence-like object into a function-like object.",
+      "effect_on_target": "It enables the coercion used in p03MatInfNorm.",
+      "paper_match": "It is implementation infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D077",
+      "name": "Finset.card",
+      "interpretation": "The number of elements in a finite set.",
+      "effect_on_target": "It counts the nonzero entries of each row of A.",
+      "paper_match": "It matches the paper's row nonzero count.",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "Finset.filter",
+      "interpretation": "Restriction of a finite set to elements satisfying a decidable predicate.",
+      "effect_on_target": "It selects exactly the columns whose A entry in a row is nonzero.",
+      "paper_match": "It implements the nonzero-count definition of p.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "Matrix",
+      "interpretation": "A matrix represented as a two-argument function from row and column indices to entries.",
+      "effect_on_target": "It is the representation consumed by Mathlib's infinity matrix norm.",
+      "paper_match": "It faithfully represents finite real matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "Matrix.linftyOpNormedRing",
+      "interpretation": "The normed-ring structure whose matrix norm is the infinity operator norm, equivalently the maximum absolute row sum for finite real square matrices.",
+      "effect_on_target": "Its norm field gives the precise semantics of p03MatInfNorm.",
+      "paper_match": "It is the same matrix infinity norm used in condition (5.6).",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "Matrix.of",
+      "interpretation": "The identity equivalence between a two-argument function and the corresponding Matrix representation.",
+      "effect_on_target": "It changes representation before taking a norm without changing entries.",
+      "paper_match": "It introduces no mathematical transformation.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D082",
+      "name": "Ne",
+      "interpretation": "Inequality defined as the negation of propositional equality.",
+      "effect_on_target": "It identifies nonzero entries of A and b when computing p.",
+      "paper_match": "It matches the ordinary meaning of nonzero.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "Norm.norm",
+      "interpretation": "Projection of the norm function from a Norm instance.",
+      "effect_on_target": "It evaluates the selected matrix infinity norm.",
+      "paper_match": "With D080 it gives exactly the paper's norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D084",
+      "name": "NormedCommRing.toNormedRing",
+      "interpretation": "Projection of a normed-ring structure from a normed commutative ring.",
+      "effect_on_target": "It supplies the real normed-ring argument needed for the matrix norm instance.",
+      "paper_match": "It is typeclass infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D085",
+      "name": "NormedRing.toNorm",
+      "interpretation": "Projection of a norm operation from a normed ring.",
+      "effect_on_target": "It exposes the matrix norm supplied by D080.",
+      "paper_match": "It is typeclass infrastructure only.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D086",
+      "name": "Real.decidableEq",
+      "interpretation": "A classical decision procedure for equality of real values.",
+      "effect_on_target": "It permits finite filtering by whether an entry equals zero.",
+      "paper_match": "It does not change the mathematical nonzero predicate.",
+      "status": "pass"
+    },
+    {
+      "id": "D087",
+      "name": "Real.instLT",
+      "interpretation": "The standard strict order on real numbers.",
+      "effect_on_target": "It interprets p*uR<1 in GammaValid.",
+      "paper_match": "It gives the usual real strict inequality required for the gamma domain.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "Real.normedCommRing",
+      "interpretation": "The standard normed commutative-ring structure on the reals.",
+      "effect_on_target": "It supplies real arithmetic and absolute-value norm semantics to the matrix norm construction.",
+      "paper_match": "It matches ordinary real absolute-value arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D089",
+      "name": "instDecidableNot",
+      "interpretation": "A decision procedure for a negated decidable proposition.",
+      "effect_on_target": "It makes the nonzero predicate decidable for finite filtering.",
+      "paper_match": "It is computational infrastructure only.",
+      "status": "not-applicable"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The inspected PDF has the stated SHA-256 and metadata for SIAM Journal on Scientific Computing, volume 40, issue 2, pages A817-A847. Equations (5.2)-(5.6) and Theorem 5.1 are on A826-A827.",
-      "lean_evidence": "The dossier supplies the exact source, elaborated, and fully explicit type of p03_t3_componentwise_residual_recurrence.",
-      "reasoning": "The selected published version and cited passage are the correct source for the componentwise residual recurrence."
+      "paper_evidence": "The verified PDF is the 2018 SIAM Journal on Scientific Computing version. The exact result is Theorem 5.1 across printed pages A826-A827, supported by Algorithm 1.1 and equations (2.5), (3.3), (3.6), and (5.1)-(5.6).",
+      "lean_evidence": "The target states the componentwise residual recurrence and unfolds W, y, Z, M1, gamma, and the execution assumptions corresponding to those passages.",
+      "reasoning": "The selected source, version, theorem, and surrounding derivation are correct."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Theorem 5.1 binds a nonsingular A in R^(n x n), b in R^n, Algorithm 1.1's computed iterates and corrections, and iteration-dependent Gi, Z1, M1, Wi, and yi.",
-      "lean_evidence": "Lean binds arbitrary real scalars, two arbitrary matrices M1 and P, and five arbitrary vectors. Its only final index i : Fin n is a coordinate index.",
-      "reasoning": "Although the finite coordinate types are appropriate, the algorithmic objects, matrix A, vector b, and separate iteration index are absent, so the binder meanings do not match."
+      "status": "pass",
+      "paper_evidence": "Theorem 5.1 uses nonsingular A in R^(n by n), vectors in R^n, and iteration indices i>=0, with componentwise matrix and vector inequalities.",
+      "lean_evidence": "Lean uses n:Nat, positive n inside the run, matrices Fin n -> Fin n -> Real, vectors Fin n -> Real, i:Nat, and j:Fin n.",
+      "reasoning": "The dimensions, scalar field, vector and matrix types, and index sets have the intended meanings."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "Condition (5.6) is required for all iterations, and the recurrence is concluded for every iteration i >= 0 with Gi, Z1, M1, Wi, and yi depending on that iteration.",
-      "lean_evidence": "M1, P, and all five vectors are fixed within one invocation; the concluding universal quantifier ranges only over coordinates in Fin n.",
-      "reasoning": "A caller could manually instantiate the theorem separately at each iteration, but the paper's uniform iteration quantification and dependence are not represented."
+      "status": "pass",
+      "paper_evidence": "Condition (5.6) is required for all i, after which the recurrence is asserted for every i>=0; G_i and the derived coefficients depend on that i.",
+      "lean_evidence": "The run stores condition, solver, residual, update, and M1 properties universally over i, while the theorem universally quantifies i and then every component j.",
+      "reasoning": "Uniform assumptions and per-iteration conclusions have the same scope, and the Lean indexing exposes the dependence of Z and M1 on G_i."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "Theorem 5.1 assumes nonsingular A, Algorithm 1.1, the componentwise solver model (2.5), and the uniform one-half condition (5.6), with rounding models (3.3) and (3.6) used in the derivation.",
-      "lean_evidence": "The only assumptions are P03ResolventInverse, hcorrection, and hbase. No positivity or precision conditions constrain us, u, gammaR, data, update, or correction.",
-      "reasoning": "The Lean antecedent is a different abstract algebraic contract. It neither states the paper's hypotheses nor follows directly from them because its hcorrection has the wrong source factor."
+      "status": "pass",
+      "paper_evidence": "Theorem 5.1 assumes Algorithm 1.1, nonsingular A, solver model (2.5), and uniform condition (5.6). The standard-model derivation also uses nonnegative unit roundoffs, nonnegative G_i, equations (3.3) and (3.6), and positivity of the gamma denominator.",
+      "lean_evidence": "D010 includes the inverse laws, precision ordering, GammaValid, G nonnegativity, exact local equations and bounds, condition (5.6), and the M1 properties derived in the paper.",
+      "reasoning": "The extra explicit inverse, gamma-domain, and M1 fields formalize implicit or derived paper facts rather than excluding valid paper instances."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "After writing P = Z1|A^-1|, Theorem 5.1 has W_i = us I + (1+us)M1P and y_i = alpha(I+M1P)data + u update, where alpha = (1+us)(1+u)gamma_p^r.",
-      "lean_evidence": "The conclusion contains (1+us)M1|oldResidual| and alpha(data+M1 data), with no P between M1 and either vector.",
-      "reasoning": "The essential M1P correction contribution is replaced by M1. Thus neither W_i nor y_i has the paper's exact formula."
+      "status": "pass",
+      "paper_evidence": "Theorem 5.1 concludes |b-A xhat_(i+1)| <= W_i|b-A xhat_i|+y_i and gives exact displayed definitions of W_i and y_i.",
+      "lean_evidence": "The target contains the recurrence for every component, and D005-D006 unfold to every term and factor in the two displayed definitions.",
+      "reasoning": "No conjunct, additive term, multiplier, or dependence on x_(i+1) is omitted."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The paper defines Z1 = us Gi + (1+us)gamma_p^r|A|, P = Z1|A^-1| implicitly in the resolvent, and M1 = (I-P)^-1.",
-      "lean_evidence": "p03MatVec and p03VecAbs have correct explicit meanings, but P is an arbitrary matrix and P03ResolventInverse states only nonnegativity of M1 and M1(I-P)=I.",
-      "reasoning": "The primitive operations are clear, but the nontrivial placeholders P, data, update, and correction are not defined as the paper's composite quantities."
+      "status": "pass",
+      "paper_evidence": "The paper defines componentwise absolute value, ordinary matrix products, cond(A^-1), gamma_p^r, Z_1, M_1, and the infinity norm.",
+      "lean_evidence": "D003-D025 and D079-D085 explicitly interpret matrix operations, entrywise absolute values, the augmented-row count, gamma, the resolvent, and the infinity operator norm.",
+      "reasoning": "All nontrivial local and imported operators affecting the proposition have the intended meanings."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "Equation (2.5) concerns the computed residual and computed correction, while Theorem 5.1 bounds the exact residual |b-A xhat_i|; data and update are formed from |b|, |A|, and |xhat_(i+1)|.",
-      "lean_evidence": "oldResidual, newResidual, data, update, and correction are unrelated arbitrary real vectors; only the two names containing Residual are placed under abs.",
-      "reasoning": "No equality links the arbitrary vectors to exact or computed algorithmic quantities, and correction is not required to be Z1|dhat_i|."
+      "status": "pass",
+      "paper_evidence": "Equation (3.3) distinguishes the computed residual rhat_i from b-A xhat_i via deltaR_i, and equation (3.6) models the rounded computed update.",
+      "lean_evidence": "The run has separate x, rHat, dHat, deltaR, and deltaX fields, while p03ComponentwiseExactResidual is definitionally b-Ax.",
+      "reasoning": "The target bounds the true residual of computed iterates and does not conflate it with rHat."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "Theorem 5.1 explicitly begins with Algorithm 1.1 applied to Ax=b and uses its residual computation, correction solve, and rounded update.",
-      "lean_evidence": "The target contains no A, b, xhat_i, rhat_i, dhat_i, execution relation, or algorithm predicate.",
-      "reasoning": "The statement is a generic ordered-linear algebra lemma rather than a result linked to Algorithm 1.1."
+      "status": "pass",
+      "paper_evidence": "Algorithm 1.1 computes and rounds residuals, solves corrections under (2.5), and performs rounded updates; Theorem 5.1 depends only on these loop relations and imposes no accuracy condition on the initial solve.",
+      "lean_evidence": "P03ComponentwiseIRRun records equations (3.3), (2.5), and (3.6) for every iteration, together with the precision ordering, but abstracts away concrete storage and step-1 provenance.",
+      "reasoning": "All execution behavior used by the theorem remains linked through explicit run fields. Omitting unused bit-level and initial-solver provenance is a genuine generalization, not a change to the recurrence."
     },
     {
       "id": "S09",
-      "status": "fail",
-      "paper_evidence": "The conclusion is componentwise, while the sufficient condition (5.6) and the M-matrix argument use the infinity norm and cond(A^-1) = |||A||A^-1|||_infinity.",
-      "lean_evidence": "The conclusion is componentwise through coordinatewise real inequalities, but the target contains no infinity norm, condition number, one-half threshold, or resolvent norm bound.",
-      "reasoning": "The componentwise relation kind is represented, but the norm semantics essential to the theorem's hypothesis and resolvent construction are omitted."
+      "status": "pass",
+      "paper_evidence": "Condition (5.6) uses the matrix infinity norm and cond(A^-1)=|| |A||A^-1| ||_infinity, whereas the main recurrence is componentwise.",
+      "lean_evidence": "p03MatInfNorm is the infinity operator norm, condition_5_6 uses |A| times |Ainv| in that order, and the target universally quantifies j instead of taking a norm.",
+      "reasoning": "Norm kind, multiplication order, and componentwise versus normwise semantics match."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The paper retains factors (1+us), (1+u), gamma_p^r, the iteration-dependent products M1Z1|A^-1|, and the offset from xhat_i to xhat_(i+1).",
-      "lean_evidence": "The scalar factors shown are syntactically similar, but gammaR is arbitrary, M1 and P are not iteration-dependent, there is no iteration offset, and P is absent from both M1 terms in the conclusion.",
-      "reasoning": "Key coefficient dependence and indexing are not preserved."
+      "status": "pass",
+      "paper_evidence": "The threshold is 1/2; the recurrence advances i to i+1; W_i begins with u_s I; y_i retains (1+u_s)(1+u)gamma_p^r and the final u term; p counts nonzeros in [A b].",
+      "lean_evidence": "D005, D006, D015, D019, D023, and the target contain exactly those constants, factors, counts, and index offsets.",
+      "reasoning": "All numerical constants and parameter dependencies match. Lean's per-i Z and M1 resolve the paper's subscript-1 notation consistently with its explicit G_i dependence."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "Algorithm 1.1 has ur <= u <= us <= uf, gamma_p^r = p ur/(1-p ur), residual and update rounding models, and the analysis ignores underflow and overflow.",
-      "lean_evidence": "us, u, and gammaR are arbitrary reals, with no precision ordering, gamma formula, rounding mode, standard-model assumption, or exceptional-value policy.",
-      "reasoning": "The floating-point model has been erased rather than represented or explicitly abstracted by an equivalent contract."
+      "status": "pass",
+      "paper_evidence": "Pages A817-A818 order u_r, u, u_s, and u_f and describe the precision of each loop operation. Page A821 invokes the standard model, and page A828 states that underflow and overflow are ignored.",
+      "lean_evidence": "The run orders the four real precision parameters, requires GammaValid, and directly assumes the standard-model residual, solver, and update equations and bounds.",
+      "reasoning": "Every paper execution covered by the unscaled standard model embeds in the Lean run. Lean does not model formats or exceptional events operationally, so it also covers abstract traces beyond actual floating-point executions; that strengthening is recorded under S15."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The exact recurrence is a non-strict componentwise upper bound with resolvent contribution M1P.",
-      "lean_evidence": "Lean also uses non-strict <=, but changes the premise from correction <= P correction + Pq to correction <= P correction + q and changes the conclusion from M1Pq to M1q.",
-      "reasoning": "The inequality direction is correct, but the logical relation is materially different. On paper-valid nonnegative quantities, replacing M1P by M1 generally enlarges the right-hand side."
+      "status": "pass",
+      "paper_evidence": "Theorem 5.1 gives a non-strict componentwise upper bound with W_i multiplying the old residual magnitude and y_i added.",
+      "lean_evidence": "The target uses ordinary real <= with exactly the same left and right sides for every component.",
+      "reasoning": "Direction, strictness, and the logical form of the conclusion are correct."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "Theorem 5.1 is specifically an exact-residual recurrence and does not itself state a bound on componentwise backward error omega; that requires Lemma 5.2 and later analysis.",
-      "lean_evidence": "The target does not claim an omega bound, but its purported residual vectors are arbitrary and have no definition as b-A xhat_i.",
-      "reasoning": "It avoids substituting omega for the residual, but it also fails to encode the residual error notion itself."
+      "status": "pass",
+      "paper_evidence": "Theorem 5.1 is an exact componentwise true-residual recurrence; the later omega estimate (5.8) is a separate approximate backward-error interpretation.",
+      "lean_evidence": "The target contains only the exact residual recurrence and does not mention forward error, omega, xi, norms of the residual, or an ultimate limiting estimate.",
+      "reasoning": "No different error notion has been substituted."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Theorem 5.1 and equations (5.2)-(5.6) are exact. M1=I+O(us), the less-similar bounds, and equation (5.7) are explicitly subsequent first-order interpretations.",
-      "lean_evidence": "The target uses only exact real equalities and inequalities and contains no O term or asymptotic comparison.",
-      "reasoning": "The Lean statement does not incorrectly promote equation (5.7) to an exact theorem. Its formula is wrong for a separate, non-asymptotic reason."
+      "paper_evidence": "The displayed theorem retains exact factors. Big-O and lesssim notation first appears after the theorem in the interpretation leading to (5.7) and (5.8).",
+      "lean_evidence": "D005 and D006 retain every factor exactly and contain no asymptotic or first-order operator.",
+      "reasoning": "The Lean target formalizes the exact theorem rather than its later approximate corollaries."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The paper result concerns finite-dimensional real systems generated by a specified iterative-refinement algorithm.",
-      "lean_evidence": "Fin-indexed real functions correctly specialize vectors and matrices, but the statement generalizes to arbitrary signed vectors and arbitrary resolvent pairs while omitting all algorithmic linkage.",
-      "reasoning": "This is not a documented pointwise specialization of Theorem 5.1; it changes the measured task into a generic lemma."
+      "status": "pass",
+      "paper_evidence": "The paper states the result for executions of unscaled Algorithm 1.1 with actual precision parameters and the standard floating-point model.",
+      "lean_evidence": "Lean works over finite real matrices of the same dimensions but quantifies over any abstract trace satisfying the local analytic equations, even when it lacks concrete storage or solver provenance and when ordered real parameters are not realizable hardware unit roundoffs.",
+      "reasoning": "This is a faithful strict generalization: every paper case is represented, while additional algebraic model traces are admitted. It is therefore classified faithful-stronger, not as a specialization."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper's assumptions describe ordinary nonsingular systems satisfying a sufficiently small one-half condition, so the source result is not inherently vacuous.",
-      "lean_evidence": "A nontrivial formal model exists with n=1, M1=[1], P=[0], us=u=gammaR=0, oldResidual=correction=newResidual=[1], and data=update=[0]; both hypotheses and the conclusion hold at equality.",
-      "reasoning": "The formal proposition is satisfiable and not globally vacuous, although n=0 additionally yields a vacuous coordinate conclusion. Nonvacuity does not repair the semantic mismatches."
+      "paper_evidence": "The paper studies ordinary nonsingular systems and supplies sufficient, realizable small-roundoff conditions.",
+      "lean_evidence": "A concrete run exists for n=1, A=Ainv=[1], b=0, zero iterate and error sequences, G=0, all precision parameters zero, and M1=I. Nonzero-residual examples also exist, such as exact residual formation with u=uS=0.1, G=[1], and M1=(I-0.1I)^-1.",
+      "reasoning": "The run type is inhabited, its assumptions are consistent, and the recurrence is not obtained from an empty domain or an always-degenerate expression."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "With n=1, M1=1, P=0, us=u=gammaR=0, oldResidual=correction=newResidual=1, and data=update=0, all Lean hypotheses hold and the Lean conclusion is 1<=1. The paper-shaped recurrence with the required M1P coefficient would instead require 1<=0. This formal model is possible precisely because the target lacks the paper's algorithmic linkage and P factor."
+      "verdict": "yes",
+      "reasoning": "Every execution covered by Theorem 5.1 supplies the Lean run fields: nonsingularity supplies Ainv, the standard model supplies the residual and update relations, (2.5) supplies the solver bound, and condition (5.6) supplies the nonnegative bounded resolvent M1. Unfolding the Lean conclusion then gives the paper's exact recurrence."
     },
     "paper_implies_lean": {
       "verdict": "no",
-      "reasoning": "The paper proves a statement only for Algorithm 1.1 quantities and derives correction <= P correction + Pq before obtaining M1Pq. Lean universally covers arbitrary matrices and vectors under the different premise correction <= P correction + q. Although the paper's final right-hand side is smaller than the Lean right-hand side under the intended nonnegative substitution, that isolated inequality comparison does not entail Lean's broader, differently premised proposition."
+      "reasoning": "The published theorem quantifies over executions of Algorithm 1.1 with floating-point precisions. The Lean proposition also covers arbitrary real-valued traces satisfying only the analytic equations, including traces without concrete storage or step-1 provenance and parameter values outside realizable unit roundoffs. The paper statement does not assert the recurrence over that strictly larger domain."
     }
   },
-  "classification": "not-faithful-different",
-  "accepted": false,
+  "classification": "faithful-stronger",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "missing-resolvent-factor",
-      "paper_evidence": "On A827, Theorem 5.1 defines W_i = us I + (1+us)M1Z1|A^-1| and y_i = alpha(I+M1Z1|A^-1|)data + u update.",
-      "lean_evidence": "The conclusion uses (1+us)M1|oldResidual| and alpha(data+M1 data), omitting P from both matrix-vector products.",
-      "impact": "The target does not state the paper's recurrence. Under the intended P=Z1|A^-1| substitution it generally gives a looser bound, and outside that substitution it has no fixed strength relation."
+      "severity": "note",
+      "category": "model-domain-generalization",
+      "paper_evidence": "Theorem 5.1 is introduced as a result about unscaled Algorithm 1.1 under the standard floating-point model.",
+      "lean_evidence": "P03ComponentwiseIRRun is an axiomatic real trace containing the local equations and bounds but no bit-level representability, concrete rounding operation, or step-1 solver provenance.",
+      "impact": "The Lean theorem is nonvacuously stronger because it retains all paper cases and proves the same exact recurrence for additional abstract traces."
     },
     {
-      "severity": "major",
-      "category": "altered-correction-premise",
-      "paper_evidence": "The inequality immediately before (5.4) is (I-P)c <= Pq, equivalently c <= Pc + Pq, for c=Z1|dhat_i| and q=(1+us)|old residual|+alpha data.",
-      "lean_evidence": "hcorrection states correction <= P correction + q, with the source q not premultiplied by P.",
-      "impact": "The paper assumptions do not establish the Lean premise in general, and resolving this altered premise yields M1q instead of the required M1Pq."
-    },
-    {
-      "severity": "major",
-      "category": "algorithm-linkage-and-hypotheses",
-      "paper_evidence": "Theorem 5.1 assumes Algorithm 1.1, nonsingular A, solver condition (2.5), and uniform condition (5.6), using rounding models (3.3) and (3.6).",
-      "lean_evidence": "No A, b, computed iterates, solver model, precision ordering, one-half condition, or rounding model occurs in the target.",
-      "impact": "The formal result measures a generic resolvent manipulation, not the claimed finite-precision iterative-refinement theorem."
-    },
-    {
-      "severity": "major",
-      "category": "iteration-scope",
-      "paper_evidence": "Condition (5.6) holds for all iteration indices and Theorem 5.1 concludes the recurrence for every i>=0 with iteration-dependent Gi, Z1, M1, Wi, and yi.",
-      "lean_evidence": "The sole concluding index i:Fin n is a coordinate; no sequence or iteration-indexed data is present.",
-      "impact": "The uniform theorem over algorithm iterations is reduced to an unlabelled single-step assertion without an explicit specialization contract."
-    },
-    {
-      "severity": "major",
-      "category": "unconstrained-placeholders",
-      "paper_evidence": "Z1, |dhat_i|, |b|+|A||xhat_(i+1)|, and |A||xhat_(i+1)| are nonnegative quantities constructed from the algorithm, and gamma_p^r and the unit roundoffs have prescribed meanings.",
-      "lean_evidence": "P, correction, data, update, us, u, and gammaR are arbitrary real-valued objects, with no corresponding definitions or sign conditions.",
-      "impact": "The intended interpretation cannot be recovered from the proposition, and strength comparisons valid for the paper's nonnegative quantities need not hold on Lean's full domain."
+      "severity": "note",
+      "category": "indexing-resolution",
+      "paper_evidence": "Equations (5.3) and (5.5) literally write Z_1 and M_1, although Z_1 contains iteration-dependent G_i and Theorem 5.1 defines W_i and y_i for each i.",
+      "lean_evidence": "p03Z and the M1 field are explicitly indexed by i, and p03W and p03Y use the same index consistently.",
+      "impact": "Lean resolves the paper's notational ambiguity in the mathematically required way; it does not change the recurrence or matrix dependence."
     }
   ],
-  "rationale": "The authoritative PDF confirms that Theorem 5.1's exact recurrence uses M1Z1|A^-1| in both W_i and y_i. Writing P=Z1|A^-1|, the paper derives c<=Pc+Pq and then c<=M1Pq. Lean instead assumes c<=Pc+q and concludes c<=M1q, while omitting the algorithm, uniform iteration scope, floating-point assumptions, and definitions of all data vectors. The formal proposition is nonvacuous and its primitive real and matrix operations are interpreted correctly, but it is a different generic lemma. Neither full statement semantically implies the other under their stated binders and hypotheses."
+  "rationale": "The Lean proposition unfolds to the exact componentwise true-residual recurrence of Theorem 5.1. Its W_i, y_i, Z_i, gamma_p^r, infinity-norm condition, inverse order, solver defect model, residual model, update model, constants, and i-to-i+1 indexing all agree with the PDF. Explicit gamma validity and resolvent properties formalize implicit or derived source facts. The only consequential difference is that the run is an axiomatic real-valued execution model rather than a concrete floating-point execution, so it admits additional nonvacuous traces while retaining every paper instance. Accordingly Lean implies the paper result, the paper statement does not cover the full Lean domain, and the correct accepted classification is faithful-stronger."
 }
+

@@ -1,0 +1,112 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P03-T3",
+  "trigger": [
+    "judge classifications differ",
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "blind dependency D024 is unclear",
+    "blind dependency D080 is unclear",
+    "round-trip S03 is unclear",
+    "round-trip S04 is unclear",
+    "round-trip S06 is unclear",
+    "round-trip S09 is unclear",
+    "round-trip S10 is unclear",
+    "round-trip S15 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "judge classifications differ",
+      "resolution": "The direct classification is sustained: the declaration is faithful-stronger. The exact paper recurrence is preserved, every paper execution maps to a Lean run, and the Lean run abstraction additionally admits non-paper real-valued traces.",
+      "primary_evidence": "The verified PDF states the exact recurrence and definitions on printed A826-A827. D002-D006 reproduce that recurrence, while D010 requires the local analytic relations but omits Algorithm 1.1's concrete initial-solve and storage provenance."
+    },
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "Adjudication resolves the disputed norm, indexing, hypothesis, execution-model, and domain questions without relying on either judge's vote. The target is accepted as a nonvacuous strict generalization.",
+      "primary_evidence": "The authorized PDF has SHA-256 952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc. The relevant primary passages are Algorithm 1.1 on A818, the norm and solver definitions on A821, equations (3.3) and (3.6) on A823, Theorem 5.1 on A826-A827, and the exceptional-value discussion on A828."
+    },
+    {
+      "item": "round-trip judge classification is undetermined",
+      "resolution": "The classification is determined as faithful-stronger. The norm and auxiliary-index semantics match the paper, while the abstract run domain is strictly broader than the paper's concrete Algorithm 1.1 execution domain.",
+      "primary_evidence": "D024 and D080 select the l-infinity operator norm; D005-D006 exactly encode W_i and y_i; D010 packages equations (2.5), (3.3), (3.6), condition (5.6), and the derived resolvent properties for all iterations."
+    },
+    {
+      "item": "blind dependency D024 is unclear",
+      "resolution": "D024 is the induced matrix infinity operator norm. For a finite real square matrix C, it is the maximum absolute row sum, max_i sum_j |C_ij|.",
+      "primary_evidence": "D024 installs Matrix.linftyOpNormedRing and applies its norm to Matrix.of A. D081 shows Matrix.of is the identity representation change from a two-index function to Matrix, so no entries or multiplication order change. The PDF uses precisely the matrix infinity norm in equations (2.1), (2.2), and (5.6)."
+    },
+    {
+      "item": "blind dependency D080 is unclear",
+      "resolution": "D080 supplies the same l-infinity operator norm used by D024; its NormedRing retains the toNorm field of Matrix.linftyOpSemiNormedRing. It is not an arbitrary or default matrix norm.",
+      "primary_evidence": "The D080 body explicitly sets toNorm from Matrix.linftyOpSemiNormedRing, and D024 explicitly selects this instance. Over finite real square matrices this is the operator norm induced by the vector l-infinity norm, equivalently the maximum absolute row sum required by the PDF."
+    },
+    {
+      "item": "round-trip S03 is unclear",
+      "resolution": "S03 passes. Z_1 and M_1 are local auxiliaries for the currently fixed iteration i and therefore depend on i through G_i; Lean correctly exposes that dependence with an iteration argument.",
+      "primary_evidence": "On A826, equation (5.3) literally defines Z_1 using G_i, every surrounding expression uses x_i and d_i, and equation (5.5) defines M_1 from that Z_1. On A827, condition (5.6) and the conclusion are quantified for all i. D025, D008, D005, and D006 consistently use the same i."
+    },
+    {
+      "item": "round-trip S04 is unclear",
+      "resolution": "S04 passes. GammaValid makes an inherited standard-model side condition explicit, and the M1 fields package consequences of condition (5.6); neither excludes a valid paper execution.",
+      "primary_evidence": "A821 invokes the standard floating-point model and defines gamma_p^r. The bound using gamma and the assertion on A826 that Z_1 is nonnegative require p*u_r<1. A826 derives existence, entrywise nonnegativity, and norm at most 2 for M_1 from the one-half norm condition. D021 and the corresponding D010 fields state exactly these inherited or derived facts."
+    },
+    {
+      "item": "round-trip S06 is unclear",
+      "resolution": "S06 passes. Matrix-vector multiplication, matrix multiplication, entrywise absolute value, identity entries, inversion actions, gamma, sparsity counting, and the infinity norm all have the paper's meanings.",
+      "primary_evidence": "D003, D004, D015, D017-D025, and D079-D085 give the relevant declaration bodies. In particular, D018 fixes ordinary matrix-product order, D023-D019 count nonzeros in rows of [A b], and D024-D080 select the l-infinity operator norm."
+    },
+    {
+      "item": "round-trip S09 is unclear",
+      "resolution": "S09 passes. The smallness hypothesis uses the matrix infinity norm with the exact multiplication orders G_i|A^-1| and |A||A^-1|, while the conclusion remains componentwise.",
+      "primary_evidence": "Equation (2.2) on A821 gives cond(A^-1)=|| |A||A^-1| ||_infinity by substitution, and equation (5.6) on A826 uses ||G_i|A^-1|||_infinity. D010 uses p03MatMul (G i) (p03MatAbs Ainv) and p03MatMul (p03MatAbs A) (p03MatAbs Ainv); the target quantifies over j rather than enclosing the recurrence in a norm."
+    },
+    {
+      "item": "round-trip S10 is unclear",
+      "resolution": "S10 passes. The threshold, factors, matrix order, sparsity parameter, and i-to-i+1 indexing are exact. Iteration-indexing the paper's Z_1 and M_1 records their displayed dependence on G_i rather than changing a numerical dependency.",
+      "primary_evidence": "A823 defines p as the maximum row nonzero count of [A b]. A826-A827 retain 1/2, u_s I, 1+u_s, (1+u_s)(1+u), gamma_p^r, and the final u|A||x_(i+1)| term. D005, D006, D015, D019, D023, and D025 contain those same constants and offsets."
+    },
+    {
+      "item": "round-trip S15 is unclear",
+      "resolution": "S15 passes as a genuine domain generalization. Lean preserves finite real dimensions and all analytic conditions used in the proof but admits abstract exact-real histories without representability, storage, or initial-solve provenance. This broadens applicability rather than strengthening the hypotheses.",
+      "primary_evidence": "Algorithm 1.1 on A818 requires x_0 to be computed at u_f and stored at u, and requires subsequent values to be produced at specified precisions. D010 has no such provenance fields. Its assumptions are nevertheless inhabited outside that execution domain; for example, a one-dimensional identity system can use an irrational stored x_0 and then sequences satisfying the exact residual, correction, and update bounds. Such a package is nonempty and has nonzero residuals but cannot be a finite-format stored Algorithm 1.1 state. A828's underflow/overflow exclusion is represented by the real-valued standard-model equations rather than by additional exceptional values."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "Every paper execution satisfying Theorem 5.1 yields the D010 fields: nonsingularity supplies Ainv, the standard model supplies equations (3.3) and (3.6) and GammaValid, solver condition (2.5) supplies the correction bound, and condition (5.6) supplies the required M1 resolvent properties. Unfolding D002-D006 then gives the paper's exact recurrence."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper theorem asserts the recurrence for computed executions of unscaled Algorithm 1.1. Lean asserts it for every abstract real trace satisfying the local analytic certificate, including inhabited traces with no finite-format storage or valid step-1 solve. The paper statement therefore does not cover the full Lean domain."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "remaining_uncertainties": [
+    "The PDF does not explain why the auxiliaries are printed with subscript 1 rather than i. The editorial intent remains unknown, but their displayed dependence on G_i within a derivation for arbitrary i determines the task-specific semantics and does not affect the classification."
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "category": "model-domain-generalization",
+      "evidence": "The PDF ties Theorem 5.1 to precision-specific executions of Algorithm 1.1, whereas D010 axiomatizes only the real-valued local equations and bounds used by the analysis.",
+      "impact": "The declaration proves the same recurrence on a strictly larger, inhabited domain, which is genuine nonvacuous strength."
+    },
+    {
+      "severity": "note",
+      "category": "explicit-inherited-facts",
+      "evidence": "GammaValid and the M1 nonnegativity, resolvent, and norm fields in D010 correspond respectively to the inherited gamma-domain requirement and the M-matrix consequences derived on A826.",
+      "impact": "These fields do not reduce applicability relative to valid paper cases and therefore do not reverse either implication."
+    },
+    {
+      "severity": "note",
+      "category": "auxiliary-indexing",
+      "evidence": "Equation (5.3) defines printed Z_1 using G_i, equation (5.5) defines M_1 from Z_1, and Theorem 5.1 ranges over all i.",
+      "impact": "Lean's explicit iteration arguments resolve the operational dependence consistently without altering W_i, y_i, or the theorem's scope."
+    }
+  ],
+  "rationale": "The declaration preserves the exact componentwise true-residual recurrence, solver defect model, residual and update models, infinity-norm condition, condition-number multiplication order, sparsity-dependent gamma factor, constants, higher-order factors, and next-iterate dependence of Theorem 5.1. The disputed imported norm is Mathlib's l-infinity operator norm, and the paper's printed Z_1/M_1 are per-iteration auxiliaries because they explicitly contain G_i. Gamma validity and M1 properties are inherited or derived source facts, not extra restrictions. The only consequential difference is that Lean replaces concrete floating-point execution provenance with an inhabited axiomatic real-trace model. Hence Lean covers every paper case and additional cases, Lean implies the paper theorem, the paper theorem does not imply the full Lean proposition, and faithful-stronger is the consistent accepted classification."
+}
+

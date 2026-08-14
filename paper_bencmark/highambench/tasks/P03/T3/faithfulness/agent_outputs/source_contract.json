@@ -1,141 +1,202 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "Equation (5.3) defines Z_1=u_sG_i+(1+u_s)\u03b3_p^r|A|, while Theorem 5.1 quantifies over i and refers back to the same Z_1 and M_1 symbols. [PDF pp. 10-11, printed A826-A827, equations (5.3), (5.5), and Theorem 5.1]",
-      "impact": "A formalization should treat Z_1 and M_1 as local iteration-dependent objects, or rename them Z_i and M_i while documenting that normalization; treating them as globally fixed would add an unsupported assumption. [PDF pp. 10-11, printed A826-A827, equations (5.3), (5.5), and Theorem 5.1]",
-      "issue": "The literal symbols Z_1 and M_1 carry subscript 1 even though Z_1 contains G_i and therefore varies with the iteration. [PDF pp. 10-11, printed A826-A827, equations (5.3), (5.5), and Theorem 5.1]"
-    },
-    {
-      "evidence": "The paper moves from the exact M_1 and W_i formulas to M_1=I+O(u_s), then to W_i\u2272\u2026 and \u2016W_i\u2016\u221e\u2272\u2026, before stating \u2016W_i\u2016\u221e<1 in view of (5.6). [PDF p. 11, printed A827, interpretation following Theorem 5.1]",
-      "impact": "The exact recurrence and the M-matrix bound can be formalized literally, but equation (5.7) and the asserted strict contraction require an explicit interpretation of hidden higher-order terms and constants. [PDF pp. 10-11, printed A826-A827, M-matrix paragraph, Theorem 5.1, and equation (5.7)]",
-      "issue": "The symbols O(u_s) and \u2272 in the interpretation of W_i have no explicit constants or quantified asymptotic regime. [PDF p. 11, printed A827, text preceding and equation (5.7)]"
-    },
-    {
-      "evidence": "The paper says this relation can be expected in practice only after completing Theorem 5.1 and equation (5.7). [PDF p. 11, printed A827, text following equation (5.7)]",
-      "impact": "It may motivate which term dominates the interpreted norm bound, but it must not be added to the formal source contract for Theorem 5.1. [PDF p. 11, printed A827, text following equation (5.7)]",
-      "issue": "The statement that G_i\u2265|A| is presented as a practical expectation, not a theorem hypothesis or universally quantified matrix inequality. [PDF p. 11, printed A827, paragraph following equation (5.7)]"
-    }
-  ],
-  "contract_plain_english": "Under a componentwise correction-solver defect bound and the uniform one-half condition (5.6), a nonnegative M-matrix resolvent controls the correction contribution and yields an exact componentwise recurrence for the next true residual. The theorem includes a nonnegative additive vector y_i; only the subsequent first-order interpretation gives the approximate infinity-norm estimate (5.7), and the theorem alone does not yet bound \u03c9. [PDF pp. 10-11, printed A826-A827, equations (5.2)-(5.7) and Theorem 5.1]",
-  "paper_batch_sha256": "cc0f2d27697c7df47ddee702a54285359037d701ffa45ec71a92ca67f9cf3902",
-  "paper_sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P03-T3",
+  "paper_sha256": "952c6827db21fb2a9362b5aa4d38a1b2c75361f2cc7a3badbb7cd4a232d7b7bc",
   "source_evidence": [
     {
-      "anchor": "equations (2.2), (2.5), (2.6), and (2.7)",
-      "observation": "The paper defines cond(A), assumes the componentwise correction-solver residual bound |r\u0302_i\u2212A d\u0302_i|\u2264u_sG_i|d\u0302_i|, and defines componentwise relative backward error \u03c9.",
+      "pdf_page": 1,
+      "printed_page": "A817",
+      "anchor": "precision bullets and equation (1.1)",
+      "observation": "The paper defines u as working precision, u_f as factorization precision, and u_r as residual-computation precision, with u_r <= u <= u_f. [PDF p. 1, printed A817, precision bullets and eq. (1.1)]"
+    },
+    {
+      "pdf_page": 2,
+      "printed_page": "A818",
+      "anchor": "u_s definition and Algorithm 1.1",
+      "observation": "The effective correction-solve precision satisfies u <= u_s <= u_f. Algorithm 1.1 takes nonsingular A in R^(n x n) and b in R^n, computes the initial solution at u_f, then for i = 0,1,... computes the residual at u_r and rounds it to u_s, solves the correction equation at u_s and stores the correction at u, and performs the update at u. [PDF p. 2, printed A818, u_s definition and Algorithm 1.1]"
+    },
+    {
       "pdf_page": 5,
-      "printed_page": "A821"
+      "printed_page": "A821",
+      "anchor": "standard model and gamma definition",
+      "observation": "The analysis uses the standard floating-point model and defines gamma_k = k u/(1-k u); a superscript selects the corresponding unit roundoff, so gamma_p^r = p u_r/(1-p u_r). [PDF p. 5, printed A821, opening of section 2]"
     },
     {
-      "anchor": "continuation of equation (2.7)",
-      "observation": "For the componentwise backward-error quotient, \u03be/0 is interpreted as zero when \u03be=0 and as infinity otherwise.",
+      "pdf_page": 5,
+      "printed_page": "A821",
+      "anchor": "equation (2.2)",
+      "observation": "The componentwise condition-number convention is cond(A) = norm_inf(abs(A^(-1)) abs(A)); therefore, by substitution, cond(A^(-1)) = norm_inf(abs(A) abs(A^(-1))). [PDF p. 5, printed A821, eq. (2.2)]"
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "A821",
+      "anchor": "equation (2.5)",
+      "observation": "The step-4 solver condition is abs(rhat_i - A dhat_i) <= u_s G_i abs(dhat_i). The paper states that G_i is a function of n, A, rhat_i, and u_s and has nonnegative entries. [PDF p. 5, printed A821, eq. (2.5) and following sentence]"
+    },
+    {
       "pdf_page": 6,
-      "printed_page": "A822"
+      "printed_page": "A822",
+      "anchor": "continuation after equation (2.7)",
+      "observation": "For componentwise backward-error quotients, a numerator divided by zero is interpreted as zero when the numerator is zero and as infinity otherwise. [PDF p. 6, printed A822, continuation after eq. (2.7)]"
     },
     {
-      "anchor": "equations (3.3) and (3.6)",
-      "observation": "The residual and update rounding models used in section 5 are stated componentwise.",
       "pdf_page": 7,
-      "printed_page": "A823"
+      "printed_page": "A823",
+      "anchor": "equation (3.3)",
+      "observation": "The computed residual satisfies rhat_i = b - A xhat_i + Delta r_i and abs(Delta r_i) <= u_s abs(b-A xhat_i) + (1+u_s) gamma_p^r (abs(b)+abs(A)abs(xhat_i)). Here p is the maximum number of nonzeros in a row of [A b], and p = n+1 for dense A and b. [PDF p. 7, printed A823, text preceding and eq. (3.3)]"
     },
     {
-      "anchor": "equations (5.1)-(5.6) and opening of Theorem 5.1",
-      "observation": "The paper derives the base componentwise residual inequality, defines Z_1 and the M-matrix inverse M_1, proves its nonnegativity and norm bound under a one-half condition, and states the theorem's uniform hypothesis.",
+      "pdf_page": 7,
+      "printed_page": "A823",
+      "anchor": "equation (3.6)",
+      "observation": "The rounded update satisfies xhat_(i+1) = xhat_i + dhat_i + Delta x_i with abs(Delta x_i) <= u abs(xhat_(i+1)). [PDF p. 7, printed A823, eq. (3.6)]"
+    },
+    {
+      "pdf_page": 9,
+      "printed_page": "A825",
+      "anchor": "equation (4.1)",
+      "observation": "The residual identity used by section 5 is A xhat_(i+1) - b = Delta r_i + A dhat_i - rhat_i + A Delta x_i. [PDF p. 9, printed A825, eq. (4.1)]"
+    },
+    {
       "pdf_page": 10,
-      "printed_page": "A826"
+      "printed_page": "A826",
+      "anchor": "equations (5.1)-(5.5)",
+      "observation": "The derivation defines Z_1 = u_s G_i + (1+u_s) gamma_p^r abs(A) and M_1 = (I-Z_1 abs(A^(-1)))^(-1). If norm_inf(Z_1 abs(A^(-1))) <= 1/2, then I-Z_1 abs(A^(-1)) is an M-matrix, and M_1 exists, is entrywise nonnegative, and has infinity norm at most 2. [PDF p. 10, printed A826, eqs. (5.3)-(5.5) and following paragraph]"
     },
     {
-      "anchor": "continuation of Theorem 5.1 and equation (5.7)",
-      "observation": "The theorem gives the componentwise residual recurrence with W_i and y_i, followed by a first-order interpretation of W_i and its infinity-norm bound.",
+      "pdf_page": 10,
+      "printed_page": "A826",
+      "anchor": "opening of Theorem 5.1 and equation (5.6)",
+      "observation": "Theorem 5.1 assumes Algorithm 1.1, nonsingular A, solver condition (2.5), and u_s norm_inf(G_i abs(A^(-1))) + (1+u_s) gamma_p^r cond(A^(-1)) <= 1/2 for all i. [PDF p. 10, printed A826, Theorem 5.1 and eq. (5.6); quantifier continuation on PDF p. 11, printed A827]"
+    },
+    {
       "pdf_page": 11,
-      "printed_page": "A827"
+      "printed_page": "A827",
+      "anchor": "continuation of Theorem 5.1",
+      "observation": "For every i >= 0, the theorem concludes abs(b-A xhat_(i+1)) <= W_i abs(b-A xhat_i) + y_i, where W_i = u_s I + (1+u_s) M_1 Z_1 abs(A^(-1)) and y_i = (1+u_s)(1+u) gamma_p^r (I+M_1 Z_1 abs(A^(-1)))(abs(b)+abs(A)abs(xhat_(i+1))) + u abs(A)abs(xhat_(i+1)). [PDF p. 11, printed A827, continuation of Theorem 5.1]"
     },
     {
-      "anchor": "section 6, Scaling",
-      "observation": "The analysis ignores underflow and overflow; a scaled modification is proposed separately.",
+      "pdf_page": 11,
+      "printed_page": "A827",
+      "anchor": "equations (5.7)-(5.8) and Lemma 5.2",
+      "observation": "Only after the theorem does the paper use M_1 = I+O(u_s) and approximate inequalities marked by lesssim to interpret W_i and derive the eventual componentwise relative backward-error estimate (5.8), using Lemma 5.2 and the scaling ratio xi. [PDF p. 11, printed A827, discussion after Theorem 5.1, Lemma 5.2, and eqs. (5.7)-(5.8)]"
+    },
+    {
       "pdf_page": 12,
-      "printed_page": "A828"
+      "printed_page": "A828",
+      "anchor": "opening of section 6",
+      "observation": "The unscaled analysis explicitly ignores underflow and overflow; section 6 introduces a different scaled version of steps 4 and 5 to address those events. [PDF p. 12, printed A828, opening of section 6]"
     }
   ],
   "statement": {
-    "algorithm_linkage": "The result applies to the original unscaled Algorithm 1.1 and combines the componentwise solver-defect condition (2.5), residual computation at u_r followed by rounding to u_s, and update rounding at u. [PDF pp. 2, 5, 7, and 10-11, printed A818, A821, A823, and A826-A827, Algorithm 1.1, equations (2.5), (3.3), (3.6), and Theorem 5.1]",
     "binders": [
-      "Let A \u2208 \u211d^{n\u00d7n} be nonsingular, b \u2208 \u211d^n, and let Algorithm 1.1 produce x\u0302_i, r\u0302_i, d\u0302_i, and x\u0302_{i+1} for i\u22650. [PDF pp. 2 and 10-11, printed A818 and A826-A827, Algorithm 1.1 and Theorem 5.1]",
-      "For each i, let G_i \u2208 \u211d^{n\u00d7n} have nonnegative entries and satisfy the solver model (2.5); let I be the n\u00d7n identity. [PDF pp. 5 and 10, printed A821 and A826, equation (2.5), its explanatory text, and equations (5.3)-(5.5)]",
-      "Let p be the maximum number of nonzeros in a row of [A b], and let \u03b3_p^r=pu_r/(1\u2212pu_r). [PDF pp. 5 and 7, printed A821 and A823, definition of \u03b3_k and text preceding equation (3.3)]"
-    ],
-    "conclusions": [
-      "The base inequality is |b\u2212Ax\u0302_{i+1}|\u2264u_s|b\u2212Ax\u0302_i|+(1+u_s)\u03b3_p^r(1+u)(|b|+|A||x\u0302_{i+1}|)+Z_1|d\u0302_i|+u|A||x\u0302_{i+1}|. [PDF p. 10, printed A826, equation (5.2)]",
-      "Z_1=u_sG_i+(1+u_s)\u03b3_p^r|A| and has nonnegative entries. [PDF p. 10, printed A826, equation (5.3) and following sentence]",
-      "The correction satisfies |d\u0302_i|\u2264|A^{-1}|[(1+u_s)|b\u2212Ax\u0302_i|+(1+u_s)(1+u)\u03b3_p^r(|b|+|A||x\u0302_{i+1}|)]+|A^{-1}|Z_1|d\u0302_i|. [PDF p. 10, printed A826, displayed derivation between equations (5.3) and (5.4)]",
-      "After premultiplication by Z_1, (I\u2212Z_1|A^{-1}|)Z_1|d\u0302_i|\u2264Z_1|A^{-1}|[(1+u_s)|b\u2212Ax\u0302_i|+(1+u_s)(1+u)\u03b3_p^r(|b|+|A||x\u0302_{i+1}|)]. [PDF p. 10, printed A826, displayed inequality immediately before equation (5.4)]",
-      "With M_1:=(I\u2212Z_1|A^{-1}|)^{-1}, equation (5.4) gives Z_1|d\u0302_i|\u2264M_1Z_1|A^{-1}|[(1+u_s)|b\u2212Ax\u0302_i|+(1+u_s)(1+u)\u03b3_p^r(|b|+|A||x\u0302_{i+1}|)]. [PDF p. 10, printed A826, equations (5.4) and (5.5)]",
-      "If \u2016Z_1|A^{-1}|\u2016\u221e\u22641/2, then I\u2212Z_1|A^{-1}| is an M-matrix; M_1 exists, has nonnegative entries, and satisfies \u2016M_1\u2016\u221e\u22642. [PDF p. 10, printed A826, paragraph following equation (5.5)]",
-      "Theorem 5.1 concludes |b\u2212Ax\u0302_{i+1}|\u2264W_i|b\u2212Ax\u0302_i|+y_i componentwise for every i\u22650. [PDF p. 11, printed A827, continuation of Theorem 5.1]",
-      "W_i=u_sI+(1+u_s)M_1Z_1|A^{-1}|. [PDF p. 11, printed A827, continuation of Theorem 5.1]",
-      "y_i=(1+u_s)(1+u)\u03b3_p^r(I+M_1Z_1|A^{-1}|)(|b|+|A||x\u0302_{i+1}|)+u|A||x\u0302_{i+1}|. [PDF p. 11, printed A827, continuation of Theorem 5.1]",
-      "For interpretation, the paper states M_1=I+O(u_s), W_i\u2272u_sI+(u_sG_i+\u03b3_p^r|A|)|A^{-1}|, and \u2016W_i\u2016\u221e\u2272u_s+u_s\u2016G_i|A^{-1}|\u2016\u221e+\u03b3_p^r cond(A^{-1}). [PDF p. 11, printed A827, text preceding and equation (5.7)]",
-      "The paper then states \u2016W_i\u2016\u221e<1 in view of (5.6) and concludes that \u2016W_i\u2016\u221e is much less than one when the solver is not too unstable and A is not too ill conditioned relative to u_s. [PDF p. 11, printed A827, text following equation (5.7)]"
-    ],
-    "constants_and_indexing": [
-      "Theorem 5.1 requires condition (5.6) for all i and concludes the recurrence for every i\u22650. [PDF pp. 10-11, printed A826-A827, equation (5.6) and continuation of Theorem 5.1]",
-      "The M-matrix threshold is exactly 1/2, and the resulting resolvent norm bound is exactly 2. [PDF p. 10, printed A826, paragraph following equation (5.5)]",
-      "The factors (1+u_s)(1+u) multiply \u03b3_p^r in y_i, while W_i contains (1+u_s)M_1Z_1|A^{-1}|. [PDF p. 11, printed A827, formulas for W_i and y_i]",
-      "Although denoted Z_1 and M_1, both quantities depend on the current i through G_i. [PDF pp. 10-11, printed A826-A827, equations (5.3), (5.5), and Theorem 5.1]"
-    ],
-    "definitions_and_conventions": [
-      "All absolute values of vectors and matrices are entrywise, and all displayed vector and matrix inequalities are componentwise. [PDF p. 5, printed A821, section 2 notation]",
-      "For nonsingular B, cond(B)=\u2016|B^{-1}||B|\u2016\u221e; hence cond(A^{-1})=\u2016|A||A^{-1}|\u2016\u221e, with the multiplication order shown. [PDF pp. 5 and 10, printed A821 and A826, equation (2.2) and equation (5.6)]",
-      "Z_1 and M_1 are the literal symbols used in equations (5.3) and (5.5), while W_i and y_i are the theorem's iteration-indexed matrix and vector. [PDF pp. 10-11, printed A826-A827, equations (5.3), (5.5), and Theorem 5.1]",
-      "The componentwise relative backward error is \u03c9(y)=max_j |b\u2212Ay|_j/(|A||y|+|b|)_j, equivalently the minimum common componentwise relative perturbation to A and b. [PDF pp. 5-6, printed A821-A822, equations (2.6) and (2.7)]"
-    ],
-    "error_notions": [
-      "The theorem's main conclusion is a componentwise recurrence for the exact residual |b\u2212Ax\u0302_i|, not directly a bound on \u03c9(x\u0302_i). [PDF p. 11, printed A827, Theorem 5.1 and the discussion after equation (5.7)]",
-      "The computed residual r\u0302_i appears in the solver hypothesis, while the theorem recurrence uses the exact original-system residual b\u2212Ax\u0302_i. [PDF pp. 5 and 11, printed A821 and A827, equation (2.5) and Theorem 5.1]",
-      "The additive vector y_i is explicitly noted not to be a scalar multiple of |A||x\u0302_{i+1}|+|b|, so an \u03c9 bound requires the later Lemma 5.2 argument rather than following immediately from Theorem 5.1. [PDF p. 11, printed A827, paragraph after equation (5.7)]"
-    ],
-    "exceptional_values": [
-      "Condition (5.6) ensures the inverse defining M_1 exists and is nonnegative; without such a condition, equation (5.5) alone does not guarantee an admissible componentwise resolvent. [PDF p. 10, printed A826, equations (5.5), (5.6), and the M-matrix paragraph]",
-      "For \u03c9, a zero denominator component is interpreted as zero only when the corresponding numerator is zero and as infinity otherwise. [PDF p. 6, printed A822, continuation of equation (2.7)]",
-      "The finite \u03b3_p^r bound implicitly needs the ordinary standard-model smallness condition on pu_r. [PDF pp. 5 and 7, printed A821 and A823, definition and use of \u03b3_p^r]",
-      "Underflow and overflow are ignored; the scaled algorithm introduced in section 6 is not part of Theorem 5.1. [PDF p. 12, printed A828, section 6, Scaling]"
-    ],
-    "higher_order_terms": [
-      "Equations (5.2)-(5.6) and the W_i,y_i recurrence are exact inequalities with no omitted big-O terms. [PDF pp. 10-11, printed A826-A827, equations (5.2)-(5.6) and Theorem 5.1]",
-      "The later statement M_1=I+O(u_s) and both \u2272 bounds suppress higher-order terms and unspecified constants; equation (5.7) is therefore an interpretation, not the exact theorem recurrence. [PDF p. 11, printed A827, text preceding and equation (5.7)]"
+      "Fix a matrix dimension n, a nonsingular matrix A in R^(n x n), and b in R^n; Algorithm 1.1 treats A and b as data stored at working precision u. [PDF p. 2, printed A818, Algorithm 1.1; PDF p. 10, printed A826, Theorem 5.1]",
+      "Fix precision parameters u_r, u, u_f, and u_s satisfying u_r <= u <= u_f and u <= u_s <= u_f. [PDF p. 1, printed A817, eq. (1.1); PDF p. 2, printed A818, u_s definition]",
+      "The iteration index ranges over i = 0,1,..., with xhat_i, rhat_i, and dhat_i denoting computed iterates, residuals, and corrections in the analysis. [PDF p. 2, printed A818, Algorithm 1.1; PDF p. 7, printed A823, eqs. (3.3) and (3.6)]",
+      "For each correction solve, G_i has nonnegative entries and is associated with n, A, rhat_i, and u_s through solver model (2.5). Its n-by-n dimension is forced by the displayed matrix-vector products rather than separately declared. [PDF p. 5, printed A821, eq. (2.5) and following sentence]"
     ],
     "hypotheses": [
-      "The step-4 solver satisfies |r\u0302_i\u2212A d\u0302_i|\u2264u_sG_i|d\u0302_i| componentwise. [PDF p. 5, printed A821, equation (2.5)]",
-      "For all i, u_s\u2016G_i|A^{-1}|\u2016\u221e+(1+u_s)\u03b3_p^r cond(A^{-1})\u22641/2. [PDF pp. 10-11, printed A826-A827, equation (5.6) and its continuation]",
-      "The residual and update satisfy the componentwise models (3.3) and (3.6). [PDF p. 7, printed A823, equations (3.3) and (3.6)]",
-      "The unit roundoffs inherit u_r\u2264u\u2264u_s\u2264u_f from Algorithm 1.1. [PDF pp. 1-2, printed A817-A818, equation (1.1) and the definition of u_s]"
+      "Explicit theorem hypothesis: Algorithm 1.1 is applied to Ax=b with nonsingular A in R^(n x n). [PDF p. 10, printed A826, opening of Theorem 5.1]",
+      "Explicit theorem hypothesis: at every relevant step-4 solve, abs(rhat_i-A dhat_i) <= u_s G_i abs(dhat_i). [PDF p. 5, printed A821, eq. (2.5); PDF p. 10, printed A826, Theorem 5.1]",
+      "Explicit uniform hypothesis: u_s norm_inf(G_i abs(A^(-1))) + (1+u_s) gamma_p^r cond(A^(-1)) <= 1/2 for all i. [PDF p. 10, printed A826, eq. (5.6); PDF p. 11, printed A827, words for all i]",
+      "Inherited algorithm hypothesis: residuals are formed at u_r and rounded to u_s, corrections are effectively solved at u_s and stored at u, and updates are performed at u. [PDF p. 2, printed A818, Algorithm 1.1]"
+    ],
+    "conclusions": [
+      "For every i >= 0, abs(b-A xhat_(i+1)) <= W_i abs(b-A xhat_i) + y_i, with the inequality interpreted componentwise. [PDF p. 11, printed A827, continuation of Theorem 5.1; PDF p. 5, printed A821, componentwise-inequality convention]",
+      "W_i is exactly u_s I + (1+u_s) M_1 Z_1 abs(A^(-1)). [PDF p. 11, printed A827, continuation of Theorem 5.1]",
+      "y_i is exactly (1+u_s)(1+u) gamma_p^r (I+M_1 Z_1 abs(A^(-1)))(abs(b)+abs(A)abs(xhat_(i+1))) + u abs(A)abs(xhat_(i+1)). [PDF p. 11, printed A827, continuation of Theorem 5.1]"
+    ],
+    "definitions_and_conventions": [
+      "Absolute values of vectors and matrices are entrywise, and inequalities between vectors or matrices are componentwise. [PDF p. 5, printed A821, notation paragraph preceding eq. (2.3)]",
+      "cond(B) means norm_inf(abs(B^(-1)) abs(B)); hence cond(A^(-1)) means norm_inf(abs(A) abs(A^(-1))), with this latter expansion inferred by substituting B=A^(-1). [PDF p. 5, printed A821, eq. (2.2); PDF p. 10, printed A826, eq. (5.6)]",
+      "gamma_k = k u/(1-k u), and a superscript denotes which unit roundoff replaces u; consequently gamma_p^r = p u_r/(1-p u_r). [PDF p. 5, printed A821, opening of section 2]",
+      "p is the maximum number of nonzeros in any row of the augmented matrix [A b]; for dense A and b, p=n+1. [PDF p. 7, printed A823, paragraph preceding eq. (3.3)]",
+      "Z_1 is exactly the paper's displayed symbol and is defined by Z_1 = u_s G_i + (1+u_s) gamma_p^r abs(A). [PDF p. 10, printed A826, eq. (5.3)]",
+      "M_1 is exactly the paper's displayed symbol and is defined by M_1 = (I-Z_1 abs(A^(-1)))^(-1). [PDF p. 10, printed A826, eq. (5.5)]",
+      "The identity I and the matrices Z_1, M_1, and W_i are n-by-n by dimensional conformity, while y_i and each residual magnitude are n-vectors; these dimensions are implicit in the displayed products. [PDF p. 10, printed A826, eqs. (5.3)-(5.5); PDF p. 11, printed A827, Theorem 5.1 continuation]"
     ],
     "implicit_context": [
-      "Equation (5.1), |x\u0302_i|\u2264(1+u)|x\u0302_{i+1}|+|d\u0302_i|, is used to replace x\u0302_i by x\u0302_{i+1} and d\u0302_i in the derivation of (5.2) and (5.4). [PDF p. 10, printed A826, equation (5.1) and following derivation]",
-      "Condition (5.6) is a scalar sufficient condition for \u2016Z_1|A^{-1}|\u2016\u221e\u22641/2 because Z_1=u_sG_i+(1+u_s)\u03b3_p^r|A| and cond(A^{-1})=\u2016|A||A^{-1}|\u2016\u221e. [PDF p. 10, printed A826, equations (5.3), (5.5), and (5.6)]",
-      "W_i and y_i are nonnegative componentwise under the theorem's M-matrix conclusion, although the theorem does not separately label this fact. [PDF pp. 10-11, printed A826-A827, nonnegativity discussion after (5.5) and formulas for W_i and y_i]",
-      "The practical expectation G_i\u2265|A| appears only after the theorem and is not one of Theorem 5.1's assumptions. [PDF p. 11, printed A827, paragraph following equation (5.7)]"
+      "A and b denote the stored input data, while xhat_i denotes a computed iterate; b-A xhat_i in the theorem is the mathematical residual of that computed iterate, not the separately computed residual rhat_i. [PDF p. 2, printed A818, Algorithm 1.1; PDF p. 7, printed A823, eq. (3.3); PDF p. 11, printed A827, Theorem 5.1 continuation]",
+      "The standard floating-point model from section 2 is inherited by Theorem 5.1 even though it is not restated in the theorem. [PDF p. 5, printed A821, opening of section 2; PDF p. 10, printed A826, Theorem 5.1]",
+      "Condition (5.6), together with nonnegativity and the definition of cond(A^(-1)), is sufficient for norm_inf(Z_1 abs(A^(-1))) <= 1/2; the preceding M-matrix argument then supplies existence and nonnegativity of M_1 and norm_inf(M_1) <= 2. [PDF p. 5, printed A821, eq. (2.2); PDF p. 10, printed A826, eqs. (5.3)-(5.6)]",
+      "Theorem 5.1 invokes solver condition (2.5), not solver conditions (2.3) or (2.4). [PDF p. 5, printed A821, eqs. (2.3)-(2.5); PDF p. 10, printed A826, opening of Theorem 5.1]",
+      "No special condition on the step-1 solver is added by Theorem 5.1 beyond use of Algorithm 1.1; the theorem's displayed recurrence does not contain u_f. [PDF p. 2, printed A818, Algorithm 1.1 and following paragraph; PDF pp. 10-11, printed A826-A827, Theorem 5.1]"
+    ],
+    "algorithm_linkage": "The result is tied to the original, unscaled Algorithm 1.1: solve for the initial approximation at u_f and store it at u; for i=0,1,... compute b-A x_i at u_r and round it to u_s, solve A d_i=r_i at u_s and store d_i at u, then update x_(i+1)=x_i+d_i at u. Theorem 5.1 specifically uses the step-4 componentwise defect model (2.5). [PDF p. 2, printed A818, Algorithm 1.1; PDF p. 5, printed A821, eq. (2.5); PDF p. 10, printed A826, Theorem 5.1]",
+    "numerical_model": [
+      "Residual formation has two rounding stages summarized exactly by rhat_i = b-A xhat_i+Delta r_i and abs(Delta r_i) <= u_s abs(b-A xhat_i) + (1+u_s) gamma_p^r (abs(b)+abs(A)abs(xhat_i)). [PDF p. 7, printed A823, eq. (3.3)]",
+      "The update model is xhat_(i+1)=xhat_i+dhat_i+Delta x_i with abs(Delta x_i) <= u abs(xhat_(i+1)); the bound uses the rounded output xhat_(i+1), not the unrounded sum. [PDF p. 7, printed A823, eq. (3.6)]",
+      "The correction solver is modeled through its computed equation defect: abs(rhat_i-A dhat_i) <= u_s G_i abs(dhat_i). [PDF p. 5, printed A821, eq. (2.5)]",
+      "The exact residual b-A xhat_i and computed residual rhat_i are distinct and are connected by Delta r_i. [PDF p. 7, printed A823, eq. (3.3)]",
+      "The displayed theorem retains the exact gamma_p^r rational factor and the multiplicative rounding factors 1+u_s and 1+u within the adopted standard model. [PDF p. 5, printed A821, gamma definition; PDF p. 11, printed A827, Theorem 5.1 continuation]"
+    ],
+    "error_notions": [
+      "Theorem 5.1 bounds the componentwise absolute true residual vector; it is not directly a forward-error statement or a scalar normwise residual bound. [PDF p. 11, printed A827, continuation of Theorem 5.1]",
+      "The paper defines componentwise relative backward error omega(y) as the minimum epsilon permitting componentwise relative perturbations to both A and b, equivalently max over components of abs(b-Ay)_j divided by (abs(A)abs(y)+abs(b))_j. [PDF p. 5, printed A821, eqs. (2.6)-(2.7)]",
+      "The eventual omega bound in equation (5.8) is a subsequent lesssim estimate, not one of Theorem 5.1's exact conclusions. [PDF p. 11, printed A827, eq. (5.8) and preceding text]",
+      "The additive vector y_i depends on xhat_(i+1), so the recurrence is not an estimate with an iteration-independent additive constant. [PDF p. 11, printed A827, definition of y_i]"
     ],
     "norms": [
-      "The recurrence and its base inequalities are componentwise; only the hypotheses establishing the M-matrix and the interpretation (5.7) use the infinity norm. [PDF pp. 10-11, printed A826-A827, equations (5.2)-(5.7)]",
-      "The matrix condition in (5.6) uses cond(A^{-1}), not cond(A) or \u03ba\u221e(A). [PDF p. 10, printed A826, equation (5.6)]",
-      "The M-matrix resolvent bound is \u2016M_1\u2016\u221e\u22642 under the exact threshold \u2016Z_1|A^{-1}|\u2016\u221e\u22641/2. [PDF p. 10, printed A826, paragraph following equation (5.5)]"
+      "The hypothesis and auxiliary bounds use the infinity norm; the main residual recurrence itself is componentwise and has no enclosing norm. [PDF p. 10, printed A826, eq. (5.6); PDF p. 11, printed A827, Theorem 5.1 continuation]",
+      "The condition uses cond(A^(-1)) = norm_inf(abs(A)abs(A^(-1))), not cond(A) = norm_inf(abs(A^(-1))abs(A)); multiplication order is therefore significant. [PDF p. 5, printed A821, eq. (2.2); PDF p. 10, printed A826, eq. (5.6)]",
+      "The M-matrix argument gives norm_inf(M_1) <= 2 under norm_inf(Z_1 abs(A^(-1))) <= 1/2. [PDF p. 10, printed A826, paragraph following eq. (5.5)]",
+      "The later conversion toward omega uses Lemma 5.2: abs(A)abs(x) <= norm_inf(A) xi(x) abs(x), where xi(x)=max_j abs(x_j)/min_j abs(x_j). [PDF p. 11, printed A827, Lemma 5.2]"
     ],
-    "numerical_model": [
-      "Residual computation contributes \u03b3_p^r and residual rounding contributes u_s and 1+u_s; update rounding contributes u and 1+u. [PDF pp. 7 and 10-11, printed A823 and A826-A827, equations (3.3), (3.6), (5.1)-(5.4), and Theorem 5.1]",
-      "The solver model (2.5) is componentwise and permits an iteration-dependent nonnegative matrix G_i rather than a scalar normwise constant. [PDF p. 5, printed A821, equation (2.5) and its explanatory text]",
-      "The exact theorem recurrence retains all displayed finite-precision factors; the subsequent W_i interpretation is asymptotic. [PDF pp. 10-11, printed A826-A827, Theorem 5.1 and equation (5.7)]"
+    "constants_and_indexing": [
+      "The recurrence advances exactly from residual index i to residual index i+1 and is asserted for every i >= 0. [PDF p. 2, printed A818, Algorithm 1.1; PDF p. 11, printed A827, Theorem 5.1 continuation]",
+      "The uniform threshold in (5.6) is exactly 1/2. [PDF p. 10, printed A826, eq. (5.6)]",
+      "W_i has the exact leading term u_s I and multiplier 1+u_s on M_1 Z_1 abs(A^(-1)). [PDF p. 11, printed A827, definition of W_i]",
+      "y_i has the exact factor (1+u_s)(1+u) gamma_p^r and the separate final term u abs(A)abs(xhat_(i+1)); neither term may be dropped from the theorem. [PDF p. 11, printed A827, definition of y_i]",
+      "The PDF literally uses subscript 1 in Z_1 and M_1, while Z_1's definition contains the iteration-indexed G_i. [PDF p. 10, printed A826, eqs. (5.3) and (5.5); PDF p. 11, printed A827, Theorem 5.1 continuation]",
+      "For dense input, the residual accumulation parameter is p=n+1, not n. [PDF p. 7, printed A823, paragraph preceding eq. (3.3)]"
+    ],
+    "higher_order_terms": [
+      "Theorem 5.1's recurrence, W_i, and y_i are displayed without big-O or lesssim notation; all shown 1+u_s and 1+u factors are retained. [PDF p. 11, printed A827, continuation of Theorem 5.1]",
+      "The statement M_1=I+O(u_s) and the lesssim bounds for W_i and norm_inf(W_i) occur only in the interpretation following the theorem. [PDF p. 11, printed A827, discussion and eq. (5.7)]",
+      "Equation (5.8) is introduced with Hence, ultimately and uses lesssim, so its omitted terms and constants are not specified by the exact theorem. [PDF p. 11, printed A827, eq. (5.8)]"
+    ],
+    "exceptional_values": [
+      "Nonsingularity of A is explicit and is required for every occurrence of A^(-1). [PDF p. 10, printed A826, opening of Theorem 5.1]",
+      "The unscaled rounding-error analysis ignores underflow and overflow; the scaling modification in section 6 is a different algorithmic variant. [PDF p. 12, printed A828, opening of section 6]",
+      "For componentwise backward-error quotients, a zero denominator yields zero when the numerator is zero and infinity otherwise. [PDF p. 6, printed A822, continuation after eq. (2.7)]",
+      "The discussion after (5.8) says that a zero component of abs(b)+abs(A)abs(x) makes obtaining a small componentwise relative backward error ill posed. [PDF p. 11, printed A827, paragraph following eq. (5.8)]"
     ]
   },
-  "task_id": "P03-T3",
   "undebatable_constraints": [
-    "The solver premise is the componentwise inequality (2.5) with a nonnegative matrix G_i. [PDF p. 5, printed A821, equation (2.5) and following text]",
-    "Condition (5.6) is uniform over all i and contains cond(A^{-1}) with the order |A||A^{-1}|. [PDF pp. 5 and 10-11, printed A821 and A826-A827, equation (2.2), equation (5.6), and its continuation]",
-    "The exact theorem conclusion includes both W_i and the additive vector y_i; omitting y_i changes the result. [PDF p. 11, printed A827, Theorem 5.1]",
-    "The products M_1Z_1|A^{-1}|, |A||x\u0302_{i+1}|, and G_i|A^{-1}| have fixed, noncommutative order. [PDF pp. 10-11, printed A826-A827, equations (5.4)-(5.7) and Theorem 5.1]",
-    "Equation (5.7) is an infinity-norm asymptotic interpretation and must not replace the exact componentwise recurrence. [PDF p. 11, printed A827, Theorem 5.1 and equation (5.7)]",
-    "The theorem itself does not claim a componentwise relative backward-error bound for \u03c9; that requires the subsequent lemma and analysis. [PDF p. 11, printed A827, discussion following equation (5.7)]"
-  ]
+    "The contract must preserve the componentwise residual recurrence abs(b-A xhat_(i+1)) <= W_i abs(b-A xhat_i)+y_i for every i >= 0. [PDF p. 11, printed A827, Theorem 5.1 continuation]",
+    "The solver assumption must be the componentwise defect model (2.5), not the distinct forward-error or normwise models (2.3) and (2.4). [PDF p. 5, printed A821, eqs. (2.3)-(2.5); PDF p. 10, printed A826, Theorem 5.1]",
+    "The uniform hypothesis must include both u_s norm_inf(G_i abs(A^(-1))) and (1+u_s) gamma_p^r cond(A^(-1)), with sum at most 1/2 for all i. [PDF pp. 10-11, printed A826-A827, eq. (5.6) and its quantifier]",
+    "The order inside cond(A^(-1)) is abs(A)abs(A^(-1)); replacing it by cond(A) changes the source statement. [PDF p. 5, printed A821, eq. (2.2); PDF p. 10, printed A826, eq. (5.6)]",
+    "W_i, y_i, Z_1, and M_1 must retain their exact displayed factors, matrix order, and the dependence of y_i on xhat_(i+1). [PDF pp. 10-11, printed A826-A827, eqs. (5.3), (5.5), and Theorem 5.1 continuation]",
+    "The residual in the conclusion is the true residual b-A xhat_i, not the computed residual rhat_i. [PDF p. 7, printed A823, eq. (3.3); PDF p. 11, printed A827, Theorem 5.1 continuation]",
+    "The exact theorem must not be replaced by the later approximate or ultimate omega estimate (5.8). [PDF p. 11, printed A827, Theorem 5.1 and eq. (5.8)]",
+    "The result concerns the unscaled Algorithm 1.1 and inherits the analysis's exclusion of underflow and overflow. [PDF p. 2, printed A818, Algorithm 1.1; PDF p. 12, printed A828, opening of section 6]",
+    "The PDF's displayed symbols are Z_1 and M_1, not Z_i and M_i, although Z_1 contains G_i. [PDF p. 10, printed A826, eqs. (5.3) and (5.5)]",
+    "Theorem 5.1 does not assume G_i >= abs(A); the paper mentions that relation only as a practical expectation after equation (5.7). [PDF p. 11, printed A827, discussion following eq. (5.7)]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The PDF literally writes Z_1 and M_1, but Z_1 = u_s G_i + (1+u_s) gamma_p^r abs(A) contains the iteration-dependent G_i, and W_i and y_i use Z_1 and M_1. [PDF pp. 10-11, printed A826-A827, eqs. (5.3), (5.5), and Theorem 5.1 continuation]",
+      "evidence": "No sentence explains whether subscript 1 is intentional fixed notation, a typographical substitute for i, or shorthand for quantities recomputed from each G_i. [PDF pp. 10-11, printed A826-A827, eqs. (5.3), (5.5), and Theorem 5.1 continuation]",
+      "impact": "A formalization must either preserve the literal Z_1 and M_1 notation while exposing their dependence on G_i, or explicitly record an indexing interpretation; silently changing them to Z_i and M_i would resolve an ambiguity not resolved by the PDF. [PDF pp. 10-11, printed A826-A827, cited displays]"
+    },
+    {
+      "issue": "The paper defines gamma_p^r = p u_r/(1-p u_r) through the standard model but Theorem 5.1 does not restate a condition such as p u_r < 1. [PDF p. 5, printed A821, gamma definition; PDF pp. 10-11, printed A826-A827, Theorem 5.1]",
+      "evidence": "The theorem imports gamma_p^r and the standard model without an explicit local domain or positivity hypothesis for its denominator. [PDF p. 5, printed A821, opening of section 2; PDF p. 11, printed A827, definition of y_i]",
+      "impact": "A formal statement must decide whether the usual standard-model side condition is inherited as an assumption or whether gamma_p^r is treated merely as the displayed rational expression; the PDF does not restate that choice in Theorem 5.1. [PDF p. 5, printed A821; PDF pp. 10-11, printed A826-A827]"
+    },
+    {
+      "issue": "The later symbols O(u_s) and lesssim are not assigned explicit constants or quantified remainder terms in this passage. [PDF p. 11, printed A827, discussion and eqs. (5.7)-(5.8)]",
+      "evidence": "They appear only in the interpretation after the exact theorem, including the phrase Hence, ultimately before equation (5.8). [PDF p. 11, printed A827, discussion following Theorem 5.1]",
+      "impact": "Those later estimates cannot be converted into exact inequalities without adding semantics absent from the passage; they should remain separate from the exact source contract. [PDF p. 11, printed A827, eqs. (5.7)-(5.8)]"
+    },
+    {
+      "issue": "Lemma 5.2 defines xi(x)=max_j abs(x_j)/min_j abs(x_j) without restating a zero-denominator convention at the lemma itself. [PDF p. 11, printed A827, Lemma 5.2]",
+      "evidence": "A prior general quotient convention says division by zero is zero for zero numerator and infinity otherwise, while the later discussion specifically warns about zero components. [PDF p. 6, printed A822, continuation after eq. (2.7); PDF p. 11, printed A827, paragraph after eq. (5.8)]",
+      "impact": "This affects only the later approximate conversion to omega, not Theorem 5.1's exact residual recurrence; any formalization of Lemma 5.2 or (5.8) must make the convention explicit. [PDF p. 11, printed A827, Lemma 5.2 and eq. (5.8)]"
+    }
+  ],
+  "contract_plain_english": "Run the original unscaled iterative-refinement algorithm on nonsingular A with the stated four precision parameters. [PDF pp. 1-2, printed A817-A818, eq. (1.1) and Algorithm 1.1] If every computed correction satisfies abs(rhat_i-A dhat_i) <= u_s G_i abs(dhat_i), and if u_s norm_inf(G_i abs(A^(-1))) + (1+u_s) gamma_p^r cond(A^(-1)) <= 1/2 uniformly for all i, then every next computed iterate satisfies the exact componentwise true-residual recurrence abs(b-A xhat_(i+1)) <= W_i abs(b-A xhat_i)+y_i with W_i, y_i, Z_1, and M_1 exactly as displayed above. [PDF p. 5, printed A821, eq. (2.5); PDF pp. 10-11, printed A826-A827, Theorem 5.1] The theorem itself is not equation (5.8): that componentwise relative backward-error estimate is a later, ultimate lesssim interpretation using additional scaling information. [PDF p. 11, printed A827, Lemma 5.2 and eq. (5.8)] Underflow and overflow are excluded from this unscaled analysis. [PDF p. 12, printed A828, opening of section 6]"
 }
+
