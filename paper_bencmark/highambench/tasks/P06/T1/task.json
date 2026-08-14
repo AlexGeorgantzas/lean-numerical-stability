@@ -1,13 +1,16 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, and finite column-to-Frobenius formalization",
+    "kind": "source selection, Model 1.5 execution interface, Theorem 4.4 event certificate, and equation (4.20) aggregation",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The common relative column coefficient eta is nonnegative.",
-    "Every backward-error column satisfies the same Euclidean relative bound against the corresponding input column.",
-    "Only the exact leading-order implication in (4.20) is selected; the paper's separate O(u^2) term is not represented."
+    "The Householder QR run has positive column dimension n and m >= n, and its computed output RHat is upper trapezoidal.",
+    "The scalar computation obeys Model 1.5: equation (1.4), |delta| <= u with 0 <= u < 1, computation-order mean independence, and zero mean under a probability measure.",
+    "The local application bound (4.2) holds for every Householder step on an event of probability one, as explicitly assumed in Lemma 4.2 and Theorem 4.4.",
+    "The paper constants c5 and c6 are positive natural numbers and lambda > 0.",
+    "The input to equation (4.20) is the simultaneous Theorem 4.4 certificate: on one measurable event, the exact orthogonal QR relation and every columnwise bound (4.17) hold, with probability at least p4(lambda,m,n).",
+    "Each additive column remainder is an otherwise unscaled O(u^2) function as u tends to zero; no dependence on ||A||, dimensions, or lambda is added beyond what the paper states."
   ],
   "author_label": null,
   "classification_frozen_before_runs": false,
@@ -17,14 +20,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P06/T1/context.md",
   "formal_statement": {
-    "lean_header": "theorem p06_t1_columnwise_to_frobenius {m n : Nat} (A DeltaA : Fin m -> Fin n -> Real) (eta : Real) ... : p06FrobNorm DeltaA <= eta * p06FrobNorm A",
+    "lean_header": "theorem p06_t1_householder_qr_frobenius_backward_error {Omega} [MeasurableSpace Omega] {m n : Nat} (A) (model : P06Model15 Omega) (run : P06HouseholderQRRun Omega m n A model) (c5 c6 : Nat) (lambda : Real) ... : exists goodEvent Q DeltaA normwiseRemainder, goodEvent is measurable, normwiseRemainder = O(u^2), the event has probability >= p4 and carries upper-trapezoidal RHat, orthogonal Q, A+DeltaA=Q*RHat, and the Frobenius bound (4.20)",
     "namespace": "HighamBench",
-    "plain_language": "A common relative Euclidean bound for all error columns implies the same relative Frobenius bound for the complete error matrix.",
+    "plain_language": "On the same event as Theorem 4.4, the computed Householder QR factor has an exact orthogonal backward-error certificate and the Frobenius error bound c6*lambda*sqrt(n)*gammaTilde_m(lambda)*||A||_F plus an unspecified second-order remainder.",
     "target_file": "paper_bencmark/highambench/tasks/P06/T1/Target.lean",
-    "theorem_name": "p06_t1_columnwise_to_frobenius"
+    "theorem_name": "p06_t1_householder_qr_frobenius_backward_error"
   },
-  "informal_proof": "Square each nonnegative column bound, sum over columns, identify the two sums with squared Frobenius norms, and take square roots using eta >= 0.",
-  "informal_statement": "The deterministic columnwise-to-normwise implication displayed as equation (4.20).",
+  "informal_proof": "Keep the Theorem 4.4 event, Q, DeltaA, RHat, exact factorization, and probability unchanged. Regard the column norms as a finite Euclidean vector. Pointwise (4.17), monotonicity of the Euclidean norm, and its triangle inequality bound this vector by the leading coefficient times the input-column norm vector plus the vector of absolute column remainders. Identify the two column-norm vectors with the Frobenius norms, bound the remainder vector's Euclidean norm by its l1 norm, and choose sum_j |remainder_j(u)| as the normwise remainder. A finite sum of O(u^2) functions remains O(u^2).",
+  "informal_statement": "Equation (4.20), with all inherited Theorem 4.4 Householder-QR, Model 1.5, backward-error, probability, coefficient, dimension, and O(u^2) semantics retained.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -38,23 +41,74 @@
   "result_form_tag": "BND",
   "review_record_not_for_run_prompt": {
     "exact_target_found_in_mathlib": false,
-    "exact_target_found_in_numstability_baseline": true,
+    "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
+      "NumStability.vecNorm2_add_le",
+      "NumStability.vecNorm2_le_of_abs_le",
+      "NumStability.vecNorm2Sq_le_sum_abs_sq",
       "NumStability.frobNormRect_le_of_col_vecNorm2_le"
     ],
-    "note": "The frozen declaration is the exact generic columnwise-to-Frobenius implication. The L proof only adapts P06's paper-scoped norm notation."
+    "note": "The frozen library directly supplies the Euclidean triangle inequality used for the column-norm vectors and nearby exact column-to-Frobenius infrastructure. It has no Model 1.5, probability-event, Householder execution, computed-factor, or asymptotic-remainder theorem matching the repaired target."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "p06VecNorm2",
-    "p06FrobNorm"
+    "p06FrobNorm",
+    "p06RectMatMul",
+    "p06HouseholderMatrix",
+    "p06Orthogonal",
+    "p06UpperTrapezoidal",
+    "p06GammaTilde",
+    "p06QRLeadingCoefficient",
+    "p06P4",
+    "p06SecondOrderAtZero",
+    "p06MeanIndependent",
+    "P06Model15",
+    "P06HouseholderQRRun",
+    "P06Lemma42Assumption",
+    "P06Theorem44ColumnwiseCertificate"
   ],
   "source_locations": [
     {
-      "anchor": "equation (4.20) and its preceding implication sentence",
+      "anchor": "equations (1.4), (1.6), and Definition 1.3",
+      "pdf_page": 2,
+      "printed_page": "1147",
+      "role": "relative-error model, gammaTilde, lambda domain, and mean-independence definition",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "Model 1.5",
+      "pdf_page": 3,
+      "printed_page": "1148",
+      "role": "computation-order mean independence and zero-mean assumptions",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "equations (4.1)-(4.2)",
+      "pdf_page": 6,
+      "printed_page": "1151",
+      "role": "perturbed Householder execution and local operator-norm bound",
+      "section": "4. Application of a sequence of Householder matrices"
+    },
+    {
+      "anchor": "paragraph preceding Lemma 4.2 and Lemma 4.2 hypothesis",
+      "pdf_page": 7,
+      "printed_page": "1152",
+      "role": "probability-one strengthening of the local-bound assumption",
+      "section": "4. Application of a sequence of Householder matrices"
+    },
+    {
+      "anchor": "Theorem 4.4 and equations (4.16)-(4.17)",
+      "pdf_page": 9,
+      "printed_page": "1154",
+      "role": "computed factor, exact orthogonal backward relation, simultaneous column bounds, coefficient, and event probability",
+      "section": "4. Application of a sequence of Householder matrices"
+    },
+    {
+      "anchor": "equations (4.18)-(4.20) and the implication sentence preceding (4.20)",
       "pdf_page": 10,
       "printed_page": "1155",
-      "role": "Frobenius backward-error bound implied by the columnwise estimate",
+      "role": "higher-order interpretation and the selected Frobenius backward-error consequence",
       "section": "4. Application of a sequence of Householder matrices"
     }
   ],
@@ -64,12 +118,12 @@
   "task_id": "P06-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "NumStability.frobNormRect_le_of_col_vecNorm2_le in NumStability/Analysis/MatrixAlgebra.lean states the generic result directly; only unfolding the paper-scoped Euclidean and Frobenius wrappers is required.",
+  "tier_rationale": "The L proof directly applies NumStability.vecNorm2_add_le to the finite vector of column budgets; the remaining steps are paper-scoped wrapper unfolding, pointwise monotonicity, l2-to-l1 remainder control, finite Big-O summation, and projection of the unchanged Theorem 4.4 event certificate.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P06/T1/Target.lean",
     "mode": "shared automatic validator",
     "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
     "reject_statement_changes": true,
-    "required_declaration": "HighamBench.p06_t1_columnwise_to_frobenius"
+    "required_declaration": "HighamBench.p06_t1_householder_qr_frobenius_backward_error"
   }
 }
