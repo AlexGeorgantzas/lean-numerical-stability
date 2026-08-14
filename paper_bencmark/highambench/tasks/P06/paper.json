@@ -90,7 +90,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use equations (4.8)-(4.9)'s first-order perturbed-product expansion with an explicit exact higher-order remainder.",
+      "decision": "Use both forms of equations (4.8)-(4.9), retaining the Model 1.5 computed Householder product, the probability-one local bound, a matrix-valued O(u^2) remainder, and the exact Q^T/F_j factor ordering.",
       "task_id": "P06-T3",
       "theorem_name": "p06_t3_householder_product_first_order_expansion"
     }

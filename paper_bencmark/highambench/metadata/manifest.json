@@ -81,7 +81,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean",
       "role": "P06-only Model 1.5 probability and execution interfaces, Householder QR certificates, finite norms, symmetric dilation, and transformation-sequence expansion",
-      "sha256": "70ab70b4c8180c1e9c4791e7c0862241aa2ed29ee346e9c631ea1d17bccec9a5",
+      "sha256": "a8b26a6d6fb23bb227d6779309edc71f2002b92dc682361a613f1d7f46044445",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -1357,15 +1357,17 @@
             "NumStability.rectMatMulVec_mat_add",
             "NumStability.rectMatMulVec_add",
             "NumStability.rectMatMulVec_smul",
-            "NumStability.matSeqProd_mixed_normwise_perturbation_bound"
+            "NumStability.matMul_assoc",
+            "NumStability.matMul_add_left",
+            "NumStability.matMul_add_right"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs are kept under paper_bencmark/scratch_pad/private_gold/P06/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Induct on the sequence length. Distribute the newest factor P_r+tE_r over the induction hypothesis, collect the terms with zero and one E factors, and identify the remaining terms with the recursive higher-order state.",
-          "informal_statement_paraphrase": "An exact finite version of the first-order product expansion and O(u^2) remainder in equations (4.8)-(4.9).",
+          "informal_proof_paraphrase": "Induct on the number of applications to split the perturbed product into zero-, one-, and multiple-DeltaP terms. Big-O closure gives an O(u^2) multiple-perturbation matrix on the probability-one local event. Householder involution then factors the one-insertion sum through Q^T with the F_j matrices of equation (4.9).",
+          "informal_statement_paraphrase": "Both displayed first-order expansions in equation (4.8), including the exact endpoint ordering in equation (4.9), for the Model 1.5 computed Householder application.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "7ab9b1c444e5abf221bf343eb310b90ddc12d47745085cc62f3448bc11603ca2",
+            "controlled_file_sha256": "81ba8dd1fe214237a86851edcdbc849edd15cb668e86d4f1fcdb15f1801a4cfa",
             "declaration": "p06_t3_householder_product_first_order_expansion",
             "file": "paper_bencmark/highambench/tasks/P06/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -1373,22 +1375,43 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P06Definitions.lean"
             ],
-            "statement_summary": "A product of transformations P_j+tE_j is exactly its unperturbed state plus t times all single-error insertions plus t squared times an explicit higher-order remainder."
+            "statement_summary": "A Model 1.5 computed sequence of normalized Householder applications equals the exact result plus all single local-perturbation insertions and a matrix O(u^2) remainder, both before and after the Q^T/F_j factorization."
           },
           "source_locations": [
+            {
+              "anchor": "Model 1.5",
+              "journal_page": "1148",
+              "pdf_page": 3,
+              "role": "standard relative-error equations, computation-order mean independence, and zero-mean errors",
+              "section": "1. Introduction"
+            },
+            {
+              "anchor": "Lemma 4.1 and equations (4.1)-(4.2)",
+              "journal_page": "1151",
+              "pdf_page": 6,
+              "role": "normalized exact Householder matrices, computed perturbed-product representation, and local subordinate-2-norm bound",
+              "section": "4. Application of a sequence of Householder matrices"
+            },
             {
               "anchor": "equations (4.8)-(4.9) in the proof of Lemma 4.2",
               "journal_page": "1152",
               "pdf_page": 7,
               "role": "first-order expansion of the perturbed transformation product and the single-perturbation insertion matrices",
               "section": "4. Application of a sequence of Householder matrices"
+            },
+            {
+              "anchor": "higher-order discussion following Theorem 4.4",
+              "journal_page": "1154",
+              "pdf_page": 9,
+              "role": "identification of the omitted O(u^2) matrix as terms containing at least two local perturbations",
+              "section": "4. Application of a sequence of Householder matrices"
             }
           ],
           "task_id": "P06-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "The closest compiled facts are NumStability.rectMatMulVec_mat_add, NumStability.rectMatMulVec_add, NumStability.rectMatMulVec_smul, and NumStability.matSeqProd_mixed_normwise_perturbation_bound in NumStability/Analysis/MatrixAlgebra.lean. They do not provide P06's exact first-order coefficient or explicit higher-order state, so the target requires new paper-scoped sequence models and a full induction. The frozen object inventory was searched completely for Householder and sequence-expansion modules; only MatrixAlgebra.olean is relevant.",
-          "title": "Exact first-order expansion of a perturbed Householder product"
+          "tier_reason": "The L proof reuses NumStability.rectMatMulVec_mat_add from the frozen MatrixAlgebra module. The library does not model this Model 1.5 Householder execution, prove closure of the recursively generated multiple-perturbation matrix at O(u^2), or supply the Q^T/F_j factorization. Both conditions therefore require a full product induction, asymptotic matrix reasoning, and Householder cancellation.",
+          "title": "Model 1.5 first-order Householder-product expansion"
         }
       ],
       "topic": "probabilistic rounding-error analysis of Householder QR"
