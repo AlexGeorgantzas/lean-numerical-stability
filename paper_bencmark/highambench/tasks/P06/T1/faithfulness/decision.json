@@ -1,97 +1,71 @@
 {
   "accepted": false,
-  "adjudicated": false,
-  "adjudication_reasons": [],
-  "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T13:20:44.364568+00:00",
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "direct judge requested adjudication",
+    "round-trip judge requested adjudication",
+    "direct S03 is unclear"
+  ],
+  "classification": "not-faithful-weaker",
+  "completed_at_utc": "2026-08-14T21:27:34.111843+00:00",
   "findings": [
     {
-      "category": "missing-backward-error-certificate",
-      "impact": "The proposition does not state that Householder QR is backward stable; it only bounds one arbitrary matrix from assumed column bounds.",
-      "lean_evidence": "R_hat, Q, orthogonality, computation, and the factorization relation are all absent.",
-      "paper_evidence": "Theorem 4.4 requires a computed Householder QR factor R_hat and an orthogonal Q satisfying A + \u0394A = Q R_hat.",
+      "category": "conclusion-as-hypothesis",
+      "evidence": "P06Theorem44ColumnwiseCertificate is a target premise and already contains the high-probability event, Q, DeltaA, exact factorization, and every bound from (4.17), whereas Theorem 4.4 derives these from the numerical and local assumptions.",
+      "impact": "The declaration proves only a consequence after assuming the selected theorem's main conclusion.",
       "severity": "critical"
     },
     {
-      "category": "missing-probabilistic-numerical-model",
-      "impact": "The defining probabilistic rounding-error content of the selected paper result is not formalized.",
-      "lean_evidence": "The target is a deterministic exact-real theorem with no rounding model, random variables, local application bound, event, or probability.",
-      "paper_evidence": "The result is conditional on Model 1.5 and the probability-one local bound and inherits probability at least 1 - 2mn exp(-\u03bb^2).",
+      "category": "higher-order-vacuity",
+      "evidence": "The remainder is existentially chosen after unitRoundoff is fixed, is constrained only by IsBigO at nhds 0, and is evaluated at that fixed value without an absolute value or nonnegativity requirement.",
+      "impact": "For any positive fixed unit roundoff, an isolated positive spike can make the Frobenius inequality automatic without representing an O(u^2) computational error.",
       "severity": "critical"
     },
     {
-      "category": "higher-order-term-deletion",
-      "impact": "The target cannot be instantiated from the paper's displayed columnwise estimate without an unjustified treatment of the remainder.",
-      "lean_evidence": "The premise and conclusion contain no remainder and assert exact multiplicative inequalities.",
-      "paper_evidence": "Equation (4.20) includes an additive O(u^2) term whose scale and uniformity are not specified.",
+      "category": "algorithm-linkage",
+      "evidence": "The run permits arbitrary normalized reflector vectors and perturbations with a generic recurrence and final triangularity, while the paper requires reflectors constructed from successive computed active columns and explicit annihilation of entries.",
+      "impact": "The formal execution class includes processes not established to be executions of the source algorithm.",
       "severity": "major"
     },
     {
-      "category": "coefficient-and-domain-abstraction",
-      "impact": "The theorem does not preserve the paper's dimension dependence, constants, parameters, or QR domain.",
-      "lean_evidence": "An arbitrary nonnegative \u03b7 replaces the entire expression, and m and n are unrestricted natural numbers.",
-      "paper_evidence": "The leading factor is c_6 \u03bb sqrt(n) gamma_tilde_m(\u03bb), with \u03bb > 0 and QR context m \u2265 n.",
+      "category": "incomplete-conclusion",
+      "evidence": "Theorem 4.4's simultaneous per-column bounds are absent from the target conclusion and occur only in the assumed certificate.",
+      "impact": "The declaration cannot recover the complete selected theorem-and-consequence result.",
       "severity": "major"
     },
     {
-      "category": "valid-aggregation-sublemma",
-      "impact": "The declaration is mathematically relevant as a supporting lemma, but it is not the selected paper result.",
-      "lean_evidence": "The definitions and theorem correctly prove the generic exact implication from pure multiplicative column 2-norm bounds to a Frobenius bound.",
-      "paper_evidence": "The paper states that the all-column bound (4.17) implies the Frobenius bound (4.20).",
+      "category": "constant-quantification",
+      "evidence": "The paper uses fixed symbolic constants c5 and c6, while Lean universally quantifies positive natural choices and conditions the theorem on packages indexed by them.",
+      "impact": "The declaration does not assert existence of the paper's constants, although its displayed coefficient is otherwise correct.",
+      "severity": "minor"
+    },
+    {
+      "category": "event-witness-scope",
+      "evidence": "The PDF context treats the exact relation as executionwise and attaches probability to the bounds; Lean states orthogonality and factorization only on goodEvent.",
+      "impact": "This textual scope differs, but it is not an independent logical weakening here because nonmeasurable existential witnesses can be extended outside goodEvent.",
       "severity": "note"
-    },
-    {
-      "category": "algorithm-and-conclusion-omission",
-      "impact": "The translated proposition is not a backward-stability result for the paper's algorithm.",
-      "paper_evidence": "Theorem 4.4 links Delta A to computed R_hat through A + Delta A = Q R_hat with Q orthogonal.",
-      "severity": "critical",
-      "translation_evidence": "R_hat, Q, orthogonality, Householder QR, and the exact factorization are absent."
-    },
-    {
-      "category": "higher-order-term-deletion",
-      "impact": "The translation converts a first-order asymptotic estimate into a different all-orders claim.",
-      "paper_evidence": "Equation (4.20) contains an additive O(u^2) remainder whose scale is explicitly unresolved by the source packet.",
-      "severity": "critical",
-      "translation_evidence": "The conclusion is an exact pure multiplicative inequality with no remainder."
-    },
-    {
-      "category": "numerical-model-and-probability",
-      "impact": "The main conditions under which the paper establishes its estimate are lost.",
-      "paper_evidence": "The result depends on Model 1.5, the probability-1 local bound, and an inherited event probability at least 1 - 2mn exp(-lambda^2).",
-      "severity": "major",
-      "translation_evidence": "No floating-point, stochastic, local-error, or probability structure occurs."
-    },
-    {
-      "category": "quantifiers-and-parameters",
-      "impact": "Neither direction of semantic implication holds between the two statements.",
-      "paper_evidence": "The source uses computed-data-dependent witnesses and the coefficient c_6 lambda sqrt(n) gamma_tilde_m(lambda), with m >= n and lambda > 0.",
-      "severity": "major",
-      "translation_evidence": "DeltaA is universally quantified and the coefficient is an arbitrary nonnegative eta; dimensions are unrestricted naturals."
-    },
-    {
-      "category": "norm-aggregation",
-      "impact": "This preserves one mathematical step used by the paper but not the P06-T1 result as a whole.",
-      "paper_evidence": "The Frobenius estimate is obtained from simultaneous Euclidean column bounds.",
-      "severity": "note",
-      "translation_evidence": "The translation correctly formalizes the abstract columnwise-Euclidean to Frobenius aggregation principle."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean theorem cannot produce the computed R_hat, an orthogonal Q, the exact backward relation, the algorithm-generated \u0394A, Model 1.5 assumptions, the probability guarantee, or the concrete first-order coefficient. Moreover, the paper's columnwise estimate contains O(u^2), so it does not directly supply Lean's exact hcol premise.",
+      "reasoning": "The Lean proposition does not derive Theorem 4.4's simultaneous columnwise result from Model 1.5 and the local probability-one assumption. It assumes that result in a certificate, omits the column bounds from its conclusion, admits executions not linked to Householder QR, and allows a fixed-unit-roundoff remainder spike to trivialize its quantitative bound.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper establishes an algorithm-specific high-probability result for particular computed quantities, not the universally quantified deterministic implication for every A, \u0394A, and \u03b7. Its additive O(u^2) terms also do not imply the target's exact pure multiplicative premise and conclusion.",
-      "verdict": "no"
+      "reasoning": "For a corresponding genuine Householder QR execution, Theorem 4.4 supplies the event, orthogonal witness, exact factorization, and simultaneous column bounds required by the certificate. The paper explicitly states that (4.17) implies the Frobenius bound (4.20), which is at least as strong as the Lean conclusion.",
+      "verdict": "yes"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-different",
-    "roundtrip": "not-faithful-different"
+    "direct": "not-faithful-weaker",
+    "roundtrip": "not-faithful-weaker"
   },
-  "rationale": "The declaration faithfully formalizes a nonvacuous deterministic norm-aggregation lemma with the correct finite-dimensional Euclidean and Frobenius norms. It does not formalize P06-T1's Householder QR backward-error theorem: the computed factor, orthogonal witness, exact backward relation, rounding and probability hypotheses, inherited probability, exact leading expression, dimension restrictions, and additive O(u^2) remainder are absent. The stronger exact hcol premise also prevents direct instantiation from equation (4.17). Consequently neither statement implies the other at the claimed semantic scope, so the result is not-faithful-different and does not require adjudication.",
-  "remaining_uncertainties": [],
+  "rationale": "Primary paper evidence confirms the exact coefficient, probability, norms, tall real dimensions, local probability-one assumption, backward relation, simultaneous column bounds, and Frobenius consequence. The declaration nevertheless assumes the complete columnwise theorem, proves only its aggregation, under-specifies the source algorithm, and encodes the higher-order remainder so that the asserted bound can be trivial at a fixed positive unit roundoff. Its apparently broader run and constant quantification therefore do not constitute genuine nonvacuous strength. The paper result yields the Lean consequence, but the Lean proposition does not yield the paper result, so the directionally consistent classification is not-faithful-weaker.",
+  "remaining_uncertainties": [
+    "The PDF does not quantify the coefficient, dimension dependence, input-norm scaling, or uniformity hidden in its additive O(u^2) terms.",
+    "The numerical values of c5 and c6 are not supplied; they are only described as integer constants of modest size.",
+    "The paper does not formalize measurability or canonical Skolemization of Q and DeltaA as random functions. This does not alter the classification because the Lean declaration also imposes no measurability on those witnesses."
+  ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P06-T1"

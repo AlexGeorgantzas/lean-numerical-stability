@@ -1,197 +1,1000 @@
 {
   "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "5c0b359341957a9a846813c29b78c4d35b52235beb62b4d080d22e4a7ae1105e",
+  "dossier_sha256": "c831f0a8ecb9d8f82d2688aa95507ae629a992991730fa7c338c0420396eddab",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "For an m-by-n real array A, this is sqrt(sum over i in Fin m of sum over j in Fin n of (A i j)^2), namely its Frobenius norm.",
-      "effect_on_target": "It defines both matrix-level quantities in the conclusion: the Frobenius norms of DeltaA and A.",
+      "meaning": "An execution package for an m-by-n real matrix A and a stochastic model. Its constructor records n <= m, 0 < n, Householder vectors, local perturbation matrices, intermediate states, the final computed matrix RHat, output-operation indices, and the stated recurrence and structural properties.",
+      "effect_on_target": "The universally quantified run supplies the computed m-by-n matrix RHat used in every eventwise conclusion and implicitly imposes the execution package's dimension, recurrence, computed-value, and upper-trapezoidal conditions.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "For a real vector x indexed by Fin n, this is sqrt(sum over i in Fin n of (x i)^2), namely its Euclidean norm.",
-      "effect_on_target": "For each column j, it defines the Euclidean norms of i maps to DeltaA i j and i maps to A i j in the columnwise hypothesis.",
+      "meaning": "The projection of an execution package returning RHat : Omega -> Fin m -> Fin n -> Real.",
+      "effect_on_target": "It is the random computed matrix appearing in the upper-trapezoidal assertion and in the exact factorization A + DeltaA = Q RHat.",
       "status": "understood"
     },
     {
       "id": "D003",
-      "name": "Fin",
-      "meaning": "Fin n is the finite index type with n positions.",
-      "effect_on_target": "Fin m indexes rows and Fin n indexes columns; these types may be empty when the corresponding dimension is zero.",
+      "name": "LocalDef003",
+      "meaning": "A local-control package for run, c5, and lambda. Its constructor supplies a measurable probability-one event whose membership is equivalent to every local perturbation having Euclidean operator bound c5 times exp((lambda sqrt(m) u + m u^2)/(1-u)) - 1, where u is the model's unit roundoff.",
+      "effect_on_target": "The target assumes such a package as hlocal. It is required by the columnwise package but contributes no separately stated numerical term to the final conclusion.",
       "status": "understood"
     },
     {
       "id": "D004",
-      "name": "HMul.hMul",
-      "meaning": "This selects the heterogeneous multiplication operation supplied by an HMul instance.",
-      "effect_on_target": "With the real multiplication instances used here, it interprets both occurrences of eta times a norm as ordinary real multiplication.",
+      "name": "LocalDef004",
+      "meaning": "A stochastic arithmetic-model package containing a probability measure, an operation count, exact values, computed values, relative errors, and a unit roundoff. Its constructor requires total mass one, 0 <= u < 1, computedValue = exactValue*(1+error), absolute error at most u, measurability, integrability, zero means, and the supplied previous-error factorization property.",
+      "effect_on_target": "The model supplies the probability measure used for the good-event bound and the unit roundoff used in the perturbation coefficient and remainder evaluation. Its internal assumptions make that measure finite and constrain u.",
       "status": "understood"
     },
     {
       "id": "D005",
-      "name": "LE.le",
-      "meaning": "This selects the less-than-or-equal relation supplied by an LE instance.",
-      "effect_on_target": "With the real order instance, it interprets all hypotheses and the conclusion using the usual order on real numbers.",
+      "name": "LocalDef005",
+      "meaning": "The projection of a stochastic model returning its measure on Omega.",
+      "effect_on_target": "This is the probability measure whose real-valued mass of the existential good event is bounded below.",
       "status": "understood"
     },
     {
       "id": "D006",
-      "name": "Nat",
-      "meaning": "Nat is the type of natural numbers.",
-      "effect_on_target": "The universally quantified natural numbers m and n are the matrix dimensions, and natural numbers also provide the exponent used for squaring.",
+      "name": "LocalDef006",
+      "meaning": "The projection of a stochastic model returning its real unit roundoff u.",
+      "effect_on_target": "The final coefficient is evaluated at u, and the normwise remainder is evaluated at the same u.",
       "status": "understood"
     },
     {
       "id": "D007",
-      "name": "OfNat.ofNat",
-      "meaning": "This interprets a natural-number literal in a target type through its OfNat instance.",
-      "effect_on_target": "It interprets the literal 0 in the assumption 0 <= eta as the real number zero.",
+      "name": "LocalDef007",
+      "meaning": "A columnwise backward-error package. Its constructor provides a measurable good event with probability at least 1-2mn exp(-lambda^2), random Q and DeltaA, and per-column remainders O(u^2), such that on the event Q^T Q = I, A+DeltaA=Q RHat, and each column perturbation obeys the stated Euclidean bound.",
+      "effect_on_target": "The target assumes this package and concludes a corresponding Frobenius-norm perturbation bound with one pointwise normwise O(u^2) remainder.",
       "status": "understood"
     },
     {
       "id": "D008",
-      "name": "Real",
-      "meaning": "Real is the type of real numbers.",
-      "effect_on_target": "Matrix entries, eta, all norms, products, and inequalities in the proposition are real-valued.",
+      "name": "LocalDef008",
+      "meaning": "For a real m-by-n matrix B, sqrt(sum_i sum_j B_ij^2), the Frobenius norm.",
+      "effect_on_target": "It measures A and DeltaA in the final normwise perturbation inequality.",
       "status": "understood"
     },
     {
       "id": "D009",
-      "name": "Real.instLE",
-      "meaning": "This is the less-than-or-equal structure on the real numbers.",
-      "effect_on_target": "It makes every occurrence of <= the standard real-order comparison.",
+      "name": "LocalDef009",
+      "meaning": "For an m-by-m real matrix Q, the condition that for all i,j, sum_k Q_ki Q_kj equals 1 when i=j and 0 otherwise; equivalently Q^T Q = I_m.",
+      "effect_on_target": "It requires Q(omega) to have orthonormal columns for every omega in the good event.",
       "status": "understood"
     },
     {
       "id": "D010",
-      "name": "Real.instMul",
-      "meaning": "This is the multiplication structure on the real numbers.",
-      "effect_on_target": "It supplies ordinary real multiplication for eta times each vector or matrix norm.",
+      "name": "LocalDef010",
+      "meaning": "The real number 1 - 2mn exp(-lambda^2), with m and n cast to reals.",
+      "effect_on_target": "It is the exact lower bound on the real-valued probability of the good event.",
       "status": "understood"
     },
     {
       "id": "D011",
-      "name": "Real.instZero",
-      "meaning": "This is the distinguished zero element of the real numbers.",
-      "effect_on_target": "It supplies the real zero occurring in the nonnegativity assumption on eta.",
+      "name": "LocalDef011",
+      "meaning": "For unit roundoff u, the coefficient c6*lambda*sqrt(n)*(exp((lambda*sqrt(m)*u + m*u^2)/(1-u)) - 1).",
+      "effect_on_target": "Multiplying the Frobenius norm of A, it forms the leading term in the final bound for the Frobenius norm of DeltaA.",
       "status": "understood"
     },
     {
       "id": "D012",
-      "name": "Zero.toOfNat0",
-      "meaning": "This constructs the interpretation of the numeral 0 from a type's Zero instance.",
-      "effect_on_target": "Together with Real.instZero, it ensures that the numeral in 0 <= eta is real zero.",
+      "name": "LocalDef012",
+      "meaning": "Ordinary matrix multiplication: (QR)_ij = sum_k Q_ik R_kj.",
+      "effect_on_target": "It gives the exact eventwise equality A + DeltaA(omega) = Q(omega) RHat(omega).",
       "status": "understood"
     },
     {
       "id": "D013",
-      "name": "instHMul",
-      "meaning": "For a type with multiplication, this constructs homogeneous heterogeneous multiplication by using that multiplication operation.",
-      "effect_on_target": "It converts the real multiplication structure into the HMul instance used to form eta times each norm.",
+      "name": "LocalDef013",
+      "meaning": "The assertion that a real function remainder(u) is O(u^2) as u tends to 0 through the real neighborhood filter.",
+      "effect_on_target": "For each fixed omega, the existential normwise remainder as a function of u must be O(u^2). The assertion is pointwise in omega.",
       "status": "understood"
     },
     {
       "id": "D014",
-      "name": "Fin.fintype",
-      "meaning": "This provides a finite enumeration of every element of Fin n using the finite range of length n.",
-      "effect_on_target": "It permits the norm definitions to sum over all row and column indices.",
+      "name": "LocalDef014",
+      "meaning": "An m-by-n matrix R is upper trapezoidal: R_ij = 0 whenever the column index j is strictly less than the row index i.",
+      "effect_on_target": "RHat(omega) must satisfy this condition for every omega in the good event; the input execution package in fact already records it for every omega.",
       "status": "understood"
     },
     {
       "id": "D015",
-      "name": "Finset.sum",
-      "meaning": "This sums the values of a function over a finite set using the additive commutative monoid operation.",
-      "effect_on_target": "It forms the finite sums of squared entries in both the Euclidean column norms and the Frobenius matrix norms.",
+      "name": "LocalDef015",
+      "meaning": "The constructor for an execution package. It requires n <= m and 0 < n; vectors v_j with sum_i v_ji^2=2; states X_0=A and X_{j+1}=(I-v_j v_j^T+E_j)X_j; RHat=X_n; every RHat entry to equal a model computed value; and RHat to be upper trapezoidal.",
+      "effect_on_target": "Because run is an input of the constructed type, these conditions are implicit hypotheses. They constrain dimensions and identify the RHat used in the conclusion as the computed final state.",
       "status": "understood"
     },
     {
       "id": "D016",
-      "name": "Finset.univ",
-      "meaning": "For a finite type, this is the finite set containing all elements of that type.",
-      "effect_on_target": "It makes each norm sum range over every relevant row or column index, with an empty sum when the index type is empty.",
+      "name": "LocalDef016",
+      "meaning": "The constructor for the local-control package. It records a measurable event of measure exactly one, characterized by simultaneous bounds ||E_j x||_2 <= c5*gamma_m(lambda,u)*||x||_2 for every column j and vector x.",
+      "effect_on_target": "It explains the semantic content of the assumed hlocal object on which the columnwise hypothesis depends.",
       "status": "understood"
     },
     {
       "id": "D017",
-      "name": "HPow.hPow",
-      "meaning": "This selects the exponentiation operation supplied by an HPow instance.",
-      "effect_on_target": "It interprets each entry raised to the exponent 2 in the norm definitions.",
+      "name": "LocalDef017",
+      "meaning": "The constructor for the stochastic model, with a probability measure, operation-indexed exact/computed/error values, relative-error equation, uniform absolute error bound u, measurable integrable zero-mean errors, and factorization against functions of earlier errors.",
+      "effect_on_target": "It ensures that model.probability is a probability measure and that model.unitRoundoff satisfies 0 <= u < 1, while linking run outputs to modeled computed values.",
       "status": "understood"
     },
     {
       "id": "D018",
-      "name": "Monoid.toNatPow",
-      "meaning": "This equips a monoid with exponentiation by natural numbers through repeated multiplication.",
-      "effect_on_target": "For real entries, it gives the natural power operation under which exponent 2 is ordinary squaring.",
+      "name": "LocalDef018",
+      "meaning": "The constructor for the columnwise package. It records a measurable event with the target probability threshold, Q, DeltaA, per-column O(u^2) remainders, eventwise orthogonality and exact factorization, and column bounds using c6*lambda*sqrt(n)*gamma_m(lambda,u).",
+      "effect_on_target": "This structured assumption is the direct source of the existential good event and backward factorization that the target upgrades from columnwise Euclidean bounds to one Frobenius bound.",
       "status": "understood"
     },
     {
       "id": "D019",
-      "name": "Real.instAddCommMonoid",
-      "meaning": "This is the additive commutative monoid structure on the real numbers.",
-      "effect_on_target": "It supplies real addition and zero for all finite sums in the norm definitions.",
+      "name": "LocalDef019",
+      "meaning": "The Kronecker delta: delta_ij is 1 if i=j and 0 otherwise.",
+      "effect_on_target": "It is the right-hand side of the equations defining Q^T Q = I.",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "Real.instMonoid",
-      "meaning": "This is the multiplicative monoid structure on the real numbers.",
-      "effect_on_target": "It supplies natural-number exponentiation of real entries, in particular their squares.",
+      "name": "LocalDef020",
+      "meaning": "gamma_k(lambda,u) = exp((lambda*sqrt(k)*u + k*u^2)/(1-u)) - 1.",
+      "effect_on_target": "With k=m, it appears in both the local-control bounds and the final coefficient c6*lambda*sqrt(n)*gamma_m(lambda,u).",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "Real.sqrt",
-      "meaning": "This is Lean's nonnegative real square-root operation, implemented through the nonnegative reals.",
-      "effect_on_target": "It turns each sum of squares into the corresponding Euclidean or Frobenius norm.",
+      "name": "LocalDef021",
+      "meaning": "A proof that the natural number 1+1 is at least two.",
+      "effect_on_target": "It provides typeclass evidence for interpreting the numeral 2 in polymorphic arithmetic; it adds no mathematical hypothesis.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "instHPow",
-      "meaning": "This converts an ordinary Pow instance into the homogeneous HPow instance that uses the same exponentiation.",
-      "effect_on_target": "It connects real natural-number powers to the HPow syntax used for each squared matrix entry.",
+      "name": "LocalDef022",
+      "meaning": "The projection of run returning its column-indexed random local perturbation matrices.",
+      "effect_on_target": "These matrices are the objects controlled by hlocal and used in the execution recurrence underlying the assumed columnwise result.",
       "status": "understood"
     },
     {
       "id": "D023",
+      "name": "LocalDef023",
+      "meaning": "The projection of a stochastic model returning its operation-indexed computed-value functions.",
+      "effect_on_target": "The execution package requires each entry of RHat to equal one such computed value.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "LocalDef024",
+      "meaning": "The projection of a stochastic model returning its natural-number operation count.",
+      "effect_on_target": "It determines the finite index type for modeled operations and for the output index assigned to each RHat entry.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "LocalDef025",
+      "meaning": "For a vector v, the matrix with entries delta_ij - v_i v_j, namely I-vv^T.",
+      "effect_on_target": "It is the unperturbed transformation in each step of the execution recurrence.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "LocalDef026",
+      "meaning": "For each error e_k and every function g of the preceding errors, whenever the relevant functions are integrable, integral(g(previous errors)*e_k) equals integral(g(previous errors))*integral(e_k).",
+      "effect_on_target": "It is an internal stochastic-model assumption expressing a precise expectation-factorization property. It does not add a separate clause to the final existential conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "LocalDef027",
+      "meaning": "For an m-by-n matrix B and real L, the quantified operator bound ||Bx||_2 <= L||x||_2 for every real n-vector x.",
+      "effect_on_target": "It expresses the local perturbation bounds contained in hlocal.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "LocalDef028",
+      "meaning": "For a finite real vector x, sqrt(sum_i x_i^2), its Euclidean norm.",
+      "effect_on_target": "It measures vectors in local operator bounds and columns in the assumed columnwise perturbation bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "LocalDef029",
+      "meaning": "Ordinary matrix-vector multiplication: (Bx)_i = sum_j B_ij x_j.",
+      "effect_on_target": "Together with the Euclidean norm, it defines the operator bounds used by the local-control package.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "LocalDef030",
+      "meaning": "For operation k and outcome omega, the vector consisting of errors with indices strictly before k.",
+      "effect_on_target": "It specifies exactly which previous errors may be supplied to the test function g in the model's factorization condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "LocalDef031",
+      "meaning": "A proof that an index lying below k.val also lies below the total number of steps when k is a valid step index.",
+      "effect_on_target": "It validates the finite indices used to form the previous-error vector and has no independent mathematical content in the target.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "It requires all measurability, Big-O, probability, structural, factorization, and norm-bound clauses to hold simultaneously.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "DFunLike.coe",
+      "meaning": "The coercion that evaluates a function-like object at an argument.",
+      "effect_on_target": "It permits the probability measure to be evaluated on the good event.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "ENNReal",
+      "meaning": "The extended nonnegative real numbers, represented as nonnegative reals with a top element.",
+      "effect_on_target": "Measure values, including the probability of the good event, initially lie in this type.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "ENNReal.toReal",
+      "meaning": "The map from an extended nonnegative real to a real obtained through its nonnegative-real component.",
+      "effect_on_target": "It converts the measure of the good event to the real number compared with 1-2mn exp(-lambda^2). The model's total mass one guarantees finiteness here.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "It expresses the exact matrix factorization and the equations defining orthogonality and triangular structure.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "It introduces, in order, a good event, a random square matrix Q, a random perturbation DeltaA, and a remainder depending on u and omega.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "Fin",
+      "meaning": "Fin d is the type of natural indices i satisfying 0 <= i < d.",
+      "effect_on_target": "It fixes the exact finite dimensions of matrices, vectors, operation indices, and all finite sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "HAdd.hAdd",
+      "meaning": "Typeclass-dispatched addition.",
+      "effect_on_target": "It denotes ordinary real addition and pointwise matrix addition, including A + DeltaA and the additive perturbation bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "HMul.hMul",
+      "meaning": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "It denotes ordinary real multiplication in coefficients, sums, products, and model equations.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "LE.le",
+      "meaning": "Typeclass-dispatched non-strict order.",
+      "effect_on_target": "It expresses the lower probability bound and the upper Frobenius perturbation bound, as well as internal model bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "LT.lt",
+      "meaning": "Typeclass-dispatched strict order.",
+      "effect_on_target": "It expresses 0<c5, 0<c6, 0<lambda, finite-index comparisons, and internal restrictions such as u<1.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "MeasurableSet",
+      "meaning": "The predicate that a set belongs to the supplied measurable-space structure.",
+      "effect_on_target": "The existential good event must be measurable.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "MeasurableSpace",
+      "meaning": "A sigma-algebra structure on a type.",
+      "effect_on_target": "Omega is universally equipped with this structure, allowing measurable events and measures to be stated.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "MeasureTheory.Measure",
+      "meaning": "A measure on a measurable space.",
+      "effect_on_target": "The stochastic model contains such a measure, normalized to total mass one, and the conclusion bounds its mass on the good event.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "MeasureTheory.Measure.instFunLike",
+      "meaning": "The function-like instance evaluating a measure on a measurable set-valued argument and returning an extended nonnegative real.",
+      "effect_on_target": "It gives the expression model.probability(goodEvent).",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "Membership.mem",
+      "meaning": "Typeclass-dispatched membership.",
+      "effect_on_target": "It restricts the structural and perturbation conclusions to outcomes omega belonging to the good event.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "Nat",
+      "meaning": "The natural numbers.",
+      "effect_on_target": "The dimensions m,n and constants c5,c6 are natural numbers, as are operation counts and finite indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "OfNat.ofNat",
+      "meaning": "Typeclass-based interpretation of natural-number literals.",
+      "effect_on_target": "It supplies literals such as 0, 1, and 2 in the relevant natural or real types.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "Pi.instAdd",
+      "meaning": "The addition instance on dependent function types, defined pointwise.",
+      "effect_on_target": "It makes matrix addition pointwise, so (A+DeltaA)_ij = A_ij+DeltaA_ij.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "Real",
+      "meaning": "The real numbers.",
+      "effect_on_target": "Matrix entries, lambda, unit roundoff, norms, probabilities after conversion, coefficients, and remainders are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "Real.instAdd",
+      "meaning": "Ordinary addition on real numbers.",
+      "effect_on_target": "It interprets scalar and pointwise matrix additions in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "Real.instLE",
+      "meaning": "The ordinary non-strict order on real numbers.",
+      "effect_on_target": "All real inequalities in the probability and perturbation bounds use the usual real order.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "Real.instLT",
+      "meaning": "The ordinary strict order on real numbers.",
+      "effect_on_target": "It gives the usual meanings of 0<lambda and the model condition u<1.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "Real.instMul",
+      "meaning": "Ordinary multiplication on real numbers.",
+      "effect_on_target": "It interprets every scalar product in coefficients, sums, matrix operations, and model equations.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "Real.instZero",
+      "meaning": "The real additive identity 0.",
+      "effect_on_target": "It interprets positivity conditions, zero matrix entries, and the limit point in the Big-O condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "Set",
+      "meaning": "A set of elements of a type, represented by its membership predicate.",
+      "effect_on_target": "The first existential witness is a set of outcomes in Omega.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "Set.instMembership",
+      "meaning": "The standard membership instance for predicate-defined sets.",
+      "effect_on_target": "It gives the usual interpretation of omega belonging to the good event.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "Zero.toOfNat0",
+      "meaning": "The instance interpreting the numeral 0 from a type's zero element.",
+      "effect_on_target": "It supplies the real zero used in 0<lambda and related expressions without adding an assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "instHAdd",
+      "meaning": "The homogeneous-addition instance induced by an ordinary addition operation.",
+      "effect_on_target": "It routes HAdd notation to pointwise matrix addition or ordinary real and natural addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "instHMul",
+      "meaning": "The homogeneous-multiplication instance induced by an ordinary multiplication operation.",
+      "effect_on_target": "It routes HMul notation to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "instLTNat",
+      "meaning": "The ordinary strict order on natural numbers.",
+      "effect_on_target": "It gives the meanings of 0<c5, 0<c6, finite-index bounds, and the below-diagonal test j<i.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
       "name": "instOfNatNat",
-      "meaning": "This interprets each natural-number literal n as the natural number n itself.",
-      "effect_on_target": "It interprets the exponent literal 2 in every squared-entry term as the natural number two.",
+      "meaning": "The instance interpreting each natural literal as that same natural number.",
+      "effect_on_target": "It supplies natural literals used in positivity, indexing, and powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "Asymptotics.IsBigO",
+      "meaning": "The norm-based asymptotic relation f = O(g) along a specified filter.",
+      "effect_on_target": "Applied at the neighborhood filter of 0 with g(u)=u^2, it defines the required quadratic-order remainder.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "Fin.fintype",
+      "meaning": "The finite enumeration structure on Fin n.",
+      "effect_on_target": "It makes all sums over matrix and vector indices finite and exhaustive.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Fin.val",
+      "meaning": "The underlying natural-number value of a finite index.",
+      "effect_on_target": "It is used to compare row and column positions and to select errors preceding a given operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "Finset.sum",
+      "meaning": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It defines Euclidean and Frobenius norms, matrix products, orthogonality equations, and the execution transformations.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It makes each sum range over all valid rows, columns, or inner-product indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "HPow.hPow",
+      "meaning": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "It supplies squares of entries, lambda, and u in norms, probability bounds, and coefficients.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "HSub.hSub",
+      "meaning": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "It forms 1-2mn exp(-lambda^2), 1-u, exp(...) - 1, and I-vv^T.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "Monoid.toNatPow",
+      "meaning": "The natural-exponent power operation induced by a monoid.",
+      "effect_on_target": "It interprets real squares such as lambda^2, u^2, and matrix-entry squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "Nat.cast",
+      "meaning": "The canonical cast of a natural number into a type with natural-number casts.",
+      "effect_on_target": "It turns c6, m, and n into reals in probability and perturbation coefficients.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "Neg.neg",
+      "meaning": "Typeclass-dispatched unary negation.",
+      "effect_on_target": "It forms the exponent -lambda^2 in the probability threshold.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "One.toOfNat1",
+      "meaning": "The instance interpreting the numeral 1 from a type's multiplicative identity.",
+      "effect_on_target": "It supplies real and extended-nonnegative-real ones in formulas and probability normalization.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "PseudoMetricSpace.toUniformSpace",
+      "meaning": "The uniform-space structure inherited from a pseudometric space.",
+      "effect_on_target": "It participates in giving the reals their standard topology for the neighborhood-based Big-O statement.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "Real.exp",
+      "meaning": "The real exponential function.",
+      "effect_on_target": "It appears in both the probability threshold exp(-lambda^2) and gamma_m(lambda,u).",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative monoid structure of the reals.",
+      "effect_on_target": "It permits finite real sums used in norms, products, and orthogonality.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure of the reals.",
+      "effect_on_target": "It supplies natural powers of real quantities.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "Real.instNatCast",
+      "meaning": "The canonical embedding of natural numbers into the reals.",
+      "effect_on_target": "It interprets m, n, c5, c6, and numerical constants as real scalars where required.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "Real.instNeg",
+      "meaning": "Ordinary negation on the reals.",
+      "effect_on_target": "It interprets -lambda^2 and real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "Real.instOne",
+      "meaning": "The real multiplicative identity 1.",
+      "effect_on_target": "It appears in the probability threshold, denominator 1-u, and exponential correction exp(...) - 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "Real.instSub",
+      "meaning": "Ordinary real subtraction, defined as addition of the negative.",
+      "effect_on_target": "It interprets all real differences occurring in the explicit constants.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "Real.norm",
+      "meaning": "The norm on a real number, equal to its absolute value.",
+      "effect_on_target": "It gives the norm used by the Big-O relation, so the remainder comparison is in absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "Real.pseudoMetricSpace",
+      "meaning": "The standard pseudometric structure on the reals with distance |x-y|.",
+      "effect_on_target": "It induces the ordinary real topology used for convergence as u tends to zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "Real.sqrt",
+      "meaning": "The nonnegative real square-root function.",
+      "effect_on_target": "It defines Euclidean and Frobenius norms and the factors sqrt(m) and sqrt(n).",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "UniformSpace.toTopologicalSpace",
+      "meaning": "The topological-space structure inherited from a uniform space.",
+      "effect_on_target": "It provides the standard real neighborhood filter used in the Big-O condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "instDecidableEqFin",
+      "meaning": "Decidable equality for finite indices, implemented by comparing their natural values.",
+      "effect_on_target": "It allows the Kronecker delta to choose between 1 and 0 according to whether two indices are equal.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "instHPow",
+      "meaning": "The heterogeneous-power instance induced by an existing power operation.",
+      "effect_on_target": "It routes power notation to natural powers of real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "instHSub",
+      "meaning": "The homogeneous-subtraction instance induced by an ordinary subtraction operation.",
+      "effect_on_target": "It routes subtraction notation to ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "An instance interpreting a numeral n in a type with natural casts when n is certified to be at least two.",
+      "effect_on_target": "It supports polymorphic occurrences of numerical constants such as 2 without imposing an additional target hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "nhds",
+      "meaning": "The neighborhood filter of a point in a topological space.",
+      "effect_on_target": "nhds 0 specifies that each remainder is O(u^2) as the real variable u approaches zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "AddCommMonoidWithOne.toAddMonoidWithOne",
+      "meaning": "The additive-monoid-with-one structure inherited from an additive commutative monoid with one.",
+      "effect_on_target": "It is typeclass infrastructure for numerical constants in extended nonnegative-real measure expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "AddMonoidWithOne.toOne",
+      "meaning": "The multiplicative-one structure projected from an additive monoid with one.",
+      "effect_on_target": "It supplies the value 1 used to normalize the model's measure.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "DecidableEq",
+      "meaning": "A procedure deciding equality for every pair of elements of a type.",
+      "effect_on_target": "It is required to define the finite-index Kronecker delta used in Q^T Q = I.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "The division operation projected from a division-inverse monoid.",
+      "effect_on_target": "It supplies ordinary real division in the denominator 1-u of gamma_k.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "Fin.castSucc",
+      "meaning": "The inclusion of Fin n into Fin(n+1) preserving the underlying index.",
+      "effect_on_target": "It selects the current state X_j in the execution recurrence while viewing j as an index of the n+1 states.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "Fin.instOfNat",
+      "meaning": "Interpretation of a natural literal as an element of a provably nonempty Fin n.",
+      "effect_on_target": "It supplies the state index 0 in the equation X_0=A.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "Fin.last",
+      "meaning": "The final index n in Fin(n+1).",
+      "effect_on_target": "It identifies RHat with the final state X_n.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "Fin.succ",
+      "meaning": "The successor inclusion sending an index j to j+1 in Fin(n+1).",
+      "effect_on_target": "It selects the next state X_{j+1} in the execution recurrence.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "HDiv.hDiv",
+      "meaning": "Typeclass-dispatched division.",
+      "effect_on_target": "It forms the quotient in gamma_k(lambda,u).",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "Iff",
+      "meaning": "Logical equivalence.",
+      "effect_on_target": "It states that membership in the local probability-one event is exactly equivalent to simultaneous local perturbation bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "InnerProductSpace.toNormedSpace",
+      "meaning": "The normed-space structure inherited from an inner-product space.",
+      "effect_on_target": "It provides typeclass infrastructure for real-valued Bochner integrals appearing in the stochastic-model assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "Measurable",
+      "meaning": "A function is measurable when preimages of measurable sets are measurable.",
+      "effect_on_target": "The stochastic model requires every operation error function to be measurable.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "MeasureTheory.Integrable",
+      "meaning": "The conjunction of almost-everywhere strong measurability and finite integral norm.",
+      "effect_on_target": "It constrains model errors and qualifies the test functions and products in the previous-error factorization condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "MeasureTheory.integral",
+      "meaning": "The Bochner integral of a function with respect to a measure.",
+      "effect_on_target": "It expresses zero mean for each model error and the exact expectation-factorization property against prior errors.",
+      "status": "understood"
+    },
+    {
+      "id": "D106",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "A proposition certifying that a natural number is at least two.",
+      "effect_on_target": "It supports numeral-instance construction and adds no substantive target condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D107",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "meaning": "Given that n is nonzero, a proof that n+1 is at least two.",
+      "effect_on_target": "It supplies finite-index and numeral typeclass evidence for the n+1 execution states.",
+      "status": "understood"
+    },
+    {
+      "id": "D108",
+      "name": "Nat.instNeZeroSucc",
+      "meaning": "A proof that n+1 is nonzero for every natural n.",
+      "effect_on_target": "It permits construction of finite literal indices such as 0 in Fin(n+1).",
+      "status": "understood"
+    },
+    {
+      "id": "D109",
+      "name": "NonUnitalSeminormedCommRing.toNonUnitalSeminormedRing",
+      "meaning": "The noncommutative seminormed-ring structure inherited from a nonunital seminormed commutative ring.",
+      "effect_on_target": "It is typeclass infrastructure for real norm and integrability structures and contributes no separate proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D110",
+      "name": "NonUnitalSeminormedRing.toSeminormedAddCommGroup",
+      "meaning": "The seminormed additive commutative group structure inherited from a nonunital seminormed ring.",
+      "effect_on_target": "It supports the normed and continuous-enorm instances used by real-valued integrability.",
+      "status": "understood"
+    },
+    {
+      "id": "D111",
+      "name": "NormedAddCommGroup.toSeminormedAddCommGroup",
+      "meaning": "The seminormed additive commutative group structure inherited from a normed additive commutative group.",
+      "effect_on_target": "It is instance infrastructure for real norms and integrals, with no additional mathematical restriction.",
+      "status": "understood"
+    },
+    {
+      "id": "D112",
+      "name": "NormedCommRing.toSeminormedCommRing",
+      "meaning": "The seminormed commutative ring structure inherited from a normed commutative ring.",
+      "effect_on_target": "It participates in constructing the norm and continuity instances used by the model's integrability assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D113",
+      "name": "RCLike.toInnerProductSpaceReal",
+      "meaning": "The real inner-product-space structure carried by an RCLike scalar type.",
+      "effect_on_target": "For the reals, it supplies the normed-space-over-Real structure required by the integral.",
+      "status": "understood"
+    },
+    {
+      "id": "D114",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive group structure of the reals.",
+      "effect_on_target": "It supports subtraction, absolute value, norms, and real-valued integration.",
+      "status": "understood"
+    },
+    {
+      "id": "D115",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The multiplicative monoid-with-inverses and division structure of the reals.",
+      "effect_on_target": "It gives the real division used in gamma_k(lambda,u).",
+      "status": "understood"
+    },
+    {
+      "id": "D116",
+      "name": "Real.instRCLike",
+      "meaning": "The RCLike structure on the reals, including their normed-field, order, conjugation, and completeness data.",
+      "effect_on_target": "It supplies standard real normed-space infrastructure needed by integrals and asymptotics.",
+      "status": "understood"
+    },
+    {
+      "id": "D117",
+      "name": "Real.lattice",
+      "meaning": "The lattice-order structure on the reals.",
+      "effect_on_target": "Together with the additive group, it defines ordinary absolute value in model error bounds and column remainders.",
+      "status": "understood"
+    },
+    {
+      "id": "D118",
+      "name": "Real.measurableSpace",
+      "meaning": "The Borel measurable-space structure on the reals.",
+      "effect_on_target": "It gives the meaning of measurability for real-valued model error functions.",
+      "status": "understood"
+    },
+    {
+      "id": "D119",
+      "name": "Real.normedAddCommGroup",
+      "meaning": "The standard normed additive commutative group structure on the reals.",
+      "effect_on_target": "It supplies the absolute-value norm used by integrability, the integral, and Big-O.",
+      "status": "understood"
+    },
+    {
+      "id": "D120",
+      "name": "Real.normedCommRing",
+      "meaning": "The standard normed commutative ring structure on the reals.",
+      "effect_on_target": "It supports compatible real arithmetic, norms, products, and analytic typeclass requirements.",
+      "status": "understood"
+    },
+    {
+      "id": "D121",
+      "name": "SeminormedAddCommGroup.toSeminormedAddGroup",
+      "meaning": "The seminormed additive group structure inherited from a seminormed additive commutative group.",
+      "effect_on_target": "It is typeclass infrastructure for the continuous extended norm required in integrability.",
+      "status": "understood"
+    },
+    {
+      "id": "D122",
+      "name": "SeminormedAddGroup.toContinuousENorm",
+      "meaning": "The continuous extended-norm structure induced by a seminormed additive group.",
+      "effect_on_target": "It supplies a required instance in the definition of real-valued integrability.",
+      "status": "understood"
+    },
+    {
+      "id": "D123",
+      "name": "SeminormedCommRing.toNonUnitalSeminormedCommRing",
+      "meaning": "The nonunital seminormed commutative ring structure inherited from a seminormed commutative ring.",
+      "effect_on_target": "It is instance-resolution infrastructure for real norm and integration structures.",
+      "status": "understood"
+    },
+    {
+      "id": "D124",
+      "name": "Set.univ",
+      "meaning": "The universal set containing every element.",
+      "effect_on_target": "The stochastic model requires its probability measure to assign mass exactly one to all of Omega.",
+      "status": "understood"
+    },
+    {
+      "id": "D125",
+      "name": "abs",
+      "meaning": "Absolute value, defined as the maximum of a and -a in an ordered additive group.",
+      "effect_on_target": "It bounds model relative errors and appears in the assumed per-column remainder bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D126",
+      "name": "instAddCommMonoidWithOneENNReal",
+      "meaning": "The additive commutative monoid-with-one structure on extended nonnegative reals.",
+      "effect_on_target": "It supplies the value 1 in the measure-normalization equations.",
+      "status": "understood"
+    },
+    {
+      "id": "D127",
+      "name": "instAddNat",
+      "meaning": "Ordinary addition on natural numbers.",
+      "effect_on_target": "It forms n+1, the number of execution states, and related finite-index bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D128",
+      "name": "instHDiv",
+      "meaning": "The homogeneous-division instance induced by an ordinary division operation.",
+      "effect_on_target": "It routes division notation in gamma_k to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D129",
+      "name": "instLENat",
+      "meaning": "The ordinary non-strict order on natural numbers.",
+      "effect_on_target": "It gives the dimension restriction n <= m in every execution package.",
+      "status": "understood"
+    },
+    {
+      "id": "D130",
+      "name": "instNeZeroNatHAdd_1",
+      "meaning": "If m is nonzero, then n+m is nonzero.",
+      "effect_on_target": "It provides nonemptiness evidence for finite types such as Fin(n+1), without adding a substantive conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D131",
+      "name": "ite",
+      "meaning": "The if-then-else operation selected by a decidable proposition.",
+      "effect_on_target": "It defines the Kronecker delta as 1 for equal indices and 0 for unequal indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D132",
+      "name": "Fin.mk",
+      "meaning": "Construction of a finite index from a natural value together with a proof that it lies below the bound.",
+      "effect_on_target": "It constructs the indices of earlier errors in the previous-error vector.",
+      "status": "understood"
+    },
+    {
+      "id": "D133",
+      "name": "Nat.instPreorder",
+      "meaning": "The standard preorder structure on natural numbers.",
+      "effect_on_target": "It supports the comparison proving that earlier-error indices lie within the total operation range.",
+      "status": "understood"
+    },
+    {
+      "id": "D134",
+      "name": "Preorder.toLT",
+      "meaning": "The strict-order operation projected from a preorder.",
+      "effect_on_target": "It supplies the natural strict comparison used in the index-validity proof for previous errors.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "For every pair of natural numbers m and n.",
-      "For every pair of real arrays A and DeltaA of shape m-by-n, represented as functions Fin m -> Fin n -> Real.",
-      "For every real number eta."
+      "An arbitrary type Omega equipped with a measurable-space structure.",
+      "Natural-number dimensions m and n and an arbitrary real m-by-n matrix A, indexed by Fin m and Fin n.",
+      "A stochastic arithmetic model containing a probability measure P, operation data, and unit roundoff u.",
+      "An execution package run for A in that model, with final random computed matrix RHat(omega).",
+      "Natural numbers c5 and c6 and a real number lambda.",
+      "A local-control package hlocal and a columnwise backward-error package indexed by hlocal."
     ],
     "hypotheses": [
-      "eta is nonnegative: 0 <= eta.",
-      "For every column index j in Fin n, the Euclidean norm of the column i maps to DeltaA i j is at most eta times the Euclidean norm of the column i maps to A i j."
+      "c5>0, c6>0, and lambda>0.",
+      "The model has P(Omega)=1, unit roundoff 0<=u<1, and operation errors satisfying computedValue=exactValue*(1+error), |error|<=u, measurability, integrability, zero mean, and the stated expectation-factorization condition against functions of previous errors.",
+      "The execution package entails n<=m and n>0. It has states X_0=A and X_{j+1}=(I-v_jv_j^T+E_j)X_j, with sum_i v_j(i)^2=2, final state RHat=X_n, each RHat entry equal to a modeled computed value, and RHat upper trapezoidal.",
+      "The local-control package supplies a measurable probability-one event on which, equivalently, every local perturbation E_j satisfies ||E_j x||_2 <= c5*gamma_m(lambda,u)*||x||_2 for all x.",
+      "The columnwise package supplies a measurable event, random Q and DeltaA, and per-column pointwise O(u^2) remainders, with eventwise Q^TQ=I, A+DeltaA=Q RHat, and the corresponding Euclidean bound for every column."
     ],
     "conclusions": [
-      "The Frobenius norm of DeltaA is at most eta times the Frobenius norm of A."
+      "There exists a measurable set E of outcomes.",
+      "There exist functions Q: Omega -> R^(m by m), DeltaA: Omega -> R^(m by n), and r: R x Omega -> R.",
+      "For every fixed omega, r(u,omega)=O(u^2) as u tends to 0.",
+      "The real-valued probability satisfies toReal(P(E)) >= 1-2mn exp(-lambda^2).",
+      "For every omega in E, RHat(omega) is upper trapezoidal: RHat_ij(omega)=0 whenever j<i.",
+      "For every omega in E, Q(omega)^T Q(omega)=I_m.",
+      "For every omega in E, the exact pointwise matrix equality A+DeltaA(omega)=Q(omega)RHat(omega) holds.",
+      "For every omega in E, ||DeltaA(omega)||_F <= c6*lambda*sqrt(n)*(exp((lambda*sqrt(m)*u+m*u^2)/(1-u))-1)*||A||_F + r(u,omega), where u is the model's unit roundoff."
     ],
     "mathematical_definitions": [
-      "For a vector x indexed by Fin m, ||x||_2 = sqrt(sum over i in Fin m of x_i^2).",
-      "For an m-by-n array B, ||B||_F = sqrt(sum over i in Fin m of sum over j in Fin n of B_ij^2)."
+      "Fin d indexes the natural numbers 0,...,d-1.",
+      "For a vector x, ||x||_2 = sqrt(sum_i x_i^2).",
+      "For an m-by-n matrix B, ||B||_F = sqrt(sum_i sum_j B_ij^2).",
+      "delta_ij is 1 if i=j and 0 otherwise; Q^TQ=I means sum_k Q_ki Q_kj=delta_ij for every i,j.",
+      "Matrix multiplication is (QR)_ij=sum_k Q_ik R_kj, and matrix addition is entrywise.",
+      "gamma_k(lambda,u)=exp((lambda*sqrt(k)*u+k*u^2)/(1-u))-1.",
+      "The probability threshold is p(lambda,m,n)=1-2mn exp(-lambda^2).",
+      "The leading normwise coefficient is c6*lambda*sqrt(n)*gamma_m(lambda,u).",
+      "The condition r(u,omega)=O(u^2) is taken as u approaches 0 in the usual two-sided real topology and is asserted separately for each omega."
     ],
-    "proposition_plain_english": "For arbitrary finite dimensions m and n, arbitrary real m-by-n arrays A and DeltaA, and a nonnegative real eta, if every column of DeltaA has Euclidean norm at most eta times the Euclidean norm of the corresponding column of A, then the Frobenius norm of DeltaA is at most eta times the Frobenius norm of A."
+    "proposition_plain_english": "For every measurable outcome space, every real m-by-n matrix A, every stochastic model and compatible execution, every positive natural constants c5 and c6, every positive real lambda, and every supplied local and columnwise control package, there are a measurable good event E, a random m-by-m matrix Q, a random m-by-n perturbation DeltaA, and a real remainder r(u,omega) such that each fixed-outcome remainder is O(u^2) near u=0, the probability of E is at least 1-2mn exp(-lambda^2), and on E the computed matrix RHat is upper trapezoidal, Q has orthonormal columns, A+DeltaA=Q RHat exactly, and the Frobenius perturbation obeys ||DeltaA||_F <= c6*lambda*sqrt(n)*(exp((lambda*sqrt(m)*u+m*u^2)/(1-u))-1)*||A||_F+r(u,omega), evaluated at the model's unit roundoff u."
   },
   "restrictions_and_vacuity_risks": [
-    "The dimensions m and n may be zero.",
-    "If n = 0, the columnwise hypothesis is vacuous and both Frobenius norms are zero, so the conclusion is 0 <= 0.",
-    "If m = 0, every column norm and both Frobenius norms are zero; all column inequalities and the conclusion reduce to 0 <= 0.",
-    "If eta = 0, each column hypothesis forces the corresponding column of DeltaA to have zero Euclidean norm.",
-    "If a column of A has zero Euclidean norm, the corresponding hypothesis forces that column of DeltaA to have zero Euclidean norm.",
-    "The proposition assumes only columnwise norm bounds; it does not encode entrywise bounds, rowwise bounds, a construction of DeltaA, rounding behavior, a converse, equality conditions, or optimality of eta.",
-    "There are no existential witnesses or additional dimension, positivity, invertibility, or nonzero assumptions."
+    "Although m and n are universally quantified natural numbers, an execution package can be constructed only with n>0 and n<=m. Thus the proposition is vacuous for dimensions for which no run exists; in particular a run cannot exist when n=0 or n>m.",
+    "The theorem is conditional on inhabitants of the local-control and columnwise package types. If either package is unavailable, the corresponding universal implication is vacuous.",
+    "The probability lower bound can be nonpositive when 2mn exp(-lambda^2)>=1, in which case that bound alone is trivial.",
+    "No restriction beyond lambda>0 is imposed on lambda, and no numerical relationship among c5, c6, lambda, m, and n is required.",
+    "The unit roundoff restriction 0<=u<1 is encoded inside the model rather than as an explicit target binder hypothesis; it makes the denominator 1-u positive.",
+    "The Big-O assertion is pointwise in omega. Its constants and neighborhood may depend on omega; no uniform-in-omega O(u^2) estimate is stated.",
+    "The final inequality adds r(u,omega) itself, not |r(u,omega)|, and the proposition does not explicitly require r to be nonnegative.",
+    "Only the good event is required to be measurable. No measurability is asserted for Q, DeltaA, or r.",
+    "Orthogonality, factorization, and the normwise perturbation bound are required only on E. No corresponding bound or factorization is asserted outside E.",
+    "The execution package already encodes that RHat is upper trapezoidal for every omega, even though the explicit target conclusion repeats this property only for omega in E.",
+    "The equality A+DeltaA=Q RHat is exact and entrywise, but the proposition states no forward-error, residual, solution-accuracy, uniqueness, or optimality claim.",
+    "The stochastic assumptions encode the displayed expectation-factorization property for each error against functions of prior errors; no stronger unstated notion of independence is asserted.",
+    "The model probability is converted from an extended nonnegative real to a real in the event bound. Its total mass-one condition ensures the relevant measure values are finite."
   ],
   "ambiguities": []
 }
