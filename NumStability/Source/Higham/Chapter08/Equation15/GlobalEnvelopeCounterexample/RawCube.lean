@@ -4,6 +4,14 @@ import NumStability.Source.Higham.Chapter08.Section04.FanInCore.AllOrdersEnvelop
 import NumStability.Source.Higham.Chapter08.Section04.FanInCore.Factors
 import NumStability.Source.Higham.Chapter08.Section04.FanInCore.ResidualForwardBounds
 
+/-!
+# RawCube
+
+Retained R03 owner (source): every declaration stays at this exact path
+under the frozen B0005 route; wave R03 adds this module docstring only.
+-/
+
+
 /-
 Algorithms/HighamChapter8FanInClosure.lean
 

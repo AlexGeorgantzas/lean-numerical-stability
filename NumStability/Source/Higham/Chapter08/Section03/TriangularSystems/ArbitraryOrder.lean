@@ -3,6 +3,14 @@ import NumStability.Algorithms.Summation.Tree.Core
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
 
+/-!
+# ArbitraryOrder
+
+Retained R03 owner (source): every declaration stays at this exact path
+under the frozen B0005 route; wave R03 adds this module docstring only.
+-/
+
+
 -- Algorithms/TriangularArbitraryOrder.lean
 --
 -- Higham, "Accuracy and Stability of Numerical Algorithms", 2nd ed., Chapter 8.

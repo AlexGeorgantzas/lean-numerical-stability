@@ -5,6 +5,14 @@ import Mathlib.Data.Real.Sqrt
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 
+/-!
+# Model
+
+Retained R03 owner (reusable): every declaration stays at this exact path
+under the frozen B0005 route; wave R03 adds this module docstring only.
+-/
+
+
 namespace NumStability
 
 /-- The four primitive arithmetic operations in Higham Chapter 1, equation (1.1). -/

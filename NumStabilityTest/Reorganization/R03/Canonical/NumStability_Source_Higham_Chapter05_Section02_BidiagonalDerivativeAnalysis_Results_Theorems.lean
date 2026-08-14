@@ -1,0 +1,22 @@
+import NumStability.Source.Higham.Chapter05.Section02.BidiagonalDerivativeAnalysis.Results.Theorems
+
+/-!
+# R03 canonical-only test — `Theorems`
+
+Imports exactly the canonical destination and checks all 13
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.flHighamBidiagonalSolve_backward_perturbation
+#check @NumStability.flHighamBidiagonalSolve_forward_error
+#check @NumStability.flHighamBidiagonalSolve_forward_error_first_order_quadratic
+#check @NumStability.flHighamBidiagonalSolve_forward_majorant_first_order_quadratic
+#check @NumStability.flHighamBidiagonalSolve_succ
+#check @NumStability.flHighamBidiagonalSolve_two_sweeps_backward_perturbation
+#check @NumStability.flHighamBidiagonalSolve_two_sweeps_forward_error
+#check @NumStability.flHighamBidiagonalSolve_two_sweeps_forward_error_first_order_quadratic
+#check @NumStability.highamBidiagonalAbsInv_mul_absInv_mul_absU_entry
+#check @NumStability.highamBidiagonalAbsInv_mul_absU_entry
+#check @NumStability.highamBidiagonalExactSolve_system
+#check @NumStability.highamBidiagonalUInv_leftInverse
+#check @NumStability.highamBidiagonalUInv_rightInverse

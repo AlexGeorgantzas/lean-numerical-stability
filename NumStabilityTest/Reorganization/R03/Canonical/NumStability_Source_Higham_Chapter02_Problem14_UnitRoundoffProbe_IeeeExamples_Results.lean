@@ -1,0 +1,21 @@
+import NumStability.Source.Higham.Chapter02.Problem14.UnitRoundoffProbe.IeeeExamples.Results
+
+/-!
+# R03 canonical-only test — `Results`
+
+Imports exactly the canonical destination and checks all 12
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeDoubleKahanEstimate_eq_machineEpsilon
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeDoubleKahanEstimate_eq_two_unitRoundoff
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeDouble_four_thirds_minus_one
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeDouble_four_thirds_rounds_to_lower
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeDouble_kahan_probe_error
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeDouble_three_mul_four_thirds_minus_one
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeSingleKahanEstimate_eq_machineEpsilon
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeSingleKahanEstimate_eq_two_unitRoundoff
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeSingle_four_thirds_minus_one
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeSingle_four_thirds_rounds_to_upper
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeSingle_kahan_probe_error
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeSingle_three_mul_four_thirds_minus_one

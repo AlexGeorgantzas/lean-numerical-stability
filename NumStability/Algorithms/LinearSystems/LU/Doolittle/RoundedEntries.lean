@@ -11,6 +11,14 @@ import NumStability.Analysis.Rounding
 import NumStability.Analysis.SubtractionFold
 import NumStability.FloatingPoint.Model
 
+/-!
+# RoundedEntries
+
+Retained R03 owner (reusable): every declaration stays at this exact path
+under the frozen B0005 route; wave R03 adds this module docstring only.
+-/
+
+
 -- Algorithms/LU/Doolittle.lean
 --
 -- Doolittle's method for LU factorization (Higham §9.2, Algorithm 9.2)

@@ -1,0 +1,21 @@
+import NumStability.Analysis.Problem2_14
+
+/-!
+# R03 historical-only test — `Problem2_14`
+
+Imports exactly the historical path; checks its preserved public
+surface (12 declarations).
+-/
+
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeDoubleKahanEstimate_eq_machineEpsilon
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeDoubleKahanEstimate_eq_two_unitRoundoff
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeDouble_four_thirds_minus_one
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeDouble_four_thirds_rounds_to_lower
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeDouble_kahan_probe_error
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeDouble_three_mul_four_thirds_minus_one
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeSingleKahanEstimate_eq_machineEpsilon
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeSingleKahanEstimate_eq_two_unitRoundoff
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeSingle_four_thirds_minus_one
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeSingle_four_thirds_rounds_to_upper
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeSingle_kahan_probe_error
+#check @NumStability.FloatingPointFormat.problem2_14_ieeeSingle_three_mul_four_thirds_minus_one

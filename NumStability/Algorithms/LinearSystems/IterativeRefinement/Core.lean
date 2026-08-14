@@ -12,6 +12,14 @@ import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
 
+/-!
+# Core
+
+Retained R03 owner (reusable): every declaration stays at this exact path
+under the frozen B0005 route; wave R03 adds this module docstring only.
+-/
+
+
 -- Algorithms/IterativeRefinement.lean
 --
 -- §11: Iterative refinement for Ax = b.

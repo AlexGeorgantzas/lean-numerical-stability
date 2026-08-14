@@ -1,0 +1,22 @@
+import NumStability.Algorithms.Ch5SourceClosure
+
+/-!
+# R03 historical-only test — `Ch5SourceClosure`
+
+Imports exactly the historical path; checks its preserved public
+surface (13 declarations).
+-/
+
+#check @NumStability.flHighamBidiagonalSolve_backward_perturbation
+#check @NumStability.flHighamBidiagonalSolve_forward_error
+#check @NumStability.flHighamBidiagonalSolve_forward_error_first_order_quadratic
+#check @NumStability.flHighamBidiagonalSolve_forward_majorant_first_order_quadratic
+#check @NumStability.flHighamBidiagonalSolve_succ
+#check @NumStability.flHighamBidiagonalSolve_two_sweeps_backward_perturbation
+#check @NumStability.flHighamBidiagonalSolve_two_sweeps_forward_error
+#check @NumStability.flHighamBidiagonalSolve_two_sweeps_forward_error_first_order_quadratic
+#check @NumStability.highamBidiagonalAbsInv_mul_absInv_mul_absU_entry
+#check @NumStability.highamBidiagonalAbsInv_mul_absU_entry
+#check @NumStability.highamBidiagonalExactSolve_system
+#check @NumStability.highamBidiagonalUInv_leftInverse
+#check @NumStability.highamBidiagonalUInv_rightInverse

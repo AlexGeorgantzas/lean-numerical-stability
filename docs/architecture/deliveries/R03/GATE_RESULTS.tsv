@@ -1,0 +1,22 @@
+phase	gate	command	mutex	exit	result	notes
+authority	planned_control_ci	GitHub Actions Lean CI run 31691727184 / job 94420320315	-	0	pass	planned-control fb5a021b4640dd595a99f7560ce252ad9836a5b6 success
+authority	activation_ci	GitHub Actions Lean CI run 31697060516 / job 94437144462	-	0	pass	activation-control 1166874cb986d09f357d092f1171a31d7f8b2332 success
+authority	operator_authorization_ci	GitHub Actions Lean CI run 31719287142	-	0	pass	authority-control c4f66cbdfdce6cf64d484be13290e7d2e60547f5 authorizes claude-local as second operator
+authority	route_amendment_ci	GitHub Actions Lean CI run 31732612464	-	0	pass	route-amendment control 09b3962dc6ed18b6de6eea5dc4a0e0e7c8ba4bb7 (fanIn7 private-closure repair)
+tests	tests_canonical	lake build <47 canonical TEST_MATRIX targets>	Local\lean-reorganization-2026-08	0	pass	each destination imported alone, no historical owner import
+tests	tests_old_only	lake build <36 old-only TEST_MATRIX targets>	Local\lean-reorganization-2026-08	0	pass	every historical wrapper with preserved public surface
+tests	tests_focused_private	lake build NumStabilityTest.Reorganization.R03.PrivateNormalization	Local\lean-reorganization-2026-08	0	pass	all 398 approved names present AND all 398 retired names absent
+tests	tests_consumer	lake build <2058 protected-consumer targets, 9 chunks>	Local\lean-reorganization-2026-08	0	pass	every integrator-owned consumer compiles unedited
+tests	tests_aggregate_entry	lake build <7 aggregate entrypoints>	Local\lean-reorganization-2026-08	0	pass	integrated aggregate roots unchanged
+tests	tests_all	lake build NumStabilityTest.Reorganization.R03.All	Local\lean-reorganization-2026-08	0	pass	declaration-free aggregate of all 2150 isolated tests; the frozen R0005 root-import target
+repository	lake_library	lake build NumStability	Local\lean-reorganization-2026-08	0	pass	full production build
+repository	lake_lib_tests	lake build NumStability NumStabilityTest	Local\lean-reorganization-2026-08	0	pass	full production and repository test build
+repository	lake_test	lake test	Local\lean-reorganization-2026-08	0	pass	repository test driver
+repository	check_layout	python -B tools/architecture/check_layout.py	-	1	integrator_required	worker view only: R0005 root wiring + tiers classification + ratchet baselines my improvements outran + one new umbrella; see DELIVERY.md
+repository	check_compatibility	python -B tools/architecture/check_compatibility.py	-	0	pass	all wrappers documented import-only forwarding
+repository	check_provenance	python -B tools/architecture/check_provenance.py	-	0	pass	Apache marking and upstream evidence intact
+source	strict_source	python -B tools/architecture/generate_baseline.py --skip-declarations --strict-source	Local\lean-reorganization-2026-08	0	pass	0 unresolved imports, 0 cycles, 0 reusable-to-source/mixed reachable pairs
+audit	placeholder_scan	python -B -c <comment-stripped production placeholder scan>	-	0	pass	0 sorry/admit/top-level axiom/constant
+audit	diff_check	git diff --check	-	0	pass	whitespace and conflict-marker hygiene
+projection	candidate	generate_baseline.py --name R03-candidate --keep-dependency-tsv	Local\lean-reorganization-2026-08	0	pass	format-2; 56903 declarations; 649259 typed edges; SHA-256 98199873425E068D3B74F8595A6CFB9AFE5532974186FD760DFD122B0D273626
+projection	p0005_replay	check_completion_phase_projection.py <recorded vector; candidate pin dropped; full private map>	Local\lean-reorganization-2026-08	0	pass	2389 selected; 2132 relocated; 28180 signature; 42404 body; 398 private normalizations

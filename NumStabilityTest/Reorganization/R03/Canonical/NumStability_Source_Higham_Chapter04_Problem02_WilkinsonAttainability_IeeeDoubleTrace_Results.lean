@@ -1,0 +1,24 @@
+import NumStability.Source.Higham.Chapter04.Problem02.WilkinsonAttainability.IeeeDoubleTrace.Results
+
+/-!
+# R03 canonical-only test — `Results`
+
+Imports exactly the canonical destination and checks all 15
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.wilkinsonProblem42_ieeeDouble_abs_error_closed_form
+#check @NumStability.wilkinsonProblem42_ieeeDouble_abs_error_eq_defect
+#check @NumStability.wilkinsonProblem42_ieeeDouble_block_boundary_add_rounds_to_pow
+#check @NumStability.wilkinsonProblem42_ieeeDouble_block_prefix_accumulator
+#check @NumStability.wilkinsonProblem42_ieeeDouble_block_rounds_pow_to_next_pow
+#check @NumStability.wilkinsonProblem42_ieeeDouble_finiteRecursiveSum_eq_pow
+#check @NumStability.wilkinsonProblem42_ieeeDouble_finiteRecursiveSum_eq_pow_one
+#check @NumStability.wilkinsonProblem42_ieeeDouble_finiteRecursiveSum_eq_pow_two
+#check @NumStability.wilkinsonProblem42_ieeeDouble_first_block_rounds_to_two
+#check @NumStability.wilkinsonProblem42_ieeeDouble_first_order_bound_le_four_abs_error
+#check @NumStability.wilkinsonProblem42_ieeeDouble_first_order_bound_le_three_abs_error_plus_u
+#check @NumStability.wilkinsonProblem42_ieeeDouble_gamma_bound_le_eight_abs_error
+#check @NumStability.wilkinsonProblem42_ieeeDouble_gamma_bound_le_three_abs_error_plus_u_div
+#check @NumStability.wilkinsonProblem42_ieeeDouble_listRecursiveSum_eq_pow
+#check @NumStability.wilkinsonProblem42_ieeeDouble_sameBinade_add_rounds_to_nat
