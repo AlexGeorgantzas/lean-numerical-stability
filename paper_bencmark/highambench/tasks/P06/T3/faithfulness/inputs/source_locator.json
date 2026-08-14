@@ -5,10 +5,31 @@
   "paper_version": "published journal version; volume 44, issue 3, 2023, printed pages 1146-1163",
   "source_locations": [
     {
+      "anchor": "Model 1.5",
+      "pdf_page": 3,
+      "printed_page": "1148",
+      "role": "standard relative-error equations, computation-order mean independence, and zero-mean errors",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "Lemma 4.1 and equations (4.1)-(4.2)",
+      "pdf_page": 6,
+      "printed_page": "1151",
+      "role": "normalized exact Householder matrices, computed perturbed-product representation, and local subordinate-2-norm bound",
+      "section": "4. Application of a sequence of Householder matrices"
+    },
+    {
       "anchor": "equations (4.8)-(4.9) in the proof of Lemma 4.2",
       "pdf_page": 7,
       "printed_page": "1152",
       "role": "first-order expansion of the perturbed transformation product and the single-perturbation insertion matrices",
+      "section": "4. Application of a sequence of Householder matrices"
+    },
+    {
+      "anchor": "higher-order discussion following Theorem 4.4",
+      "pdf_page": 9,
+      "printed_page": "1154",
+      "role": "confirms that the omitted O(u^2) matrix consists of terms containing at least two local perturbations",
       "section": "4. Application of a sequence of Householder matrices"
     }
   ],

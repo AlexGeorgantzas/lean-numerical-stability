@@ -1,0 +1,135 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "It appears additively beside m-by-m matrix sums and then multiplies b, but no remainder symbol, norm, hidden constant, or parameter uniformity is supplied at (4.8) (PDF p. 7, printed p. 1152, (4.8)).",
+      "impact": "A formal contract must preserve an unspecified matrix-valued higher-order remainder rather than inventing a scalar remainder or explicit norm bound.",
+      "issue": "The O(u^2) remainder in (4.8) is not explicitly typed or bounded."
+    },
+    {
+      "evidence": "At j=1 the right product P_(j-1)...P_1 is empty, and at j=r the left product P_r...P_(j+1) is empty (PDF p. 7, printed p. 1152, (4.8)-(4.9)).",
+      "impact": "Interpreting those products as identity matrices is dimensionally necessary but implicit.",
+      "issue": "Endpoint products are not accompanied by an explicit empty-product convention."
+    },
+    {
+      "evidence": "The probability-1 local bound is a lemma hypothesis, while probability 1-2m exp(-lambda^2) is attached to the eventual bound (4.7), not to the algebraic expansion itself (PDF p. 7, printed p. 1152, Lemma 4.2 and (4.7)-(4.9)).",
+      "impact": "The expansion should be treated as the first-order rewrite used inside the probabilistic proof, not assigned the final lemma's probability as though it were explicitly stated at (4.8).",
+      "issue": "Equations (4.8)-(4.9) carry no standalone probability statement."
+    },
+    {
+      "evidence": "Only the later r=n discussion estimates the number and scale of omitted terms; equation (4.8) itself gives no such dependence (PDF p. 7, printed p. 1152, (4.8); PDF pp. 9-10, printed pp. 1154-1155, higher-order discussion).",
+      "impact": "The later specialized estimate may clarify asymptotic intent but must not be substituted as an exact general-r remainder bound in (4.8).",
+      "issue": "The notation O(u^2) suppresses dependence on r, m, lambda, and b."
+    }
+  ],
+  "contract_plain_english": "Expanding the computed product of r perturbed Householder applications and retaining first-order terms gives the exact transformed vector plus one term for each possible insertion of Delta P_j, with all multiple-perturbation terms left as O(u^2). Factoring out Q^T rewrites those insertions using F_j=P_1...P_j Delta P_j P_(j-1)...P_1, which prepares the matrices for the subsequent concentration argument (PDF p. 7, printed p. 1152, (4.8)-(4.9) and following sentence).",
+  "paper_batch_sha256": "5fc79f8dcb892e5e54a0e6404abfb754e2c8f1233e5e586f0036f135448517d2",
+  "paper_sha256": "c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "Model 1.5",
+      "observation": "The computation-order rounding errors satisfy the standard relative-error model and are mean-independent random variables of mean zero.",
+      "pdf_page": 3,
+      "printed_page": "1148"
+    },
+    {
+      "anchor": "Lemma 4.1 and equations (4.1)-(4.2)",
+      "observation": "The paper takes given exact Householder matrices P_i = I - v_i v_i^T in R^(m x m), with v_i^T v_i = 2, defines b_(r+1) = P_r...P_1 b, and represents the computed result as (P_r+Delta P_r)...(P_1+Delta P_1)b.",
+      "pdf_page": 6,
+      "printed_page": "1151"
+    },
+    {
+      "anchor": "Lemma 4.2, equations (4.8)-(4.9)",
+      "observation": "Assuming the local bound (4.2) with probability 1, the proof expands the perturbed product to first order as b_hat_(r+1) = b_(r+1) + (sum from j=1 to r of P_r...P_(j+1) Delta P_j P_(j-1)...P_1 + O(u^2))b = b_(r+1) + Q^T(sum from j=1 to r of F_j + O(u^2))b, where F_j = P_1...P_j Delta P_j P_(j-1)...P_1.",
+      "pdf_page": 7,
+      "printed_page": "1152"
+    },
+    {
+      "anchor": "sentence immediately following equation (4.9)",
+      "observation": "The proof introduces F_j so that it can seek E(F_j | F_(j-1),...,F_1)=0 and apply Theorem 3.2 with X_k=F_k.",
+      "pdf_page": 7,
+      "printed_page": "1152"
+    },
+    {
+      "anchor": "higher-order discussion following Theorem 4.4",
+      "observation": "When r=n, the paper says the O(u^2) part dropped from the expansion contains binomial(n,2) second-order terms.",
+      "pdf_page": 9,
+      "printed_page": "1154"
+    },
+    {
+      "anchor": "continuation of higher-order discussion and equation (4.18)",
+      "observation": "Omitting constants and lambda, the second-order contribution is bounded at scale n^2 gamma_tilde_m(lambda)^2 ||b||_2, approximately n^2 m u^2 ||b||_2, and m^(1/2)n^(3/2)u < 1 is used for first-order dominance.",
+      "pdf_page": 10,
+      "printed_page": "1155"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "The equations describe the sequential floating-point application of r given Householder transformations to one vector, before the paper applies the result columnwise to a matrix or specializes it to Householder QR (PDF p. 6, printed p. 1151, opening of section 4 and Lemma 4.1; PDF p. 7, printed p. 1152, Lemma 4.2 proof).",
+    "binders": [
+      "Positive matrix dimension m and number of transformations r; indices i,j=1,...,r; starting vector b=b_1 in R^m (PDF p. 6, printed p. 1151, Lemma 4.1).",
+      "Given exact vectors v_i in R^m and Householder matrices P_i = I - v_i v_i^T in R^(m x m), normalized by v_i^T v_i=2 (PDF p. 6, printed p. 1151, Lemma 4.1).",
+      "Local perturbation matrices Delta P_j in R^(m x m), exact product result b_(r+1), computed result b_hat_(r+1), matrices F_j, and Q=(P_r...P_2P_1)^T (PDF p. 6, printed p. 1151, (4.1); PDF p. 7, printed p. 1152, Lemma 4.2 and (4.8)-(4.9))."
+    ],
+    "conclusions": [
+      "b_hat_(r+1) = b_(r+1) + (sum_(j=1)^r P_r...P_(j+1) Delta P_j P_(j-1)...P_1 + O(u^2))b (PDF p. 7, printed p. 1152, first line of (4.8)).",
+      "Equivalently, b_hat_(r+1) = b_(r+1) + Q^T(sum_(j=1)^r F_j + O(u^2))b (PDF p. 7, printed p. 1152, second line of (4.8)).",
+      "For each j=1:r, F_j = P_1...P_j Delta P_j P_(j-1)...P_1 (PDF p. 7, printed p. 1152, (4.9))."
+    ],
+    "constants_and_indexing": [
+      "The summation range is exactly j=1:r (PDF p. 7, printed p. 1152, (4.8)).",
+      "The single-insertion term before factoring is P_r...P_(j+1) Delta P_j P_(j-1)...P_1; there is no P_j adjacent to Delta P_j in that unfactored term (PDF p. 7, printed p. 1152, first line of (4.8)).",
+      "After factoring Q^T, F_j has the exact order P_1...P_j Delta P_j P_(j-1)...P_1; the left product includes P_j and the right product begins at P_(j-1) (PDF p. 7, printed p. 1152, (4.9)).",
+      "The local perturbation bound uses c_5 and gamma_tilde indexed by m, while the final enclosing lemma uses c_6 lambda sqrt(r) gamma_tilde_m(lambda) (PDF p. 6, printed p. 1151, (4.2); PDF p. 7, printed p. 1152, (4.7))."
+    ],
+    "definitions_and_conventions": [
+      "b_(r+1)=P_r...P_1b is the exact transformed vector, whereas b_hat_(r+1) is the computed vector represented by the perturbed product (PDF p. 6, printed p. 1151, Lemma 4.1 and (4.1)).",
+      "Q=(P_r...P_1)^T, hence Q^T=P_r...P_1 (PDF p. 7, printed p. 1152, Lemma 4.2).",
+      "Delta P_j is the local matrix perturbation induced by the computed application of P_j; the paper bounds its subordinate 2-norm but does not define it as a Householder matrix (PDF p. 6, printed p. 1151, (4.1)-(4.4)).",
+      "F_j is the transformed single-perturbation insertion used as X_j in the later matrix-concentration argument (PDF p. 7, printed p. 1152, (4.9) and following sentence)."
+    ],
+    "error_notions": [
+      "Equation (4.8) is a first-order forward expansion of b_hat_(r+1)-b_(r+1) into single local perturbation insertions; it is not itself the final backward-error statement (PDF p. 7, printed p. 1152, (4.8)-(4.9) and Lemma 4.2).",
+      "The enclosing lemma subsequently interprets the accumulated matrix sum as a perturbation Delta b of the original vector before exact multiplication by Q^T (PDF p. 8, printed p. 1153, (4.14))."
+    ],
+    "exceptional_values": [
+      "The given Householder vectors satisfy v_i^T v_i=2, so zero vectors are excluded by normalization (PDF p. 6, printed p. 1151, Lemma 4.1).",
+      "No separate overflow, underflow, NaN, or infinity conditions are stated in Lemma 4.2; the calculation is conditional on the standard relative-error model and the assumed local bound (PDF p. 2, printed p. 1147, (1.4); PDF p. 7, printed p. 1152, Lemma 4.2)."
+    ],
+    "higher_order_terms": [
+      "Both forms of (4.8) explicitly retain an O(u^2) matrix remainder inside the parentheses that multiply b (PDF p. 7, printed p. 1152, (4.8)).",
+      "For r=n, the later discussion identifies binomial(n,2) second-order terms and bounds their aggregate, omitting constants and lambda, by a quantity of scale n^2 gamma_tilde_m(lambda)^2||b||_2, approximately n^2 m u^2||b||_2 (PDF p. 9, printed p. 1154, higher-order discussion; PDF p. 10, printed p. 1155, continuation before (4.18)).",
+      "The paper does not replace O(u^2) in (4.8) by an explicit remainder matrix or an exact finite sum there (PDF p. 7, printed p. 1152, (4.8))."
+    ],
+    "hypotheses": [
+      "The exact recurrence is b_(j+1)=P_j b_j=b_j-(v_j^T b_j)v_j for j=1:r, with b_(r+1)=P_r...P_1b (PDF p. 6, printed p. 1151, Lemma 4.1).",
+      "The computed result has the perturbed-product representation b_hat_(r+1)=(P_r+Delta P_r)...(P_1+Delta P_1)b (PDF p. 6, printed p. 1151, (4.1)).",
+      "The computation is under Model 1.5 (PDF p. 6, printed p. 1151, Lemma 4.1; PDF p. 3, printed p. 1148, Model 1.5).",
+      "Lemma 4.2 assumes ||Delta P_j||_2 <= c_5 gamma_tilde_m(lambda) with probability 1 for every j (PDF p. 6, printed p. 1151, (4.2); PDF p. 7, printed p. 1152, Lemma 4.2 hypothesis)."
+    ],
+    "implicit_context": [
+      "The first equality in (4.8) is obtained by retaining terms containing exactly one Delta P_j from the product (4.1); products containing at least two perturbations are absorbed into O(u^2) (PDF p. 6, printed p. 1151, (4.1); PDF p. 7, printed p. 1152, (4.8); PDF p. 9, printed p. 1154, later higher-order discussion).",
+      "The factorization through Q^T uses the involutory Householder identities P_i^2=I to cancel the prefix and yields the asymmetric index placement in (4.9) (PDF p. 6, printed p. 1151, Householder definition; PDF p. 7, printed p. 1152, (4.8)-(4.9)).",
+      "Immediately after (4.9), zero conditional mean of the F_j is stated as the proof's aim, not as an additional assertion contained in equations (4.8)-(4.9) themselves (PDF p. 7, printed p. 1152, sentence after (4.9)).",
+      "The enclosing Lemma 4.2 later converts this forward expansion into b_hat_(r+1)=Q^T(b+Delta b) with ||Delta b||_2 <= c_6 lambda sqrt(r) gamma_tilde_m(lambda)||b||_2+O(u^2), with probability at least 1-2m exp(-lambda^2) (PDF p. 7, printed p. 1152, (4.7); PDF p. 8, printed p. 1153, (4.12)-(4.14))."
+    ],
+    "norms": [
+      "No norm occurs in equations (4.8)-(4.9) themselves; their standing local hypothesis uses the subordinate matrix 2-norm ||Delta P_j||_2 (PDF p. 6, printed p. 1151, (4.2); PDF p. 7, printed p. 1152, (4.8)-(4.9)).",
+      "The enclosing Lemma 4.2 measures the resulting backward vector perturbation in the Euclidean 2-norm relative to ||b||_2 (PDF p. 7, printed p. 1152, (4.7))."
+    ],
+    "numerical_model": [
+      "Elementary operations obey fl(x op y)=(x op y)(1+delta), |delta|<=u, and Model 1.5 makes the generated errors mean independent and zero mean (PDF p. 2, printed p. 1147, (1.4); PDF p. 3, printed p. 1148, Model 1.5).",
+      "The first-order expansion uses Delta P_j=O(u) through the assumed norm bound ||Delta P_j||_2<=c_5 gamma_tilde_m(lambda), with gamma_tilde_m(lambda)=O(u) for fixed m and lambda (PDF p. 2, printed p. 1147, (1.6); PDF p. 6, printed p. 1151, (4.2)).",
+      "The probability-1 local-bound assumption is stronger than Lemma 4.1's derived high-probability bound and is explicitly adopted for Lemma 4.2 (PDF p. 7, printed p. 1152, paragraph preceding Lemma 4.2)."
+    ]
+  },
+  "task_id": "P06-T3",
+  "undebatable_constraints": [
+    "The exact and computed quantities must remain distinct: b_(r+1)=P_r...P_1b is exact, while b_hat_(r+1) comes from the perturbed product (PDF p. 6, printed p. 1151, Lemma 4.1 and (4.1)).",
+    "Every first-order summand contains exactly one Delta P_j in the product order shown in (4.8) (PDF p. 7, printed p. 1152, (4.8)).",
+    "F_j must be defined with left factor P_1...P_j and right factor P_(j-1)...P_1; changing either endpoint changes the sourced identity (PDF p. 7, printed p. 1152, (4.9)).",
+    "The O(u^2) remainder is part of both displayed forms of the expansion and cannot be silently discarded (PDF p. 7, printed p. 1152, (4.8)).",
+    "The P_i are given exact normalized Householder matrices in this lemma-level setup; Delta P_j are general local perturbation matrices and are not asserted to be symmetric, orthogonal, or Householder (PDF p. 6, printed p. 1151, Lemma 4.1 and (4.1)-(4.4)).",
+    "The probability-1 form of the local norm bound (4.2) is an explicit assumption of the enclosing Lemma 4.2 (PDF p. 7, printed p. 1152, Lemma 4.2 hypothesis)."
+  ]
+}

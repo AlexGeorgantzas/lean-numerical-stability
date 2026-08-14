@@ -1,0 +1,276 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "5f20af25aa5b4101cbdc8bd45cec040992c80e15c766bce0647850e3bee5af9e",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "Given P and b, this defines a vector sequence u by u_0=b and u_{k+1}=P_k u_k, where matrix-vector multiplication is the finite coordinate sum from D006.",
+      "effect_on_target": "Its value u_r(i) is the constant-term contribution on the right-hand side and is also used in the recurrence defining D002.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "Given P, E, and b, this defines a vector sequence v by v_0=0 and v_{k+1}=P_k v_k+E_k u_k, where u is D001.",
+      "effect_on_target": "Its value v_r(i) is multiplied by t in the asserted decomposition and is used in the recurrence defining D003.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "Given t, P, E, and b, this defines a vector sequence w by w_0=0 and w_{k+1}=P_k w_k+E_k v_k+t(E_k w_k), where v is D002.",
+      "effect_on_target": "Its value w_r(i) is multiplied by t^2 in the decomposition. Because its recurrence contains t, it is a t-dependent exact remainder rather than a t-independent quadratic coefficient.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "Given t, P, E, and b, this defines a vector sequence z by z_0=b and z_{k+1}=(P_k+tE_k)z_k, with matrix addition and scalar multiplication interpreted entrywise.",
+      "effect_on_target": "Its coordinate z_r(i) is the left-hand side whose exact decomposition into D001, D002, and D003 is asserted.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "This is natural-number case analysis: at x=0 it returns the supplied base value, and at x=r+1 it returns the supplied successor value for r.",
+      "effect_on_target": "Inside D001-D004 it selects their base-vector definitions at time 0 and their recurrence clauses at successor times.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "For A with entries A(i,j) and a vector x, it defines (Ax)(i)=sum over all j in Fin(n) of A(i,j)x(j).",
+      "effect_on_target": "It gives every matrix-vector product occurring in the four recursive sequences.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "Eq",
+      "meaning": "Propositional equality between two terms of the same type.",
+      "effect_on_target": "The target asserts exact equality of two real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "Fin",
+      "meaning": "Fin(m) is the finite index type with m elements, conventionally represented by natural indices 0 through m-1.",
+      "effect_on_target": "It fixes the row and column dimensions of P_k and E_k and the coordinate domains of b and all recursively defined vectors.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "HAdd.hAdd",
+      "meaning": "This projects the addition operation supplied by an HAdd instance.",
+      "effect_on_target": "With the supplied real instances, every occurrence is ordinary real addition, including the three terms on the right-hand side and additions in the recurrences.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "HMul.hMul",
+      "meaning": "This projects the multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "With the supplied real instances, it is ordinary real multiplication for scalar factors and for each summand A(i,j)x(j).",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "HPow.hPow",
+      "meaning": "This projects the exponentiation operation supplied by an HPow instance.",
+      "effect_on_target": "It interprets the expression t raised to the natural exponent 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Monoid.toNatPow",
+      "meaning": "A monoid supplies natural powers by repeated monoid multiplication, including the zeroth power as the identity.",
+      "effect_on_target": "For the real multiplicative monoid, it makes t^2 the ordinary square t*t.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "It is the type of the dimension m, the time indices r and k, the domains of P and E, and the exponent 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "OfNat.ofNat",
+      "meaning": "This extracts the value assigned to a numeral by an OfNat instance.",
+      "effect_on_target": "It interprets the literal 2 as the natural number used as the exponent of t.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "All matrix entries, vector coordinates, the parameter t, products, sums, powers, and both sides of the equality are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instAdd",
+      "meaning": "The standard addition operation on real numbers.",
+      "effect_on_target": "It supplies the real additions used throughout the target and recursive definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instMonoid",
+      "meaning": "The canonical multiplicative monoid structure on the real numbers.",
+      "effect_on_target": "It supplies natural-number exponentiation of t, in particular t^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instMul",
+      "meaning": "The standard multiplication operation on real numbers.",
+      "effect_on_target": "It supplies scalar multiplication, products in matrix-vector sums, and multiplication by t and t^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "instHAdd",
+      "meaning": "This converts an ordinary homogeneous Add operation into the corresponding HAdd operation.",
+      "effect_on_target": "It routes HAdd on real operands to standard real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "instHMul",
+      "meaning": "This converts an ordinary homogeneous Mul operation into the corresponding HMul operation.",
+      "effect_on_target": "It routes HMul on real operands to standard real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "instHPow",
+      "meaning": "This converts a Pow operation into the corresponding HPow operation with the same base and result type.",
+      "effect_on_target": "It routes heterogeneous power notation to the real natural-power operation used for t^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "instOfNatNat",
+      "meaning": "This gives each natural-number numeral its identical value in Nat.",
+      "effect_on_target": "It ensures that the exponent literal 2 denotes exactly the natural number 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Nat.below",
+      "meaning": "For a motive M, Nat.below(k) is a nested product containing motive values at all natural indices below k; at k+1 its first projection has type M(k).",
+      "effect_on_target": "It packages course-of-values recursion data, and the first projection used in D001-D004 is precisely the immediately preceding vector value.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Nat.brecOn",
+      "meaning": "Course-of-values recursion on a natural number: to construct a value at time k, its defining function receives packaged values for all smaller times.",
+      "effect_on_target": "It constructs each of the four vector sequences; together with D023 and D005 it realizes their base and one-step recurrence equations.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "Nat.succ",
+      "meaning": "The successor operation k maps to k+1 on natural numbers.",
+      "effect_on_target": "It identifies the positive-time branch of each recursive definition and indexes its update by the preceding time k.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Real.instZero",
+      "meaning": "The standard zero element of the real numbers.",
+      "effect_on_target": "It supplies the zero coordinates of the initial vectors v_0 and w_0.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Unit",
+      "meaning": "A one-element type, here an abbreviation of PUnit.",
+      "effect_on_target": "It provides a dummy argument to the base branch selected by D005 and has no mathematical data content.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Zero.toOfNat0",
+      "meaning": "This converts a Zero structure into the numeral interpretation of 0.",
+      "effect_on_target": "It makes each literal 0 in D002 and D003 the standard real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Fin.fintype",
+      "meaning": "This equips Fin(n) with a finite enumeration containing each of its n elements exactly once.",
+      "effect_on_target": "It makes the column-index set in every matrix-vector product finitely summable, including the empty index set when n=0.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Finset.sum",
+      "meaning": "This adds the values of a function over a finite set using an additive commutative monoid.",
+      "effect_on_target": "It implements the coordinate formula sum_j A(i,j)x(j) in D006.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, this is the finite set of all elements of that type.",
+      "effect_on_target": "It makes D006 sum over every column index j in Fin(n), with no omitted or repeated indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "Nat.casesOn",
+      "meaning": "Natural-number case analysis returning one supplied value at zero and a supplied value indexed by n at n+1.",
+      "effect_on_target": "It is the underlying eliminator used by D005 to distinguish initial conditions from successor recurrences.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative monoid structure of the real numbers, with addition and zero.",
+      "effect_on_target": "It supplies order-independent finite real sums in D006 and assigns an empty sum the value zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Unit.unit",
+      "meaning": "The unique inhabitant of Unit.",
+      "effect_on_target": "It is passed to each base-case function by D005 and contributes no mathematical choice or condition.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "A natural number m, universally quantified, specifying the common matrix and vector dimension.",
+      "A real scalar t.",
+      "Two arbitrary sequences P and E, where for every k in Nat, P_k and E_k are real m-by-m matrices indexed by Fin(m) x Fin(m).",
+      "An arbitrary real vector b indexed by Fin(m).",
+      "A natural-number time r.",
+      "A coordinate i in Fin(m)."
+    ],
+    "hypotheses": [],
+    "conclusions": [
+      "For the recursively defined vectors u, v, w, and z, the exact coordinate identity z_r(i)=u_r(i)+t v_r(i)+t^2 w_r(i) holds."
+    ],
+    "mathematical_definitions": [
+      "For an m-by-n real matrix A and vector x in R^n, define (Ax)(i)=sum over j in Fin(n) of A(i,j)x(j).",
+      "Define u_0=b and u_{k+1}=P_k u_k.",
+      "Define v_0=0 and v_{k+1}=P_k v_k+E_k u_k.",
+      "Define w_0=0 and w_{k+1}=P_k w_k+E_k v_k+t(E_k w_k). This sequence depends on t.",
+      "Define z_0=b and z_{k+1}=(P_k+tE_k)z_k, where (P_k+tE_k)(i,j)=P_k(i,j)+tE_k(i,j)."
+    ],
+    "proposition_plain_english": "For every natural dimension m, every real t, arbitrary time-indexed real m-by-m matrices P_k and E_k, every initial vector b, every natural time r, and every coordinate i, let z evolve by z_0=b and z_{k+1}=(P_k+tE_k)z_k. Let u, v, and w evolve respectively by u_0=b, u_{k+1}=P_k u_k; v_0=0, v_{k+1}=P_k v_k+E_k u_k; and w_0=0, w_{k+1}=P_k w_k+E_k v_k+tE_k w_k. Then exactly, coordinate by coordinate, z_r=u_r+t v_r+t^2 w_r."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The dimension m is unrestricted and may be zero. If m=0, Fin(m) has no coordinate i, so the universally quantified proposition is vacuous.",
+    "There are no hypotheses on t, b, P_k, or E_k: no positivity, boundedness, invertibility, constancy, or commutativity assumptions are encoded.",
+    "The assertion is an exact identity in real arithmetic, not an approximation, asymptotic statement, floating-point error claim, or norm bound.",
+    "The sequence w depends on t through the term tE_k w_k. Thus t^2 w_r is an exact remainder containing all dependence beyond the displayed constant and linear terms; the proposition does not assert that w is a t-independent second-order coefficient.",
+    "No norms, inequalities, conjunctions, existential witnesses, or claims about the size or regularity of u, v, w, or z are present.",
+    "At r=0 the equality reduces to b(i)=b(i)+t*0+t^2*0. For positive r, only matrix indices below r affect the recursively defined values, although P and E are supplied as total sequences on all natural indices."
+  ],
+  "ambiguities": []
+}

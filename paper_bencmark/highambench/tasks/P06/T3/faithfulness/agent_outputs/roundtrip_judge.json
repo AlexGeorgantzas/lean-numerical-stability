@@ -3,177 +3,177 @@
   "role": "roundtrip-judge",
   "task_id": "P06-T3",
   "paper_sha256": "c02a20e9ffa8039a5ad3db9261fba19929de84bf0bff7654547541dffe496a79",
-  "blind_translation_sha256": "9d0330870bf7d93defdfdd3260e510244713a78555d4fab54e2975a3bfbf329a",
+  "blind_translation_sha256": "68c7901c6530fa3e89ade6177f6e9796bb290f78c87228f73ce4eabca5247cae",
   "semantic_checklist": [
     {
       "id": "S01",
-      "status": "fail",
-      "paper_evidence": "The selected result is the first-order expansion and factorization in Lemma 4.2, equations (4.8)-(4.9), within the sequential floating-point application of normalized Householder matrices.",
-      "translation_evidence": "The translation states a generic exact recurrence identity for arbitrary matrix sequences P and E and an arbitrary scalar t, without identifying the Lemma 4.2 setting or its factored equation (4.9).",
-      "reasoning": "The construction resembles the single-insertion expansion but does not translate the complete selected passage and surrounding result."
+      "status": "pass",
+      "paper_evidence": "The verified PDF is the 2023 SIAM Journal on Matrix Analysis and Applications article, volume 44, issue 3, pages 1146-1163. Model 1.5 and equations (4.1), (4.2), (4.7), (4.8), and (4.9) occur at the supplied locations.",
+      "translation_evidence": "The translation addresses exact Householder products, local perturbations, the first-order insertion sum, and second-order remainders corresponding to section 4.",
+      "reasoning": "The source version and cited passages are correct; semantic incompleteness is assessed in later checks."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "The paper has positive m and r, b in R^m, exact normalized Householder matrices P_1 through P_r, local perturbations Delta P_j, Q, and F_j.",
-      "translation_evidence": "The translation quantifies unrestricted natural m and r, arbitrary matrices P_k and E_k, a new scalar t, b, and a coordinate i; it contains no v_i, Q, F_j, or Delta P_j binders.",
-      "reasoning": "Although the matrix and vector dimensions are internally consistent, the binder types and admissible objects differ materially from the paper."
+      "paper_evidence": "The paper uses m-dimensional real vectors, r exact normalized Householder factors, unit roundoff u, lambda, local matrices Delta P_j, insertion matrices F_j, their sum E, and a backward perturbation Delta b.",
+      "translation_evidence": "The translation binds an abstract model, run, natural c5, lambda, and certificate, and introduces two matrix remainder functions. It has no translated witness corresponding to Delta b or E as used in the backward-error conclusion, and it adds a family indexed by every real u.",
+      "reasoning": "The basic finite real dimensions are correct, but important paper quantities are absent while additional parametric structures have no explicit counterpart in the paper statement."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "The expansion is asserted for the given Householder computation and its associated perturbations under the hypotheses of Lemma 4.2.",
-      "translation_evidence": "P, E, t, b, r, and i are all universally quantified without constraints, and the remainder w is recursively determined from those arbitrary data.",
-      "reasoning": "Universal generalization to arbitrary matrices and a free perturbation parameter changes the scope rather than preserving the paper's conditional setup."
+      "paper_evidence": "Lemma 4.1 derives the perturbed-product representation and a simultaneous high-probability local bound from the actual computation. Lemma 4.2 assumes the local bound almost surely and then gives a separate tail-probability conclusion for a backward perturbation.",
+      "translation_evidence": "The exact perturbed-product representation and probability-one local event are packaged as premises. Global remainder functions are then existentially chosen, with identities required for every real u and every outcome while their asymptotic properties hold only on the local event.",
+      "reasoning": "Derived facts have been moved into quantified input structures, and the paper's probability and existential scopes are not preserved."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The setup requires P_i=I-v_i v_i^T with v_i^T v_i=2, the perturbed-product representation of the computed result, Model 1.5, and the probability-1 local bound on ||Delta P_j||_2.",
-      "translation_evidence": "The hypotheses array is empty, and the translation explicitly records no boundedness, Householder, floating-point, probabilistic, or positivity assumptions.",
-      "reasoning": "Essential explicit and inherited hypotheses have been removed."
+      "paper_evidence": "The paper assumes exact normalized reflectors, the sequential update b_{j+1}=b_j-(v_j^T b_j)v_j, Model 1.5 errors in computation order, and, for Lemma 4.2, an almost-sure spectral-norm bound on the algorithmically generated Delta P_j.",
+      "translation_evidence": "The run assumes an arbitrary exact perturbed-product equation and the certificate separately assumes entrywise Delta_j(u,omega)=O(u). No hypothesis links each Delta_j to the dot-product, scaling, and subtraction errors or yields conditional mean zero for F_j.",
+      "reasoning": "The normalization and abstract error model are present, but the hypotheses do not identify the perturbations with those generated by the paper's algorithm and add an unsupported cross-u asymptotic premise."
     },
     {
       "id": "S05",
       "status": "fail",
-      "paper_evidence": "The paper gives the unfactored single-insertion sum, the equivalent Q^T-factored form, and F_j=P_1...P_j Delta P_j P_(j-1)...P_1.",
-      "translation_evidence": "The sole conclusion is z_r(i)=u_r(i)+t v_r(i)+t^2 w_r(i); no Q, F_j, explicit insertion sum, or matrix-valued O(u^2) term appears.",
-      "reasoning": "The recurrence for v can encode the unfactored single-insertion contribution after reindexing, but the remaining displayed conclusions and dependencies are absent."
+      "paper_evidence": "The selected result includes the perturbed-product representation, its simultaneous local norm bound with probability at least 1-2rm exp(-lambda^2/2), the first-order expansion, and the backward bound with probability at least 1-2m exp(-lambda^2).",
+      "translation_evidence": "The conclusions contain only two exact first-order decompositions with existential O(u^2) matrix remainders and a definitional equality for F_j. They contain no local high-probability conclusion, no Delta b, no c6 lambda sqrt(r) gamma-tilde factor, and no final tail probability.",
+      "reasoning": "Central probabilistic and backward-error conclusions are missing."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The relevant algebra uses finite-dimensional matrix-vector multiplication, products of matrices, and first-order versus higher-order contributions.",
-      "translation_evidence": "The dependency ledger explicitly interprets the four recursive sequences, finite coordinate matrix-vector multiplication, real arithmetic, t^2, finite sums, and course-of-values recursion.",
-      "reasoning": "The operators and imported definitions that actually occur in the translated proposition are adequately unfolded and coherently interpreted."
+      "paper_evidence": "Equation (4.8) uses ordered reflector products and equation (4.9) defines each conjugated single-perturbation insertion.",
+      "translation_evidence": "The ledger correctly unfolds P_j=I-v_jv_j^T, Q_{k+1}=P_kQ_k, the perturbed product T_k, the first-order recursion A_k, F_j=Q_{j+1}^T Delta_j Q_j, finite sums, matrix multiplication, transposition, rho_m, and Euclidean norms.",
+      "reasoning": "The nontrivial operators occurring in the translated proposition are comprehensively and correctly interpreted."
     },
     {
       "id": "S07",
-      "status": "pass",
-      "paper_evidence": "The paper distinguishes the exact result b_(r+1)=P_r...P_1b from the computed result represented by the perturbed product.",
-      "translation_evidence": "The translation distinguishes u, evolved using P alone, from z, evolved using P+tE, and states their relationship without identifying them.",
-      "reasoning": "At the abstract algebraic level, the unperturbed and perturbed quantities remain distinct, although the floating-point interpretation is omitted elsewhere."
+      "status": "fail",
+      "paper_evidence": "The exact P_j and b are distinguished from the actual rounded sequential output, and Delta P_j is derived from the rounding errors of that execution.",
+      "translation_evidence": "The field called computed is any real-parametric vector family assumed equal to an abstract perturbed product; agreement with selected model outputs at u0 does not encode the arithmetic dependency graph producing Delta_j.",
+      "reasoning": "The translated computed quantity is not adequately tied to the paper's rounded execution, so an arbitrary perturbed product can stand in for the algorithmic result."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Equations (4.8)-(4.9) arise from sequential floating-point application of r given Householder transformations to a vector.",
-      "translation_evidence": "The proposition concerns arbitrary real matrix sequences and an exact recurrence, with no Householder algorithm, execution order model, or computed floating-point result.",
-      "reasoning": "The algebraic recurrence is detached from the sourced algorithm and execution model."
+      "paper_evidence": "Lemma 4.1 explicitly computes each step through an inner product, scaling, and subtraction, with diagonal error factors D_j, Lambda_1^(j), and Lambda_2^(j). Their computation order is used to prove conditional mean zero of F_j.",
+      "translation_evidence": "The model operation records and the run perturbations are separate data. The run supplies the final perturbed-product semantics directly and does not encode the stepwise Householder calculation or formula for Delta_j.",
+      "reasoning": "The proposition has become a generic matrix-product expansion rather than a result linked to the stated floating-point algorithm."
     },
     {
       "id": "S09",
       "status": "fail",
-      "paper_evidence": "The enclosing lemma assumes the subordinate matrix 2-norm bound ||Delta P_j||_2 <= c_5 gamma_tilde_m(lambda), while its later vector perturbation is measured in Euclidean 2-norm.",
-      "translation_evidence": "The translation contains no norm or norm bound and states that no claims about size are present.",
-      "reasoning": "The standing norm semantics needed to interpret Delta P_j=O(u) and the higher-order remainder are not preserved."
+      "paper_evidence": "The local bounds use the subordinate matrix 2-norm, and the final result bounds the Euclidean norm of the backward vector Delta b, uniformly through a stated probabilistic event.",
+      "translation_evidence": "The certificate correctly expresses an induced Euclidean operator bound at u0, but the remainder conditions are entrywise, pointwise in omega Big-O statements, and no vector-norm backward bound is concluded.",
+      "reasoning": "One local norm is represented correctly, but the principal normwise error conclusion and its uniform probabilistic meaning are absent."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "The sum runs over j=1:r; the unfactored term has the exact order P_r...P_(j+1) Delta P_j P_(j-1)...P_1, and F_j has left endpoint P_j and right endpoint P_(j-1).",
-      "translation_evidence": "The v recurrence uses zero-based times k and implicitly generates the analogous insertion order, but F_j and its endpoint-sensitive formula are absent, as are c_5 and gamma_tilde_m(lambda).",
-      "reasoning": "A benign zero-based reindexing preserves part of the insertion order, but the paper's complete indexing and parameter-dependent data are missing."
+      "paper_evidence": "The paper uses c5 locally, c6 in the backward bound, gamma-tilde_m(lambda), the factors lambda sqrt(r), and the probabilities 1-2rm exp(-lambda^2/2) and 1-2m exp(-lambda^2). Its products apply P_1 first and P_r last.",
+      "translation_evidence": "The zero-based products, rho_m formula, and F_j index offset are correct. However c6, lambda sqrt(r), and both probability coefficients are absent from the conclusions.",
+      "reasoning": "Index conversion is faithful, but essential constants and parameter dependence are missing."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "The computation is under the standard relative-error model and Model 1.5, with mean-independent zero-mean rounding errors and an assumed probability-1 local perturbation bound.",
-      "translation_evidence": "All arithmetic is exact over Real, with no unit roundoff u, rounding rule, stochastic assumptions, local bound, overflow, or underflow context.",
-      "reasoning": "The floating-point and probabilistic model has been entirely erased."
+      "status": "pass",
+      "paper_evidence": "Model 1.5 assumes bounded relative errors, zero means, and mean independence in computation order. It selects neither a mandatory rounding mode nor exceptional-value semantics.",
+      "translation_evidence": "The model packages computed=exact*(1+error), the bound by u0, zero means, and factorization against functions of prior errors without imposing mutual independence, a floating-point format, or a rounding mode.",
+      "reasoning": "At the abstract model level, the relative-error and mean-independence assumptions match; the missing linkage to the algorithm is covered by S08."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "Equation (4.8) is a first-order equality modulo an unspecified additive O(u^2) matrix remainder.",
-      "translation_evidence": "The target is an exact equality obtained by defining a t-dependent vector w that absorbs all terms of degree at least two.",
-      "reasoning": "An exact recursive decomposition with an unconstrained remainder is not the same relation as the paper's asymptotic first-order expansion."
+      "paper_evidence": "The paper combines an exact perturbed-product equality, first-order big-O notation, norm inequalities, and explicit probability lower bounds.",
+      "translation_evidence": "The perturbed-product equality is assumed, the decompositions are exact for all real u and outcomes, and only eventwise entrywise asymptotics are concluded. The norm and probability inequalities are omitted.",
+      "reasoning": "The translation simultaneously strengthens the domain of its algebraic equalities and weakens the substantive probabilistic conclusions, so relation strength is not preserved."
     },
     {
       "id": "S13",
       "status": "fail",
-      "paper_evidence": "The paper interprets (4.8) as a first-order forward expansion of the computed-minus-exact vector arising from local floating-point perturbations.",
-      "translation_evidence": "The translation describes only an exact algebraic parameter decomposition and expressly disclaims any approximation, floating-point error, or norm claim.",
-      "reasoning": "The sourced numerical forward-error meaning is replaced by a generic polynomial-remainder identity."
+      "paper_evidence": "Equation (4.8) is a forward-error expansion, while equations (4.7) and (4.14) reinterpret it as a normwise backward perturbation Delta b to the input of the exact orthogonal transformation.",
+      "translation_evidence": "The translation retains a forward decomposition of the computed vector but introduces no input perturbation Delta b and states no backward-error inequality.",
+      "reasoning": "The paper's backward-stability result is omitted rather than preserved alongside the forward expansion."
     },
     {
       "id": "S14",
       "status": "fail",
-      "paper_evidence": "Both forms of (4.8) retain an unspecified matrix-valued O(u^2) remainder, representing products containing at least two local perturbations.",
-      "translation_evidence": "The remainder is t^2 w_r, where w is a b-dependent vector and itself depends on t through tE_k w_k; no relationship between t, u, E_k, and O(u^2) is asserted.",
-      "reasoning": "The translation exactifies and retypes the higher-order term without proving its O(u^2) scale or preserving its matrix-valued character."
+      "paper_evidence": "The paper identifies the O(u^2) matrix as the collection of terms containing at least two local perturbations and later counts and bounds these terms, including the binomial second-order count when r=n.",
+      "translation_evidence": "The remainder witnesses are constrained only by entrywise O(u^2) on the local event. No formula requires them to be the multi-perturbation product terms, and no second-order count, norm estimate, dominance condition, or higher-order ratio is present.",
+      "reasoning": "The exact equalities avoid literally discarding a remainder, but the paper's stated higher-order structure and estimates are not translated. The chosen two-sided, pointwise asymptotic semantics also exceed what the paper formally specifies."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The result is specialized to real normalized Householder matrices and their local computation perturbations for positive dimensions and transformation counts.",
-      "translation_evidence": "The proposition generalizes to arbitrary real square matrices, arbitrary t, and zero dimensions or zero time.",
-      "reasoning": "This generalization captures an algebraic subidentity but is not a faithful strengthening of the full paper statement because its hypotheses, conclusions, and error semantics also change."
+      "status": "pass",
+      "paper_evidence": "The generic vector result uses arbitrary r and real m-dimensional data; r=n and m>=n enter only in the later QR specialization.",
+      "translation_evidence": "The translation uses finite real m-vectors and m-by-m matrices with arbitrary positive m and r and does not impose r=n or m>=r.",
+      "reasoning": "The relevant real finite-dimensional specialization and the distinction between generic r and the later QR case are preserved."
     },
     {
       "id": "S16",
       "status": "fail",
-      "paper_evidence": "The paper's setup has positive m and r and makes a substantive claim about a specified computed Householder product.",
-      "translation_evidence": "When m=0 there is no i in Fin(m), so the coordinatewise proposition is vacuous; when r=0 it reduces to the initial-condition identity.",
-      "reasoning": "The unrestricted natural binders introduce unintended vacuous and degenerate cases excluded by the sourced setup."
+      "paper_evidence": "The paper's perturbations and conditional expectations arise from a concrete ordered Householder computation, and concentration supplies nontrivial probabilistic content.",
+      "translation_evidence": "The model and run can be populated largely independently; existence of a certificate is not established, the final F_j conjunct merely repeats a definition, and the remainder theorem follows algebraically from the assumed product recursion and O(u) perturbations without using the encoded mean-zero model or local norm constant.",
+      "reasoning": "Compatible instances appear satisfiable, but the stochastic hypotheses do not support the conclusion in the intended way and part of the conclusion is tautological, creating a material unintended-triviality risk."
     }
   ],
   "implications": {
     "translation_implies_paper": {
       "verdict": "no",
-      "reasoning": "The exact generic recurrence identity does not supply the Householder hypotheses, floating-point model, probability-1 local norm bound, Q^T factorization, F_j definition, or an O(u^2) matrix remainder. Specializing t and E cannot recover those missing assertions from the translation alone."
+      "reasoning": "The translated proposition supplies neither the algorithmic derivation of local perturbations nor the conditional-mean-zero concentration argument, local high-probability result, backward perturbation, norm bound, or final tail probability required by the paper."
     },
     "paper_implies_translation": {
-      "verdict": "no",
-      "reasoning": "The paper treats one constrained Householder computation and states a first-order expansion with an unspecified higher-order remainder. It does not assert the translated exact identity for every arbitrary matrix sequence, scalar t, dimension, and time."
+      "verdict": "unclear",
+      "reasoning": "The ordered first-order formulas align algebraically with equations (4.8)-(4.9), but the paper's informal O(u^2) notation does not determine the translation's globally defined remainder functions, two-sided limit over all real u, common outcome-space coupling across u, or pointwise outcome-dependent Big-O constants."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "undetermined",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "higher-order-terms",
-      "paper_evidence": "Equation (4.8) retains an unspecified matrix-valued O(u^2) term representing multiple local perturbations.",
-      "translation_evidence": "The target replaces it with t^2 w_r, a t-dependent exact vector remainder with no size bound or connection between t and unit roundoff u.",
-      "impact": "The paper's asymptotic first-order numerical claim cannot be recovered, and the remainder's type, dependence, and meaning all change."
+      "category": "missing probabilistic backward conclusion",
+      "paper_evidence": "Lemma 4.2 concludes existence of Delta b with norm at most c6 lambda sqrt(r) gamma-tilde_m(lambda)||b||_2+O(u^2), with probability at least 1-2m exp(-lambda^2).",
+      "translation_evidence": "No Delta b, c6, sqrt(r) factor, output-error norm inequality, or tail probability occurs in the translated conclusions.",
+      "impact": "The main stability conclusion of the selected paper result cannot be recovered from the translation."
+    },
+    {
+      "severity": "critical",
+      "category": "algorithm-model disconnection",
+      "paper_evidence": "The local Delta P_j are constructed from the rounded dot product, scaling, and subtraction, and this computation order proves that F_j is conditionally mean zero.",
+      "translation_evidence": "Delta_j and the abstract model errors are not linked by any operation-level formula; the perturbed-product representation is assumed as run data.",
+      "impact": "Translated instances may satisfy the proposition without representing the paper's Householder computation, and the concentration argument is unavailable."
     },
     {
       "severity": "major",
-      "category": "missing-hypotheses",
-      "paper_evidence": "Lemma 4.2 uses normalized exact Householder matrices, Model 1.5, a computed perturbed-product representation, and a probability-1 subordinate-norm bound on every Delta P_j.",
-      "translation_evidence": "The proposition has no hypotheses and permits arbitrary P_k, E_k, and t.",
-      "impact": "The statement is detached from the algorithm, rounding model, and assumptions that make the source a numerical-analysis result."
+      "category": "hypothesis-conclusion shift",
+      "paper_evidence": "Lemma 4.1 derives the perturbed-product representation and its high-probability local bound before Lemma 4.2 strengthens the local bound to an almost-sure assumption.",
+      "translation_evidence": "Both exact perturbed-product semantics and a probability-one local certificate are supplied as input structures, while no corresponding probabilistic conclusion is produced.",
+      "impact": "Substantive claims from the paper are assumed or omitted, leaving a materially weaker theorem."
     },
     {
       "severity": "major",
-      "category": "conclusion-omission",
-      "paper_evidence": "The source includes the Q^T-factored expansion and the endpoint-sensitive definition F_j=P_1...P_j Delta P_j P_(j-1)...P_1.",
-      "translation_evidence": "Neither Q nor F_j occurs; only recursive vectors u, v, w, and z are present.",
-      "impact": "A central conclusion used to prepare the concentration argument is missing."
+      "category": "higher-order semantics",
+      "paper_evidence": "The omitted product terms contain at least two local perturbations; the paper provides their combinatorial count and asymptotic norm estimates in the QR specialization.",
+      "translation_evidence": "The existential remainders have only entrywise, pointwise O(u^2) properties and are not identified with the omitted multi-perturbation terms.",
+      "impact": "The translation does not preserve the paper's higher-order treatment, and its particular Big-O semantics cannot be confirmed from the source."
     },
     {
       "severity": "major",
-      "category": "relation-and-error-notion",
-      "paper_evidence": "The source is a first-order forward expansion of a floating-point computed result relative to its exact counterpart.",
-      "translation_evidence": "The target is an exact real-arithmetic invariant engineered through the recurrence defining w.",
-      "impact": "The numerical forward-error interpretation is replaced by a different algebraic theorem."
+      "category": "quantifier and uniformity mismatch",
+      "paper_evidence": "The paper concerns a floating-point computation at unit roundoff and states probabilistic bounds over its rounding errors.",
+      "translation_evidence": "The run and remainder identities range over every real u and outcome, while Big-O constants and neighborhoods may vary by outcome and matrix entry.",
+      "impact": "The translated family is stronger in some unsupported directions and weaker in the probabilistic uniformity that matters to the paper."
     },
     {
       "severity": "minor",
-      "category": "domain-and-vacuity",
-      "paper_evidence": "The source uses positive m and r in a nondegenerate sequence of Householder applications.",
-      "translation_evidence": "The binders allow m=0 and r=0; the former makes the coordinatewise assertion vacuous.",
-      "impact": "The translated domain contains unintended degenerate cases."
-    },
-    {
-      "severity": "note",
-      "category": "partial-structural-correspondence",
-      "paper_evidence": "The unfactored first-order term is the sum of all products containing exactly one Delta P_j in the original product order.",
-      "translation_evidence": "After shifting from paper indices 1:r to translation indices 0:r-1, the recurrence for v generates the same single-insertion ordering.",
-      "impact": "The translation preserves one algebraic component of (4.8), but this does not compensate for the missing factored form, hypotheses, and higher-order semantics."
+      "category": "tautological conclusion",
+      "paper_evidence": "Equation (4.9) introduces F_j for use in the nontrivial first-order expansion and concentration proof.",
+      "translation_evidence": "The last conjunct merely equates LocalDef010 with its defining expression.",
+      "impact": "This conjunct contributes no mathematical content and does not compensate for the omitted concentration result."
     }
   ],
-  "rationale": "The blind translation proves a valid generic exact decomposition of a parameterized matrix recurrence, and its dependency ledger explains that proposition clearly. It preserves the distinction between unperturbed and perturbed evolutions and implicitly reproduces the single-insertion order. However, it is not a translation of the complete paper result: it removes the Householder and floating-point hypotheses, omits Q and F_j, changes the matrix O(u^2) remainder into an unconstrained t-dependent vector remainder, and generalizes the domain to arbitrary matrices and degenerate dimensions. Consequently neither statement entails the other as stated."
+  "rationale": "The zero-based reflector ordering, first-order recurrence, factored insertion formula, rho_m expression, and abstract mean-independence model are translated correctly. Nevertheless, the proposition reduces the selected result to a deterministic expansion under an already assumed perturbed-product representation and an added O(u) family hypothesis. It omits the local high-probability conclusion, conditional-mean-zero linkage, matrix concentration result, backward perturbation, norm bound, and final probability. Translation-implies-paper therefore fails. Paper-implies-translation requires adjudication because the source does not define enough uniformity or cross-u semantics to validate the translation's particular exact remainder functions."
 }
