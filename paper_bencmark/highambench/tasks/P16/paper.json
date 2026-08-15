@@ -39,8 +39,8 @@
   },
   "rejected_candidates": [
     {
-      "candidate": "floating-point notation, gamma definition, condition numbers, singular values, and forward/backward error definitions in Section 2",
-      "reason": "These are definitions or recalled standard tools. T1 instead formalizes the exact perturbation-to-residual implication that makes the displayed backward-error formula operational."
+      "candidate": "floating-point notation, gamma definition, condition numbers, singular values, and the forward-error definition in Section 2",
+      "reason": "These are definitions or recalled standard tools. T1 instead selects the complete displayed normwise backward-error minimum identity."
     },
     {
       "candidate": "operation models (3.1)-(3.6) and key-dimension conditions (3.7)-(3.8)",
@@ -74,9 +74,9 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use the exact perturbed-solve residual estimate behind the normwise backward-error formula on printed page 1942.",
+      "decision": "Use the complete unnumbered normwise backward-error minimum and normalized-residual identity on printed page 1942, under the standing nonsingular-system and nonzero-right-hand-side assumptions from printed page 1939.",
       "task_id": "P16-T1",
-      "theorem_name": "p16_t1_perturbed_solve_residual_bound"
+      "theorem_name": "p16_t1_normwise_backward_error_formula"
     },
     "T2": {
       "available": true,

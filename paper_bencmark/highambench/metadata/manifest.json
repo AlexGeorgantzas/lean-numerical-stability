@@ -171,7 +171,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean",
       "role": "P16-only finite matrix and vector norms, residuals, condition factors, mixed-precision contractions, and attainable floors",
-      "sha256": "7f2630cf2406121b98d74782c2533349ff41d913e9e16dac3c230974b7f572ec",
+      "sha256": "c6e1e7fbec905b0088523056156ff1ca066c92d0818f3a54f05fa411a552e9ac",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -3082,7 +3082,7 @@
         "volume": "46"
       },
       "paper_id": "P16",
-      "paper_structure_note": "The paper builds a modular backward-error framework from operation models and a key-dimension argument, extends it to restarted GMRES, instantiates it for several Arnoldi and least-squares implementations, and derives new simpler-, CGS2-, and mixed-precision GMRES results. The selected targets progress from the basic perturbation-to-residual bridge through the exact restarted residual recurrence to finite mixed-precision geometric convergence above attainable floors.",
+      "paper_structure_note": "The paper builds a modular backward-error framework from operation models and a key-dimension argument, extends it to restarted GMRES, instantiates it for several Arnoldi and least-squares implementations, and derives new simpler-, CGS2-, and mixed-precision GMRES results. The selected targets progress from the complete normwise backward-error minimum identity through the exact restarted residual recurrence to finite mixed-precision geometric convergence above attainable floors.",
       "paper_version": "published open-access journal version; IMA Journal of Numerical Analysis 46(4), 2026, printed pages 1939-1993",
       "source": {
         "journal_page_map": "PDF pages 1-55 are printed pages 1939-1993 respectively.",
@@ -3096,40 +3096,51 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
+            "NumStability.frobNorm_nonneg",
+            "NumStability.frobNorm_rankOne_smul",
+            "NumStability.vecNorm2_eq_zero_iff",
+            "NumStability.vecNorm2_smul",
             "NumStability.vecNorm2_add_le",
             "NumStability.vecNorm2_neg",
             "NumStability.vecNorm2_matMulVec_le_frobNorm_mul"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P16/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Rearrange the perturbed solve into b-Ax = deltaA*x-deltaB, apply Euclidean triangle inequality, and bound the matrix action by the Frobenius norm.",
-          "informal_statement_paraphrase": "The exact residual implication behind the perturbation and normalized-residual forms of the normwise backward error in Section 2.",
+          "informal_proof_paraphrase": "Every admissible perturbation bounds the residual by epsilon times the normalization denominator. An optimal pair is obtained by splitting the residual between a scaled residual-by-xHat rank-one matrix and a scaled residual vector, with a separate deltaB=-b construction when xHat is zero.",
+          "informal_statement_paraphrase": "The minimum simultaneous relative matrix and right-hand-side perturbation equals the normalized residual in Section 2.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "d58289b7ce54ba1c17daaa783978d4464bc9542f0b92fe95938a77337a3cf5a5",
-            "declaration": "p16_t1_perturbed_solve_residual_bound",
+            "controlled_file_sha256": "6cf6a658a6363e5a80fa10a2354101880c5b3f801b04cdcbcf09d61dc81e5dcb",
+            "declaration": "p16_t1_normwise_backward_error_formula",
             "file": "paper_bencmark/highambench/tasks/P16/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean"
             ],
-            "statement_summary": "An exact solve of a system perturbed in its matrix and right-hand side has residual bounded by the Frobenius matrix perturbation acting on the solution plus the right-hand-side perturbation."
+            "statement_summary": "The normalized residual is an attained least shared relative perturbation level for the nonsingular system with nonzero right-hand side."
           },
           "source_locations": [
             {
-              "anchor": "normwise backward-error perturbation definition and normalized-residual identity",
+              "anchor": "equation (1.1), nonsingular square system with nonzero right-hand side",
+              "pdf_page": 1,
+              "printed_page": "1939",
+              "role": "standing system assumptions",
+              "section": "1. Introduction"
+            },
+            {
+              "anchor": "unnumbered normwise backward-error minimum and normalized-residual identity",
               "pdf_page": 4,
               "printed_page": "1942",
-              "role": "exact perturbation-to-residual bridge",
+              "role": "exact minimum characterization",
               "section": "2. Notations"
             }
           ],
           "task_id": "P16-T1",
           "tier": "T1",
           "tier_name": "direct use",
-          "tier_reason": "The L proof directly composes NumStability.vecNorm2_add_le, NumStability.vecNorm2_neg, and NumStability.vecNorm2_matMulVec_le_frobNorm_mul after the elementary perturbed-solve rearrangement.",
-          "title": "Perturbed-solve residual bound"
+          "tier_reason": "The L proof directly specializes the frozen rank-one Frobenius identity and combines it with the frozen Euclidean scaling, triangle, zero-characterization, and Frobenius matrix-action rules; only paper-scoped normalization and elementary field algebra remain.",
+          "title": "Exact normwise backward-error formula"
         },
         {
           "availability": "available",

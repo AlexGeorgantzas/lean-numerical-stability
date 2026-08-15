@@ -36,6 +36,27 @@ noncomputable def p16Residual {n : ℕ} (A : P16Matrix n)
     (b x : P16Vector n) : P16Vector n :=
   b - p16MatVec A x
 
+/-- A square matrix is nonsingular when its exact matrix-vector action is a
+bijection. -/
+def p16IsNonsingular {n : ℕ} (A : P16Matrix n) : Prop :=
+  Function.Bijective (p16MatVec A)
+
+/-- The shared relative perturbation condition in the paper's normwise
+backward-error definition. -/
+def p16NormwiseBackwardErrorAdmissible {n : ℕ}
+    (A : P16Matrix n) (b xHat : P16Vector n) (epsilon : ℝ) : Prop :=
+  ∃ deltaA : P16Matrix n, ∃ deltaB : P16Vector n,
+    p16MatVec (A + deltaA) xHat = b + deltaB ∧
+      p16FrobNorm deltaA ≤ epsilon * p16FrobNorm A ∧
+      p16VecNorm deltaB ≤ epsilon * p16VecNorm b
+
+/-- The normalized residual on the right-hand side of the paper's exact
+normwise backward-error formula. -/
+noncomputable def p16NormalizedResidual {n : ℕ}
+    (A : P16Matrix n) (b xHat : P16Vector n) : ℝ :=
+  p16VecNorm (p16Residual A b xHat) /
+    (p16FrobNorm A * p16VecNorm xHat + p16VecNorm b)
+
 /-- Frobenius condition-number factor represented by a matrix and a supplied
 inverse. The T3 target needs only its exact nonnegativity. -/
 noncomputable def p16ConditionNumberF {n : ℕ}
