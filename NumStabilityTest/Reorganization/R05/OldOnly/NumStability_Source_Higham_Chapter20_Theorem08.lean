@@ -1,0 +1,41 @@
+import NumStability.Source.Higham.Chapter20.Theorem08
+
+/-!
+# R05 historical-only test — `Theorem08`
+
+Imports exactly the historical path; checks its preserved public
+surface (32 declarations).
+-/
+
+#check @NumStability.Theorem20_8.dataCoeff
+#check @NumStability.Theorem20_8.dataCoeff_nonneg
+#check @NumStability.Theorem20_8.directDataCorrectionRadius
+#check @NumStability.Theorem20_8.exists_lagrange_solution_difference_eq_source_bottom_row
+#check @NumStability.Theorem20_8.exists_lagrange_solution_difference_relative_le_highamRadius_add_kktRemainder
+#check @NumStability.Theorem20_8.explicitRemainder
+#check @NumStability.Theorem20_8.explicitRemainder_le_eps_sq_mul
+#check @NumStability.Theorem20_8.finalSmallnessThreshold
+#check @NumStability.Theorem20_8.finalSmallnessThreshold_pos
+#check @NumStability.Theorem20_8.highamDirectDataCorrectionRadius
+#check @NumStability.Theorem20_8.highamDirectDataCorrectionRadius_le_firstOrderRHS_plus_eps_radius
+#check @NumStability.Theorem20_8.higham_direct_data_correction_difference_le
+#check @NumStability.Theorem20_8.kktConstraintDifferenceLinearCoeff
+#check @NumStability.Theorem20_8.kktDataDifferenceLinearCoeff
+#check @NumStability.Theorem20_8.kktMultiplierDifferenceLinearCoeff
+#check @NumStability.Theorem20_8.kktResidualDifferenceLinearCoeff
+#check @NumStability.Theorem20_8.kktSourceStationarityLinearCoeff
+#check @NumStability.Theorem20_8.kktStationarityQuadraticCoeff
+#check @NumStability.Theorem20_8.kkt_residual_multiplier_differences_le_local_coeffs
+#check @NumStability.Theorem20_8.kkt_solution_eq_source_bottom_row
+#check @NumStability.Theorem20_8.partial_source_facing_of_rank_conditions
+#check @NumStability.Theorem20_8.partial_source_facing_of_rank_kkt_smallnessThreshold
+#check @NumStability.Theorem20_8.sourceBAplus
+#check @NumStability.Theorem20_8.sourceBAplus_rightInverse_of_constraint_annihilates
+#check @NumStability.Theorem20_8.sourceNormalGramPlus
+#check @NumStability.Theorem20_8.sourceNormalGramPlus_stationarity_forcing_le_residualAmplifier
+#check @NumStability.Theorem20_8.sourceNullIntersection
+#check @NumStability.Theorem20_8.source_facing_firstOrder_plus_eps_sq_of_finalSmallnessThreshold
+#check @NumStability.Theorem20_8.source_facing_firstOrder_plus_eps_sq_of_rank_conditions
+#check @NumStability.Theorem20_8.source_facing_of_rank_conditions_with_kkt_remainder
+#check @NumStability.Theorem20_8.source_lagrange_eq_transpose_A_BAplus_residual
+#check @NumStability.Theorem20_8.source_lagrange_vecNorm2_le_A_BAplus_residual

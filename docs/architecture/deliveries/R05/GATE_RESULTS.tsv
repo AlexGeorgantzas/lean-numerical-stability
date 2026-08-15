@@ -1,0 +1,20 @@
+phase	gate	command	mutex	exit	result	notes
+authority	planned_control_ci	GitHub Actions Lean CI run 31844203563 / job 94907208819	-	0	pass	planned-control b6794f326313f8077c0c3433bb9c76b6e2ed5361 success
+authority	activation_ci	GitHub Actions Lean CI run 31845432265 / job 94910787445	-	0	pass	activation-control 405e76f36a342a5d7d31a8e094cc7c580dcb250f success
+authority	private_map_amendment_ci	GitHub Actions Lean CI run 31893563259	-	0	pass	reviewed totality amendment d6a241de6c2af12439bc48885461c7190fc751d6 (45 identity rows)
+tests	tests_canonical	lake build <28 canonical TEST_MATRIX targets>	Local\lean-reorganization-2026-08	0	pass	each destination imported alone, no historical owner import
+tests	tests_old_only	lake build <48 old-only TEST_MATRIX targets>	Local\lean-reorganization-2026-08	0	pass	every historical owner path still elaborates with its public surface
+tests	tests_private	lake build NumStabilityTest.Reorganization.R05.PrivateNormalization	Local\lean-reorganization-2026-08	0	pass	all 106 approved private names present; all 61 retired rename names absent
+tests	tests_consumer	lake build <19 protected-consumer TEST_MATRIX targets>	Local\lean-reorganization-2026-08	0	pass	integrator-owned consumers compile unedited against the worker tree
+tests	tests_aggregate	lake build <aggregate-root TEST_MATRIX target>	Local\lean-reorganization-2026-08	0	pass	global aggregate root builds unchanged
+tests	tests_all	lake build NumStabilityTest.Reorganization.R05.All	Local\lean-reorganization-2026-08	0	pass	all 97 isolated R05 tests build together
+build	full_build	lake build NumStability	Local\lean-reorganization-2026-08	0	pass	full production library
+build	full_build_tests	lake build NumStability NumStabilityTest	Local\lean-reorganization-2026-08	0	pass	production plus complete test library
+build	lake_test	lake test	Local\lean-reorganization-2026-08	0	pass	repository test target
+checks	check_compatibility	python tools/architecture/check_compatibility.py	-	0	pass	420 forwarding modules, 1171 canonical targets
+checks	check_provenance	python tools/architecture/check_provenance.py	-	0	pass	provenance contract
+checks	strict_source	python tools/architecture/generate_baseline.py --skip-declarations --strict-source	Local\lean-reorganization-2026-08	0	pass	0 unresolved, 0 cycles, 0 forbidden pairs after umbrella cycle-breaker aggregates
+checks	check_layout	python tools/architecture/check_layout.py	-	1	documented	integrator items only: 7 Chapter20 umbrellas leave the declaration-bearing baseline (improvement; --write-baseline at integration) and new destinations await chapter/root aggregate wiring per the frozen R0006 postimages
+checks	placeholder_scan	sorry/admit/axiom/constant scan over NumStability	-	0	pass	0 hits
+checks	diff_check	git add -A && git diff --check --cached e20de2f931caa12221e708c341e9cb4f64d29b25	-	0	pass	committed-basis whitespace check over the full C0003 diff including added files; re-run after the audit-found EOF blank lines in 13 empty-surface OldOnly tests were removed (redelivery)
+projection	p0006_delivery_replay	python tools/architecture/check_completion_phase_projection.py <frozen P0006 vector + complete 106-row private map>	Local\lean-reorganization-2026-08	0	pass	3171 selected / 574 relocated / 29704 signature / 38184 body edges; freeze-time --candidate-sha256 dropped per reviews/R05-R06-projection-replay.md
