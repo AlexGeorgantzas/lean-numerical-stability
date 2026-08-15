@@ -1,4 +1,5 @@
 import HighamBench.Core
+import Mathlib.Algebra.Order.Round
 
 namespace HighamBench
 
@@ -8,11 +9,711 @@ def p12Nearest (representable : ℝ → Prop) (exact rounded : ℝ) : Prop :=
     ∀ candidate, representable candidate →
       |exact - rounded| ≤ |exact - candidate|
 
+/-- The radix, precision, and inclusive exponent interval in equation (1) of
+Lange and Oishi. -/
+structure P12RadixFormat where
+  beta : ℕ
+  precision : ℕ
+  emin : ℤ
+  emax : ℤ
+  beta_ge_two : 2 ≤ beta
+  precision_pos : 0 < precision
+  emin_le_emax : emin ≤ emax
+
+namespace P12RadixFormat
+
+/-- The paper's integer radix viewed in the reals. -/
+def betaR (fmt : P12RadixFormat) : ℝ :=
+  fmt.beta
+
+/-- The strict mantissa bound `beta^p` from equation (1). -/
+def mantissaBound (fmt : P12RadixFormat) : ℝ :=
+  fmt.betaR ^ fmt.precision
+
+/-- The exponent scale `beta^e` used by a particular representation. -/
+noncomputable def scale (fmt : P12RadixFormat) (e : ℤ) : ℝ :=
+  fmt.betaR ^ e
+
+/-- Explicit range-validity for an exact real operation result.  The strict
+upper endpoint matches equation (1) and makes the paper's "absence of
+overflow" qualification in equation (8) visible. -/
+def noOverflow (fmt : P12RadixFormat) (z : ℝ) : Prop :=
+  |z| < fmt.mantissaBound * fmt.scale fmt.emax
+
+theorem betaR_pos (fmt : P12RadixFormat) : 0 < fmt.betaR := by
+  change (0 : ℝ) < (fmt.beta : ℝ)
+  exact_mod_cast (lt_of_lt_of_le (by norm_num : 0 < (2 : ℕ)) fmt.beta_ge_two)
+
+theorem betaR_one_le (fmt : P12RadixFormat) : 1 ≤ fmt.betaR := by
+  have htwo : (2 : ℝ) ≤ fmt.betaR := by
+    change (2 : ℝ) ≤ (fmt.beta : ℝ)
+    exact_mod_cast fmt.beta_ge_two
+  linarith
+
+theorem mantissaBound_pos (fmt : P12RadixFormat) :
+    0 < fmt.mantissaBound := by
+  exact pow_pos fmt.betaR_pos _
+
+theorem scale_pos (fmt : P12RadixFormat) (e : ℤ) :
+    0 < fmt.scale e := by
+  exact zpow_pos fmt.betaR_pos _
+
+theorem scale_mono (fmt : P12RadixFormat) {e f : ℤ} (hef : e ≤ f) :
+    fmt.scale e ≤ fmt.scale f := by
+  exact zpow_le_zpow_right₀ fmt.betaR_one_le hef
+
+theorem scale_succ (fmt : P12RadixFormat) (e : ℤ) :
+    fmt.scale (e + 1) = fmt.scale e * fmt.betaR := by
+  rw [scale, scale, zpow_add₀ (ne_of_gt fmt.betaR_pos)]
+  simp
+
+end P12RadixFormat
+
+/-- A particular, not necessarily normalized, representation
+`x = m * beta^e` admitted by equation (1).  Keeping the exponent in the
+witness preserves the paper's intentional nonuniqueness of `e(x)`. -/
+structure P12Representation (fmt : P12RadixFormat) (x : ℝ) where
+  mantissa : ℤ
+  exponent : ℤ
+  mantissa_lower : -fmt.mantissaBound < (mantissa : ℝ)
+  mantissa_upper : (mantissa : ℝ) < fmt.mantissaBound
+  exponent_lower : fmt.emin ≤ exponent
+  exponent_upper : exponent ≤ fmt.emax
+  value_eq : x = (mantissa : ℝ) * fmt.scale exponent
+
+/-- Membership in the paper's floating-point set `F`, retaining no preferred
+representation. -/
+def p12Representable (fmt : P12RadixFormat) (x : ℝ) : Prop :=
+  Nonempty (P12Representation fmt x)
+
+namespace P12Representation
+
+theorem abs_lt_mantissaBound_mul_scale
+    {fmt : P12RadixFormat} {x : ℝ} (r : P12Representation fmt x) :
+    |x| < fmt.mantissaBound * fmt.scale r.exponent := by
+  have hm : |(r.mantissa : ℝ)| < fmt.mantissaBound :=
+    (abs_lt).2 ⟨by linarith [r.mantissa_lower], r.mantissa_upper⟩
+  calc
+    |x| = |(r.mantissa : ℝ) * fmt.scale r.exponent| :=
+      congrArg abs r.value_eq
+    _ = |(r.mantissa : ℝ)| * fmt.scale r.exponent := by
+      rw [abs_mul, abs_of_pos (fmt.scale_pos r.exponent)]
+    _ < fmt.mantissaBound * fmt.scale r.exponent :=
+      mul_lt_mul_of_pos_right hm (fmt.scale_pos r.exponent)
+
+end P12Representation
+
+/-- Nearest rounding into the concrete radix set from equation (1). -/
+def p12NearestInFormat (fmt : P12RadixFormat) (exact rounded : ℝ) : Prop :=
+  p12Nearest (p12Representable fmt) exact rounded
+
+/-- Faithful rounding into `F`: apart from the returned endpoint, no
+representable value lies in the closed interval up to the exact result.  This
+allows either adjacent endpoint and fixes no tie-breaking policy. -/
+def p12FaithfulInFormat (fmt : P12RadixFormat) (exact rounded : ℝ) : Prop :=
+  p12Representable fmt rounded ∧
+    ∀ candidate, p12Representable fmt candidate →
+      ¬ ((rounded < candidate ∧ candidate ≤ exact) ∨
+        (exact ≤ candidate ∧ candidate < rounded))
+
+theorem p12NearestInFormat_mem
+    {fmt : P12RadixFormat} {exact rounded : ℝ}
+    (h : p12NearestInFormat fmt exact rounded) :
+    p12Representable fmt rounded :=
+  h.1
+
+theorem p12NearestInFormat_error_le
+    {fmt : P12RadixFormat} {exact rounded candidate : ℝ}
+    (h : p12NearestInFormat fmt exact rounded)
+    (hcandidate : p12Representable fmt candidate) :
+    |exact - rounded| ≤ |exact - candidate| :=
+  h.2 candidate hcandidate
+
+theorem p12NearestInFormat_eq_of_representable
+    {fmt : P12RadixFormat} {exact rounded : ℝ}
+    (hexact : p12Representable fmt exact)
+    (h : p12NearestInFormat fmt exact rounded) :
+    rounded = exact := by
+  have hz : |exact - rounded| ≤ 0 := by
+    simpa using h.2 exact hexact
+  have hzero : exact - rounded = 0 :=
+    abs_eq_zero.mp (le_antisymm hz (abs_nonneg _))
+  linarith
+
+theorem p12FaithfulInFormat_mem
+    {fmt : P12RadixFormat} {exact rounded : ℝ}
+    (h : p12FaithfulInFormat fmt exact rounded) :
+    p12Representable fmt rounded :=
+  h.1
+
+theorem p12FaithfulInFormat_eq_of_representable
+    {fmt : P12RadixFormat} {exact rounded : ℝ}
+    (hexact : p12Representable fmt exact)
+    (h : p12FaithfulInFormat fmt exact rounded) :
+    rounded = exact := by
+  by_contra hne
+  rcases lt_or_gt_of_ne hne with hlt | hgt
+  · exact h.2 exact hexact (Or.inl ⟨hlt, le_rfl⟩)
+  · exact h.2 exact hexact (Or.inr ⟨le_rfl, hgt⟩)
+
+/-- The elementary radix-grid facts used in Theorem 2's three-case proof.
+Each field is a general consequence of equation (1), independent of a
+particular FastTwoSum execution.  The bounded addition/subtraction fields are
+the representability content of equation (8) and its addition analogue. -/
+structure P12RadixGeometry (fmt : P12RadixFormat) : Prop where
+  representation_at_or_below_of_abs_lt :
+    ∀ {x y : ℝ} (rx : P12Representation fmt x),
+      p12Representable fmt y →
+      |y| < fmt.mantissaBound * fmt.scale rx.exponent →
+      ∃ ry : P12Representation fmt y, ry.exponent ≤ rx.exponent
+  add_representation_of_bound :
+    ∀ {a b : ℝ} (ra : P12Representation fmt a)
+      (rb : P12Representation fmt b),
+      fmt.noOverflow (a + b) →
+      |a + b| ≤
+        fmt.mantissaBound * fmt.scale (min ra.exponent rb.exponent) →
+      ∃ rsum : P12Representation fmt (a + b),
+        min ra.exponent rb.exponent ≤ rsum.exponent
+  sub_representation_of_bound :
+    ∀ {a b : ℝ} (ra : P12Representation fmt a)
+      (rb : P12Representation fmt b),
+      fmt.noOverflow (a - b) →
+      |a - b| ≤
+        fmt.mantissaBound * fmt.scale (min ra.exponent rb.exponent) →
+      ∃ rdiff : P12Representation fmt (a - b),
+        min ra.exponent rb.exponent ≤ rdiff.exponent
+  same_exponent_nearest_add :
+    ∀ {x y s : ℝ} (rx : P12Representation fmt x)
+      (ry : P12Representation fmt y),
+      rx.exponent = ry.exponent →
+      |y| ≤
+        (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale rx.exponent →
+      fmt.noOverflow (x + y) →
+      p12NearestInFormat fmt (x + y) s →
+      ∃ rs : P12Representation fmt s,
+        rx.exponent ≤ rs.exponent ∧
+          |s - (x + y)| ≤ fmt.betaR / 2 * fmt.scale rx.exponent
+  large_sum_nearest_exponent :
+    ∀ {x y s : ℝ} (rx : P12Representation fmt x)
+      (ry : P12Representation fmt y),
+      ry.exponent < rx.exponent →
+      fmt.mantissaBound * fmt.scale ry.exponent < |x + y| →
+      fmt.noOverflow (x + y) →
+      p12NearestInFormat fmt (x + y) s →
+      ∃ rs : P12Representation fmt s, ry.exponent < rs.exponent
+
+open P12RadixFormat
+
+private theorem representation_integer_multiple_at
+    {fmt : P12RadixFormat} {x : ℝ} (r : P12Representation fmt x)
+    {e : ℤ} (he : e ≤ r.exponent) :
+    ∃ k : ℤ, x = (k : ℝ) * fmt.scale e := by
+  let d : ℕ := (r.exponent - e).toNat
+  have hdiff_nonneg : 0 ≤ r.exponent - e := sub_nonneg.mpr he
+  have hd : (d : ℤ) = r.exponent - e := Int.toNat_of_nonneg hdiff_nonneg
+  refine ⟨r.mantissa * (fmt.beta : ℤ) ^ d, ?_⟩
+  calc
+    x = (r.mantissa : ℝ) * fmt.scale r.exponent := r.value_eq
+    _ = (r.mantissa : ℝ) *
+        (fmt.scale e * (fmt.betaR ^ d)) := by
+      rw [P12RadixFormat.scale, P12RadixFormat.scale]
+      have hexp : r.exponent = e + (d : ℤ) := by omega
+      rw [hexp, zpow_add₀ (ne_of_gt fmt.betaR_pos), zpow_natCast]
+    _ = ((r.mantissa * (fmt.beta : ℤ) ^ d : ℤ) : ℝ) *
+        fmt.scale e := by
+      simp only [Int.cast_mul, Int.cast_pow, Int.cast_natCast]
+      change (r.mantissa : ℝ) *
+          (fmt.scale e * ((fmt.beta : ℝ) ^ d)) =
+        (r.mantissa : ℝ) * ((fmt.beta : ℝ) ^ d) * fmt.scale e
+      ring
+
+private noncomputable def representation_of_integer_multiple_of_abs_lt
+    {fmt : P12RadixFormat} {z : ℝ} {e : ℤ}
+    (hemin : fmt.emin ≤ e) (heemax : e ≤ fmt.emax)
+    (k : ℤ) (hz : z = (k : ℝ) * fmt.scale e)
+    (hbound : |z| < fmt.mantissaBound * fmt.scale e) :
+    P12Representation fmt z := by
+  have hscale : 0 < fmt.scale e := fmt.scale_pos e
+  have hkabs : |(k : ℝ)| < fmt.mantissaBound := by
+    rw [hz, abs_mul, abs_of_pos hscale] at hbound
+    nlinarith
+  exact
+    { mantissa := k
+      exponent := e
+      mantissa_lower := (abs_lt.mp hkabs).1
+      mantissa_upper := (abs_lt.mp hkabs).2
+      exponent_lower := hemin
+      exponent_upper := heemax
+      value_eq := hz }
+
+private theorem representation_at_or_below_of_abs_lt
+    {fmt : P12RadixFormat} {x y : ℝ}
+    (rx : P12Representation fmt x) (hy : p12Representable fmt y)
+    (hbound : |y| < fmt.mantissaBound * fmt.scale rx.exponent) :
+    ∃ ry : P12Representation fmt y, ry.exponent ≤ rx.exponent := by
+  rcases hy with ⟨ry⟩
+  by_cases he : ry.exponent ≤ rx.exponent
+  · exact ⟨ry, he⟩
+  · have hxe : rx.exponent ≤ ry.exponent := le_of_not_ge he
+    rcases representation_integer_multiple_at ry hxe with ⟨k, hk⟩
+    let ry' := representation_of_integer_multiple_of_abs_lt
+      rx.exponent_lower rx.exponent_upper k hk hbound
+    exact ⟨ry', le_rfl⟩
+
+private theorem precision_sub_one_add_one (fmt : P12RadixFormat) :
+    fmt.precision - 1 + 1 = fmt.precision := by
+  have hp := fmt.precision_pos
+  omega
+
+private theorem mantissaUnit_cast (fmt : P12RadixFormat) :
+    (((fmt.beta : ℤ) ^ (fmt.precision - 1) : ℤ) : ℝ) =
+      fmt.betaR ^ (fmt.precision - 1) := by
+  simp [P12RadixFormat.betaR]
+
+private theorem mantissaUnit_lt_bound (fmt : P12RadixFormat) :
+    fmt.betaR ^ (fmt.precision - 1) < fmt.mantissaBound := by
+  have hpow : 0 < fmt.betaR ^ (fmt.precision - 1) :=
+    pow_pos fmt.betaR_pos _
+  have htwo : (2 : ℝ) ≤ fmt.betaR := by
+    change (2 : ℝ) ≤ (fmt.beta : ℝ)
+    exact_mod_cast fmt.beta_ge_two
+  have hbeta : 1 < fmt.betaR := by linarith
+  have hbound_eq :
+      fmt.mantissaBound =
+        fmt.betaR ^ (fmt.precision - 1) * fmt.betaR := by
+    calc
+      fmt.mantissaBound = fmt.betaR ^ fmt.precision := rfl
+      _ = fmt.betaR ^ (fmt.precision - 1 + 1) := by
+        rw [precision_sub_one_add_one fmt]
+      _ = fmt.betaR ^ (fmt.precision - 1) * fmt.betaR := pow_succ _ _
+  rw [hbound_eq]
+  nlinarith
+
+private theorem mantissaBound_eq_unit_mul_beta (fmt : P12RadixFormat) :
+    fmt.mantissaBound =
+      fmt.betaR ^ (fmt.precision - 1) * fmt.betaR := by
+  calc
+    fmt.mantissaBound = fmt.betaR ^ fmt.precision := rfl
+    _ = fmt.betaR ^ (fmt.precision - 1 + 1) := by
+      rw [precision_sub_one_add_one fmt]
+    _ = fmt.betaR ^ (fmt.precision - 1) * fmt.betaR := pow_succ _ _
+
+private theorem mantissaUnit_le_bound_sub_half (fmt : P12RadixFormat) :
+    fmt.betaR ^ (fmt.precision - 1) ≤
+      fmt.mantissaBound - fmt.betaR / 2 := by
+  have hunit : 1 ≤ fmt.betaR ^ (fmt.precision - 1) := by
+    exact one_le_pow₀ fmt.betaR_one_le
+  have htwo : (2 : ℝ) ≤ fmt.betaR := by
+    change (2 : ℝ) ≤ (fmt.beta : ℝ)
+    exact_mod_cast fmt.beta_ge_two
+  rw [mantissaBound_eq_unit_mul_beta]
+  nlinarith [mul_nonneg
+    (sub_nonneg.mpr hunit)
+    (sub_nonneg.mpr (by linarith : 1 ≤ fmt.betaR - 1))]
+
+private noncomputable def positive_boundary_representation
+    (fmt : P12RadixFormat) (e : ℤ)
+    (hemin : fmt.emin ≤ e) (heemax : e + 1 ≤ fmt.emax) :
+    P12Representation fmt (fmt.mantissaBound * fmt.scale e) where
+  mantissa := (fmt.beta : ℤ) ^ (fmt.precision - 1)
+  exponent := e + 1
+  mantissa_lower := by
+    rw [mantissaUnit_cast]
+    have hpow : 0 ≤ fmt.betaR ^ (fmt.precision - 1) :=
+      (pow_pos fmt.betaR_pos _).le
+    have hbound := fmt.mantissaBound_pos
+    linarith
+  mantissa_upper := by
+    rw [mantissaUnit_cast]
+    exact mantissaUnit_lt_bound fmt
+  exponent_lower := le_trans hemin (by omega)
+  exponent_upper := heemax
+  value_eq := by
+    rw [mantissaUnit_cast, fmt.scale_succ,
+      mantissaBound_eq_unit_mul_beta]
+    ring
+
+private noncomputable def negative_boundary_representation
+    (fmt : P12RadixFormat) (e : ℤ)
+    (hemin : fmt.emin ≤ e) (heemax : e + 1 ≤ fmt.emax) :
+    P12Representation fmt (-(fmt.mantissaBound * fmt.scale e)) where
+  mantissa := -((fmt.beta : ℤ) ^ (fmt.precision - 1))
+  exponent := e + 1
+  mantissa_lower := by
+    rw [Int.cast_neg, mantissaUnit_cast]
+    exact neg_lt_neg (mantissaUnit_lt_bound fmt)
+  mantissa_upper := by
+    rw [Int.cast_neg, mantissaUnit_cast]
+    have hpow : 0 ≤ fmt.betaR ^ (fmt.precision - 1) :=
+      (pow_pos fmt.betaR_pos _).le
+    have hbound := fmt.mantissaBound_pos
+    linarith
+  exponent_lower := le_trans hemin (by omega)
+  exponent_upper := heemax
+  value_eq := by
+    rw [Int.cast_neg, mantissaUnit_cast, fmt.scale_succ,
+      mantissaBound_eq_unit_mul_beta]
+    ring
+
+private theorem representation_of_integer_multiple_of_bound
+    {fmt : P12RadixFormat} {z : ℝ} {e : ℤ}
+    (hemin : fmt.emin ≤ e) (heemax : e ≤ fmt.emax)
+    (k : ℤ) (hz : z = (k : ℝ) * fmt.scale e)
+    (hno : fmt.noOverflow z)
+    (hbound : |z| ≤ fmt.mantissaBound * fmt.scale e) :
+    ∃ rz : P12Representation fmt z, e ≤ rz.exponent := by
+  by_cases hstrict : |z| < fmt.mantissaBound * fmt.scale e
+  · exact ⟨representation_of_integer_multiple_of_abs_lt
+      hemin heemax k hz hstrict, le_rfl⟩
+  · have habs : |z| = fmt.mantissaBound * fmt.scale e :=
+      le_antisymm hbound (le_of_not_gt hstrict)
+    have heplus : e + 1 ≤ fmt.emax := by
+      by_contra hnot
+      have heeq : e = fmt.emax := by omega
+      rw [P12RadixFormat.noOverflow, ← heeq, habs] at hno
+      exact (lt_irrefl _ hno)
+    have hendpoint_nonneg :
+        0 ≤ fmt.mantissaBound * fmt.scale e :=
+      (mul_pos fmt.mantissaBound_pos (fmt.scale_pos e)).le
+    rcases (abs_eq hendpoint_nonneg).mp habs with hzpos | hzneg
+    · rw [hzpos]
+      refine ⟨positive_boundary_representation fmt e hemin heplus, ?_⟩
+      change e ≤ e + 1
+      omega
+    · rw [hzneg]
+      refine ⟨negative_boundary_representation fmt e hemin heplus, ?_⟩
+      change e ≤ e + 1
+      omega
+
+private theorem add_representation_of_bound
+    {fmt : P12RadixFormat} {a b : ℝ}
+    (ra : P12Representation fmt a) (rb : P12Representation fmt b)
+    (hno : fmt.noOverflow (a + b))
+    (hbound : |a + b| ≤
+      fmt.mantissaBound * fmt.scale (min ra.exponent rb.exponent)) :
+    ∃ rsum : P12Representation fmt (a + b),
+      min ra.exponent rb.exponent ≤ rsum.exponent := by
+  let e := min ra.exponent rb.exponent
+  rcases representation_integer_multiple_at ra (min_le_left _ _) with
+    ⟨ka, hka⟩
+  rcases representation_integer_multiple_at rb (min_le_right _ _) with
+    ⟨kb, hkb⟩
+  have hz : a + b = ((ka + kb : ℤ) : ℝ) * fmt.scale e := by
+    rw [hka, hkb]
+    simp only [Int.cast_add]
+    ring
+  apply representation_of_integer_multiple_of_bound
+    (le_min ra.exponent_lower rb.exponent_lower)
+    (le_trans (min_le_left _ _) ra.exponent_upper)
+    (ka + kb) hz hno
+  simpa [e] using hbound
+
+private theorem sub_representation_of_bound
+    {fmt : P12RadixFormat} {a b : ℝ}
+    (ra : P12Representation fmt a) (rb : P12Representation fmt b)
+    (hno : fmt.noOverflow (a - b))
+    (hbound : |a - b| ≤
+      fmt.mantissaBound * fmt.scale (min ra.exponent rb.exponent)) :
+    ∃ rdiff : P12Representation fmt (a - b),
+      min ra.exponent rb.exponent ≤ rdiff.exponent := by
+  let e := min ra.exponent rb.exponent
+  rcases representation_integer_multiple_at ra (min_le_left _ _) with
+    ⟨ka, hka⟩
+  rcases representation_integer_multiple_at rb (min_le_right _ _) with
+    ⟨kb, hkb⟩
+  have hz : a - b = ((ka - kb : ℤ) : ℝ) * fmt.scale e := by
+    rw [hka, hkb]
+    simp only [Int.cast_sub]
+    ring
+  apply representation_of_integer_multiple_of_bound
+    (le_min ra.exponent_lower rb.exponent_lower)
+    (le_trans (min_le_left _ _) ra.exponent_upper)
+    (ka - kb) hz hno
+  simpa [e] using hbound
+
+private theorem large_sum_nearest_exponent
+    {fmt : P12RadixFormat} {x y s : ℝ}
+    (rx : P12Representation fmt x) (ry : P12Representation fmt y)
+    (_hryx : ry.exponent < rx.exponent)
+    (hlarge : fmt.mantissaBound * fmt.scale ry.exponent < |x + y|)
+    (hno : fmt.noOverflow (x + y))
+    (hnearest : p12NearestInFormat fmt (x + y) s) :
+    ∃ rs : P12Representation fmt s, ry.exponent < rs.exponent := by
+  let endpoint := fmt.mantissaBound * fmt.scale ry.exponent
+  have hendpoint_pos : 0 < endpoint :=
+    mul_pos fmt.mantissaBound_pos (fmt.scale_pos ry.exponent)
+  have heplus : ry.exponent + 1 ≤ fmt.emax := by
+    by_contra hnot
+    have hry_upper := ry.exponent_upper
+    have heeq : ry.exponent = fmt.emax := by omega
+    rw [P12RadixFormat.noOverflow, ← heeq] at hno
+    exact (not_lt_of_ge hlarge.le hno)
+  have hs_endpoint : endpoint ≤ |s| := by
+    have htriangle : |x + y| ≤ |(x + y) - s| + |s| := by
+      calc
+        |x + y| = |((x + y) - s) + s| := by congr 1 <;> ring
+        _ ≤ |(x + y) - s| + |s| := abs_add_le _ _
+    by_cases hsign : 0 ≤ x + y
+    · have hvalue : endpoint < x + y := by
+        simpa [abs_of_nonneg hsign] using hlarge
+      have hcand : p12Representable fmt endpoint :=
+        ⟨positive_boundary_representation fmt ry.exponent
+          ry.exponent_lower heplus⟩
+      have hnear := hnearest.2 endpoint hcand
+      have hdist : |(x + y) - endpoint| = (x + y) - endpoint :=
+        abs_of_nonneg (sub_nonneg.mpr hvalue.le)
+      rw [hdist] at hnear
+      rw [abs_of_nonneg hsign] at htriangle
+      linarith
+    · have hsign' : x + y < 0 := lt_of_not_ge hsign
+      have hvalue : x + y < -endpoint := by
+        rw [abs_of_neg hsign'] at hlarge
+        linarith
+      have hcand : p12Representable fmt (-endpoint) :=
+        ⟨negative_boundary_representation fmt ry.exponent
+          ry.exponent_lower heplus⟩
+      have hnear := hnearest.2 (-endpoint) hcand
+      have hdist : |(x + y) - (-endpoint)| = -(x + y) - endpoint := by
+        rw [abs_of_neg]
+        · ring
+        · linarith
+      rw [hdist] at hnear
+      rw [abs_of_neg hsign'] at htriangle
+      linarith
+  rcases hnearest.1 with ⟨rs⟩
+  refine ⟨rs, ?_⟩
+  by_contra hnot
+  have hrs_le : rs.exponent ≤ ry.exponent := le_of_not_gt hnot
+  have hscale : fmt.scale rs.exponent ≤ fmt.scale ry.exponent :=
+    fmt.scale_mono hrs_le
+  have hrs_abs := rs.abs_lt_mantissaBound_mul_scale
+  have hrs_lt_endpoint : |s| < endpoint :=
+    lt_of_lt_of_le hrs_abs
+      (mul_le_mul_of_nonneg_left hscale fmt.mantissaBound_pos.le)
+  exact (not_lt_of_ge hs_endpoint hrs_lt_endpoint)
+
+private theorem same_exponent_nearest_add
+    {fmt : P12RadixFormat} {x y s : ℝ}
+    (rx : P12Representation fmt x) (ry : P12Representation fmt y)
+    (hsame : rx.exponent = ry.exponent)
+    (hcondition : |y| ≤
+      (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale rx.exponent)
+    (hno : fmt.noOverflow (x + y))
+    (hnearest : p12NearestInFormat fmt (x + y) s) :
+    ∃ rs : P12Representation fmt s,
+      rx.exponent ≤ rs.exponent ∧
+        |s - (x + y)| ≤ fmt.betaR / 2 * fmt.scale rx.exponent := by
+  let z := x + y
+  let e := rx.exponent
+  have hscale_pos : 0 < fmt.scale e := fmt.scale_pos e
+  have hx_abs := rx.abs_lt_mantissaBound_mul_scale
+  have hz_upper :
+      |z| < (2 * fmt.mantissaBound - fmt.betaR / 2) * fmt.scale e := by
+    calc
+      |z| ≤ |x| + |y| := by
+        simpa [z] using abs_add_le x y
+      _ < fmt.mantissaBound * fmt.scale e + |y| := by
+        nlinarith
+      _ ≤ fmt.mantissaBound * fmt.scale e +
+          (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale e := by
+        nlinarith
+      _ = (2 * fmt.mantissaBound - fmt.betaR / 2) * fmt.scale e := by
+        ring
+  by_cases hsmall : |z| ≤ fmt.mantissaBound * fmt.scale e
+  · have hmin : min rx.exponent ry.exponent = e := by
+      simp [e, hsame]
+    have hbound : |x + y| ≤
+        fmt.mantissaBound *
+          fmt.scale (min rx.exponent ry.exponent) := by
+      simpa [z, hmin] using hsmall
+    rcases add_representation_of_bound rx ry hno hbound with
+      ⟨rsum, hrsum⟩
+    have hs : s = x + y :=
+      p12NearestInFormat_eq_of_representable ⟨rsum⟩ hnearest
+    rw [hs]
+    refine ⟨rsum, ?_, ?_⟩
+    · simpa [e, hmin] using hrsum
+    · simp
+      exact mul_nonneg (div_nonneg fmt.betaR_pos.le (by norm_num))
+        (fmt.scale_pos rx.exponent).le
+  · have hlarge : fmt.mantissaBound * fmt.scale e < |z| :=
+      lt_of_not_ge hsmall
+    have heplus : e + 1 ≤ fmt.emax := by
+      by_contra hnot
+      have he_upper := rx.exponent_upper
+      have heeq : e = fmt.emax := by omega
+      rw [P12RadixFormat.noOverflow, ← heeq] at hno
+      exact (not_lt_of_ge hlarge.le hno)
+    rcases representation_integer_multiple_at rx (by
+      change rx.exponent ≤ rx.exponent
+      exact le_rfl) with
+      ⟨kx, hkx⟩
+    rcases representation_integer_multiple_at ry (by
+      change rx.exponent ≤ ry.exponent
+      exact hsame.le) with
+      ⟨ky, hky⟩
+    let k : ℤ := kx + ky
+    have hz_mul : z = (k : ℝ) * fmt.scale e := by
+      rw [show z = x + y by rfl, hkx, hky]
+      simp only [k, Int.cast_add]
+      ring
+    have hk_upper : |(k : ℝ)| <
+        2 * fmt.mantissaBound - fmt.betaR / 2 := by
+      rw [hz_mul, abs_mul, abs_of_pos hscale_pos] at hz_upper
+      nlinarith
+    let n : ℤ := round ((k : ℝ) / fmt.betaR)
+    have hround :
+        |(k : ℝ) / fmt.betaR - (n : ℝ)| ≤ 1 / 2 := by
+      exact abs_sub_round ((k : ℝ) / fmt.betaR)
+    have hn_triangle : |(n : ℝ)| ≤
+        |(k : ℝ) / fmt.betaR - (n : ℝ)| +
+          |(k : ℝ)| / fmt.betaR := by
+      calc
+        |(n : ℝ)| =
+            |-((k : ℝ) / fmt.betaR - (n : ℝ)) +
+              (k : ℝ) / fmt.betaR| := by congr 1 <;> ring
+        _ ≤ |-((k : ℝ) / fmt.betaR - (n : ℝ))| +
+            |(k : ℝ) / fmt.betaR| := abs_add_le _ _
+        _ = |(k : ℝ) / fmt.betaR - (n : ℝ)| +
+            |(k : ℝ)| / fmt.betaR := by
+          rw [abs_neg, abs_div, abs_of_pos fmt.betaR_pos]
+    have hk_div : |(k : ℝ)| / fmt.betaR <
+        (2 * fmt.mantissaBound - fmt.betaR / 2) / fmt.betaR :=
+      div_lt_div_of_pos_right hk_upper fmt.betaR_pos
+    have hn_pre : |(n : ℝ)| < 2 * fmt.mantissaBound / fmt.betaR := by
+      calc
+        |(n : ℝ)| ≤
+            |(k : ℝ) / fmt.betaR - (n : ℝ)| +
+              |(k : ℝ)| / fmt.betaR := hn_triangle
+        _ ≤ 1 / 2 + |(k : ℝ)| / fmt.betaR := by linarith
+        _ < 1 / 2 +
+            (2 * fmt.mantissaBound - fmt.betaR / 2) / fmt.betaR := by
+          linarith
+        _ = 2 * fmt.mantissaBound / fmt.betaR := by
+          field_simp [ne_of_gt fmt.betaR_pos]
+          ring
+    have htwo : (2 : ℝ) ≤ fmt.betaR := by
+      change (2 : ℝ) ≤ (fmt.beta : ℝ)
+      exact_mod_cast fmt.beta_ge_two
+    have htwo_bound :
+        2 * fmt.mantissaBound / fmt.betaR ≤ fmt.mantissaBound := by
+      rw [div_le_iff₀ fmt.betaR_pos]
+      nlinarith [fmt.mantissaBound_pos]
+    have hn_bound : |(n : ℝ)| < fmt.mantissaBound :=
+      lt_of_lt_of_le hn_pre htwo_bound
+    let candidate := (n : ℝ) * fmt.scale (e + 1)
+    have hcand_bound :
+        |candidate| < fmt.mantissaBound * fmt.scale (e + 1) := by
+      rw [show candidate = (n : ℝ) * fmt.scale (e + 1) by rfl,
+        abs_mul, abs_of_pos (fmt.scale_pos (e + 1))]
+      exact mul_lt_mul_of_pos_right hn_bound (fmt.scale_pos (e + 1))
+    let rcandidate : P12Representation fmt candidate :=
+      representation_of_integer_multiple_of_abs_lt
+        (le_trans rx.exponent_lower (by omega)) heplus n rfl hcand_bound
+    have hscaled_round :
+        |(k : ℝ) - (n : ℝ) * fmt.betaR| ≤ fmt.betaR / 2 := by
+      have hmul := mul_le_mul_of_nonneg_left hround fmt.betaR_pos.le
+      have hrewrite :
+          fmt.betaR *
+              |(k : ℝ) / fmt.betaR - (n : ℝ)| =
+            |(k : ℝ) - (n : ℝ) * fmt.betaR| := by
+        calc
+          fmt.betaR * |(k : ℝ) / fmt.betaR - (n : ℝ)| =
+              |fmt.betaR| *
+                |(k : ℝ) / fmt.betaR - (n : ℝ)| := by
+            rw [abs_of_pos fmt.betaR_pos]
+          _ = |fmt.betaR *
+                ((k : ℝ) / fmt.betaR - (n : ℝ))| := by
+            rw [abs_mul]
+          _ = |(k : ℝ) - (n : ℝ) * fmt.betaR| := by
+            congr 1
+            field_simp [ne_of_gt fmt.betaR_pos]
+      rw [hrewrite] at hmul
+      nlinarith
+    have hcandidate_error :
+        |z - candidate| ≤ fmt.betaR / 2 * fmt.scale e := by
+      rw [hz_mul, show candidate = (n : ℝ) * fmt.scale (e + 1) by rfl,
+        fmt.scale_succ]
+      have heq :
+          (k : ℝ) * fmt.scale e -
+              (n : ℝ) * (fmt.scale e * fmt.betaR) =
+            ((k : ℝ) - (n : ℝ) * fmt.betaR) * fmt.scale e := by
+        ring
+      rw [heq, abs_mul, abs_of_pos hscale_pos]
+      exact mul_le_mul_of_nonneg_right hscaled_round hscale_pos.le
+    have hnearest_error :
+        |z - s| ≤ fmt.betaR / 2 * fmt.scale e :=
+      le_trans (hnearest.2 candidate ⟨rcandidate⟩) hcandidate_error
+    have hs_lower :
+        (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale e < |s| := by
+      have htriangle : |z| ≤ |z - s| + |s| := by
+        calc
+          |z| = |(z - s) + s| := by congr 1 <;> ring
+          _ ≤ |z - s| + |s| := abs_add_le _ _
+      nlinarith
+    rcases hnearest.1 with ⟨rs⟩
+    have hrs_ge : e ≤ rs.exponent := by
+      by_contra hnot
+      have hrs_succ : rs.exponent + 1 ≤ e := by omega
+      have hscale_step :
+          fmt.scale (rs.exponent + 1) ≤ fmt.scale e :=
+        fmt.scale_mono hrs_succ
+      have hrs_upper := rs.abs_lt_mantissaBound_mul_scale
+      have hunit_nonneg :
+          0 ≤ fmt.betaR ^ (fmt.precision - 1) :=
+        (pow_pos fmt.betaR_pos _).le
+      have hcoarse :
+          fmt.mantissaBound * fmt.scale rs.exponent ≤
+            fmt.betaR ^ (fmt.precision - 1) * fmt.scale e := by
+        calc
+          fmt.mantissaBound * fmt.scale rs.exponent =
+              fmt.betaR ^ (fmt.precision - 1) *
+                fmt.scale (rs.exponent + 1) := by
+            rw [mantissaBound_eq_unit_mul_beta, fmt.scale_succ]
+            ring
+          _ ≤ fmt.betaR ^ (fmt.precision - 1) * fmt.scale e :=
+            mul_le_mul_of_nonneg_left hscale_step hunit_nonneg
+      have hthreshold :
+          fmt.betaR ^ (fmt.precision - 1) * fmt.scale e ≤
+            (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale e :=
+        mul_le_mul_of_nonneg_right
+          (mantissaUnit_le_bound_sub_half fmt) hscale_pos.le
+      have : |s| <
+          (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale e :=
+        lt_of_lt_of_le hrs_upper (le_trans hcoarse hthreshold)
+      exact (not_lt_of_ge hs_lower.le this)
+    refine ⟨rs, ?_, ?_⟩
+    · simpa [e] using hrs_ge
+    · rw [abs_sub_comm]
+      simpa [z, e] using hnearest_error
+
+theorem p12RadixGeometry (fmt : P12RadixFormat) :
+    P12RadixGeometry fmt where
+  representation_at_or_below_of_abs_lt :=
+    representation_at_or_below_of_abs_lt
+  add_representation_of_bound := add_representation_of_bound
+  sub_representation_of_bound := sub_representation_of_bound
+  same_exponent_nearest_add := same_exponent_nearest_add
+  large_sum_nearest_exponent := large_sum_nearest_exponent
+
 /-- The three returned/intermediate values of Dekker's FastTwoSum algorithm. -/
 structure P12FastTwoSumTrace where
   s : ℝ
   t : ℝ
   e : ℝ
+
+/-- One execution of the original three-operation FastTwoSum algorithm from
+the paper: nearest addition followed by two uses of the same faithful
+subtraction model.  Range validity makes equation (8)'s overflow qualification
+explicit without assuming either exact difference is representable. -/
+structure P12FastTwoSumExecution (fmt : P12RadixFormat)
+    (x y : ℝ) (tr : P12FastTwoSumTrace) : Prop where
+  add : p12NearestInFormat fmt (x + y) tr.s
+  first_sub : p12FaithfulInFormat fmt (tr.s - x) tr.t
+  second_sub : p12FaithfulInFormat fmt (y - tr.t) tr.e
+  add_no_overflow : fmt.noOverflow (x + y)
+  first_sub_no_overflow : fmt.noOverflow (tr.s - x)
+  second_sub_no_overflow : fmt.noOverflow (y - tr.t)
 
 /-- The values needed to state the exact ThreeProduct composition in Lemma 4. -/
 structure P12ThreeProductTrace where

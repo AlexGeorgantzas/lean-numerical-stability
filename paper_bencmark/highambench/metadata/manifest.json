@@ -134,8 +134,8 @@
         "P12"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P12Definitions.lean",
-      "role": "P12-only nearest-rounding relations and FastTwoSum/ThreeProduct trace records",
-      "sha256": "d6677c1c7ca6220986f35a297ea87792323e45c21d808d3c9206e0a70502cad3",
+      "role": "P12-only equation-(1) radix format, derived grid geometry, rounding relations, and FastTwoSum/ThreeProduct traces",
+      "sha256": "152b175c35b214046a814ecd891c07960566f9d06e1916d92bbb9c9dd5144d0e",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -2331,7 +2331,7 @@
         "volume": "145"
       },
       "paper_id": "P12",
-      "paper_structure_note": "The paper develops arbitrary-base FastTwoSum conditions, a four-operation modification, and three applications. The selected targets retain equation (10), a finite-certificate form of Theorem 2, and Lemma 4 exact ThreeProduct composition.",
+      "paper_structure_note": "The paper develops arbitrary-base FastTwoSum conditions, a four-operation modification, and three applications. The selected targets retain equation (10), Theorem 2 over the concrete equation-(1) radix system, and Lemma 4 exact ThreeProduct composition.",
       "paper_version": "published journal version; volume 145, issue 2, 2020, printed pages 383-403; corrected open-access publication 2021",
       "source": {
         "journal_page_map": "PDF pages 1-21 are printed pages 383-403 respectively.",
@@ -2382,15 +2382,16 @@
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
             "NumStability.FloatingPointFormat.nearestRoundingIn_eq_self_of_mem",
-            "NumStability.FloatingPointFormat.nearestRoundingIn_minimal"
+            "NumStability.FloatingPointFormat.nearestRoundingIn_minimal",
+            "NumStability.FloatingPointFormat.fergusonMagnitudeExponentConditionLe_sub_finiteSystem"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P12/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Nearest rounding fixes each representable subtraction result, so t=s-x and e=y-t. Substitute both equalities, simplify s+e, and choose x in the nearest-addition relation for the error bound.",
-          "informal_statement_paraphrase": "Theorem 2's error-free identity (3), with the two representability obligations used in its proof made explicit, together with equation (10).",
+          "informal_proof_paraphrase": "Choose the condition-(7) representation of x and rebase y so e(y)<=e(x). Follow Theorem 2's equal-exponent, exact-addition, and complementary large-sum cases to derive t=s-x using equation (8). The nearest-addition error and the derived exponent of t then make e=y-t exact; exact algebra gives s+e=x+y.",
+          "informal_statement_paraphrase": "Theorem 2 for arbitrary radix: equation-(1) inputs satisfying existential condition (7) make nearest-addition/faithful-subtraction FastTwoSum error-free, with both exact subtraction identities and equation (10)'s local error bound exposed.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "c0e659193763c9d16fdfdcae671afddf5748751c77ec10d7e2e78e0946a6e13a",
+            "controlled_file_sha256": "3100033c4f50b31b8a19dc91b1cd9d58aec379619098437b917b98d9b7e560c1",
             "declaration": "p12_t2_fast_two_sum_exact",
             "file": "paper_bencmark/highambench/tasks/P12/T2/Target.lean",
             "must_compile_without_numstability": true,
@@ -2398,9 +2399,23 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P12Definitions.lean"
             ],
-            "statement_summary": "A nearest-addition FastTwoSum trace whose two exact subtraction results are representable returns an exact two-term transform and satisfies the local sum-error bound."
+            "statement_summary": "For equation-(1) floating-point inputs satisfying condition (7), original FastTwoSum derives both subtraction steps exactly and returns an exact two-term transform."
           },
           "source_locations": [
+            {
+              "anchor": "equation (1), rounding definitions, and original FastTwoSum algorithm",
+              "pdf_page": 2,
+              "printed_page": "384",
+              "role": "radix set, nearest and faithful operation semantics, and three-step execution",
+              "section": "1. Introduction and notation"
+            },
+            {
+              "anchor": "multiple representations and exponent convention",
+              "pdf_page": 3,
+              "printed_page": "385",
+              "role": "nonunique representation witness e(x)",
+              "section": "2. Multiple representations"
+            },
             {
               "anchor": "Theorem 2, equations (3), (7), and (8)",
               "pdf_page": 5,
@@ -2419,8 +2434,8 @@
           "task_id": "P12-T2",
           "tier": "T2",
           "tier_name": "combine",
-          "tier_reason": "The L proof combines two uses of NumStability.FloatingPointFormat.nearestRoundingIn_eq_self_of_mem with nearestRoundingIn_minimal and paper-specific trace algebra. No mounted declaration states the completed error-free transform.",
-          "title": "Certified FastTwoSum exact transform"
+          "tier_reason": "The L proof reuses NumStability.FloatingPointFormat.nearestRoundingIn_minimal and nearestRoundingIn_eq_self_of_mem, then combines them with the paper-scoped equation-(1)/(8) radix geometry and the source's three-case reasoning. No mounted declaration states condition (7), the arbitrary-base case split, or the completed error-free transform; the unmounted source-only FastTwoSum module cannot be used.",
+          "title": "Arbitrary-base FastTwoSum exact transform"
         },
         {
           "availability": "available",

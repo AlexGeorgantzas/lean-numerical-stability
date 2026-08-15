@@ -89,7 +89,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use Theorem 2's exact FastTwoSum identity with the two representability obligations from implication (8) exposed as finite certificates.",
+      "decision": "Use Theorem 2's exact FastTwoSum identity over equation (1), retaining existential condition (7) and deriving the radix geometry and both exact subtraction steps through the paper's arbitrary-base case analysis and implication (8).",
       "task_id": "P12-T2",
       "theorem_name": "p12_t2_fast_two_sum_exact"
     },
@@ -103,7 +103,7 @@
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
     "Use results proved in this paper rather than definitions, pseudocode, or delegated earlier theorems.",
-    "Expose finite representability obligations explicitly instead of hiding a complete radix implementation in shared definitions.",
+    "Model equation (1), nearest addition, faithful subtraction, and condition (7) explicitly; derive the two exact subtraction obligations through the paper's radix argument rather than assuming them.",
     "Preserve the exact error-free transformation identities and the nearest-addition bound.",
     "Keep the fixed Lean setting condition-neutral and paper-scoped.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json; do not count the broader source-only compensated FastTwoSum module."
