@@ -213,4 +213,28 @@ noncomputable def p11DefectCore {n : ℕ}
     p11MatMul n (p11Transpose dA) A -
     p11MatMul n (p11Transpose dA) dA
 
+/-- Transpose of a rectangular P11 matrix. -/
+def p11RectTranspose {m n : ℕ}
+    (A : P11RectMatrix m n) : P11RectMatrix n m :=
+  A.transpose
+
+/-- The rectangular loss-of-orthogonality matrix `I - Q^T Q`. -/
+noncomputable def p11RectOrthogonalityDefect {m k : ℕ}
+    (Q : P11RectMatrix m k) : P11Matrix k :=
+  p11Identity k - p11RectMatMul (p11RectTranspose Q) Q
+
+/-- The rectangular normal-equations residual `R^T R - A^T A`. -/
+noncomputable def p11RectNormalEquationResidual {m k : ℕ}
+    (A : P11RectMatrix m k) (R : P11Matrix k) : P11Matrix k :=
+  p11MatMul k (p11Transpose R) R -
+    p11RectMatMul (p11RectTranspose A) A
+
+/-- The exact rectangular inner residual in the derivation of Theorem 1(7). -/
+noncomputable def p11RectDefectCore {m k : ℕ}
+    (A dA : P11RectMatrix m k) (R : P11Matrix k) : P11Matrix k :=
+  p11RectNormalEquationResidual A R -
+    p11RectMatMul (p11RectTranspose A) dA -
+    p11RectMatMul (p11RectTranspose dA) A -
+    p11RectMatMul (p11RectTranspose dA) dA
+
 end HighamBench

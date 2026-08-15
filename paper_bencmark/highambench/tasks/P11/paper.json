@@ -81,7 +81,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use the exact inverse-conjugated orthogonality-defect identity displayed in the appendix proof of Theorem 1(7).",
+      "decision": "Use the exact inverse-conjugated orthogonality-defect identity displayed in the appendix proof of Theorem 1(7), retaining the paper's m-by-k leading-factor geometry and one-based positive index range.",
       "task_id": "P11-T2",
       "theorem_name": "p11_t2_orthogonality_defect_identity"
     },

@@ -125,8 +125,8 @@
         "P11"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean",
-      "role": "P11-only CGS-P first-column execution model, Euclidean, spectral, and Frobenius norms, matrix products, normal-equation residuals, and orthogonality defects",
-      "sha256": "06a47e036b5267ab5b6fecef9451dc752a606abd91feb28ca809519cb1169b60",
+      "role": "P11-only CGS-P execution models, rectangular leading-factor algebra, Euclidean, spectral, and Frobenius norms, normal-equation residuals, and orthogonality defects",
+      "sha256": "9e99f563c817f880d49ff34103ceae6091146b2c19770f5e79aa794e970b08a5",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -2192,18 +2192,17 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.matMul_assoc",
-            "NumStability.matMul_id_right",
+            "NumStability.rectMatMul_assoc",
             "NumStability.matTranspose_matMul",
-            "NumStability.matTranspose_id"
+            "NumStability.matMul_id_right"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P11/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Use the right inverse to rewrite Q as (A+DeltaA)Rinv and the identity as Rinv-transpose times R-transpose R times Rinv. Expand the two transposes and collect the normal-equation and perturbation terms in the paper's displayed order.",
-          "informal_statement_paraphrase": "The exact inverse-conjugated orthogonality-defect identity displayed in the proof of Theorem 1(7).",
+          "informal_proof_paraphrase": "Use R*Rinv=I to rewrite the rectangular Q as (A+DeltaA)*Rinv. Transpose the product, reassociate compatible rectangular products, expand (A+DeltaA)^T(A+DeltaA), and collect the four central terms in the paper's displayed order.",
+          "informal_statement_paraphrase": "The exact rectangular inverse-conjugated orthogonality-defect identity displayed in the proof of Theorem 1(7), for every positive leading index in the paper's m-by-n geometry.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "0841de2615bd65b411edf5fd3aef97f97877d931fe8963f505b2f668abea4c2e",
+            "controlled_file_sha256": "7bbb70549d9ce5ddd178c1850b997292c0c3fe2c16ad20d070254c97db9bde49",
             "declaration": "p11_t2_orthogonality_defect_identity",
             "file": "paper_bencmark/highambench/tasks/P11/T2/Target.lean",
             "must_compile_without_numstability": true,
@@ -2211,22 +2210,43 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean"
             ],
-            "statement_summary": "The loss-of-orthogonality matrix is exactly the inverse-transpose conjugation of the normal-equation residual minus the three perturbation-product terms."
+            "statement_summary": "For every positive leading index, the rectangular loss-of-orthogonality matrix is exactly the inverse-transpose conjugation of the normal-equations residual minus both cross terms and the quadratic factorization-residual term."
           },
           "source_locations": [
+            {
+              "anchor": "opening rectangular matrix setting and column notation",
+              "pdf_page": 2,
+              "printed_page": "300",
+              "role": "m-by-n dimensions, n at most m, full column rank, and leading A/Q/R notation",
+              "section": "Introduction and Algorithm 1 setup"
+            },
+            {
+              "anchor": "Algorithm 2 and following floating-point model",
+              "pdf_page": 3,
+              "printed_page": "301",
+              "role": "CGS-P provenance and surrounding normalized-range arithmetic context",
+              "section": "Algorithm 2 (CGS-P)"
+            },
+            {
+              "anchor": "Theorem 1 and equations (3)-(7)",
+              "pdf_page": 4,
+              "printed_page": "302",
+              "role": "leading index k=1,...,n, factor dimensions, residual definitions, and inverse availability",
+              "section": "Theorem 1"
+            },
             {
               "anchor": "unnumbered two-line displayed identity beginning I-Q_k^T Q_k",
               "pdf_page": 14,
               "printed_page": "312",
-              "role": "exact residual-to-orthogonality-defect identity",
+              "role": "exact rectangular residual-to-orthogonality-defect identity",
               "section": "Appendix: Proof of Theorem 1"
             }
           ],
           "task_id": "P11-T2",
           "tier": "T2",
           "tier_name": "combine",
-          "tier_reason": "The L proof combines NumStability.matMul_assoc, NumStability.matMul_id_right, NumStability.matTranspose_matMul, and NumStability.matTranspose_id from NumStability/Analysis/MatrixAlgebra.lean with the paper-specific substitution QR=A+DeltaA and noncommutative expansion. No one frozen declaration states the completed identity.",
-          "title": "Exact orthogonality-defect identity"
+          "tier_reason": "The frozen library's NumStability.rectMatMul_assoc supplies the reusable dimension-changing product reassociation, while the proof must combine it with transpose identities, the certified inverse, the paper-specific Q*R=A+DeltaA substitution, and an exact four-term rectangular Gram expansion. No frozen declaration states the completed identity, so the faithful rebuild remains T2 rather than a direct-use task.",
+          "title": "Exact rectangular orthogonality-defect identity"
         },
         {
           "availability": "available",
