@@ -153,7 +153,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P14Definitions.lean",
       "role": "P14-only exponential sums, exact and computed softmax components, and finite error radii",
-      "sha256": "43b0cbc4a33c3556b173455522d5436a89cad4f3e98e66dcd072f22bcdc779f2",
+      "sha256": "6fb3de99ac2eb3f774020ccc849aae32d0b00fe7efe88eefeb340f4c866ad124",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -2693,7 +2693,7 @@
         "volume": "41"
       },
       "paper_id": "P14",
-      "paper_structure_note": "The paper derives conditioning formulas and first-order error bounds for basic, shifted, and alternative log-sum-exp and softmax algorithms. The selected targets isolate the positive summation stage, give an exact finite form of the basic softmax theorem, and connect the shift identity to exact normalization.",
+      "paper_structure_note": "The paper derives conditioning formulas and first-order error bounds for basic, shifted, and alternative log-sum-exp and softmax algorithms. The selected targets retain the positive exponential-evaluation and recursive-summation stages, give an exact finite form of the basic softmax theorem, and connect the shift identity to exact normalization.",
       "paper_version": "published journal version; IMA Journal of Numerical Analysis 41(4), 2021, printed pages 2311-2330",
       "source": {
         "journal_page_map": "PDF pages 1-20 are printed pages 2311-2330 respectively.",
@@ -2707,16 +2707,16 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.recursiveSum_relError_le_gamma_of_oneSigned",
-            "NumStability.recursiveSum_forward_error_bound_oneSigned"
+            "NumStability.recursiveSum_forward_error_bound",
+            "NumStability.recursiveSum_running_error_bound"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P14/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Use the exact backward-error representation for recursive summation, take absolute values, and use nonnegativity to identify the sum of magnitudes with the exact sum.",
-          "informal_statement_paraphrase": "Exact finite-gamma form of the positive exponential-summation stage used to derive equation (3.3).",
+          "informal_proof_paraphrase": "Bound each computed exponential using equation (3.1), apply the recursive-summation gamma theorem, combine both error stages, and expand the finite envelope as the paper's (n+1)u*s term plus a genuine O(u^2) remainder.",
+          "informal_statement_paraphrase": "The positive exponential-evaluation and recursive-summation analysis culminating in equation (3.3), retaining s, sTilde, sHat, DeltaS, the n+1 coefficient, and O(u^2).",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "0a667aa6e36e01717511c96133b6fd38517644187bc09a7eeb2bb6f9248fb484",
+            "controlled_file_sha256": "1fadb695cd89451b64987663c962bbcc73d042d4cad968f476cba00c9eeb4e90",
             "declaration": "p14_t1_positive_recursive_sum_relative_error",
             "file": "paper_bencmark/highambench/tasks/P14/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -2724,22 +2724,43 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P14Definitions.lean"
             ],
-            "statement_summary": "Recursive summation of a nonnegative nonzero family has relative error at most gamma for n-1 rounded additions."
+            "statement_summary": "Algorithm 3.1's computed exponentials and their recursive sum satisfy an exact finite counterpart of the paper's (n+1)u*s+O(u^2) positive-sum error bound."
           },
           "source_locations": [
             {
-              "anchor": "positive exponential sum and unnumbered recursive-summation bounds preceding equations (3.2)-(3.3)",
+              "anchor": "equation (1.7), standard floating-point model",
+              "pdf_page": 4,
+              "printed_page": "2314",
+              "role": "relative-error model for basic additions",
+              "section": "1. Introduction"
+            },
+            {
+              "anchor": "Algorithm 3.1, lines 1-5, and standing no-overflow/no-underflow assumption",
+              "pdf_page": 6,
+              "printed_page": "2316",
+              "role": "unshifted exponential evaluation and recursive accumulation algorithm",
+              "section": "3. Basic algorithms and error analysis"
+            },
+            {
+              "anchor": "equation (3.1), exact computed-term sum, unnumbered recursive bounds, and equation (3.2)",
               "pdf_page": 7,
               "printed_page": "2317",
-              "role": "positive recursive-summation error stage",
+              "role": "computed exponential errors, sTilde/sHat distinction, recursive error, and printed missing-u discrepancy",
+              "section": "3. Basic algorithms and error analysis"
+            },
+            {
+              "anchor": "equation (3.3)",
+              "pdf_page": 8,
+              "printed_page": "2318",
+              "role": "additive DeltaS representation and (n+1)u*s+O(u^2) aggregate bound",
               "section": "3. Basic algorithms and error analysis"
             }
           ],
           "task_id": "P14-T1",
           "tier": "T1",
           "tier_name": "direct use",
-          "tier_reason": "The frozen library already exposes the exact one-signed recursive-summation relative-error theorem; only the P14 model adapter and nonnegative specialization are needed.",
-          "title": "Positive recursive-sum relative error"
+          "tier_reason": "The frozen library directly supplies the central recursive-summation forward bound after a small model adapter. The remaining exponential-stage combination and rational O(u^2) expansion are elementary paper-specific bookkeeping, so the result remains a direct-use task rather than a preassembled exact target.",
+          "title": "Basic positive exponential-sum error"
         },
         {
           "availability": "available",

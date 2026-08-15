@@ -75,7 +75,7 @@ the `theorem` command.
 | `P13-T1` | `LEM` | `Lemma 2.2` | The selected condition-number lower bound is an explicit clause of Lemma 2.2. |
 | `P13-T2` | `LEM` | `Lemma 2.2` | The selected componentwise data-perturbation bound is the second explicit conclusion of Lemma 2.2. |
 | `P13-T3` | `THM` | `Theorem 4.1` | The selected result is Theorem 4.1's two-condition-number bound, retained `O(u^2)` term, and sharpness sentence, with the preceding exact perturbed quotient supplying its execution model. |
-| `P14-T1` | `UNL` | none | The selected positive recursive-summation bound is displayed without a number immediately before equations (3.2)--(3.3). |
+| `P14-T1` | `EQN` | none | The selected aggregate positive-sum result is equation (3.3); the preceding unnumbered exponential and recursive-summation displays supply its execution and proof context. |
 | `P14-T2` | `THM` | `Theorem 3.3` | The selected basic-softmax componentwise bound is explicitly named Theorem 3.3. |
 | `P14-T3` | `EQN`, `TXT` | none | Equation (1.4) supplies shift invariance and the paper later uses exact normalization and nonnegative mass in prose. |
 | `P15-T1` | `TXT` | none | Section 2.1 states Frobenius submultiplicativity in prose as the first norm property used throughout the analysis. |

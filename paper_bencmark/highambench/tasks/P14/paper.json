@@ -77,7 +77,7 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use the positive recursive-summation stage preceding equations (3.2)-(3.3) in its exact finite-gamma form.",
+      "decision": "Use the full positive exponential-evaluation and recursive-summation passage culminating in equation (3.3), retaining s, sTilde, sHat, the (n+1) coefficient, and a genuine O(u^2) remainder.",
       "task_id": "P14-T1",
       "theorem_name": "p14_t1_positive_recursive_sum_relative_error"
     },
@@ -98,7 +98,7 @@
   "selection_policy": [
     "Use results and operational invariants established or explicitly used in this paper rather than empirical plots or delegated cited results.",
     "Preserve nonnegative exponential terms and the absence-of-overflow/underflow scope of the basic algorithm analysis.",
-    "Replace first-order O(u^2) expressions by disclosed exact finite radii and denominator corrections.",
+    "Retain first-order O(u^2) claims as genuine asymptotic statements, with disclosed exact finite radii used only to make their remainders checkable.",
     "Keep every public definition paper-scoped and free of NumStability imports.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json."
   ],
