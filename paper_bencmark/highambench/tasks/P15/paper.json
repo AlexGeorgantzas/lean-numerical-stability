@@ -78,7 +78,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use Lemma 3.1 equation (3.2), retaining the finite epsilon-gamma cross term and constructing the total backward perturbation.",
+      "decision": "Use the complete exact finite content of Lemma 3.1 equations (3.1)-(3.2), deriving the ordered X(Y^T v) stage perturbation, c = b + r^(3/2), and the truncation-plus-rounding bound with its retained epsilon-gamma cross term.",
       "task_id": "P15-T2",
       "theorem_name": "p15_t2_low_rank_matvec_backward_error"
     },

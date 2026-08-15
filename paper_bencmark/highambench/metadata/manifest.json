@@ -161,8 +161,8 @@
         "P15"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean",
-      "role": "P15-only finite matrix norms, products, actions, and composed BLR solve perturbations",
-      "sha256": "5357f7c5371a813a10049e6813c641d663791fe454a66984d37aac870d84b4ac",
+      "role": "P15-only finite matrix norms, products, low-rank matrix-vector executions, and composed BLR solve perturbations",
+      "sha256": "e100f30e5a716c676e7227932fc08f156b857a3deb88cfd609200d41c649bda8",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -2920,16 +2920,18 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.frobNorm_add_le",
-            "NumStability.frobNorm_nonneg"
+            "NumStability.frobNormRect_nonneg",
+            "NumStability.frobNormRect_add_le",
+            "NumStability.frobNormRect_rectMatMul_le",
+            "NumStability.rectMatMulVec_rectMatMul"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P15/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Choose totalError as truncError plus roundingError. Reassociate the computed matrix action, use the Frobenius triangle inequality twice, bound the norm of Atilde by the norms of A and truncError, and collect the epsilon-gamma cross term.",
-          "informal_statement_paraphrase": "The exact finite backward-error conclusion of Lemma 3.1, equation (3.2), before replacing the epsilon-gamma product by O(u epsilon).",
+          "informal_proof_paraphrase": "Expand (X + deltaX)(Y + deltaY)^T, use orthonormality to identify the required Frobenius norms, combine the gamma_b and gamma_r stage bounds into gamma_(b+r^(3/2)), then add the truncation perturbation and retain the exact epsilon-gamma cross term.",
+          "informal_statement_paraphrase": "The complete exact finite backward-error content of Lemma 3.1 equations (3.1) and (3.2), derived from the ordered X(Y^T v) computation before the mixed term is abbreviated as O(u epsilon).",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "6e8c3e8528e7e3c053ffa3234471c492a454ea2bbce319bec82e414fb3feb565",
+            "controlled_file_sha256": "d67615e334bef3b3e171e89412ebcd25c97a86834c508d7be20d945d99bba8de",
             "declaration": "p15_t2_low_rank_matvec_backward_error",
             "file": "paper_bencmark/highambench/tasks/P15/T2/Target.lean",
             "must_compile_without_numstability": true,
@@ -2937,21 +2939,49 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean"
             ],
-            "statement_summary": "A low-rank truncation perturbation and the rounded low-rank matrix-vector backward perturbation combine into one perturbation of A with the exact finite radius in equation (3.2)."
+            "statement_summary": "The ordered floating-point computation X(Y^T v) satisfies both Lemma 3.1 backward-error bounds relative to Atilde and A, with c = b + r^(3/2) and the exact mixed epsilon-gamma term retained."
           },
           "source_locations": [
             {
-              "anchor": "Lemma 3.1, especially equation (3.2) and the final replacement Atilde = A + E",
+              "anchor": "Frobenius norm convention, submultiplicativity, and orthonormal-column invariance",
+              "pdf_page": 3,
+              "printed_page": "953",
+              "role": "norm semantics and matrix identities used in Lemma 3.1",
+              "section": "2 Notation and background"
+            },
+            {
+              "anchor": "equation (2.5) and the definition of gamma_k for real indices",
+              "pdf_page": 4,
+              "printed_page": "954",
+              "role": "finite floating-point model and gamma validity",
+              "section": "2 Notation and background"
+            },
+            {
+              "anchor": "Assumption 2.1 and the following u safely smaller than epsilon convention",
+              "pdf_page": 5,
+              "printed_page": "955",
+              "role": "low-rank truncation and precision scope",
+              "section": "2 Notation and background"
+            },
+            {
+              "anchor": "Lemma 3.1, equations (3.1)-(3.4), and the final replacement Atilde = A + E",
               "pdf_page": 6,
               "printed_page": "956",
-              "role": "combined low-rank truncation and floating-point backward error",
+              "role": "ordered two-stage computation and both low-rank and combined backward-error conclusions",
+              "section": "3.1 LR matrix times vector or full matrix"
+            },
+            {
+              "anchor": "discussion interpreting epsilon, gamma_c, and epsilon*gamma_c as the three normwise error terms",
+              "pdf_page": 7,
+              "printed_page": "957",
+              "role": "higher-order and normwise interpretation",
               "section": "3.1 LR matrix times vector or full matrix"
             }
           ],
           "task_id": "P15-T2",
           "tier": "T2",
           "tier_name": "combine",
-          "tier_reason": "The L proof combines NumStability.frobNorm_add_le and NumStability.frobNorm_nonneg from NumStability/Analysis/MatrixAlgebra.lean with the paper-specific total-error witness, reassociation of the computed action, and exact collection of epsilon * gammaC * beta.",
+          "tier_reason": "The L proof combines the frozen rectangular matrix-vector composition and Frobenius nonnegativity, triangle, and product declarations with paper-specific orthonormal identities, the expanded two-stage perturbation, the real-index gamma composition, and the exact truncation-plus-rounding bound. No frozen declaration states Lemma 3.1.",
           "title": "Low-rank matrix-vector backward error"
         },
         {
