@@ -1,82 +1,82 @@
 {
-  "accepted": false,
+  "accepted": true,
   "adjudicated": false,
   "adjudication_reasons": [],
-  "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T16:52:10.251387+00:00",
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-15T09:39:01.130326+00:00",
   "findings": [
     {
-      "category": "algorithm-linkage",
-      "impact": "The proposition proves a generic quotient perturbation lemma rather than a theorem about the paper's algorithm.",
-      "lean_evidence": "The target quantifies an arbitrary coeff array and arbitrary additive perturbations, with no nodes, evaluation point, weights, floating-point operations, or counter derivation.",
-      "paper_evidence": "Equation (4.1) and its derivation on printed pages 551-552 analyze the second barycentric formula with computed reciprocal-product weights and operation-derived counters.",
-      "severity": "critical"
+      "category": "explicit-finite-envelope",
+      "impact": "This makes the formal result more quantitative and prevents the paper statement alone from implying the whole Lean proposition; it does not change the paper's leading bound.",
+      "lean_evidence": "The target first bounds error by an exact rational envelope and gives a closed-form remainder identity.",
+      "paper_evidence": "Equations (4.2)-(4.3) state only the first-order terms plus O(u^2), although the preceding counter representation and gamma bound support a finite estimate.",
+      "severity": "note"
     },
     {
-      "category": "constants-and-higher-order-terms",
-      "impact": "The displayed Lean bound cannot be identified directly with either the exact counter model or Theorem 4.1's stated asymptotic bound.",
-      "lean_evidence": "The bound uses unconstrained epsilonNum and epsilonDen and a finite denominator correction, with no n-dependent constants or unit roundoff.",
-      "paper_evidence": "The paper requires separate 3n+4 and 3n+2 counters, first-order coefficients (3n+4)u and (3n+2)u, and an explicit O(u^2) remainder.",
-      "severity": "major"
+      "category": "sharpness-strengthening",
+      "impact": "Lean supplies a concrete uniform first-order factor stronger than the printed assertion. It still entails the source's qualitative constant-factor claim.",
+      "lean_evidence": "P13SecondBarycentricFirstOrderSharp requires a normalized directional response at least one third of the complete first-order coefficient for every problem.",
+      "paper_evidence": "The sentence after equation (4.3) says only that the bound is attained within a constant factor, without a value or detailed quantifiers.",
+      "severity": "note"
     },
     {
-      "category": "conclusion-omission",
-      "impact": "A substantive conclusion of the selected paper result is absent.",
-      "lean_evidence": "The Lean conclusion is solely a universal upper inequality and contains no existential lower or sharpness statement.",
-      "paper_evidence": "The sentence following equation (4.3) asserts existence of rounding errors attaining the bound within a constant factor.",
-      "severity": "major"
+      "category": "input-domain-generalization",
+      "impact": "The theorem covers the paper's input domain and additionally proves an idealized exact-input result for arbitrary reals; it does not model initial conversion of nonrepresentable inputs.",
+      "lean_evidence": "P13SecondBarycentricProblem stores arbitrary real nodes, data, and x, while executions impose the same relative-error-counter model.",
+      "paper_evidence": "PDF p. 3 says the nodes, data, and evaluation point are assumed to be floating-point numbers.",
+      "severity": "note"
     },
     {
-      "category": "binders-and-indexing",
-      "impact": "Recovering the paper setting requires an unstated parameter shift and external constructions, so the formal statement does not preserve the paper's binder semantics.",
-      "lean_evidence": "Lean uses n entries indexed by Fin n and binds only generic arrays and epsilon values.",
-      "paper_evidence": "The paper uses degree n with n+1 terms indexed j=0,...,n and binds nodes, data, x, weights, and u.",
-      "severity": "major"
+      "category": "defined-domain-specialization",
+      "impact": "These hypotheses make all displayed ratios defined and are nonvacuous. They do not import the later interval restriction or remove a defined case stated by Theorem 4.1.",
+      "lean_evidence": "Problem.mk requires x different from every node, and the theorem separately requires nonzero exact numerator and denominator.",
+      "paper_evidence": "Equation (4.1) divides by every x-x_j but does not state a node-evaluation branch; the relative error also requires p_n(x)!=0.",
+      "severity": "note"
     },
     {
-      "category": "algorithm-and-numerical-model",
-      "impact": "The translated theorem does not state a result about the paper's algorithm.",
-      "paper_evidence": "Formula (4.1) is evaluated with reciprocal-product weights under the standard floating-point model, producing term counters 3n+4 and 3n+2.",
-      "severity": "critical",
-      "translation_evidence": "The proposition uses arbitrary coefficients and exact-real additive perturbations, with no nodes, weights, floating-point operations, or computed-result linkage."
-    },
-    {
-      "category": "conclusion-and-higher-order-treatment",
-      "impact": "The principal conclusion is replaced by a related but logically different perturbation lemma.",
-      "paper_evidence": "The paper states two first-order terms with coefficients (3n+4)u and (3n+2)u, retains O(u^2), and asserts attainable sharpness.",
-      "severity": "critical",
-      "translation_evidence": "The translation states a finite rational perturbation bound with arbitrary epsilonNum and epsilonDen and omits both O(u^2) and sharpness."
-    },
-    {
-      "category": "binders-dimensions-and-indexing",
-      "impact": "The paper's dimension convention and essential mathematical objects are not preserved.",
-      "paper_evidence": "The interpolation problem has n+1 entries indexed from 0 through n and binds nodes, data, an evaluation point, and barycentric weights.",
+      "category": "input-domain-generalization",
+      "impact": "The translation covers the paper's representable instances but proves a broader result, so the reverse implication fails.",
+      "paper_evidence": "The paper assumes that nodes, data, and evaluation point are floating-point numbers.",
       "severity": "major",
-      "translation_evidence": "The vectors have n entries indexed by Fin n, and only generic coefficients, values, perturbations, and perturbation levels are bound."
+      "translation_evidence": "The translated proposition ranges over arbitrary real-valued problems and abstract admissible runs."
     },
     {
-      "category": "hypotheses-and-quantifiers",
-      "impact": "Neither statement logically implies the other without substantial additional premises and derivations.",
-      "paper_evidence": "Distinct nodes, floating-point inputs, the relative-error model, directly computed weights, nonzero exact output, and an existential sharpness claim are part of the result's context.",
+      "category": "higher-order-strengthening",
+      "impact": "These claims imply the paper's asymptotic bound but are not consequences of the stated paper theorem alone.",
+      "paper_evidence": "Theorem 4.1 states only a first-order bound with an unspecified O(u^2) remainder.",
       "severity": "major",
-      "translation_evidence": "These are replaced by generic componentwise perturbation assumptions, exact-sum nonzero assumptions, and a denominator-smallness condition, with no existential quantifier."
+      "translation_evidence": "The proposition gives an exact gamma-based majorant, an explicit rational remainder, and an exact eventual decomposition."
+    },
+    {
+      "category": "sharpness-strengthening",
+      "impact": "The direction witness supports the paper's qualitative sharpness under the same abstract local-error construction, but the numerical factor and directional formulation are stronger than the source statement.",
+      "paper_evidence": "The paper states only that some rounding errors attain the bound within an unspecified constant factor.",
+      "severity": "minor",
+      "translation_evidence": "The proposition supplies componentwise bounded first-order directions with magnitude at least C/3."
+    },
+    {
+      "category": "defined-domain-formalization",
+      "impact": "These conditions make the displayed quotient and relative error formally meaningful and are consistent with the paper's operative domain.",
+      "paper_evidence": "Formula (4.1) divides by x-x_j and the relative bound divides by p_n(x), without separately spelling out every definedness condition.",
+      "severity": "note",
+      "translation_evidence": "The problem structurally requires x different from every node and assumes both N and D nonzero."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean proposition alone supplies no barycentric coefficient construction, rounding execution, 3n+4 or 3n+2 counters, relationship between epsilon values and u, O(u^2) statement, or existential sharpness. Those missing facts are required to recover the complete paper result.",
-      "verdict": "no"
+      "reasoning": "For floating-representable problem instances, the Lean execution reproduces the paper's direct-weight and proper-barycentric counter expression. The eventual finite-envelope inequality and its exact decomposition imply the two first-order terms plus O(u^2). The normalized directions in FirstOrderSharp can be scaled to admissible local errors for sufficiently small positive u, giving constant-factor first-order attainability; the explicit factor 1/3 is stronger than the paper's unspecified factor.",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "The cited paper result concerns outputs of a specific barycentric floating-point algorithm. It does not assert the Lean theorem's universal finite inequality for every real coefficient array and every pair of arbitrary additive perturbations satisfying the generic predicates.",
+      "reasoning": "The printed theorem does not assert the arbitrary-real input generalization, the exact rational finite envelope and explicit remainder identity, or a uniform one-third first-order response. Its unspecified constant-factor sentence and unquantified O(u^2) remainder are insufficient by themselves to entail those strengthened Lean conjuncts.",
       "verdict": "no"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-different",
-    "roundtrip": "not-faithful-different"
+    "direct": "faithful-stronger",
+    "roundtrip": "faithful-stronger"
   },
-  "rationale": "The exact quotient and condition-number definitions contain algebraic forms that can represent the paper after choosing coeff j=w_j/(x-x_j). Likewise, paper counters could induce Lean additive perturbations with epsilon values chosen as suitable gamma bounds. Those choices and derivations are not part of the proposition. The target instead proves a nonvacuous, exact, generic perturbation inequality with an additional smallness premise. It omits the algorithm, floating-point model, operation-count constants, O(u^2) formulation, degree indexing, and sharpness claim. Because the Lean statement does not entail the complete paper result and the specialized paper theorem does not entail Lean's universal generic theorem, the relationship is different rather than equivalent, stronger, or merely weaker.",
+  "rationale": "The declaration faithfully models the direct weights, proper barycentric execution, exact and computed values, both condition-number terms, operation counts, relative forward error, and O(u^2) behavior of Theorem 4.1. Its off-node and nonzero assumptions make the displayed formulas defined and are satisfiable. The proposition is not equivalent to the printed theorem because it extends the ideal counter model to arbitrary real inputs and adds an exact finite envelope, explicit remainder, and a concrete one-third first-order sharpness guarantee. Those additions all strengthen the same result and preserve Lean-implies-paper, so the appropriate classification is faithful-stronger.",
   "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",

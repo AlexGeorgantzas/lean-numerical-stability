@@ -1,313 +1,821 @@
 {
   "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "f5e8dadbbc1d7f3992108cb38c4302c09faaf7f255a94073b469e9d93a14eb14",
+  "dossier_sha256": "9e4ee2f9f7e3683ed5b5e69f652f227d66bf7a1c6fa6baa27ee4a943f0f7b39d",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "For coefficient, value, numerator-perturbation, and denominator-perturbation vectors, it defines the perturbed quotient (sum_i (coeff_i f_i + deltaNum_i)) / (sum_i (coeff_i + deltaDen_i)).",
-      "effect_on_target": "It is the perturbed quantity whose relative error from the exact quotient is bounded.",
+      "meaning": "The type of admissible modeled runs for a problem at a real error parameter u. Its supplied constructor packages nonnegative u, six families of multiplicative error counters, six operation-count smallness conditions, and consistency equations between primitive and composite counters.",
+      "effect_on_target": "The universally supplied run(t) restricts every u(t) and determines the computed value used in the relative-error conclusion.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "It defines the exact quotient (sum_i coeff_i f_i) / (sum_i coeff_i), with the denominator written as the sum against the constant-one function.",
-      "effect_on_target": "It is the reference value in both the error difference and the denominator of the relative error.",
+      "meaning": "There exist, independently for every j, bounded weight, numerator-evaluation, and denominator-evaluation direction vectors of lengths 2n, n+3, and n+2, together with a bounded quotient direction of length 1, such that one third of (3n+4) times the data condition number plus (3n+2) times the constant-one condition number is at most the absolute value of the corresponding signed first-order directional expression.",
+      "effect_on_target": "This is the fourth conjunct: an unconditional-in-the-filter existential lower bound for the first-order condition quantity.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "For vectors ell and f, it defines (sum_i |ell_i f_i|) / |sum_i ell_i f_i|.",
-      "effect_on_target": "It supplies the two amplification factors C(coeff,f) and C(coeff,1) appearing in the smallness assumption and error bound.",
+      "meaning": "The type of size-n problems, whose supplied constructor contains n+1 real nodes, n+1 real data values, an evaluation point, injectivity of the nodes, and proof that the evaluation point differs from every node.",
+      "effect_on_target": "It supplies all fixed interpolation data and its structural noncollision assumptions.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "For vectors ell and f, it defines the finite sum sum_i ell_i f_i over every i in Fin n.",
-      "effect_on_target": "It supplies the exact numerator and denominator sums, their nonzero assumptions, and the denominators of the amplification factors.",
+      "meaning": "For coefficients ell_j and data f_j, the real number kappa_data = (sum_j |ell_j f_j|)/|sum_j ell_j f_j|.",
+      "effect_on_target": "It is conditionData in the upper bound, its first-order coefficient, its remainder, and the directional lower bound.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "For vectors v and delta and a real epsilon, it asserts the pointwise bounds |delta_i| <= epsilon |v_i| for every i in Fin n.",
-      "effect_on_target": "It imposes |deltaNum_i| <= epsilonNum |coeff_i f_i| and |deltaDen_i| <= epsilonDen |coeff_i| for every index.",
+      "meaning": "The denominator D = sum_j ell_j, obtained by applying the coefficient functional to the constant-one vector.",
+      "effect_on_target": "The target assumes D is nonzero; D defines the exact quotient and the constant-one condition number.",
       "status": "understood"
     },
     {
       "id": "D006",
-      "name": "DivInvMonoid.toDiv",
-      "meaning": "It extracts the division operation stored in a DivInvMonoid structure.",
-      "effect_on_target": "Applied to the real-number instance, it provides the real divisions used in the exact quotient, perturbed quotient, amplification factors, and final bound.",
+      "name": "LocalDef006",
+      "meaning": "For v, kappa_data, and kappa_one, the majorant M(v) = (gamma_(3n+4)(v) kappa_data + gamma_(3n+2)(v) kappa_one)/(1 - gamma_(3n+2)(v) kappa_one), where gamma_m(v) = mv/(1-mv).",
+      "effect_on_target": "It is the eventual upper bound for relative error and the quantity eventually decomposed into a linear term plus a remainder.",
       "status": "understood"
     },
     {
       "id": "D007",
-      "name": "Fin",
-      "meaning": "Fin n is the type of natural-number indices strictly below n.",
-      "effect_on_target": "All four input vectors have exactly n components indexed by 0 through n-1.",
+      "name": "LocalDef007",
+      "meaning": "The first-order coefficient C = (3n+4) kappa_data + (3n+2) kappa_one, with natural counts cast to real numbers.",
+      "effect_on_target": "It multiplies u(t) in the exact majorant expansion and appears, divided by three, in the directional lower bound.",
       "status": "understood"
     },
     {
       "id": "D008",
-      "name": "HAdd.hAdd",
-      "meaning": "It projects the heterogeneous addition operation supplied by an HAdd instance.",
-      "effect_on_target": "For real arguments it denotes ordinary real addition, including addition of perturbations to summands and addition of the two terms in the bound.",
+      "name": "LocalDef008",
+      "meaning": "Let p=3n+4, q=3n+2, A=p kappa_data, and B=q kappa_one. The remainder is R(v) = v^2[(Ap+Bq+AB+B^2) - (A+B)p(q+B)v]/[(1-pv)(1-(q+B)v)].",
+      "effect_on_target": "It is the exact remainder in the eventual identity M(u(t)) = u(t)C + R(u(t)), and it is asserted to be big-O of u(t)^2 along the filter.",
       "status": "understood"
     },
     {
       "id": "D009",
-      "name": "HDiv.hDiv",
-      "meaning": "It projects the heterogeneous division operation supplied by an HDiv instance.",
-      "effect_on_target": "For real arguments it denotes the divisions in all quotients and in the relative-error expression.",
+      "name": "LocalDef009",
+      "meaning": "The numerator N = sum_j ell_j f_j.",
+      "effect_on_target": "The target assumes N is nonzero; it defines the exact result, the data condition number, and the directional expression.",
       "status": "understood"
     },
     {
       "id": "D010",
-      "name": "HMul.hMul",
-      "meaning": "It projects the heterogeneous multiplication operation supplied by an HMul instance.",
-      "effect_on_target": "For real arguments it denotes products such as coeff_i f_i, epsilon times an absolute value, and epsilon times an amplification factor.",
+      "name": "LocalDef010",
+      "meaning": "The constant-one condition number kappa_one = (sum_j |ell_j|)/|sum_j ell_j|.",
+      "effect_on_target": "It is conditionOne throughout the majorant, first-order coefficient, remainder, and lower-bound conclusion.",
       "status": "understood"
     },
     {
       "id": "D011",
-      "name": "HSub.hSub",
-      "meaning": "It projects the heterogeneous subtraction operation supplied by an HSub instance.",
-      "effect_on_target": "For real arguments it forms the error difference and the denominator 1 - epsilonDen C(coeff,1).",
+      "name": "LocalDef011",
+      "meaning": "The relative error |y - y_hat|/|y|, where y is the exact result and y_hat is the modeled computed result of the run.",
+      "effect_on_target": "This is the left side of the first eventual inequality.",
       "status": "understood"
     },
     {
       "id": "D012",
-      "name": "LE.le",
-      "meaning": "It projects the non-strict order relation supplied by an LE instance.",
-      "effect_on_target": "For reals it expresses nonnegativity, the pointwise perturbation bounds, and the final upper-bound inequality.",
+      "name": "LocalDef012",
+      "meaning": "The type of direction vectors of a specified finite length whose components all have absolute value at most 1.",
+      "effect_on_target": "It types the existential direction witnesses in the fourth conjunct.",
       "status": "understood"
     },
     {
       "id": "D013",
-      "name": "LT.lt",
-      "meaning": "It projects the strict order relation supplied by an LT instance.",
-      "effect_on_target": "For reals it expresses the strict smallness condition epsilonDen C(coeff,1) < 1.",
+      "name": "LocalDef013",
+      "meaning": "The run constructor requires 0 <= u; counters W_j, F^N_j, F^D_j, Q, C^N_j, and C^D_j with operation counts 2n, n+3, n+2, 1, 3n+4, and 3n+2; the six inequalities count*u<1; and value(C^N_j)=value(W_j)value(F^N_j)value(Q), value(C^D_j)=value(W_j)value(F^D_j).",
+      "effect_on_target": "It makes each run an explicitly constrained multiplicative-error computation and forces all listed nonnegativity and smallness conditions for every t.",
       "status": "understood"
     },
     {
       "id": "D014",
-      "name": "Nat",
-      "meaning": "Nat is the type of natural numbers, including zero.",
-      "effect_on_target": "The universally quantified natural number n determines the common vector dimension and may syntactically be zero.",
+      "name": "LocalDef014",
+      "meaning": "A proof that the natural number 2+1, namely 3, is at least two.",
+      "effect_on_target": "It supports interpretation and casting of the numeral 3; it adds no mathematical premise.",
       "status": "understood"
     },
     {
       "id": "D015",
-      "name": "Ne",
-      "meaning": "Ne a b means that a = b is false.",
-      "effect_on_target": "It requires both the exact numerator sum and exact denominator sum to be nonzero.",
+      "name": "LocalDef015",
+      "meaning": "The projection of a problem's n+1 real data values.",
+      "effect_on_target": "It supplies f_j in the exact numerator, computed numerator, and condition quantities.",
       "status": "understood"
     },
     {
       "id": "D016",
-      "name": "OfNat.ofNat",
-      "meaning": "It interprets a natural-number literal in a type having the corresponding OfNat instance.",
-      "effect_on_target": "It interprets the displayed literals 0 and 1 as real numbers.",
+      "name": "LocalDef016",
+      "meaning": "The constructor for a problem from n+1 nodes, n+1 data values, an evaluation point x, injectivity of the node map, and x distinct from every node.",
+      "effect_on_target": "It encodes distinct nodes and exclusion of evaluation at a node as structural restrictions on problem.",
       "status": "understood"
     },
     {
       "id": "D017",
-      "name": "One.toOfNat1",
-      "meaning": "It constructs interpretation of the numeral 1 from a type's distinguished one.",
-      "effect_on_target": "It supplies the real constant 1, including the constant-one vector and the threshold and denominator in the smallness bound.",
+      "name": "LocalDef017",
+      "meaning": "The projection of a problem's n+1 nodes.",
+      "effect_on_target": "It supplies the nodes used to construct the coefficients.",
       "status": "understood"
     },
     {
       "id": "D018",
-      "name": "Real",
-      "meaning": "Real is the type of real numbers.",
-      "effect_on_target": "All vector entries, perturbation parameters, sums, quotients, absolute values, and inequalities are over the real numbers.",
+      "name": "LocalDef018",
+      "meaning": "The projection of a problem's real evaluation point.",
+      "effect_on_target": "It supplies x in each coefficient denominator x-x_j.",
       "status": "understood"
     },
     {
       "id": "D019",
-      "name": "Real.instAdd",
-      "meaning": "It supplies ordinary addition on real numbers.",
-      "effect_on_target": "It makes every overloaded real addition in the perturbed sums and final numerator ordinary real addition.",
+      "name": "LocalDef019",
+      "meaning": "The standard rational error factor gamma_m(v) = mv/(1-mv), with m cast from a natural number to a real.",
+      "effect_on_target": "It defines the nonlinear majorant and the certified relative deviation bound for each multiplicative counter.",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "Real.instAddGroup",
-      "meaning": "It supplies the additive-group structure of the real numbers, including zero, subtraction, and negation laws.",
-      "effect_on_target": "It provides the additive structure required by the absolute-value operation used throughout the proposition.",
+      "name": "LocalDef020",
+      "meaning": "For finite real vectors ell and f, the condition ratio (sum_i |ell_i f_i|)/|sum_i ell_i f_i|.",
+      "effect_on_target": "It defines both conditionData and conditionOne.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "Real.instDivInvMonoid",
-      "meaning": "It supplies the real multiplicative, inverse, and division structure, with division defined from multiplication and real inversion.",
-      "effect_on_target": "It makes the quotient operations in the definitions and conclusion real-number division.",
+      "name": "LocalDef021",
+      "meaning": "The operation count q = 3n+2.",
+      "effect_on_target": "It controls denominator counters and the denominator-related terms of the majorant, linear coefficient, and remainder.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "Real.instLE",
-      "meaning": "It supplies the usual non-strict order on the real numbers.",
-      "effect_on_target": "It gives the standard meanings of >= 0 and <= in all assumptions and in the conclusion.",
+      "name": "LocalDef022",
+      "meaning": "The operation count n+2.",
+      "effect_on_target": "It is the length of each denominator-evaluation counter and denominator direction.",
       "status": "understood"
     },
     {
       "id": "D023",
-      "name": "Real.instLT",
-      "meaning": "It supplies the usual strict order on the real numbers.",
-      "effect_on_target": "It gives the standard meaning of the strict smallness inequality.",
+      "name": "LocalDef023",
+      "meaning": "For node x_j and evaluation point x, ell_j = omega_j/(x-x_j), where omega_j is the reciprocal of the product of x_j-x_k over k different from j.",
+      "effect_on_target": "These are the coefficients in every exact, computed, condition-number, and directional expression.",
       "status": "understood"
     },
     {
       "id": "D024",
-      "name": "Real.instMul",
-      "meaning": "It supplies ordinary multiplication on real numbers.",
-      "effect_on_target": "It makes all coefficient-value, perturbation-scale, and amplification-factor products ordinary real products.",
+      "name": "LocalDef024",
+      "meaning": "The finite linear sum sum_i ell_i f_i.",
+      "effect_on_target": "It defines the exact numerator and denominator and appears in both condition ratios.",
       "status": "understood"
     },
     {
       "id": "D025",
-      "name": "Real.instOne",
-      "meaning": "It supplies the multiplicative identity 1 in the real numbers.",
-      "effect_on_target": "It provides the entries of the constant-one function and the real constant 1 in the smallness condition and bound denominator.",
+      "name": "LocalDef025",
+      "meaning": "The operation count p = 3n+4.",
+      "effect_on_target": "It controls composite numerator counters and data-related terms of the majorant, linear coefficient, and remainder.",
       "status": "understood"
     },
     {
       "id": "D026",
-      "name": "Real.instSub",
-      "meaning": "It supplies real subtraction, defined as addition of the additive inverse.",
-      "effect_on_target": "It defines the difference between perturbed and exact quotients and the expression 1 - epsilonDen C(coeff,1).",
+      "name": "LocalDef026",
+      "meaning": "The operation count n+3.",
+      "effect_on_target": "It is the length of each numerator-evaluation counter and numerator direction.",
       "status": "understood"
     },
     {
       "id": "D027",
-      "name": "Real.instZero",
-      "meaning": "It supplies the additive identity 0 in the real numbers.",
-      "effect_on_target": "It provides the zero used in nonnegativity and nonzero assumptions.",
+      "name": "LocalDef027",
+      "meaning": "The modeled computed result y_hat = Q[(sum_j ell_j W_j f_j F^N_j)/(sum_j ell_j W_j F^D_j)], where the symbols denote the stored counter values.",
+      "effect_on_target": "It is compared with the exact quotient inside the relative error.",
       "status": "understood"
     },
     {
       "id": "D028",
-      "name": "Real.lattice",
-      "meaning": "It supplies the lattice order structure of the real numbers.",
-      "effect_on_target": "Together with the real additive group, it supports the absolute-value operation as the maximum of a real number and its negation.",
+      "name": "LocalDef028",
+      "meaning": "The exact result y = N/D = (sum_j ell_j f_j)/(sum_j ell_j).",
+      "effect_on_target": "It is the reference value in the relative error; the two nonzero hypotheses imply y is nonzero.",
       "status": "understood"
     },
     {
       "id": "D029",
-      "name": "Zero.toOfNat0",
-      "meaning": "It constructs interpretation of the numeral 0 from a type's distinguished zero.",
-      "effect_on_target": "It ensures every displayed 0 in the target denotes real zero.",
+      "name": "LocalDef029",
+      "meaning": "Writing S(d) for the sum of a direction vector, it is the absolute value of [sum_j ell_j f_j(S(w_j)+S(a_j))]/N - [sum_j ell_j(S(w_j)+S(b_j))]/D + S(qdir).",
+      "effect_on_target": "It is the attainable directional magnitude required to be at least C/3 in the fourth conjunct.",
       "status": "understood"
     },
     {
       "id": "D030",
-      "name": "abs",
-      "meaning": "In an ordered additive group it defines abs(a) as max(a,-a); for reals this is the ordinary scalar absolute value |a|.",
-      "effect_on_target": "It measures scalar perturbations, forms the l1-type sums in the amplification factors, and defines the numerator and denominator of the relative error.",
+      "name": "LocalDef030",
+      "meaning": "The operation count 2n.",
+      "effect_on_target": "It is the length of every weight counter and weight direction.",
       "status": "understood"
     },
     {
       "id": "D031",
-      "name": "instHAdd",
-      "meaning": "It converts an ordinary homogeneous Add operation into the corresponding HAdd operation.",
-      "effect_on_target": "It routes each overloaded addition of two reals to ordinary real addition.",
+      "name": "LocalDef031",
+      "meaning": "The smallness condition m*u < 1, with m cast to a real.",
+      "effect_on_target": "Every run carries this condition for each relevant operation count, allowing the counter error bounds to be applied.",
       "status": "understood"
     },
     {
       "id": "D032",
-      "name": "instHDiv",
-      "meaning": "It converts an ordinary homogeneous Div operation into the corresponding HDiv operation.",
-      "effect_on_target": "It routes each overloaded division of two reals to real division.",
+      "name": "LocalDef032",
+      "meaning": "The constructor of a direction object from k real components satisfying |d_i| <= 1.",
+      "effect_on_target": "It enforces componentwise boundedness of all witnesses in the directional lower bound.",
       "status": "understood"
     },
     {
       "id": "D033",
-      "name": "instHMul",
-      "meaning": "It converts an ordinary homogeneous Mul operation into the corresponding HMul operation.",
-      "effect_on_target": "It routes each overloaded multiplication of two reals to ordinary real multiplication.",
+      "name": "LocalDef033",
+      "meaning": "The type of a multiplicative counter value modeled using k local relative-error factors at parameter u.",
+      "effect_on_target": "Its values are the multiplicative perturbations in each run.",
       "status": "understood"
     },
     {
       "id": "D034",
-      "name": "instHSub",
-      "meaning": "It converts an ordinary homogeneous Sub operation into the corresponding HSub operation.",
-      "effect_on_target": "It routes each overloaded subtraction of two reals to ordinary real subtraction.",
+      "name": "LocalDef034",
+      "meaning": "The real value projection of a multiplicative counter.",
+      "effect_on_target": "It extracts every W_j, F^N_j, F^D_j, and Q factor used in the computed result.",
       "status": "understood"
     },
     {
       "id": "D035",
-      "name": "Fin.fintype",
-      "meaning": "It equips Fin n with a finite enumeration containing every index below n exactly once.",
-      "effect_on_target": "It makes the sums in the local definitions finite sums over all n coordinates.",
+      "name": "LocalDef035",
+      "meaning": "The projection of the denominator-evaluation counter for each j.",
+      "effect_on_target": "Its value is F^D_j in the computed denominator.",
       "status": "understood"
     },
     {
       "id": "D036",
-      "name": "Finset.sum",
-      "meaning": "It sums the values of a function over a finite set using the additive commutative monoid operation.",
-      "effect_on_target": "It computes every exact, perturbed, and absolute-value sum appearing in the proposition.",
+      "name": "LocalDef036",
+      "meaning": "The projection of the numerator-evaluation counter for each j.",
+      "effect_on_target": "Its value is F^N_j in the computed numerator.",
       "status": "understood"
     },
     {
       "id": "D037",
-      "name": "Finset.univ",
-      "meaning": "For a finite type, it is the finite set of all elements of that type.",
-      "effect_on_target": "For Fin n it makes each sum range over every index i with 0 <= i < n.",
+      "name": "LocalDef037",
+      "meaning": "The projection of the one-operation quotient counter.",
+      "effect_on_target": "Its value Q multiplies the computed quotient.",
       "status": "understood"
     },
     {
       "id": "D038",
+      "name": "LocalDef038",
+      "meaning": "The projection of the 2n-operation weight counter for each j.",
+      "effect_on_target": "Its value W_j perturbs the coefficient in both computed sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "LocalDef039",
+      "meaning": "The node weight omega_j = 1/product_{k != j}(x_j-x_k), represented by a product whose jth factor is 1.",
+      "effect_on_target": "It forms the numerator of ell_j; node injectivity ensures its mathematical denominator is nonzero.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "LocalDef040",
+      "meaning": "The sum of all components of a bounded direction vector.",
+      "effect_on_target": "These sums form the scalar first-order perturbations in the directional expression.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "LocalDef041",
+      "meaning": "The component-vector projection of a direction object.",
+      "effect_on_target": "It supplies the components summed by LocalDef040.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "LocalDef042",
+      "meaning": "A counter constructor with value product_i z_i, where z_i is either 1+delta_i or its reciprocal according to a Boolean flag, every |delta_i| <= u, and, conditionally on ku<1, |value-1| <= gamma_k(u).",
+      "effect_on_target": "It specifies the abstract multiplicative local-error model underlying every run counter.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "It combines the four conclusions into A and (B and (C and D)).",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "Asymptotics.IsBigO",
+      "meaning": "Big-O along a filter: the norm of one function is eventually bounded by a constant multiple of the norm of another.",
+      "effect_on_target": "It states that |R(u(t))| is eventually bounded by a constant times |u(t)^2| along l.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "It expresses the eventual exact expansion and the internal counter consistency equations.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "Filter",
+      "meaning": "A filter on an arbitrary index type.",
+      "effect_on_target": "It provides the notion of approach and eventual truth used throughout the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "Filter.Eventually",
+      "meaning": "A predicate holds eventually along a filter when its truth set belongs to that filter.",
+      "effect_on_target": "It qualifies the error inequality and majorant identity rather than asserting them for every t.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "Filter.NeBot",
+      "meaning": "The filter is nontrivial, equivalently it is not the bottom filter.",
+      "effect_on_target": "It rules out the degenerate filter on which every predicate is eventual.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "Filter.Tendsto",
+      "meaning": "Tendsto u l L means the map of l under u is finer than L.",
+      "effect_on_target": "With L the neighborhoods of 0, it states u(t) tends to 0 along l.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "HAdd.hAdd",
+      "meaning": "Typeclass-dispatched addition.",
+      "effect_on_target": "It denotes ordinary addition on reals and naturals in the supplied formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "HMul.hMul",
+      "meaning": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "It denotes ordinary multiplication on reals and naturals in counts, products, bounds, and computed quantities.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "HPow.hPow",
+      "meaning": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "It denotes natural powers, in particular u(t)^2 and B^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "LE.le",
+      "meaning": "Typeclass-dispatched non-strict order.",
+      "effect_on_target": "On reals it expresses the error upper bound, component bounds, nonnegative u, and the directional lower bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "Monoid.toNatPow",
+      "meaning": "Natural-number exponentiation induced by a monoid.",
+      "effect_on_target": "It gives ordinary real natural powers used for squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "Nat",
+      "meaning": "The natural numbers.",
+      "effect_on_target": "It supplies n, finite dimensions, operation counts, and exponent 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "Ne",
+      "meaning": "Inequality, defined as the negation of equality.",
+      "effect_on_target": "It states that the exact numerator and denominator are nonzero and that x differs from every node.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "OfNat.ofNat",
+      "meaning": "Interpretation of natural-number literals in a target type.",
+      "effect_on_target": "It supplies the real and natural constants 0, 1, 2, and 3 appearing in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "PseudoMetricSpace.toUniformSpace",
+      "meaning": "The uniform structure induced by a pseudometric.",
+      "effect_on_target": "It participates in constructing the usual topology on the reals used for convergence to zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "Real",
+      "meaning": "The real numbers.",
+      "effect_on_target": "All data, errors, condition quantities, limits, computed values, and bounds are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "Real.instAdd",
+      "meaning": "Ordinary real addition.",
+      "effect_on_target": "It interprets all real sums in the formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "Real.instLE",
+      "meaning": "The ordinary non-strict order on the reals.",
+      "effect_on_target": "It interprets every real-valued <= relation.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure on the reals.",
+      "effect_on_target": "It supplies natural powers such as v^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "Real.instMul",
+      "meaning": "Ordinary real multiplication.",
+      "effect_on_target": "It interprets all products in the exact, computed, condition, and remainder expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "Real.instZero",
+      "meaning": "The real number zero.",
+      "effect_on_target": "It is the limit of u, the lower bound for u, and the value excluded for N and D.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "Real.norm",
+      "meaning": "The real norm, equal to absolute value.",
+      "effect_on_target": "It makes the big-O assertion an absolute-value estimate.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Real.pseudoMetricSpace",
+      "meaning": "The usual real pseudometric with distance |x-y|.",
+      "effect_on_target": "It induces the standard real topology in the convergence hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "UniformSpace.toTopologicalSpace",
+      "meaning": "The topology induced by a uniform structure.",
+      "effect_on_target": "It completes the construction of the usual real neighborhood filter at zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Zero.toOfNat0",
+      "meaning": "The numeral-zero instance induced by a zero operation.",
+      "effect_on_target": "It interprets the real literal 0.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "instHAdd",
+      "meaning": "The homogeneous addition instance derived from an Add structure.",
+      "effect_on_target": "It routes overloaded addition to ordinary real or natural addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "instHMul",
+      "meaning": "The homogeneous multiplication instance derived from a Mul structure.",
+      "effect_on_target": "It routes overloaded multiplication to ordinary real or natural multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "instHPow",
+      "meaning": "The homogeneous power instance derived from a Pow structure.",
+      "effect_on_target": "It routes exponentiation to ordinary natural powers of real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "instOfNatNat",
+      "meaning": "The interpretation of a natural literal as itself.",
+      "effect_on_target": "It supplies natural counts and the exponent 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "nhds",
+      "meaning": "The neighborhood filter of a point in a topological space.",
+      "effect_on_target": "nhds 0 specifies ordinary convergence of u(t) to real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "Division induced by a division-and-inverse monoid.",
+      "effect_on_target": "It supplies real division in all quotient formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "It quantifies the four groups of bounded direction witnesses in LocalDef002.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "Fin",
+      "meaning": "Fin(k), the finite type of natural indices strictly below k.",
+      "effect_on_target": "It gives exactly n+1 node indices and the exact finite dimensions of counters and direction vectors.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "HDiv.hDiv",
+      "meaning": "Typeclass-dispatched division.",
+      "effect_on_target": "On reals it forms coefficients, exact and computed quotients, condition ratios, gamma factors, the majorant, and the remainder.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "HSub.hSub",
+      "meaning": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "On reals it forms differences, denominator factors, and relative errors.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "Nat.cast",
+      "meaning": "Casting a natural number into a type with natural-number casts.",
+      "effect_on_target": "It turns operation counts into real coefficients in gamma, C, and R.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "One.toOfNat1",
+      "meaning": "The numeral-one instance induced by a one operation.",
+      "effect_on_target": "It supplies real and natural occurrences of 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive-group structure of the reals.",
+      "effect_on_target": "It supports real negation, subtraction, and absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The real multiplicative division and inverse structure, with totalized inverse.",
+      "effect_on_target": "It interprets every real quotient, including expressions whose denominator is not explicitly assumed nonzero.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "Real.instNatCast",
+      "meaning": "The standard embedding of natural numbers into the reals.",
+      "effect_on_target": "It interprets all real-valued operation counts.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "Real.instOne",
+      "meaning": "The real number one.",
+      "effect_on_target": "It appears in denominator factors, constant-one data, and local relative-error factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "Real.instSub",
+      "meaning": "Ordinary real subtraction.",
+      "effect_on_target": "It interprets all real differences in coefficients, errors, and rational denominators.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "Real.lattice",
+      "meaning": "The lattice order structure on the reals.",
+      "effect_on_target": "It supports the definition of real absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "abs",
+      "meaning": "Absolute value, defined as max(a,-a) in an ordered additive group.",
+      "effect_on_target": "It defines relative error, condition numbers, bounded local errors, directional magnitude, and the real norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "instAddNat",
+      "meaning": "Ordinary natural-number addition.",
+      "effect_on_target": "It forms dimensions and operation counts such as n+1, n+2, n+3, 3n+2, and 3n+4.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "instHDiv",
+      "meaning": "The homogeneous division instance derived from a Div structure.",
+      "effect_on_target": "It routes overloaded real division to the real division operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "instHSub",
+      "meaning": "The homogeneous subtraction instance derived from a Sub structure.",
+      "effect_on_target": "It routes overloaded real subtraction to ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "Interpretation of a numeral known to be at least two via its natural-number cast.",
+      "effect_on_target": "It supports real numeral 3 in the factor 1/3 and related formulas without adding a target hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "Fin.fintype",
+      "meaning": "The finite enumeration of Fin(k).",
+      "effect_on_target": "It makes all sums and products over finite index types well-defined.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "Finset.sum",
+      "meaning": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It forms exact and computed sums, condition numerators, and sums of direction components.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "Finset.univ",
+      "meaning": "The finite set of every element of a finite type.",
+      "effect_on_target": "It makes each sum or product range over all indices of the corresponding Fin type.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "Function.Injective",
+      "meaning": "A function is injective when equal outputs imply equal inputs.",
+      "effect_on_target": "It requires all problem nodes to be pairwise distinct.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "The proposition or typeclass witnessing that a natural number is at least two.",
+      "effect_on_target": "It supports numeral casting for 3 and imposes no restriction on the arbitrary n.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
       "name": "Real.instAddCommMonoid",
-      "meaning": "It supplies the commutative additive-monoid structure of the real numbers.",
-      "effect_on_target": "It provides the associative, commutative real addition and zero required to define the finite sums.",
+      "meaning": "The additive commutative monoid structure on the reals.",
+      "effect_on_target": "It supplies the algebraic structure used by all finite real sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "instMulNat",
+      "meaning": "Ordinary natural-number multiplication.",
+      "effect_on_target": "It forms operation counts 2n and 3n.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "Finset.prod",
+      "meaning": "Finite multiplication in a commutative monoid.",
+      "effect_on_target": "It forms node weights and multiplicative counter values.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "Inv.inv",
+      "meaning": "Typeclass-dispatched multiplicative inverse.",
+      "effect_on_target": "On reals it forms node weights and reciprocal local-error factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "LT.lt",
+      "meaning": "Typeclass-dispatched strict order.",
+      "effect_on_target": "On reals it expresses every operation-count smallness condition m*u<1.",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "Real.instCommMonoid",
+      "meaning": "The multiplicative commutative monoid structure on the reals.",
+      "effect_on_target": "It supplies the algebraic structure for finite real products.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "Real.instInv",
+      "meaning": "The totalized multiplicative inverse on the reals.",
+      "effect_on_target": "It interprets reciprocal node products and reciprocal perturbation factors, assigning a defined value even at zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "Real.instLT",
+      "meaning": "The ordinary strict order on the reals.",
+      "effect_on_target": "It interprets all inequalities of the form m*u<1.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "instDecidableEqFin",
+      "meaning": "Decidable equality on a finite index type Fin(k).",
+      "effect_on_target": "It enables the conditional that omits the jth factor in each node-weight product.",
+      "status": "understood"
+    },
+    {
+      "id": "D106",
+      "name": "ite",
+      "meaning": "The if-then-else operation on a decidable proposition.",
+      "effect_on_target": "It selects 1 versus x_j-x_k in node weights and reciprocal versus direct local factors in counters.",
+      "status": "understood"
+    },
+    {
+      "id": "D107",
+      "name": "Bool",
+      "meaning": "The two-valued Boolean type.",
+      "effect_on_target": "A Boolean flag specifies whether each local counter factor is direct or reciprocal.",
+      "status": "understood"
+    },
+    {
+      "id": "D108",
+      "name": "Bool.true",
+      "meaning": "The true Boolean value.",
+      "effect_on_target": "A true reciprocal flag selects (1+delta_i)^(-1).",
+      "status": "understood"
+    },
+    {
+      "id": "D109",
+      "name": "instDecidableEqBool",
+      "meaning": "Decidable equality on Booleans.",
+      "effect_on_target": "It permits testing whether a counter's reciprocal flag is true.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "The proposition is universal over a natural number n.",
-      "It is universal over four functions coeff, f, deltaNum, deltaDen : Fin n -> Real, so each is an n-component real vector.",
-      "It is universal over two real numbers epsilonNum and epsilonDen."
+      "n is an arbitrary natural number; all node and data vectors are indexed by Fin(n+1), which has exactly n+1 elements.",
+      "iota is an arbitrary type and l is a nonbottom filter on iota.",
+      "The problem consists of real nodes x_j, real data f_j, and a real evaluation point x, with pairwise distinct nodes and x different from every node.",
+      "u is an arbitrary real-valued function on iota.",
+      "For every t in iota, run(t) is a supplied admissible multiplicative-error run for the problem at parameter u(t)."
     ],
     "hypotheses": [
-      "epsilonNum >= 0.",
-      "epsilonDen >= 0.",
-      "For every i in Fin n, |deltaNum_i| <= epsilonNum |coeff_i f_i|.",
-      "For every i in Fin n, |deltaDen_i| <= epsilonDen |coeff_i|.",
-      "The exact numerator sum sum_i coeff_i f_i is nonzero.",
-      "The exact denominator sum sum_i coeff_i is nonzero.",
-      "epsilonDen C(coeff,1) < 1, where C(coeff,1) = (sum_i |coeff_i|) / |sum_i coeff_i|."
+      "u(t) tends to 0 along l in the usual topology of the real numbers.",
+      "N = sum_j ell_j f_j is nonzero.",
+      "D = sum_j ell_j is nonzero.",
+      "Each run(t) structurally contains 0 <= u(t), the six inequalities (2n)u(t)<1, (n+3)u(t)<1, (n+2)u(t)<1, u(t)<1, (3n+4)u(t)<1, and (3n+2)u(t)<1, and the multiplicative counter model and consistency equations."
     ],
     "conclusions": [
-      "The relative error satisfies |Q_delta - Q| / |Q| <= (epsilonNum C(coeff,f) + epsilonDen C(coeff,1)) / (1 - epsilonDen C(coeff,1))."
+      "Eventually along l, the relative error |y-y_hat(t)|/|y| is at most M(u(t)).",
+      "Eventually along l, the exact identity M(u(t)) = u(t)C + R(u(t)) holds.",
+      "Along l, R(u(t)) is big-O of u(t)^2 with respect to absolute value.",
+      "There exist bounded first-order direction vectors for the weight, numerator evaluation, denominator evaluation, and final quotient whose directional magnitude is at least C/3."
     ],
     "mathematical_definitions": [
-      "Let I_n = Fin n = {0,...,n-1}. Every sum below is over i in I_n.",
-      "For n-component real vectors ell and g, define S(ell,g) = sum_i ell_i g_i.",
-      "Define C(ell,g) = (sum_i |ell_i g_i|) / |S(ell,g)|.",
-      "Define the exact quotient Q = S(coeff,f) / S(coeff,1) = (sum_i coeff_i f_i) / (sum_i coeff_i).",
-      "Define the perturbed quotient Q_delta = (sum_i (coeff_i f_i + deltaNum_i)) / (sum_i (coeff_i + deltaDen_i)).",
-      "All absolute values are ordinary scalar real absolute values; sum_i |ell_i g_i| is an l1-type sum of scalar magnitudes, not a separately introduced vector norm."
+      "For j in Fin(n+1), omega_j = 1/product_{k != j}(x_j-x_k) and ell_j = omega_j/(x-x_j).",
+      "N = sum_j ell_j f_j, D = sum_j ell_j, and the exact value is y=N/D.",
+      "kappa_data = (sum_j |ell_j f_j|)/|N| and kappa_one = (sum_j |ell_j|)/|D|.",
+      "For a natural m and real v, gamma_m(v)=mv/(1-mv). Put p=3n+4 and q=3n+2.",
+      "M(v) = [gamma_p(v)kappa_data + gamma_q(v)kappa_one]/[1-gamma_q(v)kappa_one].",
+      "C = p kappa_data + q kappa_one.",
+      "With A=p kappa_data and B=q kappa_one, R(v)=v^2[(Ap+Bq+AB+B^2)-(A+B)p(q+B)v]/[(1-pv)(1-(q+B)v)].",
+      "Writing W_j(t), F^N_j(t), F^D_j(t), and Q(t) for the relevant counter values, y_hat(t)=Q(t)[sum_j ell_j W_j(t)f_jF^N_j(t)]/[sum_j ell_j W_j(t)F^D_j(t)].",
+      "A length-k counter value is a product of k factors, each independently either 1+delta_i or (1+delta_i)^(-1), with |delta_i|<=u; it also certifies |value-1|<=gamma_k(u) whenever ku<1.",
+      "For a bounded direction d, let S(d) be the sum of its components. The final existential conclusion requires C/3 <= |[sum_j ell_j f_j(S(w_j)+S(a_j))]/N - [sum_j ell_j(S(w_j)+S(b_j))]/D + S(qdir)|, where w_j, a_j, b_j, and qdir have dimensions 2n, n+3, n+2, and 1 and every component has absolute value at most 1."
     ],
-    "proposition_plain_english": "For every dimension n, coefficient vector coeff, value vector f, additive numerator and denominator perturbation vectors deltaNum and deltaDen, and nonnegative perturbation levels epsilonNum and epsilonDen, suppose each numerator perturbation is bounded pointwise by epsilonNum times the magnitude of coeff_i f_i and each denominator perturbation is bounded pointwise by epsilonDen times the magnitude of coeff_i. If both the exact numerator sum and exact denominator sum are nonzero and epsilonDen times the denominator amplification factor C(coeff,1) is strictly less than one, then the relative absolute error between the perturbed quotient Q_delta and exact quotient Q is at most (epsilonNum C(coeff,f) + epsilonDen C(coeff,1)) divided by (1 - epsilonDen C(coeff,1))."
+    "proposition_plain_english": "For any n+1 distinct real nodes, associated real data, and evaluation point different from every node, suppose the exact numerator N and denominator D are both nonzero. Let u(t) approach zero along any proper filter, and for every t supply a modeled computation whose multiplicative local errors satisfy the specified operation counts, nonnegativity, smallness, product structure, and consistency equations. Then, eventually, the relative error of the modeled computed quotient is bounded by the stated nonlinear majorant M(u(t)); eventually that majorant is exactly its linear term u(t)[(3n+4)kappa_data+(3n+2)kappa_one] plus the explicit rational remainder R(u(t)); and this remainder is big-O of u(t)^2 along the filter. In addition, there exist componentwise unit-bounded perturbation directions whose first-order directional magnitude is at least one third of the linear condition quantity."
   },
   "restrictions_and_vacuity_risks": [
-    "Although n may syntactically be zero, for n = 0 both finite sums are zero, so the two nonzero hypotheses cannot hold and the implication is vacuous.",
-    "The proposition applies only when both sum_i coeff_i f_i and sum_i coeff_i are nonzero. Consequently Q, C(coeff,f), C(coeff,1), and the relative-error denominator |Q| have nonzero mathematical denominators.",
-    "The strict condition epsilonDen C(coeff,1) < 1 makes the right-hand denominator 1 - epsilonDen C(coeff,1) positive.",
-    "No explicit nonzero hypothesis is stated for the perturbed denominator sum_i (coeff_i + deltaDen_i); the denominator perturbation bound together with the strict smallness condition implies that it cannot vanish.",
-    "The perturbation assumptions are componentwise relative bounds. In particular, coeff_i f_i = 0 forces deltaNum_i = 0, and coeff_i = 0 forces deltaDen_i = 0.",
-    "No sign restrictions are imposed on coefficients, values, or perturbations.",
-    "The assertion concerns exact real arithmetic with prescribed additive perturbations. It does not encode a floating-point format, rounding mode, evaluation order, probabilistic model, or a claim that the bound is sharp.",
-    "The theorem is an implication and says nothing for inputs failing any hypothesis.",
-    "There are no existential quantifiers or witness choices in the proposition."
+    "The natural number n is unrestricted and may be zero; the problem still has n+1 nodes.",
+    "Pairwise distinct nodes and exclusion of x from the nodes are encoded structurally in the problem type, not listed as separate target hypotheses.",
+    "The supplied run for every t forces u(t)>=0 and all six count-smallness inequalities. Thus the convergence is effectively from nonnegative admissible values, and the theorem has no applicable run argument where these conditions cannot be met.",
+    "The theorem quantifies over a supplied run function rather than asserting that such runs exist. If the indexed run type has no inhabitant, there is no run instance to which the theorem can be applied.",
+    "Only the exact N and D are explicitly assumed nonzero. The modeled computed denominator and the denominators occurring in M and R are not separately assumed nonzero.",
+    "Real division and inverse are totalized in Lean, so every displayed quotient has a formal value even at a zero denominator. The eventual claims, rather than explicit global side conditions, control the formulas near u=0.",
+    "The error inequality and the algebraic expansion hold only eventually along l, not for every t.",
+    "The big-O statement concerns the particular path R(u(t)) versus u(t)^2 along the chosen filter; it is not directly a global assertion about R(v) for all real v near zero.",
+    "A nonbottom filter prevents the wholly degenerate bottom-filter interpretation, but it does not require u(t) to be nonzero eventually. For example, u may eventually equal zero, making the pathwise asymptotic statement less informative.",
+    "The computation model is an abstract product-of-relative-factors model. No floating-point radix, precision, rounding mode, underflow, overflow, exceptional values, or concrete machine arithmetic is encoded.",
+    "The proposition gives an upper bound for the actual modeled relative error and an expansion of that bound. It does not assert that the actual error equals its first-order term or has a matching asymptotic lower bound.",
+    "The final existential directions establish attainability for an abstract linearized expression only; the statement does not identify them with the local errors of any supplied run.",
+    "The direction witnesses are introduced after all universal binders and hypotheses and can therefore depend logically on that context, although their types and required inequality mention only n and the fixed problem data.",
+    "The two eventual conclusions may initially be witnessed by different filter-large sets, although their finite intersection is also filter-large."
   ],
   "ambiguities": []
 }

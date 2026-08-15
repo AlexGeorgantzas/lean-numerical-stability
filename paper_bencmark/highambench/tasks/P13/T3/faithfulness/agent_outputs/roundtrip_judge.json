@@ -3,163 +3,163 @@
   "role": "roundtrip-judge",
   "task_id": "P13-T3",
   "paper_sha256": "9ebf8adb699f96c82ccbb153dd6ca592c64475a8bc3e0703a50cb659b012c520",
-  "blind_translation_sha256": "5415f28c58508e5c70e8986e0ff99391c0d7f2a40e3713491707d78e17685f54",
+  "blind_translation_sha256": "04f2c52b847f817b3d3f4251aeac96e5bc25e6bf68766542e359516eedc7734a",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF has the exact perturbed second-barycentric quotient on PDF page 5, printed page 551, followed by Theorem 4.1 and equations (4.2)-(4.3) on PDF page 6, printed page 552. Its SHA-256 matches the supplied hash.",
-      "translation_evidence": "The translation concerns an exact and a perturbed quotient together with two amplification factors, so it is directed toward the mathematical neighborhood of the selected result.",
-      "reasoning": "The paper version, passage, and surrounding result selected for P13-T3 are correct."
+      "paper_evidence": "The selected result is Theorem 4.1 on PDF page 6, preceded by the proper barycentric formula (4.1) and its collected and uncollected error-counter representations on PDF page 5.",
+      "translation_evidence": "The translation targets the quotient using direct barycentric weights, numerator count 3n+4, denominator count 3n+2, the two condition ratios, and constant-factor sharpness.",
+      "reasoning": "The paper version, theorem, and supporting passages are correctly selected."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "The paper binds degree parameter n, n+1 distinct nodes and data values indexed by j=0,...,n, an evaluation point x, reciprocal-product weights w_j, unit roundoff u, and rounding-error counters.",
-      "translation_evidence": "The translation binds an arbitrary n, four arbitrary vectors Fin n -> Real indexed by 0,...,n-1, and two arbitrary real perturbation levels. It has no nodes, evaluation point, barycentric weights, unit roundoff, or local rounding errors.",
-      "reasoning": "The dimension is shifted from n+1 paper terms to n translation terms, and the paper-specific binders are replaced by unrelated generic quotient data."
+      "paper_evidence": "The paper has n+1 fixed floating-point nodes and data values indexed from 0 through n, together with a fixed floating-point evaluation point.",
+      "translation_evidence": "The translation correctly uses Fin(n+1), but permits arbitrary real nodes, data, and evaluation point and adds an arbitrary index type, nonbottom filter, error path, and run family.",
+      "reasoning": "The dimensions and finite indexing match, but the input types and asymptotic binders strictly generalize the paper's binders."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "The computed result is determined by a floating-point execution on the interpolation data, while the paper separately asserts that there exist rounding errors attaining the bound within a constant factor.",
-      "translation_evidence": "The proposition universally quantifies arbitrary additive perturbation vectors satisfying bounds and contains no existential sharpness assertion.",
-      "reasoning": "Universal arbitrary perturbations are substituted for execution-dependent rounding errors, and the paper's existential conclusion is absent."
+      "paper_evidence": "The paper states the result for the computed value at unit roundoff u and separately asserts existence of rounding errors attaining the bound within a constant factor.",
+      "translation_evidence": "The translation universally quantifies a filter-indexed path u(t) and supplied run(t), places the upper conclusions under Eventually, and introduces direction witnesses after all universal context.",
+      "reasoning": "This is a coherent strengthening of the asymptotic interpretation, but it is not the same explicit quantifier structure as the paper."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The inherited hypotheses include distinct nodes, floating-point inputs, the standard relative-error model, directly computed reciprocal-product weights, counter smallness such as ku<1, and nonzero p_n(x) for relative error.",
-      "translation_evidence": "The hypotheses instead require nonnegative epsilonNum and epsilonDen, arbitrary componentwise additive perturbation bounds, two exact sums to be nonzero, and epsilonDen C(coeff,1)<1.",
-      "reasoning": "The translation omits the interpolation and floating-point hypotheses while adding a generic denominator-smallness condition and an explicit exact-denominator nonzero condition."
+      "paper_evidence": "The paper requires distinct floating-point nodes, floating-point data and evaluation point, direct weight computation, p_n(x) nonzero, and the generic smallness condition ku<1 where counter bounds are used.",
+      "translation_evidence": "The translation requires distinct nodes, x different from every node, N and D nonzero, nonnegative u, and six count-specific smallness inequalities, but imposes no floating-point representability condition on the inputs.",
+      "reasoning": "The noncollision, nonzero, and smallness conditions faithfully make the formulas applicable, but the floating-point input hypothesis is replaced by an all-real abstract model."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "P13-T3 includes the exact counter quotient, the two-term first-order forward bound, its condition-number rewritings, the retained O(u^2) term, and attainable sharpness within a constant factor.",
-      "translation_evidence": "The sole conclusion is a generic exact inequality with numerator epsilonNum C(coeff,f)+epsilonDen C(coeff,1) and denominator 1-epsilonDen C(coeff,1).",
-      "reasoning": "Several central paper conclusions are absent, and the remaining conclusion has a different finite form."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.1 contains the two-term relative forward-error bound with O(u^2) and the subsequent qualitative constant-factor attainability assertion.",
+      "translation_evidence": "The first three conclusions yield the same first-order upper bound, while the fourth gives a bounded first-order direction with magnitude at least one third of the linear coefficient.",
+      "reasoning": "The upper conclusion is present. Instantiating local error factors by sufficiently small multiples of the bounded directions realizes the paper's abstract constant-factor sharpness; the translation additionally specifies a factor."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The relevant paper operators are scalar sums, absolute values, quotient evaluation, and condition quotients; the paper separately defines barycentric weights and relative-error counters.",
-      "translation_evidence": "The dependency ledger unfolds the finite sums, scalar absolute value, exact quotient, perturbed quotient, componentwise perturbation relation, and amplification factor C.",
-      "reasoning": "The nontrivial operators actually present in the translated proposition are explicitly and consistently interpreted. Missing paper-specific objects are linkage omissions assessed elsewhere."
+      "paper_evidence": "The paper defines direct weights, the proper barycentric quotient, cond(x,n,f), cond(x,n,1), and multiplicative error counters.",
+      "translation_evidence": "The dependency ledger unfolds omega_j, ell_j, N, D, the exact and computed quotients, both condition ratios, gamma factors, counters, and direction sums.",
+      "reasoning": "All nontrivial mathematical operators and target-relevant dependencies have the intended interpretations."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The paper distinguishes exact p_n(x), computed hat(p_n(x)), and the exact representation of that computed value using perturbed summands.",
-      "translation_evidence": "The translation distinguishes exact Q from perturbed Q_delta and explicitly identifies Q_delta as an exact-real quotient with prescribed additive perturbations.",
-      "reasoning": "Exact and perturbed quantities are not conflated, although the translation fails to establish that Q_delta is the paper's computed result."
+      "paper_evidence": "The paper distinguishes exact weights and p_n(x) from computed weights, accumulated counters, and the computed value p_hat_n(x).",
+      "translation_evidence": "The translation separately defines exact y=N/D and computed y_hat from W, F^N, F^D, and Q counter values; the directional expression is explicitly first-order.",
+      "reasoning": "Exact, computed, and linearized quantities are not conflated."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "The analyzed algorithm is specifically formula (4.1), with coefficients w_j/(x-x_j), weights computed by reciprocal products, and operation counts inherited from Theorem 3.2.",
-      "translation_evidence": "The coefficient vector is arbitrary, perturbations are externally prescribed, and the restrictions explicitly state that no floating-point execution or evaluation order is encoded.",
-      "reasoning": "The proposition is detached from the second barycentric algorithm and its execution model."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.1 analyzes the second barycentric formula using directly computed weights, with uncollected counts 2n, n+3, n+2, and 1 and collected counts 3n+4 and 3n+2.",
+      "translation_evidence": "The modeled run uses the same proper quotient, shares each weight counter between numerator and denominator, and imposes exactly those primitive and composite counter lengths and consistency equations.",
+      "reasoning": "The abstract run remains linked to the selected algorithm and its operation-count execution model."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "The theorem uses scalar relative absolute error and condition quotients whose numerators are sums of termwise scalar absolute values.",
-      "translation_evidence": "The conclusion uses |Q_delta-Q|/|Q|, and C(ell,g) is the sum of |ell_i g_i| divided by the absolute value of the exact sum.",
-      "reasoning": "After a coefficient specialization, the scalar and componentwise absolute-value semantics agree; no vector or function norm is substituted."
+      "paper_evidence": "The theorem uses scalar absolute values, and the data condition number comes from componentwise relative perturbations of the data vector.",
+      "translation_evidence": "Relative error and both condition ratios use real absolute value; bounded error directions are componentwise constrained by absolute value at most one.",
+      "reasoning": "Scalar and componentwise semantics match, and no normwise vector error is substituted."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "There are n+1 summands indexed 0,...,n, with exact collected counters 3n+4 and 3n+2 and corresponding first-order coefficients (3n+4)u and (3n+2)u.",
-      "translation_evidence": "There are n summands indexed by Fin n, and the bound contains arbitrary epsilonNum and epsilonDen without the constants 3n+4, 3n+2, or any operation-count dependence.",
-      "reasoning": "Both indexing and the result's defining constants are missing or changed."
+      "paper_evidence": "The exact upper-bound coefficients are 3n+4 and 3n+2, while the sharpness sentence specifies no numerical constant factor.",
+      "translation_evidence": "All operation counts and upper coefficients match, but the directional lower bound fixes the sharpness factor as 1/3.",
+      "reasoning": "The indexing and principal coefficients are exact; the factor 1/3 is an additional quantitative strengthening not supplied by the paper."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "The paper assumes fl(a op b)=(a op b)(1+delta)^(+1 or -1), |delta|<=u, floating-point inputs, and directly computed weights, while leaving IEEE exceptional behavior unspecified.",
-      "translation_evidence": "The proposition is exact real arithmetic with arbitrary additive perturbations and explicitly encodes no format, unit roundoff, rounding operation, evaluation order, overflow, or underflow behavior.",
-      "reasoning": "The paper's deterministic floating-point relative-error model is not represented."
+      "status": "pass",
+      "paper_evidence": "The paper models each basic operation by a multiplicative factor (1+delta) with exponent plus or minus one, |delta|<=u, and gives the gamma_k bound under ku<1; it does not model exceptional IEEE outcomes.",
+      "translation_evidence": "Each counter is a product of direct or reciprocal factors with |delta_i|<=u and the same gamma_k certificate; no radix, concrete rounding mode, underflow, overflow, NaN, or infinity behavior is added.",
+      "reasoning": "At the abstraction level actually used by the paper's analysis, the local relative-error model and its omissions match."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "Theorem 4.1 gives an asymptotic upper bound consisting of two first-order terms plus O(u^2), without an explicit rational correction denominator.",
-      "translation_evidence": "The translation gives a finite upper bound divided by 1-epsilonDen C(coeff,1), under a strict smallness hypothesis.",
-      "reasoning": "Although both relations are upper inequalities, their logical strength and domains differ. Deriving the paper form would require an unstated specialization, counter estimates, and asymptotic expansion."
+      "paper_evidence": "The paper gives a first-order non-strict upper inequality with an unspecified O(u^2) remainder and a qualitative constant-factor lower attainability statement.",
+      "translation_evidence": "The translation gives a non-strict upper inequality by an exact nonlinear majorant, an exact identity for that majorant, and a specific non-strict directional lower bound C/3.",
+      "reasoning": "No inequality is reversed, but the translation asserts strictly stronger exact and quantitative relations."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Theorem 4.1 measures scalar relative forward error against exact p_n(x), and the preceding paragraph rejects a useful backward-error interpretation.",
-      "translation_evidence": "The proposition bounds scalar relative error of a perturbed quotient against its exact quotient and makes no backward-stability claim.",
-      "reasoning": "The translated error expression remains a relative forward-error notion."
+      "paper_evidence": "The principal quantity is scalar relative forward error; the paper explicitly says the counter expression has no useful backward-error interpretation.",
+      "translation_evidence": "The target bounds |y-y_hat|/|y| and formulates sharpness through the first-order directional change of that same computed quotient.",
+      "reasoning": "The translation preserves the forward-error notion and does not replace it with backward error, residual error, or node perturbation."
     },
     {
       "id": "S14",
       "status": "fail",
-      "paper_evidence": "The exact counter representation has no omitted terms, but every displayed Theorem 4.1 forward bound retains an unquantified additive O(u^2) term.",
-      "translation_evidence": "The translation contains no u, counters, asymptotic expansion, or O(u^2); it instead retains a finite denominator correction.",
-      "reasoning": "The translation neither reproduces the paper's higher-order term nor states the mapping needed to recover it from the finite inequality."
+      "paper_evidence": "Equations (4.2) and (4.3) retain only an unspecified additive O(u^2), without a coefficient, uniformity statement, or explicit formula.",
+      "translation_evidence": "The translation defines an explicit rational remainder R, asserts the exact identity M(u)=uC+R(u) eventually, and proves pathwise R(u(t))=O(u(t)^2).",
+      "reasoning": "This rigorously implies the paper's higher-order treatment but is a substantial strengthening not implied by the displayed paper result."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The paper concerns real scalar barycentric interpolation with coefficients constrained by distinct nodes and reciprocal-product weights.",
-      "translation_evidence": "The proposition generalizes to every arbitrary real coefficient vector and every bounded additive perturbation vector.",
-      "reasoning": "This generalization removes the defining algorithmic structure rather than presenting a declared faithful specialization or strengthening of the paper theorem."
+      "paper_evidence": "The analyzed inputs are floating-point numbers, and the theorem concerns their floating-point evaluation under the stated operation model.",
+      "translation_evidence": "All problem data are arbitrary real numbers, while the computation is represented by abstract real multiplicative counters.",
+      "reasoning": "The scalar real setting is correct, but extending the theorem from representable inputs to all real inputs is a strict generalization."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper result has ordinary nonvacuous instances away from interpolation nodes with nonzero exact interpolated value and sufficiently small unit roundoff.",
-      "translation_evidence": "For example, n=1, coeff_0=f_0=1, zero perturbations, and epsilonNum=epsilonDen=0 satisfy all translated hypotheses. Only the syntactic n=0 case is vacuous.",
-      "reasoning": "The translated proposition is substantively satisfiable and is not globally true for a trivial or contradictory reason."
+      "paper_evidence": "Distinct nodes, a nonnode evaluation point in the meaningful domain of (4.1), and data with nonzero interpolant provide ordinary nontrivial instances of Theorem 4.1.",
+      "translation_evidence": "NeBot excludes the bottom filter, N and D are nonzero, and admissible examples exist using small nonnegative u and valid multiplicative counters; the directional conclusion remains nontrivial even though u may eventually be zero.",
+      "reasoning": "The hypotheses are satisfiable and the whole proposition is not established solely by an empty run type, bottom filter, or zero exact value."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The generic algebraic inequality could serve as one ingredient after separately setting coeff_j=w_j/(x-x_j), deriving additive perturbations from the angle counters, choosing counter bounds such as gamma_(3n+4) and gamma_(3n+2), and expanding in u. None of those algorithmic links is asserted, and the translation cannot supply the exact computed representation or existential sharpness."
+      "verdict": "yes",
+      "reasoning": "Specialize the all-real problem to the paper's floating-point inputs and the counter runs to those induced by the paper's operation model. The exact majorant identity and big-O remainder give the two-term bound with coefficients 3n+4 and 3n+2 plus O(u^2). The bounded direction witnesses can be instantiated as local relative errors for sufficiently small u, yielding constant-factor first-order attainability within the paper's abstract error model."
     },
     "paper_implies_translation": {
       "verdict": "no",
-      "reasoning": "The paper proves a result only for coefficients and perturbations generated by the second barycentric floating-point computation. It does not assert the translated finite inequality universally for arbitrary real coefficient, value, and additive perturbation vectors."
+      "reasoning": "The paper does not assert the theorem for arbitrary real inputs and arbitrary filter-indexed counter runs, does not state the exact nonlinear majorant or explicit rational remainder, and does not supply the specific C/3 directional lower bound. Its first-order O(u^2) bound and qualitative sharpness sentence do not imply these strengthened conclusions."
     }
   },
-  "classification": "not-faithful-different",
-  "accepted": false,
+  "classification": "faithful-stronger",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "algorithm-and-numerical-model",
-      "paper_evidence": "Formula (4.1) is evaluated with reciprocal-product weights under the standard floating-point model, producing term counters 3n+4 and 3n+2.",
-      "translation_evidence": "The proposition uses arbitrary coefficients and exact-real additive perturbations, with no nodes, weights, floating-point operations, or computed-result linkage.",
-      "impact": "The translated theorem does not state a result about the paper's algorithm."
-    },
-    {
-      "severity": "critical",
-      "category": "conclusion-and-higher-order-treatment",
-      "paper_evidence": "The paper states two first-order terms with coefficients (3n+4)u and (3n+2)u, retains O(u^2), and asserts attainable sharpness.",
-      "translation_evidence": "The translation states a finite rational perturbation bound with arbitrary epsilonNum and epsilonDen and omits both O(u^2) and sharpness.",
-      "impact": "The principal conclusion is replaced by a related but logically different perturbation lemma."
+      "severity": "major",
+      "category": "input-domain-generalization",
+      "paper_evidence": "The paper assumes that nodes, data, and evaluation point are floating-point numbers.",
+      "translation_evidence": "The translated proposition ranges over arbitrary real-valued problems and abstract admissible runs.",
+      "impact": "The translation covers the paper's representable instances but proves a broader result, so the reverse implication fails."
     },
     {
       "severity": "major",
-      "category": "binders-dimensions-and-indexing",
-      "paper_evidence": "The interpolation problem has n+1 entries indexed from 0 through n and binds nodes, data, an evaluation point, and barycentric weights.",
-      "translation_evidence": "The vectors have n entries indexed by Fin n, and only generic coefficients, values, perturbations, and perturbation levels are bound.",
-      "impact": "The paper's dimension convention and essential mathematical objects are not preserved."
+      "category": "higher-order-strengthening",
+      "paper_evidence": "Theorem 4.1 states only a first-order bound with an unspecified O(u^2) remainder.",
+      "translation_evidence": "The proposition gives an exact gamma-based majorant, an explicit rational remainder, and an exact eventual decomposition.",
+      "impact": "These claims imply the paper's asymptotic bound but are not consequences of the stated paper theorem alone."
     },
     {
-      "severity": "major",
-      "category": "hypotheses-and-quantifiers",
-      "paper_evidence": "Distinct nodes, floating-point inputs, the relative-error model, directly computed weights, nonzero exact output, and an existential sharpness claim are part of the result's context.",
-      "translation_evidence": "These are replaced by generic componentwise perturbation assumptions, exact-sum nonzero assumptions, and a denominator-smallness condition, with no existential quantifier.",
-      "impact": "Neither statement logically implies the other without substantial additional premises and derivations."
+      "severity": "minor",
+      "category": "sharpness-strengthening",
+      "paper_evidence": "The paper states only that some rounding errors attain the bound within an unspecified constant factor.",
+      "translation_evidence": "The proposition supplies componentwise bounded first-order directions with magnitude at least C/3.",
+      "impact": "The direction witness supports the paper's qualitative sharpness under the same abstract local-error construction, but the numerical factor and directional formulation are stronger than the source statement."
+    },
+    {
+      "severity": "note",
+      "category": "defined-domain-formalization",
+      "paper_evidence": "Formula (4.1) divides by x-x_j and the relative bound divides by p_n(x), without separately spelling out every definedness condition.",
+      "translation_evidence": "The problem structurally requires x different from every node and assumes both N and D nonzero.",
+      "impact": "These conditions make the displayed quotient and relative error formally meaningful and are consistent with the paper's operative domain."
     }
   ],
-  "rationale": "The translation correctly decodes a nonvacuous algebraic relative-error lemma for a quotient with componentwise additive numerator and denominator perturbations. Its scalar absolute-value and amplification-factor structure resembles the algebra used to derive Theorem 4.1. However, it does not translate P13-T3 itself: it changes n+1 barycentric terms into n arbitrary terms, removes nodes, reciprocal-product weights, the evaluation point, floating-point execution, error counters, operation-count constants, the O(u^2) expansion, and sharpness, while introducing a different exact rational bound and smallness hypothesis. The generic lemma may help prove part of the paper bound after several unstated specializations, but it is neither implied by nor sufficient to imply the complete paper result."
+  "rationale": "The translation preserves the proper barycentric algorithm, n+1 indexing, direct-weight operation counts, both condition-number terms, scalar relative forward error, and first-order sharpness mechanism. It nevertheless proves materially more: arbitrary real-input and filter-indexed versions, an exact nonlinear majorant with explicit remainder, and a quantified 1/3 directional sharpness bound. Those strengthened statements specialize to and imply the paper result, while the paper's stated theorem does not imply them. The appropriate classification is therefore faithful-stronger."
 }

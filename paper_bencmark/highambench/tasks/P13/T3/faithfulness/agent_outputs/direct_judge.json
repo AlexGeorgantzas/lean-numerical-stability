@@ -3,469 +3,1037 @@
   "role": "direct-judge",
   "task_id": "P13-T3",
   "paper_sha256": "9ebf8adb699f96c82ccbb153dd6ca592c64475a8bc3e0703a50cb659b012c520",
-  "dossier_sha256": "758f33d8f47f21a93300f14ff299c0f84946c8df33d3d93ee5b45a25efb25bb7",
+  "dossier_sha256": "7c97b41a31c15db0f8f051686387e38f21597bb120518cd3bb4de2e7e1595b1a",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.p13BarycentricComputed",
-      "interpretation": "This is the exact real quotient of a numerator sum whose terms are coeff i * f i + deltaNum i and a denominator sum whose terms are coeff i + deltaDen i.",
-      "effect_on_target": "It defines the quantity called computed on the left-hand side as an arbitrary additively perturbed quotient.",
-      "paper_match": "The paper's collected counter expression can be encoded by choosing coeff j = w_j/(x-x_j) and deltas equal to each term times its counter minus one. The definition itself imposes neither that choice nor the 3n+4 and 3n+2 counter provenance.",
-      "status": "fail"
+      "name": "HighamBench.P13SecondBarycentricExecution",
+      "interpretation": "A modeled execution of the proper barycentric formula at unit roundoff u, with its arithmetic-error counters exposed by D013.",
+      "effect_on_target": "The universally quantified run supplies the computed value and all counter validity obligations used by the forward bound.",
+      "paper_match": "It represents the perturbed numerator, denominator, and final quotient displayed on PDF p. 5 (printed p. 551).",
+      "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p13BarycentricValue",
-      "interpretation": "This is the quotient of the exact sum of coeff i * f i by the exact sum of coeff i.",
-      "effect_on_target": "It supplies the exact reference value and the denominator of the relative forward error.",
-      "paper_match": "After setting coeff j = w_j/(x-x_j), its algebraic form is exactly the second barycentric formula (4.1), although the target does not enforce that setting.",
+      "name": "HighamBench.P13SecondBarycentricFirstOrderSharp",
+      "interpretation": "There exist normalized weight, numerator, denominator, and quotient error directions whose first-order response is at least one third of the stated first-order coefficient.",
+      "effect_on_target": "It is the final conjunct and gives a concrete, uniform first-order sharpness assertion.",
+      "paper_match": "PDF p. 6 states constant-factor attainability without naming the factor. The Lean predicate is a compatible but strictly more precise first-order strengthening.",
       "status": "pass"
     },
     {
       "id": "D003",
-      "name": "HighamBench.p13Condition",
-      "interpretation": "This is the sum of |ell i * f i| divided by the absolute value of the sum of ell i * f i.",
-      "effect_on_target": "It supplies both the data condition quotient and, with constant-one data, the denominator-cancellation quotient.",
-      "paper_match": "Under ell j = w_j/(x-x_j), these are exactly cond(x,n,f) and cond(x,n,1) from equations (4.2)-(4.3).",
+      "name": "HighamBench.P13SecondBarycentricProblem",
+      "interpretation": "A package for an n-degree interpolation instance, whose constructor carries n+1 real nodes, n+1 data values, an evaluation point, node injectivity, and off-node evaluation.",
+      "effect_on_target": "It fixes all exact problem data used by the conditions, exact value, executions, and sharpness predicate.",
+      "paper_match": "This matches the fixed distinct nodes, data, and evaluation point of Sections 2 and 4, while explicitly restricting equation (4.1) to x different from every node.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.p13InterpolationValue",
-      "reuse_sha256": "91651a431909eb18900aed94b174f42faeaf9eb340bc7bda4e2d4e78c2f2070c",
-      "effect_on_target": "It forms every exact numerator or denominator sum used by the value, conditions, and nonzero hypotheses.",
-      "paper_match": "It matches the exact finite sums in the barycentric numerator and denominator after the intended coefficient specialization.",
+      "name": "HighamBench.p13SecondBarycentricDataCondition",
+      "interpretation": "The absolute-sum ratio for coefficients w_j/(x-x_j) multiplied by the data f_j.",
+      "effect_on_target": "It supplies conditionData in both the finite envelope and the coefficient (3n+4) conditionData.",
+      "paper_match": "It is exactly cond(x,n,f) in the rewriting before Theorem 4.1 and equations (4.2)-(4.3).",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "HighamBench.p13TermPerturbation",
-      "interpretation": "For every index, it bounds an additive perturbation delta i by epsilon times the absolute value of the original term v i.",
-      "effect_on_target": "It is the only premise connecting deltaNum and deltaDen to their unperturbed terms.",
-      "paper_match": "A paper counter can induce such a delta with epsilon = gamma_k, but this predicate records neither multiplicative counters, operation counts, unit roundoff, nor k = 3n+4 or 3n+2.",
-      "status": "fail"
+      "name": "HighamBench.p13SecondBarycentricDenominator",
+      "interpretation": "The sum of the direct barycentric coefficients w_j/(x-x_j), equivalently interpolation with constant-one data.",
+      "effect_on_target": "Its nonvanishing makes the proper barycentric quotient and conditionOne denominator defined.",
+      "paper_match": "It is the denominator of equation (4.1) and the denominator-cancellation term in equation (4.2).",
+      "status": "pass"
     },
     {
       "id": "D006",
-      "name": "DivInvMonoid.toDiv",
-      "reuse_sha256": "7d038def03b8b04afde21f875edb707b3ff548ef11d2da4fa55b6043d015b1e0",
-      "effect_on_target": "It provides the real division operation used in quotient values and bounds.",
-      "paper_match": "Ordinary real division matches the exact algebra used to express the paper's computed quotient and forward error.",
+      "name": "HighamBench.p13SecondBarycentricFiniteEnvelope",
+      "interpretation": "The exact rational envelope (gamma_p conditionData + gamma_q conditionOne)/(1-gamma_q conditionOne), with p=3n+4 and q=3n+2.",
+      "effect_on_target": "It gives the eventual finite-u upper bound whose expansion yields the paper's first-order formula.",
+      "paper_match": "The paper states the first-order expansion; this envelope follows from its exact counter representation and gamma bounds and is a strengthening, not a changed error notion.",
       "status": "pass"
     },
     {
       "id": "D007",
-      "name": "Fin",
-      "interpretation": "Fin n is the finite index type with values 0 through n-1.",
-      "effect_on_target": "All arrays and sums in the target contain n entries.",
-      "paper_match": "The paper's degree parameter n gives indices 0 through n and therefore n+1 entries. Lean can represent these by instantiating its n with the paper's n+1, but the proposition never states this offset.",
-      "status": "fail"
+      "name": "HighamBench.p13SecondBarycentricFirstOrderCoefficient",
+      "interpretation": "The real number (3n+4) conditionData + (3n+2) conditionOne.",
+      "effect_on_target": "It is the coefficient multiplying u in the asymptotic decomposition and the benchmark for sharpness.",
+      "paper_match": "It exactly matches equation (4.3).",
+      "status": "pass"
     },
     {
       "id": "D008",
-      "name": "HAdd.hAdd",
-      "interpretation": "This dispatches addition through the selected heterogeneous-addition instance, which here is ordinary real addition.",
-      "effect_on_target": "It adds perturbations to terms and adds the two condition contributions.",
-      "paper_match": "These are the usual real additions occurring in the exact perturbation expression and error bound.",
+      "name": "HighamBench.p13SecondBarycentricForwardRemainder",
+      "interpretation": "An explicit rational expression equal to the finite envelope minus u times its first-order coefficient and containing an overall u^2 factor.",
+      "effect_on_target": "The target identifies this exact remainder and proves it is O(u^2) along the supplied filter.",
+      "paper_match": "It faithfully makes the paper's unexpanded O(u^2) term quantitative for fixed n and conditions.",
       "status": "pass"
     },
     {
       "id": "D009",
-      "name": "HDiv.hDiv",
-      "reuse_sha256": "95bbeabfe5a449f2ba09086bbe1d6364b401db913c8278859fe06ad567803d42",
-      "effect_on_target": "It dispatches all displayed quotients to real division.",
-      "paper_match": "The resulting operation is the ordinary division used by the paper's scalar formulas.",
+      "name": "HighamBench.p13SecondBarycentricNumerator",
+      "interpretation": "The exact sum of w_j f_j/(x-x_j).",
+      "effect_on_target": "Its nonvanishing ensures the exact quotient and relative forward error have a nonzero numerator value.",
+      "paper_match": "It is the numerator in equation (4.1) and in the first cancellation ratio of equation (4.2).",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "HMul.hMul",
-      "reuse_sha256": "604a960639af0efce7efa7efc6f134fe051b3c5dc1c48c78ffaa9ce8b9649dcc",
-      "effect_on_target": "It dispatches products of coefficients, data, perturbation bounds, and conditions to real multiplication.",
-      "paper_match": "The arithmetic operation itself matches the paper's real products.",
+      "name": "HighamBench.p13SecondBarycentricOneCondition",
+      "interpretation": "The absolute-sum condition ratio for the coefficients w_j/(x-x_j) with all data equal to one.",
+      "effect_on_target": "It supplies conditionOne and hence the (3n+2) denominator-cancellation contribution.",
+      "paper_match": "It is exactly cond(x,n,1), where 1 is the constant-one function on PDF p. 6.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "HSub.hSub",
-      "interpretation": "This dispatches subtraction through the selected heterogeneous-subtraction instance, here ordinary real subtraction.",
-      "effect_on_target": "It forms computed-minus-exact error and the denominator 1 - epsilonDen * condition.",
-      "paper_match": "Ordinary subtraction matches the scalar error difference; the rational denominator is Lean's finite perturbation bound rather than a displayed paper expression.",
+      "name": "HighamBench.p13SecondBarycentricRelativeError",
+      "interpretation": "The scalar quantity abs(exact-computed)/abs(exact).",
+      "effect_on_target": "It is the left side of the target's eventual inequality.",
+      "paper_match": "It exactly matches the relative forward error in Theorem 4.1.",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "LE.le",
-      "reuse_sha256": "8fc86d4b46d47573c7084325585f71d53c2195bd6ef436faef4ed7aa61e99ee1",
-      "effect_on_target": "It expresses nonnegativity, termwise perturbation bounds, and the final non-strict error inequality.",
-      "paper_match": "The standard real non-strict order agrees with the paper's bound direction.",
+      "name": "HighamBench.P13FirstOrderCounterDirection",
+      "interpretation": "A length-k vector of normalized local first-order error directions, each having absolute value at most one.",
+      "effect_on_target": "These vectors parameterize the witnesses in the sharpness predicate.",
+      "paper_match": "They are the first-order normalization of the paper's local errors satisfying abs(delta)<=u.",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "LT.lt",
-      "interpretation": "This projects the selected strict-order relation, here the ordinary strict order on real numbers.",
-      "effect_on_target": "It states the smallness premise epsilonDen * p13Condition coeff 1 < 1.",
-      "paper_match": "The order meaning is standard, although this exact smallness hypothesis is not printed in Theorem 4.1.",
+      "name": "HighamBench.P13SecondBarycentricExecution.mk",
+      "interpretation": "The execution constructor requires u>=0; weight, numerator-evaluation, denominator-evaluation, quotient, and collected counters of the stated lengths; all gamma-validity conditions; and the two counter-product identities.",
+      "effect_on_target": "It restricts runs to the exact counter execution analyzed in Sections 3-4 and supplies enough structure to bound the computed quotient.",
+      "paper_match": "Lengths 2n, n+3, n+2, 1, 3n+4, and 3n+2 and the collection identities match the displays on PDF pp. 3-5.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "Nat",
-      "interpretation": "Nat is the type of nonnegative integers.",
-      "effect_on_target": "It parameterizes the cardinality of the finite coefficient and data arrays.",
-      "paper_match": "A natural-number parameter is appropriate for interpolation degree or cardinality, with the unresolved degree-versus-cardinality offset arising through Fin n.",
-      "status": "pass"
+      "name": "HighamBench.P13SecondBarycentricFirstOrderSharp._proof_1",
+      "interpretation": "Typeclass evidence that the natural numeral 3 is at least two, allowing its cast in the factor 1/3.",
+      "effect_on_target": "It has no independent mathematical effect beyond elaborating the concrete sharpness constant.",
+      "paper_match": "This is Lean numeral infrastructure; the paper does not discuss such typeclass evidence.",
+      "status": "not-applicable"
     },
     {
       "id": "D015",
-      "name": "Ne",
-      "reuse_sha256": "b379281ac30d72322e40b97d7100066d7c3c750cf0a953ab0d40f3f1f1d1ec74",
-      "effect_on_target": "It requires both the exact numerator sum and exact denominator sum to be nonzero.",
-      "paper_match": "The numerator condition corresponds to p_n(x) nonzero; denominator nonvanishing is implicit for a well-defined barycentric quotient away from nodes.",
+      "name": "HighamBench.P13SecondBarycentricProblem.data",
+      "interpretation": "The projection returning the n+1 real interpolation data values.",
+      "effect_on_target": "It feeds the exact numerator, data condition, computed numerator, and first-order response.",
+      "paper_match": "It corresponds to f_j for j=0:n.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "OfNat.ofNat",
-      "reuse_sha256": "217c6c364afad38f28c563d138bedd706cd225dea80409f4bcf8f9a16838ef56",
-      "effect_on_target": "It supplies typed real occurrences of zero and one.",
-      "paper_match": "The literals have their ordinary real meanings, including the constant-one data used in cond(x,n,1).",
+      "name": "HighamBench.P13SecondBarycentricProblem.mk",
+      "interpretation": "The constructor accepts real nodes and data indexed by Fin(n+1), a real x, injective nodes, and proofs that x is off every node.",
+      "effect_on_target": "It enforces distinct nodes and defined termwise divisions in the proper barycentric formula.",
+      "paper_match": "Distinctness matches Section 2; the off-node restriction makes equation (4.1) defined. Using arbitrary reals broadens the paper's floating-representable input domain within the same ideal error model.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "One.toOfNat1",
-      "reuse_sha256": "aa2a375ccf272e189f88e088a0cd0f3800f44033349f108f9a37c636524dc1ca",
-      "effect_on_target": "It constructs the real literal one used for constant data and the smallness denominator.",
-      "paper_match": "It correctly represents the paper's constant-one function and scalar one.",
+      "name": "HighamBench.P13SecondBarycentricProblem.nodes",
+      "interpretation": "The projection returning the n+1 real nodes.",
+      "effect_on_target": "It determines direct weights and all barycentric coefficients.",
+      "paper_match": "It corresponds to x_0 through x_n.",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "Real",
-      "reuse_sha256": "a8b1d6c8a236c9000a59f2eddfc4bb9eafa545405b21f06782cfbb22d6531335",
-      "effect_on_target": "All coefficients, data, perturbations, tolerances, sums, and bounds are real.",
-      "paper_match": "This agrees with the paper's real floating-point interpolation setting.",
+      "name": "HighamBench.P13SecondBarycentricProblem.x",
+      "interpretation": "The projection returning the real evaluation point.",
+      "effect_on_target": "It appears in every denominator x-x_j.",
+      "paper_match": "It is the fixed evaluation point x used throughout the cited result.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "Real.instAdd",
-      "interpretation": "This supplies ordinary addition on real numbers.",
-      "effect_on_target": "It evaluates every term addition and the addition of the two error contributions.",
-      "paper_match": "It has the intended exact real-arithmetic meaning.",
+      "name": "HighamBench.gamma",
+      "interpretation": "gamma(u,k)=k*u/(1-k*u), with k cast to the reals.",
+      "effect_on_target": "It gives the finite counter-error factors in the envelope.",
+      "paper_match": "It exactly matches gamma_k on PDF p. 3 (printed p. 549).",
       "status": "pass"
     },
     {
       "id": "D020",
-      "name": "Real.instAddGroup",
-      "reuse_sha256": "f2e72b4b339dff0a5dbbcbc0ccd3af8d122f0604199b14886775db5e57dc5221",
-      "effect_on_target": "It supports real subtraction, negation, and absolute value.",
-      "paper_match": "These operations match the paper's scalar real error expressions.",
+      "name": "HighamBench.p13Condition",
+      "interpretation": "For coefficient vector ell and data f, it is sum_i abs(ell_i*f_i)/abs(sum_i ell_i*f_i).",
+      "effect_on_target": "It defines both condition numbers used by the theorem.",
+      "paper_match": "It is the componentwise condition-number formula in Lemma 2.2 and its barycentric rewriting.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "Real.instDivInvMonoid",
-      "reuse_sha256": "7666c0953a2efc300f90fdd768e88421404d01fba675a21f058f5fc0f8a66dc7",
-      "effect_on_target": "It supplies exact real inversion and division.",
-      "paper_match": "It matches the exact real quotients used to state the paper's algebraic model, but does not itself model rounded division.",
+      "name": "HighamBench.p13DenominatorCounterLength",
+      "interpretation": "The natural-number function q(n)=3n+2.",
+      "effect_on_target": "It fixes the denominator gamma factor and first-order coefficient.",
+      "paper_match": "It matches the collected denominator counter in the display before Theorem 4.1.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "Real.instLE",
-      "reuse_sha256": "ad12fb8bfe185a50548cde2b1fe4430aad1d1eb5e7fe6cf41615c4a56a579fb8",
-      "effect_on_target": "It makes all non-strict comparisons the standard real order.",
-      "paper_match": "This is the intended order for the paper's inequalities.",
+      "name": "HighamBench.p13DenominatorEvaluationCounterLength",
+      "interpretation": "The natural-number function n+2.",
+      "effect_on_target": "It counts each denominator term's subtraction, division, and summation errors after weight computation is separated.",
+      "paper_match": "It matches the uncollected denominator counter on PDF p. 5.",
       "status": "pass"
     },
     {
       "id": "D023",
-      "name": "Real.instLT",
-      "interpretation": "This supplies the standard strict order on real numbers.",
-      "effect_on_target": "It interprets the denominator-smallness premise.",
-      "paper_match": "The relation itself is standard, while the particular premise is an extra Lean condition.",
+      "name": "HighamBench.p13DirectBarycentricCoefficient",
+      "interpretation": "The coefficient w_j/(x-x_j), using the direct weight from D039.",
+      "effect_on_target": "It is the common exact coefficient in numerator, denominator, conditions, computed value, and sharpness response.",
+      "paper_match": "It is exactly the coefficient appearing in equation (4.1).",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "Real.instMul",
-      "reuse_sha256": "9226216e945c56e1f162c24801f8900aba95bcadd64b323b1fac2328074c418f",
-      "effect_on_target": "It supplies every real multiplication in terms, conditions, and perturbation bounds.",
-      "paper_match": "It is ordinary real multiplication as used in the paper's formulas.",
+      "name": "HighamBench.p13InterpolationValue",
+      "interpretation": "The finite sum of componentwise products ell_i*f_i.",
+      "effect_on_target": "It constructs exact numerator and denominator sums and condition denominators.",
+      "paper_match": "It matches the finite sums indexed from 0 through n.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "Real.instOne",
-      "reuse_sha256": "6fb8d92f2871fe72b593b6cb306abc1722cf47e304fd579e39aef2a8bfa5ff6b",
-      "effect_on_target": "It supplies real one for constant data and rational-bound denominators.",
-      "paper_match": "It correctly represents the constant-one data in equation (4.3).",
+      "name": "HighamBench.p13NumeratorCounterLength",
+      "interpretation": "The natural-number function p(n)=3n+4.",
+      "effect_on_target": "It fixes the numerator gamma factor and first-order coefficient.",
+      "paper_match": "It matches the collected numerator counter and coefficient in Theorem 4.1.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "Real.instSub",
-      "interpretation": "This defines real subtraction as addition of the additive inverse.",
-      "effect_on_target": "It forms the forward-error difference and 1 minus the denominator perturbation measure.",
-      "paper_match": "Its scalar meaning is correct; the second use belongs to Lean's alternative finite bound.",
+      "name": "HighamBench.p13NumeratorEvaluationCounterLength",
+      "interpretation": "The natural-number function n+3.",
+      "effect_on_target": "It records the numerator term's subtraction, division, multiplication by f_j, and summation errors apart from weight and final quotient errors.",
+      "paper_match": "It matches the uncollected numerator counter on PDF p. 5.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "Real.instZero",
-      "reuse_sha256": "1e61978cbbd3b176de599693b6db2ada4fe690d45638f7c75a3bd4b054dd6004",
-      "effect_on_target": "It supplies zero for nonnegativity and nonzero hypotheses.",
-      "paper_match": "It has the ordinary real-zero meaning required by the relative error conditions.",
+      "name": "HighamBench.p13SecondBarycentricComputed",
+      "interpretation": "The quotient of perturbed numerator and denominator sums, multiplied by the final quotient counter.",
+      "effect_on_target": "It is the computed value used in the relative error.",
+      "paper_match": "It reproduces the first perturbed expression preceding Theorem 4.1.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "Real.lattice",
-      "reuse_sha256": "a9ded547c0f64bfdaedff72c03dbb5e290c4f75262960fff2d5fd356320f4732",
-      "effect_on_target": "It supplies the real order structure used to define absolute value.",
-      "paper_match": "It yields the usual scalar absolute values appearing throughout Theorem 4.1.",
+      "name": "HighamBench.p13SecondBarycentricExact",
+      "interpretation": "The exact numerator divided by the exact denominator.",
+      "effect_on_target": "It supplies the reference value in the relative forward error.",
+      "paper_match": "It is equation (4.1), which equals the exact interpolant away from the nodes.",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "Zero.toOfNat0",
-      "reuse_sha256": "6f4d693d3279d6348a8beabfa01ca7ac2e6db5ec0904d145c0a3d72f15281a3a",
-      "effect_on_target": "It constructs typed real zero.",
-      "paper_match": "It has the intended ordinary meaning.",
+      "name": "HighamBench.p13SecondBarycentricFirstOrderResponse",
+      "interpretation": "The absolute first-order relative response: perturbed numerator response divided by N, minus denominator response divided by D, plus final quotient response.",
+      "effect_on_target": "It measures how strongly a chosen normalized local-error direction realizes the first-order upper-bound coefficient.",
+      "paper_match": "It is the derivative of the exact counter expression on PDF p. 5. The paper does not display this derivative but its sharpness sentence concerns the same first-order rounding effects.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "abs",
-      "reuse_sha256": "5600a951864c72f91f5551c89acab72b0c37a8a9e178e5335c0917eca73e1e9a",
-      "effect_on_target": "It measures scalar forward error, exact values, perturbations, and condition-number summands.",
-      "paper_match": "It is precisely the usual real absolute value used in the paper's scalar relative error and condition quotients.",
+      "name": "HighamBench.p13WeightCounterLength",
+      "interpretation": "The natural-number function 2n.",
+      "effect_on_target": "It fixes the direct-weight counter length in every execution and sharpness direction.",
+      "paper_match": "It exactly matches Lemma 3.1.",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "instHAdd",
-      "interpretation": "This converts homogeneous real addition into the HAdd operation used by elaboration.",
-      "effect_on_target": "It ensures every HAdd occurrence is ordinary real addition.",
-      "paper_match": "It introduces no semantic change from the paper's exact scalar addition.",
+      "name": "HighamBench.GammaValid",
+      "interpretation": "The strict smallness condition k*u<1.",
+      "effect_on_target": "Execution constructors require it for every local and collected counter length.",
+      "paper_match": "It is the paper's stated condition ku<1 for gamma_k.",
       "status": "pass"
     },
     {
       "id": "D032",
-      "name": "instHDiv",
-      "reuse_sha256": "3b34ef37f7beb75ebd0cda4c2464144e16d11cdad3fa2c07eacd02e6277977fc",
-      "effect_on_target": "It converts real division into the homogeneous HDiv operation used in the elaborated type.",
-      "paper_match": "It preserves ordinary real division semantics.",
+      "name": "HighamBench.P13FirstOrderCounterDirection.mk",
+      "interpretation": "The direction constructor packages local real directions bounded in absolute value by one.",
+      "effect_on_target": "It ensures sharpness witnesses are normalized versions of admissible local relative errors.",
+      "paper_match": "Scaling such a direction by u gives local errors satisfying the paper's abs(delta)<=u condition.",
       "status": "pass"
     },
     {
       "id": "D033",
-      "name": "instHMul",
-      "reuse_sha256": "c527b442abb61196db8a735ab550d0c90390f8e2c1b3f3936c52414a4c6c9578",
-      "effect_on_target": "It converts real multiplication into the homogeneous HMul operation used in the elaborated type.",
-      "paper_match": "It preserves ordinary real multiplication semantics.",
+      "name": "HighamBench.P13RelativeErrorCounter",
+      "interpretation": "A length-k relative-error-counter object at roundoff u.",
+      "effect_on_target": "All modeled execution perturbations use this type.",
+      "paper_match": "It formalizes the paper's angle-bracket counter notation.",
       "status": "pass"
     },
     {
       "id": "D034",
-      "name": "instHSub",
-      "interpretation": "This converts homogeneous real subtraction into the HSub operation used by elaboration.",
-      "effect_on_target": "It ensures every HSub occurrence is ordinary real subtraction.",
-      "paper_match": "It introduces no semantic change from exact real subtraction.",
+      "name": "HighamBench.P13RelativeErrorCounter.value",
+      "interpretation": "The real multiplicative value represented by a counter.",
+      "effect_on_target": "Computed expressions and counter-collection identities use this projection.",
+      "paper_match": "It corresponds to the numerical value of the product angle(k).",
       "status": "pass"
     },
     {
       "id": "D035",
-      "name": "Fin.fintype",
-      "interpretation": "This provides a finite enumeration of every member of Fin n exactly once.",
-      "effect_on_target": "It permits all coefficient, data, and perturbation arrays to be summed over their complete index type.",
-      "paper_match": "It models a finite complete index range, subject to the target's unstated n-versus-n+1 offset.",
+      "name": "HighamBench.P13SecondBarycentricExecution.denominatorEvaluationCounter",
+      "interpretation": "The per-index counter of length n+2 for denominator evaluation after separating weight computation.",
+      "effect_on_target": "It perturbs each denominator summand in the computed quotient.",
+      "paper_match": "It matches angle(n+2)_j in the uncollected expression.",
       "status": "pass"
     },
     {
       "id": "D036",
-      "name": "Finset.sum",
-      "reuse_sha256": "2c83cd50974a10e9bfd9b166e086a82ede265eb6fd123d760d924382ca48b01b",
-      "effect_on_target": "It forms exact finite real sums of all numerator, denominator, and condition terms.",
-      "paper_match": "Exact finite summation matches the sums in equations (4.1)-(4.3) and the counter representation.",
+      "name": "HighamBench.P13SecondBarycentricExecution.numeratorEvaluationCounter",
+      "interpretation": "The per-index counter of length n+3 for numerator evaluation after separating weight computation.",
+      "effect_on_target": "It perturbs each numerator summand in the computed quotient.",
+      "paper_match": "It matches angle(n+3)_j in the uncollected expression.",
       "status": "pass"
     },
     {
       "id": "D037",
-      "name": "Finset.univ",
-      "interpretation": "This is the finite set containing every element of the ambient finite type.",
-      "effect_on_target": "It makes each sum range over every member of Fin n.",
-      "paper_match": "It provides the full interpolation index range after a cardinality mapping, but does not state the paper's 0-through-degree convention.",
+      "name": "HighamBench.P13SecondBarycentricExecution.quotientCounter",
+      "interpretation": "The length-one counter for the final division.",
+      "effect_on_target": "It multiplies the computed quotient and is collected into each numerator counter.",
+      "paper_match": "It matches the outer angle(1) on PDF p. 5.",
       "status": "pass"
     },
     {
       "id": "D038",
-      "name": "Real.instAddCommMonoid",
-      "reuse_sha256": "61817d1b06dbd530df02033695349dedbd248eef070112791c2f7bb2cebe065a",
-      "effect_on_target": "It gives Finset.sum associative and commutative real addition with zero.",
-      "paper_match": "This is appropriate for the paper's exact mathematical sums; it does not encode floating-point summation order or errors.",
+      "name": "HighamBench.P13SecondBarycentricExecution.weightCounter",
+      "interpretation": "The per-index length-2n counter for direct weight computation.",
+      "effect_on_target": "It multiplies both numerator and denominator summands.",
+      "paper_match": "It matches angle(2n)_j from Lemma 3.1.",
       "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "HighamBench.p13DirectBarycentricWeight",
+      "interpretation": "The inverse of the product over all indices, with the self-index factor replaced by one, hence 1/product_{k!=j}(x_j-x_k).",
+      "effect_on_target": "It defines every exact barycentric coefficient.",
+      "paper_match": "It exactly matches equation (3.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "HighamBench.p13FirstOrderCounterDirectionValue",
+      "interpretation": "The sum of a counter direction's k local components.",
+      "effect_on_target": "It is the derivative at u=0 of a product of k relative-error factors along that direction.",
+      "paper_match": "This is the first-order counterpart of collecting the paper's k local errors.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "HighamBench.P13FirstOrderCounterDirection.localDirection",
+      "interpretation": "The projection returning an individual normalized local-error direction.",
+      "effect_on_target": "Its entries are summed by D040 and bounded by the constructor.",
+      "paper_match": "It corresponds to delta_i/u at first order.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "HighamBench.P13RelativeErrorCounter.mk",
+      "interpretation": "A counter consists of local errors bounded by u, Boolean choices between (1+delta_i) and its reciprocal, an exact product identity, and the conditional gamma_k bound.",
+      "effect_on_target": "It gives the complete numerical semantics of every execution counter.",
+      "paper_match": "It exactly formalizes products (1+delta_i)^{rho_i}, rho_i in {+1,-1}, abs(delta_i)<=u, and the gamma bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "And",
+      "interpretation": "Logical conjunction requiring both component propositions.",
+      "effect_on_target": "It requires the finite bound, exact expansion, Big-O remainder, and sharpness claim simultaneously.",
+      "paper_match": "The cited result contains the forward bound, O(u^2) qualification, and sharpness assertion; the extra exact expansion supports them.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "Asymptotics.IsBigO",
+      "interpretation": "The norm of one function is eventually bounded by a constant multiple of the norm of another along a filter.",
+      "effect_on_target": "It gives a rigorous meaning to the remainder being O(u^2).",
+      "paper_match": "It is the standard formal semantics of the O(u^2) term in equations (4.2)-(4.3).",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "It states exact counter-product identities and the exact envelope decomposition.",
+      "paper_match": "These are ordinary mathematical equalities consistent with the paper's displayed identities.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "Filter",
+      "interpretation": "A generalized notion of eventual behavior and convergence on an index type.",
+      "effect_on_target": "It parameterizes the asymptotic regime in which u tends to zero.",
+      "paper_match": "The paper's O(u^2) notation implicitly uses a limit u to zero; filters make that regime explicit.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "Filter.Eventually",
+      "interpretation": "A predicate holds on a set belonging to the specified filter.",
+      "effect_on_target": "Both the forward inequality and envelope identity are required for sufficiently small u along l.",
+      "paper_match": "This is the formal reading of an asymptotic statement valid near u=0.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "Filter.NeBot",
+      "interpretation": "The filter is nondegenerate rather than the bottom filter where every proposition is eventual.",
+      "effect_on_target": "It prevents the asymptotic conclusions from being vacuous solely because of the filter.",
+      "paper_match": "This is a sound formal nonvacuity condition for the paper's limit notation.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "Filter.Tendsto",
+      "interpretation": "The map u sends l into the neighborhood filter of zero.",
+      "effect_on_target": "It states that unit roundoff approaches zero in the asymptotic family.",
+      "paper_match": "It supplies the limiting regime implicit in O(u^2).",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "HAdd.hAdd",
+      "interpretation": "Overloaded addition, instantiated here as real or natural addition.",
+      "effect_on_target": "It forms n+1, counter lengths, coefficients, envelope numerators, and remainder expressions.",
+      "paper_match": "All uses reduce to the standard additions in the paper's formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "HMul.hMul",
+      "interpretation": "Overloaded multiplication, instantiated here as real or natural multiplication.",
+      "effect_on_target": "It forms products, counter lengths, and coefficient terms.",
+      "paper_match": "All uses have the standard multiplication semantics required by the cited formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "HPow.hPow",
+      "interpretation": "Overloaded exponentiation, instantiated as natural powers of real numbers.",
+      "effect_on_target": "It forms u^2 and B^2 in the explicit remainder.",
+      "paper_match": "The relevant target occurrence is the square in O(u^2).",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "LE.le",
+      "interpretation": "The non-strict order relation, instantiated on the reals.",
+      "effect_on_target": "It expresses the forward upper bound and bounded error directions.",
+      "paper_match": "It matches the non-strict inequalities in the floating-point model and Theorem 4.1.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "Monoid.toNatPow",
+      "interpretation": "The standard natural-power operation derived from a monoid.",
+      "effect_on_target": "It interprets real exponentiation by 2 in the Big-O comparison.",
+      "paper_match": "It gives the ordinary square u^2.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "Nat",
+      "interpretation": "The natural-number type.",
+      "effect_on_target": "It types n and all operation-counter lengths.",
+      "paper_match": "It matches the nonnegative integer degree n and finite operation counts.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "Ne",
+      "interpretation": "Non-equality, defined as the negation of equality.",
+      "effect_on_target": "It requires the exact numerator and denominator to be nonzero.",
+      "paper_match": "Numerator nonvanishing is equivalent to p_n(x)!=0 when the denominator is nonzero; denominator nonvanishing makes equation (4.1) defined.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "OfNat.ofNat",
+      "interpretation": "Interpretation of natural-number literals in a target type.",
+      "effect_on_target": "It supplies literals such as 0, 1, 2, 3, and 4 throughout the statement and definitions.",
+      "paper_match": "This is elaboration infrastructure and adds no paper-level condition.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D058",
+      "name": "PseudoMetricSpace.toUniformSpace",
+      "interpretation": "The uniform structure induced by a pseudometric space.",
+      "effect_on_target": "It participates in constructing the standard topology used for real convergence.",
+      "paper_match": "This is topology infrastructure, not an independent numerical claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D059",
+      "name": "Real",
+      "interpretation": "The mathematical real-number type.",
+      "effect_on_target": "All nodes, data, roundoff parameters, counters, conditions, and errors are real-valued.",
+      "paper_match": "The paper's algebra is real-valued. Lean omits a floating-representability subtype, thereby extending the ideal relative-error model to arbitrary real inputs while retaining the paper's float-input cases.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary addition on real numbers.",
+      "effect_on_target": "It interprets real sums in coefficients, envelopes, and responses.",
+      "paper_match": "It has the standard arithmetic meaning used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "Real.instLE",
+      "interpretation": "The ordinary non-strict order on real numbers.",
+      "effect_on_target": "It interprets all real upper bounds.",
+      "paper_match": "It matches the paper's real inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "Real.instMonoid",
+      "interpretation": "The multiplicative monoid structure on the reals.",
+      "effect_on_target": "It provides natural powers such as u^2.",
+      "paper_match": "This is standard real algebra with no changed paper semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary multiplication on real numbers.",
+      "effect_on_target": "It interprets all real products.",
+      "paper_match": "It matches the paper's scalar products.",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "Real.instZero",
+      "interpretation": "The real number zero.",
+      "effect_on_target": "It appears in convergence, nonvanishing, and nonnegative-roundoff conditions.",
+      "paper_match": "It has the standard meaning required by the source.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "Real.norm",
+      "interpretation": "The norm on reals defined by absolute value.",
+      "effect_on_target": "It makes IsBigO compare abs(remainder) against abs(u^2).",
+      "paper_match": "The paper uses scalar absolute value, so this norm choice is exact.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "Real.pseudoMetricSpace",
+      "interpretation": "The standard real metric induced by abs(x-y).",
+      "effect_on_target": "It supplies the topology in which u tends to zero.",
+      "paper_match": "It gives the ordinary real limit intended by the asymptotic notation.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "UniformSpace.toTopologicalSpace",
+      "interpretation": "The topology induced by a uniform space.",
+      "effect_on_target": "It completes the standard topology used by nhds 0.",
+      "paper_match": "This is formal topology infrastructure without an independent paper-level effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D068",
+      "name": "Zero.toOfNat0",
+      "interpretation": "The canonical interpretation of numeral 0 from a Zero instance.",
+      "effect_on_target": "It elaborates real and natural zero literals.",
+      "paper_match": "This is typeclass plumbing and adds no semantic condition.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D069",
+      "name": "instHAdd",
+      "interpretation": "The homogeneous overloaded-addition instance induced by ordinary addition.",
+      "effect_on_target": "It routes HAdd expressions to real or natural addition.",
+      "paper_match": "This is elaboration plumbing for standard arithmetic.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D070",
+      "name": "instHMul",
+      "interpretation": "The homogeneous overloaded-multiplication instance induced by ordinary multiplication.",
+      "effect_on_target": "It routes HMul expressions to real or natural multiplication.",
+      "paper_match": "This is elaboration plumbing for standard arithmetic.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D071",
+      "name": "instHPow",
+      "interpretation": "The homogeneous overloaded-power instance induced by a Pow operation.",
+      "effect_on_target": "It routes the displayed squares to ordinary natural exponentiation.",
+      "paper_match": "This is elaboration plumbing for u^2.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D072",
+      "name": "instOfNatNat",
+      "interpretation": "The canonical interpretation of a natural numeral as itself.",
+      "effect_on_target": "It elaborates natural operation counts and exponents.",
+      "paper_match": "This is numeral infrastructure with no independent source claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D073",
+      "name": "nhds",
+      "interpretation": "The neighborhood filter of a point in a topological space.",
+      "effect_on_target": "nhds 0 specifies convergence of u to real zero.",
+      "paper_match": "It formalizes the limit underlying O(u^2).",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "The division operation supplied by a division-inverse monoid.",
+      "effect_on_target": "It provides real division for ratios, gamma values, and the exact quotient.",
+      "paper_match": "It reduces to ordinary real division used in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "Exists",
+      "interpretation": "Existential quantification.",
+      "effect_on_target": "It quantifies the four families of sharpness directions.",
+      "paper_match": "It matches the paper's existential statement that suitable rounding errors attain the bound within a constant factor.",
+      "status": "pass"
+    },
+    {
+      "id": "D076",
+      "name": "Fin",
+      "interpretation": "The finite index type containing exactly the naturals below its size.",
+      "effect_on_target": "Fin(n+1) represents indices j=0,...,n; Fin k represents local errors in a length-k counter.",
+      "paper_match": "It exactly realizes the paper's finite index sets and operation counts.",
+      "status": "pass"
+    },
+    {
+      "id": "D077",
+      "name": "HDiv.hDiv",
+      "interpretation": "Overloaded division, instantiated here as real division.",
+      "effect_on_target": "It forms barycentric coefficients, quotients, condition ratios, gamma values, and the envelope.",
+      "paper_match": "It has the ordinary division semantics of equations (3.2), (4.1), and (4.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "HSub.hSub",
+      "interpretation": "Overloaded subtraction, instantiated here as real subtraction.",
+      "effect_on_target": "It forms node differences, x-x_j, errors, and envelope denominators.",
+      "paper_match": "It has the standard subtraction semantics used throughout the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "Nat.cast",
+      "interpretation": "The canonical cast of natural operation counts into the reals.",
+      "effect_on_target": "It turns 3n+4 and 3n+2 into scalar coefficients and forms k*u in gamma.",
+      "paper_match": "It faithfully interprets the paper's integer coefficients as real multipliers.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "One.toOfNat1",
+      "interpretation": "The canonical interpretation of numeral 1 from a One instance.",
+      "effect_on_target": "It supplies real one in constant data, products, counter factors, and denominators.",
+      "paper_match": "In conditionOne it represents the paper's constant-one function.",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "Real.instAddGroup",
+      "interpretation": "The additive-group structure on the reals.",
+      "effect_on_target": "It supports subtraction and absolute value.",
+      "paper_match": "This is standard real-algebra infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D082",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The real multiplicative structure with inversion and division.",
+      "effect_on_target": "It gives ordinary real quotients and reciprocals.",
+      "paper_match": "It matches the source's scalar divisions and reciprocal error factors.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "Real.instNatCast",
+      "interpretation": "The natural-number cast into the reals.",
+      "effect_on_target": "It interprets counter lengths as real coefficients.",
+      "paper_match": "It gives the intended coefficients 3n+4 and 3n+2.",
+      "status": "pass"
+    },
+    {
+      "id": "D084",
+      "name": "Real.instOne",
+      "interpretation": "The real multiplicative identity one.",
+      "effect_on_target": "It appears in constant-one data, gamma denominators, and counter products.",
+      "paper_match": "It has the source's ordinary scalar-one meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction.",
+      "effect_on_target": "It interprets exact-minus-computed, node differences, and rational denominators.",
+      "paper_match": "It matches the paper's real subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "Real.lattice",
+      "interpretation": "The lattice order structure on the reals.",
+      "effect_on_target": "It supports the definition of absolute value.",
+      "paper_match": "This is implementation infrastructure for scalar absolute value.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D087",
+      "name": "abs",
+      "interpretation": "Real absolute value, max(a,-a).",
+      "effect_on_target": "It defines relative forward error, condition ratios, local-error bounds, and sharpness response.",
+      "paper_match": "Every relevant occurrence matches the scalar absolute values in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "instAddNat",
+      "interpretation": "Ordinary addition on natural numbers.",
+      "effect_on_target": "It constructs n+1 and the offsets in all counter lengths.",
+      "paper_match": "It realizes the paper's n+1 indexing and count offsets.",
+      "status": "pass"
+    },
+    {
+      "id": "D089",
+      "name": "instHDiv",
+      "interpretation": "The homogeneous overloaded-division instance induced by Div.",
+      "effect_on_target": "It routes HDiv expressions to ordinary real division.",
+      "paper_match": "This is elaboration plumbing for standard division.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D090",
+      "name": "instHSub",
+      "interpretation": "The homogeneous overloaded-subtraction instance induced by Sub.",
+      "effect_on_target": "It routes HSub expressions to ordinary real subtraction.",
+      "paper_match": "This is elaboration plumbing for standard subtraction.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D091",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "A numeral instance casting a natural n>=2 into a type with NatCast.",
+      "effect_on_target": "It elaborates the real numeral 3 used in the explicit sharpness factor 1/3.",
+      "paper_match": "It supports Lean's concrete strengthening; the paper itself leaves the constant factor unspecified.",
+      "status": "pass"
+    },
+    {
+      "id": "D092",
+      "name": "Fin.fintype",
+      "interpretation": "The finite enumeration structure for Fin n.",
+      "effect_on_target": "It makes sums and products range over every element of each finite index type.",
+      "paper_match": "It implements the finite ranges j=0:n and i=1:k.",
+      "status": "pass"
+    },
+    {
+      "id": "D093",
+      "name": "Finset.sum",
+      "interpretation": "The commutative finite sum of a function over a finite set.",
+      "effect_on_target": "It forms interpolation sums, condition numerators, computed sums, and first-order responses.",
+      "paper_match": "It matches the paper's finite summations; commutativity is compatible with the real sums analyzed for any ordering.",
+      "status": "pass"
+    },
+    {
+      "id": "D094",
+      "name": "Finset.univ",
+      "interpretation": "The finite set of all elements of a finite type.",
+      "effect_on_target": "It ensures every Fin(n+1) interpolation index and every Fin k local-error index is included exactly once.",
+      "paper_match": "It implements the complete index ranges in the source.",
+      "status": "pass"
+    },
+    {
+      "id": "D095",
+      "name": "Function.Injective",
+      "interpretation": "A function is injective when equal outputs imply equal inputs.",
+      "effect_on_target": "Applied to nodes, it enforces pairwise distinct interpolation points.",
+      "paper_match": "It exactly matches the distinct-node hypothesis in Section 2.",
+      "status": "pass"
+    },
+    {
+      "id": "D096",
+      "name": "Nat.AtLeastTwo",
+      "interpretation": "A proposition/typeclass asserting a natural numeral is at least two.",
+      "effect_on_target": "It is used only to elaborate the numeral 3 in the sharpness constant.",
+      "paper_match": "It is numeral infrastructure without an independent numerical-analysis meaning.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D097",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative-monoid structure on reals.",
+      "effect_on_target": "It supplies the algebra required by finite real sums.",
+      "paper_match": "This is standard algebraic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D098",
+      "name": "instMulNat",
+      "interpretation": "Ordinary multiplication on natural numbers.",
+      "effect_on_target": "It forms 2n and 3n in the operation-counter lengths.",
+      "paper_match": "It exactly realizes the source's linear operation counts.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "Finset.prod",
+      "interpretation": "The commutative finite product of a function over a finite set.",
+      "effect_on_target": "It constructs direct weights and multiplicative relative-error counters.",
+      "paper_match": "It matches the products in equation (3.2) and equation (3.3).",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "Inv.inv",
+      "interpretation": "Multiplicative inversion.",
+      "effect_on_target": "It defines direct weights and reciprocal (1+delta)^{-1} counter factors.",
+      "paper_match": "It matches the inverse weight product and exponent rho_i=-1 cases.",
+      "status": "pass"
+    },
+    {
+      "id": "D101",
+      "name": "LT.lt",
+      "interpretation": "The strict-order relation, instantiated on reals.",
+      "effect_on_target": "It expresses k*u<1 in GammaValid.",
+      "paper_match": "It exactly matches the strict gamma-validity assumption on PDF p. 3.",
+      "status": "pass"
+    },
+    {
+      "id": "D102",
+      "name": "Real.instCommMonoid",
+      "interpretation": "The commutative multiplicative-monoid structure on reals.",
+      "effect_on_target": "It supports finite products of node differences and error factors.",
+      "paper_match": "This is standard real-product infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D103",
+      "name": "Real.instInv",
+      "interpretation": "Ordinary multiplicative inversion on reals, with Lean's totalized value at zero.",
+      "effect_on_target": "It defines real reciprocals in weights and counters; problem and validity hypotheses keep the paper-relevant divisions defined.",
+      "paper_match": "On the nonzero denominators relevant to the theorem it matches ordinary reciprocal division.",
+      "status": "pass"
+    },
+    {
+      "id": "D104",
+      "name": "Real.instLT",
+      "interpretation": "The ordinary strict order on reals.",
+      "effect_on_target": "It interprets GammaValid's k*u<1.",
+      "paper_match": "It matches the source's real strict inequality.",
+      "status": "pass"
+    },
+    {
+      "id": "D105",
+      "name": "instDecidableEqFin",
+      "interpretation": "A decision procedure for equality of finite indices.",
+      "effect_on_target": "It permits selecting the self-index factor in the direct-weight product.",
+      "paper_match": "This is computational infrastructure for excluding k=j.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D106",
+      "name": "ite",
+      "interpretation": "A conditional expression selecting one of two values according to a decidable proposition.",
+      "effect_on_target": "It replaces the k=j weight factor by one and selects direct versus reciprocal counter factors.",
+      "paper_match": "These uses exactly implement exclusion of k=j and exponents rho_i in {+1,-1}.",
+      "status": "pass"
+    },
+    {
+      "id": "D107",
+      "name": "Bool",
+      "interpretation": "A two-valued type used as the reciprocal flag for each local counter factor.",
+      "effect_on_target": "It records whether a factor is (1+delta_i) or its inverse.",
+      "paper_match": "It encodes the two exponent choices rho_i=+1 and rho_i=-1.",
+      "status": "pass"
+    },
+    {
+      "id": "D108",
+      "name": "Bool.true",
+      "interpretation": "The Boolean value selecting the reciprocal branch.",
+      "effect_on_target": "When set, the corresponding counter factor is (1+delta_i)^{-1}.",
+      "paper_match": "It represents rho_i=-1 in equation (3.3).",
+      "status": "pass"
+    },
+    {
+      "id": "D109",
+      "name": "instDecidableEqBool",
+      "interpretation": "A decision procedure for Boolean equality.",
+      "effect_on_target": "It lets the counter definition test whether a reciprocal flag is true.",
+      "paper_match": "This is computational infrastructure and adds no paper-level condition.",
+      "status": "not-applicable"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF is the published 2004 IMA Journal version. Printed pages 551-552 contain equation (4.1), the exact collected counter quotient, Theorem 4.1, and equations (4.2)-(4.3).",
-      "lean_evidence": "The supplied dossier identifies target P13-T3 and exposes its exact, readable, elaborated, and fully explicit proposition.",
-      "reasoning": "The selected paper passage and Lean declaration are the intended comparison objects."
+      "paper_evidence": "The verified PDF is the 2004 IMA Journal version. PDF pp. 5-6 (printed pp. 551-552) contain equation (4.1), its exact counter analysis, Theorem 4.1, equations (4.2)-(4.3), and the sharpness sentence.",
+      "lean_evidence": "The target uses the proper barycentric problem, execution, two conditions, coefficients 3n+4 and 3n+2, an O(u^2) remainder, and first-order sharpness.",
+      "reasoning": "The selected declaration addresses the cited second-form barycentric forward-error result rather than Theorem 3.2 or the later interval-dependent corollary."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "The paper binds a degree n, n+1 nodes and data indexed j=0,...,n, an evaluation point x, barycentric weights, computed output, and unit roundoff u.",
-      "lean_evidence": "Lean binds n-entry arrays over Fin n, two arbitrary epsilon values, and arbitrary coefficients and additive perturbations; it binds no nodes, evaluation point, weights, or unit roundoff.",
-      "reasoning": "The coefficient abstraction can be instantiated with barycentric terms, but the intended binder meanings and the n+1 indexing convention are not preserved in the proposition."
+      "status": "pass",
+      "paper_evidence": "PDF p. 2 defines n+1 values indexed j=0:n, distinct nodes, real-valued interpolation data, and a fixed evaluation point.",
+      "lean_evidence": "n is Nat; nodes and data have type Fin(n+1)->Real; x is Real; counter indices use the corresponding finite lengths.",
+      "reasoning": "Dimensions and index offsets agree. The formal model permits arbitrary real inputs instead of only floating-representable reals, which is a domain generalization rather than an index/type error."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The paper analyzes the errors generated by a specified computation and additionally asserts that there exist rounding errors attaining the bound within a constant factor.",
-      "lean_evidence": "Lean universally quantifies arbitrary deltaNum, deltaDen, epsilonNum, and epsilonDen, then proves an implication from generic perturbation premises; it contains no existential sharpness conclusion.",
-      "reasoning": "The quantified objects and witness structure differ, and the paper's existential conclusion is absent."
+      "status": "pass",
+      "paper_evidence": "The forward estimate applies to the computed result under admissible rounding errors, while the final sentence existentially asserts suitable errors attaining the bound within a constant factor.",
+      "lean_evidence": "problem, u, and run are universal theorem binders; run supplies an execution for every asymptotic index; FirstOrderSharp existentially quantifies four direction families depending on problem.",
+      "reasoning": "The universal upper-bound and existential sharpness scopes are preserved. Lean additionally makes the sharpness factor uniformly 1/3 and formalizes the upper bound along arbitrary nonbottom filters."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The surrounding paper requires distinct nodes, floating-point inputs, the standard relative-error model, ku<1 for counter estimates, computed reciprocal-product weights, and p_n(x) nonzero; node evaluation and exceptional IEEE behavior remain implicit.",
-      "lean_evidence": "Lean assumes two nonzero sums, nonnegative generic epsilons, termwise additive perturbation bounds, and epsilonDen * cond(coeff,1) < 1. It has no node distinctness, input representability, weight construction, or floating-point execution hypothesis.",
-      "reasoning": "Some nonzero requirements are made explicit, but the defining paper hypotheses are replaced by generic algebraic assumptions and an additional finite-bound smallness condition."
+      "status": "pass",
+      "paper_evidence": "The paper assumes distinct nodes, floating-point inputs, the relative operation model, ku<1 for counters, and implicitly p_n(x)!=0; equation (4.1) also requires its displayed divisions to be defined.",
+      "lean_evidence": "Problem.mk requires injective nodes and x off every node; Execution.mk requires u>=0 and all relevant GammaValid conditions; hnumerator and hdenominator require both exact quotient components to be nonzero.",
+      "reasoning": "The nonzero and smallness requirements are made explicit. Off-node evaluation resolves an ambiguity in the displayed formula. Floating representability is not encoded, so Lean proves the ideal counter-model statement on a broader real domain."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "Printed pages 551-552 give the exact separate numerator and denominator counters, both first-order condition-number terms, an O(u^2) remainder, and attainable sharpness within a constant factor.",
-      "lean_evidence": "Lean concludes only one rational perturbation inequality involving epsilonNum and epsilonDen.",
-      "reasoning": "The operation-count counters, unit-roundoff coefficients, retained remainder, and sharpness conclusion are missing."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.1 contains both condition-number contributions and O(u^2), followed by the constant-factor attainability claim.",
+      "lean_evidence": "The four conjuncts provide the finite upper bound, its exact first-order-plus-remainder identity, Big-O control of that remainder, and FirstOrderSharp. Execution carries both uncollected and collected counter semantics.",
+      "reasoning": "No condition term, higher-order qualification, or sharpness component is dropped."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The nontrivial paper objects are barycentric terms w_j/(x-x_j), the second barycentric quotient, relative-error counters, and cond(x,n,f) and cond(x,n,1).",
-      "lean_evidence": "The unfolded definitions show a generic quotient of arbitrary coefficient sums with additive perturbations. p13Condition matches the condition quotient, but p13BarycentricComputed and p13TermPerturbation do not encode the counter construction.",
-      "reasoning": "All dependencies are readable, but their combined meaning is a generic quotient perturbation lemma rather than the paper-defined floating-point computation."
+      "status": "pass",
+      "paper_evidence": "The paper defines direct weights, the proper barycentric quotient, the two cancellation ratios, relative-error counters, gamma_k, and the constant-one condition.",
+      "lean_evidence": "D019-D030 and D039-D042 unfold these objects into finite real sums/products, direct weights, coefficient ratios, exact counter products, and the stated counter lengths.",
+      "reasoning": "Every nontrivial local operator has a concrete interpretation matching the source; external dependencies reduce to standard real arithmetic, finite sums/products, logic, and asymptotics."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "The paper distinguishes exact p_n(x), actual computed hat(p_n(x)), and an exact real counter representation derived from the floating-point execution.",
-      "lean_evidence": "p13BarycentricValue is exact, while p13BarycentricComputed is simply an exact real quotient for arbitrary supplied additive deltas, with no premise identifying it with an actual rounded execution.",
-      "reasoning": "The two algebraic quantities are distinct, but the designation of the generic perturbed quotient as computed is not justified by an execution model."
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes w_j and p_n(x) from computed weights and computed p-hat_n(x), and displays their perturbation counters separately.",
+      "lean_evidence": "D028 defines the exact quotient; D027 defines the counter-perturbed computed quotient; D011 compares them by scalar relative error.",
+      "reasoning": "Exact and computed quantities are not conflated."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "The result is specifically for formula (4.1), using weights computed by reciprocal products and the operation counts inherited from Theorem 3.2.",
-      "lean_evidence": "No hypothesis defines coeff from nodes and weights or derives deltaNum and deltaDen from operations of the second barycentric algorithm.",
-      "reasoning": "The proposition is not linked to the paper's algorithm or execution."
+      "status": "pass",
+      "paper_evidence": "Equation (4.1) is the second or proper barycentric formula, and the preceding analysis assigns weight, numerator, denominator, and final-division counters.",
+      "lean_evidence": "Execution.mk requires precisely those counters and identities, while Computed evaluates the perturbed proper quotient using directly computed weights.",
+      "reasoning": "The theorem remains tied to the selected algorithm and its operation-count abstraction, rather than asserting an algorithm-independent condition-number estimate."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Theorem 4.1 uses scalar relative forward error, scalar absolute values, sums of termwise absolute values, and absolute values of exact sums.",
-      "lean_evidence": "The left side is |computed-exact|/|exact|, and p13Condition is sum |coeff i * f i| divided by |sum coeff i * f i|.",
-      "reasoning": "The scalar absolute-value and componentwise condition-quotient semantics agree."
+      "paper_evidence": "Theorem 4.1 uses scalar absolute values; Definition 2.1 uses componentwise relative perturbations of f; no vector norm appears in the theorem.",
+      "lean_evidence": "RelativeError and p13Condition use Real absolute value and finite componentwise terms; Real.norm in IsBigO is also absolute value.",
+      "reasoning": "Scalar, componentwise, and asymptotic norm semantics agree, with no squared-error substitution."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The numerator and denominator counters and first-order coefficients are exactly 3n+4 and 3n+2 for n+1 terms indexed 0 through n.",
-      "lean_evidence": "Lean has n terms over Fin n and unconstrained epsilonNum and epsilonDen, with no formulas involving n or u.",
-      "reasoning": "Neither the operation-count constants nor their dependence on the paper's degree parameter is represented."
+      "status": "pass",
+      "paper_evidence": "The exact counts are 2n for weights, n+3 for numerator evaluation, n+2 for denominator evaluation, 1 for the quotient, and collected lengths 3n+4 and 3n+2.",
+      "lean_evidence": "D021, D022, D025, D026, and D030 define exactly those lengths; D013 enforces the collection identities; D007 uses the two collected coefficients.",
+      "reasoning": "All constants, offsets, and n-dependencies match the source."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "The paper assumes fl(a op b)=(a op b)(1+delta)^{+/-1}, |delta|<=u, floating-point inputs, and counter bounds under ku<1; it leaves exceptional IEEE behavior unspecified.",
-      "lean_evidence": "All arithmetic is exact over Real, and no precision, rounding operation, unit roundoff, exceptional-value rule, overflow condition, or underflow condition occurs.",
-      "reasoning": "Lean states an exact real perturbation theorem and does not formalize the paper's floating-point model."
+      "status": "pass",
+      "paper_evidence": "PDF p. 3 uses fl(a op b)=(a op b)(1+delta)^{+/-1}, abs(delta)<=u, gamma_k under ku<1, and does not model overflow, underflow, NaNs, or infinities.",
+      "lean_evidence": "D042 represents each counter as products of direct or reciprocal factors with local errors bounded by u; D031 enforces ku<1; no exceptional IEEE values occur because all quantities are Real.",
+      "reasoning": "The same ideal relative-error model is formalized. Lean does not claim coverage of exceptional IEEE behavior."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.1 gives a first-order non-strict upper bound with an unquantified additive O(u^2) term.",
-      "lean_evidence": "Lean gives a non-strict finite bound divided by 1-epsilonDen*cond(coeff,1), conditional on that product being less than one.",
-      "reasoning": "The inequality direction agrees, but the relations are not logically equivalent without an external identification of epsilons with counter bounds and an asymptotic expansion."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.1 is a non-strict upper bound with first-order coefficients and a constant-factor attainability statement.",
+      "lean_evidence": "The target uses <= for the exact finite envelope; its algebraic expansion has exactly the paper coefficient; sharpness requires a response at least one third of that coefficient.",
+      "reasoning": "The upper-bound direction is correct. The explicit one-third lower response is a genuine strengthening of the unspecified constant-factor assertion, not a reversal or weakening."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "The reported quantity is relative forward error, and the paper explicitly says the counter quotient has no useful backward-error interpretation.",
-      "lean_evidence": "The target bounds relative difference between a perturbed quotient and its exact quotient and asserts no backward-error claim.",
-      "reasoning": "The target retains a forward-error notion rather than substituting backward stability or a residual."
+      "paper_evidence": "Theorem 4.1 bounds scalar relative forward error and explicitly says the preceding expression lacks a useful backward-error interpretation.",
+      "lean_evidence": "D011 is abs(exact-computed)/abs(exact); neither the target nor its conditions assert backward stability.",
+      "reasoning": "The formal proposition preserves the forward-error notion and does not substitute a backward, residual, or mixed error."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "The exact counter quotient has no remainder, while every Theorem 4.1 forward form retains O(u^2) with no explicit coefficient.",
-      "lean_evidence": "Lean has an exact rational denominator correction but no u, counter gamma values, big-O relation, or higher-order remainder statement.",
-      "reasoning": "Its finite inequality could be asymptotically expanded after additional identifications, but that expansion and its relationship to the paper's O(u^2) term are absent."
+      "status": "pass",
+      "paper_evidence": "Equations (4.2)-(4.3) retain an additive O(u^2) term without specifying its coefficient.",
+      "lean_evidence": "D008 explicitly defines the exact remainder; the target states the envelope equals u times the first-order coefficient plus that remainder and proves the composed remainder IsBigO u^2.",
+      "reasoning": "The higher-order term is retained and rigorously controlled rather than deleted. The explicit rational remainder is a valid strengthening derived from the finite envelope."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The paper result concerns real floating-point evaluation of one specific barycentric algorithm.",
-      "lean_evidence": "Lean generalizes to arbitrary finite real coefficient arrays and arbitrary bounded additive term perturbations, while omitting the facts that select paper executions.",
-      "reasoning": "This is an unlinked algebraic generalization, not an explicitly classified faithful specialization or a standalone stronger encoding of the paper result."
+      "status": "pass",
+      "paper_evidence": "The paper assumes floating-point input values, does not require nodes in [-1,1] for Theorem 4.1, and leaves node evaluation behavior unstated in equation (4.1).",
+      "lean_evidence": "The formal problem uses arbitrary Real values, imposes x!=x_j, and has no interval hypothesis.",
+      "reasoning": "Lean generalizes the ideal relative-error theorem from floating-representable inputs to arbitrary reals and specializes to the defined off-node branch of the displayed quotient. The float-input cases remain covered, and no later [-1,1] restriction is imported."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper studies ordinary nonzero interpolation values and gives numerical examples of nontrivial error behavior.",
-      "lean_evidence": "For n=1, coeff 0=1, f 0=1, deltaNum 0=0.1, deltaDen 0=0, epsilonNum=0.1, and epsilonDen=0, all hypotheses hold and both sides of the conclusion equal 0.1.",
-      "reasoning": "The Lean proposition has satisfiable hypotheses and can attain a nonzero error bound, so its truth is not vacuous."
+      "paper_evidence": "The cited formulas admit ordinary nonzero examples, including a one-node instance with nonzero data and an evaluation point different from the node.",
+      "lean_evidence": "For n=0, one may take node 0, data 1, x=1, u identically 0 on a nonbottom filter, and counters with zero local errors and value 1; numerator, denominator, GammaValid conditions, and execution equations are satisfied.",
+      "reasoning": "The hypotheses are jointly satisfiable. NeBot prevents filter-level vacuity, and the sharpness conjunct is a substantive directional lower-response assertion rather than a consequence of an empty execution type."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The Lean proposition alone supplies no barycentric coefficient construction, rounding execution, 3n+4 or 3n+2 counters, relationship between epsilon values and u, O(u^2) statement, or existential sharpness. Those missing facts are required to recover the complete paper result."
+      "verdict": "yes",
+      "reasoning": "For floating-representable problem instances, the Lean execution reproduces the paper's direct-weight and proper-barycentric counter expression. The eventual finite-envelope inequality and its exact decomposition imply the two first-order terms plus O(u^2). The normalized directions in FirstOrderSharp can be scaled to admissible local errors for sufficiently small positive u, giving constant-factor first-order attainability; the explicit factor 1/3 is stronger than the paper's unspecified factor."
     },
     "paper_implies_lean": {
       "verdict": "no",
-      "reasoning": "The cited paper result concerns outputs of a specific barycentric floating-point algorithm. It does not assert the Lean theorem's universal finite inequality for every real coefficient array and every pair of arbitrary additive perturbations satisfying the generic predicates."
+      "reasoning": "The printed theorem does not assert the arbitrary-real input generalization, the exact rational finite envelope and explicit remainder identity, or a uniform one-third first-order response. Its unspecified constant-factor sentence and unquantified O(u^2) remainder are insufficient by themselves to entail those strengthened Lean conjuncts."
     }
   },
-  "classification": "not-faithful-different",
-  "accepted": false,
+  "classification": "faithful-stronger",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "algorithm-linkage",
-      "paper_evidence": "Equation (4.1) and its derivation on printed pages 551-552 analyze the second barycentric formula with computed reciprocal-product weights and operation-derived counters.",
-      "lean_evidence": "The target quantifies an arbitrary coeff array and arbitrary additive perturbations, with no nodes, evaluation point, weights, floating-point operations, or counter derivation.",
-      "impact": "The proposition proves a generic quotient perturbation lemma rather than a theorem about the paper's algorithm."
+      "severity": "note",
+      "category": "explicit-finite-envelope",
+      "paper_evidence": "Equations (4.2)-(4.3) state only the first-order terms plus O(u^2), although the preceding counter representation and gamma bound support a finite estimate.",
+      "lean_evidence": "The target first bounds error by an exact rational envelope and gives a closed-form remainder identity.",
+      "impact": "This makes the formal result more quantitative and prevents the paper statement alone from implying the whole Lean proposition; it does not change the paper's leading bound."
     },
     {
-      "severity": "major",
-      "category": "constants-and-higher-order-terms",
-      "paper_evidence": "The paper requires separate 3n+4 and 3n+2 counters, first-order coefficients (3n+4)u and (3n+2)u, and an explicit O(u^2) remainder.",
-      "lean_evidence": "The bound uses unconstrained epsilonNum and epsilonDen and a finite denominator correction, with no n-dependent constants or unit roundoff.",
-      "impact": "The displayed Lean bound cannot be identified directly with either the exact counter model or Theorem 4.1's stated asymptotic bound."
+      "severity": "note",
+      "category": "sharpness-strengthening",
+      "paper_evidence": "The sentence after equation (4.3) says only that the bound is attained within a constant factor, without a value or detailed quantifiers.",
+      "lean_evidence": "P13SecondBarycentricFirstOrderSharp requires a normalized directional response at least one third of the complete first-order coefficient for every problem.",
+      "impact": "Lean supplies a concrete uniform first-order factor stronger than the printed assertion. It still entails the source's qualitative constant-factor claim."
     },
     {
-      "severity": "major",
-      "category": "conclusion-omission",
-      "paper_evidence": "The sentence following equation (4.3) asserts existence of rounding errors attaining the bound within a constant factor.",
-      "lean_evidence": "The Lean conclusion is solely a universal upper inequality and contains no existential lower or sharpness statement.",
-      "impact": "A substantive conclusion of the selected paper result is absent."
+      "severity": "note",
+      "category": "input-domain-generalization",
+      "paper_evidence": "PDF p. 3 says the nodes, data, and evaluation point are assumed to be floating-point numbers.",
+      "lean_evidence": "P13SecondBarycentricProblem stores arbitrary real nodes, data, and x, while executions impose the same relative-error-counter model.",
+      "impact": "The theorem covers the paper's input domain and additionally proves an idealized exact-input result for arbitrary reals; it does not model initial conversion of nonrepresentable inputs."
     },
     {
-      "severity": "major",
-      "category": "binders-and-indexing",
-      "paper_evidence": "The paper uses degree n with n+1 terms indexed j=0,...,n and binds nodes, data, x, weights, and u.",
-      "lean_evidence": "Lean uses n entries indexed by Fin n and binds only generic arrays and epsilon values.",
-      "impact": "Recovering the paper setting requires an unstated parameter shift and external constructions, so the formal statement does not preserve the paper's binder semantics."
+      "severity": "note",
+      "category": "defined-domain-specialization",
+      "paper_evidence": "Equation (4.1) divides by every x-x_j but does not state a node-evaluation branch; the relative error also requires p_n(x)!=0.",
+      "lean_evidence": "Problem.mk requires x different from every node, and the theorem separately requires nonzero exact numerator and denominator.",
+      "impact": "These hypotheses make all displayed ratios defined and are nonvacuous. They do not import the later interval restriction or remove a defined case stated by Theorem 4.1."
     }
   ],
-  "rationale": "The exact quotient and condition-number definitions contain algebraic forms that can represent the paper after choosing coeff j=w_j/(x-x_j). Likewise, paper counters could induce Lean additive perturbations with epsilon values chosen as suitable gamma bounds. Those choices and derivations are not part of the proposition. The target instead proves a nonvacuous, exact, generic perturbation inequality with an additional smallness premise. It omits the algorithm, floating-point model, operation-count constants, O(u^2) formulation, degree indexing, and sharpness claim. Because the Lean statement does not entail the complete paper result and the specialized paper theorem does not entail Lean's universal generic theorem, the relationship is different rather than equivalent, stronger, or merely weaker."
+  "rationale": "The declaration faithfully models the direct weights, proper barycentric execution, exact and computed values, both condition-number terms, operation counts, relative forward error, and O(u^2) behavior of Theorem 4.1. Its off-node and nonzero assumptions make the displayed formulas defined and are satisfiable. The proposition is not equivalent to the printed theorem because it extends the ideal counter model to arbitrary real inputs and adds an exact finite envelope, explicit remainder, and a concrete one-third first-order sharpness guarantee. Those additions all strengthen the same result and preserve Lean-implies-paper, so the appropriate classification is faithful-stronger."
 }
