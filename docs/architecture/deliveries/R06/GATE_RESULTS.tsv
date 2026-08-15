@@ -1,0 +1,22 @@
+phase	gate	command	mutex	exit	result	notes
+authority	planned_control_ci	GitHub Actions Lean CI run 31844203563	-	0	pass	planned-control b6794f326313f8077c0c3433bb9c76b6e2ed5361 success
+authority	activation_ci	GitHub Actions Lean CI run 31845432265	-	0	pass	activation-control 405e76f36a342a5d7d31a8e094cc7c580dcb250f success
+authority	private_map_amendment_ci	GitHub Actions Lean CI run 31893563259	-	0	pass	reviewed totality amendment d6a241de6c2af12439bc48885461c7190fc751d6 (5 B0007 identity rows)
+tests	tests_canonical	lake build <48 canonical TEST_MATRIX targets>	Local\lean-reorganization-2026-08	0	pass	each destination imported alone with no historical-owner import; corrected-tree replay 47.3 s
+tests	tests_old_only	lake build <75 old-only TEST_MATRIX targets>	Local\lean-reorganization-2026-08	0	pass	every historical owner path elaborates with its approved public surface; corrected-tree replay 44.9 s
+tests	tests_private	lake build NumStabilityTest.Reorganization.R06.PrivateNormalization	Local\lean-reorganization-2026-08	0	pass	all 200 approved names present; only 195 genuine rename pre-images absent; corrected-tree replay 22.8 s
+tests	tests_consumer	lake build <45 protected-consumer TEST_MATRIX targets>	Local\lean-reorganization-2026-08	0	pass	protected consumers compile unedited; corrected-tree replay 6159 jobs / 49.5 s
+tests	tests_aggregate	lake build <1 aggregate-root TEST_MATRIX target>	Local\lean-reorganization-2026-08	0	pass	global aggregate root builds unchanged; corrected-tree replay 6203 jobs / 26.4 s
+tests	tests_all	lake build NumStabilityTest.Reorganization.R06.All	Local\lean-reorganization-2026-08	0	pass	all 170 isolated R06 modules imported by All; corrected-tree replay 28.3 s
+build	full_build	lake build NumStability	Local\lean-reorganization-2026-08	0	pass	full corrected production library; 6203 jobs / 58.4 s
+build	full_build_tests	lake build NumStability NumStabilityTest	Local\lean-reorganization-2026-08	0	pass	corrected production plus complete test library; 658.3 s
+build	lake_test	lake test	Local\lean-reorganization-2026-08	0	pass	corrected-tree repository test target; 9.1 s
+checks	cache_integrity	python .lake/r06_cache_setup.py verify	Local\lean-reorganization-2026-08	0	pass	22320 primary hashes exact / 21216 hardlinks retained / 3 Aasen worker artifacts intentionally detached and rebuilt / 0 missing / 0 primary changes; terminal 58.9 s audit
+checks	check_compatibility	python tools/architecture/check_compatibility.py	Local\lean-reorganization-2026-08	0	pass	420 forwarding modules / 1171 canonical targets / 2 retained production-import exceptions; 19.0 s
+checks	check_provenance	python tools/architecture/check_provenance.py	Local\lean-reorganization-2026-08	0	pass	137 Apache-marked production files / 5 evidenced upstream modules; 1.0 s
+checks	strict_source	python tools/architecture/generate_baseline.py --skip-declarations --strict-source --output-dir .lake/r06-strict-source --name R06	Local\lean-reorganization-2026-08	0	pass	2738 modules / 0 unresolved / 0 cyclic SCC / 0 forbidden reusable-reachability pairs; 18.5 s
+checks	check_layout	python -B tools/architecture/check_layout.py	Local\lean-reorganization-2026-08	1	documented	exactly 7 integrator items and no other red; summary 2738 / 255 / 0 / 0 / 217 / 15 / 0; 129.7 s
+checks	placeholder_scan	placeholder scan over NumStability and NumStabilityTest	Local\lean-reorganization-2026-08	0	pass	0 sorry/admit/top-level axiom/constant hits; 126.7 s
+checks	diff_check	git diff --cached --check	-	0	pass	no whitespace errors in the exact 276-path staged delivery
+projection	candidate_graph	python -B tools/architecture/generate_baseline.py --no-build --keep-dependency-tsv .lake/R06-candidate.tsv --output-dir .lake/r06-candidate-baseline --name R06-candidate	Local\lean-reorganization-2026-08	0	pass	format-2 candidate 06E993418A5FEBD7CE88EE1DAE71C2E0BA9639B8F37B958ABBF0EBCAB155DDC9; 56903 declarations / 649259 edges; corrected-tree regeneration 135.3 s
+projection	p0007_delivery_replay	python -B tools/architecture/check_completion_phase_projection.py <123 exact P0007 modules + amended 200-row private map>	Local\lean-reorganization-2026-08	0	pass	9415 selected / 2094 relocated / 81048 signature / 88795 body edges; no prefix and no freeze-time candidate pin; corrected-tree replay 6.4 s

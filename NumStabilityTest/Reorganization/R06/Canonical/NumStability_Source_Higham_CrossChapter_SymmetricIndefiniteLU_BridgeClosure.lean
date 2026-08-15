@@ -1,0 +1,55 @@
+import NumStability.Source.Higham.CrossChapter.SymmetricIndefiniteLU.BridgeClosure
+
+/-!
+# R06 canonical-only test — `BridgeClosure`
+
+Imports exactly the canonical destination and checks all 46
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.higham11_1_bunchSharpGrowthBound
+#check @NumStability.higham11_1_bunchSharpGrowthBound_eq_multiplier_mul_higham9_14
+#check @NumStability.higham11_1_bunchSharpGrowthBound_nonneg
+#check @NumStability.higham11_1_bunchSharpGrowthMultiplier
+#check @NumStability.higham11_1_bunchSharpGrowthMultiplier_nonneg
+#check @NumStability.higham11_7_abs_matMul_le
+#check @NumStability.higham11_7_condSkeel_add_perturbation_le
+#check @NumStability.higham11_7_condition_sum_le_two_mul_product
+#check @NumStability.higham11_7_envelopeCondition
+#check @NumStability.higham11_7_envelopeCondition_absMatrix_eq_condSkeel
+#check @NumStability.higham11_7_envelopeCondition_eq_infNorm_abs_product
+#check @NumStability.higham11_7_envelopeCondition_nonneg
+#check @NumStability.higham11_7_envelopeCondition_row_le
+#check @NumStability.higham11_7_factorCondition
+#check @NumStability.higham11_7_factorCondition_nonneg
+#check @NumStability.higham11_7_factorCondition_row_le
+#check @NumStability.higham11_7_familyFirstOrderLe_of_denominator
+#check @NumStability.higham11_7_firstOrderLe_from_higham9_23
+#check @NumStability.higham11_7_firstOrderLe_of_denominator
+#check @NumStability.higham11_7_forwardError_exact_from_backward_errors
+#check @NumStability.higham11_7_forwardError_exact_from_total_backward_error
+#check @NumStability.higham11_7_forwardError_family_condition_product_from_backward_errors
+#check @NumStability.higham11_7_forwardError_firstOrder_condition_product
+#check @NumStability.higham11_7_forwardError_firstOrder_condition_product_from_backward_errors
+#check @NumStability.higham11_7_forwardError_firstOrder_from_backward_errors
+#check @NumStability.higham11_7_infNorm_mono_of_nonneg
+#check @NumStability.higham11_7_matMul_mono_left_factor
+#check @NumStability.higham11_7_matMul_mono_right_factor
+#check @NumStability.higham11_7_matMul_nonneg
+#check @NumStability.higham11_7_one_le_envelopeCondition_of_inverse
+#check @NumStability.higham11_7_permutedAbsLDLT
+#check @NumStability.higham11_7_permutedAbsLDLT_nonneg
+#check @NumStability.higham11_7_permutedLeftFactor
+#check @NumStability.higham11_7_permutedLeft_mul_rightEnvelope_eq_permutedAbsLDLT
+#check @NumStability.higham11_7_permutedLeft_mul_rightFactor_eq_of_BlockLDLTSpec
+#check @NumStability.higham11_7_permutedRightEnvelope
+#check @NumStability.higham11_7_permutedRightFactor
+#check @NumStability.higham11_7_permutedRightFactor_abs_le_envelope
+#check @NumStability.higham11_7_perturbed_product_envelopeCondition_le
+#check @NumStability.higham11_7_product_envelopeCondition_le
+#check @NumStability.higham11_7_totalBackwardEnvelope
+#check @NumStability.higham11_7_totalBackwardEnvelope_nonneg
+#check @NumStability.higham11_7_totalBackwardEnvelope_row_le_globalCondition
+#check @NumStability.higham11_7_totalConditionAtSolution_le
+#check @NumStability.higham11_7_totalGlobalCondition
+#check @NumStability.higham11_7_totalGlobalCondition_nonneg

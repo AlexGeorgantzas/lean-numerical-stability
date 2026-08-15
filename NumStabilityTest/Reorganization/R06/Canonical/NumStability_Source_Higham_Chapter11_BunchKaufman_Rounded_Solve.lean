@@ -1,0 +1,21 @@
+import NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Solve
+
+/-!
+# R06 canonical-only test — `Solve`
+
+Imports exactly the canonical destination and checks all 12
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.computedSolve_backward_error
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.computedSolve_backward_error_normwise_of_growth
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.computedSolve_backward_error_normwise_of_growth_source
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.computedSolve_backward_error_source
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.flatL_diag
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.flatL_lower
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.solveResidualCoefficient
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.solveResidualCoefficient_nonneg
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.sourceFlatAbsProduct
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.unpermutedMatrix
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.unpermutedVector
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.unpermuted_solve_equation

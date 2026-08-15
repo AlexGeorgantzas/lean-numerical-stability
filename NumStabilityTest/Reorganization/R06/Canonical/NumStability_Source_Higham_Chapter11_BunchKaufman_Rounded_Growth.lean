@@ -1,0 +1,42 @@
+import NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Growth
+
+/-!
+# R06 canonical-only test — `Growth`
+
+Imports exactly the canonical destination and checks all 33
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.currentMax_le_roundedStageMax
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.flatAbsProduct_le_forty_mul_dimension_mul_roundedStageMax
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.roundedGrowthFactor
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.roundedStageMax
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.roundedStageMax_eq_growthFactor_mul
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.roundedStageMax_nonneg
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.tail_roundedStageMax_le_case1
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.tail_roundedStageMax_le_case2
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.tail_roundedStageMax_le_case3
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.tail_roundedStageMax_le_case4
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.tail_roundedStageMax_le_noAction
+#check @NumStability.higham11_4_active_offdiag_le_omegaOne_case1_or_case2
+#check @NumStability.higham11_4_active_offdiag_le_omegaRow_case3
+#check @NumStability.higham11_4_case4_active_trailing_first_le_omegaOne
+#check @NumStability.higham11_4_case4_active_trailing_second_le_omegaRow
+#check @NumStability.higham11_4_case4_flMultTwo_component_bounds
+#check @NumStability.higham11_4_entry_le_roundedActiveMax
+#check @NumStability.higham11_4_fl_div_pair_pivot_abs_le_four
+#check @NumStability.higham11_4_omegaOne_le_omegaRow
+#check @NumStability.higham11_4_omegaOne_le_roundedActiveMax
+#check @NumStability.higham11_4_omegaRow_le_roundedActiveMax
+#check @NumStability.higham11_4_omegaRow_nonneg
+#check @NumStability.higham11_4_pivotColTwoAbs_le_six_case4
+#check @NumStability.higham11_4_pivotPathOneAbs_le_eight_case1
+#check @NumStability.higham11_4_pivotPathOneAbs_le_eight_case2
+#check @NumStability.higham11_4_pivotPathOneAbs_le_eight_case3
+#check @NumStability.higham11_4_pivotPathOneAbs_le_eight_of_correction
+#check @NumStability.higham11_4_pivotPathTwoAbs_le_thirtyThree_case4
+#check @NumStability.higham11_4_pivotRowTwoAbs_le_six_case4
+#check @NumStability.higham11_4_roundedActiveMax
+#check @NumStability.higham11_4_roundedActiveMax_nonneg
+#check @NumStability.higham11_4_roundedActive_entry_le_currentMax
+#check @NumStability.higham11_4_scalar_pivot_cross_le_two

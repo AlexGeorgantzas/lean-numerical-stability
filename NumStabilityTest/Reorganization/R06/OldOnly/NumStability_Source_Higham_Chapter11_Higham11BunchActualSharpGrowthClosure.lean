@@ -1,0 +1,60 @@
+import NumStability.Source.Higham.Chapter11.Higham11BunchActualSharpGrowthClosure
+
+/-!
+# R06 historical-only test — `Higham11BunchActualSharpGrowthClosure`
+
+Imports exactly the historical path; checks its preserved public
+surface (51 declarations).
+-/
+
+#check @NumStability.Higham11BunchCertifiedExecution
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.blocks
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.casesOn
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.ctorIdx
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.firstMax_eq_full
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.isChain
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.isPrefix
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.mk
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.mk.inj
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.mk.injEq
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.mk.noConfusion
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.mk.sizeOf_spec
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.noConfusion
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.noConfusionType
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.nonempty
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.rec
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.recOn
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.stageMax_le_original_bound_of_structural_hadamard
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.toSharpBlockCertificate
+#check @NumStability.Higham11BunchCertifiedExecution.ReachedPrefix.totalWidth_le_order
+#check @NumStability.Higham11BunchCertifiedExecution.all_stageMax_le_original_bound_of_structural_hadamard
+#check @NumStability.Higham11BunchCertifiedExecution.all_stageRatio_le_maxEntryNorm_of_structural_hadamard
+#check @NumStability.Higham11BunchCertifiedExecution.all_stageRatio_le_original_bound_of_structural_hadamard
+#check @NumStability.Higham11BunchCertifiedExecution.casesOn
+#check @NumStability.Higham11BunchCertifiedExecution.ctorIdx
+#check @NumStability.Higham11BunchCertifiedExecution.mk
+#check @NumStability.Higham11BunchCertifiedExecution.mk.inj
+#check @NumStability.Higham11BunchCertifiedExecution.mk.injEq
+#check @NumStability.Higham11BunchCertifiedExecution.mk.noConfusion
+#check @NumStability.Higham11BunchCertifiedExecution.mk.sizeOf_spec
+#check @NumStability.Higham11BunchCertifiedExecution.noConfusion
+#check @NumStability.Higham11BunchCertifiedExecution.noConfusionType
+#check @NumStability.Higham11BunchCertifiedExecution.rec
+#check @NumStability.Higham11BunchCertifiedExecution.recOn
+#check @NumStability.Higham11BunchCertifiedExecution.trace
+#check @NumStability.Higham11BunchCertifiedExecution.wholeBlockSegmentHadamard
+#check @NumStability.Higham11ExactBunchTrace.SharpAdjacent
+#check @NumStability.Higham11ExactBunchTrace.firstMax_toSharpBlocks_eq_maxEntryNorm
+#check @NumStability.Higham11ExactBunchTrace.firstMax_toSharpBlocks_pos
+#check @NumStability.Higham11ExactBunchTrace.oneSharpBlock
+#check @NumStability.Higham11ExactBunchTrace.stageMaxes_eq_map_stageMax
+#check @NumStability.Higham11ExactBunchTrace.toSharpBlocks
+#check @NumStability.Higham11ExactBunchTrace.toSharpBlocks_isChain
+#check @NumStability.Higham11ExactBunchTrace.toSharpBlocks_totalWidth
+#check @NumStability.Higham11ExactBunchTrace.twoSharpBlock
+#check @NumStability.Higham11WholeBlockHadamard
+#check @NumStability.higham11_1_bunchSharpBlockCertificate_of_chain_and_hadamard
+#check @NumStability.higham11_1_bunchSharpGrowthBound_le_of_le
+#check @NumStability.higham11_1_exists_prefix_lastMax_eq_of_mem_stageMax
+#check @NumStability.higham11_1_one_le_bunchSharpGrowthBound

@@ -1,0 +1,18 @@
+import NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanSourceCorrection
+
+/-!
+# R06 historical-only test — `Higham11BunchKaufmanSourceCorrection`
+
+Imports exactly the historical path; checks its preserved public
+surface (9 declarations).
+-/
+
+#check @NumStability.higham11_4_computed_absLDLT_maxEntryNorm_le_of_relative_factor_bounds
+#check @NumStability.higham11_4_computed_productEntry_le_of_relative_factor_bounds
+#check @NumStability.higham11_4_computed_productEntry_le_of_relative_factor_perturbations
+#check @NumStability.higham11_4_computed_productMax_le_higham1997_exact_bound_finite_u
+#check @NumStability.higham11_4_computed_productMax_le_of_relative_factor_bounds
+#check @NumStability.higham11_4_exact_product_bound_does_not_imply_same_computed_bound
+#check @NumStability.higham11_4_first_order_times_computed_productMax_le_exact_plus_second_order
+#check @NumStability.higham11_4_relativeProductInflation
+#check @NumStability.higham11_4_relativeProductSecondOrderCoefficient

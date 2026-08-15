@@ -1,0 +1,34 @@
+import NumStability.Source.Higham.Chapter11.BunchKaufman.ActualSelector
+
+/-!
+# R06 canonical-only test — `ActualSelector`
+
+Imports exactly the canonical destination and checks all 25
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.higham11_2_bunchKaufmanBranchPivotSize
+#check @NumStability.higham11_2_bunchKaufmanFirstBranch
+#check @NumStability.higham11_2_bunchKaufmanFirstBranch_spec
+#check @NumStability.higham11_2_bunchKaufmanFirstColumnMaximizers
+#check @NumStability.higham11_2_bunchKaufmanFirstColumnMaximizers_nonempty
+#check @NumStability.higham11_2_bunchKaufmanFirstPerm
+#check @NumStability.higham11_2_bunchKaufmanFirstPerm_injective
+#check @NumStability.higham11_2_bunchKaufmanFirstPermutedMatrix
+#check @NumStability.higham11_2_bunchKaufmanFirstPermutedMatrix_symmetric
+#check @NumStability.higham11_2_bunchKaufmanMaxRow
+#check @NumStability.higham11_2_bunchKaufmanMaxRow_attains_omegaOne
+#check @NumStability.higham11_2_bunchKaufmanMaxRow_attains_omegaOne_if
+#check @NumStability.higham11_2_bunchKaufmanMaxRow_le_of_attains_omegaOne
+#check @NumStability.higham11_2_bunchKaufmanMaxRow_mem_firstColumnMaximizers
+#check @NumStability.higham11_2_bunchKaufmanMaxRow_ne_first_of_omegaOne_ne_zero
+#check @NumStability.higham11_2_bunchKaufmanOmegaOne
+#check @NumStability.higham11_2_bunchKaufmanOmegaOne_nonneg
+#check @NumStability.higham11_2_bunchKaufmanOmegaOne_spec
+#check @NumStability.higham11_2_bunchKaufmanOmegaRow
+#check @NumStability.higham11_2_bunchKaufmanSelectedTwoBlock
+#check @NumStability.higham11_2_case4_selected_fill_bound
+#check @NumStability.higham11_2_firstIndex
+#check @NumStability.higham11_2_flSelectedTwoByTwoSecondPivot
+#check @NumStability.higham11_2_flSelectedTwoByTwoSolve
+#check @NumStability.higham11_2_flSelectedTwoByTwoSolve_higham115

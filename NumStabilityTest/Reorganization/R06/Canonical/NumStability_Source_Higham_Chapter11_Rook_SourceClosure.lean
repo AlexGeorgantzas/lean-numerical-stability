@@ -1,0 +1,27 @@
+import NumStability.Source.Higham.Chapter11.Rook.SourceClosure
+
+/-!
+# R06 canonical-only test — `SourceClosure`
+
+Imports exactly the canonical destination and checks all 18
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.higham11_5_RookBlockDiagonalSupport
+#check @NumStability.higham11_5_rookEliminatedCount
+#check @NumStability.higham11_5_rookEliminatedCount_succ
+#check @NumStability.higham11_5_rookGrowthBound
+#check @NumStability.higham11_5_rookGrowthBound_of_pivot_steps
+#check @NumStability.higham11_5_rookPivotWidth
+#check @NumStability.higham11_5_rookTwoByTwoPivotInverse
+#check @NumStability.higham11_5_rook_bounded_search_twoByTwo_condition_number_bound
+#check @NumStability.higham11_5_rook_common_L_const_le_three
+#check @NumStability.higham11_5_rook_oneByOne_schur_growth
+#check @NumStability.higham11_5_rook_terminal_twoByTwo_condition_number_bound
+#check @NumStability.higham11_5_rook_theorem11_4_backward_error
+#check @NumStability.higham11_5_rook_theorem11_4_product_bound
+#check @NumStability.higham11_5_rook_twoByTwo_condition_number_bound
+#check @NumStability.higham11_5_rook_twoByTwo_schur_growth
+#check @NumStability.higham11_5_rook_twoByTwo_terminal_pivot_data
+#check @NumStability.higham11_5_sum_le_two_mul_of_two_index_support
+#check @NumStability.higham11_5_symmetricTwoByTwo_opNorm2Le_of_row_bounds

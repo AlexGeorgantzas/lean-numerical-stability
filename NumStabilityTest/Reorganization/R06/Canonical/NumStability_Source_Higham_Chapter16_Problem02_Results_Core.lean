@@ -1,0 +1,30 @@
+import NumStability.Source.Higham.Chapter16.Problem02.Results.Core
+
+/-!
+# R06 canonical-only test — `Core`
+
+Imports exactly the canonical destination and checks all 21
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.Higham16LyapunovSemigroupIntegrable
+#check @NumStability.higham16CMatrixFiniteDimensionalComplex
+#check @NumStability.higham16CMatrixFiniteDimensionalReal
+#check @NumStability.higham16Problem16_2LyapunovIntegral
+#check @NumStability.higham16Problem16_2LyapunovKernel
+#check @NumStability.higham16_exponentialProductIntegrable_of_hurwitz
+#check @NumStability.higham16_hurwitz_exists_shift_spectralRadius_lt
+#check @NumStability.higham16_hurwitz_exp_decay
+#check @NumStability.higham16_lyapunovSemigroupIntegrable_of_hurwitz
+#check @NumStability.higham16_p317_psd_does_not_imply_spd
+#check @NumStability.higham16_problem16_2_generalIntegral_neg_eq_lyapunovIntegral
+#check @NumStability.higham16_problem16_2_integral_isUnique
+#check @NumStability.higham16_problem16_2_integral_isUnique_of_hurwitz
+#check @NumStability.higham16_problem16_2_integral_solves
+#check @NumStability.higham16_problem16_2_kernel_tendsto_zero
+#check @NumStability.higham16_problem16_2_lyapunovIntegral_posDef
+#check @NumStability.higham16_problem16_2_lyapunovIntegral_solves
+#check @NumStability.higham16_problem16_2_lyapunovKernel_posDef
+#check @NumStability.higham16_problem16_2_lyapunov_spd_unique
+#check @NumStability.higham16_problem16_2_lyapunov_spd_unique_of_hurwitz
+#check @NumStability.higham16_problem16_2_solution_unique_of_difference_integrable

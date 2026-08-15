@@ -1,0 +1,17 @@
+import NumStability.Source.Higham.Chapter11.Higham11RookExecutorAdapter
+
+/-!
+# R06 historical-only test — `Higham11RookExecutorAdapter`
+
+Imports exactly the historical path; checks its preserved public
+surface (8 declarations).
+-/
+
+#check @NumStability.Higham11RookExecutorAdapter.flMixedD_rookBlockDiagonalSupport
+#check @NumStability.Higham11RookExecutorAdapter.higham11_5_rook_theorem11_4_product_bound_of_mixedExecutor
+#check @NumStability.Higham11RookExecutorAdapter.mixedSchedulePartner
+#check @NumStability.Higham11RookExecutorAdapter.mixedSchedulePartner_consOne_succ
+#check @NumStability.Higham11RookExecutorAdapter.mixedSchedulePartner_consOne_zero
+#check @NumStability.Higham11RookExecutorAdapter.mixedSchedulePartner_consTwo_one
+#check @NumStability.Higham11RookExecutorAdapter.mixedSchedulePartner_consTwo_succ_succ
+#check @NumStability.Higham11RookExecutorAdapter.mixedSchedulePartner_consTwo_zero

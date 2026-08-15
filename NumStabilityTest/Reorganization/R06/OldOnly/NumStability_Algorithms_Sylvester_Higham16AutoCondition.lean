@@ -1,0 +1,17 @@
+import NumStability.Algorithms.Sylvester.Higham16AutoCondition
+
+/-!
+# R06 historical-only test — `Higham16AutoCondition`
+
+Imports exactly the historical path; checks its preserved public
+surface (8 declarations).
+-/
+
+#check @NumStability.Wave17.H16_eq16_23_sylvester_first_order_bound_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.H16_eq16_24_structured_condition_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.H16_eq16_25_sylvester_relative_perturbation_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.H16_eq16_27_lyapunov_condition_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.H16_eq16_28_lyapunov_relative_aposteriori_bound_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.H16_eq16_28_sylvester_relative_aposteriori_bound_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.exists_lyapunovOp_sigmaMin_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.exists_sylvesterOp_sigmaMin_of_no_common_complex_right_eigenvalue

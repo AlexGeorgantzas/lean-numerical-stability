@@ -1,0 +1,39 @@
+import NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedClosure
+
+/-!
+# R06 historical-only test — `Higham11BunchKaufmanRoundedClosure`
+
+Imports exactly the historical path; checks its preserved public
+surface (30 declarations).
+-/
+
+#check @NumStability.higham11_2_bunchKaufmanFlMultOne
+#check @NumStability.higham11_2_bunchKaufmanFlMultOne_abs_coupling
+#check @NumStability.higham11_2_bunchKaufmanFlMultOne_col_residual
+#check @NumStability.higham11_2_bunchKaufmanFlMultOne_row_residual
+#check @NumStability.higham11_2_bunchKaufmanPivotColTwoAbs
+#check @NumStability.higham11_2_bunchKaufmanPivotColTwo_residual
+#check @NumStability.higham11_2_bunchKaufmanPivotPathOne
+#check @NumStability.higham11_2_bunchKaufmanPivotPathOneAbs
+#check @NumStability.higham11_2_bunchKaufmanPivotPathOneAbs_symm
+#check @NumStability.higham11_2_bunchKaufmanPivotPathOne_symm
+#check @NumStability.higham11_2_bunchKaufmanPivotPathTwo
+#check @NumStability.higham11_2_bunchKaufmanPivotPathTwoAbs
+#check @NumStability.higham11_2_bunchKaufmanPivotPathTwoAbs_nonneg
+#check @NumStability.higham11_2_bunchKaufmanPivotPathTwoAbs_symm
+#check @NumStability.higham11_2_bunchKaufmanPivotPathTwo_sub_dot_bound
+#check @NumStability.higham11_2_bunchKaufmanPivotPathTwo_symm
+#check @NumStability.higham11_2_bunchKaufmanPivotRowTwoAbs
+#check @NumStability.higham11_2_bunchKaufmanPivotRowTwo_residual
+#check @NumStability.higham11_2_bunchKaufmanRawSchurOne
+#check @NumStability.higham11_2_bunchKaufmanRawSchurOne_dot_residual
+#check @NumStability.higham11_2_bunchKaufmanRawSchurOne_residual_bound
+#check @NumStability.higham11_2_bunchKaufmanRawSchurTwo_dot_residual
+#check @NumStability.higham11_2_bunchKaufmanRawSchurTwo_residual_bound
+#check @NumStability.higham11_2_bunchKaufmanRoundedSchurOne_residual_bound
+#check @NumStability.higham11_2_bunchKaufmanRoundedSchurTwo_residual_bound
+#check @NumStability.higham11_2_bunchKaufmanTrailingDotTwo
+#check @NumStability.higham11_2_bunchKaufmanTrailingDotTwo_abs_input_bound
+#check @NumStability.higham11_2_one_add_thirtySix_u_le_three
+#check @NumStability.higham11_2_thirtySix_u_le_twelve_gamma3
+#check @NumStability.higham11_5_twoByTwoPivotSolveStable_bilinear_residual
