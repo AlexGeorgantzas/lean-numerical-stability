@@ -1,115 +1,184 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "Equation (8) uses '=', whereas the foundational multiplication result in equation (1) is an inequality and includes O(\u03b5\u00b2); equation (8) is introduced as first order. (PDF p. 8, printed p. 66, anchor: equation (8); PDF p. 2, printed p. 60, anchor: equation (1)).",
-      "impact": "A faithful formalization should preserve the three-term first-order bound structure without asserting exact equality of realized errors unless err is explicitly defined as the chosen bound.",
-      "issue": "The displayed equality may be error-accounting notation rather than an exact identity."
-    },
-    {
-      "evidence": "Only unsubscripted ||\u00b7|| appears in equation (8), while the earlier text discusses norm equivalence without selecting one norm. (PDF p. 8, printed p. 66, anchor: equation (8); PDF p. 2, printed p. 60, anchor: paragraph following equation (1)).",
-      "impact": "No particular norm should be silently substituted.",
-      "issue": "The matrix norm is unspecified."
-    },
-    {
-      "evidence": "The equation's introduction says 'two matrices C = A\u00b7B'; n-by-n dimensions occur in equation (1) and in the surrounding inversion application. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8); PDF p. 2, printed p. 60, anchor: equation (1)).",
-      "impact": "Conformability is explicit in substance, but square n-by-n dimensions are contextual.",
-      "issue": "The exact matrix dimensions are not restated in equation (8)."
-    },
-    {
-      "evidence": "A and B simultaneously denote operands with inherited errors and the matrices whose norms occur in equation (8), with no hats or perturbation variables. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8) and equation (8)).",
-      "impact": "The source determines the first-order formula but not a unique exact-versus-computed encoding.",
-      "issue": "Exact and computed operands are not notationally separated."
-    }
-  ],
-  "contract_plain_english": "When multiplying two matrices that may already be inaccurate, the first-order absolute normwise error is split into three additive pieces: fresh multiplication roundoff \u03bc(n)\u03b5||A||||B||, propagation of B's error as ||A||err(B,n), and propagation of A's error as err(A,n)||B||. (PDF p. 8, printed p. 66, anchor: equation (8)).",
-  "paper_batch_sha256": "a730fdcbbc543ec8712373b135d8a67dd310f31f635dedabf0ed548f9316414a",
-  "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P10-T2",
+  "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
   "source_evidence": [
     {
-      "anchor": "paragraph immediately preceding equation (8)",
-      "observation": "The rule is introduced for computing C = A\u00b7B when A and B already have inherited errors err(A,n) and err(B,n), within a first-order absolute-error analysis.",
-      "pdf_page": 8,
-      "printed_page": "66"
-    },
-    {
-      "anchor": "complete equation (8)",
-      "observation": "The paper gives err(C,n) = \u03bc(n)\u03b5||A||\u00b7||B|| + ||A||\u00b7err(B,n) + err(A,n)\u00b7||B||.",
-      "pdf_page": 8,
-      "printed_page": "66"
-    },
-    {
-      "anchor": "right-hand annotations in equation (8)",
-      "observation": "The three summands are respectively attributed to matrix multiplication, amplification of B's inherited error by ||A||, and amplification of A's inherited error by ||B||.",
-      "pdf_page": 8,
-      "printed_page": "66"
-    },
-    {
-      "anchor": "equation (1) and its explanatory paragraph",
-      "observation": "The underlying local multiplication guarantee is normwise: ||Ccomp\u2212C|| \u2264 \u03bc(n)\u03b5||A||||B|| + O(\u03b5\u00b2), with \u03b5 machine epsilon and \u03bc(n) a low-degree polynomial.",
       "pdf_page": 2,
-      "printed_page": "60"
+      "printed_page": "60",
+      "anchor": "Equation (1) and the paragraph defining stable matrix multiplication",
+      "observation": "For exact n-by-n operands with C = A B, stability means that the computed C_comp satisfies ||C_comp-C|| <= mu(n) epsilon ||A|| ||B|| + O(epsilon^2). Epsilon is machine epsilon, and mu(n) is a low-degree polynomial O(n^c). The authors explicitly permit changing norms at the cost of additional dimension-dependent factors."
+    },
+    {
+      "pdf_page": 3,
+      "printed_page": "61",
+      "anchor": "Paragraph interpreting normwise backward stability after equation (1)",
+      "observation": "The paper states that O(epsilon) notation may absorb a factor n^c for a modest constant c."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "64",
+      "anchor": "Opening of Section 3, condition-number and backward-stability definitions",
+      "observation": "The surrounding framework is perturbative: condition numbers and forward errors are expanded to first order, with quadratic perturbation terms represented by big-O terms."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "65",
+      "anchor": "Definition 3.1 and the opening block formula in Section 3.1",
+      "observation": "Logarithmic stability is defined through a relative error of first order in epsilon, plus O(epsilon^2). Recursive triangular inversion uses the exact block identity whose off-diagonal block is -T11^(-1) T12 T22^(-1)."
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "66",
+      "anchor": "Paragraph beginning 'To show that this algorithm is logarithmically stable' and equation (8)",
+      "observation": "The authors explicitly call the analysis first order and call err(T^(-1),n) an absolute error. For C = A B with inherited operand errors, equation (8) prints the three terms mu(n) epsilon ||A|| ||B||, ||A|| err(B,n), and err(A,n) ||B||."
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "66",
+      "anchor": "Paragraph and recurrences immediately following equation (8)",
+      "observation": "The recursive proof defines err(n') as a bound on normwise inverse error, applies equation (8) using inequalities, uses ||Tii|| <= ||T|| and ||Tii^(-1)|| <= ||T^(-1)||, and chooses to form T11^(-1) T12 before multiplying by T22^(-1)."
+    },
+    {
+      "pdf_page": 9,
+      "printed_page": "67",
+      "anchor": "Final triangular-inversion recurrence and its solution",
+      "observation": "The first-order product rule yields an error recurrence bounded by 2(kappa(T)+1) err(n/2) + 2 mu(n/2) epsilon kappa(T) ||T^(-1)|| and hence an O(mu(n/2) epsilon kappa(T) [2(kappa(T)+1)]^(log_2 n) ||T^(-1)||) bound."
+    },
+    {
+      "pdf_page": 10,
+      "printed_page": "68",
+      "anchor": "Recursive dense-inversion analysis, including 'using (8)'",
+      "observation": "Equation (8) is reused for products in the distinct dense-inversion algorithm, including a case with no inherited error in one operand. This later analysis explicitly specializes its norm to the 2-norm."
     }
   ],
   "statement": {
-    "algorithm_linkage": "The contract is the local three-term error-propagation rule used whenever the recursive algorithm multiplies matrices that may themselves be inexact; it does not depend on the order in which the surrounding triangular-inversion products are associated. (PDF p. 8, printed p. 66, anchor: equation (8) and the subsequent note choosing to premultiply T12 first).",
     "binders": [
-      "n is the size parameter used by \u03bc and each err quantity. (PDF p. 8, printed p. 66, anchor: equation (8)).",
-      "A and B are conformable matrices, C = A\u00b7B, and A and B may each carry inherited errors from prior computations. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8))."
-    ],
-    "conclusions": [
-      "The complete displayed first-order product-error rule is err(C,n) = \u03bc(n)\u03b5||A||||B|| + ||A||err(B,n) + err(A,n)||B||. (PDF p. 8, printed p. 66, anchor: equation (8)).",
-      "The first summand is newly introduced local matrix-multiplication error. (PDF p. 8, printed p. 66, anchor: first line of equation (8) and annotation 'from matrix multiplication').",
-      "The second summand propagates the inherited error in B and amplifies it by ||A||. (PDF p. 8, printed p. 66, anchor: second line of equation (8)).",
-      "The third summand propagates the inherited error in A and amplifies it by ||B||. (PDF p. 8, printed p. 66, anchor: third line of equation (8))."
-    ],
-    "constants_and_indexing": [
-      "Each of the three displayed contributions has coefficient 1 apart from the explicitly displayed \u03bc(n)\u03b5 factor in the local term. (PDF p. 8, printed p. 66, anchor: equation (8)).",
-      "The size argument n is unchanged across err(C,n), err(A,n), and err(B,n). (PDF p. 8, printed p. 66, anchor: equation (8)).",
-      "Propagation is cross-oriented: err(B,n) is multiplied by ||A||, while err(A,n) is multiplied by ||B||. (PDF p. 8, printed p. 66, anchor: second and third lines of equation (8))."
-    ],
-    "definitions_and_conventions": [
-      "err(C,n), err(A,n), and err(B,n) are absolute normwise error quantities in this first-order accounting. (PDF p. 8, printed p. 66, anchor: first-order absolute-error paragraph and equation (8)).",
-      "\u03bc(n) is the dimension-dependent stability factor belonging to matrix multiplication. (PDF p. 2, printed p. 60, anchor: equation (1) and definition of \u03bc).",
-      "The rule separates newly generated local roundoff from propagation of errors already present in each operand. (PDF p. 8, printed p. 66, anchor: annotations in equation (8))."
-    ],
-    "error_notions": [
-      "The rule concerns absolute normwise forward error in the computed product, not componentwise error. (PDF p. 8, printed p. 66, anchor: first-order absolute-error paragraph and equation (8)).",
-      "It accounts separately for local multiplication error, inherited right-input error, and inherited left-input error. (PDF p. 8, printed p. 66, anchor: all three annotations in equation (8))."
-    ],
-    "exceptional_values": [
-      "No assumptions or conclusions concerning overflow, underflow, NaN, infinity, or other exceptional floating-point values are stated with equations (1) or (8). (PDF p. 2, printed p. 60, anchor: equation (1); PDF p. 8, printed p. 66, anchor: equation (8))."
-    ],
-    "higher_order_terms": [
-      "The rule is explicitly first order and does not display a product err(A,n)err(B,n), \u03b5 times an inherited error, or an O(\u03b5\u00b2) remainder. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8) and equation (8)).",
-      "Equation (1), from which the local multiplication term is inherited, includes +O(\u03b5\u00b2). (PDF p. 2, printed p. 60, anchor: equation (1))."
+      "n is the local order of the square product C = A B; equation (1) introduces A, B, and C as n-by-n square matrices, while recursive calls use local order n/2. [PDF p. 2 (printed 60), anchor: equation (1); PDF p. 8 (printed 66), anchor: recurrences after equation (8)]",
+      "A and B are the reference operands for the product C = A B, and err(A,n) and err(B,n) represent errors inherited by their computed approximations from prior computations. [PDF p. 8 (printed 66), anchor: sentence introducing equation (8)]",
+      "In the enclosing application, T is an invertible n-by-n upper block-triangular matrix with n/2-by-n/2 diagonal blocks T11 and T22 and off-diagonal block T12. [PDF pp. 7-8 (printed 65-66), anchor: recursive triangular-inverse block formula and following dimension sentence]",
+      "epsilon is the working machine epsilon, and mu(n) is the dimension-dependent stability factor of the selected multiplication algorithm. [PDF p. 2 (printed 60), anchor: paragraph following equation (1)]"
     ],
     "hypotheses": [
-      "The product C is evaluated under the paper's stable normwise matrix-multiplication model. (PDF p. 2, printed p. 60, anchor: equation (1); PDF p. 8, printed p. 66, anchor: equation (8)).",
-      "The analysis is first order. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8)).",
-      "The two operands have inherited errors denoted err(A,n) and err(B,n). (PDF p. 8, printed p. 66, anchor: paragraph before equation (8))."
+      "The matrix-multiplication routine satisfies the normwise stability bound (1) for exact square operands. [PDF p. 2 (printed 60), anchor: equation (1)]",
+      "The product invocation may receive operands carrying errors from earlier computations. [PDF p. 8 (printed 66), anchor: sentence introducing equation (8)]",
+      "Equation (8) is used in a first-order perturbation regime; inherited errors are therefore treated as first-order quantities in epsilon, although the paper does not separately state err(A,n)=O(epsilon) and err(B,n)=O(epsilon) as formal hypotheses. [PDF p. 8 (printed 66), anchor: 'we do a first order error analysis' and equation (8)]",
+      "The norm must support triangle-inequality and product-error propagation; the triangular proof additionally assumes diagonal-submatrix monotonicity with the displayed unit constants. [PDF p. 8 (printed 66), anchor: equation (8) and the paragraph beginning 'We will also use the facts']",
+      "For the recursive triangular-inversion application, the required inverses T^(-1), T11^(-1), and T22^(-1) exist. [PDF pp. 7-8 (printed 65-66), anchor: block inverse formula]"
+    ],
+    "conclusions": [
+      "The printed rule is err(C,n) = mu(n) epsilon ||A|| ||B|| + ||A|| err(B,n) + err(A,n) ||B||. [PDF p. 8 (printed 66), anchor: equation (8)]",
+      "Its three retained contributions are, respectively, fresh roundoff from matrix multiplication, amplification of B's inherited error by ||A||, and amplification of A's inherited error by ||B||. [PDF p. 8 (printed 66), anchor: annotations beside the three lines of equation (8)]",
+      "Despite the printed equality sign, equation (8) is not an exact identity for actual error matrices or error norms. In context it is a first-order error budget used as an upper bound, modulo omitted higher-order terms; the subsequent applications use <= and describe bounds. [PDF p. 8 (printed 66), anchor: first-order-analysis sentence, equation (8), and following recurrences]",
+      "In recursive triangular inversion, systematic application of this local rule to the two products in -T11^(-1) T12 T22^(-1) produces the recurrence and logarithmic-stability bound stated on the following page. [PDF pp. 8-9 (printed 66-67), anchor: recurrences following equation (8) and their solution]"
+    ],
+    "definitions_and_conventions": [
+      "err(X,n) is a scalar absolute normwise error quantity or bound for the computed version of X at local dimension n, not a perturbation matrix. The later err(n') notation is explicitly a bound applying to any encountered n'-by-n' diagonal inverse block. [PDF p. 8 (printed 66), anchor: first-order-analysis paragraph and definition of err(n')]",
+      "In equation (1), C = A B is exact and C_comp is computed. Equation (8) suppresses computed-value decorations and records their effects through err(A,n), err(B,n), and err(C,n). [PDF p. 2 (printed 60), anchor: equation (1); PDF p. 8 (printed 66), anchor: equation (8)]",
+      "epsilon is machine epsilon and bounds roundoff error. [PDF p. 2 (printed 60), anchor: sentence following equation (1)]",
+      "mu(n) is a low-degree polynomial in n: mu(n)=O(n^c) for some constant c. [PDF p. 2 (printed 60), anchor: sentence following equation (1)]",
+      "For triangular inversion, kappa(T)=||T|| ||T^(-1)||, and the proof similarly defines kappa(Tii)=||Tii|| ||Tii^(-1)||. [PDF p. 8 (printed 66), anchor: paragraph after equation (8)]",
+      "Big-O error notation is asymptotic in epsilon and may absorb polynomial factors in dimension under the paper's standing convention. [PDF p. 3 (printed 61), anchor: interpretation of O(epsilon); PDF p. 6 (printed 64), anchor: perturbative condition-number expansion]"
     ],
     "implicit_context": [
-      "Equation (8) is subsequently applied repeatedly to products in recursive triangular matrix inversion. (PDF p. 8, printed p. 66, anchor: text following equation (8) and displayed recursive bounds).",
-      "The surrounding application uses square recursive blocks, but the rule's own introductory sentence only requires a matrix product C = A\u00b7B. (PDF p. 7, printed p. 65, anchor: recursive inverse block formula; PDF p. 8, printed p. 66, anchor: paragraph before equation (8))."
+      "The unadorned A and B in equation (8) function as reference values, while their computed approximations carry the stated inherited errors; equation (8) does not formally introduce perturbations Delta A and Delta B. [PDF p. 8 (printed 66), anchor: sentence introducing equation (8)]",
+      "For fixed matrices and dimension, the recursive error quantities remain first order in epsilon because the recurrence is linear in inherited error and is driven by terms proportional to epsilon. [PDF pp. 8-9 (printed 66-67), anchor: triangular-inversion error recurrences and final bound]",
+      "The recursive formula presumes repeated halving into equal blocks, but Section 3.1 does not state an odd-dimension convention, padding rule, or explicit power-of-two hypothesis. [PDF pp. 7-8 (printed 65-66), anchor: block formula and n/2 dimension sentence]",
+      "No real-only or complex-only scalar domain is stated for equation (1), equation (8), or recursive triangular inversion. [PDF p. 2 (printed 60), anchor: stable square-multiplication definition; PDF pp. 7-8 (printed 65-66), anchor: Section 3.1]"
+    ],
+    "algorithm_linkage": "Equation (8) is a local reusable rule for a stable matrix-product call with inherited operand errors; it contains no triangular-matrix variables and is later reused in dense inversion. In Section 3.1 it is invoked twice for the off-diagonal inverse block, first for T11^(-1) T12 and then for (T11^(-1) T12) T22^(-1); that parenthesization is explicitly described as arbitrary. The complete recursive algorithm supplies the inherited errors and recurrence, but is not a prerequisite for the local rule itself. [PDF p. 8 (printed 66), anchor: equation (8) and subsequent recurrences; PDF p. 10 (printed 68), anchor: later uses of equation (8)]",
+    "numerical_model": [
+      "The only explicit local multiplication model is the aggregate normwise bound ||C_comp-C|| <= mu(n) epsilon ||A|| ||B|| + O(epsilon^2). [PDF p. 2 (printed 60), anchor: equation (1)]",
+      "Equation (8) retains only terms first order in fresh roundoff and inherited errors. [PDF p. 8 (printed 66), anchor: first-order-analysis sentence and equation (8)]",
+      "The paper identifies epsilon as machine epsilon bounding roundoff but does not specify radix, rounding mode, scalar-operation formulas, fused operations, or a particular floating-point format in this setup. [PDF p. 2 (printed 60), anchor: sentence defining epsilon; PDF p. 8 (printed 66), anchor: equation (8)]",
+      "The enclosing Section 3 permits extra precision for logarithmic stability, but equation (8) itself uses a single generic working epsilon rather than a level-dependent precision schedule. [PDF pp. 6-7 (printed 64-65), anchor: logarithmic-stability setup and Lemma 3.2; PDF p. 8 (printed 66), anchor: equation (8)]"
+    ],
+    "error_notions": [
+      "Equation (1) is a normwise forward error bound for a computed matrix product relative to the exact product. [PDF p. 2 (printed 60), anchor: equation (1)]",
+      "Equation (8) is an absolute normwise first-order product-error rule, not a componentwise rule and not a relative-error formula. [PDF p. 8 (printed 66), anchor: sentence calling err(T^(-1),n) absolute and equation (8)]",
+      "err(A,n) and err(B,n) are inherited operand-error magnitudes; err(C,n) accounts for both those propagated errors and new multiplication roundoff. [PDF p. 8 (printed 66), anchor: equation (8) and its three annotations]",
+      "In the recursive application, err(n') is an upper bound uniform over the encountered diagonal inverse subblocks of order n'. [PDF p. 8 (printed 66), anchor: definition of err(n')]",
+      "The resulting absolute inverse-error bound is converted into the surrounding claim of logarithmic stability by comparison with ||T^(-1)|| and kappa(T). [PDF p. 9 (printed 67), anchor: solved recurrence and concluding sentence]"
     ],
     "norms": [
-      "All three terms use matrix norms: the local term contains ||A||||B||, right-error propagation contains ||A||, and left-error propagation contains ||B||. (PDF p. 8, printed p. 66, anchor: equation (8)).",
-      "No specific norm is named in equation (8); the earlier multiplication model permits changing norms with additional dimension-dependent factors. (PDF p. 2, printed p. 60, anchor: paragraph after equation (1); PDF p. 8, printed p. 66, anchor: equation (8))."
+      "The norm in equations (1) and (8) and in Section 3.1 is deliberately not named as a specific matrix norm. The paper says norms can be exchanged using finite-dimensional norm equivalence, with added n-dependent factors. [PDF p. 2 (printed 60), anchor: paragraph following equation (1)]",
+      "The propagation terms in equation (8) require a product-compatible submultiplicative norm and the triangle inequality; these properties are used implicitly rather than separately axiomatized. [PDF p. 8 (printed 66), anchor: equation (8)]",
+      "The triangular proof explicitly relies on ||Tii|| <= ||T|| and ||Tii^(-1)|| <= ||T^(-1)|| because the blocks are submatrices. A formal norm choice must validate these inequalities or include replacement equivalence constants. [PDF p. 8 (printed 66), anchor: paragraph after equation (8)]",
+      "The 2-norm is explicitly selected only later for the dense-inversion analysis; that later specialization does not retroactively identify the unnamed norm used in equation (8)'s triangular-inversion setting. [PDF p. 10 (printed 68), anchor: 'For the rest of this section the matrix norm ... will denote the 2-norm']",
+      "Changing the norm can change the effective dimension dependence of the multiplication bound and hence the exponent c absorbed into mu(n). [PDF p. 2 (printed 60), anchor: norm-equivalence discussion after equation (1)]"
     ],
-    "numerical_model": [
-      "\u03b5 is machine epsilon. (PDF p. 2, printed p. 60, anchor: equation (1) explanatory paragraph).",
-      "\u03bc(n) is a low-degree polynomial in n, \u03bc(n) = O(n^c) for some constant c. (PDF p. 2, printed p. 60, anchor: equation (1) explanatory paragraph).",
-      "Only the local multiplication term is explicitly proportional to \u03b5; inherited errors are propagated through the other two terms. (PDF p. 8, printed p. 66, anchor: equation (8))."
+    "constants_and_indexing": [
+      "mu(n)=O(n^c) for a constant c and is associated with the local multiplication dimension and chosen normwise stability bound. [PDF p. 2 (printed 60), anchor: definition of mu(n)]",
+      "At a recursive level for an n-by-n T, each multiplication is on n/2-by-n/2 blocks and therefore uses mu(n/2), not mu(n). [PDF p. 8 (printed 66), anchor: recursive product-error inequalities]",
+      "Equation (8) has coefficient one on each of its three displayed first-order contributions; no additional constant or index offset is printed there. [PDF p. 8 (printed 66), anchor: equation (8)]",
+      "The diagonal blocks are indexed T11 and T22, and the chosen multiplication order is T11^(-1) T12 followed by multiplication by T22^(-1). [PDF pp. 7-8 (printed 65-66), anchor: block inverse formula and parenthesization note]",
+      "The recursive bound uses kappa(T)=||T|| ||T^(-1)|| and produces the factor [2(kappa(T)+1)]^(log_2 n). [PDF pp. 8-9 (printed 66-67), anchor: condition-number paragraph and solved recurrence]"
+    ],
+    "higher_order_terms": [
+      "Equation (1) explicitly includes an O(epsilon^2) remainder, whereas equation (8) suppresses that remainder under its stated first-order analysis. [PDF p. 2 (printed 60), anchor: equation (1); PDF p. 8 (printed 66), anchor: first-order-analysis sentence and equation (8)]",
+      "Writing computed operands as A+Delta A and B+Delta B shows that the omitted inherited-error cross term is Delta A Delta B, bounded by err(A,n) err(B,n). This omission is the algebraic first-order interpretation of the paper's setup rather than a term explicitly enumerated by the authors. [PDF p. 8 (printed 66), anchor: inherited-error sentence and equation (8)]",
+      "Also omitted are corrections from evaluating the local multiplication-roundoff bound on perturbed operands, such as terms of scale epsilon ||A|| err(B,n), epsilon err(A,n) ||B||, and smaller products. These are second order when inherited errors are themselves first order in epsilon. [PDF p. 2 (printed 60), anchor: equation (1); PDF p. 8 (printed 66), anchor: first-order-analysis sentence and equation (8)]",
+      "Thus equation (8) is valid as the paper uses it only modulo quadratic and higher perturbation terms; without first-order scaling of inherited errors, the omitted cross terms need not be negligible. [PDF pp. 6 and 8 (printed 64 and 66), anchor: perturbative framework and first-order product analysis]"
+    ],
+    "exceptional_values": [
+      "No assumptions about overflow, underflow, subnormals, infinities, NaNs, or exceptional-operation behavior are stated in equation (1), equation (8), or the surrounding triangular-inversion analysis. [PDF p. 2 (printed 60), anchor: equation (1) and epsilon definition; PDF pp. 7-8 (printed 65-66), anchor: Section 3.1 and equation (8)]",
+      "No radix, rounding direction, or concrete machine format is specified; machine epsilon is the only explicit machine parameter. [PDF p. 2 (printed 60), anchor: sentence following equation (1)]",
+      "The product rule itself does not require invertible operands, but its triangular-inversion use presupposes that T and its diagonal blocks are invertible; singular-input behavior is not addressed. [PDF pp. 7-8 (printed 65-66), anchor: block inverse formula]"
     ]
   },
-  "task_id": "P10-T2",
   "undebatable_constraints": [
-    "All three first-order summands must be preserved. (PDF p. 8, printed p. 66, anchor: complete equation (8)).",
-    "The local term is \u03bc(n)\u03b5||A||||B||. (PDF p. 8, printed p. 66, anchor: first line of equation (8)).",
-    "Right-input error contributes ||A||err(B,n). (PDF p. 8, printed p. 66, anchor: second line of equation (8)).",
-    "Left-input error contributes err(A,n)||B||. (PDF p. 8, printed p. 66, anchor: third line of equation (8)).",
-    "The rule is first-order, absolute, and normwise. (PDF p. 8, printed p. 66, anchor: paragraph before equation (8))."
-  ]
+    "Equation (8) must retain all three displayed first-order terms: fresh multiplication error, propagated error from B, and propagated error from A. [PDF p. 8 (printed 66), anchor: equation (8)]",
+    "The fresh multiplication term must be mu(n) epsilon ||A|| ||B|| and comes from the stable normwise multiplication assumption (1). [PDF p. 2 (printed 60), anchor: equation (1); PDF p. 8 (printed 66), anchor: first line of equation (8)]",
+    "The two inherited-error terms must be ||A|| err(B,n) and err(A,n) ||B||, with the operand roles and order shown. [PDF p. 8 (printed 66), anchor: second and third lines of equation (8)]",
+    "The printed equality must not be interpreted as an exact identity of actual errors; the source explicitly places it in a first-order analysis and subsequently uses inequalities and bounds. [PDF p. 8 (printed 66), anchor: first-order-analysis sentence and recurrences after equation (8)]",
+    "The rule is absolute and normwise, not relative or componentwise. [PDF p. 8 (printed 66), anchor: absolute-error sentence and contrast with the stronger componentwise bound]",
+    "mu is polynomial in dimension and can acquire additional dimension dependence when the norm is changed. [PDF p. 2 (printed 60), anchor: paragraph following equation (1)]",
+    "Equation (8) is a local product rule and does not require the complete recursive triangular-inversion algorithm, although that algorithm is the immediate application. [PDF p. 8 (printed 66), anchor: generic product wording and recursive applications; PDF p. 10 (printed 68), anchor: reuse of equation (8)]",
+    "Cross products of inherited errors and all other quadratic or higher perturbation terms are outside the retained first-order contract. [PDF p. 8 (printed 66), anchor: first-order-analysis sentence and equation (8)]",
+    "No exceptional-value or detailed floating-point-format contract may be attributed to this passage beyond the use of machine epsilon to bound roundoff. [PDF p. 2 (printed 60), anchor: epsilon definition; PDF p. 8 (printed 66), anchor: equation (8)]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "Formal status of the equality sign in equation (8)",
+      "evidence": "The display uses '=', but the immediately preceding sentence calls the analysis first order, err(n') is later called a bound, and every concrete application is written with '<='. [PDF p. 8 (printed 66), anchor: equation (8) and following recurrences]",
+      "impact": "A formal contract should encode a first-order upper bound or equality modulo higher-order terms, not literal equality between the actual output-error norm and the displayed sum."
+    },
+    {
+      "issue": "Explicit scaling hypothesis for inherited operand errors",
+      "evidence": "The source calls err(A,n) and err(B,n) inherited errors inside a first-order analysis but never separately states that each is O(epsilon). The recursive result is nevertheless linear in epsilon. [PDF pp. 8-9 (printed 66-67), anchor: equation (8), recursive recurrences, and final bound]",
+      "impact": "Treating inherited errors as first order is justified within the recursive perturbation argument, but equation (8) is not a complete bound for arbitrarily large inherited errors."
+    },
+    {
+      "issue": "Exact definition of err(X,n)",
+      "evidence": "The source calls err(T^(-1),n) an absolute error, calls err(n') a bound, and uses err(A,n) and err(B,n) without defining whether they are exact error norms, selected upper bounds, or worst-case functions. [PDF p. 8 (printed 66), anchor: paragraph containing equation (8)]",
+      "impact": "A formalization must choose a bound interpretation and should not infer an exact scalar error function beyond what the source supplies."
+    },
+    {
+      "issue": "Permitted matrix norms",
+      "evidence": "No norm is named in equations (1) or (8); norm equivalence is invoked generally, while the triangular proof assumes unit-constant submatrix inequalities. The 2-norm is selected only later. [PDF p. 2 (printed 60), anchor: norm-equivalence discussion; PDF p. 8 (printed 66), anchor: submatrix inequalities; PDF p. 10 (printed 68), anchor: later 2-norm specialization]",
+      "impact": "The contract cannot quantify over arbitrary matrix norms without qualification; it needs compatible submultiplicativity and the stated submatrix behavior, or explicit equivalence constants."
+    },
+    {
+      "issue": "Scalar domain",
+      "evidence": "The relevant definitions refer only to square and triangular matrices and do not say whether entries are real or complex. [PDF p. 2 (printed 60), anchor: stable multiplication definition; PDF pp. 7-8 (printed 65-66), anchor: recursive triangular inversion]",
+      "impact": "No real-only or complex-only restriction is source-mandated for this passage."
+    },
+    {
+      "issue": "Uniformity of big-O terms and smallness conditions",
+      "evidence": "Equation (1) contains O(epsilon^2), and the paper allows polynomial n-factors in error notation, but it does not state uniform constants or a condition such as mu(n) epsilon < 1 in this passage. [PDF pp. 2-3 (printed 60-61), anchor: equation (1), mu definition, and O(epsilon) convention]",
+      "impact": "The claim is asymptotic first-order error accounting, not a fully quantified finite-epsilon theorem with explicit thresholds."
+    },
+    {
+      "issue": "Recursive dimension parity and base case",
+      "evidence": "Section 3.1 repeatedly partitions into n/2-by-n/2 blocks but does not state a power-of-two assumption, padding method, odd-size split, or scalar base-case error model. [PDF pp. 7-8 (printed 65-66), anchor: block inverse formula and dimension sentence]",
+      "impact": "This omission affects a complete recursive-algorithm specification but not the local product rule in equation (8)."
+    },
+    {
+      "issue": "Exceptional floating-point behavior",
+      "evidence": "The setup defines epsilon only as machine epsilon bounding roundoff and supplies no overflow, underflow, special-value, radix, or rounding-mode assumptions. [PDF p. 2 (printed 60), anchor: sentence following equation (1); PDF p. 8 (printed 66), anchor: equation (8)]",
+      "impact": "Such machine-format assumptions cannot be added to the source contract; implementations requiring them must state them separately."
+    }
+  ],
+  "contract_plain_english": "Assume a stable normwise n-by-n multiplication routine satisfying equation (1). If its two input matrices already carry first-order absolute normwise errors, then equation (8) accounts for the computed product's first-order error by adding exactly three contributions: fresh multiplication roundoff mu(n) epsilon ||A|| ||B||, propagation of B's error through A, and propagation of A's error through B. [PDF p. 2 (printed 60), anchor: equation (1); PDF p. 8 (printed 66), anchor: equation (8)] The printed equality is first-order bound notation, not an exact identity: quadratic inherited-error products, interactions between inherited errors and new roundoff, and the O(epsilon^2) remainder are omitted. [PDF p. 8 (printed 66), anchor: first-order-analysis sentence and subsequent inequalities] The rule is local and reusable; recursive triangular inversion applies it twice to -T11^(-1) T12 T22^(-1), using local dimension n/2, suitable norm properties, and inherited inverse errors to obtain its logarithmic-stability recurrence. [PDF pp. 8-9 (printed 66-67), anchor: recursive applications and solved recurrence] The norm and scalar domain are not fixed, mu may change with dimension and norm choice, and no machine assumptions beyond machine epsilon bounding roundoff are supplied. [PDF p. 2 (printed 60), anchor: mu, epsilon, and norm discussion; PDF p. 8 (printed 66), anchor: Section 3.1 error analysis]"
 }

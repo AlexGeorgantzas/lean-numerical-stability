@@ -1,0 +1,172 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P10-T2",
+  "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
+  "blind_translation_sha256": "559f6d1e96571c9877d952afdb42bb8205c09e30f049a44ad67792352c5349b1",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The supplied source packet identifies the published journal version and equation (8) on PDF page 8, printed page 66, as the complete three-term first-order product-error rule.",
+      "translation_evidence": "The blind translation is the supplied P10-T2 translation associated with the required digest and is sufficiently explicit to compare against equation (8).",
+      "reasoning": "The authoritative paper version and target passage are selected correctly."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper binds a size parameter n, conformable operands A and B with inherited error quantities, and their product C = A·B.",
+      "translation_evidence": "The translation universally binds five independent real square matrices A, dA, B, dB, and E of dimension n, but binds neither C nor scalar error quantities, machine epsilon, or μ.",
+      "reasoning": "The binder structure and types replace the paper's product and associated error quantities with arbitrary perturbation matrices."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The inherited errors err(A,n) and err(B,n) are associated with the particular operands, while err(C,n) is associated with the computed product under the multiplication model.",
+      "translation_evidence": "All five matrices are independently universally quantified, with no relation making dA and dB operand errors or E the local error of a computation.",
+      "reasoning": "The dependencies among operands, computation, and errors are lost and replaced by independent universal quantification."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes stable normwise matrix multiplication, first-order analysis, and operands carrying inherited errors.",
+      "translation_evidence": "The translation has no hypotheses concerning floating-point multiplication, first-order treatment, inherited errors, small perturbations, or a bound on E.",
+      "reasoning": "Essential explicit and implicit hypotheses of the numerical analysis are absent."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Equation (8) concludes that the product error has exactly three first-order contributions: μ(n)ε||A||||B||, ||A||err(B,n), and err(A,n)||B||.",
+      "translation_evidence": "The conclusion bounds ||E + A dB + dA B + dA dB||_F by four norm products, including ||dA||_F||dB||_F, and never states a bound for err(C,n).",
+      "reasoning": "The paper's complete three-term conclusion is not present and is replaced by a different four-term algebraic inequality."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The comparison requires understanding matrix products, matrix norms, and the three error contributions in equation (8).",
+      "translation_evidence": "The dependency ledger explicitly identifies square real matrices, ordinary matrix multiplication, pointwise addition, the Frobenius norm, real arithmetic, and the exact matrix E + A dB + dA B + dA dB.",
+      "reasoning": "The translation's imported operators and local definitions are fully interpreted, although those interpreted objects expose substantive mismatches with the paper."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "The paper distinguishes a computed product's local roundoff and inherited inaccuracies from its operands, even though exact and computed operands are not given separate notation in equation (8).",
+      "translation_evidence": "Every operation is exact real arithmetic, and E, dA, and dB are arbitrary matrices with no computed, rounded, or perturbation relationship.",
+      "reasoning": "The translation does not encode the distinction between exact operands, inaccurate operands, and the computed product."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Equation (8) is a local rule for stable matrix multiplication and is repeatedly used in the recursive triangular-inversion error analysis.",
+      "translation_evidence": "The proposition is an execution-independent norm inequality for arbitrary matrices and contains no multiplication algorithm, computed output, or recursive context.",
+      "reasoning": "The required linkage to the paper's algorithm and execution model is absent."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "Equation (8) is normwise but leaves the matrix norm unspecified; the surrounding discussion permits norm changes with dimension-dependent factors.",
+      "translation_evidence": "Every norm is fixed specifically to the entrywise Euclidean Frobenius norm.",
+      "reasoning": "The translation silently specializes an unspecified paper norm to the Frobenius norm."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The local term has coefficient μ(n)ε, all error quantities use the same n, and propagation is cross-oriented as ||A||err(B,n) and err(A,n)||B||.",
+      "translation_evidence": "The translation has no μ(n) or ε. Its n only fixes matrix dimensions, and its right side additionally contains ||dA||_F||dB||_F.",
+      "reasoning": "The defining dimension-dependent constant and machine-precision factor are missing, and an additional coefficient-one term is introduced."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The local multiplication contribution is governed by machine epsilon ε and a stable normwise floating-point multiplication model; no exceptional-value conventions are stated.",
+      "translation_evidence": "The proposition uses exact real arithmetic and encodes no precision, rounding, floating-point operation, underflow, overflow, or exceptional values.",
+      "reasoning": "The paper's floating-point model is omitted rather than represented."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "Equation (8) displays equality as first-order error accounting, while equation (1) supplies an inequality with an O(ε²) remainder; under either reading the intended first-order budget has three terms.",
+      "translation_evidence": "The translation states a non-strict upper bound with an additional nonnegative cross term and unrelated left-hand quantity.",
+      "reasoning": "Regardless of the paper's equality-versus-bound notation ambiguity, the translated inequality is a weaker four-term bound on different quantities and does not preserve the intended relation."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The paper concerns absolute normwise forward error in a computed matrix product, separated into local and inherited contributions.",
+      "translation_evidence": "The conclusion is a deterministic norm bound for an arbitrary exact matrix sum, without defining any matrix as an error or computed-output difference.",
+      "reasoning": "A generic perturbation-expression bound is substituted for the paper's forward-error statement."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Equation (8) is explicitly first order and omits products of inherited errors, ε times inherited errors, and the O(ε²) remainder shown in the foundational multiplication result.",
+      "translation_evidence": "The translation exactly retains the quadratic cross term dA dB and its norm contribution ||dA||_F||dB||_F.",
+      "reasoning": "The higher-order treatment directly contradicts the paper's first-order truncation."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The local rule is stated for conformable matrices, with square n-by-n blocks supplied by the surrounding application, and it does not select a particular norm in equation (8).",
+      "translation_evidence": "The translation restricts every object to a real n-by-n matrix, fixes the Frobenius norm, and permits n = 0.",
+      "reasoning": "The real, square, Frobenius, and zero-dimensional specialization is not presented or justified as a faithful specialization of the paper rule."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The paper's conclusion depends substantively on a stable multiplication model, machine precision, and inherited operand errors.",
+      "translation_evidence": "The proposition holds for arbitrary matrices by the triangle inequality and Frobenius submultiplicativity, independently of any numerical-error interpretation; at n = 0 it also reduces to 0 ≤ 0.",
+      "reasoning": "The translated statement is true for a generic exact-norm reason that does not encode the intended numerical result."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translation supplies no bound ||E|| ≤ μ(n)ε||A||||B||, no identification of dA and dB with inherited errors, and retains the extra quadratic term. Its inequality therefore cannot yield the paper's three-term first-order error rule."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper constrains errors arising from a stable floating-point product; it does not assert a universal exact Frobenius inequality for five arbitrary independent real matrices or define the translation's perturbation expansion."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "numerical-model substitution",
+      "paper_evidence": "Equation (8) is a first-order absolute normwise forward-error rule for stable floating-point matrix multiplication.",
+      "translation_evidence": "The translation is an exact-real Frobenius norm inequality for arbitrary matrices with no floating-point computation.",
+      "impact": "The translation expresses a different mathematical result and neither statement semantically implies the other."
+    },
+    {
+      "severity": "major",
+      "category": "missing local-error factor",
+      "paper_evidence": "The fresh multiplication-error term is μ(n)ε||A||||B||.",
+      "translation_evidence": "The corresponding apparent object E is arbitrary and contributes only ||E||_F, with no μ(n), ε, or local-error bound.",
+      "impact": "The central machine-precision-dependent contribution cannot be recovered from the translated proposition."
+    },
+    {
+      "severity": "major",
+      "category": "higher-order mismatch",
+      "paper_evidence": "The paper explicitly performs first-order accounting and omits the product of inherited operand errors.",
+      "translation_evidence": "Both dA dB and ||dA||_F||dB||_F are retained exactly.",
+      "impact": "The translation changes the error budget and weakens the upper bound by adding a quadratic contribution."
+    },
+    {
+      "severity": "major",
+      "category": "error-variable independence",
+      "paper_evidence": "The error quantities are tied to A, B, and their computed product C.",
+      "translation_evidence": "dA, dB, and E are independent arbitrary matrices and need not represent errors or perturbations.",
+      "impact": "The proposition loses the semantic dependencies that make equation (8) an error-propagation statement."
+    },
+    {
+      "severity": "minor",
+      "category": "norm and domain specialization",
+      "paper_evidence": "Equation (8) uses an unspecified matrix norm for conformable operands.",
+      "translation_evidence": "The proposition fixes real square matrices and the Frobenius norm.",
+      "impact": "The translation silently narrows the domain and norm semantics beyond what the target passage specifies."
+    }
+  ],
+  "rationale": "The blind translation accurately describes a standard exact Frobenius-norm bound for a perturbation expansion, but that bound is not equation (8). It omits the stable floating-point model and μ(n)ε local term, makes all putative errors arbitrary matrices, fixes a norm not selected by the paper, and retains the quadratic dA dB term that first-order analysis discards. These structural differences make both semantic implications fail, so the appropriate classification is not-faithful-different."
+}

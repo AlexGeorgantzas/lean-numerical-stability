@@ -3,79 +3,86 @@
   "adjudicated": false,
   "adjudication_reasons": [],
   "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T16:00:34.406753+00:00",
+  "completed_at_utc": "2026-08-15T06:22:45.653654+00:00",
   "findings": [
     {
-      "category": "missing-local-roundoff-model",
-      "impact": "The target cannot establish the paper's local rounding-error budget or any floating-point stability claim.",
-      "lean_evidence": "Lean replaces it by norm(E) for an arbitrary universally quantified matrix E and assumes no bound relating E to mu, epsilon, A, or B.",
-      "paper_evidence": "The fresh multiplication contribution in equation (8) is mu(n)*epsilon*norm(A)*norm(B), inherited from the stable multiplication bound in equation (1).",
+      "category": "different-error-object",
+      "impact": "The formal inequality can hold while the actual computed-product error is arbitrarily larger than equation (8)'s budget.",
+      "lean_evidence": "D004 takes the norm only after exactly subtracting Delta A*Delta B and higherOrderRemainder.",
+      "paper_evidence": "On printed pages 60 and 66, the bounded quantity is the computed-product error relative to AB, interpreted to first order with higher terms suppressed.",
       "severity": "critical"
     },
     {
-      "category": "different-error-object-and-higher-order-term",
-      "impact": "The additional term makes the right side looser rather than stronger, and the exact perturbation lemma is not the paper's three-term rule.",
-      "lean_evidence": "The target bounds the exact matrix expression E+A*dB+dA*B+dA*dB and includes norm(dA)*norm(dB).",
-      "paper_evidence": "Equation (8) is explicitly first order and has only local roundoff plus the two inherited-error propagation terms.",
+      "category": "nonuniform-higher-order-semantics",
+      "impact": "The perturbation cross term need not be quadratic, and any finite discrepancy can be labeled higher order at one positive epsilon.",
+      "lean_evidence": "D014 represents one fixed epsilon; inherited errors have no epsilon scaling, and higherOrderCoeff is a run-local field chosen after the remainder.",
+      "paper_evidence": "The first-order analysis and O(epsilon^2) notation require inherited errors of first order and remainder constants uniform with respect to epsilon.",
+      "severity": "critical"
+    },
+    {
+      "category": "algorithm-and-mu-quantifier-scope",
+      "impact": "The theorem does not establish a uniform stable multiplication routine or its algorithm-level growth contract.",
+      "lean_evidence": "The exact decomposition and fresh-error certificate contain no execution object, while mu and its polynomial witnesses can vary from run to run with n and epsilon.",
+      "paper_evidence": "Equation (1) assumes a stable multiplication algorithm with a polynomial dimension factor mu shared across its calls.",
       "severity": "major"
     },
     {
-      "category": "missing-computation-and-algorithm-linkage",
-      "impact": "The theorem holds independently of the numerical algorithm and therefore does not measure the claimed paper result.",
-      "lean_evidence": "No computed product, multiplication algorithm, inherited-error relation, or recursive execution appears in the proposition.",
-      "paper_evidence": "The passage concerns the computed product C=A*B under a stable matrix-multiplication model and is immediately applied inside recursive triangular inversion.",
-      "severity": "major"
+      "category": "faithful-local-structure",
+      "impact": "The local algebra, norm semantics, coefficient placement, real specialization, and omission of the full recursive inversion algorithm are individually appropriate.",
+      "lean_evidence": "D005 has exactly those three terms, D020 supplies the compatible norm axioms, and D014's local_error_bound contains only equation (1)'s fresh term.",
+      "paper_evidence": "Equation (8) is a local reusable rule with fresh roundoff and two inherited-error terms; printed page 68 reuses it outside triangular inversion.",
+      "severity": "note"
     },
     {
-      "category": "unsupported-norm-specialization",
-      "impact": "This is a nontrivial real-matrix specialization, but it silently chooses norm semantics and factors not fixed by the source.",
-      "lean_evidence": "Every magnitude is fixed to the Frobenius norm with coefficient-one product bounds.",
-      "paper_evidence": "Equation (8) leaves the matrix norm unspecified, and the discussion after equation (1) warns that changing norms may modify dimension-dependent factors.",
-      "severity": "minor"
-    },
-    {
-      "category": "numerical-model substitution",
-      "impact": "The translation expresses a different mathematical result and neither statement semantically implies the other.",
-      "paper_evidence": "Equation (8) is a first-order absolute normwise forward-error rule for stable floating-point matrix multiplication.",
+      "category": "bounded-error-object",
+      "impact": "The proposition concerns a different error object and does not directly bound the computed product's full forward error.",
+      "paper_evidence": "Equation (8) is presented as the first-order absolute error err(C,n) of the computed product.",
       "severity": "critical",
-      "translation_evidence": "The translation is an exact-real Frobenius norm inequality for arbitrary matrices with no floating-point computation."
+      "translation_evidence": "The left-hand side is N(((C-AB)-Delta A Delta B)-R), with both the perturbation cross product and named remainder removed before taking the norm."
     },
     {
-      "category": "missing local-error factor",
-      "impact": "The central machine-precision-dependent contribution cannot be recovered from the translated proposition.",
-      "paper_evidence": "The fresh multiplication-error term is \u03bc(n)\u03b5||A||||B||.",
+      "category": "first-order-uniformity",
+      "impact": "The removed cross product can be leading order or arbitrarily large, so its omission is not justified as a higher-order omission.",
+      "paper_evidence": "The passage explicitly conducts first-order analysis, and the recursive inherited errors produced on following lines remain proportional to epsilon.",
       "severity": "major",
-      "translation_evidence": "The corresponding apparent object E is arbitrary and contributes only ||E||_F, with no \u03bc(n), \u03b5, or local-error bound."
+      "translation_evidence": "Delta A, Delta B, eta_A, and eta_B belong only to one fixed-epsilon run and have no O(epsilon) scaling witnesses."
     },
     {
-      "category": "higher-order mismatch",
-      "impact": "The translation changes the error budget and weakens the upper bound by adding a quadratic contribution.",
-      "paper_evidence": "The paper explicitly performs first-order accounting and omits the product of inherited operand errors.",
+      "category": "higher-order-remainder",
+      "impact": "The remainder certificate does not represent a uniform big-O term and places no meaningful higher-order control on the asserted error.",
+      "paper_evidence": "Equation (1)'s O(epsilon^2) denotes asymptotic higher-order error.",
       "severity": "major",
-      "translation_evidence": "Both dA dB and ||dA||_F||dB||_F are retained exactly."
+      "translation_evidence": "Kappa is packaged after epsilon and R, can be inflated separately for each run, and its bound is irrelevant to the conclusion because R is canceled."
     },
     {
-      "category": "error-variable independence",
-      "impact": "The proposition loses the semantic dependencies that make equation (8) an error-propagation statement.",
-      "paper_evidence": "The error quantities are tied to A, B, and their computed product C.",
+      "category": "coefficient-dependence",
+      "impact": "The formal scope loses the fixed algorithm-wide dependence needed for the paper's stability model.",
+      "paper_evidence": "Mu is the polynomial-growth stability factor of a selected multiplication algorithm and norm.",
       "severity": "major",
-      "translation_evidence": "dA, dB, and E are independent arbitrary matrices and need not represent errors or perturbations."
+      "translation_evidence": "Each run independently supplies mu, its degree, and its growth constant after supplying epsilon."
     },
     {
-      "category": "norm and domain specialization",
-      "impact": "The translation silently narrows the domain and norm semantics beyond what the target passage specifies.",
-      "paper_evidence": "Equation (8) uses an unspecified matrix norm for conformable operands.",
-      "severity": "minor",
-      "translation_evidence": "The proposition fixes real square matrices and the Frobenius norm."
+      "category": "local-certificate-modularization",
+      "impact": "This part is noncircular and is a legitimate local abstraction; the complete recursive inversion algorithm is not required.",
+      "paper_evidence": "Equation (8) derives inherited-error propagation from equation (1)'s fresh multiplication error.",
+      "severity": "note",
+      "translation_evidence": "The L certificate contains only the fresh term, while the two inherited terms are derived from the decomposition and norm axioms."
+    },
+    {
+      "category": "norm-and-domain",
+      "impact": "These choices are acceptable for the local equation and are not the source of rejection.",
+      "paper_evidence": "The local rule uses an unnamed product-compatible norm and does not specify a scalar domain.",
+      "severity": "note",
+      "translation_evidence": "The norm is abstract and submultiplicative, and matrices are specialized to real square matrices."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "Lean places no upper bound on norm(E) by mu(n)*epsilon*norm(A)*norm(B), does not identify dA and dB with inherited errors, and retains a nonnegative cross term. Consequently its four-term generic bound cannot yield the paper's three-term first-order computed-error rule.",
+      "reasoning": "From the Lean run one can at most derive an actual-error bound equal to the displayed budget plus leftInheritedError*rightInheritedError and higherOrderCoeff*epsilon^2. With no epsilon-uniform first-order inherited errors or uniform coefficient, those additions are not O(epsilon^2), so the paper's first-order actual-error rule does not follow.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper's first-order scalar accounting does not quantify arbitrary perturbation matrices or E, does not state the exact matrix expansion, omits dA*dB, and leaves the norm unspecified. The Lean inequality is independently true from algebraic norm properties, not a semantic consequence of equation (8).",
+      "reasoning": "The paper gives an asymptotic scalar bound for a stable multiplication execution; it does not assert the Lean theorem's universal exact decomposition or control the specifically truncated matrix after independently chosen cross and remainder terms. Possible cancellation also prevents an actual-error bound from implying a bound on an arbitrarily selected component.",
       "verdict": "no"
     }
   },
@@ -83,7 +90,7 @@
     "direct": "not-faithful-different",
     "roundtrip": "not-faithful-different"
   },
-  "rationale": "The Lean proposition is a valid exact Frobenius-norm inequality for an unconstrained algebraic perturbation expansion. Equation (8), by contrast, is a first-order absolute normwise computed-error rule tied to stable multiplication, with a specified mu(n)*epsilon local term and exactly two inherited-error propagation terms. Because Lean neither constrains E nor connects dA and dB to inherited errors, and because it retains the omitted higher-order cross term, neither statement implies the other in the intended semantics. The result is therefore not-faithful-different, not a stronger formalization.",
+  "rationale": "The PDF directly supports a local, absolute normwise first-order product-error rule. The Lean packet correctly models real square operands, exact multiplication, a compatible norm, and the three displayed budget terms; its local equation (1) certificate is legitimate modularization and does not assume equation (8), and the complete recursive inversion algorithm is unnecessary. The decisive mismatch is the bounded object and asymptotic scope. Lean bounds computedProduct-AB-DeltaA*DeltaB-remainder exactly, while the paper accounts for the actual computed-product error modulo uniformly higher-order effects. The run contains no epsilon-indexed inherited-error families, its higher-order coefficient can depend on the fixed epsilon and remainder, and its mu witnesses are run-local. Consequently cross and remainder deletion can hide arbitrarily large actual error, even allowing arbitrary computed outputs to satisfy a run certificate. Neither implication holds, so this is a different, non-faithful proposition rather than a stronger theorem or an acceptable specialization.",
   "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
