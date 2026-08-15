@@ -1,257 +1,837 @@
 {
-  "schema_version": "highambench-faithfulness-0.1",
+  "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "1b49b7fd0dbd315f2767a43f76cab9d60a7d713a1084e882569d4f887bb4d682",
+  "dossier_sha256": "46b0d3e1cd0684aaade6805383722507fcb566370117112877cc9c6b08555b96",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "For a natural number n, this is the type of real n-by-n matrices, represented as functions Fin n -> Fin n -> Real.",
-      "effect_on_target": "It makes G a square real matrix whose row and column indices both range over Fin n.",
+      "meaning": "An indexed run-package type for dimensions m and n. Its constructor D003 packages matrices A, Q, and R, dimensional and triangularity assumptions, an error parameter, inverses of every leading principal block of R, smallness assumptions, and a first-column normalization witness.",
+      "effect_on_target": "The target universally quantifies over inhabitants of this highly restricted package rather than over arbitrary matrices.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "For a real n-by-n matrix A, this is sqrt(sum_i sum_j (A i j)^2), with both sums over all indices in Fin n.",
-      "effect_on_target": "It defines the matrix quantity in the hypothesis, namely the Frobenius norm of G.",
+      "meaning": "A proposition indexed by a run. Its supplied constructor D004 certifies a chain of first-column normalization, residual, norm-equality, and norm-bound statements.",
+      "effect_on_target": "This is the target conclusion asserted for every packaged run.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "For a matrix A and vector x, this is the matrix-vector product Matrix.mulVec A x.",
-      "effect_on_target": "It makes the vector in the left-hand side of the conclusion equal to G a.",
+      "meaning": "The run constructor requires natural dimensions with 0 < m, 0 < n, and n ≤ m; real matrices A,Q of size m by n and R of size n by n; injectivity of x ↦ Ax; upper triangularity of R; epsilonM ≥ 0; a chosen two-sided inverse for every leading principal block of R; the corresponding smallness inequalities; and a first-column normalization witness.",
+      "effect_on_target": "It determines all assumptions implicit in the quantified variable run.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "For a real vector x indexed by Fin n, this is sqrt(sum_i (x i)^2).",
-      "effect_on_target": "It defines the Euclidean norm used for both G a and a.",
+      "meaning": "The constructor of the conclusion package requires the first-column normalization equation, the bound on its perturbation matrix, identification of the m by 1 residual matrix with its residual vector, the equation e = -G1 a, two norm equalities, the matrix-vector operator-norm bound, and the final comparison using epsilonM.",
+      "effect_on_target": "It makes LocalDef002 run a conjunction-like certificate yielding ||A[:,0]-Q[:,0]R00||₂ ≤ epsilonM ||A[:,0]||₂ through the recorded equality and inequality chain.",
       "status": "understood"
     },
     {
       "id": "D005",
-      "name": "Fin",
-      "meaning": "Fin n is the finite index type with n indices, conventionally represented by natural numbers strictly less than n.",
-      "effect_on_target": "It indexes all rows, columns, and vector coordinates and therefore fixes every dimension at n.",
+      "name": "LocalDef005",
+      "meaning": "The projection selecting the m by n real matrix A from a run.",
+      "effect_on_target": "Supplies the input matrix and its first column.",
       "status": "understood"
     },
     {
       "id": "D006",
-      "name": "HMul.hMul",
-      "meaning": "This selects the multiplication operation supplied by an HMul instance.",
-      "effect_on_target": "With the supplied real instances, it interprets the right-hand side as the ordinary real product epsilon * LocalDef004 a.",
+      "name": "LocalDef006",
+      "meaning": "The projection selecting the m by n real matrix Q from a run.",
+      "effect_on_target": "Supplies the matrix whose first column is used in the normalization and residual.",
       "status": "understood"
     },
     {
       "id": "D007",
-      "name": "LE.le",
-      "meaning": "This selects the binary less-than-or-equal relation supplied by an LE instance.",
-      "effect_on_target": "With Real.instLE, both displayed relations are ordinary inequalities between real numbers.",
+      "name": "LocalDef007",
+      "meaning": "The projection selecting the n by n real matrix R from a run.",
+      "effect_on_target": "Supplies R00 and all leading principal blocks.",
       "status": "understood"
     },
     {
       "id": "D008",
-      "name": "Nat",
-      "meaning": "This is the type of natural numbers.",
-      "effect_on_target": "The dimension n is universally quantified over all natural numbers, including zero.",
+      "name": "LocalDef008",
+      "meaning": "Every run carries a proof that n is positive.",
+      "effect_on_target": "Makes the zeroth column and the entry R00 well-defined.",
       "status": "understood"
     },
     {
       "id": "D009",
-      "name": "Real",
-      "meaning": "This is the type of real numbers.",
-      "effect_on_target": "Matrix entries, vector coordinates, epsilon, norms, sums, and products are all real-valued.",
+      "name": "LocalDef009",
+      "meaning": "The projection selecting the real number epsilonM from a run.",
+      "effect_on_target": "This is the perturbation bound and the relative residual-bound constant.",
       "status": "understood"
     },
     {
       "id": "D010",
-      "name": "Real.instLE",
-      "meaning": "This equips Real with its standard order relation.",
-      "effect_on_target": "It turns the hypothesis and conclusion into standard real inequalities.",
+      "name": "LocalDef010",
+      "meaning": "The projection selecting the first-column normalization witness for a = A[:,0], q = Q[:,0], r11 = R00, and epsilonM.",
+      "effect_on_target": "Provides the particular perturbation matrix G1 used throughout the conclusion.",
       "status": "understood"
     },
     {
       "id": "D011",
-      "name": "Real.instMul",
-      "meaning": "This equips Real with ordinary real multiplication.",
-      "effect_on_target": "It determines the multiplication epsilon * ||a||_2 and contributes the multiplication used in matrix-vector products and squares.",
+      "name": "LocalDef011",
+      "meaning": "LocalDef011 n is the type of n by n real matrices.",
+      "effect_on_target": "Types R, its leading blocks and inverses, G1, and identity matrices.",
       "status": "understood"
     },
     {
       "id": "D012",
-      "name": "instHMul",
-      "meaning": "Given a multiplication operation on a type, this constructs homogeneous multiplication HMul alpha alpha alpha using that operation.",
-      "effect_on_target": "It connects HMul.hMul in the conclusion to ordinary multiplication on Real.",
+      "name": "LocalDef012",
+      "meaning": "A first-column normalization witness type indexed by vectors a,q, a scalar r11, and epsilonM; D027 shows it contains a matrix G1 satisfying r11 > 0, q = (a+G1a)/r11, and ||G1|| ≤ epsilonM.",
+      "effect_on_target": "Embeds an explicit perturbation matrix and its certified properties into each run.",
       "status": "understood"
     },
     {
       "id": "D013",
-      "name": "Fin.fintype",
-      "meaning": "This supplies a finite enumeration of every element of Fin n.",
-      "effect_on_target": "It makes the coordinate, row, and column sums finite sums over all n indices.",
+      "name": "LocalDef013",
+      "meaning": "The projection selecting G1 from a first-column normalization witness.",
+      "effect_on_target": "Fixes the same G1 in every equality and inequality of the conclusion.",
       "status": "understood"
     },
     {
       "id": "D014",
-      "name": "Finset.sum",
-      "meaning": "This sums the values of a function over a finite set using the additive commutative monoid structure.",
-      "effect_on_target": "It forms the sums of squared entries, squared coordinates, and the finite dot products in matrix-vector multiplication.",
+      "name": "LocalDef014",
+      "meaning": "LocalDef014 m n is the type of m by n real matrices, represented as functions Fin m → Fin n → Real.",
+      "effect_on_target": "Determines all rectangular matrix dimensions.",
       "status": "understood"
     },
     {
       "id": "D015",
-      "name": "Finset.univ",
-      "meaning": "For a finite type, this is the finite set containing every element of that type.",
-      "effect_on_target": "It ensures that every norm-defining sum ranges over every index in Fin n.",
+      "name": "LocalDef015",
+      "meaning": "The real coefficient C(m,s) = alpha(m,s) + 2 beta(m,s), with alpha from D031 and beta from D029.",
+      "effect_on_target": "Appears in every leading-block smallness assumption C(m,s) epsilonM kappa_s² < 1.",
       "status": "understood"
     },
     {
       "id": "D016",
-      "name": "HPow.hPow",
-      "meaning": "This selects the exponentiation operation supplied by an HPow instance.",
-      "effect_on_target": "It interprets each occurrence of an entry or coordinate raised to 2 as its real square.",
+      "name": "LocalDef016",
+      "meaning": "The m by 1 residual matrix E = A[:,0] - Q[:,0][R00], where [R00] is the 1 by 1 matrix containing R00.",
+      "effect_on_target": "It is the matrix whose sole-column Euclidean norm is bounded.",
       "status": "understood"
     },
     {
       "id": "D017",
-      "name": "Matrix",
-      "meaning": "A matrix with row type m, column type n, and entries in alpha is a function m -> n -> alpha.",
-      "effect_on_target": "It gives the pointwise interpretation G i j of the real square matrix G.",
+      "name": "LocalDef017",
+      "meaning": "For an m by 1 matrix E, this is sqrt(sum_i E(i,0)^2), the Euclidean norm of its unique column.",
+      "effect_on_target": "Defines the left side of the first-column residual bound; it is not using the matrix operator norm.",
       "status": "understood"
     },
     {
       "id": "D018",
-      "name": "Matrix.mulVec",
-      "meaning": "For each row index i, matrix-vector multiplication returns the dot product of row j |-> M i j with v, namely sum_j M i j * v j.",
-      "effect_on_target": "Thus the i-th coordinate of LocalDef003 G a is sum_j G i j * a j.",
+      "name": "LocalDef018",
+      "meaning": "The residual vector e with entries e_i = A(i,0) - Q(i,0)R(0,0).",
+      "effect_on_target": "Connects the residual matrix to -G1 A[:,0].",
       "status": "understood"
     },
     {
       "id": "D019",
-      "name": "Monoid.toNatPow",
-      "meaning": "A monoid supplies natural-number exponentiation by repeated multiplication.",
-      "effect_on_target": "It gives the real natural power operation used to form every square x^2.",
+      "name": "LocalDef019",
+      "meaning": "Given 0 < n, constructs the zeroth element of Fin n.",
+      "effect_on_target": "Selects the first, zero-indexed column and the entry R00.",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
-      "meaning": "This forgets part of a nonunital commutative ring structure while retaining the nonunital, potentially nonassociative commutative ring operations.",
-      "effect_on_target": "It is part of the instance chain providing the algebraic structure required for real matrix-vector multiplication; it adds no mathematical hypothesis.",
+      "name": "LocalDef020",
+      "meaning": "The identity matrix of the requested square dimension.",
+      "effect_on_target": "Specifies that each supplied leading-block inverse is both a left and right inverse.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
-      "meaning": "This forgets commutativity from a nonunital nonassociative commutative ring structure.",
-      "effect_on_target": "It continues the instance chain needed by Matrix.mulVec and adds no condition to the proposition.",
+      "name": "LocalDef021",
+      "meaning": "For square matrices R and Rinv, returns ||R||₂→₂ ||Rinv||₂→₂.",
+      "effect_on_target": "Defines the condition-number factor kappa_s used squared in the smallness hypotheses.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
-      "meaning": "This exposes the additive and multiplicative semiring operations underlying a nonunital nonassociative ring.",
-      "effect_on_target": "It supplies the NonUnitalNonAssocSemiring Real instance required to define Matrix.mulVec.",
+      "name": "LocalDef022",
+      "meaning": "For k in Fin n, extracts the leading principal (k.val+1) by (k.val+1) block of R.",
+      "effect_on_target": "Determines exactly which submatrices must have supplied two-sided inverses.",
       "status": "understood"
     },
     {
       "id": "D023",
-      "name": "NonUnitalNormedCommRing.toNonUnitalCommRing",
-      "meaning": "This forgets the normed structure of a nonunital normed commutative ring and retains its nonunital commutative ring structure.",
-      "effect_on_target": "It is an infrastructural step in obtaining the algebraic structure needed for real matrix-vector multiplication.",
+      "name": "LocalDef023",
+      "meaning": "Ordinary square matrix multiplication.",
+      "effect_on_target": "Expresses both inverse identities for each leading block.",
       "status": "understood"
     },
     {
       "id": "D024",
-      "name": "NormedCommRing.toNonUnitalNormedCommRing",
-      "meaning": "This forgets the multiplicative identity from a normed commutative ring while retaining its normed nonunital ring structure.",
-      "effect_on_target": "Applied to Real, it begins the structure-forgetting chain that supplies Matrix.mulVec with the required semiring instance.",
+      "name": "LocalDef024",
+      "meaning": "Ordinary matrix-vector multiplication, (Ax)_i = sum_j A_ij x_j.",
+      "effect_on_target": "Defines G1a, Ax, and the matrix-vector map whose injectivity is assumed.",
       "status": "understood"
     },
     {
       "id": "D025",
-      "name": "OfNat.ofNat",
-      "meaning": "This interprets a natural-number numeral in a type equipped with the corresponding OfNat instance.",
-      "effect_on_target": "It interprets the exponent numeral 2 used in every squared entry or coordinate.",
+      "name": "LocalDef025",
+      "meaning": "The matrix norm selected by Mathlib's L2-operator normed additive-group instance.",
+      "effect_on_target": "Measures G1, leading blocks of R, and their inverses in all assumptions and bounds.",
       "status": "understood"
     },
     {
       "id": "D026",
-      "name": "Real.instAddCommMonoid",
-      "meaning": "This equips Real with its additive commutative monoid structure.",
-      "effect_on_target": "It permits the finite sums appearing in the matrix and vector norms.",
+      "name": "LocalDef026",
+      "meaning": "For x in R^n, ||x||₂ = sqrt(sum_i x_i²).",
+      "effect_on_target": "Measures the residual vector, G1a, and the first column of A.",
       "status": "understood"
     },
     {
       "id": "D027",
-      "name": "Real.instMonoid",
-      "meaning": "This equips Real with its multiplicative monoid structure.",
-      "effect_on_target": "It supplies natural powers on Real, in particular the squares used in all norm formulas.",
+      "name": "LocalDef027",
+      "meaning": "Constructs a first-column normalization witness from G1, r11 > 0, q_i = (a_i+(G1a)_i)/r11 for all i, and ||G1|| ≤ epsilonM.",
+      "effect_on_target": "Supplies the essential equation implying a-q r11 = -G1a and the perturbation-size bound.",
       "status": "understood"
     },
     {
       "id": "D028",
-      "name": "Real.normedCommRing",
-      "meaning": "This equips Real with its standard normed commutative ring structure.",
-      "effect_on_target": "It supplies the real algebraic structures from which the structure required by Matrix.mulVec is obtained; it introduces no additional quantified assumption.",
+      "name": "LocalDef028",
+      "meaning": "The m by 1 matrix whose unique column is A[:,0].",
+      "effect_on_target": "Forms the first term of the residual matrix.",
       "status": "understood"
     },
     {
       "id": "D029",
-      "name": "Real.sqrt",
-      "meaning": "This is the nonnegative real square-root operation, implemented through the nonnegative reals; on a negative input it uses the input's nonnegative truncation.",
-      "effect_on_target": "It takes the square root of each sum of squares. Those inputs are nonnegative, so these are the usual Frobenius and Euclidean norms.",
+      "name": "LocalDef029",
+      "meaning": "The piecewise real quantity beta(m,s): beta(m,1)=1, and beta(m,s)=2s sqrt(2m)+2 sqrt(s) when s≠1.",
+      "effect_on_target": "Contributes twice its value to the leading-block coefficient C(m,s).",
       "status": "understood"
     },
     {
       "id": "D030",
-      "name": "instHPow",
-      "meaning": "Given a power operation Pow alpha beta, this constructs the corresponding homogeneous HPow alpha beta alpha operation.",
-      "effect_on_target": "It connects HPow.hPow on real bases and natural exponents to ordinary natural-number powers of real numbers.",
+      "name": "LocalDef030",
+      "meaning": "Proof-only evidence permitting the concrete natural literal 2 to be cast through the AtLeastTwo numeral mechanism.",
+      "effect_on_target": "Supports exact occurrences of the real numeral 2; it imposes no hypothesis on m, n, or the matrices.",
       "status": "understood"
     },
     {
       "id": "D031",
+      "name": "LocalDef031",
+      "meaning": "The piecewise real quantity alpha(m,s): alpha(m,1)=m+2, and alpha(m,s)=(7/2)ms²-(3/2)ms+16s when s≠1.",
+      "effect_on_target": "Combines with D029 to form C(m,s).",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "LocalDef032",
+      "meaning": "Proof that the natural number 1 is nonzero.",
+      "effect_on_target": "Allows the literal index 0 in Fin 1 when taking the unique column of an m by 1 matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "LocalDef033",
+      "meaning": "For k in Fin n, proves k.val+1 ≤ n.",
+      "effect_on_target": "Justifies embedding indices of each leading block into indices of R.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "LocalDef034",
+      "meaning": "The m by 1 matrix whose unique column is Q[:,0].",
+      "effect_on_target": "Forms the left factor Q[:,0] in the residual product.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "LocalDef035",
+      "meaning": "The 1 by 1 matrix all of whose sole entry is R(0,0).",
+      "effect_on_target": "Forms the scalar right factor in Q[:,0][R00].",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "LocalDef036",
+      "meaning": "Ordinary rectangular matrix multiplication.",
+      "effect_on_target": "Computes the m by 1 product Q[:,0][R00].",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "LocalDef037",
+      "meaning": "Proof-only evidence permitting the concrete natural literal 7 to be cast to the reals.",
+      "effect_on_target": "Supports the coefficient 7/2 in alpha(m,s).",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "LocalDef038",
+      "meaning": "Proof-only evidence permitting the concrete natural literal 3 to be cast to the reals.",
+      "effect_on_target": "Supports the coefficient 3/2 in alpha(m,s).",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "LocalDef039",
+      "meaning": "Proof-only evidence permitting the concrete natural literal 16 to be cast to the reals.",
+      "effect_on_target": "Supports the term 16s in alpha(m,s).",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "Nat",
+      "meaning": "The natural numbers.",
+      "effect_on_target": "Provide dimensions, finite-index bounds, and the integer arguments of the coefficient functions.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "Extracts division from a division-inverse monoid.",
+      "effect_on_target": "Interprets real divisions such as (a+G1a)/r11 and 7/2.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "Expresses triangular zeros, inverse identities, normalization formulas, residual identities, and norm equalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type with values 0 through n-1.",
+      "effect_on_target": "Indexes every matrix and finite-dimensional vector.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "Fin.fintype",
+      "meaning": "The finite enumeration of Fin n.",
+      "effect_on_target": "Enables finite sums in matrix products and Euclidean norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "Fin.val",
+      "meaning": "Returns the underlying natural value of a finite index.",
+      "effect_on_target": "Defines upper triangularity and the leading-block size k.val+1.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "Function.Injective",
+      "meaning": "A function f is injective when f(a1)=f(a2) implies a1=a2.",
+      "effect_on_target": "Requires the matrix-vector map x ↦ Ax from R^n to R^m to be injective.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "HAdd.hAdd",
+      "meaning": "Typeclass-dispatched addition.",
+      "effect_on_target": "Realizes natural and real additions in dimensions, coefficients, and normalization equations.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "HDiv.hDiv",
+      "meaning": "Typeclass-dispatched division.",
+      "effect_on_target": "Realizes division by r11 and the rational coefficients 7/2 and 3/2.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "HMul.hMul",
+      "meaning": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "Realizes scalar products and matrix products throughout the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "HPow.hPow",
+      "meaning": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "Interprets squares in Euclidean norms, alpha(m,s), and the smallness condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "LE.le",
+      "meaning": "Typeclass-dispatched non-strict order.",
+      "effect_on_target": "Expresses n≤m, epsilonM≥0, and all norm bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "LT.lt",
+      "meaning": "Typeclass-dispatched strict order.",
+      "effect_on_target": "Expresses positive dimensions, r11>0, upper-triangular index order, and strict smallness.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "Matrix.mulVec",
+      "meaning": "Matrix-vector multiplication by rowwise dot products.",
+      "effect_on_target": "Defines Ax, G1a, and injectivity of A.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "Monoid.toNatPow",
+      "meaning": "Natural-number powers in a monoid.",
+      "effect_on_target": "Makes every exponent 2 the ordinary square.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "Neg.neg",
+      "meaning": "Typeclass-dispatched additive negation.",
+      "effect_on_target": "Expresses the residual identity e = -G1a.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
+      "meaning": "Forgets part of a commutative ring structure while retaining the operations needed by matrix multiplication.",
+      "effect_on_target": "Instance plumbing for ordinary real matrix-vector products; it adds no mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
+      "meaning": "Forgets commutativity from a nonunital nonassociative commutative ring structure.",
+      "effect_on_target": "Supplies algebraic structure required by matrix-vector multiplication without adding assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
+      "meaning": "Extracts the additive and multiplicative semiring operations from a nonunital nonassociative ring.",
+      "effect_on_target": "Supports finite dot products over the reals.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "NonUnitalNormedCommRing.toNonUnitalCommRing",
+      "meaning": "Forgets norm structure from a nonunital normed commutative ring.",
+      "effect_on_target": "Provides ordinary real ring operations to matrix calculations.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "NormedCommRing.toNonUnitalNormedCommRing",
+      "meaning": "Forgets the multiplicative identity from a normed commutative ring.",
+      "effect_on_target": "Connects the real normed-ring instance to matrix multiplication infrastructure.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "OfNat.ofNat",
+      "meaning": "Interprets a natural-number literal in a target type.",
+      "effect_on_target": "Gives the exact natural and real constants occurring in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "One.toOfNat1",
+      "meaning": "Interprets the numeral 1 using a type's multiplicative identity.",
+      "effect_on_target": "Supplies identity matrices, the smallness right side 1, and scalar one.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "Real",
+      "meaning": "The real numbers.",
+      "effect_on_target": "All matrix entries, vector entries, norms, coefficients, and epsilonM are real.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "Real.instAdd",
+      "meaning": "Ordinary addition on the real numbers.",
+      "effect_on_target": "Interprets all real sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The usual multiplicative, inverse, and division structure on the reals.",
+      "effect_on_target": "Interprets all real quotients, including division by the positive r11.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Real.instLE",
+      "meaning": "The usual non-strict order on the reals.",
+      "effect_on_target": "Interprets epsilonM≥0 and the norm inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "Real.instLT",
+      "meaning": "The usual strict order on the reals.",
+      "effect_on_target": "Interprets r11>0 and the strict smallness inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure of the reals.",
+      "effect_on_target": "Interprets natural powers such as x².",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "Real.instMul",
+      "meaning": "Ordinary multiplication on the reals.",
+      "effect_on_target": "Interprets scalar products and coefficient formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "Real.instNeg",
+      "meaning": "Ordinary additive negation on the reals.",
+      "effect_on_target": "Interprets -G1a and subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "Real.instOne",
+      "meaning": "The real number 1.",
+      "effect_on_target": "Supplies the smallness threshold and entries of identity matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "Real.instZero",
+      "meaning": "The real number 0.",
+      "effect_on_target": "Supplies triangular zero entries and nonnegativity/positivity comparisons.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "Real.normedCommRing",
+      "meaning": "The standard normed commutative-ring structure on the real numbers.",
+      "effect_on_target": "Provides the algebraic and normed structures needed for matrix norms and products.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "Zero.toOfNat0",
+      "meaning": "Interprets the numeral 0 using a type's zero.",
+      "effect_on_target": "Supplies real zeros and zero finite indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "instAddNat",
+      "meaning": "Ordinary addition on natural numbers.",
+      "effect_on_target": "Forms each leading-block size k.val+1.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "instHAdd",
+      "meaning": "Promotes homogeneous addition to the generic HAdd interface.",
+      "effect_on_target": "Routes natural and real additions to their ordinary operations.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "instHDiv",
+      "meaning": "Promotes homogeneous division to the generic HDiv interface.",
+      "effect_on_target": "Routes real divisions to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "instHMul",
+      "meaning": "Promotes homogeneous multiplication to the generic HMul interface.",
+      "effect_on_target": "Routes real scalar multiplications to ordinary multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "instHPow",
+      "meaning": "Promotes an exponentiation operation to the generic HPow interface.",
+      "effect_on_target": "Routes exponent 2 to ordinary natural-number powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "instLENat",
+      "meaning": "The usual non-strict order on natural numbers.",
+      "effect_on_target": "Interprets n≤m and the inclusions of leading-block indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "instLTNat",
+      "meaning": "The usual strict order on natural numbers.",
+      "effect_on_target": "Interprets positive dimensions, finite-index bounds, and the below-diagonal relation.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
       "name": "instOfNatNat",
-      "meaning": "This interprets each natural-number numeral as that same natural number.",
-      "effect_on_target": "It makes the exponent numeral 2 exactly the natural number two.",
+      "meaning": "Interprets each natural literal as that natural number.",
+      "effect_on_target": "Supplies exact dimension and index constants.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "Fin.castLE",
+      "meaning": "Embeds Fin s into Fin n when s≤n while preserving the underlying index.",
+      "effect_on_target": "Implements extraction of each leading principal block of R.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "Fin.instOfNat",
+      "meaning": "Provides finite-index numeral literals when the modulus is nonzero.",
+      "effect_on_target": "Interprets the unique index 0 of Fin 1 in column norms and 1 by 1 matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "Fin.mk",
+      "meaning": "Constructs a finite index from a natural value and a proof that it is below the bound.",
+      "effect_on_target": "Constructs the zeroth index of Fin n from n>0.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "Finset.sum",
+      "meaning": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "Defines dot products and sums of squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "Makes vector norms sum over every coordinate.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "HSub.hSub",
+      "meaning": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "Forms A[:,0]-Q[:,0][R00] and the residual entries.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "Matrix",
+      "meaning": "A matrix with row type m, column type n, and entries in alpha is a function m → n → alpha.",
+      "effect_on_target": "Fixes the functional representation and all matrix dimensions.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "meaning": "Matrix multiplication defined by finite row-column dot products.",
+      "effect_on_target": "Interprets inverse products, Q[:,0][R00], and rectangular multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "Matrix.instL2OpNormedAddCommGroup",
+      "meaning": "Provides the designated L2-operator matrix norm through an auxiliary norm construction whose lower-level formula is not included in the dossier.",
+      "effect_on_target": "Determines every matrix norm in the proposition.",
+      "status": "unclear"
+    },
+    {
+      "id": "D092",
+      "name": "Matrix.one",
+      "meaning": "The square identity matrix, with ones on the diagonal and zeros elsewhere.",
+      "effect_on_target": "Provides the right sides of the two-sided inverse equations.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "Matrix.sub",
+      "meaning": "Pointwise subtraction of matrices.",
+      "effect_on_target": "Defines the m by 1 residual matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "Nat.succ",
+      "meaning": "Natural-number successor.",
+      "effect_on_target": "Forms k.val+1 and the proof that this leading-block size is at most n.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "Norm.norm",
+      "meaning": "Extracts the real-valued norm operation from a norm structure.",
+      "effect_on_target": "Evaluates the designated matrix norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "NormedAddCommGroup.toNorm",
+      "meaning": "Extracts the norm structure from a normed additive commutative group.",
+      "effect_on_target": "Connects the matrix L2 normed-group instance to norm notation.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative-monoid structure of the reals.",
+      "effect_on_target": "Supports finite sums and matrix multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "Real.instNatCast",
+      "meaning": "The standard embedding of natural numbers into the reals.",
+      "effect_on_target": "Interprets m, s, and integer coefficients as exact real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "Real.instRCLike",
+      "meaning": "The RCLike structure on the real numbers.",
+      "effect_on_target": "Supplies the scalar structure required by the designated matrix L2-operator norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "Real.instSub",
+      "meaning": "Ordinary real subtraction, defined as addition of the negation.",
+      "effect_on_target": "Interprets all residual and coefficient differences.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "Real.sqrt",
+      "meaning": "The nonnegative real square-root operation.",
+      "effect_on_target": "Defines Euclidean vector norms and the square-root terms in beta(m,s).",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "instDecidableEqFin",
+      "meaning": "Decidable equality on Fin n.",
+      "effect_on_target": "Supports identity matrices and the matrix norm instance.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "instHSub",
+      "meaning": "Promotes homogeneous subtraction to the generic HSub interface.",
+      "effect_on_target": "Routes matrix and real subtraction to their ordinary operations.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "Casts a natural literal n into a type with NatCast when proof-only AtLeastTwo evidence is available.",
+      "effect_on_target": "Interprets the exact real literals 2, 3, 7, and 16 used in coefficient formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "An indexed proposition used as proof-only authorization for casting natural literals of at least two; its constructors are not supplied.",
+      "effect_on_target": "Only enables concrete numeral elaboration through D030 and D037-D039 and imposes no target-level assumption.",
+      "status": "unclear"
+    },
+    {
+      "id": "D106",
+      "name": "Nat.cast",
+      "meaning": "Applies a type's natural-number embedding.",
+      "effect_on_target": "Converts dimensions and coefficient integers to exact real values.",
+      "status": "understood"
+    },
+    {
+      "id": "D107",
+      "name": "NeZero",
+      "meaning": "An indexed proof proposition associated with a nonzero value; its constructor and field are not supplied in the packet.",
+      "effect_on_target": "Together with D032, only enables finite-index literals for Fin 1.",
+      "status": "unclear"
+    },
+    {
+      "id": "D108",
+      "name": "Zero.ofOfNat0",
+      "meaning": "Constructs a zero operation from an interpretation of the numeral 0.",
+      "effect_on_target": "Provides supporting typeclass infrastructure for zero values.",
+      "status": "understood"
+    },
+    {
+      "id": "D109",
+      "name": "instDecidableEqNat",
+      "meaning": "Decidable equality on natural numbers.",
+      "effect_on_target": "Decides the branches s=1 versus s≠1 in alpha and beta.",
+      "status": "understood"
+    },
+    {
+      "id": "D110",
+      "name": "ite",
+      "meaning": "The if-then-else operation on a decidable proposition.",
+      "effect_on_target": "Makes alpha(m,s) and beta(m,s) exact piecewise-defined quantities.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "n is an arbitrary natural number.",
-      "G is an arbitrary real n-by-n matrix, with entries G_ij indexed by i,j in Fin n.",
-      "a is an arbitrary real n-vector, indexed by Fin n.",
-      "epsilon is an arbitrary real number."
+      "m and n are implicit universally quantified natural numbers.",
+      "run is universally quantified over LocalDef001 m n and therefore packages all data and assumptions below.",
+      "The run contains A,Q ∈ R^(m×n), R ∈ R^(n×n), epsilonM ∈ R, a family B_s of square real matrices for s=1,...,n, and a first-column perturbation matrix G1 ∈ R^(m×m).",
+      "All matrix and vector indices are zero-based finite indices."
     ],
     "hypotheses": [
-      "The Frobenius norm of G satisfies sqrt(sum_i sum_j G_ij^2) <= epsilon."
+      "0 < m, 0 < n, and n ≤ m.",
+      "The map R^n → R^m given by x ↦ Ax is injective.",
+      "R is upper triangular: R_ij = 0 whenever j < i.",
+      "epsilonM ≥ 0.",
+      "For every s=1,...,n, B_s is a chosen two-sided inverse of the leading principal block R_s = R[0:s,0:s]: B_s R_s = I_s and R_s B_s = I_s.",
+      "For every s=1,...,n, C(m,s) epsilonM (||R_s||₂→₂ ||B_s||₂→₂)^2 < 1.",
+      "Writing a=A[:,0], q=Q[:,0], and r=R_00, the run contains G1 ∈ R^(m×m) such that r>0, q_i=(a_i+(G1a)_i)/r for every i, and ||G1||₂→₂ ≤ epsilonM."
     ],
     "conclusions": [
-      "The Euclidean norm of the matrix-vector product G a satisfies sqrt(sum_i (sum_j G_ij a_j)^2) <= epsilon * sqrt(sum_i a_i^2)."
+      "LocalDef002 run is inhabited, meaning that its full first-column certificate is available.",
+      "For every i, q_i=(a_i+(G1a)_i)/r.",
+      "||G1||₂→₂ ≤ epsilonM.",
+      "If E=A[:,0]-Q[:,0][r] is viewed as an m by 1 matrix and e=a-qr as a vector, then E_i0=e_i for every i.",
+      "e=-G1a.",
+      "The sole-column norm of E equals ||e||₂.",
+      "||e||₂=||G1a||₂.",
+      "||G1a||₂ ≤ ||G1||₂→₂ ||a||₂.",
+      "||G1||₂→₂ ||a||₂ ≤ epsilonM ||a||₂.",
+      "Consequently, the recorded chain yields ||A[:,0]-Q[:,0]R_00||₂ ≤ epsilonM ||A[:,0]||₂, where the left side is the Euclidean norm of the first-column residual."
     ],
     "mathematical_definitions": [
-      "||G||_F := sqrt(sum_{i in Fin n} sum_{j in Fin n} G_ij^2).",
-      "(G a)_i := sum_{j in Fin n} G_ij a_j.",
-      "||x||_2 := sqrt(sum_{i in Fin n} x_i^2).",
-      "All sums, products, powers, square roots, and inequalities are exact operations on real numbers."
+      "For p∈N, Fin p is identified with {0,...,p-1}.",
+      "For x∈R^p, ||x||₂=sqrt(sum_{i=0}^{p-1} x_i²).",
+      "For a square real matrix M, ||M||₂→₂ denotes the matrix norm selected by the supplied L2-operator norm instance.",
+      "For s=1,...,n, R_s is the s by s leading principal submatrix with entries (R_s)_ij=R_ij for 0≤i,j<s.",
+      "kappa_s=||R_s||₂→₂ ||B_s||₂→₂.",
+      "beta(m,1)=1; for s≠1, beta(m,s)=2s sqrt(2m)+2 sqrt(s).",
+      "alpha(m,1)=m+2; for s≠1, alpha(m,s)=(7/2)ms²-(3/2)ms+16s.",
+      "C(m,s)=alpha(m,s)+2 beta(m,s). Thus C(m,1)=m+4, while for s>1, C(m,s)=(7/2)ms²-(3/2)ms+16s+4s sqrt(2m)+4 sqrt(s).",
+      "a=A[:,0], q=Q[:,0], r=R_00, e=a-qr, and E is the m by 1 matrix with E_i0=e_i.",
+      "[r] denotes the 1 by 1 matrix whose sole entry is r, so E=A[:,0]-Q[:,0][r]."
     ],
-    "proposition_plain_english": "For every natural number n, every real n-by-n matrix G, every real n-vector a, and every real number epsilon, if the Frobenius norm of G is at most epsilon, then the Euclidean norm of G a is at most epsilon times the Euclidean norm of a. Equivalently, ||G||_F <= epsilon implies ||G a||_2 <= epsilon ||a||_2."
+    "proposition_plain_english": "For every pair of natural dimensions and every packaged run satisfying the stated positivity, dimension, injectivity, triangularity, leading-block invertibility, smallness, and first-column normalization conditions, the run has a first-column residual certificate. Using the same perturbation matrix G1 stored in the run, the residual A[:,0]-Q[:,0]R_00 equals -G1A[:,0]; its Euclidean norm equals ||G1A[:,0]||₂ and is bounded first by ||G1||₂→₂||A[:,0]||₂ and then by epsilonM||A[:,0]||₂."
   },
   "restrictions_and_vacuity_risks": [
-    "The statement concerns only finite-dimensional square matrices over the real numbers; it does not state a rectangular, complex, or infinite-dimensional version.",
-    "No assumption n > 0 is present. When n = 0, all relevant sums are empty and both norms are zero.",
-    "There is no explicit hypothesis epsilon >= 0. Since ||G||_F is nonnegative, the given hypothesis implies epsilon >= 0 whenever it is satisfiable; for epsilon < 0 the proposition is vacuous.",
-    "There is no restriction that a be nonzero, normalized, or otherwise special.",
-    "Epsilon need only be an upper bound for ||G||_F; it is not required to equal that norm.",
-    "The conclusion has the exact multiplicative constant 1: no additional dimension-dependent or approximation factor is present.",
-    "The proposition contains no existential witnesses and asserts no equality, lower bound, converse, optimality, or sharpness.",
-    "The proposition encodes exact real arithmetic only. It contains no floating-point format, rounding operation, computed approximation, algorithm, perturbation model, or error term."
+    "The proposition is conditional on an inhabitant run. It does not assert that such a run exists, so it is vacuous for dimensions or data admitting no run; in particular no run can exist when m=0, n=0, or n>m.",
+    "The leading-block inverses B_s and G1 are supplied components of run, not witnesses whose existence is independently proved by the target.",
+    "Only the first, zero-indexed column is covered. No residual or error bound is asserted for columns 1 through n-1.",
+    "No statement says that Q is orthogonal or has normalized columns.",
+    "No global equation A=QR or approximate factorization statement is encoded.",
+    "R is only required to be upper triangular, with R_00>0. No positivity or nonzero condition is imposed directly on later diagonal entries, although the supplied two-sided inverses force every leading block to be invertible.",
+    "The injectivity of A, upper triangularity of R, leading-block inverses, and smallness inequalities restrict the run domain but do not occur in the fields of the first-column certificate D004.",
+    "epsilonM is an arbitrary nonnegative real satisfying the packaged assumptions; the proposition does not identify it with machine unit roundoff or any particular floating-point format.",
+    "All quantities and equalities are over exact real numbers. No floating-point operations, rounding map, execution trace, probability, or computed approximation is encoded.",
+    "The conclusion predicate is a proof package containing intermediate equalities and inequalities, not merely the final residual inequality.",
+    "The relative bound remains meaningful when a=0 because the stored normalization equation and norm chain then force the certified residual norm to be zero; no separate nonzero assumption on ||a||₂ is present.",
+    "No uniqueness is claimed for G1 or for the chosen leading-block inverses."
   ],
-  "ambiguities": []
+  "ambiguities": [
+    "The body of the matrix L2-operator norm instance delegates its norm field to an auxiliary construction not included in the packet. The translation therefore denotes exactly the supplied matrix norm symbolically as ||·||₂→₂; its lower-level normalization cannot be reconstructed solely from the dossier.",
+    "The constructors or fields of Nat.AtLeastTwo and NeZero are not supplied. Their concrete instances are used only for numeral and finite-index elaboration, so this omission does not alter the translated matrix proposition."
+  ]
 }
-

@@ -1,0 +1,430 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "direct-judge",
+  "task_id": "P11-T1",
+  "paper_sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5",
+  "dossier_sha256": "781435c9386bfcdaf7fc38e1b9355f040381a48b6da9929294395c2565203738",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.P11Matrix",
+      "interpretation": "A P11Matrix n is the square real matrix type Matrix (Fin n) (Fin n) Real.",
+      "effect_on_target": "It makes G an arbitrary finite square real matrix.",
+      "paper_match": "After identifying Lean n with paper m, this is the correct shape for the perturbation operator G1 acting on a1 in R^m, although it does not represent the paper's rectangular input A.",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p11FrobNorm",
+      "interpretation": "This is sqrt(sum_i sum_j G_ij^2), the Frobenius norm.",
+      "effect_on_target": "The sole hypothesis is a Frobenius-norm bound p11FrobNorm G <= epsilon.",
+      "paper_match": "The paper assumes the induced spectral norm ||G1||_2 <= epsilon_M, not a Frobenius-norm bound. A spectral bound does not imply the Lean hypothesis without a dimension factor.",
+      "status": "fail"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.p11MatVec",
+      "interpretation": "This applies Matrix.mulVec to a finite square matrix and vector.",
+      "effect_on_target": "The left side measures the vector G a.",
+      "paper_match": "It matches the ordinary matrix action G1 a1 in equation (16).",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.p11VecNorm",
+      "interpretation": "This is sqrt(sum_i x_i^2), the finite Euclidean vector norm.",
+      "effect_on_target": "It supplies both ||G a||_2 and ||a||_2 in the conclusion.",
+      "paper_match": "It matches the Euclidean vector 2-norm used for G1 a1 and a1.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "Fin",
+      "interpretation": "Fin n is the finite index type consisting of natural numbers below n.",
+      "effect_on_target": "It indexes every matrix row, matrix column, and vector coordinate.",
+      "paper_match": "It faithfully represents finite coordinates in R^m when Lean n is identified with paper m.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "HMul.hMul",
+      "interpretation": "This dispatches heterogeneous multiplication through the selected HMul instance.",
+      "effect_on_target": "With the explicit instances, it denotes ordinary real multiplication epsilon * p11VecNorm a.",
+      "paper_match": "This matches scalar multiplication on the right side of the paper's bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "LE.le",
+      "interpretation": "This dispatches the non-strict order relation supplied by an LE instance.",
+      "effect_on_target": "It supplies both the norm hypothesis and the conclusion's <= relation.",
+      "paper_match": "Both corresponding paper bounds are non-strict inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "Nat",
+      "interpretation": "Nat supplies the dimension parameter and includes zero.",
+      "effect_on_target": "The proposition quantifies over every n, including the zero-dimensional case.",
+      "paper_match": "The paper's standing dimensions are positive and satisfy m >= n for a full-column-rank input. Lean admits an extra degenerate zero-dimensional case.",
+      "status": "fail"
+    },
+    {
+      "id": "D009",
+      "name": "Real",
+      "interpretation": "This is mathlib's real-number type.",
+      "effect_on_target": "Matrix entries, vector entries, epsilon, norms, products, and inequalities are all real-valued.",
+      "paper_match": "The paper works over real matrices and vectors.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "Real.instLE",
+      "interpretation": "This is the standard linear order relation on Real.",
+      "effect_on_target": "It resolves every <= in the target to ordinary real inequality.",
+      "paper_match": "It matches the real inequalities in equation (16).",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "Real.instMul",
+      "interpretation": "This is ordinary multiplication on Real.",
+      "effect_on_target": "It resolves epsilon * p11VecNorm a to real multiplication.",
+      "paper_match": "It matches epsilon_M ||a1||_2.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "instHMul",
+      "interpretation": "This lifts a homogeneous Mul instance to HMul on the same type.",
+      "effect_on_target": "It connects HMul.hMul in the elaborated target to Real.instMul.",
+      "paper_match": "It introduces no nonstandard operation and preserves ordinary scalar multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "Fin.fintype",
+      "interpretation": "This provides the canonical finite enumeration of Fin n.",
+      "effect_on_target": "It enables complete finite sums and matrix-vector multiplication over all coordinates.",
+      "paper_match": "It matches finite-dimensional real vector and matrix operations.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Finset.sum",
+      "interpretation": "This folds an indexed finite collection using the additive commutative monoid operation.",
+      "effect_on_target": "It forms the sums of squares in both explicit norms and the dot products used by mulVec.",
+      "paper_match": "These are the ordinary finite sums underlying Euclidean and Frobenius formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "Finset.univ",
+      "interpretation": "This is the finite set containing every element of a Fintype.",
+      "effect_on_target": "It makes each explicit norm sum range over every coordinate or matrix entry.",
+      "paper_match": "The coordinate ranges are complete, as required by the corresponding finite-dimensional norms.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "HPow.hPow",
+      "interpretation": "This dispatches exponentiation through an HPow instance.",
+      "effect_on_target": "It denotes the squaring of each real coordinate or matrix entry.",
+      "paper_match": "Squaring entries is appropriate for Euclidean and Frobenius norms.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "Matrix",
+      "interpretation": "Matrix m n alpha is definitionally the function type m -> n -> alpha.",
+      "effect_on_target": "It gives G ordinary row-and-column access over Fin n.",
+      "paper_match": "It is a faithful finite representation of a real linear operator once n is identified with paper m.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "Matrix.mulVec",
+      "interpretation": "For each row, this computes the dot product sum_j M_ij v_j.",
+      "effect_on_target": "It makes p11MatVec G a the standard matrix-vector product.",
+      "paper_match": "It matches the exact mathematical product G1 a1 used in the paper's post-analysis.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "Monoid.toNatPow",
+      "interpretation": "This supplies natural-number powers using repeated monoid multiplication.",
+      "effect_on_target": "Together with exponent 2, it makes x^2 ordinary real squaring.",
+      "paper_match": "It matches the sums-of-squares formulas used for the explicit norms.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
+      "interpretation": "This projects a nonunital commutative ring to the weaker nonassociative commutative-ring structure.",
+      "effect_on_target": "It is typeclass infrastructure used to obtain the algebra required by Matrix.mulVec over Real.",
+      "paper_match": "It preserves ordinary real addition and multiplication and adds no divergent mathematical content.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
+      "interpretation": "This forgets commutativity while retaining the underlying nonunital nonassociative ring operations.",
+      "effect_on_target": "It contributes to the typeclass chain required for matrix-vector multiplication.",
+      "paper_match": "The inherited operations remain ordinary real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
+      "interpretation": "This projects the additive and multiplicative operations and distributive laws needed by a nonunital nonassociative semiring.",
+      "effect_on_target": "It supplies Matrix.mulVec's required scalar structure.",
+      "paper_match": "It implements the standard real dot-product arithmetic used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "NonUnitalNormedCommRing.toNonUnitalCommRing",
+      "interpretation": "This forgets normed structure while retaining the nonunital commutative-ring operations.",
+      "effect_on_target": "It is part of the instance path supplying real arithmetic to Matrix.mulVec.",
+      "paper_match": "It does not alter the ordinary real operations.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "NormedCommRing.toNonUnitalNormedCommRing",
+      "interpretation": "This forgets the multiplicative identity from a normed commutative ring while preserving its remaining operations and norm laws.",
+      "effect_on_target": "It contributes the real scalar structure needed by the matrix-vector definition.",
+      "paper_match": "The resulting operations agree with the paper's real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "OfNat.ofNat",
+      "interpretation": "This extracts the value of a natural-number literal through an OfNat instance.",
+      "effect_on_target": "It participates in interpreting the literal 2 used as the power exponent.",
+      "paper_match": "The exponent is exactly two, as required for sums of squares.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "This supplies ordinary real addition, zero, and commutative-monoid laws.",
+      "effect_on_target": "It determines how the finite sums in the explicit norms are evaluated.",
+      "paper_match": "It matches standard summation over real coordinates.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "Real.instMonoid",
+      "interpretation": "This supplies ordinary real multiplication, one, and natural powers.",
+      "effect_on_target": "It determines the real squaring operation in the explicit norm definitions.",
+      "paper_match": "It matches ordinary squares of real entries.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "Real.normedCommRing",
+      "interpretation": "This packages the standard normed commutative-ring structure on Real.",
+      "effect_on_target": "It supplies the algebraic instances used by matrix-vector multiplication and powers.",
+      "paper_match": "It agrees with the paper's exact real arithmetic; it does not itself encode floating-point computation.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "Real.sqrt",
+      "interpretation": "This is the nonnegative real square root, implemented through NNReal after truncating negative inputs to zero.",
+      "effect_on_target": "Applied to sums of real squares, it produces the usual Euclidean and Frobenius norms.",
+      "paper_match": "The arguments here are nonnegative sums of squares, so it has the expected norm meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "instHPow",
+      "interpretation": "This lifts a Pow instance to homogeneous HPow.",
+      "effect_on_target": "It connects HPow.hPow to natural powers on Real.",
+      "paper_match": "It preserves the intended real squaring operation.",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "instOfNatNat",
+      "interpretation": "This is the canonical OfNat instance interpreting a natural literal as itself.",
+      "effect_on_target": "It makes the exponent literal in x^2 the natural number 2.",
+      "paper_match": "It introduces the correct square exponent.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The published journal PDF, printed page 308, Appendix proof of Theorem 1, contains equation (16) and the immediately preceding G1 representation.",
+      "lean_evidence": "The dossier proposition is an action-norm inequality involving G a and epsilon ||a||, the algebraic fragment occurring at the end of equation (16).",
+      "reasoning": "The locator identifies the correct paper version and passage. Subsequent failures concern the proposition's content, not source selection."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper has A in R^(m x n), a1 and q1 in R^m, scalar r11, and an m-by-m perturbation G1, with positive dimensions and m >= n.",
+      "lean_evidence": "Lean binds only Nat n, an arbitrary square G : P11Matrix n, an arbitrary a : Fin n -> Real, and an arbitrary real epsilon.",
+      "reasoning": "The square operator and vector types can model G1 and a1 after setting Lean n = paper m, but the other paper quantities, the distinct matrix dimensions, and positivity are absent."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "G1 arises in the analysis of the computed first column and satisfies q1 = (I + G1)a1/r11 with ||G1||_2 <= epsilon_M.",
+      "lean_evidence": "Lean universally quantifies G, a, and epsilon and assumes p11FrobNorm G <= epsilon before proving an implication.",
+      "reasoning": "An algorithm-dependent perturbation witness has been replaced by an arbitrary universally quantified matrix, changing witness dependence and quantifier scope."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The result inherits full column rank, m >= n, CGS-P computation, normalized-range IEEE arithmetic, condition (3), and r11 > 0; locally it uses ||G1||_2 <= epsilon_M.",
+      "lean_evidence": "The only hypothesis is p11FrobNorm G <= epsilon. There is no input A, rank condition, conditioning assumption, nonzero divisor, computation model, or machine-unit predicate.",
+      "reasoning": "The source hypotheses are mostly erased and the remaining spectral-norm condition is replaced by a strictly narrower Frobenius-norm condition."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The passage includes q1 = (I + G1)a1/r11, A1 - Q1R1 = a1 - q1r11 = -G1a1, and the full norm chain ending in epsilon_M ||a1||_2.",
+      "lean_evidence": "The target concludes only p11VecNorm (G a) <= epsilon * p11VecNorm a.",
+      "reasoning": "The perturbation representation, exact residual identity, identification of the one-column matrix norm, and computed factor quantities are missing."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "The paper's nontrivial operator norm is the induced spectral 2-norm, used through ||G1a1||_2 <= ||G1||_2 ||a1||_2.",
+      "lean_evidence": "D002 unfolds to sqrt(sum_i sum_j G_ij^2), while D003 and D004 unfold to ordinary matrix-vector multiplication and Euclidean vector norm.",
+      "reasoning": "Unfolding confirms that the vector action is standard but the matrix norm hypothesis is Frobenius rather than spectral."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "q1, r11, Q1, and R1 are computed floating-point quantities; the displayed residual is then evaluated as an exact mathematical post-analysis expression.",
+      "lean_evidence": "G and a are arbitrary exact real data, and the target has no computed quantities, rounding operations, or relation to q1 and r11.",
+      "reasoning": "The distinction between computed factors and their exact residual is erased rather than preserved."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Equation (16) is the k = 1 base case of Theorem 1 for the computed output of Algorithm 2, CGS-P.",
+      "lean_evidence": "The proposition mentions no algorithm, input A, Q, R, first column, or execution relation.",
+      "reasoning": "Nothing in the actual proposition links G and a to a CGS-P execution; the declaration name cannot supply that missing semantics."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "The paper uses the spectral matrix 2-norm for G1 and Euclidean vector 2-norms for G1a1 and a1, all unsquared.",
+      "lean_evidence": "D002 is the Frobenius matrix norm; D004 is the unsquared Euclidean vector norm.",
+      "reasoning": "The vector norm and unsquared form match, but replacing the spectral matrix norm by Frobenius changes the hypothesis and its dimension dependence."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The passage is specifically k = 1 and has residual coefficient exactly one, consistent with c1(m,1) = 1.",
+      "lean_evidence": "The RHS is exactly epsilon times the vector norm, but the target has no k, first-column index, c1, or distinct m and n parameters.",
+      "reasoning": "The coefficient matches, while the source's first-column indexing and parameter roles are absent, so the complete constants-and-indexing contract is not preserved."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The paper assumes IEEE floating-point arithmetic, a machine unit epsilon_M, and a relative-error model restricted to normalized-range results; it does not claim coverage of exceptional values.",
+      "lean_evidence": "epsilon is an arbitrary real constrained only indirectly by the Frobenius-norm hypothesis, and no rounding mode, precision, normalized-range condition, underflow, overflow, infinity, or NaN behavior appears.",
+      "reasoning": "The target is a theorem of exact real algebra and does not encode the source floating-point model."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The source gives exact equalities followed by <= inequalities under a spectral-norm bound.",
+      "lean_evidence": "Lean retains only the final <= shape and assumes a Frobenius-norm bound.",
+      "reasoning": "Although the surviving inequality direction is correct, omitted equalities and the stronger hypothesis make the logical relation materially different."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "Equation (16) bounds the normwise first-column factorization residual A1 - Q1R1 in the original data space.",
+      "lean_evidence": "The target bounds an arbitrary matrix action G a and contains no residual or factorization quantities.",
+      "reasoning": "The generic action estimate becomes a residual estimate only after an identity that Lean does not state."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The enclosing theorem uses a first-order convention, but equation (16) itself displays its G1 identity and bound without an O(epsilon_M^2) remainder.",
+      "lean_evidence": "The Lean action inequality is exact and contains no big-O term.",
+      "reasoning": "For the local displayed action estimate, omitting a higher-order remainder matches the source rather than strengthening it spuriously."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The source concerns one algorithm-derived G1 and a1 in the first column of a real m-by-n problem under a spectral bound.",
+      "lean_evidence": "Lean generalizes to all finite square real G and all vectors while simultaneously restricting admissible G through a Frobenius bound and discarding the algorithmic context.",
+      "reasoning": "This mixed generalization and narrowing is not a faithful specialization and cannot be classified as a stronger source theorem merely because it is universal in G and a."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The full-rank and conditioning context yields r11 > 0 and admits ordinary nondegenerate CGS-P inputs.",
+      "lean_evidence": "The hypothesis is satisfiable for positive dimensions, for example n = 1 with G = [1/2], epsilon = 1/2, and nonzero a; the conclusion then expresses a genuine sharp action bound.",
+      "reasoning": "The Lean proposition is not globally vacuous or true solely because of the zero-dimensional case, although it includes that extra degenerate case."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean proposition supplies only an action inequality under a Frobenius-norm hypothesis. It establishes neither the computed perturbation representation nor the exact residual identities, and the paper's spectral bound does not provide the Lean hypothesis for G1."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper establishes an algorithm-specific statement about its computed G1 and a1, not a universal proposition for every finite G and a. Its spectral-norm premise also differs from Lean's Frobenius premise, so the actual paper proposition does not entail the universally quantified Lean theorem."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "matrix-norm-mismatch",
+      "paper_evidence": "Printed page 308 assumes ||G1||_2 <= epsilon_M, where the surrounding use is the induced spectral norm.",
+      "lean_evidence": "D002 defines p11FrobNorm G as sqrt(sum_i sum_j G_ij^2), and hG uses that norm.",
+      "impact": "A spectral bound does not imply the Frobenius bound with coefficient one, so the source G1 cannot in general discharge the Lean hypothesis."
+    },
+    {
+      "severity": "critical",
+      "category": "incomplete-source-conclusion",
+      "paper_evidence": "The source retains q1 = (I + G1)a1/r11 and A1 - Q1R1 = a1 - q1r11 = -G1a1 before the norm chain.",
+      "lean_evidence": "The target states only ||G a|| <= epsilon ||a|| and has no A1, Q1, R1, q1, or r11.",
+      "impact": "The Lean proposition does not establish the first-column residual statement selected from the paper."
+    },
+    {
+      "severity": "major",
+      "category": "quantifier-and-algorithm-mismatch",
+      "paper_evidence": "G1 and a1 are tied to the computed first column of CGS-P under Theorem 1's standing context.",
+      "lean_evidence": "G and a are arbitrary universally quantified exact real objects with no execution relation.",
+      "impact": "The target is a generic linear-algebra lemma rather than a proposition about the paper's computed algorithmic quantities."
+    },
+    {
+      "severity": "major",
+      "category": "missing-floating-point-context",
+      "paper_evidence": "The paper assumes IEEE arithmetic, normalized-range results, machine unit epsilon_M, full rank, condition (3), and positivity of r11.",
+      "lean_evidence": "Lean has only an arbitrary real epsilon and a Frobenius-norm inequality.",
+      "impact": "The target cannot express when the perturbation or residual bound arises from a valid floating-point execution."
+    },
+    {
+      "severity": "minor",
+      "category": "dimension-domain-mismatch",
+      "paper_evidence": "The source uses positive dimensions m and n with m >= n.",
+      "lean_evidence": "The implicit Nat dimension permits n = 0 and does not retain distinct row and column dimensions.",
+      "impact": "Lean includes a degenerate case and erases the original dimensional roles, though this is not the principal faithfulness failure."
+    },
+    {
+      "severity": "note",
+      "category": "matching-action-fragment",
+      "paper_evidence": "The final part of equation (16) uses ||G1a1||_2 <= epsilon_M ||a1||_2 with coefficient one and no displayed higher-order remainder.",
+      "lean_evidence": "D003 and D004 give standard matrix action and Euclidean vector norm, and the conclusion has coefficient one with no big-O term.",
+      "impact": "The target correctly captures this isolated algebraic shape once its stronger Frobenius hypothesis is assumed, but that fragment is insufficient for source faithfulness."
+    }
+  ],
+  "rationale": "The proposition is a valid generic Frobenius-to-Euclidean matrix-action estimate, but the selected paper result is an algorithm-specific first-column residual identity and spectral-norm estimate for computed CGS-P quantities. The Frobenius substitution, universal arbitrary inputs, omitted residual identities, and absent floating-point context prevent implication in either direction. The result is therefore not-faithful-different and is not accepted."
+}
+

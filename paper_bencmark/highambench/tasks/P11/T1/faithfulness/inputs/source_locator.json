@@ -5,10 +5,38 @@
   "paper_version": "published journal version; volume 105, issue 2, 2006, printed pages 299-313",
   "source_locations": [
     {
-      "anchor": "equation (16)",
+      "anchor": "opening matrix setting and column notation",
+      "pdf_page": 2,
+      "printed_page": "300",
+      "role": "positive rectangular dimensions, full column rank, and A/Q/R notation",
+      "section": "Introduction and Algorithm 1 setup"
+    },
+    {
+      "anchor": "Algorithm 2 and following floating-point model",
+      "pdf_page": 3,
+      "printed_page": "301",
+      "role": "CGS-P first-column computation and normalized-range IEEE model",
+      "section": "Algorithm 2 (CGS-P)"
+    },
+    {
+      "anchor": "Theorem 1, condition (3)",
+      "pdf_page": 4,
+      "printed_page": "302",
+      "role": "inherited leading-block conditioning hypothesis",
+      "section": "Theorem 1"
+    },
+    {
+      "anchor": "nonsingularity paragraph after equations (14)-(15)",
+      "pdf_page": 9,
+      "printed_page": "307",
+      "role": "positivity of every computed diagonal, including r11",
+      "section": "Appendix: Proof of Lemma 2"
+    },
+    {
+      "anchor": "standard-error-bound display, exact residual identity, and equation (16)",
       "pdf_page": 10,
       "printed_page": "308",
-      "role": "first-column residual as a small matrix action and its norm estimate",
+      "role": "computed normalization relation, exact residual, and complete norm chain",
       "section": "Appendix: Proof of Theorem 1"
     }
   ],
