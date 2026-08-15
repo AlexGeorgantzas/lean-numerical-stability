@@ -74,7 +74,7 @@ the `theorem` command.
 | `P12-T3` | `LEM` | `Lemma 4` | The selected exact ThreeProduct identity is Lemma 4, equation (18). |
 | `P13-T1` | `LEM` | `Lemma 2.2` | The selected condition-number lower bound is an explicit clause of Lemma 2.2. |
 | `P13-T2` | `LEM` | `Lemma 2.2` | The selected componentwise data-perturbation bound is the second explicit conclusion of Lemma 2.2. |
-| `P13-T3` | `THM` | `Theorem 4.1` | The selected two-condition-number forward bound is Theorem 4.1, with the preceding exact perturbed quotient supplying its finite certificate form. |
+| `P13-T3` | `THM` | `Theorem 4.1` | The selected result is Theorem 4.1's two-condition-number bound, retained `O(u^2)` term, and sharpness sentence, with the preceding exact perturbed quotient supplying its execution model. |
 | `P14-T1` | `UNL` | none | The selected positive recursive-summation bound is displayed without a number immediately before equations (3.2)--(3.3). |
 | `P14-T2` | `THM` | `Theorem 3.3` | The selected basic-softmax componentwise bound is explicitly named Theorem 3.3. |
 | `P14-T3` | `EQN`, `TXT` | none | Equation (1.4) supplies shift invariance and the paper later uses exact normalization and nonnegative mass in prose. |
