@@ -1,97 +1,92 @@
 {
   "accepted": false,
-  "adjudicated": false,
-  "adjudication_reasons": [],
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ",
+    "direct judge requested adjudication",
+    "round-trip judge requested adjudication",
+    "direct D010 is unclear",
+    "direct D048 is unclear",
+    "direct D064 is unclear",
+    "direct D069 is unclear",
+    "direct D194 is unclear",
+    "direct S06 is unclear",
+    "direct S10 is unclear",
+    "round-trip S06 is unclear",
+    "round-trip S10 is unclear"
+  ],
   "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T15:11:13.047996+00:00",
+  "completed_at_utc": "2026-08-15T06:03:25.185066+00:00",
   "findings": [
     {
-      "category": "algorithm-linkage",
-      "impact": "The target proves only a generic norm-budget implication and does not establish the benchmark's algorithmic roundoff claim.",
-      "lean_evidence": "The target quantifies arbitrary term and total vectors and assumes their decomposition and local bounds, with no FFT or floating-point computation present.",
-      "paper_evidence": "Theorem 2(a) analyzes a nested sequence of coordinate FFTs, and its proof constructs one propagated local roundoff term for each T_l before applying equation (4.2).",
+      "category": "algorithm-execution-unlinked",
+      "evidence": "PDF printed page 764 analyzes fl(T_1 fl(T_2 ... fl(T_m X))). D023 defines states only by exact coordinate transforms plus arbitrary residuals and never invokes D027's arithmetic operations or D069's mixed-radix stages.",
+      "impact": "The proposition is not about execution of the numerical algorithm studied in the paper.",
       "severity": "critical"
     },
     {
-      "category": "higher-order-terms",
-      "impact": "The conclusion can carry an arbitrarily large or unrelated budget and cannot be read as the paper's asymptotic estimate.",
-      "lean_evidence": "K and remainder are arbitrary functions; no condition makes K i equal the paper constant or remainder i quadratic in epsilon.",
-      "paper_evidence": "The final error has a first-order coefficient sum_l K(N_l,gamma) and a remainder specifically of order epsilon squared.",
+      "category": "higher-order-quantifier-collapse",
+      "evidence": "D027 fixes positive epsilon before D023 and D026 introduce all O(epsilon)- and O(epsilon^2)-shaped coefficients. No coefficient is required to be independent of epsilon.",
+      "impact": "Coefficients may scale as 1/epsilon or 1/epsilon^2, eliminating the paper's asymptotic leading-order content.",
       "severity": "critical"
     },
     {
-      "category": "error-and-scale-linkage",
-      "impact": "Even the quantities on the two sides of the Lean inequality need not denote the paper's error or reference scale.",
-      "lean_evidence": "total is not identified with fl(Y)-Y, terms are not identified with propagated local errors, and yRms is an arbitrary real.",
-      "paper_evidence": "The numerator is the forward error fl(Y)-Y and the denominator is the RMS of the exact multidimensional output Y.",
+      "category": "certificate-assumes-numerical-substance",
+      "evidence": "D026 assumes both the local coordinate error bound and every propagated intermediate-RMS approximation. The paper derives their analogues from Theorem 1 and the actual nested computation on printed pages 764-765.",
+      "impact": "The target is an algebraic consequence of supplied bounds rather than a formalization of the roundoff theorem.",
       "severity": "major"
     },
     {
-      "category": "dimensions-and-norms",
-      "impact": "A plausible flattening can be supplied externally, but the proposition does not state the representation needed to match the paper.",
-      "lean_evidence": "The target uses a flat real vector of unconstrained length n and provides no product-cardinality or complex-encoding relation.",
-      "paper_evidence": "The RMS norm uses complex magnitudes and normalization by the product N_1...N_m over a multidimensional index set.",
+      "category": "input-representation-condition-vacuous",
+      "evidence": "D023 permits an arbitrary post-epsilon coefficient for the flInput RMS discrepancy and simultaneously sets the computation's last state equal to unmodified input.",
+      "impact": "The premise neither excludes arbitrary input-representation error nor links represented input to the computed run.",
       "severity": "major"
     },
     {
-      "category": "algorithm-linkage",
-      "impact": "It formalizes a generic accumulation lemma rather than the selected algorithmic roundoff theorem.",
-      "paper_evidence": "Theorem 2(a) bounds the error produced by a specified nested sequence of coordinate FFTs and derives one propagated local roundoff term per stage.",
-      "severity": "critical",
-      "translation_evidence": "The proposition mentions only arbitrary real vectors, their exact coordinatewise sum, and assumed local bounds."
+      "category": "domain-and-implication-mismatch",
+      "evidence": "Paper eligibility requires an actual floating-point FFT. Lean eligibility requires abstract run and certificate structures that omit that fact while assuming residual inequalities.",
+      "impact": "The target is not simply the paper theorem under stronger hypotheses; the applicability classes are incomparable, so neither implication direction holds.",
+      "severity": "major"
     },
     {
-      "category": "error-and-output-semantics",
-      "impact": "The translated conclusion cannot be read as the paper's relative forward-error guarantee.",
-      "paper_evidence": "The numerator is the forward error fl(Y)-Y and the denominator is the RMS of the exact output Y.",
-      "severity": "major",
-      "translation_evidence": "total is not connected to a computed-minus-exact result, and yRms is an arbitrary real parameter."
+      "category": "fourier-phase-unresolved",
+      "evidence": "The paper explicitly uses exp(+i 2 pi jk/N), while D194 stops at Circle.coeHom.compAddChar ZMod.toCircle.",
+      "impact": "The exact transform's sign cannot be certified from authorized evidence, although independent critical defects already determine rejection.",
+      "severity": "major"
     },
     {
-      "category": "domain-and-norm",
-      "impact": "The paper's multidimensional complex RMS semantics and coordinate-transform scaling are missing.",
-      "paper_evidence": "The source uses complex arrays over a product of m coordinate index sets and normalization by N_1...N_m.",
-      "severity": "major",
-      "translation_evidence": "The translation uses a single Fin n index and squares of real coordinates."
+      "category": "redundant-telescoping-conclusion",
+      "evidence": "The target concludes the same telescoping equality required by D023's telescoping_error field.",
+      "impact": "The extra conjunct supplies no nonvacuous strength and cannot support a faithful-stronger classification.",
+      "severity": "minor"
     },
     {
-      "category": "numerical-model-and-constants",
-      "impact": "The first-order coefficient has the right summation syntax but none of its source meaning or justification.",
-      "paper_evidence": "K(N_l,gamma) is inherited from the mixed-radix floating-point FFT analysis with arithmetic and trigonometric roundoff models.",
-      "severity": "major",
-      "translation_evidence": "K is arbitrary and no floating-point operation or gamma parameter is represented."
-    },
-    {
-      "category": "higher-order-terms",
-      "impact": "The conclusion does not retain the paper's first-order accuracy statement.",
-      "paper_evidence": "The paper's local and final estimates have second-order big-O remainders.",
-      "severity": "major",
-      "translation_evidence": "The remainders are unrestricted real values with no asymptotic dependence on epsilon."
-    },
-    {
-      "category": "nonvacuity",
-      "impact": "The translated domain includes unintended trivial instances, though this is not the primary reason for rejection.",
-      "paper_evidence": "The FFT dimensions are positive transform lengths.",
-      "severity": "minor",
-      "translation_evidence": "Zero dimensions are admitted and produce totalized or vacuous cases."
+      "category": "faithful-static-components",
+      "evidence": "The product ZMod index, complex normalized RMS, positive denominator, piecewise alpha, factorization-dependent K, prefix scaling, and literal common-gamma coefficient agree with PDF printed pages 759 and 763-765.",
+      "impact": "These accurate static components do not repair the execution and quantifier failures.",
+      "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean proposition does not derive hdecomp or hlocal from a multidimensional FFT, identify K with K(N_l,gamma), bind yRms to the exact output, or constrain the summed remainder to O(epsilon^2). Recovering Theorem 2(a) requires supplying precisely these missing paper-specific facts externally, so the proposition itself does not imply the selected result.",
+      "reasoning": "Lean proves only a finite, certificate-relative propagation inequality for abstract residual decompositions. It provides neither actual nested floating-point FFT execution nor existence of epsilon-independent certificates over a small-epsilon family, so it cannot recover the paper's roundoff theorem or its O(epsilon^2) conclusion.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper establishes its inequality only for errors generated by the specified complex multidimensional FFT and floating-point model. It does not assert the Lean proposition's universal conditional statement for arbitrary real vectors, arbitrary K and remainder functions, arbitrary signs, or degenerate cardinalities. The generic triangle lemma is independently true, not a proposition implied by the selected FFT result.",
+      "reasoning": "The paper quantifies actual floating-point FFT computations, whereas Lean universally quantifies packaged runs and certificates whose premises do not imply such execution. The fact that Lean's conclusion follows from its own assumed telescoping and quantitative bounds does not make it a consequence of the paper for arbitrary non-execution packages.",
       "verdict": "no"
     }
   },
   "judge_classifications": {
     "direct": "not-faithful-different",
-    "roundtrip": "not-faithful-different"
+    "roundtrip": "not-faithful-weaker"
   },
-  "rationale": "The dependency inventory is semantically clear, and the Lean theorem is a nonvacuous finite-dimensional RMS triangle-budget lemma. Its pointwise sum and normalized Euclidean norm can model equation (4.2) after all propagated error terms and scales have already been supplied. However, the proposition omits the multidimensional FFT, exact/computed quantities, stage construction, one-dimensional K constants, floating-point model, output-RMS linkage, input condition, and quadratic remainder semantics. Those omissions are the substantive content connecting equation (4.2) to Theorem 2(a). Conversely, the paper's FFT-specific theorem does not assert the Lean theorem for arbitrary real vectors and arbitrary budgets. Therefore neither implication direction holds and the appropriate classification is not-faithful-different.",
-  "remaining_uncertainties": [],
+  "rationale": "The Lean declaration accurately reproduces many static ingredients of Theorem 2(a), but it changes the theorem's logical and numerical subject. The paper bounds an actual nested floating-point FFT and uses first-order expansions with an O(epsilon^2) remainder. Lean instead quantifies arbitrary exact-transform-plus-residual runs, repeats a telescoping premise as a conclusion, and assumes the decisive local and intermediate estimates through coefficients chosen after one fixed epsilon. Those coefficients can absorb arbitrary finite discrepancies, and the modeled arithmetic operations never generate the computation. Consequently Lean cannot imply the paper, while the paper does not entail Lean's universal claim over non-execution packages. The statements are therefore not-faithful-different; unresolved Fourier sign and common-gamma details are non-determinative.",
+  "remaining_uncertainties": [
+    "The exponential sign of ZMod.stdAddChar is not determined by the supplied D194 body. This uncertainty propagates separately to D010, D048, D064, D069, and S06.",
+    "The paper displays one gamma across all axes but does not explicitly explain how it is selected when coordinate orders use different trigonometric computations. A common upper-bound reading is compatible with Lean.",
+    "The paper does not quantify the constants, parameter dependence, or small-epsilon neighborhood hidden by its O notation. This omission does not justify witnesses chosen after one fixed epsilon."
+  ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P09-T3"

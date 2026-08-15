@@ -3,178 +3,191 @@
   "role": "roundtrip-judge",
   "task_id": "P09-T3",
   "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
-  "blind_translation_sha256": "a13dee089b0902650277ab595f3dd6019deccc8ca22efc166fd9b39b66d749ce",
+  "blind_translation_sha256": "ec70416b1f970279730b3b611c82f884512c14833fd254d3545a15d8bc23db03",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The authoritative PDF is Ramos, Roundoff Error Analysis of the Fast Fourier Transform, and the selected passage is Theorem 2(a), its telescoping proof, and equation (4.2) on PDF page 8, printed page 764.",
-      "translation_evidence": "The translation concerns finite accumulation of RMS-like bounds, which is recognizably associated with the selected accumulation step, although it contains no bibliographic locator.",
-      "reasoning": "The supplied paper version, passage, and surrounding multidimensional FFT result are correctly identified."
+      "paper_evidence": "The inspected PDF has the stated 1971 journal version and SHA-256. Theorem 1 is on printed page 759, and the multidimensional transform and Theorem 2(a) are on printed pages 763-765.",
+      "translation_evidence": "The translation targets the multidimensional relative RMS result with one coefficient G_i derived from Theorem 1 for each coordinate.",
+      "reasoning": "The selected source, theorem part, and surrounding proof are correct."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "The paper uses m positive transform dimensions of lengths N_l, complex multidimensional arrays indexed by one coordinate per dimension, and coordinate transforms T_l.",
-      "translation_evidence": "The translation quantifies arbitrary natural numbers m and n, including zero, and arbitrary real vectors indexed by Fin n; it contains no N_l family or complex multidimensional array type.",
-      "reasoning": "A single arbitrary real-vector length n does not preserve the paper's product-shaped complex domain or its dimension-size binders."
+      "paper_evidence": "The paper uses a positive number m of coordinate dimensions, positive orders N_l, complex product-indexed arrays, and coordinate indices from 0 through N_l-1.",
+      "translation_evidence": "The finite product of ZMod(n_i), complex-valued arrays, and positive axis orders match, but runs, certificates, arbitrary states, local errors, and coefficient functions are introduced as additional universally quantified data.",
+      "reasoning": "The basic dimensions and types match, but quantities that should arise from the computation or serve as uniform asymptotic witnesses have instead become unrestricted structured inputs."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "The local errors and partial transforms are determined by the input X, the nested FFT execution, and the operators T_m through T_1.",
-      "translation_evidence": "term, total, epsilon, yRms, K, and remainder are independently universally quantified, with decomposition and local bounds supplied as premises.",
-      "reasoning": "Derived FFT quantities and estimates have been replaced by arbitrary data satisfying added hypotheses, changing quantifier dependence and scope."
+      "paper_evidence": "Theorem 2(a) uses O(epsilon^2), and printed page 765 permits an O(epsilon) input-RMS perturbation. Standard big-O semantics require coefficients independent of epsilon in a sufficiently small neighborhood.",
+      "translation_evidence": "A model first supplies one fixed positive epsilon; the run and certificate supplied afterward contain c, a_i, and b_i, which can therefore depend on that epsilon and on the particular run.",
+      "reasoning": "The witness order does not preserve the paper's asymptotic quantification or uniformity in epsilon."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The proof assumes one-dimensional FFT stages governed by Theorem 1 and an exactly represented input, or an input RMS differing only by O(epsilon); gamma is nonnegative. The displayed relative ratio also leaves the Y_RMS=0 case unstated.",
-      "translation_evidence": "There is no FFT-stage hypothesis, input-representability condition, gamma, positivity condition, or relation between yRms and an output. Instead, exact decomposition and local bounds are additional premises.",
-      "reasoning": "The source hypotheses and inherited proof conditions are not preserved. The source's zero-denominator ambiguity is avoided only by changing to an unrelated arbitrary scale parameter."
+      "paper_evidence": "The paper assumes an actual nested floating-point FFT under the Wilkinson and trigonometric models, together with exact or O(epsilon) input-RMS representation. Nonzero exact-output RMS is implicit in the displayed ratio.",
+      "translation_evidence": "Positive exact-output norm is made explicit, but actual execution is replaced by run recurrences and certificate inequalities. The input alternative is an existential fixed-epsilon bound involving an otherwise disconnected flInput.",
+      "reasoning": "The denominator condition is a faithful clarification, but the principal computational and input-representation hypotheses are not preserved."
     },
     {
       "id": "S05",
       "status": "fail",
-      "paper_evidence": "Theorem 2(a) concludes a relative forward RMS bound with coefficient sum_l K(N_l,gamma) and O(epsilon^2), supported by the exact telescoping identity and relations (4.2)-(4.4).",
-      "translation_evidence": "The sole conclusion is an absolute RMS-like inequality for total with arbitrary K and an explicit sum of arbitrary remainders; the decomposition is merely assumed.",
-      "reasoning": "The final relative FFT theorem, transform scaling relations, and asymptotic conclusion are absent."
+      "paper_evidence": "The selected conclusion is the relative RMS inequality with an O(epsilon^2) remainder. The telescoping equality appears as a proof identity rather than as a conjunct of Theorem 2(a).",
+      "translation_evidence": "The conclusion uses a certificate-dependent exact epsilon-squared term and adds the telescoping equality, even though that equality is already required when constructing the run.",
+      "reasoning": "The asymptotic conclusion is not reproduced, and the added equality is redundant rather than a genuine strengthening."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The source uses complex Fourier operators T_l, complex modulus in the RMS norm, the mixed-radix constant K(N_l,gamma), and computed partial transforms fl(Z_l).",
-      "translation_evidence": "The dependency ledger correctly unfolds its own real sum-of-squares quantity and coordinatewise finite sum, but contains none of the source's Fourier, complex-modulus, or K definitions.",
-      "reasoning": "The translated operators are internally understood, but they do not interpret the paper's nontrivial operators and definitions."
+      "status": "unclear",
+      "paper_evidence": "Equation (1.1) uses the unnormalized kernel exp(i 2 pi jk/N), and equation (4.1) inherits that positive-sign convention.",
+      "translation_evidence": "The coordinate transform is unnormalized and uses ZMod.stdAddChar, but the supplied dependency ledger does not expand that character far enough to determine its exponential sign.",
+      "reasoning": "Normalization and product indexing match, but the exact Fourier sign cannot be verified from the permitted evidence."
     },
     {
       "id": "S07",
       "status": "fail",
-      "paper_evidence": "The paper distinguishes exact Y and Z_l from computed fl(Y) and fl(Z_l), and each telescoping summand is a propagated local floating-point error.",
-      "translation_evidence": "total and term are arbitrary exact real vectors with no exact-versus-computed provenance.",
-      "reasoning": "The exact coordinatewise sum preserves an algebraic decomposition but erases the distinction between exact, intermediate, and rounded quantities."
+      "paper_evidence": "Printed page 764 defines the error as the output of the nested floating-point evaluation minus the exact multidimensional transform.",
+      "translation_evidence": "The translation names s_0 as computed and T_m x as exact, but s_0 is only an abstract state satisfying s_i = F_i(s_{i+1}) + delta_i.",
+      "reasoning": "Exact and computed values are syntactically separated, but the alleged computed value is not established to be produced by floating-point evaluation."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "The result concerns the nested execution fl(T_1 fl(T_2 ... fl(T_m X))) with T_m executed first and one propagated local error per coordinate FFT.",
-      "translation_evidence": "No FFT, transform operator, execution order, radix factorization, or propagation operator appears.",
-      "reasoning": "The proposition is a generic finite-vector accumulation lemma and is not linked to the algorithm whose roundoff error the paper bounds."
+      "paper_evidence": "The proof explicitly analyzes fl(T_1 fl(T_2 ... fl(T_m X))) and invokes Theorem 1 for each floating-point coordinate FFT.",
+      "translation_evidence": "The staged plans certify exact DFT behavior, while the run recurrence uses exact F_i plus arbitrary local errors. Nothing links the states or errors to evaluations of flAdd, flMul, flSin, flCos, or the staged FFT.",
+      "reasoning": "The proposition is an abstract error-propagation lemma, not a theorem about execution of the paper's algorithm."
     },
     {
       "id": "S09",
-      "status": "fail",
-      "paper_evidence": "The paper's RMS is the square root of the sum of squared complex magnitudes divided by N_1...N_m, and each T_l scales it by sqrt(N_l).",
-      "translation_evidence": "RMS_n is sqrt(sum_j x(j)^2)/sqrt(n) for real coordinates, with totalized division and no coordinate-transform scaling law.",
-      "reasoning": "Although both quantities are unsquared RMS-style Euclidean magnitudes, the scalar field, normalization dimension, and required transform scaling are not preserved."
+      "status": "pass",
+      "paper_evidence": "Printed page 764 defines RMS as the Euclidean magnitude divided by sqrt(N_1...N_m), and Theorem 2(a) divides the forward-error RMS by the exact-output RMS.",
+      "translation_evidence": "LocalDef012 is the finite complex l2 norm divided by the square root of the total product of axis orders, and the conclusion uses the corresponding relative norm.",
+      "reasoning": "The normalized, unsquared, global normwise RMS semantics match."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The first-order coefficient is exactly sum from l=1 to m of K(N_l,gamma), where each K is the mixed-radix constant inherited from Theorem 1.",
-      "translation_evidence": "K is an arbitrary real function on zero-based Fin m, independent of dimension sizes, radix factors, and gamma.",
-      "reasoning": "The summation shape and absence of an extra factor agree abstractly, but the constants' meaning and parameter dependence are lost; zero-based reindexing alone would have been harmless."
+      "status": "unclear",
+      "paper_evidence": "Theorem 1 gives the same piecewise alpha constants and factorization-dependent K used by the translation. Theorem 2 displays one gamma in every K(N_l,gamma), although the earlier model says gamma depends on computation for a transform of a given order.",
+      "translation_evidence": "The stage coefficients, zero-based axis indexing, prefix products, and unweighted final sum match, but one arithmetic-model gamma is forced across every axis.",
+      "reasoning": "The numerical constants and index shifts match. The paper does not clearly state whether its common displayed gamma is a single uniform bound across different coordinate orders."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The source inherits deterministic addition and multiplication roundoff models with bounded theta, a nonnegative absolute trigonometric-error constant gamma, and no treatment of exceptional floating-point values.",
-      "translation_evidence": "epsilon is an arbitrary real number and no arithmetic operation, rounding rule, trigonometric approximation, precision, overflow, or underflow model occurs.",
-      "reasoning": "The numerical model responsible for the local and final errors is entirely absent."
+      "paper_evidence": "Printed pages 758-759 specify occurrence-wise Wilkinson perturbations, absolute sine and cosine errors, and formulas tying epsilon to radix, precision, accumulation, and rounded or chopped arithmetic.",
+      "translation_evidence": "The perturbation representations are stored, but epsilon is merely positive, no format or rounding-mode relation is encoded, and the operations are unused by the run.",
+      "reasoning": "Although the local formulas resemble the source model, the model is both broader than the paper's stated machine interpretation and disconnected from the claimed computation."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The source gives non-strict upper bounds for the propagated-error sum and a relative RMS theorem after normalization by the exact output RMS.",
-      "translation_evidence": "The translation also uses non-strict upper bounds, but only in a conditional absolute inequality involving an arbitrary yRms.",
-      "reasoning": "The inequality direction matches the accumulation step, but the added premises and unconnected scale parameter change the logical strength and prevent equivalence to the relative theorem."
+      "paper_evidence": "The paper provides a first-order upper bound with an asymptotic second-order remainder.",
+      "translation_evidence": "The translation provides an exact finite inequality only after assuming local and intermediate certificate bounds, with an arbitrarily supplied C, and repeats an already assumed equality.",
+      "reasoning": "The exact-looking inequality is not genuinely stronger; its stronger premises and post-epsilon coefficients make it a restricted conditional result."
     },
     {
       "id": "S13",
       "status": "fail",
-      "paper_evidence": "The controlled quantity is the accumulated forward roundoff error fl(Y)-Y relative to the exact output RMS.",
-      "translation_evidence": "term and total are arbitrary vectors and are not identified as forward errors, computed-output differences, residuals, or perturbations.",
-      "reasoning": "The translation retains only vector magnitude and summation, not the paper's forward-error notion."
+      "paper_evidence": "The selected error is deterministic normwise forward roundoff error between an actual computed FFT output and its exact transform.",
+      "translation_evidence": "The expression s_0 - T_m x is formally a normwise forward difference, but s_0 need not be produced by any floating-point computation.",
+      "reasoning": "The algebraic error orientation matches, but its interpretation as roundoff error does not."
     },
     {
       "id": "S14",
       "status": "fail",
-      "paper_evidence": "The telescoping identity and equation (4.2) are exact, while stage estimates and Theorem 2(a) contain O(epsilon^2); intermediate norm substitutions introduce O(epsilon) changes absorbed at second order.",
-      "translation_evidence": "Each remainder(i) is an arbitrary real scalar at a single epsilon, with no condition that it is O(epsilon^2), no asymptotic family, and no uniformity statement.",
-      "reasoning": "Summing arbitrary exact remainders does not express or imply the paper's second-order asymptotic remainder."
+      "paper_evidence": "The paper retains O(epsilon^2) locally and globally and uses O(epsilon) intermediate and input-norm replacements.",
+      "translation_evidence": "The remainder is (C/outputNorm) epsilon^2, where C is built from coefficients supplied after one fixed epsilon and no epsilon-independent bound or small-epsilon interval is required.",
+      "reasoning": "A fixed-epsilon allowance with potentially epsilon-dependent coefficients does not express the paper's higher-order remainder."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The selected result is specifically about complex multidimensional FFT roundoff under the inherited one-dimensional FFT analysis.",
-      "translation_evidence": "The translated theorem ranges over arbitrary finite families of real vectors and arbitrary scalar bounds.",
-      "reasoning": "This is a cross-cutting abstraction rather than a faithful generalization: it broadens the analytic summation lemma while deleting the algorithmic assertion, complex domain, numerical model, and asymptotic guarantee."
+      "paper_evidence": "The result concerns finite complex multidimensional transforms computed by nested mixed-radix floating-point FFTs.",
+      "translation_evidence": "The finite complex setting is retained, but applicability is restricted to runs carrying decomposition and certificate data while simultaneously generalized to abstract states and models unrelated to actual floating-point execution.",
+      "reasoning": "This is not a faithful finite or dimensional specialization; it changes the computational subject and makes applicability conditional."
     },
     {
       "id": "S16",
       "status": "fail",
-      "paper_evidence": "Transform dimensions have positive lengths, and the intended theorem concerns a nondegenerate FFT computation, subject to the paper's unstated issue when Y_RMS is zero.",
-      "translation_evidence": "m and n may be zero; n=0 makes the totalized RMS quantity zero, m=0 makes the local premise vacuous, and negative local right-hand sides can make premises unsatisfiable.",
-      "reasoning": "The intended positive-dimensional instances can be satisfiable, but the formal domain introduces unintended trivial and vacuous cases absent from the paper."
+      "paper_evidence": "The source's O(epsilon) and O(epsilon^2) assertions are intended to constrain errors uniformly as epsilon tends to zero.",
+      "translation_evidence": "For fixed epsilon > 0, the input condition always holds with c equal to the norm discrepancy divided by epsilon. Likewise, sufficiently large a_i and b_i can absorb any finite local or intermediate discrepancy, and the first conclusion is already a run premise.",
+      "reasoning": "The certificate and input premises can be satisfied by epsilon-dependent large coefficients, making the claimed second-order content and input condition nonrestrictive."
     }
   ],
   "implications": {
     "translation_implies_paper": {
       "verdict": "no",
-      "reasoning": "The translation can serve as an abstract triangle-inequality lemma only after supplying additional FFT-specific identifications, propagated local-error bounds, complex-to-real encoding, output-norm linkage, and second-order remainder facts. It does not itself assert that the paper's computation satisfies its premises and therefore does not imply Theorem 2(a)."
+      "reasoning": "The translation does not establish that actual evaluations of the floating-point operations produce the stated run or certificate, nor does it provide epsilon-independent witnesses for the O(epsilon) and O(epsilon^2) terms. It therefore cannot recover the paper's numerical asymptotic theorem."
     },
     "paper_implies_translation": {
-      "verdict": "no",
-      "reasoning": "The paper proves a bound for one class of multidimensional floating-point FFT computations. It does not establish the translation's universal conditional theorem for every finite family of arbitrary real vectors, arbitrary K values, and arbitrary remainders."
+      "verdict": "yes",
+      "reasoning": "As a restricted conditional statement, the translation follows once its stronger certificate premises are assumed: triangle inequality, transform scaling, the local bounds, and the intermediate bounds yield the displayed finite inequality, while the extra equality is already a premise. The numerical substance that the paper proves has been moved into those premises."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "not-faithful-weaker",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
       "category": "algorithm-linkage",
-      "paper_evidence": "Theorem 2(a) bounds the error produced by a specified nested sequence of coordinate FFTs and derives one propagated local roundoff term per stage.",
-      "translation_evidence": "The proposition mentions only arbitrary real vectors, their exact coordinatewise sum, and assumed local bounds.",
-      "impact": "It formalizes a generic accumulation lemma rather than the selected algorithmic roundoff theorem."
+      "paper_evidence": "The source analyzes the concrete nested evaluation fl(T_1 fl(T_2 ... fl(T_m X))) using floating-point coordinate FFTs.",
+      "translation_evidence": "States satisfy only an exact-DFT-plus-error recurrence and are never related to the model's approximate operations or staged FFT evaluation.",
+      "impact": "The proposition does not establish roundoff behavior of the algorithm studied in the paper."
+    },
+    {
+      "severity": "critical",
+      "category": "higher-order-quantification",
+      "paper_evidence": "Theorem 2(a) and its proof use O(epsilon^2) and O(epsilon) asymptotic terms.",
+      "translation_evidence": "The model fixes epsilon before c, a_i, and b_i are supplied, with no uniformity or neighborhood of epsilon = 0.",
+      "impact": "The explicit epsilon-squared expression cannot imply the paper's asymptotic remainder."
     },
     {
       "severity": "major",
-      "category": "error-and-output-semantics",
-      "paper_evidence": "The numerator is the forward error fl(Y)-Y and the denominator is the RMS of the exact output Y.",
-      "translation_evidence": "total is not connected to a computed-minus-exact result, and yRms is an arbitrary real parameter.",
-      "impact": "The translated conclusion cannot be read as the paper's relative forward-error guarantee."
+      "category": "certificate-assumes-numerical-substance",
+      "paper_evidence": "The paper derives the local coordinate error and intermediate-norm estimates from Theorem 1 and the nested floating-point computation.",
+      "translation_evidence": "Those estimates are certificate premises with unrestricted nonnegative coefficients.",
+      "impact": "The conclusion is an algebraic consequence of assumed bounds rather than a formalization of the numerical theorem."
     },
     {
       "severity": "major",
-      "category": "domain-and-norm",
-      "paper_evidence": "The source uses complex arrays over a product of m coordinate index sets and normalization by N_1...N_m.",
-      "translation_evidence": "The translation uses a single Fin n index and squares of real coordinates.",
-      "impact": "The paper's multidimensional complex RMS semantics and coordinate-transform scaling are missing."
+      "category": "vacuous-input-rms-condition",
+      "paper_evidence": "Printed page 765 requires exact input-RMS preservation or an O(epsilon) perturbation.",
+      "translation_evidence": "For one fixed positive epsilon it permits an existential c with discrepancy at most c epsilon, and c is unused afterward.",
+      "impact": "Every finite discrepancy satisfies the alternative, so arbitrary input-representation error is not excluded."
     },
     {
       "severity": "major",
-      "category": "numerical-model-and-constants",
-      "paper_evidence": "K(N_l,gamma) is inherited from the mixed-radix floating-point FFT analysis with arithmetic and trigonometric roundoff models.",
-      "translation_evidence": "K is arbitrary and no floating-point operation or gamma parameter is represented.",
-      "impact": "The first-order coefficient has the right summation syntax but none of its source meaning or justification."
-    },
-    {
-      "severity": "major",
-      "category": "higher-order-terms",
-      "paper_evidence": "The paper's local and final estimates have second-order big-O remainders.",
-      "translation_evidence": "The remainders are unrestricted real values with no asymptotic dependence on epsilon.",
-      "impact": "The conclusion does not retain the paper's first-order accuracy statement."
+      "category": "fourier-phase",
+      "paper_evidence": "Equation (1.1) fixes the positive exponential sign.",
+      "translation_evidence": "The permitted translation evidence leaves the sign convention of ZMod.stdAddChar unexpanded.",
+      "impact": "The exact Fourier operator cannot be confirmed without adjudication."
     },
     {
       "severity": "minor",
-      "category": "nonvacuity",
-      "paper_evidence": "The FFT dimensions are positive transform lengths.",
-      "translation_evidence": "Zero dimensions are admitted and produce totalized or vacuous cases.",
-      "impact": "The translated domain includes unintended trivial instances, though this is not the primary reason for rejection."
+      "category": "telescoping-conjunct",
+      "paper_evidence": "The exact telescoping identity is used in the proof but is not a conjunct of Theorem 2(a).",
+      "translation_evidence": "It appears as both a run premise and the first conclusion.",
+      "impact": "It adds no theorem strength and obscures that part of the conclusion is assumed verbatim."
+    },
+    {
+      "severity": "note",
+      "category": "positive-denominator",
+      "paper_evidence": "The paper divides by the exact-output RMS without stating a nonzero side condition.",
+      "translation_evidence": "The exact-output normalized norm is required to be strictly positive.",
+      "impact": "This is a faithful explicit treatment of the paper's implicit domain restriction."
+    },
+    {
+      "severity": "note",
+      "category": "common-gamma",
+      "paper_evidence": "Theorem 2 uses one displayed gamma across axes, while the preceding discussion allows dependence on transform order.",
+      "translation_evidence": "One common arithmetic-model gamma enters every G_i.",
+      "impact": "Whether the source intended a common uniform bound across unequal axis orders remains unclear."
     }
   ],
-  "rationale": "The blind translation accurately describes an exact finite-vector triangle-inequality argument, but that argument is only one abstract ingredient of the source proof. It replaces the multidimensional complex FFT, computed-versus-exact quantities, inherited roundoff model, dimension-dependent K constants, output normalization, input condition, and O(epsilon^2) conclusion with arbitrary real data and added premises. Neither implication holds at the level of the selected statements, so the result is not-faithful-different. The paper's own unstated Y_RMS nonzero condition does not affect this classification because the other mismatches are decisive."
+  "rationale": "The translation preserves the finite complex product domain, unnormalized coordinate DFT structure, normalized RMS norm, per-radix constants, prefix scaling, positive denominator, and the first-order sum of per-axis coefficients. It does not preserve the theorem's computational or asymptotic content. Computed states are not outputs of the supplied floating-point operations; local and intermediate estimates are assumed through a certificate; and all purported O-term coefficients may be selected after a fixed positive epsilon. The input O(epsilon) condition is consequently vacuous, and the repeated telescoping equality is already a premise. Thus the translation is a weaker conditional propagation lemma rather than the paper's FFT roundoff theorem. Adjudication is required for the unexpanded Fourier-character sign and the source's common-gamma convention."
 }
-

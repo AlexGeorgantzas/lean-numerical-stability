@@ -5,10 +5,31 @@
   "paper_version": "published journal version; volume 25, issue 116, October 1971, printed pages 757-768",
   "source_locations": [
     {
-      "anchor": "Theorem 2(a), its telescoping decomposition, and equation (4.2)",
+      "anchor": "Theorem 1 and the definition of K(N,gamma)",
+      "pdf_page": 3,
+      "printed_page": "759",
+      "role": "inherited mixed-radix floating-point model and per-coordinate constants",
+      "section": "3. Roundoff Errors in the Fast Fourier Transform"
+    },
+    {
+      "anchor": "equation (4.1) and multidimensional index convention",
+      "pdf_page": 7,
+      "printed_page": "763",
+      "role": "complex product-indexed multidimensional Fourier transform",
+      "section": "4. Roundoff Errors in Multidimensional Transformations"
+    },
+    {
+      "anchor": "multidimensional RMS definition, Theorem 2(a), nested computation, telescoping decomposition, and equations (4.2)-(4.4)",
       "pdf_page": 8,
       "printed_page": "764",
-      "role": "multidimensional RMS error accumulation",
+      "role": "selected relative RMS theorem and its exact local-error accumulation",
+      "section": "4. Roundoff Errors in Multidimensional Transformations"
+    },
+    {
+      "anchor": "continuation and completion of the proof of Theorem 2(a)",
+      "pdf_page": 9,
+      "printed_page": "765",
+      "role": "propagated scaling and exact-or-O(epsilon) input RMS condition",
       "section": "4. Roundoff Errors in Multidimensional Transformations"
     }
   ],
