@@ -72,7 +72,7 @@ the `theorem` command.
 | `P12-T1` | `EQN` | none | The selected nearest-addition error property is equation (10). |
 | `P12-T2` | `THM` | `Theorem 2` | The selected error-free transform is Theorem 2, with equations (3), (7), and (8) providing its certificate form. |
 | `P12-T3` | `LEM` | `Lemma 4` | The selected exact ThreeProduct identity is Lemma 4, equation (18). |
-| `P13-T1` | `LEM` | `Lemma 2.2` | The selected condition-number lower bound is an explicit clause of Lemma 2.2. |
+| `P13-T1` | `LEM` | `Lemma 2.2` | The selected result is Lemma 2.2's exact identification of Definition 2.1's condition number with equation (2.2), together with its lower bound. |
 | `P13-T2` | `LEM` | `Lemma 2.2` | The selected componentwise data-perturbation bound is the second explicit conclusion of Lemma 2.2. |
 | `P13-T3` | `THM` | `Theorem 4.1` | The selected result is Theorem 4.1's two-condition-number bound, retained `O(u^2)` term, and sharpness sentence, with the preceding exact perturbed quotient supplying its execution model. |
 | `P14-T1` | `EQN` | none | The selected aggregate positive-sum result is equation (3.3); the preceding unnumbered exponential and recursive-summation displays supply its execution and proof context. |

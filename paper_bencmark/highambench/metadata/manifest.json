@@ -143,8 +143,8 @@
         "P13"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P13Definitions.lean",
-      "role": "P13-only interpolation values, condition numbers, direct barycentric weights, relative-error executions, asymptotic remainders, and sharpness certificates",
-      "sha256": "95ff034522ce39cc3c9a6978aca35a45be86475ceec648d6ca6ade044ae0623a",
+      "role": "P13-only Lagrange problems, perturbation-defined condition numbers, direct barycentric weights, relative-error executions, asymptotic remainders, and sharpness certificates",
+      "sha256": "7068b71541b010c612ecd1cceafe4d1b30fe7a0a82bc98ce27a63963cf0f1799",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -2537,15 +2537,18 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
+            "NumStability.SummationComponentwisePerturbation",
+            "NumStability.summationComponentwisePerturbation_rel_error_le_condition",
+            "NumStability.summationConditionNumber_attained",
             "NumStability.one_le_summationConditionNumber"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P13/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Apply the triangle inequality to the finite interpolation sum and divide by the positive magnitude of its nonzero value.",
-          "informal_statement_paraphrase": "The lower-bound clause of Lemma 2.2, equation (2.2).",
+          "informal_proof_paraphrase": "For each positive radius, translate data perturbations through the fixed Lagrange coefficients to obtain the quotient upper bound. The sign-aligned data perturbation attains that quotient, making every positive-radius supremum equal to it and hence giving Definition 2.1's limit. The triangle inequality gives the lower bound by one.",
+          "informal_statement_paraphrase": "Definition 2.1 and the full conclusion of Lemma 2.2: the componentwise perturbation condition number is exactly the quotient in equation (2.2), which is at least one.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "9c331535dfca807cb7a0aae7523f78ebad9de6564b9a9e66d0762cf08fd12892",
+            "controlled_file_sha256": "d3c2d2f5f1b80abd0e6dd41f569a7299253fbef7d89a2c4b319ba69c31df4cbb",
             "declaration": "p13_t1_condition_ge_one",
             "file": "paper_bencmark/highambench/tasks/P13/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -2553,22 +2556,29 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P13Definitions.lean"
             ],
-            "statement_summary": "Higham's componentwise interpolation condition number is at least one whenever the interpolated value is nonzero."
+            "statement_summary": "For the paper's fixed degree-n Lagrange problem, Definition 2.1's componentwise data-perturbation condition number equals equation (2.2)'s quotient, which is at least one."
           },
           "source_locations": [
+            {
+              "anchor": "equation (2.1) and Definition 2.1",
+              "pdf_page": 2,
+              "printed_page": "548",
+              "role": "exact Lagrange representation and limiting supremum definition under componentwise data perturbations",
+              "section": "2. Condition number"
+            },
             {
               "anchor": "Lemma 2.2 and equation (2.2)",
               "pdf_page": 2,
               "printed_page": "548",
-              "role": "closed-form condition number and lower bound",
+              "role": "exact closed-form condition-number identity, sign-aligned attainment, and lower bound",
               "section": "2. Condition number"
             }
           ],
           "task_id": "P13-T1",
           "tier": "T1",
           "tier_name": "direct use",
-          "tier_reason": "NumStability.one_le_summationConditionNumber in the mounted Summation/ErrorBounds object directly proves the result after unfolding the interpolation summands.",
-          "title": "Interpolation condition number lower bound"
+          "tier_reason": "The frozen summation module already proves the generic componentwise perturbation upper bound, sharpness of its closed-form condition number, and the lower bound by one. The L proof directly specializes those facts to the Lagrange-weighted data and packages their exact positive-radius behavior as Definition 2.1's limit.",
+          "title": "Exact interpolation condition number"
         },
         {
           "availability": "available",

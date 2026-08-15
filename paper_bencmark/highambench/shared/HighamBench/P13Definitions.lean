@@ -12,11 +12,75 @@ noncomputable def p13InterpolationValue {n : ℕ}
     (ell f : Fin n → ℝ) : ℝ :=
   ∑ i, ell i * f i
 
-/-- Higham's componentwise condition number (2.2) for interpolation with
-fixed nodes and evaluation point. -/
+/-- The closed-form quotient on the right-hand side of Lemma 2.2, equation
+(2.2). The lemma identifies Definition 2.1's perturbation condition number with
+this quantity. -/
 noncomputable def p13Condition {n : ℕ}
     (ell f : Fin n → ℝ) : ℝ :=
   (∑ i, |ell i * f i|) / |p13InterpolationValue ell f|
+
+/-! ## Exact Lagrange interpolation condition number -/
+
+/-- Fixed data for the degree-`n` interpolation problem in Section 2. There
+are exactly `n+1` pairwise distinct nodes, while the evaluation point and nodes
+remain fixed under perturbations of `data`. -/
+structure P13LagrangeProblem (n : ℕ) where
+  nodes : Fin (n + 1) → ℝ
+  data : Fin (n + 1) → ℝ
+  x : ℝ
+  nodes_injective : Function.Injective nodes
+
+/-- The Lagrange basis value `ell_j(x)` from equation (2.1). The skipped
+`k = j` factors are represented by `1`. -/
+noncomputable def p13LagrangeBasis {n : ℕ}
+    (nodes : Fin (n + 1) → ℝ) (x : ℝ) (j : Fin (n + 1)) : ℝ :=
+  (∏ k : Fin (n + 1), if k = j then 1 else x - nodes k) /
+    (∏ k : Fin (n + 1), if k = j then 1 else nodes j - nodes k)
+
+/-- All Lagrange basis values at the fixed evaluation point. -/
+noncomputable def p13LagrangeBasisValues {n : ℕ}
+    (problem : P13LagrangeProblem n) : Fin (n + 1) → ℝ :=
+  p13LagrangeBasis problem.nodes problem.x
+
+/-- The exact degree-`n` interpolant value `p_f(x)` from equation (2.1). -/
+noncomputable def p13LagrangeValue {n : ℕ}
+    (problem : P13LagrangeProblem n) : ℝ :=
+  p13InterpolationValue (p13LagrangeBasisValues problem) problem.data
+
+/-- Definition 2.1's componentwise relative data perturbation
+`|delta f| <= epsilon |f|`. -/
+def p13DataPerturbation {m : ℕ} (f deltaF : Fin m → ℝ)
+    (epsilon : ℝ) : Prop :=
+  ∀ j, |deltaF j| ≤ epsilon * |f j|
+
+/-- Relative change in the exact interpolation value caused by `deltaF`.
+Definition 2.1 excludes a zero unperturbed value. -/
+noncomputable def p13RelativeInterpolationChange {m : ℕ}
+    (ell f deltaF : Fin m → ℝ) : ℝ :=
+  |p13InterpolationValue ell f - p13InterpolationValue ell (f + deltaF)| /
+    |p13InterpolationValue ell f|
+
+/-- The set inside Definition 2.1's supremum at a fixed positive radius. Each
+element is the relative output change divided by that radius. -/
+def p13ScaledPerturbationSet {m : ℕ} (ell f : Fin m → ℝ)
+    (epsilon : ℝ) : Set ℝ :=
+  {q | ∃ deltaF : Fin m → ℝ,
+    p13DataPerturbation f deltaF epsilon ∧
+      q = p13RelativeInterpolationChange ell f deltaF / epsilon}
+
+/-- Definition 2.1's supremum at perturbation radius `epsilon`. -/
+noncomputable def p13PerturbationSupremum {m : ℕ}
+    (ell f : Fin m → ℝ) (epsilon : ℝ) : ℝ :=
+  sSup (p13ScaledPerturbationSet ell f epsilon)
+
+/-- A scalar is Definition 2.1's condition number when the perturbation
+suprema tend to it through positive radii. This `Tendsto` formulation records
+the equality asserted by the paper without choosing a value for a nonexistent
+limit outside the nonzero-value domain. -/
+def p13IsComponentwiseConditionNumber {m : ℕ}
+    (ell f : Fin m → ℝ) (condition : ℝ) : Prop :=
+  Filter.Tendsto (p13PerturbationSupremum ell f)
+    (nhdsWithin 0 (Set.Ioi 0)) (nhds condition)
 
 /-- The exact second barycentric formula, with `coeff i = w_i/(x-x_i)`. -/
 noncomputable def p13BarycentricValue {n : ℕ}

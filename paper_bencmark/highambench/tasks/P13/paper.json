@@ -35,12 +35,12 @@
   },
   "rejected_candidates": [
     {
-      "candidate": "Lagrange representation (2.1) and Definition 2.1",
-      "reason": "Equation (2.1) is setup and Definition 2.1 is a limit/supremum definition. Lemma 2.2 supplies the closed form and its proved perturbation consequences."
+      "candidate": "Lagrange representation (2.1) standing alone",
+      "reason": "Equation (2.1) is setup rather than a standalone result. Its exact basis and interpolation value are retained in T1 to state Definition 2.1 and Lemma 2.2 faithfully."
     },
     {
-      "candidate": "the equality-attainment clause in the proof of Lemma 2.2",
-      "reason": "The extremizing sign choice is useful but secondary; T1 and T2 retain both the lower bound and the operational perturbation inequality."
+      "candidate": "Definition 2.1 standing alone",
+      "reason": "The limit/supremum definition is not used as an isolated task. T1 combines it with Lemma 2.2's proved closed form, exact sign-aligned attainment, and lower bound."
     },
     {
       "candidate": "modified Lagrange formulae (3.1)-(3.3)",
@@ -86,7 +86,7 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use the lower-bound clause of Lemma 2.2, which directly matches the frozen generic summation condition-number theorem.",
+      "decision": "Use Definition 2.1 and the full conclusion of Lemma 2.2: the componentwise data-perturbation supremum tends to the exact quotient in (2.2), which is at least one, for the paper's degree-n Lagrange problem with n+1 fixed distinct nodes.",
       "task_id": "P13-T1",
       "theorem_name": "p13_t1_condition_ge_one"
     },
