@@ -1,0 +1,172 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P12-T2",
+  "paper_sha256": "0569d969cebaabe42de69fef10fa91002af12d62149af7485d0712414b53c2a1",
+  "blind_translation_sha256": "4d5cbece83c6f5d97976986f4d37894cd76e57ad76a04f85282db04f87d8ef30",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF is the published 2020 article with corrected publication in 2021. Theorem 2 and its proof appear on PDF pages 5-6, printed pages 387-388.",
+      "translation_evidence": "The translation concerns inputs x,y, intermediate values s,t,e, the identity s+e=x+y, and the bound |s-(x+y)|≤|y|, identifying the intended FastTwoSum result.",
+      "reasoning": "The source version, theorem, and surrounding proof passages are correctly selected."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "Theorem 2 binds x,y∈F, where F is the radix-β finite floating-point system defined by precision p and exponent bounds.",
+      "translation_evidence": "The translation binds an arbitrary predicate R on reals, arbitrary real x and y, and an arbitrary triple of real components; only R(x) is required, not R(y).",
+      "reasoning": "The concrete floating-point domain and the requirement that both inputs belong to it are replaced by a substantially different arbitrary-predicate domain."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "After x and y are fixed, Theorem 2 requires the existence of a permitted representation x=mβ^e whose exponent satisfies condition (7).",
+      "translation_evidence": "There is no representation witness, exponent binder, or magnitude condition. Instead, exact representability of s-x and y-t is assumed after an arbitrary triple is selected.",
+      "reasoning": "The existential witness and its dependence on x and y disappear, while unrelated representability assumptions are introduced at a different logical position."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The hypotheses are x,y∈F, nearest addition, faithful subtraction, and |y|≤(β^p-β/2)β^{e(x)} for some permitted representation of x.",
+      "translation_evidence": "The hypotheses require R(x), nearest-representable s,t,e, and exact representability of s-x and y-t; they omit R(y), the radix-format condition, and condition (7).",
+      "reasoning": "The paper's substantive sufficient conditions are omitted and replaced by assumptions that already supply the exact representability established in the paper's proof."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The result keeps s as the computed nearest sum, proves t=s-x and e=y-t for the two computed subtractions, and concludes s+e=x+y together with the nearest-addition error bound.",
+      "translation_evidence": "Only s+e=x+y and |s-(x+y)|≤|y| are explicit conclusions. Exactness of t and e follows only because exact representability of their targets was assumed.",
+      "reasoning": "The two subtraction-exactness results and their dependency on the paper hypotheses are not retained as conclusions; the central proof obligations have been moved into the antecedent."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "The paper defines F through β,p,e_min,e_max, distinguishes nearest from faithful rounding, and uses the representability implication (8).",
+      "translation_evidence": "The dependency ledger correctly unfolds its own nearest predicate and ordinary real operations, but contains no radix-format definition, faithful-rounding relation, exponent representation, or counterpart of (8).",
+      "reasoning": "Although the target dependencies are intelligibly unfolded, the nontrivial definitions governing the paper result are absent or replaced."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "The symbols ⊕ and ⊖ denote computed floating-point operations, whereas x+y, s-x, y-t, and s+e denote exact real arithmetic.",
+      "translation_evidence": "The exact real targets are distinguished syntactically from s,t,e, but the latter are arbitrary triple components constrained by nearest predicates rather than outputs of the stated computed operations.",
+      "reasoning": "The translation loses the execution-level distinction between arbitrary nearest choices and the actual nearest-addition and faithful-subtraction results."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "FastTwoSum executes, in order, s←x⊕y, t←s⊖x, and e←y⊖t.",
+      "translation_evidence": "The triple is arbitrary and the translation explicitly states that no algorithm computing its components is encoded.",
+      "reasoning": "No operation functions or execution equations link the components to the paper's three-step algorithm."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "All estimates in Theorem 2 use scalar real absolute value.",
+      "translation_evidence": "All error comparisons use the standard absolute value on scalar reals; no vector or matrix norm is introduced.",
+      "reasoning": "The norm semantics are preserved."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "Condition (7) contains the exact inclusive threshold (β^p-β/2)β^{e(x)}, and implication (8) uses β^pβ^{min(e(a),e(b))}.",
+      "translation_evidence": "The translation contains no β, p, exponent, threshold, exponent minimum, or representation-index dependence.",
+      "reasoning": "All format-dependent constants and indexing information central to Theorem 2 are missing."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The model is a finite radix-β system; addition is nearest, subtraction is faithful, ties are unspecified, and equation (8) is qualified by absence of overflow even though Theorem 2 does not separately state that premise.",
+      "translation_evidence": "R is arbitrary, all three stages use global nearest predicates, and no precision, exponent range, overflow, underflow, or exceptional-value model is encoded.",
+      "reasoning": "The numerical model fails under either reading of the paper's overflow qualification: the concrete format is absent and faithful subtraction is replaced by nearest rounding."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper derives exact subtraction and the final identity from condition (7), nearest addition, faithful subtraction, and floating-point representability properties.",
+      "translation_evidence": "The translation assumes exact representability of both subtraction targets and assumes nearest results at those stages, while dropping condition (7) and y's representability.",
+      "reasoning": "The antecedents are logically incomparable and the source's substantive derived facts become stronger assumptions, so theorem strength is not preserved."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The paper's main error notion is the exact signed residual e=x+y-s, supplemented by the forward-error bound |s-(x+y)|≤|y|.",
+      "translation_evidence": "The equality s+e=x+y makes e the same exact signed residual, and the same scalar forward-error bound is stated.",
+      "reasoning": "No backward, mixed, relative, or merely approximate error notion is substituted for these two claims."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The identities t=s-x, e=y-t, and s+e=x+y are exact and contain no neglected higher-order terms.",
+      "translation_evidence": "The translation uses exact real equalities and inequalities and introduces no asymptotic or first-order approximation.",
+      "reasoning": "Higher-order treatment matches."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "Theorem 2 concerns scalar values in one concrete arbitrary-base floating-point system F, with both x and y in that system.",
+      "translation_evidence": "The claim is generalized to every real predicate R, permits y outside R, and applies to arbitrary real triples under newly imposed exact-representability assumptions.",
+      "reasoning": "This is an uncontrolled generalization of the domain combined with a specialization to nearest subtraction, not a faithful reformulation."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The paper's content is proving that condition (7) and the floating-point model make both subtraction targets exactly representable despite only faithful subtraction being assumed.",
+      "translation_evidence": "R(s-x) and R(y-t), together with nearestness, immediately force t=s-x and e=y-t; R(x) and nearestness of s immediately give the stated error bound.",
+      "reasoning": "The hypotheses are satisfiable, but they make the conclusions follow for the unintended trivial reason that the two exact targets are already assumed to be representable."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translation cannot establish Theorem 2 cases from the paper hypotheses because it requires exact representability and nearestness at both subtraction stages, omits the format machinery that derives those facts, and does not model faithfully rounded algorithm outputs."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper theorem covers algorithm outputs for x,y in a radix floating-point system under condition (7); it does not establish a theorem for every arbitrary predicate R, arbitrary real y, and arbitrary constrained triple."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "derived-exactness-assumed",
+      "paper_evidence": "Theorem 2 uses condition (7), the radix format, and implication (8) to prove t=s-x and e=y-t.",
+      "translation_evidence": "The translation assumes R(s-x) and R(y-t); combined with nearestness, these assumptions immediately force t=s-x and e=y-t.",
+      "impact": "The principal mathematical content of the paper theorem is assumed rather than translated."
+    },
+    {
+      "severity": "major",
+      "category": "missing-condition-7",
+      "paper_evidence": "The exact theorem hypothesis is the existential representation bound |y|≤(β^p-β/2)β^{e(x)}.",
+      "translation_evidence": "No representation witness, exponent, β, p, or corresponding bound occurs.",
+      "impact": "The translated statement cannot express the paper's generalization for arbitrary bases or its sufficient input condition."
+    },
+    {
+      "severity": "major",
+      "category": "algorithm-and-rounding-mismatch",
+      "paper_evidence": "FastTwoSum uses one nearest addition followed by two faithfully rounded subtractions.",
+      "translation_evidence": "All three components satisfy nearest predicates, and no component is linked to an executed operation.",
+      "impact": "The statement describes a different selection model and does not establish correctness of the paper's algorithm."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point-domain-erased",
+      "paper_evidence": "Both inputs and all computed values belong to the radix floating-point set F with bounded mantissa and exponent.",
+      "translation_evidence": "R is arbitrary, x and y are arbitrary reals, and y need not satisfy R.",
+      "impact": "The domain, format structure, and input representability requirements are not preserved."
+    },
+    {
+      "severity": "major",
+      "category": "logical-strength-incomparable",
+      "paper_evidence": "The source derives exact intermediate behavior from format-specific assumptions.",
+      "translation_evidence": "The translation broadens the domain to arbitrary predicates while strengthening the local antecedent with exact-representability and nearest-subtraction assumptions.",
+      "impact": "Neither theorem statement implies the other under their stated binders and hypotheses."
+    }
+  ],
+  "rationale": "The dependency ledger accurately explains the translated target and thereby exposes the mismatch: it is a generic nearest-representable lemma whose exact-intermediate assumptions make the result immediate. It omits the floating-point format, the existential representation and threshold in condition (7), faithful subtraction, and linkage to the executed FastTwoSum operations. Although scalar absolute value, the exact residual identity, the forward-error bound, and exact higher-order treatment are preserved, the hypotheses, domains, numerical model, and proof dependency are materially different. Consequently neither directional implication holds."
+}

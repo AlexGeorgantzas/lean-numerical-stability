@@ -1,0 +1,184 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "2f81ddc7f6915ee4e168a1b1e3ef4258a7587ebe12f1ce1e3287b3e69e545d0b",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "A record-like inductive type carrying three real components. For tr, these components are denoted below by s, t, and e.",
+      "effect_on_target": "The target universally quantifies over tr and uses its first, second, and third real components as the three successive rounded values s, t, and e.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "The function selecting the third real component of a LocalDef001 value.",
+      "effect_on_target": "LocalDef002 tr is e, the rounded result associated with the exact quantity y - t and the correction added to s in the equality s + e = x + y.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "The function selecting the first real component of a LocalDef001 value.",
+      "effect_on_target": "LocalDef003 tr is s, assumed to be a nearest representable value to x + y and used in both conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "The function selecting the second real component of a LocalDef001 value.",
+      "effect_on_target": "LocalDef004 tr is t, assumed to be a nearest representable value to the exact difference s - x.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "LocalDef005 R a r means that r is R-representable and globally minimizes absolute error from a among all R-representable real candidates: R(r) and, for every real c, R(c) implies |a - r| ≤ |a - c|.",
+      "effect_on_target": "It states that s is nearest representable to x + y, t is nearest representable to s - x, and e is nearest representable to y - t. It allows ties and specifies no tie-breaking rule.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "The constructor that forms a LocalDef001 value from three arbitrary real numbers.",
+      "effect_on_target": "It confirms that the triple type itself imposes no numerical invariant on s, t, and e; all constraints used by the theorem come from the explicit hypotheses.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "It combines the exact equality s + e = x + y with the error bound |s - (x + y)| ≤ |y|. It also combines representability and global minimality inside each LocalDef005 hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "Eq",
+      "meaning": "Propositional equality between two values of the same type.",
+      "effect_on_target": "It expresses the exact real-number identity s + e = x + y.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "HAdd.hAdd",
+      "meaning": "The heterogeneous-addition operation supplied by an HAdd instance.",
+      "effect_on_target": "For the displayed real-number instance, every occurrence is ordinary real addition, including x + y and s + e.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "HSub.hSub",
+      "meaning": "The heterogeneous-subtraction operation supplied by an HSub instance.",
+      "effect_on_target": "For the displayed real-number instance, it gives the ordinary real differences s - x, y - t, and s - (x + y), as well as the differences in the nearest-representable definition.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LE.le",
+      "meaning": "The less-than-or-equal relation supplied by an LE instance.",
+      "effect_on_target": "For real numbers it expresses both the global absolute-error comparisons in LocalDef005 and the final bound |s - (x + y)| ≤ |y|.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "The inputs x and y, all three components s, t, and e, every representable candidate, and all exact or computed quantities are scalar real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Real.instAdd",
+      "meaning": "The standard addition structure on the real numbers.",
+      "effect_on_target": "It resolves the additions in x + y, s + e, and real subtraction to standard real arithmetic.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive-group structure on the real numbers, supplying zero, addition, negation, and subtraction laws.",
+      "effect_on_target": "It supplies the negation operation used by absolute value and supports the standard interpretation of all real differences.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instLE",
+      "meaning": "The standard less-than-or-equal relation on the real numbers.",
+      "effect_on_target": "It makes every comparison in the proposition an ordinary real inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instSub",
+      "meaning": "The standard real subtraction operation, defined by a - b = a + (-b).",
+      "effect_on_target": "It determines the exact intermediate quantities s - x and y - t, the final error s - (x + y), and all absolute errors in LocalDef005.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real.lattice",
+      "meaning": "The standard lattice structure on the real numbers, including maximum and minimum.",
+      "effect_on_target": "It supplies the maximum operation used to define |a| as max(a, -a), hence gives the standard real absolute values appearing throughout.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "abs",
+      "meaning": "For a real number a, abs(a) is max(a, -a), the standard absolute value |a|.",
+      "effect_on_target": "It measures every rounding error and appears in the final estimate |s - (x + y)| ≤ |y|.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "instHAdd",
+      "meaning": "The homogeneous HAdd instance induced by an Add instance, so heterogeneous-addition notation applies the underlying addition operation.",
+      "effect_on_target": "Together with Real.instAdd, it ensures that all HAdd expressions in the target are standard addition of real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "instHSub",
+      "meaning": "The homogeneous HSub instance induced by a Sub instance, so heterogeneous-subtraction notation applies the underlying subtraction operation.",
+      "effect_on_target": "Together with Real.instSub, it ensures that all HSub expressions in the target are standard subtraction of real numbers.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "An arbitrary predicate R on the real numbers, interpreted as representability.",
+      "Arbitrary real numbers x and y.",
+      "An arbitrary triple tr of real numbers; write s for its first component, t for its second component, and e for its third component."
+    ],
+    "hypotheses": [
+      "x is representable: R(x).",
+      "s is representable and is a global nearest representable real to the exact sum x + y: for every real c, if R(c), then |(x + y) - s| ≤ |(x + y) - c|.",
+      "The exact difference s - x is representable: R(s - x).",
+      "t is representable and is a global nearest representable real to the exact difference s - x: for every real c, if R(c), then |(s - x) - t| ≤ |(s - x) - c|.",
+      "The exact difference y - t is representable: R(y - t).",
+      "e is representable and is a global nearest representable real to the exact difference y - t: for every real c, if R(c), then |(y - t) - e| ≤ |(y - t) - c|."
+    ],
+    "conclusions": [
+      "The exact equality s + e = x + y holds.",
+      "The absolute error in s as an approximation to x + y is bounded by |y|: |s - (x + y)| ≤ |y|."
+    ],
+    "mathematical_definitions": [
+      "For a representability predicate R, define Near_R(a,r) to mean R(r) and ∀c ∈ Real, R(c) implies |a - r| ≤ |a - c|.",
+      "The three exact quantities supplied to the nearest-representable assumptions are a0 = x + y, a1 = s - x, and a2 = y - t.",
+      "The components satisfy Near_R(a0,s), Near_R(a1,t), and Near_R(a2,e), together with the additional assumptions R(x), R(a1), and R(a2).",
+      "All additions, subtractions, order comparisons, and absolute values are the standard operations on scalar real numbers."
+    ],
+    "proposition_plain_english": "For every representability predicate R on the reals, every pair of real numbers x and y, and every real triple (s,t,e), suppose x is representable; s is a nearest representable value to x + y; the exact difference s - x is itself representable; t is a nearest representable value to s - x; the exact difference y - t is itself representable; and e is a nearest representable value to y - t. Then s + e equals x + y exactly, and the absolute error |s - (x + y)| is at most |y|."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The predicate R is completely arbitrary. The proposition does not encode a floating-point format, discreteness, finiteness, closure properties, rounding mode, precision, exponent range, exceptional values, or any other structure on representable numbers.",
+    "All quantities are scalar real numbers; there are no vectors, matrices, dimensions, or componentwise operations.",
+    "Each nearest-representable hypothesis asserts a global minimizer among all R-representable real candidates. Existence of such minimizers is assumed for the selected s, t, and e, not proved.",
+    "Nearest values need not be unique, because equality of errors is allowed and no tie-breaking rule is specified.",
+    "The assumptions that s - x and y - t are exactly representable are strong. Together with the nearest-representable hypotheses, they force zero error at the second and third stages, hence t = s - x and e = y - t.",
+    "The number y is not required to be representable.",
+    "The statement is a chain of implications. For any chosen R, x, y, and tr, it is automatically true if any required hypothesis fails; in particular, it is vacuous when the relevant nearest-representable values do not exist or when x is not representable.",
+    "No algorithm for computing s, t, or e is encoded. They are arbitrary triple components constrained only by the hypotheses."
+  ],
+  "ambiguities": []
+}

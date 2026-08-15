@@ -3,166 +3,582 @@
   "role": "direct-judge",
   "task_id": "P12-T2",
   "paper_sha256": "0569d969cebaabe42de69fef10fa91002af12d62149af7485d0712414b53c2a1",
-  "dossier_sha256": "8b5adc1e7aa2b4d2360a1ed6d3a619a8f12af0e6402e1f726c502e6ce2f966e6",
+  "dossier_sha256": "8eb3747ad0d9b495345e4e45e478d005fb87f8c68343fa33182cb5012c6a7401",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.P12FastTwoSumTrace",
-      "interpretation": "An inductive trace type which, together with its supplied constructor and projections, stores exactly three real values corresponding to s, t, and e.",
-      "effect_on_target": "The target quantifies an arbitrary three-real trace and constrains its fields through the three p12Nearest premises.",
-      "paper_match": "The field structure matches the original FastTwoSum dataflow, including the internal t and returned s and e, although representability is not built into the trace type.",
-      "status": "pass"
+      "name": "HighamBench.P12FastTwoSumExecution",
+      "interpretation": "An execution predicate whose constructor requires tr.s to be nearest to x+y, tr.t faithful to tr.s-x, tr.e faithful to y-tr.t, and noOverflow for all three exact results.",
+      "effect_on_target": "The run hypothesis carries the three ordered operation semantics, output representability, and three range side conditions.",
+      "paper_match": "The operation order and rounding modes match FastTwoSum, but Theorem 2 does not impose all three noOverflow predicates, particularly noOverflow of x+y.",
+      "status": "fail"
     },
     {
       "id": "D002",
-      "name": "HighamBench.P12FastTwoSumTrace.e",
-      "interpretation": "The projection returning the third real component of a trace.",
-      "effect_on_target": "This component is constrained as a nearest representative of y-tr.t and is used as the correction in tr.s+tr.e.",
-      "paper_match": "It occupies the same position as the correction e computed by the third FastTwoSum operation.",
+      "name": "HighamBench.P12FastTwoSumTrace",
+      "interpretation": "A record of three real values, constructed as s, t, and e.",
+      "effect_on_target": "Packages the computed sum, intermediate subtraction, and returned residual quantified by the target.",
+      "paper_match": "Matches the three values occurring in the paper's algorithm.",
       "status": "pass"
     },
     {
       "id": "D003",
-      "name": "HighamBench.P12FastTwoSumTrace.s",
-      "interpretation": "The projection returning the first real component of a trace.",
-      "effect_on_target": "This component is constrained as a nearest representative of x+y and is the high part in both conclusions.",
-      "paper_match": "It matches the paper's first computed quantity s=x⊕y.",
+      "name": "HighamBench.P12FastTwoSumTrace.e",
+      "interpretation": "Projection of the third real component of a trace.",
+      "effect_on_target": "Selects the returned residual used in the exactness conclusions.",
+      "paper_match": "Matches line 3 output e.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.P12FastTwoSumTrace.t",
-      "interpretation": "The projection returning the second real component of a trace.",
-      "effect_on_target": "This component is constrained as a nearest representative of tr.s-x and is used in the exact argument y-tr.t of the final rounding relation.",
-      "paper_match": "Its dataflow position matches the intermediate t computed by the second FastTwoSum operation.",
+      "name": "HighamBench.P12FastTwoSumTrace.s",
+      "interpretation": "Projection of the first real component of a trace.",
+      "effect_on_target": "Selects the rounded sum used throughout the execution and conclusion.",
+      "paper_match": "Matches line 1 output s.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "HighamBench.p12Nearest",
-      "reuse_sha256": "d8b3c420977688a5152435b75ac5713580eb4b731ef6d566708ddd46e4bfcc3a",
-      "effect_on_target": "For hs it makes tr.s a globally nearest representable value to x+y. With hx, this directly yields the error bound by taking x as a candidate. For ht and he, the separate hst and hye premises supply zero-distance representable candidates, forcing tr.t=tr.s-x and tr.e=y-tr.t.",
-      "paper_match": "Its use for the addition matches nearest-addition and permits unspecified ties. Its use for both subtractions does not match the paper's faithful-subtraction hypothesis, and together with hst and hye it makes the exactness steps immediate assumptions rather than consequences of condition (7) and the floating-point structure.",
-      "status": "fail"
+      "name": "HighamBench.P12FastTwoSumTrace.t",
+      "interpretation": "Projection of the second real component of a trace.",
+      "effect_on_target": "Selects the intermediate subtraction result.",
+      "paper_match": "Matches line 2 value t.",
+      "status": "pass"
     },
     {
       "id": "D006",
-      "name": "HighamBench.P12FastTwoSumTrace.mk",
-      "interpretation": "A constructor taking three real arguments in the order s, t, e and packaging them as a P12FastTwoSumTrace.",
-      "effect_on_target": "It permits every real triple to serve as a trace before the theorem premises impose relational constraints.",
-      "paper_match": "The component order agrees with the three sequential FastTwoSum quantities.",
+      "name": "HighamBench.P12RadixFormat",
+      "interpretation": "A radix format containing beta, precision, minimum exponent, maximum exponent, and validity proofs.",
+      "effect_on_target": "Fixes the single floating-point set used by representations and operation relations.",
+      "paper_match": "Matches the parameters beta, p, emin, and emax of equation (1).",
       "status": "pass"
     },
     {
       "id": "D007",
-      "name": "And",
-      "reuse_sha256": "c5359964579f42cd451c7b80335c5bc6444e0bd8f9eb2ad62d6bcc73a5827d44",
-      "effect_on_target": "The conclusion requires both the exact two-term identity and the line-1 absolute-error bound.",
-      "paper_match": "Theorem 2 concludes the exact identity, and equation (9) establishes the stated nearest-addition error bound. This conjunction does not include the two exact-subtraction conclusions.",
+      "name": "HighamBench.P12RadixFormat.betaR",
+      "interpretation": "The natural radix beta cast to the reals.",
+      "effect_on_target": "Supplies beta in division, multiplication, and real powers.",
+      "paper_match": "Correctly interprets the paper's radix in real-valued inequalities.",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "Eq",
-      "interpretation": "Homogeneous propositional equality between two values of the same type.",
-      "effect_on_target": "It states exact real equality tr.s+tr.e=x+y, with no rounding operation applied to either side.",
-      "paper_match": "This matches the exact real identity s+e=x+y in equation (3).",
-      "status": "pass"
+      "name": "HighamBench.P12RadixFormat.mantissaBound",
+      "interpretation": "The real value beta^p, with p a natural precision.",
+      "effect_on_target": "Its direct use makes the Lean threshold (beta^p-beta/2) beta^e, with no ceiling operation.",
+      "paper_match": "The beta^p component is correct, but equation (7) is ceil(beta^p-beta/2) beta^e. The expressions differ for every odd beta.",
+      "status": "fail"
     },
     {
       "id": "D009",
-      "name": "HAdd.hAdd",
-      "reuse_sha256": "74aa55b0ad9407a572b103fe243ec7bfd85c500b6fe3cb2cda7e9134aa7c8ed5",
-      "effect_on_target": "Through the supplied real HAdd instance, every displayed + is exact real addition; computed addition is represented separately by p12Nearest.",
-      "paper_match": "This correctly realizes the exact additions in x+y, the rounding argument, and the final unevaluated sum s+e.",
+      "name": "HighamBench.P12RadixFormat.scale",
+      "interpretation": "The real integer power beta^e.",
+      "effect_on_target": "Provides the representation scale and the exponent-dependent factor in condition (7).",
+      "paper_match": "Matches beta raised to the chosen integral representation exponent.",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "HSub.hSub",
-      "reuse_sha256": "910865b63624f8f852cdf917c24378a2c58fe15bd9021ef96ea7cb8572a22709",
-      "effect_on_target": "Through the real HSub instance, it forms the exact differences tr.s-x, y-tr.t, and tr.s-(x+y), which are then used in predicates or the bound.",
-      "paper_match": "These are the correct exact real arguments and residuals corresponding to the paper's computed subtraction steps; the rounding-mode mismatch arises from p12Nearest rather than from this exact subtraction operator.",
+      "name": "HighamBench.P12Representation",
+      "interpretation": "A type of witnesses that x equals an integral mantissa times beta^e within the format's strict mantissa and exponent bounds.",
+      "effect_on_target": "Makes condition (7) existential over an actual feasible representation of x.",
+      "paper_match": "Preserves the paper's nonnormalized, potentially nonunique representation semantics.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "LE.le",
-      "reuse_sha256": "021045e95e0c21a2eb0a14dae03247f90624c147438f82cd2bb70bbaf7adbe27",
-      "effect_on_target": "It supplies the inclusive comparison in |tr.s-(x+y)|≤|y|.",
-      "paper_match": "The direction and inclusiveness match the nearest-addition bound used in equation (9).",
+      "name": "HighamBench.P12Representation.exponent",
+      "interpretation": "Projection of the integral exponent from a representation witness.",
+      "effect_on_target": "Makes the bound depend on the particular existentially chosen representation.",
+      "paper_match": "Matches the representation-specific and noncanonical e(x) used in Theorem 2.",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "Real",
-      "reuse_sha256": "5eda97e2aeddf310e1f963c8b9a394088cd4583baa5b2cfa49162cc318cd87d2",
-      "effect_on_target": "All inputs, exact expressions, and trace fields range over mathematical reals. Membership in a floating-point set is represented only by an arbitrary predicate, and no such premise is imposed on y.",
-      "paper_match": "Real numbers are suitable denotations for finite floating-point values, but the current target ranges beyond the paper's x,y,s,t,e∈F domain because representable is unconstrained and y need not satisfy it.",
-      "status": "fail"
-    },
-    {
-      "id": "D013",
-      "name": "Real.instAdd",
-      "reuse_sha256": "e9db96f91871c57076af00e6fb401681a44e3b6c18c7daca0597f7bbdbdfa9a9",
-      "effect_on_target": "It supplies standard exact real addition to all additions in the target.",
-      "paper_match": "It matches the paper's unadorned exact real additions.",
+      "name": "HighamBench.p12Representable",
+      "interpretation": "The proposition that the representation type for a real number is nonempty.",
+      "effect_on_target": "Expresses x and y membership in the format and underlies rounded-output membership.",
+      "paper_match": "Matches membership in F as defined by equation (1).",
       "status": "pass"
     },
     {
+      "id": "D013",
+      "name": "HighamBench.P12FastTwoSumExecution.mk",
+      "interpretation": "The sole execution constructor combines nearest addition, two faithful subtractions, and noOverflow assumptions for x+y, s-x, and y-t.",
+      "effect_on_target": "Determines the full hidden content of run and narrows the quantified executions to three explicit range conditions.",
+      "paper_match": "Nearest addition and faithful subtraction match, but the three range assumptions are not the hypotheses stated by Theorem 2; the addition restriction is especially unsupported.",
+      "status": "fail"
+    },
+    {
       "id": "D014",
-      "name": "Real.instAddGroup",
-      "reuse_sha256": "f77853411748aaf532855b44e49577d858002306d195b28def05f569026eb2dd",
-      "effect_on_target": "It provides real negation and additive-group structure used by subtraction and absolute value.",
-      "paper_match": "These are the standard real operations underlying the paper's exact differences and scalar absolute values.",
+      "name": "HighamBench.P12FastTwoSumTrace.mk",
+      "interpretation": "Constructs a trace from three real values in s, t, e order.",
+      "effect_on_target": "Fixes the component ordering used by all projections.",
+      "paper_match": "Matches the algorithm's variable ordering.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "Real.instLE",
-      "reuse_sha256": "d3a74f29e3c128c65a64cd85c1ff20e38c7c45bf6fef0129f1eb1707ed54a74e",
-      "effect_on_target": "It makes the target inequality use the standard real order.",
-      "paper_match": "This matches the scalar order used by the paper's bounds.",
+      "name": "HighamBench.P12RadixFormat.beta",
+      "interpretation": "Projection of the natural radix.",
+      "effect_on_target": "Supplies the integral beta later cast into real arithmetic.",
+      "paper_match": "Matches the paper's integral radix beta.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "Real.instSub",
-      "reuse_sha256": "9a37ea0c3ed4633bcb29365559f29747f0d50114d73cdb3937f82dfad5f40b21",
-      "effect_on_target": "It interprets every subtraction expression as exact real addition of a negation.",
-      "paper_match": "It correctly represents the paper's unadorned exact differences, distinct from computed floating-point subtraction.",
+      "name": "HighamBench.P12RadixFormat.mk",
+      "interpretation": "Constructs a format with beta at least 2, positive natural precision, and emin no greater than emax.",
+      "effect_on_target": "Restricts formats to conventional valid radix systems.",
+      "paper_match": "Matches the paper's use of 2 <= beta, positive mantissa length, and an ordered exponent interval.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "Real.lattice",
-      "reuse_sha256": "a13a5b29df057070012dc41ff632c26b9c967412e3c02001f5e5ad789148084a",
-      "effect_on_target": "It supplies the ordered lattice structure used to define real absolute value.",
-      "paper_match": "Its resulting absolute value has the scalar real meaning used throughout equations (7)-(10).",
+      "name": "HighamBench.P12RadixFormat.precision",
+      "interpretation": "Projection of the positive natural mantissa length.",
+      "effect_on_target": "Becomes p in beta^p.",
+      "paper_match": "Matches the paper's mantissa length p.",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "abs",
-      "reuse_sha256": "a468b89dd7f25f736a8a5bd180e4b5390358b5412c8a76a75e3c898cff46f514",
-      "effect_on_target": "It measures the scalar magnitudes of the line-1 residual and y.",
-      "paper_match": "This is exactly the scalar absolute-value notion in the paper, not a vector or matrix norm.",
+      "name": "HighamBench.P12Representation.mk",
+      "interpretation": "Builds a representation from integral m,e, strict bounds -beta^p < m < beta^p, exponent bounds, and x=m beta^e.",
+      "effect_on_target": "Precisely determines feasible representation witnesses and representable values.",
+      "paper_match": "Matches equation (1), including strict mantissa bounds and nonnormalized representations.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "instHAdd",
-      "reuse_sha256": "d606ddbdeb8527fc64397dcca7d82be54c432c0d137fdfd662fb34df5358cdc7",
-      "effect_on_target": "It forwards homogeneous + notation to standard real addition.",
-      "paper_match": "The resulting operations correctly denote exact real addition where + appears in the paper.",
+      "name": "HighamBench.P12RadixFormat.emax",
+      "interpretation": "Projection of the maximum integral exponent.",
+      "effect_on_target": "Bounds representations and defines the noOverflow magnitude.",
+      "paper_match": "Matches emax in equation (1).",
       "status": "pass"
     },
     {
       "id": "D020",
+      "name": "HighamBench.P12RadixFormat.emin",
+      "interpretation": "Projection of the minimum integral exponent.",
+      "effect_on_target": "Provides the lower exponent bound on representations.",
+      "paper_match": "Matches emin in equation (1).",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "HighamBench.P12RadixFormat.noOverflow",
+      "interpretation": "The strict real bound |z| < beta^p beta^emax.",
+      "effect_on_target": "Through run, requires this bound for the exact sum and both exact subtraction arguments before the theorem can be used.",
+      "paper_match": "The proof qualifies implication (8) by absence of overflow, but Theorem 2 does not state these three hypotheses and does not require this bound for the line-1 exact sum.",
+      "status": "fail"
+    },
+    {
+      "id": "D022",
+      "name": "HighamBench.p12FaithfulInFormat",
+      "interpretation": "Requires a representable rounded value with no distinct representable candidate between it and the exact value, including the exact endpoint.",
+      "effect_on_target": "Models each subtraction output as faithfully rounded and forces exact output when the exact value is representable.",
+      "paper_match": "Matches the paper's faithful-rounding definition.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "HighamBench.p12NearestInFormat",
+      "interpretation": "Specializes p12Nearest to the format's representable real numbers.",
+      "effect_on_target": "Constrains tr.s to be a nearest member of the same F.",
+      "paper_match": "Matches nearest addition into F.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "HighamBench.p12Nearest",
+      "interpretation": "Requires rounded to be representable and no farther from exact than any representable candidate.",
+      "effect_on_target": "Allows arbitrary tie selection while enforcing minimum absolute error.",
+      "paper_match": "Matches the paper's nearest-rounding definition and introduces no tie-breaking rule.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "Combines the four target conclusions and the components of rounding predicates.",
+      "paper_match": "Correctly represents simultaneous claims and conditions.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Provides ordinary real division from the real multiplicative structure.",
+      "effect_on_target": "Interprets betaR / 2 as exact real division.",
+      "paper_match": "Matches the coefficient beta/2 in equation (7).",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "States exact real identities for t, e, and s+e.",
+      "paper_match": "Matches the exact equalities in equations (3) and the proof.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "Exists",
+      "interpretation": "Existential quantification over a witness.",
+      "effect_on_target": "Quantifies a feasible representation rx of x inside condition (7).",
+      "paper_match": "Matches 'there is a representation of x' in Theorem 2.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "HAdd.hAdd",
+      "interpretation": "Overloaded addition resolved here to real addition.",
+      "effect_on_target": "Forms exact x+y and s+e, rather than floating-point addition.",
+      "paper_match": "Matches the paper's unadorned exact real addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "HDiv.hDiv",
+      "interpretation": "Overloaded division resolved here to real division.",
+      "effect_on_target": "Forms the exact coefficient beta/2.",
+      "paper_match": "Matches exact arithmetic in equation (7).",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "HMul.hMul",
+      "interpretation": "Overloaded multiplication resolved here to real multiplication.",
+      "effect_on_target": "Multiplies the condition coefficient by beta^e and forms represented values.",
+      "paper_match": "Matches ordinary multiplication in equations (1) and (7).",
+      "status": "pass"
+    },
+    {
+      "id": "D032",
+      "name": "HSub.hSub",
+      "interpretation": "Overloaded subtraction resolved here to real subtraction.",
+      "effect_on_target": "Forms exact differences s-x, y-t, and s-(x+y).",
+      "paper_match": "Matches unadorned exact subtraction in the paper's conclusions and proof.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "LE.le",
+      "interpretation": "The non-strict order operation, resolved to real or integral order as instantiated.",
+      "effect_on_target": "Expresses all non-strict bounds, including condition (7) and the residual-error bound.",
+      "paper_match": "Matches the paper's <= relations.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "Nat",
+      "interpretation": "Natural numbers.",
+      "effect_on_target": "Types beta, precision, and numeral literals used by the format.",
+      "paper_match": "Matches the conventional integral radix and positive mantissa length.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "interpretation": "Typeclass evidence permitting the numeral 2 to be constructed by natural casting.",
+      "effect_on_target": "Supports elaboration of the real literal 2 in betaR/2.",
+      "paper_match": "Has no independent mathematical effect beyond denoting the numeral 2 correctly.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "Nat.instNeZeroSucc",
+      "interpretation": "Typeclass proof that a successor natural is nonzero.",
+      "effect_on_target": "Supports elaboration machinery for the literal 2.",
+      "paper_match": "Has no independent paper-level content and preserves the intended numeral.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "OfNat.ofNat",
+      "interpretation": "Interprets natural-number literals in the requested type.",
+      "effect_on_target": "Creates the real denominator 2 and natural bounds 0,1,2.",
+      "paper_match": "All resulting numerals match the paper and format constraints.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "Real",
+      "interpretation": "The mathematical real-number type.",
+      "effect_on_target": "Types x, y, all trace values, and exact arithmetic.",
+      "paper_match": "Matches the paper's scalar real model F subset R.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary addition on real numbers.",
+      "effect_on_target": "Implements exact x+y and s+e.",
+      "paper_match": "Matches unrounded real addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "Real.instAddGroup",
+      "interpretation": "The additive-group structure on the reals.",
+      "effect_on_target": "Provides negation and subtraction structure used by absolute value.",
+      "paper_match": "Supports standard real absolute value and arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The multiplicative, inverse, division, and integer-power structure on reals.",
+      "effect_on_target": "Provides exact division by 2 and beta raised to integral exponents.",
+      "paper_match": "Matches real division and beta^e for possibly negative e.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "Real.instLE",
+      "interpretation": "The standard non-strict order on reals.",
+      "effect_on_target": "Interprets all real inequalities.",
+      "paper_match": "Matches ordinary scalar order in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary multiplication on real numbers.",
+      "effect_on_target": "Implements products in representations, thresholds, and overflow bounds.",
+      "paper_match": "Matches the paper's real multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "Real.instNatCast",
+      "interpretation": "Canonical embedding of natural numbers into the reals.",
+      "effect_on_target": "Casts beta and numeric literals into exact real values.",
+      "paper_match": "Preserves the numerical values used in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "Real.instSub",
+      "interpretation": "Real subtraction defined as addition of the negation.",
+      "effect_on_target": "Implements every exact difference in the target and rounding predicates.",
+      "paper_match": "Matches unadorned real subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "Real.lattice",
+      "interpretation": "The lattice order structure on the reals.",
+      "effect_on_target": "Supports absolute value as max(a,-a).",
+      "paper_match": "Yields ordinary real absolute value.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "abs",
+      "interpretation": "Absolute value defined as max(a,-a) in the ordered additive group.",
+      "effect_on_target": "Interprets |y| and all scalar error magnitudes.",
+      "paper_match": "Matches the ordinary absolute value used throughout Theorem 2.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "instHAdd",
+      "interpretation": "Lifts homogeneous addition into the overloaded HAdd interface.",
+      "effect_on_target": "Routes target additions to ordinary real addition.",
+      "paper_match": "Introduces no change from exact addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "instHDiv",
+      "interpretation": "Lifts homogeneous division into the overloaded HDiv interface.",
+      "effect_on_target": "Routes betaR/2 to real division.",
+      "paper_match": "Introduces no change from exact division.",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "instHMul",
+      "interpretation": "Lifts homogeneous multiplication into the overloaded HMul interface.",
+      "effect_on_target": "Routes all real products to ordinary multiplication.",
+      "paper_match": "Introduces no change from exact multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
       "name": "instHSub",
-      "reuse_sha256": "04fa48c2c3005a6026ea7d75bd00afa56b0f3a065c58e799fbbbd8cdd55084be",
-      "effect_on_target": "It forwards homogeneous - notation to standard real subtraction.",
-      "paper_match": "The resulting operations correctly denote the exact real differences used as rounding arguments and residuals.",
+      "interpretation": "Lifts homogeneous subtraction into the overloaded HSub interface.",
+      "effect_on_target": "Routes all target differences to real subtraction.",
+      "paper_match": "Introduces no floating-point rounding into unadorned subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "Builds real numerals at least two through natural casting.",
+      "effect_on_target": "Interprets the denominator literal 2 exactly as a real.",
+      "paper_match": "Matches the exact constant 2.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "instOfNatNat",
+      "interpretation": "Interprets each natural numeral as itself.",
+      "effect_on_target": "Supplies natural constants in format constraints and cast construction.",
+      "paper_match": "Preserves the intended constants.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "DivInvMonoid.toZPow",
+      "interpretation": "Provides integer exponentiation from the real division-inverse monoid.",
+      "effect_on_target": "Makes scale e equal beta^e for all integer exponents.",
+      "paper_match": "Matches the paper's integral exponent convention.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "HPow.hPow",
+      "interpretation": "The overloaded power operation.",
+      "effect_on_target": "Forms beta^p and beta^e using the appropriate exponent type.",
+      "paper_match": "Matches both powers in equations (1), (7), and (8).",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "Int",
+      "interpretation": "The integer type.",
+      "effect_on_target": "Types mantissas, representation exponents, emin, and emax.",
+      "paper_match": "Matches m,e in Z in equation (1).",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Provides natural exponentiation from the real monoid.",
+      "effect_on_target": "Makes mantissaBound equal beta raised to natural precision p.",
+      "paper_match": "Matches beta^p.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "Nat.cast",
+      "interpretation": "Canonical natural-number casting operation.",
+      "effect_on_target": "Embeds the natural radix and literals into real arithmetic.",
+      "paper_match": "Preserves exact integer values.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "Nonempty",
+      "interpretation": "Proposition asserting that a type has at least one inhabitant without exposing a chosen inhabitant.",
+      "effect_on_target": "Defines membership in F as existence of at least one valid representation.",
+      "paper_match": "Matches representability while allowing multiple representations.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "Real.instMonoid",
+      "interpretation": "The multiplicative monoid structure on reals.",
+      "effect_on_target": "Supports natural powers used in beta^p.",
+      "paper_match": "Gives ordinary real exponentiation by a natural number.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "instHPow",
+      "interpretation": "Lifts a power operation into the heterogeneous power interface.",
+      "effect_on_target": "Routes beta^p and beta^e to the relevant real power instances.",
+      "paper_match": "Introduces no change in exponentiation semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "Int.cast",
+      "interpretation": "Canonical embedding of integers into a target ring such as the reals.",
+      "effect_on_target": "Interprets integral mantissas as real coefficients.",
+      "paper_match": "Matches m beta^e with m integral.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "Int.instLEInt",
+      "interpretation": "The standard non-strict order on integers.",
+      "effect_on_target": "Checks emin <= exponent <= emax and emin <= emax.",
+      "paper_match": "Matches the integral exponent bounds in equation (1).",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "LT.lt",
+      "interpretation": "The strict-order operation.",
+      "effect_on_target": "Expresses strict mantissa bounds and strict noOverflow bounds.",
+      "paper_match": "Matches the strict mantissa inequalities; its use in the extra noOverflow predicate contributes to the restriction already identified.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "Neg.neg",
+      "interpretation": "Unary negation.",
+      "effect_on_target": "Forms -beta^p and the negative branch of absolute value.",
+      "paper_match": "Matches ordinary real negation.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "Real.instIntCast",
+      "interpretation": "Canonical embedding of integers into reals.",
+      "effect_on_target": "Casts representation mantissas into exact real numbers.",
+      "paper_match": "Matches equation (1).",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "Real.instLT",
+      "interpretation": "The standard strict order on reals.",
+      "effect_on_target": "Interprets strict mantissa and magnitude bounds.",
+      "paper_match": "Matches ordinary strict real inequalities where used.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "Real.instNeg",
+      "interpretation": "Ordinary negation on reals.",
+      "effect_on_target": "Supports lower mantissa bounds, subtraction, and absolute value.",
+      "paper_match": "Matches real negation.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "instLENat",
+      "interpretation": "The standard non-strict order on natural numbers.",
+      "effect_on_target": "States beta >= 2 in the format constructor.",
+      "paper_match": "Matches the proof's explicit use of 2 <= beta.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "instLTNat",
+      "interpretation": "The standard strict order on natural numbers.",
+      "effect_on_target": "States 0 < precision.",
+      "paper_match": "Matches a positive mantissa length.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "Not",
+      "interpretation": "Logical negation, defined as implication to false.",
+      "effect_on_target": "Expresses the absence of an intervening representable number in faithful rounding.",
+      "paper_match": "Correctly formalizes 'there lies no other floating-point number between'.",
+      "status": "pass"
+    },
+    {
+      "id": "D072",
+      "name": "Or",
+      "interpretation": "Logical disjunction.",
+      "effect_on_target": "Covers both possible orders of rounded and exact values in faithful rounding.",
+      "paper_match": "Correctly handles both sides of the exact result.",
       "status": "pass"
     }
   ],
@@ -170,158 +586,151 @@
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The PDF hash matches the supplied hash. Its first page identifies the Numerische Mathematik 145:383-403 publication, published in 2020 and corrected in 2021. Theorem 2 and equations (7)-(10) occur on PDF pages 5-6, printed pages 387-388.",
-      "lean_evidence": "The packet identifies p12_t2_fast_two_sum_exact and supplies exact, readable, elaborated, and fully explicit types for P12-T2.",
-      "reasoning": "The selected source and surrounding passage are the arbitrary-base FastTwoSum result relevant to this target."
+      "paper_evidence": "The supplied journal PDF has the stated SHA-256; pages 384-388 contain equation (1), the FastTwoSum algorithm, multiple representations, Theorem 2, equations (7)-(10), and the completed proof. :codex-file-citation{path=\"/tmp/lean-fp-analysis-p12t2-audit/paper_bencmark/reference_papers/P12_A note on Dekker’s FastTwoSum algorithm.pdf\" purpose=\"source\"}",
+      "lean_evidence": "The dossier identifies P12-T2 and the theorem p12_t2_fast_two_sum_exact with the matching format, algorithm, and theorem context.",
+      "reasoning": "The selected source and surrounding result are unambiguous and correctly identified."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Theorem 2 fixes x,y∈F and computed s,t,e∈F in one floating-point system determined by β, p, and exponent limits.",
-      "lean_evidence": "The target quantifies representable : Real→Prop, arbitrary real x and y, and an arbitrary real trace. It assumes representable x and p12Nearest makes s,t,e representable, but there is no representable y premise and no type or structure for β, p, or exponent bounds.",
-      "reasoning": "The ambient real encoding is not restricted enough to preserve the paper's binders and common floating-point domain."
+      "status": "pass",
+      "paper_evidence": "Theorem 2 quantifies scalar x,y in one F parameterized by beta,p,emin,emax and discusses computed s,t,e.",
+      "lean_evidence": "The target quantifies one P12RadixFormat, real x,y, and a three-real trace; representation and execution predicates use the same format.",
+      "reasoning": "The scalar types, format parameters, and trace components have the intended meanings."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "After x and y are fixed, Theorem 2 requires the existence of a permitted representation of x whose exponent satisfies condition (7); the computed trace then depends on the selected operations and inputs.",
-      "lean_evidence": "The target universally quantifies representable, x, y, and tr before introducing implication premises. It contains no existential representation or exponent witness and instead accepts any trace satisfying three rounding relations and two exact-representability premises.",
-      "reasoning": "The existential witness and its dependence on x are absent, and the paper's generated computation is replaced by universal relational trace quantification."
+      "status": "pass",
+      "paper_evidence": "Theorem 2 says there is a representation of x satisfying equation (7), and page 385 establishes that representation exponents are nonunique.",
+      "lean_evidence": "hcondition7 is an Exists over P12Representation fmt x and uses that witness's exponent; the witness is inside the scope of fmt,x,y.",
+      "reasoning": "Witness dependence and quantifier scope preserve the paper's existential, representation-specific exponent."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "Theorem 2 assumes x,y∈F, nearest addition, faithful subtraction, and some permitted representation of x satisfying |y|≤(β^p-β/2)β^{e(x)}. Equation (8) is qualified by absence of overflow.",
-      "lean_evidence": "The target omits representable y and condition (7), assumes representable(s-x) and representable(y-t), and applies p12Nearest to both subtraction outputs. It has no β, p, representation, exponent-range, or overflow premise.",
-      "reasoning": "The central magnitude and floating-point hypotheses are replaced by assumptions that directly provide the exact subtraction arguments as representable."
+      "paper_evidence": "Equation (7) assumes |y| <= ceil(beta^p-beta/2) beta^e(x). The theorem statement lists nearest addition and faithful subtraction but no three-part noOverflow hypothesis.",
+      "lean_evidence": "hcondition7 uses (beta^p-beta/2) beta^e without ceiling, while run requires noOverflow for x+y, s-x, and y-t.",
+      "reasoning": "The Lean hypotheses are strictly narrower for odd beta and additionally restrict the execution range."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "The proof establishes t=s-x and e=y-t before concluding s+e=x+y; equation (9) gives the line-1 error bound.",
-      "lean_evidence": "The explicit conclusion contains only tr.s+tr.e=x+y and |tr.s-(x+y)|≤|y|. Exactness of t and e is not returned; it follows immediately only because hst, ht, hye, and he are already premises.",
-      "reasoning": "Two substantive exact-subtraction conclusions have been moved into premise-driven consequences rather than delivered from the paper's hypotheses."
+      "status": "pass",
+      "paper_evidence": "Equation (3) gives s+e=x+y with s=x plus-rounded y; the proof establishes t=s-x and e=y-t, and equation (9) supplies the absolute addition-error bound.",
+      "lean_evidence": "The target concludes exact t and e, exact reconstruction, and |s-(x+y)| <= |y|; run identifies s as the nearest line-1 result and makes outputs representable.",
+      "reasoning": "All explicit and proof-established output facts are present, with the line-1 linkage carried by run."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The paper defines F by integer mantissas and exponents, defines nearest and faithful rounding separately, permits nonunique representations, and uses representability criterion (8).",
-      "lean_evidence": "p12Nearest is nearest distance over an arbitrary predicate. The remaining operators are exact real addition, subtraction, order, equality, and absolute value. No dependency defines the paper's floating-point set, representations, exponents, faithful rounding, or criterion (8).",
-      "reasoning": "Although the supplied dependencies are interpretable, the target's imported semantic model does not contain the nontrivial definitions on which Theorem 2 depends."
+      "status": "pass",
+      "paper_evidence": "Pages 384-388 define F, nearest rounding, faithful rounding, exact arithmetic, representation exponents, and scalar absolute value.",
+      "lean_evidence": "D001-D072 unfold representations, nearest and faithful relations, real arithmetic, powers, order, and absolute value.",
+      "reasoning": "The imported operators and definitions have determinate meanings matching the paper; the missing ceiling is a target-expression error assessed under S10."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The paper distinguishes computed s, t, and e from exact x+y, s-x, y-t, and the unevaluated exact sum s+e.",
-      "lean_evidence": "The exact real expressions occur as the first arguments of p12Nearest, while tr.s, tr.t, and tr.e are separate rounded-output fields. The final equality and residual bound use exact real operations.",
-      "reasoning": "Exact and computed quantities remain syntactically distinct. The inappropriate assumptions and rounding mode are separate faithfulness defects."
+      "paper_evidence": "The algorithm uses rounded operations for s,t,e, while equations (3), (8), and the proof use unadorned exact real arithmetic.",
+      "lean_evidence": "run constrains computed trace values through rounding relations, whereas target equalities use Real addition and subtraction.",
+      "reasoning": "Computed outputs and exact values are not conflated."
     },
     {
       "id": "S08",
       "status": "pass",
-      "paper_evidence": "Original FastTwoSum executes s←x⊕y, t←s⊖x, and e←y⊖t, with no cβ preprocessing.",
-      "lean_evidence": "The premises sequentially relate tr.s to x+y, tr.t to tr.s-x, and tr.e to y-tr.t.",
-      "reasoning": "The three-stage dataflow and field order match the original algorithm rather than the later modified algorithm, despite the incorrect subtraction semantics."
+      "paper_evidence": "FastTwoSum executes s:=x plus-rounded y, t:=s minus-rounded x, e:=y minus-rounded t in that order.",
+      "lean_evidence": "P12FastTwoSumExecution constrains tr.s from x+y, then tr.t from tr.s-x, then tr.e from y-tr.t.",
+      "reasoning": "The target remains linked to the original three-step execution."
     },
     {
       "id": "S09",
-      "status": "pass",
-      "paper_evidence": "Equations (7)-(10) use scalar absolute value.",
-      "lean_evidence": "The target uses real abs on tr.s-(x+y) and y.",
-      "reasoning": "There is no squared, vector, componentwise, or normwise substitution."
+      "status": "not-applicable",
+      "paper_evidence": "All magnitudes in Theorem 2 and equations (7)-(10) are ordinary scalar absolute values; no vector norm occurs.",
+      "lean_evidence": "Every magnitude is Real abs on a scalar.",
+      "reasoning": "There is no norm choice, dimension, or squared-norm issue to compare."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "Condition (7) has the inclusive threshold (β^p-β/2)β^{e(x)}, and criterion (8) uses β^pβ^{min(e(a),e(b))}.",
-      "lean_evidence": "The target contains no β, p, e(x), minimum exponent, or either threshold. Its only numerical comparison is |tr.s-(x+y)|≤|y|.",
-      "reasoning": "The constants and parameter dependence carrying the arbitrary-base theorem are entirely absent."
+      "paper_evidence": "Equation (7) visibly uses the ceiling ceil(beta^p-beta/2), followed by beta^e(x).",
+      "lean_evidence": "The target contains mantissaBound-betaR/2 directly and has no ceiling declaration or operation.",
+      "reasoning": "For odd beta, the Lean coefficient is one half smaller than the paper coefficient; for example beta=3,p=1 gives 1.5 instead of 2."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The system F has base, precision, and bounded exponents; addition is nearest, subtraction need only be faithful, ties are unspecified, and equation (8) explicitly mentions absence of overflow.",
-      "lean_evidence": "representable is an unconstrained predicate over reals, all three operations use p12Nearest, and the target has no exceptional-value, underflow, overflow, exponent-range, or precision semantics.",
-      "reasoning": "The floating-point model differs decisively regardless of whether no-overflow is read as an implicit theorem condition."
+      "paper_evidence": "F is a finite real model without NaNs or infinities. The proof qualifies implication (8) by absence of overflow, but Theorem 2 does not state noOverflow for all three algorithm lines.",
+      "lean_evidence": "The real representability model matches F, but run requires |x+y|, |s-x|, and |y-t| each to be strictly below beta^p beta^emax.",
+      "reasoning": "Exceptional-value semantics otherwise match, but the added range hypotheses exclude paper-covered executions, including overflowing exact sums whose rounded FastTwoSum result still satisfies equation (3)."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The paper derives exact subtraction and the final equality from condition (7), nearest addition, and faithful subtraction.",
-      "lean_evidence": "The target drops condition (7), strengthens subtraction relations to nearest, and adds hst and hye, which make exact subtraction immediate. Its final equality and error inequality themselves have the correct exact and inclusive relations.",
-      "reasoning": "The antecedents are not strength-equivalent: the paper's substantive sufficient condition is replaced by direct representability assumptions, producing an incomparable proposition."
+      "paper_evidence": "Theorem 2 applies under the inclusive ceiling bound and states exact reconstruction.",
+      "lean_evidence": "The equalities and <= directions are correct, but the antecedent uses a smaller odd-radix threshold and extra noOverflow conditions.",
+      "reasoning": "As a theorem schema, the Lean proposition has a strictly narrower domain and is therefore weaker despite having supported extra conjuncts."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "The result is an error-free transformation with signed residual e=x+y-s and a forward line-1 error bound |s-(x+y)|≤|y|.",
-      "lean_evidence": "The conjunction states s+e=x+y and the same absolute forward-error bound; over the reals, the equality is equivalent to e=x+y-s.",
-      "reasoning": "The target does not substitute a backward, mixed, or merely approximate error notion."
+      "paper_evidence": "The result is an error-free transformation: e is exactly x+y-s, with t=s-x and e=y-t.",
+      "lean_evidence": "The target states the two exact subtraction identities and exact reconstruction, plus the nearest-addition absolute error bound.",
+      "reasoning": "The exact residual notion is preserved and is not replaced by relative, backward, or asymptotic error."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "The identities t=s-x, e=y-t, and s+e=x+y are exact and contain no omitted higher-order terms.",
-      "lean_evidence": "The target uses exact equality and an exact inequality with no approximation or big-O notation.",
-      "reasoning": "There is no higher-order truncation mismatch."
+      "paper_evidence": "Equations (3) and the subtraction identities are exact and contain no omitted higher-order term.",
+      "lean_evidence": "All target conclusions are exact equalities or a nonasymptotic absolute inequality.",
+      "reasoning": "No approximation order or big-O term is introduced or discarded."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "Theorem 2 concerns arbitrary bases but a specific finite floating-point system F and inputs x,y∈F satisfying condition (7).",
-      "lean_evidence": "The target generalizes F to every predicate on Real and permits nonrepresentable y, while simultaneously restricting the exact differences to be representable and requiring nearest subtraction.",
-      "reasoning": "This mixed generalization and restriction is not a faithful specialization of the paper theorem."
+      "paper_evidence": "Theorem 2 is explicitly an arbitrary-base result with the ceiling threshold and includes boundary cases for odd bases.",
+      "lean_evidence": "P12RadixFormat allows odd bases, but the missing ceiling removes their upper half-step boundary cases; run also imposes extra range restrictions.",
+      "reasoning": "This is a strict specialization of the paper theorem and does not faithfully provide the claimed arbitrary-base task."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "The paper's proof performs the substantive work of deriving representability and exactness of both subtractions from condition (7) and the structure of F.",
-      "lean_evidence": "The premises are satisfiable, for example with representable true for every real, x=1, y=2, and trace (s,t,e)=(3,2,0). More generally, hst plus ht forces t=s-x, hye plus he forces e=y-t, and hx plus hs directly yields the error bound.",
-      "reasoning": "The proposition is nonempty, but its conclusion holds for an unintended trivial reason: the hypotheses encode the core exactness facts that the paper proves."
+      "status": "pass",
+      "paper_evidence": "The paper gives a substantive error-free transformation theorem and discusses concrete nontrivial executions.",
+      "lean_evidence": "A satisfiable Lean instance is beta=2,p=1,emin=0,emax=1,x=y=1 with trace s=2,t=1,e=0; condition (7), representability, rounding relations, and all noOverflow predicates hold.",
+      "reasoning": "The formal hypotheses are nonempty and the conclusion is not vacuous. Separately, beta=3,p=1,x=1,y=2 is a nontrivial paper boundary case excluded only by Lean's missing ceiling."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "The Lean proposition cannot recover Theorem 2 from condition (7), nearest addition, and faithful subtraction because it contains no floating-point representation structure or condition (7) and requires hst, hye, and nearest relations for the subtraction outputs. Establishing those premises is precisely the central work of the paper result."
+      "reasoning": "The Lean result covers only a subset of the paper's hypotheses. For beta=3,p=1 and a representation exponent 0, the paper allows |y|=2 because ceil(3-3/2)=2, while Lean requires |y|<=3/2. The added noOverflow conditions further remove paper cases. A theorem restricted to Lean's antecedent therefore does not establish Theorem 2 on its full domain."
     },
     "paper_implies_lean": {
-      "verdict": "no",
-      "reasoning": "The paper is scoped to a set F of the form (1), inputs x,y∈F, specified operations, and condition (7). It does not establish the Lean proposition's universal implication for every predicate Real→Prop, arbitrary real y, and arbitrary relational trace under the different antecedents."
+      "verdict": "yes",
+      "reasoning": "Lean's unceiled bound implies the paper's ceiling bound because beta^e is positive, and Lean additionally assumes the required rounded execution and range conditions. On that narrower domain, Theorem 2 and its proof give t=s-x, e=y-t, and s+e=x+y; nearest addition with representable x gives |s-(x+y)|<=|y|."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "not-faithful-weaker",
   "accepted": false,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "core-proof-obligation-replaced-by-premises",
-      "paper_evidence": "Theorem 2 uses condition (7), the representation structure of F, and criterion (8) to prove first t=s-x and then e=y-t.",
-      "lean_evidence": "The target omits condition (7) and instead assumes representable(s-x) and representable(y-t); paired with p12Nearest, these premises immediately force both exact equalities.",
-      "impact": "The target does not formalize the paper's main numerical result. It proves only an abstract algebraic consequence after the central exactness facts have effectively been supplied."
+      "severity": "major",
+      "category": "condition-7-constant",
+      "paper_evidence": "Equation (7) on printed page 387 is |y| <= ceil(beta^p-beta/2) beta^e(x).",
+      "lean_evidence": "hcondition7 is |y| <= (fmt.mantissaBound-fmt.betaR/2)*fmt.scale rx.exponent, with mantissaBound=beta^p and no ceiling.",
+      "impact": "The target excludes valid boundary cases for every odd radix. For beta=3,p=1,e(x)=0, the paper permits |y|=2 while Lean permits only |y|<=1.5."
     },
     {
       "severity": "major",
-      "category": "floating-point-model-mismatch",
-      "paper_evidence": "The paper requires nearest addition but only faithful subtraction in a base-β, precision-p system with bounded exponents.",
-      "lean_evidence": "All three rounded steps use p12Nearest over an arbitrary predicate, with no base, precision, exponent range, representation, or overflow semantics.",
-      "impact": "The formal operation model is neither the paper's model nor a justified specialization of it."
+      "category": "extra-overflow-hypotheses",
+      "paper_evidence": "Theorem 2 does not list no-overflow assumptions. Only the exact-subtraction implication (8) is textually qualified by absence of overflow.",
+      "lean_evidence": "P12FastTwoSumExecution requires noOverflow of x+y, s-x, and y-t, where noOverflow z means |z|<beta^p beta^emax.",
+      "impact": "This further narrows the theorem. For beta=2,p=2,emin=emax=0,x=y=3, nearest addition returns s=3 and FastTwoSum gives t=0,e=3, satisfying the paper conclusion, but Lean rejects the run because |x+y|=6 is not less than 4."
     },
     {
-      "severity": "major",
-      "category": "domain-and-quantifier-mismatch",
-      "paper_evidence": "Theorem 2 quantifies x,y∈F and existentially selects a permitted representation of x satisfying the displayed threshold.",
-      "lean_evidence": "The target quantifies arbitrary real x, y, and trace values, omits representable y, and has no existential representation witness.",
-      "impact": "The Lean and paper propositions range over different cases and have incomparable antecedents, preventing either implication."
-    },
-    {
-      "severity": "major",
-      "category": "conclusion-incompleteness",
-      "paper_evidence": "The proof explicitly establishes exactness of both subtraction steps before the final error-free identity.",
-      "lean_evidence": "The conclusion contains only the final identity and addition-error bound; the subtraction equalities are obtainable only from the stronger representability and nearest-rounding premises.",
-      "impact": "The target fails to expose two required parts of the selected paper result and shifts them out of the theorem's delivered conclusions."
+      "severity": "note",
+      "category": "supported-extra-conclusions",
+      "paper_evidence": "The proof explicitly verifies t=s-x and e=y-t, while equation (9) gives |s-(x+y)|<=|y|.",
+      "lean_evidence": "These three facts are explicit target conjuncts in addition to exact reconstruction.",
+      "impact": "These additions do not create a faithfulness defect because they are directly established in the cited proof; they do not compensate for the narrowed hypotheses."
     }
   ],
-  "rationale": "The target preserves the three-step dataflow, exact final identity, scalar residual bound, and nearest-addition relation. It does not preserve Theorem 2's substantive contract: x and y in a structured floating-point system, an existential representation of x satisfying condition (7), and faithful subtraction from which both exact subtraction steps are proved. Instead it quantifies an arbitrary representability predicate, omits representability of y and all base/precision/exponent data, assumes both exact differences representable, and applies nearest rounding to every operation. These changes make the target a nonvacuous but largely immediate abstract lemma, not a faithful strengthening or specialization. Because neither proposition implies the other under their stated domains and hypotheses, the result is not-faithful-different."
+  "rationale": "The representation model, existential exponent witness, rounding relations, algorithm order, exact residual, and arithmetic operators substantially match Theorem 2. The target nevertheless omits the ceiling in equation (7), producing a strictly smaller hypothesis bound for odd radices, and its execution predicate adds three noOverflow requirements not present in the theorem statement. These restrictions are nonvacuous and exclude explicit paper-covered cases. Thus the paper result yields the Lean target on its narrowed domain, but the Lean target does not cover the full paper result, so the fixed classification is not-faithful-weaker."
 }
