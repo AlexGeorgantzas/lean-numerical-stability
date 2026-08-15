@@ -79,7 +79,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use the coefficientwise condition-number step that turns the expected suffix-product envelope into Theorem 4.1's summation-bias bound.",
+      "decision": "Use Theorem 4.1's full limited-precision stochastic recursive-summation bias bound, including the generated recurrence, conditional-bias model, exact expectation, and gamma_(n-1)(u_(p+r)) constant.",
       "task_id": "P17-T2",
       "theorem_name": "p17_t2_recursive_sum_bias_condition_bound"
     },

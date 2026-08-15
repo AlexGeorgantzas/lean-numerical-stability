@@ -179,8 +179,8 @@
         "P17"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P17Definitions.lean",
-      "role": "P17-only product-growth, summation-conditioning, and finite-probability notation",
-      "sha256": "90ea1cc4af8101d1e345960950d5c2c97a04fcadac1147c75edfbe1e7e7ad9a0",
+      "role": "P17-only limited-precision stochastic-rounding traces, recursive sums, product growth, summation conditioning, and finite-probability notation",
+      "sha256": "2df90df914a23bbd138e8a30b1754cbc6e731196cb9025bc5a65b1573de74ce1",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -3364,17 +3364,20 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
+            "NumStability.foldl_add_mul_one_add_suffix_expansion",
+            "NumStability.FiniteProbability.expectationReal_sum",
+            "NumStability.FiniteProbability.expectationReal_mono",
             "NumStability.SummationComponentwisePerturbation",
             "NumStability.summationComponentwisePerturbation_rel_error_le_condition",
             "NumStability.summationConditionNumber"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P17/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Rewrite each effective term as the original input plus a componentwise perturbation a_i(factor_i-1), bound that perturbation by gamma times |a_i|, apply the summation condition-number theorem, and divide by the nonzero exact sum.",
-          "informal_statement_paraphrase": "Exact coefficientwise condition-number step in the proof of Theorem 4.1, before instantiating gamma with gamma_{n-1}(u_{p+r}).",
+          "informal_proof_paraphrase": "Expand the generated recursive sum into equation (4.4)'s input coefficients. Derive the expected suffix-product envelope from the conditional-mean identity, the p+r-bit truncation-error bound, and nonnegative SR factors. Linearity and the summation condition-number inequality then yield equation (4.6).",
+          "informal_statement_paraphrase": "Theorem 4.1 in full: the relative bias of the SR_(p,r) recursive sum is bounded by kappa(a) gamma_(n-1)(u_(p+r)); Lean writes n=m+1.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "361691c5f22f9529aca157de13f54a97ea32535889829e0f13877470d39da880",
+            "controlled_file_sha256": "2a91b322f57d9538107713cf09209199c753850bdaee198795e77ae8f1cd56e4",
             "declaration": "p17_t2_recursive_sum_bias_condition_bound",
             "file": "paper_bencmark/highambench/tasks/P17/T2/Target.lean",
             "must_compile_without_numstability": true,
@@ -3382,7 +3385,7 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P17Definitions.lean"
             ],
-            "statement_summary": "Bounds on effective expected suffix-product factors imply the Theorem 4.1 summation-bias bound through the componentwise summation condition number."
+            "statement_summary": "The expected bias of the generated m-addition SR_(p,r) recursive sum is at most its summation condition number times gamma_m(u_(p+r))."
           },
           "source_locations": [
             {
@@ -3403,8 +3406,8 @@
           "task_id": "P17-T2",
           "tier": "T2",
           "tier_name": "combine",
-          "tier_reason": "The L proof combines the frozen componentwise summation perturbation theorem and condition-number definition with P17's effective expected suffix-product factors and their paper-specific envelope.",
-          "title": "Recursive-sum bias condition bound"
+          "tier_reason": "The L proof combines the frozen exact fold expansion, finite-expectation operations, and componentwise summation-condition theorem with the paper-specific conditional-mean induction that derives the limited-precision suffix-product envelope. No frozen declaration states the complete P17 theorem.",
+          "title": "Limited-precision recursive-sum bias bound"
         },
         {
           "availability": "available",
