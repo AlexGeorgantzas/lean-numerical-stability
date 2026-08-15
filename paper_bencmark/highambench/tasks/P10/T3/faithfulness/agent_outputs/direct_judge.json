@@ -1,1 +1,1276 @@
-{"schema_version":"highambench-faithfulness-0.2","role":"direct-judge","task_id":"P10-T3","paper_sha256":"0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269","dossier_sha256":"70a35c142f16e4806a68726f7a0ea0453d8534d87d4a940a194029c235dce993","dependency_coverage":[{"id":"D001","name":"HighamBench.P10Matrix","reuse_sha256":"7bbb140588b0cbe60838fa3a730653d5e3db50aa2d82c7f07dd98f4cd02166c8","effect_on_target":"A, B, C, and R are square n-by-n real matrices indexed by Fin n; the type does not enforce triangularity, nonsingularity, or n > 0.","paper_match":"It matches the paper's equal square dimensions. Real is an explicit specialization of a passage that does not settle the scalar field; the paper's structural hypotheses are not supplied by this type.","status":"pass"},{"id":"D002","name":"HighamBench.p10SylvesterForcing","interpretation":"This is (epsilon/sep) * (3*||C||_F + 2*mu*(||A||_F+||B||_F)*||R||_F).","effect_on_target":"It supplies one constant forcing value used at every abstract hstep and multiplied by the finite geometric sum in the conclusion.","paper_match":"The coefficients and factors match the displayed recurrence only after identifying sep with sep(A,B), epsilon with machine epsilon, and mu with mu(n/2). The target leaves those identifications unconstrained and makes mu dimension-independent.","status":"fail"},{"id":"D003","name":"HighamBench.p10SylvesterGrowth","interpretation":"This is 4 + 2*(||A||_F+||B||_F)/sep.","effect_on_target":"It is the constant multiplier in every abstract recurrence step and the base of every power in the unrolled bound.","paper_match":"The formula matches the paper's recurrence multiplier if sep is the Sylvester separation sep(A,B). In the target sep is an arbitrary positive real unrelated to A and B.","status":"fail"},{"id":"D004","name":"HighamBench.p10FrobNorm","reuse_sha256":"f0913e4a3cb61ed7354bd6a8d663bbd8b2c93ae29427d84803fab115a0397e5f","effect_on_target":"Every matrix norm appearing in the growth and forcing expressions is the unsquared Frobenius norm.","paper_match":"The paper defines separation using Frobenius norms, while the recurrence prints unsubscripted norms. The Lean choice is an explicit, consistent norm specialization, though the source does not label every recurrence norm.","status":"pass"},{"id":"D005","name":"HighamBench.p10SylvesterForcing._proof_1","interpretation":"This proves that the natural numeral 2+1, namely 3, is at least two so it can be cast as a real numeral.","effect_on_target":"It is numeral-elaboration evidence only and introduces no mathematical hypothesis.","paper_match":"It has no independent paper meaning; it merely preserves the forcing coefficient 3.","status":"not-applicable"},{"id":"D006","name":"HighamBench.p10SylvesterGrowth._proof_1","interpretation":"This proves that the natural numeral 3+1, namely 4, is at least two so it can be cast as a real numeral.","effect_on_target":"It is numeral-elaboration evidence only and introduces no mathematical hypothesis.","paper_match":"It has no independent paper meaning; it merely preserves the growth constant 4.","status":"not-applicable"},{"id":"D007","name":"HighamBench.p10SylvesterGrowth._proof_2","interpretation":"This proves that the natural numeral 1+1, namely 2, is at least two so it can be cast as a real numeral.","effect_on_target":"It is numeral-elaboration evidence only and introduces no mathematical hypothesis.","paper_match":"It has no independent paper meaning; it merely preserves the growth coefficient 2.","status":"not-applicable"},{"id":"D008","name":"Finset.range","interpretation":"Finset.range depth is the finite set of natural numbers 0 through depth-1.","effect_on_target":"It fixes the geometric-series exponents in the conclusion to 0,...,depth-1.","paper_match":"These are the correct exponents for unrolling a constant affine recurrence for depth steps, although the paper does not display this finite sum and uses depth log2(n) implicitly.","status":"pass"},{"id":"D009","name":"Finset.sum","reuse_sha256":"de6d317f3a880f3f1114792c82569d34742d40bae7422a3e5db0b5805b28d019","effect_on_target":"It adds growth^k over k in Finset.range depth to form the finite geometric sum.","paper_match":"This is the standard exact unrolling term for a constant forcing value and is compatible with the paper's recurrence as an intermediate calculation.","status":"pass"},{"id":"D010","name":"HAdd.hAdd","interpretation":"This selects addition from the applicable heterogeneous-addition instance.","effect_on_target":"It denotes natural addition in k+1 and ordinary real addition in the recurrence and conclusion.","paper_match":"Both uses have their standard intended meanings and preserve the recurrence's additive structure.","status":"pass"},{"id":"D011","name":"HMul.hMul","reuse_sha256":"26ec858b7914040b62e41dac07549d0e710576ebffcab48ae340f110ef32e4ad","effect_on_target":"Through the supplied instances it denotes ordinary real multiplication among coefficients, errors, norms, and the geometric sum.","paper_match":"The resulting products match the algebraic products in the paper's recurrence and its unrolling.","status":"pass"},{"id":"D012","name":"HPow.hPow","reuse_sha256":"60f50c00298e91552c0f3ee54936e00ab9f2e0f8fa49f646dc9b041ae3179598","effect_on_target":"It supplies real-valued powers with natural exponents for growth^depth and growth^k.","paper_match":"Natural powers are the appropriate operation in a finite affine-recurrence unrolling.","status":"pass"},{"id":"D013","name":"LE.le","reuse_sha256":"30a6ffc7f69a075cd10e87a2d586237b1dc7098e4c686f0874110b84179c4b55","effect_on_target":"With Real.instLE it makes hstep and the conclusion non-strict real inequalities.","paper_match":"The paper's preceding block estimates are upper bounds, so non-strict inequalities are appropriate when err is interpreted as a bound even though the dominating recurrence is printed with equality.","status":"pass"},{"id":"D014","name":"LT.lt","interpretation":"This selects the strict-order relation from the applicable LT instance.","effect_on_target":"It means ordinary real 0 < sep and ordinary natural k < depth.","paper_match":"Positive separation is required by the paper; k < depth is the correct internal range for the abstract unrolling, though depth itself is not paper-linked.","status":"pass"},{"id":"D015","name":"Monoid.toNatPow","reuse_sha256":"e13788490a4ddd6ff4b4b149324f60ecb8e7a0c0ba610b843d8bfe723b75081e","effect_on_target":"It gives ordinary repeated real multiplication for each natural power of the growth factor.","paper_match":"This is the correct power semantics for iterating a constant recurrence multiplier.","status":"pass"},{"id":"D016","name":"Nat","reuse_sha256":"519df6688320448028db3a6368518c22853de54ad47b45d39946022a1e1bdf87","effect_on_target":"Both matrix dimension n and an independent recurrence depth are arbitrary natural numbers, including zero.","paper_match":"The paper's n is a positive power of two and the number of halvings is log2(n). The target neither restricts n nor relates depth to n.","status":"fail"},{"id":"D017","name":"OfNat.ofNat","reuse_sha256":"60b25ca730b3f044345386af6b5c4cd605be284726e8529d8750294794ee5501","effect_on_target":"It interprets the literals 0, 1, 2, 3, and 4 in their context-specific natural or real types.","paper_match":"The resulting literal values preserve the paper's coefficients and the recurrence's zero and successor indices.","status":"pass"},{"id":"D018","name":"Real","reuse_sha256":"901954785acc1690e69168c413434be73549452178ff230777d608e0a5c1c72a","effect_on_target":"Matrix entries, sep, epsilon, mu, and every err value are mathematical real numbers.","paper_match":"Real-valued error bounds and parameters are appropriate. Real matrices are an explicit scalar-field specialization because the selected passage does not resolve real versus complex data.","status":"pass"},{"id":"D019","name":"Real.instAdd","interpretation":"This equips Real with ordinary real addition.","effect_on_target":"It gives the additions inside growth, forcing, each hstep bound, and the final bound their usual arithmetic meaning.","paper_match":"Those additions match the paper's affine recurrence arithmetic.","status":"pass"},{"id":"D020","name":"Real.instAddCommMonoid","reuse_sha256":"a32c03321ce860001cd2c4902a7abf115c40a20363f82e9b3abf692dc48a9dbc","effect_on_target":"It supplies zero and commutative real addition to Finset.sum.","paper_match":"It yields the ordinary finite sum needed for the geometric-series term.","status":"pass"},{"id":"D021","name":"Real.instLE","reuse_sha256":"1a7b1542350a021093ae24fdcaf462b9362f6c48f6f02fff171623ea4471b7c1","effect_on_target":"It makes every target inequality use the usual non-strict order on real numbers.","paper_match":"This agrees with interpreting err and the displayed estimates as real upper bounds.","status":"pass"},{"id":"D022","name":"Real.instLT","interpretation":"This equips Real with its ordinary strict order.","effect_on_target":"It makes hsep assert strict positivity of the real scalar sep.","paper_match":"The paper requires positive separation for a nonsingular Sylvester problem, although Lean does not define sep from that problem.","status":"pass"},{"id":"D023","name":"Real.instMonoid","reuse_sha256":"887b455028b0c64705213f67d7309a4c1e14d10690c1ec3a36f5a6808151c33d","effect_on_target":"It supplies real multiplication, one, and natural powers used by the unrolled recurrence.","paper_match":"These are the standard arithmetic operations required by the recurrence calculation.","status":"pass"},{"id":"D024","name":"Real.instMul","reuse_sha256":"7ee4e8807313f6dcf59b99b52940f5cd8eb868799c0b55b8b7ce1b1745581ea7","effect_on_target":"It makes every real product in growth, forcing, hstep, and the conclusion ordinary multiplication.","paper_match":"The operation itself matches the paper's scalar products.","status":"pass"},{"id":"D025","name":"Real.instZero","interpretation":"This equips Real with its ordinary zero.","effect_on_target":"It supplies the zero in the positivity hypothesis 0 < sep.","paper_match":"This gives the intended strict-positive-separation test.","status":"pass"},{"id":"D026","name":"Zero.toOfNat0","interpretation":"This derives the real numeral 0 from the Zero Real instance.","effect_on_target":"It elaborates the left side of hsep without adding any assumption.","paper_match":"It preserves the ordinary condition sep > 0.","status":"pass"},{"id":"D027","name":"instAddNat","interpretation":"This equips Nat with ordinary natural-number addition.","effect_on_target":"It makes k+1 the successor index used by hstep.","paper_match":"Successive abstract recurrence levels are indexed correctly, but the target does not connect these levels to matrix-size halving.","status":"pass"},{"id":"D028","name":"instHAdd","interpretation":"This converts a homogeneous Add instance into the corresponding homogeneous HAdd instance.","effect_on_target":"It routes the overloaded additions to Nat.add or ordinary real addition.","paper_match":"It introduces no semantic deviation from the intended arithmetic.","status":"pass"},{"id":"D029","name":"instHMul","reuse_sha256":"e59d6740ce08cc0daa448ab94b648895253d68ac0e9c1eddcd501b2207170f14","effect_on_target":"It routes homogeneous overloaded multiplication to ordinary real multiplication.","paper_match":"It introduces no semantic deviation from the recurrence arithmetic.","status":"pass"},{"id":"D030","name":"instHPow","reuse_sha256":"dbb79fafbbcd409e51876cd7225091df1a0b6e0da3463e224a6374329da57fbf","effect_on_target":"It routes overloaded exponentiation to the real natural-power operation.","paper_match":"It gives the intended powers in the finite recurrence unrolling.","status":"pass"},{"id":"D031","name":"instLTNat","interpretation":"This equips Nat with ordinary strict less-than.","effect_on_target":"It restricts hstep to recurrence indices k from 0 through depth-1.","paper_match":"That is the correct range for depth abstract steps, although depth lacks the paper's log2(n) meaning.","status":"pass"},{"id":"D032","name":"instOfNatNat","reuse_sha256":"2246ab7a7b13850a8d38ca05ad78918942345dbbe75b4186e5bf96f438540ffa","effect_on_target":"It interprets natural literals such as 0 and 1 as the same natural values.","paper_match":"It preserves the intended base index and successor offset.","status":"pass"},{"id":"D033","name":"DivInvMonoid.toDiv","interpretation":"This projects division from a DivInvMonoid instance.","effect_on_target":"With the real instance it supplies ordinary real division by sep in growth and forcing.","paper_match":"Division by positive sep has the intended paper meaning, but the target does not identify sep with the Sylvester separation.","status":"pass"},{"id":"D034","name":"Fin","reuse_sha256":"cf0e0c079b128caed6b4d65311a6841c6e5632ce09e2aa0f9fb215fea4607413","effect_on_target":"Fin n supplies exactly n row and n column indices for each matrix, including an empty index type when n=0.","paper_match":"It correctly represents n-by-n matrices. The paper's requirement that n be a positive power of two is absent from the enclosing target, not altered by Fin itself.","status":"pass"},{"id":"D035","name":"HDiv.hDiv","interpretation":"This selects division from the applicable heterogeneous-division instance.","effect_on_target":"It denotes ordinary real division in epsilon/sep and in the growth ratio.","paper_match":"The division operation matches the displayed recurrence when sep has the paper's intended meaning.","status":"pass"},{"id":"D036","name":"Matrix","reuse_sha256":"6ecc3081362c8634c4eb699026fb8296519b916facae91a3517af0ba69876c50","effect_on_target":"Each matrix is represented extensionally as a function from row and column indices to real entries.","paper_match":"This is a faithful representation of the paper's finite square matrices.","status":"pass"},{"id":"D037","name":"Real.instDivInvMonoid","interpretation":"This supplies ordinary real multiplication, inversion, and division, with Lean's total inverse operation.","effect_on_target":"It implements both divisions by sep; hsep ensures the actual denominator is nonzero.","paper_match":"For positive sep, the resulting division agrees with the paper's denominators and Lean's behavior at zero is irrelevant.","status":"pass"},{"id":"D038","name":"Real.instNatCast","interpretation":"This casts natural numbers into Real in the standard way.","effect_on_target":"It supplies the real coefficients 2, 3, and 4 used in the definitions.","paper_match":"The cast values exactly preserve the paper's numerical constants.","status":"pass"},{"id":"D039","name":"instHDiv","interpretation":"This converts a homogeneous Div instance into the corresponding homogeneous HDiv instance.","effect_on_target":"It routes overloaded real division to the ordinary Real division operation.","paper_match":"It introduces no semantic deviation from the displayed ratios.","status":"pass"},{"id":"D040","name":"instOfNatAtLeastTwo","interpretation":"This creates a numeral instance from a natural cast when the numeral is proved to be at least two.","effect_on_target":"Together with the local proofs, it elaborates the real literals 2, 3, and 4.","paper_match":"It preserves the exact recurrence coefficients and has no additional paper-level content.","status":"pass"},{"id":"D041","name":"Fin.fintype","reuse_sha256":"a3999a1876b4d406154453fec4f9ac4d68c8269ece8a353478f85850c47b023c","effect_on_target":"It provides a finite enumeration of matrix row and column indices for the Frobenius-norm sums.","paper_match":"Finite enumeration of all n indices is appropriate for an n-by-n Frobenius norm.","status":"pass"},{"id":"D042","name":"Finset.univ","reuse_sha256":"5d4d7dabcf45aa3b1f9a4b7978279f8792590b45a37eed435ce57b7d72a0450a","effect_on_target":"It makes each Frobenius-norm sum range over every row and every column index.","paper_match":"This gives the standard sum over all matrix entries required by the Frobenius norm.","status":"pass"},{"id":"D043","name":"Nat.AtLeastTwo","interpretation":"This proposition records that a natural numeral is at least two for numeral-instance synthesis.","effect_on_target":"It is used only to elaborate the real constants 2, 3, and 4 and imposes no condition on matrix dimension n.","paper_match":"It has no independent paper meaning.","status":"not-applicable"},{"id":"D044","name":"Real.sqrt","reuse_sha256":"5214108629a6d07812769d7a896c21f2e077cef9b79d32f6fedcd9e9723e66b2","effect_on_target":"It turns the sum of squared matrix entries into the nonnegative, unsquared Frobenius norm.","paper_match":"This matches the paper's Frobenius-norm definition rather than a squared norm.","status":"pass"}],"semantic_checklist":[{"id":"S01","status":"pass","paper_evidence":"The hash-verified PDF's physical page 28, printed page 86, contains the block-error estimates, affine recurrence, two asymptotic bounds ending in equation (20), and the logarithmic-stability comparison. Pages 26-27 identify ordinary SylR and its assumptions.","lean_evidence":"The supplied exact and fully explicit target types use the displayed growth and forcing expressions in a recurrence-unrolling proposition.","reasoning":"The selected version and source location are correct; the substantive mismatches arise from the Lean proposition rather than source selection."},{"id":"S02","status":"fail","paper_evidence":"Pages 26-28 use n-by-n matrices with n a positive power of two, upper-triangular A and B, an exact solution R of AR-RB=-C, machine epsilon, and the size-dependent factor mu(n/2).","lean_evidence":"Lean binds arbitrary n and depth in Nat, arbitrary n-by-n real A, B, C, R, arbitrary real sep, epsilon, mu, and an arbitrary function err : Nat -> Real.","reasoning":"Square dimensions match, but the meanings and restrictions of n, depth, R, sep, epsilon, mu, and err do not."},{"id":"S03","status":"fail","paper_evidence":"In the paper R, sep(A,B), and the error sequence depend on the Sylvester data and SylR execution; the number of recurrence levels is determined by repeated halving of n.","lean_evidence":"R, sep, epsilon, mu, depth, and err are independent universal binders, followed by a universally quantified conditional hstep.","reasoning":"The dependency structure and scope are lost: in particular sep and R are not functions of A, B, C, and depth is not determined by n."},{"id":"S04","status":"fail","paper_evidence":"The source requires the ordinary nonsingular Sylvester problem, positive sep(A,B), distinct spectra in the triangular setting, power-of-two dimension, subproblem separation bound (19), the induction error interpretation, and product-error model (8).","lean_evidence":"The only paper-like primitive hypothesis is 0 < sep; hstep directly assumes the abstract affine inequality. There is no Sylvester equation, triangularity, spectral condition, power-of-two condition, subproblem separation fact, or rounding-model hypothesis.","reasoning":"The target assumes the central recurrence instead of establishing it from the hypotheses used by the paper."},{"id":"S05","status":"fail","paper_evidence":"The selected result includes the affine recurrence, its first asymptotic solution, equation (20), comparison with the conventional forward-error bound, and the conclusion that SylR is logarithmically stable.","lean_evidence":"The conclusion is only an exact finite geometric unrolling of an assumed constant-step inequality.","reasoning":"Equation (20), its n and condition-ratio exponents, the conventional comparison, and logarithmic stability are absent."},{"id":"S06","status":"fail","paper_evidence":"Page 27 defines sep(A,B) as the smallest singular value of the vectorized Sylvester operator and through a Frobenius-norm minimization; err and mu have algorithmic error-model meanings.","lean_evidence":"The Frobenius norm, growth, and forcing definitions are explicit, but sep is merely a positive real, mu is a real scalar, and err is an arbitrary real sequence.","reasoning":"The arithmetic expressions are unfolded, but the nontrivial paper operators and semantic definitions of separation, multiplication error, and forward error are not represented."},{"id":"S07","status":"fail","paper_evidence":"The paper compares the recursively computed SylR result with the exact solution R and includes rounding errors incurred while constructing recursive right-hand sides.","lean_evidence":"There is no computed matrix, exact-solution equation, perturbation, or rounding operation; R is arbitrary and err has no connection to any pair of exact and computed quantities.","reasoning":"The target eliminates rather than preserves the exact-versus-computed distinction."},{"id":"S08","status":"fail","paper_evidence":"Pages 26-28 link the recurrence to ordinary SylR, four half-sized solves in order R21, R11, R22, R12, matrix products in their right-hand sides, and the separation bound for recursive blocks.","lean_evidence":"No algorithm, block decomposition, solve order, matrix multiplication, or recursive size change occurs in the target; all algorithmic content is hidden in the assumed hstep.","reasoning":"The proposition is a generic scalar recurrence lemma and is not a theorem about executing SylR."},{"id":"S09","status":"pass","paper_evidence":"The source explicitly defines separation with unsquared Frobenius norms; the immediately following recurrence uses unsubscripted norm symbols in that perturbation context.","lean_evidence":"p10FrobNorm is the square root of the sum of entry squares, and every A, B, C, R norm in growth and forcing uses it.","reasoning":"Lean makes a consistent explicit Frobenius, normwise, unsquared specialization. The source's missing subscripts do not create a material mismatch for this check."},{"id":"S10","status":"fail","paper_evidence":"The recurrence has multiplier 4+2*(||A||+||B||)/sep(A,B), forcing coefficients 3 and 2, recursive argument n/2, factor mu(n/2), and equation (20) exponents 1+log2(3) and 1+log2(n).","lean_evidence":"Growth and forcing retain 4, 2, and 3, but hstep advances k to k+1, mu is scalar, depth is independent of n, and the conclusion contains neither equation (20) exponent.","reasoning":"Local constants match, while the size indexing and essential n-dependent exponents do not."},{"id":"S11","status":"fail","paper_evidence":"The paper treats epsilon as machine epsilon and invokes the first-order matrix-product error rule (8); it does not analyze overflow, underflow, NaN, or infinity at this passage.","lean_evidence":"epsilon and mu are arbitrary mathematical reals, and the target contains no floating-point values, rounding operation, precision, product-error model, or exceptional-value assumptions.","reasoning":"The paper's numerical model is not formalized or even constrained through the scalar parameters."},{"id":"S12","status":"pass","paper_evidence":"The block estimates use non-strict upper bounds; the paper then prints equality for a dominating recurrence before using asymptotic upper bounds.","lean_evidence":"hstep and the unrolled conclusion are non-strict inequalities.","reasoning":"Interpreting err as a bound makes the Lean inequality direction faithful and avoids treating the printed recurrence equality as equality of realized errors."},{"id":"S13","status":"fail","paper_evidence":"err(n) is an absolute normwise forward-error bound for the computed SylR solution, and the final comparison is with a conventional forward-error bound.","lean_evidence":"err is any Nat -> Real function, with no nonnegativity, norm, computed solution, exact solution, residual, or forward-error definition.","reasoning":"The target's err does not denote the paper's forward error, and the stability comparison is absent."},{"id":"S14","status":"fail","paper_evidence":"The recurrence is obtained from a first-order error analysis, while both displayed solutions use big-O and equation (20) suppresses constants; Definition 3.1 separately permits an O(epsilon^2) remainder.","lean_evidence":"Lean states an exact conditional inequality with an explicit finite sum and has no first-order qualification, big-O relation, hidden constant, threshold, or higher-order remainder.","reasoning":"The exact algebraic unrolling does not encode the asymptotic and first-order status of the paper's numerical result."},{"id":"S15","status":"fail","paper_evidence":"The result concerns ordinary SylR on same-size square matrices, with positive power-of-two n and upper-triangular A and B; the selected passage does not settle the scalar field.","lean_evidence":"Lean explicitly specializes entries and norms to real/Frobenius data but simultaneously permits every natural n, including zero, every depth, and arbitrary matrices because hstep is assumed.","reasoning":"The real/Frobenius specialization is explicit, but the unrestricted n/depth domain is not a valid generalization of the algorithmic result and does not preserve the claimed benchmark task."},{"id":"S16","status":"pass","paper_evidence":"The paper's nonsingular Sylvester setting has ordinary nontrivial instances with sep(A,B)>0 and a genuine recursive error bound.","lean_evidence":"The hypotheses are satisfiable; for example, n=1, zero matrices, sep=1, epsilon=mu=0, depth=1, err(0)=1, and err(1)=4 satisfy hstep with equality and attain the conclusion's bound.","reasoning":"The formal implication is not vacuous or based on contradiction. Its failure is semantic relevance: the numerical burden has been placed entirely in hstep."}],"implications":{"lean_implies_paper":{"verdict":"no","reasoning":"The Lean conclusion only unrolls an assumed scalar inequality. It neither proves that SylR errors satisfy the paper's recurrence nor yields the asymptotic equation (20), its conventional-error comparison, or logarithmic stability."},"paper_implies_lean":{"verdict":"no","reasoning":"The paper establishes a size-indexed recurrence and asymptotic result for the specific ordinary SylR execution. It does not assert the target's universally quantified proposition for arbitrary independent n, depth, sep, mu, R, and err. A manually constrained instance of the Lean lemma could be used as an intermediate calculation, but that is not the full Lean statement as quantified."}},"classification":"not-faithful-different","accepted":false,"requires_adjudication":false,"findings":[{"severity":"critical","category":"algorithm-linkage","paper_evidence":"Pages 26-28 derive the recurrence from ordinary SylR's four recursive solves, right-hand-side products, separation inequality (19), and product-error rule (8).","lean_evidence":"The target assumes hstep for an arbitrary real sequence and contains no SylR execution, block equations, matrix products, or error derivation.","impact":"The core numerical-analysis claim is moved into a hypothesis, leaving a generic recurrence lemma that does not verify the paper's algorithm."},{"severity":"major","category":"missing-conclusions","paper_evidence":"Printed page 86 gives two asymptotic bounds, equation (20), and the conclusion that SylR is logarithmically stable relative to a conventional forward-error bound.","lean_evidence":"The only conclusion is growth^depth*err(0) plus forcing times a finite geometric sum.","impact":"The theorem does not state the selected paper result's n-dependent bound or stability conclusion."},{"severity":"major","category":"indexing-and-parameter-binding","paper_evidence":"The paper recurses from n to n/2, uses mu(n/2), and obtains log2(n)-dependent exponents.","lean_evidence":"Matrix dimension n is unused by the recurrence index; depth is independent, steps are k to k+1, and mu is one arbitrary scalar.","impact":"The formal unrolling cannot yield equation (20) without substantial external assumptions and identifications absent from the proposition."},{"severity":"major","category":"separation-and-error-semantics","paper_evidence":"sep(A,B) is defined from the Sylvester operator, R solves AR-RB=-C, and err is the normwise forward error of the computed recursive solution including right-hand-side errors.","lean_evidence":"sep is merely a positive real, R is arbitrary, and err is an arbitrary real sequence.","impact":"The symbols carrying the paper's condition and forward-error meaning are semantically detached from the matrices and computation."},{"severity":"minor","category":"specialization","paper_evidence":"The separation definition is Frobenius-based, but the recurrence norms are unsubscripted and the passage does not explicitly settle real versus complex scalars.","lean_evidence":"All matrices are real and all displayed matrix norms are the unsquared Frobenius norm.","impact":"This is an explicit and plausible specialization, but it should be recorded; it does not remedy the larger algorithmic and logical mismatches."}],"rationale":"The target correctly proves a nonvacuous algebraic unrolling of a constant affine inequality, and its growth and forcing formulas reproduce the recurrence's visible coefficients under intended parameter identifications. However, it does not state that SylR generates that inequality, does not bind sep, R, epsilon, mu, depth, or err to their paper meanings, and omits equation (20) and logarithmic stability. Because neither full statement implies the other under their actual quantifier structures, the result is not-faithful-different."}
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P10-T3",
+  "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
+  "dossier_sha256": "c598d64ddd65430d3c827d45f6358b554e4ba391e004bda891114761ec119254",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.P10SylRLogarithmicallyStable",
+      "interpretation": "A predicate requiring a levelwise affine envelope recurrence, a top absolute Frobenius forward-error bound by a concrete equation-(20) expression, an exact factorization through the conventional scale, and the dyadic log2 identity.",
+      "effect_on_target": "This is the entire theorem conclusion; the declaration proves these four conjuncts for every packaged run.",
+      "paper_match": "It preserves the displayed recurrence and exponent shape, but replaces the paper's first-order big-O logarithmic-stability claim with an exact constant-2 bound and does not formalize Definition 3.1 or coverage of actual SylR executions.",
+      "status": "fail"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.P10SylRRun",
+      "interpretation": "An indexed type of certified recursive run dossiers at dyadic depth.",
+      "effect_on_target": "The target ranges only over values of this type, so all constructor obligations are antecedent data rather than conclusions.",
+      "paper_match": "The paper ranges over SylR problems and executions under a stable-arithmetic model, not over executions already carrying the local page-86 estimates, an attained envelope, separation inheritance, and a base bound.",
+      "status": "fail"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.P10SylRRun.errorEnvelope",
+      "interpretation": "The stored function from recursion level to a real error bound.",
+      "effect_on_target": "It supplies err(k) to the recurrence; the run constructor additionally requires it to upper-bound every node and be attained at every level.",
+      "paper_match": "The paper's err(m) is an inductive upper bound and is not required to be attained. The attainment restriction changes applicability.",
+      "status": "fail"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.P10SylRRun.mk",
+      "interpretation": "The sole constructor packages epsilon and mu assumptions, an arbitrary level-indexed node hierarchy, all four child maps, a level certificate for every parent, global norm and separation bounds, an attained envelope, and an explicit scalar-level bound.",
+      "effect_on_target": "It makes the hierarchy structurally recursive and nonempty from the root, but assumes every local block estimate and the base estimate needed to derive the theorem.",
+      "paper_match": "The child dependency graph matches R21 then R11/R22 then R12, but the constructor assumes rather than derives the page-86 estimates from stable multiplication, adds monotonic mu and envelope attainment, assumes equation-(19) separation inheritance, and supplies a base constant absent from the source.",
+      "status": "fail"
+    },
+    {
+      "id": "D005",
+      "name": "HighamBench.p10SylRConditionRatio",
+      "interpretation": "The ratio (||A||_F+||B||_F)/sep at the top problem.",
+      "effect_on_target": "It controls both recurrence growth and the final exponentiated conditioning factor.",
+      "paper_match": "The algebraic ratio matches equation (20), but the paper specifies Frobenius only for sep and leaves the other norms unsubscripted; fixing all of them to Frobenius is an unproved specialization for an exact-constant theorem.",
+      "status": "fail"
+    },
+    {
+      "id": "D006",
+      "name": "HighamBench.p10SylRConventionalForwardScale",
+      "interpretation": "The exact real product epsilon*||R||_F*((||A||_F+||B||_F)/sep).",
+      "effect_on_target": "It rewrites the concrete final bound as a multiple of a conventional forward-error scale.",
+      "paper_match": "The paper gives this scale only inside O(...), with unspecified bare norms. The dependency has the right shape but cannot carry the paper's unspecified constant or norm choice.",
+      "status": "fail"
+    },
+    {
+      "id": "D007",
+      "name": "HighamBench.p10SylREquation20Bound",
+      "interpretation": "The concrete quantity 2*n^(1+log_2 3)*mu(n/2)*epsilon*||R||_F*kappa^(1+log2 n), with n=2^depth and Nat conventions at depth zero.",
+      "effect_on_target": "It is the exact right-hand side of the target's top forward-error inequality.",
+      "paper_match": "Equation (20) states only an asymptotic O-bound. The universal coefficient 2, exact inequality, all-Frobenius norms, and depth-zero convention are not conclusions of the cited paper.",
+      "status": "fail"
+    },
+    {
+      "id": "D008",
+      "name": "HighamBench.p10SylRForwardError",
+      "interpretation": "The Frobenius norm of computedSolution-exactSolution.",
+      "effect_on_target": "It gives an absolute normwise forward error for every problem and the top conclusion.",
+      "paper_match": "This correctly distinguishes computed from exact output and instantiates the paper's absolute normwise forward-error notion with the Frobenius norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "HighamBench.p10SylRHalfMu",
+      "interpretation": "The top-level growth factor mu(2^(depth-1)), using truncated Nat subtraction.",
+      "effect_on_target": "The same top-half value is passed to every level certificate and appears in the final bound; at depth 0 it is mu(1).",
+      "paper_match": "For positive recursion depth it is mu(n/2), and monotonicity can dominate smaller levels. At n=1 the paper gives no mu(n/2) or base-error convention, so the universally quantified depth-zero use is extra.",
+      "status": "fail"
+    },
+    {
+      "id": "D010",
+      "name": "HighamBench.p10SylRRecurrenceForcing",
+      "interpretation": "epsilon/sep times 3||C||_F+2*mu(n/2)*(||A||_F+||B||_F)||R||_F, using top data.",
+      "effect_on_target": "It is the additive term in every asserted envelope recurrence.",
+      "paper_match": "Within the chosen Frobenius specialization, its coefficients 3 and 2 and parameter dependence match the displayed affine recurrence on printed page 86.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "HighamBench.p10SylRRecurrenceGrowth",
+      "interpretation": "The real coefficient 4+2*((||A||_F+||B||_F)/sep).",
+      "effect_on_target": "It multiplies the previous-level envelope.",
+      "paper_match": "Its coefficients and dependence match the displayed recurrence, subject to the formal norm specialization.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "HighamBench.p10SylRTopProblem",
+      "interpretation": "The problem attached to the distinguished node at level depth.",
+      "effect_on_target": "It supplies all root matrices, solution, separation, and forward error used in the conclusion.",
+      "paper_match": "A distinguished original Sylvester problem is consistent with the paper's root problem.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "HighamBench.p10SylvesterForcing._proof_1",
+      "interpretation": "A generated proof that the numeral 3 is at least two.",
+      "effect_on_target": "It only supports numeral elaboration.",
+      "paper_match": "It has no independent paper-level semantic content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D014",
+      "name": "HighamBench.p10SylvesterGrowth._proof_2",
+      "interpretation": "A generated proof that the numeral 2 is at least two.",
+      "effect_on_target": "It only supports numeral elaboration.",
+      "paper_match": "It has no independent paper-level semantic content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D015",
+      "name": "HighamBench.P10DyadicIndex",
+      "interpretation": "A recursively doubled finite index type: Fin 1 at depth 0 and a disjoint sum of two prior index types at each successor.",
+      "effect_on_target": "Matrices at depth d have 2^d rows and columns and split into equal dyadic blocks.",
+      "paper_match": "This exactly realizes the paper's square power-of-two dimension convention.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "HighamBench.P10DyadicMatrix",
+      "interpretation": "A square real matrix indexed by P10DyadicIndex depth.",
+      "effect_on_target": "It fixes every problem and block to dimension 2^depth over the reals.",
+      "paper_match": "Square dyadic dimensions match. Choosing Real is a specialization because the passage does not state the scalar field, but it is coherent with the transpose-based real formulation.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "HighamBench.P10SylRLevelCertificate",
+      "interpretation": "A proposition parameterized by one parent, four children, global bounds, epsilon, muHalf, and the smaller-level error.",
+      "effect_on_target": "The run requires one certificate for every node at every non-base level.",
+      "paper_match": "As used, it packages the four local error estimates that the paper derives; treating them as input certificates changes the theorem's hypothesis boundary.",
+      "status": "fail"
+    },
+    {
+      "id": "D018",
+      "name": "HighamBench.P10SylRProblem",
+      "interpretation": "An indexed record-like inductive type for one exact and computed Sylvester problem.",
+      "effect_on_target": "It groups A, B, C, exact and computed solutions, the exact equation, and a separation certificate.",
+      "paper_match": "This is a reasonable typed representation of an ordinary square Sylvester subproblem.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "HighamBench.P10SylRProblem.A",
+      "interpretation": "Projection of the left Sylvester coefficient matrix.",
+      "effect_on_target": "It supplies A to actions, norms, block equations, and separation.",
+      "paper_match": "It matches the paper's A.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "HighamBench.P10SylRProblem.B",
+      "interpretation": "Projection of the right Sylvester coefficient matrix.",
+      "effect_on_target": "It supplies B to actions, norms, block equations, and separation.",
+      "paper_match": "It matches the paper's B.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "HighamBench.P10SylRProblem.C",
+      "interpretation": "Projection of the stored right-hand-side parameter C in AX-XB=-C.",
+      "effect_on_target": "For child problems it may be a rounded right-hand side constrained only by certificate inequalities.",
+      "paper_match": "The sign convention matches the paper; the rounded-child interpretation is compatible with the error analysis but is not operationally generated.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "HighamBench.P10SylRProblem.computedSolution",
+      "interpretation": "Projection of the computed solution matrix.",
+      "effect_on_target": "It is compared with exact solutions and assembled blockwise through level certificates.",
+      "paper_match": "It correctly represents the computed SylR output quantity.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "HighamBench.P10SylRProblem.exactSolution",
+      "interpretation": "Projection of the exact solution matrix for the stored problem.",
+      "effect_on_target": "It satisfies AX-XB=-C by the problem constructor and is the reference for forward error.",
+      "paper_match": "It matches the paper's exact R, including for perturbed child right-hand sides.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "HighamBench.P10SylRProblem.separation",
+      "interpretation": "Projection of a positive variational separation certificate for A and B.",
+      "effect_on_target": "Its value is used as the perturbation denominator and in hierarchy bounds.",
+      "paper_match": "It matches the role of sep(A,B).",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "HighamBench.P10SylRRun.epsilon",
+      "interpretation": "Projection of a positive real epsilon no larger than one.",
+      "effect_on_target": "It scales all local, base, recurrence, and final error bounds.",
+      "paper_match": "It represents machine epsilon abstractly, as in the paper's first-order model.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "HighamBench.P10SylRRun.mu",
+      "interpretation": "Projection of a Nat-to-Real multiplication growth-factor function.",
+      "effect_on_target": "The constructor constrains it to be nonnegative, monotone, at least one for positive sizes, and polynomially bounded.",
+      "paper_match": "It represents the paper's mu, although monotonicity and a concrete global polynomial majorant are additional restrictions.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "HighamBench.P10SylRRun.problem",
+      "interpretation": "A map assigning a Sylvester problem to every node at every level not exceeding depth.",
+      "effect_on_target": "Together with child maps it builds the recursive problem hierarchy.",
+      "paper_match": "It can represent all recursive SylR subproblems; the map is abstract rather than an execution of the pseudocode.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "HighamBench.P10SylRRun.top",
+      "interpretation": "The distinguished root node at maximum depth.",
+      "effect_on_target": "It prevents the hierarchy from being empty and identifies the original problem.",
+      "paper_match": "This matches the paper's original Sylvester instance.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "HighamBench.P10SylvesterSeparation.value",
+      "interpretation": "Projection of the certified positive separation scalar.",
+      "effect_on_target": "It is the denominator in every perturbation and conditioning expression.",
+      "paper_match": "It matches sep(A,B).",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "HighamBench.p10DyadicFrobNorm",
+      "interpretation": "The mathlib Frobenius norm on real square matrices.",
+      "effect_on_target": "It is used for every A, B, C, R, right-hand-side difference, block error, and forward error.",
+      "paper_match": "The paper explicitly uses Frobenius for sep but leaves all page-86 bare norms unspecified. Using Frobenius everywhere while retaining exact constants is not established by the source.",
+      "status": "fail"
+    },
+    {
+      "id": "D031",
+      "name": "HighamBench.p10SylvesterGrowth._proof_1",
+      "interpretation": "A generated proof that the numeral 4 is at least two.",
+      "effect_on_target": "It only supports numeral elaboration.",
+      "paper_match": "It has no independent paper-level semantic content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D032",
+      "name": "HighamBench.P10DyadicIndex.match_1",
+      "interpretation": "The zero/successor eliminator used to define the recursive dyadic index type.",
+      "effect_on_target": "It implements the Fin-1 base and Sum successor cases.",
+      "paper_match": "It is definitional plumbing with no separate paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D033",
+      "name": "HighamBench.P10SylRLevelCertificate.mk",
+      "interpretation": "The certificate constructor enforces upper-block triangularity, child coefficient and block identities, parent-computed block assembly, exact block equations (15)-(18), first-order right-hand-side perturbation bounds, four block-error bounds, and the aggregate block-sum bound.",
+      "effect_on_target": "Its dependency graph is R21 to R11/R22 to R12 and every run supplies it recursively for all nodes; child right-hand sides are only related to exact right-hand sides by inequalities, not actual rounded operations.",
+      "paper_match": "The signs, blocks, and dependency order match, but the constructor assumes the page-86 local estimates and assembly inequality that the selected result derives from model (1)/(8).",
+      "status": "fail"
+    },
+    {
+      "id": "D034",
+      "name": "HighamBench.P10SylRProblem.mk",
+      "interpretation": "Constructs a problem from five matrices, a proof that the exact solution satisfies AX-XB=-C, and a separation certificate.",
+      "effect_on_target": "It enforces the ordinary Sylvester sign and exact-solution relation for every hierarchy node.",
+      "paper_match": "This matches the paper's ordinary equation and keeps exact and computed solutions distinct.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "HighamBench.P10SylRRun.Node",
+      "interpretation": "Projection of an arbitrary type of nodes at each recursion level.",
+      "effect_on_target": "It permits a tree or larger family; all nodes, including unreachable extras, must satisfy run bounds and certificates.",
+      "paper_match": "The paper has the concrete SylR call tree. This abstraction can encode it but neither identifies nodes with actual calls nor requires finiteness, and envelope attainment is imposed separately.",
+      "status": "fail"
+    },
+    {
+      "id": "D036",
+      "name": "HighamBench.P10SylvesterSeparation",
+      "interpretation": "An indexed certificate type for the separation of a matrix pair.",
+      "effect_on_target": "It carries positivity, a global Frobenius lower bound, and an attaining unit matrix through its constructor.",
+      "paper_match": "This is a faithful finite-dimensional representation of the paper's variational sep for nonsingular pairs.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "HighamBench.p10DyadicIndexDecidableEq",
+      "interpretation": "A decidable-equality instance for every dyadic index type.",
+      "effect_on_target": "It enables finite matrix norm and algebra instances.",
+      "paper_match": "This is implementation infrastructure without a separate source assertion.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D038",
+      "name": "HighamBench.p10DyadicIndexFintype",
+      "interpretation": "A finite-enumeration instance for every dyadic index type.",
+      "effect_on_target": "It enables finite sums, Frobenius norms, and matrix multiplication.",
+      "paper_match": "This is implementation infrastructure for finite matrices.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D039",
+      "name": "HighamBench.P10SylvesterSeparation.mk",
+      "interpretation": "Constructs sep from a positive value that lower-bounds ||AX-XB||_F/||X||_F for every X and is attained at a unit-Frobenius X.",
+      "effect_on_target": "It makes the stored value exactly the variational minimum and excludes zero separation.",
+      "paper_match": "This matches sep(A,B)=min_{||X||_F=1}||AX-XB||_F and the nonsingularity requirement.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "HighamBench.p10DyadicBlock11",
+      "interpretation": "Extracts the upper-left block under the Sum/Sum dyadic partition.",
+      "effect_on_target": "It supplies A11, B11, C11, R11, and computed block 11.",
+      "paper_match": "Its indexing matches block 11 in equations (14)-(18).",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "HighamBench.p10DyadicBlock12",
+      "interpretation": "Extracts the upper-right block under the dyadic partition.",
+      "effect_on_target": "It supplies A12, B12, C12, R12, and computed block 12.",
+      "paper_match": "Its indexing matches block 12 in equations (14)-(18).",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "HighamBench.p10DyadicBlock21",
+      "interpretation": "Extracts the lower-left block under the dyadic partition.",
+      "effect_on_target": "It supplies triangular-zero tests and C21, R21, and computed block 21.",
+      "paper_match": "Its indexing matches block 21 in equations (14)-(18).",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "HighamBench.p10DyadicBlock22",
+      "interpretation": "Extracts the lower-right block under the dyadic partition.",
+      "effect_on_target": "It supplies A22, B22, C22, R22, and computed block 22.",
+      "paper_match": "Its indexing matches block 22 in equations (14)-(18).",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "HighamBench.p10SylRBlockError11",
+      "interpretation": "The Frobenius distance between child11's computed solution and the parent's exact R11 block.",
+      "effect_on_target": "It is the err(R11,n/2) quantity used in RHS12 and the aggregate bound.",
+      "paper_match": "This is the appropriate parent-solution forward error for the page-86 R11 estimate.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "HighamBench.p10SylRBlockError12",
+      "interpretation": "The Frobenius distance between child12's computed solution and the parent's exact R12 block.",
+      "effect_on_target": "It is err(R12,n/2) in the aggregate bound.",
+      "paper_match": "This is the appropriate parent-solution forward error for the page-86 R12 estimate.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "HighamBench.p10SylRBlockError21",
+      "interpretation": "The Frobenius distance between child21's computed solution and the parent's exact R21 block.",
+      "effect_on_target": "It feeds both later right-hand-side bounds and is bounded first by smallerError.",
+      "paper_match": "This matches the first page-86 block error and its dependency role.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "HighamBench.p10SylRBlockError22",
+      "interpretation": "The Frobenius distance between child22's computed solution and the parent's exact R22 block.",
+      "effect_on_target": "It feeds the R12 right-hand-side bound and aggregate bound.",
+      "paper_match": "This matches the page-86 R22 error quantity.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "HighamBench.p10SylRExactRhs11",
+      "interpretation": "Defines C11+A12*R21 using the parent's exact solution blocks.",
+      "effect_on_target": "The exact child equation is A11 R11-R11 B11=-ExactRhs11.",
+      "paper_match": "This is algebraically equation (16) with the correct sign.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "HighamBench.p10SylRExactRhs12",
+      "interpretation": "Defines C12-R11*B12+A12*R22 using exact parent blocks.",
+      "effect_on_target": "The exact child equation is A11 R12-R12 B22=-ExactRhs12.",
+      "paper_match": "Negating it gives -C12+R11 B12-A12 R22, exactly equation (18).",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "HighamBench.p10SylRExactRhs22",
+      "interpretation": "Defines C22-R21*B12 using exact parent blocks.",
+      "effect_on_target": "The exact child equation is A22 R22-R22 B22=-ExactRhs22.",
+      "paper_match": "Negating it gives -C22+R21 B12, exactly equation (17).",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "HighamBench.p10SylvesterAction",
+      "interpretation": "The matrix map X to A*X-X*B.",
+      "effect_on_target": "It defines every exact equation and separation certificate.",
+      "paper_match": "It is exactly the ordinary Sylvester operator.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "Nat",
+      "interpretation": "Lean's natural numbers.",
+      "effect_on_target": "They index depth, levels, dimensions through 2^depth, mu, and integer logarithms.",
+      "paper_match": "Natural dyadic depth is suitable for the paper's power-of-two sizes.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "It combines the recurrence, top bound, factorization, and logarithm identity.",
+      "paper_match": "It has no independent numerical-paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D054",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "It states block identities, exact equations, attained bounds, and algebraic identities.",
+      "paper_match": "It is standard logical infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D055",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-dispatched addition.",
+      "effect_on_target": "It elaborates natural, real, and matrix additions.",
+      "paper_match": "Its concrete meanings are assessed at instantiated dependencies.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D056",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "It elaborates scalar and matrix products.",
+      "paper_match": "Its concrete meanings are assessed at instantiated dependencies.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D057",
+      "name": "HPow.hPow",
+      "interpretation": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "It selects natural powers or real powers according to operand types.",
+      "paper_match": "Its concrete meanings are assessed at Nat powers and Real.rpow.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D058",
+      "name": "LE.le",
+      "interpretation": "Typeclass-dispatched non-strict order.",
+      "effect_on_target": "It expresses all bounds.",
+      "paper_match": "It is standard order infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D059",
+      "name": "LT.lt",
+      "interpretation": "Typeclass-dispatched strict order.",
+      "effect_on_target": "It expresses positive epsilon and separation and level bounds.",
+      "paper_match": "It is standard order infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D060",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-number exponentiation in a monoid.",
+      "effect_on_target": "It interprets 2^depth and real quantities raised to natural log2 exponents.",
+      "paper_match": "These are the intended integer powers in the dyadic equation-(20) specialization.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "Nat.cast",
+      "interpretation": "Casts a natural number into a target type.",
+      "effect_on_target": "It turns n=2^depth into a real base for n^(1+log_2 3).",
+      "paper_match": "This matches the real-valued asymptotic power in equation (20).",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "Nat.instMonoid",
+      "interpretation": "The multiplicative monoid instance on Nat.",
+      "effect_on_target": "It supplies natural exponentiation of 2.",
+      "paper_match": "This is routine arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D063",
+      "name": "Nat.log2",
+      "interpretation": "The floor base-2 logarithm on natural numbers.",
+      "effect_on_target": "It supplies the integer exponent on the condition ratio and the identity for n=2^depth.",
+      "paper_match": "Because formal sizes are exact powers of two, it equals the paper's log_2 n.",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "OfNat.ofNat",
+      "interpretation": "Typeclass interpretation of numeric literals.",
+      "effect_on_target": "It elaborates constants 0, 1, 2, 3, and 4.",
+      "paper_match": "This is routine syntax infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D065",
+      "name": "One.toOfNat1",
+      "interpretation": "Builds the numeral-one instance from One.",
+      "effect_on_target": "It elaborates literal 1 in several types.",
+      "paper_match": "This is routine syntax infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D066",
+      "name": "Real",
+      "interpretation": "Mathlib's exact real-number type.",
+      "effect_on_target": "It is the scalar field for matrices and all error-model quantities; no floating-point values are represented.",
+      "paper_match": "The passage leaves the scalar field unstated. Real matrices are a coherent specialization, but exact reals do not themselves model the paper's floating-point execution.",
+      "status": "fail"
+    },
+    {
+      "id": "D067",
+      "name": "Real.instAdd",
+      "interpretation": "Exact real addition.",
+      "effect_on_target": "It evaluates all scalar sums.",
+      "paper_match": "This is arithmetic infrastructure; floating-point effects appear only in certificate hypotheses.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D068",
+      "name": "Real.instLE",
+      "interpretation": "The usual order on real numbers.",
+      "effect_on_target": "It interprets all scalar inequalities.",
+      "paper_match": "This is standard arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D069",
+      "name": "Real.instMonoid",
+      "interpretation": "The multiplicative monoid on reals.",
+      "effect_on_target": "It supports real natural powers.",
+      "paper_match": "This is standard arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D070",
+      "name": "Real.instMul",
+      "interpretation": "Exact real multiplication.",
+      "effect_on_target": "It evaluates bound products.",
+      "paper_match": "This is arithmetic infrastructure, not a rounded operation model.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D071",
+      "name": "Real.instNatCast",
+      "interpretation": "The canonical embedding of naturals into reals.",
+      "effect_on_target": "It interprets real-valued dimensions and constants.",
+      "paper_match": "This is standard arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D072",
+      "name": "Real.instOne",
+      "interpretation": "The real number one.",
+      "effect_on_target": "It appears in epsilon and mu bounds and unit-norm separation witnesses.",
+      "paper_match": "This is standard arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D073",
+      "name": "Real.instPow",
+      "interpretation": "Real exponentiation implemented as Real.rpow.",
+      "effect_on_target": "It interprets n^(1+logb 2 3), whose exponent is nonintegral.",
+      "paper_match": "For positive n=2^depth this is the intended real power in equation (20).",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "Real.logb",
+      "interpretation": "The real logarithm ratio log(x)/log(b).",
+      "effect_on_target": "It interprets log_2 3 in the dimension exponent.",
+      "paper_match": "This matches equation (20)'s log_2 3.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "instAddNat",
+      "interpretation": "Natural-number addition.",
+      "effect_on_target": "It forms k+1 and depth+1.",
+      "paper_match": "This is routine index arithmetic.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D076",
+      "name": "instHAdd",
+      "interpretation": "Lifts homogeneous addition into HAdd.",
+      "effect_on_target": "It dispatches natural and real additions.",
+      "paper_match": "This is typeclass plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D077",
+      "name": "instHMul",
+      "interpretation": "Lifts homogeneous multiplication into HMul.",
+      "effect_on_target": "It dispatches scalar multiplications.",
+      "paper_match": "This is typeclass plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D078",
+      "name": "instHPow",
+      "interpretation": "Lifts Pow into HPow.",
+      "effect_on_target": "It dispatches natural and real exponentiation.",
+      "paper_match": "This is typeclass plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D079",
+      "name": "instLTNat",
+      "interpretation": "The standard strict order on naturals.",
+      "effect_on_target": "It indexes non-base recursion levels.",
+      "paper_match": "This is routine index infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D080",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "Builds numeral instances at values at least two.",
+      "effect_on_target": "It elaborates larger numeric literals.",
+      "paper_match": "This is syntax and typeclass infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D081",
+      "name": "instOfNatNat",
+      "interpretation": "The numeral instance for naturals.",
+      "effect_on_target": "It elaborates natural literals.",
+      "paper_match": "This is syntax infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D082",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "The division operation supplied by a division-inverse monoid.",
+      "effect_on_target": "It underlies exact real division by sep.",
+      "paper_match": "This is arithmetic infrastructure; positivity of sep supplies the relevant nonzero condition.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D083",
+      "name": "Exists",
+      "interpretation": "Existential quantification.",
+      "effect_on_target": "It states envelope attainment and existence of a minimizing separation witness.",
+      "paper_match": "The quantifier is standard; the extra envelope-attainment use is assessed at D003 and D004.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D084",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-dispatched division.",
+      "effect_on_target": "It elaborates condition ratios and perturbation denominators.",
+      "paper_match": "Its concrete real meaning is standard exact division.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D085",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "It elaborates natural, real, and matrix subtraction.",
+      "paper_match": "Its concrete meanings are assessed at relevant dependencies.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D086",
+      "name": "Iff.mpr",
+      "interpretation": "Backward use of an equivalence.",
+      "effect_on_target": "It converts k<depth into k+1<=depth.",
+      "paper_match": "This is proof plumbing without paper semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D087",
+      "name": "Matrix.sub",
+      "interpretation": "Pointwise matrix subtraction.",
+      "effect_on_target": "It forms computed-minus-exact and rounded-RHS-minus-exact-RHS matrices.",
+      "paper_match": "Pointwise matrix subtraction is the intended operation.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "Monotone",
+      "interpretation": "Order preservation of mu over natural sizes.",
+      "effect_on_target": "The run assumes mu is monotone so one top-half value can dominate all lower-level multiplication factors.",
+      "paper_match": "The paper requires mu(n)=O(n^c), not monotonicity. This is an additional applicability restriction, although a monotone majorant could be chosen separately.",
+      "status": "fail"
+    },
+    {
+      "id": "D089",
+      "name": "Nat.AtLeastTwo",
+      "interpretation": "A proposition used to elaborate numerals at least two.",
+      "effect_on_target": "It supports literals in generated terms.",
+      "paper_match": "This is typeclass infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D090",
+      "name": "Nat.instPreorder",
+      "interpretation": "The natural-number preorder.",
+      "effect_on_target": "It supports monotonicity and level bounds.",
+      "paper_match": "This is routine order infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D091",
+      "name": "Nat.le_of_lt",
+      "interpretation": "Converts natural strict inequality to non-strict inequality.",
+      "effect_on_target": "It supplies proof arguments for child problem lookup.",
+      "paper_match": "This is proof plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D092",
+      "name": "Nat.succ",
+      "interpretation": "Natural successor.",
+      "effect_on_target": "It represents the parent level k+1.",
+      "paper_match": "This is routine index infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D093",
+      "name": "Nat.succ_le_iff",
+      "interpretation": "The equivalence k+1<=depth iff k<depth.",
+      "effect_on_target": "It validates parent lookups at each certificate level.",
+      "paper_match": "This is proof plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D094",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The exact real multiplication, inversion, and division structure.",
+      "effect_on_target": "It interprets all scalar quotients.",
+      "paper_match": "This is arithmetic infrastructure, not a floating-point division model.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D095",
+      "name": "Real.instLT",
+      "interpretation": "The usual strict order on reals.",
+      "effect_on_target": "It states epsilon and separation positivity.",
+      "paper_match": "This is standard arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D096",
+      "name": "Real.instPreorder",
+      "interpretation": "The real preorder.",
+      "effect_on_target": "It supports monotonicity of mu.",
+      "paper_match": "This is standard order infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D097",
+      "name": "Real.instSub",
+      "interpretation": "Exact real subtraction.",
+      "effect_on_target": "It is available for scalar expressions.",
+      "paper_match": "This is standard arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D098",
+      "name": "Real.instZero",
+      "interpretation": "The real number zero.",
+      "effect_on_target": "It appears in positivity and nonnegativity assumptions.",
+      "paper_match": "This is standard arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D099",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Builds numeral zero from a Zero instance.",
+      "effect_on_target": "It elaborates zero for reals and matrices.",
+      "paper_match": "This is syntax and typeclass infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D100",
+      "name": "instHDiv",
+      "interpretation": "Lifts homogeneous division into HDiv.",
+      "effect_on_target": "It dispatches real division.",
+      "paper_match": "This is typeclass plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D101",
+      "name": "instHSub",
+      "interpretation": "Lifts homogeneous subtraction into HSub.",
+      "effect_on_target": "It dispatches natural, real, and matrix subtraction.",
+      "paper_match": "This is typeclass plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D102",
+      "name": "instLENat",
+      "interpretation": "The standard non-strict order on naturals.",
+      "effect_on_target": "It constrains levels to depth.",
+      "paper_match": "This is routine index infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D103",
+      "name": "instSubNat",
+      "interpretation": "Truncated natural subtraction.",
+      "effect_on_target": "It makes depth-1 equal zero at depth zero in mu(2^(depth-1)).",
+      "paper_match": "The operation is standard, but this depth-zero convention has no displayed source analogue and is assessed at D009.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D104",
+      "name": "le_rfl",
+      "interpretation": "Reflexivity of a preorder.",
+      "effect_on_target": "It supplies depth<=depth when selecting the top problem.",
+      "paper_match": "This is proof plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D105",
+      "name": "Fin",
+      "interpretation": "The finite type of naturals below a bound.",
+      "effect_on_target": "Fin 1 is the scalar base index set.",
+      "paper_match": "This realizes the paper's n=1 base case.",
+      "status": "pass"
+    },
+    {
+      "id": "D106",
+      "name": "Matrix",
+      "interpretation": "A matrix is a two-index function into the scalar type.",
+      "effect_on_target": "It supplies the finite square matrices used throughout.",
+      "paper_match": "This is the standard mathematical matrix representation.",
+      "status": "pass"
+    },
+    {
+      "id": "D107",
+      "name": "Matrix.frobeniusNormedRing",
+      "interpretation": "The normed-ring instance whose norm is the matrix Frobenius norm.",
+      "effect_on_target": "It provides the concrete norm used by p10DyadicFrobNorm and its exact algebraic properties.",
+      "paper_match": "It correctly implements Frobenius norm; the mismatch is its use for every bare paper norm, recorded at D030.",
+      "status": "pass"
+    },
+    {
+      "id": "D108",
+      "name": "Nat.below",
+      "interpretation": "The below-recursion motive package for naturals.",
+      "effect_on_target": "It supports the recursive definition of the dyadic index type.",
+      "paper_match": "This is implementation plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D109",
+      "name": "Nat.brecOn",
+      "interpretation": "Course-of-values recursion on naturals.",
+      "effect_on_target": "It defines P10DyadicIndex.",
+      "paper_match": "This is implementation plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D110",
+      "name": "Norm.norm",
+      "interpretation": "Projection of a norm operation.",
+      "effect_on_target": "It evaluates the Frobenius norm instance on matrices.",
+      "paper_match": "This is norm typeclass plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D111",
+      "name": "NormedRing.toNorm",
+      "interpretation": "Projection of the norm from a normed ring.",
+      "effect_on_target": "It exposes the Frobenius norm used on matrices.",
+      "paper_match": "This is norm typeclass plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D112",
+      "name": "Real.instRCLike",
+      "interpretation": "The RCLike instance for reals.",
+      "effect_on_target": "It enables the Frobenius matrix norm construction.",
+      "paper_match": "This is library infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D113",
+      "name": "Sum",
+      "interpretation": "The disjoint sum of two index types.",
+      "effect_on_target": "At each successor depth it doubles row and column indices and defines the 2-by-2 block partition.",
+      "paper_match": "This matches equal halving of a power-of-two matrix.",
+      "status": "pass"
+    },
+    {
+      "id": "D114",
+      "name": "Unit",
+      "interpretation": "The one-element unit type.",
+      "effect_on_target": "It is used only in the generated zero-case eliminator.",
+      "paper_match": "This is implementation infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D115",
+      "name": "DecidableEq",
+      "interpretation": "Decidable equality on an index type.",
+      "effect_on_target": "It supports finite matrix instances.",
+      "paper_match": "This is implementation infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D116",
+      "name": "Fin.fintype",
+      "interpretation": "The canonical finite enumeration of Fin n.",
+      "effect_on_target": "It supplies the base Fintype instance.",
+      "paper_match": "This is implementation infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D117",
+      "name": "Fintype",
+      "interpretation": "A finite enumeration structure.",
+      "effect_on_target": "It enables finite sums in norms and matrix multiplication.",
+      "paper_match": "This is implementation infrastructure for finite dimensions.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D118",
+      "name": "Matrix.neg",
+      "interpretation": "Pointwise matrix negation.",
+      "effect_on_target": "It expresses the right side -C in every exact Sylvester equation.",
+      "paper_match": "This matches the paper's minus sign.",
+      "status": "pass"
+    },
+    {
+      "id": "D119",
+      "name": "Matrix.zero",
+      "interpretation": "The pointwise zero matrix.",
+      "effect_on_target": "It expresses vanishing lower-left blocks of upper-triangular A and B.",
+      "paper_match": "This matches the upper-triangular block form.",
+      "status": "pass"
+    },
+    {
+      "id": "D120",
+      "name": "Nat.casesOn",
+      "interpretation": "Zero/successor case analysis on naturals.",
+      "effect_on_target": "It supports the dyadic-index eliminator.",
+      "paper_match": "This is implementation plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D121",
+      "name": "Nat.recAux",
+      "interpretation": "Natural recursion with successor written as n+1.",
+      "effect_on_target": "It builds Fintype and DecidableEq instances across depths.",
+      "paper_match": "This is implementation plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D122",
+      "name": "Neg.neg",
+      "interpretation": "Typeclass-dispatched negation.",
+      "effect_on_target": "It elaborates -C for matrices.",
+      "paper_match": "Its concrete matrix meaning is assessed at D118.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D123",
+      "name": "Real.instNeg",
+      "interpretation": "Exact real negation.",
+      "effect_on_target": "It underlies pointwise matrix negation.",
+      "paper_match": "This is standard arithmetic infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D124",
+      "name": "Unit.unit",
+      "interpretation": "The sole unit value.",
+      "effect_on_target": "It supplies the zero branch of a generated eliminator.",
+      "paper_match": "This is implementation plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D125",
+      "name": "id",
+      "interpretation": "The identity function.",
+      "effect_on_target": "It assists instance synthesis in recursive definitions.",
+      "paper_match": "This is implementation plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D126",
+      "name": "inferInstance",
+      "interpretation": "Returns a typeclass instance found by synthesis.",
+      "effect_on_target": "It supplies standard algebraic, order, and finite instances.",
+      "paper_match": "This is implementation plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D127",
+      "name": "instDecidableEqFin",
+      "interpretation": "Decidable equality for Fin n.",
+      "effect_on_target": "It supplies the base dyadic-index equality instance.",
+      "paper_match": "This is implementation infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D128",
+      "name": "instDecidableEqSum",
+      "interpretation": "Decidable equality for disjoint sums.",
+      "effect_on_target": "It propagates dyadic-index equality through doubling.",
+      "paper_match": "This is implementation infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D129",
+      "name": "instFintypeSum",
+      "interpretation": "Finite enumeration for a disjoint sum.",
+      "effect_on_target": "It propagates finite dyadic indices through doubling.",
+      "paper_match": "This is implementation infrastructure.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D130",
+      "name": "Matrix.add",
+      "interpretation": "Pointwise matrix addition.",
+      "effect_on_target": "It forms exact and rounded SylR right-hand-side expressions.",
+      "paper_match": "This is the intended matrix addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D131",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "interpretation": "Standard finite matrix multiplication by row-column dot products.",
+      "effect_on_target": "It interprets AX, XB, A12R21, R21B12, R11B12, and A12R22.",
+      "paper_match": "This matches ordinary matrix multiplication in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D132",
+      "name": "Matrix.toBlocks₁₁",
+      "interpretation": "Restriction to Sum.inl rows and Sum.inl columns.",
+      "effect_on_target": "It implements block 11.",
+      "paper_match": "This is the correct upper-left block extraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D133",
+      "name": "Matrix.toBlocks₁₂",
+      "interpretation": "Restriction to Sum.inl rows and Sum.inr columns.",
+      "effect_on_target": "It implements block 12.",
+      "paper_match": "This is the correct upper-right block extraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D134",
+      "name": "Matrix.toBlocks₂₁",
+      "interpretation": "Restriction to Sum.inr rows and Sum.inl columns.",
+      "effect_on_target": "It implements block 21.",
+      "paper_match": "This is the correct lower-left block extraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D135",
+      "name": "Matrix.toBlocks₂₂",
+      "interpretation": "Restriction to Sum.inr rows and Sum.inr columns.",
+      "effect_on_target": "It implements block 22.",
+      "paper_match": "This is the correct lower-right block extraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D136",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative monoid structure on reals.",
+      "effect_on_target": "It supports finite dot products in matrix multiplication.",
+      "paper_match": "This is standard library infrastructure.",
+      "status": "not-applicable"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF hash is 0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269. PDF pages 26-28, printed 84-86, contain Section 6.3, equations (13)-(20), SylR, the recurrence, and the logarithmic-stability conclusion; pages 2 and 6-8 define the multiplication/error model and logarithmic stability.",
+      "lean_evidence": "The packet identifies P10-T3 and its target as p10_t3_sylr_logarithmic_stability, with dependencies centered on the ordinary SylR equation-(20) hierarchy.",
+      "reasoning": "The selected publication and passage are the correct source for the intended ordinary SylR stability result."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper's objects are n-by-n A, B, C, and R with n a positive power of two, upper-triangular A and B, and recursive n/2 blocks.",
+      "lean_evidence": "The target binds depth and an abstract P10SylRRun; matrices are hidden inside arbitrary Node-indexed P10SylRProblem families over Real with size 2^depth, and the run carries proof artifacts such as an attained envelope.",
+      "reasoning": "Dimensions are represented correctly, but the principal binder is a pre-certified hierarchy rather than an ordinary SylR input or execution, and the real-field choice is only a specialization of an unstated source field."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The paper claims that SylR under its arithmetic assumptions has the displayed error behavior for the ordinary problem.",
+      "lean_evidence": "Lean proves forall depth and run:P10SylRRun depth, P10SylRLogarithmicallyStable run; existence of a run for each paper input or execution is not concluded, while each run existentially attains its envelope at every level.",
+      "reasoning": "Quantification is restricted to already-certified runs and adds witness and attainment obligations, so paper-level universal coverage is not preserved."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The source assumes disjoint spectra and positive sep, stable multiplication model (1)/(8), recursive separation inheritance, and an inductive error upper bound; it displays no scalar base constant and does not require monotone mu or attained err.",
+      "lean_evidence": "P10SylRRun.mk assumes positive separations, every local level certificate including all page-86 block bounds, global norm and separation bounds, monotone polynomially bounded mu, envelope attainment, and base_rounding_bound with coefficient 1.",
+      "reasoning": "Several source conclusions are moved into hypotheses, and several additional hypotheses narrow applicability."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Printed page 86 derives four block estimates, their aggregate recurrence, equation (20) as big-O, and the logarithmic-stability comparison.",
+      "lean_evidence": "The four estimates and assembly bound are fields of P10SylRLevelCertificate.mk; the target conclusion contains only an envelope recurrence, a concrete top bound, and algebraic identities, with no formal Definition-3.1 comparison.",
+      "reasoning": "The selected result is not concluded in the same form or completeness; crucial local conclusions are assumed."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "The paper defines the Sylvester action, variational Frobenius sep, absolute err, conventional forward scale, and logarithmic stability via Definition 3.1.",
+      "lean_evidence": "D039 and D051 correctly define sep and AX-XB, and D008 defines forward error, but D001 defines logarithmic stability as a custom exact recurrence and bound conjunction rather than the paper's relative-error and chi(n) notion.",
+      "reasoning": "Most operators are explicit, but the named stability predicate changes the imported definition that gives the source conclusion its meaning."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes exact R and recursively computed quantities and includes errors made while forming child right-hand sides.",
+      "lean_evidence": "P10SylRProblem stores exactSolution and computedSolution separately; block errors compare child computed outputs to parent exact blocks, while child C may differ from the exact RHS under explicit first-order bounds.",
+      "reasoning": "The formal hierarchy does not conflate exact and computed values, although it abstracts rather than executes rounding."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "SylR is a concrete ordered recursion: R21, R11, R22, R12, with rounded matrix products and a scalar division base case.",
+      "lean_evidence": "D004 and D033 provide four child maps at every level and the correct dependency DAG, but no executable SylR function or equality saying each child C is the result of specified rounded operations; the local execution estimates are assumed as certificates.",
+      "reasoning": "The hierarchy covers recursively relevant children and order relationally, but is not linked to the paper's execution model strongly enough to establish the algorithmic claim."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "The source explicitly makes sep variational in Frobenius norm but uses unsubscripted norms in the block estimates and equation (20), noting elsewhere that norm changes incur dimension-polynomial factors.",
+      "lean_evidence": "D030 uses Frobenius norm for A, B, C, R, every block and RHS error, and final error while D007 retains an exact coefficient 2.",
+      "reasoning": "The all-Frobenius specialization is not justified with unchanged exact constants and therefore does not preserve the source's norm semantics."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The recurrence has coefficients 4, 2, 3, and 2, while equation (20) has n^(1+log_2 3), mu(n/2), and conditioning exponent 1+log_2 n, all inside O(...).",
+      "lean_evidence": "D010, D011, and D048-D050 preserve local coefficients, signs, and indices; D007 adds a universal leading 2, D009 sets muHalf=mu(1) at depth 0, and D001 asserts an exact factorization.",
+      "reasoning": "Indexing and displayed local constants match, but the final constant and depth-zero parameter convention are not source conclusions."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The source uses a first-order normwise stable-multiplication model with machine epsilon and leaves scalar base rounding, rounding mode, overflow, underflow, and exceptional values unspecified.",
+      "lean_evidence": "Lean uses exact Real arithmetic and assumes RHS and block error inequalities plus an explicit base_rounding_bound; it has no rounding operation, mode, exceptional-value model, or derivation from multiplication bound (1)/(8).",
+      "reasoning": "The formal antecedent is a certificate abstraction, not the paper's floating-point model."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The source gives non-strict block and recurrence inequalities and asymptotic O upper bounds, not a finite inequality with a declared universal constant.",
+      "lean_evidence": "The target requires forwardError<=Equation20Bound where Equation20Bound has exact leading factor 2, and requires exact equalities rewriting that bound and the dyadic logarithm.",
+      "reasoning": "The final relation is more specific under stronger antecedents; it is not a faithful logical strengthening of the same theorem."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The source conclusion is logarithmic stability, obtained by comparing an absolute forward bound with the conventional forward scale and Definition 3.1; it does not claim backward stability.",
+      "lean_evidence": "D008 is an absolute forward error and D006 is the conventional scale, but D001 names their concrete bound conjunction logarithmically stable without quantifying relative error, chi(n), precision adjustment, or the conventional comparison as a stability definition.",
+      "reasoning": "No backward-error substitution occurs, but the source stability notion is reduced to a custom absolute-bound predicate."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Model (1) includes O(epsilon^2); equation (8) and the SylR derivation are first-order; equation (20) has unspecified big-O constants and lower-order terms.",
+      "lean_evidence": "D033 assumes first-order formulas as exact inequalities, and D007 and D001 conclude an exact finite bound with coefficient 2 and no higher-order remainder.",
+      "reasoning": "First-order and asymptotic statements have been converted into exact propositions without source-provided remainder control."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The paper explicitly specializes the algorithm to equal square power-of-two dimensions but leaves the scalar field and page-86 bare norm unspecified.",
+      "lean_evidence": "Lean uses real matrices and Frobenius norms throughout and further restricts attention to certified run hierarchies with monotone mu, attained envelopes, inherited sep, and a base bound.",
+      "reasoning": "The dyadic specialization is faithful, but the remaining choices and certificate domain are reduced applicability, not genuine theorem strength."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's domain is nonempty; for example A=I and B=0 have sep=1 and admit the zero-right-hand-side solution.",
+      "lean_evidence": "For every depth one can take dyadic identity A, zero B, C, exact R, and computed R, sep=1, mu=1, positive epsilon, zero envelope, and a singleton recursive hierarchy; all certificate and base inequalities reduce to 0<=0. At depth 0 there are no level certificates and muHalf=mu(1).",
+      "reasoning": "The formal antecedent is satisfiable and the conclusion is not globally vacuous, although this does not supply runs for general paper inputs."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean result applies only to pre-certified run objects that already contain the four local block estimates, separation inheritance, an attained envelope, and an explicit base bound; it neither constructs such a run for every ordinary SylR input nor links one to every actual floating-point execution. Its nonempty restricted domain therefore does not establish the paper's general algorithm-level logarithmic-stability claim."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper supplies first-order and big-O bounds with an unspecified constant and no displayed scalar base estimate, envelope-attainment requirement, monotone-mu requirement, or all-Frobenius exact-constant theorem. It therefore cannot entail the exact coefficient-2 Lean inequality or the additional run certificates."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "assumed-local-stability-result",
+      "paper_evidence": "Printed pages 85-86 derive the four block estimates from stable multiplication rule (8), recursive error induction, and separation inequality (19).",
+      "lean_evidence": "P10SylRRun.mk requires P10SylRLevelCertificate for every parent, and P10SylRLevelCertificate.mk takes all three RHS error bounds, all four block-error bounds, and the assembled-error bound as constructor arguments.",
+      "impact": "The theorem proves an aggregate recurrence and final bound only after assuming the central local conclusions of the selected analysis; it does not formalize their derivation from the paper's arithmetic model."
+    },
+    {
+      "severity": "major",
+      "category": "asymptotic-to-exact-constant",
+      "paper_evidence": "Equation (20) is an O(...) statement with no constant or uniform threshold, and the paper gives no scalar base error value.",
+      "lean_evidence": "p10SylREquation20Bound fixes leading constant 2 and P10SylRRun.mk assumes errorEnvelope 0<=muHalf*epsilon*||R||_F*conditionRatio.",
+      "impact": "The paper does not imply the Lean bound. The concrete inequality is derivable only in the narrower formal certificate model, so it is not genuine stronger coverage of the paper theorem."
+    },
+    {
+      "severity": "major",
+      "category": "restricted-certified-run-quantification",
+      "paper_evidence": "The source assertion concerns executions of SylR for ordinary upper-triangular problems with disjoint spectra under the stated error model.",
+      "lean_evidence": "The sole target binder after depth is run:P10SylRRun depth; its constructor requires envelope attainment, monotone mu, global bounds, separation inheritance, every local certificate, and a base bound, but the target asserts no run exists for a given input or execution.",
+      "impact": "Even though certified runs are nonempty, the Lean theorem does not imply the paper's general algorithm-level claim."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point-and-algorithm-linkage",
+      "paper_evidence": "SylR specifies four ordered recursive calls and rounded products and additions, with line (a) feeding (b) and (c), and those feeding (d).",
+      "lean_evidence": "The child maps and certificate inequalities encode the correct dependency DAG for every node, but child right-hand sides are arbitrary matrices only bounded relative to exact right-hand sides; no rounded operation or scalar base division is executed.",
+      "impact": "The recursion hierarchy is structurally complete but relational, so arbitrary certified data can satisfy it without being an execution of the paper's algorithm."
+    },
+    {
+      "severity": "major",
+      "category": "norm-specialization",
+      "paper_evidence": "Printed page 85 explicitly labels only sep's variational norm as Frobenius; printed page 86 uses bare norms, and printed page 60 says changing norms incurs dimension-dependent polynomial factors.",
+      "lean_evidence": "p10DyadicFrobNorm is used for every matrix and error norm while the final bound keeps exact coefficients and exponent factors.",
+      "impact": "Lean chooses one possible norm regime without accounting for equivalence factors, preventing direct equivalence to the stated source result."
+    },
+    {
+      "severity": "major",
+      "category": "stability-definition",
+      "paper_evidence": "Definition 3.1 defines logarithmic stability through relative error O(epsilon)*kappa_f(x)^chi(n)+O(epsilon^2), and printed page 86 invokes that classification by comparison with a conventional forward bound.",
+      "lean_evidence": "P10SylRLogarithmicallyStable is a bespoke conjunction of an absolute recurrence, one finite top bound, and two equalities; it does not formalize relative error, chi(n), higher-order terms, or precision conversion.",
+      "impact": "The formal predicate's name overstates what its type says and does not preserve the paper's stability notion."
+    },
+    {
+      "severity": "note",
+      "category": "nonvacuity-and-dyadic-edge",
+      "paper_evidence": "The algorithm includes n=1 as its scalar base but supplies no err(1) formula; recursive formulas use n/2 only above the base.",
+      "lean_evidence": "Depth 0 is inhabited and has no level obligations; Nat subtraction makes p10SylRHalfMu=mu(1), and the explicit base_rounding_bound controls the result.",
+      "impact": "The target is nonvacuous, but its depth-zero mu and base convention is an added formal assumption rather than evidence from the source."
+    }
+  ],
+  "rationale": "The dossier accurately encodes dyadic matrix dimensions, the ordinary equation AR-RB=-C, the four block signs and dependency graph, variational positive separation, and exact-versus-computed forward errors. However, the theorem changes the proof boundary: P10SylRRun assumes the page-86 local estimates, separation inheritance, an attained worst-case envelope, and an unsupported scalar base bound, then concludes a custom exact constant-2 Frobenius bound. The source instead derives first-order estimates from a stable multiplication model and states equation (20) only up to big-O before classifying the actual SylR algorithm by Definition 3.1. Certified runs are constructible, so the proposition is not vacuous, but its narrower antecedent is not genuine strength and neither implication holds."
+}

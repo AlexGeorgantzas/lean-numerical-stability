@@ -1,0 +1,94 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P10-T3",
+  "trigger": [
+    "round-trip judge requested adjudication",
+    "blind dependency D043 is unclear",
+    "round-trip S09 is unclear",
+    "round-trip S12 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "The Lean declaration is not-faithful-different. It proves a nonvacuous generic unrolling of an assumed affine scalar recurrence, whereas the paper derives that recurrence from SylR and proceeds to equation (20) and logarithmic stability. Neither full statement implies the other under its actual binders and meanings.",
+      "primary_evidence": "PDF pp. 26-28 (printed pp. 84-86) link the recurrence to the ordinary Sylvester equation, four recursive SylR solves, separation bound (19), and product-error model (8), then state equation (20) and logarithmic stability. The declaration instead universally quantifies arbitrary n, depth, matrices, sep, epsilon, mu, and err, assumes the scalar step inequality, and concludes only its finite geometric unrolling."
+    },
+    {
+      "item": "blind dependency D043 is unclear",
+      "resolution": "D043 has no unresolved task-level effect. D005-D007 provide the required Nat.AtLeastTwo evidence for the natural values 3, 4, and 2, and D040 uses that evidence solely to construct real numeral instances. No Nat.AtLeastTwo premise remains in the elaborated theorem. Its omitted constructors therefore do not affect the proposition or its paper comparison.",
+      "primary_evidence": "The complete declaration evidence gives D040 the type [NatCast R] -> [Nat.AtLeastTwo n] -> OfNat R n; D005-D007 prove AtLeastTwo for 2+1, 3+1, and 1+1. The fully explicit target contains the resulting real constants but no binder or hypothesis involving D043."
+    },
+    {
+      "item": "round-trip S09 is unclear",
+      "resolution": "S09 is resolved as pass for the norm specialization itself. The Lean body is exactly the unsquared Frobenius norm. Although the recurrence omits norm subscripts, the paper defines sep(A,B) using Frobenius norms and immediately uses x/sep(A,B) as the solution-perturbation estimate. Applying the normwise product rule in the Frobenius norm is consistent, and the paper expressly permits switching finite-dimensional norms. This is an admissible explicit specialization, not a stronger theorem; the separate failure to define Lean sep from A and B remains material.",
+      "primary_evidence": "PDF p. 27 (printed p. 85) defines sep(A,B) = min_{||R||_F=1} ||AR-RB||_F. PDF p. 28 (printed p. 86) uses the corresponding perturbation estimate before the recurrence. PDF p. 2 (printed p. 60) states that the normwise multiplication model can be switched between finite-dimensional norms. D004 independently defines sqrt(sum_i sum_j A(i,j)^2)."
+    },
+    {
+      "item": "round-trip S12 is unclear",
+      "resolution": "S12 is resolved as pass. The printed equality defines a dominating recurrence for err, which the preceding text explicitly calls a bound; it is not equality of realized numerical errors. Representing each step and its unrolling by non-strict inequalities preserves the source's intended upper-bound direction.",
+      "primary_evidence": "PDF p. 27 (printed p. 85) says err(n') bounds errors in smaller solutions. PDF p. 28 (printed p. 86) first derives err(R,n) through two successive inequalities and only then says, 'This yields the recurrence,' before printing equality and subsequent big-O upper bounds. The Lean hstep and conclusion both use <= in the same upper-bound direction."
+    },
+    {
+      "item": "direct and round-trip S16 disagreement",
+      "resolution": "S16 is resolved as pass for formal nonvacuity. Zero dimension and zero depth are unintended extra cases, but they do not make the universal proposition vacuous. Positive-depth hypotheses are satisfiable and the conclusion can be attained. Those extra cases are an applicability mismatch, not a contradiction or vacuity defect.",
+      "primary_evidence": "For n=1, zero matrices, sep=1, epsilon=mu=0, depth=1, err(0)=1, and err(1)=4, the declaration has growth 4 and forcing 0; its step hypothesis and conclusion both hold with equality. The PDF's SylR setting instead assumes a positive power-of-two dimension."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean theorem assumes an abstract scalar recurrence and only unrolls it. It does not establish that SylR generates the recurrence, define sep(A,B), connect R or err to exact and computed Sylvester solutions, derive equation (20), or conclude logarithmic stability."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper proves an algorithm-specific, size-halving recurrence and asymptotic result for SylR. It does not assert the Lean theorem's universal conditional for arbitrary independent dimensions, depths, matrices, scalar parameters, and real sequences. The paper recurrence can motivate one constrained instance, not the full quantified declaration."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The paper does not typographically identify every unsubscripted recurrence norm, although Frobenius is an admissible and contextually supported specialization.",
+    "The selected paper passage does not conclusively specify whether the matrix scalar field is real or complex; Lean specializes to real matrices.",
+    "Equation (20) leaves its big-O constants, finite-n threshold, and suppressed higher-order terms unspecified."
+  ],
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "algorithm-linkage",
+      "evidence": "The paper derives the recurrence from SylR's four block solves, right-hand-side products, separation inequality (19), and product-error model (8). Lean places the resulting scalar step inequality directly in hstep.",
+      "impact": "The central numerical-analysis burden is assumed rather than proved, leaving a generic recurrence lemma instead of a theorem about SylR."
+    },
+    {
+      "severity": "major",
+      "category": "missing-conclusions",
+      "evidence": "The paper proceeds from the recurrence to equation (20), compares it with a conventional forward-error bound, and concludes logarithmic stability. None of these conclusions appears in Lean.",
+      "impact": "The declaration omits the selected result's principal asymptotic and stability claims."
+    },
+    {
+      "severity": "major",
+      "category": "binders-and-indexing",
+      "evidence": "The paper uses positive power-of-two n, recursion from n to n/2, mu(n/2), and depth log2 n. Lean has arbitrary independent n and depth, successor-indexed steps, and one arbitrary scalar mu.",
+      "impact": "The declaration cannot recover the paper's size-dependent exponents or multiplication-error indexing without substantial external assumptions."
+    },
+    {
+      "severity": "major",
+      "category": "separation-and-error-semantics",
+      "evidence": "In the paper sep(A,B) is defined by the Sylvester operator, R solves AR-RB=-C, and err is a forward-error bound including computed right-hand-side errors. Lean leaves sep, R, and err mutually independent.",
+      "impact": "The symbols carrying the paper's conditioning and forward-error content are detached from the matrices and algorithm."
+    },
+    {
+      "severity": "minor",
+      "category": "norm-specialization",
+      "evidence": "Lean explicitly uses the Frobenius norm, while the paper prints unsubscripted recurrence norms but defines separation through Frobenius norms.",
+      "impact": "The specialization is compatible and not independently disqualifying, but it does not repair the missing definition of sep or algorithmic linkage."
+    },
+    {
+      "severity": "note",
+      "category": "recurrence-relation",
+      "evidence": "The paper introduces err as a bound and derives the recurrence from inequalities before printing it with equality; Lean consistently uses upper-bound inequalities.",
+      "impact": "The Lean inequality direction is faithful for a dominating error bound and is not a source of rejection."
+    }
+  ],
+  "rationale": "Primary PDF evidence and the complete declaration bodies resolve D043, S09, and S12 without relying on vote counts or reuse hashes. Lean preserves the local coefficients and gives a valid, nonvacuous affine-recurrence unrolling. It nevertheless omits the SylR execution, Sylvester data dependencies, size halving, numerical model, equation (20), and logarithmic-stability conclusion. Its apparent generality is not genuine paper-level strengthening: it results from moving the paper-specific recurrence into an antecedent and removing the conditions and conclusions that give it numerical meaning. With both implication directions negative, the consistent classification is not-faithful-different and accepted is false."
+}

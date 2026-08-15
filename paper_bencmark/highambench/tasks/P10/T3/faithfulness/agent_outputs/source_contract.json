@@ -1,182 +1,208 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "The sep definition writes ||\u00b7||F, whereas all norms in the recurrence and equation (20) are printed without a subscript. (PDF p. 27, printed p. 85, anchor: sep definition; PDF p. 28, printed p. 86, anchor: recurrence and equation (20)).",
-      "impact": "The source strongly links solution and right-hand-side perturbations to Frobenius norm but does not explicitly state a single named norm for every other factor; a formalization should record or justify any specialization.",
-      "issue": "The recurrence uses unsubscripted norms although sep(A,B) is explicitly defined with the Frobenius norm."
-    },
-    {
-      "evidence": "The induction hypothesis calls err(n\u2032) a bound, the preceding block estimates use \u2264, and the paper then writes 'This yields the recurrence' with err(n) = .... (PDF p. 27, printed p. 85, anchor: induction hypothesis; PDF p. 28, printed p. 86, anchor: block bounds and affine recurrence).",
-      "impact": "The equality can consistently define a dominating recurrence, but it should not automatically be read as exact equality of realized numerical errors.",
-      "issue": "The recurrence is printed with equality even though err(n) is introduced as a bound."
-    },
-    {
-      "evidence": "The two big-O bounds are displayed consecutively without an intervening derivation. (PDF p. 28, printed p. 86, anchor: two asymptotic lines ending at equation (20)).",
-      "impact": "Likely supporting estimates such as ||C|| \u2264 (||A||+||B||)||R|| and domination of 2+q by 3q are inferential context, not separately stated hypotheses at this anchor.",
-      "issue": "The algebra used to pass from the first asymptotic bound to equation (20) is not explained in the text."
-    },
-    {
-      "evidence": "Both recurrence solutions are stated only with O(\u00b7), and no hidden constant or threshold is supplied. (PDF p. 28, printed p. 86, anchor: asymptotic solution and equation (20)).",
-      "impact": "Equation (20) is an asymptotic contract, not a numerical inequality with an explicit universal constant.",
-      "issue": "Big-O constants and the precise finite-n validity range are unspecified."
-    },
-    {
-      "evidence": "The section discusses upper-triangular Schur-form matrices and uses transpose B^T in vectorization, but does not state at these anchors whether all matrices are real or complex or whether conjugate transpose is intended in a complex setting. (PDF p. 26, printed p. 84, anchor: Schur-form discussion; PDF p. 27, printed p. 85, anchor: vectorized system and sep definition).",
-      "impact": "A formal contract should not silently choose a real or complex scalar field solely from this passage.",
-      "issue": "The scalar field is not specified in the selected passage."
-    }
-  ],
-  "contract_plain_english": "For the power-of-two divide-and-conquer solver SylR applied to the nonsingular ordinary equation AR\u2212RB=\u2212C, the error at size n is the sum of an amplified four-subproblem error and a forcing term from right-hand-side rounding and matrix multiplication. Solving that recurrence gives equation (20), with polynomial factors in n and \u03bc(n/2) and the Sylvester condition ratio raised to 1+log2 n; comparison with the conventional forward-error bound yields the paper's logarithmic-stability conclusion. (PDF p. 28, printed p. 86, anchor: affine recurrence, equation (20), and following sentence).",
-  "paper_batch_sha256": "a730fdcbbc543ec8712373b135d8a67dd310f31f635dedabf0ed548f9316414a",
-  "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P10-T3",
+  "paper_sha256": "0ee818d060542baefdd85cbb7c7f2fd948efcb927101da84c37e418713f87269",
   "source_evidence": [
     {
-      "anchor": "ordinary Sylvester equation preceding equation (14)",
-      "observation": "The ordinary problem is A R \u2212 R B = \u2212C. When A and B are upper triangular, the associated triangular system is nonsingular precisely when their eigenvalues are distinct.",
-      "pdf_page": 26,
-      "printed_page": "84"
+      "pdf_page": 2,
+      "printed_page": "60",
+      "anchor": "normwise matrix-multiplication error bound (1)",
+      "observation": "Machine epsilon is denoted epsilon, and stable multiplication satisfies ||C_comp-C|| <= mu(n) epsilon ||A|| ||B|| + O(epsilon^2), where mu(n)=O(n^c) is a low-degree polynomial. The paper permits changing norms at the cost of further dimension-dependent polynomial factors."
     },
     {
-      "anchor": "equations (14)\u2013(18) and paragraph introducing the recursive algorithm",
-      "observation": "The matrices are split conformally into 2-by-2 blocks, producing four smaller Sylvester equations solved in the order R21, then R11 and R22, then R12; for simplicity all matrices are assumed square, of the same power-of-two dimension.",
-      "pdf_page": 26,
-      "printed_page": "84"
+      "pdf_page": 6,
+      "printed_page": "64",
+      "anchor": "opening of Section 3, Logarithmically stable algorithms",
+      "observation": "The section abandons strict backward stability and uses extra precision to attain approximately the forward accuracy of a backward-stable method. The precision increase is described as proportional to log n and the resulting cost increase as polylogarithmic."
     },
     {
-      "anchor": "SylR pseudocode",
-      "observation": "SylR takes n-by-n A, B, C, uses the scalar base case R = \u2212C/(A\u2212B), and recursively constructs R21, R11, R22, and R12 with matrix products in their right-hand sides.",
-      "pdf_page": 27,
-      "printed_page": "85"
-    },
-    {
-      "anchor": "definition of sep(A,B) and equation (19)",
-      "observation": "The paper defines sep(A,B) = \u03c3min(I\u2297A\u2212B^T\u2297I) = min_{||R||F=1}||AR\u2212RB||F and states sep(Aii,Bjj) \u2265 sep(A,B) for every recursive subproblem.",
-      "pdf_page": 27,
-      "printed_page": "85"
-    },
-    {
-      "anchor": "induction hypothesis immediately following equation (19)",
-      "observation": "err(n\u2032) bounds the error in any smaller Sylvester solution of dimension n\u2032 encountered by the algorithm, including errors in computing its right-hand side.",
-      "pdf_page": 27,
-      "printed_page": "85"
-    },
-    {
-      "anchor": "sentence preceding the block-error inequalities",
-      "observation": "A right-hand-side perturbation bounded in norm by x can change the solution in norm by x/sep(A,B), and the proof also uses the product-error rule (8).",
-      "pdf_page": 28,
-      "printed_page": "86"
-    },
-    {
-      "anchor": "affine recurrence immediately before equation (20)",
-      "observation": "The paper states err(n) = (4 + 2(||A||+||B||)/sep(A,B))err(n/2) + (\u03b5/sep(A,B))(3||C|| + 2\u03bc(n/2)(||A||+||B||)||R||).",
-      "pdf_page": 28,
-      "printed_page": "86"
-    },
-    {
-      "anchor": "first asymptotic line following the affine recurrence",
-      "observation": "The recurrence is bounded by O((n\u03b5/sep(A,B))(||C||+\u03bc(n/2)(||A||+||B||)||R||)(2+(||A||+||B||)/sep(A,B))^(log2 n)).",
-      "pdf_page": 28,
-      "printed_page": "86"
-    },
-    {
-      "anchor": "equation (20)",
-      "observation": "The final displayed bound is O(n^(1+log2 3) \u03bc(n/2) \u03b5 ||R|| ((||A||+||B||)/sep(A,B))^(1+log2 n)).",
-      "pdf_page": 28,
-      "printed_page": "86"
-    },
-    {
-      "anchor": "sentence immediately following equation (20)",
-      "observation": "The paper compares equation (20) with the conventional bound O(\u03b5||R||(||A||+||B||)/sep(A,B)) and concludes that SylR is logarithmically stable.",
-      "pdf_page": 28,
-      "printed_page": "86"
-    },
-    {
-      "anchor": "Definition 3.1, equation (5)",
-      "observation": "Logarithmic stability is defined by a relative error of the form O(\u03b5)\u03baf(x)^\u03c7(n) + O(\u03b5\u00b2), where \u03c7(n) is at least 1 and is bounded by a polynomial in log n.",
       "pdf_page": 7,
-      "printed_page": "65"
+      "printed_page": "65",
+      "anchor": "Definition 3.1 and Lemma 3.2",
+      "observation": "Logarithmic stability means a relative error O(epsilon) kappa_f(x)^{chi(n)} + O(epsilon^2), where chi(n) is polynomial in log n. Matching backward-stable accuracy raises precision from b_bs to at most chi(n)b_bs+O(1) bits and bit complexity by at most a quadratic factor in chi(n)."
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "66",
+      "anchor": "first-order inherited-error product bound (8)",
+      "observation": "For a computed product C=A B whose operands already have errors, the first-order analysis uses err(C,n)=mu(n)epsilon||A||||B||+||A||err(B,n)+err(A,n)||B||. The surrounding text identifies err as an absolute normwise error."
+    },
+    {
+      "pdf_page": 26,
+      "printed_page": "84",
+      "anchor": "ordinary Sylvester equation following (13)",
+      "observation": "The exact ordinary problem is A R-R B=-C. For upper-triangular A and B it is the triangular linear system associated with all differences A_ii-B_jj and is nonsingular precisely when A and B have distinct eigenvalues."
+    },
+    {
+      "pdf_page": 26,
+      "printed_page": "84",
+      "anchor": "block equation (14) and exact equations (15)-(18)",
+      "observation": "With conformal 2-by-2 block partitions and upper-triangular A and B, multiplication gives four exact Sylvester equations: A22 R21-R21 B11=-C21; A11 R11-R11 B11=-C11-A12 R21; A22 R22-R22 B22=-C22+R21 B12; and A11 R12-R12 B22=-C12+R11 B12-A12 R22. R21 is solved first, then R11 and R22, and finally R12."
+    },
+    {
+      "pdf_page": 27,
+      "printed_page": "85",
+      "anchor": "SylR pseudocode",
+      "observation": "For square n-by-n matrices with n a power of two, SylR returns -C/(A-B) when n=1. Otherwise it recursively computes R21=SylR(A22,B11,C21), R11=SylR(A11,B11,C11+A12 R21), R22=SylR(A22,B22,C22-R21 B12), and R12=SylR(A11,B22,C12-R11 B12+A12 R22), in that order."
+    },
+    {
+      "pdf_page": 27,
+      "printed_page": "85",
+      "anchor": "paragraph and cost recurrence following SylR",
+      "observation": "With conventional O(n^3) multiplication, SylR performs the same arithmetic operations and rounding errors as a conventional Sylvester solver, only reordered. Its cost obeys cost(n)=4 cost(n/2)+O(n^{omega+eta})=O(n^{omega+eta}) provided omega+eta>2."
+    },
+    {
+      "pdf_page": 27,
+      "printed_page": "85",
+      "anchor": "Kronecker formulation, definition of sep, and equation (19)",
+      "observation": "The equation is written (I tensor A-B^T tensor I)vec(R)=-vec(C), with vec stacking columns from left to right. The separation is sep(A,B)=sigma_min(I tensor A-B^T tensor I)=min_{||R||_F=1}||A R-R B||_F. Every recursive diagonal-block problem satisfies sep(A_ii,B_jj)>=sep(A,B). The induction bound err(n') includes errors in forming recursive right-hand sides."
+    },
+    {
+      "pdf_page": 28,
+      "printed_page": "86",
+      "anchor": "four block-error inequalities, aggregate recurrence, and equation (20)",
+      "observation": "The page gives separate first-order bounds for R21, R11, R22, and R12, sums them into an affine recurrence with coefficient 4+2(||A||+||B||)/sep(A,B), and derives both displayed asymptotic bounds culminating in equation (20). It compares this with the conventional forward bound O(epsilon||R||(||A||+||B||)/sep(A,B)) and concludes that SylR is logarithmically stable."
+    },
+    {
+      "pdf_page": 28,
+      "printed_page": "86",
+      "anchor": "generalized Sylvester sketch after equation (20)",
+      "observation": "For the generalized pair A R-L B=-C and Abar R-L Bbar=-Cbar, conformal block expansion produces four generalized Sylvester subproblems, one per output subblock, which the paper says are solved consecutively and recursively as before. No generalized error recurrence is displayed."
     }
   ],
   "statement": {
-    "algorithm_linkage": "The recurrence and equation (20) belong specifically to the divide-and-conquer ordinary Sylvester solver SylR: it recursively forms right-hand sides with fast matrix multiplication, solves four n/2 subproblems, and uses the global lower bound sep(Aii,Bjj) \u2265 sep(A,B) to control error amplification. They are not a proved recurrence for the generalized two-equation variant, which the paper only sketches afterward. (PDF p. 26, printed p. 84, anchor: equations (14)\u2013(18); PDF p. 27, printed p. 85, anchor: SylR and equation (19); PDF p. 28, printed p. 86, anchor: equation (20) and following generalized-case paragraph).",
     "binders": [
-      "n is a positive power of 2 for the equal-halving recursive SylR analysis. (PDF p. 26, printed p. 84, anchor: paragraph before SylR; PDF p. 27, printed p. 85, anchor: complexity-analysis assumption).",
-      "A, B, and C are n-by-n matrices; A and B are upper triangular in the Schur-form setting. (PDF p. 26, printed p. 84, anchor: Sylvester-equation discussion; PDF p. 27, printed p. 85, anchor: SylR header).",
-      "R is the exact solution of A R \u2212 R B = \u2212C against which the computed recursive result is compared. (PDF p. 26, printed p. 84, anchor: ordinary Sylvester equation; PDF p. 27, printed p. 85, anchor: err induction hypothesis).",
-      "\u03b5 is machine epsilon, \u03bc(n/2) is the multiplication-error factor at half dimension, and err(n) is a recursive absolute-error bound. (PDF p. 2, printed p. 60, anchor: equation (1); PDF p. 27, printed p. 85, anchor: induction hypothesis; PDF p. 28, printed p. 86, anchor: affine recurrence)."
-    ],
-    "conclusions": [
-      "The affine error recurrence is err(n) = (4 + 2(||A||+||B||)/sep(A,B))err(n/2) + (\u03b5/sep(A,B))(3||C|| + 2\u03bc(n/2)(||A||+||B||)||R||). (PDF p. 28, printed p. 86, anchor: recurrence immediately before equation (20)).",
-      "Its first displayed asymptotic solution is err(n) \u2264 O((n\u03b5/sep(A,B))(||C|| + \u03bc(n/2)(||A||+||B||)||R||)(2 + (||A||+||B||)/sep(A,B))^(log2 n)). (PDF p. 28, printed p. 86, anchor: first asymptotic line following the recurrence).",
-      "The further simplified bound is err(n) \u2264 O(n^(1+log2 3) \u03bc(n/2) \u03b5 ||R|| ((||A||+||B||)/sep(A,B))^(1+log2 n)). (PDF p. 28, printed p. 86, anchor: equation (20)).",
-      "Because a conventional Sylvester solver has error O(\u03b5||R||(||A||+||B||)/sep(A,B)), the paper concludes that recursive SylR is logarithmically stable. (PDF p. 28, printed p. 86, anchor: sentence following equation (20))."
-    ],
-    "constants_and_indexing": [
-      "The recurrence multiplier is exactly 4 + 2(||A||+||B||)/sep(A,B). (PDF p. 28, printed p. 86, anchor: affine recurrence).",
-      "The forcing term has constants 3 on ||C|| and 2 on \u03bc(n/2)(||A||+||B||)||R||. (PDF p. 28, printed p. 86, anchor: affine recurrence).",
-      "The recursive argument is n/2, and the multiplication factor is evaluated at n/2. (PDF p. 28, printed p. 86, anchor: affine recurrence).",
-      "The first asymptotic amplification exponent is log2 n. (PDF p. 28, printed p. 86, anchor: first asymptotic line after the recurrence).",
-      "Equation (20) has n exponent 1 + log2 3 and separation-ratio exponent 1 + log2 n. (PDF p. 28, printed p. 86, anchor: equation (20)).",
-      "The four block indices are 21, 11, 22, and 12 in their dependency order. (PDF p. 26, printed p. 84, anchor: equations (15)\u2013(18); PDF p. 27, printed p. 85, anchor: SylR lines (a)\u2013(d))."
-    ],
-    "definitions_and_conventions": [
-      "sep(A,B) = \u03c3min(I\u2297A\u2212B^T\u2297I) = min_{||X||F=1}||AX\u2212XB||F, where ||\u00b7||F is the Frobenius norm. (PDF p. 27, printed p. 85, anchor: definition of sep(A,B)).",
-      "The Sylvester equation is equivalently (I\u2297A\u2212B^T\u2297I)vec(R) = \u2212vec(C), with vec stacking columns from left to right. (PDF p. 27, printed p. 85, anchor: paragraph defining the Sylvester condition number).",
-      "err(n\u2032) is a normwise absolute forward-error bound for any dimension-n\u2032 Sylvester subproblem encountered recursively, including right-hand-side construction errors. (PDF p. 27, printed p. 85, anchor: induction hypothesis after equation (19)).",
-      "Logarithmic stability allows the relevant condition-number factor to be raised to an exponent \u03c7(n) bounded by a polynomial in log n. (PDF p. 7, printed p. 65, anchor: Definition 3.1 and equation (5))."
-    ],
-    "error_notions": [
-      "err(n) is an absolute normwise forward-error bound for the computed solution R. (PDF p. 27, printed p. 85, anchor: induction hypothesis; PDF p. 28, printed p. 86, anchor: recurrence).",
-      "Errors made while forming recursive right-hand sides are included, not treated as exact data. (PDF p. 27, printed p. 85, anchor: induction hypothesis after equation (19)).",
-      "Right-hand-side perturbations are converted into solution perturbations by division by sep(A,B). (PDF p. 28, printed p. 86, anchor: opening sentence).",
-      "The comparator is the conventional forward-error bound O(\u03b5||R||(||A||+||B||)/sep(A,B)), not a backward-error statement. (PDF p. 28, printed p. 86, anchor: sentence after equation (20))."
-    ],
-    "exceptional_values": [
-      "The recurrence requires sep(A,B) > 0 because sep(A,B) appears in denominators; for upper-triangular A and B, the paper identifies nonsingularity with distinct eigenvalues. (PDF p. 26, printed p. 84, anchor: paragraph following equation (13); PDF p. 28, printed p. 86, anchor: recurrence).",
-      "The scalar base case divides by A\u2212B, so coincident scalar eigenvalues are excluded. (PDF p. 27, printed p. 85, anchor: SylR base case).",
-      "The cited analysis gives no treatment of overflow, underflow, NaN, infinity, or failure caused by exceptional floating-point values. (PDF p. 27, printed p. 85, anchor: SylR and error-model setup; PDF p. 28, printed p. 86, anchor: recurrence and equation (20))."
-    ],
-    "higher_order_terms": [
-      "The recurrence and equation (20) are first-order bounds and contain no explicit +O(\u03b5\u00b2) term. (PDF p. 28, printed p. 86, anchor: recurrence and equation (20); PDF p. 8, printed p. 66, anchor: first-order introduction to equation (8)).",
-      "Both asymptotic solution lines use big-O notation, so constants and terms suppressed by that notation are not specified. (PDF p. 28, printed p. 86, anchor: two asymptotic lines ending at equation (20)).",
-      "Definition 3.1 includes an O(\u03b5\u00b2) remainder in the general definition of logarithmic stability even though the Sylvester recurrence does not display it. (PDF p. 7, printed p. 65, anchor: equation (5); PDF p. 28, printed p. 86, anchor: recurrence)."
+      "Let n be a positive power of two; A, B, C, and the solution R are square n-by-n matrices, with each recursion operating on n/2-by-n/2 blocks. [PDF page 26 (printed 84), anchor \"power-of-two assumption\"; PDF page 27 (printed 85), anchor \"SylR pseudocode\"]",
+      "A and B are upper triangular, C is conformally partitioned, and R denotes the exact solution of A R-R B=-C when exact and computed quantities are being distinguished through err. [PDF page 26 (printed 84), anchors \"ordinary Sylvester equation\" and \"equation (14)\"]",
+      "epsilon is machine epsilon, mu(m) is the polynomial growth factor in the stable m-by-m multiplication model, and '+eta' means any eta>0. [PDF page 2 (printed 60), anchors \"equation (1)\" and \"for any eta>0\"]"
     ],
     "hypotheses": [
-      "The ordinary Sylvester equation is nonsingular; in the stated upper-triangular setting this is equivalent to A and B having distinct eigenvalues, and it implies sep(A,B) > 0. (PDF p. 26, printed p. 84, anchor: paragraph following equation (13); PDF p. 27, printed p. 85, anchor: definition of sep(A,B)).",
-      "Every recursive subproblem obeys sep(Aii,Bjj) \u2265 sep(A,B). (PDF p. 27, printed p. 85, anchor: equation (19)).",
-      "The induction hypothesis makes err(n\u2032) bound both solution error and error introduced while computing each smaller right-hand side. (PDF p. 27, printed p. 85, anchor: paragraph following equation (19)).",
-      "Matrix products used in the recursive right-hand sides obey the first-order product-error model (8). (PDF p. 28, printed p. 86, anchor: sentence preceding the block-error inequalities; PDF p. 8, printed p. 66, anchor: equation (8)).",
-      "A right-hand-side perturbation of norm at most x changes the solution by at most x/sep(A,B) in the norm used by the proof. (PDF p. 28, printed p. 86, anchor: opening sentence)."
+      "The spectra of A and B are disjoint, equivalently the Sylvester coefficient system is nonsingular; hence sep(A,B)>0. [PDF page 26 (printed 84), anchor \"nonsingular precisely when the eigenvalues of A and B are distinct\"; PDF page 27 (printed 85), anchor \"definition of sep\"]",
+      "Matrix products used in the analysis obey the normwise first-order stable-multiplication model inherited from (1) and (8). [PDF page 2 (printed 60), anchor \"equation (1)\"; PDF page 8 (printed 66), anchor \"equation (8)\"]",
+      "For each smaller problem, err(n') is assumed inductively to bound its solution error, including error incurred while computing its right-hand side. [PDF page 27 (printed 85), anchor \"induction hypothesis following (19)\"]",
+      "Each recursive problem inherits sep(A_ii,B_jj)>=sep(A,B), so a right-hand-side perturbation of norm at most x changes its solution by at most x/sep(A,B). [PDF page 27 (printed 85), anchor \"equation (19)\"; PDF page 28 (printed 86), opening sentence]"
+    ],
+    "conclusions": [
+      "The exact block dependencies are A22 R21-R21 B11=-C21; A11 R11-R11 B11=-C11-A12 R21; A22 R22-R22 B22=-C22+R21 B12; and A11 R12-R12 B22=-C12+R11 B12-A12 R22. [PDF page 26 (printed 84), anchor \"equations (15)-(18)\"]",
+      "SylR computes, in order, R21=SylR(A22,B11,C21), R11=SylR(A11,B11,C11+A12 R21), R22=SylR(A22,B22,C22-R21 B12), and R12=SylR(A11,B22,C12-R11 B12+A12 R22), with scalar base case R=-C/(A-B). [PDF page 27 (printed 85), anchor \"SylR pseudocode\"]",
+      "The first block satisfies err(R21,n/2)<=err(n/2). [PDF page 28 (printed 86), anchor \"first block-error inequality\"]",
+      "The R11 bound is err(R11,n/2)<=err(n/2)+[epsilon||C11||+||A12||err(R21,n/2)+mu(n/2)epsilon||A12||||R21||]/sep(A,B), and then <=err(n/2)+[epsilon||C||+||A||err(n/2)+mu(n/2)epsilon||A||||R||]/sep(A,B). [PDF page 28 (printed 86), anchor \"R11 error inequality\"]",
+      "The R22 bound is err(R22,n/2)<=err(n/2)+[epsilon||C22||+||B12||err(R21,n/2)+mu(n/2)epsilon||B12||||R21||]/sep(A,B), and then <=err(n/2)+[epsilon||C||+||B||err(n/2)+mu(n/2)epsilon||B||||R||]/sep(A,B). [PDF page 28 (printed 86), anchor \"R22 error inequality\"]",
+      "The R12 bound is err(R12,n/2)<=err(n/2)+[epsilon||C12||+||B12||err(R11,n/2)+mu(n/2)epsilon||B12||||R11||+||A12||err(R22,n/2)+mu(n/2)epsilon||A12||||R22||]/sep(A,B), and then <=err(n/2)+[epsilon||C||+(||A||+||B||)err(n/2)+mu(n/2)epsilon(||A||+||B||)||R||]/sep(A,B). [PDF page 28 (printed 86), anchor \"R12 error inequality\"]",
+      "Summing block errors gives err(R,n)<=sum_ij err(Rij,n/2)<=[4+2(||A||+||B||)/sep(A,B)]err(n/2)+epsilon[3||C||+2mu(n/2)(||A||+||B||)||R||]/sep(A,B). The displayed equality for err(n) is the recurrence defining this upper bound, not an exact identity for the realized error. [PDF page 28 (printed 86), anchor \"aggregate block-error inequality and affine recurrence\"]",
+      "Solving the recurrence gives err(n)<=O((n epsilon/sep(A,B))(||C||+mu(n/2)(||A||+||B||)||R||)(2+(||A||+||B||)/sep(A,B))^{log_2 n}) and then equation (20): err(n)<=O(n^{1+log_2 3}mu(n/2)epsilon||R||((||A||+||B||)/sep(A,B))^{1+log_2 n}). [PDF page 28 (printed 86), anchor \"equation (20)\"]",
+      "Because a conventional Sylvester solver has forward error O(epsilon||R||(||A||+||B||)/sep(A,B)), the recursive algorithm is declared logarithmically stable. [PDF page 28 (printed 86), anchor \"comparison following (20)\"]",
+      "The arithmetic cost is O(n^{omega+eta}) when omega+eta>2; using conventional O(n^3) multiplication reproduces the conventional solver's arithmetic and rounding errors in a different order. [PDF page 27 (printed 85), anchor \"cost recurrence following SylR\"]",
+      "For the generalized equations A R-L B=-C and Abar R-L Bbar=-Cbar, the paper claims only that block expansion yields four generalized Sylvester equations solved consecutively and recursively as before. [PDF page 26 (printed 84), anchor \"generalized Sylvester equation\"; PDF page 28 (printed 86), anchor \"generalized Sylvester sketch\"]"
+    ],
+    "definitions_and_conventions": [
+      "vec(R) stacks the columns of R from left to right, and the exact vectorized equation is (I tensor A-B^T tensor I)vec(R)=-vec(C). [PDF page 27 (printed 85), anchor \"Kronecker formulation\"]",
+      "sep(A,B)=sigma_min(I tensor A-B^T tensor I)=min_{||X||_F=1}||A X-X B||_F, where ||.||_F is the Frobenius norm. [PDF page 27 (printed 85), anchor \"definition of sep\"]",
+      "err(X,m) denotes an absolute normwise forward-error bound for a particular m-dimensional computed quantity, while err(m) is an inductive worst-case bound for any m-dimensional Sylvester subproblem encountered. [PDF page 8 (printed 66), anchor \"absolute error preceding (8)\"; PDF page 27 (printed 85), anchor \"induction hypothesis following (19)\"]",
+      "A logarithmically stable algorithm has relative error O(epsilon)kappa_f(x)^{chi(n)}+O(epsilon^2), with chi(n) polynomial in log n. [PDF page 7 (printed 65), anchor \"Definition 3.1\"]",
+      "The notation n^{omega+eta} uses arbitrary eta>0, and the SylR cost conclusion additionally states omega+eta>2. [PDF page 2 (printed 60), anchor \"for any eta>0\"; PDF page 27 (printed 85), anchor \"cost recurrence\"]"
     ],
     "implicit_context": [
-      "The recurrence is derived for the ordinary equation A R \u2212 R B = \u2212C and the ordinary SylR algorithm. The generalized Sylvester case is only sketched after equation (20). (PDF p. 26, printed p. 84, anchor: ordinary and generalized equations; PDF p. 28, printed p. 86, anchor: paragraph after equation (20)).",
-      "SylR solves the four half-sized blocks in dependency order R21, R11, R22, R12. (PDF p. 26, printed p. 84, anchor: equations (15)\u2013(18); PDF p. 27, printed p. 85, anchor: SylR lines (a)\u2013(d)).",
-      "Each non-base recursion level contains four smaller Sylvester solves and four matrix multiplications, with two multiplications used for the R12 right-hand side. (PDF p. 27, printed p. 85, anchor: SylR pseudocode and cost recurrence)."
+      "The section's analysis concerns the ordinary upper-triangular Sylvester equation; the generalized equation is mentioned only afterward as a sketch. [PDF page 26 (printed 84), anchors \"ordinary Sylvester equation\" and \"generalized Sylvester equation\"; PDF page 28 (printed 86), anchor \"which we just sketch\"]",
+      "The exact equations (15)-(18) describe mathematical block dependencies, whereas SylR and err describe their finite-precision recursive evaluation. [PDF page 26 (printed 84), anchor \"equations (15)-(18)\"; PDF pages 27-28 (printed 85-86), anchors \"SylR\" and \"error inequalities\"]",
+      "The forward-error analysis imports the stable product model and the meaning of logarithmic stability from earlier sections rather than restating them in Section 6.3. [PDF page 27 (printed 85), anchor \"as well as error bound (8)\"; PDF page 7 (printed 65), anchor \"Definition 3.1\"]",
+      "Extra precision is the paper-wide mechanism for converting logarithmic stability into conventional forward accuracy, but Section 6.3 does not give a concrete working precision for SylR. [PDF page 6 (printed 64), anchor \"opening of Section 3\"; PDF page 7 (printed 65), anchor \"Lemma 3.2\"; PDF page 28 (printed 86), anchor \"logarithmically stable conclusion\"]"
+    ],
+    "algorithm_linkage": "SylR is the recursive ordinary-Sylvester solver implementing the exact dependencies (15)-(18), with a scalar division base case and the explicit order R21, R11, R22, R12. The equation-(20) analysis applies to this ordinary solver. The generalized two-equation variant is only block-expanded and said to recurse similarly; no generalized pseudocode or error bound is supplied. [PDF page 26 (printed 84), anchors \"equations (15)-(18)\" and \"generalized Sylvester equation\"; PDF page 27 (printed 85), anchor \"SylR pseudocode\"; PDF page 28 (printed 86), anchors \"equation (20)\" and \"generalized Sylvester sketch\"]",
+    "numerical_model": [
+      "Stable matrix multiplication is modeled by ||C_comp-A B||<=mu(m)epsilon||A||||B||+O(epsilon^2), with mu(m) a low-degree polynomial. [PDF page 2 (printed 60), anchor \"equation (1)\"]",
+      "When operands inherit prior errors, the first-order product rule is mu(m)epsilon||A||||B||+||A||err(B,m)+err(A,m)||B||. [PDF page 8 (printed 66), anchor \"equation (8)\"]",
+      "The SylR derivation is explicitly first order and uses machine epsilon epsilon; products of inherited errors and other O(epsilon^2) contributions are omitted. [PDF page 8 (printed 66), anchors \"first order error analysis\" and \"equation (8)\"; PDF page 28 (printed 86), anchor \"error inequalities\"]",
+      "With conventional O(n^3) multiplication, SylR has the same arithmetic operations and rounding errors as a conventional Sylvester solver, merely reordered. [PDF page 27 (printed 85), anchor \"paragraph following SylR\"]",
+      "The paper-wide precision result says matching backward-stable accuracy may require up to chi(n) times the baseline number of bits and at most a quadratic factor in chi(n) in bit complexity. [PDF page 7 (printed 65), anchor \"Lemma 3.2\"]"
+    ],
+    "error_notions": [
+      "err(R,n) is an absolute normwise forward-error bound for the computed solution, not a residual or backward-error bound. [PDF page 8 (printed 66), anchor \"absolute error preceding (8)\"; PDF pages 27-28 (printed 85-86), anchors \"induction hypothesis\" and \"err(R,n)\"]",
+      "Errors made while computing recursive right-hand sides are explicitly included in err(n'). [PDF page 27 (printed 85), anchor \"including errors in computing the right-hand side\"]",
+      "The conventional comparison is the forward bound O(epsilon||R||(||A||+||B||)/sep(A,B)). [PDF page 28 (printed 86), anchor \"comparison following (20)\"]",
+      "The claimed stability category is logarithmic stability; the passage does not claim conventional normwise backward stability for SylR. [PDF page 28 (printed 86), anchor \"we see our new algorithm is logarithmically stable\"; PDF page 6 (printed 64), anchor \"abandon strict backward stability\"]"
     ],
     "norms": [
-      "The separation sep(A,B) is explicitly defined through Frobenius norms and the smallest singular value of the vectorized Sylvester operator. (PDF p. 27, printed p. 85, anchor: definition of sep(A,B)).",
-      "The recurrence itself prints unsubscripted norms for A, B, C, R, and block quantities. (PDF p. 28, printed p. 86, anchor: block-error inequalities and affine recurrence).",
-      "The perturbation statement x/sep(A,B) is naturally tied to the Frobenius norm used in the definition of sep, but the paper does not explicitly relabel every unsubscripted norm in the recurrence as Frobenius. (PDF p. 27, printed p. 85, anchor: sep definition; PDF p. 28, printed p. 86, anchor: opening sentence and recurrence)."
+      "The separation sep(A,B) is explicitly defined using the Frobenius norm on R and A R-R B; equivalently it is the smallest singular value of the vectorized coefficient matrix. [PDF page 27 (printed 85), anchor \"definition of sep\"]",
+      "The error inequalities and equation (20) use unsubscripted norms for A, B, C, R, and errors. Section 6.3 does not explicitly identify those unsubscripted norms. [PDF page 28 (printed 86), anchor \"four block-error inequalities and equation (20)\"]",
+      "The global multiplication model is normwise and says norm changes are permitted at the expense of dimension-dependent polynomial factors. [PDF page 2 (printed 60), anchor \"discussion following equation (1)\"]"
     ],
-    "numerical_model": [
-      "\u03b5 denotes machine epsilon in the normwise rounding model. (PDF p. 2, printed p. 60, anchor: equation (1) and explanatory paragraph).",
-      "\u03bc(n/2) is the low-degree dimension factor for matrix multiplication performed on half-sized blocks. (PDF p. 2, printed p. 60, anchor: definition of \u03bc; PDF p. 28, printed p. 86, anchor: recurrence and equation (20)).",
-      "The forcing term combines direct right-hand-side rounding, represented by 3\u03b5||C||/sep(A,B), with two multiplication-error contributions represented by 2\u03bc(n/2)\u03b5(||A||+||B||)||R||/sep(A,B). (PDF p. 28, printed p. 86, anchor: affine recurrence).",
-      "The analysis uses first-order product error (8); no explicit higher-order remainder is carried through the recurrence. (PDF p. 28, printed p. 86, anchor: reference to equation (8) and recurrence; PDF p. 8, printed p. 66, anchor: first-order error-analysis paragraph).",
-      "The final logarithmic-stability interpretation permits extra precision so that accuracy comparable to a conventional stable method can be recovered with polylogarithmic precision overhead. (PDF p. 7, printed p. 65, anchor: Definition 3.1 and Lemma 3.2; PDF p. 28, printed p. 86, anchor: conclusion following equation (20))."
+    "constants_and_indexing": [
+      "The block indices are 11, 12, 21, and 22; upper triangularity removes A21 and B21, while R and C retain all four blocks. [PDF page 26 (printed 84), anchor \"equation (14)\"]",
+      "The dependency order is R21 first, R11 second, R22 third, and R12 last; equations (16) and (17) are both enabled by R21, although the pseudocode fixes their order as R11 then R22. [PDF page 26 (printed 84), text following (18); PDF page 27 (printed 85), anchor \"SylR pseudocode\"]",
+      "The aggregate recurrence has the exact displayed coefficients 4, 2, 3, and 2: [4+2(||A||+||B||)/sep]err(n/2)+epsilon[3||C||+2mu(n/2)(||A||+||B||)||R||]/sep. [PDF page 28 (printed 86), anchor \"affine recurrence\"]",
+      "Equation (20) retains mu(n/2), the factor n^{1+log_2 3}, and the conditioning-ratio exponent 1+log_2 n. [PDF page 28 (printed 86), anchor \"equation (20)\"]",
+      "The cost recurrence has four recursive calls of size n/2 and yields O(n^{omega+eta}) only under the stated condition omega+eta>2. [PDF page 27 (printed 85), anchor \"cost recurrence\"]",
+      "Equation (19) applies to recursive diagonal-block pairs A_ii and B_jj and states sep(A_ii,B_jj)>=sep(A,B). [PDF page 27 (printed 85), anchor \"equation (19)\"]"
+    ],
+    "higher_order_terms": [
+      "The foundational stable-multiplication bound explicitly contains +O(epsilon^2). [PDF page 2 (printed 60), anchor \"equation (1)\"]",
+      "Equation (8) and the SylR derivation are first-order formulas, so products of operand errors and other second-order rounding terms are not retained. [PDF page 8 (printed 66), anchors \"first order error analysis\" and \"equation (8)\"; PDF page 28 (printed 86), anchor \"four block-error inequalities\"]",
+      "Both final bounds in equation (20) are big-O statements; their multiplicative constants and lower-order dependence are not specified. [PDF page 28 (printed 86), anchor \"equation (20)\"]"
+    ],
+    "exceptional_values": [
+      "The exact problem requires sep(A,B)>0, equivalently disjoint spectra; otherwise the displayed bounds divide by zero and uniqueness is lost. [PDF page 26 (printed 84), anchor \"nonsingular precisely when the eigenvalues of A and B are distinct\"; PDF page 27 (printed 85), anchor \"definition of sep\"]",
+      "At n=1 the algorithm divides by A-B, whose nonvanishing is inherited from the nonsingularity assumption. [PDF page 27 (printed 85), anchor \"scalar base case\"]",
+      "The passage states no assumptions or safeguards concerning overflow, underflow, NaNs, infinities, subnormal values, or a rounded scalar denominator becoming zero. [PDF pages 27-28 (printed 85-86), anchors \"SylR pseudocode\" and \"error analysis\"]"
     ]
   },
-  "task_id": "P10-T3",
   "undebatable_constraints": [
-    "The contract is for the ordinary recursive Sylvester solver A R \u2212 R B = \u2212C, not for the generalized Sylvester equations. (PDF p. 26, printed p. 84, anchor: ordinary equation and equations (14)\u2013(18); PDF p. 28, printed p. 86, anchor: generalized-case paragraph after equation (20)).",
-    "All matrices in SylR are n-by-n, and the recursive analysis assumes n is a power of 2. (PDF p. 26, printed p. 84, anchor: paragraph before SylR; PDF p. 27, printed p. 85, anchor: SylR header and complexity assumption).",
-    "The recurrence multiplier must retain both 4 and 2(||A||+||B||)/sep(A,B). (PDF p. 28, printed p. 86, anchor: affine recurrence).",
-    "The forcing term must retain \u03b5/sep(A,B), 3||C||, and 2\u03bc(n/2)(||A||+||B||)||R||. (PDF p. 28, printed p. 86, anchor: affine recurrence).",
-    "Equation (20) must retain n^(1+log2 3), \u03bc(n/2), \u03b5||R||, and the ratio ((||A||+||B||)/sep(A,B)) raised to 1+log2 n. (PDF p. 28, printed p. 86, anchor: equation (20)).",
-    "sep(A,B) is defined through the Frobenius-norm Sylvester operator and is positive for the nonsingular problem. (PDF p. 27, printed p. 85, anchor: sep definition; PDF p. 26, printed p. 84, anchor: nonsingularity statement).",
-    "err(n\u2032) includes errors made while computing recursive right-hand sides. (PDF p. 27, printed p. 85, anchor: induction hypothesis after equation (19)).",
-    "The final paper-level conclusion is logarithmic stability relative to the stated conventional forward-error bound. (PDF p. 28, printed p. 86, anchor: sentence following equation (20))."
-  ]
+    "The exact ordinary equation is A R-R B=-C, with the minus sign on C. [PDF page 26 (printed 84), anchor \"ordinary Sylvester equation\"]",
+    "A and B are upper triangular and the recursive presentation assumes all matrices are square, equally dimensioned, and n is a power of two. [PDF page 26 (printed 84), anchors \"equation (14)\" and \"power-of-two assumption\"]",
+    "The four recursive calls, their signs, their arguments, and their order must match the displayed SylR pseudocode. [PDF page 27 (printed 85), anchor \"SylR pseudocode\"]",
+    "sep(A,B) is the Frobenius-norm variational separation and recursive subproblems satisfy sep(A_ii,B_jj)>=sep(A,B). [PDF page 27 (printed 85), anchors \"definition of sep\" and \"equation (19)\"]",
+    "All four block-error inequalities and the aggregate affine recurrence are parts of the source result. [PDF page 28 (printed 86), anchor \"four block-error inequalities and affine recurrence\"]",
+    "The final source bound contains n^{1+log_2 3}, mu(n/2), and the exponent 1+log_2 n on (||A||+||B||)/sep(A,B). [PDF page 28 (printed 86), anchor \"equation (20)\"]",
+    "The source conclusion is logarithmic stability based on comparison with a conventional forward-error bound, not a claim of conventional backward stability. [PDF page 28 (printed 86), anchor \"comparison following (20)\"]",
+    "The generalized Sylvester result is only a recursive block sketch and must not be strengthened into the fully displayed ordinary error bound. [PDF page 28 (printed 86), anchor \"generalized Sylvester sketch\"]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The scalar field is not explicitly stated in the selected passage.",
+      "evidence": "PDF pages 26-28 (printed 84-86), anchors \"ordinary Sylvester equation\", \"SylR\", and \"equation (20)\", use transpose and singular-value notation but do not declare whether matrices are real or complex.",
+      "impact": "A formal contract must choose a real or complex matrix domain separately; the passage alone does not authorize that choice."
+    },
+    {
+      "issue": "The unsubscripted norm in the error inequalities is not identified.",
+      "evidence": "PDF page 27 (printed 85), anchor \"definition of sep\", explicitly marks the Frobenius norm with a subscript F, whereas PDF page 28 (printed 86), anchor \"equation (20)\", uses bare norms for A, B, C, R, and errors.",
+      "impact": "One must not silently assert that every norm in equation (20) is Frobenius, spectral, or another specific norm, even though norm compatibility is required for the perturbation argument."
+    },
+    {
+      "issue": "The realized error and the recurrence bound are not notationally separated.",
+      "evidence": "PDF page 28 (printed 86), anchors \"err(R,n) inequality\" and \"This yields the recurrence\", first bounds err(R,n) and then writes an equality defining err(n).",
+      "impact": "The recurrence equality should be interpreted as defining an upper-bound sequence, not as an exact equality for ||R_comp-R||."
+    },
+    {
+      "issue": "No scalar base-case rounding bound or initial value err(1) is displayed.",
+      "evidence": "PDF page 27 (printed 85), anchor \"scalar base case\", gives R=-C/(A-B), while PDF page 28 (printed 86), anchor \"recurrence\", begins the recursive error bound without stating err(1).",
+      "impact": "A fully formal recurrence proof needs a base error estimate; the source leaves it absorbed into the asymptotic first-order bound."
+    },
+    {
+      "issue": "The extension from powers of two to arbitrary dimensions is not given.",
+      "evidence": "PDF pages 26-27 (printed 84-85), anchors \"for simplicity\" and \"complexity analysis\", explicitly assume n is a power of two.",
+      "impact": "The stated algorithm and recurrence should not be quantified over arbitrary positive n without an additional padding or uneven-partition convention."
+    },
+    {
+      "issue": "The big-O constants and their parameter dependence are unspecified.",
+      "evidence": "PDF page 28 (printed 86), anchor \"equation (20)\", presents two nested O-bounds without constants or a uniformity statement.",
+      "impact": "Only the displayed asymptotic dependence is authoritative; no concrete numerical constant or threshold may be recovered."
+    },
+    {
+      "issue": "Section 6.3 does not prescribe the exact extra precision needed by SylR.",
+      "evidence": "PDF page 28 (printed 86), anchor \"logarithmically stable conclusion\", gives the classification, while PDF page 7 (printed 65), anchor \"Lemma 3.2\", provides only a general chi(n)-dependent precision conversion.",
+      "impact": "The source supports a logarithmic-stability classification and general bit-complexity consequence, but not a specific SylR precision schedule."
+    },
+    {
+      "issue": "The generalized Sylvester stability and complexity details are omitted.",
+      "evidence": "PDF page 28 (printed 86), anchor \"A similar approach works ... which we just sketch\", states only that four generalized subproblems are solved recursively.",
+      "impact": "Equation (20), its constants, and the ordinary sep definition cannot automatically be asserted for the generalized problem."
+    },
+    {
+      "issue": "Floating-point exceptional behavior is outside the stated model.",
+      "evidence": "PDF pages 27-28 (printed 85-86), anchors \"SylR pseudocode\" and \"first-order error analysis\", mention rounding error and machine epsilon but not overflow, underflow, subnormals, NaNs, infinities, or division rounded to zero.",
+      "impact": "Any implementation-level theorem excluding such events requires assumptions not supplied by this passage."
+    }
+  ],
+  "contract_plain_english": "For upper-triangular n-by-n A and B with disjoint spectra, n a power of two, and n-by-n C, the exact target is the unique R satisfying A R-R B=-C. SylR obtains R by solving the four exact block equations in the fixed order R21, R11, R22, R12, ending in scalar divisions. [PDF pages 26-27 (printed 84-85), anchors \"equations (15)-(18)\" and \"SylR pseudocode\"] The conditioning quantity is sep(A,B)=min_{||X||_F=1}||A X-X B||_F, and every recursive diagonal-block problem has separation at least sep(A,B). [PDF page 27 (printed 85), anchors \"definition of sep\" and \"equation (19)\"] Under the paper's first-order normwise stable-multiplication model, the four block-error estimates sum to the stated affine recurrence and yield equation (20): O(n^{1+log_2 3}mu(n/2)epsilon||R||((||A||+||B||)/sep(A,B))^{1+log_2 n}). [PDF pages 2 and 28 (printed 60 and 86), anchors \"equation (1)\", \"four block-error inequalities\", and \"equation (20)\"] Comparing this with the conventional forward bound makes the ordinary recursive solver logarithmically stable, with O(n^{omega+eta}) arithmetic cost when omega+eta>2; the generalized equation receives only a recursive block sketch. [PDF pages 27-28 (printed 85-86), anchors \"cost recurrence\", \"comparison following (20)\", and \"generalized Sylvester sketch\"]"
 }

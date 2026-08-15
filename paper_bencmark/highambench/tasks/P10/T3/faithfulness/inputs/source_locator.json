@@ -5,10 +5,24 @@
   "paper_version": "published journal version; volume 108, 2007, printed pages 59-91",
   "source_locations": [
     {
-      "anchor": "affine recurrence immediately before equation (20), followed by its asymptotic solution",
+      "anchor": "ordinary Sylvester equation and exact block equations (13)-(18)",
+      "pdf_page": 26,
+      "printed_page": "84",
+      "role": "exact problem and block dependencies",
+      "section": "6.3 Solving the (generalized) Sylvester equation"
+    },
+    {
+      "anchor": "SylR pseudocode, power-of-two assumption, variational separation, and equation (19)",
+      "pdf_page": 27,
+      "printed_page": "85",
+      "role": "algorithm, recursion dimensions, solve order, and subproblem conditioning",
+      "section": "6.3 Solving the (generalized) Sylvester equation"
+    },
+    {
+      "anchor": "four block-error inequalities, affine recurrence, equation (20), and following logarithmic-stability comparison",
       "pdf_page": 28,
       "printed_page": "86",
-      "role": "recursive Sylvester forward-error amplification and forcing budget",
+      "role": "first-order recurrence, asymptotic forward bound, conventional comparison, and stability conclusion",
       "section": "6.3 Solving the (generalized) Sylvester equation"
     }
   ],
