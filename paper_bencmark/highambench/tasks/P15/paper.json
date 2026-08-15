@@ -72,7 +72,7 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use the Frobenius submultiplicativity property fixed in Section 2.1 and reused throughout the paper; it is an exact direct match to the frozen matrix library.",
+      "decision": "Use the Frobenius submultiplicativity property fixed in Section 2.1 for every compatible rectangular real matrix product, with the paper's norm formula explicit; it is an exact direct match to the frozen matrix library.",
       "task_id": "P15-T1",
       "theorem_name": "p15_t1_frobenius_submultiplicative"
     },

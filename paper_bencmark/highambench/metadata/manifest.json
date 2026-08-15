@@ -162,7 +162,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean",
       "role": "P15-only finite matrix norms, products, actions, and composed BLR solve perturbations",
-      "sha256": "831dce905ad8a08bb52f5b55ebad349c09ac26a06168d6ca22eb022d2cf91792",
+      "sha256": "5357f7c5371a813a10049e6813c641d663791fe454a66984d37aac870d84b4ac",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -2884,15 +2884,15 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.frobNorm_matMul_le"
+            "NumStability.frobNormRect_rectMatMul_le"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P15/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Identify the paper-scoped finite product and Frobenius norm with the native matrix product and Frobenius norm, then apply Frobenius submultiplicativity.",
-          "informal_statement_paraphrase": "The first Frobenius-norm property listed in Section 2.1 and used throughout the paper's normwise analysis.",
+          "informal_proof_paraphrase": "Identify the explicit square-root-of-sums definition and compatible finite product with the corresponding rectangular Frobenius objects, then apply constant-one Frobenius submultiplicativity.",
+          "informal_statement_paraphrase": "The first Frobenius-norm property listed in Section 2.1 for arbitrary multiplication-compatible rectangular real matrices.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "317350b3e17134b5663fd4b741ed6029642a3d73e3073e13c08bbe97dd1664b9",
+            "controlled_file_sha256": "cd09d32b3060a89a0f9071e7d1db40086544808e7ba79c750b5c2803938399ce",
             "declaration": "p15_t1_frobenius_submultiplicative",
             "file": "paper_bencmark/highambench/tasks/P15/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -2900,7 +2900,7 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean"
             ],
-            "statement_summary": "The Frobenius norm of a finite matrix product is at most the product of the two Frobenius norms."
+            "statement_summary": "For every pair of compatible finite rectangular real matrices, the Frobenius norm of their product is at most the product of their Frobenius norms."
           },
           "source_locations": [
             {
@@ -2914,7 +2914,7 @@
           "task_id": "P15-T1",
           "tier": "T1",
           "tier_name": "direct use",
-          "tier_reason": "The close frozen-library theorem is NumStability.frobNorm_matMul_le in NumStability/Analysis/MatrixAlgebra.lean. The L proof only identifies p15MatMul and p15FrobNorm with that theorem's notation.",
+          "tier_reason": "The exact frozen-library theorem is NumStability.frobNormRect_rectMatMul_le in NumStability/Analysis/MatrixAlgebra.lean. The L proof only unfolds the transparent P15 rectangular product and Frobenius definitions.",
           "title": "Frobenius submultiplicativity"
         },
         {
