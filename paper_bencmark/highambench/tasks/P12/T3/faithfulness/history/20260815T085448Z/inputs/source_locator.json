@@ -5,27 +5,6 @@
   "paper_version": "published journal version; volume 145, issue 2, 2020, printed pages 383-403; corrected open-access publication 2021",
   "source_locations": [
     {
-      "anchor": "equation (1), nearest and faithful rounding, and FastTwoSum",
-      "pdf_page": 2,
-      "printed_page": "384",
-      "role": "floating-point set and operation semantics used by ThreeProduct",
-      "section": "1. Introduction and notation"
-    },
-    {
-      "anchor": "standing absence-of-overflow convention for Section 4",
-      "pdf_page": 9,
-      "printed_page": "391",
-      "role": "range scope inherited by the application",
-      "section": "4. Applications"
-    },
-    {
-      "anchor": "FourSumThreeProduct and the TwoProduct contract in equation (17)",
-      "pdf_page": 13,
-      "printed_page": "395",
-      "role": "three delegated product calls, rounded high products, exact decompositions, and half-ULP errors",
-      "section": "4.2 Error-free transformation - ThreeProduct"
-    },
-    {
       "anchor": "Lemma 4 and equation (18)",
       "pdf_page": 14,
       "printed_page": "396",
