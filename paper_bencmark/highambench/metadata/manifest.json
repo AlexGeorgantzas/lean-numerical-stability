@@ -170,8 +170,8 @@
         "P16"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean",
-      "role": "P16-only finite matrix and vector norms, residuals, condition factors, mixed-precision contractions, and attainable floors",
-      "sha256": "c6e1e7fbec905b0088523056156ff1ca066c92d0818f3a54f05fa411a552e9ac",
+      "role": "P16-only finite matrix and vector norms, residuals, first-order iterative-refinement steps, condition factors, mixed-precision contractions, and attainable floors",
+      "sha256": "155c2da1874d00abd4fd6d53ea9dcb1ff9c6490958d49cfa29980f8abda15589",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -3082,7 +3082,7 @@
         "volume": "46"
       },
       "paper_id": "P16",
-      "paper_structure_note": "The paper builds a modular backward-error framework from operation models and a key-dimension argument, extends it to restarted GMRES, instantiates it for several Arnoldi and least-squares implementations, and derives new simpler-, CGS2-, and mixed-precision GMRES results. The selected targets progress from the complete normwise backward-error minimum identity through the exact restarted residual recurrence to finite mixed-precision geometric convergence above attainable floors.",
+      "paper_structure_note": "The paper builds a modular backward-error framework from operation models and a key-dimension argument, extends it to restarted GMRES, instantiates it for several Arnoldi and least-squares implementations, and derives new simpler-, CGS2-, and mixed-precision GMRES results. The selected targets progress from the complete normwise backward-error minimum identity through Lemma 4.2's exact composition and first-order restarted residual recurrence to mixed-precision convergence above attainable floors.",
       "paper_version": "published open-access journal version; IMA Journal of Numerical Analysis 46(4), 2026, printed pages 1939-1993",
       "source": {
         "journal_page_map": "PDF pages 1-55 are printed pages 1939-1993 respectively.",
@@ -3153,11 +3153,11 @@
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P16/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Use the exact identity b-A*xNext = (rhat-A*correction)-deltaR-A*deltaX, apply Euclidean triangle inequality twice and the Frobenius action bound, replace ||x|| by ||xNext||, and collect coefficients exactly.",
-          "informal_statement_paraphrase": "Exact finite version of Lemma 4.2's backward residual recurrence before the paper drops second-order terms.",
+          "informal_proof_paraphrase": "Derive (4.18), apply Euclidean triangle and Frobenius action bounds, and propagate the O(scale^2) remainder from the paper's iterate comparison. Nonnegative epsilonR tends to zero and is eventually at most one, so constant Frobenius scaling preserves the second-order remainder before the printed coefficients are collected.",
+          "informal_statement_paraphrase": "The exact residual identity (4.18) and Lemma 4.2's first-order next-residual recurrence (4.15), with the omitted second-order term represented explicitly.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "34afa46e62ca706b5e59c8868da30b3304cda19e8b10da2f2b8fd99c5fa67af0",
+            "controlled_file_sha256": "1c582176b5d6f0ea639794f09f49d14c1343fed97e7e030bd8cc1c506739809a",
             "declaration": "p16_t2_restarted_residual_recurrence",
             "file": "paper_bencmark/highambench/tasks/P16/T2/Target.lean",
             "must_compile_without_numstability": true,
@@ -3165,29 +3165,50 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean"
             ],
-            "statement_summary": "The correction residual, residual-computation error, and update error combine into the exact finite next-residual recurrence underlying Lemma 4.2."
+            "statement_summary": "One generic computed iterative-refinement step satisfies exact identity (4.18) and the next-residual recurrence (4.15) with an explicit O(scale^2) remainder."
           },
           "source_locations": [
+            {
+              "anchor": "equation (1.1), nonsingular square real system with nonzero right-hand side",
+              "pdf_page": 1,
+              "printed_page": "1939",
+              "role": "standing system assumptions",
+              "section": "1. Introduction"
+            },
+            {
+              "anchor": "convention for lesssim after dropping negligible second-order terms",
+              "pdf_page": 4,
+              "printed_page": "1942",
+              "role": "first-order comparison semantics",
+              "section": "2. Notations"
+            },
+            {
+              "anchor": "residual and update models (4.1)-(4.3)",
+              "pdf_page": 17,
+              "printed_page": "1955",
+              "role": "computed operation model and parameter smallness",
+              "section": "4.1 The modular algorithm, error model, and error analysis"
+            },
             {
               "anchor": "Lemma 4.2, correction residual (4.14) and next-residual recurrence (4.15)",
               "pdf_page": 19,
               "printed_page": "1957",
-              "role": "one-step backward-error recurrence",
+              "role": "selected one-step backward-error recurrence",
               "section": "4.1 The modular algorithm, error model, and error analysis"
             },
             {
-              "anchor": "exact iterative-refinement identity (4.18)",
+              "anchor": "exact iterative-refinement identity (4.18), iterate comparison, and following norm derivation",
               "pdf_page": 20,
               "printed_page": "1958",
-              "role": "finite residual composition used before norm bounds",
+              "role": "exact composition and second-order remainder propagation",
               "section": "4.1 The modular algorithm, error model, and error analysis"
             }
           ],
           "task_id": "P16-T2",
           "tier": "T2",
           "tier_name": "combine",
-          "tier_reason": "The L proof combines frozen Frobenius nonnegativity, Euclidean triangle/negation, and matrix-action bounds with the paper-specific residual/update equations and exact coefficient collection.",
-          "title": "Restarted residual recurrence"
+          "tier_reason": "The L proof combines frozen Frobenius nonnegativity, Euclidean triangle/negation, and matrix-action bounds with the paper-specific computed-step equations, then propagates the iterate's O(scale^2) remainder and collects the exact Lemma 4.2 coefficients. No mounted theorem performs this combination; a different componentwise one-step result is source-visible only in the unmounted Algorithms/IterativeRefinement module.",
+          "title": "First-order restarted residual recurrence"
         },
         {
           "availability": "available",

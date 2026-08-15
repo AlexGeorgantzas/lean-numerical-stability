@@ -48,11 +48,11 @@
     },
     {
       "candidate": "Theorem 3.1 full MOD-GMRES attainable forward/backward error theorem",
-      "reason": "It is the central unrestarted result, but a source-faithful finite formalization would require singular-value optimization, key-dimension existence, least-squares backward stability, and the complete Paige-et-al. residual argument absent from the frozen baseline. Lemma 4.2 preserves the paper's reusable exact residual-composition core without pretending those delegated ingredients are formalized."
+      "reason": "It is the central unrestarted result, but a source-faithful formalization would require singular-value optimization, key-dimension existence, least-squares backward stability, and the complete Paige-et-al. residual argument absent from the frozen baseline. Lemma 4.2 preserves the paper's reusable generic iterative-refinement recurrence without pretending those delegated ingredients are formalized."
     },
     {
       "candidate": "Theorem 4.1 full restarted MOD-GMRES theorem",
-      "reason": "Its modular coefficients depend on every operation model and on Theorem 3.1. The selected T2 isolates its exact one-step engine, and T3 captures the resulting mixed-precision restart convergence."
+      "reason": "Its modular coefficients depend on every operation model and on Theorem 3.1. The selected T2 isolates its generic one-step backward-error clause, and T3 captures the resulting mixed-precision restart convergence."
     },
     {
       "candidate": "Theorems 5.1-5.3 for HH-GMRES, MGS-GMRES, and FGMRES",
@@ -80,7 +80,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use the backward-error half of Lemma 4.2, replacing the paper's first-order comparison by the exact finite recurrence implied by (4.1), (4.2), (4.14), and (4.18).",
+      "decision": "Use the complete backward-error half of Lemma 4.2: retain exact identity (4.18), model the paper's lesssim relation with an explicit O(scale^2) remainder, and derive recurrence (4.15) from (4.1), (4.2), (4.14), and the same first-order iterate comparison used in the proof.",
       "task_id": "P16-T2",
       "theorem_name": "p16_t2_restarted_residual_recurrence"
     },
@@ -95,7 +95,7 @@
   "selection_policy": [
     "Use results proved in this paper and exact consequences of their displayed hypotheses, not empirical or prospective discussions.",
     "Expose the paper's Euclidean/Frobenius normwise structure with finite-dimensional paper-scoped definitions.",
-    "Replace first-order comparison notation by exact inequalities and make the finite restart count explicit.",
+    "Retain first-order comparison notation through explicit second-order remainder semantics, and make finite restart counts explicit where the source supplies contraction claims.",
     "Keep every public definition paper-scoped and free of NumStability imports.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json."
   ],

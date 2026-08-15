@@ -1,4 +1,5 @@
 import HighamBench.Core
+import Mathlib.Analysis.Asymptotics.Lemmas
 import Mathlib.Analysis.Matrix.Normed
 
 /-!
@@ -56,6 +57,62 @@ noncomputable def p16NormalizedResidual {n : ℕ}
     (A : P16Matrix n) (b xHat : P16Vector n) : ℝ :=
   p16VecNorm (p16Residual A b xHat) /
     (p16FrobNorm A * p16VecNorm xHat + p16VecNorm b)
+
+/-- A scalar remainder that is second order in `scale` along `l`. Dimensions
+and the fixed refinement iteration are outside the limit, so the hidden Big-O
+constant may depend on them exactly as in the paper's convention. -/
+def p16SecondOrderAt {ι : Type*} (l : Filter ι) (scale remainder : ι → ℝ) : Prop :=
+  remainder =O[l] fun t ↦ scale t ^ 2
+
+/-- A precise interpretation of the paper's `≲`: the inequality holds after
+adding an otherwise unspecified second-order remainder. -/
+def p16FirstOrderLeAt {ι : Type*} (l : Filter ι) (scale lhs rhs : ι → ℝ) : Prop :=
+  ∃ remainder : ι → ℝ,
+    p16SecondOrderAt l scale remainder ∧
+      ∀ᶠ t in l, lhs t ≤ rhs t + |remainder t|
+
+/-- One computed generic iterative-refinement step in the backward-error
+clause of Lemma 4.2. It records exactly the normwise operation models (4.1),
+(4.2), and (4.14), together with the first-order iterate comparison used in
+the proof of (4.15). -/
+structure P16Lemma42BackwardStep {n : ℕ} {ι : Type*}
+    (l : Filter ι) (scale : ι → ℝ)
+    (A : P16Matrix n) (b : P16Vector n) (_iteration : ℕ) where
+  xHat : ι → P16Vector n
+  correctionHat : ι → P16Vector n
+  xHatNext : ι → P16Vector n
+  residualHat : ι → P16Vector n
+  deltaR : ι → P16Vector n
+  deltaX : ι → P16Vector n
+  epsilonR : ι → ℝ
+  epsilonU : ι → ℝ
+  w : ι → ℝ
+  omega : ι → ℝ
+  residual_equation : ∀ t,
+    residualHat t = p16Residual A b (xHat t) + deltaR t
+  update_equation : ∀ t,
+    xHatNext t = xHat t + correctionHat t + deltaX t
+  correction_residual_bound : ∀ t,
+    p16VecNorm (residualHat t - p16MatVec A (correctionHat t)) ≤
+      w t * p16VecNorm (p16Residual A b (xHat t)) +
+        omega t *
+          (p16VecNorm b + p16FrobNorm A * p16VecNorm (xHatNext t))
+  residual_error_bound : ∀ t,
+    p16VecNorm (deltaR t) ≤
+      epsilonR t *
+        (p16VecNorm b + p16FrobNorm A * p16VecNorm (xHat t))
+  update_error_bound : ∀ t,
+    p16VecNorm (deltaX t) ≤ epsilonU t * p16VecNorm (xHatNext t)
+  epsilonR_nonneg : ∀ t, 0 ≤ epsilonR t
+  epsilonU_nonneg : ∀ t, 0 ≤ epsilonU t
+  w_nonneg : ∀ t, 0 ≤ w t
+  omega_nonneg : ∀ t, 0 ≤ omega t
+  epsilonR_tendsto_zero : Filter.Tendsto epsilonR l (nhds 0)
+  epsilonU_tendsto_zero : Filter.Tendsto epsilonU l (nhds 0)
+  iterate_norm_comparison :
+    p16FirstOrderLeAt l scale
+      (fun t ↦ p16VecNorm (xHat t))
+      (fun t ↦ p16VecNorm (xHatNext t))
 
 /-- Frobenius condition-number factor represented by a matrix and a supplied
 inverse. The T3 target needs only its exact nonnegativity. -/
