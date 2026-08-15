@@ -5,17 +5,10 @@
   "paper_version": "published journal version; volume 108, 2007, printed pages 59-91",
   "source_locations": [
     {
-      "anchor": "equation (1) and following norm-equivalence paragraph",
-      "pdf_page": 2,
-      "printed_page": "60",
-      "role": "stable matrix-multiplication model and unspecified norm convention",
-      "section": "Introduction"
-    },
-    {
-      "anchor": "equation (8), middle term ||A||*err(B,n)",
+      "anchor": "equation (8), term norm(A) times err(B,n)",
       "pdf_page": 8,
       "printed_page": "66",
-      "role": "linked first-order amplification of error inherited from the right operand and its additive position",
+      "role": "amplification of error inherited from the right product input",
       "section": "3.1 Recursive triangular matrix inversion"
     }
   ],
