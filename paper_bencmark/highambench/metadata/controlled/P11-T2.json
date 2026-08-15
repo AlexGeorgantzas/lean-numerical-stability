@@ -11,9 +11,9 @@
       "sha256": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a"
     },
     {
-      "bytes": 9770,
+      "bytes": 17290,
       "path": "shared/HighamBench/P11Definitions.lean",
-      "sha256": "9e99f563c817f880d49ff34103ceae6091146b2c19770f5e79aa794e970b08a5"
+      "sha256": "6756f18215387ae4f685e6cd69598895af8117ed6fe81c264b4591f04d20e40d"
     },
     {
       "bytes": 628,

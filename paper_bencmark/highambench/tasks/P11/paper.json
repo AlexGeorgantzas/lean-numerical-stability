@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete local paper, surveyed both CGS algorithms, the corrected theorem, condition-number remark, counterexamples, reorthogonalization discussion, and the full appendix proof, rejected delegated, incorrect, experimental, heuristic, and asymptotic-only candidates, searched the frozen mathlib and mounted NumStability object baselines, visually checked every selected source page, and compiled private N/L proofs before accepting the targets.",
+    "method": "Codex read the complete local paper, surveyed both CGS algorithms, the corrected theorem, condition-number remark, counterexamples, reorthogonalization discussion, and the full appendix proof, rejected delegated, incorrect, experimental, and heuristic candidates, resolved the source's first-order remainder convention explicitly, searched the frozen mathlib and mounted NumStability object baselines, visually checked every selected source page, and compiled private N/L proofs before accepting the targets.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P11 source selection and benchmark annotation to Codex."
@@ -44,8 +44,8 @@
       "reason": "The paper explicitly states that this lemma is incorrect for Algorithm 1, so it cannot serve as a valid target."
     },
     {
-      "candidate": "Theorem 1 equations (3)-(8) in their literal printed form",
-      "reason": "Most conclusions are stated only to first order with O(epsilon squared). T1 retains an exact finite action bound, T2 the exact algebraic identity, and T3 a finite-budget completion of the main orthogonality conclusion."
+      "candidate": "Theorem 1 clauses (4)-(6) and (8) as standalone T3 targets",
+      "reason": "These clauses support the selected main orthogonality result. T3 uses their exact residual relations and exposes their hidden second-order coefficients while deriving inequality (7), rather than replacing the selected conclusion with one supporting estimate."
     },
     {
       "candidate": "Remark 1 and equations (9)-(10)",
@@ -87,16 +87,16 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 1(7) as an exact finite-budget bound requiring a new derivation and multi-term norm propagation beyond the frozen adapters.",
+      "decision": "Use Theorem 1(7) for every positive prefix of one linked rectangular CGS-P execution, preserving condition (3), spectral norms, c4(m,k), kappa2(R_k)^2, epsilonM, and an explicit finite coefficient for the source's O(epsilonM^2) remainder.",
       "task_id": "P11-T3",
       "theorem_name": "p11_t3_orthogonality_defect_bound"
     }
   },
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
-    "Use correct finite claims proved in this paper and exact algebraic cores of its first-order analysis.",
-    "Reject the explicitly incorrect cited lemma, experiments, heuristics, definitions, and literal O-notation-only formulas.",
-    "Replace asymptotic second-order bookkeeping with explicit finite perturbation budgets.",
+    "Use correct claims proved in this paper and retain their algorithm, dimensions, hypotheses, norms, constants, and quantifier scope.",
+    "Reject the explicitly incorrect cited lemma, experiments, heuristics, and definitions as standalone proof targets.",
+    "Represent every unspecified O(epsilon squared) term by a separate explicit finite coefficient without assigning an unprinted value or uniformity claim.",
     "Keep the fixed Lean setting condition-neutral and paper-scoped.",
     "Assign tiers only after checking the mounted frozen object baseline, not broader source-only Gram-Schmidt modules."
   ],

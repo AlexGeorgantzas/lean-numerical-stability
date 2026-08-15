@@ -1,12 +1,16 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, and exact finite-budget completion of Theorem 1(7)",
+    "kind": "faithfulness rebuild of the all-prefix CGS-P execution, Theorem 1(7), and its explicit finite second-order remainder",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The computed factors satisfy QR=A+DeltaA and Rinv is a right inverse of R.",
-    "The normal-equation residual, A, DeltaA, and Rinv obey the four stated nonnegative Frobenius budgets."
+    "The dimensions m and n are positive, n <= m, and the real m-by-n input A has full column rank.",
+    "One proof-carrying successful normalized-range Algorithm 2 (CGS-P) trace links the common computed Q and upper-triangular R to every column step, including the pythagorean diagonal formula.",
+    "The machine unit satisfies 0 < epsilonM < 1; named local pseudo-code errors have finite first-order envelopes because the paper does not fix complete primitive evaluation orders.",
+    "Every leading R_k has a certified two-sided inverse, and the strict condition c4(m,k)*epsilonM*kappa2(R_k)^2 < 1 holds for all positive prefixes.",
+    "For every prefix, equations (4)-(5) and the reversed norm comparison used from (6) hold in the spectral 2-norm with separate explicit nonnegative coefficients multiplying epsilonM^2.",
+    "Only successful normalized finite real executions are modeled; breakdown and IEEE exceptional-value behavior left unspecified by the paper are outside the claim."
   ],
   "author_label": "Theorem 1",
   "classification_frozen_before_runs": false,
@@ -16,14 +20,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P11/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p11_t3_orthogonality_defect_bound {n : Nat} (A dA Q R Rinv : P11Matrix n) (e a d rho : Real) ... : p11FrobNorm (p11OrthogonalityDefect Q) <= rho^2 * (e + 2*a*d + d^2)",
+    "lean_header": "theorem p11_t3_orthogonality_defect_bound {m n : Nat} (run : P11CGSPTheorem1Run m n) : forall k : Fin n, p11OpNorm2 (p11RectOrthogonalityDefect (p11ColumnPrefix run.Q k)) <= p11C4 m (k.val+1) * p11Kappa2 (p11LeadingBlock run.R k) (run.leadingInverse k)^2 * run.epsilonM + p11Theorem1OrthogonalityRemainderCoeff run k * run.epsilonM^2",
     "namespace": "HighamBench",
-    "plain_language": "The loss of orthogonality is bounded by the squared inverse-factor budget times the normal-equation residual and the two first-order plus one quadratic factorization-error contributions.",
+    "plain_language": "Every positive prefix of one successful rectangular CGS-P execution satisfies Theorem 1(7)'s spectral loss-of-orthogonality bound with exact leading coefficient c4(m,k)*kappa2(R_k)^2 and an explicit finite second-order remainder.",
     "target_file": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
     "theorem_name": "p11_t3_orthogonality_defect_bound"
   },
-  "informal_proof": "First derive the exact inverse-conjugated identity from QR=A+DeltaA. Bound each of A-transpose DeltaA, DeltaA-transpose A, and DeltaA-transpose DeltaA by Frobenius submultiplicativity, collect the four inner terms by repeated triangle inequalities, and apply two more product bounds for Rinv-transpose and Rinv.",
-  "informal_statement": "Theorem 1(7)'s orthogonality estimate with its first- and second-order contributions represented by explicit finite budgets.",
+  "informal_proof": "For each prefix, derive the exact page-312 inverse-conjugated identity from Q_k R_k=A_k+DeltaA_k and the certified inverse. Apply spectral transpose invariance, triangle inequalities, and submultiplicativity to obtain the paper's intermediate norm estimate. Substitute (4)-(5), use 0<epsilonM<1 to collect all hidden and quadratic terms into epsilonM^2, apply the reversed form of (6) to replace ||A_k||_2^2 by ||R_k||_2^2 to first order, and identify the leading factor as c4(m,k)*kappa2(R_k)^2.",
+  "informal_statement": "Theorem 1(7) for every prefix produced by the linked CGS-P execution, retaining the rectangular dimensions, strict condition (3), spectral norm, exact constants, computed R_k condition number, and an explicit finite interpretation of O(epsilonM squared).",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -39,25 +43,48 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
-      "NumStability.frobNorm_matMul_le",
-      "NumStability.frobNorm_sub_le",
-      "NumStability.frobNorm_transpose",
-      "NumStability.matMul_assoc",
-      "NumStability.matTranspose_matMul"
+      "NumStability.rectOpNorm2_nonneg",
+      "NumStability.rectOpNorm2_finiteTranspose",
+      "NumStability.opNorm2_sub_le",
+      "NumStability.opNorm2_matMul_le",
+      "NumStability.rectMatMul_assoc"
     ],
-    "note": "All 24 modules in metadata/library_olean.json were searched. The mounted MatrixAlgebra object has the required local norm and algebra adapters, but no Gram-Schmidt model, no theorem deriving the exact defect identity, and no completed finite-budget version of Theorem 1(7). The broader source-only GramSchmidt modules are absent from the frozen object manifest and were not counted."
+    "note": "All 24 modules in metadata/library_olean.json were searched. The mounted MatrixAlgebra object supplies exact spectral-norm adapters, including square-product submultiplicativity used by the L proof, but no CGS-P execution model, pythagorean column trace, all-prefix residual certificate, page-312 defect identity, or Theorem 1(7) remainder propagation. Broader source-only GramSchmidt modules are absent from the frozen object manifest and were not counted."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "P11Matrix",
-    "p11MatMul",
-    "p11Transpose",
-    "p11FrobNorm",
-    "p11OrthogonalityDefect",
-    "p11NormalEquationResidual",
-    "p11DefectCore"
+    "P11RectMatrix",
+    "p11ColumnPrefix",
+    "p11LeadingBlock",
+    "p11OpNorm2",
+    "p11RectOpNorm2",
+    "p11C1",
+    "p11C2",
+    "p11C3",
+    "p11C4",
+    "p11Kappa2",
+    "p11RectOrthogonalityDefect",
+    "P11CGSPColumnTrace",
+    "P11Theorem1PrefixCertificate",
+    "P11CGSPTheorem1Run",
+    "p11Theorem1OrthogonalityRemainderCoeff"
   ],
   "source_locations": [
+    {
+      "anchor": "standing rectangular full-rank setup and Algorithm 2 (CGS-P)",
+      "pdf_page": 2,
+      "printed_page": "300",
+      "role": "inherited dimensions, rank assumption, and distinction from standard CGS",
+      "section": "Algorithm setup"
+    },
+    {
+      "anchor": "Algorithm 2 and floating-point model",
+      "pdf_page": 3,
+      "printed_page": "301",
+      "role": "pythagorean diagonal, normalized-range arithmetic, and first-order convention",
+      "section": "Algorithm 2"
+    },
     {
       "anchor": "Theorem 1, inequality (7)",
       "pdf_page": 4,
@@ -79,7 +106,7 @@
   "task_id": "P11-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "NumStability.frobNorm_matMul_le, NumStability.frobNorm_sub_le, NumStability.frobNorm_transpose, NumStability.matMul_assoc, and NumStability.matTranspose_matMul in NumStability/Analysis/MatrixAlgebra.lean supply only local adapters. The proof must newly derive the residual-to-defect identity and propagate four budgets through a double inverse conjugation; no such result exists in any of the 24 mounted modules recorded by metadata/library_olean.json.",
+  "tier_rationale": "The L proof can directly reuse NumStability.opNorm2_matMul_le from the frozen MatrixAlgebra object, with nearby transpose and triangle adapters. It must still newly derive the rectangular inverse-conjugated identity, control all four spectral residual terms, propagate three explicit second-order coefficients, use the reversed equation-(6) comparison, and assemble the all-prefix c4*kappa2(R_k)^2 conclusion. No mounted declaration models the CGS-P trace or states this theorem.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
     "mode": "shared automatic validator",

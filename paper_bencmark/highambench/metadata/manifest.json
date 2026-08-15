@@ -126,7 +126,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean",
       "role": "P11-only CGS-P execution models, rectangular leading-factor algebra, Euclidean, spectral, and Frobenius norms, normal-equation residuals, and orthogonality defects",
-      "sha256": "9e99f563c817f880d49ff34103ceae6091146b2c19770f5e79aa794e970b08a5",
+      "sha256": "6756f18215387ae4f685e6cd69598895af8117ed6fe81c264b4591f04d20e40d",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -2251,19 +2251,19 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.frobNorm_matMul_le",
-            "NumStability.frobNorm_sub_le",
-            "NumStability.frobNorm_transpose",
-            "NumStability.matMul_assoc",
-            "NumStability.matTranspose_matMul"
+            "NumStability.rectOpNorm2_nonneg",
+            "NumStability.rectOpNorm2_finiteTranspose",
+            "NumStability.opNorm2_sub_le",
+            "NumStability.opNorm2_matMul_le",
+            "NumStability.rectMatMul_assoc"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P11/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "First derive the exact inverse-conjugated identity from QR=A+DeltaA. Bound each of A-transpose DeltaA, DeltaA-transpose A, and DeltaA-transpose DeltaA by Frobenius submultiplicativity, collect the four inner terms by repeated triangle inequalities, and apply two more product bounds for Rinv-transpose and Rinv.",
-          "informal_statement_paraphrase": "Theorem 1(7)'s orthogonality estimate with its first- and second-order contributions represented by explicit finite budgets.",
+          "informal_proof_paraphrase": "For each prefix, derive the exact inverse-conjugated identity from Q_k R_k=A_k+DeltaA_k. Apply spectral-norm triangle and product bounds, substitute equations (4)-(5), propagate their explicit second-order coefficients, and use the reversed equation-(6) comparison to identify the leading c4(m,k) kappa2(R_k)^2 epsilonM term.",
+          "informal_statement_paraphrase": "Every positive prefix of one successful rectangular CGS-P execution satisfies Theorem 1(7)'s spectral loss-of-orthogonality estimate with its exact leading coefficient and an explicit finite second-order remainder.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "4dff54d443d74f80beb55e2a83baae6aa601d4d6d0be9b0e16c5c4914d692205",
+            "controlled_file_sha256": "b6ecd17c207880a5b97422a423981ad79c542ee4f29eddfd1b4b5c460e1cf48a",
             "declaration": "p11_t3_orthogonality_defect_bound",
             "file": "paper_bencmark/highambench/tasks/P11/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -2271,9 +2271,24 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P11Definitions.lean"
             ],
-            "statement_summary": "The loss of orthogonality is bounded by the squared inverse-factor budget times the normal-equation residual and the two first-order plus one quadratic factorization-error contributions."
+            "shared_model": "P11CGSPTheorem1Run",
+            "statement_summary": "For every positive leading prefix produced by the linked CGS-P execution, the spectral loss of orthogonality is at most c4(m,k) kappa2(R_k)^2 epsilonM plus the explicit finite second-order remainder."
           },
           "source_locations": [
+            {
+              "anchor": "standing rectangular full-rank setup and Algorithm 2 (CGS-P)",
+              "pdf_page": 2,
+              "printed_page": "300",
+              "role": "inherited dimensions, rank assumption, and distinction from standard CGS",
+              "section": "Algorithm setup"
+            },
+            {
+              "anchor": "Algorithm 2 and floating-point model",
+              "pdf_page": 3,
+              "printed_page": "301",
+              "role": "pythagorean diagonal, normalized-range arithmetic, and first-order convention",
+              "section": "Algorithm 2"
+            },
             {
               "anchor": "Theorem 1, inequality (7)",
               "pdf_page": 4,
@@ -2292,8 +2307,8 @@
           "task_id": "P11-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "NumStability.frobNorm_matMul_le, NumStability.frobNorm_sub_le, NumStability.frobNorm_transpose, NumStability.matMul_assoc, and NumStability.matTranspose_matMul in NumStability/Analysis/MatrixAlgebra.lean supply only local adapters. The proof must newly derive the residual-to-defect identity and propagate four budgets through a double inverse conjugation; no such result exists in any of the 24 mounted modules recorded by metadata/library_olean.json.",
-          "title": "Finite orthogonality-defect budget"
+          "tier_reason": "The L proof can directly reuse NumStability.opNorm2_matMul_le from the frozen MatrixAlgebra object, with nearby transpose and triangle adapters. It must still newly derive the rectangular inverse-conjugated identity, control all four spectral residual terms, propagate three explicit second-order coefficients, use the reversed equation-(6) comparison, and assemble the all-prefix c4*kappa2(R_k)^2 conclusion. No mounted declaration models the CGS-P trace or states this theorem.",
+          "title": "Full Theorem 1(7) all-prefix spectral orthogonality bound"
         }
       ],
       "topic": "roundoff analysis of classical Gram-Schmidt with Cholesky-like diagonal updates"
