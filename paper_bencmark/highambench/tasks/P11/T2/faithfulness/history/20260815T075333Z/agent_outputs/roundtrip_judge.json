@@ -1,0 +1,159 @@
+{
+  "schema_version": "highambench-faithfulness-0.1",
+  "role": "roundtrip-judge",
+  "task_id": "P11-T2",
+  "paper_sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5",
+  "blind_translation_sha256": "ccbd9b3259835e43f8344955168694cb89770144127cdabfed421d2ab605642d",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF is the 2006 Numerische Mathematik article, volume 105, pages 299-313. PDF page 14, printed page 312, contains the selected two-line identity beginning I - Q_k^T Q_k.",
+      "translation_evidence": "The translation asserts the expanded exact orthogonality-defect identity with the same transpose order, sandwich factors, signs, and quadratic residual product.",
+      "reasoning": "The translation targets the correct published passage and its exact algebraic identity."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "For each k = 1,...,n, A_k, Q_k, and Delta A_k are m-by-k, while R_k, E_k, and I are k-by-k; the standing setup has m >= n.",
+      "translation_evidence": "A, dA, Q, R, and Rinv are all n-by-n matrices for one arbitrary natural n, which may be zero.",
+      "reasoning": "The translation collapses the rectangular and square dimensions into one square dimension, excludes genuine tall-matrix cases, and adds a zero-dimensional case absent from the paper."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "A full-rank m-by-n input is fixed, Algorithm 2 computes Q and R, condition (3) is imposed for every leading index k, and conclusions are then made for k = 1,...,n.",
+      "translation_evidence": "The proposition universally quantifies n and arbitrary matrices A, dA, Q, R, and Rinv, subject only to two matrix equalities.",
+      "reasoning": "The leading-factor dependence, outer input matrix, algorithmic dependence, and quantifier order are not preserved. Rinv is also supplied as independent data rather than denoting the inverse determined by R, although uniqueness mitigates that difference in the square setting."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The identity occurs under the inherited assumptions m >= n, rank(A) = n, CGS-P computation, condition (3), and consequent nonsingularity of the upper-triangular R_k.",
+      "translation_evidence": "The only hypotheses are Q R = A + dA and R Rinv = I_n; no rank, triangularity, Algorithm 2, condition-number, positivity, or computed-output condition is present.",
+      "reasoning": "The two translated hypotheses suffice for the algebraic identity, but they do not preserve the explicit and inherited scope of the paper result."
+    },
+    {
+      "id": "S05",
+      "status": "pass",
+      "paper_evidence": "The selected passage gives Q_k = (A_k + Delta A_k)R_k^{-1} and expands I - Q_k^T Q_k into the sandwich containing E_k and all three negative correction terms.",
+      "translation_evidence": "The conclusion contains Rinv^T on the left, Rinv on the right, and the complete expansion R^T R - A^T A - A^T dA - dA^T A - dA^T dA.",
+      "reasoning": "After substituting E_k = R_k^T R_k - A_k^T A_k, the operative conclusion is complete. The preceding Q formula and first displayed expansion are algebraic consequences of the translated hypotheses and definitions."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The passage uses ordinary real matrix multiplication, transpose, subtraction, the appropriately sized identity, and inverse matrices.",
+      "translation_evidence": "The dependency ledger explicitly interprets matrix types, finite-index multiplication, transpose, identity, entrywise addition and subtraction, real arithmetic, and exact equality.",
+      "reasoning": "All operators affecting the target are unfolded correctly. The local name E denotes the whole expanded central expression, but its definition is mathematically the source bracket after substituting the source E_k."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "Although Q_k and R_k are computed matrices, the page-312 identity is an exact equality between their real-valued matrices and exactly defined residuals.",
+      "translation_evidence": "The proposition uses exact real matrix equalities and does not introduce rounding, approximation, or an ideal orthogonal Q.",
+      "reasoning": "The exact algebraic status of the selected identity is preserved; loss of computed provenance is recorded separately under algorithm linkage."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The enclosing theorem concerns leading factors produced by Algorithm 2, CGS-P, whose diagonal uses the Pythagorean formula rather than the standard norm-of-v_k formula.",
+      "translation_evidence": "The proposition quantifies arbitrary matrices and contains no reference to CGS-P, leading factors, the Pythagorean diagonal computation, or any execution model.",
+      "reasoning": "The translation states an algorithm-independent algebraic lemma and therefore loses the paper result's algorithmic provenance."
+    },
+    {
+      "id": "S09",
+      "status": "not-applicable",
+      "paper_evidence": "The selected two-line identity on printed page 312 is norm-free; the spectral 2-norm enters only in the following inequality establishing bound (7).",
+      "translation_evidence": "The translated proposition is likewise a matrix equality and contains no norm.",
+      "reasoning": "No norm semantics belong to the selected identity itself."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The identity is indexed by the leading-factor index k, with A_k and Q_k having m rows and k columns and R_k being k-by-k. Constants c_i(m,k) occur only in the surrounding bounds.",
+      "translation_evidence": "There is one dimension n and no outer matrix dimension, leading index k, or first-k-columns construction.",
+      "reasoning": "Omission of the bound constants is appropriate for this identity, but the source indexing and its dependence on both m and k are not represented."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The enclosing theorem treats matrices computed in IEEE floating-point arithmetic for normalized-range results and adopts a first-order model neglecting O(epsilon_M^2), even though the selected identity itself is exact.",
+      "translation_evidence": "The translation explicitly has no floating-point operations, rounding model, precision, normalized-range restriction, or exceptional-value assumptions.",
+      "reasoning": "No rounding term should appear inside the exact equality, but the inherited numerical execution context of the computed factors is absent."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "The source states I - Q_k^T Q_k as an exact equality, with R_k^{-T} on the left and R_k^{-1} on the right.",
+      "translation_evidence": "The translation asserts the same exact equality direction using Rinv^T and Rinv, under R Rinv = I_n.",
+      "reasoning": "The equality strength, defect sign, transpose placement, and sandwich order match. For finite square real matrices, the supplied right inverse is the inverse required by the formula."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "Delta A_k is the factorization residual Q_k R_k - A_k, R_k^T R_k - A_k^T A_k is E_k, and I - Q_k^T Q_k is the orthogonality-defect matrix.",
+      "translation_evidence": "The hypothesis Q R = A + dA makes dA the same factorization residual, and the conclusion uses the exact normal-equations residual expansion to produce I_n - Q^T Q.",
+      "reasoning": "The relevant backward residuals and orthogonality defect are not replaced by forward errors, scalar norms, or another stability notion."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The exact source identity retains -(Delta A_k)^T(Delta A_k); O(epsilon_M^2) appears only in the subsequent norm estimate.",
+      "translation_evidence": "The conclusion explicitly retains -dA^T dA and states an exact equality with no big-O remainder.",
+      "reasoning": "The quadratic residual term and exact higher-order treatment are preserved faithfully."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The paper result applies to rectangular m-by-k leading blocks for positive k under the full-rank CGS-P setup.",
+      "translation_evidence": "The proposition applies only to square n-by-n matrices, including n = 0, but otherwise generalizes to arbitrary matrices satisfying its two equalities.",
+      "reasoning": "This is a mixed change: a restrictive square specialization in dimensions and a broad generalization in admissible matrices and hypotheses."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "Under condition (3), the paper obtains nonsingular R_k and well-defined real computed factors, so the displayed identity has nontrivial instances.",
+      "translation_evidence": "Its hypotheses are satisfiable for positive dimensions, for example with R = Rinv = I_n and dA = Q - A, and the conclusion follows by nontrivial matrix algebra.",
+      "reasoning": "Although n = 0 is an added degenerate case, the proposition is not vacuous and is not true solely for an unintended trivial reason."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "Under direct correspondence of the stated binders, the translation has no m-by-k matrices and therefore does not cover the paper's genuine tall-matrix cases or its family of leading factors. Its square theorem cannot be instantiated directly with the paper's rectangular A_k, Q_k, and Delta A_k."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper establishes the identity only for leading factors computed by CGS-P from a full-rank input under condition (3), whereas the translation quantifies over arbitrary square matrices, nontriangular invertible R, arbitrary residuals, and the zero-dimensional case."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "major",
+      "category": "dimensions-and-indexing",
+      "paper_evidence": "The paper uses m-by-k matrices A_k, Q_k, and Delta A_k together with k-by-k R_k for every k = 1,...,n and m >= n.",
+      "translation_evidence": "Every matrix is n-by-n and there is no independent row dimension or leading index.",
+      "impact": "The translation omits the paper's rectangular cases, so it does not directly imply the selected paper result."
+    },
+    {
+      "severity": "major",
+      "category": "scope-and-algorithm-linkage",
+      "paper_evidence": "The identity concerns computed leading factors from CGS-P under the inherited full-rank and condition-number assumptions.",
+      "translation_evidence": "The matrices are arbitrary exact real matrices constrained only by a residual equality and a right-inverse equality.",
+      "impact": "The translation is broader than the paper in admissible data and loses the result's algorithmic and numerical provenance, so the paper does not imply the translation."
+    },
+    {
+      "severity": "note",
+      "category": "algebraic-core",
+      "paper_evidence": "The source sandwich contains E_k minus both cross terms and the quadratic residual product, with exact equality.",
+      "translation_evidence": "After unfolding its central expression, the translation has precisely the same signs, transpose order, sandwich order, and quadratic term.",
+      "impact": "The central algebraic identity is correct despite the incompatible statement scope."
+    }
+  ],
+  "rationale": "The blind translation accurately reproduces the exact algebraic core of the page-312 identity, including the residual sign convention after unfolding, both cross terms, the quadratic term, and the inverse-transpose sandwich. Its right-inverse hypothesis is sufficient in the finite square real setting. However, it replaces the paper's m-by-k/k-by-k leading-factor geometry with a single n-by-n type, admits n = 0, and removes the full-rank CGS-P computation, condition (3), and floating-point provenance. It is therefore narrower in dimensions but broader in admissible matrices and hypotheses. Under the stated binders neither result implies the other, yielding not-faithful-different."
+}
+

@@ -1,269 +1,320 @@
 {
-  "schema_version": "highambench-faithfulness-0.1",
+  "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "8caf1fe2aa2c0287b9c6c1380aa53b2b3af6e367a3fd1f06dc44d39befd6bd20",
+  "dossier_sha256": "5ecb6da2fa5d468c5a4d59ae0c8d7176d02e698cd7147ddaeaf1feccf6d0a952",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "For a natural number n, this abbreviates the type of n-by-n real matrices, represented as Matrix (Fin n) (Fin n) Real.",
-      "effect_on_target": "It is the type of A, dA, Q, R, Rinv, and every matrix expression in the proposition.",
+      "meaning": "LocalDef001 n is the type of n-by-n real matrices, with both indices in Fin n.",
+      "effect_on_target": "It is the type of R, Rinv, the two inverse-residual matrices, and the final matrix equality, all of size r-by-r where r = k.val + 1.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "It defines E(A,dA,R) = (((R^T R - A^T A) - A^T dA) - dA^T A) - dA^T dA, with all products being matrix products and all subtractions being pointwise matrix subtractions.",
-      "effect_on_target": "This is the central matrix occurring between Rinv^T and Rinv on the right-hand side of the conclusion.",
+      "meaning": "LocalDef002 m n is the type of m-by-n real matrices.",
+      "effect_on_target": "It makes A, dA, and Q into m-by-r real matrices, where r = k.val + 1.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "It is the n-by-n identity matrix I_n.",
-      "effect_on_target": "It appears in the hypothesis R Rinv = I_n and in the left-hand side I_n - Q^T Q.",
+      "meaning": "LocalDef003 n is the n-by-n identity matrix I_n.",
+      "effect_on_target": "It supplies I_r in the hypothesis R Rinv = I_r and in the conclusion's left-hand side I_r - Q^T Q.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "It is ordinary finite-dimensional matrix multiplication.",
-      "effect_on_target": "It forms Q R, R Rinv, all Gram-type products such as Q^T Q and R^T R, and the right-hand-side product (Rinv^T E) Rinv.",
+      "meaning": "LocalDef004 n A B is the usual product AB of two n-by-n real matrices.",
+      "effect_on_target": "It interprets the hypothesis as R Rinv = I_r and the conclusion's right-hand side as (Rinv^T E) Rinv.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "For Q, it defines the matrix I_n - Q^T Q.",
-      "effect_on_target": "It is exactly the left-hand side of the asserted equality and measures the exact orthogonality defect of Q.",
+      "meaning": "For A,dA in R^{m x r} and R in R^{r x r}, LocalDef005 A dA R is the left-associated matrix expression E = (((R^T R - A^T A) - A^T dA) - dA^T A) - dA^T dA.",
+      "effect_on_target": "This is the central r-by-r residual E occurring between Rinv^T and Rinv on the conclusion's right-hand side.",
       "status": "understood"
     },
     {
       "id": "D006",
       "name": "LocalDef006",
-      "meaning": "It maps a matrix to its transpose.",
-      "effect_on_target": "It supplies Q^T, Rinv^T, R^T, A^T, and dA^T in the conclusion.",
+      "meaning": "LocalDef006 A B is ordinary compatible rectangular real-matrix multiplication AB.",
+      "effect_on_target": "It interprets Q R, A^T A, A^T dA, dA^T A, dA^T dA, and Q^T Q as standard matrix products.",
       "status": "understood"
     },
     {
       "id": "D007",
       "name": "LocalDef007",
-      "meaning": "It defines the difference of Gram matrices R^T R - A^T A.",
-      "effect_on_target": "It is the first term in the left-associated definition of E(A,dA,R).",
+      "meaning": "For Q in R^{m x r}, LocalDef007 Q is I_r - Q^T Q.",
+      "effect_on_target": "It is exactly the left-hand side of the asserted conclusion.",
       "status": "understood"
     },
     {
       "id": "D008",
-      "name": "Eq",
-      "meaning": "It is propositional equality between two objects of the same type.",
-      "effect_on_target": "Both hypotheses and the conclusion are exact matrix equalities, not approximate relations.",
+      "name": "LocalDef008",
+      "meaning": "LocalDef008 A is the transpose A^T of a square matrix A.",
+      "effect_on_target": "It turns Rinv into Rinv^T in the conclusion and R into R^T inside the residual.",
       "status": "understood"
     },
     {
       "id": "D009",
-      "name": "Fin",
-      "meaning": "Fin n is the finite type of natural-number indices strictly below n.",
-      "effect_on_target": "It indexes the rows and columns of every matrix and supplies the finite index set over which matrix-product sums are taken.",
+      "name": "LocalDef009",
+      "meaning": "For A in R^{m x r} and R in R^{r x r}, LocalDef009 A R is R^T R - A^T A.",
+      "effect_on_target": "It supplies the first difference in E before the three additional cross and quadratic dA terms are subtracted.",
       "status": "understood"
     },
     {
       "id": "D010",
-      "name": "HAdd.hAdd",
-      "meaning": "It invokes the addition operation supplied by an HAdd instance.",
-      "effect_on_target": "With the matrix addition instance used here, it makes A + dA in the first hypothesis ordinary pointwise matrix addition.",
+      "name": "LocalDef010",
+      "meaning": "LocalDef010 A is the transpose A^T of a rectangular matrix.",
+      "effect_on_target": "It supplies A^T, dA^T, and Q^T in all Gram and cross products.",
       "status": "understood"
     },
     {
       "id": "D011",
-      "name": "Matrix.add",
-      "meaning": "It defines matrix addition pointwise from scalar addition: (X + Y)_{ij} = X_{ij} + Y_{ij}.",
-      "effect_on_target": "It determines the exact meaning of A + dA in Q R = A + dA.",
+      "name": "Eq",
+      "meaning": "Eq expresses exact equality of two terms of the same type.",
+      "effect_on_target": "Both hypotheses and the conclusion are exact matrix equalities, not approximate relations.",
       "status": "understood"
     },
     {
       "id": "D012",
-      "name": "Nat",
-      "meaning": "It is the type of natural numbers, including zero.",
-      "effect_on_target": "The quantified natural number n determines the common matrix dimension, with no assumption that n is positive.",
+      "name": "Fin",
+      "meaning": "Fin n is the finite type of natural-number indices strictly less than n.",
+      "effect_on_target": "The binder k selects an index with k.val < n, and all matrix row and column index sets are finite.",
       "status": "understood"
     },
     {
       "id": "D013",
-      "name": "Real",
-      "meaning": "It is the type of real numbers.",
-      "effect_on_target": "All matrix entries and all scalar arithmetic in the proposition are real.",
+      "name": "Fin.val",
+      "meaning": "Fin.val returns the underlying natural number of a bounded finite index.",
+      "effect_on_target": "It determines the column and square-matrix dimension r = k.val + 1.",
       "status": "understood"
     },
     {
       "id": "D014",
-      "name": "Real.instAdd",
-      "meaning": "It supplies ordinary addition on real numbers.",
-      "effect_on_target": "It induces the entrywise addition used in the matrix sum A + dA.",
+      "name": "HAdd.hAdd",
+      "meaning": "HAdd.hAdd invokes the addition operation supplied by the relevant heterogeneous-addition instance.",
+      "effect_on_target": "With the supplied instances it computes natural-number addition in k.val + 1 and pointwise matrix addition in A + dA.",
       "status": "understood"
     },
     {
       "id": "D015",
-      "name": "instHAdd",
-      "meaning": "It converts an ordinary homogeneous Add operation into an HAdd operation with the same addition.",
-      "effect_on_target": "It ensures that the elaborated HAdd expression applied to A and dA is ordinary matrix addition.",
+      "name": "LE.le",
+      "meaning": "LE.le invokes the less-than-or-equal relation supplied for a type.",
+      "effect_on_target": "With the natural-number instance it makes hmn the condition n <= m.",
       "status": "understood"
     },
     {
       "id": "D016",
-      "name": "Fin.fintype",
-      "meaning": "It equips Fin n with its finite enumeration.",
-      "effect_on_target": "It allows every matrix product to be defined by a finite sum over the intermediate index j in Fin n.",
+      "name": "Matrix.add",
+      "meaning": "Matrix.add defines matrix addition pointwise from scalar addition.",
+      "effect_on_target": "It makes A + dA the entrywise sum of the two m-by-r real matrices in the hypothesis Q R = A + dA.",
       "status": "understood"
     },
     {
       "id": "D017",
-      "name": "HMul.hMul",
-      "meaning": "It invokes the multiplication operation supplied by an HMul instance.",
-      "effect_on_target": "Through the matrix HMul instance, every occurrence represented by LocalDef004 is interpreted as standard matrix multiplication.",
+      "name": "Nat",
+      "meaning": "Nat is the type of natural numbers.",
+      "effect_on_target": "The quantities m and n, the bounded index value, and every matrix dimension are natural numbers.",
       "status": "understood"
     },
     {
       "id": "D018",
-      "name": "HSub.hSub",
-      "meaning": "It invokes the subtraction operation supplied by an HSub instance.",
-      "effect_on_target": "It implements the successive matrix subtractions in E(A,dA,R) and the subtraction I_n - Q^T Q.",
+      "name": "OfNat.ofNat",
+      "meaning": "OfNat.ofNat interprets a natural-number literal in a type having the corresponding numeral instance.",
+      "effect_on_target": "It interprets the literal 1 used in the dimension k.val + 1 and, through matrix numeral instances, the identity matrix appearing in LocalDef003.",
       "status": "understood"
     },
     {
       "id": "D019",
-      "name": "Matrix",
-      "meaning": "A matrix with row type m, column type n, and entries in alpha is a function m -> n -> alpha.",
-      "effect_on_target": "Thus the target concerns functions Fin n -> Fin n -> Real, and its matrix equalities are exact extensional equalities of their entries.",
+      "name": "Real",
+      "meaning": "Real is the type of real numbers.",
+      "effect_on_target": "Every entry of A, dA, Q, R, Rinv, and all resulting matrices is real.",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
-      "meaning": "It defines standard matrix multiplication by (X Y)_{ik} = sum over j of X_{ij} Y_{jk}.",
-      "effect_on_target": "It fixes the meaning of every product in the hypotheses, the Gram matrices, and the final sandwich product.",
+      "name": "Real.instAdd",
+      "meaning": "Real.instAdd supplies ordinary real-number addition.",
+      "effect_on_target": "It induces the pointwise matrix addition used in A + dA.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "Matrix.one",
-      "meaning": "It defines the identity matrix as the diagonal matrix having scalar one on the diagonal and zero off the diagonal.",
-      "effect_on_target": "It supplies the matrix I_n used by LocalDef003.",
+      "name": "instAddNat",
+      "meaning": "instAddNat supplies ordinary natural-number addition.",
+      "effect_on_target": "It makes k.val + 1 the natural successor of k.val.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "Matrix.sub",
-      "meaning": "It defines matrix subtraction pointwise from scalar subtraction.",
-      "effect_on_target": "It determines every subtraction in I_n - Q^T Q and in the expanded matrix E(A,dA,R).",
+      "name": "instHAdd",
+      "meaning": "instHAdd promotes a homogeneous Add operation to the corresponding HAdd operation.",
+      "effect_on_target": "It connects HAdd.hAdd to ordinary natural addition for k.val + 1 and to matrix addition for A + dA.",
       "status": "understood"
     },
     {
       "id": "D023",
-      "name": "Matrix.transpose",
-      "meaning": "For a matrix X, its transpose satisfies (X^T)_{ij} = X_{ji}.",
-      "effect_on_target": "It determines all transposed factors in the asserted identity.",
+      "name": "instLENat",
+      "meaning": "instLENat supplies the usual natural-number order relation.",
+      "effect_on_target": "It makes the dimension hypothesis precisely n <= m.",
       "status": "understood"
     },
     {
       "id": "D024",
-      "name": "OfNat.ofNat",
-      "meaning": "It interprets a natural-number literal in a type having the corresponding OfNat instance.",
-      "effect_on_target": "It interprets the literal 1 used to construct the identity matrix and its diagonal scalar entries.",
+      "name": "instOfNatNat",
+      "meaning": "instOfNatNat interprets each natural-number literal as that same natural number.",
+      "effect_on_target": "It makes the literal 1 in k.val + 1 the natural number one.",
       "status": "understood"
     },
     {
       "id": "D025",
-      "name": "One.toOfNat1",
-      "meaning": "It derives interpretation of the numeral 1 from a type's distinguished One element.",
-      "effect_on_target": "It makes the literal 1 in LocalDef003 denote matrix one and the diagonal literal 1 denote real scalar one.",
+      "name": "Fin.fintype",
+      "meaning": "Fin.fintype equips Fin n with its finite enumeration.",
+      "effect_on_target": "It permits every matrix product to be defined by finite summation over its middle Fin-indexed dimension.",
       "status": "understood"
     },
     {
       "id": "D026",
-      "name": "Real.instAddCommMonoid",
-      "meaning": "It supplies the real numbers with their additive commutative monoid structure.",
-      "effect_on_target": "It provides finite addition and zero for the dot-product sums defining matrix multiplication.",
+      "name": "HMul.hMul",
+      "meaning": "HMul.hMul invokes the multiplication operation supplied by a heterogeneous-multiplication instance.",
+      "effect_on_target": "In LocalDef004 and LocalDef006 it resolves to ordinary compatible matrix multiplication.",
       "status": "understood"
     },
     {
       "id": "D027",
-      "name": "Real.instMul",
-      "meaning": "It supplies ordinary multiplication on real numbers.",
-      "effect_on_target": "It defines the scalar products X_{ij}Y_{jk} summed in each matrix-product entry.",
+      "name": "HSub.hSub",
+      "meaning": "HSub.hSub invokes the subtraction operation supplied by a heterogeneous-subtraction instance.",
+      "effect_on_target": "It performs each matrix subtraction in I_r - Q^T Q, R^T R - A^T A, and the definition of E.",
       "status": "understood"
     },
     {
       "id": "D028",
-      "name": "Real.instOne",
-      "meaning": "It supplies the real scalar one.",
-      "effect_on_target": "It provides the diagonal entries of the identity matrix I_n.",
+      "name": "Matrix",
+      "meaning": "Matrix m n alpha is the function type m -> n -> alpha, representing an alpha-valued matrix indexed by row type m and column type n.",
+      "effect_on_target": "It gives the entrywise representation and dimensions of every real matrix in the proposition.",
       "status": "understood"
     },
     {
       "id": "D029",
-      "name": "Real.instSub",
-      "meaning": "It supplies ordinary real subtraction, implemented as addition of the additive inverse.",
-      "effect_on_target": "It induces the pointwise matrix subtraction used throughout the conclusion.",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "meaning": "This instance defines compatible matrix multiplication by (MN)_{ik} = sum_j M_{ij} N_{jk} over the finite middle index type.",
+      "effect_on_target": "It gives all products in the hypotheses, residual E, and conclusion their standard finite-sum matrix meaning.",
       "status": "understood"
     },
     {
       "id": "D030",
-      "name": "Real.instZero",
-      "meaning": "It supplies the real scalar zero.",
-      "effect_on_target": "It supplies the off-diagonal entries of I_n and the additive zero used in finite matrix-product sums.",
+      "name": "Matrix.one",
+      "meaning": "Matrix.one defines the identity matrix, with scalar one on the diagonal and zero off the diagonal.",
+      "effect_on_target": "It makes LocalDef003 r equal to the identity matrix I_r.",
       "status": "understood"
     },
     {
       "id": "D031",
-      "name": "instDecidableEqFin",
-      "meaning": "It decides equality between two indices in Fin n.",
-      "effect_on_target": "It allows the diagonal identity matrix to distinguish diagonal entries from off-diagonal entries.",
+      "name": "Matrix.sub",
+      "meaning": "Matrix.sub defines matrix subtraction pointwise from scalar subtraction.",
+      "effect_on_target": "It gives all subtractions in the two residual expressions their entrywise real-matrix meaning.",
       "status": "understood"
     },
     {
       "id": "D032",
+      "name": "Matrix.transpose",
+      "meaning": "Matrix.transpose swaps row and column indices, so (M^T)_{ij} = M_{ji}.",
+      "effect_on_target": "It defines every transpose of A, dA, Q, R, and Rinv appearing in the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "One.toOfNat1",
+      "meaning": "One.toOfNat1 interprets the numeral 1 as the distinguished multiplicative-one element of a type.",
+      "effect_on_target": "For square matrices it connects the literal 1 in LocalDef003 to the matrix identity supplied by Matrix.one.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "Real.instAddCommMonoid supplies the commutative additive monoid structure of the real numbers.",
+      "effect_on_target": "It supports the finite sums used to form ordinary real matrix products.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instMul",
+      "meaning": "Real.instMul supplies ordinary real-number multiplication.",
+      "effect_on_target": "It supplies the scalar products summed in every matrix multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Real.instOne",
+      "meaning": "Real.instOne supplies the real number one.",
+      "effect_on_target": "It supplies the diagonal entries of each identity matrix I_r.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instSub",
+      "meaning": "Real.instSub supplies ordinary real subtraction, defined as addition of the additive inverse.",
+      "effect_on_target": "It induces pointwise subtraction in all matrix residuals.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "Real.instZero",
+      "meaning": "Real.instZero supplies the real number zero.",
+      "effect_on_target": "It supplies off-diagonal entries of identity matrices and the zero used in finite-sum algebra.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "instDecidableEqFin",
+      "meaning": "instDecidableEqFin decides equality of two Fin n indices by comparing their underlying natural values.",
+      "effect_on_target": "It allows Matrix.one to distinguish diagonal from off-diagonal entries of I_r.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
       "name": "instHSub",
-      "meaning": "It converts an ordinary homogeneous Sub operation into an HSub operation with the same subtraction.",
-      "effect_on_target": "It ensures that each elaborated HSub expression is ordinary pointwise matrix subtraction.",
+      "meaning": "instHSub promotes a homogeneous Sub operation to the corresponding HSub operation.",
+      "effect_on_target": "It connects each HSub.hSub invocation to pointwise real-matrix subtraction.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "An arbitrary natural number n, implicitly quantified and allowed to be zero.",
-      "Arbitrary n-by-n real matrices A, dA, Q, R, and Rinv."
+      "Natural numbers m and n.",
+      "A bounded index k in Fin n; write j = k.val and r = j + 1.",
+      "Real matrices A, dA, and Q in R^{m x r}.",
+      "Real square matrices R and Rinv in R^{r x r}."
     ],
     "hypotheses": [
-      "Q R = A + dA exactly.",
-      "R Rinv = I_n exactly; thus Rinv is supplied as a right inverse of R."
+      "n <= m.",
+      "Q R = A + dA.",
+      "R Rinv = I_r."
     ],
     "conclusions": [
-      "I_n - Q^T Q = (Rinv^T E(A,dA,R)) Rinv, where E(A,dA,R) = (((R^T R - A^T A) - A^T dA) - dA^T A) - dA^T dA."
+      "I_r - Q^T Q = Rinv^T (((R^T R - A^T A) - A^T dA) - dA^T A - dA^T dA) Rinv, where the residual inside the parentheses is parsed left-associatively as (((R^T R - A^T A) - A^T dA) - dA^T A) - dA^T dA."
     ],
     "mathematical_definitions": [
-      "Every matrix belongs to R^{n x n} and has entries indexed by pairs i,j in Fin n.",
-      "For matrices X and Y, (X Y)_{ik} = sum_{j in Fin n} X_{ij}Y_{jk}.",
-      "Matrix addition and subtraction are entrywise.",
-      "The transpose satisfies (X^T)_{ij} = X_{ji}.",
-      "I_n is the n-by-n identity matrix, with real one on its diagonal and zero elsewhere.",
-      "E(A,dA,R) is the left-associated expression (((R^T R - A^T A) - A^T dA) - dA^T A) - dA^T dA.",
-      "The quantity I_n - Q^T Q is an exact matrix, not a norm or scalar error measure."
+      "j = k.val and r = j + 1; because k is in Fin n, j < n and hence 1 <= r <= n <= m.",
+      "I_r denotes the r-by-r identity matrix.",
+      "All additions and subtractions are entrywise, all transposes are ordinary matrix transposes, and all products are standard compatible real-matrix products.",
+      "Define E = (((R^T R - A^T A) - A^T dA) - dA^T A) - dA^T dA. The conclusion is I_r - Q^T Q = (Rinv^T E) Rinv."
     ],
-    "proposition_plain_english": "For every natural dimension n and all n-by-n real matrices A, dA, Q, R, and Rinv, if Q times R equals A plus dA and R times Rinv is the identity matrix, then the exact orthogonality-defect matrix I_n - Q^T Q equals Rinv^T times the matrix (((R^T R - A^T A) - A^T dA) - dA^T A) - dA^T dA, followed by multiplication on the right by Rinv."
+    "proposition_plain_english": "For every pair of natural dimensions m,n with n <= m, every index k < n, and r = k + 1, let A, dA, and Q be m-by-r real matrices and let R and Rinv be r-by-r real matrices. If Q R equals A + dA exactly and R Rinv equals the identity matrix exactly, then the orthogonality residual of Q satisfies the exact identity I_r - Q^T Q = Rinv^T (R^T R - A^T A - A^T dA - dA^T A - dA^T dA) Rinv, with the displayed subtractions evaluated left-associatively."
   },
   "restrictions_and_vacuity_risks": [
-    "The dimension n is not required to be positive. For n = 0, Fin 0 is empty and there is only one 0-by-0 real matrix, so the equalities are degenerate and automatically true.",
-    "The proposition is conditional: for matrix choices that do not satisfy both displayed hypotheses, no conclusion is asserted.",
-    "Rinv is universally supplied as data; the proposition does not existentially assert that an inverse exists.",
-    "Only R Rinv = I_n is explicitly assumed. The opposite-sided equality Rinv R = I_n is not encoded as a hypothesis, even though it follows mathematically for finite square real matrices.",
-    "The name dA imposes no mathematical restriction: dA is arbitrary and is not assumed small, bounded, structured, or nonzero.",
-    "Q is not assumed orthogonal. The conclusion instead gives an exact formula for I_n - Q^T Q.",
-    "No triangularity condition on R, rank condition on A, positivity condition, determinant condition, or other matrix structure is explicitly stated.",
-    "All matrices are square and have the same dimension; the proposition does not cover a rectangular factorization.",
-    "There are no norms, inequalities, error bounds, tolerances, floating-point operations, rounding models, or approximation claims.",
-    "All arithmetic and all equalities are exact over the real numbers.",
-    "There are no existential witnesses, uniqueness claims, or computed scalar constants beyond the zero and one used in the identity matrix."
+    "If n = 0, Fin n has no element k, so the part of the proposition quantified over k is vacuous.",
+    "For n > m there is no proof of the required hypothesis n <= m, so the original implication has no nonvacuous instance for those dimensions.",
+    "The column dimension is restricted to r = k.val + 1, hence 1 <= r <= n <= m; the statement does not directly quantify over an arbitrary independent column dimension.",
+    "Rinv is not definitionally declared to be the inverse of R; the only encoded inverse condition is the right-inverse equality R Rinv = I_r.",
+    "No orthogonality assumption on Q, triangularity assumption on R, rank or nonsingularity assumption on A, or smallness assumption on dA is encoded.",
+    "The name dA does not impose perturbative semantics: dA is an arbitrary real matrix of the stated dimensions.",
+    "The proposition contains no norms, inequalities, error bounds, tolerance constants, existential witnesses, or computed floating-point quantities; every relation is an exact matrix equality."
   ],
   "ambiguities": []
 }
-

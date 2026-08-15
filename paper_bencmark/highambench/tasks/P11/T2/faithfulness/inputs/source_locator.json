@@ -5,10 +5,31 @@
   "paper_version": "published journal version; volume 105, issue 2, 2006, printed pages 299-313",
   "source_locations": [
     {
+      "anchor": "opening rectangular matrix setting and column notation",
+      "pdf_page": 2,
+      "printed_page": "300",
+      "role": "m-by-n dimensions, n at most m, full column rank, and leading A/Q/R notation",
+      "section": "Introduction and Algorithm 1 setup"
+    },
+    {
+      "anchor": "Algorithm 2 and following floating-point model",
+      "pdf_page": 3,
+      "printed_page": "301",
+      "role": "CGS-P provenance and surrounding normalized-range arithmetic context",
+      "section": "Algorithm 2 (CGS-P)"
+    },
+    {
+      "anchor": "Theorem 1 and equations (3)-(7)",
+      "pdf_page": 4,
+      "printed_page": "302",
+      "role": "leading index k=1,...,n, factor dimensions, residual definitions, and inverse availability",
+      "section": "Theorem 1"
+    },
+    {
       "anchor": "unnumbered two-line displayed identity beginning I-Q_k^T Q_k",
       "pdf_page": 14,
       "printed_page": "312",
-      "role": "exact residual-to-orthogonality-defect identity",
+      "role": "exact rectangular residual-to-orthogonality-defect identity",
       "section": "Appendix: Proof of Theorem 1"
     }
   ],

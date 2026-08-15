@@ -1,264 +1,328 @@
 {
-  "schema_version": "highambench-faithfulness-0.1",
+  "schema_version": "highambench-faithfulness-0.2",
   "role": "direct-judge",
   "task_id": "P11-T2",
   "paper_sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5",
-  "dossier_sha256": "9cf6428bd30c41300100c8cd58bda8d4b2c9c49a42fc1c8130f8cdf2dc80b21f",
+  "dossier_sha256": "b196daad46844278307602065300d4db47bbc6775e9f85e9f1d19c8e400b2332",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "HighamBench.P11Matrix",
-      "interpretation": "P11Matrix n is the type of square n-by-n matrices over the exact real numbers, indexed in both directions by Fin n.",
-      "effect_on_target": "It forces A, dA, Q, R, and Rinv to have the same square shape and leaves only one dimension parameter.",
-      "paper_match": "The paper has A_k, Delta A_k, and Q_k of shape m-by-k and R_k of shape k-by-k. This definition matches only the specialization m = k = n and cannot directly express the general rectangular case.",
-      "status": "fail"
+      "interpretation": "P11Matrix l is the type of square l by l matrices over the real numbers.",
+      "effect_on_target": "It types R, Rinv, the identity, the defect core, and both sides of the conclusion as square matrices of prefix size l = k.val + 1.",
+      "paper_match": "The paper's R_k, E_k, I, and Q_k^T Q_k are all k by k real matrices.",
+      "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p11DefectCore",
-      "interpretation": "It is ((R^T R - A^T A) - A^T dA) - dA^T A - dA^T dA, with the subtractions associated to the left.",
-      "effect_on_target": "It supplies the complete matrix inside the two Rinv factors on the right-hand side.",
-      "paper_match": "After identifying dA with Delta A_k, this is exactly E_k - A_k^T Delta A_k - (Delta A_k)^T A_k - (Delta A_k)^T Delta A_k, including all signs and the quadratic term.",
+      "name": "HighamBench.P11RectMatrix",
+      "interpretation": "P11RectMatrix m l is the type of m by l real matrices.",
+      "effect_on_target": "It gives A, dA, and Q the rectangular dimensions m by (k.val + 1).",
+      "paper_match": "The paper's A_k, Delta A_k, and Q_k have dimensions m by k.",
       "status": "pass"
     },
     {
       "id": "D003",
       "name": "HighamBench.p11Identity",
-      "interpretation": "It is the square matrix with real one on the diagonal and zero off the diagonal.",
-      "effect_on_target": "It defines both the identity in hInv and the identity in the orthogonality defect.",
-      "paper_match": "With Lean's n identified with the paper's k, it is the k-by-k identity required by dimensional consistency.",
+      "interpretation": "p11Identity l is the multiplicative identity matrix of size l, since matrix 1 is the diagonal-one, off-diagonal-zero matrix.",
+      "effect_on_target": "It supplies I_l in hInv and in I_l - Q^T Q.",
+      "paper_match": "The unsubscripted I in the paper's display is conformably the k by k identity.",
       "status": "pass"
     },
     {
       "id": "D004",
       "name": "HighamBench.p11MatMul",
-      "interpretation": "It is ordinary finite matrix multiplication over the reals.",
-      "effect_on_target": "Every juxtaposed matrix product in the hypotheses, defect, residual, and conjugation is interpreted as standard matrix multiplication.",
-      "paper_match": "It matches the paper's products on the represented square domain. The inability to type rectangular products is caused by D001 rather than by the multiplication operation itself.",
+      "interpretation": "p11MatMul is ordinary square matrix multiplication over real entries.",
+      "effect_on_target": "It interprets R Rinv, Rinv^T times the core, and the final multiplication by Rinv.",
+      "paper_match": "These products are the ordinary products in R_k^{-T}(...)R_k^{-1}.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "HighamBench.p11OrthogonalityDefect",
-      "interpretation": "It is I - Q^T Q.",
-      "effect_on_target": "It fixes the left-hand side and, in particular, its sign.",
-      "paper_match": "The paper's displayed identity begins I - Q_k^T Q_k, with the same order and sign.",
+      "name": "HighamBench.p11RectDefectCore",
+      "interpretation": "The core is (R^T R - A^T A) - A^T dA - dA^T A - dA^T dA, with left-associated subtraction over real matrices.",
+      "effect_on_target": "It inlines E_k = R_k^T R_k - A_k^T A_k and all three negatively signed residual contributions, including the quadratic term.",
+      "paper_match": "This is exactly the expanded middle expression on PDF page 14, printed page 312.",
       "status": "pass"
     },
     {
       "id": "D006",
-      "name": "HighamBench.p11Transpose",
-      "interpretation": "It is ordinary matrix transpose, swapping row and column indices without conjugation.",
-      "effect_on_target": "It interprets Q^T, Rinv^T, A^T, dA^T, and R^T.",
-      "paper_match": "The paper works over real matrices and uses ordinary transpose, so this matches exactly.",
+      "name": "HighamBench.p11RectMatMul",
+      "interpretation": "p11RectMatMul is ordinary conformable rectangular matrix multiplication.",
+      "effect_on_target": "It interprets Q R, A^T dA, dA^T A, dA^T dA, and Q^T Q with their appropriate rectangular inner dimensions.",
+      "paper_match": "All corresponding products in the paper use ordinary conformable real-matrix multiplication.",
       "status": "pass"
     },
     {
       "id": "D007",
-      "name": "HighamBench.p11NormalEquationResidual",
-      "interpretation": "It is R^T R - A^T A.",
-      "effect_on_target": "It supplies the leading term of p11DefectCore.",
-      "paper_match": "This has exactly the paper's sign convention E_k = R_k^T R_k - A_k^T A_k.",
+      "name": "HighamBench.p11RectOrthogonalityDefect",
+      "interpretation": "This definition is I_l - Q^T Q for an m by l real matrix Q.",
+      "effect_on_target": "It makes the left side precisely the orthogonality defect rather than a norm or approximation.",
+      "paper_match": "The selected paper display begins with I - Q_k^T Q_k.",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "Eq",
-      "interpretation": "Lean's Eq is exact propositional equality between two values of the same type.",
-      "effect_on_target": "Both hypotheses and the conclusion are exact matrix equalities, not approximate or normwise relations.",
-      "paper_match": "The page-312 identity is written as an exact equality and retains its quadratic residual term.",
+      "name": "HighamBench.p11Transpose",
+      "interpretation": "p11Transpose is ordinary matrix transpose on square real matrices.",
+      "effect_on_target": "Applied to Rinv, it denotes (Rinv)^T.",
+      "paper_match": "Once Rinv is identified with R_k^{-1}, this is R_k^{-T}.",
       "status": "pass"
     },
     {
       "id": "D009",
-      "name": "Fin",
-      "interpretation": "Fin n is the finite index type with n elements, conventionally represented by 0 through n-1.",
-      "effect_on_target": "It indexes all rows, columns, and finite matrix-product sums.",
-      "paper_match": "The zero-based indexing is bijectively equivalent to the paper's one-based indexing and introduces no offset into the formulas.",
+      "name": "HighamBench.p11RectNormalEquationResidual",
+      "interpretation": "This definition is R^T R - A^T A.",
+      "effect_on_target": "It supplies the first term of the defect core, inlining the paper's E_k.",
+      "paper_match": "PDF page 12, printed page 310, defines E_k with exactly this sign.",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "HAdd.hAdd",
-      "interpretation": "It selects the heterogeneous-addition operation supplied by the applicable typeclass.",
-      "effect_on_target": "In hQR it dispatches A + dA to matrix addition.",
-      "paper_match": "After instance resolution, this is the ordinary matrix sum A_k + Delta A_k used by the paper.",
+      "name": "HighamBench.p11RectTranspose",
+      "interpretation": "p11RectTranspose sends an m by l matrix to its ordinary l by m transpose.",
+      "effect_on_target": "It forms A^T, dA^T, and Q^T with the correct dimensions.",
+      "paper_match": "This is the transpose operation used throughout the selected paper identity.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "Matrix.add",
-      "interpretation": "It equips matrices with pointwise addition inherited from their entries.",
-      "effect_on_target": "A + dA means the matrix whose entries are A_ij + dA_ij.",
-      "paper_match": "This is standard matrix addition and matches A_k + Delta A_k.",
+      "name": "Eq",
+      "interpretation": "Eq is exact propositional equality between two terms of the same type.",
+      "effect_on_target": "Both hypotheses and the conclusion assert exact matrix equalities.",
+      "paper_match": "The selected two-stage display is an exact equality, not an approximation.",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "Nat",
-      "interpretation": "Nat is the type of natural numbers and includes zero.",
-      "effect_on_target": "The theorem quantifies over every n, including n = 0, without a positivity hypothesis.",
-      "paper_match": "The paper's identity is used for k = 1,...,n. Lean adds an empty-dimensional case not present in that range.",
-      "status": "fail"
+      "name": "Fin",
+      "interpretation": "Fin n consists of zero-based natural indices whose values are strictly less than n.",
+      "effect_on_target": "For k : Fin n, l = k.val + 1 satisfies 1 <= l <= n. Together with n <= m, this gives the paper's positive prefix index and m by l rectangular geometry.",
+      "paper_match": "The paper indexes prefixes by the one-based range 1,...,n.",
+      "status": "pass"
     },
     {
       "id": "D013",
-      "name": "Real",
-      "interpretation": "Real is Lean's exact real-number type, not a floating-point datatype.",
-      "effect_on_target": "All matrix entries and all algebra in the proposition are exact real quantities.",
-      "paper_match": "The paper declares its matrices to be real, and the selected displayed identity is exact for the computed real-valued matrices, so the scalar semantics of the identity match.",
+      "name": "Fin.val",
+      "interpretation": "Fin.val extracts the zero-based natural value of a bounded Fin index.",
+      "effect_on_target": "Adding one converts the Lean index into the paper's one-based prefix size.",
+      "paper_match": "k.val + 1 ranges over exactly the paper indices 1,...,n.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "Real.instAdd",
-      "interpretation": "It is exact addition of real numbers.",
-      "effect_on_target": "It supplies entrywise addition for A + dA.",
-      "paper_match": "It matches exact real addition in the displayed algebraic identity.",
+      "name": "HAdd.hAdd",
+      "interpretation": "HAdd.hAdd projects the addition operation selected by the relevant typeclass instance.",
+      "effect_on_target": "It denotes natural-number addition in k.val + 1 and pointwise matrix addition in A + dA.",
+      "paper_match": "These operations correspond respectively to the one-based prefix size and A_k + Delta A_k.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "instHAdd",
-      "interpretation": "It converts an ordinary homogeneous Add instance into the HAdd interface.",
-      "effect_on_target": "It makes HAdd.hAdd on two matrices return their ordinary matrix sum.",
-      "paper_match": "This is elaboration infrastructure and preserves the intended matrix addition.",
+      "name": "LE.le",
+      "interpretation": "LE.le is the less-than-or-equal relation supplied by the natural-number order instance.",
+      "effect_on_target": "The hypothesis hmn states n <= m.",
+      "paper_match": "The paper's opening setting assumes m >= n.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "Fin.fintype",
-      "interpretation": "It provides a finite enumeration of Fin n.",
-      "effect_on_target": "It makes the index sum in matrix multiplication a finite sum over all n inner indices.",
-      "paper_match": "That is the standard finite summation used in matrix products.",
+      "name": "Matrix.add",
+      "interpretation": "Matrix.add defines matrix addition pointwise from real addition.",
+      "effect_on_target": "It makes A + dA the entrywise sum of two equally sized rectangular matrices.",
+      "paper_match": "This is the sum in Q_k R_k = A_k + Delta A_k.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "HMul.hMul",
-      "interpretation": "It selects the heterogeneous-multiplication operation supplied by a typeclass.",
-      "effect_on_target": "Inside p11MatMul it dispatches matrix multiplication to the matrix HMul instance.",
-      "paper_match": "After instance resolution it denotes ordinary matrix multiplication, as in the paper.",
+      "name": "Nat",
+      "interpretation": "Nat is the type of natural numbers used for finite dimensions and indices.",
+      "effect_on_target": "It parameterizes m, n, and the prefix dimension. A supplied k forces n > 0, and hmn then forces m > 0.",
+      "paper_match": "The paper uses finite positive integer dimensions for each instantiated prefix; the n = 0 Lean case has no k and introduces no spurious prefix.",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "HSub.hSub",
-      "interpretation": "It selects the heterogeneous-subtraction operation supplied by a typeclass.",
-      "effect_on_target": "It dispatches all subtractions in the defect and residual definitions to matrix subtraction.",
-      "paper_match": "After instance resolution it preserves the paper's ordered matrix differences.",
+      "name": "OfNat.ofNat",
+      "interpretation": "OfNat.ofNat interprets numeric literals through the selected type instance.",
+      "effect_on_target": "It supplies the natural-number literal 1 in k.val + 1.",
+      "paper_match": "This implements the exact zero-based to one-based index shift.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "Matrix",
-      "interpretation": "Matrix m n alpha is the function type m -> n -> alpha.",
-      "effect_on_target": "Matrices and their equality are entrywise-extensional functions on row and column indices.",
-      "paper_match": "This is a standard faithful representation of finite matrices; the square restriction comes from D001.",
+      "name": "Real",
+      "interpretation": "Real is the field of real numbers.",
+      "effect_on_target": "Every matrix entry is an exact real number.",
+      "paper_match": "The paper works with A in R^{m by n} and uses exact real-matrix algebra in the selected identity.",
       "status": "pass"
     },
     {
       "id": "D020",
-      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
-      "interpretation": "It defines (M N)_{ik} as the finite dot product sum_j M_{ij} N_{jk}.",
-      "effect_on_target": "It gives p11MatMul the standard row-by-column product over Fin n.",
-      "paper_match": "This is exactly ordinary real matrix multiplication.",
+      "name": "Real.instAdd",
+      "interpretation": "This is ordinary addition on real numbers.",
+      "effect_on_target": "It induces the pointwise addition used for A + dA and in matrix products' scalar arithmetic.",
+      "paper_match": "It has the standard real-arithmetic meaning used by the paper.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "Matrix.one",
-      "interpretation": "It defines the identity matrix as the diagonal matrix with entry one at every diagonal position.",
-      "effect_on_target": "It makes p11Identity n the multiplicative identity matrix.",
-      "paper_match": "It matches the paper's dimensionally inferred identity matrix I.",
+      "name": "instAddNat",
+      "interpretation": "This is ordinary natural-number addition.",
+      "effect_on_target": "It makes k.val + 1 the successor prefix size.",
+      "paper_match": "It produces the intended paper index without an offset error.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "Matrix.sub",
-      "interpretation": "It equips matrices with pointwise subtraction inherited from their entries.",
-      "effect_on_target": "Every matrix difference is evaluated entry by entry.",
-      "paper_match": "This is standard matrix subtraction and preserves all signs in the paper's identity.",
+      "name": "instHAdd",
+      "interpretation": "instHAdd turns a homogeneous Add operation into homogeneous HAdd.",
+      "effect_on_target": "It routes both natural and matrix additions to their ordinary same-type additions.",
+      "paper_match": "This is implementation-level dispatch with no alteration of the paper operations.",
       "status": "pass"
     },
     {
       "id": "D023",
-      "name": "Matrix.transpose",
-      "interpretation": "It maps a matrix M to the matrix with entry (i,j) equal to M(j,i).",
-      "effect_on_target": "It supplies the concrete operation wrapped by p11Transpose.",
-      "paper_match": "It is the ordinary transpose used throughout the real-matrix paper.",
+      "name": "instLENat",
+      "interpretation": "instLENat supplies the standard natural-number ordering.",
+      "effect_on_target": "It makes hmn the usual proposition n <= m.",
+      "paper_match": "This is exactly the paper's dimension restriction m >= n.",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "OfNat.ofNat",
-      "interpretation": "It interprets a natural-number literal in a type having the corresponding OfNat instance.",
-      "effect_on_target": "It participates in interpreting the literal 1 used to construct the identity matrix.",
-      "paper_match": "It has only an elaboration role and ultimately denotes the scalar one required on the identity diagonal.",
+      "name": "instOfNatNat",
+      "interpretation": "This instance interprets a natural-number literal as that same natural number.",
+      "effect_on_target": "The literal 1 in the prefix dimension is exactly one.",
+      "paper_match": "There is no scaling or index ambiguity.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "One.toOfNat1",
-      "interpretation": "It interprets the numeral 1 using a type's One instance.",
-      "effect_on_target": "It connects the literal 1 in Matrix.one to real one.",
-      "paper_match": "It preserves the standard identity-matrix semantics.",
+      "name": "Fin.fintype",
+      "interpretation": "Fin.fintype enumerates the finitely many elements of Fin l.",
+      "effect_on_target": "It supplies the finite inner-index set needed for matrix multiplication.",
+      "paper_match": "The resulting sums are the standard finite sums defining products of finite matrices.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "Real.instAddCommMonoid",
-      "interpretation": "It supplies associative and commutative real addition with zero.",
-      "effect_on_target": "It supports the finite sums used in real matrix multiplication.",
-      "paper_match": "Those sums are the ordinary real sums implicit in the paper's matrix products.",
+      "name": "HMul.hMul",
+      "interpretation": "HMul.hMul projects the multiplication operation selected by an HMul instance.",
+      "effect_on_target": "It dispatches the matrix products to the standard matrix-multiplication instance.",
+      "paper_match": "It introduces no nonstandard product.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "Real.instMul",
-      "interpretation": "It is exact multiplication of real numbers.",
-      "effect_on_target": "It supplies the scalar products inside matrix multiplication.",
-      "paper_match": "It matches exact real multiplication in the displayed identity.",
+      "name": "HSub.hSub",
+      "interpretation": "HSub.hSub projects the subtraction operation selected by an HSub instance.",
+      "effect_on_target": "It implements the chained matrix subtractions in the residual and defect definitions.",
+      "paper_match": "The subtraction order and all three minus signs match the paper.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "Real.instOne",
-      "interpretation": "It supplies the real multiplicative identity 1.",
-      "effect_on_target": "It supplies diagonal entries of p11Identity.",
-      "paper_match": "It matches the scalar one in the paper's identity matrix.",
+      "name": "Matrix",
+      "interpretation": "Matrix row column Real is represented as a function from row and column indices to real entries.",
+      "effect_on_target": "It gives the standard extensional finite-matrix semantics to all matrix types.",
+      "paper_match": "This representation is mathematically equivalent to the finite real matrices used by the paper.",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "Real.instSub",
-      "interpretation": "It defines real subtraction as addition of the additive inverse.",
-      "effect_on_target": "It supplies entrywise subtraction for all matrix residuals and defects.",
-      "paper_match": "It is ordinary exact real subtraction and preserves the paper's correction-term signs.",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "interpretation": "This instance defines (M N)_{ik} as the finite dot product summing M_{ij}N_{jk} over the inner index j.",
+      "effect_on_target": "Every p11 matrix product has standard row-by-column semantics.",
+      "paper_match": "It exactly matches ordinary real-matrix multiplication in the displayed identity.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "Real.instZero",
-      "interpretation": "It supplies the real additive identity 0.",
-      "effect_on_target": "It supplies off-diagonal entries of the identity matrix and the initial value of finite sums.",
-      "paper_match": "It has the standard scalar-zero semantics assumed by matrix algebra in the paper.",
+      "name": "Matrix.one",
+      "interpretation": "Matrix.one is the diagonal matrix with scalar one on the diagonal and zero elsewhere.",
+      "effect_on_target": "It makes p11Identity the genuine identity matrix for multiplication.",
+      "paper_match": "This is the conformable I_k used by the paper.",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "instDecidableEqFin",
-      "interpretation": "It decides whether two Fin n indices are equal.",
-      "effect_on_target": "It allows Matrix.one to choose one on the diagonal and zero off the diagonal.",
-      "paper_match": "This is computational infrastructure for the ordinary identity matrix and introduces no mathematical discrepancy.",
+      "name": "Matrix.sub",
+      "interpretation": "Matrix.sub defines subtraction entrywise.",
+      "effect_on_target": "It gives the defect core and orthogonality defect their ordinary additive-group meanings.",
+      "paper_match": "It matches each matrix subtraction in the paper's expression.",
       "status": "pass"
     },
     {
       "id": "D032",
+      "name": "Matrix.transpose",
+      "interpretation": "Matrix.transpose swaps row and column arguments.",
+      "effect_on_target": "It gives all square and rectangular transposes their usual entrywise meaning.",
+      "paper_match": "It matches every superscript T in the selected identity.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "One.toOfNat1",
+      "interpretation": "This declaration interprets the literal 1 from an available One instance.",
+      "effect_on_target": "In p11Identity's body it selects matrix one, which D030 identifies as the identity matrix.",
+      "paper_match": "It correctly realizes I_k.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The reals form an additive commutative monoid.",
+      "effect_on_target": "It permits order-independent finite addition in dot products.",
+      "paper_match": "This is standard real linear algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instMul",
+      "interpretation": "This is ordinary multiplication on real numbers.",
+      "effect_on_target": "It supplies scalar products inside every matrix dot product.",
+      "paper_match": "It matches the scalar multiplication underlying the paper's matrix products.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "Real.instOne",
+      "interpretation": "This is the ordinary real number one.",
+      "effect_on_target": "It supplies diagonal entries of the identity matrix.",
+      "paper_match": "It gives the standard real identity matrix.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "Real.instSub",
+      "interpretation": "Real subtraction is addition of the additive inverse.",
+      "effect_on_target": "It induces ordinary entrywise subtraction for matrices.",
+      "paper_match": "It preserves the exact residual signs in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "Real.instZero",
+      "interpretation": "This is the ordinary real number zero.",
+      "effect_on_target": "It supplies off-diagonal entries of matrix one and additive zeros in finite sums.",
+      "paper_match": "It gives the standard identity and matrix-product semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "instDecidableEqFin",
+      "interpretation": "This instance decides equality of finite indices by comparing their natural values.",
+      "effect_on_target": "It allows matrix one to distinguish diagonal from off-diagonal entries.",
+      "paper_match": "It is an implementation device for the ordinary finite identity matrix and changes no paper-level meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
       "name": "instHSub",
-      "interpretation": "It converts an ordinary homogeneous Sub instance into the HSub interface.",
-      "effect_on_target": "It makes HSub.hSub on matrices use their ordinary subtraction operation.",
-      "paper_match": "This is elaboration infrastructure and preserves the intended matrix differences.",
+      "interpretation": "instHSub turns a homogeneous Sub operation into homogeneous HSub.",
+      "effect_on_target": "It routes matrix subtraction notation to pointwise matrix subtraction.",
+      "paper_match": "It introduces no change to the subtraction operations in the source identity.",
       "status": "pass"
     }
   ],
@@ -266,159 +330,151 @@
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF is the 2006 Numerische Mathematik article with SHA-256 72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5. PDF page 14, printed page 312, contains the cited two-line identity immediately after 'To get (7)'.",
-      "lean_evidence": "The dossier identifies HighamBench.p11_t2_orthogonality_defect_identity as the target and supplies its exact, readable, and fully explicit types.",
-      "reasoning": "The selected source, version, passage, and enclosing proof of Theorem 1 are correctly identified."
+      "paper_evidence": "The inspected PDF is the published Numerische Mathematik 105 (2006), pages 299-313 article. The selected unnumbered two-line identity appears on PDF page 14, printed page 312, in the proof of Theorem 1.",
+      "lean_evidence": "The target states the orthogonality-defect identity rather than the subsequent spectral-norm inequality.",
+      "reasoning": "The selected source, result, and surrounding proof location agree exactly."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Printed pages 300 and 302 give A in R^{m x n}, A_k and Q_k in R^{m x k}, and R_k in R^{k x k}, with m >= n and k = 1,...,n.",
-      "lean_evidence": "D001 makes every matrix binder a Matrix (Fin n) (Fin n) Real, so A, dA, Q, R, and Rinv are all n-by-n.",
-      "reasoning": "The target collapses the independent row and column dimensions and represents only the square specialization m = k."
+      "status": "pass",
+      "paper_evidence": "Printed pages 300-302 give m >= n, A_k and Q_k of size m by k, R_k of size k by k, and k = 1,...,n.",
+      "lean_evidence": "For k : Fin n, l = k.val + 1 satisfies 1 <= l <= n; hmn gives l <= n <= m. A, dA, Q are m by l and R, Rinv are l by l.",
+      "reasoning": "The zero-based Lean index is shifted exactly once, giving the intended positive prefix and rectangular geometry."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "Theorem 1 first fixes a full-rank input A and computed Algorithm 2 factors, assumes condition (3) for each leading R_k, and then states conclusions for k = 1,...,n.",
-      "lean_evidence": "The target universally quantifies n and arbitrary A, dA, Q, R, and Rinv, subject only to hQR and hInv.",
-      "reasoning": "Although hQR and hInv determine dA and Rinv when the other data are fixed, the complete quantifier scope is changed from algorithm outputs and their leading blocks to arbitrary algebraic data."
+      "status": "pass",
+      "paper_evidence": "The paper first fixes the m by n problem and Algorithm 2 outputs, then states the conclusions prefixwise for every k = 1,...,n.",
+      "lean_evidence": "Lean quantifies m and n, assumes n <= m, then quantifies a bounded prefix index and matrices at that prefix size before the residual and inverse hypotheses.",
+      "reasoning": "Each paper prefix instantiates the Lean theorem with k.val = k_paper - 1. Lean does not enforce coherence among different prefixes, which is a genuine but valid pointwise generalization."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The paper inherits m >= n, rank(A) = n, Algorithm 2 provenance, floating-point computation, condition (3), and hence nonsingularity of R_k.",
-      "lean_evidence": "Lean assumes only Q R = A + dA and R Rinv = I. It has no full-rank input, upper-triangularity, Algorithm 2, condition-number condition, or positive index hypothesis.",
-      "reasoning": "The direct residual and right-inverse assumptions are sufficient for the algebraic identity, but they do not match the hypotheses of the complete paper result."
+      "status": "pass",
+      "paper_evidence": "The paper inherits full column rank, CGS-P provenance, and condition (3); printed pages 307 and 312 use these to ensure nonsingular R_k and then use the exact residual relations.",
+      "lean_evidence": "Lean directly assumes Q R = A + dA and R Rinv = I, without full rank, triangularity, positivity, condition (3), or an algorithm-output predicate.",
+      "reasoning": "The omitted paper assumptions are sufficient context for the two operative algebraic hypotheses but are not needed by the selected exact identity. Their omission broadens rather than restricts the valid domain."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "Printed page 312 concludes with I - Q_k^T Q_k = R_k^{-T}(E_k - A_k^T Delta A_k - (Delta A_k)^T A_k - (Delta A_k)^T Delta A_k)R_k^{-1}.",
-      "lean_evidence": "The conclusion is p11OrthogonalityDefect Q = Rinv^T p11DefectCore A dA R Rinv; D002, D005, and D007 unfold it to the same expanded equality.",
-      "reasoning": "The final selected identity is complete and retains every correction term. The preceding Q_k formula and unexpanded middle expression are algebraically derivable from hQR, hInv, and the definitions rather than independent missing cases."
+      "paper_evidence": "Printed page 312 gives first the unexpanded congruence with R^T R - (A + Delta A)^T(A + Delta A), then the expansion through E and three negative residual terms.",
+      "lean_evidence": "The conclusion states the expanded congruence, while p11RectDefectCore unfolds to R^T R - A^T A - A^T dA - dA^T A - dA^T dA.",
+      "reasoning": "By transpose linearity and matrix distributivity, the core equals R^T R - (A + dA)^T(A + dA). Thus the Lean conclusion logically entails the paper's unexpanded intermediate stage; a duplicate syntactic conjunct is unnecessary."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The source uses ordinary real matrix addition, subtraction, multiplication, transpose, and the k-by-k identity.",
-      "lean_evidence": "D001-D032 resolve these operations to exact real matrices, pointwise addition and subtraction, finite row-by-column multiplication, ordinary transpose, and the diagonal identity.",
-      "reasoning": "All imported operators have determinate standard meanings, and the expanded right-hand side has the source's exact order and signs. The dimensional restriction is separately recorded under S02 and S15."
+      "paper_evidence": "The source uses ordinary real matrices, transpose, identity, matrix products, Delta A_k = Q_k R_k - A_k, and E_k = R_k^T R_k - A_k^T A_k.",
+      "lean_evidence": "D001-D040 unfold the matrix types, finite row-by-column multiplication, transpose, identity, pointwise addition and subtraction, orthogonality defect, normal-equation residual, and expanded defect core.",
+      "reasoning": "Every nontrivial local operator has the intended ordinary real-matrix interpretation."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "Q_k and R_k are computed matrices, while Delta A_k and E_k are exactly defined residuals; the displayed identity itself has no rounding operator or approximation.",
-      "lean_evidence": "Lean uses exact real matrices and distinguishes dA through the exact equation Q R = A + dA; the normal-equations residual is also exact by D007.",
-      "reasoning": "At the algebraic-identity level, exact operations and residual quantities are not conflated. The loss of computed provenance is instead the algorithm-linkage failure in S08."
+      "paper_evidence": "Q_k and R_k are computed values, but printed pages 309-312 define Delta A_k and E_k exactly and use exact equality in the selected display.",
+      "lean_evidence": "All matrices are exact real matrices, hQR and hInv are exact equalities, and the conclusion is exact Eq.",
+      "reasoning": "Lean formalizes the exact algebraic relation among the computed values and analytical residuals without treating a rounded computation as an approximate equality."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "Theorem 1 and its appendix concern leading factors produced by CGS-P, whose diagonal uses the Pythagorean formula, under condition (3).",
-      "lean_evidence": "No algorithm, execution trace, computed-factor predicate, leading-block relation, or CGS-P condition appears in the target.",
-      "reasoning": "The Lean proposition is an algorithm-independent matrix identity. That is a valid algebraic generalization, but it does not preserve the complete paper statement's algorithm linkage."
+      "status": "pass",
+      "paper_evidence": "Theorem 1 and its proof concern Algorithm 2, CGS-P, but the selected display on printed page 312 follows only from Q_k R_k = A_k + Delta A_k, the definition of E_k, and availability of R_k^{-1}.",
+      "lean_evidence": "Lean has no CGS-P execution predicate but assumes exactly the residual relation and inverse relation used by this equality.",
+      "reasoning": "Every CGS-P paper instance is included. The missing algorithm steps do not alter this task's exact identity because they are used to establish residual bounds and invertibility, not the algebraic equality once those relations hold."
     },
     {
       "id": "S09",
-      "status": "not-applicable",
-      "paper_evidence": "The two-line identity on printed page 312 is norm-free; the operator 2-norm appears only in the following estimate leading to equation (7).",
-      "lean_evidence": "The Lean target contains no norm, squared norm, or componentwise error bound.",
-      "reasoning": "There is no norm expression in the selected identity whose semantics could agree or disagree."
+      "status": "pass",
+      "paper_evidence": "No norm occurs in the selected two-line equality; the spectral 2-norm is applied only in the following inequality.",
+      "lean_evidence": "The target contains no norm or scalar inequality.",
+      "reasoning": "The target correctly excludes the subsequent spectral-norm result and therefore introduces no norm-semantic mismatch."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The source uses distinct m and k, takes k = 1,...,n, and uses the same k for the first k columns and the leading k-by-k factor.",
-      "lean_evidence": "Lean has one natural parameter n for both dimensions and permits n = 0. No leading-block index k is represented.",
-      "reasoning": "No numerical constants occur in the selected identity, but its dimension and index dependence are not preserved."
+      "status": "pass",
+      "paper_evidence": "The exact identity is for k = 1,...,n and contains none of the constants c_i.",
+      "lean_evidence": "The prefix size is k.val + 1 for k : Fin n, and no c_i or shifted numerical coefficient appears.",
+      "reasoning": "The indexing is exact and no constants from the surrounding bound are incorrectly imported."
     },
     {
       "id": "S11",
-      "status": "not-applicable",
-      "paper_evidence": "Printed page 301 states the IEEE normalized-range model and a first-order convention, but printed page 312 writes the selected identity as an exact equality without fl, epsilon_M, or exceptional-value operations.",
-      "lean_evidence": "The target is exact real matrix algebra and contains no floating-point model or rounding operation.",
-      "reasoning": "Precision and exceptional-value semantics do not operate inside this exact identity. Their missing connection to the computed factors is already assessed under S08."
+      "status": "pass",
+      "paper_evidence": "Printed page 301 states the IEEE normalized-range model and first-order convention, but neither epsilon_M nor a rounding operator nor exceptional-value behavior appears in the selected equality.",
+      "lean_evidence": "The target is exact real-matrix algebra and contains no floating-point operation or approximation.",
+      "reasoning": "Omitting precision, rounding, underflow, and overflow machinery does not change this selected identity; those assumptions govern how the computed matrices and bounds are obtained."
     },
     {
       "id": "S12",
       "status": "pass",
-      "paper_evidence": "The source relation is exact equality, with left side I - Q_k^T Q_k and conjugating factors R_k^{-T} on the left and R_k^{-1} on the right.",
-      "lean_evidence": "Lean uses Eq, the same defect sign, transpose Rinv on the left, and Rinv on the right. For finite square real matrices, hInv makes Rinv the inverse of R.",
-      "reasoning": "Equality direction, exactness, signs, and conjugation order match."
+      "paper_evidence": "The paper prints exact equality in both stages, with R_k^{-T} and R_k^{-1} on the corresponding sides of the middle expression.",
+      "lean_evidence": "Lean concludes exact equality with (Rinv)^T on the left and Rinv on the right. The hypothesis R Rinv = I for a finite square real matrix makes Rinv the unique ordinary inverse; it also directly suffices for the congruence calculation.",
+      "reasoning": "Equality direction, exactness, and inverse placement all match."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Delta A_k is the factorization residual Q_k R_k - A_k, and E_k is the normal-equations residual R_k^T R_k - A_k^T A_k.",
-      "lean_evidence": "hQR is Q R = A + dA, equivalent to dA = Q R - A, while D007 defines exactly R^T R - A^T A.",
-      "reasoning": "The two residual notions are preserved and are not replaced by forward errors, norm bounds, or another stability notion."
+      "paper_evidence": "Delta A_k is the factorization residual Q_k R_k - A_k, E_k is the normal-equation residual R_k^T R_k - A_k^T A_k, and I - Q_k^T Q_k is the orthogonality defect.",
+      "lean_evidence": "hQR is equivalent over real matrices to dA = Q R - A; p11RectNormalEquationResidual and p11RectOrthogonalityDefect encode the other two notions exactly.",
+      "reasoning": "No forward, backward, Gram-residual, or orthogonality-defect notion is substituted for another."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "The exact page-312 expansion explicitly includes -(Delta A_k)^T Delta A_k; O(epsilon_M^2) appears only in the subsequent norm estimate.",
-      "lean_evidence": "D002 explicitly subtracts p11MatMul (p11Transpose dA) dA and the conclusion is exact Eq with no big-O remainder.",
-      "reasoning": "The quadratic residual term is retained exactly and no first-order truncation is applied to the identity."
+      "paper_evidence": "The selected display retains -(Delta A_k)^T Delta A_k exactly. Big-O terms enter only the following norm estimate.",
+      "lean_evidence": "p11RectDefectCore includes -dA^T dA and the conclusion has no approximation or omitted remainder.",
+      "reasoning": "The quadratic residual term is preserved and no first-order truncation is applied to the identity."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The source covers rectangular m-by-k leading factors arising from CGS-P under inherited numerical hypotheses.",
-      "lean_evidence": "Lean specializes all matrices to square n-by-n matrices while generalizing from algorithm outputs to arbitrary matrices satisfying two algebraic equations.",
-      "reasoning": "This is a mixed square specialization and algorithm-independent generalization, not an equivalent or uniformly stronger rendering of the complete paper statement."
+      "status": "pass",
+      "paper_evidence": "The paper states the identity for real CGS-P prefixes arising from a full-column-rank m by n input under condition (3).",
+      "lean_evidence": "Lean proves the same identity for arbitrary finite real matrices satisfying only the exact residual and right-inverse relations, including nontriangular R and rank-deficient A.",
+      "reasoning": "This is a genuine domain generalization with no additional restrictive assumption. Every paper tuple instantiates Lean, while Lean covers additional nonvacuous tuples, so the correct classification is faithful-stronger."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper's full-rank setup and condition (3) are intended to produce nonsingular real factors, so the displayed inverse-based identity has a nonempty intended domain.",
-      "lean_evidence": "For n = 1, A = 3, dA = 1, Q = 2, R = 2, and Rinv = 1/2 satisfy hQR and hInv; both sides of the conclusion equal -3.",
-      "reasoning": "The Lean hypotheses have nontrivial models and the conclusion is not obtained solely from an inconsistent premise or only from the empty n = 0 case."
+      "paper_evidence": "The paper's hypotheses are realized by actual nonsingular CGS-P prefixes, so its selected identity is not vacuous.",
+      "lean_evidence": "For m = n = 1, k.val = 0, A = [0], dA = [2], Q = [2], and R = Rinv = [1], both hypotheses hold and both sides equal [-3].",
+      "reasoning": "The Lean hypotheses are satisfiable, the equality can be nontrivial, and the exhibited rank-deficient A is a genuine extra tuple outside the paper's full-rank setting."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "Under the direct interpretation of corresponding matrices, Lean proves only the square case and contains no m-by-k matrices for m > k, no leading-block family, and no statement connecting its variables to CGS-P outputs. It therefore does not establish the complete rectangular paper result."
+      "verdict": "yes",
+      "reasoning": "For each paper prefix j, take Lean k.val = j - 1, A = A_j, dA = Delta A_j, Q = Q_j, R = R_j, and Rinv = R_j^{-1}. The paper's residual definition gives hQR, and its nonsingularity gives hInv. Unfolding the Lean core yields the paper's expanded equality and, by distributivity, the unexpanded intermediate equality."
     },
     "paper_implies_lean": {
       "verdict": "no",
-      "reasoning": "The paper's complete result concerns computed CGS-P factors under the inherited full-rank and condition-(3) context, whereas Lean quantifies over every square real tuple satisfying only hQR and hInv, including tuples that are not outputs of that algorithm and the n = 0 case."
+      "reasoning": "As a source-level quantified result, the paper only asserts the identity for coherent CGS-P prefixes of a full-rank input under its theorem context. It does not quantify over all arbitrary real matrices satisfying only hQR and hInv, including rank-deficient inputs and nontriangular inverse-bearing R."
     }
   },
-  "classification": "not-faithful-different",
-  "accepted": false,
+  "classification": "faithful-stronger",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "major",
-      "category": "dimension-specialization",
-      "paper_evidence": "A_k, Delta A_k, and Q_k are m-by-k while R_k is k-by-k, with m >= n and k = 1,...,n.",
-      "lean_evidence": "P11Matrix n makes all five matrix binders n-by-n and supplies no independent row dimension.",
-      "impact": "The theorem cannot directly state the paper's rectangular identity when m > k, so it does not cover the complete source domain."
-    },
-    {
-      "severity": "major",
-      "category": "scope-and-algorithm-linkage",
-      "paper_evidence": "The identity occurs in the proof of Theorem 1 for factors computed by Algorithm 2 under condition (3).",
-      "lean_evidence": "The target quantifies over arbitrary matrices constrained only by a factorization-residual equation and a right-inverse equation.",
-      "impact": "The Lean statement is broader algebraically but loses the computed-factor and execution-model meaning, making the complete statements incomparable rather than one simply stronger."
-    },
-    {
-      "severity": "minor",
-      "category": "index-domain",
-      "paper_evidence": "The paper applies the identity for k = 1,...,n.",
-      "lean_evidence": "The natural parameter n is unrestricted and therefore includes the empty 0-by-0 case.",
-      "impact": "An extra trivial boundary case is admitted, although nonzero nontrivial Lean instances also exist."
+      "severity": "note",
+      "category": "scope-generalization",
+      "paper_evidence": "The identity occurs inside the CGS-P proof with inherited full-rank, prefix-coherence, triangularity, and condition-(3) context.",
+      "lean_evidence": "The target retains only the exact residual relation, finite rectangular dimensions, and a right-inverse witness.",
+      "impact": "This validly broadens the theorem to additional nonvacuous tuples while retaining every paper instance, making it faithful-stronger rather than equivalent."
     },
     {
       "severity": "note",
-      "category": "algebraic-formula",
-      "paper_evidence": "The source has I - Q_k^T Q_k and subtracts A_k^T Delta A_k, (Delta A_k)^T A_k, and (Delta A_k)^T Delta A_k inside R_k^{-T} and R_k^{-1}.",
-      "lean_evidence": "Unfolding p11OrthogonalityDefect, p11DefectCore, and p11NormalEquationResidual gives exactly that sign pattern, order, and quadratic term.",
-      "impact": "Within the square algebraic specialization, the central residual-to-defect identity itself is represented correctly."
+      "category": "two-stage-equality",
+      "paper_evidence": "Printed page 312 displays both an unexpanded and an expanded middle expression.",
+      "lean_evidence": "The target states the expanded expression through p11RectDefectCore, whose unfolding and standard matrix distributivity give the unexpanded expression.",
+      "impact": "No source conclusion is lost despite the absence of a duplicated syntactic equality conjunct."
+    },
+    {
+      "severity": "note",
+      "category": "inverse-witness",
+      "paper_evidence": "The paper uses the ordinary inverse R_k^{-1}.",
+      "lean_evidence": "Lean assumes only R Rinv = I for a finite square real matrix.",
+      "impact": "A right inverse of a finite square real matrix is its unique two-sided ordinary inverse, so this formulation does not weaken or alter the inverse semantics."
     }
   ],
-  "rationale": "The Lean conclusion faithfully encodes the exact expanded matrix identity on its square domain, including the normal-equations residual convention, conjugation order, defect sign, and quadratic residual product. The complete propositions are nevertheless incomparable: Lean removes the paper's CGS-P, floating-point, full-rank, condition-(3), and leading-block scope while also restricting the rectangular m-by-k matrices to square n-by-n matrices and admitting n = 0. Consequently neither complete statement implies the other under the direct correspondence, so the result is not-faithful-different."
+  "rationale": "The Lean proposition unfolds to the exact expanded identity on printed page 312, with correct dimensions, index shift, residual signs, transpose placement, and retained quadratic term. Its right-inverse hypothesis denotes the paper's ordinary inverse in the finite square real setting, and the expanded core entails the paper's unexpanded intermediate stage. The target omits CGS-P, full-rank, triangularity, and condition-number assumptions, but those assumptions only establish the exact residual relations and invertibility used by this selected equality. Every paper instance therefore instantiates Lean, while Lean also covers genuine nonvacuous tuples outside the paper's algorithmic domain. The result is accepted as faithful-stronger."
 }
-
