@@ -1,383 +1,1187 @@
 {
   "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "7362b410440afdb0f170536e029a4b7f4950420491d462b75eece22df2864539",
+  "dossier_sha256": "0407fa65f3f935d0fa18ef6e7d381ef96bc34118b153c51cc3f7973a3f7c0110",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "Matrix-vector multiplication: for a matrix A and vector x, the resulting vector has component (Ax)_i = sum over all j in Fin n of A_ij x_j.",
-      "effect_on_target": "It makes the first equality in the conclusion the exact system (sQ)δ = e.",
+      "meaning": "For nonzero n, this is the type of transform plans. Its constructor packages a positive stage count, stage descriptors whose radices multiply to n, the prescribed twiddle-use pattern, a final permutation, an opaque two-valued tag, exact agreement of the staged transform with the Fourier transform, surjectivity of that Fourier transform, and its norm-scaling law.",
+      "effect_on_target": "The universally quantified plan determines the stages and the accumulated constant A(plan,gamma), while its exactness, surjectivity, and norm-scaling fields are available assumptions behind the existential perturbation.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "The canonical norm on the finite product of real coordinate spaces, namely the supremum norm: max_i |x_i| when n is positive, and 0 for the empty product.",
-      "effect_on_target": "It is the left-hand side of the concluding inequality, so that inequality is ‖δ‖∞ ≤ ‖δ‖₂.",
+      "meaning": "For a plan and arithmetic model, this is the type of certified runs containing an input, computed output, intermediate states, local errors, nonnegative local second-order coefficients, exact-input and state-transition equations, and local error bounds.",
+      "effect_on_target": "The run supplies the input, computed output, and certified execution data; the target's error is formed from its input and computed output.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "The conjunction that the transpose of Q is both a left and a right inverse of Q: QᵀQ = I and QQᵀ = I.",
-      "effect_on_target": "It is the orthogonality hypothesis imposed on Q.",
+      "meaning": "This projects the run's first field, its input x : ZMod n -> Complex.",
+      "effect_on_target": "It supplies the input norm appearing in both perturbation bounds.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "Entrywise scalar multiplication of a matrix: (sA)_ij = s A_ij.",
-      "effect_on_target": "It scales Q by s in the matrix-vector equation (sQ)δ = e.",
+      "meaning": "This is the type of forward-error certificates for a run. A value packages a real second-order coefficient C, a proof C >= 0, and a normalized Euclidean forward-error bound.",
+      "effect_on_target": "The quantified certificate supplies C and assumes the principal forward-error inequality from which the displayed perturbation bounds are obtained.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "The Euclidean norm of a real vector: sqrt(sum_i x_i²).",
-      "effect_on_target": "It supplies both sides of the exact equality ‖δ‖₂ = ‖e‖₂/s and the right-hand side of ‖δ‖∞ ≤ ‖δ‖₂.",
+      "meaning": "This projects the real second-order coefficient C from the forward-error certificate.",
+      "effect_on_target": "C occurs as C epsilon^2 divided by sqrt(n) in the normalized Euclidean perturbation bound and as C epsilon^2 in the supremum bound.",
       "status": "understood"
     },
     {
       "id": "D006",
       "name": "LocalDef006",
-      "meaning": "The assertion that Ainv is a left inverse of A: for every i and j, sum_k Ainv_ik A_kj equals 1 when i=j and 0 otherwise.",
-      "effect_on_target": "With A=Q and Ainv=Qᵀ, it gives the hypothesis QᵀQ=I.",
+      "meaning": "This is the arithmetic-model type. Its constructor packages epsilon > 0, gamma >= 0, rounded real addition, multiplication, sine and cosine operations satisfying specified error models, and a complex input-rounding function.",
+      "effect_on_target": "The model supplies epsilon and gamma and restricts the universally quantified setup to arithmetic operations satisfying the packaged error axioms.",
       "status": "understood"
     },
     {
       "id": "D007",
       "name": "LocalDef007",
-      "meaning": "The assertion that Ainv is a right inverse of A: for every i and j, sum_k A_ik Ainv_kj equals 1 when i=j and 0 otherwise.",
-      "effect_on_target": "With A=Q and Ainv=Qᵀ, it gives the hypothesis QQᵀ=I.",
+      "meaning": "This projects epsilon, the first real field of the arithmetic model.",
+      "effect_on_target": "Epsilon is the positive first-order error parameter and occurs linearly and quadratically in the bounds.",
       "status": "understood"
     },
     {
       "id": "D008",
       "name": "LocalDef008",
-      "meaning": "Matrix transposition: (Aᵀ)_ij = A_ji.",
-      "effect_on_target": "It identifies the proposed two-sided inverse in the hypothesis as Qᵀ.",
+      "meaning": "This projects gamma, the third field of the arithmetic model.",
+      "effect_on_target": "Gamma enters the stage-cost function and accumulated constant A(plan,gamma).",
       "status": "understood"
     },
     {
       "id": "D009",
       "name": "LocalDef009",
-      "meaning": "The sum of coordinate squares of a vector: sum_i x_i².",
-      "effect_on_target": "Its square root defines the Euclidean norms of δ and e.",
+      "meaning": "For a finite complex vector x indexed by ZMod n, this is its function-space norm. With the supplied Pi normed-ring instance and nonzero n, it is the supremum norm max_k |x(k)|.",
+      "effect_on_target": "It is the norm on the left side of the final perturbation inequality.",
       "status": "understood"
     },
     {
       "id": "D010",
-      "name": "And",
-      "meaning": "Logical conjunction.",
-      "effect_on_target": "It combines the two inverse conditions on Q and combines the three required properties of the existential witness δ.",
+      "name": "LocalDef010",
+      "meaning": "For x : ZMod n -> Complex, this is sqrt(sum_k |x(k)|^2) / sqrt(n), the normalized Euclidean or root-mean-square norm.",
+      "effect_on_target": "It measures the input, forward error, and perturbation in the norm equality and first inequality.",
       "status": "understood"
     },
     {
       "id": "D011",
-      "name": "DivInvMonoid.toDiv",
-      "meaning": "The division operation extracted from a division-and-inversion monoid structure.",
-      "effect_on_target": "It provides real division in the quotient ‖e‖₂/s.",
+      "name": "LocalDef011",
+      "meaning": "This is the pointwise forward error e = computedOutput - F_n(input), where F_n is LocalDef012.",
+      "effect_on_target": "The witness delta must satisfy e = F_n(delta), and the exact norm relation compares delta with this e.",
       "status": "understood"
     },
     {
       "id": "D012",
-      "name": "Eq",
-      "meaning": "Exact equality.",
-      "effect_on_target": "It requires exact equality of vectors in (sQ)δ=e and exact equality of real norms in ‖δ‖₂=‖e‖₂/s.",
+      "name": "LocalDef012",
+      "meaning": "This is the unnormalized discrete Fourier transform F_n defined by F_n(x)(k) = sum_{j in ZMod n} chi_n(jk)x(j), where chi_n is the standard additive character.",
+      "effect_on_target": "It defines both the exact transform subtracted from the computed output and the equation e = F_n(delta).",
       "status": "understood"
     },
     {
       "id": "D013",
-      "name": "Exists",
-      "meaning": "Existential quantification.",
-      "effect_on_target": "It asserts the existence of a real vector δ satisfying all three conclusions.",
+      "name": "LocalDef013",
+      "meaning": "If the plan has s stages with radices q_i, this is A(plan,gamma) = sum_i c(q_i,gamma) + ((s as a real)-1)(3+2gamma), where c is LocalDef022.",
+      "effect_on_target": "A(plan,gamma) is the complete first-order amplification constant in both perturbation bounds and in the assumed forward-error bound.",
       "status": "understood"
     },
     {
       "id": "D014",
-      "name": "Fin",
-      "meaning": "Fin n is the finite index type with elements corresponding to 0 through n-1.",
-      "effect_on_target": "It indexes every row, column, and vector coordinate and makes Q an n-by-n matrix.",
+      "name": "LocalDef014",
+      "meaning": "This constructor builds a plan from s > 0, stages indexed by Fin s, product_i q_i = n, useTwiddle_i equal to the truth value of i+1 < s, a final permutation P, an opaque tag, the identity P_action(S_{s-1}...S_0 x) = F_n(x) for every x, surjectivity of F_n, and ||F_n(x)||_rms = sqrt(n)||x||_rms for every x.",
+      "effect_on_target": "It makes the plan binder a package of strong exact-transform, surjectivity, and norm-scaling assumptions rather than an arbitrary list of stages.",
       "status": "understood"
     },
     {
       "id": "D015",
-      "name": "HDiv.hDiv",
-      "meaning": "Heterogeneous division as selected by the relevant division instance.",
-      "effect_on_target": "For real arguments it forms the quotient ‖e‖₂/s.",
+      "name": "LocalDef015",
+      "meaning": "This projects the stage descriptor at a given index i : Fin stageCount from a plan.",
+      "effect_on_target": "Its radix is used in A(plan,gamma), and the stage itself determines the certified state transitions.",
       "status": "understood"
     },
     {
       "id": "D016",
-      "name": "LE.le",
-      "meaning": "The less-than-or-equal relation selected by an ordered type.",
-      "effect_on_target": "For reals it expresses the final inequality ‖δ‖∞ ≤ ‖δ‖₂.",
+      "name": "LocalDef016",
+      "meaning": "This projects the natural-number stage count s from a plan.",
+      "effect_on_target": "It determines the stage index set and the factor s-1 in A(plan,gamma).",
       "status": "understood"
     },
     {
       "id": "D017",
-      "name": "LT.lt",
-      "meaning": "The strict less-than relation selected by an ordered type.",
-      "effect_on_target": "For reals it expresses the hypothesis 0<s.",
+      "name": "LocalDef017",
+      "meaning": "This projects the run's second field, its computed output.",
+      "effect_on_target": "It is the first term in the pointwise forward error computedOutput - F_n(input).",
       "status": "understood"
     },
     {
       "id": "D018",
-      "name": "Nat",
-      "meaning": "The type of natural numbers.",
-      "effect_on_target": "It supplies the arbitrary dimension n, including the possible value n=0.",
+      "name": "LocalDef018",
+      "meaning": "This constructor builds a run from input x, computed output yhat, states z_t, local errors eta_i, and coefficients c_i, assuming flInput(x(k)) = x(k), z_0 = x, z_{i+1} = S_i(z_i)+eta_i, yhat = P_action(z_s), every c_i >= 0, and ||eta_i||_rms <= epsilon sqrt(q_i)(c(q_i,gamma)+twiddleCost_i)||z_i||_rms + c_i epsilon^2.",
+      "effect_on_target": "It states all certified execution assumptions carried by run, although the target conclusion directly uses only its input, output, and resulting error.",
       "status": "understood"
     },
     {
       "id": "D019",
-      "name": "OfNat.ofNat",
-      "meaning": "Interpretation of a natural-number literal in a specified type.",
-      "effect_on_target": "It interprets the literal 0 as a real number in the positivity hypothesis.",
+      "name": "LocalDef019",
+      "meaning": "This projects the radix q of a stage descriptor.",
+      "effect_on_target": "Stage radices determine the Fourier blocks, local error constants, and the summands in A(plan,gamma).",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "Real",
-      "meaning": "The real numbers.",
-      "effect_on_target": "All matrix entries, vector coordinates, the scale s, norms, sums, products, and quotients are real-valued.",
+      "name": "LocalDef020",
+      "meaning": "This constructor builds a forward certificate from C >= 0 and ||e||_rms <= epsilon sqrt(n) A(plan,gamma)||x||_rms + C epsilon^2.",
+      "effect_on_target": "The target assumes exactly this forward-error estimate through the forward binder.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "Real.instDivInvMonoid",
-      "meaning": "The standard multiplicative, inversion, and division structure on the real numbers.",
-      "effect_on_target": "It makes the quotient in the norm equality ordinary real division; the hypothesis s>0 ensures its denominator is nonzero.",
+      "name": "LocalDef021",
+      "meaning": "This constructor packages epsilon > 0, gamma >= 0, flAdd, flMul, flSin, flCos, and flInput. It assumes flAdd(a,b) = a(1+theta_a epsilon)+b(1+theta_b epsilon) with |theta_a|,|theta_b| <= 1; flMul(a,b) = ab(1+theta epsilon); flSin(a) = sin(a)+gamma theta epsilon; and flCos(a) = cos(a)+gamma theta epsilon, each with |theta| <= 1.",
+      "effect_on_target": "It supplies the positivity and rounding-model assumptions implicit in every model value; flInput has no global axiom here and is constrained only on the particular run input.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "Real.instLE",
-      "meaning": "The standard non-strict order on the real numbers.",
-      "effect_on_target": "It gives the usual mathematical meaning to the final ≤ inequality.",
+      "name": "LocalDef022",
+      "meaning": "This is c(q,gamma): sqrt(2) if q=2, 5 if q=4, and 2 sqrt(q)(q+gamma) otherwise.",
+      "effect_on_target": "It supplies each radix-dependent summand of A(plan,gamma) and each local stage-error constant.",
       "status": "understood"
     },
     {
       "id": "D023",
-      "name": "Real.instLT",
-      "meaning": "The standard strict order on the real numbers.",
-      "effect_on_target": "It gives the usual mathematical meaning to 0<s.",
+      "name": "LocalDef023",
+      "meaning": "This proves that the natural number 1+1, namely 2, is at least two.",
+      "effect_on_target": "It is typeclass support for the numeral 2 and adds no substantive hypothesis.",
       "status": "understood"
     },
     {
       "id": "D024",
-      "name": "Real.instZero",
-      "meaning": "The standard zero element of the real numbers.",
-      "effect_on_target": "It supplies the real zero used in the positivity hypothesis and zero-valued identity-matrix entries.",
+      "name": "LocalDef024",
+      "meaning": "This is the unnormalized Euclidean norm sqrt(sum_k |x(k)|^2).",
+      "effect_on_target": "Dividing it by sqrt(n) defines LocalDef010.",
       "status": "understood"
     },
     {
       "id": "D025",
-      "name": "Zero.toOfNat0",
-      "meaning": "The construction interpreting the numeral 0 from a type's distinguished zero element.",
-      "effect_on_target": "It connects the literal 0 to real zero in 0<s.",
+      "name": "LocalDef025",
+      "meaning": "This is pointwise subtraction of two complex vectors.",
+      "effect_on_target": "It defines the forward error as computedOutput minus the exact Fourier output.",
       "status": "understood"
     },
     {
       "id": "D026",
-      "name": "instHDiv",
-      "meaning": "The homogeneous heterogeneous-division instance obtained from an ordinary division operation.",
-      "effect_on_target": "It makes HDiv on two real numbers return their ordinary real quotient.",
+      "name": "LocalDef026",
+      "meaning": "This proves that the natural number 2+1, namely 3, is at least two.",
+      "effect_on_target": "It supports the literal 3 in stage constants and adds no mathematical assumption.",
       "status": "understood"
     },
     {
       "id": "D027",
-      "name": "Fin.fintype",
-      "meaning": "The finite enumeration structure on Fin n.",
-      "effect_on_target": "It allows sums and the finite-product norm to range over all n indices, including an empty range when n=0.",
+      "name": "LocalDef027",
+      "meaning": "This is an opaque two-element type, since it has exactly the two nullary constructors D038 and D039.",
+      "effect_on_target": "A plan stores one such tag, but no target expression or plan condition inspects it, so it has no effect on the proposition's conclusion.",
       "status": "understood"
     },
     {
       "id": "D028",
-      "name": "Finset.sum",
-      "meaning": "Finite summation in an additive commutative monoid.",
-      "effect_on_target": "It forms matrix products, matrix-vector products, and sums of coordinate squares.",
+      "name": "LocalDef028",
+      "meaning": "This projects a plan's final equivalence P : ZMod n ≃ ZMod n.",
+      "effect_on_target": "It is used to permute the final staged state and in the plan's exact-transform equation.",
       "status": "understood"
     },
     {
       "id": "D029",
-      "name": "Finset.univ",
-      "meaning": "The finite set containing every element of a finite type.",
-      "effect_on_target": "It makes each displayed sum range over every coordinate in Fin n.",
+      "name": "LocalDef029",
+      "meaning": "For nonzero n, this is the stage-descriptor type. A stage packages nonzero radix q and block count b with bq=n, a block reindexing equivalence, an input permutation, a Boolean twiddle flag, and a twiddle-exponent function.",
+      "effect_on_target": "Stage descriptors determine the exact stage maps, stage dimensions, and all radix and twiddle contributions to the assumptions and A(plan,gamma).",
       "status": "understood"
     },
     {
       "id": "D030",
-      "name": "HMul.hMul",
-      "meaning": "Multiplication selected by a heterogeneous multiplication instance.",
-      "effect_on_target": "For real arguments it supplies the products in scalar multiplication, matrix products, and matrix-vector multiplication.",
+      "name": "LocalDef030",
+      "meaning": "This projects a stage's Boolean useTwiddle flag.",
+      "effect_on_target": "It decides whether the exact stage multiplies by a twiddle character and whether the local bound includes 3+2gamma.",
       "status": "understood"
     },
     {
       "id": "D031",
-      "name": "Norm.norm",
-      "meaning": "The norm operation extracted from a norm structure.",
-      "effect_on_target": "It evaluates the finite-product norm used by LocalDef002.",
+      "name": "LocalDef031",
+      "meaning": "This projects the model's complex input-rounding function flInput.",
+      "effect_on_target": "The run assumption requires this function to fix every component of the particular input exactly.",
       "status": "understood"
     },
     {
       "id": "D032",
-      "name": "NormedCommRing.toNormedRing",
-      "meaning": "The normed-ring structure obtained by forgetting commutativity from a normed commutative ring.",
-      "effect_on_target": "It supplies the real coordinate normed-ring structure used to construct the norm on real-valued functions.",
+      "name": "LocalDef032",
+      "meaning": "This proves that the natural number 4+1, namely 5, is at least two.",
+      "effect_on_target": "It supports the literal 5 in c(4,gamma) and adds no substantive assumption.",
       "status": "understood"
     },
     {
       "id": "D033",
-      "name": "NormedRing.toNorm",
-      "meaning": "The norm structure extracted from a normed-ring structure.",
-      "effect_on_target": "It exposes the finite-function norm used in the final inequality.",
+      "name": "LocalDef033",
+      "meaning": "This applies a finite sequence of exact stage maps by left-folding LocalDef036 over the stage list, beginning with the input vector.",
+      "effect_on_target": "It is the staged transform appearing in the plan's exact agreement with F_n.",
       "status": "understood"
     },
     {
       "id": "D034",
-      "name": "Pi.normedRing",
-      "meaning": "The normed-ring structure on a finite dependent function space, using pointwise ring operations and the finite supremum norm.",
-      "effect_on_target": "For functions Fin n→Real, it makes LocalDef002 the coordinatewise supremum norm.",
+      "name": "LocalDef034",
+      "meaning": "This is the sum of squared complex moduli, sum_k |x(k)|^2.",
+      "effect_on_target": "Its square root defines the Euclidean norm used by LocalDef024 and LocalDef010.",
       "status": "understood"
     },
     {
       "id": "D035",
-      "name": "Real.instAddCommMonoid",
-      "meaning": "The standard additive commutative monoid structure on the real numbers.",
-      "effect_on_target": "It makes all finite sums in the definitions ordinary sums of real numbers.",
+      "name": "LocalDef035",
+      "meaning": "This is pointwise addition of two complex vectors.",
+      "effect_on_target": "It expresses each computed state as the exact stage output plus its local error.",
       "status": "understood"
     },
     {
       "id": "D036",
-      "name": "Real.instMul",
-      "meaning": "The standard multiplication operation on the real numbers.",
-      "effect_on_target": "It makes all matrix, scalar, and vector products ordinary real multiplication.",
+      "name": "LocalDef036",
+      "meaning": "For a stage and vector x, first set p(a)=x(permutation(a)). For output k, write reindex^{-1}(k)=(r,u), form B(k)=sum_{j in ZMod q} chi_q(ju)p(reindex(r,j)), and return chi_n(twiddleExponent(k))B(k) when useTwiddle=true, otherwise B(k).",
+      "effect_on_target": "This is the exact block-Fourier stage map used in the plan exactness condition and run recurrence.",
       "status": "understood"
     },
     {
       "id": "D037",
-      "name": "Real.normedCommRing",
-      "meaning": "The standard normed commutative ring structure on the real numbers, whose scalar norm is absolute value.",
-      "effect_on_target": "It supplies the coordinate norms underlying the finite supremum norm and the usual real algebra used throughout.",
+      "name": "LocalDef037",
+      "meaning": "Given an equivalence P of ZMod n, this acts on a vector by precomposition: P_action(x)(i)=x(P(i)).",
+      "effect_on_target": "It applies the plan's final permutation to the terminal staged state.",
       "status": "understood"
     },
     {
       "id": "D038",
-      "name": "Real.sqrt",
-      "meaning": "The nonnegative real square-root function.",
-      "effect_on_target": "Applied to a sum of squares, it produces the Euclidean norms of δ and e.",
+      "name": "LocalDef038",
+      "meaning": "This is the first nullary constructor of the opaque two-element type LocalDef027.",
+      "effect_on_target": "It can inhabit the plan's unused tag field and otherwise has no effect.",
       "status": "understood"
     },
     {
       "id": "D039",
-      "name": "instHMul",
-      "meaning": "The homogeneous heterogeneous-multiplication instance obtained from ordinary multiplication.",
-      "effect_on_target": "It identifies each real-valued hMul expression with ordinary real multiplication.",
+      "name": "LocalDef039",
+      "meaning": "This is the second nullary constructor of the opaque two-element type LocalDef027.",
+      "effect_on_target": "It can inhabit the plan's unused tag field and otherwise has no effect.",
       "status": "understood"
     },
     {
       "id": "D040",
-      "name": "HPow.hPow",
-      "meaning": "Exponentiation selected by a heterogeneous power instance.",
-      "effect_on_target": "It forms the squares x_i² in the sum defining the Euclidean norm.",
+      "name": "LocalDef040",
+      "meaning": "This projects a stage's block count b.",
+      "effect_on_target": "It supplies the block index dimension satisfying b times the radix equals n.",
       "status": "understood"
     },
     {
       "id": "D041",
-      "name": "Monoid.toNatPow",
-      "meaning": "Natural-number exponentiation obtained from a monoid's repeated multiplication operation.",
-      "effect_on_target": "It gives x_i² its usual meaning as the square of a real coordinate.",
+      "name": "LocalDef041",
+      "meaning": "This constructs a stage from q != 0, b != 0, bq=n, an equivalence Fin b × ZMod q ≃ ZMod n, an equivalence ZMod n ≃ ZMod n, a Boolean twiddle flag, and a twiddle-exponent map ZMod n -> ZMod n.",
+      "effect_on_target": "It imposes the exact dimensions and data used by every stage map in a plan.",
       "status": "understood"
     },
     {
       "id": "D042",
-      "name": "One.toOfNat1",
-      "meaning": "The construction interpreting the numeral 1 from a type's multiplicative identity.",
-      "effect_on_target": "It supplies the diagonal value 1 in the identity-matrix conditions.",
+      "name": "LocalDef042",
+      "meaning": "This projects a stage's permutation equivalence ZMod n ≃ ZMod n.",
+      "effect_on_target": "The exact stage first reads the input through this permutation.",
       "status": "understood"
     },
     {
       "id": "D043",
-      "name": "Real.instMonoid",
-      "meaning": "The standard multiplicative monoid structure on the real numbers.",
-      "effect_on_target": "It supports natural powers such as x² and the multiplicative structure used by real division.",
+      "name": "LocalDef043",
+      "meaning": "This projects the stage reindexing equivalence Fin blockCount × ZMod radix ≃ ZMod n.",
+      "effect_on_target": "It decomposes an output index into a block and within-block coordinate and reconstructs indices in the block Fourier sum.",
       "status": "understood"
     },
     {
       "id": "D044",
-      "name": "Real.instOne",
-      "meaning": "The standard multiplicative identity 1 of the real numbers.",
-      "effect_on_target": "It supplies the diagonal entries of the identity matrix in the orthogonality hypothesis.",
+      "name": "LocalDef044",
+      "meaning": "This projects the function assigning a twiddle exponent in ZMod n to each output index.",
+      "effect_on_target": "When useTwiddle is true, its value determines the standard-character multiplier in the exact stage.",
       "status": "understood"
     },
     {
       "id": "D045",
-      "name": "instDecidableEqFin",
-      "meaning": "Decidable equality on Fin n.",
-      "effect_on_target": "It permits the definition to choose 1 when i=j and 0 otherwise.",
+      "name": "LocalDef045",
+      "meaning": "This proves that every stage radix is nonzero.",
+      "effect_on_target": "It ensures each ZMod radix is a finite nonempty residue index set and each square-root radix factor is positive.",
       "status": "understood"
     },
     {
       "id": "D046",
-      "name": "instHPow",
-      "meaning": "The homogeneous heterogeneous-power instance obtained from an ordinary power operation.",
-      "effect_on_target": "It interprets real coordinates raised to the natural exponent 2 as ordinary real powers.",
+      "name": "And",
+      "meaning": "This is logical conjunction.",
+      "effect_on_target": "It requires all four properties of the same existential witness delta simultaneously.",
       "status": "understood"
     },
     {
       "id": "D047",
-      "name": "instOfNatNat",
-      "meaning": "The standard interpretation of each natural-number literal as itself in Nat.",
-      "effect_on_target": "It supplies the natural exponent 2 used in every coordinate square.",
+      "name": "Complex",
+      "meaning": "This is the type of complex numbers.",
+      "effect_on_target": "Inputs, outputs, errors, and perturbations are complex vectors.",
       "status": "understood"
     },
     {
       "id": "D048",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "This extracts division from a division-inverse monoid.",
+      "effect_on_target": "It supplies ordinary real division by sqrt(n).",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "Eq",
+      "meaning": "This is propositional equality.",
+      "effect_on_target": "It expresses the Fourier representation of the error and the exact norm identity.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "Exists",
+      "meaning": "This is existential quantification.",
+      "effect_on_target": "It asserts the existence of one complex vector delta satisfying all conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "HAdd.hAdd",
+      "meaning": "This applies the addition operation selected by an HAdd instance.",
+      "effect_on_target": "At real arguments it is ordinary addition in the error bounds and accumulated constants.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "HDiv.hDiv",
+      "meaning": "This applies the division operation selected by an HDiv instance.",
+      "effect_on_target": "At real arguments it is ordinary division, particularly normalization by sqrt(n).",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "HMul.hMul",
+      "meaning": "This applies the multiplication operation selected by an HMul instance.",
+      "effect_on_target": "At real arguments it forms all products in the bounds; at complex or modular arguments it forms Fourier factors and index products.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "HPow.hPow",
+      "meaning": "This applies an exponentiation operation selected by an HPow instance.",
+      "effect_on_target": "It interprets epsilon^2 and squared complex norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "LE.le",
+      "meaning": "This applies a less-than-or-equal relation.",
+      "effect_on_target": "With the real instance it gives the two perturbation inequalities and packaged nonnegativity/error bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "Monoid.toNatPow",
+      "meaning": "This supplies natural-number powers in a monoid.",
+      "effect_on_target": "It makes real epsilon^2 ordinary multiplication of epsilon by itself.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "MulZeroClass.toZero",
+      "meaning": "This extracts the zero element from a multiplicative structure with zero.",
+      "effect_on_target": "For Nat it makes NeZero n mean n is not the usual natural zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "Nat",
+      "meaning": "This is the type of natural numbers.",
+      "effect_on_target": "It supplies the transform size, stage counts, radices, block counts, and natural exponents.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "Nat.cast",
+      "meaning": "This casts a natural number into a target type with a NatCast instance.",
+      "effect_on_target": "It interprets n, stage counts, and radices as real numbers in square roots and coefficients.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "Nat.instMulZeroClass",
+      "meaning": "This is the standard natural-number multiplication-and-zero structure.",
+      "effect_on_target": "It supplies the ordinary zero used by the NeZero n constraint.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "NeZero",
+      "meaning": "This proposition states that a value is unequal to zero.",
+      "effect_on_target": "The implicit instance requires n != 0, so the transform index set has n positive elements and division by sqrt(n) is nondegenerate.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "OfNat.ofNat",
+      "meaning": "This interprets a natural-number literal in a target type.",
+      "effect_on_target": "It supplies literals such as the exponent 2 and real constants in formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "Real",
+      "meaning": "This is the type of real numbers.",
+      "effect_on_target": "Norms, epsilon, gamma, coefficients, and all bounds are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "Real.instAdd",
+      "meaning": "This is ordinary real addition.",
+      "effect_on_target": "It interprets all real sums in the target and accumulated constants.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "This is the standard real multiplicative, inverse, division, and integer-power structure.",
+      "effect_on_target": "It supplies ordinary real division by sqrt(n).",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Real.instLE",
+      "meaning": "This is the standard order relation <= on real numbers.",
+      "effect_on_target": "It gives the usual numerical interpretation to all inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "Real.instMonoid",
+      "meaning": "This is the standard multiplicative monoid structure on real numbers.",
+      "effect_on_target": "It supplies natural powers such as epsilon^2.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Real.instMul",
+      "meaning": "This is ordinary real multiplication.",
+      "effect_on_target": "It interprets every product in the error constants and bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "Real.instNatCast",
+      "meaning": "This is the standard embedding of natural numbers into the reals.",
+      "effect_on_target": "It turns n, radices, and stage counts into real quantities.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "Real.sqrt",
+      "meaning": "This is the nonnegative real square root.",
+      "effect_on_target": "It defines Euclidean norms and the factors sqrt(n), sqrt(q), and sqrt(2).",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "ZMod",
+      "meaning": "ZMod n is the ring of integers modulo n; its implementation is Int when n=0 and Fin n when n>0.",
+      "effect_on_target": "Because n != 0, it is the n-element index set for all vectors and Fourier sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "instHAdd",
+      "meaning": "This converts an ordinary homogeneous addition instance into HAdd.",
+      "effect_on_target": "It routes notation to ordinary real or complex addition without adding assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "instHDiv",
+      "meaning": "This converts an ordinary homogeneous division instance into HDiv.",
+      "effect_on_target": "It routes division notation to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "instHMul",
+      "meaning": "This converts an ordinary homogeneous multiplication instance into HMul.",
+      "effect_on_target": "It routes products to the standard multiplication on the relevant type.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "instHPow",
+      "meaning": "This converts a power instance into HPow.",
+      "effect_on_target": "It routes exponentiation notation to ordinary powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "instOfNatNat",
+      "meaning": "This interprets every natural literal as that same natural number.",
+      "effect_on_target": "It supplies the natural exponent 2 and natural constants in definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "AddChar",
+      "meaning": "An additive character is a homomorphism from an additive monoid into a multiplicative monoid.",
+      "effect_on_target": "The Fourier and stage kernels use additive characters from modular indices to complex unit factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "AddChar.instFunLike",
+      "meaning": "This lets an additive character be evaluated as a function.",
+      "effect_on_target": "It gives meaning to chi_n(jk) in the Fourier and stage sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "AddGroupWithOne.toAddMonoidWithOne",
+      "meaning": "This extracts an additive-monoid-with-one structure from an additive-group-with-one structure.",
+      "effect_on_target": "It is typeclass infrastructure for modular arithmetic and contributes no extra proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "AddMonoidWithOne.toAddMonoid",
+      "meaning": "This extracts an additive monoid from an additive monoid with one.",
+      "effect_on_target": "It supplies the additive structure required for modular additive characters.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "CommRing.toNonUnitalCommRing",
+      "meaning": "This extracts the nonunital commutative-ring operations and laws from a commutative ring.",
+      "effect_on_target": "It is inherited algebraic infrastructure for ZMod and adds no separate assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "CommRing.toRing",
+      "meaning": "This extracts a ring structure from a commutative ring.",
+      "effect_on_target": "It supports ordinary modular arithmetic used in index products and characters.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "Complex.instMul",
+      "meaning": "This is standard complex multiplication.",
+      "effect_on_target": "It multiplies character values by vector components and applies twiddle factors.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "Complex.instNormedAddCommGroup",
+      "meaning": "This supplies the standard normed additive commutative group structure on Complex.",
+      "effect_on_target": "It provides the complex modulus and additive norm structure underlying vector norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "Complex.instNormedField",
+      "meaning": "This supplies the standard normed-field structure on Complex.",
+      "effect_on_target": "It ensures standard complex algebra and multiplicative norm behavior in Fourier expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "Complex.instSemiring",
+      "meaning": "This supplies the standard semiring structure on Complex.",
+      "effect_on_target": "It provides inherited multiplication, addition, zero, and one used by sums and characters.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "DFunLike.coe",
+      "meaning": "This coerces a function-like object to its underlying dependent function.",
+      "effect_on_target": "It supports evaluation of characters and equivalences; it introduces no mathematical condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "Distrib.toMul",
+      "meaning": "This extracts multiplication from a distributive algebraic structure.",
+      "effect_on_target": "It is typeclass plumbing for standard ring multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "ENormedAddCommMonoid.toESeminormedAddCommMonoid",
+      "meaning": "This forgets norm separation from an extended-normed additive commutative monoid.",
+      "effect_on_target": "It is norm-instance infrastructure and imposes no additional target hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "ESeminormedAddCommMonoid.toAddCommMonoid",
+      "meaning": "This extracts an additive commutative monoid from an extended seminormed one.",
+      "effect_on_target": "It supplies addition for finite complex sums and function spaces.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "Fin",
+      "meaning": "Fin m is the finite type of natural indices 0 through m-1.",
+      "effect_on_target": "It indexes stages and blocks with their exact finite dimensions.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "Fin.fintype",
+      "meaning": "This enumerates all elements of Fin n as a finite type.",
+      "effect_on_target": "It allows sums and products over all stage or block indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "Finset.sum",
+      "meaning": "This is finite summation in an additive commutative monoid.",
+      "effect_on_target": "It defines Fourier transforms, block transforms, squared norms, and the accumulated stage constant.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "Finset.univ",
+      "meaning": "This is the finite set containing every element of a finite type.",
+      "effect_on_target": "It specifies that all Fourier, norm, and stage sums range over the complete relevant index set.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "HSub.hSub",
+      "meaning": "This applies the subtraction operation selected by an HSub instance.",
+      "effect_on_target": "It forms pointwise complex error and the real quantity stageCount-1.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "MonoidWithZero.toMonoid",
+      "meaning": "This extracts a monoid from a monoid with zero.",
+      "effect_on_target": "It supplies the multiplicative monoid required for complex-valued additive characters.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
+      "meaning": "This forgets associativity-related structure from a nonunital commutative ring.",
+      "effect_on_target": "It is inherited ring-instance infrastructure with no separate effect.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
+      "meaning": "This forgets commutativity from a nonunital nonassociative commutative ring.",
+      "effect_on_target": "It is inherited ring-instance infrastructure with no separate effect.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
+      "meaning": "This extracts the corresponding nonunital nonassociative semiring structure.",
+      "effect_on_target": "It is algebraic typeclass plumbing and adds no proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "NonUnitalNonAssocSemiring.toDistrib",
+      "meaning": "This extracts multiplication, addition, and distributivity as a Distrib structure.",
+      "effect_on_target": "It supplies inherited multiplication notation without adding assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "Norm.norm",
+      "meaning": "This evaluates the norm supplied by a Norm instance.",
+      "effect_on_target": "It evaluates complex moduli and function-space supremum norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "NormedAddCommGroup.toENormedAddCommMonoid",
+      "meaning": "This derives an extended-normed additive commutative monoid from a normed additive commutative group.",
+      "effect_on_target": "It supports inherited complex and function norm instances.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "NormedCommRing.toNormedRing",
+      "meaning": "This forgets commutativity from a normed commutative ring.",
+      "effect_on_target": "It supplies the normed-ring structure needed for function-space norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "NormedCommRing.toSeminormedCommRing",
+      "meaning": "This derives the corresponding seminormed commutative-ring structure.",
+      "effect_on_target": "It is normed-ring typeclass infrastructure with no independent condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "NormedField.toNormedCommRing",
+      "meaning": "This derives a normed commutative ring from a normed field.",
+      "effect_on_target": "It provides the complex normed-ring instance used pointwise.",
+      "status": "understood"
+    },
+    {
+      "id": "D106",
+      "name": "NormedRing.toNorm",
+      "meaning": "This extracts the norm operation from a normed ring.",
+      "effect_on_target": "It supplies the function-space and complex norm operations used in the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D107",
+      "name": "One.toOfNat1",
+      "meaning": "This interprets the literal 1 using a type's multiplicative identity.",
+      "effect_on_target": "It supplies the real and natural constant 1 in rounding models and stageCount-1.",
+      "status": "understood"
+    },
+    {
+      "id": "D108",
+      "name": "Pi.normedRing",
+      "meaning": "For a finite index type and pointwise normed rings, this gives the function space its pointwise ring structure and supremum norm.",
+      "effect_on_target": "It makes LocalDef009 the supremum norm of a complex vector.",
+      "status": "understood"
+    },
+    {
+      "id": "D109",
+      "name": "PseudoMetricSpace.toUniformSpace",
+      "meaning": "This extracts the uniform structure induced by a pseudometric.",
+      "effect_on_target": "It is topological infrastructure for normed instances and has no direct mathematical effect here.",
+      "status": "understood"
+    },
+    {
+      "id": "D110",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "This is the standard additive commutative monoid structure on the reals.",
+      "effect_on_target": "It supports finite real sums such as sum_i c(q_i,gamma).",
+      "status": "understood"
+    },
+    {
+      "id": "D111",
+      "name": "Real.instOne",
+      "meaning": "This is the ordinary real number 1.",
+      "effect_on_target": "It appears in stageCount-1 and relative-error factors 1+theta epsilon.",
+      "status": "understood"
+    },
+    {
+      "id": "D112",
+      "name": "Real.instSub",
+      "meaning": "This is ordinary real subtraction.",
+      "effect_on_target": "It interprets the real factor (stageCount as a real)-1.",
+      "status": "understood"
+    },
+    {
+      "id": "D113",
+      "name": "Ring.toAddGroupWithOne",
+      "meaning": "This extracts additive-group and unit/cast structure from a ring.",
+      "effect_on_target": "It supports the standard additive structure and casts on ZMod.",
+      "status": "understood"
+    },
+    {
+      "id": "D114",
+      "name": "SeminormedCommRing.toSeminormedRing",
+      "meaning": "This forgets commutativity from a seminormed commutative ring.",
+      "effect_on_target": "It is inherited normed-ring infrastructure with no independent hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D115",
+      "name": "SeminormedRing.toPseudoMetricSpace",
+      "meaning": "This extracts the pseudometric space induced by a seminormed ring.",
+      "effect_on_target": "It is infrastructure for function-space norm instances.",
+      "status": "understood"
+    },
+    {
+      "id": "D116",
+      "name": "Semiring.toMonoidWithZero",
+      "meaning": "This extracts a multiplicative monoid with zero from a semiring.",
+      "effect_on_target": "For Complex it supplies the multiplicative codomain structure required by additive characters.",
+      "status": "understood"
+    },
+    {
+      "id": "D117",
+      "name": "UniformSpace.toTopologicalSpace",
+      "meaning": "This extracts a topology from a uniform space.",
+      "effect_on_target": "It is topological typeclass infrastructure and adds no proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D118",
+      "name": "ZMod.commRing",
+      "meaning": "This supplies the standard commutative-ring structure on ZMod n.",
+      "effect_on_target": "It gives the modular addition and multiplication used in jk, ju, characters, and stage indexing.",
+      "status": "understood"
+    },
+    {
+      "id": "D119",
+      "name": "ZMod.fintype",
+      "meaning": "For nonzero n, this supplies the finite enumeration of ZMod n.",
+      "effect_on_target": "It makes all sums and the supremum norm range over exactly the n residue classes.",
+      "status": "understood"
+    },
+    {
+      "id": "D120",
+      "name": "ZMod.stdAddChar",
+      "meaning": "This is the standard complex-valued additive character chi_n on ZMod n, obtained by mapping residues to the circle and then into Complex.",
+      "effect_on_target": "It is the Fourier kernel in F_n and in every block and twiddle factor.",
+      "status": "understood"
+    },
+    {
+      "id": "D121",
+      "name": "instHSub",
+      "meaning": "This converts an ordinary homogeneous subtraction instance into HSub.",
+      "effect_on_target": "It routes subtraction notation to ordinary real or complex subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D122",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "This interprets any numeral known to be at least two via the natural-number cast.",
+      "effect_on_target": "It supplies real literals such as 2, 3, and 5 in the formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D123",
+      "name": "Bool",
+      "meaning": "This is the two-valued Boolean type.",
+      "effect_on_target": "It stores whether a stage uses a twiddle multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D124",
+      "name": "Bool.true",
+      "meaning": "This is the true Boolean value.",
+      "effect_on_target": "Equality with true selects the twiddle branch of a stage and its extra local cost.",
+      "status": "understood"
+    },
+    {
+      "id": "D125",
+      "name": "Complex.instSub",
+      "meaning": "This is componentwise subtraction of complex numbers.",
+      "effect_on_target": "It defines the pointwise forward error computedOutput - F_n(input).",
+      "status": "understood"
+    },
+    {
+      "id": "D126",
+      "name": "Decidable.decide",
+      "meaning": "This converts a decidable proposition into true when it holds and false otherwise.",
+      "effect_on_target": "It requires useTwiddle_i to encode exactly whether i+1 < stageCount.",
+      "status": "understood"
+    },
+    {
+      "id": "D127",
+      "name": "Equiv",
+      "meaning": "An equivalence is a bijection equipped with an inverse.",
+      "effect_on_target": "Equivalences represent stage permutations, block reindexings, and the final output permutation.",
+      "status": "understood"
+    },
+    {
+      "id": "D128",
+      "name": "Fin.val",
+      "meaning": "This extracts the natural-number value of a bounded index.",
+      "effect_on_target": "It turns a stage index i : Fin s into the state indices i and i+1 and tests whether i+1 < s.",
+      "status": "understood"
+    },
+    {
+      "id": "D129",
+      "name": "Finset.prod",
+      "meaning": "This is finite multiplication in a commutative monoid.",
+      "effect_on_target": "It expresses the plan constraint that the product of all stage radices equals n.",
+      "status": "understood"
+    },
+    {
+      "id": "D130",
+      "name": "Function.Surjective",
+      "meaning": "A function f is surjective when every target value equals f(a) for some a.",
+      "effect_on_target": "The plan assumes F_n is surjective, ensuring the forward error has at least one Fourier preimage delta.",
+      "status": "understood"
+    },
+    {
+      "id": "D131",
+      "name": "LT.lt",
+      "meaning": "This applies a strict less-than relation.",
+      "effect_on_target": "It states stageCount > 0, epsilon > 0, and the nonfinal-stage test i+1 < stageCount.",
+      "status": "understood"
+    },
+    {
+      "id": "D132",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "This proposition records that a natural number is at least 2.",
+      "effect_on_target": "It supports numeral elaboration and contributes no additional mathematical claim.",
+      "status": "understood"
+    },
+    {
+      "id": "D133",
+      "name": "Nat.decLt",
+      "meaning": "This decides strict inequality between natural numbers.",
+      "effect_on_target": "It computes the Boolean indicating whether a stage is nonfinal.",
+      "status": "understood"
+    },
+    {
+      "id": "D134",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "meaning": "For nonzero n, this proves n+1 is at least two.",
+      "effect_on_target": "It supports numeral and finite-index instances and adds no independent assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D135",
+      "name": "Nat.instCommMonoid",
+      "meaning": "This is the standard commutative multiplicative monoid on natural numbers.",
+      "effect_on_target": "It interprets the product of stage radices and blockCount times radix.",
+      "status": "understood"
+    },
+    {
+      "id": "D136",
+      "name": "Nat.instNeZeroSucc",
+      "meaning": "This proves every successor n+1 is nonzero.",
+      "effect_on_target": "It supports finite modular and index instances internally and imposes no new target restriction.",
+      "status": "understood"
+    },
+    {
+      "id": "D137",
+      "name": "Real.cos",
+      "meaning": "This is the ordinary real cosine function.",
+      "effect_on_target": "It appears only in the packaged floating-point cosine error model.",
+      "status": "understood"
+    },
+    {
+      "id": "D138",
+      "name": "Real.instAddGroup",
+      "meaning": "This is the standard additive group structure on the reals.",
+      "effect_on_target": "It supports negation, subtraction, and absolute values in model assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D139",
+      "name": "Real.instLT",
+      "meaning": "This is the standard strict order on the reals.",
+      "effect_on_target": "It interprets the model requirement epsilon > 0.",
+      "status": "understood"
+    },
+    {
+      "id": "D140",
+      "name": "Real.instZero",
+      "meaning": "This is the ordinary real number 0.",
+      "effect_on_target": "It appears in positivity and nonnegativity assumptions and conditional costs.",
+      "status": "understood"
+    },
+    {
+      "id": "D141",
+      "name": "Real.lattice",
+      "meaning": "This is the usual lattice order structure on the reals.",
+      "effect_on_target": "It supports the standard real absolute value used to bound rounding parameters.",
+      "status": "understood"
+    },
+    {
+      "id": "D142",
+      "name": "Real.sin",
+      "meaning": "This is the ordinary real sine function.",
+      "effect_on_target": "It appears only in the packaged floating-point sine error model.",
+      "status": "understood"
+    },
+    {
+      "id": "D143",
+      "name": "Zero.toOfNat0",
+      "meaning": "This interprets the literal 0 using a type's zero element.",
+      "effect_on_target": "It supplies zeros in nonzero, positivity, and conditional expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D144",
+      "name": "abs",
+      "meaning": "This is the ordinary absolute value in a lattice-ordered additive group.",
+      "effect_on_target": "For Real it states that each rounding parameter theta has magnitude at most 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D145",
+      "name": "instAddNat",
+      "meaning": "This is ordinary natural-number addition.",
+      "effect_on_target": "It forms i+1, n+1, and small natural literals in structural definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D146",
+      "name": "instDecidableEqBool",
+      "meaning": "This decides equality of Boolean values.",
+      "effect_on_target": "It selects whether the twiddle branch is active.",
+      "status": "understood"
+    },
+    {
+      "id": "D147",
+      "name": "instDecidableEqNat",
+      "meaning": "This decides equality of natural numbers.",
+      "effect_on_target": "It selects the q=2 and q=4 branches of c(q,gamma).",
+      "status": "understood"
+    },
+    {
+      "id": "D148",
+      "name": "instLTNat",
+      "meaning": "This is the standard strict order on natural numbers.",
+      "effect_on_target": "It interprets positive stage count and the nonfinal-stage test.",
+      "status": "understood"
+    },
+    {
+      "id": "D149",
       "name": "ite",
-      "meaning": "A conditional expression selecting one value when a proposition holds and another when it does not.",
-      "effect_on_target": "It defines the identity-matrix entry as 1 if i=j and 0 otherwise.",
+      "meaning": "This is an if-then-else expression selected by a decidable proposition.",
+      "effect_on_target": "It defines the piecewise stage cost and whether twiddle multiplication and twiddle cost are used.",
+      "status": "understood"
+    },
+    {
+      "id": "D150",
+      "name": "Complex.instAdd",
+      "meaning": "This is componentwise addition of complex numbers.",
+      "effect_on_target": "It defines Fourier sums and addition of local errors to exact stage outputs.",
+      "status": "understood"
+    },
+    {
+      "id": "D151",
+      "name": "Complex.instNorm",
+      "meaning": "This is the standard complex modulus |z| = sqrt(normSq(z)).",
+      "effect_on_target": "It defines each component magnitude in Euclidean and supremum norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D152",
+      "name": "Equiv.instEquivLike",
+      "meaning": "This lets an equivalence act as a bijective function.",
+      "effect_on_target": "It permits evaluation of stage, reindexing, and final permutations.",
+      "status": "understood"
+    },
+    {
+      "id": "D153",
+      "name": "Equiv.symm",
+      "meaning": "This forms the inverse equivalence.",
+      "effect_on_target": "It decomposes an output index into its block and within-block coordinates via reindex^{-1}.",
+      "status": "understood"
+    },
+    {
+      "id": "D154",
+      "name": "EquivLike.toFunLike",
+      "meaning": "This exposes an equivalence-like object as a function-like object.",
+      "effect_on_target": "It supports direct application of all stored equivalences.",
+      "status": "understood"
+    },
+    {
+      "id": "D155",
+      "name": "List.foldl",
+      "meaning": "This is left-folding a binary update over a list.",
+      "effect_on_target": "It composes the exact stage maps in increasing stage order.",
+      "status": "understood"
+    },
+    {
+      "id": "D156",
+      "name": "List.ofFn",
+      "meaning": "This converts a function Fin s -> alpha into the ordered list of its s values.",
+      "effect_on_target": "It turns the indexed plan stages into the list consumed by the stage fold.",
+      "status": "understood"
+    },
+    {
+      "id": "D157",
+      "name": "Prod",
+      "meaning": "This is the Cartesian product type.",
+      "effect_on_target": "It represents a pair consisting of a block index and a residue within a radix-sized block.",
+      "status": "understood"
+    },
+    {
+      "id": "D158",
+      "name": "Prod.fst",
+      "meaning": "This projects the first component of a pair.",
+      "effect_on_target": "It extracts the block index after applying the inverse reindexing equivalence.",
+      "status": "understood"
+    },
+    {
+      "id": "D159",
+      "name": "Prod.mk",
+      "meaning": "This constructs an ordered pair.",
+      "effect_on_target": "It combines a fixed block index with each within-block residue when reconstructing Fourier-sum indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D160",
+      "name": "Prod.snd",
+      "meaning": "This projects the second component of a pair.",
+      "effect_on_target": "It extracts the within-block frequency coordinate used in the character chi_q(ju).",
+      "status": "understood"
+    },
+    {
+      "id": "D161",
+      "name": "Ne",
+      "meaning": "This means inequality, defined as the negation of equality.",
+      "effect_on_target": "It states that every stage radix and block count is nonzero.",
+      "status": "understood"
+    },
+    {
+      "id": "D162",
+      "name": "instMulNat",
+      "meaning": "This is ordinary natural-number multiplication.",
+      "effect_on_target": "It interprets blockCount times radix equals n and the product of stage radices.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "n is an arbitrary natural number, possibly zero.",
-      "Q is an arbitrary real n-by-n matrix, represented as a function Fin n → Fin n → Real.",
-      "e is an arbitrary real vector of length n, represented as a function Fin n → Real.",
-      "s is an arbitrary real scalar.",
-      "δ is an existentially quantified real vector of length n whose three required properties are mutually dependent on the same witness."
+      "A natural number n together with a proof n != 0; hence n >= 1.",
+      "A certified transform plan for size n. It has a positive number s of stages, stage radices q_i whose product is n, exact stage maps S_i, and a final permutation P.",
+      "An arithmetic model containing epsilon > 0, gamma >= 0, rounded arithmetic functions satisfying the stated error models, and a complex input-rounding function.",
+      "A certified run of the plan in that arithmetic model, with input x : ZMod n -> Complex and computed output yhat : ZMod n -> Complex.",
+      "A forward-error certificate for that run, carrying a coefficient C >= 0 and its normalized Euclidean forward-error bound."
     ],
     "hypotheses": [
-      "The scale is strictly positive: 0<s.",
-      "QᵀQ=I: for every i,j in Fin n, sum_k Q_ki Q_kj equals 1 if i=j and 0 otherwise.",
-      "QQᵀ=I: for every i,j in Fin n, sum_k Q_ik Q_jk equals 1 if i=j and 0 otherwise."
+      "The arithmetic model satisfies: for every real a,b, flAdd(a,b)=a(1+theta_a epsilon)+b(1+theta_b epsilon) for some |theta_a|,|theta_b|<=1; flMul(a,b)=ab(1+theta epsilon) for some |theta|<=1; flSin(a)=sin(a)+gamma theta epsilon and flCos(a)=cos(a)+gamma theta epsilon for suitable |theta|<=1.",
+      "Each stage i has nonzero radix q_i and nonzero block count b_i with b_i q_i=n, a block reindexing Fin b_i x ZMod q_i equivalent to ZMod n, an input permutation, a twiddle flag, and a twiddle-exponent map. The plan has s>0, product_i q_i=n, and its twiddle flag is true exactly for i+1<s.",
+      "The final permutation applied after the exact stage composition equals the unnormalized Fourier transform F_n on every vector. The plan additionally packages surjectivity of F_n and the scaling identity ||F_n(v)||_rms=sqrt(n)||v||_rms for every v.",
+      "The run packages states z_0,...,z_s, local errors eta_i, and coefficients c_i>=0 satisfying flInput(x(k))=x(k), z_0=x, z_{i+1}=S_i(z_i)+eta_i, and yhat=P_action(z_s). Moreover ||eta_i||_rms <= epsilon sqrt(q_i)(c(q_i,gamma)+(3+2gamma if the stage uses a twiddle, otherwise 0))||z_i||_rms+c_i epsilon^2.",
+      "Writing e=yhat-F_n(x) and A=A(plan,gamma), the forward certificate assumes ||e||_rms <= epsilon sqrt(n) A ||x||_rms + C epsilon^2."
     ],
     "conclusions": [
-      "There exists a vector δ such that (sQ)δ=e; componentwise, for every i, sum_j (s Q_ij)δ_j=e_i.",
-      "The Euclidean norm of that same δ satisfies the exact equality sqrt(sum_i δ_i²)=sqrt(sum_i e_i²)/s.",
-      "The same δ satisfies max_i |δ_i|≤sqrt(sum_i δ_i²), with the finite-product norm interpreted as 0 when n=0."
+      "There exists a vector delta : ZMod n -> Complex, logically allowed to depend on n, the plan, model, run, and forward certificate, such that e=F_n(delta) pointwise.",
+      "The same delta satisfies the exact computed quantity ||delta||_rms=||e||_rms/sqrt(n).",
+      "The same delta satisfies ||delta||_rms <= epsilon A ||x||_rms + C epsilon^2/sqrt(n).",
+      "The same delta satisfies ||delta||_infinity <= epsilon sqrt(n) A ||x||_rms + C epsilon^2."
     ],
     "mathematical_definitions": [
-      "Fin n is the coordinate set {0,…,n-1}; it is empty when n=0.",
-      "(Ax)_i := sum over j in Fin n of A_ij x_j.",
-      "(sQ)_ij := s Q_ij.",
-      "(Qᵀ)_ij := Q_ji.",
-      "I_ij := 1 when i=j and 0 otherwise.",
-      "‖x‖₂ := sqrt(sum_i x_i²).",
-      "‖x‖∞ := max_i |x_i| for nonempty Fin n, with the finite-function norm equal to 0 for Fin 0."
+      "The index set is ZMod n, the n residue classes modulo n. If chi_m denotes the supplied standard additive character on ZMod m, then F_n(v)(k)=sum_{j in ZMod n} chi_n(jk)v(j); this transform is unnormalized.",
+      "For v : ZMod n -> Complex, ||v||_E=sqrt(sum_k |v(k)|^2), ||v||_rms=||v||_E/sqrt(n), and ||v||_infinity=max_k |v(k)|.",
+      "The forward error is e=yhat-F_n(x), with subtraction pointwise.",
+      "The radix cost is c(q,gamma)=sqrt(2) when q=2, c(q,gamma)=5 when q=4, and c(q,gamma)=2sqrt(q)(q+gamma) otherwise.",
+      "For stage count s and radices q_i, A(plan,gamma)=sum_{i=0}^{s-1} c(q_i,gamma)+((s as a real)-1)(3+2gamma).",
+      "For stage i, let R_i : Fin b_i x ZMod q_i be equivalent to ZMod n, let Q_i be its input permutation, let R_i^{-1}(k)=(r,u), and set p(a)=v(Q_i(a)). The untwiddled block output is B_i(v)(k)=sum_{j in ZMod q_i} chi_{q_i}(ju)p(R_i(r,j)). If the stage's twiddle flag is true, S_i(v)(k)=chi_n(tau_i(k))B_i(v)(k); otherwise S_i(v)(k)=B_i(v)(k).",
+      "The final permutation acts by precomposition: P_action(v)(k)=v(P(k)). The plan assumes P_action(S_{s-1}(...S_0(v)...))=F_n(v) for every v."
     ],
-    "proposition_plain_english": "For every natural dimension n, every real n-by-n matrix Q, every real vector e, and every positive real scalar s, if the transpose of Q is both a left and a right inverse of Q, then there exists a real vector δ such that multiplying δ by the scaled matrix sQ gives e exactly, the Euclidean norm of δ is exactly the Euclidean norm of e divided by s, and the supremum norm of δ is at most its Euclidean norm."
+    "proposition_plain_english": "For every nonzero transform size n, every certified exact staged Fourier plan, every arithmetic model satisfying its packaged rounding assumptions, every certified run, and every supplied forward-error certificate with coefficient C, the forward error e between the computed output and the unnormalized Fourier transform of the input has a Fourier preimage delta. This same delta has normalized Euclidean norm exactly ||e||_rms/sqrt(n), is bounded in normalized Euclidean norm by epsilon A(plan,gamma)||x||_rms+C epsilon^2/sqrt(n), and is bounded in supremum norm by epsilon sqrt(n)A(plan,gamma)||x||_rms+C epsilon^2."
   },
   "restrictions_and_vacuity_risks": [
-    "The dimension n is not required to be positive. When n=0, all indexwise inverse conditions and vector equalities are vacuous, the unique vectors are empty, both norms are 0, and the conclusion is trivial.",
-    "The matrix is square and is assumed to satisfy both QᵀQ=I and QQᵀ=I exactly.",
-    "The scalar s must be strictly positive; zero and negative scales are excluded.",
-    "There is no restriction on e.",
-    "The proposition uses exact real arithmetic, exact matrix equations, and exact norm equality; it encodes no approximation, perturbation, rounding, tolerance, or error bound.",
-    "The conclusion is existential and does not explicitly state a formula or uniqueness for δ, although the hypotheses imply that the solution is unique and can be derived as δ=Qᵀe/s.",
-    "The square root is applied only to sums of real squares, which are nonnegative."
+    "The theorem applies only for n != 0; the n=0 implementation of ZMod is excluded.",
+    "The plan, model, run, and forward objects are proof-carrying structures with strong embedded assumptions. Universal quantification is vacuous whenever no value of one of these indexed types exists.",
+    "In particular, the forward-error estimate is already assumed as a field of the forward certificate. The proposition does not derive that estimate solely from the run's local-error bounds.",
+    "The plan itself assumes exact agreement with F_n, surjectivity of F_n, and the Fourier norm-scaling law; these facts are not established by the target proposition.",
+    "Epsilon is required only to be positive. There is no upper bound or smallness assumption on epsilon, and gamma is required only to be nonnegative.",
+    "The input-rounding function is required to fix only the components of this run's input; no global exactness property for arbitrary complex inputs is imposed.",
+    "The conclusion is an absolute normwise perturbation statement. It does not assert a componentwise relative perturbation bound, optimality, or an explicit uniqueness clause for delta.",
+    "The Fourier transform uses an unnormalized finite sum. The factors of sqrt(n) in the exact norm identity and bounds depend on this normalization."
   ],
-  "ambiguities": []
+  "ambiguities": [
+    "The dossier defines the Fourier kernel through ZMod.stdAddChar but does not unfold ZMod.toCircle far enough to expose an elementary exponential formula, so the sign convention of an expression such as exp(plus-or-minus 2 pi i jk/n) is not determined here. The translation therefore retains the exact abstract character chi_n.",
+    "LocalDef027 has two constructors but no supplied semantic labels. Its intended interpretation is unknown, although it is not inspected anywhere affecting the proposition."
+  ]
 }
-

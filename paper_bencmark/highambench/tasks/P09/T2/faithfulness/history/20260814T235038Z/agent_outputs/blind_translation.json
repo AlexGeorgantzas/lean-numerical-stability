@@ -1,0 +1,383 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "7362b410440afdb0f170536e029a4b7f4950420491d462b75eece22df2864539",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "Matrix-vector multiplication: for a matrix A and vector x, the resulting vector has component (Ax)_i = sum over all j in Fin n of A_ij x_j.",
+      "effect_on_target": "It makes the first equality in the conclusion the exact system (sQ)δ = e.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "The canonical norm on the finite product of real coordinate spaces, namely the supremum norm: max_i |x_i| when n is positive, and 0 for the empty product.",
+      "effect_on_target": "It is the left-hand side of the concluding inequality, so that inequality is ‖δ‖∞ ≤ ‖δ‖₂.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "The conjunction that the transpose of Q is both a left and a right inverse of Q: QᵀQ = I and QQᵀ = I.",
+      "effect_on_target": "It is the orthogonality hypothesis imposed on Q.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "Entrywise scalar multiplication of a matrix: (sA)_ij = s A_ij.",
+      "effect_on_target": "It scales Q by s in the matrix-vector equation (sQ)δ = e.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "The Euclidean norm of a real vector: sqrt(sum_i x_i²).",
+      "effect_on_target": "It supplies both sides of the exact equality ‖δ‖₂ = ‖e‖₂/s and the right-hand side of ‖δ‖∞ ≤ ‖δ‖₂.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "The assertion that Ainv is a left inverse of A: for every i and j, sum_k Ainv_ik A_kj equals 1 when i=j and 0 otherwise.",
+      "effect_on_target": "With A=Q and Ainv=Qᵀ, it gives the hypothesis QᵀQ=I.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "The assertion that Ainv is a right inverse of A: for every i and j, sum_k A_ik Ainv_kj equals 1 when i=j and 0 otherwise.",
+      "effect_on_target": "With A=Q and Ainv=Qᵀ, it gives the hypothesis QQᵀ=I.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "Matrix transposition: (Aᵀ)_ij = A_ji.",
+      "effect_on_target": "It identifies the proposed two-sided inverse in the hypothesis as Qᵀ.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "The sum of coordinate squares of a vector: sum_i x_i².",
+      "effect_on_target": "Its square root defines the Euclidean norms of δ and e.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "It combines the two inverse conditions on Q and combines the three required properties of the existential witness δ.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "The division operation extracted from a division-and-inversion monoid structure.",
+      "effect_on_target": "It provides real division in the quotient ‖e‖₂/s.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Eq",
+      "meaning": "Exact equality.",
+      "effect_on_target": "It requires exact equality of vectors in (sQ)δ=e and exact equality of real norms in ‖δ‖₂=‖e‖₂/s.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "It asserts the existence of a real vector δ satisfying all three conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type with elements corresponding to 0 through n-1.",
+      "effect_on_target": "It indexes every row, column, and vector coordinate and makes Q an n-by-n matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "HDiv.hDiv",
+      "meaning": "Heterogeneous division as selected by the relevant division instance.",
+      "effect_on_target": "For real arguments it forms the quotient ‖e‖₂/s.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "LE.le",
+      "meaning": "The less-than-or-equal relation selected by an ordered type.",
+      "effect_on_target": "For reals it expresses the final inequality ‖δ‖∞ ≤ ‖δ‖₂.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "LT.lt",
+      "meaning": "The strict less-than relation selected by an ordered type.",
+      "effect_on_target": "For reals it expresses the hypothesis 0<s.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "It supplies the arbitrary dimension n, including the possible value n=0.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "OfNat.ofNat",
+      "meaning": "Interpretation of a natural-number literal in a specified type.",
+      "effect_on_target": "It interprets the literal 0 as a real number in the positivity hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real",
+      "meaning": "The real numbers.",
+      "effect_on_target": "All matrix entries, vector coordinates, the scale s, norms, sums, products, and quotients are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The standard multiplicative, inversion, and division structure on the real numbers.",
+      "effect_on_target": "It makes the quotient in the norm equality ordinary real division; the hypothesis s>0 ensures its denominator is nonzero.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instLE",
+      "meaning": "The standard non-strict order on the real numbers.",
+      "effect_on_target": "It gives the usual mathematical meaning to the final ≤ inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instLT",
+      "meaning": "The standard strict order on the real numbers.",
+      "effect_on_target": "It gives the usual mathematical meaning to 0<s.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instZero",
+      "meaning": "The standard zero element of the real numbers.",
+      "effect_on_target": "It supplies the real zero used in the positivity hypothesis and zero-valued identity-matrix entries.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "Zero.toOfNat0",
+      "meaning": "The construction interpreting the numeral 0 from a type's distinguished zero element.",
+      "effect_on_target": "It connects the literal 0 to real zero in 0<s.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "instHDiv",
+      "meaning": "The homogeneous heterogeneous-division instance obtained from an ordinary division operation.",
+      "effect_on_target": "It makes HDiv on two real numbers return their ordinary real quotient.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Fin.fintype",
+      "meaning": "The finite enumeration structure on Fin n.",
+      "effect_on_target": "It allows sums and the finite-product norm to range over all n indices, including an empty range when n=0.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Finset.sum",
+      "meaning": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It forms matrix products, matrix-vector products, and sums of coordinate squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It makes each displayed sum range over every coordinate in Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "HMul.hMul",
+      "meaning": "Multiplication selected by a heterogeneous multiplication instance.",
+      "effect_on_target": "For real arguments it supplies the products in scalar multiplication, matrix products, and matrix-vector multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Norm.norm",
+      "meaning": "The norm operation extracted from a norm structure.",
+      "effect_on_target": "It evaluates the finite-product norm used by LocalDef002.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "NormedCommRing.toNormedRing",
+      "meaning": "The normed-ring structure obtained by forgetting commutativity from a normed commutative ring.",
+      "effect_on_target": "It supplies the real coordinate normed-ring structure used to construct the norm on real-valued functions.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "NormedRing.toNorm",
+      "meaning": "The norm structure extracted from a normed-ring structure.",
+      "effect_on_target": "It exposes the finite-function norm used in the final inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Pi.normedRing",
+      "meaning": "The normed-ring structure on a finite dependent function space, using pointwise ring operations and the finite supremum norm.",
+      "effect_on_target": "For functions Fin n→Real, it makes LocalDef002 the coordinatewise supremum norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The standard additive commutative monoid structure on the real numbers.",
+      "effect_on_target": "It makes all finite sums in the definitions ordinary sums of real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Real.instMul",
+      "meaning": "The standard multiplication operation on the real numbers.",
+      "effect_on_target": "It makes all matrix, scalar, and vector products ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Real.normedCommRing",
+      "meaning": "The standard normed commutative ring structure on the real numbers, whose scalar norm is absolute value.",
+      "effect_on_target": "It supplies the coordinate norms underlying the finite supremum norm and the usual real algebra used throughout.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "Real.sqrt",
+      "meaning": "The nonnegative real square-root function.",
+      "effect_on_target": "Applied to a sum of squares, it produces the Euclidean norms of δ and e.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "instHMul",
+      "meaning": "The homogeneous heterogeneous-multiplication instance obtained from ordinary multiplication.",
+      "effect_on_target": "It identifies each real-valued hMul expression with ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "HPow.hPow",
+      "meaning": "Exponentiation selected by a heterogeneous power instance.",
+      "effect_on_target": "It forms the squares x_i² in the sum defining the Euclidean norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "Monoid.toNatPow",
+      "meaning": "Natural-number exponentiation obtained from a monoid's repeated multiplication operation.",
+      "effect_on_target": "It gives x_i² its usual meaning as the square of a real coordinate.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "One.toOfNat1",
+      "meaning": "The construction interpreting the numeral 1 from a type's multiplicative identity.",
+      "effect_on_target": "It supplies the diagonal value 1 in the identity-matrix conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "Real.instMonoid",
+      "meaning": "The standard multiplicative monoid structure on the real numbers.",
+      "effect_on_target": "It supports natural powers such as x² and the multiplicative structure used by real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "Real.instOne",
+      "meaning": "The standard multiplicative identity 1 of the real numbers.",
+      "effect_on_target": "It supplies the diagonal entries of the identity matrix in the orthogonality hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "instDecidableEqFin",
+      "meaning": "Decidable equality on Fin n.",
+      "effect_on_target": "It permits the definition to choose 1 when i=j and 0 otherwise.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "instHPow",
+      "meaning": "The homogeneous heterogeneous-power instance obtained from an ordinary power operation.",
+      "effect_on_target": "It interprets real coordinates raised to the natural exponent 2 as ordinary real powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "instOfNatNat",
+      "meaning": "The standard interpretation of each natural-number literal as itself in Nat.",
+      "effect_on_target": "It supplies the natural exponent 2 used in every coordinate square.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "ite",
+      "meaning": "A conditional expression selecting one value when a proposition holds and another when it does not.",
+      "effect_on_target": "It defines the identity-matrix entry as 1 if i=j and 0 otherwise.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "n is an arbitrary natural number, possibly zero.",
+      "Q is an arbitrary real n-by-n matrix, represented as a function Fin n → Fin n → Real.",
+      "e is an arbitrary real vector of length n, represented as a function Fin n → Real.",
+      "s is an arbitrary real scalar.",
+      "δ is an existentially quantified real vector of length n whose three required properties are mutually dependent on the same witness."
+    ],
+    "hypotheses": [
+      "The scale is strictly positive: 0<s.",
+      "QᵀQ=I: for every i,j in Fin n, sum_k Q_ki Q_kj equals 1 if i=j and 0 otherwise.",
+      "QQᵀ=I: for every i,j in Fin n, sum_k Q_ik Q_jk equals 1 if i=j and 0 otherwise."
+    ],
+    "conclusions": [
+      "There exists a vector δ such that (sQ)δ=e; componentwise, for every i, sum_j (s Q_ij)δ_j=e_i.",
+      "The Euclidean norm of that same δ satisfies the exact equality sqrt(sum_i δ_i²)=sqrt(sum_i e_i²)/s.",
+      "The same δ satisfies max_i |δ_i|≤sqrt(sum_i δ_i²), with the finite-product norm interpreted as 0 when n=0."
+    ],
+    "mathematical_definitions": [
+      "Fin n is the coordinate set {0,…,n-1}; it is empty when n=0.",
+      "(Ax)_i := sum over j in Fin n of A_ij x_j.",
+      "(sQ)_ij := s Q_ij.",
+      "(Qᵀ)_ij := Q_ji.",
+      "I_ij := 1 when i=j and 0 otherwise.",
+      "‖x‖₂ := sqrt(sum_i x_i²).",
+      "‖x‖∞ := max_i |x_i| for nonempty Fin n, with the finite-function norm equal to 0 for Fin 0."
+    ],
+    "proposition_plain_english": "For every natural dimension n, every real n-by-n matrix Q, every real vector e, and every positive real scalar s, if the transpose of Q is both a left and a right inverse of Q, then there exists a real vector δ such that multiplying δ by the scaled matrix sQ gives e exactly, the Euclidean norm of δ is exactly the Euclidean norm of e divided by s, and the supremum norm of δ is at most its Euclidean norm."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The dimension n is not required to be positive. When n=0, all indexwise inverse conditions and vector equalities are vacuous, the unique vectors are empty, both norms are 0, and the conclusion is trivial.",
+    "The matrix is square and is assumed to satisfy both QᵀQ=I and QQᵀ=I exactly.",
+    "The scalar s must be strictly positive; zero and negative scales are excluded.",
+    "There is no restriction on e.",
+    "The proposition uses exact real arithmetic, exact matrix equations, and exact norm equality; it encodes no approximation, perturbation, rounding, tolerance, or error bound.",
+    "The conclusion is existential and does not explicitly state a formula or uniqueness for δ, although the hypotheses imply that the solution is unique and can be derived as δ=Qᵀe/s.",
+    "The square root is applied only to sums of real squares, which are nonnegative."
+  ],
+  "ambiguities": []
+}
+

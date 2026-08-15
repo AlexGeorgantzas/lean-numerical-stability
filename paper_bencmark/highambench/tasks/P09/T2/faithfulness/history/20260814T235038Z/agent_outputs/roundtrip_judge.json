@@ -1,0 +1,166 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P09-T2",
+  "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
+  "blind_translation_sha256": "9a01b41ec8fa4ec0e535babdd26a23ee9a254c5f2dddfb4022347fd85e10b48f",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The hash-verified Ramos PDF states on printed page 768 that the exact complex roundoff-error vector e satisfies e = T delta for some fictional delta, followed by the RMS and infinity-norm certificates.",
+      "translation_evidence": "The blind translation contains no competing source attribution and presents one proposition for comparison.",
+      "reasoning": "The identified passage and its surrounding Theorem 1 context are the correct source result, although the translated proposition does not preserve that result."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper uses a positive-order complex Fourier transform: x, e, and delta are complex N-vectors and T is the complex N-by-N Fourier matrix indexed from 0 through N-1.",
+      "translation_evidence": "The translation quantifies over an arbitrary natural n, including zero, an arbitrary real n-by-n matrix Q, a real vector e, and a positive real scalar s; it has no x binder.",
+      "reasoning": "Complex Fourier data and a positive transform order have been replaced by real linear algebra with an additional arbitrary matrix and scale and an unintended zero-dimensional case."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "For the error e produced from input x by the analyzed FFT, the paper asserts existence of some fictional delta satisfying the exact equation and both norm certificates.",
+      "translation_evidence": "For every n, Q, arbitrary e, and positive s satisfying orthogonality, the translation asserts one delta satisfying three algebraic properties.",
+      "reasoning": "The shared-witness conjunction is preserved abstractly, but the universal scope is changed: the translation omits x and the FFT parameters while generalizing e, Q, and s beyond the paper."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper's certificates concern e = fl(y) - y from its mixed-radix floating-point FFT with y = Tx, exactly representable input, the stated arithmetic and trigonometric models, and N = N1...NM.",
+      "translation_evidence": "The only substantive hypotheses are 0 < s, Q transpose times Q equals I, and Q times Q transpose equals I.",
+      "reasoning": "The FFT provenance, input assumption, Fourier structure, radix factorization, and numerical-model hypotheses are absent, while unrelated real orthogonality and arbitrary-scale hypotheses are introduced."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The paper concludes e = T delta exactly, ||delta||RMS = ||e||RMS/sqrt(N) <= epsilon K(N,gamma)||x||RMS + O(epsilon^2), and ||delta||infinity <= epsilon sqrt(N)K(N,gamma)||x||RMS + O(epsilon^2).",
+      "translation_evidence": "The translation concludes (sQ)delta = e, ||delta||2 = ||e||2/s, and only the generic inequality ||delta||infinity <= ||delta||2.",
+      "reasoning": "Both first-order error certificates are omitted. The paper's infinity certificate is replaced by a generic norm comparison, so the principal numerical conclusions are missing."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "T has entries exp(i 2 pi jk/N), uses complex multiplication, and is unnormalized; the relevant inverse structure is complex unitary structure after normalization.",
+      "translation_evidence": "The dependency ledger unfolds real matrix-vector multiplication, real scalar multiplication, ordinary transpose, real orthogonality, Euclidean norm, and a real finite-product supremum norm.",
+      "reasoning": "Although the translated dependencies are explained, ordinary real transpose and arbitrary real orthogonality do not interpret the paper's complex Fourier operator or its conjugate-transpose structure."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "The vector e is the computed forward roundoff error fl(y) - y, delta is fictional, e = T delta and the norm equality are exact, and only the upper estimates are first-order bounds.",
+      "translation_evidence": "The translation treats e as an arbitrary exact real vector and every displayed relation as exact, with no computed transform, rounding, perturbation estimate, or tolerance.",
+      "reasoning": "The exact algebraic relation is retained only in an abstract form, while the distinction between a computed roundoff error, a fictional perturbation, and first-order estimates is erased."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The result inherits Theorem 1's one-dimensional mixed-radix floating-point FFT, including the Cooley-Tukey or Sande-Tukey factorization and separate twiddle-factor multiplications.",
+      "translation_evidence": "The proposition concerns any scaled real orthogonal matrix and mentions no FFT, factorization, execution, or twiddle factors.",
+      "reasoning": "There is no linkage between the translated proposition and the algorithm analyzed by the paper."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "The paper uses complex RMS norm, with ||delta||RMS = ||e||RMS/sqrt(N), and complex maximum norm max_k |delta(k)| with a specific epsilon sqrt(N)K(N,gamma)||x||RMS bound.",
+      "translation_evidence": "The translation uses unnormalized real Euclidean norms, an arbitrary divisor s, and max_i |delta_i| <= ||delta||2.",
+      "reasoning": "Setting s = sqrt(N) would reproduce part of the RMS scaling only after an unstated identification. The real coordinate supremum norm and generic norm inequality do not reproduce the paper's complex maximum-norm certificate."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The paper fixes the factors sqrt(N), epsilon, and K(N,gamma), where K depends on the radix factors and the piecewise constants alpha(2), alpha(4), and alpha(q); Fourier indices are 0 through N-1.",
+      "translation_evidence": "Fin n supplies zero-based indices, but every numerical constant and parameter dependence is replaced by an unconstrained positive scalar s.",
+      "reasoning": "Correct zero-based indexing alone is insufficient; the required scale, coefficients, radix dependence, epsilon, gamma, and K are absent."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The result is tied to the paper's floating-point addition, multiplication, and absolute sine/cosine error models with constants epsilon and gamma; the source states no exceptional-value model.",
+      "translation_evidence": "The translation explicitly describes exact real arithmetic and encodes no precision, rounding mode, trigonometric error, overflow, underflow, or exceptional-value assumptions.",
+      "reasoning": "The numerical model supporting the roundoff certificates has been removed rather than represented."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The equation and RMS norm identity are exact, while the RMS and infinity estimates are directed upper bounds with additive O(epsilon^2) terms.",
+      "translation_evidence": "The scaled system and Euclidean norm identity are exact, but the only inequality is the unconditional relation ||delta||infinity <= ||delta||2.",
+      "reasoning": "Some abstract equality structure remains, but the two required upper-bound relations and their coefficients are absent and replaced by a logically different inequality."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The paper interprets forward output roundoff error e as the exact transform of a fictional input perturbation delta, yielding a normwise backward-error interpretation relative to ||x||RMS.",
+      "translation_evidence": "The translation calls e an arbitrary vector and delta a solution of an exact linear system, without x, fl(y), roundoff, or a backward-error interpretation.",
+      "reasoning": "The forward-error provenance and fictional normwise backward perturbation have been reduced to unrelated exact solvability."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Both upper certificates contain additive O(epsilon^2) remainders whose constants and parameter dependence are left unspecified; the equation and norm equality themselves are exact.",
+      "translation_evidence": "The translation contains no epsilon, approximation, remainder, or big-O term and describes all conclusions as exact.",
+      "reasoning": "The higher-order treatment is omitted entirely, so the first-order character of the paper's certificates is not preserved."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The paper concerns the specific unnormalized complex Fourier matrix of positive order N and an FFT-generated error vector.",
+      "translation_evidence": "The translation simultaneously specializes scalars from complex to real and generalizes the operator to every real orthogonal Q, every positive scale s, every e, and n = 0.",
+      "reasoning": "This is neither a faithful specialization nor a faithful generalization: the changed scalar field and operator class prevent direct identification, while the new scope substantially exceeds the paper."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "Positive-order Fourier matrices and FFT-produced errors provide nonempty intended instances of the source result.",
+      "translation_evidence": "The translation's hypotheses are satisfiable, for example by Q = I and any s > 0, and for n > 0 its conclusion requires genuine inverse and norm reasoning; n = 0 is merely an additional trivial instance.",
+      "reasoning": "The translated theorem is not globally vacuous or based on inconsistent hypotheses. Its zero-dimensional case is an unintended scope mismatch already captured by the binder and specialization failures."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The translated real orthogonal-matrix lemma cannot supply the complex Fourier statement's FFT provenance or either epsilon-K error certificate, including the O(epsilon^2) remainders. Even a proposed normalization or realification would require unstated identifications and would not recover the stated complex infinity norm and numerical bounds."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper treats one specific complex Fourier operator and errors generated by its floating-point FFT. It does not assert the translated theorem for arbitrary real dimensions, arbitrary real orthogonal matrices, arbitrary positive scales, arbitrary vectors, or the zero-dimensional case."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "missing-error-certificates",
+      "paper_evidence": "Printed page 768 gives both the RMS upper bound epsilon K(N,gamma)||x||RMS + O(epsilon^2) and the infinity upper bound epsilon sqrt(N)K(N,gamma)||x||RMS + O(epsilon^2).",
+      "translation_evidence": "The proposition contains neither bound and instead concludes only ||delta||infinity <= ||delta||2.",
+      "impact": "The central roundoff and backward-stability content is absent, so the translation cannot imply the paper result."
+    },
+    {
+      "severity": "major",
+      "category": "operator-and-type-substitution",
+      "paper_evidence": "The source uses the positive-sign, unnormalized complex Fourier matrix T and complex N-vectors.",
+      "translation_evidence": "The proposition uses an arbitrary scaled real orthogonal matrix sQ and real vectors.",
+      "impact": "Ordinary real transpose and real coordinate norms do not directly represent the complex Fourier transform, making the statements semantically different."
+    },
+    {
+      "severity": "major",
+      "category": "algorithm-and-error-model-erasure",
+      "paper_evidence": "The source's e is output roundoff error from the analyzed mixed-radix floating-point FFT under specified arithmetic and trigonometric error models.",
+      "translation_evidence": "The translated e is arbitrary and the proposition uses exact real arithmetic without x, fl(y), epsilon, gamma, a radix factorization, or an FFT.",
+      "impact": "The translated statement loses both the algorithmic scope and the intended forward-to-backward error interpretation."
+    },
+    {
+      "severity": "major",
+      "category": "norm-and-scaling-mismatch",
+      "paper_evidence": "The paper states a complex RMS identity with the fixed divisor sqrt(N) and a complex maximum-norm certificate containing an additional sqrt(N).",
+      "translation_evidence": "The translation states an unnormalized Euclidean identity with arbitrary divisor s and a generic real supremum-to-Euclidean norm inequality.",
+      "impact": "No binder equates s with sqrt(N), and the translated infinity relation does not express the paper's certificate."
+    }
+  ],
+  "rationale": "The blind translation expresses a general exact real-linear-algebra fact about scaled orthogonal matrices. The paper result is instead a complex Fourier backward-error interpretation for an FFT-generated roundoff error, with fixed sqrt(N) scaling and two first-order certificates depending on epsilon, K(N,gamma), x, and O(epsilon^2). The translation omits those certificates and the complete numerical and algorithmic context while introducing arbitrary real matrices, scales, vectors, and a zero-dimensional case. Neither statement semantically implies the other, so the result is not-faithful-different."
+}
+

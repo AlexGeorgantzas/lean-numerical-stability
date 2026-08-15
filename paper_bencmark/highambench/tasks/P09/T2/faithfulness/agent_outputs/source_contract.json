@@ -1,114 +1,177 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "The exact wording is that e can be considered the solution of e=T delta 'for some fictional delta.' (PDF p. 12, printed p. 768, anchor: prose assertion e=T delta)",
-      "impact": "A contract may assert existence and the printed certificates, but should not attribute an explicit uniqueness theorem or algorithm for recovering delta to the passage.",
-      "issue": "The passage asserts existence of 'some' fictional delta but does not explicitly state uniqueness or give a construction."
-    },
-    {
-      "evidence": "Section 6 first writes fl(x)=x+delta for actual input rounding and later calls delta in e=T delta fictional. (PDF p. 9, printed p. 765, anchor: input-rounding paragraph; PDF p. 12, printed p. 768, anchor: fictional-delta passage)",
-      "impact": "The fictional backward perturbation must not be identified with actual representational rounding without an additional assumption.",
-      "issue": "The symbol delta is reused across two conceptually different discussions."
-    },
-    {
-      "evidence": "Both certificates append O(epsilon^2) without defining its norm scaling or dependence on N, gamma, the radix factorization, or x. (PDF p. 12, printed p. 768, anchor: two unnumbered delta bounds)",
-      "impact": "Only the displayed first-order coefficients are fixed by the source.",
-      "issue": "The higher-order remainder is unquantified."
-    },
-    {
-      "evidence": "The paper says the roundoff error is negligible if epsilon sqrt(N)K(N,gamma)||x||_RMS is smaller than the least significant digit of the input data, but does not formalize that digit as a norm or componentwise threshold. (PDF p. 12, printed p. 768, anchor: sentence following the delta bounds)",
-      "impact": "That sentence is a practical heuristic, not an additional precise norm theorem.",
-      "issue": "The least-significant-digit comparison is qualitative."
-    }
-  ],
-  "contract_plain_english": "Every exact N-vector output roundoff error can be represented as the exact unnormalized Fourier transform of a hypothetical input perturbation. That perturbation has RMS norm equal to the output-error RMS norm divided by sqrt(N), and the paper gives first-order RMS and maximum-norm certificates in terms of epsilon, K(N,gamma), and ||x||_RMS. (PDF p. 12, printed p. 768, anchor: e=T delta and the two following bounds)",
-  "paper_batch_sha256": "348db3c4cffe4770d8510e9fec47ccdab62bf40c19935e431854786ba7f44db4",
-  "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P09-T2",
+  "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
   "source_evidence": [
     {
-      "anchor": "equations (2.1)-(2.2)",
-      "observation": "The paper defines the unnormalized Nth-order complex Fourier matrix T by T(j,k)=exp(i2pi jk/N), writes y=Tx, and factors T into permutation, block-Fourier, and diagonal twiddle-factor matrices for the FFT.",
+      "pdf_page": 1,
+      "printed_page": "757",
+      "anchor": "equation (1.1) and the complex RMS and maximum norm definitions",
+      "observation": "The exact transform uses the positive-sign, unnormalized convention y(j) = Σ_{k=0}^{N-1} exp(i2πjk/N)x(k), for j = 0,...,N-1, with complex RMS norm ((Σ_k |z(k)|²)/N)^(1/2) and maximum norm max_k |z(k)|. [PDF p. 1, printed p. 757, anchor: equation (1.1) and the following norm definitions]"
+    },
+    {
       "pdf_page": 2,
-      "printed_page": "758"
+      "printed_page": "758",
+      "anchor": "equations (2.1)-(2.2) and the following variant discussion",
+      "observation": "The paper writes y = Tx with T(j,k) = exp(i2πjk/N), and factors T into permutation matrices, block Fourier matrices of dimensions N_l, and diagonal twiddle-factor matrices. The factorization applies to both Sande-Tukey and Cooley-Tukey algorithms, with different diagonal matrices D_l. [PDF p. 2, printed p. 758, anchor: equations (2.1)-(2.2) and the four remarks following (2.2)]"
     },
     {
-      "anchor": "floating-point and trigonometric models followed by Theorem 1",
-      "observation": "The paper specifies epsilon and gamma error models and gives the one-dimensional RMS and maximum roundoff bounds with K(N,gamma).",
+      "pdf_page": 2,
+      "printed_page": "758",
+      "anchor": "equations (3.1)-(3.2)",
+      "observation": "For floating-point numbers a and b, the arithmetic model is fl(a+b) = a(1+θε)+b(1+θε) and fl(ab) = ab(1+θε), where θ is generic, may differ at each occurrence, and lies in [-1,1]. [PDF p. 2, printed p. 758, anchor: equations (3.1)-(3.2) and their following sentence]"
+    },
+    {
       "pdf_page": 3,
-      "printed_page": "759"
+      "printed_page": "759",
+      "anchor": "absolute trigonometric model, Theorem 1, and K(N,gamma)",
+      "observation": "The trigonometric model is fl(sin(fl(a))) = sin(a)+γθε and fl(cos(fl(a))) = cos(a)+γθε, with γ ≥ 0 dependent on the transform-order implementation but independent of input data. Theorem 1 gives the first-order FFT error constant K(N,γ) for N = N_1...N_M. [PDF p. 3, printed p. 759, anchor: absolute sine/cosine model and Theorem 1]"
     },
     {
-      "anchor": "Section 6 discussion of input representation",
-      "observation": "The paper says the preceding analysis assumed exactly representable input, distinguishes actual input rounding fl(x)=x+delta from the later reverse use of the roundoff bounds, and introduces the limited-input-accuracy motivation.",
+      "pdf_page": 4,
+      "printed_page": "760",
+      "anchor": "expansion preceding equation (3.3)",
+      "observation": "The paper explains that O(ε²) includes all terms of order ε²; it does not provide their coefficients in that explanation. [PDF p. 4, printed p. 760, anchor: sentence immediately preceding equation (3.3)]"
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "761",
+      "anchor": "assumption fl(x)=x before equation (3.6)",
+      "observation": "The one-dimensional FFT analysis explicitly assumes that the input is exactly representable: fl(x) = x. [PDF p. 5, printed p. 761, anchor: paragraph immediately before equation (3.6)]"
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "763",
+      "anchor": "proof of Theorem 1(b)",
+      "observation": "The output roundoff-error components are defined by e(j) = fl(y(j)) - y(j), so e is the difference between the computed transform and the exact transform. [PDF p. 7, printed p. 763, anchor: first sentence of the proof of Theorem 1(b)]"
+    },
+    {
       "pdf_page": 9,
-      "printed_page": "765"
+      "printed_page": "765",
+      "anchor": "Section 6 discussion of input representation and reverse use of the bounds",
+      "observation": "The conclusion reiterates that the preceding analysis assumed exactly representable inputs, separately discusses actual input rounding fl(x) = x+δ, and then introduces the different context in which input data is known to fewer significant digits than machine precision and the roundoff bounds are used in reverse. [PDF p. 9, printed p. 765, anchor: final two paragraphs of Section 6 on the page]"
     },
     {
-      "anchor": "prose assertion e=T delta and the two following unnumbered bounds",
-      "observation": "For the exact complex N-vector roundoff error e, the paper asserts that e=T delta for some fictional delta and states ||delta||_RMS=||e||_RMS/sqrt(N)<=epsilon K(N,gamma)||x||_RMS+O(epsilon^2) and ||delta||_infinity<=epsilon sqrt(N)K(N,gamma)||x||_RMS+O(epsilon^2).",
       "pdf_page": 12,
-      "printed_page": "768"
+      "printed_page": "768",
+      "anchor": "prose assertion e = T delta and the two following unnumbered bounds",
+      "observation": "For the exact complex N-vector output error e, the passage asserts that e = Tδ for some fictional δ and states ||δ||_RMS = ||e||_RMS/√N ≤ εK(N,γ)||x||_RMS + O(ε²) and ||δ||_∞ ≤ ε√N K(N,γ)||x||_RMS + O(ε²). It then gives a qualitative least-significant-digit negligibility criterion. [PDF p. 12, printed p. 768, anchor: paragraph beginning 'Let the roundoff error be given exactly']"
     }
   ],
   "statement": {
-    "algorithm_linkage": "The certificates inherit Theorem 1's one-dimensional mixed-radix floating-point FFT and its K(N,gamma). The factorization is stated to apply to Cooley-Tukey and Sande-Tukey variants with different diagonal matrices and includes separate diagonal twiddle multiplications. (PDF p. 2, printed p. 758, anchor: equation (2.2) and following remarks; PDF p. 3, printed p. 759, anchor: Theorem 1 and note following K)",
     "binders": [
-      "N is the transform order; x, e, and the fictional delta are complex N-vectors; e is the exact roundoff-error vector. (PDF p. 12, printed p. 768, anchor: opening prose of the fictional-perturbation passage)",
-      "T is the N-by-N unnormalized Fourier matrix with T(j,k)=exp(i2pi jk/N), j,k=0,...,N-1. (PDF p. 2, printed p. 758, anchor: equation (2.1) and definition of T)",
-      "For K(N,gamma), N has an FFT factorization N=N_1...N_M, epsilon is the arithmetic error constant, and gamma is the absolute trigonometric-error constant. (PDF p. 3, printed p. 759, anchor: numerical model and Theorem 1)"
-    ],
-    "conclusions": [
-      "There exists some fictional complex N-vector delta satisfying the exact equation e=T delta. (PDF p. 12, printed p. 768, anchor: prose assertion e=T delta)",
-      "||delta||_RMS = ||e||_RMS/sqrt(N) <= epsilon K(N,gamma)||x||_RMS + O(epsilon^2). (PDF p. 12, printed p. 768, anchor: first unnumbered delta bound)",
-      "||delta||_infinity <= epsilon sqrt(N)K(N,gamma)||x||_RMS + O(epsilon^2). (PDF p. 12, printed p. 768, anchor: second unnumbered delta bound)"
-    ],
-    "constants_and_indexing": [
-      "K(N,gamma)=sum_{l=1}^M alpha(N_l)+(M-1)(3+2gamma), with N=N_1...N_M, alpha(2)=sqrt(2), alpha(4)=5, and alpha(q)=2sqrt(q)(q+gamma) otherwise. (PDF p. 3, printed p. 759, anchor: Theorem 1 definition of K and alpha)",
-      "The Fourier indices run from 0 to N-1, and the first norm equality uses exactly sqrt(N), not N or an index-shifted dimension. (PDF p. 2, printed p. 758, anchor: definition of T; PDF p. 12, printed p. 768, anchor: first delta bound)"
-    ],
-    "definitions_and_conventions": [
-      "The equation e=T delta represents the output roundoff error as the exact Fourier transform of a hypothetical input perturbation; the paper does not identify delta with a perturbation actually supplied to the machine. (PDF p. 12, printed p. 768, anchor: phrase 'some fictional delta')",
-      "||z||_RMS=((sum_{k=0}^{N-1}|z(k)|^2)/N)^(1/2) and ||z||_infinity=max_k |z(k)|. (PDF p. 1, printed p. 757, anchor: norm definitions)",
-      "T is unnormalized, so the selected passage uses the exact scaling ||T delta||_RMS=sqrt(N)||delta||_RMS. (PDF p. 2, printed p. 758, anchor: definition of T; PDF p. 12, printed p. 768, anchor: equality ||delta||_RMS=||e||_RMS/sqrt(N))"
-    ],
-    "error_notions": [
-      "e is forward output roundoff error, whereas delta is a fictional input perturbation furnishing a normwise backward-error interpretation. (PDF p. 12, printed p. 768, anchor: e=T delta and the two bounds)",
-      "The certificates are absolute RMS and infinity-norm bounds scaled by ||x||_RMS; they are not componentwise relative bounds on delta(k)/x(k). (PDF p. 12, printed p. 768, anchor: two unnumbered delta bounds)"
-    ],
-    "exceptional_values": [
-      "No overflow, underflow, subnormal, NaN, infinity, or failed-trigonometric-evaluation assumptions are stated in the passage or arithmetic model. (PDF pp. 2-3, printed pp. 758-759, anchor: equations (3.1)-(3.2) and trigonometric model; PDF p. 12, printed p. 768, anchor: fictional-delta passage)"
-    ],
-    "higher_order_terms": [
-      "The equation e=T delta and the norm equality are exact; only the two upper estimates carry additive O(epsilon^2) remainders. (PDF p. 12, printed p. 768, anchor: e=T delta and the two bounds)",
-      "The source does not state the constants, parameter dependence, or uniformity hidden in O(epsilon^2). (PDF p. 12, printed p. 768, anchor: two unnumbered delta bounds)"
+      "Let N be the order of the one-dimensional complex transform, with indices j,k = 0,...,N-1, and let x ∈ C^N be its input. [PDF p. 1, printed p. 757, anchor: equation (1.1)]",
+      "Let T ∈ C^{N×N} have entries T(j,k) = exp(i2πjk/N), and let the exact output be y = Tx. [PDF p. 2, printed p. 758, anchor: equation (2.1) and the displayed definition of T]",
+      "Let N = N_1N_2...N_M describe the FFT factorization used by the inherited Theorem 1 constant K(N,γ). [PDF p. 3, printed p. 759, anchor: Theorem 1]",
+      "Given the computed floating-point FFT output fl(y), define e componentwise by e(j) = fl(y(j)) - y(j); after e is fixed, the selected passage existentially introduces some fictional δ ∈ C^N satisfying e = Tδ. [PDF p. 7, printed p. 763, anchor: proof of Theorem 1(b); PDF p. 12, printed p. 768, anchor: assertion e = Tδ]",
+      "The error parameters are the computer-dependent ε, generic occurrence-dependent θ ∈ [-1,1], and trigonometric absolute-error constant γ ≥ 0. [PDF p. 2, printed p. 758, anchor: equations (3.1)-(3.2); PDF p. 3, printed p. 759, anchor: absolute trigonometric model]"
     ],
     "hypotheses": [
-      "The vector e is the roundoff error produced in the paper's one-dimensional floating-point FFT analysis, whose standing input assumption is fl(x)=x. (PDF p. 5, printed p. 761, anchor: proof preceding equation (3.6); PDF p. 9, printed p. 765, anchor: Section 6 input-representation discussion)",
-      "The exact transform is y=Tx and the roundoff analysis supplies the Theorem 1 bounds for e=fl(y)-y. (PDF p. 2, printed p. 758, anchor: equation (2.1); PDF p. 3, printed p. 759, anchor: Theorem 1)",
-      "The reverse interpretation is introduced for input data known to fewer significant digits than machine precision; delta in the selected passage is expressly fictional. (PDF p. 9, printed p. 765, anchor: final paragraph; PDF p. 12, printed p. 768, anchor: fictional-delta prose)"
+      "The result inherits the assumption fl(x) = x, meaning the input supplied to the analyzed FFT is exactly representable in machine precision. [PDF p. 5, printed p. 761, anchor: assumption immediately before equation (3.6); PDF p. 9, printed p. 765, anchor: Section 6 input-representation discussion]",
+      "The exact output y = Tx is computed by a floating-point FFT of order N = N_1...N_M under the arithmetic and trigonometric error models used in Theorem 1. [PDF p. 2, printed p. 758, anchor: equations (2.1)-(2.2) and (3.1)-(3.2); PDF p. 3, printed p. 759, anchor: absolute trigonometric model and Theorem 1]",
+      "The inherited constants include the effect of performing the D_l twiddle-factor multiplications separately for l = 1,...,M-1. [PDF p. 3, printed p. 759, anchor: parenthetical paragraph following the radix-2 and radix-4 formulas]"
+    ],
+    "conclusions": [
+      "There exists a fictional complex N-vector δ such that the output roundoff error is represented exactly as e = Tδ. [PDF p. 12, printed p. 768, anchor: sentence ending 'e = Tδ for some fictional δ']",
+      "Its RMS norm satisfies the exact scaling identity and first-order bound ||δ||_RMS = ||e||_RMS/√N ≤ εK(N,γ)||x||_RMS + O(ε²). [PDF p. 12, printed p. 768, anchor: first unnumbered bound following e = Tδ]",
+      "Its maximum norm satisfies ||δ||_∞ ≤ ε√N K(N,γ)||x||_RMS + O(ε²). [PDF p. 12, printed p. 768, anchor: second unnumbered bound following e = Tδ]",
+      "The paper qualitatively declares the roundoff error negligible if ε√N K(N,γ)||x||_RMS is smaller than the least significant digit of the input data. [PDF p. 12, printed p. 768, anchor: sentence immediately following the two perturbation bounds]"
+    ],
+    "definitions_and_conventions": [
+      "The Fourier convention is positive-sign and unnormalized: y(j) = Σ_{k=0}^{N-1} exp(i2πjk/N)x(k). [PDF p. 1, printed p. 757, anchor: equation (1.1)]",
+      "The matrix form is y = Tx with T(j,k) = exp(i2πjk/N); no 1/√N or 1/N normalization appears in T. [PDF p. 2, printed p. 758, anchor: equation (2.1) and the displayed definition of T]",
+      "fl(y) denotes the floating-point FFT result, while y denotes the exact transform; e is their exact difference. [PDF p. 1, printed p. 757, anchor: paragraph following equation (1.1); PDF p. 7, printed p. 763, anchor: proof of Theorem 1(b)]",
+      "δ in the selected passage is expressly called fictional: it is an input-space perturbation used to represent output roundoff, not an assertion that the physical input was actually perturbed by δ. [PDF p. 12, printed p. 768, anchor: phrase 'for some fictional δ']"
     ],
     "implicit_context": [
-      "Because y=Tx and e=fl(y)-y, e=T delta permits the inferred backward-error identity fl(y)=T(x+delta), although that latter equation is not itself printed in the selected passage. (PDF p. 2, printed p. 758, anchor: equation (2.1); PDF p. 12, printed p. 768, anchor: e=T delta)",
-      "The paper follows the bounds with a qualitative criterion: if epsilon sqrt(N)K(N,gamma)||x||_RMS is smaller than the least significant digit of the input data, the roundoff error is called negligible. (PDF p. 12, printed p. 768, anchor: sentence following the two delta bounds)"
+      "The selected result is the one-dimensional backward interpretation of the one-dimensional forward-error bound in Theorem 1, not the multidimensional result of Theorem 2. [PDF p. 3, printed p. 759, anchor: Theorem 1; PDF p. 12, printed p. 768, anchor: references to a complex N-vector and K(N,γ)]",
+      "From y = Tx, e = fl(y)-y, and e = Tδ, it follows algebraically that fl(y) = T(x+δ); this backward-error reformulation is inferred rather than written explicitly in the selected passage. [PDF p. 2, printed p. 758, anchor: equation (2.1); PDF p. 7, printed p. 763, anchor: definition of e; PDF p. 12, printed p. 768, anchor: e = Tδ]",
+      "The motivating context is input data whose meaningful precision is lower than machine precision, so the fictional perturbation bound can be compared with the data's least significant meaningful digit. [PDF p. 9, printed p. 765, anchor: paragraph beginning 'On the other hand'; PDF p. 12, printed p. 768, anchor: least-significant-digit sentence]"
+    ],
+    "algorithm_linkage": "The constant is tied to the paper's factorized one-dimensional floating-point FFT for N = N_1...N_M. Equation (2.2) uses permutation matrices P_l, block Fourier matrices B_l, and diagonal twiddle matrices D_l; the factorization covers both Cooley-Tukey and Sande-Tukey variants with different D_l. The displayed K constants count separate D_l multiplications. [PDF p. 2, printed p. 758, anchor: equation (2.2) and following variant discussion; PDF p. 3, printed p. 759, anchor: Theorem 1 and its parenthetical note]",
+    "numerical_model": [
+      "For floating-point a and b, fl(a+b) = a(1+θε)+b(1+θε) and fl(ab) = ab(1+θε), with a generally different θ at each occurrence and -1 ≤ θ ≤ 1. [PDF p. 2, printed p. 758, anchor: equations (3.1)-(3.2) and following sentence]",
+      "With radix β, t base-β mantissa digits, and at least t+1 digits used to accumulate sums, ε is 0.5β^(1-t) for rounded operations and β^(1-t) for chopped operations. [PDF p. 2, printed p. 758, anchor: parenthetical definition of ε continuing after equation (3.2)]",
+      "If sums are accumulated with only t digits, ε is 0.5(1+1/β)β^(1-t) for rounded operations and (1+1/β)β^(1-t) for chopped operations. [PDF p. 3, printed p. 759, anchor: opening parenthetical paragraph]",
+      "Trigonometric evaluation uses an absolute-error model: fl(sin(fl(a))) = sin(a)+γθε and fl(cos(fl(a))) = cos(a)+γθε. [PDF p. 3, printed p. 759, anchor: displayed absolute sine/cosine model]",
+      "The constant γ is nonnegative, may depend on how trigonometric functions and their arguments are computed for a given transform order, and is independent of input data. [PDF p. 3, printed p. 759, anchor: sentences surrounding the absolute trigonometric model]"
+    ],
+    "error_notions": [
+      "e is an exact forward output-error vector, with e(j) = fl(y(j))-y(j). [PDF p. 7, printed p. 763, anchor: proof of Theorem 1(b); PDF p. 12, printed p. 768, anchor: 'roundoff error be given exactly']",
+      "δ is a normwise fictional backward input perturbation whose exact transform equals e. [PDF p. 12, printed p. 768, anchor: e = Tδ and the two following bounds]",
+      "Actual input-representation error is treated separately on printed page 765 through fl(x) = x+δ and an added output-error term; that discussion is not the same assertion as the fictional perturbation on printed page 768. [PDF p. 9, printed p. 765, anchor: paragraph beginning 'So far'; PDF p. 12, printed p. 768, anchor: phrase 'some fictional δ']"
     ],
     "norms": [
-      "The first certificate includes the exact equality ||delta||_RMS=||e||_RMS/sqrt(N). (PDF p. 12, printed p. 768, anchor: first unnumbered delta bound)",
-      "The second certificate controls max_k |delta(k)| and contains an additional sqrt(N) relative to the RMS certificate. (PDF p. 12, printed p. 768, anchor: second unnumbered delta bound)"
+      "For a complex N-vector z, ||z||_RMS = ((Σ_{k=0}^{N-1}|z(k)|²)/N)^(1/2). [PDF p. 1, printed p. 757, anchor: RMS norm definition following equation (1.1)]",
+      "For a complex N-vector z, ||z||_∞ = max_{0≤k<N}|z(k)|. [PDF p. 1, printed p. 757, anchor: maximum norm definition following equation (1.1)]",
+      "For the unnormalized Fourier matrix and the selected δ, the passage states the exact norm relation ||δ||_RMS = ||e||_RMS/√N. [PDF p. 12, printed p. 768, anchor: first unnumbered perturbation bound]"
     ],
-    "numerical_model": [
-      "The arithmetic model is fl(a+b)=a(1+theta epsilon)+b(1+theta epsilon) and fl(ab)=ab(1+theta epsilon), with independently varying theta in [-1,1]. (PDF p. 2, printed p. 758, anchor: equations (3.1)-(3.2))",
-      "With at least t+1 accumulation digits, epsilon is 0.5 beta^(1-t) for rounded operations and beta^(1-t) for chopped operations; with only t accumulation digits, the paper gives 0.5(1+1/beta)beta^(1-t) and (1+1/beta)beta^(1-t), respectively. (PDF pp. 2-3, printed pp. 758-759, anchor: paragraph defining epsilon)",
-      "The sine-and-cosine model is absolute: fl(sin(fl(a)))=sin(a)+gamma theta epsilon and fl(cos(fl(a)))=cos(a)+gamma theta epsilon, where gamma>=0 depends on their computation for the transform order but is independent of input data. (PDF p. 3, printed p. 759, anchor: trigonometric error model)"
+    "constants_and_indexing": [
+      "The transform indices are zero-based: j,k = 0,...,N-1. [PDF p. 1, printed p. 757, anchor: equation (1.1); PDF p. 2, printed p. 758, anchor: definition of T(j,k)]",
+      "For N = N_1...N_M, K(N,γ) = Σ_{l=1}^{M} α(N_l) + (M-1)(3+2γ). [PDF p. 3, printed p. 759, anchor: definition of K(N,γ) in Theorem 1]",
+      "The stage constant is α(N_l)=√2 when N_l=2, α(N_l)=5 when N_l=4, and α(N_l)=2√N_l(N_l+γ) otherwise. [PDF p. 3, printed p. 759, anchor: piecewise definition of α(N_l)]",
+      "For radix 2, K(2^M,γ)=(3+√2+2γ)M-(3+2γ); for radix 4, K(4^M,γ)=(8+2γ)M-(3+2γ). [PDF p. 3, printed p. 759, anchor: parenthetical radix-2 and radix-4 formulas]",
+      "In the factorization, P_l is indexed through l=1,...,M+1, B_l through l=1,...,M, and D_l through l=1,...,M-1. [PDF p. 2, printed p. 758, anchor: definitions following equation (2.2)]",
+      "The first perturbation bound has no √N multiplying its leading term, whereas the maximum-norm perturbation bound has exactly one factor √N. [PDF p. 12, printed p. 768, anchor: the two unnumbered bounds]"
+    ],
+    "higher_order_terms": [
+      "Both perturbation inequalities retain an additive O(ε²) term. [PDF p. 12, printed p. 768, anchor: the two unnumbered bounds]",
+      "Earlier in the derivation, O(ε²) is described only as including all terms of order ε²; no explicit coefficient, sign, uniformity range, or finite-ε threshold is supplied. [PDF p. 4, printed p. 760, anchor: sentence immediately preceding equation (3.3)]"
+    ],
+    "exceptional_values": [
+      "The cited arithmetic and trigonometric models do not explicitly discuss overflow, underflow, subnormal numbers, NaNs, infinities, or exceptional trigonometric evaluations. [PDF p. 2, printed p. 758, anchor: equations (3.1)-(3.2); PDF p. 3, printed p. 759, anchor: absolute trigonometric model]",
+      "The selected absolute perturbation bounds do not divide by ||x|| or ||y|| and state no explicit nonzero-input hypothesis, although the inherited Theorem 1 is displayed in relative form with ||y||_RMS in its denominator. [PDF p. 3, printed p. 759, anchor: Theorem 1; PDF p. 12, printed p. 768, anchor: the two unnumbered bounds]"
     ]
   },
-  "task_id": "P09-T2",
   "undebatable_constraints": [
-    "The relation e=T delta is exact and delta is explicitly fictional. (PDF p. 12, printed p. 768, anchor: opening prose and equation e=T delta)",
-    "The RMS certificate contains both an equality and an upper bound; neither may be omitted. (PDF p. 12, printed p. 768, anchor: first unnumbered delta bound)",
-    "The infinity certificate is ||delta||_infinity<=epsilon sqrt(N)K(N,gamma)||x||_RMS+O(epsilon^2). (PDF p. 12, printed p. 768, anchor: second unnumbered delta bound)",
-    "Both certificates are normwise and scale with the exact input RMS norm, not the output norm or individual input components. (PDF p. 12, printed p. 768, anchor: two unnumbered delta bounds)",
-    "The transform T uses the paper's positive-sign, unnormalized complex Fourier convention. (PDF p. 2, printed p. 758, anchor: equation (2.1) and definition of T)"
-  ]
+    "T must be the unnormalized positive-sign Fourier matrix T(j,k)=exp(i2πjk/N), not a negative-sign or unitary-normalized transform. [PDF p. 1, printed p. 757, anchor: equation (1.1); PDF p. 2, printed p. 758, anchor: definition of T]",
+    "The output error must be e = fl(y)-y for exact y=Tx. [PDF p. 2, printed p. 758, anchor: equation (2.1); PDF p. 7, printed p. 763, anchor: definition of e(j)]",
+    "The passage requires an exact identity e=Tδ for a fictional complex N-vector δ. [PDF p. 12, printed p. 768, anchor: assertion e = Tδ]",
+    "The RMS certificate must preserve both the equality ||δ||_RMS=||e||_RMS/√N and the bound by εK(N,γ)||x||_RMS+O(ε²). [PDF p. 12, printed p. 768, anchor: first unnumbered bound]",
+    "The maximum-norm certificate must be preserved separately and must contain the factor √N: ||δ||_∞≤ε√N K(N,γ)||x||_RMS+O(ε²). [PDF p. 12, printed p. 768, anchor: second unnumbered bound]",
+    "The bound is normwise and uses the RMS norm of x on the right-hand side, even for the maximum-norm bound on δ. [PDF p. 12, printed p. 768, anchor: both unnumbered bounds]",
+    "The inherited analysis assumes fl(x)=x; actual input-rounding error is not included in these two fictional-perturbation certificates. [PDF p. 5, printed p. 761, anchor: assumption before equation (3.6); PDF p. 9, printed p. 765, anchor: input-representation discussion]",
+    "K(N,γ) must retain its dependence on the factorization N=N_1...N_M, including α(N_l) and the (M-1)(3+2γ) term. [PDF p. 3, printed p. 759, anchor: Theorem 1 definition of K(N,γ)]",
+    "The O(ε²) terms may not be silently discarded when reproducing the stated passage. [PDF p. 12, printed p. 768, anchor: the two unnumbered bounds]",
+    "The final least-significant-digit statement is a qualitative conditional conclusion, not an additional exact inequality defining δ. [PDF p. 12, printed p. 768, anchor: sentence after the two perturbation bounds]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The hidden content of O(ε²) is not quantitatively specified. [PDF p. 4, printed p. 760, anchor: explanation of O(ε²); PDF p. 12, printed p. 768, anchor: both perturbation bounds]",
+      "evidence": "The paper says only that O(ε²) includes terms of order ε² and supplies no coefficient, dependence on N, γ, x, or factorization, sign, uniformity statement, or admissible ε range. [PDF p. 4, printed p. 760, anchor: sentence preceding equation (3.3)]",
+      "impact": "The displayed result is an asymptotic first-order certificate and cannot, from the cited passage alone, be strengthened into a fully explicit finite-precision inequality with the O(ε²) term removed or assigned a concrete constant. [PDF p. 12, printed p. 768, anchor: additive O(ε²) in both bounds]"
+    },
+    {
+      "issue": "The symbol δ is reused for two conceptually different input perturbations. [PDF p. 9, printed p. 765, anchor: fl(x)=x+δ; PDF p. 12, printed p. 768, anchor: 'some fictional δ']",
+      "evidence": "Printed page 765 uses δ for actual input representation error, while printed page 768 explicitly calls δ fictional and defines it through e=Tδ. [PDF p. 9, printed p. 765, anchor: input-rounding paragraph; PDF p. 12, printed p. 768, anchor: e=Tδ paragraph]",
+      "impact": "The selected contract must treat δ as the fictional backward perturbation unless actual input rounding is separately introduced; the two meanings must not be conflated. [PDF p. 12, printed p. 768, anchor: phrase 'fictional δ']"
+    },
+    {
+      "issue": "The selected passage does not choose uniquely between Cooley-Tukey and Sande-Tukey FFT variants. [PDF p. 2, printed p. 758, anchor: fourth remark following equation (2.2)]",
+      "evidence": "The paper says factorization (2.2) holds for both variants, but with different diagonal matrices D_l. [PDF p. 2, printed p. 758, anchor: sentence beginning 'And fourth']",
+      "impact": "A faithful formalization may cover either variant only if it preserves the stated factorization-level hypotheses and K(N,γ) analysis; it should not assert that one named variant alone is required. [PDF p. 2, printed p. 758, anchor: variant discussion; PDF p. 3, printed p. 759, anchor: Theorem 1]"
+    },
+    {
+      "issue": "The least-significant-digit negligibility test is not formally defined. [PDF p. 12, printed p. 768, anchor: final sentence before Acknowledgments]",
+      "evidence": "The paper compares the scalar ε√N K(N,γ)||x||_RMS with 'the least significant digit of the input data' without specifying a component, scale, absolute unit, relative interpretation, or treatment of the omitted O(ε²) term. [PDF p. 12, printed p. 768, anchor: least-significant-digit sentence]",
+      "impact": "This sentence should remain a qualitative engineering criterion and not be converted into a precise componentwise theorem without additional conventions. [PDF p. 12, printed p. 768, anchor: least-significant-digit sentence]"
+    },
+    {
+      "issue": "Exceptional floating-point values and range failures are unaddressed. [PDF p. 2, printed p. 758, anchor: equations (3.1)-(3.2); PDF p. 3, printed p. 759, anchor: trigonometric model]",
+      "evidence": "The stated models bound ordinary arithmetic and sine/cosine errors but contain no explicit clauses for overflow, underflow, subnormals, NaNs, infinities, or invalid evaluations. [PDF p. 2, printed p. 758, anchor: arithmetic model; PDF p. 3, printed p. 759, anchor: absolute trigonometric model]",
+      "impact": "No behavior for such exceptional values can be attributed to the source contract; excluding them would be a conventional inferred precondition rather than an explicit paper hypothesis. [PDF p. 2, printed p. 758, anchor: arithmetic model]"
+    },
+    {
+      "issue": "The formal domain of the factorization parameters is not fully spelled out in the theorem statement. [PDF p. 3, printed p. 759, anchor: Theorem 1 and piecewise α definition]",
+      "evidence": "The paper writes N=N_1...N_M and treats N_l as block-transform dimensions, but it does not explicitly state in the theorem line that M and every N_l are positive integers or that every radix exceeds one. [PDF p. 2, printed p. 758, anchor: definitions following equation (2.2); PDF p. 3, printed p. 759, anchor: Theorem 1]",
+      "impact": "Integer stage and dimension conditions are naturally inherited from the matrix-factorization context, but stronger radix restrictions should not be added as explicit paper claims without further evidence. [PDF p. 2, printed p. 758, anchor: block-dimension description]"
+    },
+    {
+      "issue": "Existence is explicit, but uniqueness or a componentwise formula for δ is not stated in the selected passage. [PDF p. 12, printed p. 768, anchor: phrase 'for some fictional δ']",
+      "evidence": "The passage states only that e=Tδ for some δ and then gives two norm bounds; it does not display δ=T^{-1}e or a componentwise expression. [PDF p. 12, printed p. 768, anchor: e=Tδ and following bounds]",
+      "impact": "A source-faithful target needs existential δ with the exact transform relation and certificates; uniqueness or an explicit inverse formula would be an additional mathematical inference. [PDF p. 12, printed p. 768, anchor: e=Tδ paragraph]"
+    }
+  ],
+  "contract_plain_english": "For the paper's one-dimensional, positive-sign, unnormalized complex Fourier transform y=Tx, computed by the analyzed factorized floating-point FFT from an exactly representable input x, let e=fl(y)-y be the exact output roundoff error. [PDF p. 1, printed p. 757, anchor: equation (1.1); PDF p. 5, printed p. 761, anchor: fl(x)=x; PDF p. 7, printed p. 763, anchor: definition of e(j)] The passage says there is a fictional complex input perturbation δ whose exact Fourier transform is e, with ||δ||_RMS exactly ||e||_RMS/√N and at most εK(N,γ)||x||_RMS+O(ε²), while ||δ||_∞ is at most ε√N K(N,γ)||x||_RMS+O(ε²). [PDF p. 12, printed p. 768, anchor: e=Tδ and the two following unnumbered bounds] Here K(N,γ) is the complete Theorem 1 mixed-radix constant, including the arithmetic and trigonometric error model and separate twiddle multiplications. [PDF p. 3, printed p. 759, anchor: Theorem 1 and K(N,γ)] The source finally offers the qualitative judgment that roundoff is negligible when the leading maximum-perturbation quantity is smaller than the input data's least significant digit. [PDF p. 12, printed p. 768, anchor: sentence following the two bounds]"
 }

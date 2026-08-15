@@ -1,74 +1,45 @@
 {
   "accepted": false,
-  "adjudicated": false,
-  "adjudication_reasons": [],
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "round-trip judge requested adjudication",
+    "round-trip S06 is unclear"
+  ],
   "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T15:11:03.530070+00:00",
+  "completed_at_utc": "2026-08-15T00:16:53.339311+00:00",
   "findings": [
     {
-      "category": "missing-error-certificates",
-      "impact": "The principal quantitative content of the selected result is absent.",
-      "lean_evidence": "The target has no x, epsilon, gamma, K, or remainder and concludes only p09Max delta <= p09VecNorm2 delta.",
-      "paper_evidence": "PDF p. 12, printed p. 768 gives both the RMS certificate epsilon K(N,gamma)||x||RMS + O(epsilon^2) and the infinity certificate epsilon sqrt(N)K(N,gamma)||x||RMS + O(epsilon^2).",
+      "category": "higher-order semantics and nonvacuity",
+      "evidence": "The PDF retains O(epsilon^2), whereas D020 stores C after epsilon and the run are fixed and requires only C>=0. At epsilon>0, increasing C can certify any finite forward residual.",
+      "impact": "The formal premise loses the paper's epsilon-uniform first-order stability content and makes the numerical result hold for an unintended pointwise reason.",
       "severity": "critical"
     },
     {
-      "category": "transform-and-scalar-domain",
-      "impact": "The formal theorem does not directly cover the paper's operator or vector space.",
-      "lean_evidence": "The target uses an arbitrary real scaled orthogonal matrix sQ and real vectors, with ordinary transpose instead of conjugate transpose.",
-      "paper_evidence": "T is the fixed positive-sign unnormalized complex Fourier matrix and delta, e, and x are complex N-vectors.",
+      "category": "conditionalization and execution linkage",
+      "evidence": "The paper derives Theorem 1 from the floating-point FFT operations. D018 represents stages as exact maps plus supplied errors, and D020 assumes the complete global forward estimate; neither connects computedOutput to evaluations of flAdd, flMul, flSin, or flCos.",
+      "impact": "The target is a generic backward-conversion lemma over certified perturbation traces, not the paper's guarantee for computed FFT outputs.",
       "severity": "major"
     },
     {
-      "category": "algorithm-linkage",
-      "impact": "The backward-error statement is detached from the computation whose roundoff error the paper analyzes.",
-      "lean_evidence": "The proposition treats e as arbitrary and contains no FFT, computed output, rounding model, or algorithm parameters.",
-      "paper_evidence": "The reverse interpretation depends on Theorem 1's mixed-radix floating-point FFT analysis and K(N,gamma).",
+      "category": "Fourier convention evidence gap",
+      "evidence": "The paper explicitly uses exp(+i*2*pi*j*k/N). D012 uses ZMod.stdAddChar, but D120 only exposes composition with ZMod.toCircle and does not reveal its elementary exponential convention.",
+      "impact": "Positive-sign agreement cannot be certified from the supplied declaration evidence, although independent defects already determine rejection.",
       "severity": "major"
     },
     {
-      "category": "norm-and-scale-semantics",
-      "impact": "Only an abstract norm-preserving preimage fact remains; the displayed paper norm certificates are not represented.",
-      "lean_evidence": "Lean uses a real Euclidean norm, a real function supremum norm, and an unconstrained positive scale s.",
-      "paper_evidence": "The paper states complex RMS and infinity norms with the exact scale sqrt(N).",
-      "severity": "major"
-    },
-    {
-      "category": "missing-error-certificates",
-      "impact": "The central roundoff and backward-stability content is absent, so the translation cannot imply the paper result.",
-      "paper_evidence": "Printed page 768 gives both the RMS upper bound epsilon K(N,gamma)||x||RMS + O(epsilon^2) and the infinity upper bound epsilon sqrt(N)K(N,gamma)||x||RMS + O(epsilon^2).",
-      "severity": "critical",
-      "translation_evidence": "The proposition contains neither bound and instead concludes only ||delta||infinity <= ||delta||2."
-    },
-    {
-      "category": "operator-and-type-substitution",
-      "impact": "Ordinary real transpose and real coordinate norms do not directly represent the complex Fourier transform, making the statements semantically different.",
-      "paper_evidence": "The source uses the positive-sign, unnormalized complex Fourier matrix T and complex N-vectors.",
-      "severity": "major",
-      "translation_evidence": "The proposition uses an arbitrary scaled real orthogonal matrix sQ and real vectors."
-    },
-    {
-      "category": "algorithm-and-error-model-erasure",
-      "impact": "The translated statement loses both the algorithmic scope and the intended forward-to-backward error interpretation.",
-      "paper_evidence": "The source's e is output roundoff error from the analyzed mixed-radix floating-point FFT under specified arithmetic and trigonometric error models.",
-      "severity": "major",
-      "translation_evidence": "The translated e is arbitrary and the proposition uses exact real arithmetic without x, fl(y), epsilon, gamma, a radix factorization, or an FFT."
-    },
-    {
-      "category": "norm-and-scaling-mismatch",
-      "impact": "No binder equates s with sqrt(N), and the translated infinity relation does not express the paper's certificate.",
-      "paper_evidence": "The paper states a complex RMS identity with the fixed divisor sqrt(N) and a complex maximum-norm certificate containing an additional sqrt(N).",
-      "severity": "major",
-      "translation_evidence": "The translation states an unnormalized Euclidean identity with arbitrary divisor s and a generic real supremum-to-Euclidean norm inequality."
+      "category": "faithful algebraic core",
+      "evidence": "Subject to the unresolved character sign, D009-D013 and the target preserve e=computedOutput-F(input), the RMS and maximum norms, e=F(delta), the exact 1/sqrt(n) RMS scaling, K, and the leading sqrt(n) placement.",
+      "impact": "The rejection concerns quantifier scope, asymptotic meaning, and execution applicability rather than the displayed leading formulas.",
+      "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean theorem does not establish that its operator is the paper's complex Fourier matrix, that e is an FFT roundoff error, or either epsilon- and K-dependent certificate. Even a realification and s = sqrt(N) instantiation would require unstated links and would not supply the omitted bounds.",
+      "reasoning": "The Lean proposition is a conditional algebraic conversion from an assumed fixed-epsilon forward certificate. Its coefficient may depend on epsilon and can absorb arbitrary finite error, while its run need not arise from the model's floating operations. It therefore cannot imply the paper's asymptotic guarantee for the analyzed FFT, even if ZMod.stdAddChar has the required positive sign.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper asserts a result for its fixed complex Fourier transform and FFT-generated errors. It does not assert the universal theorem for every dimension, real orthogonal Q, arbitrary real e, and arbitrary positive scale s.",
+      "reasoning": "The paper establishes an asymptotic result for its actual factorized floating-point FFT. It does not entail a universal exact finite-epsilon proposition over the declaration's abstract certified traces and supplied coefficients, nor does it furnish those proof objects for every value admitted by the Lean binders.",
       "verdict": "no"
     }
   },
@@ -76,8 +47,11 @@
     "direct": "not-faithful-different",
     "roundtrip": "not-faithful-different"
   },
-  "rationale": "The Lean proposition is a valid, nonvacuous theorem about preimages under arbitrary positively scaled real orthogonal matrices. It captures an abstract analogue of the exact equation and norm-scaling idea, but it changes the complex Fourier operator to a generic real operator, leaves the scale unbound, treats e as arbitrary, and omits both first-order roundoff bounds and their higher-order terms. Consequently neither statement implies the other as stated, so the result is not-faithful-different.",
-  "remaining_uncertainties": [],
+  "rationale": "The declaration preserves the central finite-dimensional backward-error algebra and mixed-radix constants, and packaging Fourier surjectivity and RMS scaling as plan proofs is acceptable. It nevertheless replaces the paper's derived, asymptotic FFT result with a conditional statement over abstract traces and fixed-epsilon certificates. Because the remainder coefficients are selected after epsilon and can absorb arbitrary errors, this is neither an equivalent theorem nor a genuine nonvacuous strengthening. The paper and Lean propositions fail to imply one another, so not-faithful-different is the required classification. The unresolved additive-character sign is recorded explicitly but is not needed to reach that classification.",
+  "remaining_uncertainties": [
+    "The sign of ZMod.stdAddChar cannot be established from D120 because the supplied evidence does not unfold ZMod.toCircle or state its value. The transform is confirmed unnormalized, but positive-sign agreement remains unverified.",
+    "The PDF does not specify the hidden O(epsilon^2) constants, their dependence on N, gamma, or x, or a small-epsilon threshold. This leaves the exact preferred asymptotic formalization underdetermined, but it does not validate a coefficient allowed to depend on the already fixed epsilon."
+  ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P09-T2"

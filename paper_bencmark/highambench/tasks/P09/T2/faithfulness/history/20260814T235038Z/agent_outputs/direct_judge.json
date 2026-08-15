@@ -1,0 +1,551 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P09-T2",
+  "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
+  "dossier_sha256": "bc0ee1b457543e8af14569c5fe21f98ced94c30a2af87e2414147e9646211e59",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.p09MatVec",
+      "interpretation": "For each row i, this returns the finite real sum over j of A i j times x j.",
+      "effect_on_target": "The first conjunct says componentwise that the real matrix sQ applied to delta equals e exactly.",
+      "paper_match": "The paper also uses an exact matrix-vector equation, but its matrix is the fixed complex Fourier matrix T; this declaration only supplies real matrix multiplication.",
+      "status": "fail"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p09Max",
+      "reuse_sha256": "c8512222d160e22c723abaf62d95ecd9173bef56e3be16784475ea187ef23426",
+      "effect_on_target": "It is the left side of the final inequality p09Max delta <= p09VecNorm2 delta.",
+      "paper_match": "For nonempty real vectors it is the real infinity norm, but the paper takes the maximum of complex moduli and also requires a quantitative epsilon-dependent bound.",
+      "status": "fail"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.p09Orthogonal",
+      "interpretation": "Q is declared orthogonal when its ordinary transpose is both a left and right inverse.",
+      "effect_on_target": "This makes Q an invertible norm-preserving real matrix and enables solving sQ delta = e.",
+      "paper_match": "The normalized complex Fourier matrix is unitary with respect to conjugate transpose, not an arbitrary real matrix satisfying ordinary-transpose orthogonality.",
+      "status": "fail"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.p09ScaleMatrix",
+      "interpretation": "This multiplies every matrix entry A i j by the real scalar s.",
+      "effect_on_target": "The matrix in the exact equation is the arbitrary scaled orthogonal matrix sQ.",
+      "paper_match": "The paper has the specific factorization T = sqrt(N) times a normalized complex Fourier operator. Lean neither fixes s to sqrt(N) nor identifies Q with that operator.",
+      "status": "fail"
+    },
+    {
+      "id": "D005",
+      "name": "HighamBench.p09VecNorm2",
+      "reuse_sha256": "d29b679e5a807f416243054fc723877481ad14f66c96a9a1891f6394ef48c67e",
+      "effect_on_target": "It gives the unnormalized real Euclidean norms in the equality and final generic norm inequality.",
+      "paper_match": "The paper states complex RMS norms. The Euclidean equality can be translated to the RMS equality only after fixing the same positive dimension and s = sqrt(N), neither of which Lean states.",
+      "status": "fail"
+    },
+    {
+      "id": "D006",
+      "name": "HighamBench.p09IsLeftInverse",
+      "interpretation": "Ainv is a left inverse of A when the finite matrix product Ainv A equals the identity matrix componentwise.",
+      "effect_on_target": "Applied to Q and its transpose, it requires Q transpose times Q to equal the identity.",
+      "paper_match": "The Fourier scaling law comes from complex unitarity using conjugate transpose; ordinary-transpose inversion of a real Q is not the stated Fourier property.",
+      "status": "fail"
+    },
+    {
+      "id": "D007",
+      "name": "HighamBench.p09IsRightInverse",
+      "interpretation": "Ainv is a right inverse of A when the finite matrix product A Ainv equals the identity matrix componentwise.",
+      "effect_on_target": "Applied to Q and its transpose, it requires Q times Q transpose to equal the identity.",
+      "paper_match": "This is real orthogonality rather than the paper's fixed complex Fourier operator and conjugate-transpose identity.",
+      "status": "fail"
+    },
+    {
+      "id": "D008",
+      "name": "HighamBench.p09Transpose",
+      "interpretation": "It swaps matrix indices, defining A transpose at i,j as A j,i without conjugation.",
+      "effect_on_target": "It determines the inverse used in the orthogonality hypothesis.",
+      "paper_match": "A complex Fourier norm argument requires conjugate transpose. Ordinary transpose does not express that operation.",
+      "status": "fail"
+    },
+    {
+      "id": "D009",
+      "name": "HighamBench.p09VecNorm2Sq",
+      "reuse_sha256": "718f6c94acd938cf089fd5133847779707008aab4b891b43381a1082f91737c2",
+      "effect_on_target": "It makes p09VecNorm2 the square root of the sum of real component squares.",
+      "paper_match": "The paper sums squared complex magnitudes and divides by N for RMS. Real squares are only a scalar specialization and the RMS normalization is absent.",
+      "status": "fail"
+    },
+    {
+      "id": "D010",
+      "name": "And",
+      "interpretation": "This is logical conjunction requiring both propositions.",
+      "effect_on_target": "Nested conjunctions require the exact equation, norm equality, and maximum-versus-Euclidean inequality simultaneously.",
+      "paper_match": "Conjunction is appropriate for the paper's simultaneous certificates, although Lean's conjunct contents are incomplete.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "DivInvMonoid.toDiv",
+      "reuse_sha256": "76a67940d6613ef7969675aa3d226a144bf1139d160483038c80ee5a357dd236",
+      "effect_on_target": "It supplies the division operation used in p09VecNorm2 e / s.",
+      "paper_match": "This is implementation plumbing for ordinary real division and has no independent paper-level choice.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D012",
+      "name": "Eq",
+      "interpretation": "Eq is exact propositional equality between two terms of the same type.",
+      "effect_on_target": "It makes both the matrix-vector relation and norm relation exact.",
+      "paper_match": "The paper's equation e = T delta and RMS norm equality are exact.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "Exists",
+      "interpretation": "Exists asserts that at least one witness of the specified type satisfies the predicate.",
+      "effect_on_target": "It introduces a real vector delta depending on the preceding parameters and hypotheses.",
+      "paper_match": "The paper likewise asserts some fictional delta and does not assert uniqueness.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Fin",
+      "reuse_sha256": "cd79814e865955529feeef9c171bd40df69b753354e8ddc1c2ff1f6366c9f17e",
+      "effect_on_target": "Fin n indexes every matrix row, column, and vector component from 0 through n-1.",
+      "paper_match": "This matches the paper's zero-based N-component indexing when n = N, although Lean also permits n = 0.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "HDiv.hDiv",
+      "reuse_sha256": "b64f8629edb00501ebd84ba62cf9ef9b7437bfda3448a94bcbd97cd7559a8539",
+      "effect_on_target": "It performs the division of the Euclidean norm of e by s.",
+      "paper_match": "Ordinary division is the correct arithmetic operation for a norm scaling relation; the mismatch is the unconstrained denominator s.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "LE.le",
+      "reuse_sha256": "66d8fc8aa022f66660f4a24a1b114c84bf44df579a79d815a683f9a47623ca93",
+      "effect_on_target": "It supplies the non-strict inequality in the final conjunct.",
+      "paper_match": "The paper's two upper certificates also use non-strict inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "LT.lt",
+      "reuse_sha256": "40c66835aee13b8def7fe72c7b12efdb478625f8ffbdd4d2c9e41fb39d0e8f14",
+      "effect_on_target": "It expresses the hypothesis 0 < s.",
+      "paper_match": "Positivity is compatible with s = sqrt(N) for positive N, but this operation does not establish that required identification.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "Nat",
+      "reuse_sha256": "d7519eafed2c54cc55e07fd66bcdbe97860973add8eec42fc9c9bda67fb5cd87",
+      "effect_on_target": "It supplies the finite dimension n, including the value zero.",
+      "paper_match": "A natural dimension is appropriate for transform order, but the paper's Fourier order is positive while Lean has no positivity hypothesis on n.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "OfNat.ofNat",
+      "reuse_sha256": "ac2073e314c31df0d66cc11bc463c1a740e8aa6cca22c4bfb210da1f5a6190b2",
+      "effect_on_target": "It interprets the numeral zero in the positivity hypothesis.",
+      "paper_match": "This numeral elaboration has no independent paper-level semantic content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D020",
+      "name": "Real",
+      "reuse_sha256": "71b25a45c25a5a950913a7b2dbf4f8410170fa7c902e552a3fd0380abc0f4467",
+      "effect_on_target": "All matrix entries, vector components, scalars, norms, and inequalities are over exact real numbers.",
+      "paper_match": "The paper's Fourier matrix, input, output error, and fictional perturbation are complex.",
+      "status": "fail"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instDivInvMonoid",
+      "reuse_sha256": "ce3be1507c38e8e8aab4532c83e37e1306c6e99ee071b19865e356b9828042aa",
+      "effect_on_target": "It makes division by s ordinary exact real division.",
+      "paper_match": "This agrees with scalar norm division, but it does not bind s to the paper's sqrt(N).",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instLE",
+      "reuse_sha256": "87866b29bc0bab98dff0c087a43cd7459dfe809b0fcf072c7aa1343b4b7e5570",
+      "effect_on_target": "It makes the final comparison use the standard real order.",
+      "paper_match": "Norm bounds in the paper also use the standard order on nonnegative real quantities.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instLT",
+      "interpretation": "This is the standard strict order instance on real numbers.",
+      "effect_on_target": "It gives the usual meaning to 0 < s.",
+      "paper_match": "The order is appropriate for the implicit positivity of sqrt(N), although Lean leaves s otherwise arbitrary.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "Real.instZero",
+      "interpretation": "This supplies the ordinary real number zero.",
+      "effect_on_target": "It is the lower endpoint in the positivity hypothesis on s and appears in identity-matrix off-diagonal entries.",
+      "paper_match": "The ordinary real zero is semantically appropriate.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "Zero.toOfNat0",
+      "interpretation": "This converts a Zero instance into interpretation of the numeral 0.",
+      "effect_on_target": "It elaborates zero in 0 < s and in the matrix identity definition.",
+      "paper_match": "This is elaboration plumbing with no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D026",
+      "name": "instHDiv",
+      "reuse_sha256": "c8336ab7caf16b5ed3fe6c7da7a3ba7e02410e11bc0223c048646d06775756cb",
+      "effect_on_target": "It lifts ordinary real division to the notation used in the norm equality.",
+      "paper_match": "This is typeclass plumbing and introduces no additional mathematical claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D027",
+      "name": "Fin.fintype",
+      "reuse_sha256": "67c1719acafb19f1b140d697ed4656a3d2dd83887ec46571ff88cd7ed6ad38a3",
+      "effect_on_target": "It lets every Fin n index be enumerated in matrix products and norm sums.",
+      "paper_match": "Enumerating all indices exactly once matches the paper's sums over 0 through N-1.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "Finset.sum",
+      "reuse_sha256": "5288ef8106ecb795c3363416fd73460d33935c60506911e876868f2c36768f05",
+      "effect_on_target": "It forms matrix products, matrix-vector products, and sums of component squares.",
+      "paper_match": "Finite summation is the correct structural operation for the Fourier transform and vector norms, apart from the real-versus-complex mismatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "Finset.univ",
+      "reuse_sha256": "28acb81272d20c2cd8ff3732b49f52daa1c40525aad8d36f7b55ea345e62973c",
+      "effect_on_target": "It makes each finite sum range over every index in Fin n.",
+      "paper_match": "This matches summation over all vector and matrix indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "HMul.hMul",
+      "reuse_sha256": "90f5eb353285dcf746f7822944feee7c2497fbe0e2a622c03ba11b36d0af57a3",
+      "effect_on_target": "It projects multiplication in matrix scaling, matrix products, and matrix-vector products.",
+      "paper_match": "This projection is implementation plumbing; the substantive scalar mismatch is determined by the real multiplication instance.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D031",
+      "name": "Norm.norm",
+      "reuse_sha256": "24d7edfd6b2fb01434919c04a868fd4f8da656c431c05f635ac219828fe6a566",
+      "effect_on_target": "It projects the function norm used by p09Max.",
+      "paper_match": "This projection has no independent semantics beyond the Pi norm instance assessed separately.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D032",
+      "name": "NormedCommRing.toNormedRing",
+      "reuse_sha256": "36379818a343cb840725693a05cf58bde265ca384f317dd0e6388c35cc8940ed",
+      "effect_on_target": "It supplies an intermediate structure needed to obtain the function norm.",
+      "paper_match": "This is typeclass plumbing with no independent paper counterpart.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D033",
+      "name": "NormedRing.toNorm",
+      "reuse_sha256": "3d13f77b716fd5f6fbf2840d67d536a8433c7477fbea6da05448396fd0543f8d",
+      "effect_on_target": "It extracts the norm operation used by p09Max.",
+      "paper_match": "This is typeclass plumbing; the actual norm choice is assessed at p09Max and Pi.normedRing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D034",
+      "name": "Pi.normedRing",
+      "reuse_sha256": "a0f125a7c1305c382cbaf983ccb4c152a1aed947f0f3c2a5569786d2f07adfa5",
+      "effect_on_target": "It makes p09Max the finite supremum of the absolute values of real components.",
+      "paper_match": "The paper's infinity norm is the maximum of complex component moduli. No complex encoding or nonempty-dimension condition is present.",
+      "status": "fail"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instAddCommMonoid",
+      "reuse_sha256": "30221d0dbd687d326ed38f104ed0fa7ba456b2ba5be10199815d43c92e52ce3d",
+      "effect_on_target": "All finite matrix and norm sums use ordinary real addition.",
+      "paper_match": "The paper's Fourier matrix-vector operation sums complex values, so the scalar semantics are different.",
+      "status": "fail"
+    },
+    {
+      "id": "D036",
+      "name": "Real.instMul",
+      "reuse_sha256": "39d48a732a2a33f83139bbc6cb85e6fc66d0c5684ec46fc6f615b22cdcde4bbf",
+      "effect_on_target": "Matrix entries, vector components, and scale factors are multiplied as real numbers.",
+      "paper_match": "The Fourier transform requires complex multiplication by complex exponentials.",
+      "status": "fail"
+    },
+    {
+      "id": "D037",
+      "name": "Real.normedCommRing",
+      "reuse_sha256": "3890559802d212ef968f94bde4782df49c4b8a7539b35fa572d3003cd855c322",
+      "effect_on_target": "It supplies real arithmetic and the absolute-value norm underlying p09Max.",
+      "paper_match": "The paper uses complex arithmetic and complex modulus, not the real normed-ring structure.",
+      "status": "fail"
+    },
+    {
+      "id": "D038",
+      "name": "Real.sqrt",
+      "reuse_sha256": "e269785d16bc98a2df37cfe84cf49d662f8eefb644892aa7511d6b9997736ecd",
+      "effect_on_target": "It takes the nonnegative square root of the sum of component squares.",
+      "paper_match": "Using the principal square root is appropriate for a Euclidean norm; the missing RMS normalization and complex magnitudes arise elsewhere.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "instHMul",
+      "reuse_sha256": "2442771e163b14ff68ef1c6c0257b7060bb52d0e568fade6d7214a7ed2e23515",
+      "effect_on_target": "It lifts homogeneous real multiplication to the HMul operations in local definitions.",
+      "paper_match": "This is typeclass plumbing and has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D040",
+      "name": "HPow.hPow",
+      "reuse_sha256": "84bd0ac8320aeef45754d420074f5c42d59e1075dcab88407d17cc3c71f3a862",
+      "effect_on_target": "It projects exponentiation used to square each real vector component.",
+      "paper_match": "This projection itself is implementation plumbing.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D041",
+      "name": "Monoid.toNatPow",
+      "reuse_sha256": "218460eb742e368d57358aa321233404b48243177028b181e528fa71d6690f52",
+      "effect_on_target": "It interprets each component square as repeated real multiplication.",
+      "paper_match": "For real components x squared equals absolute-value squared, but this does not cover the paper's complex modulus squared.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "One.toOfNat1",
+      "interpretation": "This converts a One instance into interpretation of the numeral 1.",
+      "effect_on_target": "It supplies diagonal entries of the identity matrix in the inverse conditions.",
+      "paper_match": "Identity-matrix diagonal entries are correctly represented by one.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "Real.instMonoid",
+      "reuse_sha256": "5435298d44bb1656378a4f37e919e8c82091e6a069d59cf5055f96c91f7716a0",
+      "effect_on_target": "It supplies real multiplication and one for natural powers.",
+      "paper_match": "This is structure plumbing; the material restriction to real scalars is already exposed by other dependencies.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D044",
+      "name": "Real.instOne",
+      "interpretation": "This supplies the ordinary real number one.",
+      "effect_on_target": "It is used on the diagonal of the identity matrices in the orthogonality condition.",
+      "paper_match": "The identity scalar one is mathematically appropriate.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "instDecidableEqFin",
+      "interpretation": "This decides whether two Fin n indices are equal by comparing their underlying natural values.",
+      "effect_on_target": "It selects diagonal versus off-diagonal identity-matrix entries.",
+      "paper_match": "This is computational elaboration of the Kronecker identity and has no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D046",
+      "name": "instHPow",
+      "reuse_sha256": "e631454bb089cf5a979f267aa7525d2f848a888d0e2ff32dd74cdb1cceda2aac",
+      "effect_on_target": "It lifts ordinary powers to the HPow notation used for component squares.",
+      "paper_match": "This is typeclass plumbing with no independent mathematical choice.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D047",
+      "name": "instOfNatNat",
+      "reuse_sha256": "17ecac36244e6f1109e5f13d5088144ea8eb6f8e5a49fa472d12f29340ba6d40",
+      "effect_on_target": "It interprets the natural exponent used in a square.",
+      "paper_match": "This is numeral elaboration with no independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D048",
+      "name": "ite",
+      "interpretation": "This returns its first branch when the decidable condition holds and its second branch otherwise.",
+      "effect_on_target": "It defines identity-matrix entries as one when i = j and zero otherwise.",
+      "paper_match": "This correctly represents the Kronecker identity appearing in an orthogonality relation, though Lean uses ordinary rather than conjugate transpose.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "PDF p. 12, printed p. 768 states e = T delta for some fictional delta followed by the RMS equality and the two epsilon-dependent upper certificates; pp. 2-3 define T and Theorem 1.",
+      "lean_evidence": "The verified target and direct-review-packet hashes identify p09_t2_scaled_orthogonal_backward_error and its exact elaborated type.",
+      "reasoning": "The paper version, cited passage, and relevant surrounding FFT result are correctly selected."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "N is a positive transform order; T is an N-by-N complex Fourier matrix; x, e, and delta are complex N-vectors; epsilon, gamma, and the radix factors determine the bounds.",
+      "lean_evidence": "Lean quantifies n : Nat, a real matrix Q, real vectors e and delta, and a real scalar s; x, epsilon, gamma, and radix factors are absent.",
+      "reasoning": "The scalar field, operator type, and parameter inventory do not match."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "For an output roundoff error e arising from the fixed transform and input, the paper asserts existence of some fictional delta, with bounds depending on N, gamma, epsilon, and x.",
+      "lean_evidence": "Lean universally quantifies arbitrary n, Q, e, and s before introducing delta, while omitting x and every error-model parameter.",
+      "reasoning": "The existential witness placement is analogous, but the surrounding universal scope and witness obligations are materially different."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The passage inherits the one-dimensional floating-point FFT setting, exactly representable input, a positive transform order, the specified arithmetic and trigonometric error models, and the fixed Fourier matrix.",
+      "lean_evidence": "The only hypotheses are 0 < s and ordinary real orthogonality of Q; n may be zero, Q need not be Fourier, and e need not be a roundoff error.",
+      "reasoning": "Essential source hypotheses and identifications are absent, while an unrelated free scale and generic matrix are introduced."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The paper requires e = T delta, the exact RMS equality, the RMS upper bound epsilon K(N,gamma)||x||RMS + O(epsilon^2), and the infinity upper bound epsilon sqrt(N)K(N,gamma)||x||RMS + O(epsilon^2).",
+      "lean_evidence": "Lean gives sQ delta = e, an unnormalized Euclidean equality, and only p09Max delta <= p09VecNorm2 delta.",
+      "reasoning": "Both source error certificates are omitted, and the final Lean inequality is merely a generic norm comparison."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "T(j,k) = exp(i 2 pi j k/N) is the positive-sign unnormalized complex Fourier matrix; the norms are complex RMS and infinity norms.",
+      "lean_evidence": "The unfolded operator is real matrix multiplication by sQ, Q uses ordinary-transpose orthogonality, p09VecNorm2 is real Euclidean norm, and p09Max is a real function supremum norm.",
+      "reasoning": "The imported definitions are understood, but they implement materially different operators and norms."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "e is the exact vector fl(y)-y produced by the floating-point FFT, whereas delta is expressly fictional; e = T delta is exact.",
+      "lean_evidence": "e is an arbitrary exact real vector, with no y, fl(y), input x, or computation relation.",
+      "reasoning": "Lean preserves exact equality but erases the distinction between computed output error and hypothetical backward perturbation."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The certificates inherit Theorem 1's mixed-radix Cooley-Tukey or Sande-Tukey FFT, its factorization, twiddle multiplications, and K(N,gamma).",
+      "lean_evidence": "No algorithm, factorization, execution trace, twiddle factor, or K function occurs in the proposition.",
+      "reasoning": "The statement has become an algorithm-independent real linear-algebra fact."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "The paper defines ||z||RMS = sqrt(sum |z(k)|^2/N) and ||z||infinity = max |z(k)| for complex vectors.",
+      "lean_evidence": "p09VecNorm2 is sqrt(sum x(i)^2) for real vectors, while p09Max is their supremum absolute-value norm.",
+      "reasoning": "The Euclidean equality can correspond to the RMS equality only after unstated scaling and dimension identifications; the complex infinity certificate is not present."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "Indices run from 0 to N-1, the exact denominator is sqrt(N), and K(N,gamma) has the stated dependence on the radix factors and coefficients alpha.",
+      "lean_evidence": "Fin n gives correct zero-based indexing, but s is arbitrary, n may be zero, and K, gamma, epsilon, alpha, and the factorization of N are absent.",
+      "reasoning": "Only the index shape matches; the constants and required parameter dependence do not."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The paper specifies arithmetic error equations with independently varying theta, rounded or chopped epsilon constants, and an absolute trigonometric-error constant gamma; it does not separately formalize exceptional values.",
+      "lean_evidence": "The proposition uses exact real arithmetic and contains no floating-point operations, precision, rounding mode, epsilon, gamma, underflow, overflow, or exceptional-value assumptions.",
+      "reasoning": "The numerical model underlying the certificates is entirely absent."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The equation and RMS norm relation are exact, and both error estimates are non-strict upper inequalities.",
+      "lean_evidence": "Lean has exact equation and equality but replaces the quantitative infinity estimate with the generic inequality p09Max delta <= p09VecNorm2 delta and omits the RMS estimate.",
+      "reasoning": "The relation kinds partly align, but the substantive inequalities have different right-hand sides and strength."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "e is forward output roundoff error and delta supplies a normwise fictional input backward-error interpretation.",
+      "lean_evidence": "e is any real vector and delta is simply its preimage under an arbitrary scaled orthogonal matrix.",
+      "reasoning": "Without the computation relation or x-dependent bounds, Lean does not state the paper's forward-to-backward error interpretation."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "e = T delta and the RMS equality are exact; both upper estimates contain additive O(epsilon^2) terms whose constants are not quantified.",
+      "lean_evidence": "No epsilon, remainder, asymptotic term, or quantitative error estimate occurs.",
+      "reasoning": "The higher-order terms are omitted together with the bounds they qualify."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The selected result concerns the specific positive-sign complex Fourier matrix and complex vectors.",
+      "lean_evidence": "Lean concerns every real scaled orthogonal matrix and every real vector, with no complex realification map or binding of Q and s to T and sqrt(N).",
+      "reasoning": "This is not an explicit faithful specialization or a generalization retaining the paper instance; it changes the scalar field and operator while dropping the certificates."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper concerns ordinary positive FFT orders and actual nonzero as well as zero roundoff-error vectors.",
+      "lean_evidence": "The hypotheses are satisfiable in nontrivial cases, for example n = 1, Q = [1], s = 1, and arbitrary nonzero e; delta = e satisfies the conclusion. Lean also includes a trivial n = 0 case.",
+      "reasoning": "The Lean proposition is nonvacuous and follows from genuine invertibility and norm preservation, although nonvacuity does not cure its semantic mismatch."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean theorem does not establish that its operator is the paper's complex Fourier matrix, that e is an FFT roundoff error, or either epsilon- and K-dependent certificate. Even a realification and s = sqrt(N) instantiation would require unstated links and would not supply the omitted bounds."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper asserts a result for its fixed complex Fourier transform and FFT-generated errors. It does not assert the universal theorem for every dimension, real orthogonal Q, arbitrary real e, and arbitrary positive scale s."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "missing-error-certificates",
+      "paper_evidence": "PDF p. 12, printed p. 768 gives both the RMS certificate epsilon K(N,gamma)||x||RMS + O(epsilon^2) and the infinity certificate epsilon sqrt(N)K(N,gamma)||x||RMS + O(epsilon^2).",
+      "lean_evidence": "The target has no x, epsilon, gamma, K, or remainder and concludes only p09Max delta <= p09VecNorm2 delta.",
+      "impact": "The principal quantitative content of the selected result is absent."
+    },
+    {
+      "severity": "major",
+      "category": "transform-and-scalar-domain",
+      "paper_evidence": "T is the fixed positive-sign unnormalized complex Fourier matrix and delta, e, and x are complex N-vectors.",
+      "lean_evidence": "The target uses an arbitrary real scaled orthogonal matrix sQ and real vectors, with ordinary transpose instead of conjugate transpose.",
+      "impact": "The formal theorem does not directly cover the paper's operator or vector space."
+    },
+    {
+      "severity": "major",
+      "category": "algorithm-linkage",
+      "paper_evidence": "The reverse interpretation depends on Theorem 1's mixed-radix floating-point FFT analysis and K(N,gamma).",
+      "lean_evidence": "The proposition treats e as arbitrary and contains no FFT, computed output, rounding model, or algorithm parameters.",
+      "impact": "The backward-error statement is detached from the computation whose roundoff error the paper analyzes."
+    },
+    {
+      "severity": "major",
+      "category": "norm-and-scale-semantics",
+      "paper_evidence": "The paper states complex RMS and infinity norms with the exact scale sqrt(N).",
+      "lean_evidence": "Lean uses a real Euclidean norm, a real function supremum norm, and an unconstrained positive scale s.",
+      "impact": "Only an abstract norm-preserving preimage fact remains; the displayed paper norm certificates are not represented."
+    }
+  ],
+  "rationale": "The Lean proposition is a valid, nonvacuous theorem about preimages under arbitrary positively scaled real orthogonal matrices. It captures an abstract analogue of the exact equation and norm-scaling idea, but it changes the complex Fourier operator to a generic real operator, leaves the scale unbound, treats e as arbitrary, and omits both first-order roundoff bounds and their higher-order terms. Consequently neither statement implies the other as stated, so the result is not-faithful-different."
+}
