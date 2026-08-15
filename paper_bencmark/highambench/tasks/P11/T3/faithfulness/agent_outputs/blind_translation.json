@@ -1,388 +1,856 @@
 {
-  "schema_version": "highambench-faithfulness-0.1",
+  "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "659d69cfdf03fdb38dde10997ba8ab55d5fa1b7f24ee649e3248597c04417b67",
+  "dossier_sha256": "661c9a60c9ec4ac226429c7ee2182b7e389710f9134ab271c657dcb698978ccc",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "For a natural number n, this is the type of real n-by-n matrices, represented as functions Fin n -> Fin n -> Real.",
-      "effect_on_target": "It fixes A, dA, Q, R, and Rinv as square real matrices of the same dimension n.",
+      "meaning": "The type of valid run records indexed by dimensions m and n. Its constructor D014 packages matrices A, Q, and R, dimension and rank assumptions, a real error parameter, exact leading-block inverses, smallness assumptions, and step and prefix certificates.",
+      "effect_on_target": "The target is universal only over data packaged as such a valid run, so all restrictions stored in this record are implicit hypotheses of the proposition.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "For an n-by-n real matrix M, this is sqrt(sum_i sum_j (M_ij)^2), with both sums over Fin n; it is the Frobenius norm of M.",
-      "effect_on_target": "It defines the four matrix bounds in the hypotheses and the norm of the orthogonality defect in the conclusion.",
+      "meaning": "The fifth field of a run, namely its real m by n matrix Q.",
+      "effect_on_target": "Its first k+1 columns form the matrix whose orthogonality defect is bounded.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "This is the multiplicative identity matrix I_n, with diagonal entries 1 and off-diagonal entries 0.",
-      "effect_on_target": "It appears in the right-inverse equation R Rinv = I_n and in the defect I_n - Q^T Q.",
+      "meaning": "The sixth field of a run, namely its real n by n matrix R.",
+      "effect_on_target": "Its leading (k+1) by (k+1) block occurs in the condition-number factor and in the second-order coefficient.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "This is ordinary matrix multiplication: (XY)_ik = sum_j X_ij Y_jk.",
-      "effect_on_target": "It defines QR, R Rinv, R^T R, A^T A, and Q^T Q.",
+      "meaning": "The ninth field of a run, a real number epsilonM satisfying 0 < epsilonM < 1.",
+      "effect_on_target": "It is the first- and second-order perturbation parameter on the right-hand side.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "For matrices A and R, this is R^T R - A^T A.",
-      "effect_on_target": "Its Frobenius norm is assumed to be at most e.",
+      "meaning": "For each k in Fin n, the twelfth field of a run supplies a real (k+1) by (k+1) matrix that is both a left and right inverse of the leading block of R.",
+      "effect_on_target": "The norm of this exact inverse enters both the squared condition-number factor and the second-order coefficient.",
       "status": "understood"
     },
     {
       "id": "D006",
       "name": "LocalDef006",
-      "meaning": "For Q, this is I_n - Q^T Q.",
-      "effect_on_target": "Its Frobenius norm is the quantity bounded in the conclusion.",
+      "meaning": "The real constant c(m,r) = alpha(m,r) + 2 beta(m,r), where alpha is D024 and beta is D022.",
+      "effect_on_target": "For r=k+1, this is the main dimension-dependent constant multiplying the squared condition number and epsilonM, and it also appears inside the second-order coefficient.",
       "status": "understood"
     },
     {
       "id": "D007",
       "name": "LocalDef007",
-      "meaning": "This is ordinary matrix transpose, defined by (M^T)_ij = M_ji.",
-      "effect_on_target": "It forms the Gram matrices R^T R, A^T A, and Q^T Q.",
+      "meaning": "For an m by n matrix and k in Fin n, it restricts the matrix to its first k+1 columns, producing an m by (k+1) matrix; index casts preserve the underlying column numbers.",
+      "effect_on_target": "It defines the prefixes A_s and Q_s used in the certificates and the conclusion, with s=k+1.",
       "status": "understood"
     },
     {
       "id": "D008",
-      "name": "Eq",
-      "meaning": "This is propositional equality.",
-      "effect_on_target": "It makes QR = A + dA and R Rinv = I_n exact matrix equalities.",
+      "name": "LocalDef008",
+      "meaning": "For two square matrices of the same size, it is the product of their induced Euclidean operator norms.",
+      "effect_on_target": "Applied to R_s and its supplied inverse S_s, it gives kappa_s = ||R_s||_2 ||S_s||_2, which is squared in the first-order term.",
       "status": "understood"
     },
     {
       "id": "D009",
-      "name": "Fin",
-      "meaning": "Fin n is the finite index type with elements corresponding to 0 through n-1.",
-      "effect_on_target": "It indexes all rows, columns, matrix products, and Frobenius-norm sums.",
+      "name": "LocalDef009",
+      "meaning": "For an n by n matrix R and k in Fin n, it selects the leading principal (k+1) by (k+1) block by preserving both row and column indices.",
+      "effect_on_target": "It defines R_s in the condition number, inverse assumptions, certificates, and second-order coefficient.",
       "status": "understood"
     },
     {
       "id": "D010",
-      "name": "HAdd.hAdd",
-      "meaning": "This selects the addition operation supplied by the relevant typeclass.",
-      "effect_on_target": "It denotes pointwise matrix addition in A + dA and ordinary real addition in e + 2ad + d^2.",
+      "name": "LocalDef010",
+      "meaning": "The induced Euclidean, or spectral operator, norm of a real square matrix.",
+      "effect_on_target": "It measures the orthogonality defect, R_s, its inverse, and square residuals appearing in certificates.",
       "status": "understood"
     },
     {
       "id": "D011",
-      "name": "HMul.hMul",
-      "meaning": "This selects the multiplication operation supplied by the relevant typeclass.",
-      "effect_on_target": "It denotes ordinary real multiplication in rho^2 times the parenthesized error expression and in 2*a*d; matrix products are supplied through the specialized matrix multiplication used by LocalDef004.",
+      "name": "LocalDef011",
+      "meaning": "For an m by r matrix Q, it is the r by r matrix I_r - Q^T Q.",
+      "effect_on_target": "The left-hand side is exactly ||I_s - Q_s^T Q_s||_2.",
       "status": "understood"
     },
     {
       "id": "D012",
-      "name": "HPow.hPow",
-      "meaning": "This selects exponentiation by the supplied exponent type.",
-      "effect_on_target": "With natural exponent 2, it forms rho^2, d^2, and the squared matrix entries in the Frobenius norm.",
+      "name": "LocalDef012",
+      "meaning": "For s=k+1, let a=||A_s||_2, rho=||R_s||_2, sigma=||S_s||_2, and let f_s, g_s, h_s be the factorization, normal-equation, and reverse-norm second-order coefficients stored in the prefix certificate. With beta=beta(m,s), alpha=alpha(m,s), and c=c(m,s), define t=(alpha/2)rho+h_s, u=2rho t+t^2, v=g_s+2a f_s+(beta a+f_s)^2. This definition returns E_s=sigma^2(cu+v).",
+      "effect_on_target": "E_s is the coefficient multiplying epsilonM squared in the conclusion.",
       "status": "understood"
     },
     {
       "id": "D013",
-      "name": "LE.le",
-      "meaning": "This selects the less-than-or-equal relation supplied for a type.",
-      "effect_on_target": "Using the real-order instance, it expresses every nonnegativity assumption, norm upper bound, and the final inequality.",
+      "name": "LocalDef013",
+      "meaning": "The fourth field of a run, namely its real m by n matrix A.",
+      "effect_on_target": "A does not occur visibly on the left-hand side, but its prefix norm and its certificate data determine E_s and the admissibility of the run.",
       "status": "understood"
     },
     {
       "id": "D014",
-      "name": "Matrix.add",
-      "meaning": "This equips matrices with entrywise addition inherited from their entries.",
-      "effect_on_target": "It makes the right side of QR = A + dA the pointwise matrix sum of A and dA.",
+      "name": "LocalDef014",
+      "meaning": "The run constructor requires 0<m, 0<n, n<=m; real matrices A,Q of size m by n and R of size n by n; injectivity of x maps to Ax; upper triangularity R_ij=0 when j<i; epsilonM with 0<epsilonM<1; exact two-sided inverses for every leading block of R; c(m,k+1) epsilonM kappa_k^2<1 for every k; one step certificate for every column; and one prefix certificate for every prefix.",
+      "effect_on_target": "It determines all packaged hypotheses under which the displayed inequality is asserted.",
       "status": "understood"
     },
     {
       "id": "D015",
-      "name": "Monoid.toNatPow",
-      "meaning": "This defines natural powers from a monoid by repeated multiplication, with power zero equal to one.",
-      "effect_on_target": "For real numbers and exponent 2, it gives the usual squares rho^2, d^2, and entrywise squares.",
+      "name": "LocalDef015",
+      "meaning": "The seventeenth field of a run, assigning to each k a prefix certificate for A_s, Q_s, R_s, and epsilonM, where s=k+1.",
+      "effect_on_target": "Its three stored second-order coefficients are used to compute E_s.",
       "status": "understood"
     },
     {
       "id": "D016",
-      "name": "Nat",
-      "meaning": "This is the type of natural numbers.",
-      "effect_on_target": "It supplies the universally quantified dimension n and the natural exponent and numeral values used in the formulas.",
+      "name": "LocalDef016",
+      "meaning": "LocalDef016(r) is the type of real r by r matrices.",
+      "effect_on_target": "It fixes the dimensions of R, its leading blocks and inverses, and all square residual and defect matrices.",
       "status": "understood"
     },
     {
       "id": "D017",
-      "name": "Nat.instAtLeastTwoHAddOfNat",
-      "meaning": "This proves that n+1 is at least two when n is nonzero.",
-      "effect_on_target": "Instantiated at n = 1, it supplies typeclass evidence needed to interpret the real numeral 2; it adds no mathematical hypothesis.",
+      "name": "LocalDef017",
+      "meaning": "LocalDef017(m,n) is the type of real m by n matrices.",
+      "effect_on_target": "It fixes the dimensions of A, Q, and their prefixes.",
       "status": "understood"
     },
     {
       "id": "D018",
-      "name": "Nat.instNeZeroSucc",
-      "meaning": "This proves that every successor n+1 is nonzero.",
-      "effect_on_target": "At n = 0, it provides the nonzero evidence used to establish that the numeral 2 is at least two; it imposes no restriction on target variables.",
+      "name": "LocalDef018",
+      "meaning": "A certificate type for an m by r factorization triple A,Q,R at error parameter epsilonM. Constructor D032 supplies its exact witnesses, equations, nonnegativity conditions, and norm bounds.",
+      "effect_on_target": "The run contains one such certificate for each prefix, and its coefficients determine the second-order term.",
       "status": "understood"
     },
     {
       "id": "D019",
-      "name": "OfNat.ofNat",
-      "meaning": "This interprets a natural-number literal in a type having the corresponding OfNat instance.",
-      "effect_on_target": "It interprets the literals 0, 1, and 2 occurring in nonnegativity conditions, identity matrices, exponents, and scalar coefficients.",
+      "name": "LocalDef019",
+      "meaning": "The third field of a prefix certificate, its nonnegative factorization second-order coefficient f.",
+      "effect_on_target": "It contributes 2||A_s||_2 f and (beta||A_s||_2+f)^2 to E_s.",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "Real",
-      "meaning": "This is the type of real numbers.",
-      "effect_on_target": "All matrix entries, scalar bounds, arithmetic expressions, norms, and inequalities are real-valued.",
+      "name": "LocalDef020",
+      "meaning": "The fourth field of a prefix certificate, its nonnegative normal-equation second-order coefficient g.",
+      "effect_on_target": "It is added directly to the core remainder in E_s.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "Real.instAdd",
-      "meaning": "This is ordinary addition on real numbers.",
-      "effect_on_target": "It supplies scalar addition and, through pointwise lifting, matrix addition.",
+      "name": "LocalDef021",
+      "meaning": "The fifth field of a prefix certificate, its nonnegative reverse-norm second-order coefficient h.",
+      "effect_on_target": "It appears in t=(alpha/2)||R_s||_2+h when E_s is computed.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "Real.instLE",
-      "meaning": "This is the usual order relation on real numbers.",
-      "effect_on_target": "All displayed inequalities use the standard real less-than-or-equal relation.",
+      "name": "LocalDef022",
+      "meaning": "The real constant beta(m,r), equal to 1 when r=1 and otherwise equal to 2r sqrt(2m)+2 sqrt(r), with natural numbers cast to reals.",
+      "effect_on_target": "It contributes to c=alpha+2beta and to the factorization part (beta||A_s||_2+f_s)^2 of E_s.",
       "status": "understood"
     },
     {
       "id": "D023",
-      "name": "Real.instMonoid",
-      "meaning": "This is the multiplicative monoid structure on the reals.",
-      "effect_on_target": "It supplies natural powers of real numbers, including the squares in the proposition.",
+      "name": "LocalDef023",
+      "meaning": "A proof that the natural numeral 1+1=2 is at least two.",
+      "effect_on_target": "It only enables interpretation of the numeral 2 in types requiring a real natural-number cast; it adds no hypothesis.",
       "status": "understood"
     },
     {
       "id": "D024",
-      "name": "Real.instMul",
-      "meaning": "This is ordinary multiplication on real numbers.",
-      "effect_on_target": "It supplies scalar products in the conclusion and entry products in matrix multiplication.",
+      "name": "LocalDef024",
+      "meaning": "The real constant alpha(m,r), equal to m+2 when r=1 and otherwise equal to (7/2)m r^2-(3/2)m r+16r.",
+      "effect_on_target": "It contributes to c, to the normal-equation certificate bound, and through alpha/2 to E_s.",
       "status": "understood"
     },
     {
       "id": "D025",
-      "name": "Real.instNatCast",
-      "meaning": "This embeds natural numbers into the real numbers in the usual way.",
-      "effect_on_target": "It interprets the coefficient 2 in 2*a*d as the real number two.",
+      "name": "LocalDef025",
+      "meaning": "The real constant alpha(m,r)/2.",
+      "effect_on_target": "It determines the slope term (alpha/2)||R_s||_2 in E_s and appears in the reverse-norm certificate bound.",
       "status": "understood"
     },
     {
       "id": "D026",
-      "name": "Real.instZero",
-      "meaning": "This is the real number zero.",
-      "effect_on_target": "It supplies the zero in all four nonnegativity hypotheses, finite-sum identities, and zero matrix entries.",
+      "name": "LocalDef026",
+      "meaning": "The identity matrix I_r of the requested square dimension r.",
+      "effect_on_target": "It appears in I_s-Q_s^TQ_s and in the exact inverse equations for R_s.",
       "status": "understood"
     },
     {
       "id": "D027",
-      "name": "Zero.toOfNat0",
-      "meaning": "This converts a zero operation into an interpretation of the numeral 0.",
-      "effect_on_target": "It makes each literal 0 in the real inequalities denote the standard real zero.",
+      "name": "LocalDef027",
+      "meaning": "For k in Fin n, a proof that k.val+1<=n.",
+      "effect_on_target": "It justifies embedding indices of each prefix into the full matrix dimensions.",
       "status": "understood"
     },
     {
       "id": "D028",
-      "name": "instHAdd",
-      "meaning": "This promotes an ordinary same-type addition operation to heterogeneous-addition notation.",
-      "effect_on_target": "It connects the addition syntax in the target to standard real addition and pointwise matrix addition.",
+      "name": "LocalDef028",
+      "meaning": "Ordinary finite-dimensional real matrix multiplication.",
+      "effect_on_target": "It forms Q_sR_s, Q_s^TQ_s, A_s^TA_s, and related certificate products.",
       "status": "understood"
     },
     {
       "id": "D029",
-      "name": "instHMul",
-      "meaning": "This promotes an ordinary same-type multiplication operation to heterogeneous-multiplication notation.",
-      "effect_on_target": "It connects scalar multiplication syntax in the final bound to ordinary real multiplication.",
+      "name": "LocalDef029",
+      "meaning": "The induced Euclidean operator norm of a real rectangular matrix.",
+      "effect_on_target": "It gives ||A_s||_2 and the factorization-error norm in prefix certificates.",
       "status": "understood"
     },
     {
       "id": "D030",
-      "name": "instHPow",
-      "meaning": "This promotes a power operation to heterogeneous-power notation while preserving its result type.",
-      "effect_on_target": "It connects the square syntax to natural exponentiation on real numbers.",
+      "name": "LocalDef030",
+      "meaning": "Matrix transpose.",
+      "effect_on_target": "It forms Q_s^TQ_s and A_s^TA_s.",
       "status": "understood"
     },
     {
       "id": "D031",
-      "name": "instOfNatAtLeastTwo",
-      "meaning": "For a type with natural-number casting, this interprets any certified numeral at least two by casting that natural number.",
-      "effect_on_target": "It interprets the literal coefficient 2 as a real number and contributes no substantive assumption.",
+      "name": "LocalDef031",
+      "meaning": "A per-column computation certificate indexed by A,Q,R,epsilonM and a column k. Constructor D037 gives its exact intermediate quantities, equations, positivity conditions, and componentwise error bounds.",
+      "effect_on_target": "One such certificate for every column is required for a run, but its fields do not occur directly in the displayed bound.",
       "status": "understood"
     },
     {
       "id": "D032",
-      "name": "instOfNatNat",
-      "meaning": "It interprets a natural-number literal in Nat as that same natural number.",
-      "effect_on_target": "It supplies the natural literals used for exponent 2 and for the numeral-instance bookkeeping.",
+      "name": "LocalDef032",
+      "meaning": "A prefix certificate consists of matrices DeltaA and N and nonnegative reals f,g,h satisfying Q R=A+DeltaA, N=R^T R-A^T A, ||DeltaA||_2<=beta(m,r)||A||_2 epsilonM+f epsilonM^2, ||N||_2<=alpha(m,r)||A||_2^2 epsilonM+g epsilonM^2, and ||A||_2<=(1+(alpha(m,r)/2)epsilonM)||R||_2+h epsilonM^2.",
+      "effect_on_target": "For each run prefix, these conditions provide the coefficients f,g,h from which E_s is computed.",
       "status": "understood"
     },
     {
       "id": "D033",
-      "name": "Fin.fintype",
-      "meaning": "This provides the finite enumeration of Fin n.",
-      "effect_on_target": "It makes sums over all matrix indices and the finite dot products defining matrix multiplication well-defined, including when n = 0.",
+      "name": "LocalDef033",
+      "meaning": "A proof that the numeral 6+1=7 is at least two.",
+      "effect_on_target": "It only supports the real numeral 7 in alpha and adds no mathematical assumption.",
       "status": "understood"
     },
     {
       "id": "D034",
-      "name": "Finset.sum",
-      "meaning": "This forms a finite sum in an additive commutative monoid.",
-      "effect_on_target": "It aggregates all squared entries in the Frobenius norm and underlies the finite sums used by matrix dot products.",
+      "name": "LocalDef034",
+      "meaning": "A proof that the numeral 2+1=3 is at least two.",
+      "effect_on_target": "It only supports the real numeral 3 in alpha and adds no mathematical assumption.",
       "status": "understood"
     },
     {
       "id": "D035",
-      "name": "Finset.univ",
-      "meaning": "This is the finite set containing every element of a finite type.",
-      "effect_on_target": "It ensures that the Frobenius-norm sums range over every row and every column index in Fin n.",
+      "name": "LocalDef035",
+      "meaning": "A proof that the numeral 15+1=16 is at least two.",
+      "effect_on_target": "It only supports the real numeral 16 in alpha and adds no mathematical assumption.",
       "status": "understood"
     },
     {
       "id": "D036",
-      "name": "HSub.hSub",
-      "meaning": "This selects the subtraction operation supplied by the relevant typeclass.",
-      "effect_on_target": "It denotes matrix subtraction in R^T R - A^T A and I_n - Q^T Q.",
+      "name": "LocalDef036",
+      "meaning": "Ordinary multiplication of two real square matrices of a specified dimension.",
+      "effect_on_target": "It states the two-sided inverse equations and forms R^TR in normal-equation residuals.",
       "status": "understood"
     },
     {
       "id": "D037",
-      "name": "Matrix",
-      "meaning": "A matrix with row type m, column type n, and entries in alpha is a function m -> n -> alpha.",
-      "effect_on_target": "With both index types Fin n and entries Real, it gives the exact n-by-n real matrix representation used throughout.",
+      "name": "LocalDef037",
+      "meaning": "A step certificate at column t stores s_j, v_i, psi, phi, projection and residual errors, scalar errors, normalization errors, and lambda>=0. It requires s_j=0 for j>=t. If t=0, R_00=||A_:0||_2+diagonalError and Q_i0=A_i0/R_00+normalizationError_i. If t>0, then for j<t, s_j=<Q_:j,A_:t>+projectionError_j and R_jt=s_j; v_i=A_it-sum_{j<t}Q_ij s_j+residualError_i; psi=||A_:t||_2+psiError; phi=||s||_2+phiError; psi>=0, phi>=0, psi-phi>=0; R_tt=sqrt(psi-phi)sqrt(psi+phi)+diagonalError; and Q_it=v_i/R_tt+normalizationError_i. It also requires R_tt>0 and bounds every listed error in absolute value by lambda epsilonM.",
+      "effect_on_target": "These certificates restrict admissible runs and encode the columnwise computation model, though the displayed inequality uses only the separately stored prefix certificate.",
       "status": "understood"
     },
     {
       "id": "D038",
-      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
-      "meaning": "This is standard matrix multiplication defined by row-column dot products: (MN)_ik = sum_j M_ij N_jk.",
-      "effect_on_target": "It gives the precise multiplication used in every matrix product appearing in the hypotheses and conclusion.",
+      "name": "LocalDef038",
+      "meaning": "For an m by r matrix A and r by r matrix R, it is R^T R-A^T A.",
+      "effect_on_target": "It is the exact normal-equation residual N required by each prefix certificate.",
       "status": "understood"
     },
     {
       "id": "D039",
-      "name": "Matrix.one",
-      "meaning": "This defines the matrix multiplicative identity as the diagonal matrix with diagonal value 1 and off-diagonal value 0.",
-      "effect_on_target": "It makes LocalDef003 n exactly the identity matrix I_n.",
+      "name": "LocalDef039",
+      "meaning": "The Euclidean norm of a selected column of a real matrix.",
+      "effect_on_target": "It appears in the base-column and positive-column equations of each step certificate.",
       "status": "understood"
     },
     {
       "id": "D040",
-      "name": "Matrix.sub",
-      "meaning": "This equips matrices with entrywise subtraction inherited from their entries.",
-      "effect_on_target": "It makes both Gram-matrix differences entrywise matrix differences.",
+      "name": "LocalDef040",
+      "meaning": "The Euclidean inner product sum_i Q_ij A_ik between column j of Q and column k of A.",
+      "effect_on_target": "It is the exact projection quantity perturbed by projectionError in a positive-index step certificate.",
       "status": "understood"
     },
     {
       "id": "D041",
-      "name": "One.toOfNat1",
-      "meaning": "This converts a one operation into an interpretation of the numeral 1.",
-      "effect_on_target": "It supplies the value 1 used on the diagonal of the identity matrix.",
+      "name": "LocalDef041",
+      "meaning": "The component A_ik-sum_{j<k}Q_ij s_j of the residual vector before residualError is added.",
+      "effect_on_target": "It defines the computed residual-vector equation in each positive-index step certificate.",
       "status": "understood"
     },
     {
       "id": "D042",
-      "name": "Real.instAddCommMonoid",
-      "meaning": "This is the additive commutative monoid structure of the real numbers.",
-      "effect_on_target": "It supplies zero, addition, and finite summation for Frobenius norms and matrix dot products.",
+      "name": "LocalDef042",
+      "meaning": "Transpose of a square matrix.",
+      "effect_on_target": "It forms R^T in the normal-equation residual.",
       "status": "understood"
     },
     {
       "id": "D043",
-      "name": "Real.instOne",
-      "meaning": "This is the standard real number one.",
-      "effect_on_target": "It supplies diagonal entries of I_n and the multiplicative identity required by real powers.",
+      "name": "LocalDef043",
+      "meaning": "For a finite real vector x, its Euclidean norm sqrt(sum_i x_i^2).",
+      "effect_on_target": "It defines column norms and the norm of the coefficient vector s in step certificates.",
       "status": "understood"
     },
     {
       "id": "D044",
-      "name": "Real.instSub",
-      "meaning": "This is ordinary real subtraction, defined as addition of the additive inverse.",
-      "effect_on_target": "Through pointwise matrix subtraction, it defines the entries of R^T R - A^T A and I_n - Q^T Q.",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type consisting of natural numbers strictly below n.",
+      "effect_on_target": "It indexes rows, columns, and the chosen prefix endpoint k.",
       "status": "understood"
     },
     {
       "id": "D045",
-      "name": "Real.sqrt",
-      "meaning": "This is the nonnegative real square root; its implementation first replaces a negative input by zero, although every input here is a sum of squares and hence nonnegative.",
-      "effect_on_target": "It completes the exact Frobenius-norm formula sqrt(sum_i sum_j M_ij^2).",
+      "name": "Fin.val",
+      "meaning": "The underlying natural-number value of a finite index.",
+      "effect_on_target": "It identifies s=k.val+1 and expresses index-order conditions.",
       "status": "understood"
     },
     {
       "id": "D046",
-      "name": "instDecidableEqFin",
-      "meaning": "This decides equality of two elements of Fin n.",
-      "effect_on_target": "It permits construction of the diagonal identity matrix by deciding whether row and column indices agree; it adds no hypothesis.",
+      "name": "HAdd.hAdd",
+      "meaning": "Typeclass-dispatched addition.",
+      "effect_on_target": "At the instantiated types it denotes ordinary natural, real, or entrywise matrix addition.",
       "status": "understood"
     },
     {
       "id": "D047",
-      "name": "instHSub",
-      "meaning": "This promotes an ordinary same-type subtraction operation to heterogeneous-subtraction notation.",
-      "effect_on_target": "It connects subtraction syntax to pointwise matrix subtraction.",
+      "name": "HMul.hMul",
+      "meaning": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "At the instantiated types it denotes real scalar multiplication or matrix multiplication as determined by the supplied instance.",
       "status": "understood"
     },
     {
       "id": "D048",
+      "name": "HPow.hPow",
+      "meaning": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "Here it supplies ordinary natural powers of reals, specifically squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "LE.le",
+      "meaning": "Typeclass-dispatched non-strict order.",
+      "effect_on_target": "With the real instance it is the usual real relation <= in the conclusion and certificate bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "Monoid.toNatPow",
+      "meaning": "The natural-number power operation induced by a monoid.",
+      "effect_on_target": "For reals it gives ordinary powers, including every squared quantity in the target.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "It supplies the dimensions m,n, prefix sizes, exponents, and finite-index values.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "OfNat.ofNat",
+      "meaning": "Interpretation of a natural-number literal in a type with an OfNat instance.",
+      "effect_on_target": "It interprets literals such as 1 and 2 as naturals or reals as required.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "Real",
+      "meaning": "The real-number type.",
+      "effect_on_target": "All matrix entries, norms, constants, errors, and inequalities are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "Real.instAdd",
+      "meaning": "Ordinary addition on real numbers.",
+      "effect_on_target": "It gives the addition in the right-hand side and scalar formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "Real.instLE",
+      "meaning": "The usual non-strict order on real numbers.",
+      "effect_on_target": "It makes the target an ordinary real inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure of the reals.",
+      "effect_on_target": "It provides ordinary real natural powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "Real.instMul",
+      "meaning": "Ordinary multiplication on real numbers.",
+      "effect_on_target": "It supplies all scalar products in the bound and definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "instAddNat",
+      "meaning": "Ordinary addition on natural numbers.",
+      "effect_on_target": "It forms k.val+1 and numeral sums used in dimensions.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "instHAdd",
+      "meaning": "The homogeneous-addition instance derived from an ordinary Add instance.",
+      "effect_on_target": "It routes homogeneous additions to the standard natural, real, or matrix addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "instHMul",
+      "meaning": "The homogeneous-multiplication instance derived from an ordinary Mul instance.",
+      "effect_on_target": "For reals it routes all homogeneous products to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "instHPow",
+      "meaning": "The homogeneous-power instance derived from a power operation.",
+      "effect_on_target": "It routes real powers with natural exponents to ordinary real exponentiation.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "instOfNatNat",
+      "meaning": "The instance interpreting a natural literal n as the natural number n itself.",
+      "effect_on_target": "It supplies the natural literals used for prefix increments and exponents.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "Fin.castLE",
+      "meaning": "Given r<=n, it embeds Fin r into Fin n while preserving the underlying value.",
+      "effect_on_target": "It realizes prefix extraction without changing row or column numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "Fin.fintype",
+      "meaning": "The finite enumeration of all elements of Fin n.",
+      "effect_on_target": "It makes all matrix products, inner products, and norms finite sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "HSub.hSub",
+      "meaning": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "It denotes ordinary real or entrywise matrix subtraction in defect and residual formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Matrix",
+      "meaning": "A matrix with row type I, column type J, and entries in a type alpha is a function I -> J -> alpha.",
+      "effect_on_target": "It gives the concrete finite real arrays represented by LocalDef016 and LocalDef017.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "Matrix.instL2OpNormedAddCommGroup",
+      "meaning": "The normed additive-group structure on finite real matrices whose norm is the induced l2 operator norm.",
+      "effect_on_target": "It fixes every matrix norm in the proposition as an operator 2-norm rather than a Frobenius norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Matrix.sub",
+      "meaning": "Entrywise subtraction of matrices.",
+      "effect_on_target": "It forms I-Q^TQ and R^TR-A^TA entrywise.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "Nat.succ",
+      "meaning": "Natural-number successor.",
+      "effect_on_target": "It expresses k.val+1 and the proof that each prefix size is at most n.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "Norm.norm",
+      "meaning": "The norm operation supplied by a Norm instance.",
+      "effect_on_target": "With the matrix l2-operator-norm instance it evaluates all displayed matrix norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "NormedAddCommGroup.toNorm",
+      "meaning": "The norm structure underlying a normed additive commutative group.",
+      "effect_on_target": "It exposes the matrix operator norm used by LocalDef010 and LocalDef029.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "Real.instNatCast",
+      "meaning": "The standard embedding of natural numbers into the reals.",
+      "effect_on_target": "It interprets m, r, and numerical constants in alpha and beta as real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "Real.instRCLike",
+      "meaning": "The RCLike structure on the reals.",
+      "effect_on_target": "It supplies the analytic scalar structure needed to define the l2 operator norm; it adds no extra proposition-level hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "Real.instSub",
+      "meaning": "Ordinary subtraction on real numbers.",
+      "effect_on_target": "It supplies scalar differences such as psi-phi and the subtraction in alpha.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "instDecidableEqFin",
+      "meaning": "Decidable equality on finite indices.",
+      "effect_on_target": "It supports identity matrices, finite sets, and matrix norm infrastructure without adding a mathematical assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "instHSub",
+      "meaning": "The homogeneous-subtraction instance derived from an ordinary Sub instance.",
+      "effect_on_target": "It routes real and matrix subtraction to their standard operations.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "For a type with natural casts, it interprets any numeral proved to be at least two by its natural-number cast.",
+      "effect_on_target": "It supplies real numerals such as 2, 3, 7, and 16 in the constant formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "The division operation supplied by a division-inverse monoid.",
+      "effect_on_target": "For reals it supplies the divisions in 1/2, 3/2, 7/2, and vector normalization.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "It states exact matrix inverse, triangularity, factorization, residual, and step-certificate equations.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "Function.Injective",
+      "meaning": "A function f is injective when f(a1)=f(a2) implies a1=a2.",
+      "effect_on_target": "Applied to x maps to Ax, it requires A to have a trivial kernel, equivalently full column rank over the reals.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "HDiv.hDiv",
+      "meaning": "Typeclass-dispatched division.",
+      "effect_on_target": "At real arguments it denotes ordinary real division in normalization equations and constants.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "LT.lt",
+      "meaning": "Typeclass-dispatched strict order.",
+      "effect_on_target": "It expresses positive dimensions, 0<epsilonM<1, positive diagonal entries, index order, and the smallness condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "Matrix.instHMulOfFintypeOfMulOfAddCommMonoid",
+      "meaning": "Standard finite matrix multiplication, with each output entry given by the dot product over the shared index.",
+      "effect_on_target": "It gives the exact meaning of all matrix products in defects, inverse equations, and certificates.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "Matrix.mulVec",
+      "meaning": "Standard matrix-vector multiplication by finite row-wise dot products.",
+      "effect_on_target": "Its injectivity for A is a packaged run hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "Matrix.one",
+      "meaning": "The square identity matrix with ones on the diagonal and zeros elsewhere.",
+      "effect_on_target": "It supplies I_s in the orthogonality defect and inverse equations.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
       "name": "Matrix.transpose",
-      "meaning": "This swaps the row and column arguments of a matrix, so (M^T)_ij = M_ji.",
-      "effect_on_target": "It supplies the ordinary, non-conjugating transpose in every Gram matrix.",
+      "meaning": "The matrix transpose, interchanging row and column indices.",
+      "effect_on_target": "It forms Q_s^T, A_s^T, and R_s^T.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "A proposition certifying that a natural number is at least two.",
+      "effect_on_target": "It is used only to elaborate larger numerical literals through natural casting.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "Nat.cast",
+      "meaning": "The natural-number casting function into a type with a NatCast instance.",
+      "effect_on_target": "It embeds dimensions and natural constants into the reals in alpha and beta.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "NonUnitalCommRing.toNonUnitalNonAssocCommRing",
+      "meaning": "A typeclass projection retaining the nonunital, possibly nonassociative commutative-ring operations.",
+      "effect_on_target": "It is algebraic infrastructure for real matrix-vector multiplication and does not change the mathematical statement.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing",
+      "meaning": "A typeclass projection forgetting commutativity while retaining nonunital nonassociative ring operations.",
+      "effect_on_target": "It is infrastructure for real matrix multiplication and adds no hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring",
+      "meaning": "The semiring-like structure underlying a nonunital nonassociative ring.",
+      "effect_on_target": "It supplies the algebra required by matrix-vector multiplication without changing the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "NonUnitalNormedCommRing.toNonUnitalCommRing",
+      "meaning": "The nonunital commutative-ring structure underlying a nonunital normed commutative ring.",
+      "effect_on_target": "It is typeclass infrastructure for the ordinary real algebra used by matrices.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "NormedCommRing.toNonUnitalNormedCommRing",
+      "meaning": "The nonunital normed-ring structure underlying a normed commutative ring.",
+      "effect_on_target": "It supports the real algebraic instances needed for matrix operations and adds no proposition-level condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "One.toOfNat1",
+      "meaning": "The instance interpreting the numeral 1 as the multiplicative identity.",
+      "effect_on_target": "It supplies real and matrix ones, notably I_s and the constant 1 in bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative monoid structure of the reals.",
+      "effect_on_target": "It supports finite real sums and standard matrix multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The standard division and inversion structure of the reals.",
+      "effect_on_target": "It gives ordinary real division in constants and normalization formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "Real.instLT",
+      "meaning": "The usual strict order on real numbers.",
+      "effect_on_target": "It interprets all real positivity and strict-smallness assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "Real.instOne",
+      "meaning": "The real multiplicative identity 1.",
+      "effect_on_target": "It supplies scalar one in epsilonM<1, constants, and matrix identities.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "Real.instZero",
+      "meaning": "The real additive identity 0.",
+      "effect_on_target": "It supplies zero in positivity, triangularity, and error-coefficient conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "Real.normedCommRing",
+      "meaning": "The standard normed commutative-ring structure of the real numbers.",
+      "effect_on_target": "It provides the real algebra and norm compatibility needed by matrix and operator-norm constructions.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "Real.sqrt",
+      "meaning": "The nonnegative real square-root function.",
+      "effect_on_target": "It occurs in beta and in the positive-column diagonal formula sqrt(psi-phi)sqrt(psi+phi).",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "Zero.toOfNat0",
+      "meaning": "The instance interpreting the numeral 0 as the additive identity.",
+      "effect_on_target": "It supplies zero in all real, natural, and matrix equations and inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "instDecidableEqNat",
+      "meaning": "Decidable equality on natural numbers.",
+      "effect_on_target": "It decides the branch r=1 in the piecewise constants alpha and beta.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "instHDiv",
+      "meaning": "The homogeneous-division instance derived from an ordinary Div instance.",
+      "effect_on_target": "It routes real homogeneous divisions to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "instLENat",
+      "meaning": "The usual non-strict order on natural numbers.",
+      "effect_on_target": "It expresses n<=m, prefix-index embeddings, and conditions such as t<=j.",
+      "status": "understood"
+    },
+    {
+      "id": "D106",
+      "name": "instLTNat",
+      "meaning": "The usual strict order on natural numbers.",
+      "effect_on_target": "It expresses positive dimensions, upper triangularity, and column-order conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D107",
+      "name": "ite",
+      "meaning": "A decidable if-then-else expression.",
+      "effect_on_target": "It defines the r=1 exceptional branches of alpha and beta exactly.",
+      "status": "understood"
+    },
+    {
+      "id": "D108",
+      "name": "Matrix.add",
+      "meaning": "Entrywise matrix addition.",
+      "effect_on_target": "It gives A+DeltaA in the factorization certificate equation.",
+      "status": "understood"
+    },
+    {
+      "id": "D109",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive group structure of the reals.",
+      "effect_on_target": "It supports real negation and absolute value in error bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D110",
+      "name": "Real.lattice",
+      "meaning": "The lattice-order structure of the reals.",
+      "effect_on_target": "It supports the standard real absolute-value operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D111",
+      "name": "abs",
+      "meaning": "Absolute value, defined as max(a,-a) in the ordered additive group.",
+      "effect_on_target": "It measures every componentwise error in a step certificate.",
+      "status": "understood"
+    },
+    {
+      "id": "D112",
+      "name": "Finset.filter",
+      "meaning": "The finite subset of elements satisfying a decidable predicate.",
+      "effect_on_target": "It restricts the residual sum to previous columns j<t.",
+      "status": "understood"
+    },
+    {
+      "id": "D113",
+      "name": "Finset.sum",
+      "meaning": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It defines Euclidean norms, inner products, matrix products, and residual vectors.",
+      "status": "understood"
+    },
+    {
+      "id": "D114",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It supplies the complete finite row or column index sets in sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D115",
+      "name": "Nat.decLt",
+      "meaning": "A decision procedure for strict order on natural numbers.",
+      "effect_on_target": "It makes the filter j<t and other index-order branches computationally decidable, without adding a hypothesis.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "n is universally quantified over all natural numbers, including n = 0.",
-      "A, dA, Q, R, and Rinv are arbitrary real n-by-n matrices.",
-      "e, a, d, and rho are arbitrary real numbers."
+      "m and n are arbitrary natural numbers, implicit in the theorem.",
+      "run is an arbitrary valid run record of dimensions m and n.",
+      "k is an arbitrary element of Fin n, so 0<=k.val<n; write s=k.val+1, hence 1<=s<=n."
     ],
     "hypotheses": [
-      "Q R = A + dA exactly.",
-      "R Rinv = I_n exactly, so Rinv is assumed to be a right inverse of R.",
-      "0 <= e.",
-      "0 <= a.",
-      "0 <= d.",
-      "0 <= rho.",
-      "||R^T R - A^T A||_F <= e.",
-      "||A||_F <= a.",
-      "||dA||_F <= d.",
-      "||Rinv||_F <= rho."
+      "The run packages 0<m, 0<n, and n<=m.",
+      "It packages real matrices A,Q in R^(m by n) and R in R^(n by n), with the map x maps to Ax injective and with R upper triangular: R_ij=0 whenever j<i.",
+      "It packages epsilon=epsilonM satisfying 0<epsilon<1.",
+      "For every t in Fin n, with r=t.val+1, it packages a matrix S_r in R^(r by r) satisfying S_r R_r=I_r and R_r S_r=I_r, where R_r is the leading principal block of R.",
+      "For every t in Fin n it assumes c(m,r) epsilon (||R_r||_2 ||S_r||_2)^2<1.",
+      "For every column t it packages a step certificate with all equations, positivity conditions, and componentwise error bounds stated in the mathematical definitions.",
+      "For every prefix r=t.val+1 it packages a prefix certificate with witnesses DeltaA_r,N_r and nonnegative coefficients f_r,g_r,h_r satisfying the exact equations and norm bounds stated in the mathematical definitions."
     ],
     "conclusions": [
-      "||I_n - Q^T Q||_F <= rho^2 * ((e + (2*a)*d) + d^2)."
+      "For s=k.val+1, ||I_s-Q_s^T Q_s||_2 <= c(m,s) (||R_s||_2 ||S_s||_2)^2 epsilon + E_s epsilon^2."
     ],
     "mathematical_definitions": [
-      "For any n-by-n real matrix M, ||M||_F = sqrt(sum_{i in Fin n} sum_{j in Fin n} M_ij^2).",
-      "I_n is the n-by-n identity matrix.",
-      "Transpose is ordinary transpose: (M^T)_ij = M_ji.",
-      "Matrix multiplication is standard: (XY)_ik = sum_{j in Fin n} X_ij Y_jk.",
-      "Matrix addition and subtraction are entrywise.",
-      "The separately bound hypotheses form a curried implication chain; equivalently, their conjunction implies the stated conclusion."
+      "Fin r indexes 0,...,r-1. A_r and Q_r are the first r columns of A and Q, R_r is the leading principal r by r block of R, and S_r is the supplied exact two-sided inverse of R_r. All matrix norms ||.||_2 are induced Euclidean operator norms.",
+      "Define beta(m,r)=1 if r=1, and beta(m,r)=2r sqrt(2m)+2 sqrt(r) otherwise. Define alpha(m,r)=m+2 if r=1, and alpha(m,r)=(7/2)m r^2-(3/2)m r+16r otherwise. Define c(m,r)=alpha(m,r)+2 beta(m,r). Natural dimensions in these expressions are cast to reals.",
+      "A prefix certificate for A_r,Q_r,R_r consists of DeltaA_r, N_r, and f_r,g_r,h_r>=0 such that Q_r R_r=A_r+DeltaA_r, N_r=R_r^T R_r-A_r^T A_r, ||DeltaA_r||_2<=beta(m,r)||A_r||_2 epsilon+f_r epsilon^2, ||N_r||_2<=alpha(m,r)||A_r||_2^2 epsilon+g_r epsilon^2, and ||A_r||_2<=(1+(alpha(m,r)/2)epsilon)||R_r||_2+h_r epsilon^2.",
+      "For the selected prefix s, set a_s=||A_s||_2, rho_s=||R_s||_2, sigma_s=||S_s||_2, t_s=(alpha(m,s)/2)rho_s+h_s, u_s=2rho_s t_s+t_s^2, and v_s=g_s+2a_s f_s+(beta(m,s)a_s+f_s)^2. Then E_s=sigma_s^2(c(m,s)u_s+v_s).",
+      "A step certificate at column t stores a vector z indexed by Fin n, a vector v indexed by Fin m, scalars psi and phi, error vectors projectionError, residualError, and normalizationError, scalar errors psiError, phiError, and diagonalError, and a scale lambda>=0. It requires z_j=0 for every j>=t.",
+      "For t=0, the step certificate requires R_00=||A_:0||_2+diagonalError and Q_i0=A_i0/R_00+normalizationError_i for every i.",
+      "For t>0, it requires z_j=sum_i Q_ij A_it+projectionError_j and R_jt=z_j for j<t; v_i=A_it-sum_{j<t}Q_ij z_j+residualError_i; psi=||A_:t||_2+psiError; phi=sqrt(sum_j z_j^2)+phiError; psi>=0, phi>=0, and psi-phi>=0; R_tt=sqrt(psi-phi)sqrt(psi+phi)+diagonalError; and Q_it=v_i/R_tt+normalizationError_i.",
+      "Every step certificate also requires R_tt>0 and the bounds |projectionError_j|<=lambda epsilon, |residualError_i|<=lambda epsilon, |psiError|<=lambda epsilon, |phiError|<=lambda epsilon, |diagonalError|<=lambda epsilon, and |normalizationError_i|<=lambda epsilon for all applicable indices."
     ],
-    "proposition_plain_english": "For every natural dimension n, all real n-by-n matrices A, dA, Q, R, and Rinv, and all real numbers e, a, d, and rho, suppose that Q R equals A + dA, that R Rinv equals the identity, that e, a, d, and rho are nonnegative, and that the Frobenius norms of R^T R - A^T A, A, dA, and Rinv are bounded respectively by e, a, d, and rho. Then the Frobenius norm of the orthogonality defect I_n - Q^T Q is at most rho squared times e + 2ad + d squared, with the exact target expression rho^2 * ((e + (2*a)*d) + d^2)."
+    "proposition_plain_english": "For every valid packaged run and every nonempty leading prefix ending at column k, the operator-norm defect from orthonormality of the computed prefix Q_s is at most a first-order term c(m,s) times the square of the operator-norm condition factor of the corresponding leading block R_s, times epsilon, plus the explicitly computed certificate-dependent coefficient E_s times epsilon squared."
   },
   "restrictions_and_vacuity_risks": [
-    "There is no assumption that n is positive. For n = 0 all matrices are empty, all Frobenius norms are zero, and the conclusion is trivial under the nonnegativity assumptions.",
-    "Rinv is only explicitly assumed to satisfy R Rinv = I_n; the reverse equality Rinv R = I_n is not an encoded hypothesis.",
-    "The norm is specifically the Frobenius norm, not the spectral or operator norm.",
-    "The values e, a, d, and rho are arbitrary nonnegative upper bounds, not asserted to equal the corresponding norms or to be minimal bounds.",
-    "There is no strict positivity or smallness assumption on any scalar, such as rho > 0 or rho*d < 1.",
-    "There is no direct orthogonality assumption on Q; the conclusion only bounds its Gram-matrix defect.",
-    "No triangularity, symmetry, rank, nonsingularity, algorithmic origin, floating-point model, or rounding-error interpretation is imposed beyond the displayed equations and bounds.",
-    "The relation Q R = A + dA is exact, not approximate.",
-    "There are no existential quantifiers or witness dependencies in the proposition.",
-    "For any chosen values that fail one of the hypotheses, the curried implication is vacuously true."
+    "The theorem quantifies over run records rather than arbitrary matrices. For dimensions or matrix data admitting no such run, the universal statement has no instance to which it applies.",
+    "Because a run requires 0<m, 0<n, and n<=m, no conclusion is provided for zero dimensions or for n>m.",
+    "Only prefixes of sizes s=k+1 with 1<=s<=n are covered; there is no size-zero prefix case.",
+    "The smallness condition c(m,s) epsilon (||R_s||_2||S_s||_2)^2<1 is an assumption for every prefix, not a conclusion.",
+    "The norm is the induced Euclidean operator norm, not the Frobenius norm or an entrywise norm.",
+    "The second-order coefficient E_s depends on the particular stored prefix-certificate coefficients f_s,g_s,h_s. These coefficients need not be minimal or unique and may be enlarged while preserving their certificate inequalities, weakening the resulting bound.",
+    "The local step-error scale lambda is required only to be nonnegative and has no encoded upper bound, so the componentwise step-error assumptions alone do not impose a fixed universal error constant.",
+    "The proposition does not itself construct Q, R, their inverses, or the certificates; all are supplied as data in the run.",
+    "No concrete floating-point format, rounding mode, underflow or overflow behavior, or executable algorithm is encoded beyond the abstract step equations and error bounds.",
+    "Although real division is total in Lean, every normalization denominator R_tt is separately required to be strictly positive.",
+    "The conclusion bounds only the orthogonality defect I_s-Q_s^TQ_s; it does not directly conclude a forward error, backward error, factorization residual, or uniqueness statement."
   ],
   "ambiguities": []
 }
-

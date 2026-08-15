@@ -1,0 +1,65 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "source contract contains ambiguity"
+  ],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-12T18:43:07.548846+00:00",
+  "findings": [
+    {
+      "category": "complete-result-linkage",
+      "evidence": "Theorem 1 on printed page 302 concerns all prefixes produced by floating-point CGS-P under condition (3); the declaration quantifies arbitrary exact square matrices satisfying algebraic certificate hypotheses.",
+      "impact": "The selected numerical-analysis theorem is replaced by a supporting algebraic lemma.",
+      "severity": "critical"
+    },
+    {
+      "category": "norm-and-dimension-mismatch",
+      "evidence": "The paper uses rectangular m-by-k prefixes and spectral 2-norms, while D001 makes every matrix n-by-n and D002 defines the Frobenius norm.",
+      "impact": "The declaration omits paper instances and cannot recover the stated quantitative bound with its exact constant.",
+      "severity": "major"
+    },
+    {
+      "category": "constants-model-and-remainder",
+      "evidence": "The paper's result contains c4(m,k), kappa_2(R_k)^2, epsilon_M, strict condition (3), and an O(epsilon_M^2) qualification. The declaration contains only arbitrary majorants e,a,d,rho and an exact remainder-free inequality.",
+      "impact": "The numerical content, applicability condition, and approximation order of inequality (7) are absent.",
+      "severity": "major"
+    },
+    {
+      "category": "retained-algebraic-core",
+      "evidence": "The declaration's QR=A+dA, normal-equation residual, right inverse, orthogonality defect, and e+2ad+d^2 expression mirror the exact decomposition on printed page 312.",
+      "impact": "The target has a genuine and nonvacuous relationship to the proof, but matching that proof fragment is insufficient for statement faithfulness.",
+      "severity": "note"
+    },
+    {
+      "category": "source-formalization-gaps",
+      "evidence": "The source uses R_k^-1 before explaining nonsingularity and leaves both the higher-order constant and full floating-point semantics unspecified.",
+      "impact": "A faithful mechanization must make additional conventions explicit, but none of these ambiguities reconciles the declaration with the selected theorem.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean theorem cannot cover general m-by-k paper prefixes because all its matrices are square. It supplies neither CGS-P provenance nor the spectral c4(m,k)kappa_2(R_k)^2 epsilon_M bound. Substituting paper-style residual estimates would still encounter Frobenius-versus-spectral dimension factors and would not reproduce the selected theorem.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper proves a first-order spectral-norm result only for prefixes computed by CGS-P under its standing setup and strict condition. It does not assert the declaration's exact Frobenius inequality for every arbitrary square matrix certificate and every collection of scalar majorants. The appendix identity explains the declaration's origin but does not universalize the paper theorem to that target.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "Primary evidence establishes that the selected claim is Theorem 1(7): a prefixwise spectral-norm loss-of-orthogonality bound for matrices computed by CGS-P, under standing rectangular full-rank assumptions, strict condition (3), explicit constants, and first-order floating-point semantics. The Lean declaration instead proves an exact Frobenius-norm budget for arbitrary square matrix certificates. Its algebraic core is genuine and nonvacuous, but it omits essential source hypotheses and conclusions and excludes general rectangular paper instances. Neither complete statement implies the other, so the consistent classification is not-faithful-different and the declaration is not accepted.",
+  "remaining_uncertainties": [
+    "The paper does not specify whether condition (3) uses an extended condition number for singular R_k or implicitly assumes invertibility before the condition is formed.",
+    "No coefficient, sign, threshold, or parameter dependence is supplied for the O(epsilon_M^2) remainder, so no exact all-orders version of inequality (7) is determined.",
+    "The paper does not provide complete primitive rounding rules, evaluation orders, or a specific IEEE rounding mode for every operation used by Algorithm 2.",
+    "Behavior for subnormals, overflow, infinities, NaNs, signed zero, and input conversion is not specified beyond the normalized-range restriction and the discussed square-root breakdown."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.1",
+  "task_id": "P11-T3"
+}

@@ -1,5 +1,5 @@
 {
-  "schema_version": "highambench-faithfulness-0.1",
+  "schema_version": "highambench-faithfulness-0.2",
   "role": "source-contract",
   "task_id": "P11-T3",
   "paper_sha256": "72b7521848be07971a6721ea0356bb898c63e21b8ad3aa109fee8f41517284a5",
@@ -7,186 +7,152 @@
     {
       "pdf_page": 2,
       "printed_page": "300",
-      "anchor": "opening setup before Algorithm 1 and equation (1)",
-      "observation": "The standing setup takes A in R^{m x n}, with m >= n and rank(A) = n. It writes A by columns and describes exact-arithmetic QR with Q^T Q = I_n and nonsingular upper-triangular R."
+      "anchor": "standing rectangular full-rank setup and Algorithm 2 (CGS-P)",
+      "observation": "The standing setup is A in R^(m x n), m >= n, rank(A) = n, with columns a_1,...,a_n. Exact arithmetic gives A = QR, Q^T Q = I_n, and an upper-triangular nonsingular R. The text distinguishes standard CGS-S from the Cholesky-like CGS-P diagonal computation."
     },
     {
       "pdf_page": 3,
       "printed_page": "301",
-      "anchor": "Algorithm 2 (CGS-P)",
-      "observation": "Algorithm 2 initializes r_11 = ||a_1||_2 and, for k = 2,...,n, computes s_k = Q_{k-1}^T a_k, v_k = a_k - Q_{k-1}s_k, psi_k = ||a_k||_2, phi_k = ||s_k||_2, r_kk = (psi_k-phi_k)^{1/2}(psi_k+phi_k)^{1/2}, and q_k = v_k/r_kk."
-    },
-    {
-      "pdf_page": 3,
-      "printed_page": "301",
-      "anchor": "floating-point model immediately following Algorithm 2",
-      "observation": "The paper assumes IEEE floating-point arithmetic, gives fl(x+y) = (x+y)(1+delta), |delta| <= epsilon_M, for normalized-range results, and adopts a first-order linearization that discards O(epsilon_M^2) contributions."
+      "anchor": "Algorithm 2 and floating-point model",
+      "observation": "Algorithm 2 computes s_k = Q_(k-1)^T a_k, v_k = a_k - Q_(k-1)s_k, psi_k = ||a_k||_2, phi_k = ||s_k||_2, r_kk = sqrt(psi_k-phi_k)sqrt(psi_k+phi_k), and q_k = v_k/r_kk. The arithmetic is assumed to satisfy IEEE floating-point behavior, with fl(x+y) = (x+y)(1+delta), |delta| <= epsilon_M, for normalized-range results, and second-order terms are neglected through a stated linear approximation."
     },
     {
       "pdf_page": 4,
       "printed_page": "302",
-      "anchor": "definitions (2) preceding Theorem 1",
-      "observation": "The paper defines c_1(m,1)=1, c_1(m,k)=2 sqrt(2mk)+2 sqrt(k) for k>=2; c_2(m,1)=m+2, c_2(m,k)=3.5mk^2-1.5mk+16k for k>=2; c_3=0.5c_2; c_4=c_2+2c_1; A_k as the first k columns of A; and kappa_2(R_k)=||R_k||_2||R_k^{-1}||_2."
+      "anchor": "Theorem 1, definitions (2), hypothesis (3), and conclusions (4)-(8)",
+      "observation": "The theorem defines c_1, c_2, c_3, c_4, A_k, and kappa_2(R_k), assumes c_4(m,k) epsilon_M kappa_2(R_k)^2 < 1 for every prefix k, and states five simultaneous first-order conclusions: factorization residual, normal-equation residual, norm agreement, loss of orthogonality, and a bound on ||Q_k||_2."
     },
     {
-      "pdf_page": 4,
-      "printed_page": "302",
-      "anchor": "Theorem 1, assumption (3) and inequality (7)",
-      "observation": "For the R produced by Algorithm 2, Theorem 1 assumes c_4(m,k) epsilon_M kappa_2(R_k)^2 < 1 for every prefix and concludes, for k=1,...,n and to within O(epsilon_M^2), that ||I-Q_k^T Q_k||_2 <= c_4(m,k) kappa_2(R_k)^2 epsilon_M."
-    },
-    {
-      "pdf_page": 4,
-      "printed_page": "302",
-      "anchor": "Theorem 1, equations (4)-(8)",
-      "observation": "The enclosing theorem also defines Delta A_k = Q_kR_k-A_k and E_k=R_k^TR_k-A_k^TA_k, bounds them by c_1(m,k)||A_k||_2 epsilon_M and c_2(m,k)||A_k||_2^2 epsilon_M, compares ||R_k||_2 with ||A_k||_2 through c_3, and bounds ||Q_k||_2 by sqrt(2)."
-    },
-    {
-      "pdf_page": 4,
-      "printed_page": "302",
-      "anchor": "paragraph immediately following Theorem 1 and opening of Remark 1",
-      "observation": "The paper states that condition (3) assures nonsingularity and the validity of (7) and (8), and emphasizes that the stated condition and orthogonality bound use kappa_2(R_k), not kappa_2(A_k)."
+      "pdf_page": 14,
+      "printed_page": "312",
+      "anchor": "unnumbered exact identity and following norm estimate deriving (7)",
+      "observation": "The proof writes Q_k = (A_k + Delta A_k)R_k^(-1) and exactly decomposes I-Q_k^TQ_k as R_k^(-T)(E_k-A_k^T Delta A_k-(Delta A_k)^T A_k-(Delta A_k)^T Delta A_k)R_k^(-1). Applying (4)-(6) produces the c_4(m,k)kappa_2(R_k)^2 epsilon_M bound plus O(epsilon_M^2)."
     },
     {
       "pdf_page": 7,
       "printed_page": "305",
-      "anchor": "Remark 2",
-      "observation": "When the assumptions of Theorem 1 fail, phi_k can be at least psi_k, causing Algorithm 2 to break down and produce nonreal Q and R."
-    },
-    {
-      "pdf_page": 9,
-      "printed_page": "307",
-      "anchor": "Lemma 2 proof following equations (14)-(15)",
-      "observation": "Using condition (3), the proof treats R as nonsingular, obtains r_kk > 0, and concludes that the computed quantities must satisfy psi_k > phi_k."
-    },
-    {
-      "pdf_page": 14,
-      "printed_page": "312",
-      "anchor": "Appendix proof, exact identity following 'To get (7)'",
-      "observation": "From Q_k=(A_k+Delta A_k)R_k^{-1}, the proof gives an exact identity expressing I-Q_k^TQ_k as R_k^{-T} times E_k-A_k^T Delta A_k-(Delta A_k)^T A_k-(Delta A_k)^T Delta A_k times R_k^{-1}."
-    },
-    {
-      "pdf_page": 14,
-      "printed_page": "312",
-      "anchor": "Appendix proof, norm estimate following the exact identity",
-      "observation": "Taking spectral norms and applying the bounds for E_k and Delta A_k yields c_4(m,k)||R_k||_2^2||R_k^{-1}||_2^2 epsilon_M + O(epsilon_M^2), where c_4=c_2+2c_1."
+      "anchor": "Remark 2, Algorithm 2 breakdown",
+      "observation": "When the assumptions of Theorem 1 are not satisfied, the paper says it is possible that phi_k >= psi_k, causing Algorithm 2 to break down and produce Q and R that are not real matrices."
     }
   ],
   "statement": {
     "binders": [
-      "Standing input: dimensions m,n with m >= n and a real matrix A in R^{m x n} having rank(A)=n. This is stated before the algorithms and inherited by Theorem 1 rather than repeated in the theorem heading. [PDF p. 2 (printed 300), anchor: opening setup before equation (1)]",
-      "Prefix index: k ranges over 1,...,n; A_k is the matrix formed from the first k columns of A. [PDF p. 4 (printed 302), anchor: definitions (2) and Theorem 1]",
-      "Computed objects: Q_k in R^{m x k} and upper-triangular R_k in R^{k x k} are the k-column prefixes constructed by floating-point Algorithm 2; these dimensions are inherited from its block construction. [PDF p. 3 (printed 301), anchor: Algorithm 2; PDF p. 4 (printed 302), anchor: Theorem 1]",
-      "Floating-point parameter: epsilon_M is the machine unit of the assumed arithmetic. [PDF p. 3 (printed 301), anchor: floating-point model following Algorithm 2]"
+      "Integers m and n and a real matrix A in R^(m x n), with m >= n and rank(A) = n; these are standing assumptions inherited from the setup preceding Algorithm 2. (PDF p. 2, printed p. 300, anchor: standing rectangular full-rank setup.)",
+      "For every k in {1,...,n}, A_k is the matrix formed from the first k columns of A, while Q_k in R^(m x k) and R_k in R^(k x k) are the corresponding computed prefixes produced by Algorithm 2; the dimensions follow from the stated block constructions and theorem equations. (PDF p. 3, printed p. 301, anchor: Algorithm 2 block construction; PDF p. 4, printed p. 302, anchor: Theorem 1.)",
+      "epsilon_M is the machine unit, and c_i(m,k), kappa_2(R_k), Delta A_k, E_k, and mu_k have the definitions appearing in equations (2)-(7). (PDF p. 4, printed p. 302, anchor: definitions (2) and Theorem 1.)"
     ],
     "hypotheses": [
-      "The output must be produced by Algorithm 2, the Cholesky-like or pythagorean classical Gram-Schmidt variant CGS-P. [PDF p. 3 (printed 301), anchor: Algorithm 2; PDF p. 4 (printed 302), anchor: Theorem 1]",
-      "For every k=1,...,n, the strict smallness condition c_4(m,k) epsilon_M kappa_2(R_k)^2 < 1 is required. [PDF p. 4 (printed 302), anchor: Theorem 1, condition (3)]",
-      "The standing matrix setup assumes m >= n and rank(A)=n. [PDF p. 2 (printed 300), anchor: opening setup before equation (1)]",
-      "The analysis uses IEEE floating-point arithmetic for normalized-range results and deliberately neglects second- and higher-order roundoff terms. [PDF p. 3 (printed 301), anchor: floating-point model and linear approximation]"
+      "A is a full-column-rank real m-by-n matrix with m >= n. This is inherited rather than repeated in Theorem 1. (PDF p. 2, printed p. 300, anchor: standing rectangular full-rank setup.)",
+      "Q and R, including every Q_k and R_k, are the floating-point outputs of Algorithm 2, CGS-P. (PDF p. 3, printed p. 301, anchor: Algorithm 2; PDF p. 4, printed p. 302, anchor: opening sentence of Theorem 1.)",
+      "For every k in {1,...,n}, c_4(m,k) epsilon_M kappa_2(R_k)^2 < 1. The hypothesis is imposed prefix by prefix before the conclusions are asserted prefix by prefix. (PDF p. 4, printed p. 302, anchor: Theorem 1, inequality (3).)",
+      "Floating-point arithmetic satisfies the stated IEEE normalized-range relative-error model, and the analysis uses a first-order approximation that treats O(epsilon_M^2) as insignificant for a modest function p(n). (PDF p. 3, printed p. 301, anchor: floating-point model and linear approximation.)"
     ],
     "conclusions": [
-      "Selected theorem conclusion: for every k=1,...,n, ||I_k-Q_k^TQ_k||_2 <= c_4(m,k) kappa_2(R_k)^2 epsilon_M, understood to within terms of O(epsilon_M^2). [PDF p. 4 (printed 302), anchor: Theorem 1, inequality (7) and its preamble]",
-      "Supporting exact proof identity: I_k-Q_k^TQ_k = R_k^{-T}(E_k-A_k^T Delta A_k-(Delta A_k)^T A_k-(Delta A_k)^T Delta A_k)R_k^{-1}. [PDF p. 14 (printed 312), anchor: Appendix proof, exact identity deriving (7)]",
-      "Supporting norm estimate: ||I_k-Q_k^TQ_k||_2 <= ||R_k^{-1}||_2^2(||E_k||_2+2||Delta A_k||_2||A_k||_2+||Delta A_k||_2^2), which becomes c_4(m,k)||R_k||_2^2||R_k^{-1}||_2^2 epsilon_M + O(epsilon_M^2). [PDF p. 14 (printed 312), anchor: Appendix proof, norm estimate deriving (7)]"
+      "For every k = 1,...,n, Q_k R_k - A_k = Delta A_k and ||Delta A_k||_2 <= c_1(m,k)||A_k||_2 epsilon_M, to within O(epsilon_M^2). (PDF p. 4, printed p. 302, anchor: Theorem 1, equation (4).)",
+      "For every k = 1,...,n, R_k^T R_k - A_k^T A_k = E_k and ||E_k||_2 <= c_2(m,k)||A_k||_2^2 epsilon_M, to within O(epsilon_M^2). (PDF p. 4, printed p. 302, anchor: Theorem 1, equation (5).)",
+      "For every k = 1,...,n, ||R_k||_2 = ||A_k||_2(1+mu_k), where |mu_k| <= c_3(m,k)epsilon_M, to within O(epsilon_M^2). (PDF p. 4, printed p. 302, anchor: Theorem 1, equation (6).)",
+      "For every k = 1,...,n, ||I-Q_k^T Q_k||_2 <= c_4(m,k)kappa_2(R_k)^2 epsilon_M, to within O(epsilon_M^2). Dimensionally, the displayed I is I_k. (PDF p. 4, printed p. 302, anchor: Theorem 1, equation (7).)",
+      "For every k = 1,...,n, ||Q_k||_2 <= sqrt(2), to within the theorem's stated omission of O(epsilon_M^2) terms. (PDF p. 4, printed p. 302, anchor: Theorem 1, equation (8).)"
     ],
     "definitions_and_conventions": [
-      "A=(a_1,...,a_n), Q=(q_1,...,q_n), and R=(r_jk); A_k, Q_k, and R_k denote the corresponding first-k-column or leading-prefix objects. [PDF p. 2 (printed 300), anchor: notational conventions; PDF p. 3 (printed 301), anchor: Algorithm 2]",
-      "Delta A_k is the factorization residual defined exactly by Delta A_k=Q_kR_k-A_k. [PDF p. 4 (printed 302), anchor: Theorem 1, equation (4)]",
-      "E_k is the normal-equation residual defined exactly by E_k=R_k^TR_k-A_k^TA_k. [PDF p. 4 (printed 302), anchor: Theorem 1, equation (5)]",
-      "The enclosing theorem supplies ||Delta A_k||_2 <= c_1(m,k)||A_k||_2 epsilon_M and ||E_k||_2 <= c_2(m,k)||A_k||_2^2 epsilon_M, within O(epsilon_M^2); these are inputs to the proof of (7). [PDF p. 4 (printed 302), anchor: equations (4)-(5); PDF p. 14 (printed 312), anchor: proof of (7)]",
-      "I in inequality (7) is dimensionally I_k because Q_k^TQ_k is k x k; the theorem prints I without a subscript. [PDF p. 4 (printed 302), anchor: inequality (7); PDF p. 3 (printed 301), anchor: construction of Q_k]",
-      "Left orthogonality means Q^TQ=I; inequality (7) measures the failure of the computed Q_k to have this exact property. [PDF p. 2 (printed 300), anchor: explanation following equation (1); PDF p. 4 (printed 302), anchor: inequality (7)]"
+      "A = (a_1,...,a_n), Q = (q_1,...,q_n), and R = (r_jk); Q_k and R_k are assembled column by column. (PDF p. 2, printed p. 300, anchor: notational conventions; PDF p. 3, printed p. 301, anchor: Algorithm 2.)",
+      "Algorithm 2 initializes r_11 = ||a_1||_2, q_1 = a_1/r_11, R_1 = (r_11), and Q_1 = (q_1). (PDF p. 3, printed p. 301, anchor: Algorithm 2 initialization.)",
+      "For k >= 2, Algorithm 2 uses s_k = Q_(k-1)^T a_k, v_k = a_k-Q_(k-1)s_k, psi_k = ||a_k||_2, phi_k = ||s_k||_2, r_kk = sqrt(psi_k-phi_k)sqrt(psi_k+phi_k), and q_k = v_k/r_kk. (PDF p. 3, printed p. 301, anchor: Algorithm 2 loop.)",
+      "c_1(m,1) = 1, while c_1(m,k) = 2sqrt(2)mk + 2sqrt(k) for k = 2,...,n. (PDF p. 4, printed p. 302, anchor: equation (2), definition of c_1.)",
+      "c_2(m,1) = m+2, while c_2(m,k) = 3.5mk^2 - 1.5mk + 16k for k = 2,...,n. (PDF p. 4, printed p. 302, anchor: equation (2), definition of c_2.)",
+      "c_3(m,k) = 0.5c_2(m,k), and c_4(m,k) = c_2(m,k)+2c_1(m,k). (PDF p. 4, printed p. 302, anchor: equation (2), definitions of c_3 and c_4.)",
+      "kappa_2(R_k) = ||R_k||_2 ||R_k^(-1)||_2. (PDF p. 4, printed p. 302, anchor: definition immediately before Theorem 1.)",
+      "Delta A_k and E_k are defined by the signed residual equalities Q_kR_k-A_k = Delta A_k and R_k^TR_k-A_k^TA_k = E_k; reversing either sign would change the proof identity. (PDF p. 4, printed p. 302, anchor: equations (4) and (5); PDF p. 14, printed p. 312, anchor: exact identity deriving (7).)"
     ],
     "implicit_context": [
-      "The full-column-rank assumption is standing context from the paper's algorithm setup, not an explicitly repeated binder in Theorem 1. [PDF p. 2 (printed 300), anchor: opening setup; PDF p. 4 (printed 302), anchor: Theorem 1]",
-      "Q_k and R_k are computed floating-point matrices subsequently interpreted as real matrices when transposes, inverses, products, and norms are taken in the analysis. [PDF p. 3 (printed 301), anchor: Algorithm 2 and floating-point model; PDF p. 14 (printed 312), anchor: exact identity deriving (7)]",
-      "Condition (3) is used to ensure that the required R_k inverses exist and that the orthogonality bound holds. [PDF p. 4 (printed 302), anchor: paragraph following Theorem 1; PDF p. 9 (printed 307), anchor: Lemma 2 proof]",
-      "The enclosing multi-part theorem also states the factorization-residual bound (4), normal-equation-residual bound (5), norm comparison (6), and ||Q_k||_2 <= sqrt(2) in (8); the locator-selected claim is specifically (7), whose proof uses (4)-(6). [PDF p. 4 (printed 302), anchor: Theorem 1, equations (4)-(8); PDF p. 14 (printed 312), anchor: proof of (6)-(8)]"
+      "The exact-arithmetic target is a QR factorization with Q^TQ = I_n and upper-triangular nonsingular R, but Theorem 1 concerns the computed floating-point Q_k and R_k. (PDF p. 2, printed p. 300, anchor: exact factorization setup; PDF p. 4, printed p. 302, anchor: computed matrices in Theorem 1.)",
+      "The paper uses the same unhatted symbols for algorithm variables and computed outputs; computed status is conveyed in prose rather than typographically. (PDF p. 3, printed p. 301, anchor: Algorithm 2 and floating-point setup; PDF p. 4, printed p. 302, anchor: 'computed matrices R_k and Q_k'.)",
+      "Because Q_k has k columns, the identity matrix in ||I-Q_k^TQ_k||_2 is dimensionally I_k, although equation (7) prints only I. (PDF p. 4, printed p. 302, anchor: equation (7) and definition of A_k.)",
+      "The restriction (3) is stated to assure that R is nonsingular and that conclusions (7) and (8) hold; the paper says weaker nonsingularity and bounded-Q assumptions would yield bounds similar to (4)-(6). (PDF p. 4, printed p. 302, anchor: paragraph immediately following Theorem 1.)"
     ],
-    "algorithm_linkage": "The claim is tied specifically to CGS-P (Algorithm 2): r_11=||a_1||_2; for k>=2 it computes s_k=Q_{k-1}^Ta_k, v_k=a_k-Q_{k-1}s_k, psi_k=||a_k||_2, phi_k=||s_k||_2, and r_kk=(psi_k-phi_k)^{1/2}(psi_k+phi_k)^{1/2}, followed by q_k=v_k/r_kk. It is not a claim about standard CGS-S, which instead sets r_kk=||v_k||_2. [PDF p. 2 (printed 300), anchor: Algorithm 1 and comparison with Algorithm 2; PDF p. 3 (printed 301), anchor: Algorithm 2]",
+    "algorithm_linkage": "The result is specifically linked to Algorithm 2, the Cholesky-like or pythagorean classical Gram-Schmidt algorithm CGS-P. Its defining diagonal update is r_kk = sqrt(psi_k-phi_k)sqrt(psi_k+phi_k), with psi_k = ||a_k||_2 and phi_k = ||s_k||_2. Standard CGS-S instead takes r_kk = ||v_k||_2, and the paper explicitly says the analogous stated lemma is not correct for Algorithm 1. (PDF p. 2, printed p. 300, anchor: distinction from standard CGS; PDF p. 3, printed p. 301, anchor: Algorithm 2 and paragraph following Lemma 1.)",
     "numerical_model": [
-      "The paper explicitly assumes floating-point arithmetic satisfying the IEEE standard. [PDF p. 3 (printed 301), anchor: floating-point model following Algorithm 2]",
-      "The displayed local model is fl(x+y)=(x+y)(1+delta), with |delta|<=epsilon_M, for results in the normalized range. [PDF p. 3 (printed 301), anchor: floating-point model following Algorithm 2]",
-      "For a modest function p(n), the analysis uses (1+epsilon_M)^{p(n)}=1+p(n)epsilon_M+O(epsilon_M^2) and assumes the O(epsilon_M^2) contribution is insignificant. [PDF p. 3 (printed 301), anchor: linear approximation]",
-      "The proof applies standard floating-point error bounds to norms, inner products, matrix-vector products, subtraction, division, and square roots, but the selected passage does not provide a complete primitive-operation semantics for each of them. [PDF p. 9 (printed 307), anchor: Lemma 2 proof; PDF pp. 10-11 (printed 308-309), anchor: proof equations (16)-(20)]"
+      "The arithmetic is assumed to satisfy the IEEE floating-point standard. (PDF p. 3, printed p. 301, anchor: floating-point-model paragraph.)",
+      "The explicitly displayed local model is fl(x+y) = (x+y)(1+delta), with |delta| <= epsilon_M, for results in the normalized range. (PDF p. 3, printed p. 301, anchor: displayed IEEE arithmetic equation.)",
+      "The paper uses (1+epsilon_M)^(p(n)) = 1+p(n)epsilon_M+O(epsilon_M^2) for a modest p(n) and assumes the O(epsilon_M^2) contribution is insignificant. (PDF p. 3, printed p. 301, anchor: linear approximation.)",
+      "A_k is the original input prefix, whereas Q_k and R_k are computed matrices; Delta A_k and E_k measure their discrepancies from exact algebraic relations involving A_k. (PDF p. 4, printed p. 302, anchor: Theorem 1, equations (4) and (5).)"
     ],
     "error_notions": [
-      "The selected error is absolute loss of column orthogonality, measured by ||I_k-Q_k^TQ_k||_2; it is not an error relative to a separately specified exact Q. [PDF p. 2 (printed 300), anchor: definition of left orthogonality; PDF p. 4 (printed 302), anchor: inequality (7)]",
-      "The derivation decomposes orthogonality loss into the normal-equation residual E_k and the factorization residual Delta A_k, including both linear cross terms and the quadratic term (Delta A_k)^T Delta A_k. [PDF p. 14 (printed 312), anchor: exact identity deriving (7)]",
-      "The residual bounds used are normwise rather than componentwise: ||Delta A_k||_2 is proportional to ||A_k||_2 and ||E_k||_2 is proportional to ||A_k||_2^2. [PDF p. 4 (printed 302), anchor: equations (4)-(5)]"
+      "Delta A_k is the forward factorization residual in Q_kR_k-A_k, bounded relative to ||A_k||_2. (PDF p. 4, printed p. 302, anchor: equation (4).)",
+      "E_k is the normal-equation or Cholesky-factor residual R_k^TR_k-A_k^TA_k, bounded relative to ||A_k||_2^2. (PDF p. 4, printed p. 302, anchor: equation (5).)",
+      "mu_k is a relative discrepancy between ||R_k||_2 and ||A_k||_2. (PDF p. 4, printed p. 302, anchor: equation (6).)",
+      "The selected quantity ||I-Q_k^TQ_k||_2 is loss of column orthogonality, not a factorization residual. (PDF p. 4, printed p. 302, anchor: equation (7).)",
+      "The proof derives the orthogonality error from both E_k and Delta A_k through I-Q_k^TQ_k = R_k^(-T)(E_k-A_k^T Delta A_k-(Delta A_k)^T A_k-(Delta A_k)^T Delta A_k)R_k^(-1). (PDF p. 14, printed p. 312, anchor: unnumbered exact identity deriving (7).)"
     ],
     "norms": [
-      "All norms in the selected theorem bound are 2-norms. For matrices this is the spectral/operator 2-norm, as also indicated by ||R_k||_2^2=||R_k^TR_k||_2 in the proof. [PDF p. 4 (printed 302), anchor: definitions and inequality (7); PDF p. 14 (printed 312), anchor: proof of (6)]",
-      "kappa_2(R_k) is defined as ||R_k||_2||R_k^{-1}||_2, using an ordinary inverse rather than a pseudoinverse. [PDF p. 4 (printed 302), anchor: definition preceding Theorem 1]",
-      "The condition number appears squared in both hypothesis (3) and conclusion (7). [PDF p. 4 (printed 302), anchor: conditions (3) and (7)]",
-      "The theorem's literal bound is expressed through the computed R_k condition number, not kappa_2(A_k); Remark 1 discusses only a modified restatement in terms of A_k. [PDF p. 4 (printed 302), anchor: opening of Remark 1]"
+      "Every final theorem bound uses the subscript-2 norm. For vectors this is the Euclidean norm; for matrices the surrounding condition-number and singular-value formulas indicate the spectral operator 2-norm, although the selected setup does not separately define it. (PDF p. 2, printed p. 300, anchor: vector norm in the algorithms; PDF p. 4, printed p. 302, anchor: kappa_2 definition and equations (4)-(9).)",
+      "The orthogonality defect is measured globally by the matrix 2-norm ||I_k-Q_k^TQ_k||_2, not entrywise and not in Frobenius norm. (PDF p. 4, printed p. 302, anchor: equation (7).)",
+      "The condition-number factor is squared: kappa_2(R_k)^2 = ||R_k||_2^2||R_k^(-1)||_2^2. (PDF p. 4, printed p. 302, anchor: definition of kappa_2 and equation (7); PDF p. 14, printed p. 312, anchor: final norm estimate.)"
     ],
     "constants_and_indexing": [
-      "For k=1, c_1(m,1)=1 and c_2(m,1)=m+2. [PDF p. 4 (printed 302), anchor: definitions (2)]",
-      "For k=2,...,n, c_1(m,k)=2 sqrt(2mk)+2 sqrt(k). [PDF p. 4 (printed 302), anchor: definitions (2)]",
-      "For k=2,...,n, c_2(m,k)=3.5mk^2-1.5mk+16k. [PDF p. 4 (printed 302), anchor: definitions (2)]",
-      "For every relevant k, c_3(m,k)=0.5c_2(m,k) and c_4(m,k)=c_2(m,k)+2c_1(m,k). [PDF p. 4 (printed 302), anchor: definitions (2)]",
-      "Both the hypothesis and conclusion apply prefix-by-prefix for k=1,...,n; Algorithm 2 handles k=1 by initialization and k>=2 by its loop. [PDF p. 3 (printed 301), anchor: Algorithm 2; PDF p. 4 (printed 302), anchor: Theorem 1]",
-      "The smallness condition is strict: c_4(m,k)epsilon_M kappa_2(R_k)^2 must be less than 1, not less than or equal to 1. [PDF p. 4 (printed 302), anchor: condition (3)]"
+      "All hypotheses and conclusions are prefix-indexed for k = 1,...,n; c_1 and c_2 have distinct k=1 cases. (PDF p. 4, printed p. 302, anchor: equation (2) and Theorem 1.)",
+      "For k >= 2, c_1(m,k) = 2sqrt(2)mk+2sqrt(k), with m and k outside the square root except for the displayed sqrt(2) and sqrt(k). (PDF p. 4, printed p. 302, anchor: equation (2), c_1 branch.)",
+      "For k >= 2, c_2(m,k) = 3.5mk^2-1.5mk+16k; c_3 = c_2/2 and c_4 = c_2+2c_1. (PDF p. 4, printed p. 302, anchor: equation (2).)",
+      "The bound in (7) contains exactly one factor epsilon_M and the square of kappa_2(R_k); it is not stated with kappa_2(A_k), although the subsequent remark discusses a possible reformulation. (PDF p. 4, printed p. 302, anchor: equation (7) and opening of Remark 1.)"
     ],
     "higher_order_terms": [
-      "Theorem 1 qualifies all displayed conclusions as valid to within terms of O(epsilon_M^2), even though inequality (7) itself prints no remainder term. [PDF p. 4 (printed 302), anchor: Theorem 1 preamble and inequality (7)]",
-      "The appendix's derived form explicitly ends with c_4(m,k)kappa_2(R_k)^2 epsilon_M + O(epsilon_M^2). [PDF p. 14 (printed 312), anchor: final norm estimate deriving (7)]",
-      "The quadratic residual term contributes at second order because ||Delta A_k||_2=O(epsilon_M); it is retained in the exact identity and absorbed into O(epsilon_M^2) in the final bound. [PDF p. 4 (printed 302), anchor: equation (4); PDF p. 14 (printed 312), anchor: exact identity and norm estimate]",
-      "No explicit coefficient, sign, threshold, or uniformity statement is supplied for the O(epsilon_M^2) remainder. [PDF p. 3 (printed 301), anchor: linear approximation; PDF p. 14 (printed 312), anchor: final estimate]"
+      "Theorem 1 qualifies the complete list (4)-(8) by 'to within terms of O(epsilon_M^2)'; those terms are suppressed from the displayed theorem formulas. (PDF p. 4, printed p. 302, anchor: sentence immediately preceding equations (4)-(8).)",
+      "The proof of (7) explicitly retains +O(epsilon_M^2) while deriving c_4(m,k)kappa_2(R_k)^2 epsilon_M, confirming that the displayed theorem bound is a first-order statement rather than an unqualified exact inequality. (PDF p. 14, printed p. 312, anchor: following norm estimate deriving (7).)",
+      "The floating-point setup justifies this suppression by assuming O(epsilon_M^2) makes no significant contribution for modest p(n). (PDF p. 3, printed p. 301, anchor: linear approximation paragraph.)"
     ],
     "exceptional_values": [
-      "The relative-error model is stated only for results in the normalized range, so the cited model does not cover overflow, underflow into subnormals, infinities, or NaNs. [PDF p. 3 (printed 301), anchor: floating-point model following Algorithm 2]",
-      "Without Theorem 1's assumptions, phi_k>=psi_k can make the square-root expression for r_kk nonreal and cause Algorithm 2 to break down. [PDF p. 7 (printed 305), anchor: Remark 2]",
-      "Under condition (3), the proof treats every needed R_k as nonsingular, obtains r_kk>0, and hence requires psi_k>phi_k. [PDF p. 4 (printed 302), anchor: paragraph following Theorem 1; PDF p. 9 (printed 307), anchor: Lemma 2 proof]",
-      "The passage gives no separate assumptions about input representability, signed zero, NaNs, infinities, or a specific IEEE rounding mode. [PDF p. 3 (printed 301), anchor: stated floating-point model]"
+      "The displayed relative-error model is restricted to results in the normalized range; the cited passage gives no separate treatment of subnormal results, overflow, infinities, or NaNs. (PDF p. 3, printed p. 301, anchor: displayed IEEE arithmetic model and normalized-range qualification.)",
+      "Algorithm 2 requires real square roots of psi_k-phi_k and psi_k+phi_k and division by r_kk. Outside Theorem 1's assumptions, phi_k >= psi_k can cause breakdown and non-real Q and R. (PDF p. 3, printed p. 301, anchor: Algorithm 2 diagonal formula; PDF p. 7, printed p. 305, anchor: Remark 2.)",
+      "The paper states that restriction (3) assures nonsingularity of R; this supplies the invertibility needed by kappa_2(R_k), Q_k=(A_k+Delta A_k)R_k^(-1), and the orthogonality proof. (PDF p. 4, printed p. 302, anchor: paragraph after Theorem 1; PDF p. 14, printed p. 312, anchor: identity deriving (7).)"
     ]
   },
   "undebatable_constraints": [
-    "The algorithm must be CGS-P/Algorithm 2 with the pythagorean diagonal formula, not standard CGS-S with r_kk=||v_k||_2. [PDF p. 2 (printed 300), anchor: comparison of Algorithms 1 and 2; PDF p. 3 (printed 301), anchor: Algorithm 2]",
-    "The standing input is a real m x n full-column-rank matrix with m>=n. [PDF p. 2 (printed 300), anchor: opening setup before equation (1)]",
-    "The statement is prefixwise for every k=1,...,n. [PDF p. 4 (printed 302), anchor: Theorem 1]",
-    "For every prefix, c_4(m,k)epsilon_M kappa_2(R_k)^2<1 is a hypothesis. [PDF p. 4 (printed 302), anchor: condition (3)]",
-    "The selected bound is ||I_k-Q_k^TQ_k||_2 <= c_4(m,k)kappa_2(R_k)^2 epsilon_M to first order. [PDF p. 4 (printed 302), anchor: inequality (7)]",
-    "The condition number is that of the computed R_k, is defined using R_k^{-1}, and is squared. [PDF p. 4 (printed 302), anchor: definition of kappa_2(R_k), conditions (3) and (7)]",
-    "The exact leading constant is c_4=c_2+2c_1 with the piecewise c_1 and c_2 formulas in (2). [PDF p. 4 (printed 302), anchor: definitions (2)]",
-    "The error and condition-number norms are matrix 2-norms, and the orthogonality residual is absolute rather than relative. [PDF p. 4 (printed 302), anchor: inequality (7); PDF p. 14 (printed 312), anchor: proof norm estimate]",
-    "The proof identity contains E_k, both transpose-related A_k/Delta A_k cross terms, and the quadratic Delta A_k term. [PDF p. 14 (printed 312), anchor: exact identity deriving (7)]",
-    "The source is a first-order floating-point result: the proof retains an unspecified O(epsilon_M^2) remainder even though displayed inequality (7) suppresses it. [PDF p. 3 (printed 301), anchor: linear approximation; PDF p. 4 (printed 302), anchor: Theorem 1 preamble; PDF p. 14 (printed 312), anchor: final estimate]",
-    "The floating-point model is restricted to normalized-range results, and the algorithm can otherwise break down through a nonreal diagonal square root. [PDF p. 3 (printed 301), anchor: floating-point model; PDF p. 7 (printed 305), anchor: Remark 2]"
+    "The theorem applies to computed prefixes from Algorithm 2 (CGS-P), not standard Algorithm 1 (CGS-S). (PDF p. 3, printed p. 301, anchor: Algorithm 2 and paragraph following Lemma 1.)",
+    "The inherited input is a real full-column-rank A in R^(m x n) with m >= n. (PDF p. 2, printed p. 300, anchor: standing rectangular full-rank setup.)",
+    "Condition (3), c_4(m,k)epsilon_M kappa_2(R_k)^2 < 1, is required for every k before the theorem concludes the bounds for every k. (PDF p. 4, printed p. 302, anchor: Theorem 1, inequality (3).)",
+    "The selected loss-of-orthogonality bound is ||I_k-Q_k^TQ_k||_2 <= c_4(m,k)kappa_2(R_k)^2 epsilon_M, subject to omitted O(epsilon_M^2) terms. (PDF p. 4, printed p. 302, anchor: equation (7) and its first-order qualifier.)",
+    "c_4 is not an unspecified constant: c_4(m,k) = c_2(m,k)+2c_1(m,k), with c_1 and c_2 given piecewise in equation (2). (PDF p. 4, printed p. 302, anchor: equation (2).)",
+    "The condition number in the theorem is that of computed R_k, namely ||R_k||_2||R_k^(-1)||_2, and it is squared in (3) and (7). (PDF p. 4, printed p. 302, anchor: kappa_2 definition and equations (3), (7).)",
+    "The enclosing theorem is multi-part and also asserts equations (4), (5), (6), and (8); extracting only (7) would omit explicit parts of Theorem 1. (PDF p. 4, printed p. 302, anchor: Theorem 1, equations (4)-(8).)",
+    "The proof of (7) necessarily uses both the normal-equation error E_k and the factorization error Delta A_k, including the quadratic term (Delta A_k)^T Delta A_k. (PDF p. 14, printed p. 312, anchor: exact identity and norm estimate deriving (7).)",
+    "The claims are first-order floating-point bounds with O(epsilon_M^2) omitted, not exact inequalities asserted uniformly without higher-order remainder. (PDF p. 3, printed p. 301, anchor: linear approximation; PDF p. 4, printed p. 302, anchor: first-order qualifier; PDF p. 14, printed p. 312, anchor: proof remainder.)"
   ],
   "ambiguities": [
     {
-      "issue": "The displayed inequality (7) looks remainder-free, while the theorem preamble and appendix explicitly qualify it by O(epsilon_M^2). [PDF p. 4 (printed 302), anchor: Theorem 1 preamble and (7); PDF p. 14 (printed 312), anchor: final estimate]",
-      "evidence": "The theorem says the computed matrices satisfy (4)-(8) to within O(epsilon_M^2), and the proof ends with the leading bound plus O(epsilon_M^2), but (7) omits that term typographically. [PDF p. 4 (printed 302), anchor: Theorem 1; PDF p. 14 (printed 312), anchor: proof of (7)]",
-      "impact": "The source does not justify treating the printed leading-order inequality as an unconditional exact finite-precision inequality unless an explicit remainder bound or a formal first-order abstraction is added. [PDF p. 3 (printed 301), anchor: discarded higher-order terms; PDF p. 14 (printed 312), anchor: final estimate]"
+      "issue": "The theorem prints I rather than I_k in equation (7).",
+      "evidence": "Q_k has k columns, so Q_k^TQ_k is k-by-k, while the displayed bound is ||I-Q_k^TQ_k||_2. (PDF p. 4, printed p. 302, anchor: definition of A_k and equation (7).)",
+      "impact": "A formal rendering must choose I_k by dimensional inference, while recording that the subscript is absent from the printed equation."
     },
     {
-      "issue": "Condition (3) is written using R_k^{-1} even though the paper subsequently says that condition (3) assures nonsingularity. [PDF p. 4 (printed 302), anchor: definition of kappa_2(R_k), condition (3), and paragraph after Theorem 1]",
-      "evidence": "kappa_2(R_k) is defined with ||R_k^{-1}||_2, while the post-theorem text and Lemma 2 use (3) to conclude that R is nonsingular and r_kk>0. [PDF p. 4 (printed 302), anchor: Theorem 1 context; PDF p. 9 (printed 307), anchor: Lemma 2 proof]",
-      "impact": "A fully formal statement must either assume prefix invertibility before forming kappa_2, define the condition number as infinite for singular matrices, or otherwise resolve this implicit convention. [PDF p. 4 (printed 302), anchor: condition-number definition and condition (3)]"
+      "issue": "The matrix 2-norm is used but not separately defined in the selected setup.",
+      "evidence": "The paper writes kappa_2(R_k)=||R_k||_2||R_k^(-1)||_2 and immediately relates these norms to singular-value/eigenvalue expressions. (PDF p. 4, printed p. 302, anchor: kappa_2 definition and equation (9).)",
+      "impact": "The spectral operator norm is strongly indicated, but substituting the Frobenius norm or an entrywise norm would not be faithful."
     },
     {
-      "issue": "The primitive floating-point semantics are only partially specified. [PDF p. 3 (printed 301), anchor: floating-point model following Algorithm 2]",
-      "evidence": "The paper displays a relative-error equation for addition in the normalized range and later invokes standard bounds for norms, inner products, square roots, products, and division without restating a complete operation-by-operation model. [PDF p. 3 (printed 301), anchor: floating-point model; PDF pp. 9-11 (printed 307-309), anchor: Lemma 2 and proof equations (14)-(20)]",
-      "impact": "A mechanized version must choose additional rounding rules and evaluation orders that the selected passage leaves implicit, while preserving the stated first-order constants. [PDF p. 3 (printed 301), anchor: Algorithm 2 and floating-point model]"
+      "issue": "The hypothesis uses R_k^(-1) while the prose says the restriction assures nonsingularity.",
+      "evidence": "kappa_2(R_k) is defined using R_k^(-1), condition (3) uses kappa_2(R_k), and the paragraph after the theorem says restriction (3) assures R is nonsingular. (PDF p. 4, printed p. 302, anchor: kappa_2 definition, condition (3), and following paragraph.)",
+      "impact": "Without an unstated convention that a singular matrix has infinite condition number, the hypothesis already presupposes invertibility; the source does not resolve this logical presentation detail."
     },
     {
-      "issue": "The rank and dimension assumptions are inherited rather than repeated inside Theorem 1. [PDF p. 2 (printed 300), anchor: opening setup; PDF p. 4 (printed 302), anchor: Theorem 1]",
-      "evidence": "The paper introduces all algorithms for A in R^{m x n}, m>=n, rank(A)=n, whereas Theorem 1 begins directly with the floating-point and condition-number assumptions. [PDF p. 2 (printed 300), anchor: opening setup; PDF p. 4 (printed 302), anchor: theorem heading]",
-      "impact": "Reading Theorem 1 in isolation could omit full column rank, but the surrounding-paper contract inherits it. [PDF p. 2 (printed 300), anchor: standing algorithm setup]"
+      "issue": "The scope of the floating-point model beyond the displayed addition formula is not explicit in the selected passage.",
+      "evidence": "The setup assumes IEEE arithmetic but displays only fl(x+y)=(x+y)(1+delta), |delta|<=epsilon_M, for normalized-range results, even though Algorithm 2 also uses products, dot products, division, norms, subtraction, and square roots. (PDF p. 3, printed p. 301, anchor: Algorithm 2 and floating-point-model paragraph.)",
+      "impact": "The contract must not silently strengthen the source to a fully specified rounding mode or detailed per-operation model."
     },
     {
-      "issue": "The paper does not quantify or characterize the hidden O(epsilon_M^2) constant. [PDF p. 3 (printed 301), anchor: linear approximation; PDF p. 14 (printed 312), anchor: final estimate]",
-      "evidence": "Higher-order terms are declared insignificant, with no explicit dependence on m, k, the input, or the conditioning of R_k. [PDF p. 3 (printed 301), anchor: first-order approximation; PDF p. 14 (printed 312), anchor: proof of (7)]",
-      "impact": "The passage determines the first-order coefficient c_4 exactly but does not determine a rigorous all-orders numerical bound. [PDF p. 4 (printed 302), anchor: definition of c_4 and inequality (7); PDF p. 14 (printed 312), anchor: final estimate]"
+      "issue": "The theorem's inequalities suppress higher-order terms.",
+      "evidence": "Theorem 1 says equations (4)-(8) hold 'to within terms of O(epsilon_M^2)', and the proof of (7) explicitly ends with +O(epsilon_M^2). (PDF p. 4, printed p. 302, anchor: qualifier before equations (4)-(8); PDF p. 14, printed p. 312, anchor: norm estimate deriving (7).)",
+      "impact": "Reading equation (7) as an exact inequality with no remainder for arbitrary epsilon_M would be stronger than the paper's stated first-order claim."
     },
     {
-      "issue": "The theorem's exceptional-value policy is implicit beyond the normalized-range qualification. [PDF p. 3 (printed 301), anchor: floating-point model]",
-      "evidence": "The source excludes non-normal results from its displayed local model and discusses a nonreal-square-root breakdown, but does not specify behavior for subnormals, overflow, infinities, NaNs, signed zero, or input conversion. [PDF p. 3 (printed 301), anchor: floating-point model; PDF p. 7 (printed 305), anchor: Remark 2]",
-      "impact": "A faithful formalization should either exclude those cases or state additional semantics rather than silently extending the theorem to them. [PDF p. 3 (printed 301), anchor: normalized-range restriction]"
+      "issue": "A displayed square-root relation in the proof of (6) appears inconsistent with the first-order derivation.",
+      "evidence": "The proof prints 1+c_3(m,k)epsilon_M+O(epsilon_M^2)=sqrt(1+c_2(m,k)), while the preceding inequality contains 1+c_2(m,k)epsilon_M and the theorem explicitly defines c_3=0.5c_2. (PDF p. 14, printed p. 312, anchor: derivation of equation (6); PDF p. 4, printed p. 302, anchor: definition of c_3.)",
+      "impact": "This appears to omit epsilon_M inside the square root. The unambiguous theorem definition c_3=0.5c_2 and equation (6) should be preserved rather than literalizing the inconsistent proof display."
+    },
+    {
+      "issue": "Theorem 1 does not restate the dimensions and rank assumption.",
+      "evidence": "The real m-by-n, m>=n, rank-n setup appears before Algorithms 1 and 2, whereas Theorem 1 begins directly with the floating-point and condition-number assumptions. (PDF p. 2, printed p. 300, anchor: standing setup; PDF p. 4, printed p. 302, anchor: opening of Theorem 1.)",
+      "impact": "These conditions are inherited standing context, not new explicit binders in the theorem paragraph itself."
     }
   ],
-  "contract_plain_english": "For a real full-column-rank A with m>=n, run the pythagorean classical Gram-Schmidt Algorithm 2 in the paper's IEEE-style, normalized-range, first-order floating-point model. If every computed leading triangular factor R_k satisfies the strict condition c_4(m,k)epsilon_M kappa_2(R_k)^2<1, then every computed Q_k has spectral-norm loss of orthogonality at most c_4(m,k)kappa_2(R_k)^2epsilon_M to first order, with an unspecified O(epsilon_M^2) remainder. The proof obtains this by an exact decomposition through the factorization residual Delta A_k and normal-equation residual E_k. The claim uses the computed R_k condition number, including its square, and depends specifically on Algorithm 2's pythagorean diagonal calculation. [PDF p. 2 (printed 300), anchor: standing setup; PDF p. 3 (printed 301), anchor: Algorithm 2 and floating-point model; PDF p. 4 (printed 302), anchor: Theorem 1, (2), (3), and (7); PDF p. 14 (printed 312), anchor: exact identity and norm estimate deriving (7)]"
+  "contract_plain_english": "Start with a real full-column-rank m-by-n matrix A, m >= n, and run the floating-point CGS-P algorithm whose diagonal is computed by the pythagorean/Cholesky-like formula, not by the standard residual norm. (PDF p. 2, printed p. 300, anchor: standing setup and distinction from CGS-S; PDF p. 3, printed p. 301, anchor: Algorithm 2.) For every leading prefix k, assume c_4(m,k)epsilon_M kappa_2(R_k)^2 < 1. Then, up to neglected O(epsilon_M^2) terms, the computed prefix has a small QR residual, a small normal-equation residual, nearly the same 2-norm as A_k, loss of orthogonality at most c_4(m,k)kappa_2(R_k)^2epsilon_M, and ||Q_k||_2 <= sqrt(2). (PDF p. 4, printed p. 302, anchor: Theorem 1, equations (3)-(8).) The orthogonality result follows by writing Q_k=(A_k+Delta A_k)R_k^(-1) and decomposing I-Q_k^TQ_k into the normal-equation error E_k, two linear factorization-error terms, and the quadratic Delta A_k term. (PDF p. 14, printed p. 312, anchor: exact identity and norm estimate deriving (7).)"
 }
-

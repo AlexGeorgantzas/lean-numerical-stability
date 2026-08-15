@@ -5,20 +5,6 @@
   "paper_version": "published journal version; volume 105, issue 2, 2006, printed pages 299-313",
   "source_locations": [
     {
-      "anchor": "standing rectangular full-rank setup and Algorithm 2 (CGS-P)",
-      "pdf_page": 2,
-      "printed_page": "300",
-      "role": "inherited dimensions, rank assumption, and distinction from standard CGS",
-      "section": "Algorithm setup"
-    },
-    {
-      "anchor": "Algorithm 2 and floating-point model",
-      "pdf_page": 3,
-      "printed_page": "301",
-      "role": "pythagorean diagonal, normalized-range arithmetic, and first-order convention",
-      "section": "Algorithm 2"
-    },
-    {
       "anchor": "Theorem 1, inequality (7)",
       "pdf_page": 4,
       "printed_page": "302",
