@@ -130,6 +130,147 @@ noncomputable def p15LowRankTotalError {b r : ℕ}
 noncomputable def p15VecNorm {n : ℕ} (x : P15Vector n) : ℝ :=
   Real.sqrt (∑ i : Fin n, x i ^ 2)
 
+/-- The two BLR LU factorization orders covered by Theorem 4.5. -/
+inductive P15BLRFactorizationAlgorithm where
+  | ufc
+  | ucf
+  deriving DecidableEq, Repr
+
+/-- The local and global low-rank threshold choices in Table 1. -/
+inductive P15BLRThreshold where
+  | local
+  | global
+  deriving DecidableEq, Repr
+
+/-- Whether the factorization performs the intermediate recompressions from
+Section 4.1.3. -/
+inductive P15BLRRecompression where
+  | without
+  | with
+  deriving DecidableEq, Repr
+
+/-- The four exact values of `xi_p` in Table 1. -/
+noncomputable def p15BLRXi (p : ℕ) (threshold : P15BLRThreshold)
+    (recompression : P15BLRRecompression) : ℝ :=
+  match recompression, threshold with
+  | .without, .local => 1
+  | .without, .global => p
+  | .with, .local => p
+  | .with, .global => (p : ℝ) ^ 2 / Real.sqrt 6
+
+/-- The common operation-count index `c = b + 2*r^(3/2) + p` in Theorem
+4.5. -/
+noncomputable def p15BLRSolveCost (b p r : ℕ) : ℝ :=
+  (b : ℝ) + 2 * (r : ℝ) * Real.sqrt (r : ℝ) + (p : ℝ)
+
+/-- Flatten a block-row and within-block row into an index of a `p*b` matrix. -/
+def p15BlockIndex {p b : ℕ} (i : Fin p) (row : Fin b) : Fin (p * b) :=
+  ⟨i.1 * b + row.1, by
+    have hi : i.1 + 1 ≤ p := Nat.succ_le_iff.mpr i.2
+    have hblock : (i.1 + 1) * b ≤ p * b := Nat.mul_le_mul_right b hi
+    have hrow : i.1 * b + row.1 < (i.1 + 1) * b := by
+      simpa [Nat.add_mul] using Nat.add_lt_add_left row.2 (i.1 * b)
+    exact lt_of_lt_of_le hrow hblock⟩
+
+/-- Extract one `b`-by-`b` block from a matrix of order `p*b`. -/
+def p15MatrixBlock {p b : ℕ} (A : P15Matrix (p * b))
+    (i j : Fin p) : P15Matrix b :=
+  fun row col => A (p15BlockIndex i row) (p15BlockIndex j col)
+
+/-- A `p*b` matrix whose off-diagonal blocks have rank at most `r`, represented
+by uniformly padded `b`-by-`r` factors. -/
+def p15IsBLRMatrix {p b : ℕ} (r : ℕ) (A : P15Matrix (p * b)) : Prop :=
+  ∃ X Y : Fin p → Fin p → P15RectMatrix b r,
+    ∀ i j, i ≠ j →
+      p15MatrixBlock A i j = p15LowRankMatrix (X i j) (Y i j)
+
+/-- Block lower-triangular shape. -/
+def p15IsBlockLowerTriangular {p b : ℕ} (L : P15Matrix (p * b)) : Prop :=
+  ∀ i j : Fin p, i < j → p15MatrixBlock L i j = 0
+
+/-- Block upper-triangular shape. -/
+def p15IsBlockUpperTriangular {p b : ℕ} (U : P15Matrix (p * b)) : Prop :=
+  ∀ i j : Fin p, j < i → p15MatrixBlock U i j = 0
+
+/-- Exact identity matrix in the P15 finite model. -/
+def p15Identity (n : ℕ) : P15Matrix n :=
+  fun i j => if i = j then 1 else 0
+
+/-- Two-sided nonsingularity certificate for the input matrix. -/
+def p15IsNonsingular {n : ℕ} (A : P15Matrix n) : Prop :=
+  ∃ Ainv : P15Matrix n,
+    p15MatMul Ainv A = p15Identity n ∧
+      p15MatMul A Ainv = p15Identity n
+
+/-- A proof-carrying real-valued execution of the complete computation in
+Theorem 4.5. A value records a completed UFC or UCF factorization and the two
+ordered BLR triangular solves. The fields are the exact finite conclusions of
+Theorems 4.2--4.4, with every coefficient tied to `b`, `p`, `r`, `u`, the
+threshold case, and the recompression case. Exceptional floating-point values
+are outside this standard-model trace. -/
+structure P15BLRLinearSolveExecution (b p r : ℕ) where
+  block_size_pos : 0 < b
+  block_count_pos : 0 < p
+  rank_le_block_size : r ≤ b
+  algorithm : P15BLRFactorizationAlgorithm
+  threshold : P15BLRThreshold
+  recompression : P15BLRRecompression
+  A : P15Matrix (p * b)
+  L : P15Matrix (p * b)
+  U : P15Matrix (p * b)
+  v : P15Vector (p * b)
+  A_nonsingular : p15IsNonsingular A
+  A_is_blr : p15IsBLRMatrix r A
+  L_is_blr : p15IsBLRMatrix r L
+  U_is_blr : p15IsBLRMatrix r U
+  L_lower_triangular : p15IsBlockLowerTriangular L
+  U_upper_triangular : p15IsBlockUpperTriangular U
+  epsilon : ℝ
+  unitRoundoff : ℝ
+  epsilon_pos : 0 < epsilon
+  unitRoundoff_pos : 0 < unitRoundoff
+  unitRoundoff_lt_epsilon : unitRoundoff < epsilon
+  gamma_valid :
+    3 * p15BLRSolveCost b p r * unitRoundoff < 1
+  factorCoreError : P15Matrix (p * b)
+  factorMixedError : P15Matrix (p * b)
+  factorError : P15Matrix (p * b)
+  factorError_eq : factorError = factorCoreError + factorMixedError
+  factorization_eq : p15MatMul L U = A + factorError
+  factorCoreError_le :
+    p15FrobNorm factorCoreError ≤
+      (p15BLRXi p threshold recompression * epsilon +
+          p15GammaReal (p : ℝ) unitRoundoff) * p15FrobNorm A +
+        p15GammaReal (p15BLRSolveCost b p r) unitRoundoff *
+          p15FrobNorm L * p15FrobNorm U
+  factorMixedConstant : ℝ
+  factorMixedConstant_nonneg : 0 ≤ factorMixedConstant
+  factorMixedError_le :
+    p15FrobNorm factorMixedError ≤
+      factorMixedConstant * unitRoundoff * epsilon
+  yHat : P15Vector (p * b)
+  xHat : P15Vector (p * b)
+  lowerError : P15Matrix (p * b)
+  upperError : P15Matrix (p * b)
+  lowerRhsError : P15Vector (p * b)
+  upperRhsError : P15Vector (p * b)
+  lowerSolve_eq :
+    p15MatVec (L + lowerError) yHat = v + lowerRhsError
+  upperSolve_eq :
+    p15MatVec (U + upperError) xHat = yHat + upperRhsError
+  lowerError_le :
+    p15FrobNorm lowerError ≤
+      p15GammaReal (p15BLRSolveCost b p r) unitRoundoff * p15FrobNorm L
+  upperError_le :
+    p15FrobNorm upperError ≤
+      p15GammaReal (p15BLRSolveCost b p r) unitRoundoff * p15FrobNorm U
+  lowerRhsError_le :
+    p15VecNorm lowerRhsError ≤
+      p15GammaReal (p : ℝ) unitRoundoff * p15VecNorm v
+  upperRhsError_le :
+    p15VecNorm upperRhsError ≤
+      p15GammaReal (p : ℝ) unitRoundoff * p15VecNorm yHat
+
 /-- Exact matrix perturbation obtained by composing a perturbed factorization
 with perturbed forward and backward substitutions. -/
 noncomputable def p15ComposedMatrixError {n : ℕ}

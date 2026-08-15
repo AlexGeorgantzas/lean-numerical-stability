@@ -162,7 +162,7 @@
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean",
       "role": "P15-only finite matrix norms, products, low-rank matrix-vector executions, and composed BLR solve perturbations",
-      "sha256": "e100f30e5a716c676e7227932fc08f156b857a3deb88cfd609200d41c649bda8",
+      "sha256": "b6e99e9b2e55582ab283590cdab7dce218b8db759e425a343925af9c06f3f857",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -2870,7 +2870,7 @@
         "volume": "42"
       },
       "paper_id": "P15",
-      "paper_structure_note": "The paper develops exact and first-order Frobenius-norm error bounds for low-rank kernels, two BLR LU variants, BLR triangular solves, and the final BLR linear-system solve. The selected targets progress from the common norm premise through the atomic low-rank backward error to the final solve composition.",
+      "paper_structure_note": "The paper develops exact and first-order Frobenius-norm error bounds for low-rank kernels, two BLR LU variants, BLR triangular solves, and the final BLR linear-system solve. The selected targets progress from the common norm premise through the ordered low-rank backward error to a proof-carrying completed UFC/UCF solve and its final perturbation composition.",
       "paper_version": "published journal version; IMA Journal of Numerical Analysis 42(2), 2022, printed pages 951-980",
       "source": {
         "journal_page_map": "PDF pages 1-30 are printed pages 951-980 respectively.",
@@ -2997,11 +2997,11 @@
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P15/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Expand (L+dL)(U+dU), use the factorization equation, and compose the two solve equations to obtain the exact perturbed system. Apply Frobenius triangle and submultiplicativity to the four matrix-error terms. For the right-hand side, bound y from (U+dU)x = y+dy, solve the finite feedback inequality using gammaP < 1, and substitute it into the two action bounds.",
-          "informal_statement_paraphrase": "An exact finite-remainder certificate for Theorem 4.5 equations (4.23)-(4.25), retaining the coefficient products suppressed by O(u epsilon) and O(u^2).",
+          "informal_proof_paraphrase": "Expand the completed UFC/UCF factorization and both ordered triangular solves, derive the exact perturbed system, use Frobenius bounds and a real-index gamma comparison for the matrix perturbation, then solve the right-hand-side feedback inequality and bound its higher-order coefficient by 16*c^2*u^2.",
+          "informal_statement_paraphrase": "The complete finite content of Theorem 4.5 equations (4.23)-(4.25) for a proof-carrying UFC or UCF BLR solve, with algorithm parameters and explicit finite O(u epsilon) and O(u^2) replacements.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "d06423c64abe1cb4ef65e8c0bf304ef9e8e1515d8a4cd618208540e606245415",
+            "controlled_file_sha256": "f45086a8968e238c276f6f26cd6fb71f3d615a1b04d1e71079cad6b5a1349acc",
             "declaration": "p15_t3_blr_lu_solve_backward_error",
             "file": "paper_bencmark/highambench/tasks/P15/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -3009,9 +3009,37 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean"
             ],
-            "statement_summary": "The BLR LU factorization perturbation and the two BLR triangular-solve perturbations compose into the exact matrix and right-hand-side backward errors of Theorem 4.5, with all finite cross terms retained."
+            "statement_summary": "For a completed UFC or UCF factorization and two ordered BLR triangular solves, the exact perturbed system and both Theorem 4.5 bounds follow with xi_p, gamma indices, and finite higher-order terms tied to b, p, r, epsilon, and unit roundoff."
           },
           "source_locations": [
+            {
+              "anchor": "Algorithm 1 and Theorem 4.1 (UFC), including the runs-to-completion hypothesis",
+              "pdf_page": 13,
+              "printed_page": "963",
+              "role": "first permitted BLR factorization execution and its blockwise output guarantee",
+              "section": "4.1 UFC factorization"
+            },
+            {
+              "anchor": "Table 1 values of xi_p and Theorem 4.2 (UFC with optional recompression)",
+              "pdf_page": 19,
+              "printed_page": "969",
+              "role": "finite UFC factorization bound and the four threshold coefficients used by Theorem 4.5",
+              "section": "4.1.3 Impact of intermediate recompressions"
+            },
+            {
+              "anchor": "Algorithm 2 and Theorem 4.3 (UCF), including the runs-to-completion hypothesis",
+              "pdf_page": 21,
+              "printed_page": "971",
+              "role": "second permitted BLR factorization execution and its normwise guarantee",
+              "section": "4.2 UCF factorization"
+            },
+            {
+              "anchor": "Theorem 4.4, equations (4.21)-(4.22)",
+              "pdf_page": 23,
+              "printed_page": "973",
+              "role": "ordered BLR triangular-solve perturbation equations and bounds",
+              "section": "4.3 BLR triangular systems"
+            },
             {
               "anchor": "Theorem 4.5, equations (4.23)-(4.25)",
               "pdf_page": 24,
@@ -3025,19 +3053,12 @@
               "printed_page": "975",
               "role": "exact perturbation composition before big-O simplification",
               "section": "4.3 BLR linear systems"
-            },
-            {
-              "anchor": "Table 1 values of xi_p for local/global thresholds and recompression choices",
-              "pdf_page": 19,
-              "printed_page": "969",
-              "role": "factorization threshold coefficient referenced by Theorem 4.5",
-              "section": "4.1.3 Impact of intermediate recompressions"
             }
           ],
           "task_id": "P15-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "The closest frozen rules are NumStability.frobNorm_add_le, NumStability.frobNorm_matMul_le, NumStability.vecNorm2_add_le, NumStability.vecNorm2_matMulVec_le_frobNorm_mul, and the matMulVec algebra in NumStability/Analysis/MatrixAlgebra.lean. The library has no BLR/UFC/UCF algorithm or Theorem 4.5 composition, so the proof adds the exact four-term matrix expansion, the two-solve connection, and the denominator-safe finite right-hand-side radius.",
+          "tier_reason": "The frozen library supplies only generic Frobenius, Euclidean, and matrix-vector algebra. It has no BLR representation, UFC/UCF execution certificate, Table 1 case model, real-index gamma comparisons, or Theorem 4.5 composition. The proof adds all of that paper-specific reasoning and therefore remains T3.",
           "title": "BLR LU solve backward error"
         }
       ],

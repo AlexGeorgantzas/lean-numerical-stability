@@ -1,15 +1,17 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, and exact-remainder finite formalization of Theorem 4.5",
+    "kind": "source selection, tier label, completed UFC/UCF execution certificate, and exact finite formalization of Theorem 4.5",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The factorization and both triangular solves satisfy the exact perturbation equations shown in the proof of Theorem 4.5.",
-    "The factorization remainder has the explicitly supplied finite upper bound factorRemainder.",
-    "The two matrix perturbations are bounded by gammaC times the Frobenius norm of their triangular factor.",
-    "The two right-hand-side perturbations are bounded by gammaP times the corresponding Euclidean vector norm, with 0 <= gammaP < 1.",
-    "The triangular-solve matrix coefficient gammaC is nonnegative."
+    "A is a nonsingular real BLR matrix of order p*b; L and U are BLR block-triangular factors with maximum off-diagonal rank r <= b.",
+    "The proof-carrying execution identifies Algorithm 1 (UFC) or Algorithm 2 (UCF), the local or global threshold, and whether intermediate recompression was used.",
+    "The factorization execution satisfies the exact equation L*U = A + factorError and the finite Theorem 4.2 or 4.3 bound with xi_p fixed by Table 1.",
+    "The O(u*epsilon) factorization term is represented by factorMixedError with a disclosed nonnegative coefficient factorMixedConstant.",
+    "The ordered lower and upper BLR triangular solves satisfy the exact perturbation equations and finite Theorem 4.4 bounds.",
+    "The LR threshold epsilon and unit roundoff u are positive, u < epsilon, and 3*c*u < 1 for c = b + 2*r*sqrt(r) + p.",
+    "The real-valued standard model excludes overflow, underflow, NaNs, and infinities."
   ],
   "author_label": "Theorem 4.5",
   "classification_frozen_before_runs": false,
@@ -19,14 +21,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P15/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p15_t3_blr_lu_solve_backward_error {n : Nat} (A L U factorError lowerError upperError : P15Matrix n) ... : p15MatVec (A + p15ComposedMatrixError ...) computed = v + p15ComposedRhsError ... and p15FrobNorm ... <= ... and p15VecNorm ... <= ...",
+    "lean_header": "theorem p15_t3_blr_lu_solve_backward_error {b p r : Nat} (run : P15BLRLinearSolveExecution b p r) : let c := p15BLRSolveCost b p r; let gammaP := p15GammaReal p run.unitRoundoff; let gammaC := p15GammaReal c run.unitRoundoff; let gamma3C := p15GammaReal (3*c) run.unitRoundoff; let xi := p15BLRXi p run.threshold run.recompression; let matrixError := p15ComposedMatrixError ...; let rhsError := p15ComposedRhsError ...; ... p15MatVec (run.A + matrixError) run.xHat = run.v + rhsError and ...",
     "namespace": "HighamBench",
-    "plain_language": "The BLR LU factorization perturbation and the two BLR triangular-solve perturbations compose into the exact matrix and right-hand-side backward errors of Theorem 4.5, with all finite cross terms retained.",
+    "plain_language": "For a completed UFC or UCF factorization and the two ordered BLR triangular solves, the target derives the exact perturbed system and the matrix and right-hand-side bounds of Theorem 4.5, with xi_p, gamma indices, and explicit finite higher-order terms tied to b, p, r, epsilon, and unit roundoff.",
     "target_file": "paper_bencmark/highambench/tasks/P15/T3/Target.lean",
     "theorem_name": "p15_t3_blr_lu_solve_backward_error"
   },
-  "informal_proof": "Expand (L+dL)(U+dU), use the factorization equation, and compose the two solve equations to obtain the exact perturbed system. Apply Frobenius triangle and submultiplicativity to the four matrix-error terms. For the right-hand side, bound y from (U+dU)x = y+dy, solve the finite feedback inequality using gammaP < 1, and substitute it into the two action bounds.",
-  "informal_statement": "An exact finite-remainder certificate for Theorem 4.5 equations (4.23)-(4.25), retaining the coefficient products suppressed by O(u epsilon) and O(u^2).",
+  "informal_proof": "Use the completed UFC/UCF certificate to expand (L+dL)(U+dU), substitute L*U = A+factorError, and compose the two ordered solve equations. Frobenius triangle and submultiplicativity give the exact matrix coefficient 3*gammaC+gammaC^2, which is bounded by gamma_(3c). For the right-hand side, solve the feedback inequality from (U+dU)xHat = yHat+dy, obtain gammaP*(1+gammaC)^2/(1-gammaP), and prove its excess over gammaP is nonnegative and at most 16*c^2*u^2.",
+  "informal_statement": "The complete finite content of Theorem 4.5 equations (4.23)-(4.25) for a proof-carrying UFC or UCF BLR solve, with every algorithm parameter and gamma coefficient fixed and the O(u epsilon) and O(u^2) terms replaced by explicit finite bounds.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -60,10 +62,46 @@
     "p15MatVec",
     "p15FrobNorm",
     "p15VecNorm",
+    "P15BLRFactorizationAlgorithm",
+    "P15BLRThreshold",
+    "P15BLRRecompression",
+    "p15BLRXi",
+    "p15BLRSolveCost",
+    "p15IsBLRMatrix",
+    "p15IsNonsingular",
+    "P15BLRLinearSolveExecution",
     "p15ComposedMatrixError",
     "p15ComposedRhsError"
   ],
   "source_locations": [
+    {
+      "anchor": "Algorithm 1 and Theorem 4.1 (UFC), including the runs-to-completion hypothesis",
+      "pdf_page": 13,
+      "printed_page": "963",
+      "role": "first permitted BLR factorization execution and its blockwise output guarantee",
+      "section": "4.1 UFC factorization"
+    },
+    {
+      "anchor": "Table 1 values of xi_p and Theorem 4.2 (UFC with optional recompression)",
+      "pdf_page": 19,
+      "printed_page": "969",
+      "role": "finite UFC factorization bound and the four threshold coefficients referenced by Theorem 4.5",
+      "section": "4.1.3 Impact of intermediate recompressions"
+    },
+    {
+      "anchor": "Algorithm 2 and Theorem 4.3 (UCF), including the runs-to-completion hypothesis",
+      "pdf_page": 21,
+      "printed_page": "971",
+      "role": "second permitted BLR factorization execution and its normwise factorization guarantee",
+      "section": "4.2 UCF factorization"
+    },
+    {
+      "anchor": "Theorem 4.4, equations (4.21)-(4.22)",
+      "pdf_page": 23,
+      "printed_page": "973",
+      "role": "ordered BLR triangular-solve perturbation equations and bounds",
+      "section": "4.3 BLR triangular systems"
+    },
     {
       "anchor": "Theorem 4.5, equations (4.23)-(4.25)",
       "pdf_page": 24,
@@ -77,13 +115,6 @@
       "printed_page": "975",
       "role": "exact perturbation composition before big-O simplification",
       "section": "4.3 BLR linear systems"
-    },
-    {
-      "anchor": "Table 1 values of xi_p for local/global thresholds and recompression choices",
-      "pdf_page": 19,
-      "printed_page": "969",
-      "role": "factorization threshold coefficient referenced by Theorem 4.5",
-      "section": "4.1.3 Impact of intermediate recompressions"
     }
   ],
   "source_tags": [
@@ -92,7 +123,7 @@
   "task_id": "P15-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "The closest frozen rules are NumStability.frobNorm_add_le, NumStability.frobNorm_matMul_le, NumStability.vecNorm2_add_le, NumStability.vecNorm2_matMulVec_le_frobNorm_mul, and the matMulVec algebra in NumStability/Analysis/MatrixAlgebra.lean. The library has no BLR/UFC/UCF algorithm or Theorem 4.5 composition, so the proof adds the exact four-term matrix expansion, the two-solve connection, and the denominator-safe finite right-hand-side radius.",
+  "tier_rationale": "The closest frozen rules are NumStability.frobNorm_add_le, NumStability.frobNorm_matMul_le, NumStability.vecNorm2_add_le, NumStability.vecNorm2_matMulVec_le_frobNorm_mul, and the matMulVec algebra in NumStability/Analysis/MatrixAlgebra.lean. The library has no BLR representation, UFC/UCF execution certificate, Table 1 case model, or Theorem 4.5 composition. The proof must add the exact four-term matrix expansion, compose two solves, prove the real-index gamma_(3c) comparison, and derive a denominator-safe finite O(u^2) replacement, so the task remains T3.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P15/T3/Target.lean",
     "mode": "shared automatic validator",
