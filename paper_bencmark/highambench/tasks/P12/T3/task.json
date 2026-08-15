@@ -1,13 +1,17 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, and finite-certificate composition of Lemma 4",
+    "kind": "source selection, tier label, equation-(1) execution model, and exact Lemma 4 ThreeProduct proof",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The three TwoProduct calls give the stated exact two-term product decompositions.",
-    "The FastTwoSum merge trace has representable exact subtraction results.",
-    "The merge remainder plus the fourth product error is representable and nearest-rounded."
+    "The format is the equation-(1) finite system with arbitrary integer radix beta >= 2, positive precision p, and an inclusive finite exponent interval.",
+    "The three inputs and relevant TwoProduct outputs have least equation-(1) representations, whose scales provide the local ULPs used in Lemma 4.",
+    "Each of the three delegated TwoProduct calls records its nearest high product, exact high-plus-low decomposition, half-ULP low bound, radix-grid preservation, symmetric representable range candidates, and absence of underflow or overflow for a nonzero product grid; the rounded-product envelope and high exponent bound are derived, and zero products remain admitted as in the paper's trivial case.",
+    "FastTwoSum executes the nearest middle addition followed by two faithful subtractions; exact subtraction and exact merging are conclusions, not premises.",
+    "The standing no-range-error hypothesis supplies an unclipped half-ULP candidate for the middle nearest addition and no overflow for all recorded FastTwoSum operations.",
+    "The final operation is nearest rounding of the merge remainder plus the fourth product error and has no overflow; representability and exactness of that real sum are conclusions.",
+    "The real-valued model has no infinities, NaNs, exception flags, or signed-zero distinction."
   ],
   "author_label": "Lemma 4",
   "classification_frozen_before_runs": false,
@@ -17,14 +21,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P12/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p12_t3_three_product_exact (representable : Real -> Prop) (x1 x2 x3 : Real) (tr : P12ThreeProductTrace) ... : tr.s1 + tr.s2 + tr.s3 = x1*x2*x3",
+    "lean_header": "theorem p12_t3_three_product_exact (fmt : P12RadixFormat) (x1 x2 x3 : Real) (tr : P12ThreeProductTrace) (run : P12ThreeProductExecution fmt x1 x2 x3 tr) : (exists ra2 : P12Representation fmt tr.a2, abs tr.a3 <= (fmt.mantissaBound-fmt.betaR/2)*fmt.scale ra2.exponent) and tr.t=tr.s2-tr.a2 and tr.r=tr.a3-tr.t and tr.s2+tr.r=tr.a2+tr.a3 and tr.s3=tr.r+tr.a4 and tr.s1+tr.s2+tr.s3=x1*x2*x3",
     "namespace": "HighamBench",
-    "plain_language": "The certified FourSumThreeProduct expansion, FastTwoSum middle-term merge, and exact final addition produce three values summing exactly to the product of the three inputs.",
+    "plain_language": "For an actual equation-(1) ThreeProduct execution with the paper's TwoProduct semantics and no range errors, condition (7) holds for the middle terms, FastTwoSum and the final addition are exact, and the three outputs sum exactly to the product of the inputs.",
     "target_file": "paper_bencmark/highambench/tasks/P12/T3/Target.lean",
     "theorem_name": "p12_t3_three_product_exact"
   },
-  "informal_proof": "Prove both FastTwoSum subtractions and the final addition exact by nearest-rounding representability. Derive s2+r=a2+a3, regroup the three returned terms into the four exact product terms, and collapse the three TwoProduct identities.",
-  "informal_statement": "Lemma 4, equation (18), in exact certificate form.",
+  "informal_proof": "Use the three TwoProduct grid and half-ULP contracts to construct the condition-(7) representation of a2 and bound a3. Apply the arbitrary-base FastTwoSum radix argument to derive both exact subtractions and s2+r=a2+a3. Bound the merge remainder and a4 by half a product-grid unit, derive representability of r+a4 from its grid and range, prove the final nearest addition exact, and regroup the three TwoProduct decompositions to obtain equation (18).",
+  "informal_statement": "Lemma 4 and equation (18): ThreeProduct reduces the exact four-term ThreeProduct expansion to three floating-point outputs without error, for arbitrary radix and without ordering the middle terms.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -43,14 +47,46 @@
       "NumStability.FloatingPointFormat.nearestRoundingIn_eq_self_of_mem",
       "NumStability.FloatingPointFormat.nearestRoundingIn_minimal"
     ],
-    "note": "All 24 modules in metadata/library_olean.json were searched. They provide only local nearest-rounding adapters, no ThreeProduct model or theorem, and no completed four-to-three error-free composition. The source-only compensated FastTwoSum module is not mounted."
+    "note": "All 24 modules in metadata/library_olean.json were searched. They provide local nearest-rounding adapters but no TwoProduct or ThreeProduct execution model, no Lange-Oishi condition-(7) derivation for the middle terms, and no completed four-to-three exact composition. The source-only compensated FastTwoSum module is not mounted."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "p12Nearest",
-    "P12ThreeProductTrace"
+    "P12RadixFormat",
+    "P12Representation",
+    "P12LeastRepresentation",
+    "p12Representable",
+    "p12IntegerMultiple",
+    "p12NearestInFormat",
+    "p12FaithfulInFormat",
+    "P12FastTwoSumTrace",
+    "P12FastTwoSumExecution",
+    "P12ThreeProductTrace",
+    "P12TwoProductExecution",
+    "P12ThreeProductExecution"
   ],
   "source_locations": [
+    {
+      "anchor": "equation (1), nearest and faithful rounding, and FastTwoSum",
+      "pdf_page": 2,
+      "printed_page": "384",
+      "role": "floating-point set and operation semantics used by ThreeProduct",
+      "section": "1. Introduction and notation"
+    },
+    {
+      "anchor": "standing absence-of-overflow convention for Section 4",
+      "pdf_page": 9,
+      "printed_page": "391",
+      "role": "range scope inherited by the application",
+      "section": "4. Applications"
+    },
+    {
+      "anchor": "FourSumThreeProduct and the TwoProduct contract in equation (17)",
+      "pdf_page": 13,
+      "printed_page": "395",
+      "role": "three delegated product calls, rounded high products, exact decompositions, and half-ULP errors",
+      "section": "4.2 Error-free transformation - ThreeProduct"
+    },
     {
       "anchor": "Lemma 4 and equation (18)",
       "pdf_page": 14,
@@ -72,7 +108,7 @@
   "task_id": "P12-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "The mounted nearest-rounding declarations discharge only local exact-operation certificates. The proof must newly compose three exact product decompositions, a certified FastTwoSum merge, and a final exact addition into Lemma 4's complete three-term product identity; no such connection exists in the frozen object baseline.",
+  "tier_rationale": "The L proof reuses mounted nearest-rounding minimality and exactness adapters, but it must introduce the paper's TwoProduct and ThreeProduct execution semantics, derive condition (7), reproduce the arbitrary-base FastTwoSum exactness argument, prove the final product-grid sum representable, and compose equation (18). No mounted declaration supplies any of those cross-operation connections, so the repaired result remains an extend task.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P12/T3/Target.lean",
     "mode": "shared automatic validator",

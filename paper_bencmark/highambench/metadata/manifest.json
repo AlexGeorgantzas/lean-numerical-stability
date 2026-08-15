@@ -134,8 +134,8 @@
         "P12"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P12Definitions.lean",
-      "role": "P12-only equation-(1) radix format, derived grid geometry, rounding relations, and FastTwoSum/ThreeProduct traces",
-      "sha256": "152b175c35b214046a814ecd891c07960566f9d06e1916d92bbb9c9dd5144d0e",
+      "role": "P12-only equation-(1) radix format, derived grid geometry, rounding relations, and FastTwoSum/TwoProduct/ThreeProduct execution records",
+      "sha256": "3e58eed419082337e49fab333f872c016fd6c0bec01cc02a9dad52a6033771bb",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -2331,7 +2331,7 @@
         "volume": "145"
       },
       "paper_id": "P12",
-      "paper_structure_note": "The paper develops arbitrary-base FastTwoSum conditions, a four-operation modification, and three applications. The selected targets retain equation (10), Theorem 2 over the concrete equation-(1) radix system, and Lemma 4 exact ThreeProduct composition.",
+      "paper_structure_note": "The paper develops arbitrary-base FastTwoSum conditions, a four-operation modification, and three applications. The selected targets retain equation (10), Theorem 2 over the concrete equation-(1) radix system, and Lemma 4 over the linked ThreeProduct execution and equation-(17) TwoProduct contracts.",
       "paper_version": "published journal version; volume 145, issue 2, 2020, printed pages 383-403; corrected open-access publication 2021",
       "source": {
         "journal_page_map": "PDF pages 1-21 are printed pages 383-403 respectively.",
@@ -2445,11 +2445,11 @@
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a long quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P12/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Prove both FastTwoSum subtractions and the final addition exact by nearest-rounding representability. Derive s2+r=a2+a3, regroup the three returned terms into the four exact product terms, and collapse the three TwoProduct identities.",
-          "informal_statement_paraphrase": "Lemma 4, equation (18), in exact certificate form.",
+          "informal_proof_paraphrase": "Use the three TwoProduct grid and half-ULP contracts to construct the condition-(7) representation of a2 and bound a3. Derive both FastTwoSum subtractions and the exact merge by the arbitrary-base radix argument, then prove r+a4 representable and its nearest addition exact before collapsing the three product decompositions.",
+          "informal_statement_paraphrase": "Lemma 4 and equation (18): an actual ThreeProduct execution reduces its exact four-term expansion to three floating-point outputs without error, for arbitrary radix and without ordering the middle terms.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "4cf6b27b7ad2ce817d773be1391a2714d83969c1200c661695b84267fa94efd2",
+            "controlled_file_sha256": "358fc92a23f1728d172df527442e4df0dd28a617b644d63cf626cd2a188b4d6c",
             "declaration": "p12_t3_three_product_exact",
             "file": "paper_bencmark/highambench/tasks/P12/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -2457,9 +2457,30 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P12Definitions.lean"
             ],
-            "statement_summary": "The certified FourSumThreeProduct expansion, FastTwoSum middle-term merge, and exact final addition produce three values summing exactly to the product of the three inputs."
+            "statement_summary": "For a linked equation-(1) ThreeProduct execution with the paper's TwoProduct and range semantics, condition (7), both exact merge operations, exact final addition, and equation (18) are derived."
           },
           "source_locations": [
+            {
+              "anchor": "equation (1), nearest and faithful rounding, and FastTwoSum",
+              "pdf_page": 2,
+              "printed_page": "384",
+              "role": "floating-point set and operation semantics used by ThreeProduct",
+              "section": "1. Introduction and notation"
+            },
+            {
+              "anchor": "standing absence-of-overflow convention for Section 4",
+              "pdf_page": 9,
+              "printed_page": "391",
+              "role": "range scope inherited by the application",
+              "section": "4. Applications"
+            },
+            {
+              "anchor": "FourSumThreeProduct and the TwoProduct contract in equation (17)",
+              "pdf_page": 13,
+              "printed_page": "395",
+              "role": "three delegated product calls, rounded high products, exact decompositions, and half-ULP errors",
+              "section": "4.2 Error-free transformation - ThreeProduct"
+            },
             {
               "anchor": "Lemma 4 and equation (18)",
               "pdf_page": 14,
@@ -2478,8 +2499,8 @@
           "task_id": "P12-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "The mounted nearest-rounding declarations discharge only local exact-operation certificates. The proof must newly compose three exact product decompositions, a certified FastTwoSum merge, and a final exact addition into Lemma 4's complete three-term product identity; no such connection exists in the frozen object baseline.",
-          "title": "Exact ThreeProduct transformation"
+          "tier_reason": "The L proof reuses mounted nearest-rounding minimality and exactness adapters, but must introduce the paper's TwoProduct and ThreeProduct execution semantics, derive condition (7), reproduce arbitrary-base FastTwoSum exactness, prove the final product-grid sum representable, and compose equation (18). No mounted declaration supplies those connections.",
+          "title": "Linked ThreeProduct exact transform"
         }
       ],
       "topic": "error-free transformations with FastTwoSum and ThreeProduct"

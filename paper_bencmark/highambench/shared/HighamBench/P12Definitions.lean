@@ -1,5 +1,4 @@
 import HighamBench.Core
-import Mathlib.Algebra.Order.Round
 
 namespace HighamBench
 
@@ -67,6 +66,26 @@ theorem scale_succ (fmt : P12RadixFormat) (e : ℤ) :
   rw [scale, scale, zpow_add₀ (ne_of_gt fmt.betaR_pos)]
   simp
 
+theorem scale_add (fmt : P12RadixFormat) (e f : ℤ) :
+    fmt.scale (e + f) = fmt.scale e * fmt.scale f := by
+  exact zpow_add₀ (ne_of_gt fmt.betaR_pos) e f
+
+theorem scale_add_precision (fmt : P12RadixFormat) (e : ℤ) :
+    fmt.scale (e + (fmt.precision : ℤ)) =
+      fmt.scale e * fmt.mantissaBound := by
+  rw [fmt.scale_add]
+  congr 1
+
+theorem betaR_le_mantissaBound (fmt : P12RadixFormat) :
+    fmt.betaR ≤ fmt.mantissaBound := by
+  have hp : fmt.precision - 1 + 1 = fmt.precision := by
+    have := fmt.precision_pos
+    omega
+  have hpow : 1 ≤ fmt.betaR ^ (fmt.precision - 1) :=
+    one_le_pow₀ fmt.betaR_one_le
+  rw [mantissaBound, ← hp, pow_succ]
+  nlinarith [fmt.betaR_pos]
+
 end P12RadixFormat
 
 /-- A particular, not necessarily normalized, representation
@@ -85,6 +104,57 @@ structure P12Representation (fmt : P12RadixFormat) (x : ℝ) where
 representation. -/
 def p12Representable (fmt : P12RadixFormat) (x : ℝ) : Prop :=
   Nonempty (P12Representation fmt x)
+
+/-- Zero belongs to every equation-(1) format, at the lower endpoint exponent. -/
+noncomputable def p12ZeroRepresentation
+    (fmt : P12RadixFormat) : P12Representation fmt 0 where
+  mantissa := 0
+  exponent := fmt.emin
+  mantissa_lower := by
+    have := fmt.mantissaBound_pos
+    simpa using (neg_neg_of_pos this)
+  mantissa_upper := by simpa using fmt.mantissaBound_pos
+  exponent_lower := le_rfl
+  exponent_upper := fmt.emin_le_emax
+  value_eq := by simp
+
+theorem p12Representable_zero (fmt : P12RadixFormat) :
+    p12Representable fmt 0 :=
+  ⟨p12ZeroRepresentation fmt⟩
+
+/-- A representation whose exponent is least among all equation-(1)
+representations of the same value.  Its scale is the paper's local ULP for a
+representable finite value. -/
+structure P12LeastRepresentation (fmt : P12RadixFormat) (x : ℝ)
+    extends P12Representation fmt x where
+  least : ∀ r : P12Representation fmt x, exponent ≤ r.exponent
+
+/-- Exact membership in the radix grid with spacing `beta^e`, without a
+mantissa-size claim. -/
+def p12IntegerMultiple (fmt : P12RadixFormat) (x : ℝ) (e : ℤ) : Prop :=
+  ∃ k : ℤ, x = (k : ℝ) * fmt.scale e
+
+theorem p12IntegerMultiple_add
+    {fmt : P12RadixFormat} {x y : ℝ} {e : ℤ}
+    (hx : p12IntegerMultiple fmt x e)
+    (hy : p12IntegerMultiple fmt y e) :
+    p12IntegerMultiple fmt (x + y) e := by
+  rcases hx with ⟨kx, hkx⟩
+  rcases hy with ⟨ky, hky⟩
+  refine ⟨kx + ky, ?_⟩
+  rw [hkx, hky, Int.cast_add]
+  ring
+
+theorem p12IntegerMultiple_sub
+    {fmt : P12RadixFormat} {x y : ℝ} {e : ℤ}
+    (hx : p12IntegerMultiple fmt x e)
+    (hy : p12IntegerMultiple fmt y e) :
+    p12IntegerMultiple fmt (x - y) e := by
+  rcases hx with ⟨kx, hkx⟩
+  rcases hy with ⟨ky, hky⟩
+  refine ⟨kx - ky, ?_⟩
+  rw [hkx, hky, Int.cast_sub]
+  ring
 
 namespace P12Representation
 
@@ -139,6 +209,31 @@ theorem p12NearestInFormat_eq_of_representable
   have hzero : exact - rounded = 0 :=
     abs_eq_zero.mp (le_antisymm hz (abs_nonneg _))
   linarith
+
+theorem p12NearestInFormat_abs_le_of_symmetric_candidates
+    {fmt : P12RadixFormat} {exact rounded bound : ℝ}
+    (hexact : |exact| ≤ bound)
+    (hpositive : p12Representable fmt bound)
+    (hnegative : p12Representable fmt (-bound))
+    (hnearest : p12NearestInFormat fmt exact rounded) :
+    |rounded| ≤ bound := by
+  have hexactBounds : -bound ≤ exact ∧ exact ≤ bound :=
+    (abs_le).mp hexact
+  have hroundUpper : rounded ≤ bound := by
+    by_contra hnot
+    have hgt : bound < rounded := lt_of_not_ge hnot
+    have hnear := hnearest.2 bound hpositive
+    rw [abs_of_nonpos (by linarith : exact - rounded ≤ 0),
+      abs_of_nonpos (by linarith : exact - bound ≤ 0)] at hnear
+    linarith
+  have hroundLower : -bound ≤ rounded := by
+    by_contra hnot
+    have hlt : rounded < -bound := lt_of_not_ge hnot
+    have hnear := hnearest.2 (-bound) hnegative
+    rw [abs_of_nonneg (by linarith : 0 ≤ exact - rounded),
+      abs_of_nonneg (by linarith : 0 ≤ exact - -bound)] at hnear
+    linarith
+  exact (abs_le).2 ⟨hroundLower, hroundUpper⟩
 
 theorem p12FaithfulInFormat_mem
     {fmt : P12RadixFormat} {exact rounded : ℝ}
@@ -384,6 +479,34 @@ private theorem representation_of_integer_multiple_of_bound
       refine ⟨negative_boundary_representation fmt e hemin heplus, ?_⟩
       change e ≤ e + 1
       omega
+
+theorem p12Representation_exists_of_integerMultiple_of_abs_lt
+    {fmt : P12RadixFormat} {z : ℝ} {e : ℤ}
+    (hemin : fmt.emin ≤ e) (heemax : e ≤ fmt.emax)
+    (hgrid : p12IntegerMultiple fmt z e)
+    (hbound : |z| < fmt.mantissaBound * fmt.scale e) :
+    ∃ rz : P12Representation fmt z, rz.exponent = e := by
+  rcases hgrid with ⟨k, hk⟩
+  let rz := representation_of_integer_multiple_of_abs_lt
+    hemin heemax k hk hbound
+  exact ⟨rz, rfl⟩
+
+theorem p12Representation_of_integerMultiple_of_bound
+    {fmt : P12RadixFormat} {z : ℝ} {e : ℤ}
+    (hemin : fmt.emin ≤ e) (heemax : e ≤ fmt.emax)
+    (hgrid : p12IntegerMultiple fmt z e)
+    (hno : fmt.noOverflow z)
+    (hbound : |z| ≤ fmt.mantissaBound * fmt.scale e) :
+    ∃ rz : P12Representation fmt z, e ≤ rz.exponent := by
+  rcases hgrid with ⟨k, hk⟩
+  exact representation_of_integer_multiple_of_bound
+    hemin heemax k hk hno hbound
+
+theorem p12IntegerMultiple_of_representation_at
+    {fmt : P12RadixFormat} {x : ℝ} (r : P12Representation fmt x)
+    {e : ℤ} (he : e ≤ r.exponent) :
+    p12IntegerMultiple fmt x e := by
+  exact representation_integer_multiple_at r he
 
 private theorem add_representation_of_bound
     {fmt : P12RadixFormat} {a b : ℝ}
@@ -727,5 +850,73 @@ structure P12ThreeProductTrace where
   t : ℝ
   r : ℝ
   s3 : ℝ
+
+/-- The semantic contract of the `TwoProduct` subroutine used in equation (17).
+The exact decomposition is delegated background in Lemma 4.  The remaining
+fields expose its nearest product, local half-ULP error, radix-grid, and range
+properties so that the ThreeProduct proof cannot replace an execution with an
+arbitrary decomposition.  Product-grid range obligations are conditional on a
+nonzero exact product, preserving Lemma 4's trivial zero case. -/
+structure P12TwoProductExecution
+    (fmt : P12RadixFormat) {left right : ℝ}
+    (leftRep : P12LeastRepresentation fmt left)
+    (rightRep : P12LeastRepresentation fmt right)
+    (high low : ℝ) where
+  highRep : P12LeastRepresentation fmt high
+  lowRep : P12LeastRepresentation fmt low
+  high_round : p12NearestInFormat fmt (left * right) high
+  exact : high + low = left * right
+  product_no_overflow : fmt.noOverflow (left * right)
+  product_grid_in_range : left * right ≠ 0 →
+    fmt.emin ≤ leftRep.exponent + rightRep.exponent ∧
+      leftRep.exponent + rightRep.exponent ≤ fmt.emax
+  high_nonzero : left * right ≠ 0 → high ≠ 0
+  low_error : |low| ≤ (1 / 2) * fmt.scale highRep.exponent
+  high_envelope_candidates :
+    let bound :=
+      fmt.mantissaBound * fmt.scale leftRep.exponent * |right|
+    p12Representable fmt bound ∧ p12Representable fmt (-bound)
+  grid_preserving :
+    ∀ {leftExponent rightExponent : ℤ},
+      p12IntegerMultiple fmt left leftExponent →
+      p12IntegerMultiple fmt right rightExponent →
+      p12IntegerMultiple fmt high (leftExponent + rightExponent) ∧
+        p12IntegerMultiple fmt low (leftExponent + rightExponent)
+
+/-- The FastTwoSum trace formed by lines 1--2 of `ThreeProduct` after the three
+`TwoProduct` calls have produced the four-term expansion. -/
+def P12ThreeProductTrace.mergeTrace
+    (tr : P12ThreeProductTrace) : P12FastTwoSumTrace where
+  s := tr.s2
+  t := tr.t
+  e := tr.r
+
+/-- One execution of the paper's `ThreeProduct` procedure.  The range witness
+for the middle addition states that nearest rounding is not clipped by an
+underflow or overflow boundary at the product grid.  Neither the exact merge
+nor representability of the final exact sum is assumed. -/
+structure P12ThreeProductExecution
+    (fmt : P12RadixFormat) (x1 x2 x3 : ℝ)
+    (tr : P12ThreeProductTrace) where
+  x1Rep : P12LeastRepresentation fmt x1
+  x2Rep : P12LeastRepresentation fmt x2
+  x3Rep : P12LeastRepresentation fmt x3
+  first : P12TwoProductExecution fmt x2Rep x3Rep tr.th tr.tl
+  second : P12TwoProductExecution fmt x1Rep first.highRep tr.s1 tr.a2
+  third : P12TwoProductExecution fmt x1Rep first.lowRep tr.a3 tr.a4
+  merge : P12FastTwoSumExecution fmt tr.a2 tr.a3 tr.mergeTrace
+  merge_high_grid :
+    p12IntegerMultiple fmt tr.s2
+      (x1Rep.exponent + x2Rep.exponent + x3Rep.exponent)
+  merge_no_range_error :
+    ∃ candidate : ℝ, p12Representable fmt candidate ∧
+      |(tr.a2 + tr.a3) - candidate| ≤
+        fmt.mantissaBound / 2 *
+          fmt.scale (x1Rep.exponent + x2Rep.exponent + x3Rep.exponent)
+  final_add : p12NearestInFormat fmt (tr.r + tr.a4) tr.s3
+  final_no_overflow : fmt.noOverflow (tr.r + tr.a4)
+  triple_grid_in_range : x1 * x2 * x3 ≠ 0 →
+    fmt.emin ≤ x1Rep.exponent + x2Rep.exponent + x3Rep.exponent ∧
+      x1Rep.exponent + x2Rep.exponent + x3Rep.exponent ≤ fmt.emax
 
 end HighamBench
