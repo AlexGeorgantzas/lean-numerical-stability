@@ -10953,7 +10953,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0006-private-normalization.tsv",
-    "sha256": "39C57629D6881CFDA7091446895484BA6CE2BB10EF3C2D62412CA8202EA6E4CA"
+    "sha256": "2FE2A25FD3E8718A871D5F11BCA277C7865A17183420BB344F451D8E792D5A76"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0006-test-plan.tsv",
@@ -11018,6 +11018,10 @@
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R05-R06-operator-authorization.md",
     "sha256": "DE8653DD61107B632323B1DF0B5BEFF70A6F992D6475109943C7483B3AA1C93D"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R05-R06-private-map-amendment.md",
+    "sha256": "E92DA0E2CF9F760FEBE9561FB40A3A8E22F058A802641E8DFBD410DB37FBFC5E"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R05-R06-projection-replay.md",
