@@ -60,7 +60,7 @@
     },
     {
       "candidate": "Theorems 6.1 and 6.2 for simpler GMRES and CGS2-GMRES",
-      "reason": "Both are viable but require formal QR/Arnoldi/Gram-Schmidt algorithms and singular-value rank conditions. Theorem 6.3 exposes the paper's most portable new finite-restart statement and admits a clean exact strengthening."
+      "reason": "Both are viable but require separate QR/Arnoldi/Gram-Schmidt execution contracts and singular-value rank arguments. Theorem 6.3 is the paper's mixed-precision application and directly tests whether high- and low-precision operation models can be composed into actual forward- and backward-error guarantees."
     },
     {
       "candidate": "Theorems A.1, B.1, C.1, C.3, Lemma C.2, and Corollary C.4",
@@ -86,7 +86,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 6.3 and make 'contracts by Lambda until the attainable floors' exact after every finite number of consecutive restarts via a Lambda-power certificate.",
+      "decision": "Use Theorem 6.3's actual-error contraction for the full mixed-precision restarted MGS-GMRES execution: retain the high-precision residual/update models, low-precision residual cast and MGS-Arnoldi correction certificate, restart-dependent key dimensions, actual inverse, explicit first-order semantics, uniform c(n,k) envelope, and both attainable floors.",
       "task_id": "P16-T3",
       "theorem_name": "p16_t3_mixed_precision_geometric_convergence"
     }
@@ -95,7 +95,7 @@
   "selection_policy": [
     "Use results proved in this paper and exact consequences of their displayed hypotheses, not empirical or prospective discussions.",
     "Expose the paper's Euclidean/Frobenius normwise structure with finite-dimensional paper-scoped definitions.",
-    "Retain first-order comparison notation through explicit second-order remainder semantics, and make finite restart counts explicit where the source supplies contraction claims.",
+    "Retain first-order comparison notation through explicit second-order remainder semantics, and make every restart-dependent quantity and key dimension explicit where the source supplies contraction claims.",
     "Keep every public definition paper-scoped and free of NumStability imports.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json."
   ],

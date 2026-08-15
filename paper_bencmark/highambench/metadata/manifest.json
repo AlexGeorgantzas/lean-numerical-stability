@@ -170,8 +170,8 @@
         "P16"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean",
-      "role": "P16-only finite matrix and vector norms, residuals, first-order iterative-refinement steps, condition factors, mixed-precision contractions, and attainable floors",
-      "sha256": "155c2da1874d00abd4fd6d53ea9dcb1ff9c6490958d49cfa29980f8abda15589",
+      "role": "P16-only finite matrix and vector norms, residuals, first-order iterative-refinement steps, mixed-precision MGS-GMRES execution certificates, condition factors, contractions, and attainable floors",
+      "sha256": "d4ea17de614c48b1916c5ffba10daf092bf258761c0850111aa6c560eff72196",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -3213,15 +3213,17 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.frobNorm_nonneg"
+            "NumStability.frobNorm_nonneg",
+            "NumStability.vecNorm2_add_le",
+            "NumStability.vecNorm2_nonneg"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P16/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Prove the Frobenius condition factor, contraction factor, and attainable floors are nonnegative. Use Lambda < 1 to bound every power by one, then induct on the restart count and apply the conditional contraction at the final step.",
-          "informal_statement_paraphrase": "Exact finite interpretation of Theorem 6.3's claim that mixed-precision restarted GMRES contracts by Lambda until it reaches the high-precision attainable floors.",
+          "informal_proof_paraphrase": "Decompose the next true residual and solution error using the exact high-precision residual/update equations, apply the Section 5.3 low-precision correction certificates, dominate each restart-dependent factor by the uniform polynomial envelope, normalize using the paper's actual error definitions, and combine the retained second-order remainders.",
+          "informal_statement_paraphrase": "For every restart of the recorded mixed-precision MGS-GMRES execution, the actual normalized backward error and relative forward error contract by Lambda up to the respective high-precision first-order floors.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "7d68f2f6bd8b7870908b0de59c1df3f9053ae50a510fbc796c8448b7beb84168",
+            "controlled_file_sha256": "4673ced6d389102473dc6b8f2307c084c43b89703cf9265030bd4f4cad6d0ad0",
             "declaration": "p16_t3_mixed_precision_geometric_convergence",
             "file": "paper_bencmark/highambench/tasks/P16/T3/Target.lean",
             "must_compile_without_numstability": true,
@@ -3229,21 +3231,49 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean"
             ],
-            "statement_summary": "Every finite sequence of above-floor mixed-precision restarts reduces backward and forward errors by the corresponding power of the contraction factor."
+            "statement_summary": "Every restart of a fully recorded mixed-precision MGS-GMRES execution satisfies the actual-error Lambda contraction with explicit first-order backward and forward floors."
           },
           "source_locations": [
             {
-              "anchor": "Theorem 6.3, contraction condition (6.17) and attainable error floors (6.18)",
+              "anchor": "definitions of normwise backward and forward errors",
+              "pdf_page": 4,
+              "printed_page": "1942",
+              "role": "actual error notions and Frobenius condition number",
+              "section": "2. Notation"
+            },
+            {
+              "anchor": "conditions (3.1)-(3.8)",
+              "pdf_page": 6,
+              "printed_page": "1944-1946",
+              "role": "modular GMRES operation models, numerical-rank assumptions, and key dimension",
+              "section": "3. Backward error analysis of MOD-GMRES"
+            },
+            {
+              "anchor": "Algorithm 2 and Theorem 4.1, equations (4.1)-(4.11)",
+              "pdf_page": 17,
+              "printed_page": "1955-1956",
+              "role": "restarted execution, inherited iterate comparison, contraction factors, and attainable floors",
+              "section": "4. Backward error analysis of restarted MOD-GMRES"
+            },
+            {
+              "anchor": "Theorem 5.2 and its proof",
+              "pdf_page": 27,
+              "printed_page": "1965-1967",
+              "role": "fully stored MGS-Arnoldi correction solve and key-dimension certificate",
+              "section": "5.3 MGS-GMRES"
+            },
+            {
+              "anchor": "Theorem 6.3 and equations (6.17)-(6.21)",
               "pdf_page": 40,
-              "printed_page": "1978",
-              "role": "mixed-precision restarted-GMRES convergence statement",
+              "printed_page": "1978-1979",
+              "role": "mixed-precision contraction, high-precision floors, residual/update models, low cast, and factor specialization",
               "section": "6.3 Mixed precision restarted GMRES"
             }
           ],
           "task_id": "P16-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "The frozen library contributes only the primitive Frobenius nonnegativity used for the condition factor. The task adds the paper-specific mixed-precision floors, conditional restart semantics, and a finite Lambda-power induction absent from every mounted module.",
+          "tier_reason": "The mounted condition-L library supplies only generic Euclidean and Frobenius norm facts. It contains no MGS-Arnoldi execution, restart-dependent key-dimension framework, mixed-precision operation linkage, actual GMRES error definitions, or Theorem 6.3 contraction theorem, so both conditions must perform the paper-specific composition.",
           "title": "Mixed-precision geometric convergence"
         }
       ],
