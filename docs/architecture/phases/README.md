@@ -4,9 +4,10 @@ The active operating contract is the
 [`2026-08 repository reorganization completion`](2026-08-repository-reorganization-completion/README.md),
 selected by [`active-phase.json`](active-phase.json). It is rooted at C0000 on
 accepted predecessor code commit
-`b1b18772d80185ec08f49c818919558645c330a1`; its current checkpoint is C0003
-at green code commit `e20de2f931caa12221e708c341e9cb4f64d29b25`. C0003 accepts R03 on top of
-C0002's accepted R11/R12 and C0001's accepted R01/R02 integrations. This
+`b1b18772d80185ec08f49c818919558645c330a1`; its current checkpoint is C0004
+at green code commit `783ae9a4951407ece046adb8631d5a8ff1795a18`. C0004 accepts
+R05/R06 on top of C0003's accepted R03, C0002's accepted R11/R12, and C0001's
+accepted R01/R02 integrations. This
 successor has precedence over
 dated migration packets and historical handoffs.
 
@@ -84,9 +85,10 @@ records the exact lease, archive, residue, worktree, and local-ref evidence;
 the hash-pinned
 [`R03 activation review`](2026-08-repository-reorganization-completion/reviews/R03-activation.md)
 preserves the earlier authority and activation facts. The temporary
-`claude-local` second-operator authority on `codex-lane` has expired, restoring
-that lane to `codex-local` alone. M05 and M06 are ready; M07/R07 and every other
-unaccepted milestone remain planned, and no successor wave is activated.
+`claude-local` second-operator authority on `codex-lane` expired, restoring
+that lane to `codex-local` alone. At C0003, M05 and M06 became ready while
+M07/R07 and every other unaccepted milestone remained planned and no successor
+wave was activated.
 
 C0003 records 2,690 production modules and 310 distinct residual-debt rows:
 254 unclassified, zero mixed, zero missing-module-doc, 217 noncanonical, and 15
@@ -94,9 +96,9 @@ declaration-bearing-umbrella rows, with zero unsorted aggregate imports. The
 inventory has 2,356 complete rows, 334 in-scope rows, and 310 rows with debt.
 Bounded-phase and repository-wide completion remain incomplete.
 
-A fresh exact-C0003 successor review selects the R05+R06 pair — the only
+A fresh exact-C0003 successor review selected the R05+R06 pair — the only
 candidate pair zero on all seven overlap dimensions under the R11/R12
-standard. B0006/R05 and B0007/R06 are planned from exact C0003 code with
+standard. B0006/R05 and B0007/R06 were planned from exact C0003 code with
 whole-owner routes only, frozen shared requests R0006 (23 paths) and R0007
 (49 paths) intersecting on exactly five integrator-owned paths under a
 reviewed union, identity projection replays for P0006/P0007, and a reviewed
@@ -104,8 +106,7 @@ temporary `claude-local` second-operator expansion scoped to B0006 expiring
 at C0004. Planned-control commit `b6794f326313f8077c0c3433bb9c76b6e2ed5361`
 passed Lean CI run 31844203563 (job 94907208819) before both worker refs were
 pushed with nonexistent-tip leases at exact C0003 code and activated with
-clean LF-configured named worktrees. C0003 stays current and its statistics
-do not change.
+clean LF-configured named worktrees. C0003 remained current through activation.
 
 The immutable R05 and R06 deliveries are now preserved by separate true
 merges, followed by exactly one application of the reviewed 67-path
@@ -115,25 +116,43 @@ edges over 29 unique destinations), 3 milestone-DAG/evidence paths, and 4
 narrative paths. Its zero cross-wave-repair count was the pre-battery
 expectation. Approved amendment R0008 separately repairs 27 compatibility
 paths and is disjoint from those 13: 4 replace union postimages through an
-exact SHA-256 chain, 23 are new staged paths, and the union postimage manifest
-remains untouched. The Source-trim decision keeps the Algorithms umbrella
-ceiling at 49 without changing the layout baseline. Registration covers 16
+exact SHA-256 chain, 23 are additional integration paths, and the union
+postimage manifest remains untouched. The Source-trim decision keeps the
+Algorithms umbrella ceiling at 49 without changing the layout baseline.
+Registration covers 16
 logical governance paths (5 request artifacts, including the immutable
 `R0008-approval.md` addendum, 2 delivered branch records, the existing 3
 DAG/evidence paths, these 4 narratives, and 2 validators); 7 were already
-staged, so 9 are new. One newly staged stale Algorithms smoke-test correction
-brings the candidate total to 111 paths (78 before R0008 + 23 repair-only + 9
-registration-only + 1 smoke correction). B0006 and B0007 are delivered at
-their exact tips but remain unaccepted and unretired; their refs and worktrees
-remain intact. The earlier battery exposed one stale Source-only Algorithms
-`#check`; it was removed under D1 and the targeted smoke file passes. Final
-evidence run `.lake/integration-r05-r06-20260816T172806Z` passed all 11 gates
+staged, so 9 were new. One stale Algorithms smoke-test correction brought the
+exact integration range to 111 paths (78 before R0008 + 23 repair-only + 9
+registration-only + 1 smoke correction). The earlier battery exposed one
+stale Source-only Algorithms `#check`; it was removed under D1 and the targeted
+smoke file passes. Final candidate evidence run
+`.lake/integration-r05-r06-20260816T172806Z` passed all 11 gates
 with a stable tree, including the full `NumStability`/`NumStabilityTest` build
 and `lake test` (`DONE.json` SHA-256
 `A5DA29ED1EE40AF2A4B3967EDB1981ECB041A5821D61EDD117F3F8A55735C166`).
-Independent package and staged-diff audits are green. The result remains an
-integration candidate pending green exact-code Lean CI; it does not accept
-C0004. Statistics remain C0003-pinned until C0004.
+Independent package and committed-diff audits are green.
+
+C0004 accepts M05/R05 and M06/R06 at exact green code commit
+`783ae9a4951407ece046adb8631d5a8ff1795a18`; Lean CI run 31962707569 (job
+95203051003) passed. B0006/B0007 are accepted with retirement due,
+P0006/P0007 are retired immutable evidence, and R0006/R0007/R0008 are applied.
+The temporary second-operator authority and R05/R06 reservations are released,
+restoring `codex-lane` to `codex-local` alone. M04/R04 and M08/R08 are ready;
+every other unaccepted milestone remains planned and no successor wave is
+activated. Retirement awaits acceptance-control CI, so the exact delivery
+refs and named worker worktrees remain present.
+
+C0004 records 2,766 production modules and 200 distinct residual-debt rows:
+191 unclassified, zero mixed, zero missing-module-doc, 125 noncanonical, and
+eight declaration-bearing-umbrella rows, with zero unsorted aggregate imports.
+The inventory has 2,555 complete rows, 211 in-scope rows, and 200 rows with
+debt. The official baseline, inventory, and 111-path ledger SHA-256 values are
+`D3F30A410903B1CA2858951CB26107B94B62630BC424723A0EC9EDF484AEDDDF`,
+`08FA3E41DA0C72E7F5D4ECFD315F0CC6C73EB0F45089CF1DAC6AB04A81A1E326`,
+and `E5F12E1834F848C7A2FAAD674BBDEEC0B3760B44BE17D073460E87F3E437F378`.
+Bounded-phase and repository-wide completion remain incomplete.
 
 The planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be`
 passed Lean CI run 31546978830 (job 93961477202) before the R11/R12 refs and

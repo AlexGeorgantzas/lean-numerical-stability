@@ -134,15 +134,20 @@
  "request_id": "R0006",
  "requester_id": "primary-human",
  "resolution": {
-  "checkpoint_id": null,
-  "commit_sha": null,
-  "reason": null,
-  "resolved_at": null,
-  "resolved_by": null,
-  "validation_evidence": []
+  "checkpoint_id": "C0004",
+  "commit_sha": "783ae9a4951407ece046adb8631d5a8ff1795a18",
+  "reason": "Applied as the independently replayed and reviewed R0006/R0007 shared-file union after both immutable delivery merges.",
+  "resolved_at": "2026-08-16T18:23:52Z",
+  "resolved_by": "primary-human",
+  "validation_evidence": [
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006-R0007-union-review.md",
+    "sha256": "12D39C6AD934F144698412D70857AA4C3B550B025F248864254A6032433770D6"
+   }
+  ]
  },
  "schema_version": 1,
- "status": "active",
+ "status": "applied",
  "superseded_by": null,
  "supersedes": null,
  "target_base_sha": "e20de2f931caa12221e708c341e9cb4f64d29b25",

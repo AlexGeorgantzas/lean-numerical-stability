@@ -5,7 +5,7 @@ only when its stated evidence is checked into the repository or recorded by CI.
 
 The active repository-wide operating contract is
 [`phases/2026-08-repository-reorganization-completion/`](phases/2026-08-repository-reorganization-completion/README.md).
-Its current C0003 checkpoint freezes the complete 2,690-module inventory,
+Its current C0004 checkpoint freezes the complete 2,766-module inventory,
 assigns every current debt row to a lane and dependency wave, distinguishes
 bounded-phase from repository-wide completion, and records branch, baseline,
 shared-request, build-lock, and checkpoint lifecycle rules. Validate it with
@@ -36,8 +36,8 @@ The local
 delivery branch remains at `1f8ff4ca5b0b136901a2f47d43e1064dc09aa556`.
 The [`R03 retirement review`](phases/2026-08-repository-reorganization-completion/reviews/R03-retirement.md)
 records the exact cleanup evidence. The temporary `claude-local` authority on
-`codex-lane` has expired. M05/M06 are ready; M07 and every other unaccepted
-milestone remain planned, and no successor wave is activated.
+`codex-lane` expired. At C0003, M05/M06 became ready while M07 and every other
+unaccepted milestone remained planned and no successor wave was activated.
 
 R05 and R06 have since been preserved by separate true merges, after which
 the reviewed 67-path R0006/R0007 union was applied exactly once from their
@@ -53,20 +53,33 @@ Source ceiling at 49 and needs no layout exception. R0008 registration covers
 16 logical governance paths (5 request artifacts, including the immutable
 `R0008-approval.md` addendum, 2 delivered branch records, 3
 milestone-DAG/evidence paths, 4 narratives, and 2 validators); because 7 were
-already staged, it adds 9 unique paths. One newly staged stale Algorithms
-smoke-test correction brings the candidate to 111 staged paths (78 before
-R0008 + 23 repair-only + 9 registration-only + 1 smoke correction). B0006 and
-B0007 are delivered at their exact tips but remain unaccepted and unretired;
-their refs and worktrees remain intact. The earlier battery exposed one stale
-Source-only Algorithms `#check`; it was removed under D1 and the targeted smoke
-file passes. Final evidence run
+already staged, it added 9 unique paths. One stale Algorithms smoke-test
+correction brought the exact integration range to 111 paths (78 before R0008
++ 23 repair-only + 9 registration-only + 1 smoke correction). The earlier
+battery exposed one stale Source-only Algorithms `#check`; it was removed under
+D1 and the targeted smoke file passes. Final candidate evidence run
 `.lake/integration-r05-r06-20260816T172806Z` passed all 11 gates with a stable
 tree, including the full `NumStability`/`NumStabilityTest` build and `lake test`
 (`DONE.json` SHA-256
 `A5DA29ED1EE40AF2A4B3967EDB1981ECB041A5821D61EDD117F3F8A55735C166`).
-Independent package and staged-diff audits are green. This is not C0004
-acceptance: green exact-code Lean CI remains required. All quantitative
-statistics remain pinned to C0003 until C0004.
+Independent package and committed-diff audits are green.
+
+C0004 accepts M05/R05 and M06/R06 at exact code
+`783ae9a4951407ece046adb8631d5a8ff1795a18`; Lean CI run 31962707569 (job
+95203051003) passed. B0006/B0007 are accepted with retirement due,
+P0006/P0007 are retired immutable evidence, and R0006/R0007/R0008 are applied.
+The temporary second-operator authority and R05/R06 reservations are released.
+M04/R04 and M08/R08 are ready; every other unaccepted milestone remains
+planned and no successor wave is activated. The official baseline, inventory,
+and 111-path ledger SHA-256 values are
+`D3F30A410903B1CA2858951CB26107B94B62630BC424723A0EC9EDF484AEDDDF`,
+`08FA3E41DA0C72E7F5D4ECFD315F0CC6C73EB0F45089CF1DAC6AB04A81A1E326`,
+and `E5F12E1834F848C7A2FAAD674BBDEEC0B3760B44BE17D073460E87F3E437F378`.
+Bounded-phase and repository-wide completion remain incomplete with 200 debt
+rows, including 191 unclassified modules, 125 noncanonical names, and eight
+declaration-bearing umbrellas. Retirement is due and pending
+acceptance-control CI; both exact delivery refs and named worker worktrees
+remain present.
 
 1. **Current baseline.** Regenerate and version the architecture and build
    report at the exact migration commit using tracked tooling.

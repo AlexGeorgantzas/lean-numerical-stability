@@ -10724,9 +10724,9 @@
   }
  ],
  "integration": {
-  "accepted_checkpoint_id": null,
-  "accepted_sha": null,
-  "method": null
+  "accepted_checkpoint_id": "C0004",
+  "accepted_sha": "783ae9a4951407ece046adb8631d5a8ff1795a18",
+  "method": "merge"
  },
  "lane_id": "codex-lane",
  "operator_ids": [
@@ -10987,7 +10987,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0006.json",
-    "sha256": "4C9785E0F2989C89F0CDBD7789AC2713EFA866C921A688EDCADC97BDA7C04C91"
+    "sha256": "EC9B20F7BD6DEF5984B699EE872A4EEC261093F3D5F68B228D01E7001ED06615"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0006.tsv.gz",
@@ -11015,7 +11015,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006.json",
-    "sha256": "E2A5633AD9ABA5DCE0159BF82188C7A618D51F85F6232171A02106B8BDB5265F"
+    "sha256": "124AEEB4909805C16240BDD7B1B24FC915C714AA80A85FB55A53AD0CC4598631"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0006.patch",
@@ -11035,7 +11035,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0008.json",
-    "sha256": "54E28FA75B40AFA48AD026818B690437A4FBD4CF0CE55ADA55956D274922EA09"
+    "sha256": "2258C080956DAAA84232EFD65AB7145BBABBE683D591C0C7D48E311FE99A3821"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0008.patch",
@@ -11074,12 +11074,12 @@
   "retired_at": null,
   "retired_by": null,
   "rule": "delivery_ancestor_of_green_checkpoint",
-  "status": "not_due"
+  "status": "due"
  },
  "schema_version": 1,
  "shared_request_ids": [
   "R0006"
  ],
- "status": "delivered",
+ "status": "accepted",
  "wave_id": "R05"
 }

@@ -172,19 +172,24 @@
   "request_id": "R0008",
   "requester_id": "primary-human",
   "resolution": {
-    "commit_sha": null,
-    "checkpoint_id": null,
-    "reason": null,
-    "resolved_at": null,
-    "resolved_by": null,
-    "validation_evidence": []
+    "commit_sha": "783ae9a4951407ece046adb8631d5a8ff1795a18",
+    "checkpoint_id": "C0004",
+    "reason": "Applied as the reviewed 27-path integration amendment after the R0006/R0007 shared-file union.",
+    "resolved_at": "2026-08-16T18:23:52Z",
+    "resolved_by": "primary-human",
+    "validation_evidence": [
+      {
+        "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0004-gates.md",
+        "sha256": "071EE1A46A1DBB3EC2168922C0A5A26B89FAF4843C5011B3BC872116FDAA3CDF"
+      }
+    ]
   },
   "review": {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0008-review.md",
     "sha256": "7A4529D9994506AD3EEBD17504BDE331DC95F42CBF3B5307643D44F97D726338"
   },
   "schema_version": 1,
-  "status": "active",
+  "status": "applied",
   "superseded_by": null,
   "supersedes": null,
   "target_branch": "main",
