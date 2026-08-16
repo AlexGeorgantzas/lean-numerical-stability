@@ -327,14 +327,25 @@ Independent package and committed-diff audits are green.
 C0004 accepts M05/R05 and M06/R06 at exact code commit
 `783ae9a4951407ece046adb8631d5a8ff1795a18`; exact-code Lean CI run
 31962707569 (job 95203051003) passed. P0006/P0007 are retired immutable
-evidence and R0006/R0007/R0008 are applied. B0006/B0007 are accepted with
-retirement due. The temporary second-operator authority and all R05/R06
-temporary path reservations are released, restoring `codex-lane` to
-`codex-local` alone. M04/R04 and M08/R08 are dependency-ready; M07/R07 and
-every other unaccepted milestone remain planned, and no successor wave is
-activated. Retirement remains pending acceptance-control CI: the exact remote
-delivery refs and named worker worktrees remain present until that control is
-green.
+evidence and R0006/R0007/R0008 are applied. The temporary second-operator
+authority and all R05/R06 temporary path reservations are released, restoring
+`codex-lane` to `codex-local` alone. M04/R04 and M08/R08 are dependency-ready;
+M07/R07 and every other unaccepted milestone remain planned, and no successor
+wave is activated. After acceptance-control commit
+`131a0c6f333de0eb47a67698decf36ee82e01dab` passed Lean CI run 31966141900
+(job 95211495907), `primary-human` retired B0006/B0007 at
+`2026-08-16T19:08:57Z`. Their exact remote delivery refs were deleted atomically
+under expected-tip leases and verified absent. Exactly five R05 material files
+totaling 117,327,061 bytes were archived and verified under
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0004-R05-R06-20260816`;
+R06 had no material artifacts. Named worktrees `completion-r05-claude` and
+`completion-r06-codex` were removed without force with no residue. Local
+delivery branches remain preserved at
+`26e89100b3c7c8a64a41426d517cbd563a40db72` and
+`bfaf2ae917ed79165caa6cc58b3782984aa8d3d9`. The
+[`R05/R06 retirement review`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R05-R06-retirement.md)
+records the exact leases, absence checks, archive, worktree cleanup, and local
+branch preservation.
 
 The official C0004 baseline, inventory, and 111-path integration ledger have
 SHA-256 values
@@ -760,9 +771,9 @@ and removal of its named worktree without force; its local delivery branch
 remains preserved at `1f8ff4ca5b0b136901a2f47d43e1064dc09aa556`. P0005 is
 retired and R0005 is applied. C0004 now accepts the exact-C0003 R05/R06
 deliveries at `783ae9a4951407ece046adb8631d5a8ff1795a18`. B0006/B0007 are
-accepted with retirement due, P0006/P0007 are retired, and
-R0006/R0007/R0008 are applied; worker retirement awaits green
-acceptance-control CI. The current C0004 counts are authoritative. Subsequent
+retired after exact green acceptance-control CI, P0006/P0007 are retired, and
+R0006/R0007/R0008 are applied; their local delivery branches remain preserved.
+The current C0004 counts are authoritative. Subsequent
 accepted batches must reduce the current 191 unclassified modules, 125
 noncanonical names, eight declaration-bearing
 umbrellas, and the remaining reviewed giant-file outliers; mixed-tier and

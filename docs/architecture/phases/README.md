@@ -136,13 +136,25 @@ Independent package and committed-diff audits are green.
 
 C0004 accepts M05/R05 and M06/R06 at exact green code commit
 `783ae9a4951407ece046adb8631d5a8ff1795a18`; Lean CI run 31962707569 (job
-95203051003) passed. B0006/B0007 are accepted with retirement due,
-P0006/P0007 are retired immutable evidence, and R0006/R0007/R0008 are applied.
+95203051003) passed. P0006/P0007 are retired immutable evidence, and
+R0006/R0007/R0008 are applied.
 The temporary second-operator authority and R05/R06 reservations are released,
 restoring `codex-lane` to `codex-local` alone. M04/R04 and M08/R08 are ready;
 every other unaccepted milestone remains planned and no successor wave is
-activated. Retirement awaits acceptance-control CI, so the exact delivery
-refs and named worker worktrees remain present.
+activated. Acceptance-control commit
+`131a0c6f333de0eb47a67698decf36ee82e01dab` passed Lean CI run 31966141900
+(job 95211495907); `primary-human` retired B0006/B0007 at
+`2026-08-16T19:08:57Z`. Their exact remote refs were deleted atomically under
+expected-tip leases and verified absent. The archive root
+`C:\Users\qed_s\higham-worktrees\retired-worker-artifacts\C0004-R05-R06-20260816`
+contains five verified R05 material files totaling 117,327,061 bytes; R06 had
+no material artifacts. Named worktrees `completion-r05-claude` and
+`completion-r06-codex` were removed without force with no residue. Local
+delivery branches remain preserved at
+`26e89100b3c7c8a64a41426d517cbd563a40db72` and
+`bfaf2ae917ed79165caa6cc58b3782984aa8d3d9`. The
+[`R05/R06 retirement review`](2026-08-repository-reorganization-completion/reviews/R05-R06-retirement.md)
+records the exact leases, archive, cleanup, and preserved refs.
 
 C0004 records 2,766 production modules and 200 distinct residual-debt rows:
 191 unclassified, zero mixed, zero missing-module-doc, 125 noncanonical, and
