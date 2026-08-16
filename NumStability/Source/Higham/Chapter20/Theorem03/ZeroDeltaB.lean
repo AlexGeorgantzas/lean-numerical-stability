@@ -4,7 +4,7 @@ import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSolve
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.Executor.Core
 import NumStability.Analysis.Conditioning.LinearSystems.InversePerturbation
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding

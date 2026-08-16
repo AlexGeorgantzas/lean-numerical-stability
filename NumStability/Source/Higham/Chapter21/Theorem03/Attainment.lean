@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT
 import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.NormNum
 import Mathlib.Topology.MetricSpace.Pseudo.Defs
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSolve
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.Executor.Core
 
 /-!
 # Higham Chapter 21, Theorem 21.3: attainment

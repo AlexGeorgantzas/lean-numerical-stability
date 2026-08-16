@@ -291,7 +291,43 @@ from exact C0003 code with whole-owner routes only, frozen shared requests
 under a reviewed five-path union, identity projection replays, and a
 reviewed temporary `claude-local` second-operator re-expansion scoped to
 B0006 expiring at C0004. M07/R07 and every other unaccepted milestone remain
-planned. The statistics above are the current C0003 ratchet. The
+planned. The immutable R05 tip
+`26e89100b3c7c8a64a41426d517cbd563a40db72` and R06 tip
+`bfaf2ae917ed79165caa6cc58b3782984aa8d3d9`, each a direct child of the
+accepted C0003 code, are now preserved by separate true merge commits
+`538c7d248a0ccaec407a082ecb73b92d7c3faec2` and
+`deee8e7ea0aeac7cfbd9fc2582eaf1f5b841fd0c`. After both merges, the reviewed
+67-path R0006/R0007 union patch (SHA-256
+`639DA03437C3FBAA6934E71B55EFE7D85DF51835D94978790C59162585690D4E`)
+was applied exactly once from the common C0003 preimages; sequential request
+replacement was not used. The original bounded follow-up ledger remains exactly
+13 unique paths: 6 aggregate paths adding 31 direct-import edges over 29 unique
+destinations, 3 milestone-DAG/evidence paths, and these 4 narrative paths. It
+is disjoint from the later approved R0008 compatibility repair and remains the
+immutable account of that earlier follow-up. R0008 repairs exactly 27 paths
+(26 production importers plus `docs/architecture/COMPATIBILITY.md`): 4 replace
+union postimages through an exact SHA-256 chain and 23 add new staged paths,
+while `R0006-R0007-union-postimages.tsv` remains untouched. Variant A trims
+only the `NumStability.Algorithms` umbrella's newly expanded Source imports,
+preserving its `NumStability.Source.` direct-import ceiling at 49 without a
+layout-baseline change. Registration covers 16 logical governance paths: 5
+request artifacts, including the immutable `R0008-approval.md` addendum, 2
+delivered branch records, the existing 3 milestone-DAG/evidence paths, these 4
+narratives, and 2 validators. Seven were already staged in the 13-path ledger,
+so registration adds 9 new paths. One newly staged stale Algorithms smoke-test
+correction brings the candidate to 111 staged paths in all (78 before R0008 +
+23 repair-only + 9 registration-only + 1 smoke correction). B0006 and B0007
+are recorded delivered at their exact tips but remain unaccepted and unretired;
+both worker refs and worktrees remain intact. The earlier battery exposed one
+stale Source-only Algorithms `#check`; it was removed under D1 and the targeted
+smoke file passes. The final exact-candidate evidence run
+`.lake/integration-r05-r06-20260816T172806Z` passed all 11 gates with a stable
+tree, including the full `NumStability`/`NumStabilityTest` build and `lake test`
+(`DONE.json` SHA-256
+`A5DA29ED1EE40AF2A4B3967EDB1981ECB041A5821D61EDD117F3F8A55735C166`).
+Independent package and staged-diff audits are green. Exact-code Lean CI remains
+the final C0004 proof obligation; the statistics above remain C0003-pinned until
+C0004. The
 [`active phase registry`](docs/architecture/phases/2026-08-repository-reorganization-completion/README.md)
 is the authoritative status record; the predecessor C0008 phase remains
 immutable historical evidence.

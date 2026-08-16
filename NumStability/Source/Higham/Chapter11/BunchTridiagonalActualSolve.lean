@@ -1,8 +1,8 @@
 import NumStability.Algorithms.LinearSystems.SymmetricIndefinite.BlockLDLT.BunchTridiagonalGrowthInvariant
-import NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSolve
 import NumStability.Source.Higham.Chapter11.BlockLDLTMixedPivot
 import NumStability.Source.Higham.Chapter11.BlockLDLTSolveBackward
 import NumStability.Source.Higham.Chapter11.Section01.PartialPivoting
+import NumStability.Source.Higham.Chapter16.QuasiRounded.Solve
 
 /-!
 # Higham Chapter 11: BunchTridiagonalActualSolve

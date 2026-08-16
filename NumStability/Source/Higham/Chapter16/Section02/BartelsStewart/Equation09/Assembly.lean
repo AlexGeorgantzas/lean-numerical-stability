@@ -1,10 +1,10 @@
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Rectangular
 import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.TriangularBartelsStewart.ResidualAssembly
-import NumStability.Algorithms.Sylvester.Higham16
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
+import NumStability.Source.Higham.Chapter16.Foundations.Core
 import NumStability.Source.Higham.Chapter19.Core
 
 /-!

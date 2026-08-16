@@ -3,8 +3,8 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.Separation
 import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds.SylvesterPerturbation
 import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Basic
 import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Rectangular
-import NumStability.Algorithms.Sylvester.Higham16
 import NumStability.Analysis.MatrixAlgebra
+import NumStability.Source.Higham.Chapter16.Foundations.Core
 
 /-!
 # Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.SylvesterPerturbation

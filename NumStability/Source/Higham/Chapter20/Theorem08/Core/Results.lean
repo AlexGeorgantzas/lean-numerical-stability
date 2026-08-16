@@ -2,7 +2,6 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.Basic
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.GQR
 import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Equality.KKTInverse
 import NumStability.Analysis.Perturbation.LeastSquares.Equality.Perturbation

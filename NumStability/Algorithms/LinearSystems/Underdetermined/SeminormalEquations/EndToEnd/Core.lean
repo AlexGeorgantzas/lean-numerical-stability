@@ -1,9 +1,10 @@
 import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.Householder.EndToEnd
 import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ConditionTransfer.Core
-import NumStability.Algorithms.Underdetermined.Higham21SNEEnvelopeTransfer
-import NumStability.Algorithms.Underdetermined.Higham21SNEQRMajorant
-import NumStability.Algorithms.Underdetermined.Higham21SNERemainderBounds
-import NumStability.Algorithms.Underdetermined.Higham21SNESigned
+import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.QRTransfer.EnvelopeTransfer
+import NumStability.Source.Higham.Chapter21.Equation11.ActualOutput
+import NumStability.Source.Higham.Chapter21.Equation11.Forward
+import NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.EnvelopeTransfer
+import NumStability.Source.Higham.Chapter21.Equation11.RemainderBounds
 import NumStability.Source.Higham.Chapter21.Equation11.Closure
 import NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.Closure
 

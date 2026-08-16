@@ -18,4 +18,46 @@ C0003 contains 2,690 production modules and 310 distinct residual-debt rows: 254
 
 A fresh exact-C0003 successor review ([`reviews/C0003-R05-R06-selection.md`](reviews/C0003-R05-R06-selection.md)) selects the R05+R06 pair — the only candidate pair that is zero on all seven overlap dimensions under the accepted R11/R12 standard (R05×R07 and R06×R07 each have a transitive owner-reachability crossing, and R06×R07 has two genuine shared Chapter 28 consumers). B0006/R05 (48 owners, projection P0006, request R0006, 23 paths) and B0007/R06 (75 owners, projection P0007, request R0007, 49 paths) are planned from exact C0003 code `e20de2f931caa12221e708c341e9cb4f64d29b25`. Every route in both waves is a whole-owner route, so the R03 fanIn7 private-closure defect class is impossible by construction, and each destination carries its owner verbatim so retargeted consumers keep their full transitive surface (the Chapter27 lesson; dot-notation field-projection scans are frozen per branch). The requests intersect on exactly five integrator-owned paths resolved by the reviewed [`R0006/R0007 union`](requests/R0006-R0007-union-review.md). Both freeze-time projection replays passed as identity replays ([`reviews/R05-R06-projection-replay.md`](reviews/R05-R06-projection-replay.md)). Planned-control commit `b6794f326313f8077c0c3433bb9c76b6e2ed5361` passed Lean CI run 31844203563 (job 94907208819); both worker refs were then pushed with nonexistent-tip leases at exact C0003 code and activated with clean LF-configured named worktrees (`completion-r05-claude`, `completion-r06-codex`); [`reviews/R05-R06-activation.md`](reviews/R05-R06-activation.md) records the exact refs, worktrees, operators, and tips. The frozen scope keeps both waves on `codex-lane`; a reviewed temporary expansion ([`reviews/R05-R06-operator-authorization.md`](reviews/R05-R06-operator-authorization.md)) authorizes `claude-local` as second codex-lane operator solely for B0006/R05, expiring at C0004. M07/R07 and every other unaccepted milestone remain planned; C0003 stays current and its statistics do not change.
 
+Integration candidate status: immutable deliveries R05
+`26e89100b3c7c8a64a41426d517cbd563a40db72` and R06
+`bfaf2ae917ed79165caa6cc58b3782984aa8d3d9`, both parented directly by
+C0003, are preserved by separate true merges
+`538c7d248a0ccaec407a082ecb73b92d7c3faec2` and
+`deee8e7ea0aeac7cfbd9fc2582eaf1f5b841fd0c`. The hash-pinned 67-path
+zero-context union patch `requests/R0006-R0007-union.patch` (SHA-256
+`639DA03437C3FBAA6934E71B55EFE7D85DF51835D94978790C59162585690D4E`)
+was applied exactly once from the common C0003 preimages, never by sequential
+whole-file replacement. The bounded follow-up ledger remains exactly 13
+unique paths: 6 aggregate paths adding 31 casefold-sorted direct-import edges
+over 29 unique destinations, 3 milestone-DAG/evidence paths, and 4 narrative
+paths. Its zero cross-wave-repair count was the pre-battery expectation.
+
+The primary-human-approved R0008 integration amendment is a separate 27-path
+compatibility repair, disjoint from those 13 paths. It rewrites 26 production
+importers plus `docs/architecture/COMPATIBILITY.md`, replacing 59 historical
+facade imports and correcting 36 stale compatibility rows; 4 paths replace union
+postimages through the exact chain `union postimage_sha256 == R0008
+preimage_sha256`, and 23 add new staged paths. The immutable
+`R0006-R0007-union-postimages.tsv` is not modified. D1 uses the Source-trim
+variant, keeping the `NumStability.Algorithms` `NumStability.Source.` ceiling
+at 49 without amending `layout-exceptions.json`; D2-D4 are approved, and D3's
+facade-to-facade exemption is intentional. R0008 registration covers 16
+logical governance paths: 5 request artifacts, including the immutable
+`R0008-approval.md` addendum, 2 delivered branch records, 3
+milestone-DAG/evidence paths, 4 narratives, and 2 validators. Seven were
+already staged in the earlier 13-path ledger, so registration adds 9 new paths.
+One newly staged stale Algorithms smoke-test correction brings the integration
+candidate to 111 staged paths (78 before R0008 + 23 repair-only + 9
+registration-only + 1 smoke correction). B0006 and B0007 are delivered at
+their exact tips but remain unaccepted and unretired; their refs and named
+worktrees remain untouched. The earlier battery exposed one stale Source-only
+Algorithms `#check`; it was removed under D1 and the targeted smoke file passes.
+Final evidence run `.lake/integration-r05-r06-20260816T172806Z` passed all 11
+gates with a stable tree, including the full
+`NumStability`/`NumStabilityTest` build and `lake test` (`DONE.json` SHA-256
+`A5DA29ED1EE40AF2A4B3967EDB1981ECB041A5821D61EDD117F3F8A55735C166`).
+Independent package and staged-diff audits are green. The integration is not
+C0004: it remains pending green exact-code Lean CI. All statistics remain
+pinned to C0003 until C0004.
+
 `MatrixAlgebra.lean` is protected read-only. Shared consumers, global aggregates, manifests, controls, tools, CI, Lake files, root documentation, and `NumStabilityTest.lean` are integrator-owned. Historical owner imports are preserved through import-only wrappers or source aggregates. Repository-wide completion requires zero classification, mixed-tier, naming, documentation, and declaration-bearing-umbrella debt.

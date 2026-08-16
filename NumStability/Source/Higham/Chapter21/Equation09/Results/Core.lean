@@ -1,5 +1,4 @@
 import NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.Radius.Core
-import NumStability.Algorithms.Underdetermined.Higham21RankStability
 import NumStability.Source.Higham.Chapter21.Equation09.EquationClosure
 
 /-!

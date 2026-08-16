@@ -20,7 +20,7 @@ import NumStability.Analysis.Rounding
 import NumStability.FloatingPoint.Model
 import NumStability.Source.Higham.Chapter19.Core
 import NumStability.Source.Higham.Chapter20.Theorem03.QRSolve
-import NumStability.Source.Higham.Chapter21.Corrections.Problem19_12.RoundedReplay
+import NumStability.Source.Higham.Chapter21.Corrections.CorrectedMGS.RoundedReplay
 import NumStability.Source.Higham.Chapter21.Theorem04.RowwiseBackwardError
 
 /-!

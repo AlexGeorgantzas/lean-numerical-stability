@@ -96,6 +96,7 @@ import NumStability.Algorithms.LinearSystems.SymmetricIndefinite.BlockLDLT.Bunch
 import NumStability.Algorithms.LinearSystems.SymmetricIndefinite.BlockLDLT.BunchTridiagonalSparseSolve
 import NumStability.Algorithms.LinearSystems.SymmetricIndefinite.ErrorAnalysis
 import NumStability.Algorithms.LinearSystems.SymmetricIndefinite.Pivoting
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.Executor.Core
 import NumStability.Algorithms.LogExpProduct
 import NumStability.Algorithms.LU.GaussianElimination
 import NumStability.Algorithms.LU.GrowthFactor
@@ -196,9 +197,6 @@ import NumStability.Algorithms.TestMatrices.Higham28ToeplitzGeneral
 import NumStability.Algorithms.TestMatrices.Higham28ToeplitzSpectrum
 import NumStability.Algorithms.TestMatrices.UpperTriangularStress
 import NumStability.Algorithms.TreeDotProduct
-import NumStability.Algorithms.Underdetermined.Higham21
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSolve
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
 import NumStability.Analysis.BergerGeneral
 import NumStability.Analysis.BergerInequality
 import NumStability.Analysis.BergerResolvent
@@ -207,9 +205,9 @@ import NumStability.Analysis.DunfordResidue
 import NumStability.Analysis.HenriciExtremal
 import NumStability.Analysis.HenriciSharpConstant
 import NumStability.Analysis.HenriciSharpConstantExact
-import NumStability.Analysis.InverseOpNorm2
 import NumStability.Analysis.JordanNormalForm
 import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.All
+import NumStability.Analysis.MatrixEquations.SylvesterExistence
 import NumStability.Analysis.MatrixPowersBaiDemmelGu
 import NumStability.Analysis.MatrixPowersBaiDemmelGuDistance
 import NumStability.Analysis.MatrixPowersBinomialBound
@@ -231,14 +229,9 @@ import NumStability.Analysis.Probability.Gaussian.AbsoluteMoment
 import NumStability.Analysis.PseudospectralLowerBound
 import NumStability.Analysis.PseudospectralPowerBound
 import NumStability.Analysis.PseudospectralResolvent
-import NumStability.Analysis.RealInvariantSubspace
-import NumStability.Analysis.RealQuasiSchur
-import NumStability.Analysis.RealSchurTriangulation
 import NumStability.Analysis.ResolventFunctionalCalculus
-import NumStability.Analysis.SchurTriangulation
 import NumStability.Analysis.SemiconvergentExistenceGaps
 import NumStability.Analysis.SemiconvergentSpectral
-import NumStability.Analysis.SylvesterSchurExistence
 import NumStability.Source.Higham.Chapter03.Problem11.KahanAbsoluteValue.IeeeDoubleTrace.Results
 import NumStability.Source.Higham.Chapter04
 import NumStability.Source.Higham.Chapter04.Problem02.WilkinsonAttainability.IeeeDoubleTrace.Results

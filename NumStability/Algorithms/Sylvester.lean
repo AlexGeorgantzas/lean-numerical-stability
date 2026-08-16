@@ -10,35 +10,14 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.GeneralizedEquations.Al
 import NumStability.Algorithms.MatrixEquations.Sylvester.Perturbation.All
 import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers
 import NumStability.Algorithms.NormEstimation.OneNorm
-import NumStability.Algorithms.Sylvester.Higham16
-import NumStability.Algorithms.Sylvester.Higham16AutoCondition
-import NumStability.Algorithms.Sylvester.Higham16Eq9Assembly
-import NumStability.Algorithms.Sylvester.Higham16Eq9EndToEnd
-import NumStability.Algorithms.Sylvester.Higham16HessenbergRounded
-import NumStability.Algorithms.Sylvester.Higham16HessenbergSchur
-import NumStability.Algorithms.Sylvester.Higham16Lyapunov
-import NumStability.Algorithms.Sylvester.Higham16LyapunovSigmaMin
-import NumStability.Algorithms.Sylvester.Higham16Minimizers
-import NumStability.Algorithms.Sylvester.Higham16NormEstimator
-import NumStability.Algorithms.Sylvester.Higham16PerturbationSigmaMin
-import NumStability.Algorithms.Sylvester.Higham16PivotedSmallBlocks
-import NumStability.Algorithms.Sylvester.Higham16Problem16_2
-import NumStability.Algorithms.Sylvester.Higham16Psi
-import NumStability.Algorithms.Sylvester.Higham16PsiSigmaMin
-import NumStability.Algorithms.Sylvester.Higham16QuasiQuasiRounded
-import NumStability.Algorithms.Sylvester.Higham16QuasiQuasiSylvester
-import NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSolve
-import NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSylvester
-import NumStability.Algorithms.Sylvester.Higham16RoundedExecutor
-import NumStability.Algorithms.Sylvester.Higham16RoundedTriangular
-import NumStability.Algorithms.Sylvester.Higham16Spectrum
-import NumStability.Algorithms.Sylvester.Higham16SpectrumMinimizers
-import NumStability.Algorithms.Sylvester.Higham16VecNorm
-import NumStability.Algorithms.Sylvester.Higham16VecPermutationNotes
-import NumStability.Algorithms.Sylvester.SylvesterBackward
-import NumStability.Algorithms.Sylvester.SylvesterPerturbation
-import NumStability.Algorithms.Sylvester.SylvesterSpec
+import NumStability.Source.Higham.Chapter16.Foundations.Core
+import NumStability.Source.Higham.Chapter16.HessenbergSchur.Results
+import NumStability.Source.Higham.Chapter16.HessenbergSchur.Rounded
+import NumStability.Source.Higham.Chapter16.Minimizers.Results
 import NumStability.Source.Higham.Chapter16.Problem02
+import NumStability.Source.Higham.Chapter16.Problem02.Results.Core
+import NumStability.Source.Higham.Chapter16.QuasiRounded.Solve
+import NumStability.Source.Higham.Chapter16.QuasiRounded.Sylvester
 import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation
 import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.All
 import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart
@@ -47,9 +26,14 @@ import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwa
 import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.All
 import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning
 import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.All
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AutomaticBounds.Results.Core
 import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds
 import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.All
 import NumStability.Source.Higham.Chapter16.Section05.GeneralizedMatrixEquations.All
+import NumStability.Source.Higham.Chapter16.Spectrum.Minimizers
+import NumStability.Source.Higham.Chapter16.Spectrum.Results
+import NumStability.Source.Higham.Chapter16.VecNorm.Results
+import NumStability.Source.Higham.Chapter16.VecPermutation.Notes
 
 /-!
 # Sylvester-equation family

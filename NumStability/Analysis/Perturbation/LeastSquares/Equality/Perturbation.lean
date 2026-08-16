@@ -13,7 +13,6 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
 import NumStability.Algorithms.LinearSystems.LeastSquares.RankGeometry
 import NumStability.Algorithms.LinearSystems.QR.GramSchmidt
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Wedin
 import NumStability.Analysis.SingularValues.Basic

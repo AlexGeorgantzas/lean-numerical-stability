@@ -9,9 +9,9 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Lyapunov
 import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Rectangular
 import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.SchurCoordinates
 import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Vectorization
-import NumStability.Algorithms.Sylvester.Higham16
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixSpectral
+import NumStability.Source.Higham.Chapter16.Foundations.Core
 import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation27
 import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.Lyapunov
 import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.StructuredSylvester

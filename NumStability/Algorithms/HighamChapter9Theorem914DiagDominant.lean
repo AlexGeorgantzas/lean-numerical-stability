@@ -1,4 +1,4 @@
-import NumStability.Source.Higham.Chapter09.Theorem914DiagDominant
+import NumStability.Source.Higham.Chapter09.Theorem14.DiagDominant
 
 /-!
 # Historical HighamChapter9Theorem914DiagDominant import

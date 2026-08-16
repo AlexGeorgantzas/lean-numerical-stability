@@ -1,4 +1,13 @@
 import NumStability.Algorithms.LinearSystems.CramersRule.Core
+import NumStability.Algorithms.MatrixEquations.Sylvester.BackwardError.Specification
+import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.FirstOrder
+import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SingularValue
+import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.StructuredLyapunov
+import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.StructuredSylvester
+import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Basic
+import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Diagonal
+import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Lyapunov
+import NumStability.Algorithms.MatrixEquations.Sylvester.Perturbation.Basic
 import NumStability.Analysis.AlternativeNumberSystems
 import NumStability.Analysis.Approximation.SineTaylor.OddDegreeFiveError.Theorems
 import NumStability.Analysis.Asymptotics
@@ -36,13 +45,13 @@ import NumStability.Analysis.ForwardError
 import NumStability.Analysis.FunctionalCalculus
 import NumStability.Analysis.HenriciSharpConstantExact
 import NumStability.Analysis.Heron
-import NumStability.Analysis.InverseOpNorm2
 import NumStability.Analysis.LeadingDigits
 import NumStability.Analysis.LiebTrace
 import NumStability.Analysis.LinearOperators
 import NumStability.Analysis.LinearOperators.MatrixPowers.Semiconvergence.All
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixConcentration
+import NumStability.Analysis.MatrixEquations.SylvesterExistence
 import NumStability.Analysis.MatrixInequalities
 import NumStability.Analysis.MatrixNorms
 import NumStability.Analysis.MatrixPowersBinomialBound
@@ -63,12 +72,8 @@ import NumStability.Analysis.ProblemDependentStability.All
 import NumStability.Analysis.ProblemDependentStability.HessenbergDeterminant
 import NumStability.Analysis.PseudospectralLowerBound
 import NumStability.Analysis.Quadratic
-import NumStability.Analysis.RealInvariantSubspace
-import NumStability.Analysis.RealQuasiSchur
-import NumStability.Analysis.RealSchurTriangulation
 import NumStability.Analysis.RelativePrecision
 import NumStability.Analysis.Rounding
-import NumStability.Analysis.SchurTriangulation
 import NumStability.Analysis.SemiconvergentSpectral
 import NumStability.Analysis.SingularValues
 import NumStability.Analysis.Stability
@@ -77,7 +82,6 @@ import NumStability.Analysis.Statistics.SampleVariance.All
 import NumStability.Analysis.Statistics.SampleVariance.RoundingErrorBounds.Theorems
 import NumStability.Analysis.SubtractionFold
 import NumStability.Analysis.Summation
-import NumStability.Analysis.SylvesterSchurExistence
 import NumStability.Analysis.TestMatrices.Cauchy.Basic
 import NumStability.Analysis.TestMatrices.Cauchy.Cauchy
 import NumStability.Analysis.TestMatrices.Cauchy.Contracts
@@ -170,6 +174,19 @@ import NumStability.Source.Higham.Chapter06
 import NumStability.Source.Higham.Chapter07.Equation17.KahanConditioningExample
 import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem03.RectangularResults
 import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.RowInfinityScaleCounterexample.Theorems
+import NumStability.Source.Higham.Chapter16.Foundations.Core
+import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation10
+import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation11
+import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation12
+import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation21
+import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.LyapunovDefinition
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation22
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation23
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation24
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation25
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation26
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation27
+import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.Equation28
 import NumStability.Source.Higham.Chapter17.Equation22
 
 /-!

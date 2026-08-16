@@ -106,6 +106,35 @@ passed Lean CI run 31844203563 (job 94907208819) before both worker refs were
 pushed with nonexistent-tip leases at exact C0003 code and activated with
 clean LF-configured named worktrees. C0003 stays current and its statistics
 do not change.
+
+The immutable R05 and R06 deliveries are now preserved by separate true
+merges, followed by exactly one application of the reviewed 67-path
+R0006/R0007 union from their common C0003 preimages. The bounded integration
+ledger remains exactly 13 unique follow-up paths: 6 aggregate paths (31 sorted
+edges over 29 unique destinations), 3 milestone-DAG/evidence paths, and 4
+narrative paths. Its zero cross-wave-repair count was the pre-battery
+expectation. Approved amendment R0008 separately repairs 27 compatibility
+paths and is disjoint from those 13: 4 replace union postimages through an
+exact SHA-256 chain, 23 are new staged paths, and the union postimage manifest
+remains untouched. The Source-trim decision keeps the Algorithms umbrella
+ceiling at 49 without changing the layout baseline. Registration covers 16
+logical governance paths (5 request artifacts, including the immutable
+`R0008-approval.md` addendum, 2 delivered branch records, the existing 3
+DAG/evidence paths, these 4 narratives, and 2 validators); 7 were already
+staged, so 9 are new. One newly staged stale Algorithms smoke-test correction
+brings the candidate total to 111 paths (78 before R0008 + 23 repair-only + 9
+registration-only + 1 smoke correction). B0006 and B0007 are delivered at
+their exact tips but remain unaccepted and unretired; their refs and worktrees
+remain intact. The earlier battery exposed one stale Source-only Algorithms
+`#check`; it was removed under D1 and the targeted smoke file passes. Final
+evidence run `.lake/integration-r05-r06-20260816T172806Z` passed all 11 gates
+with a stable tree, including the full `NumStability`/`NumStabilityTest` build
+and `lake test` (`DONE.json` SHA-256
+`A5DA29ED1EE40AF2A4B3967EDB1981ECB041A5821D61EDD117F3F8A55735C166`).
+Independent package and staged-diff audits are green. The result remains an
+integration candidate pending green exact-code Lean CI; it does not accept
+C0004. Statistics remain C0003-pinned until C0004.
+
 The planned-control commit `c48d241532ad3dee12f4107a5e8875c7054159be`
 passed Lean CI run 31546978830 (job 93961477202) before the R11/R12 refs and
 clean named worktrees were created and activated.

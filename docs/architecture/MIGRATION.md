@@ -39,6 +39,35 @@ records the exact cleanup evidence. The temporary `claude-local` authority on
 `codex-lane` has expired. M05/M06 are ready; M07 and every other unaccepted
 milestone remain planned, and no successor wave is activated.
 
+R05 and R06 have since been preserved by separate true merges, after which
+the reviewed 67-path R0006/R0007 union was applied exactly once from their
+common C0003 preimages. The bounded integration follow-up ledger remains
+exactly 13 unique paths: 6 aggregate paths adding 31 casefold-sorted import
+edges over 29 unique destinations, 3 milestone-DAG/evidence paths, and 4
+narrative paths. Its zero cross-wave-repair count was the pre-battery
+expectation. The later approved R0008 amendment is a separate 27-path
+compatibility repair, disjoint from those 13: 4 paths supersede union
+postimages through an exact SHA-256 custody chain and 23 are newly staged. The
+immutable union manifest is not recut. Variant A keeps the Algorithms umbrella
+Source ceiling at 49 and needs no layout exception. R0008 registration covers
+16 logical governance paths (5 request artifacts, including the immutable
+`R0008-approval.md` addendum, 2 delivered branch records, 3
+milestone-DAG/evidence paths, 4 narratives, and 2 validators); because 7 were
+already staged, it adds 9 unique paths. One newly staged stale Algorithms
+smoke-test correction brings the candidate to 111 staged paths (78 before
+R0008 + 23 repair-only + 9 registration-only + 1 smoke correction). B0006 and
+B0007 are delivered at their exact tips but remain unaccepted and unretired;
+their refs and worktrees remain intact. The earlier battery exposed one stale
+Source-only Algorithms `#check`; it was removed under D1 and the targeted smoke
+file passes. Final evidence run
+`.lake/integration-r05-r06-20260816T172806Z` passed all 11 gates with a stable
+tree, including the full `NumStability`/`NumStabilityTest` build and `lake test`
+(`DONE.json` SHA-256
+`A5DA29ED1EE40AF2A4B3967EDB1981ECB041A5821D61EDD117F3F8A55735C166`).
+Independent package and staged-diff audits are green. This is not C0004
+acceptance: green exact-code Lean CI remains required. All quantitative
+statistics remain pinned to C0003 until C0004.
+
 1. **Current baseline.** Regenerate and version the architecture and build
    report at the exact migration commit using tracked tooling.
 2. **Safety net.** Track CI, a test target, API/import smoke tests, and clean and

@@ -1,4 +1,4 @@
-import NumStability.Source.Higham.Chapter11.Higham11SkewSourceCorrection
+import NumStability.Source.Higham.Chapter11.Skew.SourceCorrection
 
 /-!
 Compatibility facade for the canonical Chapter 11 owner(s).

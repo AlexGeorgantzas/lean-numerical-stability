@@ -16,7 +16,8 @@ import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
 import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
 import NumStability.Algorithms.LinearSystems.QR.QRSolve
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+import NumStability.Source.Higham.Chapter21.Lemma02.Symmetrization.UnderdeterminedSpec
+import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.UnderdeterminedSpec
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.SingularValues.Basic
 import NumStability.Analysis.SingularValues.Realification

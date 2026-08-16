@@ -1,6 +1,6 @@
 import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.EndToEnd.Core
-import NumStability.Algorithms.Underdetermined.Higham21QRFoundations
-import NumStability.Algorithms.Underdetermined.Higham21RankStability
+import NumStability.Source.Higham.Chapter21.Equation03.QRFoundations
+import NumStability.Source.Higham.Chapter21.Equation04.QRFoundations
 import NumStability.Source.Higham.Chapter21.Theorem04.SourceClosure.SourceClosure
 
 /-!

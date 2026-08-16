@@ -1,5 +1,5 @@
 import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.BackwardError.Core
-import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.Closure
+import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.EndToEnd.Core
 import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.RoundedReplay
 import NumStability.Source.Higham.Chapter19.Core
 import NumStability.Source.Higham.Chapter21.Theorem04.RowwiseBackwardError

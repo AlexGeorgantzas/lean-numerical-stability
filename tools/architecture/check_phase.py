@@ -63,6 +63,13 @@ REQUEST_STATUSES = {
     "expired",
     "withdrawn",
 }
+INTEGRATION_AMENDMENT_KIND = "integration_amendment"
+INTEGRATION_AMENDMENT_MANIFEST_HEADER = (
+    "path",
+    "preimage_blob_oid",
+    "preimage_sha256",
+    "postimage_sha256",
+)
 PROJECTION_STATUSES = {"active", "retired", "superseded"}
 GATE_STATUSES = {"PASS", "FAIL", "NOT_RUN", "NOT_APPLICABLE"}
 COMPLETION_STATUSES = {"incomplete", "complete"}
@@ -425,7 +432,13 @@ class PhaseValidator:
             self.problems.violation(context, "path rules must be sorted by match and path")
         return result
 
-    def patch_paths(self, artifact: Artifact | None, context: str) -> list[str]:
+    def patch_paths(
+        self,
+        artifact: Artifact | None,
+        context: str,
+        *,
+        require_sorted: bool = True,
+    ) -> list[str]:
         if artifact is None:
             return []
         path = self.resolve_repo_path(artifact.path, f"{context}.path")
@@ -465,7 +478,7 @@ class PhaseValidator:
             self.problems.malformed(context, "patch contains no `diff --git` file header")
         if len(changed) != len(set(changed)):
             self.problems.malformed(context, "patch repeats a file diff")
-        if changed != sorted(changed):
+        if require_sorted and changed != sorted(changed):
             self.problems.violation(context, "file diffs must be sorted by path")
         return changed
 
@@ -1660,6 +1673,9 @@ class PhaseValidator:
             record = self.read_json_file(path, context)
             if record is None:
                 continue
+            if record.get("record_kind") == INTEGRATION_AMENDMENT_KIND:
+                self.load_integration_amendment_record(path, context, record)
+                continue
             required = {
                 "schema_version", "record_kind", "phase_id", "request_id", "lane_id", "wave_id",
                 "requester_id", "created_at", "target_checkpoint_id", "target_base_sha", "paths",
@@ -1752,6 +1768,535 @@ class PhaseValidator:
                 self.problems.malformed(context, f"duplicate request_id {request_id}")
             obj["_context"] = context
             self.requests[request_id] = obj
+
+    def load_integration_amendment_record(
+        self, path: Path, context: str, record: dict[str, Any]
+    ) -> None:
+        """Load a reviewed repair rooted in an in-flight integration index.
+
+        Unlike a ``shared_file_request``, an integration amendment is not
+        falsely projected back onto an accepted checkpoint.  Its exact
+        preimages live in the hash-pinned postimage manifest, and its target
+        commit records the HEAD whose staged index the amendment repaired.
+        """
+
+        required = {
+            "schema_version",
+            "record_kind",
+            "phase_id",
+            "request_id",
+            "lane_id",
+            "requester_id",
+            "created_at",
+            "target_branch",
+            "target_head_sha",
+            "target_index_staged_paths",
+            "paths",
+            "preimage_blobs",
+            "rationale",
+            "patch",
+            "postimages",
+            "predecessor_postimages",
+            "review",
+            "approval",
+            "depends_on",
+            "blocks",
+            "status",
+            "supersedes",
+            "superseded_by",
+            "resolution",
+        }
+        obj = require_keys(record, context, self.problems, required)
+        if obj is None:
+            return
+        if obj.get("schema_version") != SCHEMA_VERSION:
+            self.problems.malformed(context, f"expected schema_version {SCHEMA_VERSION}")
+        if obj.get("phase_id") != self.phase_id:
+            self.problems.violation(context, "phase_id does not match phase.json")
+        request_id = required_string(obj, "request_id", context, self.problems)
+        if request_id is None:
+            return
+        if not ID_RE.fullmatch(request_id) or path.stem != request_id:
+            self.problems.malformed(
+                context, "request_id must be a slug matching the filename stem"
+            )
+        for key in (
+            "lane_id",
+            "requester_id",
+            "created_at",
+            "target_branch",
+            "target_head_sha",
+            "rationale",
+        ):
+            required_string(obj, key, context, self.problems)
+        if isinstance(obj.get("created_at"), str) and not is_rfc3339(obj["created_at"]):
+            self.problems.malformed(
+                f"{context}.created_at", "expected an RFC3339 timestamp with timezone"
+            )
+        target_head = obj.get("target_head_sha")
+        if isinstance(target_head, str):
+            self.commit_exists(target_head, f"{context}.target_head_sha")
+        staged_paths = obj.get("target_index_staged_paths")
+        if not isinstance(staged_paths, int) or isinstance(staged_paths, bool) or staged_paths < 1:
+            self.problems.malformed(
+                f"{context}.target_index_staged_paths", "expected a positive integer"
+            )
+
+        paths = sorted_unique_strings(
+            obj.get("paths"), f"{context}.paths", self.problems, allow_empty=False
+        )
+        for affected in paths:
+            if not is_repo_path(affected):
+                self.problems.malformed(
+                    f"{context}.paths", f"invalid repository-relative path {affected!r}"
+                )
+        preimages = obj.get("preimage_blobs")
+        if not isinstance(preimages, list):
+            self.problems.malformed(f"{context}.preimage_blobs", "expected a list")
+            preimages = []
+        parsed_preimages: dict[str, str] = {}
+        preimage_order: list[str] = []
+        for index, preimage_value in enumerate(preimages):
+            item_context = f"{context}.preimage_blobs[{index}]"
+            preimage = require_keys(
+                preimage_value, item_context, self.problems, {"path", "blob_oid"}
+            )
+            if preimage is None:
+                continue
+            preimage_path = required_string(preimage, "path", item_context, self.problems)
+            blob = preimage.get("blob_oid")
+            if not isinstance(blob, str) or not SHA1_RE.fullmatch(blob):
+                self.problems.malformed(
+                    f"{item_context}.blob_oid",
+                    "integration-amendment preimages require a lowercase 40-hex blob OID",
+                )
+                continue
+            if preimage_path is not None:
+                if preimage_path in parsed_preimages:
+                    self.problems.malformed(
+                        item_context, f"duplicate preimage path {preimage_path}"
+                    )
+                parsed_preimages[preimage_path] = blob
+                preimage_order.append(preimage_path)
+        if preimage_order != sorted(preimage_order):
+            self.problems.violation(
+                f"{context}.preimage_blobs", "preimage rows must be sorted by path"
+            )
+        if set(parsed_preimages) != set(paths):
+            self.problems.violation(
+                f"{context}.preimage_blobs",
+                "preimage paths must exactly equal amendment paths",
+            )
+        obj["_preimages"] = parsed_preimages
+
+        obj["_patch"] = self.artifact(obj.get("patch"), f"{context}.patch")
+        obj["_postimages_artifact"] = self.artifact(
+            obj.get("postimages"), f"{context}.postimages"
+        )
+        obj["_review_artifact"] = self.artifact(obj.get("review"), f"{context}.review")
+        obj["_approval_artifact"] = self.artifact(
+            obj.get("approval"), f"{context}.approval"
+        )
+        predecessor_values = obj.get("predecessor_postimages")
+        if not isinstance(predecessor_values, list):
+            self.problems.malformed(
+                f"{context}.predecessor_postimages", "expected a list"
+            )
+            predecessor_values = []
+        predecessor_artifacts = [
+            self.artifact(value, f"{context}.predecessor_postimages[{index}]")
+            for index, value in enumerate(predecessor_values)
+        ]
+        predecessor_paths = [
+            artifact.path
+            for artifact in predecessor_artifacts
+            if artifact is not None
+        ]
+        if predecessor_paths != sorted(set(predecessor_paths)):
+            self.problems.violation(
+                f"{context}.predecessor_postimages",
+                "artifacts must be unique and sorted by path",
+            )
+        request_prefix = self.relative_context(self.phase_dir / "requests") + "/"
+        own_manifest = self.relative_context(
+            self.phase_dir / "requests" / f"{request_id}-postimages.tsv"
+        )
+        for index, artifact in enumerate(predecessor_artifacts):
+            if artifact is not None and (
+                not artifact.path.startswith(request_prefix)
+                or not artifact.path.endswith("-postimages.tsv")
+                or artifact.path == own_manifest
+            ):
+                self.problems.violation(
+                    f"{context}.predecessor_postimages[{index}].path",
+                    "must name a different request postimage manifest in this phase",
+                )
+        obj["_predecessor_postimages_artifacts"] = predecessor_artifacts
+        expected_artifact_paths = {
+            "_patch": self.relative_context(
+                self.phase_dir / "requests" / f"{request_id}.patch"
+            ),
+            "_postimages_artifact": self.relative_context(
+                self.phase_dir / "requests" / f"{request_id}-postimages.tsv"
+            ),
+            "_review_artifact": self.relative_context(
+                self.phase_dir / "requests" / f"{request_id}-review.md"
+            ),
+            "_approval_artifact": self.relative_context(
+                self.phase_dir / "requests" / f"{request_id}-approval.md"
+            ),
+        }
+        for key, expected in expected_artifact_paths.items():
+            artifact = obj.get(key)
+            if isinstance(artifact, Artifact) and artifact.path != expected:
+                self.problems.violation(
+                    f"{context}.{key.removeprefix('_').removesuffix('_artifact')}.path",
+                    f"artifact must be {expected}",
+                )
+        changed_paths = self.patch_paths(
+            obj.get("_patch"), f"{context}.patch", require_sorted=False
+        )
+        if len(changed_paths) != len(paths) or set(changed_paths) != set(paths):
+            self.problems.violation(
+                f"{context}.patch",
+                "patch paths must uniquely and exactly equal amendment paths: "
+                f"expected {paths}, found {changed_paths}",
+            )
+        obj["_postimages"], preimage_digests = self.validate_integration_amendment_manifest(
+            obj.get("_postimages_artifact"),
+            context,
+            paths,
+            parsed_preimages,
+            obj.get("status"),
+            (
+                obj.get("resolution", {}).get("commit_sha")
+                if isinstance(obj.get("resolution"), dict)
+                else None
+            ),
+        )
+        self.validate_integration_amendment_predecessors(
+            predecessor_artifacts,
+            context,
+            obj.get("target_head_sha"),
+            paths,
+            parsed_preimages,
+            preimage_digests,
+        )
+
+        for key in ("depends_on", "blocks"):
+            obj[f"_{key}"] = sorted_unique_strings(
+                obj.get(key), f"{context}.{key}", self.problems, allow_empty=False
+            )
+        if obj.get("status") not in REQUEST_STATUSES:
+            self.problems.malformed(
+                f"{context}.status", f"expected one of {sorted(REQUEST_STATUSES)}"
+            )
+        required_string(obj, "supersedes", context, self.problems, nullable=True)
+        required_string(obj, "superseded_by", context, self.problems, nullable=True)
+        resolution = require_keys(
+            obj.get("resolution"),
+            f"{context}.resolution",
+            self.problems,
+            {
+                "commit_sha",
+                "checkpoint_id",
+                "resolved_at",
+                "resolved_by",
+                "validation_evidence",
+                "reason",
+            },
+        )
+        if resolution is not None:
+            for key in ("commit_sha", "checkpoint_id", "resolved_at", "resolved_by", "reason"):
+                required_string(
+                    resolution,
+                    key,
+                    f"{context}.resolution",
+                    self.problems,
+                    nullable=True,
+                )
+            if resolution.get("resolved_at") is not None and not is_rfc3339(
+                resolution["resolved_at"]
+            ):
+                self.problems.malformed(
+                    f"{context}.resolution.resolved_at",
+                    "expected an RFC3339 timestamp with timezone",
+                )
+            evidence = resolution.get("validation_evidence")
+            if not isinstance(evidence, list):
+                self.problems.malformed(
+                    f"{context}.resolution.validation_evidence", "expected a list"
+                )
+                evidence = []
+            resolution["_evidence"] = [
+                self.artifact(item, f"{context}.resolution.validation_evidence[{index}]")
+                for index, item in enumerate(evidence)
+            ]
+        if request_id in self.requests:
+            self.problems.malformed(context, f"duplicate request_id {request_id}")
+        obj["_context"] = context
+        self.requests[request_id] = obj
+
+    def validate_integration_amendment_manifest(
+        self,
+        artifact: Artifact | None,
+        context: str,
+        expected_paths: list[str],
+        expected_preimages: dict[str, str],
+        status: Any,
+        resolution_commit: Any,
+    ) -> tuple[dict[str, str], dict[str, str]]:
+        if artifact is None:
+            return {}, {}
+        manifest_path = self.resolve_repo_path(
+            artifact.path, f"{context}.postimages.path"
+        )
+        if manifest_path is None or not manifest_path.is_file():
+            return {}, {}
+        try:
+            raw = manifest_path.read_bytes()
+        except OSError as error:
+            self.problems.malformed(
+                f"{context}.postimages", f"cannot read postimage manifest: {error}"
+            )
+            return {}, {}
+        if b"\r" in raw:
+            self.problems.violation(
+                f"{context}.postimages", "postimage manifest must use LF line endings"
+            )
+        if raw and not raw.endswith(b"\n"):
+            self.problems.violation(
+                f"{context}.postimages", "postimage manifest must end with a newline"
+            )
+        try:
+            reader = csv.DictReader(
+                raw.decode("utf-8-sig").splitlines(), delimiter="\t", strict=True
+            )
+            header = tuple(reader.fieldnames or ())
+            rows = [dict(row) for row in reader]
+        except (UnicodeError, csv.Error) as error:
+            self.problems.malformed(
+                f"{context}.postimages", f"cannot parse postimage manifest: {error}"
+            )
+            return {}, {}
+        if header != INTEGRATION_AMENDMENT_MANIFEST_HEADER:
+            self.problems.malformed(
+                f"{context}.postimages",
+                "header must be exactly: "
+                + "\t".join(INTEGRATION_AMENDMENT_MANIFEST_HEADER),
+            )
+        if any(None in row or any(value is None for value in row.values()) for row in rows):
+            self.problems.malformed(
+                f"{context}.postimages", "malformed row or wrong column count"
+            )
+        manifest_paths = [row.get("path", "") for row in rows]
+        if manifest_paths != expected_paths:
+            self.problems.violation(
+                f"{context}.postimages",
+                "manifest rows must be sorted, unique, and exactly equal amendment paths",
+            )
+        postimages: dict[str, str] = {}
+        preimage_digests: dict[str, str] = {}
+        for index, row in enumerate(rows):
+            row_context = f"{context}.postimages[{index}]"
+            affected_value = row.get("path", "")
+            oid_value = row.get("preimage_blob_oid", "")
+            pre_digest_value = row.get("preimage_sha256", "")
+            post_digest_value = row.get("postimage_sha256", "")
+            affected = affected_value if isinstance(affected_value, str) else ""
+            oid = oid_value if isinstance(oid_value, str) else ""
+            pre_digest = (
+                pre_digest_value if isinstance(pre_digest_value, str) else ""
+            )
+            post_digest = (
+                post_digest_value if isinstance(post_digest_value, str) else ""
+            )
+            if oid != expected_preimages.get(affected):
+                self.problems.violation(
+                    f"{row_context}.preimage_blob_oid",
+                    "manifest preimage OID must equal the request record",
+                )
+            if not SHA256_RE.fullmatch(pre_digest):
+                self.problems.malformed(
+                    f"{row_context}.preimage_sha256", "expected 64 hexadecimal characters"
+                )
+            elif affected:
+                preimage_digests[affected] = pre_digest.upper()
+            if not SHA256_RE.fullmatch(post_digest):
+                self.problems.malformed(
+                    f"{row_context}.postimage_sha256", "expected 64 hexadecimal characters"
+                )
+            if affected and SHA256_RE.fullmatch(post_digest):
+                postimages[affected] = post_digest.upper()
+                source: str | None = None
+                source_label: str | None = None
+                if status == "active":
+                    source = f":{affected}"
+                    source_label = "current index"
+                elif (
+                    status == "applied"
+                    and isinstance(resolution_commit, str)
+                    and SHA1_RE.fullmatch(resolution_commit)
+                ):
+                    source = f"{resolution_commit}:{affected}"
+                    source_label = f"resolution commit {resolution_commit}"
+                if source is not None and source_label is not None:
+                    payload = self.run_git(
+                        ["show", source], f"{row_context}.postimage_sha256"
+                    )
+                    if payload is not None:
+                        actual = hashlib.sha256(payload).hexdigest().upper()
+                        if actual != post_digest.upper():
+                            self.problems.violation(
+                                f"{row_context}.postimage_sha256",
+                                f"{source_label} hashes to {actual}, not "
+                                f"{post_digest.upper()}",
+                            )
+        return postimages, preimage_digests
+
+    def validate_integration_amendment_predecessors(
+        self,
+        artifacts: list[Artifact | None],
+        context: str,
+        target_head: Any,
+        expected_paths: list[str],
+        expected_preimages: dict[str, str],
+        expected_preimage_sha256: dict[str, str],
+    ) -> None:
+        """Prove each amendment preimage from HEAD or a pinned predecessor."""
+
+        predecessor_overlaps: set[str] = set()
+        chained: set[str] = set()
+        for artifact_index, artifact in enumerate(artifacts):
+            if artifact is None:
+                continue
+            predecessor_context = (
+                f"{context}.predecessor_postimages[{artifact_index}]"
+            )
+            path = self.resolve_repo_path(
+                artifact.path, f"{predecessor_context}.path"
+            )
+            if path is None or not path.is_file():
+                continue
+            try:
+                raw = path.read_bytes()
+                reader = csv.DictReader(
+                    raw.decode("utf-8-sig").splitlines(), delimiter="\t", strict=True
+                )
+                header = tuple(reader.fieldnames or ())
+                rows = [dict(row) for row in reader]
+            except (OSError, UnicodeError, csv.Error) as error:
+                self.problems.malformed(
+                    predecessor_context,
+                    f"cannot parse predecessor manifest: {error}",
+                )
+                continue
+            if b"\r" in raw or (raw and not raw.endswith(b"\n")):
+                self.problems.violation(
+                    predecessor_context,
+                    "predecessor manifest must use LF and end with a newline",
+                )
+            if header != INTEGRATION_AMENDMENT_MANIFEST_HEADER:
+                self.problems.malformed(
+                    predecessor_context,
+                    "header must be exactly: "
+                    + "\t".join(INTEGRATION_AMENDMENT_MANIFEST_HEADER),
+                )
+            if any(
+                None in row or any(value is None for value in row.values())
+                for row in rows
+            ):
+                self.problems.malformed(
+                    predecessor_context, "malformed row or wrong column count"
+                )
+            predecessor_paths = [
+                value if isinstance(value := row.get("path", ""), str) else ""
+                for row in rows
+            ]
+            if predecessor_paths != sorted(set(predecessor_paths)):
+                self.problems.violation(
+                    predecessor_context, "rows must be unique and sorted by path"
+                )
+            artifact_chains = 0
+            for row_index, row in enumerate(rows):
+                affected_value = row.get("path", "")
+                affected = (
+                    affected_value if isinstance(affected_value, str) else ""
+                )
+                if affected not in expected_paths:
+                    continue
+                artifact_chains += 1
+                row_context = f"{predecessor_context}[{row_index}]"
+                if affected in predecessor_overlaps:
+                    self.problems.violation(
+                        row_context,
+                        "amendment path appears in more than one predecessor manifest",
+                    )
+                predecessor_overlaps.add(affected)
+                predecessor_post_value = row.get("postimage_sha256", "")
+                predecessor_post = (
+                    predecessor_post_value.upper()
+                    if isinstance(predecessor_post_value, str)
+                    else ""
+                )
+                expected_pre = expected_preimage_sha256.get(affected)
+                if (
+                    not SHA256_RE.fullmatch(predecessor_post)
+                    or predecessor_post != expected_pre
+                ):
+                    self.problems.violation(
+                        f"{row_context}.postimage_sha256",
+                        "predecessor postimage must equal amendment preimage SHA-256",
+                    )
+                else:
+                    chained.add(affected)
+            if artifact_chains == 0:
+                self.problems.violation(
+                    predecessor_context,
+                    "pinned predecessor manifest does not chain any amendment path",
+                )
+
+        if not isinstance(target_head, str) or not SHA1_RE.fullmatch(target_head):
+            return
+        for affected in expected_paths:
+            output = self.run_git(
+                ["rev-parse", f"{target_head}:{affected}"],
+                f"{context}.preimage_blobs[{affected}]",
+            )
+            actual = (
+                output.decode("ascii", errors="replace").strip()
+                if output is not None
+                else None
+            )
+            expected_oid = expected_preimages.get(affected)
+            if actual == expected_oid:
+                if affected in predecessor_overlaps:
+                    self.problems.violation(
+                        f"{context}.preimage_blobs[{affected}]",
+                        "target-HEAD preimage must not also be claimed from a "
+                        "predecessor manifest",
+                    )
+                payload = self.run_git(
+                    ["show", f"{target_head}:{affected}"],
+                    f"{context}.preimage_blobs[{affected}]",
+                )
+                expected_digest = expected_preimage_sha256.get(affected)
+                if payload is not None and expected_digest is not None:
+                    actual_digest = hashlib.sha256(payload).hexdigest().upper()
+                    if actual_digest != expected_digest:
+                        self.problems.violation(
+                            f"{context}.preimage_blobs[{affected}]",
+                            "target-HEAD blob hashes to "
+                            f"{actual_digest}, not {expected_digest}",
+                        )
+                continue
+            if affected not in chained:
+                self.problems.violation(
+                    f"{context}.preimage_blobs[{affected}]",
+                    "preimage must equal the target-HEAD blob or chain from an "
+                    "exact pinned predecessor postimage; "
+                    f"target HEAD has {actual!r}, amendment records {expected_oid!r}",
+                )
 
     def validate_cross_references(self) -> None:
         if not self.phase:
@@ -2316,6 +2861,9 @@ class PhaseValidator:
 
     def validate_requests(self, current_id: str) -> None:
         for request_id, request in sorted(self.requests.items()):
+            if request.get("record_kind") == INTEGRATION_AMENDMENT_KIND:
+                self.validate_integration_amendment(request_id, request)
+                continue
             context = request.get("_context", f"request {request_id}")
             status = request.get("status")
             lane_id = request.get("lane_id")
@@ -2407,8 +2955,161 @@ class PhaseValidator:
                 request = self.requests.get(request_id)
                 if request is None:
                     self.problems.violation(f"branch {branch_id}", f"unknown shared request {request_id}")
+                elif request.get("record_kind") != "shared_file_request":
+                    self.problems.violation(
+                        f"branch {branch_id}",
+                        f"shared_request_ids may name only shared_file_request records, not {request_id}",
+                    )
                 elif request.get("lane_id") != branch.get("lane_id") or request.get("wave_id") != branch.get("wave_id"):
                     self.problems.violation(f"branch {branch_id}", f"shared request {request_id} belongs to another lane or wave")
+
+    def validate_integration_amendment(
+        self, request_id: str, request: dict[str, Any]
+    ) -> None:
+        context = request.get("_context", f"request {request_id}")
+        status = request.get("status")
+        lane_id = request.get("lane_id")
+        lane = self.lanes.get(lane_id)
+        if lane is None:
+            self.problems.violation(context, f"unknown lane_id {lane_id}")
+        else:
+            allowed = {lane.get("owner_id"), *lane.get("operator_ids", [])}
+            if request.get("requester_id") not in allowed:
+                self.problems.violation(
+                    context, "requester is not the lane owner or an authorized operator"
+                )
+        authority = self.phase.get("authority", {})
+        if lane_id != "integration-lane":
+            self.problems.violation(
+                context, "integration amendments must use integration-lane"
+            )
+        if request.get("requester_id") != authority.get("integration_authority_id"):
+            self.problems.violation(
+                context, "integration amendment must be issued by integration authority"
+            )
+        if request.get("requester_id") not in authority.get(
+            "shared_path_authority_ids", []
+        ):
+            self.problems.violation(
+                context, "integration amendment issuer must also hold shared-path authority"
+            )
+        target_head = request.get("target_head_sha")
+        if isinstance(target_head, str) and self.commit_exists(
+            target_head, f"{context}.target_head_sha"
+        ):
+            current = self.run_git(["rev-parse", "HEAD"], f"{context}.target_head_sha")
+            if current is not None:
+                current_sha = current.decode("ascii", errors="replace").strip()
+                if SHA1_RE.fullmatch(current_sha) and not self.is_ancestor(
+                    target_head, current_sha, f"{context}.target_head_sha"
+                ):
+                    self.problems.violation(
+                        context, "target_head_sha must remain an ancestor of current HEAD"
+                    )
+        for dependency in request.get("_depends_on", []):
+            dependency_record = self.requests.get(dependency)
+            if dependency_record is None:
+                self.problems.violation(
+                    context, f"unknown dependency request {dependency}"
+                )
+            elif dependency_record.get("status") not in {"active", "applied"}:
+                self.problems.violation(
+                    context,
+                    f"dependency request {dependency} must be active or applied",
+                )
+        known_waves = {
+            wave
+            for milestone in self.milestones.values()
+            for wave in milestone.get("wave_ids", [])
+        }
+        for wave in request.get("_blocks", []):
+            if wave not in known_waves:
+                self.problems.violation(context, f"blocks names unknown wave {wave}")
+        expected_evidence_paths = {
+            self.relative_context(
+                self.phase_dir / "requests" / f"{request_id}{suffix}"
+            )
+            for suffix in (
+                ".json",
+                ".patch",
+                "-postimages.tsv",
+                "-review.md",
+                "-approval.md",
+            )
+        }
+        blocked_waves = set(request.get("_blocks", []))
+        for branch_id, branch in sorted(self.branches.items()):
+            evidence = (branch.get("refresh") or {}).get("_evidence", [])
+            evidence_paths = [
+                artifact.path for artifact in evidence if artifact is not None
+            ]
+            counts = {
+                path: evidence_paths.count(path) for path in expected_evidence_paths
+            }
+            if branch.get("wave_id") in blocked_waves:
+                for path, count in sorted(counts.items()):
+                    if count != 1:
+                        self.problems.violation(
+                            f"branch {branch_id}.refresh.evidence",
+                            f"blocked branch must hash-pin exactly one {path}",
+                        )
+            elif any(counts.values()):
+                self.problems.violation(
+                    f"branch {branch_id}.refresh.evidence",
+                    f"non-blocked branch must not pin {request_id} amendment artifacts",
+                )
+        supersedes = request.get("supersedes")
+        superseded_by = request.get("superseded_by")
+        if supersedes is not None and supersedes not in self.requests:
+            self.problems.violation(context, f"unknown superseded request {supersedes}")
+        if status == "superseded":
+            if superseded_by is None or superseded_by not in self.requests:
+                self.problems.violation(
+                    context, "superseded amendment must name an existing successor"
+                )
+            elif self.requests[superseded_by].get("supersedes") != request_id:
+                self.problems.violation(
+                    context, "superseding request does not point back through supersedes"
+                )
+        elif superseded_by is not None:
+            self.problems.violation(
+                context, "only superseded amendments may name superseded_by"
+            )
+        resolution = request.get("resolution", {})
+        resolution_values = [
+            resolution.get("commit_sha"),
+            resolution.get("checkpoint_id"),
+            resolution.get("resolved_at"),
+            resolution.get("resolved_by"),
+        ]
+        if status in {"draft", "active"}:
+            if (
+                any(value is not None for value in resolution_values)
+                or resolution.get("reason") is not None
+                or resolution.get("_evidence")
+            ):
+                self.problems.violation(
+                    context, f"{status} amendment must have an empty resolution"
+                )
+        elif status == "applied":
+            if any(value is None for value in resolution_values) or not resolution.get(
+                "_evidence"
+            ):
+                self.problems.malformed(
+                    context,
+                    "applied amendment requires commit, checkpoint, timestamp, resolver, and validation evidence",
+                )
+            self.validate_request_resolution(request, context, require_commit=True)
+        else:
+            if (
+                resolution.get("resolved_at") is None
+                or resolution.get("resolved_by") is None
+                or resolution.get("reason") is None
+            ):
+                self.problems.malformed(
+                    context, f"{status} amendment requires resolver, timestamp, and reason"
+                )
+            self.validate_request_resolution(request, context, require_commit=False)
 
     def validate_request_resolution(self, request: dict[str, Any], context: str, *, require_commit: bool) -> None:
         resolution = request.get("resolution", {})
@@ -2675,7 +3376,16 @@ def run_self_test() -> int:
                 "branch_registry_authority_ids": ["integrator"],
                 "build_lock_name": "self-test-lock",
                 "lanes": [
-                    {"lane_id": "lane-a", "owner_id": "integrator", "operator_ids": ["worker"]}
+                    {
+                        "lane_id": "integration-lane",
+                        "owner_id": "integrator",
+                        "operator_ids": ["integrator"],
+                    },
+                    {
+                        "lane_id": "lane-a",
+                        "owner_id": "integrator",
+                        "operator_ids": ["worker"],
+                    },
                 ],
             },
             "shared_paths": [{"match": "exact", "path": "NumStability.lean"}],
@@ -2781,7 +3491,15 @@ def run_self_test() -> int:
             "base_sha": commit,
             "owned_paths": [{"match": "exact", "path": "NumStability/Foo.lean"}],
             "destination_prefixes": [
-                {"match": "prefix", "path": "NumStability/FooCanonical/"}
+                {"match": "prefix", "path": "NumStability/FooCanonical/"},
+                {
+                    "match": "prefix",
+                    "path": "NumStabilityTest/Reorganization/W1/",
+                },
+                {
+                    "match": "prefix",
+                    "path": "docs/architecture/deliveries/W1/",
+                },
             ],
             "forbidden_paths": [{"match": "exact", "path": "NumStability.lean"}],
             "baseline_projection_id": "P0001",
@@ -3015,7 +3733,15 @@ def run_self_test() -> int:
             )
             return 1
         branch["destination_prefixes"] = [
-            {"match": "prefix", "path": "NumStability/FooCanonical/"}
+            {"match": "prefix", "path": "NumStability/FooCanonical/"},
+            {
+                "match": "prefix",
+                "path": "NumStabilityTest/Reorganization/W1/",
+            },
+            {
+                "match": "prefix",
+                "path": "docs/architecture/deliveries/W1/",
+            },
         ]
         write_json(phase_dir / "branches/B0001.json", branch)
 
@@ -3101,6 +3827,566 @@ def run_self_test() -> int:
         phase["completion"]["bounded_phase"]["evidence_checkpoint_id"] = None
         write_json(phase_dir / "phase.json", phase)
 
+        # Exercise integration amendments end to end.  One preimage comes
+        # from target HEAD; the other exists only as a SHA-256-chained
+        # predecessor postimage, so the fixture also protects clean-clone
+        # validation from accidentally requiring a loose predecessor blob.
+        amendment_patch_path = phase_dir / "requests/R0002.patch"
+        amendment_postimages_path = phase_dir / "requests/R0002-postimages.tsv"
+        amendment_review_path = phase_dir / "requests/R0002-review.md"
+        amendment_approval_path = phase_dir / "requests/R0002-approval.md"
+        predecessor_postimages_path = phase_dir / "requests/R0001-postimages.tsv"
+        amendment_record_path = phase_dir / "requests/R0002.json"
+        root_path = root / "NumStability.lean"
+        foo_path = root / "NumStability/Foo.lean"
+        base_root = subprocess.check_output(
+            ["git", "show", f"{commit}:NumStability.lean"], cwd=root
+        )
+        base_foo = subprocess.check_output(
+            ["git", "show", f"{commit}:NumStability/Foo.lean"], cwd=root
+        )
+        predecessor_root = (
+            b"/-! Test root after predecessor. -/\nimport NumStability.Foo\n"
+        )
+        final_root = b"/-! Test root after amendment. -/\nimport NumStability.Foo\n"
+        final_foo = (
+            b"/-! Test leaf after amendment. -/\n"
+            b"theorem foo : True := by trivial\n"
+        )
+
+        def blob_oid(payload: bytes) -> str:
+            header = f"blob {len(payload)}\0".encode("ascii")
+            return hashlib.sha1(header + payload).hexdigest()
+
+        predecessor_root_oid = blob_oid(predecessor_root)
+        # Deliberately do not write predecessor_root_oid into the object
+        # database.  A portable validator must prove it from the pinned
+        # predecessor SHA-256 chain instead of `git cat-file`.
+        if subprocess.run(
+            ["git", "cat-file", "-e", predecessor_root_oid],
+            cwd=root,
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        ).returncode == 0:
+            print(
+                "self-test failure: predecessor-only blob unexpectedly exists",
+                file=sys.stderr,
+            )
+            return 1
+
+        predecessor_postimages_path.write_text(
+            "\t".join(INTEGRATION_AMENDMENT_MANIFEST_HEADER)
+            + "\n"
+            + "\t".join(
+                (
+                    "NumStability.lean",
+                    blobs["NumStability.lean"],
+                    hashlib.sha256(base_root).hexdigest().upper(),
+                    hashlib.sha256(predecessor_root).hexdigest().upper(),
+                )
+            )
+            + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        predecessor_postimages_bytes = predecessor_postimages_path.read_bytes()
+        amendment_postimages_path.write_text(
+            "\t".join(INTEGRATION_AMENDMENT_MANIFEST_HEADER)
+            + "\n"
+            + "\t".join(
+                (
+                    "NumStability.lean",
+                    predecessor_root_oid,
+                    hashlib.sha256(predecessor_root).hexdigest().upper(),
+                    hashlib.sha256(final_root).hexdigest().upper(),
+                )
+            )
+            + "\n"
+            + "\t".join(
+                (
+                    "NumStability/Foo.lean",
+                    blobs["NumStability/Foo.lean"],
+                    hashlib.sha256(base_foo).hexdigest().upper(),
+                    hashlib.sha256(final_foo).hexdigest().upper(),
+                )
+            )
+            + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        amendment_postimages_bytes = amendment_postimages_path.read_bytes()
+        amendment_patch_path.write_text(
+            "diff --git a/NumStability.lean b/NumStability.lean\n"
+            "--- a/NumStability.lean\n"
+            "+++ b/NumStability.lean\n"
+            "@@ -1 +1 @@\n"
+            "-/-! Test root after predecessor. -/\n"
+            "+/-! Test root after amendment. -/\n"
+            "diff --git a/NumStability/Foo.lean b/NumStability/Foo.lean\n"
+            "--- a/NumStability/Foo.lean\n"
+            "+++ b/NumStability/Foo.lean\n"
+            "@@ -1 +1 @@\n"
+            "-/-! Test leaf. -/\n"
+            "+/-! Test leaf after amendment. -/\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        amendment_review_path.write_text(
+            "# Reviewed self-test amendment\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        amendment_approval_path.write_text(
+            "# Approved self-test amendment\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        delivery_test_path = (
+            root / "NumStabilityTest/Reorganization/W1/Smoke.lean"
+        )
+        delivery_report_path = root / "docs/architecture/deliveries/W1/DELIVERY.md"
+        delivery_scope_path = (
+            root / "docs/architecture/deliveries/W1/CHANGED_PATHS.md"
+        )
+        delivery_test_path.parent.mkdir(parents=True, exist_ok=True)
+        delivery_report_path.parent.mkdir(parents=True, exist_ok=True)
+        delivery_test_path.write_text(
+            "import NumStability.Foo\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        delivery_report_path.write_text(
+            "# Self-test delivery\n", encoding="utf-8", newline="\n"
+        )
+        delivery_scope_path.write_text(
+            "# Self-test changed paths\n", encoding="utf-8", newline="\n"
+        )
+        subprocess.run(
+            [
+                "git",
+                "add",
+                "--",
+                "NumStabilityTest/Reorganization/W1/Smoke.lean",
+                "docs/architecture/deliveries/W1/DELIVERY.md",
+                "docs/architecture/deliveries/W1/CHANGED_PATHS.md",
+            ],
+            cwd=root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-qm", "self-test worker evidence"],
+            cwd=root,
+            check=True,
+        )
+        delivery_commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True
+        ).strip()
+        cross_wave_test_path = (
+            root / "NumStabilityTest/Reorganization/W2/Intrusion.lean"
+        )
+        cross_wave_test_path.parent.mkdir(parents=True, exist_ok=True)
+        cross_wave_test_path.write_text(
+            "import NumStability.Foo\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        subprocess.run(
+            [
+                "git",
+                "add",
+                "--",
+                "NumStabilityTest/Reorganization/W2/Intrusion.lean",
+            ],
+            cwd=root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "commit", "-qm", "self-test cross-wave intrusion"],
+            cwd=root,
+            check=True,
+        )
+        cross_wave_delivery_commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True
+        ).strip()
+        root_path.write_bytes(final_root)
+        foo_path.write_bytes(final_foo)
+        subprocess.run(
+            ["git", "add", "--", "NumStability.lean", "NumStability/Foo.lean"],
+            cwd=root,
+            check=True,
+        )
+        amendment = {
+            "schema_version": 1,
+            "record_kind": INTEGRATION_AMENDMENT_KIND,
+            "phase_id": phase["phase_id"],
+            "request_id": "R0002",
+            "lane_id": "integration-lane",
+            "requester_id": "integrator",
+            "created_at": "2026-08-01T00:02:00Z",
+            "target_branch": "main",
+            "target_head_sha": commit,
+            "target_index_staged_paths": 2,
+            "paths": ["NumStability.lean", "NumStability/Foo.lean"],
+            "preimage_blobs": [
+                {
+                    "path": "NumStability.lean",
+                    "blob_oid": predecessor_root_oid,
+                },
+                {
+                    "path": "NumStability/Foo.lean",
+                    "blob_oid": blobs["NumStability/Foo.lean"],
+                },
+            ],
+            "rationale": "Exercise reviewed integration-amendment provenance.",
+            "patch": artifact(amendment_patch_path),
+            "postimages": artifact(amendment_postimages_path),
+            "predecessor_postimages": [artifact(predecessor_postimages_path)],
+            "review": artifact(amendment_review_path),
+            "approval": artifact(amendment_approval_path),
+            "depends_on": ["R0001"],
+            "blocks": ["W1"],
+            "status": "active",
+            "supersedes": None,
+            "superseded_by": None,
+            "resolution": {
+                "commit_sha": None,
+                "checkpoint_id": None,
+                "resolved_at": None,
+                "resolved_by": None,
+                "validation_evidence": [],
+                "reason": None,
+            },
+        }
+
+        amendment_evidence_paths = (
+            amendment_approval_path,
+            amendment_postimages_path,
+            amendment_review_path,
+            amendment_record_path,
+            amendment_patch_path,
+        )
+
+        def write_amendment_and_branch() -> None:
+            write_json(amendment_record_path, amendment)
+            branch["refresh"]["evidence"] = [
+                artifact(path)
+                for path in sorted(
+                    amendment_evidence_paths,
+                    key=lambda candidate: candidate.relative_to(root).as_posix(),
+                )
+            ]
+            write_json(phase_dir / "branches/B0001.json", branch)
+
+        write_amendment_and_branch()
+        active_amendment = PhaseValidator(root, phase_dir).validate()
+        if not active_amendment.ok:
+            active_amendment.render()
+            print(
+                "self-test failure: valid active integration amendment was rejected",
+                file=sys.stderr,
+            )
+            return 1
+
+        foo_path.write_text(
+            "/-! Divergent live index. -/\ntheorem foo : True := by trivial\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        subprocess.run(
+            ["git", "add", "--", "NumStability/Foo.lean"], cwd=root, check=True
+        )
+        wrong_active_postimage = PhaseValidator(root, phase_dir).validate()
+        if not any(
+            "current index hashes to" in message
+            for message in wrong_active_postimage.contract_errors
+        ):
+            wrong_active_postimage.render()
+            print(
+                "self-test failure: active amendment ignored current-index drift",
+                file=sys.stderr,
+            )
+            return 1
+        foo_path.write_bytes(final_foo)
+        subprocess.run(
+            ["git", "add", "--", "NumStability/Foo.lean"], cwd=root, check=True
+        )
+
+        predecessor_postimages_path.write_text(
+            predecessor_postimages_bytes.decode("utf-8").replace(
+                hashlib.sha256(predecessor_root).hexdigest().upper(), "0" * 64
+            ),
+            encoding="utf-8",
+            newline="\n",
+        )
+        amendment["predecessor_postimages"] = [
+            artifact(predecessor_postimages_path)
+        ]
+        write_amendment_and_branch()
+        broken_predecessor = PhaseValidator(root, phase_dir).validate()
+        if not any(
+            "predecessor postimage must equal amendment preimage" in message
+            for message in broken_predecessor.contract_errors
+        ):
+            broken_predecessor.render()
+            print(
+                "self-test failure: broken amendment predecessor chain was accepted",
+                file=sys.stderr,
+            )
+            return 1
+        predecessor_postimages_path.write_bytes(predecessor_postimages_bytes)
+        amendment["predecessor_postimages"] = [
+            artifact(predecessor_postimages_path)
+        ]
+        write_amendment_and_branch()
+
+        amendment["depends_on"] = None
+        amendment["blocks"] = None
+        write_amendment_and_branch()
+        malformed_lists = PhaseValidator(root, phase_dir).validate()
+        if not all(
+            any(f"R0002.json.{key}" in message for message in malformed_lists.format_errors)
+            for key in ("depends_on", "blocks")
+        ):
+            malformed_lists.render()
+            print(
+                "self-test failure: malformed amendment lists were not diagnosed",
+                file=sys.stderr,
+            )
+            return 1
+        amendment["depends_on"] = ["R0001"]
+        amendment["blocks"] = ["W1"]
+        write_amendment_and_branch()
+
+        amendment_postimages_path.write_text(
+            "\t".join(INTEGRATION_AMENDMENT_MANIFEST_HEADER)
+            + "\nNumStability.lean\t"
+            + predecessor_root_oid
+            + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        amendment["postimages"] = artifact(amendment_postimages_path)
+        write_amendment_and_branch()
+        malformed_postimages = PhaseValidator(root, phase_dir).validate()
+        if not any(
+            "malformed row or wrong column count" in message
+            for message in malformed_postimages.format_errors
+        ):
+            malformed_postimages.render()
+            print(
+                "self-test failure: malformed amendment postimages were not diagnosed",
+                file=sys.stderr,
+            )
+            return 1
+        amendment_postimages_path.write_bytes(amendment_postimages_bytes)
+        amendment["postimages"] = artifact(amendment_postimages_path)
+        write_amendment_and_branch()
+
+        predecessor_postimages_path.write_text(
+            "\t".join(INTEGRATION_AMENDMENT_MANIFEST_HEADER)
+            + "\nNumStability.lean\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        amendment["predecessor_postimages"] = [
+            artifact(predecessor_postimages_path)
+        ]
+        write_amendment_and_branch()
+        malformed_predecessor = PhaseValidator(root, phase_dir).validate()
+        if not any(
+            "malformed row or wrong column count" in message
+            for message in malformed_predecessor.format_errors
+        ):
+            malformed_predecessor.render()
+            print(
+                "self-test failure: malformed predecessor rows were not diagnosed",
+                file=sys.stderr,
+            )
+            return 1
+        predecessor_postimages_path.write_bytes(predecessor_postimages_bytes)
+        amendment["predecessor_postimages"] = [
+            artifact(predecessor_postimages_path)
+        ]
+        write_amendment_and_branch()
+
+        # Commit the reviewed postimages, then advance the synthetic phase so
+        # the amendment can be validated as applied.  A deliberately divergent
+        # current index below must not affect this historical check.
+        subprocess.run(
+            ["git", "commit", "-qm", "self-test amendment postimages"],
+            cwd=root,
+            check=True,
+        )
+        applied_commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True
+        ).strip()
+        applied_blobs = {
+            path: subprocess.check_output(
+                ["git", "rev-parse", f"{applied_commit}:{path}"],
+                cwd=root,
+                text=True,
+            ).strip()
+            for path in ("NumStability.lean", "NumStability/Foo.lean")
+        }
+        inventory_c1_path = phase_dir / "checkpoints/C0001-inventory.tsv"
+        with inventory_c1_path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.writer(handle, delimiter="\t", lineterminator="\n")
+            writer.writerow(SCOPE_HEADER)
+            writer.writerows(
+                [
+                    [
+                        "NumStability",
+                        "NumStability.lean",
+                        applied_blobs["NumStability.lean"],
+                        "aggregate",
+                        "-",
+                        "already_complete",
+                        "-",
+                        "-",
+                        "-",
+                        "-",
+                    ],
+                    [
+                        "NumStability.Foo",
+                        "NumStability/Foo.lean",
+                        applied_blobs["NumStability/Foo.lean"],
+                        "unclassified",
+                        "unclassified_modules",
+                        "in_scope",
+                        "lane-a",
+                        "W1",
+                        "migrate",
+                        "bounded self-test wave",
+                    ],
+                ]
+            )
+        baseline_c1_path = phase_dir / "baselines/C0001-combined.json"
+        write_json(
+            baseline_c1_path,
+            {
+                "schema_version": 1,
+                "metadata": {
+                    "commit": applied_commit,
+                    "library_source_clean": True,
+                    "library_source_dirty_paths": [],
+                },
+                "declarations": {"format_version": DECLARATION_FORMAT_VERSION},
+            },
+        )
+        baseline_c1_summary_path = phase_dir / "baselines/C0001-combined.md"
+        baseline_c1_summary_path.write_text(
+            f"# Self-test successor baseline\n\n- Commit: `{applied_commit}`\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        checkpoint_c1 = json.loads(json.dumps(checkpoint))
+        checkpoint_c1.update(
+            {
+                "checkpoint_id": "C0001",
+                "parent_checkpoint_id": "C0000",
+                "commit_sha": applied_commit,
+                "accepted_at": "2026-08-01T00:03:00Z",
+                "milestones_satisfied": ["M1"],
+                "inventory": artifact(inventory_c1_path),
+                "combined_baseline": {
+                    "format_version": 2,
+                    "artifact": artifact(baseline_c1_path),
+                    "summary_artifact": artifact(baseline_c1_summary_path),
+                    "generation_command": "self-test successor baseline",
+                },
+            }
+        )
+        for gate in checkpoint_c1["gates"]:
+            gate["commit_sha"] = applied_commit
+        write_json(phase_dir / "checkpoints/C0001.json", checkpoint_c1)
+        phase["current_checkpoint_id"] = "C0001"
+        phase["milestones"][0]["status"] = "accepted"
+        phase["milestones"][0]["accepted_checkpoint_id"] = "C0001"
+        write_json(phase_dir / "phase.json", phase)
+        projection["status"] = "retired"
+        write_json(phase_dir / "projections/P0001.json", projection)
+        request["status"] = "applied"
+        request["resolution"] = {
+            "commit_sha": applied_commit,
+            "checkpoint_id": "C0001",
+            "resolved_at": "2026-08-01T00:03:00Z",
+            "resolved_by": "integrator",
+            "validation_evidence": [artifact(patch_path)],
+            "reason": "Applied in the synthetic successor checkpoint.",
+        }
+        write_json(phase_dir / "requests/R0001.json", request)
+        branch["status"] = "accepted"
+        branch["delivery"] = {
+            "commit_sha": delivery_commit,
+            "report": artifact(delivery_report_path),
+            "scope_evidence": artifact(delivery_scope_path),
+        }
+        branch["integration"] = {
+            "method": "merge",
+            "accepted_checkpoint_id": "C0001",
+            "accepted_sha": applied_commit,
+        }
+        amendment["status"] = "applied"
+        amendment["resolution"] = {
+            "commit_sha": applied_commit,
+            "checkpoint_id": "C0001",
+            "resolved_at": "2026-08-01T00:03:00Z",
+            "resolved_by": "integrator",
+            "validation_evidence": [artifact(amendment_approval_path)],
+            "reason": "Applied in the synthetic successor checkpoint.",
+        }
+        write_amendment_and_branch()
+        foo_path.write_text(
+            "/-! Later live-index edit. -/\ntheorem foo : True := by trivial\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        subprocess.run(
+            ["git", "add", "--", "NumStability/Foo.lean"], cwd=root, check=True
+        )
+        applied_amendment = PhaseValidator(root, phase_dir).validate()
+        if not applied_amendment.ok:
+            applied_amendment.render()
+            print(
+                "self-test failure: applied amendment remained coupled to live index",
+                file=sys.stderr,
+            )
+            return 1
+
+        branch["delivery"]["commit_sha"] = cross_wave_delivery_commit
+        write_amendment_and_branch()
+        cross_wave_delivery = PhaseValidator(root, phase_dir).validate()
+        if not any(
+            "delivery changed unowned path "
+            "NumStabilityTest/Reorganization/W2/Intrusion.lean" in message
+            for message in cross_wave_delivery.contract_errors
+        ):
+            cross_wave_delivery.render()
+            print(
+                "self-test failure: cross-wave delivery evidence was accepted",
+                file=sys.stderr,
+            )
+            return 1
+        branch["delivery"]["commit_sha"] = delivery_commit
+        write_amendment_and_branch()
+
+        amendment["resolution"]["commit_sha"] = commit
+        write_amendment_and_branch()
+        wrong_applied_postimage = PhaseValidator(root, phase_dir).validate()
+        if not any(
+            f"resolution commit {commit} hashes to" in message
+            for message in wrong_applied_postimage.contract_errors
+        ):
+            wrong_applied_postimage.render()
+            print(
+                "self-test failure: applied amendment ignored resolution-commit drift",
+                file=sys.stderr,
+            )
+            return 1
+        amendment["resolution"]["commit_sha"] = applied_commit
+        write_amendment_and_branch()
+
         patch_path.write_text("tampered\n", encoding="utf-8", newline="\n")
         tampered = PhaseValidator(root, phase_dir).validate()
         if not any("SHA-256 mismatch" in message for message in tampered.contract_errors):
@@ -3114,7 +4400,9 @@ def run_self_test() -> int:
         "unpassed gates, projection count drift, cycle, premature unblock, premature "
         "completion, unauthorized live operator, live shared-path release, and hash "
         "tampering and unknown terminal operators rejected; known terminal historical "
-        "operator attribution and terminal shared-path release accepted"
+        "operator attribution and terminal shared-path release accepted; integration "
+        "amendment active-index, applied-commit, predecessor-chain, approval, and "
+        "malformed-input lifecycle cases verified"
     )
     return 0
 

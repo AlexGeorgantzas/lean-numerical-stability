@@ -1,4 +1,9 @@
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.UnderdeterminedSpec
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifications.UnderdeterminedSpec
+import NumStability.Source.Higham.Chapter21.Equation04.UnderdeterminedSpec
+import NumStability.Source.Higham.Chapter21.Equation05.UnderdeterminedSpec
+import NumStability.Source.Higham.Chapter21.Lemma02.Symmetrization.UnderdeterminedSpec
+import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.UnderdeterminedSpec
 import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem09Linearized
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.SingularValues.Basic

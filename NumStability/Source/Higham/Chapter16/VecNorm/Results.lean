@@ -1,9 +1,7 @@
 import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SigmaMinBounds.Vectorized
 import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.ComplexSchur.VectorizedSolvability
 import NumStability.Source.Higham.Chapter16.Foundations.Core
-import NumStability.Algorithms.Sylvester.Higham16LyapunovSigmaMin
-import NumStability.Algorithms.Sylvester.Higham16PerturbationSigmaMin
-import NumStability.Algorithms.Sylvester.Higham16PsiSigmaMin
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.SylvesterPerturbation
 import NumStability.Source.Higham.Chapter16.Spectrum.Results
 import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.ComplexSolvability.Vectorized
 import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.Vectorized

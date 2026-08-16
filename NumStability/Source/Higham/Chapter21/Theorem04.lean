@@ -13,6 +13,7 @@ import NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.Remain
 import NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.Signed
 import NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.Uniform
 import NumStability.Source.Higham.Chapter21.Theorem04.SourceClosure.SourceClosure
+import NumStability.Source.Higham.Chapter21.Theorem04.SourceClosure.Supplement.Core
 
 /-!
 # Higham Chapter 21, Theorem 21.4

@@ -1,4 +1,4 @@
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSolve
+import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.Executor.Core
 
 /-!
 # Higham Chapter 21: row-scaling invariance

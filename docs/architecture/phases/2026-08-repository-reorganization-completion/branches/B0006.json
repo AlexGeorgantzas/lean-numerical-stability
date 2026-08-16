@@ -5,9 +5,15 @@
  "branch_id": "B0006",
  "branch_name": "codex/reorg-completion-2026-08-r05-least-squares-underdetermined-ch20-ch21",
  "delivery": {
-  "commit_sha": null,
-  "report": null,
-  "scope_evidence": null
+  "commit_sha": "26e89100b3c7c8a64a41426d517cbd563a40db72",
+  "report": {
+   "path": "docs/architecture/deliveries/R05/DELIVERY.md",
+   "sha256": "D2312C4F659D28FE8F3F71AB00197AEC142DB9BF2C0212C237AC5ABBDC229D92"
+  },
+  "scope_evidence": {
+   "path": "docs/architecture/deliveries/R05/CHANGED_PATHS.md",
+   "sha256": "75E134DF96BC611B96097C1337F995AEC75FA75AB953745BABCB5F44D6AAD608"
+  }
  },
  "destination_prefixes": [
   {
@@ -117,6 +123,14 @@
   {
    "match": "prefix",
    "path": "NumStability/Source/Higham/Chapter21/Theorem04/SourceClosure/Supplement/"
+  },
+  {
+   "match": "prefix",
+   "path": "NumStabilityTest/Reorganization/R05/"
+  },
+  {
+   "match": "prefix",
+   "path": "docs/architecture/deliveries/R05/"
   }
  ],
  "forbidden_paths": [
@@ -11008,6 +11022,26 @@
     "sha256": "03EDD5719A03DF152C1B33A207D1DE36D4787E3DD3947AF14C9E3EF4B1C56017"
    },
    {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0008-approval.md",
+    "sha256": "228565D2C26E5610C36CC94B51B15E02C29EFABEA339F08A88E09355A7488D38"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0008-postimages.tsv",
+    "sha256": "F23881D337127F0F408105512222F8EB10DDD671F186291F932659D1A77C25E7"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0008-review.md",
+    "sha256": "7A4529D9994506AD3EEBD17504BDE331DC95F42CBF3B5307643D44F97D726338"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0008.json",
+    "sha256": "54E28FA75B40AFA48AD026818B690437A4FBD4CF0CE55ADA55956D274922EA09"
+   },
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0008.patch",
+    "sha256": "2FB6F4D07E8EBB270BF710D972958F20F1F53452A52DB081D953B231742D66D4"
+   },
+   {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0003-R05-R06-selection.md",
     "sha256": "786ED2B9A49F66CDE837B399D530824F57BB2A78E41934EC947653D4477E3181"
    },
@@ -11046,6 +11080,6 @@
  "shared_request_ids": [
   "R0006"
  ],
- "status": "active",
+ "status": "delivered",
  "wave_id": "R05"
 }

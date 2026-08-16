@@ -18,7 +18,7 @@ import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Foundations.Unde
 import NumStability.Algorithms.LinearSystems.Underdetermined.RankStability.FullRowRank.UnderdeterminedSolve
 import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ForwardError.UnderdeterminedSolve
 import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.TriangularSolves.UnderdeterminedSolve
-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.UnderdeterminedSpec
 import NumStability.Analysis.Conditioning.LinearSystems.InversePerturbation
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.Perturbation.LeastSquares.Normwise

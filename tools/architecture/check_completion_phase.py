@@ -984,7 +984,7 @@ class R03EpochSnapshot:
     request_unreserved_paths: tuple[str, ...]
 
 
-# --- C0003-rooted planned/active R05/R06 pair epoch (B0006/B0007) ---
+# --- C0003-rooted delivered R05/R06 pair epoch (B0006/B0007) ---
 # Frozen by the fresh exact-C0003 successor review
 # (reviews/C0003-R05-R06-selection.md): the only authorizable pair, zero on
 # all seven overlap dimensions under the accepted R11/R12 standard.  Every
@@ -1012,6 +1012,15 @@ R05R06_PLANNED_FACTS: dict[str, dict[str, Any]] = {
         "planned_worktree": r"C:\Users\qed_s\higham-worktrees\completion-r05-claude",
         "owner_count": 48,
         "request_paths": 23,
+        "delivery_sha": "26e89100b3c7c8a64a41426d517cbd563a40db72",
+        "delivery_report": (
+            "docs/architecture/deliveries/R05/DELIVERY.md",
+            "D2312C4F659D28FE8F3F71AB00197AEC142DB9BF2C0212C237AC5ABBDC229D92",
+        ),
+        "delivery_scope": (
+            "docs/architecture/deliveries/R05/CHANGED_PATHS.md",
+            "75E134DF96BC611B96097C1337F995AEC75FA75AB953745BABCB5F44D6AAD608",
+        ),
         "private_normalizations": 61,
         "relocated_declarations": 574,
         "counts": {
@@ -1044,6 +1053,15 @@ R05R06_PLANNED_FACTS: dict[str, dict[str, Any]] = {
         "planned_worktree": r"C:\Users\qed_s\higham-worktrees\completion-r06-codex",
         "owner_count": 75,
         "request_paths": 49,
+        "delivery_sha": "bfaf2ae917ed79165caa6cc58b3782984aa8d3d9",
+        "delivery_report": (
+            "docs/architecture/deliveries/R06/DELIVERY.md",
+            "A698EA26FB8E99507291515013D74DE2EBB0E57669C1AE96A1CA71ED772E97FB",
+        ),
+        "delivery_scope": (
+            "docs/architecture/deliveries/R06/CHANGED_PATHS.md",
+            "DF6E279A0CB17B7B315E45CD024923DE8384E43AC6AAAC19E2BE5B36A8DBE9E3",
+        ),
         "private_normalizations": 195,
         "relocated_declarations": 2094,
         "counts": {
@@ -1102,6 +1120,124 @@ R05R06_PLANNED_CONTROL_SHA = "b6794f326313f8077c0c3433bb9c76b6e2ed5361"
 R05R06_PLANNED_CONTROL_CI_RUN = "31844203563"
 R05R06_PLANNED_CONTROL_CI_JOB = "94907208819"
 
+R0008_REQUEST_ID = "R0008"
+R0008_RECORD_KIND = "integration_amendment"
+R0008_TARGET_HEAD_SHA = "deee8e7ea0aeac7cfbd9fc2582eaf1f5b841fd0c"
+R0008_TARGET_INDEX_STAGED_PATHS = 78
+R0008_PATH_LIST_SHA256 = (
+    "47775B7D774019AEDCC0FB70D27E6AB5CF36749A0E37B037E4204B343E0582BD"
+)
+R0008_PATCH_SHA256 = (
+    "2FB6F4D07E8EBB270BF710D972958F20F1F53452A52DB081D953B231742D66D4"
+)
+R0008_POSTIMAGES_SHA256 = (
+    "F23881D337127F0F408105512222F8EB10DDD671F186291F932659D1A77C25E7"
+)
+R0008_REVIEW_SHA256 = (
+    "7A4529D9994506AD3EEBD17504BDE331DC95F42CBF3B5307643D44F97D726338"
+)
+R0008_APPROVAL_SHA256 = (
+    "228565D2C26E5610C36CC94B51B15E02C29EFABEA339F08A88E09355A7488D38"
+)
+R0008_PREDECESSOR_POSTIMAGES_SHA256 = (
+    "D36AEB47BF5F09AF693CEC2EBACDB1566EC4ED91D0F301F6F11BC7603311BDB8"
+)
+R0008_ARTIFACTS = {
+    "approval": (
+        f"{R03_PHASE_PREFIX}/requests/R0008-approval.md",
+        R0008_APPROVAL_SHA256,
+    ),
+    "patch": (
+        f"{R03_PHASE_PREFIX}/requests/R0008.patch",
+        R0008_PATCH_SHA256,
+    ),
+    "postimages": (
+        f"{R03_PHASE_PREFIX}/requests/R0008-postimages.tsv",
+        R0008_POSTIMAGES_SHA256,
+    ),
+    "review": (
+        f"{R03_PHASE_PREFIX}/requests/R0008-review.md",
+        R0008_REVIEW_SHA256,
+    ),
+}
+R0008_PREDECESSOR_POSTIMAGES = (
+    f"{R03_PHASE_PREFIX}/requests/R0006-R0007-union-postimages.tsv",
+    R0008_PREDECESSOR_POSTIMAGES_SHA256,
+)
+R0008_MANIFEST_HEADER = (
+    "path",
+    "preimage_blob_oid",
+    "preimage_sha256",
+    "postimage_sha256",
+)
+R0008_PATHS = frozenset(
+    {
+        "NumStability/Algorithms.lean",
+        "NumStability/Algorithms/LinearSystems/LeastSquares/Equality/GQR.lean",
+        "NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Solvers/Executor/Core.lean",
+        "NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Bounds/Core.lean",
+        "NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/Rounded/Core.lean",
+        "NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/Rounded/Core.lean",
+        "NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/EndToEnd/Core.lean",
+        "NumStability/Algorithms/Sylvester.lean",
+        "NumStability/Analysis.lean",
+        "NumStability/Analysis/Perturbation/LeastSquares/Conditioning.lean",
+        "NumStability/Analysis/Perturbation/LeastSquares/Equality/Perturbation.lean",
+        "NumStability/Source/Higham/Chapter14/Section05/RectangularIteration.lean",
+        "NumStability/Source/Higham/Chapter16/Foundations/Core.lean",
+        "NumStability/Source/Higham/Chapter16/QuasiRounded/Solve.lean",
+        "NumStability/Source/Higham/Chapter16/VecNorm/Results.lean",
+        "NumStability/Source/Higham/Chapter20/Examples/Condition.lean",
+        "NumStability/Source/Higham/Chapter20/Examples/GeneralRank.lean",
+        "NumStability/Source/Higham/Chapter20/Lemma11/Core/Results.lean",
+        "NumStability/Source/Higham/Chapter20/Lemma12.lean",
+        "NumStability/Source/Higham/Chapter20/Problem03.lean",
+        "NumStability/Source/Higham/Chapter20/Prose/MoorePenrose.lean",
+        "NumStability/Source/Higham/Chapter20/Theorem08/Core/Results.lean",
+        "NumStability/Source/Higham/Chapter20/Theorem08/LSE.lean",
+        "NumStability/Source/Higham/Chapter21/Equation09/Results/Core.lean",
+        "NumStability/Source/Higham/Chapter21/Equation11/Results/Core.lean",
+        "NumStability/Source/Higham/Chapter21/Theorem04/SourceClosure/Supplement/Core.lean",
+        "docs/architecture/COMPATIBILITY.md",
+    }
+)
+R0008_UNION_OVERLAP = frozenset(
+    {
+        "NumStability/Algorithms.lean",
+        "NumStability/Algorithms/Sylvester.lean",
+        "NumStability/Analysis.lean",
+        "docs/architecture/COMPATIBILITY.md",
+    }
+)
+R0008_REQUIRED_KEYS = frozenset(
+    {
+        "approval",
+        "blocks",
+        "created_at",
+        "depends_on",
+        "lane_id",
+        "patch",
+        "paths",
+        "phase_id",
+        "postimages",
+        "predecessor_postimages",
+        "preimage_blobs",
+        "rationale",
+        "record_kind",
+        "request_id",
+        "requester_id",
+        "resolution",
+        "review",
+        "schema_version",
+        "status",
+        "superseded_by",
+        "supersedes",
+        "target_branch",
+        "target_head_sha",
+        "target_index_staged_paths",
+    }
+)
+
 
 def validate_r05r06_branch_record(
     record: Any,
@@ -1132,17 +1268,30 @@ def validate_r05r06_branch_record(
             f"{context}.{key}",
             f"expected {expected!r}, found {record.get(key)!r}",
         )
+    operators = record.get("operator_ids")
     problems.require(
-        tuple(record.get("operator_ids", ())) == facts["operator_ids"],
+        isinstance(operators, list) and tuple(operators) == facts["operator_ids"],
         f"{context}.operator_ids",
         "unauthorized operator set: B0006 carries the reviewed claude-local/"
         "codex-local pair (reviews/R05-R06-operator-authorization.md) and "
         "B0007 carries codex-local alone",
     )
     problems.require(
-        record.get("status") in {"planned", "active", "delivered"},
+        record.get("status") == "delivered",
         f"{context}.status",
-        "pre-acceptance status must be planned, active, or delivered",
+        "exact C0003 integration state requires the delivered worker tip",
+    )
+    report_path, report_sha256 = facts["delivery_report"]
+    scope_path, scope_sha256 = facts["delivery_scope"]
+    expected_delivery = {
+        "commit_sha": facts["delivery_sha"],
+        "report": {"path": report_path, "sha256": report_sha256},
+        "scope_evidence": {"path": scope_path, "sha256": scope_sha256},
+    }
+    problems.require(
+        record.get("delivery") == expected_delivery,
+        f"{context}.delivery",
+        f"must equal exact reviewed delivery record {expected_delivery!r}",
     )
     owned = record.get("owned_paths")
     problems.require(
@@ -1158,6 +1307,341 @@ def validate_r05r06_branch_record(
         f"{context}.destination_prefixes",
         "every destination rule must be a new-directory prefix",
     )
+
+
+def validate_r0008_record_shape(
+    record: Any,
+    problems: "Problems",
+    *,
+    expected_status: str | None = None,
+) -> None:
+    """Pure structural and exact-fact ratchet for the R0008 amendment."""
+
+    context = "R0008 integration amendment"
+    if not isinstance(record, dict):
+        problems.add(context, "record must be a JSON object")
+        return
+    problems.require(
+        set(record) == set(R0008_REQUIRED_KEYS),
+        context,
+        "record keys must be exactly the reviewed integration-amendment schema; "
+        f"missing={sorted(set(R0008_REQUIRED_KEYS)-set(record))}, "
+        f"extra={sorted(set(record)-set(R0008_REQUIRED_KEYS))}",
+    )
+    for key, expected in (
+        ("schema_version", 1),
+        ("record_kind", R0008_RECORD_KIND),
+        ("phase_id", PHASE_ID),
+        ("request_id", R0008_REQUEST_ID),
+        ("lane_id", "integration-lane"),
+        ("requester_id", "primary-human"),
+        ("target_branch", "main"),
+        ("target_head_sha", R0008_TARGET_HEAD_SHA),
+        ("target_index_staged_paths", R0008_TARGET_INDEX_STAGED_PATHS),
+        ("depends_on", ["R0006", "R0007"]),
+        ("blocks", ["R05", "R06"]),
+        (
+            "predecessor_postimages",
+            [
+                {
+                    "path": R0008_PREDECESSOR_POSTIMAGES[0],
+                    "sha256": R0008_PREDECESSOR_POSTIMAGES[1],
+                }
+            ],
+        ),
+        ("supersedes", None),
+        ("superseded_by", None),
+    ):
+        problems.require(
+            record.get(key) == expected,
+            f"{context}.{key}",
+            f"expected {expected!r}, found {record.get(key)!r}",
+        )
+    for key, (path, digest) in R0008_ARTIFACTS.items():
+        expected = {"path": path, "sha256": digest}
+        problems.require(
+            record.get(key) == expected,
+            f"{context}.{key}",
+            f"expected exact reviewed artifact {expected!r}",
+        )
+    created_at = record.get("created_at")
+    problems.require(
+        isinstance(created_at, str)
+        and RFC3339_RE.fullmatch(created_at) is not None,
+        f"{context}.created_at",
+        "expected an RFC3339 timestamp",
+    )
+    paths = record.get("paths")
+    problems.require(
+        isinstance(paths, list)
+        and paths == sorted(R0008_PATHS)
+        and len(paths) == len(set(paths)) == 27,
+        f"{context}.paths",
+        "must be the exact sorted 27-path reviewed repair set",
+    )
+    preimages = record.get("preimage_blobs")
+    parsed_preimages: dict[str, str] = {}
+    valid_preimages = isinstance(preimages, list)
+    if isinstance(preimages, list):
+        for item in preimages:
+            if (
+                not isinstance(item, dict)
+                or set(item) != {"path", "blob_oid"}
+                or not isinstance(item.get("path"), str)
+                or not isinstance(item.get("blob_oid"), str)
+                or SHA1_RE.fullmatch(item["blob_oid"]) is None
+                or item["path"] in parsed_preimages
+            ):
+                valid_preimages = False
+                continue
+            parsed_preimages[item["path"]] = item["blob_oid"]
+    problems.require(
+        valid_preimages
+        and isinstance(preimages, list)
+        and [item.get("path") for item in preimages if isinstance(item, dict)]
+        == sorted(R0008_PATHS)
+        and set(parsed_preimages) == set(R0008_PATHS),
+        f"{context}.preimage_blobs",
+        "must contain one sorted lowercase blob OID for every repair path",
+    )
+    status = record.get("status")
+    problems.require(
+        status in {"active", "applied"},
+        f"{context}.status",
+        "must be active before C0004 or applied at C0004",
+    )
+    if expected_status is not None:
+        problems.require(
+            status == expected_status,
+            f"{context}.status",
+            f"current checkpoint requires exact status {expected_status!r}",
+        )
+    resolution = record.get("resolution")
+    expected_empty = {
+        "checkpoint_id": None,
+        "commit_sha": None,
+        "reason": None,
+        "resolved_at": None,
+        "resolved_by": None,
+        "validation_evidence": [],
+    }
+    problems.require(
+        isinstance(resolution, dict) and set(resolution) == set(expected_empty),
+        f"{context}.resolution",
+        "resolution must use the exact integration-amendment resolution schema",
+    )
+    if status == "active":
+        problems.require(
+            resolution == expected_empty,
+            f"{context}.resolution",
+            "active amendment requires the exact empty resolution",
+        )
+    elif status == "applied" and isinstance(resolution, dict):
+        problems.require(
+            resolution.get("checkpoint_id") == "C0004",
+            f"{context}.resolution.checkpoint_id",
+            "applied R0008 must resolve at C0004",
+        )
+        commit_sha = resolution.get("commit_sha")
+        problems.require(
+            isinstance(commit_sha, str) and SHA1_RE.fullmatch(commit_sha) is not None,
+            f"{context}.resolution.commit_sha",
+            "applied R0008 requires an exact lowercase integration commit SHA-1",
+        )
+        reason = resolution.get("reason")
+        problems.require(
+            isinstance(reason, str) and bool(reason.strip()),
+            f"{context}.resolution.reason",
+            "applied R0008 requires a nonempty reason",
+        )
+        resolved_at = resolution.get("resolved_at")
+        problems.require(
+            isinstance(resolved_at, str)
+            and RFC3339_RE.fullmatch(resolved_at) is not None,
+            f"{context}.resolution.resolved_at",
+            "applied R0008 requires an RFC3339 resolution timestamp",
+        )
+        problems.require(
+            resolution.get("resolved_by") == "primary-human",
+            f"{context}.resolution.resolved_by",
+            "applied R0008 must be resolved by primary-human",
+        )
+        validation_evidence = resolution.get("validation_evidence")
+        problems.require(
+            isinstance(validation_evidence, list) and bool(validation_evidence),
+            f"{context}.resolution.validation_evidence",
+            "applied R0008 requires nonempty validation evidence",
+        )
+    rationale = record.get("rationale")
+    folded_rationale = rationale.upper() if isinstance(rationale, str) else ""
+    for token in (
+        R0008_TARGET_HEAD_SHA.upper(),
+        R0008_PATH_LIST_SHA256,
+        R0008_PATCH_SHA256,
+        R0008_POSTIMAGES_SHA256,
+        R0008_REVIEW_SHA256,
+        R0008_APPROVAL_SHA256,
+        "D1",
+        "D2",
+        "D3",
+        "D4",
+        "D5",
+        "D6",
+    ):
+        problems.require(
+            token in folded_rationale,
+            f"{context}.rationale",
+            f"must record reviewed fact {token}",
+        )
+
+
+def validate_r0008_predecessor_chain(
+    predecessor_rows: list[dict[str, str]],
+    postimage_rows: list[dict[str, str]],
+    problems: "Problems",
+) -> None:
+    """Prove the exact reviewed four-path union-to-R0008 SHA-256 chain."""
+
+    context = "R0008 predecessor postimage chain"
+
+    def index_rows(
+        rows: list[dict[str, str]],
+        label: str,
+        expected_count: int,
+    ) -> dict[str, dict[str, str]]:
+        indexed: dict[str, dict[str, str]] = {}
+        valid = True
+        ordered_paths: list[str] = []
+        for index, row in enumerate(rows):
+            row_context = f"{context}.{label}[{index}]"
+            if not isinstance(row, dict) or set(row) != set(R0008_MANIFEST_HEADER):
+                problems.add(
+                    row_context,
+                    "row must contain exactly the reviewed postimage-manifest columns",
+                )
+                valid = False
+                continue
+            if not all(isinstance(row.get(key), str) for key in R0008_MANIFEST_HEADER):
+                problems.add(row_context, "every manifest cell must be a string")
+                valid = False
+                continue
+            path = row["path"]
+            ordered_paths.append(path)
+            if path in indexed:
+                problems.add(row_context, f"duplicate path {path!r}")
+                valid = False
+                continue
+            if SHA1_RE.fullmatch(row["preimage_blob_oid"]) is None:
+                problems.add(row_context, "preimage_blob_oid must be lowercase SHA-1")
+                valid = False
+            for column in ("preimage_sha256", "postimage_sha256"):
+                if SHA256_RE.fullmatch(row[column]) is None:
+                    problems.add(row_context, f"{column} must be SHA-256")
+                    valid = False
+            indexed[path] = row
+        problems.require(
+            valid
+            and len(rows) == expected_count
+            and len(indexed) == expected_count
+            and ordered_paths == sorted(ordered_paths),
+            f"{context}.{label}",
+            f"must contain exactly {expected_count} sorted unique valid rows",
+        )
+        return indexed
+
+    predecessor = index_rows(
+        predecessor_rows, "R0006-R0007-union", R05R06_UNION_PATH_COUNT
+    )
+    postimages = index_rows(postimage_rows, "R0008", len(R0008_PATHS))
+    problems.require(
+        set(postimages) == set(R0008_PATHS),
+        f"{context}.R0008",
+        "postimage manifest must cover the exact reviewed 27-path repair",
+    )
+    overlap = set(predecessor) & set(postimages)
+    problems.require(
+        overlap == set(R0008_UNION_OVERLAP),
+        context,
+        "predecessor/R0008 overlap must be exactly the four reviewed chained paths; "
+        f"found={sorted(overlap)}",
+    )
+    for path in sorted(R0008_UNION_OVERLAP):
+        predecessor_row = predecessor.get(path)
+        postimage_row = postimages.get(path)
+        if predecessor_row is None or postimage_row is None:
+            continue
+        predecessor_sha = predecessor_row["postimage_sha256"].upper()
+        r0008_preimage_sha = postimage_row["preimage_sha256"].upper()
+        problems.require(
+            predecessor_sha == r0008_preimage_sha,
+            f"{context}[{path}]",
+            "union postimage_sha256 must equal R0008 preimage_sha256; "
+            f"found {predecessor_sha} != {r0008_preimage_sha}",
+        )
+
+
+def validate_r0008_branch_evidence(
+    record: Any,
+    branch_id: str,
+    amendment_json_sha256: str,
+    problems: "Problems",
+) -> None:
+    """Require exactly five current R0008 pins in one worker branch record."""
+
+    context = f"{branch_id}.refresh.evidence"
+    if not isinstance(record, dict):
+        problems.add(context, "branch record must be a JSON object")
+        return
+    refresh = record.get("refresh")
+    evidence = refresh.get("evidence") if isinstance(refresh, dict) else None
+    if not isinstance(evidence, list):
+        problems.add(context, "expected a hash-pinned evidence list")
+        return
+    prefix = f"{R03_PHASE_PREFIX}/requests/R0008"
+    actual: list[tuple[str, str]] = []
+    for index, item in enumerate(evidence):
+        if not isinstance(item, dict):
+            continue
+        path, digest = item.get("path"), item.get("sha256")
+        if not isinstance(path, str) or not normalize_path(path).startswith(prefix):
+            continue
+        if set(item) != {"path", "sha256"} or not isinstance(digest, str):
+            problems.add(f"{context}[{index}]", "R0008 pin must be exactly {path, sha256}")
+            continue
+        actual.append((normalize_path(path), digest.upper()))
+    expected = {
+        (f"{R03_PHASE_PREFIX}/requests/R0008.json", amendment_json_sha256),
+        *((path, digest) for path, digest in R0008_ARTIFACTS.values()),
+    }
+    problems.require(
+        len(actual) == 5 and len(set(actual)) == 5 and set(actual) == expected,
+        context,
+        "must contain exactly the current R0008.json plus exact approval, patch, "
+        "postimages, and review pins",
+    )
+
+
+def validate_r0008_c0003_contract(
+    amendment: Any,
+    branch_records: dict[str, Any],
+    predecessor_rows: list[dict[str, str]],
+    postimage_rows: list[dict[str, str]],
+    amendment_json_sha256: str,
+    problems: "Problems",
+) -> None:
+    """Pure C0003 hook shared by live validation and adversarial self-tests."""
+
+    validate_r0008_record_shape(
+        amendment, problems, expected_status="active"
+    )
+    validate_r0008_predecessor_chain(predecessor_rows, postimage_rows, problems)
+    for wave in ("R05", "R06"):
+        branch_id = R05R06_PLANNED_FACTS[wave]["branch_id"]
+        record = branch_records.get(branch_id)
+        validate_r05r06_branch_record(record, wave, problems)
+        validate_r0008_branch_evidence(
+            record, branch_id, amendment_json_sha256, problems
+        )
 
 
 def r03_activation_fact(text: str, label: str) -> str | None:
@@ -6348,7 +6832,7 @@ class CompletionValidator:
         return matches[0]
 
     def validate_r05_r06_epoch(self) -> None:
-        """Ratchet the C0003-rooted planned/active R05/R06 pair (B0006/B0007)."""
+        """Ratchet the exact C0003-rooted delivered R05/R06 pair and R0008."""
 
         context = "C0003-rooted R05/R06 epoch"
         self.problems.require(
@@ -6357,6 +6841,7 @@ class CompletionValidator:
             "R05/R06 controls require current checkpoint C0003",
         )
         request_path_sets: dict[str, set[str]] = {}
+        r05r06_records: dict[str, dict[str, Any]] = {}
         for wave in ("R05", "R06"):
             facts = R05R06_PLANNED_FACTS[wave]
             branch_id = facts["branch_id"]
@@ -6366,26 +6851,46 @@ class CompletionValidator:
             )
             if record is None:
                 continue
-            validate_r05r06_branch_record(record, wave, self.problems)
+            r05r06_records[branch_id] = record
             evidence = (record.get("refresh") or {}).get("evidence")
             if not isinstance(evidence, list) or not evidence:
                 self.problems.add(
                     f"{wave_context}.refresh.evidence", "evidence list is required"
                 )
             else:
-                for entry in evidence:
-                    path = self.root / str(entry.get("path", ""))
-                    if not path.is_file():
-                        self.problems.add(
-                            f"{wave_context}.refresh.evidence",
-                            f"missing evidence file {entry.get('path')!r}",
-                        )
-                        continue
-                    self.problems.require(
-                        sha256_path(path) == entry.get("sha256"),
-                        f"{wave_context}.refresh.evidence",
-                        f"stale evidence hash for {entry.get('path')!r}",
+                for index, entry in enumerate(evidence):
+                    self.artifact(
+                        entry, f"{wave_context}.refresh.evidence[{index}]"
                     )
+            delivery = record.get("delivery")
+            if isinstance(delivery, dict):
+                for label, fact_key in (
+                    ("report", "delivery_report"),
+                    ("scope_evidence", "delivery_scope"),
+                ):
+                    expected_path, expected_sha256 = facts[fact_key]
+                    artifact = self.artifact(
+                        delivery.get(label), f"{wave_context}.delivery.{label}"
+                    )
+                    self.problems.require(
+                        artifact == Artifact(expected_path, expected_sha256),
+                        f"{wave_context}.delivery.{label}",
+                        f"must hash-pin exact delivery artifact {expected_path} "
+                        f"at {expected_sha256}",
+                    )
+            parent_vector = self.git(
+                "rev-list",
+                "--parents",
+                "-n",
+                "1",
+                facts["delivery_sha"],
+                check=False,
+            ).stdout.strip().split()
+            self.problems.require(
+                parent_vector == [facts["delivery_sha"], R05R06_CODE_SHA],
+                f"{wave_context}.delivery.commit_sha",
+                "delivery must be the exact reviewed direct child of C0003",
+            )
             for rel, expected, label in (
                 (f"selectors/{wave}.tsv", facts["selector_sha256"], "selector"),
                 (
@@ -6495,10 +7000,9 @@ class CompletionValidator:
                 "R0006/R0007 may share exactly the five reviewed integrator paths",
             )
         active_statuses = {
-            (self.read_json(
-                self.phase_dir / f"branches/{R05R06_PLANNED_FACTS[w]['branch_id']}.json",
-                context,
-            ) or {}).get("status")
+            r05r06_records.get(R05R06_PLANNED_FACTS[w]["branch_id"], {}).get(
+                "status"
+            )
             for w in ("R05", "R06")
         }
         if active_statuses - {"planned"}:
@@ -6561,6 +7065,56 @@ class CompletionValidator:
                 f"{context}.{label}",
                 f"hash drift: expected SHA-256 {expected}",
             )
+
+        amendment_path = self.phase_dir / "requests/R0008.json"
+        amendment_context = f"{context}[R0008]"
+        amendment = self.read_json(amendment_path, amendment_context)
+        if amendment is not None:
+            for key, expected in R0008_ARTIFACTS.items():
+                artifact = self.artifact(
+                    amendment.get(key), f"{amendment_context}.{key}"
+                )
+                self.problems.require(
+                    artifact == Artifact(*expected),
+                    f"{amendment_context}.{key}",
+                    f"must hash-pin exact reviewed artifact {expected[0]} at {expected[1]}",
+                )
+            predecessor = amendment.get("predecessor_postimages")
+            predecessor_artifact = None
+            if isinstance(predecessor, list) and len(predecessor) == 1:
+                predecessor_artifact = self.artifact(
+                    predecessor[0],
+                    f"{amendment_context}.predecessor_postimages[0]",
+                )
+            self.problems.require(
+                predecessor_artifact == Artifact(*R0008_PREDECESSOR_POSTIMAGES),
+                f"{amendment_context}.predecessor_postimages",
+                "must hash-pin the exact immutable R0006-R0007 union postimages",
+            )
+
+        predecessor_path = self.root / R0008_PREDECESSOR_POSTIMAGES[0]
+        _, predecessor_rows = self.read_tsv(
+            predecessor_path,
+            self.relative(predecessor_path),
+            R0008_MANIFEST_HEADER,
+        )
+        postimage_path = self.root / R0008_ARTIFACTS["postimages"][0]
+        _, postimage_rows = self.read_tsv(
+            postimage_path,
+            self.relative(postimage_path),
+            R0008_MANIFEST_HEADER,
+        )
+        amendment_json_sha256 = (
+            sha256_path(amendment_path) if amendment_path.is_file() else ""
+        )
+        validate_r0008_c0003_contract(
+            amendment,
+            r05r06_records,
+            predecessor_rows,
+            postimage_rows,
+            amendment_json_sha256,
+            self.problems,
+        )
 
     def validate_r03_epoch(self) -> None:
         """Ratchet the singleton exact-C0002 R03 packet through C0003."""
@@ -8910,6 +9464,23 @@ def run_self_test() -> int:
         "self-test R05/R06 constants",
         "exact C0003 pair identities or reviewed union arithmetic drifted",
     )
+    r0008_json_sha256 = "B" * 64
+    r0008_evidence_fixture = [
+        {
+            "path": f"{R03_PHASE_PREFIX}/requests/R0008.json",
+            "sha256": r0008_json_sha256,
+        },
+        *[
+            {"path": path, "sha256": digest}
+            for path, digest in R0008_ARTIFACTS.values()
+        ],
+    ]
+    r05_report_path, r05_report_sha256 = R05R06_PLANNED_FACTS["R05"][
+        "delivery_report"
+    ]
+    r05_scope_path, r05_scope_sha256 = R05R06_PLANNED_FACTS["R05"][
+        "delivery_scope"
+    ]
     r05_record_fixture: dict[str, Any] = {
         "branch_id": "B0006",
         "wave_id": "R05",
@@ -8921,7 +9492,15 @@ def run_self_test() -> int:
         "owner_id": "primary-human",
         "shared_request_ids": ["R0006"],
         "operator_ids": list(R05R06_OPERATOR_PAIR),
-        "status": "planned",
+        "status": "delivered",
+        "delivery": {
+            "commit_sha": R05R06_PLANNED_FACTS["R05"]["delivery_sha"],
+            "report": {"path": r05_report_path, "sha256": r05_report_sha256},
+            "scope_evidence": {
+                "path": r05_scope_path,
+                "sha256": r05_scope_sha256,
+            },
+        },
         "owned_paths": [
             {"match": "exact", "path": f"NumStability/SelfTest{i}.lean"}
             for i in range(48)
@@ -8929,13 +9508,14 @@ def run_self_test() -> int:
         "destination_prefixes": [
             {"match": "prefix", "path": "NumStability/SelfTest/Dir/"}
         ],
+        "refresh": {"evidence": r0008_evidence_fixture},
     }
     positive_pair = Problems()
     validate_r05r06_branch_record(r05_record_fixture, "R05", positive_pair)
     problems.require(
         not positive_pair.messages,
         "self-test R05/R06 record positive",
-        f"valid planned record rejected: {positive_pair.messages}",
+        f"valid delivered record rejected: {positive_pair.messages}",
     )
     for label, mutation in (
         ("intruder lane", {"lane_id": "claude-lane"}),
@@ -8949,7 +9529,16 @@ def run_self_test() -> int:
                 {"match": "exact", "path": "NumStability/SelfTest/Dir/File.lean"}
             ]},
         ),
-        ("terminal status leak", {"status": "retired"}),
+        ("non-delivered status", {"status": "active"}),
+        (
+            "delivery drift",
+            {
+                "delivery": {
+                    **r05_record_fixture["delivery"],
+                    "commit_sha": "0" * 40,
+                }
+            },
+        ),
     ):
         mutated = dict(r05_record_fixture)
         mutated.update(mutation)
@@ -8958,8 +9547,270 @@ def run_self_test() -> int:
         problems.require(
             bool(negative_pair.messages),
             f"self-test R05/R06 {label}",
-            "adversarial planned-record mutation was not rejected",
+            "adversarial delivered-record mutation was not rejected",
         )
+    r06_report_path, r06_report_sha256 = R05R06_PLANNED_FACTS["R06"][
+        "delivery_report"
+    ]
+    r06_scope_path, r06_scope_sha256 = R05R06_PLANNED_FACTS["R06"][
+        "delivery_scope"
+    ]
+    r06_record_fixture: dict[str, Any] = {
+        **r05_record_fixture,
+        "branch_id": "B0007",
+        "wave_id": "R06",
+        "branch_name": R05R06_PLANNED_FACTS["R06"]["branch_name"],
+        "baseline_projection_id": "P0007",
+        "shared_request_ids": ["R0007"],
+        "operator_ids": ["codex-local"],
+        "delivery": {
+            "commit_sha": R05R06_PLANNED_FACTS["R06"]["delivery_sha"],
+            "report": {"path": r06_report_path, "sha256": r06_report_sha256},
+            "scope_evidence": {
+                "path": r06_scope_path,
+                "sha256": r06_scope_sha256,
+            },
+        },
+        "owned_paths": [
+            {"match": "exact", "path": f"NumStability/SelfTestR06{i}.lean"}
+            for i in range(75)
+        ],
+    }
+    r0008_fixture: dict[str, Any] = {
+        "approval": {
+            "path": R0008_ARTIFACTS["approval"][0],
+            "sha256": R0008_ARTIFACTS["approval"][1],
+        },
+        "blocks": ["R05", "R06"],
+        "created_at": "2026-08-16T00:00:00Z",
+        "depends_on": ["R0006", "R0007"],
+        "lane_id": "integration-lane",
+        "patch": {
+            "path": R0008_ARTIFACTS["patch"][0],
+            "sha256": R0008_ARTIFACTS["patch"][1],
+        },
+        "paths": sorted(R0008_PATHS),
+        "phase_id": PHASE_ID,
+        "postimages": {
+            "path": R0008_ARTIFACTS["postimages"][0],
+            "sha256": R0008_ARTIFACTS["postimages"][1],
+        },
+        "predecessor_postimages": [
+            {
+                "path": R0008_PREDECESSOR_POSTIMAGES[0],
+                "sha256": R0008_PREDECESSOR_POSTIMAGES[1],
+            }
+        ],
+        "preimage_blobs": [
+            {"blob_oid": "a" * 40, "path": path}
+            for path in sorted(R0008_PATHS)
+        ],
+        "rationale": " ".join(
+            (
+                R0008_TARGET_HEAD_SHA,
+                R0008_PATH_LIST_SHA256,
+                R0008_PATCH_SHA256,
+                R0008_POSTIMAGES_SHA256,
+                R0008_REVIEW_SHA256,
+                R0008_APPROVAL_SHA256,
+                "D1 D2 D3 D4 D5 D6",
+            )
+        ),
+        "record_kind": R0008_RECORD_KIND,
+        "request_id": R0008_REQUEST_ID,
+        "requester_id": "primary-human",
+        "resolution": {
+            "checkpoint_id": None,
+            "commit_sha": None,
+            "reason": None,
+            "resolved_at": None,
+            "resolved_by": None,
+            "validation_evidence": [],
+        },
+        "review": {
+            "path": R0008_ARTIFACTS["review"][0],
+            "sha256": R0008_ARTIFACTS["review"][1],
+        },
+        "schema_version": 1,
+        "status": "active",
+        "superseded_by": None,
+        "supersedes": None,
+        "target_branch": "main",
+        "target_head_sha": R0008_TARGET_HEAD_SHA,
+        "target_index_staged_paths": R0008_TARGET_INDEX_STAGED_PATHS,
+    }
+    r0008_preimage_sha256 = {
+        path: hashlib.sha256(f"R0008 preimage {path}".encode()).hexdigest().upper()
+        for path in R0008_PATHS
+    }
+    r0008_postimage_rows = [
+        {
+            "path": path,
+            "preimage_blob_oid": hashlib.sha1(path.encode()).hexdigest(),
+            "preimage_sha256": r0008_preimage_sha256[path],
+            "postimage_sha256": hashlib.sha256(
+                f"R0008 postimage {path}".encode()
+            ).hexdigest().upper(),
+        }
+        for path in sorted(R0008_PATHS)
+    ]
+    union_paths = sorted(
+        set(R0008_UNION_OVERLAP)
+        | {
+            f"NumStability/SelfTest/Union{i:02}.lean"
+            for i in range(R05R06_UNION_PATH_COUNT - len(R0008_UNION_OVERLAP))
+        }
+    )
+    predecessor_rows = [
+        {
+            "path": path,
+            "preimage_blob_oid": hashlib.sha1(f"union {path}".encode()).hexdigest(),
+            "preimage_sha256": hashlib.sha256(
+                f"union preimage {path}".encode()
+            ).hexdigest().upper(),
+            "postimage_sha256": (
+                r0008_preimage_sha256[path]
+                if path in R0008_UNION_OVERLAP
+                else hashlib.sha256(f"union postimage {path}".encode()).hexdigest().upper()
+            ),
+        }
+        for path in union_paths
+    ]
+    positive_r0008_hook = Problems()
+    validate_r0008_c0003_contract(
+        r0008_fixture,
+        {"B0006": r05_record_fixture, "B0007": r06_record_fixture},
+        predecessor_rows,
+        r0008_postimage_rows,
+        r0008_json_sha256,
+        positive_r0008_hook,
+    )
+    problems.require(
+        not positive_r0008_hook.messages,
+        "self-test R0008 live C0003 hook positive",
+        f"valid live R0008 contract rejected: {positive_r0008_hook.messages}",
+    )
+    positive_r0008 = Problems()
+    validate_r0008_record_shape(
+        r0008_fixture, positive_r0008, expected_status="active"
+    )
+    problems.require(
+        not positive_r0008.messages,
+        "self-test R0008 record positive",
+        f"valid integration amendment rejected: {positive_r0008.messages}",
+    )
+    for key in ("approval", "patch", "postimages", "review"):
+        mutated = dict(r0008_fixture)
+        mutated[key] = {**r0008_fixture[key], "sha256": "0" * 64}
+        negative_r0008 = Problems()
+        validate_r0008_c0003_contract(
+            mutated,
+            {"B0006": r05_record_fixture, "B0007": r06_record_fixture},
+            predecessor_rows,
+            r0008_postimage_rows,
+            r0008_json_sha256,
+            negative_r0008,
+        )
+        problems.require(
+            bool(negative_r0008.messages),
+            f"self-test R0008 {key} drift",
+            f"adversarial {key} artifact mutation was not rejected",
+        )
+    mutated_predecessor = dict(r0008_fixture)
+    mutated_predecessor["predecessor_postimages"] = [
+        {
+            "path": R0008_PREDECESSOR_POSTIMAGES[0],
+            "sha256": "0" * 64,
+        }
+    ]
+    negative_predecessor_artifact = Problems()
+    validate_r0008_c0003_contract(
+        mutated_predecessor,
+        {"B0006": r05_record_fixture, "B0007": r06_record_fixture},
+        predecessor_rows,
+        r0008_postimage_rows,
+        r0008_json_sha256,
+        negative_predecessor_artifact,
+    )
+    problems.require(
+        bool(negative_predecessor_artifact.messages),
+        "self-test R0008 predecessor artifact drift",
+        "adversarial predecessor artifact mutation was not rejected",
+    )
+    chained_path = sorted(R0008_UNION_OVERLAP)[0]
+    broken_postimage_rows = [dict(row) for row in r0008_postimage_rows]
+    for row in broken_postimage_rows:
+        if row["path"] == chained_path:
+            row["preimage_sha256"] = "0" * 64
+            break
+    negative_chain = Problems()
+    validate_r0008_c0003_contract(
+        r0008_fixture,
+        {"B0006": r05_record_fixture, "B0007": r06_record_fixture},
+        predecessor_rows,
+        broken_postimage_rows,
+        r0008_json_sha256,
+        negative_chain,
+    )
+    problems.require(
+        any(chained_path in message for message in negative_chain.messages),
+        "self-test R0008 predecessor chain drift",
+        f"broken four-path SHA chain was not rejected: {negative_chain.messages}",
+    )
+    premature_applied = {
+        **r0008_fixture,
+        "status": "applied",
+        "resolution": {
+            "checkpoint_id": "C0004",
+            "commit_sha": "c" * 40,
+            "reason": "self-test syntactically valid future acceptance",
+            "resolved_at": "2026-08-17T00:00:00Z",
+            "resolved_by": "primary-human",
+            "validation_evidence": [
+                {"path": "self-test", "sha256": "D" * 64}
+            ],
+        },
+    }
+    negative_premature = Problems()
+    validate_r0008_c0003_contract(
+        premature_applied,
+        {"B0006": r05_record_fixture, "B0007": r06_record_fixture},
+        predecessor_rows,
+        r0008_postimage_rows,
+        r0008_json_sha256,
+        negative_premature,
+    )
+    problems.require(
+        any(
+            "current checkpoint requires exact status 'active'" in message
+            for message in negative_premature.messages
+        ),
+        "self-test R0008 premature applied state",
+        f"C0003 accepted premature applied state: {negative_premature.messages}",
+    )
+    mutated_r05_evidence = [dict(item) for item in r0008_evidence_fixture]
+    for item in mutated_r05_evidence:
+        if item["path"] == R0008_ARTIFACTS["approval"][0]:
+            item["sha256"] = "0" * 64
+            break
+    branch_evidence_drift = {
+        **r05_record_fixture,
+        "refresh": {"evidence": mutated_r05_evidence},
+    }
+    negative_branch_evidence = Problems()
+    validate_r0008_c0003_contract(
+        r0008_fixture,
+        {"B0006": branch_evidence_drift, "B0007": r06_record_fixture},
+        predecessor_rows,
+        r0008_postimage_rows,
+        r0008_json_sha256,
+        negative_branch_evidence,
+    )
+    problems.require(
+        any("B0006.refresh.evidence" in message for message in negative_branch_evidence.messages),
+        "self-test R0008 branch evidence drift",
+        f"mutated live branch evidence was not rejected: {negative_branch_evidence.messages}",
+    )
     problems.require(
         (R03_BRANCH_ID, R03_PROJECTION_ID, R03_REQUEST_ID, R03_WAVE_ID)
         == ("B0005", "P0005", "R0005", "R03")
@@ -9583,9 +10434,10 @@ No implementation began before activation-control CI. The worker remains frozen 
         "review plus missing/stale evidence, wrong-base/tip, selector, route/hash, "
         "authority, R07, shared-path, delivery, integration, resolution, and retirement "
         "mutations; disposable-index R0005 replay-tree match plus missing/wrong-tree "
-        "rejection; and exact C0003-rooted planned R05/R06 pair constants with "
-        "intruder-lane, operator, base, owner-count, destination-rule, and "
-        "terminal-status mutations rejected"
+        "rejection; and exact C0003-rooted delivered R05/R06 plus active R0008 "
+        "contract with intruder-lane, operator, base, owner-count, destination-rule, "
+        "delivery, artifact, branch-evidence, predecessor-chain, and premature-applied "
+        "mutations rejected"
     )
     return 0
 
@@ -9629,9 +10481,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         "accepted/retired controls with exact checkpoint evidence; plus the singleton "
         "exact-C0002 B0005/P0005/R0005 planned/active or C0003 accepted/retired R03 "
         "epoch with corrected 115+6 request identity and 21 bounded follow-ups; plus "
-        "the C0003-rooted planned R05/R06 pair epoch (B0006/B0007) with whole-owner "
-        "routes, the reviewed five-path request union, and the reviewed B0006-scoped "
-        "operator re-expansion"
+        "the C0003-rooted delivered R05/R06 pair epoch (B0006/B0007), the active "
+        "five-artifact R0008 amendment, and its exact four-path predecessor SHA chain"
     )
     return 0
 

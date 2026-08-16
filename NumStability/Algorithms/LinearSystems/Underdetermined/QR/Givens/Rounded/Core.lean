@@ -1,5 +1,4 @@
 import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.RoundedReplay
-import NumStability.Algorithms.Underdetermined.Higham21Givens
 import NumStability.Source.Higham.Chapter21.Equation10.RoundedReplay
 import NumStability.Source.Higham.Chapter21.Theorem04.GivensQMethod.RoundedReplay
 

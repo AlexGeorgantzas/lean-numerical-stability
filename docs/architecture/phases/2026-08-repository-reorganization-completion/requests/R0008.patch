@@ -1,0 +1,372 @@
+diff --git a/NumStability/Algorithms/LinearSystems/LeastSquares/Equality/GQR.lean b/NumStability/Algorithms/LinearSystems/LeastSquares/Equality/GQR.lean
+index ef25d7e..7b144f5 100644
+--- a/NumStability/Algorithms/LinearSystems/LeastSquares/Equality/GQR.lean
++++ b/NumStability/Algorithms/LinearSystems/LeastSquares/Equality/GQR.lean
+@@ -19 +19,2 @@ import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Lemma02.Symmetrization.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.UnderdeterminedSpec
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Solvers/Executor/Core.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Solvers/Executor/Core.lean
+index 63e36ce..50351ed 100644
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Solvers/Executor/Core.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/MinimumNorm/Solvers/Executor/Core.lean
+@@ -21 +21 @@ import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.UnderdeterminedSpec
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Bounds/Core.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Bounds/Core.lean
+index 1b4d4c6..4947fef 100644
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Bounds/Core.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/Perturbation/Bounds/Core.lean
+@@ -1 +1,2 @@
+-import NumStability.Algorithms.Underdetermined.Higham21RankStability
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.Executor.Core
++import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.RankStability
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/Rounded/Core.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/Rounded/Core.lean
+index 92a042a..c1bb55c 100644
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/Rounded/Core.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/Givens/Rounded/Core.lean
+@@ -2 +1,0 @@ import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredRep
+-import NumStability.Algorithms.Underdetermined.Higham21Givens
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/Rounded/Core.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/Rounded/Core.lean
+index a7be72f..2d9cbba 100644
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/Rounded/Core.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/QR/ModifiedGramSchmidt/Rounded/Core.lean
+@@ -3 +3,2 @@ import NumStability.Algorithms.RankOneUpdate
+-import NumStability.Algorithms.Underdetermined.Higham21MGS
++import NumStability.Source.Higham.Chapter21.Section03.MethodComparison.Core
++import NumStability.Source.Higham.Chapter21.Theorem04.ModifiedGramSchmidtQMethod.Core
+diff --git a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/EndToEnd/Core.lean b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/EndToEnd/Core.lean
+index 2bd40a9..d76ef05 100644
+--- a/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/EndToEnd/Core.lean
++++ b/NumStability/Algorithms/LinearSystems/Underdetermined/SeminormalEquations/EndToEnd/Core.lean
+@@ -3,4 +3,5 @@ import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations
+-import NumStability.Algorithms.Underdetermined.Higham21SNEEnvelopeTransfer
+-import NumStability.Algorithms.Underdetermined.Higham21SNEQRMajorant
+-import NumStability.Algorithms.Underdetermined.Higham21SNERemainderBounds
+-import NumStability.Algorithms.Underdetermined.Higham21SNESigned
++import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.QRTransfer.EnvelopeTransfer
++import NumStability.Source.Higham.Chapter21.Equation11.ActualOutput
++import NumStability.Source.Higham.Chapter21.Equation11.Forward
++import NumStability.Source.Higham.Chapter21.Theorem04.SeminormalEquations.EnvelopeTransfer
++import NumStability.Source.Higham.Chapter21.Equation11.RemainderBounds
+diff --git a/NumStability/Algorithms/Sylvester.lean b/NumStability/Algorithms/Sylvester.lean
+index 5da5eac..5637786 100644
+--- a/NumStability/Algorithms/Sylvester.lean
++++ b/NumStability/Algorithms/Sylvester.lean
+@@ -13,16 +12,0 @@ import NumStability.Algorithms.NormEstimation.OneNorm
+-import NumStability.Algorithms.Sylvester.Higham16Eq9Assembly
+-import NumStability.Algorithms.Sylvester.Higham16Eq9EndToEnd
+-import NumStability.Algorithms.Sylvester.Higham16Lyapunov
+-import NumStability.Algorithms.Sylvester.Higham16LyapunovSigmaMin
+-import NumStability.Algorithms.Sylvester.Higham16NormEstimator
+-import NumStability.Algorithms.Sylvester.Higham16PerturbationSigmaMin
+-import NumStability.Algorithms.Sylvester.Higham16PivotedSmallBlocks
+-import NumStability.Algorithms.Sylvester.Higham16Psi
+-import NumStability.Algorithms.Sylvester.Higham16PsiSigmaMin
+-import NumStability.Algorithms.Sylvester.Higham16QuasiQuasiRounded
+-import NumStability.Algorithms.Sylvester.Higham16QuasiQuasiSylvester
+-import NumStability.Algorithms.Sylvester.Higham16RoundedExecutor
+-import NumStability.Algorithms.Sylvester.Higham16RoundedTriangular
+-import NumStability.Algorithms.Sylvester.SylvesterBackward
+-import NumStability.Algorithms.Sylvester.SylvesterPerturbation
+-import NumStability.Algorithms.Sylvester.SylvesterSpec
+diff --git a/NumStability/Algorithms.lean b/NumStability/Algorithms.lean
+index 501425b..4f46fa1 100644
+--- a/NumStability/Algorithms.lean
++++ b/NumStability/Algorithms.lean
+@@ -200,2 +199,0 @@ import NumStability.Algorithms.TreeDotProduct
+-import NumStability.Algorithms.Underdetermined.Higham21
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+@@ -210 +207,0 @@ import NumStability.Analysis.HenriciSharpConstantExact
+-import NumStability.Analysis.InverseOpNorm2
+@@ -235,3 +231,0 @@ import NumStability.Analysis.PseudospectralResolvent
+-import NumStability.Analysis.RealInvariantSubspace
+-import NumStability.Analysis.RealQuasiSchur
+-import NumStability.Analysis.RealSchurTriangulation
+@@ -239 +232,0 @@ import NumStability.Analysis.ResolventFunctionalCalculus
+-import NumStability.Analysis.SchurTriangulation
+diff --git a/NumStability/Analysis/Perturbation/LeastSquares/Conditioning.lean b/NumStability/Analysis/Perturbation/LeastSquares/Conditioning.lean
+index 45e26a4..7e9580b 100644
+--- a/NumStability/Analysis/Perturbation/LeastSquares/Conditioning.lean
++++ b/NumStability/Analysis/Perturbation/LeastSquares/Conditioning.lean
+@@ -2,2 +2,5 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Basic
+-import NumStability.Algorithms.Underdetermined.Higham21ProjectorNorm
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.Projectors.ComplementNorm.ProjectorNorm
++import NumStability.Source.Higham.Chapter21.Equation08.ProjectorNorm
++import NumStability.Source.Higham.Chapter21.Equation08.Results.Core
++import NumStability.Source.Higham.Chapter21.Equation09.ProjectorNorm
++import NumStability.Source.Higham.Chapter21.Equation09.Results.Core
+diff --git a/NumStability/Analysis/Perturbation/LeastSquares/Equality/Perturbation.lean b/NumStability/Analysis/Perturbation/LeastSquares/Equality/Perturbation.lean
+index e31e5c3..029cee2 100644
+--- a/NumStability/Analysis/Perturbation/LeastSquares/Equality/Perturbation.lean
++++ b/NumStability/Analysis/Perturbation/LeastSquares/Equality/Perturbation.lean
+@@ -16 +15,0 @@ import NumStability.Algorithms.LinearSystems.QR.HouseholderQR
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+diff --git a/NumStability/Analysis.lean b/NumStability/Analysis.lean
+index 1dad4c0..71f1b68 100644
+--- a/NumStability/Analysis.lean
++++ b/NumStability/Analysis.lean
+@@ -1,0 +2,9 @@ import NumStability.Algorithms.LinearSystems.CramersRule.Core
++import NumStability.Algorithms.MatrixEquations.Sylvester.BackwardError.Specification
++import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.FirstOrder
++import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.SingularValue
++import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.StructuredLyapunov
++import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.StructuredSylvester
++import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Basic
++import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Diagonal
++import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Lyapunov
++import NumStability.Algorithms.MatrixEquations.Sylvester.Perturbation.Basic
+@@ -39 +47,0 @@ import NumStability.Analysis.Heron
+-import NumStability.Analysis.InverseOpNorm2
+@@ -67,3 +74,0 @@ import NumStability.Analysis.Quadratic
+-import NumStability.Analysis.RealInvariantSubspace
+-import NumStability.Analysis.RealQuasiSchur
+-import NumStability.Analysis.RealSchurTriangulation
+@@ -72 +76,0 @@ import NumStability.Analysis.Rounding
+-import NumStability.Analysis.SchurTriangulation
+@@ -172,0 +177,13 @@ import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.
++import NumStability.Source.Higham.Chapter16.Foundations.Core
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation10
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation11
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation12
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation21
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.LyapunovDefinition
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation22
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation23
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation24
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation25
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation26
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation27
++import NumStability.Source.Higham.Chapter16.Section04.PracticalErrorBounds.Equation28
+diff --git a/NumStability/Source/Higham/Chapter14/Section05/RectangularIteration.lean b/NumStability/Source/Higham/Chapter14/Section05/RectangularIteration.lean
+index 9ed02bd..718a9a9 100644
+--- a/NumStability/Source/Higham/Chapter14/Section05/RectangularIteration.lean
++++ b/NumStability/Source/Higham/Chapter14/Section05/RectangularIteration.lean
+@@ -1 +1,8 @@
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Pseudoinverse.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifications.UnderdeterminedSpec
++import NumStability.Analysis.MatrixAlgebra
++import NumStability.Source.Higham.Chapter21.Equation04.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Equation05.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Lemma02.Symmetrization.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.UnderdeterminedSpec
+diff --git a/NumStability/Source/Higham/Chapter16/Foundations/Core.lean b/NumStability/Source/Higham/Chapter16/Foundations/Core.lean
+index b5dacba..7bb4815 100644
+--- a/NumStability/Source/Higham/Chapter16/Foundations/Core.lean
++++ b/NumStability/Source/Higham/Chapter16/Foundations/Core.lean
+@@ -12,2 +12,12 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.Perturbation.Vectorizat
+-import NumStability.Algorithms.Sylvester.SylvesterBackward
+-import NumStability.Algorithms.Sylvester.SylvesterPerturbation
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation10
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation11
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation12
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation13
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation15
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation16
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation18
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation19
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation21
++import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.LyapunovDefinition
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation23
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.Equation24
+diff --git a/NumStability/Source/Higham/Chapter16/QuasiRounded/Solve.lean b/NumStability/Source/Higham/Chapter16/QuasiRounded/Solve.lean
+index 87f0de7..be082a6 100644
+--- a/NumStability/Source/Higham/Chapter16/QuasiRounded/Solve.lean
++++ b/NumStability/Source/Higham/Chapter16/QuasiRounded/Solve.lean
+@@ -2 +2,2 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangular
+-import NumStability.Algorithms.Sylvester.Higham16RoundedTriangular
++import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.RoundedTriangular
++import NumStability.Source.Higham.Chapter16.Spectrum.Results
+diff --git a/NumStability/Source/Higham/Chapter16/VecNorm/Results.lean b/NumStability/Source/Higham/Chapter16/VecNorm/Results.lean
+index 41ef4a2..452cba0 100644
+--- a/NumStability/Source/Higham/Chapter16/VecNorm/Results.lean
++++ b/NumStability/Source/Higham/Chapter16/VecNorm/Results.lean
+@@ -4,3 +4 @@ import NumStability.Source.Higham.Chapter16.Foundations.Core
+-import NumStability.Algorithms.Sylvester.Higham16LyapunovSigmaMin
+-import NumStability.Algorithms.Sylvester.Higham16PerturbationSigmaMin
+-import NumStability.Algorithms.Sylvester.Higham16PsiSigmaMin
++import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.SigmaMinCorollaries.SylvesterPerturbation
+diff --git a/NumStability/Source/Higham/Chapter20/Examples/Condition.lean b/NumStability/Source/Higham/Chapter20/Examples/Condition.lean
+index 160790d..ac14300 100644
+--- a/NumStability/Source/Higham/Chapter20/Examples/Condition.lean
++++ b/NumStability/Source/Higham/Chapter20/Examples/Condition.lean
+@@ -1 +1,6 @@
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifications.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Equation04.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Equation05.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Lemma02.Symmetrization.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.UnderdeterminedSpec
+diff --git a/NumStability/Source/Higham/Chapter20/Examples/GeneralRank.lean b/NumStability/Source/Higham/Chapter20/Examples/GeneralRank.lean
+index 367de82..c76b4a8 100644
+--- a/NumStability/Source/Higham/Chapter20/Examples/GeneralRank.lean
++++ b/NumStability/Source/Higham/Chapter20/Examples/GeneralRank.lean
+@@ -1 +1,6 @@
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifications.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Equation04.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Equation05.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Lemma02.Symmetrization.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.UnderdeterminedSpec
+diff --git a/NumStability/Source/Higham/Chapter20/Lemma11/Core/Results.lean b/NumStability/Source/Higham/Chapter20/Lemma11/Core/Results.lean
+index 02693a4..184ae75 100644
+--- a/NumStability/Source/Higham/Chapter20/Lemma11/Core/Results.lean
++++ b/NumStability/Source/Higham/Chapter20/Lemma11/Core/Results.lean
+@@ -1 +1,6 @@
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifications.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Equation04.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Equation05.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Lemma02.Symmetrization.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.UnderdeterminedSpec
+diff --git a/NumStability/Source/Higham/Chapter20/Lemma12.lean b/NumStability/Source/Higham/Chapter20/Lemma12.lean
+index 2f6c399..2066a64 100644
+--- a/NumStability/Source/Higham/Chapter20/Lemma12.lean
++++ b/NumStability/Source/Higham/Chapter20/Lemma12.lean
+@@ -1 +1,6 @@
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifications.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Equation04.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Equation05.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Lemma02.Symmetrization.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.UnderdeterminedSpec
+diff --git a/NumStability/Source/Higham/Chapter20/Problem03.lean b/NumStability/Source/Higham/Chapter20/Problem03.lean
+index e280fc1..de252e6 100644
+--- a/NumStability/Source/Higham/Chapter20/Problem03.lean
++++ b/NumStability/Source/Higham/Chapter20/Problem03.lean
+@@ -1 +1,7 @@
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Pseudoinverse.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.UnderdeterminedSpec
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifications.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Equation04.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Equation05.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Lemma02.Symmetrization.UnderdeterminedSpec
++import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.UnderdeterminedSpec
+diff --git a/NumStability/Source/Higham/Chapter20/Prose/MoorePenrose.lean b/NumStability/Source/Higham/Chapter20/Prose/MoorePenrose.lean
+index 37e85fd..5c3bedc 100644
+--- a/NumStability/Source/Higham/Chapter20/Prose/MoorePenrose.lean
++++ b/NumStability/Source/Higham/Chapter20/Prose/MoorePenrose.lean
+@@ -4 +3,0 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem08/Core/Results.lean b/NumStability/Source/Higham/Chapter20/Theorem08/Core/Results.lean
+index f6f25cd..3a9dc48 100644
+--- a/NumStability/Source/Higham/Chapter20/Theorem08/Core/Results.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem08/Core/Results.lean
+@@ -5 +4,0 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.Equality.KKT
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+diff --git a/NumStability/Source/Higham/Chapter20/Theorem08/LSE.lean b/NumStability/Source/Higham/Chapter20/Theorem08/LSE.lean
+index acd1c17..10aea2d 100644
+--- a/NumStability/Source/Higham/Chapter20/Theorem08/LSE.lean
++++ b/NumStability/Source/Higham/Chapter20/Theorem08/LSE.lean
+@@ -12 +11,0 @@ import NumStability.Algorithms.LinearSystems.LeastSquares.NormalEquations
+-import NumStability.Algorithms.Underdetermined.UnderdeterminedSpec
+diff --git a/NumStability/Source/Higham/Chapter21/Equation09/Results/Core.lean b/NumStability/Source/Higham/Chapter21/Equation09/Results/Core.lean
+index 635b40b..eb8049c 100644
+--- a/NumStability/Source/Higham/Chapter21/Equation09/Results/Core.lean
++++ b/NumStability/Source/Higham/Chapter21/Equation09/Results/Core.lean
+@@ -2 +1,0 @@ import NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.Radius
+-import NumStability.Algorithms.Underdetermined.Higham21RankStability
+diff --git a/NumStability/Source/Higham/Chapter21/Equation11/Results/Core.lean b/NumStability/Source/Higham/Chapter21/Equation11/Results/Core.lean
+index aef244a..8b2dab7 100644
+--- a/NumStability/Source/Higham/Chapter21/Equation11/Results/Core.lean
++++ b/NumStability/Source/Higham/Chapter21/Equation11/Results/Core.lean
+@@ -1 +1,2 @@
+-import NumStability.Algorithms.Underdetermined.Higham21RankStability
++import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.Executor.Core
++import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.RankStability
+diff --git a/NumStability/Source/Higham/Chapter21/Theorem04/SourceClosure/Supplement/Core.lean b/NumStability/Source/Higham/Chapter21/Theorem04/SourceClosure/Supplement/Core.lean
+index 5513efc..c311780 100644
+--- a/NumStability/Source/Higham/Chapter21/Theorem04/SourceClosure/Supplement/Core.lean
++++ b/NumStability/Source/Higham/Chapter21/Theorem04/SourceClosure/Supplement/Core.lean
+@@ -2,2 +2,2 @@ import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.EndToEnd.
+-import NumStability.Algorithms.Underdetermined.Higham21QRFoundations
+-import NumStability.Algorithms.Underdetermined.Higham21RankStability
++import NumStability.Source.Higham.Chapter21.Equation03.QRFoundations
++import NumStability.Source.Higham.Chapter21.Equation04.QRFoundations
+diff --git a/docs/architecture/COMPATIBILITY.md b/docs/architecture/COMPATIBILITY.md
+index 9801263..2ec5261 100644
+--- a/docs/architecture/COMPATIBILITY.md
++++ b/docs/architecture/COMPATIBILITY.md
+@@ -74,32 +74,32 @@ the table remains an import-only forwarding module.
+-| `NumStability.Algorithms.Cholesky.Higham11BunchActualSharpGrowthClosure` | `NumStability.Source.Higham.Chapter11.Higham11BunchActualSharpGrowthClosure` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchExactTrace` | `NumStability.Source.Higham.Chapter11.Higham11BunchExactTrace` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanActualSelector` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanActualSelector` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactGrowth` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExactGrowth` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactGrowthArithmetic` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExactGrowthArithmetic` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactTrace` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExactTrace` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExplicitInverseSolve` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExplicitInverseSolve` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExplicitInverseTerminalClosedForm` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanExplicitInverseTerminalClosedForm` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedAccumulated` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedAccumulated` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedBridge` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedBridge` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedClosure` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedClosure` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedExecution` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedExecution` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedFactors` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedFactors` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGlobal` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedGlobal` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGrowth` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedGrowth` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGrowthSolve` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedGrowthSolve` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedMiddleSolve` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedMiddleSolve` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedSolve` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedSolve` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedTerminal` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedTerminal` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedTerminalClosedForm` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedTerminalClosedForm` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanSourceCorrection` | `NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanSourceCorrection` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchSharpGrowthBridge` | `NumStability.Source.Higham.Chapter11.Higham11BunchSharpGrowthBridge` |
+-| `NumStability.Algorithms.Cholesky.Higham11BunchTraceHadamard` | `NumStability.Source.Higham.Chapter11.Higham11BunchTraceHadamard` |
+-| `NumStability.Algorithms.Cholesky.Higham11Chapter9ActualExecutorBridge` | `NumStability.Source.Higham.Chapter11.Higham11Chapter9ActualExecutorBridge` |
+-| `NumStability.Algorithms.Cholesky.Higham11Chapter9BridgeClosure` | `NumStability.Source.Higham.Chapter11.Higham11Chapter9BridgeClosure` |
+-| `NumStability.Algorithms.Cholesky.Higham11RookExactTrace` | `NumStability.Source.Higham.Chapter11.Higham11RookExactTrace` |
+-| `NumStability.Algorithms.Cholesky.Higham11RookExecutorAdapter` | `NumStability.Source.Higham.Chapter11.Higham11RookExecutorAdapter` |
+-| `NumStability.Algorithms.Cholesky.Higham11RookRoundedGap` | `NumStability.Source.Higham.Chapter11.Higham11RookRoundedGap` |
+-| `NumStability.Algorithms.Cholesky.Higham11RookSourceClosure` | `NumStability.Source.Higham.Chapter11.Higham11RookSourceClosure` |
+-| `NumStability.Algorithms.Cholesky.Higham11SkewActualSelector` | `NumStability.Source.Higham.Chapter11.Higham11SkewActualSelector` |
+-| `NumStability.Algorithms.Cholesky.Higham11SkewExactTrace` | `NumStability.Source.Higham.Chapter11.Higham11SkewExactTrace` |
+-| `NumStability.Algorithms.Cholesky.Higham11SkewSourceCorrection` | `NumStability.Source.Higham.Chapter11.Higham11SkewSourceCorrection` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchActualSharpGrowthClosure` | `NumStability.Source.Higham.Chapter11.Bunch.ActualSharpGrowthClosure` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchExactTrace` | `NumStability.Source.Higham.Chapter11.Bunch.ExactTrace` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanActualSelector` | `NumStability.Source.Higham.Chapter11.BunchKaufman.ActualSelector` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactGrowth` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Exact.Growth` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactGrowthArithmetic` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Exact.GrowthArithmetic` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExactTrace` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Exact.Trace` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExplicitInverseSolve` | `NumStability.Source.Higham.Chapter11.BunchKaufman.ExplicitInverse.Solve` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanExplicitInverseTerminalClosedForm` | `NumStability.Source.Higham.Chapter11.BunchKaufman.ExplicitInverse.TerminalClosedForm` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedAccumulated` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Accumulated` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedBridge` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Bridge` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedClosure` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Closure` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedExecution` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Execution` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedFactors` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Factors` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGlobal` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Global` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGrowth` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Growth` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedGrowthSolve` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.GrowthSolve` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedMiddleSolve` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.MiddleSolve` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedSolve` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Solve` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedTerminal` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Terminal` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanRoundedTerminalClosedForm` | `NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.TerminalClosedForm` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchKaufmanSourceCorrection` | `NumStability.Source.Higham.Chapter11.BunchKaufman.SourceCorrection` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchSharpGrowthBridge` | `NumStability.Source.Higham.Chapter11.Bunch.SharpGrowthBridge` |
++| `NumStability.Algorithms.Cholesky.Higham11BunchTraceHadamard` | `NumStability.Source.Higham.Chapter11.Bunch.TraceHadamard` |
++| `NumStability.Algorithms.Cholesky.Higham11Chapter9ActualExecutorBridge` | `NumStability.Source.Higham.CrossChapter.SymmetricIndefiniteLU.ActualExecutorBridge` |
++| `NumStability.Algorithms.Cholesky.Higham11Chapter9BridgeClosure` | `NumStability.Source.Higham.CrossChapter.SymmetricIndefiniteLU.BridgeClosure` |
++| `NumStability.Algorithms.Cholesky.Higham11RookExactTrace` | `NumStability.Source.Higham.Chapter11.Rook.ExactTrace` |
++| `NumStability.Algorithms.Cholesky.Higham11RookExecutorAdapter` | `NumStability.Source.Higham.Chapter11.Rook.ExecutorAdapter` |
++| `NumStability.Algorithms.Cholesky.Higham11RookRoundedGap` | `NumStability.Source.Higham.Chapter11.Rook.RoundedGap` |
++| `NumStability.Algorithms.Cholesky.Higham11RookSourceClosure` | `NumStability.Source.Higham.Chapter11.Rook.SourceClosure` |
++| `NumStability.Algorithms.Cholesky.Higham11SkewActualSelector` | `NumStability.Source.Higham.Chapter11.Skew.ActualSelector` |
++| `NumStability.Algorithms.Cholesky.Higham11SkewExactTrace` | `NumStability.Source.Higham.Chapter11.Skew.ExactTrace` |
++| `NumStability.Algorithms.Cholesky.Higham11SkewSourceCorrection` | `NumStability.Source.Higham.Chapter11.Skew.SourceCorrection` |
+@@ -160,3 +160,3 @@ the table remains an import-only forwarding module.
+-| `NumStability.Algorithms.HighamChapter9Theorem914Actual` | `NumStability.Source.Higham.Chapter09.Theorem914Actual` |
+-| `NumStability.Algorithms.HighamChapter9Theorem914DiagDominant` | `NumStability.Source.Higham.Chapter09.Theorem914DiagDominant` |
+-| `NumStability.Algorithms.HighamChapter9Theorem914Primitive` | `NumStability.Source.Higham.Chapter09.Theorem914Primitive` |
++| `NumStability.Algorithms.HighamChapter9Theorem914Actual` | `NumStability.Source.Higham.Chapter09.Theorem14.Actual` |
++| `NumStability.Algorithms.HighamChapter9Theorem914DiagDominant` | `NumStability.Source.Higham.Chapter09.Theorem14.DiagDominant` |
++| `NumStability.Algorithms.HighamChapter9Theorem914Primitive` | `NumStability.Source.Higham.Chapter09.Theorem14.Primitive` |
+@@ -232 +232 @@ the table remains an import-only forwarding module.
+-| `NumStability.Algorithms.LeastSquares.Higham20ZeroDeltaB` | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_3`, `NumStability.Algorithms.QR.Higham19Labels`, `NumStability.Algorithms.Underdetermined.UnderdeterminedSolve`, and `NumStability.Source.Higham.Chapter20.Theorem03.ZeroDeltaB` |
++| `NumStability.Algorithms.LeastSquares.Higham20ZeroDeltaB` | `NumStability.Algorithms.LeastSquares.Higham20Theorem20_3`, `NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Solvers.Executor.Core`, `NumStability.Algorithms.QR.Higham19Labels`, `NumStability.Source.Higham.Chapter20.Theorem03.ZeroDeltaB` |

@@ -1,5 +1,6 @@
 import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart.QuasiTriangularSolve
-import NumStability.Algorithms.Sylvester.Higham16RoundedTriangular
+import NumStability.Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.RoundedTriangular
+import NumStability.Source.Higham.Chapter16.Spectrum.Results
 
 /-!
 # Algorithms.Sylvester.Higham16QuasiRoundedSolve

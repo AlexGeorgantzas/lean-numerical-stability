@@ -1,6 +1,7 @@
 import NumStability.Algorithms.LinearSystems.Underdetermined.QR.ModifiedGramSchmidt.RoundedReplay.RoundedReplay
 import NumStability.Algorithms.RankOneUpdate
-import NumStability.Algorithms.Underdetermined.Higham21MGS
+import NumStability.Source.Higham.Chapter21.Section03.MethodComparison.Core
+import NumStability.Source.Higham.Chapter21.Theorem04.ModifiedGramSchmidtQMethod.Core
 import NumStability.Source.Higham.Chapter21.Corrections.CorrectedMGS.RoundedReplay
 import NumStability.Source.Higham.Chapter21.Theorem04.ModifiedGramSchmidtQMethod.RoundedReplay
 import NumStability.Source.Higham.Chapter21.Theorem04.RowwiseBackwardError

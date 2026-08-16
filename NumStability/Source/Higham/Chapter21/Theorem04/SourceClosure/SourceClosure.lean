@@ -12,7 +12,7 @@ import NumStability.Algorithms.LinearSystems.Underdetermined.Conditioning.Compon
 import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Pseudoinverse.UnderdeterminedSpec
 import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Specifications.UnderdeterminedSpec
 import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.BackwardError.Core
-import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.Closure
+import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.EndToEnd.Core
 import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.RoundedReplay
 import NumStability.Analysis.Conditioning.LinearSystems.InversePerturbation
 import NumStability.Analysis.MatrixAlgebra

@@ -12,11 +12,11 @@ import NumStability.Source.Higham.Chapter09.Section06
 import NumStability.Source.Higham.Chapter09.Section08
 import NumStability.Source.Higham.Chapter09.Section10
 import NumStability.Source.Higham.Chapter09.Section11
+import NumStability.Source.Higham.Chapter09.Theorem14.Actual
+import NumStability.Source.Higham.Chapter09.Theorem14.DiagDominant
+import NumStability.Source.Higham.Chapter09.Theorem14.Primitive
 import NumStability.Source.Higham.Chapter09.Theorem15.Barrlund.Basic
 import NumStability.Source.Higham.Chapter09.Theorem15.Sun.Basic
-import NumStability.Source.Higham.Chapter09.Theorem914Actual
-import NumStability.Source.Higham.Chapter09.Theorem914DiagDominant
-import NumStability.Source.Higham.Chapter09.Theorem914Primitive
 import NumStability.Source.Higham.Chapter09.Theorem97Classification
 import NumStability.Source.Higham.Chapter09.Theorem99Closure
 import NumStability.Source.Higham.Chapter09.Theorem99ComplexClosure

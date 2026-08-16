@@ -4,10 +4,10 @@ import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.SchurCoordinat
 import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.Vectorization
 import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.ComplexSchur.SpectralSolvability
 import NumStability.Algorithms.MatrixEquations.Sylvester.Solvers.QuasiTriangularBartelsStewart.BlockTraversal
-import NumStability.Algorithms.Sylvester.Higham16
 import NumStability.Analysis.LinearOperators.Schur.Real.QuasiTriangular.API
 import NumStability.Analysis.LinearOperators.Schur.Real.QuasiTriangular.Basic
 import NumStability.Analysis.MatrixAlgebra
+import NumStability.Source.Higham.Chapter16.Foundations.Core
 
 /-!
 # Source.Higham.Chapter16.Section02.BartelsStewart.Equations04To08.Spectrum

@@ -1,4 +1,4 @@
-import NumStability.Source.Higham.Chapter11.Higham11Chapter9BridgeClosure
+import NumStability.Source.Higham.CrossChapter.SymmetricIndefiniteLU.BridgeClosure
 
 /-!
 Compatibility facade for the canonical Chapter 11 owner(s).
