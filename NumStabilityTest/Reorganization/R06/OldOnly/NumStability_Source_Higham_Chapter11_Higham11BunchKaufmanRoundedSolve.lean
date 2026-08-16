@@ -1,0 +1,21 @@
+import NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedSolve
+
+/-!
+# R06 historical-only test — `Higham11BunchKaufmanRoundedSolve`
+
+Imports exactly the historical path; checks its preserved public
+surface (12 declarations).
+-/
+
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.computedSolve_backward_error
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.computedSolve_backward_error_normwise_of_growth
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.computedSolve_backward_error_normwise_of_growth_source
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.computedSolve_backward_error_source
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.flatL_diag
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.flatL_lower
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.solveResidualCoefficient
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.solveResidualCoefficient_nonneg
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.sourceFlatAbsProduct
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.unpermutedMatrix
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.unpermutedVector
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.unpermuted_solve_equation

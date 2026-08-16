@@ -1,0 +1,17 @@
+import NumStability.Source.Higham.Chapter16.Section03.PerturbationAndConditioning.AutomaticBounds.Results.Core
+
+/-!
+# R06 canonical-only test — `Core`
+
+Imports exactly the canonical destination and checks all 8
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.Wave17.H16_eq16_23_sylvester_first_order_bound_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.H16_eq16_24_structured_condition_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.H16_eq16_25_sylvester_relative_perturbation_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.H16_eq16_27_lyapunov_condition_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.H16_eq16_28_lyapunov_relative_aposteriori_bound_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.H16_eq16_28_sylvester_relative_aposteriori_bound_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.exists_lyapunovOp_sigmaMin_of_no_common_complex_right_eigenvalue
+#check @NumStability.Wave17.exists_sylvesterOp_sigmaMin_of_no_common_complex_right_eigenvalue

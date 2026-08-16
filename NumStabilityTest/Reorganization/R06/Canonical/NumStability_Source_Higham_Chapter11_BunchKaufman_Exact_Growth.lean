@@ -1,0 +1,17 @@
+import NumStability.Source.Higham.Chapter11.BunchKaufman.Exact.Growth
+
+/-!
+# R06 canonical-only test — `Growth`
+
+Imports exactly the canonical destination and checks all 8
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.exactArithmetic_maxEntryProductBound
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.exactArithmetic_maxEntryProductBound_of_stageMax_eq
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.flatAbsProduct_le_thirtySix_dimension_stageMax_exactArithmetic
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.flatAbsProduct_le_thirtySix_dimension_stageMax_rounded
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.flatAbsProduct_le_thirtySix_mul_dimension_mul_roundedGrowthFactor
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.rounded_maxEntryProductBound_thirtySix
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.sourceCoordinateFlatAbsProduct_le_thirtySix_mul_dimension_mul_roundedGrowthFactor
+#check @NumStability.higham11_4_exactArithmeticBunchKaufmanMaxEntryNorm_productBound

@@ -1,0 +1,88 @@
+import NumStability.Source.Higham.Chapter11.BunchKaufman.Exact.Trace
+
+/-!
+# R06 canonical-only test — `Trace`
+
+Imports exactly the canonical destination and checks all 79
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.Higham11BunchKaufmanMatrix
+#check @NumStability.Higham11ExactBunchKaufmanTrace
+#check @NumStability.Higham11ExactBunchKaufmanTrace.allSelectedTwoSolvesCertified
+#check @NumStability.Higham11ExactBunchKaufmanTrace.allSelectedTwoSolvesCertified_of_runDomain
+#check @NumStability.Higham11ExactBunchKaufmanTrace.below
+#check @NumStability.Higham11ExactBunchKaufmanTrace.brecOn
+#check @NumStability.Higham11ExactBunchKaufmanTrace.brecOn.eq
+#check @NumStability.Higham11ExactBunchKaufmanTrace.brecOn.go
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case1
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case1.elim
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case1.inj
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case1.injEq
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case1.noConfusion
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case1.sizeOf_spec
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case2
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case2.elim
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case2.inj
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case2.injEq
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case2.noConfusion
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case2.sizeOf_spec
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case3
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case3.elim
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case3.inj
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case3.injEq
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case3.noConfusion
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case3.sizeOf_spec
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case4
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case4.elim
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case4.inj
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case4.injEq
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case4.noConfusion
+#check @NumStability.Higham11ExactBunchKaufmanTrace.case4.sizeOf_spec
+#check @NumStability.Higham11ExactBunchKaufmanTrace.casesOn
+#check @NumStability.Higham11ExactBunchKaufmanTrace.ctorElim
+#check @NumStability.Higham11ExactBunchKaufmanTrace.ctorElimType
+#check @NumStability.Higham11ExactBunchKaufmanTrace.ctorIdx
+#check @NumStability.Higham11ExactBunchKaufmanTrace.firstPerm
+#check @NumStability.Higham11ExactBunchKaufmanTrace.firstPerm_injective
+#check @NumStability.Higham11ExactBunchKaufmanTrace.firstPermuted_symmetric
+#check @NumStability.Higham11ExactBunchKaufmanTrace.nil
+#check @NumStability.Higham11ExactBunchKaufmanTrace.nil.elim
+#check @NumStability.Higham11ExactBunchKaufmanTrace.nil.noConfusion
+#check @NumStability.Higham11ExactBunchKaufmanTrace.nil.sizeOf_spec
+#check @NumStability.Higham11ExactBunchKaufmanTrace.noAction
+#check @NumStability.Higham11ExactBunchKaufmanTrace.noAction.elim
+#check @NumStability.Higham11ExactBunchKaufmanTrace.noAction.inj
+#check @NumStability.Higham11ExactBunchKaufmanTrace.noAction.injEq
+#check @NumStability.Higham11ExactBunchKaufmanTrace.noAction.noConfusion
+#check @NumStability.Higham11ExactBunchKaufmanTrace.noAction.sizeOf_spec
+#check @NumStability.Higham11ExactBunchKaufmanTrace.noAction_offDiagonal_zero
+#check @NumStability.Higham11ExactBunchKaufmanTrace.noConfusion
+#check @NumStability.Higham11ExactBunchKaufmanTrace.noConfusionType
+#check @NumStability.Higham11ExactBunchKaufmanTrace.rec
+#check @NumStability.Higham11ExactBunchKaufmanTrace.recOn
+#check @NumStability.Higham11ExactBunchKaufmanTrace.schedule
+#check @NumStability.Higham11ExactBunchKaufmanTrace.symmetric
+#check @NumStability.Higham11ExactBunchKaufmanTrace.twoSolveRunDomain
+#check @NumStability.Higham11ExactBunchKaufmanTrace.widths
+#check @NumStability.Higham11ExactBunchKaufmanTrace.widths_sum
+#check @NumStability.higham11_2_SelectedTwoSolveCertificate
+#check @NumStability.higham11_2_bunchKaufmanCase1_pivot_ne_zero
+#check @NumStability.higham11_2_bunchKaufmanCase2_pivot_ne_zero
+#check @NumStability.higham11_2_bunchKaufmanCase3_pivot_ne_zero
+#check @NumStability.higham11_2_bunchKaufmanCase4_det_ne_zero
+#check @NumStability.higham11_2_bunchKaufmanExactActive
+#check @NumStability.higham11_2_bunchKaufmanExactActive_case3_pivot
+#check @NumStability.higham11_2_bunchKaufmanExactActive_eq_of_case1_or_case2
+#check @NumStability.higham11_2_bunchKaufmanExactActive_symmetric
+#check @NumStability.higham11_2_bunchKaufmanExactSchurOne
+#check @NumStability.higham11_2_bunchKaufmanExactSchurOne_symmetric
+#check @NumStability.higham11_2_bunchKaufmanExactSchurTwo
+#check @NumStability.higham11_2_bunchKaufmanExactSchurTwo_symmetric
+#check @NumStability.higham11_2_bunchKaufmanFirstBranch_finOne
+#check @NumStability.higham11_2_bunchKaufmanNoActionTail
+#check @NumStability.higham11_2_bunchKaufmanNoActionTail_symmetric
+#check @NumStability.higham11_2_bunchKaufmanOmegaRow_pos_of_branch
+#check @NumStability.higham11_2_bunchKaufmanSelectedTwoBlock_eq_activeLeading
+#check @NumStability.higham11_2_exactBunchKaufmanTrace
+#check @NumStability.higham11_2_nonempty_exactBunchKaufmanTrace

@@ -1,0 +1,13 @@
+import NumStability.Source.Higham.Chapter11.Higham11BunchKaufmanRoundedGrowthSolve
+
+/-!
+# R06 historical-only test — `Higham11BunchKaufmanRoundedGrowthSolve`
+
+Imports exactly the historical path; checks its preserved public
+surface (4 declarations).
+-/
+
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.computedSolve_backward_error_normwise_forty
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.computedSolve_backward_error_normwise_forty_source
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.flatAbsProduct_le_forty_mul_dimension_mul_roundedGrowthFactor
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.sourceFlatAbsProduct_le_forty_mul_dimension_mul_roundedGrowthFactor

@@ -1,0 +1,69 @@
+import NumStability.Source.Higham.Chapter11.Bunch.SharpGrowthBridge
+
+/-!
+# R06 canonical-only test — `SharpGrowthBridge`
+
+Imports exactly the canonical destination and checks all 60
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.Higham11BunchSharpBlock
+#check @NumStability.Higham11BunchSharpBlock.casesOn
+#check @NumStability.Higham11BunchSharpBlock.ctorIdx
+#check @NumStability.Higham11BunchSharpBlock.detAbs
+#check @NumStability.Higham11BunchSharpBlock.detAbs_pos
+#check @NumStability.Higham11BunchSharpBlock.mk
+#check @NumStability.Higham11BunchSharpBlock.mk.inj
+#check @NumStability.Higham11BunchSharpBlock.mk.injEq
+#check @NumStability.Higham11BunchSharpBlock.mk.noConfusion
+#check @NumStability.Higham11BunchSharpBlock.mk.sizeOf_spec
+#check @NumStability.Higham11BunchSharpBlock.noConfusion
+#check @NumStability.Higham11BunchSharpBlock.noConfusionType
+#check @NumStability.Higham11BunchSharpBlock.one_det_lower
+#check @NumStability.Higham11BunchSharpBlock.penalty
+#check @NumStability.Higham11BunchSharpBlock.rec
+#check @NumStability.Higham11BunchSharpBlock.recOn
+#check @NumStability.Higham11BunchSharpBlock.stageMax
+#check @NumStability.Higham11BunchSharpBlock.stageMax_pos
+#check @NumStability.Higham11BunchSharpBlock.two_det_lower
+#check @NumStability.Higham11BunchSharpBlock.width
+#check @NumStability.Higham11BunchSharpBlock.width_le_two
+#check @NumStability.Higham11BunchSharpBlock.width_one_or_two
+#check @NumStability.Higham11BunchSharpBlock.width_pos
+#check @NumStability.Higham11BunchSharpBlockCertificate
+#check @NumStability.Higham11BunchSharpBlockCertificate.adjustedLogSum
+#check @NumStability.Higham11BunchSharpBlockCertificate.adjustedLogSum_le_boundary
+#check @NumStability.Higham11BunchSharpBlockCertificate.adjustedMean
+#check @NumStability.Higham11BunchSharpBlockCertificate.below
+#check @NumStability.Higham11BunchSharpBlockCertificate.below.casesOn
+#check @NumStability.Higham11BunchSharpBlockCertificate.below.cons
+#check @NumStability.Higham11BunchSharpBlockCertificate.below.rec
+#check @NumStability.Higham11BunchSharpBlockCertificate.below.singleton
+#check @NumStability.Higham11BunchSharpBlockCertificate.boundaryMoment
+#check @NumStability.Higham11BunchSharpBlockCertificate.brecOn
+#check @NumStability.Higham11BunchSharpBlockCertificate.casesOn
+#check @NumStability.Higham11BunchSharpBlockCertificate.cons
+#check @NumStability.Higham11BunchSharpBlockCertificate.detProduct
+#check @NumStability.Higham11BunchSharpBlockCertificate.eliminatedWidth
+#check @NumStability.Higham11BunchSharpBlockCertificate.firstMax
+#check @NumStability.Higham11BunchSharpBlockCertificate.firstMax_pos
+#check @NumStability.Higham11BunchSharpBlockCertificate.higham11_1_bunchSharpGrowth_n_one_source_discrepancy
+#check @NumStability.Higham11BunchSharpBlockCertificate.higham11_1_bunchSharpGrowth_ratio_bound
+#check @NumStability.Higham11BunchSharpBlockCertificate.higham11_1_bunchSharpGrowth_stageMax_le_bound_mul
+#check @NumStability.Higham11BunchSharpBlockCertificate.lastMax
+#check @NumStability.Higham11BunchSharpBlockCertificate.lastMax_pos
+#check @NumStability.Higham11BunchSharpBlockCertificate.nonempty
+#check @NumStability.Higham11BunchSharpBlockCertificate.rec
+#check @NumStability.Higham11BunchSharpBlockCertificate.recOn
+#check @NumStability.Higham11BunchSharpBlockCertificate.sharpLogPotential
+#check @NumStability.Higham11BunchSharpBlockCertificate.singleton
+#check @NumStability.Higham11BunchSharpBlockCertificate.totalWidth
+#check @NumStability.Higham11BunchSharpBlockCertificate.totalWidth_pos
+#check @NumStability.Higham11BunchSharpBlockCertificate.wilkinsonLogSteps
+#check @NumStability.higham11_1_bunchLocalGrowthFactor
+#check @NumStability.higham11_1_bunchPenaltyOne
+#check @NumStability.higham11_1_bunchPenaltyTwo
+#check @NumStability.higham11_1_bunchSharpGrowth_n_one_source_discrepancy
+#check @NumStability.higham11_1_bunchSharpGrowth_ratio_bound
+#check @NumStability.higham11_1_bunchSharpGrowth_stageMax_le_bound_mul
+#check @NumStability.higham11_1_bunch_modified_wilkinson_ratio_bound

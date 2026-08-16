@@ -1,0 +1,31 @@
+import NumStability.Source.Higham.Chapter11.Higham11RookRoundedGap
+
+/-!
+# R06 historical-only test — `Higham11RookRoundedGap`
+
+Imports exactly the historical path; checks its preserved public
+surface (22 declarations).
+-/
+
+#check @NumStability.Higham11RookExecutorAdapter.exists_aligned_small_mixedExecutor_without_printed_growth
+#check @NumStability.Higham11RookExecutorAdapter.flMixedPivots_does_not_determine_rook_schedule
+#check @NumStability.Higham11RookExecutorAdapter.rookGapIdentity2
+#check @NumStability.Higham11RookExecutorAdapter.rookGapIdentity2_columnMax_zero
+#check @NumStability.Higham11RookExecutorAdapter.rookGapIdentity2_rook_selects_one
+#check @NumStability.Higham11RookExecutorAdapter.rookGapIdentity2_symmetric
+#check @NumStability.Higham11RookExecutorAdapter.rookGapIdentity2_terminalTwo_vacuous
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedA2
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedA2_columnMax_one
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedA2_first_rook_scalar
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedA2_flMixedD_last
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedA2_flSchur_value
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedA2_growth_violation
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedA2_mixedPivots
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedA2_no_printed_D_growth
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedA2_recursive_rook_scalar
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedA2_search_stops_at_zero
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedA2_symmetric
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedA2_terminalStep_zero
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedDivFP
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedDivFP_gammaValid
+#check @NumStability.Higham11RookExecutorAdapter.rookGapRoundedDivFP_small

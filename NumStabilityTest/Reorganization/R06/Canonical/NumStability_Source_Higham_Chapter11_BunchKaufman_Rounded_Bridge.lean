@@ -1,0 +1,22 @@
+import NumStability.Source.Higham.Chapter11.BunchKaufman.Rounded.Bridge
+
+/-!
+# R06 canonical-only test — `Bridge`
+
+Imports exactly the canonical destination and checks all 13
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.Higham11ExactBunchKaufmanTrace.allSelectedTwoCouplingsBounded
+#check @NumStability.Higham11ExactBunchKaufmanTrace.allSelectedTwoCouplingsBounded_of_runDomain
+#check @NumStability.Higham11ExactBunchKaufmanTrace.allSelectedTwoResidualsBounded
+#check @NumStability.Higham11ExactBunchKaufmanTrace.allSelectedTwoResidualsBounded_of_runDomain
+#check @NumStability.higham11_2_flSelectedTwoByTwoSolve_abs_coupling
+#check @NumStability.higham11_2_flSelectedTwoByTwoSolve_residual
+#check @NumStability.higham11_5_stable_solve_does_not_imply_exact_abs_coupling
+#check @NumStability.higham11_5_twoByTwoAbsBilinear
+#check @NumStability.higham11_5_twoByTwoAbsBilinear_perturbation_le
+#check @NumStability.higham11_5_twoByTwoAbsRow
+#check @NumStability.higham11_5_twoByTwoPivotSolveStable_abs_coupling
+#check @NumStability.higham11_5_twoByTwoPivotSolveStable_residual
+#check @NumStability.higham11_5_twoByTwoSolve_abs_coupling_additive

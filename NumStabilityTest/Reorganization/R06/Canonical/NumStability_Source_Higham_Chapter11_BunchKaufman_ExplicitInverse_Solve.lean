@@ -1,0 +1,29 @@
+import NumStability.Source.Higham.Chapter11.BunchKaufman.ExplicitInverse.Solve
+
+/-!
+# R06 canonical-only test — `Solve`
+
+Imports exactly the canonical destination and checks all 20
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.Higham11ExplicitInverseRunDomain
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.actualExplicitInverseMiddleSolve_backward_error
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.completed_of_explicitInverseMiddleSolveRunDomain
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.computedSolve_backward_error_normwise_forty_actual_explicitInverse
+#check @NumStability.Higham11RoundedBunchKaufmanExecution.computedSolve_backward_error_normwise_forty_actual_explicitInverse_source
+#check @NumStability.higham11_2_case4_selected_explicitInverse_runDomain
+#check @NumStability.higham11_2_case4_selected_product_half_bound
+#check @NumStability.higham11_2_flExplicitInverseDen
+#check @NumStability.higham11_2_flExplicitInverseDen_ne_zero_of_scaled_product
+#check @NumStability.higham11_2_flExplicitInverseMu
+#check @NumStability.higham11_2_flExplicitInverseScaledA
+#check @NumStability.higham11_2_flExplicitInverseScaledC
+#check @NumStability.higham11_2_flExplicitInverseSolve
+#check @NumStability.higham11_2_flExplicitInverseSolve_backward_error_360u
+#check @NumStability.higham11_2_flExplicitInverseSolve_backward_error_gamma180
+#check @NumStability.higham11_2_flExplicitInverse_scaled_product_le_three_fifths
+#check @NumStability.higham11_2_flSelectedExplicitInverseDen
+#check @NumStability.higham11_2_flSelectedExplicitInverseSolve
+#check @NumStability.higham11_2_flSelectedExplicitInverseSolve_backward_error_gamma180
+#check @NumStability.higham11_2_flSelectedExplicitInverseSolve_higham115
