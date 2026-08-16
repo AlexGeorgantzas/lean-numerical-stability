@@ -1,0 +1,18 @@
+import NumStability.Algorithms.Underdetermined.Higham21Perturbation
+
+/-!
+# R05 historical-only test — `Higham21Perturbation`
+
+Imports exactly the historical path; checks its preserved public
+surface (9 declarations).
+-/
+
+#check @NumStability.higham21Eq21_7_exactRemainder_absoluteNorm_isBigO
+#check @NumStability.higham21Eq21_7_exactRemainder_absoluteNorm_le_fixed_radius
+#check @NumStability.higham21_theorem21_1_finite_error_numerator_bound_of_gram_det_ne_zero
+#check @NumStability.higham21_theorem21_1_finite_error_relative_bound
+#check @NumStability.higham21_theorem21_1_finite_error_relative_bound_of_gram_det_ne_zero
+#check @NumStability.higham21_theorem21_1_firstOrder_componentwise_bound
+#check @NumStability.higham21_theorem21_1_firstOrder_numerator_bound
+#check @NumStability.higham21_theorem21_1_firstOrder_relative_bound
+#check @NumStability.higham21_theorem21_1_relative_asymptotic_bound_of_gram_det_ne_zero

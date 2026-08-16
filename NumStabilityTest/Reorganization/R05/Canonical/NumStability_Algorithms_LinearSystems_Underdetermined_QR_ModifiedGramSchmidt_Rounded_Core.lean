@@ -1,0 +1,21 @@
+import NumStability.Algorithms.LinearSystems.Underdetermined.QR.ModifiedGramSchmidt.Rounded.Core
+
+/-!
+# R05 canonical-only test — `Core`
+
+Imports exactly the canonical destination and checks all 12
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.Higham21MGSRoundedSystemTransfer.of_rankOneCorrections
+#check @NumStability.higham21_fl_mgs_corrected_output_repaired_action_rowwise
+#check @NumStability.higham21_mgs_feasibilityCorrection_rowNorm
+#check @NumStability.higham21_mgs_feasibilityCorrection_solves
+#check @NumStability.higham21_mgs_fixedVectorActionCorrection_action
+#check @NumStability.higham21_mgs_fixedVectorActionCorrection_rowNorm
+#check @NumStability.higham21_mgs_rangeCorrection_action
+#check @NumStability.higham21_mgs_rangeCorrection_represents
+#check @NumStability.higham21_mgs_rounded_actual_output_omegaR_le
+#check @NumStability.higham21_mgs_rounded_actual_output_rowwise_backward_stable
+#check @NumStability.higham21_mgs_rounded_forwardSub_actual_output_omegaR_le
+#check @NumStability.higham21_mgs_rounded_forwardSub_actual_output_theorem21_4

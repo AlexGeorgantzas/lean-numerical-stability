@@ -1,0 +1,18 @@
+import NumStability.Source.Higham.Chapter20.Theorem04
+
+/-!
+# R05 historical-only test — `Theorem04`
+
+Imports exactly the historical path; checks its preserved public
+surface (9 declarations).
+-/
+
+#check @NumStability.LSAsymmetricAugmentedSystem.exists_exact_qr_solution_of_fl_householderQRPanel_theorem20_4_printed_total_perturbations
+#check @NumStability.LSAsymmetricAugmentedSystem.exists_exact_qr_solution_with_source_bounds_and_qr_relation
+#check @NumStability.higham20Theorem20_4NormalizedWitness
+#check @NumStability.higham20Theorem20_4NormalizedWitness_frobNorm
+#check @NumStability.higham20Theorem20_4NormalizedWitness_nonneg
+#check @NumStability.higham20Theorem20_4_exists_unit_witness_of_left_domination
+#check @NumStability.higham20Theorem20_4_le_normalized_of_left_domination
+#check @NumStability.higham20Theorem20_4_witness_eq_frobNorm_mul_normalized
+#check @NumStability.lsTheorem20_4ConcreteGammaTildeTotal

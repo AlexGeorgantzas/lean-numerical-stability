@@ -1,0 +1,21 @@
+import NumStability.Algorithms.Underdetermined.Higham21MGSRounded
+
+/-!
+# R05 historical-only test — `Higham21MGSRounded`
+
+Imports exactly the historical path; checks its preserved public
+surface (12 declarations).
+-/
+
+#check @NumStability.Higham21MGSRoundedSystemTransfer.of_rankOneCorrections
+#check @NumStability.higham21_fl_mgs_corrected_output_repaired_action_rowwise
+#check @NumStability.higham21_mgs_feasibilityCorrection_rowNorm
+#check @NumStability.higham21_mgs_feasibilityCorrection_solves
+#check @NumStability.higham21_mgs_fixedVectorActionCorrection_action
+#check @NumStability.higham21_mgs_fixedVectorActionCorrection_rowNorm
+#check @NumStability.higham21_mgs_rangeCorrection_action
+#check @NumStability.higham21_mgs_rangeCorrection_represents
+#check @NumStability.higham21_mgs_rounded_actual_output_omegaR_le
+#check @NumStability.higham21_mgs_rounded_actual_output_rowwise_backward_stable
+#check @NumStability.higham21_mgs_rounded_forwardSub_actual_output_omegaR_le
+#check @NumStability.higham21_mgs_rounded_forwardSub_actual_output_theorem21_4

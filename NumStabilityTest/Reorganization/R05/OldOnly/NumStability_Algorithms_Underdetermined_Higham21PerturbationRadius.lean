@@ -1,0 +1,22 @@
+import NumStability.Algorithms.Underdetermined.Higham21PerturbationRadius
+
+/-!
+# R05 historical-only test — `Higham21PerturbationRadius`
+
+Imports exactly the historical path; checks its preserved public
+surface (13 declarations).
+-/
+
+#check @NumStability.higham21PerturbationRadius_mul_gramSensitivity_le_half
+#check @NumStability.higham21PerturbationRadius_mul_product_le_half
+#check @NumStability.higham21_eq21_7_euclidean_relative_asymptotic_bound_of_firstOrder_bound
+#check @NumStability.higham21_theorem21_1_finite_error_relative_bound_of_direction_envelope
+#check @NumStability.higham21_theorem21_1_fixed_radius_certificates_of_direction_envelope
+#check @NumStability.higham21_theorem21_1_fixed_radius_certificates_of_family_entrywise_envelope
+#check @NumStability.higham21_theorem21_1_fixed_radius_certificates_of_family_row_envelope
+#check @NumStability.higham21_theorem21_1_fixed_radius_certificates_of_product_and_entrywise_envelopes
+#check @NumStability.higham21_theorem21_1_relative_asymptotic_bound_of_direction_envelope
+#check @NumStability.higham21_theorem21_1_relative_remainder_isBigO_of_direction_envelope
+#check @NumStability.higham21_theorem21_1_scaled_gramInverse_frobNorm_le_of_radius
+#check @NumStability.higham21_theorem21_1_scaled_gram_det_ne_zero_of_radius
+#check @NumStability.higham21_theorem21_1_scaled_product_contraction_of_radius

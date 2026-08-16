@@ -1,0 +1,57 @@
+import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.StoredReplay.Closure
+
+/-!
+# R05 historical-only test — `Closure`
+
+Imports exactly the historical path; checks its preserved public
+surface (48 declarations).
+-/
+
+#check @NumStability.Higham21ConcreteGivensReplayStep
+#check @NumStability.Higham21ConcreteGivensReplayStep.casesOn
+#check @NumStability.Higham21ConcreteGivensReplayStep.ctorIdx
+#check @NumStability.Higham21ConcreteGivensReplayStep.distinct
+#check @NumStability.Higham21ConcreteGivensReplayStep.exactTranspose
+#check @NumStability.Higham21ConcreteGivensReplayStep.exactTranspose_orthogonal
+#check @NumStability.Higham21ConcreteGivensReplayStep.mk
+#check @NumStability.Higham21ConcreteGivensReplayStep.mk.inj
+#check @NumStability.Higham21ConcreteGivensReplayStep.mk.injEq
+#check @NumStability.Higham21ConcreteGivensReplayStep.mk.noConfusion
+#check @NumStability.Higham21ConcreteGivensReplayStep.mk.sizeOf_spec
+#check @NumStability.Higham21ConcreteGivensReplayStep.noConfusion
+#check @NumStability.Higham21ConcreteGivensReplayStep.noConfusionType
+#check @NumStability.Higham21ConcreteGivensReplayStep.p
+#check @NumStability.Higham21ConcreteGivensReplayStep.q
+#check @NumStability.Higham21ConcreteGivensReplayStep.rec
+#check @NumStability.Higham21ConcreteGivensReplayStep.recOn
+#check @NumStability.Higham21ConcreteGivensReplayStep.source_ne
+#check @NumStability.Higham21ConcreteGivensReplayStep.stored
+#check @NumStability.Higham21ConcreteGivensReplayStep.xi
+#check @NumStability.Higham21ConcreteGivensReplayStep.xj
+#check @NumStability.Higham21GivensActualReplayEtaQ
+#check @NumStability.Higham21GivensStoredReplayBridge.mono
+#check @NumStability.higham21ConcreteGivensExactQ
+#check @NumStability.higham21ConcreteGivensExactQ_append
+#check @NumStability.higham21ConcreteGivensExactQ_cons
+#check @NumStability.higham21ConcreteGivensExactQ_nil
+#check @NumStability.higham21ConcreteGivensExactQ_orthogonal
+#check @NumStability.higham21ConcreteGivensStoredTrace
+#check @NumStability.higham21ConcreteGivensStoredTrace_append
+#check @NumStability.higham21ConcreteGivensStoredTrace_cons
+#check @NumStability.higham21ConcreteGivensStoredTrace_nil
+#check @NumStability.higham21GivensActualConcreteSteps
+#check @NumStability.higham21GivensActualDeltaAT
+#check @NumStability.higham21GivensActualRoundedOutput
+#check @NumStability.higham21GivensActualStoredTrace
+#check @NumStability.higham21GivensReplayAccumBound
+#check @NumStability.higham21GivensReplayAccumBound_le_succ
+#check @NumStability.higham21GivensReplayAccumBound_mono_nat
+#check @NumStability.higham21GivensReplayAccumBound_nonneg
+#check @NumStability.higham21_append_columnwise_qr_certificate
+#check @NumStability.higham21_concrete_givens_stored_replay_bridge
+#check @NumStability.higham21_concrete_givens_transpose_app_error
+#check @NumStability.higham21_fixed_accumulation_prepend_closed
+#check @NumStability.higham21_givens_stage_fold_explicit_certificate
+#check @NumStability.higham21_givens_task_list_explicit_certificate
+#check @NumStability.higham21_prepend_columnwise_qr_certificate
+#check @NumStability.matTranspose_givensRotation

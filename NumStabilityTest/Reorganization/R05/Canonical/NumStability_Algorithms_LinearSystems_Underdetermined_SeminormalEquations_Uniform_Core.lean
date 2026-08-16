@@ -1,0 +1,19 @@
+import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.Uniform.Core
+
+/-!
+# R05 canonical-only test — `Core`
+
+Imports exactly the canonical destination and checks all 10
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.higham21_sne_householder_RInv_frobNorm_le_q_uniform
+#check @NumStability.higham21_sne_householder_actual_coefficients_le_q_uniform
+#check @NumStability.higham21_sne_householder_actual_output_q_uniform
+#check @NumStability.higham21_sne_householder_actual_output_source_q_uniform
+#check @NumStability.higham21_sne_householder_actual_output_source_relative_q_uniform
+#check @NumStability.higham21_sne_householder_actual_output_source_relative_unit_roundoff_sq
+#check @NumStability.higham21_sne_householder_computedNormalSolution_vecNorm2_le_q_uniform
+#check @NumStability.higham21_sne_householder_nearby_gramInverse_frobNorm_le_q_uniform
+#check @NumStability.higham21_sne_householder_reference_output_q_uniform
+#check @NumStability.higham21_sne_householder_reference_transfers_q_uniform

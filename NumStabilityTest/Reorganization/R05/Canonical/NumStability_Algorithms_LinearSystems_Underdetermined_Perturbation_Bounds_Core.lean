@@ -1,0 +1,18 @@
+import NumStability.Algorithms.LinearSystems.Underdetermined.Perturbation.Bounds.Core
+
+/-!
+# R05 canonical-only test — `Core`
+
+Imports exactly the canonical destination and checks all 9
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.higham21Eq21_7_exactRemainder_absoluteNorm_isBigO
+#check @NumStability.higham21Eq21_7_exactRemainder_absoluteNorm_le_fixed_radius
+#check @NumStability.higham21_theorem21_1_finite_error_numerator_bound_of_gram_det_ne_zero
+#check @NumStability.higham21_theorem21_1_finite_error_relative_bound
+#check @NumStability.higham21_theorem21_1_finite_error_relative_bound_of_gram_det_ne_zero
+#check @NumStability.higham21_theorem21_1_firstOrder_componentwise_bound
+#check @NumStability.higham21_theorem21_1_firstOrder_numerator_bound
+#check @NumStability.higham21_theorem21_1_firstOrder_relative_bound
+#check @NumStability.higham21_theorem21_1_relative_asymptotic_bound_of_gram_det_ne_zero

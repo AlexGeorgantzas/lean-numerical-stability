@@ -1,0 +1,11 @@
+import NumStability.Source.Higham.Chapter21.Equation11.Results.Core
+
+/-!
+# R05 canonical-only test — `Core`
+
+Imports exactly the canonical destination and checks all 2
+routed public declarations. No historical owner import.
+-/
+
+#check @NumStability.higham21_eq21_11_computed_qhat_relative_forward_error_quadratic
+#check @NumStability.higham21_theorem21_4_computed_qhat_rank_stable_gamma
