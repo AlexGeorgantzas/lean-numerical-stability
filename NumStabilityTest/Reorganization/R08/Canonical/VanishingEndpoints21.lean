@@ -1,0 +1,17 @@
+import NumStability.Source.Higham.Chapter14.Theorem05.PrintedTrace.VanishingEndpoints
+
+/-!
+# VanishingEndpoints canonical-only test
+
+Imports exactly one canonical module, so no sibling import can supply the
+declarations checked below. They moved here from
+`NumStability.Algorithms.Ch14GJETheorem145SourceClosure`
+during wave R08 and must resolve from this destination alone.
+-/
+#check @NumStability.Ch14Ext.ch14ext_gjeResidualPrintedEnvelopeCorrection_isBigOOne
+#check @NumStability.Ch14Ext.ch14ext_gjeResidualS2_exact_le_printed_add_correction
+#check @NumStability.Ch14Ext.ch14ext_gjeSourceResidual1431PrintedRemainder_isBigO_unit_sq
+#check @NumStability.Ch14Ext.ch14ext_gjeSourceTrace_14_30abc_printed_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_gjeSourceTrace_forward_14_32_printed_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_gjeSourceTrace_residual_14_31_printed_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_gjeSourceTrace_theorem14_5_printed_vanishing_family_endpoint

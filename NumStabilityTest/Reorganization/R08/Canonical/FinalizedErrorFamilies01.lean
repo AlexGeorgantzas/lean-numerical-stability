@@ -1,0 +1,24 @@
+import NumStability.Source.Higham.Chapter14.Algorithm04.FinalDivisionStage.FinalizedErrorFamilies
+
+/-!
+# FinalizedErrorFamilies canonical-only test
+
+Imports exactly one canonical module, so no sibling import can supply the
+declarations checked below. They moved here from
+`NumStability.Algorithms.Ch14GJEFinalDivisionClosure`
+during wave R08 and must resolve from this destination alone.
+-/
+#check @NumStability.Ch14Ext.ch14ext_cor146FinalizedForwardAbsoluteRemainder_family_isBigO_u_sq
+#check @NumStability.Ch14Ext.ch14ext_cor146FinalizedForwardRelativeRemainder_family_isBigO_u_sq
+#check @NumStability.Ch14Ext.ch14ext_cor146FinalizedForwardTerminal_family_isBigO_u_sq
+#check @NumStability.Ch14Ext.ch14ext_cor146FinalizedResidualExactNormCorrection_family_isBigO_u_sq
+#check @NumStability.Ch14Ext.ch14ext_cor146FinalizedResidualPrintedRemainder_family_isBigO_u_sq
+#check @NumStability.Ch14Ext.ch14ext_cor146FinalizedResidualRemainder_family_isBigO_u_sq
+#check @NumStability.Ch14Ext.ch14ext_cor146FinalizedResidualTerminal_family_isBigO_u_sq
+#check @NumStability.Ch14Ext.ch14ext_cor146Finalized_output_error_family_isBigO_u
+#check @NumStability.Ch14Ext.ch14ext_cor146Finalized_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_gjeFinalizedFamily_stage2_error_isBigO_unit
+#check @NumStability.Ch14Ext.ch14ext_gjeFinalizedFamily_theorem14_5_endpoint
+#check @NumStability.Ch14Ext.ch14ext_gjeForwardFinalDivisionHigherOrder_family_isBigO
+#check @NumStability.Ch14Ext.ch14ext_gjeResidualFinalDivisionHigherOrder_family_isBigO
+#check @NumStability.Ch14Ext.ch14ext_gjeResidualFinalizedPrintedHigherOrder_family_isBigO

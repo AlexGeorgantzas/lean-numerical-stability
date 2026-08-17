@@ -1,0 +1,28 @@
+import NumStability.Source.Higham.Chapter14.Corollary07.PrintedTraceFamilies.ResidualAndForwardEndpoints
+
+/-!
+# ResidualAndForwardEndpoints canonical-only test
+
+Imports exactly one canonical module, so no sibling import can supply the
+declarations checked below. They moved here from
+`NumStability.Algorithms.Ch14Corollary147SourceClosure`
+during wave R08 and must resolve from this destination alone.
+-/
+#check @NumStability.Ch14Ext.ch14ext_cor147SourceForwardPrintedRemainder_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147SourceForwardRelativeRemainder_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147SourceForwardVectorRemainder_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147SourceResidualLeadingCorrection_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147SourceResidualRemainder_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_factorProximity_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_forwardCore_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_forwardT1_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_forwardT2_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_forward_14_32_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_forward_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_printedResidualLeading_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_printedX_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_residual_14_31_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_residual_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_luBackward_factorProximity_isBigO
+#check @NumStability.Ch14Ext.ch14ext_luBackward_productResidual_isBigO

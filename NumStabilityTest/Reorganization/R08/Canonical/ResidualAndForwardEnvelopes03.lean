@@ -1,0 +1,30 @@
+import NumStability.Source.Higham.Chapter14.Corollary07.FinalizedRunFamilies.ResidualAndForwardEnvelopes
+
+/-!
+# ResidualAndForwardEnvelopes canonical-only test
+
+Imports exactly one canonical module, so no sibling import can supply the
+declarations checked below. They moved here from
+`NumStability.Algorithms.Ch14Cor147FinalDivisionFamilyClosure`
+during wave R08 and must resolve from this destination alone.
+-/
+#check @NumStability.Ch14Ext.ch14ext_cor147FinalizedForwardPrintedRemainder_family_isBigO_u_sq
+#check @NumStability.Ch14Ext.ch14ext_cor147FinalizedForwardRelativeRemainder_family_isBigO_u_sq
+#check @NumStability.Ch14Ext.ch14ext_cor147FinalizedForwardRelativeTerminal_family_isBigO_u_sq
+#check @NumStability.Ch14Ext.ch14ext_cor147FinalizedForwardVectorRemainder_family_isBigO_u_sq
+#check @NumStability.Ch14Ext.ch14ext_cor147FinalizedResidualLeadingCorrection_family_isBigO_u
+#check @NumStability.Ch14Ext.ch14ext_cor147FinalizedResidualRemainder_family_isBigO_u_sq
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_factorProximity_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_forwardCore_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_forwardT1_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_forwardT2_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_forward_bound
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_forward_printed_bound_of_coefficient_lt_one
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_forward_printed_eventually
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_forward_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_inverseProximity_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_printedResidualLeading_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_printedX_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_residual_bound
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_residual_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_cor147Finalized_vanishing_family_endpoint

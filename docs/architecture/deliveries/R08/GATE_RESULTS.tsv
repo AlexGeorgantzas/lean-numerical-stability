@@ -1,0 +1,9 @@
+gate	command	exit	duration_ms	note
+full_build	lake build NumStability NumStabilityTest	0	763036	all 21 destinations built (21/21 oleans)
+lake_test	lake test	0	25092	does not reach R08 tests; NumStabilityTest.lean is R0010
+r08_tests	lake build <79 R08 test modules>	0	225238	79/79 oleans; zero compiler errors
+compatibility	check_compatibility.py	0	-	523 forwarding modules, 1425 canonical targets
+provenance	check_provenance.py	0	-	137 Apache-marked files, 5 evidenced upstream modules
+layout	check_layout.py	1	-	5 failures, all R0010 integrator hand-offs (see DELIVERY.md)
+candidate_graph	generate_baseline.py (format 2, 706163 rows)	0	127978	fresh candidate under the named mutex
+projection_replay	check_completion_phase_projection.py (P0009)	0	-	211 decls, 1229 sig, 2886 body, 48 private; zero mismatch

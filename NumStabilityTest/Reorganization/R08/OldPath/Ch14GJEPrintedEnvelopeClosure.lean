@@ -1,0 +1,26 @@
+import NumStability.Algorithms.Ch14GJEPrintedEnvelopeClosure
+
+/-!
+# Ch14GJEPrintedEnvelopeClosure old-path-only test
+
+Imports only the historical path. Every declaration checked below is part of
+the residual C0004 surface that wave R08 relocated to
+`NumStability.Source.Higham.Chapter14.Theorem05.PrintedEnvelopes.CorrectionBounds`,
+so this compiles only if the compatibility module still re-exports it
+under its original name.
+-/
+#check @NumStability.Ch14Ext.ch14ext_gje1430bPrintedRemainder_isBigO_unit_sq
+#check @NumStability.Ch14Ext.ch14ext_gje1430cPrintedRemainder_isBigO_unit_sq
+#check @NumStability.Ch14Ext.ch14ext_gje1431EnvelopeCorrectionAction_isBigOOne
+#check @NumStability.Ch14Ext.ch14ext_gje1431PrintedRemainder_isBigO_unit_sq
+#check @NumStability.Ch14Ext.ch14ext_gjeConcreteFamilyPabs_isBigOOne
+#check @NumStability.Ch14Ext.ch14ext_gjeConcreteFamilyPabs_le_Xabs
+#check @NumStability.Ch14Ext.ch14ext_gjeConcretePrintedEnvelopeFamily
+#check @NumStability.Ch14Ext.ch14ext_gjeConcrete_14_30bc_printed_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_gjeConcrete_14_31_printed_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_gjeConcrete_constructedQ_diag_one
+#check @NumStability.Ch14Ext.ch14ext_gjeExactQPEnvelope_le_printed_add_correction
+#check @NumStability.Ch14Ext.ch14ext_gjeExactQPEnvelope_matMulVec_le_printed_add_correction
+#check @NumStability.Ch14Ext.ch14ext_gjeExactQPEnvelope_matMul_le_printed_add_correction
+#check @NumStability.Ch14Ext.ch14ext_gjePrintedEnvelopeCorrection_isBigOOne
+#check @NumStability.Ch14Ext.ch14ext_gjeResidualS2_le_1431PrintedLeading_add_correction
