@@ -1,0 +1,404 @@
+diff --git a/NumStability/Algorithms.lean b/NumStability/Algorithms.lean
+index 4f46fa15910e40d3fb41e5a7fc53479ce3b36e49..88f6b864b6207b0b66c0d5c4ea4cfc2667dc980f 100644
+--- a/NumStability/Algorithms.lean
++++ b/NumStability/Algorithms.lean
+@@ -7,6 +6,0 @@
+-import NumStability.Algorithms.Ch10ActualSourceClosure
+-import NumStability.Algorithms.Ch10ComplexPositiveDefiniteSourceClosure
+-import NumStability.Algorithms.Ch10KahanSharpnessSource
+-import NumStability.Algorithms.Ch10PivotedPSDSourceClosure
+-import NumStability.Algorithms.Ch10Theorem108Componentwise
+-import NumStability.Algorithms.Ch10Theorem108Source
+@@ -54 +47,0 @@
+-import NumStability.Algorithms.Cholesky.CholeskyPSD
+@@ -56,4 +48,0 @@
+-import NumStability.Algorithms.Cholesky.Higham1014Equation1022
+-import NumStability.Algorithms.Cholesky.Higham1014SourceError
+-import NumStability.Algorithms.Cholesky.Higham1029Source
+-import NumStability.Algorithms.Cholesky.HighamMathiasSource
+@@ -69 +57,0 @@
+-import NumStability.Algorithms.HighamChapter10
+@@ -70,0 +59 @@
++import NumStability.Algorithms.LinearSystems.Cholesky.ErrorAnalysis.PositivePivots.Certificate
+@@ -71,0 +61,3 @@
++import NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.KahanTelescope.Identity
++import NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.PivotedFactorization.Existence
++import NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.StageEmbedding.InteriorMass
+@@ -210,0 +203 @@
++import NumStability.Analysis.MatrixNorms.SpectralExtrema.PrincipalSubmatrices.Bounds
+@@ -260,0 +254,2 @@
++import NumStability.Source.Higham.Chapter10.Equation29.Mathias.RoundedSchur.Bounds
++import NumStability.Source.Higham.Chapter10.Equation30.ComplexPositiveDefinite.NoPivotLU.SourceBounds
+@@ -262,0 +258,3 @@
++import NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.OperatorNorm.SourceBound
++import NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.UnboundedGrowth.Construction
++import NumStability.Source.Higham.Chapter10.Problem01.PositiveSemidefiniteEntries.EntryBounds.Results
+@@ -263,0 +262,10 @@
++import NumStability.Source.Higham.Chapter10.Problem04.UnpivotedGrowth.PositivePivots.Bounds
++import NumStability.Source.Higham.Chapter10.Section01.Factorization.ExistenceUniqueness.Results
++import NumStability.Source.Higham.Chapter10.Section02.ErrorAnalysis.FactorizationAndSolve.Bounds
++import NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.ConstructiveFactorization.Existence
++import NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.PivotingAndScaling.Results
++import NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.QuadraticFormBounds.WeightedNorm
++import NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.TrailingTermination.Bound
++import NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.LUGrowth.Equation29
++import NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.SchurStages.Bounds
++import NumStability.Source.Higham.Chapter10.Theorem06.RoundedCholesky.ForwardError.ActualAlgorithm
+@@ -264,0 +273,3 @@
++import NumStability.Source.Higham.Chapter10.Theorem07.SuccessThreshold.Factorization
++import NumStability.Source.Higham.Chapter10.Theorem08.ComponentwisePerturbation.NormalizedResolvent.SourceBound
++import NumStability.Source.Higham.Chapter10.Theorem08.NormwiseDiscrepancy.Counterexample.Uniqueness
+@@ -265,0 +277,5 @@
++import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.ActualComputation.ErrorBounds
++import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.RankSensitiveError.Bounds
++import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.RoundedErrorAnalysis.Bounds
++import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SchurPerturbation.Family
++import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SuccessfulRun.StageBounds
+diff --git a/NumStability/Algorithms/LinearSystems/Cholesky/ErrorAnalysis.lean b/NumStability/Algorithms/LinearSystems/Cholesky/ErrorAnalysis.lean
+index eb35c30ccd08a3f11a3979f0a0ec4916565314bd..1ab516a1a9c04533a331545fa3c80c3a1fc80d3b 100644
+--- a/NumStability/Algorithms/LinearSystems/Cholesky/ErrorAnalysis.lean
++++ b/NumStability/Algorithms/LinearSystems/Cholesky/ErrorAnalysis.lean
+@@ -2,0 +3 @@
++import NumStability.Algorithms.LinearSystems.Cholesky.ErrorAnalysis.PositivePivots.Certificate
+diff --git a/NumStability/Algorithms/LinearSystems/Cholesky/PositiveSemidefinite.lean b/NumStability/Algorithms/LinearSystems/Cholesky/PositiveSemidefinite.lean
+index 804bc3fe77db24654f10dcec811e6841238ccd6d..0f5dd761923c8ff5e74d7884a4969b65136daa7f 100644
+--- a/NumStability/Algorithms/LinearSystems/Cholesky/PositiveSemidefinite.lean
++++ b/NumStability/Algorithms/LinearSystems/Cholesky/PositiveSemidefinite.lean
+@@ -2,0 +3,2 @@
++import NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.KahanTelescope.Identity
++import NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.PivotedFactorization.Existence
+@@ -3,0 +6 @@
++import NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.StageEmbedding.InteriorMass
+diff --git a/NumStability/Analysis/MatrixNorms/SpectralExtrema.lean b/NumStability/Analysis/MatrixNorms/SpectralExtrema.lean
+index 824c7d269dad2cf2b1f21e5863454ce8d49778fe..f1755f6a96860ddf07d83ae0dab0f56b1b85afb7 100644
+--- a/NumStability/Analysis/MatrixNorms/SpectralExtrema.lean
++++ b/NumStability/Analysis/MatrixNorms/SpectralExtrema.lean
+@@ -1,0 +2 @@
++import NumStability.Analysis.MatrixNorms.SpectralExtrema.PrincipalSubmatrices.Bounds
+diff --git a/NumStability/Source/Higham/Chapter06/Lemma06/OperatorTwoNormBound/Bridge.lean b/NumStability/Source/Higham/Chapter06/Lemma06/OperatorTwoNormBound/Bridge.lean
+index 31d68b0fc8c91a9c634504029b0b3612c65fac9b..7bde4e04a70a24cb0d48c3e6fb2cfcacbf748b62 100644
+--- a/NumStability/Source/Higham/Chapter06/Lemma06/OperatorTwoNormBound/Bridge.lean
++++ b/NumStability/Source/Higham/Chapter06/Lemma06/OperatorTwoNormBound/Bridge.lean
+@@ -13,0 +14,2 @@
++import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
++import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+@@ -17,2 +18,0 @@
+-import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+-import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+@@ -24 +24 @@
+-import NumStability.Source.Higham.Chapter06.Lemma06
++import NumStability.Source.Higham.Chapter06.Lemma06.Core.Results
+diff --git a/NumStability/Source/Higham/Chapter10/Equation07/AbsoluteFactorNorm/Bridge.lean b/NumStability/Source/Higham/Chapter10/Equation07/AbsoluteFactorNorm/Bridge.lean
+index 80014368701a1349b53ba084875bd692bc3a1e22..ab317b5b757e97926b89df678ca38683f81694ac 100644
+--- a/NumStability/Source/Higham/Chapter10/Equation07/AbsoluteFactorNorm/Bridge.lean
++++ b/NumStability/Source/Higham/Chapter10/Equation07/AbsoluteFactorNorm/Bridge.lean
+@@ -13,0 +14,2 @@
++import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
++import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+@@ -17,2 +18,0 @@
+-import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+-import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+@@ -24 +24 @@
+-import NumStability.Source.Higham.Chapter06.Lemma06
++import NumStability.Source.Higham.Chapter06.Lemma06.Core.Results
+diff --git a/NumStability/Source/Higham/Chapter10/Equation29/Mathias.lean b/NumStability/Source/Higham/Chapter10/Equation29/Mathias.lean
+index e200538d067e2ea6c028fb77f83fcef015b9c60e..07adb5c919d89178e813952b648ca9b3bf9a1442 100644
+--- a/NumStability/Source/Higham/Chapter10/Equation29/Mathias.lean
++++ b/NumStability/Source/Higham/Chapter10/Equation29/Mathias.lean
+@@ -2,0 +3 @@
++import NumStability.Source.Higham.Chapter10.Equation29.Mathias.RoundedSchur.Bounds
+diff --git a/NumStability/Source/Higham/Chapter10/Equation30/ComplexPositiveDefinite.lean b/NumStability/Source/Higham/Chapter10/Equation30/ComplexPositiveDefinite.lean
+index fef8d777004ac946fdf87955811ee142ed99948d..6601efd93246e9b04ad10e02b1c37f6dc1d11e4f 100644
+--- a/NumStability/Source/Higham/Chapter10/Equation30/ComplexPositiveDefinite.lean
++++ b/NumStability/Source/Higham/Chapter10/Equation30/ComplexPositiveDefinite.lean
+@@ -1,0 +2 @@
++import NumStability.Source.Higham.Chapter10.Equation30.ComplexPositiveDefinite.NoPivotLU.SourceBounds
+diff --git a/NumStability/Source/Higham/Chapter10/Lemma13/KahanSharpness.lean b/NumStability/Source/Higham/Chapter10/Lemma13/KahanSharpness.lean
+index d6fcefc6a35291496c60d972ae01204a4b541e19..eddee23019e251a94e3fac2cc82143fd8fcfe34e 100644
+--- a/NumStability/Source/Higham/Chapter10/Lemma13/KahanSharpness.lean
++++ b/NumStability/Source/Higham/Chapter10/Lemma13/KahanSharpness.lean
+@@ -4,0 +5,2 @@
++import NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.OperatorNorm.SourceBound
++import NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.UnboundedGrowth.Construction
+diff --git a/NumStability/Source/Higham/Chapter10/Problem01/PositiveSemidefiniteEntries.lean b/NumStability/Source/Higham/Chapter10/Problem01/PositiveSemidefiniteEntries.lean
+index d2cf69da628fccdb87aa43774e1c0204b55bf6d5..dafcc018154d2f8d634aedce5140ae4fe92ed2e2 100644
+--- a/NumStability/Source/Higham/Chapter10/Problem01/PositiveSemidefiniteEntries.lean
++++ b/NumStability/Source/Higham/Chapter10/Problem01/PositiveSemidefiniteEntries.lean
+@@ -1,0 +2 @@
++import NumStability.Source.Higham.Chapter10.Problem01.PositiveSemidefiniteEntries.EntryBounds.Results
+diff --git a/NumStability/Source/Higham/Chapter10/Problem04/UnpivotedGrowth.lean b/NumStability/Source/Higham/Chapter10/Problem04/UnpivotedGrowth.lean
+index f6999997dac5769e982ff1f6ee4af1e5b4d0950f..b80ffe35275d9b5e3c747c4f38916b22fef5ba08 100644
+--- a/NumStability/Source/Higham/Chapter10/Problem04/UnpivotedGrowth.lean
++++ b/NumStability/Source/Higham/Chapter10/Problem04/UnpivotedGrowth.lean
+@@ -1,0 +2 @@
++import NumStability.Source.Higham.Chapter10.Problem04.UnpivotedGrowth.PositivePivots.Bounds
+diff --git a/NumStability/Source/Higham/Chapter10/Section01/Factorization.lean b/NumStability/Source/Higham/Chapter10/Section01/Factorization.lean
+index 30fc15019272cd511be73f028f33cf3ecb4cfbc1..7d394464d1f5b7014f959a52b82226f30c14bf47 100644
+--- a/NumStability/Source/Higham/Chapter10/Section01/Factorization.lean
++++ b/NumStability/Source/Higham/Chapter10/Section01/Factorization.lean
+@@ -1,0 +2 @@
++import NumStability.Source.Higham.Chapter10.Section01.Factorization.ExistenceUniqueness.Results
+diff --git a/NumStability/Source/Higham/Chapter10/Section02/ErrorAnalysis.lean b/NumStability/Source/Higham/Chapter10/Section02/ErrorAnalysis.lean
+index 362ed166a6bf2be1866f265f534e4957fca3e9d3..2dd27d36f93d0186dce9710fe0c0275d3d31e807 100644
+--- a/NumStability/Source/Higham/Chapter10/Section02/ErrorAnalysis.lean
++++ b/NumStability/Source/Higham/Chapter10/Section02/ErrorAnalysis.lean
+@@ -1,0 +2 @@
++import NumStability.Source.Higham.Chapter10.Section02.ErrorAnalysis.FactorizationAndSolve.Bounds
+diff --git a/NumStability/Source/Higham/Chapter10/Section03/PositiveSemidefinite.lean b/NumStability/Source/Higham/Chapter10/Section03/PositiveSemidefinite.lean
+index 2cb21364f81bc594e1ead01294b33c25d01b7585..685e78ffe87e9a0264a8918c46d7a609687287ec 100644
+--- a/NumStability/Source/Higham/Chapter10/Section03/PositiveSemidefinite.lean
++++ b/NumStability/Source/Higham/Chapter10/Section03/PositiveSemidefinite.lean
+@@ -0,0 +1 @@
++import NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.ConstructiveFactorization.Existence
+@@ -2,0 +4,2 @@
++import NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.PivotingAndScaling.Results
++import NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.QuadraticFormBounds.WeightedNorm
+@@ -4,0 +8 @@
++import NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.TrailingTermination.Bound
+diff --git a/NumStability/Source/Higham/Chapter10/Section04/PositiveDefiniteSymmetricPart.lean b/NumStability/Source/Higham/Chapter10/Section04/PositiveDefiniteSymmetricPart.lean
+index f4bedbd0ea16ccd296f7e34bf9ce3a3867c85516..b2f39947d290b581a8380311c5f19adc8510aefe 100644
+--- a/NumStability/Source/Higham/Chapter10/Section04/PositiveDefiniteSymmetricPart.lean
++++ b/NumStability/Source/Higham/Chapter10/Section04/PositiveDefiniteSymmetricPart.lean
+@@ -2,0 +3,2 @@
++import NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.LUGrowth.Equation29
++import NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.SchurStages.Bounds
+diff --git a/NumStability/Source/Higham/Chapter10/Theorem06/RoundedCholesky.lean b/NumStability/Source/Higham/Chapter10/Theorem06/RoundedCholesky.lean
+index 6f755cc32c7ec54b92a0b12bcc228f22833bcea1..3591eb37c24d177c0c1e3c499a02cbf9586cc8d0 100644
+--- a/NumStability/Source/Higham/Chapter10/Theorem06/RoundedCholesky.lean
++++ b/NumStability/Source/Higham/Chapter10/Theorem06/RoundedCholesky.lean
+@@ -2,0 +3 @@
++import NumStability.Source.Higham.Chapter10.Theorem06.RoundedCholesky.ForwardError.ActualAlgorithm
+diff --git a/NumStability/Source/Higham/Chapter10/Theorem08/ComponentwisePerturbation.lean b/NumStability/Source/Higham/Chapter10/Theorem08/ComponentwisePerturbation.lean
+index a45e2d1faa480adc4fcbc028f6564d19461c5025..38a35fab10552867cc1a3797196bde2f2fc439b1 100644
+--- a/NumStability/Source/Higham/Chapter10/Theorem08/ComponentwisePerturbation.lean
++++ b/NumStability/Source/Higham/Chapter10/Theorem08/ComponentwisePerturbation.lean
+@@ -1,0 +2 @@
++import NumStability.Source.Higham.Chapter10.Theorem08.ComponentwisePerturbation.NormalizedResolvent.SourceBound
+diff --git a/NumStability/Source/Higham/Chapter10/Theorem08/NormwiseDiscrepancy.lean b/NumStability/Source/Higham/Chapter10/Theorem08/NormwiseDiscrepancy.lean
+index a35212149fcf04b66a946591e1dd22c3b60fed9b..9b78da3e3a5fe14eaab52187d115b7f7d8858518 100644
+--- a/NumStability/Source/Higham/Chapter10/Theorem08/NormwiseDiscrepancy.lean
++++ b/NumStability/Source/Higham/Chapter10/Theorem08/NormwiseDiscrepancy.lean
+@@ -0,0 +1 @@
++import NumStability.Source.Higham.Chapter10.Theorem08.NormwiseDiscrepancy.Counterexample.Uniqueness
+diff --git a/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD.lean b/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD.lean
+index d465a56797051cd781ba439bba717051b1f949e0..b24dbd9cb8177dab3689119cb735b023ff1de508 100644
+--- a/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD.lean
++++ b/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD.lean
+@@ -0,0 +1 @@
++import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.ActualComputation.ErrorBounds
+@@ -4,0 +6,3 @@
++import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.RankSensitiveError.Bounds
++import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.RoundedErrorAnalysis.Bounds
++import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SchurPerturbation.Family
+@@ -6,0 +11 @@
++import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SuccessfulRun.StageBounds
+diff --git a/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/Equation22.lean b/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/Equation22.lean
+index 4c789537d0a1f4c864d1ef62a146bcacfbb1989c..861cdee13a0afbc6d35338a9ae2dc43a3607eeca 100644
+--- a/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/Equation22.lean
++++ b/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/Equation22.lean
+@@ -13,0 +14,3 @@
++import NumStability.Algorithms.LinearSystems.Cholesky.RoundedFactorization.Basic
++import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
++import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+@@ -17,3 +19,0 @@
+-import NumStability.Algorithms.LinearSystems.Cholesky.RoundedFactorization.Basic
+-import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+-import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+@@ -39 +39 @@
+-import NumStability.Source.Higham.Chapter10.Theorem07
++import NumStability.Source.Higham.Chapter10.Theorem07.Core.Results
+diff --git a/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/SourceError.lean b/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/SourceError.lean
+index 3e6383846d3ab3ed4659531500e25fe8b76f8a07..15d4fd7a2bd8389976aa5e12baa9ee0a62891b74 100644
+--- a/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/SourceError.lean
++++ b/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/SourceError.lean
+@@ -3 +3 @@
+-import NumStability.Source.Higham.Chapter10.Theorem07
++import NumStability.Source.Higham.Chapter10.Theorem07.Core.Results
+diff --git a/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/SourceSuccess.lean b/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/SourceSuccess.lean
+index 712b38db7a1d390e9d5878833ead8592e013eaf2..d4099dcd2f9664cdf3e32d7fc2c03c10b352063e 100644
+--- a/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/SourceSuccess.lean
++++ b/NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/SourceSuccess.lean
+@@ -4 +4 @@
+-import NumStability.Source.Higham.Chapter10.Theorem07
++import NumStability.Source.Higham.Chapter10.Theorem07.Core.Results
+diff --git a/NumStability/Source/Higham/Chapter14/Section03/ResidualOperatorTwoNorm/Bridge.lean b/NumStability/Source/Higham/Chapter14/Section03/ResidualOperatorTwoNorm/Bridge.lean
+index 4ec7953aeab8d6833b71981406df7fecf7bbe190..5ac92e08aa41fcb7fb7ed0ef5ac6c14db75ab672 100644
+--- a/NumStability/Source/Higham/Chapter14/Section03/ResidualOperatorTwoNorm/Bridge.lean
++++ b/NumStability/Source/Higham/Chapter14/Section03/ResidualOperatorTwoNorm/Bridge.lean
+@@ -13,0 +14,2 @@
++import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
++import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+@@ -17,2 +18,0 @@
+-import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
+-import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+@@ -24 +24 @@
+-import NumStability.Source.Higham.Chapter06.Lemma06
++import NumStability.Source.Higham.Chapter06.Lemma06.Core.Results
+diff --git a/NumStability/Source/Higham/Chapter19/Theorem05/SourceClosure.lean b/NumStability/Source/Higham/Chapter19/Theorem05/SourceClosure.lean
+index dddec78f2ea9ffadadd1bc360b64bb7e160cfa58..1f14a9646d17a03300fcc9d8d203ae2c8393acc9 100644
+--- a/NumStability/Source/Higham/Chapter19/Theorem05/SourceClosure.lean
++++ b/NumStability/Source/Higham/Chapter19/Theorem05/SourceClosure.lean
+@@ -0,0 +1 @@
++import NumStability.Source.Higham.Chapter06.Lemma06.Core.Results
+@@ -2 +2,0 @@
+-import NumStability.Source.Higham.Chapter06.Lemma06
+diff --git a/NumStabilityTest.lean b/NumStabilityTest.lean
+index 18a16f88d946795c9c5a7cb46d63c4640b7de998..2af9a29f12fb1c221c98fc7f56c9ec47cf4cac6c 100644
+--- a/NumStabilityTest.lean
++++ b/NumStabilityTest.lean
+@@ -525,0 +526 @@
++import NumStabilityTest.Reorganization.R04.All
+diff --git a/docs/architecture/COMPATIBILITY.md b/docs/architecture/COMPATIBILITY.md
+index 2ec5261a3d7fe75af25e793c7d3aed9f9425c79c..b10007ef6df2e106a08d8abcb30256f0d02ceed9 100644
+--- a/docs/architecture/COMPATIBILITY.md
++++ b/docs/architecture/COMPATIBILITY.md
+@@ -13,0 +14 @@
++| `NumStability.Algorithms.Ch10ActualSourceClosure` | `NumStability.Algorithms.HighamChapter10`, `NumStability.Source.Higham.Chapter10.Theorem06.RoundedCholesky.ActualClosure`, and `NumStability.Source.Higham.Chapter10.Theorem06.RoundedCholesky.ForwardError.ActualAlgorithm` |
+@@ -14,0 +16 @@
++| `NumStability.Algorithms.Ch10ComplexPositiveDefiniteSourceClosure` | `Mathlib.Data.Complex.BigOperators`, `NumStability.Algorithms.ComplexBackwardError`, `NumStability.Algorithms.HighamChapter10`, `NumStability.Analysis.ComplexArithmetic`, `NumStability.Analysis.MatrixAlgebra`, `NumStability.Source.Higham.Chapter10.Equation30.ComplexPositiveDefinite.NoPivotLU.SourceBounds`, and `NumStability.Source.Higham.Chapter10.Equation30.ComplexPositiveDefinite.SourceClosure` |
+@@ -15,0 +18 @@
++| `NumStability.Algorithms.Ch10KahanSharpnessSource` | `NumStability.Algorithms.HighamChapter10`, `NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.GramFamily`, `NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.Limit`, and `NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.OperatorNorm.SourceBound` |
+@@ -16,0 +20 @@
++| `NumStability.Algorithms.Ch10PivotedPSDSourceClosure` | `NumStability.Algorithms.HighamChapter10`, `NumStability.Source.Higham.Chapter10.Lemma11.PivotSequenceStability.SourceClosure`, `NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.ActualComputation.ErrorBounds`, and `NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.ActualRun` |
+@@ -17,0 +22,2 @@
++| `NumStability.Algorithms.Ch10Theorem108Componentwise` | `NumStability.Algorithms.Cholesky.CholeskySpec`, `NumStability.Algorithms.LinearSystems.Triangular.InverseBounds`, `NumStability.Source.Higham.Chapter09.Problems`, `NumStability.Source.Higham.Chapter09.Section01`, `NumStability.Source.Higham.Chapter09.Section02`, `NumStability.Source.Higham.Chapter09.Section03`, `NumStability.Source.Higham.Chapter09.Section04`, `NumStability.Source.Higham.Chapter09.Section05`, `NumStability.Source.Higham.Chapter09.Section06`, `NumStability.Source.Higham.Chapter09.Section08`, `NumStability.Source.Higham.Chapter09.Section10`, `NumStability.Source.Higham.Chapter09.Section11`, `NumStability.Source.Higham.Chapter10.Theorem08.ComponentwisePerturbation.NormalizedResolvent.SourceBound`, and `NumStability.Source.Higham.Chapter10.Theorem08.ComponentwisePerturbation.Resolvent` |
++| `NumStability.Algorithms.Ch10Theorem108Source` | `NumStability.Algorithms.HighamChapter10`, `NumStability.Source.Higham.Chapter10.Theorem08.NormwiseDiscrepancy.Counterexample.Uniqueness`, and `NumStability.Source.Higham.Chapter10.Theorem08.NormwiseDiscrepancy.LiteralSource` |
+@@ -68,0 +75 @@
++| `NumStability.Algorithms.Cholesky.CholeskyPSD` | `Mathlib.Algebra.BigOperators.Field`, `Mathlib.Algebra.BigOperators.Group.Finset.Basic`, `Mathlib.Algebra.Order.BigOperators.Group.Finset`, `Mathlib.Data.Real.Basic`, `Mathlib.Data.Real.Sqrt`, `Mathlib.LinearAlgebra.Matrix.Block`, `Mathlib.LinearAlgebra.Matrix.NonsingularInverse`, `Mathlib.LinearAlgebra.Matrix.Rank`, `Mathlib.Tactic.FieldSimp`, `Mathlib.Tactic.Linarith`, `Mathlib.Tactic.Ring`, `NumStability.Algorithms.Cholesky.CholeskySpec`, `NumStability.Algorithms.LU.GaussianElimination`, `NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.Basic`, `NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.PivotedFactorization.Existence`, `NumStability.Analysis.Rounding`, `NumStability.FloatingPoint.Model`, `NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.CompletePivotingBound`, `NumStability.Source.Higham.Chapter10.Problem01.PositiveSemidefiniteEntries.EntryBounds.Results`, `NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.ConstructiveFactorization.Existence`, `NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.Existence`, `NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.QuadraticFormBounds.WeightedNorm`, `NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.SchurComplement`, `NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.Termination`, `NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.TrailingTermination.Bound`, `NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.WNormBound`, `NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.PsdErrorAnalysis`, and `NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.RoundedErrorAnalysis.Bounds` |
+@@ -70,0 +78,2 @@
++| `NumStability.Algorithms.Cholesky.Higham1014Equation1022` | `NumStability.Algorithms.Cholesky.Higham1014SourceError`, `NumStability.Algorithms.HighamChapter10`, `NumStability.Analysis.FirstOrder.AsymptoticFamilies`, `NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.Equation22`, and `NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SchurPerturbation.Family` |
++| `NumStability.Algorithms.Cholesky.Higham1014SourceError` | `NumStability.Source.Higham.Chapter09.DoolittleClosure`, `NumStability.Source.Higham.Chapter10.Theorem07`, `NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.RankSensitiveError.Bounds`, `NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SourceError`, and `NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SourceSuccess` |
+@@ -71,0 +81 @@
++| `NumStability.Algorithms.Cholesky.Higham1029Source` | `NumStability.Algorithms.HighamChapter10`, `NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.Equation29`, and `NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.LUGrowth.Equation29` |
+@@ -106,0 +117 @@
++| `NumStability.Algorithms.Cholesky.HighamMathiasSource` | `NumStability.Algorithms.Cholesky.Higham1029Source`, `NumStability.Source.Higham.Chapter09.DoolittleClosure`, `NumStability.Source.Higham.Chapter10.Equation29.Mathias.FirstBreakdown`, `NumStability.Source.Higham.Chapter10.Equation29.Mathias.RoundedSchur.Bounds`, and `NumStability.Source.Higham.Chapter10.Equation29.Mathias.SourceIngredients` |
+@@ -129,0 +141 @@
++| `NumStability.Algorithms.HighamChapter10` | `Mathlib.Data.Complex.Basic`, `NumStability.Algorithms.Cholesky.CholeskyDemmel`, `NumStability.Algorithms.Cholesky.CholeskyFl`, `NumStability.Algorithms.Cholesky.CholeskyNonsym`, `NumStability.Algorithms.Cholesky.CholeskyPSD`, `NumStability.Algorithms.Cholesky.CholeskySpec`, `NumStability.Algorithms.LinearSystems.Cholesky.ErrorAnalysis.Certificates`, `NumStability.Algorithms.LinearSystems.Cholesky.ErrorAnalysis.PositivePivots.Certificate`, `NumStability.Algorithms.LinearSystems.Cholesky.Perturbation.Basic`, `NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.KahanMatrix`, `NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.KahanTelescope.Identity`, `NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.ScaledStage`, `NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.StageEmbedding.InteriorMass`, `NumStability.Analysis.MatrixNorms.EntrywiseAbsolute.Basic`, `NumStability.Analysis.MatrixNorms.SpectralExtrema.Basic`, `NumStability.Analysis.MatrixNorms.SpectralExtrema.PrincipalSubmatrices.Bounds`, `NumStability.Analysis.MatrixSpectral`, `NumStability.Source.Higham.Chapter09.Problems`, `NumStability.Source.Higham.Chapter09.Section01`, `NumStability.Source.Higham.Chapter09.Section02`, `NumStability.Source.Higham.Chapter09.Section03`, `NumStability.Source.Higham.Chapter09.Section04`, `NumStability.Source.Higham.Chapter09.Section05`, `NumStability.Source.Higham.Chapter09.Section06`, `NumStability.Source.Higham.Chapter09.Section08`, `NumStability.Source.Higham.Chapter09.Section10`, `NumStability.Source.Higham.Chapter09.Section11`, `NumStability.Source.Higham.Chapter10.Equation07.AbsoluteFactorNorm.Endpoints`, `NumStability.Source.Higham.Chapter10.Equation29.Mathias.Endpoints`, `NumStability.Source.Higham.Chapter10.Equation30.ComplexPositiveDefinite.Endpoints`, `NumStability.Source.Higham.Chapter10.Lemma11.PivotSequenceStability.Endpoints`, `NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.Endpoints`, `NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.UnboundedGrowth.Construction`, `NumStability.Source.Higham.Chapter10.Problem01.PositiveSemidefiniteEntries.Basic`, `NumStability.Source.Higham.Chapter10.Problem04.UnpivotedGrowth.Basic`, `NumStability.Source.Higham.Chapter10.Problem04.UnpivotedGrowth.PositivePivots.Bounds`, `NumStability.Source.Higham.Chapter10.Problem08.LeadingMinorsCounterexample.Basic`, `NumStability.Source.Higham.Chapter10.Section01.Factorization.Basic`, `NumStability.Source.Higham.Chapter10.Section01.Factorization.ExistenceUniqueness.Results`, `NumStability.Source.Higham.Chapter10.Section02.ErrorAnalysis.Basic`, `NumStability.Source.Higham.Chapter10.Section02.ErrorAnalysis.FactorizationAndSolve.Bounds`, `NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.Endpoints`, `NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.PivotingAndScaling.Results`, `NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.Endpoints`, `NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.SchurStages.Bounds`, `NumStability.Source.Higham.Chapter10.Theorem06.RoundedCholesky.Endpoints`, `NumStability.Source.Higham.Chapter10.Theorem07.FailureVacuity.Endpoints`, `NumStability.Source.Higham.Chapter10.Theorem07.SuccessThreshold.Factorization`, `NumStability.Source.Higham.Chapter10.Theorem08.ComponentwisePerturbation.Endpoints`, `NumStability.Source.Higham.Chapter10.Theorem08.NormwiseDiscrepancy.Endpoints`, `NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.Endpoints`, `NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.RoundedErrorAnalysis.Bounds`, and `NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SuccessfulRun.StageBounds` |
+diff --git a/docs/architecture/layout-exceptions.json b/docs/architecture/layout-exceptions.json
+index f2adbdc1cea2579aacac1d8e5f84be394b40e3a9..5dce9e9e7cac00c0f73b57f87c7ca8376a9e8ae4 100644
+--- a/docs/architecture/layout-exceptions.json
++++ b/docs/architecture/layout-exceptions.json
+@@ -278 +278 @@
+-      "NumStability.Source.": 49
++      "NumStability.Source.": 72
+@@ -285,3 +284,0 @@
+-      "NumStability.Source.Higham.Chapter06.Lemma06",
+-      "NumStability.Source.Higham.Chapter10.Theorem07",
+-      "NumStability.Source.Higham.Chapter11.Theorem07",
+@@ -295,6 +291,0 @@
+-      "NumStability.Algorithms.Ch10ActualSourceClosure",
+-      "NumStability.Algorithms.Ch10ComplexPositiveDefiniteSourceClosure",
+-      "NumStability.Algorithms.Ch10KahanSharpnessSource",
+-      "NumStability.Algorithms.Ch10PivotedPSDSourceClosure",
+-      "NumStability.Algorithms.Ch10Theorem108Componentwise",
+-      "NumStability.Algorithms.Ch10Theorem108Source",
+@@ -339,5 +329,0 @@
+-      "NumStability.Algorithms.Cholesky.Higham1014Equation1022",
+-      "NumStability.Algorithms.Cholesky.Higham1014SourceError",
+-      "NumStability.Algorithms.Cholesky.Higham1029Source",
+-      "NumStability.Algorithms.Cholesky.HighamMathiasSource",
+-      "NumStability.Algorithms.HighamChapter10",
+@@ -422,6 +407,0 @@
+-      "NumStability.Algorithms.Ch10ActualSourceClosure",
+-      "NumStability.Algorithms.Ch10ComplexPositiveDefiniteSourceClosure",
+-      "NumStability.Algorithms.Ch10KahanSharpnessSource",
+-      "NumStability.Algorithms.Ch10PivotedPSDSourceClosure",
+-      "NumStability.Algorithms.Ch10Theorem108Componentwise",
+-      "NumStability.Algorithms.Ch10Theorem108Source",
+@@ -466,9 +445,0 @@
+-      "NumStability.Algorithms.Cholesky.CholeskyDemmel",
+-      "NumStability.Algorithms.Cholesky.CholeskyFl",
+-      "NumStability.Algorithms.Cholesky.CholeskyNonsym",
+-      "NumStability.Algorithms.Cholesky.CholeskyPSD",
+-      "NumStability.Algorithms.Cholesky.CholeskySpec",
+-      "NumStability.Algorithms.Cholesky.Higham1014Equation1022",
+-      "NumStability.Algorithms.Cholesky.Higham1014SourceError",
+-      "NumStability.Algorithms.Cholesky.Higham1029Source",
+-      "NumStability.Algorithms.Cholesky.HighamMathiasSource",
+@@ -477 +447,0 @@
+-      "NumStability.Algorithms.HighamChapter10",
+diff --git a/docs/architecture/tiers.json b/docs/architecture/tiers.json
+index a15c10e642e7b045d72b35eae42f48831ae21b88..62aff19106d74d9645188163b3ffce0cd5cb7704 100644
+--- a/docs/architecture/tiers.json
++++ b/docs/architecture/tiers.json
+@@ -48,0 +49 @@
++    "NumStability.Algorithms.Ch10ActualSourceClosure": "compatibility",
+@@ -49,0 +51 @@
++    "NumStability.Algorithms.Ch10ComplexPositiveDefiniteSourceClosure": "compatibility",
+@@ -50,0 +53 @@
++    "NumStability.Algorithms.Ch10KahanSharpnessSource": "compatibility",
+@@ -51,0 +55 @@
++    "NumStability.Algorithms.Ch10PivotedPSDSourceClosure": "compatibility",
+@@ -52,0 +57,2 @@
++    "NumStability.Algorithms.Ch10Theorem108Componentwise": "compatibility",
++    "NumStability.Algorithms.Ch10Theorem108Source": "compatibility",
+@@ -102,0 +109,2 @@
++    "NumStability.Algorithms.Cholesky.CholeskyDemmel": "reusable",
++    "NumStability.Algorithms.Cholesky.CholeskyFl": "reusable",
+@@ -103,0 +112,2 @@
++    "NumStability.Algorithms.Cholesky.CholeskyNonsym": "reusable",
++    "NumStability.Algorithms.Cholesky.CholeskyPSD": "compatibility",
+@@ -105,0 +116,3 @@
++    "NumStability.Algorithms.Cholesky.CholeskySpec": "reusable",
++    "NumStability.Algorithms.Cholesky.Higham1014Equation1022": "compatibility",
++    "NumStability.Algorithms.Cholesky.Higham1014SourceError": "compatibility",
+@@ -106,0 +120 @@
++    "NumStability.Algorithms.Cholesky.Higham1029Source": "compatibility",
+@@ -141,0 +156 @@
++    "NumStability.Algorithms.Cholesky.HighamMathiasSource": "compatibility",
+@@ -173,0 +189 @@
++    "NumStability.Algorithms.HighamChapter10": "compatibility",
+@@ -292,0 +309 @@
++    "NumStability.Algorithms.LinearSystems.Cholesky.ErrorAnalysis.PositivePivots.Certificate": "reusable",
+@@ -299,0 +317,2 @@
++    "NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.KahanTelescope.Identity": "reusable",
++    "NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.PivotedFactorization.Existence": "reusable",
+@@ -300,0 +320 @@
++    "NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.StageEmbedding.InteriorMass": "reusable",
+@@ -963,0 +984 @@
++    "NumStability.Analysis.MatrixNorms.SpectralExtrema.PrincipalSubmatrices.Bounds": "reusable",
+@@ -1180,0 +1202,2 @@
++    "NumStability.Source.Higham.Chapter06.Lemma06": "aggregate",
++    "NumStability.Source.Higham.Chapter06.Lemma06.Core.Results": "source",
+@@ -1213,0 +1237 @@
++    "NumStability.Source.Higham.Chapter10.Equation29.Mathias.RoundedSchur.Bounds": "source",
+@@ -1214,0 +1239 @@
++    "NumStability.Source.Higham.Chapter10.Equation30.ComplexPositiveDefinite.NoPivotLU.SourceBounds": "source",
+@@ -1216,0 +1242,2 @@
++    "NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.OperatorNorm.SourceBound": "source",
++    "NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.UnboundedGrowth.Construction": "source",
+@@ -1217,0 +1245 @@
++    "NumStability.Source.Higham.Chapter10.Problem01.PositiveSemidefiniteEntries.EntryBounds.Results": "source",
+@@ -1219,0 +1248 @@
++    "NumStability.Source.Higham.Chapter10.Problem04.UnpivotedGrowth.PositivePivots.Bounds": "source",
+@@ -1221,0 +1251 @@
++    "NumStability.Source.Higham.Chapter10.Section01.Factorization.ExistenceUniqueness.Results": "source",
+@@ -1222,0 +1253 @@
++    "NumStability.Source.Higham.Chapter10.Section02.ErrorAnalysis.FactorizationAndSolve.Bounds": "source",
+@@ -1223,0 +1255,4 @@
++    "NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.ConstructiveFactorization.Existence": "source",
++    "NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.PivotingAndScaling.Results": "source",
++    "NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.QuadraticFormBounds.WeightedNorm": "source",
++    "NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.TrailingTermination.Bound": "source",
+@@ -1224,0 +1260,2 @@
++    "NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.LUGrowth.Equation29": "source",
++    "NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.SchurStages.Bounds": "source",
+@@ -1225,0 +1263,3 @@
++    "NumStability.Source.Higham.Chapter10.Theorem06.RoundedCholesky.ForwardError.ActualAlgorithm": "source",
++    "NumStability.Source.Higham.Chapter10.Theorem07": "aggregate",
++    "NumStability.Source.Higham.Chapter10.Theorem07.Core.Results": "source",
+@@ -1226,0 +1267 @@
++    "NumStability.Source.Higham.Chapter10.Theorem07.SuccessThreshold.Factorization": "source",
+@@ -1227,0 +1269 @@
++    "NumStability.Source.Higham.Chapter10.Theorem08.ComponentwisePerturbation.NormalizedResolvent.SourceBound": "source",
+@@ -1228,0 +1271 @@
++    "NumStability.Source.Higham.Chapter10.Theorem08.NormwiseDiscrepancy.Counterexample.Uniqueness": "source",
+@@ -1229,0 +1273,5 @@
++    "NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.ActualComputation.ErrorBounds": "source",
++    "NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.RankSensitiveError.Bounds": "source",
++    "NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.RoundedErrorAnalysis.Bounds": "source",
++    "NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SchurPerturbation.Family": "source",
++    "NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SuccessfulRun.StageBounds": "source",
+@@ -1292,0 +1341,2 @@
++    "NumStability.Source.Higham.Chapter11.Theorem07": "aggregate",
++    "NumStability.Source.Higham.Chapter11.Theorem07.Core.Results": "source",

@@ -9,7 +9,8 @@
       {
         "lane_id": "claude-lane",
         "operator_ids": [
-          "claude-local"
+          "claude-local",
+          "codex-local"
         ],
         "owner_id": "primary-human"
       },
@@ -514,6 +515,14 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/ErrorAnalysis.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Algorithms/LinearSystems/Cholesky/PositiveSemidefinite.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Algorithms/LinearSystems/LeastSquares/Basic.lean"
     },
     {
@@ -658,6 +667,10 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Analysis/MatrixNorms/SpectralExtrema.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Analysis/Perturbation/LeastSquares/Contract.lean"
     },
     {
@@ -750,6 +763,114 @@
     },
     {
       "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter06/Lemma06/OperatorTwoNormBound/Bridge.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Equation07/AbsoluteFactorNorm/Bridge.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Equation29/Mathias.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Equation30/ComplexPositiveDefinite.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Lemma13/KahanSharpness.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Problem01/PositiveSemidefiniteEntries.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Problem04/UnpivotedGrowth.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Section01/Factorization.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Section02/ErrorAnalysis.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Section03/PositiveSemidefinite.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Section04/PositiveDefiniteSymmetricPart.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem06/RoundedCholesky.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem08/ComponentwisePerturbation.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem08/NormwiseDiscrepancy.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/Equation22.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/SourceError.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/SourceSuccess.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter14/Algorithm04.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter14/Corollary06.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter14/Corollary07.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter14/Problem02.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter14/Problem12.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter14/Section01.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter14/Section02.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter14/Section03/ResidualOperatorTwoNorm/Bridge.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter14/Theorem05.lean"
+    },
+    {
+      "match": "exact",
       "path": "NumStability/Source/Higham/Chapter15.lean"
     },
     {
@@ -803,6 +924,10 @@
     {
       "match": "exact",
       "path": "NumStability/Source/Higham/Chapter19/StoredLoop/StrongModel.lean"
+    },
+    {
+      "match": "exact",
+      "path": "NumStability/Source/Higham/Chapter19/Theorem05/SourceClosure.lean"
     },
     {
       "match": "exact",
@@ -1063,6 +1188,10 @@
     {
       "match": "exact",
       "path": "docs/architecture/COMPATIBILITY.md"
+    },
+    {
+      "match": "exact",
+      "path": "docs/architecture/MIGRATION.md"
     },
     {
       "match": "exact",

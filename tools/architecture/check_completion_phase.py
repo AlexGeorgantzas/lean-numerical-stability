@@ -332,6 +332,158 @@ C0004_AGGREGATE_FOLLOWUPS = frozenset(
 C0004_PHASE_SHA256 = (
     "E897A8317AAE0FA518209EA9B519FB2F34D836E8192A4C39E5803C2F1F42EFC4"
 )
+C0004_ACCEPTANCE_CONTROL_SHA = "131a0c6f333de0eb47a67698decf36ee82e01dab"
+C0005_PLANNED_CONTROL_PARENT_SHA = "59115771c816e0f41967c854beb9e86532317e82"
+C0005_PLANNED_PHASE_SHA256 = (
+    "E3B8E30F2435EFCEAC9D4A0302A7FD26EC5AD17A1132FEBA692F4287C7608CA1"
+)
+C0005_REQUEST_INTERSECTION = frozenset(
+    {
+        "NumStability/Algorithms.lean",
+        "NumStabilityTest.lean",
+        "docs/architecture/COMPATIBILITY.md",
+        "docs/architecture/layout-exceptions.json",
+        "docs/architecture/tiers.json",
+    }
+)
+C0005_REQUEST_UNION_PATH_SHA256 = (
+    "6DB1CD2A1AAB1DAD67924B2FA0ECD5F3FA2B315AB18BED68F7A3559C2DF63B81"
+)
+C0005_BRANCH_FACTS = {
+    "R04": {
+        "branch_id": "B0008",
+        "projection_id": "P0008",
+        "request_id": "R0009",
+        "branch_name": "codex/reorg-completion-2026-08-r04-cholesky-higham-ch10",
+        "record_sha256": "CE8FCEB5B26821077A112E3192517CBE7E641A2EA364C1815C0A596D216DC90F",
+        "operators": ["claude-local", "codex-local"],
+        "selector_count": 19,
+        "route_count": 289,
+        "private_count": 115,
+        "private_identity_count": 14,
+        "closure_count": 272,
+        "dag_count": 39,
+        "dag_signature_edges": 0,
+        "dag_body_edges": 58,
+        "destination_count": 31,
+        "prefix_count": 33,
+        "forbidden_count": 2747,
+        "test_count": 76,
+        "import_manifest_count": 1616,
+        "tier_counts": Counter({"source": 26, "compatibility": 12, "reusable": 9, "aggregate": 3}),
+        "artifacts": {
+            "selectors/R04.tsv": "DA7F230D3FFA05863B273C09C070ED8762389F2C3F527B1C4FF6A87EEE10E5CE",
+            "branches/B0008-aggregate-build-targets.txt": "F0E961902044166799F65F90ED6BFD8FB31F74196CE460FEFE77178ABF2877AA",
+            "branches/B0008-aggregate-reachability.tsv": "5766429BA5F6F7C2795B012148BFB6AEB91CF3574D2E244F44D9F135DBBE3AB9",
+            "branches/B0008-branch-prefixes.txt": "0930457000DBEE61C629AFC0A6FBD8D31695FA6D2D4CEA83B9E1896EA4EC6B0A",
+            "branches/B0008-consumers.tsv": "1C554677605D4D7BFB38A9EFA17E3AC8603646F0FEADF0D8382AC7C24EE617DD",
+            "branches/B0008-declaration-routes.tsv": "122E11842F40D823FE003C7000528FCDF0E8A94658F411649BC411B066ECA314",
+            "branches/B0008-destination-dag.tsv": "86FF205A29AEB64324D034283AE8FD946BA09B93E994163C7C491FB8C64C722C",
+            "branches/B0008-destination-modules.txt": "E5BF22318D3CBFA2ECEC2A4FCA6EC56D26408DFBD25413D502A2EC2C9EDAEE38",
+            "branches/B0008-destination-prefixes.txt": "D8DE7708C1B1DC74F0E2CAC4478CDF81971371A23444EC4042473162B3628DD5",
+            "branches/B0008-external-owner-supply.tsv": "829E4F61AEB5EA75018CAE6CFAB36AB6F8AACD88DEB8C921D1C406A1A1E26D10",
+            "branches/B0008-field-projection-scan.tsv": "9BFD9E9914B78B6E244EF5EE1E3B6F0B71C24B792C3C7A84D0B1F351EEC2660F",
+            "branches/B0008-module-routes.tsv": "39CE641792379A947DE5AAB76F91D5A1E877537BE379F922FDCFE30CC49BE805",
+            "branches/B0008-overlap-review.md": "36CC89225B989D78A74D4DA0020BA1CFF7747DFD872FBC670FDD27EB88DA72AC",
+            "branches/B0008-post-move-import-manifest.tsv": "8BF709213AD10F47011BF4A2084A6E6B0D3E551C84FD8E7EFA8F43296EC50A86",
+            "branches/B0008-private-closure.tsv": "ED341E2FFCCB9AE635DBAA9AB5BDAC1DDB2454D960D39FA069985D01D3AAD432",
+            "branches/B0008-private-normalization.tsv": "2349DFA9F94EEB183359B57A870E8F2CC5068662FB69EC4799FE7D99914858C1",
+            "branches/B0008-recursive-frontier.tsv": "995F92EC325FF1B50E8E8EA755964E2258EBAD3BABCCB4912DB27351B41E88D2",
+            "branches/B0008-split-wrapper-transitive.tsv": "CC8E1D4F967D2B4626FE4485C91FBBA7AD3E24E38705C31081373D85365A1F8C",
+            "branches/B0008-test-modules.txt": "B23E05112FF4E91D9CA013614C44C1031153C793208F06764A84028F729E582D",
+            "branches/B0008-test-plan.tsv": "99979E8299D47DECB618B035F6A85AABC7311CBAF72E3136F0048B1CEC34B617",
+            "branches/B0008-tier-assignments.tsv": "8BAD3F07772F74A433A9FC811BE1C5BCBED47C8EE3DAA829F602513D19525CFD",
+        },
+    },
+    "R08": {
+        "branch_id": "B0009",
+        "projection_id": "P0009",
+        "request_id": "R0010",
+        "branch_name": "codex/reorg-completion-2026-08-r08-matrix-inversion-ch14",
+        "record_sha256": "81D29E44AA256057F9EBBCA09F1A5185C7FC63DE5973A36C55BACD7896692804",
+        "operators": ["claude-local"],
+        "selector_count": 45,
+        "route_count": 211,
+        "private_count": 48,
+        "private_identity_count": 0,
+        "closure_count": 190,
+        "dag_count": 13,
+        "dag_signature_edges": 0,
+        "dag_body_edges": 51,
+        "destination_count": 21,
+        "prefix_count": 23,
+        "forbidden_count": 2721,
+        "test_count": 79,
+        "import_manifest_count": 522,
+        "tier_counts": Counter({"compatibility": 42, "source": 21, "aggregate": 3}),
+        "artifacts": {
+            "selectors/R08.tsv": "048E05FBE511688F8A4463219A73AF7B0719CFE3069A35A2F56578539CAF6B9B",
+            "branches/B0009-algorithms-deletions.txt": "86AF2852FF40BE503B9A98B4B3D09C18ED37F5CDF46F1AE90DDE42A81FB82FA0",
+            "branches/B0009-branch-prefixes.txt": "DA4A204D65FDD85479357E23844D076DF8AC635C192D719BC80921EA70B1D2D5",
+            "branches/B0009-consumers.tsv": "94C9BAE7F074749147EB2B7422124856D4E669B0D37D44F8D0501CB3C5568168",
+            "branches/B0009-declaration-routes.tsv": "C2CD263AB3852D67D8CA16B737159FBCA58B1046EC69972CAF178C287BA856C6",
+            "branches/B0009-destination-dag.tsv": "2155DD31934277E66F86BCD5D68D4054A9F4A98D235D469B54C22E0F316F2C5C",
+            "branches/B0009-destination-modules.txt": "58F71B0EEE5D7766652263CE98AEF0CADF6C2473652A7A498D844AF44466C267",
+            "branches/B0009-destination-prefixes.txt": "26B02C9B970CD353A33FA9A1DF0268C796E6CF83B36B9C7A62CA7BB871F2C1FE",
+            "branches/B0009-field-projection-scan.tsv": "9E0B671A818B4CB75AFD2CE6C64141DC4D2948DF5176D1397D1ADDB20EFA3E69",
+            "branches/B0009-freeze-declaration-routes.tsv": "A00C5BBF97383BA45F752BB4085CB8A8F780B4C211DF95F5CDEA55A77957AD68",
+            "branches/B0009-freeze-destination-dag.tsv": "F0CF51AE800681524F7093ADE99350CB906386376FB8A295A92D0CFE0606F837",
+            "branches/B0009-freeze-private-normalization.tsv": "335C3FE17716B3391962CC68EFAD81673E1BAE0E4B4C2F0720C0906703786FC0",
+            "branches/B0009-freeze-test-modules.txt": "915E0B206130085D69EC82605775383E1041342EC6E306893090235D598A5316",
+            "branches/B0009-module-routes.tsv": "1A53ED95811440643F8D35C7C65741D0F86060005420517A403AB47DBBE34253",
+            "branches/B0009-outside-consumers.txt": "D92A107A41D86E50350E70E9E5746C4B046353F8C3B4A276934E5096CB627F7A",
+            "branches/B0009-overlap-review.md": "39B2C44839A81064BBC4239B2C60832E14A2F947EC046402D5A599419C2EE8D2",
+            "branches/B0009-post-move-import-manifest.tsv": "86CD1D9603A46D8789C164C99C5D032011C43919D899ECFC80B4E04E13F8D9AE",
+            "branches/B0009-private-closure.tsv": "5A9F11D304A2DEB5B9DBF581E1C447A68A1692C690E0067A3083CB29390D50FC",
+            "branches/B0009-private-normalization.tsv": "335C3FE17716B3391962CC68EFAD81673E1BAE0E4B4C2F0720C0906703786FC0",
+            "branches/B0009-shared-request-paths.txt": "27909095ED5B03AF1CDA0AB9CD7757A3D53A772F553B4C115611FA8ADD650384",
+            "branches/B0009-test-modules.txt": "CF2D7A28A8447BBFDC2A23EF2DE08CDE1E4AEB27E11FC5621874882DCAE5A254",
+            "branches/B0009-test-plan.tsv": "2B786C732EDA46C74A4DDA0C4AC1916560E4655BA6A9DC32C871A8EE01ACFE10",
+            "branches/B0009-tier-assignments.tsv": "BC03AB3FEEF85857D0A1ABF31B102FF07B05A0CC60C7F80C5C09993D94E0A1E7",
+        },
+    },
+}
+C0005_PROJECTION_FACTS = {
+    "P0008": {
+        "record_sha256": "90449CE8A3095BCBC0731FACF0F2B8ACD36BB3B67EEDFEC0E9A6D0C3417AC79F",
+        "graph_sha256": "5207DDA1BBA72F0802ACDA0A286611B62A07A72C9DF4E50E0E5F1EC048887540",
+        "payload_sha256": "45FF82C7CF66381809C378883D50A72C0AD6058382B0605F0D8AE91C3C0C42E7",
+        "counts": Counter({"declarations": 289, "signature_edges": 990, "body_edges": 2239, "union_edges": 2293}),
+    },
+    "P0009": {
+        "record_sha256": "393871622B9FFB08476C959166A7A6F940FE57435D279DCA2250912EC7C3DDB5",
+        "graph_sha256": "CE770EBE7B3170BA808D22D2AD603B7266A8AADC550864902423FD33162FA1FF",
+        "payload_sha256": "ADECD1A8D33B4DC34E33708F8BC24FDC33D35E16C3F65CB628AAB8D5FE3252CD",
+        "counts": Counter({"declarations": 211, "signature_edges": 1229, "body_edges": 2886, "union_edges": 2912}),
+    },
+}
+C0005_REQUEST_FACTS = {
+    "R0009": {
+        "wave": "R04",
+        "count": 28,
+        "record_sha256": "470664403259B3D777D11410F1631148065CD2BAC824986BF468050186456135",
+        "patch_sha256": "3277A434AEA678551274D55953FDBA72A44A46DE1235C1B747126A39DC0E1BCA",
+        "postimages_sha256": "FCD07DDC98FA740395CC485237C0CE6E8E3738B160C0904A3755A9EAF304C21B",
+    },
+    "R0010": {
+        "wave": "R08",
+        "count": 14,
+        "record_sha256": "9DF1A049EEA893E6E44E4808DC25C836A9257F29255FE3CE99EA2CE60CCD9726",
+        "patch_sha256": "DE6D0A2217D3644D8957830C02F91C99FB44E863FA973CAA698794A498D19A2B",
+        "postimages_sha256": "616ABB7DC012A1C6E2DC70C1C9D98E9F31A3943AAAC483B34360EDBC89D25C01",
+    },
+    "union": {
+        "count": 37,
+        "patch_sha256": "0D646D4658D0AEDBEDCDE397553B1AEF31662130545750DA27061299BD11545B",
+        "postimages_sha256": "22C2D8B31096FC7B9268C3B75FC1C243A652C3916FC496FC07F61E90995DCE5C",
+        "review_sha256": "8D7085A7335E6B73C7A201DAA6C2FE5A2A557F19957B2F1EAED44AAFFD829CEA",
+    },
+}
+C0005_REVIEW_FACTS = {
+    "reviews/C0004-R04-R08-selection.md": "5B4A232A6141AE456C2FA043AA5EA75C86DCD38203B5DF677D0A6E7D44F0BAD8",
+    "reviews/R04-R08-operator-authorization.md": "C87C4D75F7A65168ADC976A1B9EE908EBDB1D9264A13A49730C24BBFC13109B1",
+    "reviews/R04-R08-projection-replay.md": "A80377A251E4634B38777F753FD42A2DE9C238FC6A93BFF8C573D783F29D2E09",
+}
 C0004_CHECKPOINT_SHA256 = (
     "DB0B7CED45622E6033660F7AD32459AFFDBFFE09226A6C1AAE2627A5A1537FCB"
 )
@@ -1051,6 +1203,40 @@ class Problems:
     def require(self, condition: bool, context: str, message: str) -> None:
         if not condition:
             self.add(context, message)
+
+
+def validate_c0005_planned_branch_header(
+    record: dict[str, Any],
+    wave: str,
+    facts: dict[str, Any],
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Pure exact-header ratchet shared by live validation and self-tests."""
+
+    expected_fields = {
+        "schema_version": 1,
+        "record_kind": "phase_branch",
+        "phase_id": PHASE_ID,
+        "branch_id": facts["branch_id"],
+        "wave_id": wave,
+        "branch_name": facts["branch_name"],
+        "lane_id": "claude-lane",
+        "owner_id": "primary-human",
+        "operator_ids": facts["operators"],
+        "base_checkpoint_id": C0004_CHECKPOINT_ID,
+        "base_sha": C0004_CODE_SHA,
+        "baseline_projection_id": facts["projection_id"],
+        "shared_request_ids": [facts["request_id"]],
+        "status": "planned",
+    }
+    for key, expected in expected_fields.items():
+        problems.require(
+            record.get(key) == expected,
+            f"{context}.{key}",
+            f"expected exact planned value {expected!r}",
+        )
 
 
 @dataclass(frozen=True)
@@ -2760,6 +2946,7 @@ class CompletionValidator:
         self.validate_next_wave_controls()
         self.validate_r03_epoch()
         self.validate_r05_r06_epoch()
+        self.validate_r04_r08_planned_epoch()
         self.validate_milestone_dag()
         return self.problems
 
@@ -2927,20 +3114,42 @@ class CompletionValidator:
                         "set plus exactly the 60 reviewed R0006/R0007 consumer paths",
                     )
                 else:
+                    phase_path = self.phase_dir / "phase.json"
+                    historical_phase_path = (DEFAULT_PHASE_DIR / "phase.json").as_posix()
+                    try:
+                        historical_phase = self.git(
+                            "show",
+                            f"{C0004_ACCEPTANCE_CONTROL_SHA}:{historical_phase_path}",
+                        ).stdout.encode("utf-8")
+                    except RuntimeError as error:
+                        historical_phase = b""
+                        self.problems.add(
+                            "phase.json",
+                            f"cannot load accepted C0004 phase control: {error}",
+                        )
                     self.problems.require(
                         isinstance(accepted_shared, list)
                         and len(accepted_shared) == 160
-                        and live_shared == accepted_shared,
+                        and isinstance(live_shared, list)
+                        and len(live_shared) == 192
+                        and all(rule in live_shared for rule in accepted_shared),
                         "phase.json.shared_paths",
-                        "C0004 must release the R05/R06 reservations and restore the "
-                        "exact ordered 160-rule C0002 accepted shared-path set",
+                        "the C0005 planning epoch must retain the accepted 160-rule set "
+                        "and add exactly 32 reviewed R0009/R0010 exact reservations",
                     )
-                    phase_path = self.phase_dir / "phase.json"
+                    if historical_phase:
+                        self.problems.require(
+                            hashlib.sha256(historical_phase).hexdigest().upper()
+                            == C0004_PHASE_SHA256,
+                            "phase.json historical C0004 control",
+                            f"accepted C0004 phase control must hash to {C0004_PHASE_SHA256}",
+                        )
                     if phase_path.is_file():
                         self.problems.require(
-                            sha256_path(phase_path) == C0004_PHASE_SHA256,
+                            sha256_path(phase_path) == C0005_PLANNED_PHASE_SHA256,
                             "phase.json",
-                            f"C0004 phase control must hash to {C0004_PHASE_SHA256}",
+                            "live planned phase control must hash to "
+                            f"{C0005_PLANNED_PHASE_SHA256}",
                         )
         readme = self.phase_dir / "README.md"
         try:
@@ -6229,14 +6438,19 @@ class CompletionValidator:
             ]
             if len(matches) == 1:
                 lane = matches[0]
-        expected_operators = next_lane_operators(self.current_checkpoint_id)
+        planned_pair = (self.phase_dir / "branches/B0008.json").is_file()
+        expected_operators = (
+            ["claude-local", "codex-local"]
+            if self.current_checkpoint_id == C0004_CHECKPOINT_ID and planned_pair
+            else next_lane_operators(self.current_checkpoint_id)
+        )
         self.problems.require(
             isinstance(lane, dict)
             and lane.get("owner_id") == "primary-human"
             and lane.get("operator_ids") == expected_operators,
             "phase.json.authority.lanes[claude-lane]",
-            "R11/R12 authority must use the reviewed C0001 expansion and "
-            "restore the single Claude operator at C0002",
+            "claude-lane operators must equal the historical epoch authority or the "
+            "exact temporary C0005 B0008 planning expansion",
         )
 
     def require_next_evidence(
@@ -7599,6 +7813,766 @@ class CompletionValidator:
                     f"R03 evidence content must equal exact SHA-256 {expected}",
                 )
         return matches[0]
+
+    def validate_r04_r08_planned_epoch(self) -> None:
+        """Ratchet the exact-C0004 R04/R08 packet without activating workers."""
+
+        context = "C0004-rooted R04/R08 planned epoch"
+        self.problems.require(
+            self.current_checkpoint_id == C0004_CHECKPOINT_ID,
+            context,
+            "planned R04/R08 controls require current checkpoint C0004",
+        )
+        production_diff = self.git(
+            "diff",
+            "--name-only",
+            C0005_PLANNED_CONTROL_PARENT_SHA,
+            "HEAD",
+            "--",
+            "NumStability",
+            "NumStabilityTest",
+            "benchmark-results",
+            check=False,
+        )
+        self.problems.require(
+            production_diff.returncode == 0 and not production_diff.stdout.strip(),
+            context,
+            "planned-control range must not change production, tests, or benchmark evidence",
+        )
+
+        milestones = self.phase.get("milestones")
+        milestone_map = {
+            item.get("milestone_id"): item
+            for item in milestones
+            if isinstance(item, dict) and isinstance(item.get("milestone_id"), str)
+        } if isinstance(milestones, list) else {}
+        for milestone_id in ("M04", "M08"):
+            milestone = milestone_map.get(milestone_id)
+            self.problems.require(
+                isinstance(milestone, dict)
+                and milestone.get("status") == "ready"
+                and milestone.get("accepted_checkpoint_id") is None,
+                f"{context}.milestones[{milestone_id}]",
+                "must remain ready and unaccepted until worker activation/delivery",
+            )
+
+        authority = self.phase.get("authority")
+        lanes = authority.get("lanes") if isinstance(authority, dict) else None
+        claude_lanes = [
+            lane
+            for lane in lanes or []
+            if isinstance(lane, dict) and lane.get("lane_id") == "claude-lane"
+        ]
+        self.problems.require(
+            len(claude_lanes) == 1
+            and claude_lanes[0].get("owner_id") == "primary-human"
+            and claude_lanes[0].get("operator_ids") == ["claude-local", "codex-local"],
+            f"{context}.authority",
+            "temporary claude-lane authority must be exactly Claude plus B0008-scoped Codex",
+        )
+
+        inventory_path = self.phase_dir / "checkpoints/C0004-inventory.tsv"
+        _, inventory = self.read_tsv(
+            inventory_path, self.relative(inventory_path), SCOPE_HEADER
+        )
+        self.problems.require(
+            len(inventory) == C0004_METRICS["production_modules"],
+            self.relative(inventory_path),
+            "must retain all 2,766 exact C0004 inventory rows",
+        )
+        inventory_paths = {row.get("path", "") for row in inventory}
+        self.problems.require(
+            len(inventory_paths) == len(inventory),
+            self.relative(inventory_path),
+            "C0004 inventory paths must be unique",
+        )
+        base_tree_paths = self.git_tree_paths(C0004_CODE_SHA)
+        selected_by_wave: dict[str, set[str]] = {}
+        destination_prefixes: dict[str, list[str]] = {}
+
+        route_header = (
+            "baseline_owner_module",
+            "baseline_declaration_name",
+            "visibility",
+            "kind",
+            "baseline_order",
+            "destination_module",
+            "route_class",
+            "normalization_decision",
+        )
+        private_header = ("old_private", "new_private", "destination_module")
+        closure_header = (
+            "declaration",
+            "owner_module",
+            "visibility",
+            "selected_owner",
+            "closure_role",
+        )
+        dag_header = (
+            "from_destination",
+            "to_destination",
+            "signature_edges",
+            "body_edges",
+        )
+        tier_header = ("module", "tier", "reason")
+        test_header = ("test_class", "target", "purpose")
+        consumer_header = (
+            "consumer_module",
+            "consumer_path",
+            "consumer_scope",
+            "old_import",
+            "new_import",
+        )
+
+        for wave, facts in C0005_BRANCH_FACTS.items():
+            branch_id = facts["branch_id"]
+            wave_context = f"{context}[{branch_id}]"
+            selector_path = self.phase_dir / f"selectors/{wave}.tsv"
+            _, selector = self.read_tsv(
+                selector_path, self.relative(selector_path), SELECTOR_HEADER
+            )
+            expected_selector = sorted(
+                (
+                    (row.get("module", ""), row.get("path", ""))
+                    for row in inventory
+                    if row.get("wave_id") == wave
+                ),
+                key=lambda row: row[0],
+            )
+            actual_selector = [
+                (row.get("module", ""), row.get("path", "")) for row in selector
+            ]
+            self.problems.require(
+                len(selector) == facts["selector_count"]
+                and actual_selector == expected_selector,
+                self.relative(selector_path),
+                "selector must equal all and only exact C0004 inventory rows for the wave",
+            )
+            selected_paths = {path for _module, path in actual_selector}
+            selected_modules = {module for module, _path in actual_selector}
+            selected_by_wave[wave] = selected_paths
+
+            branch_path = self.phase_dir / f"branches/{branch_id}.json"
+            branch = self.read_json(branch_path, self.relative(branch_path))
+            if branch is None:
+                continue
+            self.problems.require(
+                sha256_path(branch_path) == facts["record_sha256"],
+                self.relative(branch_path),
+                f"planned branch record must hash to {facts['record_sha256']}",
+            )
+            validate_c0005_planned_branch_header(
+                branch,
+                wave,
+                facts,
+                self.problems,
+                context=wave_context,
+            )
+            self.problems.require(
+                branch.get("delivery")
+                == {"commit_sha": None, "report": None, "scope_evidence": None},
+                f"{wave_context}.delivery",
+                "planning requires a null delivery record",
+            )
+            self.problems.require(
+                branch.get("integration")
+                == {"accepted_checkpoint_id": None, "accepted_sha": None, "method": None},
+                f"{wave_context}.integration",
+                "planning requires a null integration record",
+            )
+            retirement = branch.get("retirement")
+            self.problems.require(
+                isinstance(retirement, dict)
+                and retirement.get("status") == "not_due"
+                and retirement.get("ancestry_checkpoint_id") is None
+                and retirement.get("retired_at") is None,
+                f"{wave_context}.retirement",
+                "planned branches must not be retired",
+            )
+
+            owned = branch.get("owned_paths")
+            actual_owned = {
+                item.get("path")
+                for item in owned or []
+                if isinstance(item, dict) and item.get("match") == "exact"
+            }
+            self.problems.require(
+                isinstance(owned, list)
+                and len(owned) == len(actual_owned) == facts["selector_count"]
+                and actual_owned == selected_paths,
+                f"{wave_context}.owned_paths",
+                "must be exact rules for every and only selector path",
+            )
+            prefix_file = self.phase_dir / f"branches/{branch_id}-branch-prefixes.txt"
+            try:
+                prefixes = prefix_file.read_text(encoding="utf-8").splitlines()
+            except OSError as error:
+                prefixes = []
+                self.problems.add(self.relative(prefix_file), f"cannot read: {error}")
+            actual_destinations = [
+                item.get("path")
+                for item in branch.get("destination_prefixes") or []
+                if isinstance(item, dict) and item.get("match") == "prefix"
+            ]
+            self.problems.require(
+                len(prefixes) == facts["prefix_count"]
+                and actual_destinations == prefixes,
+                f"{wave_context}.destination_prefixes",
+                "must exactly equal the frozen casefold-vacant branch-prefix list",
+            )
+            destination_prefixes[wave] = prefixes
+            folded = [prefix.casefold() for prefix in prefixes]
+            self.problems.require(
+                len(folded) == len(set(folded))
+                and all(
+                    not (left.startswith(right) or right.startswith(left))
+                    for index, left in enumerate(folded)
+                    for right in folded[index + 1 :]
+                ),
+                f"{wave_context}.destination_prefixes",
+                "prefixes must be casefold-unique and mutually non-ancestor",
+            )
+            occupied = [
+                (prefix, path)
+                for prefix in folded
+                for path in base_tree_paths
+                if path.casefold() == prefix.rstrip("/") + ".lean"
+                or path.casefold().startswith(prefix)
+            ]
+            self.problems.require(
+                not occupied,
+                f"{wave_context}.destination_prefixes",
+                f"all prefixes must be vacant in exact C0004; found {occupied[:5]}",
+            )
+
+            forbidden = branch.get("forbidden_paths")
+            forbidden_exact = {
+                item.get("path")
+                for item in forbidden or []
+                if isinstance(item, dict) and item.get("match") == "exact"
+            }
+            forbidden_prefix = {
+                normalize_path(item.get("path", ""))
+                for item in forbidden or []
+                if isinstance(item, dict) and item.get("match") == "prefix"
+            }
+            expected_prefix = set(NEXT_PROTECTED_PREFIXES) - {".github"}
+            self.problems.require(
+                len(forbidden_exact) == facts["forbidden_count"]
+                and forbidden_exact == inventory_paths - selected_paths
+                and forbidden_prefix == expected_prefix,
+                f"{wave_context}.forbidden_paths",
+                "must equal the exact selector complement plus five protected prefixes",
+            )
+
+            evidence = ((branch.get("refresh") or {}).get("evidence"))
+            evidence_map: dict[str, str] = {}
+            if not isinstance(evidence, list):
+                self.problems.add(f"{wave_context}.refresh.evidence", "expected a list")
+            else:
+                for index, item in enumerate(evidence):
+                    artifact_value = self.artifact(
+                        item, f"{wave_context}.refresh.evidence[{index}]"
+                    )
+                    if artifact_value is not None:
+                        evidence_map[artifact_value.path] = artifact_value.sha256
+            for local_path, digest in facts["artifacts"].items():
+                full_path = (DEFAULT_PHASE_DIR / local_path).as_posix()
+                artifact_path = self.root / full_path
+                self.problems.require(
+                    evidence_map.get(full_path) == digest,
+                    f"{wave_context}.refresh.evidence[{full_path}]",
+                    f"must hash-pin exact artifact SHA-256 {digest}",
+                )
+                if artifact_path.is_file():
+                    self.problems.require(
+                        sha256_path(artifact_path) == digest,
+                        full_path,
+                        f"artifact content must hash to {digest}",
+                    )
+
+            route_path = self.phase_dir / f"branches/{branch_id}-declaration-routes.tsv"
+            _, routes = self.read_tsv(
+                route_path, self.relative(route_path), route_header
+            )
+            route_owners: dict[str, list[int]] = defaultdict(list)
+            routed_declarations: set[str] = set()
+            produced_destinations: set[str] = set()
+            private_declarations: set[str] = set()
+            for index, row in enumerate(routes):
+                owner = row.get("baseline_owner_module", "")
+                declaration = row.get("baseline_declaration_name", "")
+                try:
+                    order = int(row.get("baseline_order", ""))
+                except ValueError:
+                    order = -1
+                    self.problems.add(
+                        f"{self.relative(route_path)}[{index}].baseline_order",
+                        "must be a zero-based integer",
+                    )
+                route_owners[owner].append(order)
+                if declaration in routed_declarations:
+                    self.problems.add(
+                        self.relative(route_path),
+                        f"duplicate routed declaration {declaration}",
+                    )
+                routed_declarations.add(declaration)
+                destination = row.get("destination_module", "")
+                if destination != "-":
+                    produced_destinations.add(destination)
+                if row.get("visibility") == "private":
+                    private_declarations.add(declaration)
+            self.problems.require(
+                len(routes) == facts["route_count"]
+                and set(route_owners) <= selected_modules
+                and all(orders == list(range(len(orders))) for orders in route_owners.values()),
+                self.relative(route_path),
+                "routes must be total, unique, and zero-based contiguous per selected owner",
+            )
+            self.problems.require(
+                len(produced_destinations) == facts["destination_count"],
+                self.relative(route_path),
+                "route destinations must equal the frozen production destination count",
+            )
+
+            private_path = self.phase_dir / f"branches/{branch_id}-private-normalization.tsv"
+            _, private_rows = self.read_tsv(
+                private_path, self.relative(private_path), private_header
+            )
+            old_private = [row.get("old_private", "") for row in private_rows]
+            identity_count = sum(
+                row.get("old_private") == row.get("new_private") for row in private_rows
+            )
+            self.problems.require(
+                len(private_rows) == facts["private_count"]
+                and len(set(old_private)) == len(old_private)
+                and set(old_private) == private_declarations
+                and identity_count == facts["private_identity_count"],
+                self.relative(private_path),
+                "private map must be total with the exact frozen identity census",
+            )
+
+            closure_path = self.phase_dir / f"branches/{branch_id}-private-closure.tsv"
+            _, closure_rows = self.read_tsv(
+                closure_path, self.relative(closure_path), closure_header
+            )
+            self.problems.require(
+                len(closure_rows) == facts["closure_count"],
+                self.relative(closure_path),
+                "private reverse-closure row count drifted",
+            )
+
+            dag_path = self.phase_dir / f"branches/{branch_id}-destination-dag.tsv"
+            _, dag_rows = self.read_tsv(dag_path, self.relative(dag_path), dag_header)
+            adjacency: dict[str, set[str]] = defaultdict(set)
+            nodes: set[str] = set()
+            signature_total = body_total = 0
+            for row in dag_rows:
+                source = row.get("from_destination", "")
+                target = row.get("to_destination", "")
+                nodes.update((source, target))
+                adjacency[source].add(target)
+                try:
+                    signature_total += int(row.get("signature_edges", ""))
+                    body_total += int(row.get("body_edges", ""))
+                except ValueError:
+                    self.problems.add(self.relative(dag_path), "edge counts must be integers")
+            indegree = {node: 0 for node in nodes}
+            for targets in adjacency.values():
+                for target in targets:
+                    indegree[target] += 1
+            queue = [node for node, degree in indegree.items() if degree == 0]
+            visited = 0
+            while queue:
+                node = queue.pop()
+                visited += 1
+                for target in adjacency.get(node, set()):
+                    indegree[target] -= 1
+                    if indegree[target] == 0:
+                        queue.append(target)
+            self.problems.require(
+                len(dag_rows) == facts["dag_count"]
+                and signature_total == facts["dag_signature_edges"]
+                and body_total == facts["dag_body_edges"]
+                and visited == len(nodes),
+                self.relative(dag_path),
+                "destination DAG count or acyclicity drifted",
+            )
+
+            tier_path = self.phase_dir / f"branches/{branch_id}-tier-assignments.tsv"
+            _, tier_rows = self.read_tsv(tier_path, self.relative(tier_path), tier_header)
+            self.problems.require(
+                Counter(row.get("tier", "") for row in tier_rows) == facts["tier_counts"],
+                self.relative(tier_path),
+                f"tier census must equal {facts['tier_counts']}",
+            )
+            test_path = self.phase_dir / f"branches/{branch_id}-test-plan.tsv"
+            _, test_rows = self.read_tsv(test_path, self.relative(test_path), test_header)
+            self.problems.require(
+                len(test_rows) == facts["test_count"],
+                self.relative(test_path),
+                "branch-specific planned test census drifted",
+            )
+            manifest_path = self.phase_dir / f"branches/{branch_id}-post-move-import-manifest.tsv"
+            _, manifest_rows = self.read_tsv(
+                manifest_path, self.relative(manifest_path), None
+            )
+            self.problems.require(
+                len(manifest_rows) == facts["import_manifest_count"],
+                self.relative(manifest_path),
+                "post-move import manifest row count drifted",
+            )
+            consumer_path = self.phase_dir / f"branches/{branch_id}-consumers.tsv"
+            _, consumer_rows = self.read_tsv(
+                consumer_path, self.relative(consumer_path), consumer_header
+            )
+            self.problems.require(
+                all(all(value != "" for value in row.values()) for row in consumer_rows),
+                self.relative(consumer_path),
+                "consumer plan must not contain blank cells",
+            )
+            algorithm_rows = [
+                row
+                for row in consumer_rows
+                if row.get("consumer_module") == "NumStability.Algorithms"
+            ]
+            if wave == "R04":
+                self.problems.require(
+                    len(algorithm_rows) == 17
+                    and sum(row["old_import"] != row["new_import"] for row in algorithm_rows) == 12
+                    and sum(row["old_import"] == row["new_import"] for row in algorithm_rows) == 5,
+                    self.relative(consumer_path),
+                    "R04 Algorithms plan must replace 12 imports and retain exactly five",
+                )
+            else:
+                self.problems.require(
+                    len(algorithm_rows) == 42
+                    and all(row.get("new_import") == "-" for row in algorithm_rows),
+                    self.relative(consumer_path),
+                    "R08 Algorithms plan must contain exactly 42 deletions",
+                )
+
+            for ref in (
+                f"refs/heads/{facts['branch_name']}",
+                f"refs/remotes/origin/{facts['branch_name']}",
+            ):
+                present = self.git("show-ref", "--verify", "--quiet", ref, check=False)
+                self.problems.require(
+                    present.returncode != 0,
+                    f"{wave_context}.ref",
+                    f"planned control must not create {ref}",
+                )
+            worktrees = self.git("worktree", "list", "--porcelain", check=False)
+            self.problems.require(
+                facts["branch_name"] not in worktrees.stdout,
+                f"{wave_context}.worktree",
+                "planned control must not create a worker worktree",
+            )
+
+            projection_id = facts["projection_id"]
+            projection_facts = C0005_PROJECTION_FACTS[projection_id]
+            projection_record_path = self.phase_dir / f"projections/{projection_id}.json"
+            projection = self.read_json(
+                projection_record_path, self.relative(projection_record_path)
+            )
+            graph_path = self.phase_dir / f"projections/{projection_id}.tsv.gz"
+            self.problems.require(
+                projection_record_path.is_file()
+                and sha256_path(projection_record_path) == projection_facts["record_sha256"],
+                self.relative(projection_record_path),
+                "planned projection record hash drifted",
+            )
+            self.problems.require(
+                graph_path.is_file()
+                and sha256_path(graph_path) == projection_facts["graph_sha256"],
+                self.relative(graph_path),
+                "planned projection graph hash drifted",
+            )
+            if projection is not None:
+                self.problems.require(
+                    projection.get("status") == "active"
+                    and projection.get("wave_id") == wave
+                    and projection.get("base_checkpoint_id") == C0004_CHECKPOINT_ID
+                    and projection.get("expected_counts") == dict(projection_facts["counts"]),
+                    self.relative(projection_record_path),
+                    "projection must be active at C0004 with exact incident counts",
+                )
+            try:
+                projection_payload = gzip.decompress(graph_path.read_bytes())
+            except (OSError, gzip.BadGzipFile) as error:
+                projection_payload = b""
+                self.problems.add(self.relative(graph_path), f"cannot decompress: {error}")
+            if projection_payload:
+                self.problems.require(
+                    hashlib.sha256(projection_payload).hexdigest().upper()
+                    == projection_facts["payload_sha256"],
+                    self.relative(graph_path),
+                    "uncompressed projection payload hash drifted",
+                )
+                records = projection_payload.decode("utf-8").splitlines()
+                declarations = [row for row in records if row.startswith("declaration\t")]
+                signature_edges = [row for row in records if row.startswith("edge\tsignature\t")]
+                body_edges = [row for row in records if row.startswith("edge\tbody\t")]
+                union_edges = {
+                    tuple(row.split("\t")[2:4])
+                    for row in signature_edges + body_edges
+                }
+                actual_counts = Counter(
+                    {
+                        "declarations": len(declarations),
+                        "signature_edges": len(signature_edges),
+                        "body_edges": len(body_edges),
+                        "union_edges": len(union_edges),
+                    }
+                )
+                self.problems.require(
+                    records[:1] == ["format\t2"]
+                    and actual_counts == projection_facts["counts"],
+                    self.relative(graph_path),
+                    "projection payload must be exact format 2 with pinned counts",
+                )
+
+        self.problems.require(
+            selected_by_wave.get("R04", set()).isdisjoint(selected_by_wave.get("R08", set())),
+            context,
+            "R04/R08 owner sets must be disjoint",
+        )
+        cross_prefix = [
+            (left, right)
+            for left in destination_prefixes.get("R04", [])
+            for right in destination_prefixes.get("R08", [])
+            if left.casefold() == right.casefold()
+            or left.casefold().startswith(right.casefold())
+            or right.casefold().startswith(left.casefold())
+        ]
+        self.problems.require(
+            not cross_prefix,
+            context,
+            f"peer branch prefixes must have zero exact/ancestor overlap: {cross_prefix[:5]}",
+        )
+
+        request_paths: dict[str, set[str]] = {}
+        request_postimages: dict[str, dict[str, str]] = {}
+        for request_id in ("R0009", "R0010"):
+            facts = C0005_REQUEST_FACTS[request_id]
+            request_context = f"{context}[{request_id}]"
+            record_path = self.phase_dir / f"requests/{request_id}.json"
+            patch_path = self.phase_dir / f"requests/{request_id}.patch"
+            manifest_path = self.phase_dir / f"requests/{request_id}-postimages.tsv"
+            record = self.read_json(record_path, self.relative(record_path))
+            for path, expected in (
+                (record_path, facts["record_sha256"]),
+                (patch_path, facts["patch_sha256"]),
+                (manifest_path, facts["postimages_sha256"]),
+            ):
+                self.problems.require(
+                    path.is_file() and sha256_path(path) == expected,
+                    self.relative(path),
+                    f"must hash to exact planned value {expected}",
+                )
+            if record is None:
+                continue
+            paths = record.get("paths")
+            path_set = set(paths) if isinstance(paths, list) else set()
+            request_paths[request_id] = path_set
+            self.problems.require(
+                isinstance(paths, list)
+                and paths == sorted(path_set)
+                and len(paths) == facts["count"],
+                f"{request_context}.paths",
+                "request paths must be sorted, unique, and exact-count",
+            )
+            self.problems.require(
+                record.get("schema_version") == 1
+                and record.get("record_kind") == "shared_file_request"
+                and record.get("request_id") == request_id
+                and record.get("wave_id") == facts["wave"]
+                and record.get("blocks") == [facts["wave"]]
+                and record.get("lane_id") == "claude-lane"
+                and record.get("requester_id") == "primary-human"
+                and record.get("status") == "active"
+                and record.get("target_checkpoint_id") == C0004_CHECKPOINT_ID
+                and record.get("valid_through_checkpoint_id") == C0004_CHECKPOINT_ID
+                and record.get("target_base_sha") == C0004_CODE_SHA,
+                request_context,
+                "request must be active and independently rooted at exact C0004",
+            )
+            self.problems.require(
+                record.get("resolution")
+                == {
+                    "checkpoint_id": None,
+                    "commit_sha": None,
+                    "reason": None,
+                    "resolved_at": None,
+                    "resolved_by": None,
+                    "validation_evidence": [],
+                },
+                f"{request_context}.resolution",
+                "planned request must be unresolved",
+            )
+            preimages = record.get("preimage_blobs")
+            expected_preimages = [
+                {"blob_oid": self.git_blob(C0004_CODE_SHA, path), "path": path}
+                for path in sorted(path_set)
+            ]
+            self.problems.require(
+                preimages == expected_preimages,
+                f"{request_context}.preimage_blobs",
+                "must pin exact C0004 blobs in request path order",
+            )
+            _, rows = self.read_tsv(
+                manifest_path,
+                self.relative(manifest_path),
+                ("path", "preimage_blob_oid", "preimage_sha256", "postimage_sha256"),
+            )
+            postimages = self.validate_postimage_rows(
+                ("path", "preimage_blob_oid", "preimage_sha256", "postimage_sha256"),
+                rows,
+                self.relative(manifest_path),
+                path_set,
+                "postimage_sha256",
+                base_sha=C0004_CODE_SHA,
+                base_label="C0004",
+            )
+            request_postimages[request_id] = postimages
+            self.materialize_patch_postimages(
+                request_context,
+                patch_path,
+                path_set,
+                postimages,
+                base_sha=C0004_CODE_SHA,
+                base_label="C0004",
+                unidiff_zero=True,
+            )
+            selector_paths = selected_by_wave.get(facts["wave"], set())
+            self.problems.require(
+                path_set.isdisjoint(selector_paths),
+                request_context,
+                "shared request must not contain a worker-owned selector path",
+            )
+
+        r0009 = request_paths.get("R0009", set())
+        r0010 = request_paths.get("R0010", set())
+        union_paths = r0009 | r0010
+        intersection = r0009 & r0010
+        self.problems.require(
+            intersection == C0005_REQUEST_INTERSECTION
+            and len(union_paths) == C0005_REQUEST_FACTS["union"]["count"]
+            and hashlib.sha256(
+                "".join(f"{path}\n" for path in sorted(union_paths)).encode("utf-8")
+            ).hexdigest().upper()
+            == C0005_REQUEST_UNION_PATH_SHA256,
+            f"{context}.request union",
+            "must contain the exact five-path overlap and reviewed 37-path union",
+        )
+        union_patch = self.phase_dir / "requests/R0009-R0010-union.patch"
+        union_manifest = self.phase_dir / "requests/R0009-R0010-union-postimages.tsv"
+        union_review = self.phase_dir / "requests/R0009-R0010-union-review.md"
+        for path, expected in (
+            (union_patch, C0005_REQUEST_FACTS["union"]["patch_sha256"]),
+            (union_manifest, C0005_REQUEST_FACTS["union"]["postimages_sha256"]),
+            (union_review, C0005_REQUEST_FACTS["union"]["review_sha256"]),
+        ):
+            self.problems.require(
+                path.is_file() and sha256_path(path) == expected,
+                self.relative(path),
+                f"must hash to exact union value {expected}",
+            )
+        _, union_rows = self.read_tsv(
+            union_manifest,
+            self.relative(union_manifest),
+            ("path", "preimage_blob_oid", "preimage_sha256", "postimage_sha256"),
+        )
+        union_postimages = self.validate_postimage_rows(
+            ("path", "preimage_blob_oid", "preimage_sha256", "postimage_sha256"),
+            union_rows,
+            self.relative(union_manifest),
+            union_paths,
+            "postimage_sha256",
+            base_sha=C0004_CODE_SHA,
+            base_label="C0004",
+        )
+        self.materialize_patch_postimages(
+            f"{context}[union]",
+            union_patch,
+            union_paths,
+            union_postimages,
+            base_sha=C0004_CODE_SHA,
+            base_label="C0004",
+            unidiff_zero=True,
+        )
+        for path in sorted(r0009 - r0010):
+            self.problems.require(
+                union_postimages.get(path) == request_postimages.get("R0009", {}).get(path),
+                f"{context}.union[{path}]",
+                "R0009-only union postimage must equal standalone R0009",
+            )
+        for path in sorted(r0010 - r0009):
+            self.problems.require(
+                union_postimages.get(path) == request_postimages.get("R0010", {}).get(path),
+                f"{context}.union[{path}]",
+                "R0010-only union postimage must equal standalone R0010",
+            )
+        for path in sorted(intersection):
+            self.problems.require(
+                union_postimages.get(path)
+                not in {
+                    request_postimages.get("R0009", {}).get(path),
+                    request_postimages.get("R0010", {}).get(path),
+                },
+                f"{context}.union[{path}]",
+                "shared union postimage must compose both independent request semantics",
+            )
+
+        try:
+            accepted_phase = json.loads(
+                self.git(
+                    "show",
+                    f"{C0004_ACCEPTANCE_CONTROL_SHA}:{(DEFAULT_PHASE_DIR / 'phase.json').as_posix()}",
+                ).stdout
+            )
+        except (RuntimeError, json.JSONDecodeError) as error:
+            accepted_phase = {}
+            self.problems.add(context, f"cannot load accepted C0004 phase: {error}")
+        accepted_exact = {
+            row.get("path")
+            for row in accepted_phase.get("shared_paths", [])
+            if isinstance(row, dict) and row.get("match") == "exact"
+        }
+        accepted_prefix = [
+            row.get("path")
+            for row in accepted_phase.get("shared_paths", [])
+            if isinstance(row, dict) and row.get("match") == "prefix"
+        ]
+        live_exact = {
+            rule.path for rule in self.shared_rules if rule.match == "exact"
+        }
+        live_prefix = [
+            rule.path for rule in self.shared_rules if rule.match == "prefix"
+        ]
+        self.problems.require(
+            len(live_exact) == 187
+            and len(live_prefix) == 5
+            and live_exact - accepted_exact == union_paths - accepted_exact
+            and len(live_exact - accepted_exact) == 32
+            and live_prefix == [normalize_path(path) for path in accepted_prefix],
+            f"{context}.shared paths",
+            "phase must add exactly the 32 new union reservations and retain five prefixes",
+        )
+
+        for local_path, digest in C0005_REVIEW_FACTS.items():
+            path = self.phase_dir / local_path
+            self.problems.require(
+                path.is_file() and sha256_path(path) == digest,
+                self.relative(path),
+                f"planned review must hash to {digest}",
+            )
+        self.problems.require(
+            not (self.phase_dir / "reviews/R04-R08-activation.md").exists()
+            and not list((self.phase_dir / "checkpoints").glob("C0005*")),
+            context,
+            "planning must not create an activation review or C0005 checkpoint",
+        )
 
     def validate_r05_r06_epoch(self) -> None:
         """Ratchet the C0003-rooted R05/R06 pair through C0004 acceptance."""
@@ -10134,6 +11108,70 @@ def run_self_test() -> int:
     problems.require(exact.matches("NumStability/A.lean"), "self-test", "exact path match missed")
     problems.require(prefix.matches("NumStability/A.lean"), "self-test", "prefix path match missed")
     problems.require(not exact.intersects(distant), "self-test", "false path collision")
+    problems.require(
+        set(C0005_BRANCH_FACTS) == {"R04", "R08"}
+        and C0005_BRANCH_FACTS["R04"]["selector_count"] == 19
+        and C0005_BRANCH_FACTS["R08"]["selector_count"] == 45
+        and C0005_BRANCH_FACTS["R04"]["route_count"] == 289
+        and C0005_BRANCH_FACTS["R08"]["route_count"] == 211
+        and C0005_REQUEST_FACTS["union"]["count"] == 37
+        and len(C0005_REQUEST_INTERSECTION) == 5,
+        "self-test C0005 constants",
+        "planned R04/R08 exact constants drifted",
+    )
+    for wave, facts in C0005_BRANCH_FACTS.items():
+        fixture = {
+            "schema_version": 1,
+            "record_kind": "phase_branch",
+            "phase_id": PHASE_ID,
+            "branch_id": facts["branch_id"],
+            "wave_id": wave,
+            "branch_name": facts["branch_name"],
+            "lane_id": "claude-lane",
+            "owner_id": "primary-human",
+            "operator_ids": facts["operators"],
+            "base_checkpoint_id": C0004_CHECKPOINT_ID,
+            "base_sha": C0004_CODE_SHA,
+            "baseline_projection_id": facts["projection_id"],
+            "shared_request_ids": [facts["request_id"]],
+            "status": "planned",
+        }
+        positive = Problems()
+        validate_c0005_planned_branch_header(
+            fixture, wave, facts, positive, context=f"self-test {wave}"
+        )
+        problems.require(
+            not positive.messages,
+            f"self-test {wave} planned header positive",
+            f"valid planned header rejected: {positive.messages}",
+        )
+        mutations = {
+            "wrong base": {**fixture, "base_sha": "0" * 40},
+            "wrong checkpoint": {**fixture, "base_checkpoint_id": "C0005"},
+            "premature activation": {**fixture, "status": "active"},
+            "wrong operator vector": {
+                **fixture,
+                "operator_ids": (
+                    ["claude-local"]
+                    if wave == "R04"
+                    else ["claude-local", "codex-local"]
+                ),
+            },
+        }
+        for label, mutated in mutations.items():
+            negative = Problems()
+            validate_c0005_planned_branch_header(
+                mutated,
+                wave,
+                facts,
+                negative,
+                context=f"self-test {wave} {label}",
+            )
+            problems.require(
+                bool(negative.messages),
+                f"self-test {wave} {label}",
+                "adversarial planned-branch mutation was not rejected",
+            )
     replay_positive = Problems()
     problems.require(
         validate_reconstructed_r03_tree(
@@ -11722,7 +12760,8 @@ No implementation began before activation-control CI. The worker remains frozen 
         "delivery, artifact, branch-evidence, predecessor-chain, and premature-applied "
         "mutations rejected; plus exact C0004 accepted/applied and retired R05/R06/R0008 "
         "states with integration, retirement, projection, request, resolution, and refreshed-"
-        "evidence mutations rejected"
+        "evidence mutations rejected; plus exact C0004-rooted B0008/B0009 planned headers "
+        "with wrong-base, checkpoint, operator, and premature-activation mutations rejected"
     )
     return 0
 
@@ -11768,7 +12807,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "epoch with corrected 115+6 request identity and 21 bounded follow-ups; plus "
         "the C0003-rooted R05/R06 pair epoch through C0004 acceptance/retirement, the "
         "five-artifact R0008 amendment through exact application, its four-path predecessor "
-        "SHA chain, and the C0004 61-union/27-amendment terminal postimage ratchet"
+        "SHA chain, and the C0004 61-union/27-amendment terminal postimage ratchet; plus "
+        "the exact-C0004 planned B0008/P0008/R0009 and B0009/P0009/R0010 pair, "
+        "its reviewed 37-path common-base union, and the no-ref/no-worktree activation gate"
     )
     return 0
 

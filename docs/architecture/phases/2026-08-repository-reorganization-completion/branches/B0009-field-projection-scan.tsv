@@ -1,0 +1,2 @@
+consumer_path	dot_notation_token_matching_relocated_declaration	supply_after_retarget
+-	zero owner-defined structures/classes; 858 qualified dot tokens are not receiver moves	no R08 field/projection surface moves; anonymous constructors retain external defining imports

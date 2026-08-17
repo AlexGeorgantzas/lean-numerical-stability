@@ -227,9 +227,10 @@ result and live migration-debt values are enforced by
 [`tools/architecture/check_layout.py`](tools/architecture/check_layout.py),
 with compatibility and provenance checked separately.
 
-The repository-reorganization successor remains in progress. C0003 accepted
-R03, so M03 is accepted in addition to M01, M02, M11, and M12; bounded-phase
-and repository-wide completion both remain incomplete. B0001/B0002 are
+The repository-reorganization successor remains in progress. C0004 accepts
+R05/R06 on top of C0003's R03, C0002's R11/R12, and C0001's R01/R02, so M01,
+M02, M03, M05, M06, M11, and M12 are accepted; bounded-phase and
+repository-wide completion both remain incomplete. B0001/B0002 are
 retired, their remote delivery refs are deleted, and their named worker worktrees were
 removed after evidence archival. P0001/P0002 remain retired immutable
 evidence, and R0001/R0002/R0002T are applied. B0003/R11 (QR and Chapter 19)
@@ -346,6 +347,27 @@ delivery branches remain preserved at
 [`R05/R06 retirement review`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R05-R06-retirement.md)
 records the exact leases, absence checks, archive, worktree cleanup, and local
 branch preservation.
+
+Exact-C0004 successor planning now records
+[`B0008/R04`](docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0008.json)
+and
+[`B0009/R08`](docs/architecture/phases/2026-08-repository-reorganization-completion/branches/B0009.json)
+as planned branches, with frozen baseline projections P0008/P0009 and active
+common-base shared requests R0009/R0010. R04 selects 19 owners and 289
+declarations into 31 production destinations; R08 selects 45 owners and 211
+declarations into 21 production destinations. The 28- and 14-path requests
+intersect on exactly five integrator-owned files and are reconciled by the
+reviewed
+[`37-path common-base union`](docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0009-R0010-union-review.md).
+The
+[`selection review`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/C0004-R04-R08-selection.md)
+records zero peer overlap across every enforced dimension, while the
+[`temporary operator authorization`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R04-R08-operator-authorization.md)
+adds `codex-local` to `claude-lane` solely for B0008/R04; B0009/R08 remains
+`claude-local`-only. No worker ref or worktree exists, neither wave is
+activated, and implementation remains prohibited until this exact
+planned-control commit passes Lean CI and a later activation-control commit is
+green.
 
 The official C0004 baseline, inventory, and 111-path integration ledger have
 SHA-256 values

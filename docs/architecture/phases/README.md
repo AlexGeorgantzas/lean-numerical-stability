@@ -156,6 +156,24 @@ delivery branches remain preserved at
 [`R05/R06 retirement review`](2026-08-repository-reorganization-completion/reviews/R05-R06-retirement.md)
 records the exact leases, archive, cleanup, and preserved refs.
 
+Exact-C0004 successor planning now records
+[`B0008/R04`](2026-08-repository-reorganization-completion/branches/B0008.json)
+and
+[`B0009/R08`](2026-08-repository-reorganization-completion/branches/B0009.json)
+as planned branches, with frozen baseline projections P0008/P0009 and active
+common-base requests R0009/R0010. The 28- and 14-path requests intersect on
+exactly five integrator-owned files and are reconciled by the reviewed
+[`37-path common-base union`](2026-08-repository-reorganization-completion/requests/R0009-R0010-union-review.md).
+The
+[`selection review`](2026-08-repository-reorganization-completion/reviews/C0004-R04-R08-selection.md)
+records zero peer overlap across every enforced dimension. The
+[`temporary operator authorization`](2026-08-repository-reorganization-completion/reviews/R04-R08-operator-authorization.md)
+adds `codex-local` to `claude-lane` solely for B0008/R04; B0009/R08 remains
+`claude-local`-only. No worker ref or worktree exists, neither wave is
+activated, and implementation remains prohibited until this exact
+planned-control commit passes Lean CI and a later activation-control commit is
+green.
+
 C0004 records 2,766 production modules and 200 distinct residual-debt rows:
 191 unclassified, zero mixed, zero missing-module-doc, 125 noncanonical, and
 eight declaration-bearing-umbrella rows, with zero unsorted aggregate imports.

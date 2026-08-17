@@ -1,0 +1,80 @@
+test_class	target	purpose
+aggregate_completeness	NumStabilityTest/Reorganization/R08/AggregateCompleteness/Problem13.lean	new declaration-free aggregate reaches its child
+aggregate_completeness	NumStabilityTest/Reorganization/R08/AggregateCompleteness/Problem14.lean	new declaration-free aggregate reaches its child
+aggregate_completeness	NumStabilityTest/Reorganization/R08/AggregateCompleteness/Problem15.lean	new declaration-free aggregate reaches its child
+all	NumStabilityTest/Reorganization/R08/All.lean	branch-owned aggregate imports every R08 leaf test
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/CoefficientAsymptotics19.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/CorrectionBounds20.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/CumulativeProductBounds05.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/Derivations07.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/Derivations08.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/DeterminantSignAndRelativeBounds13.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/FinalizedErrorFamilies01.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/FirstOrderBound09.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/ForwardError15.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/HymanBackwardError12.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/LeftResidualBounds17.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/LeftResidualBounds18.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/RemainderAsymptotics14.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/ResidualAndForwardBounds06.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/ResidualAndForwardEndpoints04.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/ResidualAndForwardEnvelopes03.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/StressAndPeiMatrices10.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/UniformInverseRegularity02.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/UnitRowAndScalarCase11.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/VanishingEndpoints21.lean	new destination alone checks its routed declaration surface
+canonical_only	NumStabilityTest/Reorganization/R08/Canonical/WholeMatrixBounds16.lean	new destination alone checks its routed declaration surface
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Algorithms.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Algorithms_Ch14HymanDeterminant.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Algorithms_Ch14Problem1413Boundary.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Algorithms_Chapter14Problem1415Weyl.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Source_Higham_Chapter14.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Source_Higham_Chapter14_Algorithm04_Execution_GJEActualDoolittleAdapter.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Source_Higham_Chapter14_Algorithm04_Execution_GJEFinalDivisionClosure.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Source_Higham_Chapter14_Corollary06_SPD_Closure.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Source_Higham_Chapter14_Corollary06_SPD_Concrete.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Source_Higham_Chapter14_Corollary06_SPD_GaussJordanSPDCorollary.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Source_Higham_Chapter14_Corollary06_SPD_SourceClosure.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Source_Higham_Chapter14_Corollary06_SPD_UniformInverseBridge.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Source_Higham_Chapter14_Corollary07_DiagonalDominance_FinalDivisionFamilyClosure.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Source_Higham_Chapter14_Corollary07_DiagonalDominance_SourceDomainConstructor.lean	outside direct import consumer continues to elaborate
+consumer	NumStabilityTest/Reorganization/R08/Consumer/NumStability_Source_Higham_Chapter14_Theorem05_ForwardError_GJEFinalDivisionClosure.lean	outside direct import consumer continues to elaborate
+focused	NumStabilityTest/Reorganization/R08/Focused/Algorithm04.lean	semantic Chapter 14 cluster build
+focused	NumStabilityTest/Reorganization/R08/Focused/Corollary06.lean	semantic Chapter 14 cluster build
+focused	NumStabilityTest/Reorganization/R08/Focused/Corollary07.lean	semantic Chapter 14 cluster build
+focused	NumStabilityTest/Reorganization/R08/Focused/Problem02.lean	semantic Chapter 14 cluster build
+focused	NumStabilityTest/Reorganization/R08/Focused/Problem12.lean	semantic Chapter 14 cluster build
+focused	NumStabilityTest/Reorganization/R08/Focused/Problem13.lean	semantic Chapter 14 cluster build
+focused	NumStabilityTest/Reorganization/R08/Focused/Problem14.lean	semantic Chapter 14 cluster build
+focused	NumStabilityTest/Reorganization/R08/Focused/Problem15.lean	semantic Chapter 14 cluster build
+focused	NumStabilityTest/Reorganization/R08/Focused/Section01.lean	semantic Chapter 14 cluster build
+focused	NumStabilityTest/Reorganization/R08/Focused/Section02.lean	semantic Chapter 14 cluster build
+focused	NumStabilityTest/Reorganization/R08/Focused/Theorem05.lean	semantic Chapter 14 cluster build
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14AsymptoticFamilies.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14Cor146UniformInverseBridge.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14Cor147FinalDivisionFamilyClosure.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14Corollary147SourceClosure.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14Corollary147WeakFamily.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14ForwardErrorEndpoint.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14GJEAsymptoticFamilies.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14GJEFinalDivisionClosure.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14GJEPrintedEnvelopeClosure.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14GJETheorem145SourceClosure.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14Method1BWhole.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14Method2C.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14Method2CWhole.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14Problem142.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14Problem142Families.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/Ch14Problem142Method2B.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/GaussJordan.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+old_only	NumStabilityTest/Reorganization/R08/OldPath/MatrixInversion.lean	newly evacuated historical Algorithm path checks its residual C0004 surface
+private_normalization	NumStabilityTest/Reorganization/R08/PrivateNormalization/CoefficientAsymptotics.lean	private owner rewrite is total and exact
+private_normalization	NumStabilityTest/Reorganization/R08/PrivateNormalization/CorrectionBounds.lean	private owner rewrite is total and exact
+private_normalization	NumStabilityTest/Reorganization/R08/PrivateNormalization/Derivations.lean	private owner rewrite is total and exact
+private_normalization	NumStabilityTest/Reorganization/R08/PrivateNormalization/DeterminantSignAndRelativeBounds.lean	private owner rewrite is total and exact
+private_normalization	NumStabilityTest/Reorganization/R08/PrivateNormalization/ForwardError.lean	private owner rewrite is total and exact
+private_normalization	NumStabilityTest/Reorganization/R08/PrivateNormalization/LeftResidualBounds.lean	private owner rewrite is total and exact
+private_normalization	NumStabilityTest/Reorganization/R08/PrivateNormalization/RemainderAsymptotics.lean	private owner rewrite is total and exact
+private_normalization	NumStabilityTest/Reorganization/R08/PrivateNormalization/StressAndPeiMatrices.lean	private owner rewrite is total and exact
+private_normalization	NumStabilityTest/Reorganization/R08/PrivateNormalization/Totality.lean	private owner rewrite is total and exact
+private_normalization	NumStabilityTest/Reorganization/R08/PrivateNormalization/WholeMatrixBounds.lean	private owner rewrite is total and exact

@@ -1,0 +1,5 @@
+consumer_path	dot_notation_token_matching_relocated_declaration	supply_after_retarget
+NumStability/Source/Higham/Chapter06/Lemma06/OperatorTwoNormBound/Bridge.lean	Lemma66.* namespace qualification; no receiver-style field notation	retarget to Lemma06.Core.Results preserves qualified namespace supply
+NumStability/Source/Higham/Chapter14/Section03/ResidualOperatorTwoNorm/Bridge.lean	Lemma66.* namespace qualification; no receiver-style field notation	retarget to Lemma06.Core.Results preserves qualified namespace supply
+NumStability/Source/Higham/Chapter19/Theorem05/SourceClosure.lean	Lemma66.* namespace qualification; no receiver-style field notation	retarget to Lemma06.Core.Results preserves one signature and five body edges
+-	structure projections product_eq;R_upper;R_diag_pos;R_rank_zero;perm	canonical destinations import the exact defining specification modules

@@ -1,0 +1,67 @@
+module	tier	reason
+NumStability.Algorithms.Ch14AsymptoticFamilies	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14BlockTriInverse	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Cor146UniformInverseBridge	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Cor147FinalDivisionFamilyClosure	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Cor147SourceDomainConstructor	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Corollary146Closure	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Corollary146Concrete	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Corollary146SourceClosure	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Corollary147	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Corollary147Closure	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Corollary147Concrete	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Corollary147SourceClosure	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Corollary147WeakFamily	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14ForwardErrorEndpoint	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14GJEActualDoolittleAdapter	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14GJEAsymptoticFamilies	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14GJEFinalDivisionClosure	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14GJEOperationalBridge	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14GJEPrintedEnvelopeClosure	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14GJESourceAccumulationBridge	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14GJETheorem145SourceClosure	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14GaussJordanAccumulation	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14GaussJordanQConstruction	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14GaussJordanSPDCorollary	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14GaussJordanSourceClosure	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14GaussJordanStep	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Method1BWhole	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Method2C	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Method2CWhole	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Method2Loop	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14MethodDLeftResidual	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14MethodDProductDischarge	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14MethodDUpperCertificate	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14MethodsBC	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Problem142	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Problem142Families	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14Problem142Method2B	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch14ProductErrorNotation	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.GaussJordan	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.GaussJordanPivoting	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.MatrixInversion	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.MatrixInversionMethod2BInstance	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Source.Higham.Chapter14.Algorithm04.FinalDivisionStage.FinalizedErrorFamilies	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Corollary06.FinalizedRunRegularity.UniformInverseRegularity	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Corollary07.FinalizedRunFamilies.ResidualAndForwardEnvelopes	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Corollary07.PrintedTraceFamilies.ResidualAndForwardEndpoints	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Corollary07.RowDominantCertificates.CumulativeProductBounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Corollary07.WeakDominanceFamilies.ResidualAndForwardBounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Problem02.TriangularInversion.TwoBlockFamilies.Derivations	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Problem02.TriangularInversion.TwoBlockFirstOrder.Derivations	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Problem02.TriangularInversion.TwoBlockMethod2B.FirstOrderBound	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Problem12.ConditionNumberExamples.StressAndPeiMatrices	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Problem13	aggregate	declarations evacuate to a new child; historical source path becomes aggregate
+NumStability.Source.Higham.Chapter14.Problem13.ConditionNumberBounds.UnitRowAndScalarCase	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Problem14	aggregate	declarations evacuate to a new child; historical source path becomes aggregate
+NumStability.Source.Higham.Chapter14.Problem14.FloatingPointDeterminant.HymanBackwardError	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Problem15	aggregate	declarations evacuate to a new child; historical source path becomes aggregate
+NumStability.Source.Higham.Chapter14.Problem15.SingularValueGuards.DeterminantSignAndRelativeBounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Section01.InverseErrorAnalysis.ComposedCoefficientFamilies.RemainderAsymptotics	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Section01.InverseErrorAnalysis.ScaledPerturbationEndpoints.ForwardError	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Section02.TriangularInversion.Method1B.BlockResidual.WholeMatrixBounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Section02.TriangularInversion.Method2C.BlockResidual.LeftResidualBounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Section02.TriangularInversion.Method2C.WholeMatrixResidual.LeftResidualBounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Theorem05.EliminationFamilies.CoefficientAsymptotics	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Theorem05.PrintedEnvelopes.CorrectionBounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter14.Theorem05.PrintedTrace.VanishingEndpoints	source	new casefold-vacant semantic declaration destination

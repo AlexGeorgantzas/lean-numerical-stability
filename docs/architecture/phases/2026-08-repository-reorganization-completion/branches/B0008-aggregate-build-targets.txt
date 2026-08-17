@@ -1,0 +1,16 @@
+NumStability.Algorithms.LinearSystems.Cholesky.ErrorAnalysis
+NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite
+NumStability.Analysis.MatrixNorms.SpectralExtrema
+NumStability.Source.Higham.Chapter10.Equation29.Mathias
+NumStability.Source.Higham.Chapter10.Equation30.ComplexPositiveDefinite
+NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness
+NumStability.Source.Higham.Chapter10.Problem01.PositiveSemidefiniteEntries
+NumStability.Source.Higham.Chapter10.Problem04.UnpivotedGrowth
+NumStability.Source.Higham.Chapter10.Section01.Factorization
+NumStability.Source.Higham.Chapter10.Section02.ErrorAnalysis
+NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite
+NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart
+NumStability.Source.Higham.Chapter10.Theorem06.RoundedCholesky
+NumStability.Source.Higham.Chapter10.Theorem08.ComponentwisePerturbation
+NumStability.Source.Higham.Chapter10.Theorem08.NormwiseDiscrepancy
+NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD

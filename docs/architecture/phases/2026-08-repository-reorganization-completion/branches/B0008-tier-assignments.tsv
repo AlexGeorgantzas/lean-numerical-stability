@@ -1,0 +1,51 @@
+module	tier	reason
+NumStability.Algorithms.Ch10ActualSourceClosure	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch10ComplexPositiveDefiniteSourceClosure	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch10KahanSharpnessSource	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch10PivotedPSDSourceClosure	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch10Theorem108Componentwise	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Ch10Theorem108Source	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Cholesky.CholeskyDemmel	reusable	reviewed reusable owner retained in place
+NumStability.Algorithms.Cholesky.CholeskyFl	reusable	reviewed reusable owner retained in place
+NumStability.Algorithms.Cholesky.CholeskyNonsym	reusable	reviewed reusable owner retained in place
+NumStability.Algorithms.Cholesky.CholeskyPSD	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Cholesky.CholeskySpec	reusable	reviewed reusable owner retained in place
+NumStability.Algorithms.Cholesky.Higham1014Equation1022	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Cholesky.Higham1014SourceError	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Cholesky.Higham1029Source	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.Cholesky.HighamMathiasSource	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.HighamChapter10	compatibility	historical Algorithm path is import-only after the wave
+NumStability.Algorithms.LinearSystems.Cholesky.ErrorAnalysis.PositivePivots.Certificate	reusable	new casefold-vacant semantic declaration destination
+NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.KahanTelescope.Identity	reusable	new casefold-vacant semantic declaration destination
+NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.PivotedFactorization.Existence	reusable	new casefold-vacant semantic declaration destination
+NumStability.Algorithms.LinearSystems.Cholesky.PositiveSemidefinite.StageEmbedding.InteriorMass	reusable	new casefold-vacant semantic declaration destination
+NumStability.Analysis.MatrixNorms.SpectralExtrema.PrincipalSubmatrices.Bounds	reusable	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter06.Lemma06	aggregate	declarations evacuate to a new child; historical source path becomes aggregate
+NumStability.Source.Higham.Chapter06.Lemma06.Core.Results	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Equation29.Mathias.RoundedSchur.Bounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Equation30.ComplexPositiveDefinite.NoPivotLU.SourceBounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.OperatorNorm.SourceBound	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.UnboundedGrowth.Construction	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Problem01.PositiveSemidefiniteEntries.EntryBounds.Results	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Problem04.UnpivotedGrowth.PositivePivots.Bounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Section01.Factorization.ExistenceUniqueness.Results	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Section02.ErrorAnalysis.FactorizationAndSolve.Bounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.ConstructiveFactorization.Existence	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.PivotingAndScaling.Results	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.QuadraticFormBounds.WeightedNorm	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.TrailingTermination.Bound	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.LUGrowth.Equation29	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Section04.PositiveDefiniteSymmetricPart.SchurStages.Bounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Theorem06.RoundedCholesky.ForwardError.ActualAlgorithm	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Theorem07	aggregate	declarations evacuate to a new child; historical source path becomes aggregate
+NumStability.Source.Higham.Chapter10.Theorem07.Core.Results	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Theorem07.SuccessThreshold.Factorization	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Theorem08.ComponentwisePerturbation.NormalizedResolvent.SourceBound	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Theorem08.NormwiseDiscrepancy.Counterexample.Uniqueness	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.ActualComputation.ErrorBounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.RankSensitiveError.Bounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.RoundedErrorAnalysis.Bounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SchurPerturbation.Family	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SuccessfulRun.StageBounds	source	new casefold-vacant semantic declaration destination
+NumStability.Source.Higham.Chapter11.Theorem07	aggregate	declarations evacuate to a new child; historical source path becomes aggregate
+NumStability.Source.Higham.Chapter11.Theorem07.Core.Results	source	new casefold-vacant semantic declaration destination

@@ -1,0 +1,15 @@
+NumStability.Algorithms
+NumStability.Algorithms.Ch14HymanDeterminant
+NumStability.Algorithms.Ch14Problem1413Boundary
+NumStability.Algorithms.Chapter14Problem1415Weyl
+NumStability.Source.Higham.Chapter14
+NumStability.Source.Higham.Chapter14.Algorithm04.Execution.GJEActualDoolittleAdapter
+NumStability.Source.Higham.Chapter14.Algorithm04.Execution.GJEFinalDivisionClosure
+NumStability.Source.Higham.Chapter14.Corollary06.SPD.Closure
+NumStability.Source.Higham.Chapter14.Corollary06.SPD.Concrete
+NumStability.Source.Higham.Chapter14.Corollary06.SPD.GaussJordanSPDCorollary
+NumStability.Source.Higham.Chapter14.Corollary06.SPD.SourceClosure
+NumStability.Source.Higham.Chapter14.Corollary06.SPD.UniformInverseBridge
+NumStability.Source.Higham.Chapter14.Corollary07.DiagonalDominance.FinalDivisionFamilyClosure
+NumStability.Source.Higham.Chapter14.Corollary07.DiagonalDominance.SourceDomainConstructor
+NumStability.Source.Higham.Chapter14.Theorem05.ForwardError.GJEFinalDivisionClosure

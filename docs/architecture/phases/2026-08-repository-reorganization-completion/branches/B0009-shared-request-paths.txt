@@ -1,0 +1,14 @@
+NumStability/Algorithms.lean
+NumStability/Source/Higham/Chapter14/Algorithm04.lean
+NumStability/Source/Higham/Chapter14/Corollary06.lean
+NumStability/Source/Higham/Chapter14/Corollary07.lean
+NumStability/Source/Higham/Chapter14/Problem02.lean
+NumStability/Source/Higham/Chapter14/Problem12.lean
+NumStability/Source/Higham/Chapter14/Section01.lean
+NumStability/Source/Higham/Chapter14/Section02.lean
+NumStability/Source/Higham/Chapter14/Theorem05.lean
+NumStabilityTest.lean
+docs/architecture/COMPATIBILITY.md
+docs/architecture/MIGRATION.md
+docs/architecture/layout-exceptions.json
+docs/architecture/tiers.json
