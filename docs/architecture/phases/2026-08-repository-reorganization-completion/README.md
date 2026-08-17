@@ -63,7 +63,8 @@ R0006/R0007/R0008 are applied.
 The temporary second-operator authority and all R05/R06 temporary path
 reservations are released, restoring `codex-lane` to `codex-local` alone.
 M04/R04 and M08/R08 are ready; every other unaccepted milestone remains
-planned and no successor wave is activated. Acceptance-control commit
+planned; the R04/R08 successor branches are activated below.
+Acceptance-control commit
 `131a0c6f333de0eb47a67698decf36ee82e01dab` passed Lean CI run 31966141900
 (job 95211495907); `primary-human` retired B0006/B0007 at
 `2026-08-16T19:08:57Z`. Their exact remote refs were deleted atomically under
@@ -78,8 +79,8 @@ delivery branches remain preserved at
 [`R05/R06 retirement review`](reviews/R05-R06-retirement.md) records the exact
 leases, archive, cleanup, and preserved refs.
 
-Exact-C0004 successor planning now records [`B0008/R04`](branches/B0008.json)
-and [`B0009/R08`](branches/B0009.json) as planned branches, with frozen
+Exact-C0004 successor activation now records [`B0008/R04`](branches/B0008.json)
+and [`B0009/R08`](branches/B0009.json) as active branches, with frozen
 baseline projections [`P0008`](projections/P0008.json) and
 [`P0009`](projections/P0009.json) and active common-base shared requests
 [`R0009`](requests/R0009.json) and [`R0010`](requests/R0010.json). R04 selects
@@ -92,10 +93,14 @@ are reconciled by the reviewed
 overlap across all enforced dimensions. The
 [`temporary operator authorization`](reviews/R04-R08-operator-authorization.md)
 adds `codex-local` to `claude-lane` solely for B0008/R04; B0009/R08 remains
-`claude-local`-only. No worker ref or worktree exists, neither wave is
-activated, and implementation remains prohibited until this exact
-planned-control commit passes Lean CI and a later activation-control commit is
-green.
+`claude-local`-only. Planned-control commit
+`2d9dbf7bf8b4b51e9cb7817f5c5dc2d5194e8c42` passed exact Lean CI run
+32030191197 (build job 95388234941). The
+[`activation review`](reviews/R04-R08-activation.md) pins the two atomic new
+refs and clean LF-configured named worktrees at exact C0004. The 37-path union
+remains integrator-only and unapplied, and both workers remain frozen until
+this activation-control commit passes its exact Lean CI build job; no
+implementation, delivery, integration, or C0005 has begun.
 
 C0004 contains 2,766 production modules and 200 distinct residual-debt rows:
 191 unclassified, zero mixed, zero missing module docs, 125 noncanonical, and

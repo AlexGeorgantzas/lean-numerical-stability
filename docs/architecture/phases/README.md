@@ -139,9 +139,9 @@ C0004 accepts M05/R05 and M06/R06 at exact green code commit
 95203051003) passed. P0006/P0007 are retired immutable evidence, and
 R0006/R0007/R0008 are applied.
 The temporary second-operator authority and R05/R06 reservations are released,
-restoring `codex-lane` to `codex-local` alone. M04/R04 and M08/R08 are ready;
-every other unaccepted milestone remains planned and no successor wave is
-activated. Acceptance-control commit
+restoring `codex-lane` to `codex-local` alone. M04/R04 and M08/R08 are ready
+and their successor branches are activated below; every other unaccepted
+milestone remains planned. Acceptance-control commit
 `131a0c6f333de0eb47a67698decf36ee82e01dab` passed Lean CI run 31966141900
 (job 95211495907); `primary-human` retired B0006/B0007 at
 `2026-08-16T19:08:57Z`. Their exact remote refs were deleted atomically under
@@ -156,11 +156,11 @@ delivery branches remain preserved at
 [`R05/R06 retirement review`](2026-08-repository-reorganization-completion/reviews/R05-R06-retirement.md)
 records the exact leases, archive, cleanup, and preserved refs.
 
-Exact-C0004 successor planning now records
+Exact-C0004 successor activation now records
 [`B0008/R04`](2026-08-repository-reorganization-completion/branches/B0008.json)
 and
 [`B0009/R08`](2026-08-repository-reorganization-completion/branches/B0009.json)
-as planned branches, with frozen baseline projections P0008/P0009 and active
+as active branches, with frozen baseline projections P0008/P0009 and active
 common-base requests R0009/R0010. The 28- and 14-path requests intersect on
 exactly five integrator-owned files and are reconciled by the reviewed
 [`37-path common-base union`](2026-08-repository-reorganization-completion/requests/R0009-R0010-union-review.md).
@@ -169,10 +169,15 @@ The
 records zero peer overlap across every enforced dimension. The
 [`temporary operator authorization`](2026-08-repository-reorganization-completion/reviews/R04-R08-operator-authorization.md)
 adds `codex-local` to `claude-lane` solely for B0008/R04; B0009/R08 remains
-`claude-local`-only. No worker ref or worktree exists, neither wave is
-activated, and implementation remains prohibited until this exact
-planned-control commit passes Lean CI and a later activation-control commit is
-green.
+`claude-local`-only. Planned-control commit
+`2d9dbf7bf8b4b51e9cb7817f5c5dc2d5194e8c42` passed exact Lean CI run
+32030191197 (build job 95388234941). The
+[`activation review`](2026-08-repository-reorganization-completion/reviews/R04-R08-activation.md)
+pins the two atomic new refs and clean LF-configured named worktrees at exact
+C0004. The 37-path union remains integrator-only and unapplied, and both
+workers remain frozen until this activation-control commit passes its exact
+Lean CI build job; no implementation, delivery, integration, or C0005 has
+begun.
 
 C0004 records 2,766 production modules and 200 distinct residual-debt rows:
 191 unclassified, zero mixed, zero missing-module-doc, 125 noncanonical, and

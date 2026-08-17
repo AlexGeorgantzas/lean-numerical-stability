@@ -334,8 +334,18 @@ C0004_PHASE_SHA256 = (
 )
 C0004_ACCEPTANCE_CONTROL_SHA = "131a0c6f333de0eb47a67698decf36ee82e01dab"
 C0005_PLANNED_CONTROL_PARENT_SHA = "59115771c816e0f41967c854beb9e86532317e82"
+C0005_PLANNED_CONTROL_SHA = "2d9dbf7bf8b4b51e9cb7817f5c5dc2d5194e8c42"
+C0005_PLANNED_CONTROL_CI_RUN = "32030191197"
+C0005_PLANNED_CONTROL_CI_JOB = "95388234941"
 C0005_PLANNED_PHASE_SHA256 = (
     "E3B8E30F2435EFCEAC9D4A0302A7FD26EC5AD17A1132FEBA692F4287C7608CA1"
+)
+C0005_ACTIVATION_REVIEW_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/R04-R08-activation.md"
+)
+C0005_ACTIVATION_REVIEW_SHA256 = (
+    "1F4D2B8B585C9D8D919F5CCBA71FD6AB748D0D4CA859B65E133B51048ACE72FB"
 )
 C0005_REQUEST_INTERSECTION = frozenset(
     {
@@ -355,7 +365,12 @@ C0005_BRANCH_FACTS = {
         "projection_id": "P0008",
         "request_id": "R0009",
         "branch_name": "codex/reorg-completion-2026-08-r04-cholesky-higham-ch10",
-        "record_sha256": "CE8FCEB5B26821077A112E3192517CBE7E641A2EA364C1815C0A596D216DC90F",
+        "remote_ref": "refs/heads/codex/reorg-completion-2026-08-r04-cholesky-higham-ch10",
+        "planned_worktree": r"C:\Users\qed_s\higham-worktrees\completion-r04-codex",
+        "assignment": "Codex",
+        "implementation_operator": "codex-local",
+        "planned_record_sha256": "CE8FCEB5B26821077A112E3192517CBE7E641A2EA364C1815C0A596D216DC90F",
+        "active_record_sha256": "11225E2B244BF0ACE820E1D7E165DEFAB3368EDAAE9D48EB34DE189AFC27AE2E",
         "operators": ["claude-local", "codex-local"],
         "selector_count": 19,
         "route_count": 289,
@@ -400,7 +415,12 @@ C0005_BRANCH_FACTS = {
         "projection_id": "P0009",
         "request_id": "R0010",
         "branch_name": "codex/reorg-completion-2026-08-r08-matrix-inversion-ch14",
-        "record_sha256": "81D29E44AA256057F9EBBCA09F1A5185C7FC63DE5973A36C55BACD7896692804",
+        "remote_ref": "refs/heads/codex/reorg-completion-2026-08-r08-matrix-inversion-ch14",
+        "planned_worktree": r"C:\Users\qed_s\higham-worktrees\completion-r08-claude",
+        "assignment": "Claude exclusively",
+        "implementation_operator": "claude-local",
+        "planned_record_sha256": "81D29E44AA256057F9EBBCA09F1A5185C7FC63DE5973A36C55BACD7896692804",
+        "active_record_sha256": "726D26753D52EEC2971074AA13C433E1F7A67E5201F7C3EF3BB96BCD9094D8E0",
         "operators": ["claude-local"],
         "selector_count": 45,
         "route_count": 211,
@@ -1205,15 +1225,16 @@ class Problems:
             self.add(context, message)
 
 
-def validate_c0005_planned_branch_header(
+def validate_c0005_branch_header(
     record: dict[str, Any],
     wave: str,
     facts: dict[str, Any],
     problems: Problems,
     *,
+    expected_status: str,
     context: str,
 ) -> None:
-    """Pure exact-header ratchet shared by live validation and self-tests."""
+    """Pure exact-header ratchet shared by planned/active validation and tests."""
 
     expected_fields = {
         "schema_version": 1,
@@ -1229,13 +1250,293 @@ def validate_c0005_planned_branch_header(
         "base_sha": C0004_CODE_SHA,
         "baseline_projection_id": facts["projection_id"],
         "shared_request_ids": [facts["request_id"]],
-        "status": "planned",
+        "status": expected_status,
     }
     for key, expected in expected_fields.items():
         problems.require(
             record.get(key) == expected,
             f"{context}.{key}",
-            f"expected exact planned value {expected!r}",
+            f"expected exact {expected_status} value {expected!r}",
+        )
+
+
+def validate_c0005_epoch_state(
+    statuses: dict[str, Any],
+    *,
+    activation_review_exists: bool,
+    c0005_exists: bool,
+    problems: Problems,
+    context: str,
+) -> str | None:
+    """Require the R04/R08 pair to occupy one synchronous pre-delivery state."""
+
+    expected_waves = set(C0005_BRANCH_FACTS)
+    problems.require(
+        set(statuses) == expected_waves,
+        f"{context}.status",
+        f"expected statuses for exactly {sorted(expected_waves)}",
+    )
+    values = set(statuses.values())
+    state = next(iter(values)) if len(values) == 1 else None
+    problems.require(
+        state in {"planned", "active"},
+        f"{context}.status",
+        "B0008/B0009 must be synchronously both planned or both active; "
+        f"found {statuses!r}",
+    )
+    if state == "planned":
+        problems.require(
+            not activation_review_exists,
+            f"{context}.activation",
+            "planned state must not create reviews/R04-R08-activation.md",
+        )
+    elif state == "active":
+        problems.require(
+            activation_review_exists,
+            f"{context}.activation",
+            "active state requires reviews/R04-R08-activation.md",
+        )
+    problems.require(
+        not c0005_exists,
+        f"{context}.checkpoint",
+        "planned/active R04/R08 state must not create a C0005 checkpoint",
+    )
+    return state
+
+
+def validate_c0005_branch_lifecycle(
+    record: dict[str, Any],
+    facts: dict[str, Any],
+    state: str,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Pure pre-delivery lifecycle/evidence ratchet for C0004-rooted workers."""
+
+    expected_delivery = {"commit_sha": None, "report": None, "scope_evidence": None}
+    expected_integration = {
+        "accepted_checkpoint_id": None,
+        "accepted_sha": None,
+        "method": None,
+    }
+    expected_retirement = {
+        "ancestry_checkpoint_id": None,
+        "remote_ref": facts["remote_ref"],
+        "retired_at": None,
+        "retired_by": None,
+        "rule": "delivery_ancestor_of_green_checkpoint",
+        "status": "not_due",
+    }
+    problems.require(
+        record.get("delivery") == expected_delivery,
+        f"{context}.delivery",
+        "planned/active worker must retain the exact null delivery record",
+    )
+    problems.require(
+        record.get("integration") == expected_integration,
+        f"{context}.integration",
+        "planned/active worker must retain the exact null integration record",
+    )
+    problems.require(
+        record.get("retirement") == expected_retirement,
+        f"{context}.retirement",
+        "planned/active worker must retain exact not-due retirement metadata",
+    )
+
+    refresh = record.get("refresh")
+    evidence: Any = None
+    if not isinstance(refresh, dict) or set(refresh) != {
+        "decision",
+        "evidence",
+        "reviewed_checkpoint_id",
+    }:
+        problems.add(
+            f"{context}.refresh",
+            "expected exactly decision/evidence/reviewed_checkpoint_id",
+        )
+    else:
+        problems.require(
+            refresh.get("decision") == "current"
+            and refresh.get("reviewed_checkpoint_id") == C0004_CHECKPOINT_ID,
+            f"{context}.refresh",
+            "must remain a current refresh against exact C0004",
+        )
+        evidence = refresh.get("evidence")
+    parsed: list[Artifact] = []
+    if not isinstance(evidence, list):
+        problems.add(f"{context}.refresh.evidence", "expected a hash-pinned list")
+    else:
+        for index, item in enumerate(evidence):
+            item_context = f"{context}.refresh.evidence[{index}]"
+            if not isinstance(item, dict) or set(item) != {"path", "sha256"}:
+                problems.add(item_context, "expected exactly {path, sha256}")
+                continue
+            path, digest = item.get("path"), item.get("sha256")
+            if not isinstance(path, str) or not isinstance(digest, str):
+                problems.add(item_context, "path and sha256 must be strings")
+                continue
+            if SHA256_RE.fullmatch(digest) is None:
+                problems.add(item_context, "sha256 must be 64 hexadecimal characters")
+                continue
+            parsed.append(Artifact(normalize_path(path), digest.upper()))
+    evidence_paths = [artifact.path for artifact in parsed]
+    problems.require(
+        evidence_paths == sorted(evidence_paths)
+        and len(evidence_paths) == len(set(evidence_paths)),
+        f"{context}.refresh.evidence",
+        "evidence paths must remain sorted and unique",
+    )
+    activation = tuple(
+        artifact
+        for artifact in parsed
+        if artifact.path == C0005_ACTIVATION_REVIEW_PATH
+    )
+    if state == "planned":
+        problems.require(
+            not activation
+            and not any(
+                any(token in path.casefold() for token in ("activation", "base-tip", "ref-tip", "worktree"))
+                for path in evidence_paths
+            ),
+            f"{context}.refresh.evidence",
+            "planned state may not carry activation/ref/worktree evidence",
+        )
+    elif state == "active":
+        problems.require(
+            activation
+            == (
+                Artifact(
+                    C0005_ACTIVATION_REVIEW_PATH,
+                    C0005_ACTIVATION_REVIEW_SHA256,
+                ),
+            ),
+            f"{context}.refresh.evidence",
+            "active state must hash-pin exactly the reviewed R04/R08 activation",
+        )
+
+
+def validate_c0005_request_activation_state(
+    request_records: dict[str, dict[str, Any]],
+    request_paths_match_planned_control: bool,
+    problems: Problems,
+    *,
+    context: str,
+) -> None:
+    """Reject premature request resolution or application before C0005."""
+
+    expected_resolution = {
+        "checkpoint_id": None,
+        "commit_sha": None,
+        "reason": None,
+        "resolved_at": None,
+        "resolved_by": None,
+        "validation_evidence": [],
+    }
+    for request_id in ("R0009", "R0010"):
+        record = request_records.get(request_id)
+        problems.require(
+            isinstance(record, dict)
+            and record.get("status") == "active"
+            and record.get("resolution") == expected_resolution,
+            f"{context}[{request_id}]",
+            "request must remain active, unresolved, and unapplied",
+        )
+    problems.require(
+        request_paths_match_planned_control,
+        f"{context}.union",
+        "all 37 R0009/R0010 union paths must remain byte-identical to the exact "
+        "planned-control tree",
+    )
+
+
+def validate_c0005_activation_review_text(
+    text: str,
+    problems: Problems,
+    *,
+    context: str = C0005_ACTIVATION_REVIEW_PATH,
+) -> None:
+    """Validate hash-pinned external ref/worktree facts without Git/network I/O."""
+
+    activated = re.search(
+        r"^- Activation time \(RFC3339 UTC\): `([^`\r\n]+)`\.\s*$",
+        text,
+        re.MULTILINE,
+    )
+    problems.require(
+        activated is not None
+        and RFC3339_RE.fullmatch(activated.group(1)) is not None
+        and activated.group(1).endswith("Z"),
+        f"{context}.activation_time",
+        "activation time must be an exact RFC3339 UTC timestamp",
+    )
+    exact_lines = {
+        "- Activation authority: `primary-human`, exercising the authorized "
+        "branch-registry, new-ref, named-worktree, activation-control, main commit/push, "
+        "and CI-monitoring controls.",
+        f"- Planned-control commit: `{C0005_PLANNED_CONTROL_SHA}`.",
+        "- Planned-control Lean CI: run "
+        f"`{C0005_PLANNED_CONTROL_CI_RUN}`, build job `{C0005_PLANNED_CONTROL_CI_JOB}`, "
+        f"exact head `{C0005_PLANNED_CONTROL_SHA}`, conclusion `success`.",
+        "- Immutable worker base: checkpoint "
+        f"`{C0004_CHECKPOINT_ID}`, commit `{C0004_CODE_SHA}`.",
+        "- C0004 raw dependency graph SHA-256: "
+        f"`{C0004_RAW_DEPENDENCY_TSV_SHA256}`.",
+    }
+    text_lines = set(text.splitlines())
+    for line in sorted(exact_lines):
+        problems.require(
+            line in text_lines,
+            f"{context}.identity",
+            f"activation review is missing exact line {line!r}",
+        )
+
+    for wave, facts in C0005_BRANCH_FACTS.items():
+        expected_row = (
+            f"| `{facts['branch_id']}` | `{wave}` | {facts['assignment']} | "
+            f"`{facts['branch_name']}` | `{C0004_CODE_SHA}` | `{facts['remote_ref']}` | "
+            f"`{C0004_CODE_SHA}` | `{facts['planned_worktree']}` | `{C0004_CODE_SHA}` | "
+            f"`claude-lane` | `{json.dumps(facts['operators'])}` | "
+            f"`{facts['implementation_operator']}` |"
+        )
+        problems.require(
+            expected_row in text_lines,
+            f"{context}.{facts['branch_id']}",
+            "activation review must record the exact branch/base/ref/worktree/lane/operator row",
+        )
+        mapping = f"- `{facts['remote_ref']}:{facts['remote_ref']}`"
+        lease = f"- `--force-with-lease={facts['remote_ref']}:`"
+        for line, label in ((mapping, "explicit ref mapping"), (lease, "nonexistent-tip lease")):
+            problems.require(
+                line in text_lines,
+                f"{context}.{facts['branch_id']}",
+                f"activation review must record exact {label}",
+            )
+
+    required_fragments = (
+        "Both local branches were created explicitly at exact C0004, never at the planned-control commit.",
+        "Both remote refs were created in one atomic push with these explicit mappings:",
+        "The atomic push used explicit nonexistent-tip leases for both new refs:",
+        "The remote tips were independently re-read after creation and both equal exact C0004.",
+        "Each named worktree has worktree-scoped `core.autocrlf=false`, `core.eol=lf`, and `core.safecrlf=false`.",
+        "empty tracked and untracked status",
+        "zero tracked `w/crlf` entries",
+        "No implementation or build state exists in either worktree.",
+        "`P0008` and `P0009` remain active and unchanged.",
+        "`R0009` and `R0010` remain active and unchanged, with null resolutions.",
+        "Their reviewed 37-path common-base union remains integrator-only and unapplied",
+        f"`phase.json` remains byte-identical at SHA-256 `{C0005_PLANNED_PHASE_SHA256}`.",
+        "C0004 remains current and immutable, and M04/M08 readiness remains unchanged.",
+        "No worker commit, production or test edit, request application, Lean build, delivery, integration, or `C0005` checkpoint exists.",
+        "serialize under `Local\\lean-reorganization-2026-08`",
+        "Both workers remain frozen until the activation-control commit itself passes exact Lean CI, including its exact `build` job.",
+        "does not begin R04 or R08 implementation.",
+    )
+    for fragment in required_fragments:
+        problems.require(
+            fragment in text,
+            f"{context}.claims",
+            f"activation review is missing exact fact {fragment!r}",
         )
 
 
@@ -2946,7 +3247,7 @@ class CompletionValidator:
         self.validate_next_wave_controls()
         self.validate_r03_epoch()
         self.validate_r05_r06_epoch()
-        self.validate_r04_r08_planned_epoch()
+        self.validate_r04_r08_epoch()
         self.validate_milestone_dag()
         return self.problems
 
@@ -7814,31 +8115,109 @@ class CompletionValidator:
                 )
         return matches[0]
 
-    def validate_r04_r08_planned_epoch(self) -> None:
-        """Ratchet the exact-C0004 R04/R08 packet without activating workers."""
+    def validate_r04_r08_epoch(self) -> None:
+        """Ratchet the exact-C0004 R04/R08 packet through synchronized activation."""
 
-        context = "C0004-rooted R04/R08 planned epoch"
+        context = "C0004-rooted R04/R08 planned/active epoch"
         self.problems.require(
             self.current_checkpoint_id == C0004_CHECKPOINT_ID,
             context,
-            "planned R04/R08 controls require current checkpoint C0004",
+            "R04/R08 controls require current checkpoint C0004",
+        )
+        planned_ancestor = self.git(
+            "merge-base",
+            "--is-ancestor",
+            C0005_PLANNED_CONTROL_SHA,
+            "HEAD",
+            check=False,
+        )
+        self.problems.require(
+            planned_ancestor.returncode == 0,
+            f"{context}.planned control",
+            f"exact planned-control commit {C0005_PLANNED_CONTROL_SHA} must be an ancestor of HEAD",
+        )
+        planned_parent = self.git(
+            "rev-parse", f"{C0005_PLANNED_CONTROL_SHA}^", check=False
+        )
+        self.problems.require(
+            planned_parent.returncode == 0
+            and planned_parent.stdout.strip() == C0005_PLANNED_CONTROL_PARENT_SHA,
+            f"{context}.planned control",
+            "planned-control commit must retain its exact reviewed parent",
         )
         production_diff = self.git(
             "diff",
             "--name-only",
-            C0005_PLANNED_CONTROL_PARENT_SHA,
-            "HEAD",
+            C0004_CODE_SHA,
             "--",
             "NumStability",
+            "NumStability.lean",
             "NumStabilityTest",
+            "NumStabilityTest.lean",
             "benchmark-results",
             check=False,
         )
         self.problems.require(
             production_diff.returncode == 0 and not production_diff.stdout.strip(),
             context,
-            "planned-control range must not change production, tests, or benchmark evidence",
+            "C0004-to-live control state must not change production, tests, or benchmark evidence",
         )
+
+        activation_path = self.root / C0005_ACTIVATION_REVIEW_PATH
+        branch_records: dict[str, dict[str, Any]] = {}
+        statuses: dict[str, Any] = {}
+        for wave, facts in C0005_BRANCH_FACTS.items():
+            branch_path = self.phase_dir / f"branches/{facts['branch_id']}.json"
+            branch = self.read_json(branch_path, self.relative(branch_path))
+            if branch is not None:
+                branch_records[wave] = branch
+                statuses[wave] = branch.get("status")
+            else:
+                statuses[wave] = None
+            historical = self.git_bytes(
+                "show",
+                f"{C0005_PLANNED_CONTROL_SHA}:{self.relative(branch_path)}",
+                check=False,
+            )
+            historical_digest = (
+                hashlib.sha256(historical.stdout).hexdigest().upper()
+                if historical.returncode == 0
+                else None
+            )
+            self.problems.require(
+                historical_digest == facts["planned_record_sha256"],
+                f"{context}[{facts['branch_id']}].historical planned record",
+                "planned-control history must retain exact branch-record SHA-256 "
+                f"{facts['planned_record_sha256']}",
+            )
+        c0005_exists = bool(list((self.phase_dir / "checkpoints").glob("C0005*")))
+        state = validate_c0005_epoch_state(
+            statuses,
+            activation_review_exists=activation_path.is_file(),
+            c0005_exists=c0005_exists,
+            problems=self.problems,
+            context=context,
+        )
+        if state == "active" and activation_path.is_file():
+            self.problems.require(
+                sha256_path(activation_path) == C0005_ACTIVATION_REVIEW_SHA256,
+                C0005_ACTIVATION_REVIEW_PATH,
+                "activation review must retain exact SHA-256 "
+                f"{C0005_ACTIVATION_REVIEW_SHA256}",
+            )
+            try:
+                activation_text = activation_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeError) as error:
+                self.problems.add(
+                    C0005_ACTIVATION_REVIEW_PATH,
+                    f"cannot read activation review: {error}",
+                )
+            else:
+                validate_c0005_activation_review_text(
+                    activation_text,
+                    self.problems,
+                    context=C0005_ACTIVATION_REVIEW_PATH,
+                )
 
         milestones = self.phase.get("milestones")
         milestone_map = {
@@ -7953,41 +8332,30 @@ class CompletionValidator:
             selected_by_wave[wave] = selected_paths
 
             branch_path = self.phase_dir / f"branches/{branch_id}.json"
-            branch = self.read_json(branch_path, self.relative(branch_path))
+            branch = branch_records.get(wave)
             if branch is None:
                 continue
-            self.problems.require(
-                sha256_path(branch_path) == facts["record_sha256"],
-                self.relative(branch_path),
-                f"planned branch record must hash to {facts['record_sha256']}",
-            )
-            validate_c0005_planned_branch_header(
+            if state in {"planned", "active"}:
+                expected_record_sha256 = facts[f"{state}_record_sha256"]
+                self.problems.require(
+                    sha256_path(branch_path) == expected_record_sha256,
+                    self.relative(branch_path),
+                    f"{state} branch record must hash to {expected_record_sha256}",
+                )
+            validate_c0005_branch_header(
                 branch,
                 wave,
                 facts,
                 self.problems,
+                expected_status=state or "invalid",
                 context=wave_context,
             )
-            self.problems.require(
-                branch.get("delivery")
-                == {"commit_sha": None, "report": None, "scope_evidence": None},
-                f"{wave_context}.delivery",
-                "planning requires a null delivery record",
-            )
-            self.problems.require(
-                branch.get("integration")
-                == {"accepted_checkpoint_id": None, "accepted_sha": None, "method": None},
-                f"{wave_context}.integration",
-                "planning requires a null integration record",
-            )
-            retirement = branch.get("retirement")
-            self.problems.require(
-                isinstance(retirement, dict)
-                and retirement.get("status") == "not_due"
-                and retirement.get("ancestry_checkpoint_id") is None
-                and retirement.get("retired_at") is None,
-                f"{wave_context}.retirement",
-                "planned branches must not be retired",
+            validate_c0005_branch_lifecycle(
+                branch,
+                facts,
+                state or "invalid",
+                self.problems,
+                context=wave_context,
             )
 
             owned = branch.get("owned_paths")
@@ -8252,22 +8620,25 @@ class CompletionValidator:
                     "R08 Algorithms plan must contain exactly 42 deletions",
                 )
 
-            for ref in (
-                f"refs/heads/{facts['branch_name']}",
-                f"refs/remotes/origin/{facts['branch_name']}",
-            ):
-                present = self.git("show-ref", "--verify", "--quiet", ref, check=False)
+            if state == "planned":
+                for ref in (
+                    facts["remote_ref"],
+                    f"refs/remotes/origin/{facts['branch_name']}",
+                ):
+                    present = self.git("show-ref", "--verify", "--quiet", ref, check=False)
+                    self.problems.require(
+                        present.returncode != 0,
+                        f"{wave_context}.ref",
+                        f"planned control must not create {ref}",
+                    )
+                worktrees = self.git("worktree", "list", "--porcelain", check=False)
                 self.problems.require(
-                    present.returncode != 0,
-                    f"{wave_context}.ref",
-                    f"planned control must not create {ref}",
+                    facts["branch_name"] not in worktrees.stdout
+                    and facts["planned_worktree"] not in worktrees.stdout
+                    and not Path(facts["planned_worktree"]).exists(),
+                    f"{wave_context}.worktree",
+                    "planned control must not create the worker branch or named worktree",
                 )
-            worktrees = self.git("worktree", "list", "--porcelain", check=False)
-            self.problems.require(
-                facts["branch_name"] not in worktrees.stdout,
-                f"{wave_context}.worktree",
-                "planned control must not create a worker worktree",
-            )
 
             projection_id = facts["projection_id"]
             projection_facts = C0005_PROJECTION_FACTS[projection_id]
@@ -8353,6 +8724,7 @@ class CompletionValidator:
 
         request_paths: dict[str, set[str]] = {}
         request_postimages: dict[str, dict[str, str]] = {}
+        request_records: dict[str, dict[str, Any]] = {}
         for request_id in ("R0009", "R0010"):
             facts = C0005_REQUEST_FACTS[request_id]
             request_context = f"{context}[{request_id}]"
@@ -8372,6 +8744,7 @@ class CompletionValidator:
                 )
             if record is None:
                 continue
+            request_records[request_id] = record
             paths = record.get("paths")
             path_set = set(paths) if isinstance(paths, list) else set()
             request_paths[request_id] = path_set
@@ -8455,6 +8828,20 @@ class CompletionValidator:
         r0010 = request_paths.get("R0010", set())
         union_paths = r0009 | r0010
         intersection = r0009 & r0010
+        request_diff = self.git(
+            "diff",
+            "--name-only",
+            C0005_PLANNED_CONTROL_SHA,
+            "--",
+            *sorted(union_paths),
+            check=False,
+        )
+        validate_c0005_request_activation_state(
+            request_records,
+            request_diff.returncode == 0 and not request_diff.stdout.strip(),
+            self.problems,
+            context=f"{context}.request state",
+        )
         self.problems.require(
             intersection == C0005_REQUEST_INTERSECTION
             and len(union_paths) == C0005_REQUEST_FACTS["union"]["count"]
@@ -8567,13 +8954,6 @@ class CompletionValidator:
                 self.relative(path),
                 f"planned review must hash to {digest}",
             )
-        self.problems.require(
-            not (self.phase_dir / "reviews/R04-R08-activation.md").exists()
-            and not list((self.phase_dir / "checkpoints").glob("C0005*")),
-            context,
-            "planning must not create an activation review or C0005 checkpoint",
-        )
-
     def validate_r05_r06_epoch(self) -> None:
         """Ratchet the C0003-rooted R05/R06 pair through C0004 acceptance."""
 
@@ -11115,63 +11495,321 @@ def run_self_test() -> int:
         and C0005_BRANCH_FACTS["R04"]["route_count"] == 289
         and C0005_BRANCH_FACTS["R08"]["route_count"] == 211
         and C0005_REQUEST_FACTS["union"]["count"] == 37
-        and len(C0005_REQUEST_INTERSECTION) == 5,
+        and len(C0005_REQUEST_INTERSECTION) == 5
+        and SHA1_RE.fullmatch(C0005_PLANNED_CONTROL_SHA) is not None
+        and C0005_PLANNED_CONTROL_CI_RUN.isdecimal()
+        and C0005_PLANNED_CONTROL_CI_JOB.isdecimal()
+        and SHA256_RE.fullmatch(C0005_ACTIVATION_REVIEW_SHA256) is not None
+        and all(
+            SHA256_RE.fullmatch(facts["planned_record_sha256"]) is not None
+            and SHA256_RE.fullmatch(facts["active_record_sha256"]) is not None
+            and facts["planned_record_sha256"] != facts["active_record_sha256"]
+            for facts in C0005_BRANCH_FACTS.values()
+        ),
         "self-test C0005 constants",
-        "planned R04/R08 exact constants drifted",
+        "planned/active R04/R08 exact constants drifted",
     )
-    for wave, facts in C0005_BRANCH_FACTS.items():
-        fixture = {
-            "schema_version": 1,
-            "record_kind": "phase_branch",
-            "phase_id": PHASE_ID,
-            "branch_id": facts["branch_id"],
-            "wave_id": wave,
-            "branch_name": facts["branch_name"],
-            "lane_id": "claude-lane",
-            "owner_id": "primary-human",
-            "operator_ids": facts["operators"],
-            "base_checkpoint_id": C0004_CHECKPOINT_ID,
-            "base_sha": C0004_CODE_SHA,
-            "baseline_projection_id": facts["projection_id"],
-            "shared_request_ids": [facts["request_id"]],
-            "status": "planned",
-        }
-        positive = Problems()
-        validate_c0005_planned_branch_header(
-            fixture, wave, facts, positive, context=f"self-test {wave}"
+    for state in ("planned", "active"):
+        epoch_positive = Problems()
+        returned_state = validate_c0005_epoch_state(
+            {"R04": state, "R08": state},
+            activation_review_exists=state == "active",
+            c0005_exists=False,
+            problems=epoch_positive,
+            context=f"self-test C0005 {state} epoch",
         )
         problems.require(
-            not positive.messages,
-            f"self-test {wave} planned header positive",
-            f"valid planned header rejected: {positive.messages}",
+            returned_state == state and not epoch_positive.messages,
+            f"self-test C0005 {state} epoch positive",
+            f"valid synchronous state rejected: {epoch_positive.messages}",
         )
-        mutations = {
-            "wrong base": {**fixture, "base_sha": "0" * 40},
-            "wrong checkpoint": {**fixture, "base_checkpoint_id": "C0005"},
-            "premature activation": {**fixture, "status": "active"},
-            "wrong operator vector": {
-                **fixture,
-                "operator_ids": (
-                    ["claude-local"]
-                    if wave == "R04"
-                    else ["claude-local", "codex-local"]
-                ),
-            },
-        }
-        for label, mutated in mutations.items():
-            negative = Problems()
-            validate_c0005_planned_branch_header(
-                mutated,
+        for wave, facts in C0005_BRANCH_FACTS.items():
+            activation_evidence = (
+                []
+                if state == "planned"
+                else [
+                    {
+                        "path": C0005_ACTIVATION_REVIEW_PATH,
+                        "sha256": C0005_ACTIVATION_REVIEW_SHA256,
+                    }
+                ]
+            )
+            fixture = {
+                "schema_version": 1,
+                "record_kind": "phase_branch",
+                "phase_id": PHASE_ID,
+                "branch_id": facts["branch_id"],
+                "wave_id": wave,
+                "branch_name": facts["branch_name"],
+                "lane_id": "claude-lane",
+                "owner_id": "primary-human",
+                "operator_ids": facts["operators"],
+                "base_checkpoint_id": C0004_CHECKPOINT_ID,
+                "base_sha": C0004_CODE_SHA,
+                "baseline_projection_id": facts["projection_id"],
+                "shared_request_ids": [facts["request_id"]],
+                "status": state,
+                "refresh": {
+                    "decision": "current",
+                    "evidence": activation_evidence,
+                    "reviewed_checkpoint_id": C0004_CHECKPOINT_ID,
+                },
+                "delivery": {
+                    "commit_sha": None,
+                    "report": None,
+                    "scope_evidence": None,
+                },
+                "integration": {
+                    "accepted_checkpoint_id": None,
+                    "accepted_sha": None,
+                    "method": None,
+                },
+                "retirement": {
+                    "ancestry_checkpoint_id": None,
+                    "remote_ref": facts["remote_ref"],
+                    "retired_at": None,
+                    "retired_by": None,
+                    "rule": "delivery_ancestor_of_green_checkpoint",
+                    "status": "not_due",
+                },
+            }
+            positive = Problems()
+            validate_c0005_branch_header(
+                fixture,
                 wave,
                 facts,
-                negative,
-                context=f"self-test {wave} {label}",
+                positive,
+                expected_status=state,
+                context=f"self-test {wave} {state}",
+            )
+            validate_c0005_branch_lifecycle(
+                fixture,
+                facts,
+                state,
+                positive,
+                context=f"self-test {wave} {state}",
             )
             problems.require(
-                bool(negative.messages),
-                f"self-test {wave} {label}",
-                "adversarial planned-branch mutation was not rejected",
+                not positive.messages,
+                f"self-test {wave} {state} positive",
+                f"valid {state} branch rejected: {positive.messages}",
             )
+            mutations = {
+                "wrong base": {**fixture, "base_sha": "0" * 40},
+                "wrong checkpoint": {**fixture, "base_checkpoint_id": "C0005"},
+                "wrong operator vector": {
+                    **fixture,
+                    "operator_ids": (
+                        ["claude-local"]
+                        if wave == "R04"
+                        else ["claude-local", "codex-local"]
+                    ),
+                },
+                "wrong remote ref": {
+                    **fixture,
+                    "retirement": {**fixture["retirement"], "remote_ref": "refs/heads/wrong"},
+                },
+                "premature delivery": {
+                    **fixture,
+                    "delivery": {**fixture["delivery"], "commit_sha": "0" * 40},
+                },
+                "premature integration": {
+                    **fixture,
+                    "integration": {**fixture["integration"], "method": "merge"},
+                },
+            }
+            if state == "active":
+                mutations["stale activation evidence"] = {
+                    **fixture,
+                    "refresh": {
+                        **fixture["refresh"],
+                        "evidence": [
+                            {
+                                "path": C0005_ACTIVATION_REVIEW_PATH,
+                                "sha256": "0" * 64,
+                            }
+                        ],
+                    },
+                }
+                mutations["missing activation evidence"] = {
+                    **fixture,
+                    "refresh": {**fixture["refresh"], "evidence": []},
+                }
+            for label, mutated in mutations.items():
+                negative = Problems()
+                validate_c0005_branch_header(
+                    mutated,
+                    wave,
+                    facts,
+                    negative,
+                    expected_status=state,
+                    context=f"self-test {wave} {state} {label}",
+                )
+                validate_c0005_branch_lifecycle(
+                    mutated,
+                    facts,
+                    state,
+                    negative,
+                    context=f"self-test {wave} {state} {label}",
+                )
+                problems.require(
+                    bool(negative.messages),
+                    f"self-test {wave} {state} {label}",
+                    "adversarial planned/active branch mutation was not rejected",
+                )
+
+    for label, statuses, review_exists, c0005_exists in (
+        ("mixed status", {"R04": "planned", "R08": "active"}, True, False),
+        ("planned activation review", {"R04": "planned", "R08": "planned"}, True, False),
+        ("active missing review", {"R04": "active", "R08": "active"}, False, False),
+        ("planned C0005", {"R04": "planned", "R08": "planned"}, False, True),
+        ("active C0005", {"R04": "active", "R08": "active"}, True, True),
+    ):
+        negative = Problems()
+        validate_c0005_epoch_state(
+            statuses,
+            activation_review_exists=review_exists,
+            c0005_exists=c0005_exists,
+            problems=negative,
+            context=f"self-test C0005 {label}",
+        )
+        problems.require(
+            bool(negative.messages),
+            f"self-test C0005 {label}",
+            "adversarial pair-state mutation was not rejected",
+        )
+
+    resolution = {
+        "checkpoint_id": None,
+        "commit_sha": None,
+        "reason": None,
+        "resolved_at": None,
+        "resolved_by": None,
+        "validation_evidence": [],
+    }
+    request_fixture = {
+        "R0009": {"status": "active", "resolution": resolution},
+        "R0010": {"status": "active", "resolution": resolution},
+    }
+    request_positive = Problems()
+    validate_c0005_request_activation_state(
+        request_fixture,
+        True,
+        request_positive,
+        context="self-test C0005 request state",
+    )
+    problems.require(
+        not request_positive.messages,
+        "self-test C0005 request state positive",
+        f"valid unapplied requests rejected: {request_positive.messages}",
+    )
+    for label, records, paths_match in (
+        (
+            "premature request resolution",
+            {
+                **request_fixture,
+                "R0009": {
+                    "status": "applied",
+                    "resolution": {**resolution, "commit_sha": C0004_CODE_SHA},
+                },
+            },
+            True,
+        ),
+        ("premature request application", request_fixture, False),
+    ):
+        negative = Problems()
+        validate_c0005_request_activation_state(
+            records,
+            paths_match,
+            negative,
+            context=f"self-test C0005 {label}",
+        )
+        problems.require(
+            bool(negative.messages),
+            f"self-test C0005 {label}",
+            "premature request mutation was not rejected",
+        )
+
+    review_rows = "\n".join(
+        (
+            f"| `{facts['branch_id']}` | `{wave}` | {facts['assignment']} | "
+            f"`{facts['branch_name']}` | `{C0004_CODE_SHA}` | `{facts['remote_ref']}` | "
+            f"`{C0004_CODE_SHA}` | `{facts['planned_worktree']}` | `{C0004_CODE_SHA}` | "
+            f"`claude-lane` | `{json.dumps(facts['operators'])}` | "
+            f"`{facts['implementation_operator']}` |"
+        )
+        for wave, facts in C0005_BRANCH_FACTS.items()
+    )
+    review_mappings = "\n".join(
+        f"- `{facts['remote_ref']}:{facts['remote_ref']}`"
+        for facts in C0005_BRANCH_FACTS.values()
+    )
+    review_leases = "\n".join(
+        f"- `--force-with-lease={facts['remote_ref']}:`"
+        for facts in C0005_BRANCH_FACTS.values()
+    )
+    activation_review_fixture = f"""# R04/R08 successor-pair activation
+
+- Activation time (RFC3339 UTC): `2026-08-17T13:18:09Z`.
+- Activation authority: `primary-human`, exercising the authorized branch-registry, new-ref, named-worktree, activation-control, main commit/push, and CI-monitoring controls.
+- Planned-control commit: `{C0005_PLANNED_CONTROL_SHA}`.
+- Planned-control Lean CI: run `{C0005_PLANNED_CONTROL_CI_RUN}`, build job `{C0005_PLANNED_CONTROL_CI_JOB}`, exact head `{C0005_PLANNED_CONTROL_SHA}`, conclusion `success`.
+- Immutable worker base: checkpoint `{C0004_CHECKPOINT_ID}`, commit `{C0004_CODE_SHA}`.
+- C0004 raw dependency graph SHA-256: `{C0004_RAW_DEPENDENCY_TSV_SHA256}`.
+
+{review_rows}
+
+Both local branches were created explicitly at exact C0004, never at the planned-control commit. Both remote refs were created in one atomic push with these explicit mappings:
+{review_mappings}
+The atomic push used explicit nonexistent-tip leases for both new refs:
+{review_leases}
+The remote tips were independently re-read after creation and both equal exact C0004.
+
+Each named worktree has worktree-scoped `core.autocrlf=false`, `core.eol=lf`, and `core.safecrlf=false`. Each has empty tracked and untracked status and zero tracked `w/crlf` entries. No implementation or build state exists in either worktree.
+
+`P0008` and `P0009` remain active and unchanged. `R0009` and `R0010` remain active and unchanged, with null resolutions. Their reviewed 37-path common-base union remains integrator-only and unapplied.
+
+`phase.json` remains byte-identical at SHA-256 `{C0005_PLANNED_PHASE_SHA256}`. C0004 remains current and immutable, and M04/M08 readiness remains unchanged. No worker commit, production or test edit, request application, Lean build, delivery, integration, or `C0005` checkpoint exists.
+
+All future Lean operations serialize under `Local\\lean-reorganization-2026-08`. Both workers remain frozen until the activation-control commit itself passes exact Lean CI, including its exact `build` job. This activation turn does not begin R04 or R08 implementation.
+"""
+    review_positive = Problems()
+    validate_c0005_activation_review_text(
+        activation_review_fixture,
+        review_positive,
+        context="self-test C0005 activation review",
+    )
+    problems.require(
+        not review_positive.messages,
+        "self-test C0005 activation review positive",
+        f"valid activation review rejected: {review_positive.messages}",
+    )
+    review_mutations = {
+        "wrong CI": activation_review_fixture.replace(C0005_PLANNED_CONTROL_CI_JOB, "0", 1),
+        "wrong ref": activation_review_fixture.replace(
+            C0005_BRANCH_FACTS["R04"]["remote_ref"], "refs/heads/wrong", 1
+        ),
+        "wrong worktree": activation_review_fixture.replace(
+            C0005_BRANCH_FACTS["R08"]["planned_worktree"], r"C:\wrong", 1
+        ),
+        "wrong operator": activation_review_fixture.replace(
+            json.dumps(C0005_BRANCH_FACTS["R04"]["operators"]),
+            json.dumps(["claude-local"]),
+            1,
+        ),
+    }
+    for label, mutated in review_mutations.items():
+        negative = Problems()
+        validate_c0005_activation_review_text(
+            mutated,
+            negative,
+            context=f"self-test C0005 activation review {label}",
+        )
+        problems.require(
+            bool(negative.messages),
+            f"self-test C0005 activation review {label}",
+            "adversarial activation-review mutation was not rejected",
+        )
     replay_positive = Problems()
     problems.require(
         validate_reconstructed_r03_tree(
@@ -12760,8 +13398,10 @@ No implementation began before activation-control CI. The worker remains frozen 
         "delivery, artifact, branch-evidence, predecessor-chain, and premature-applied "
         "mutations rejected; plus exact C0004 accepted/applied and retired R05/R06/R0008 "
         "states with integration, retirement, projection, request, resolution, and refreshed-"
-        "evidence mutations rejected; plus exact C0004-rooted B0008/B0009 planned headers "
-        "with wrong-base, checkpoint, operator, and premature-activation mutations rejected"
+        "evidence mutations rejected; plus exact C0004-rooted B0008/B0009 synchronous "
+        "planned/active states, activation review, historical/live hashes, and wrong-base, "
+        "checkpoint, ref, worktree, operator, CI, evidence, lifecycle, request-application, "
+        "mixed-state, and premature-C0005 mutations rejected"
     )
     return 0
 
@@ -12808,8 +13448,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         "the C0003-rooted R05/R06 pair epoch through C0004 acceptance/retirement, the "
         "five-artifact R0008 amendment through exact application, its four-path predecessor "
         "SHA chain, and the C0004 61-union/27-amendment terminal postimage ratchet; plus "
-        "the exact-C0004 planned B0008/P0008/R0009 and B0009/P0009/R0010 pair, "
-        "its reviewed 37-path common-base union, and the no-ref/no-worktree activation gate"
+        "the exact-C0004 planned/active B0008/P0008/R0009 and B0009/P0009/R0010 pair, "
+        "its reviewed unapplied 37-path common-base union, planned ref/worktree absence, "
+        "and hash-pinned active external activation facts"
     )
     return 0
 

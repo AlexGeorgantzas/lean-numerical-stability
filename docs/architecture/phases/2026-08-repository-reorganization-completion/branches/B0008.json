@@ -11380,6 +11380,10 @@
     "sha256": "5B4A232A6141AE456C2FA043AA5EA75C86DCD38203B5DF677D0A6E7D44F0BAD8"
    },
    {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R04-R08-activation.md",
+    "sha256": "1F4D2B8B585C9D8D919F5CCBA71FD6AB748D0D4CA859B65E133B51048ACE72FB"
+   },
+   {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R04-R08-operator-authorization.md",
     "sha256": "C87C4D75F7A65168ADC976A1B9EE908EBDB1D9264A13A49730C24BBFC13109B1"
    },
@@ -11406,6 +11410,6 @@
  "shared_request_ids": [
   "R0009"
  ],
- "status": "planned",
+ "status": "active",
  "wave_id": "R04"
 }
