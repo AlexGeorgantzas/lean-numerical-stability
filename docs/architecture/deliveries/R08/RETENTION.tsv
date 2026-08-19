@@ -1,0 +1,46 @@
+module	role	note
+NumStability.Algorithms.Ch14BlockTriInverse	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14Cor147SourceDomainConstructor	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14Corollary146Closure	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14Corollary146Concrete	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14Corollary146SourceClosure	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14Corollary147	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14Corollary147Closure	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14Corollary147Concrete	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14GJEActualDoolittleAdapter	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14GJEOperationalBridge	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14GJESourceAccumulationBridge	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14GaussJordanAccumulation	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14GaussJordanQConstruction	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14GaussJordanSPDCorollary	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14GaussJordanSourceClosure	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14GaussJordanStep	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14Method2Loop	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14MethodDLeftResidual	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14MethodDProductDischarge	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14MethodDUpperCertificate	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14MethodsBC	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14ProductErrorNotation	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.GaussJordanPivoting	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.MatrixInversionMethod2BInstance	compatibility-shim	pre-existing empty shim; inert open lines removed, 121 frozen imports preserved
+NumStability.Algorithms.Ch14AsymptoticFamilies	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14Cor146UniformInverseBridge	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14Cor147FinalDivisionFamilyClosure	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14Corollary147SourceClosure	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14Corollary147WeakFamily	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14ForwardErrorEndpoint	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14GJEAsymptoticFamilies	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14GJEFinalDivisionClosure	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14GJEPrintedEnvelopeClosure	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14GJETheorem145SourceClosure	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14Method1BWhole	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14Method2C	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14Method2CWhole	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14Problem142	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14Problem142Families	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.Ch14Problem142Method2B	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.GaussJordan	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Algorithms.MatrixInversion	compatibility-shim(new)	evacuated this wave; original imports frozen plus one destination import
+NumStability.Source.Higham.Chapter14.Problem13	aggregate	declaration-free source aggregate; imports its new canonical child
+NumStability.Source.Higham.Chapter14.Problem14	aggregate	declaration-free source aggregate; imports its new canonical child
+NumStability.Source.Higham.Chapter14.Problem15	aggregate	declaration-free source aggregate; imports its new canonical child

@@ -1,0 +1,10 @@
+destination_module	private_declarations	indivisible	note
+NumStability.Source.Higham.Chapter14.Problem02.TriangularInversion.TwoBlockFirstOrder.Derivations	2	yes	authored-private reverse closure kept whole; whole-owner routing
+NumStability.Source.Higham.Chapter14.Problem12.ConditionNumberExamples.StressAndPeiMatrices	9	yes	authored-private reverse closure kept whole; whole-owner routing
+NumStability.Source.Higham.Chapter14.Problem15.SingularValueGuards.DeterminantSignAndRelativeBounds	3	yes	authored-private reverse closure kept whole; whole-owner routing
+NumStability.Source.Higham.Chapter14.Section01.InverseErrorAnalysis.ComposedCoefficientFamilies.RemainderAsymptotics	2	yes	authored-private reverse closure kept whole; whole-owner routing
+NumStability.Source.Higham.Chapter14.Section01.InverseErrorAnalysis.ScaledPerturbationEndpoints.ForwardError	5	yes	authored-private reverse closure kept whole; whole-owner routing
+NumStability.Source.Higham.Chapter14.Section02.TriangularInversion.Method1B.BlockResidual.WholeMatrixBounds	3	yes	authored-private reverse closure kept whole; whole-owner routing
+NumStability.Source.Higham.Chapter14.Section02.TriangularInversion.Method2C.BlockResidual.LeftResidualBounds	3	yes	authored-private reverse closure kept whole; whole-owner routing
+NumStability.Source.Higham.Chapter14.Theorem05.EliminationFamilies.CoefficientAsymptotics	14	yes	authored-private reverse closure kept whole; whole-owner routing
+NumStability.Source.Higham.Chapter14.Theorem05.PrintedEnvelopes.CorrectionBounds	7	yes	authored-private reverse closure kept whole; whole-owner routing

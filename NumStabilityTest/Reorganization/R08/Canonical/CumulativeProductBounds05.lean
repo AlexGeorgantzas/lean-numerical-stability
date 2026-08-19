@@ -1,0 +1,16 @@
+import NumStability.Source.Higham.Chapter14.Corollary07.RowDominantCertificates.CumulativeProductBounds
+
+/-!
+# CumulativeProductBounds canonical-only test
+
+Imports exactly one canonical module, so no sibling import can supply the
+declarations checked below. They moved here from
+`NumStability.Algorithms.GaussJordan`
+during wave R08 and must resolve from this destination alone.
+-/
+#check @NumStability.gje_rowDiagDominantUpper_forward_error_relative_infNorm_kappaInf_of_cumulative_product_certificates_c3_cap
+#check @NumStability.gje_rowDiagDominantUpper_forward_error_relative_infNorm_kappaInf_rowsum_of_cumulative_product_certificates_c3_cap
+#check @NumStability.gje_rowDiagDominantUpper_forward_error_relative_infNorm_of_cumulative_product_certificates_c3_cap
+#check @NumStability.gje_rowDiagDominantUpper_residual_of_cumulative_product_certificates
+#check @NumStability.gje_rowDiagDominantUpper_residual_relative_infNorm_of_cumulative_product_certificates_c3_cap
+#check @NumStability.gje_rowDiagDominantUpper_residual_relative_infNorm_rowsum_of_cumulative_product_certificates_c3_cap

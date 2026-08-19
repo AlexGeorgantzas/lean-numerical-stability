@@ -1,0 +1,29 @@
+import NumStability.Algorithms.Ch14Corollary147SourceClosure
+
+/-!
+# Ch14Corollary147SourceClosure old-path-only test
+
+Imports only the historical path. Every declaration checked below is part of
+the residual C0004 surface that wave R08 relocated to
+`NumStability.Source.Higham.Chapter14.Corollary07.PrintedTraceFamilies.ResidualAndForwardEndpoints`,
+so this compiles only if the compatibility module still re-exports it
+under its original name.
+-/
+#check @NumStability.Ch14Ext.ch14ext_cor147SourceForwardPrintedRemainder_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147SourceForwardRelativeRemainder_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147SourceForwardVectorRemainder_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147SourceResidualLeadingCorrection_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147SourceResidualRemainder_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_factorProximity_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_forwardCore_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_forwardT1_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_forwardT2_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_forward_14_32_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_forward_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_printedResidualLeading_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_printedX_difference_isBigO
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_residual_14_31_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_residual_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_cor147Source_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_luBackward_factorProximity_isBigO
+#check @NumStability.Ch14Ext.ch14ext_luBackward_productResidual_isBigO

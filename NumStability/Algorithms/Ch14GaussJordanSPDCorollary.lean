@@ -13,7 +13,3 @@ modules imported above. The module's own original imports are
 re-stated so consumers reaching an identifier transitively through
 this path still see the same surface.
 -/
-
-open scoped BigOperators
-open scoped Matrix.Norms.L2Operator
-open NumStability

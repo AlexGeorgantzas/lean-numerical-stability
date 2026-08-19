@@ -1,0 +1,25 @@
+import NumStability.Source.Higham.Chapter14.Theorem05.PrintedEnvelopes.CorrectionBounds
+
+/-!
+# CorrectionBounds canonical-only test
+
+Imports exactly one canonical module, so no sibling import can supply the
+declarations checked below. They moved here from
+`NumStability.Algorithms.Ch14GJEPrintedEnvelopeClosure`
+during wave R08 and must resolve from this destination alone.
+-/
+#check @NumStability.Ch14Ext.ch14ext_gje1430bPrintedRemainder_isBigO_unit_sq
+#check @NumStability.Ch14Ext.ch14ext_gje1430cPrintedRemainder_isBigO_unit_sq
+#check @NumStability.Ch14Ext.ch14ext_gje1431EnvelopeCorrectionAction_isBigOOne
+#check @NumStability.Ch14Ext.ch14ext_gje1431PrintedRemainder_isBigO_unit_sq
+#check @NumStability.Ch14Ext.ch14ext_gjeConcreteFamilyPabs_isBigOOne
+#check @NumStability.Ch14Ext.ch14ext_gjeConcreteFamilyPabs_le_Xabs
+#check @NumStability.Ch14Ext.ch14ext_gjeConcretePrintedEnvelopeFamily
+#check @NumStability.Ch14Ext.ch14ext_gjeConcrete_14_30bc_printed_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_gjeConcrete_14_31_printed_vanishing_family_endpoint
+#check @NumStability.Ch14Ext.ch14ext_gjeConcrete_constructedQ_diag_one
+#check @NumStability.Ch14Ext.ch14ext_gjeExactQPEnvelope_le_printed_add_correction
+#check @NumStability.Ch14Ext.ch14ext_gjeExactQPEnvelope_matMulVec_le_printed_add_correction
+#check @NumStability.Ch14Ext.ch14ext_gjeExactQPEnvelope_matMul_le_printed_add_correction
+#check @NumStability.Ch14Ext.ch14ext_gjePrintedEnvelopeCorrection_isBigOOne
+#check @NumStability.Ch14Ext.ch14ext_gjeResidualS2_le_1431PrintedLeading_add_correction
