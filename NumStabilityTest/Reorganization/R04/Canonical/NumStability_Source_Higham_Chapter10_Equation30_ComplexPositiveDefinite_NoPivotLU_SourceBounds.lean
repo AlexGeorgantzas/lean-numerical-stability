@@ -1,0 +1,25 @@
+import NumStability.Source.Higham.Chapter10.Equation30.ComplexPositiveDefinite.NoPivotLU.SourceBounds
+
+/-!
+# SourceBounds canonical-only test (R04)
+
+Imports exactly one canonical module, so no sibling import can supply the
+declarations checked below; they must resolve from this destination alone.
+-/
+#check @NumStability.higham10_30_SourceGETrace
+#check @NumStability.higham10_30_SourceSchurDiagonalRep
+#check @NumStability.higham10_30_SourceUpperEntryRep
+#check @NumStability.higham10_30_complexPositiveDefinite_GE_backward_error_source
+#check @NumStability.higham10_30_complexPositiveDefinite_exists_noPivotLU
+#check @NumStability.higham10_30_complexPositiveDefinite_exists_noPivotLU_growth_lt_three
+#check @NumStability.higham10_30_complexPositiveDefinite_growth_lt_three
+#check @NumStability.higham10_30_complexPositiveDefinite_sourceGETrace
+#check @NumStability.higham10_30_complexQuadForm_im
+#check @NumStability.higham10_30_complexQuadForm_re
+#check @NumStability.higham10_30_complex_entry_norm_le_max_diagonal
+#check @NumStability.higham10_30_det_ne_zero_of_real_spd
+#check @NumStability.higham10_30_leadingComplexBlock_det_ne_zero
+#check @NumStability.higham10_30_leadingRealBlock_spd
+#check @NumStability.higham10_30_literalComplexGE_gamma_n_certificate_source_discrepancy
+#check @NumStability.higham10_30_source_schur_diagonal_growth_sq_lt_nine
+#check @NumStability.higham10_30_source_schur_diagonal_norm_lt_three
