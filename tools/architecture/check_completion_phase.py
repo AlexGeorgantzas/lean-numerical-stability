@@ -345,7 +345,7 @@ C0005_ACTIVATION_REVIEW_PATH = (
     "reviews/R04-R08-activation.md"
 )
 C0005_ACTIVATION_REVIEW_SHA256 = (
-    "1F4D2B8B585C9D8D919F5CCBA71FD6AB748D0D4CA859B65E133B51048ACE72FB"
+    "8BEEF2BD2B24FA311EF8EB57AC6F87B73BBDC8780C2365966142508F45F9C8D7"
 )
 C0005_REQUEST_INTERSECTION = frozenset(
     {
@@ -368,9 +368,9 @@ C0005_BRANCH_FACTS = {
         "remote_ref": "refs/heads/codex/reorg-completion-2026-08-r04-cholesky-higham-ch10",
         "planned_worktree": r"C:\Users\qed_s\higham-worktrees\completion-r04-codex",
         "assignment": "Codex",
-        "implementation_operator": "codex-local",
+        "implementation_operator": "claude-local",
         "planned_record_sha256": "CE8FCEB5B26821077A112E3192517CBE7E641A2EA364C1815C0A596D216DC90F",
-        "active_record_sha256": "11225E2B244BF0ACE820E1D7E165DEFAB3368EDAAE9D48EB34DE189AFC27AE2E",
+        "active_record_sha256": "137F39C642FEFD7BB19D64E9E27C2D6449C32C4E801FEEEBFA1CE7026725727B",
         "operators": ["claude-local", "codex-local"],
         "selector_count": 19,
         "route_count": 289,
@@ -420,7 +420,7 @@ C0005_BRANCH_FACTS = {
         "assignment": "Claude exclusively",
         "implementation_operator": "claude-local",
         "planned_record_sha256": "81D29E44AA256057F9EBBCA09F1A5185C7FC63DE5973A36C55BACD7896692804",
-        "active_record_sha256": "726D26753D52EEC2971074AA13C433E1F7A67E5201F7C3EF3BB96BCD9094D8E0",
+        "active_record_sha256": "A0230F7F3B2D2E729B8C579B2E0810975C9957C2C1A072798687E1E8676D4A32",
         "operators": ["claude-local"],
         "selector_count": 45,
         "route_count": 211,

@@ -11,7 +11,7 @@
 
 | Branch ID | Wave | Assignment | Branch | Local tip | Remote ref | Remote tip | Named worktree | Worktree HEAD | Lane | Recorded operators | Implementation operator after activation CI |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `B0008` | `R04` | Codex | `codex/reorg-completion-2026-08-r04-cholesky-higham-ch10` | `783ae9a4951407ece046adb8631d5a8ff1795a18` | `refs/heads/codex/reorg-completion-2026-08-r04-cholesky-higham-ch10` | `783ae9a4951407ece046adb8631d5a8ff1795a18` | `C:\Users\qed_s\higham-worktrees\completion-r04-codex` | `783ae9a4951407ece046adb8631d5a8ff1795a18` | `claude-lane` | `["claude-local", "codex-local"]` | `codex-local` |
+| `B0008` | `R04` | Codex | `codex/reorg-completion-2026-08-r04-cholesky-higham-ch10` | `783ae9a4951407ece046adb8631d5a8ff1795a18` | `refs/heads/codex/reorg-completion-2026-08-r04-cholesky-higham-ch10` | `783ae9a4951407ece046adb8631d5a8ff1795a18` | `C:\Users\qed_s\higham-worktrees\completion-r04-codex` | `783ae9a4951407ece046adb8631d5a8ff1795a18` | `claude-lane` | `["claude-local", "codex-local"]` | `claude-local` |
 | `B0009` | `R08` | Claude exclusively | `codex/reorg-completion-2026-08-r08-matrix-inversion-ch14` | `783ae9a4951407ece046adb8631d5a8ff1795a18` | `refs/heads/codex/reorg-completion-2026-08-r08-matrix-inversion-ch14` | `783ae9a4951407ece046adb8631d5a8ff1795a18` | `C:\Users\qed_s\higham-worktrees\completion-r08-claude` | `783ae9a4951407ece046adb8631d5a8ff1795a18` | `claude-lane` | `["claude-local"]` | `claude-local` |
 
 Both local branches were created explicitly at exact C0004, never at the planned-control commit. Both remote refs were created in one atomic push with these explicit mappings:
