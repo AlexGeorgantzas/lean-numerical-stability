@@ -374,6 +374,34 @@ workers remain frozen until this activation-control commit passes its exact
 Lean CI build job; no implementation, delivery, integration, or C0005 has
 begun.
 
+Both successor deliveries now exist on their worker branches, each a single
+commit sole-parented on exact C0004. B0008/R04 was implemented by
+`claude-local` under the reviewed
+[`operator redesignation`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R04-operator-redesignation-amendment.md)
+(control commit `8cbfbe984469024725b5ba8781d8fc3dab0935a4`, Lean CI run
+32235392913) and delivered at `e92d0fa270b1113ea630f41c4c797051e68e5d26`:
+289 declarations routed per the frozen packet (127 whole-owner, 64 split, 61
+umbrella-extract, 37 retained in place), the 115-row private map realized
+(101 renames, 14 identities), 76 branch test modules, full build and
+`lake test` green, and a zero-mismatch P0008 projection replay (289 selected /
+252 relocated declarations, 990 signature and 2,239 body edges). B0009/R08 was
+delivered at `e9a09b17deabe14baaa56036e55eeb6ac67b04fb`: 211 declarations
+routed whole-owner into 21 new Source leaves, the 48-row private map realized
+with zero identities, 79 branch test modules, and a zero-mismatch P0009 replay
+(1,229 signature and 2,886 body edges), after the reviewed Variant A
+import-manifest amendment (29 additions, zero removals) recorded in the branch
+delivery evidence. Each delivery carries its evidence under
+`docs/architecture/deliveries/` on its branch. Integration remains pending:
+the reviewed 37-path R0009/R0010 union is still integrator-only and unapplied;
+one union row (`docs/architecture/MIGRATION.md`) requires the drafted preimage
+re-anchor amendment; two frozen-plan defects await reviewed amendments (the
+`Chapter10.Theorem07` aggregate's manifest-frozen import of the now-historical
+`Algorithms.HighamChapter10`, and the union-registered canonical target
+`Algorithms.ComplexBackwardError` lacking a direct test import); and the
+completion checker's delivered-state ratchet for B0008/B0009 has not been
+authored. No integration commit, C0005 checkpoint, acceptance, or retirement
+exists.
+
 The official C0004 baseline, inventory, and 111-path integration ledger have
 SHA-256 values
 `D3F30A410903B1CA2858951CB26107B94B62630BC424723A0EC9EDF484AEDDDF`,
