@@ -1,0 +1,51 @@
+import NumStability.Algorithms.HighamChapter10
+
+/-!
+# HighamChapter10 old-path-only test (R04)
+
+Imports only the historical path. Every declaration checked below moved to
+a canonical destination during wave R04, so this compiles only if the
+compatibility surface still re-exports it under its original name.
+-/
+#check @NumStability.finiteMaxEigenvalue_leading_principal_le
+#check @NumStability.finiteMinEigenvalue_leading_principal_ge
+#check @NumStability.fl_cholesky_pivots_pos_sharp_certified
+#check @NumStability.higham10_12_w_action_trace_bound
+#check @NumStability.higham10_14_fl_psd_cholesky_backward_error
+#check @NumStability.higham10_18_isPosSemiDef
+#check @NumStability.higham10_18_w_arbitrarily_large
+#check @NumStability.higham10_1_cholesky_existence
+#check @NumStability.higham10_1_cholesky_uniqueness
+#check @NumStability.higham10_21_fl_cholesky_leading_pivots_pos
+#check @NumStability.higham10_21_fl_cholesky_success
+#check @NumStability.higham10_21_stage_border_mass
+#check @NumStability.higham10_21_stage_interior_mass
+#check @NumStability.higham10_29_stage_operator_le
+#check @NumStability.higham10_29_stage_operator_le_exists
+#check @NumStability.higham10_29_stage_quadForm_le
+#check @NumStability.higham10_3_fl_cholesky_backward_error
+#check @NumStability.higham10_3_fl_cholesky_certificate
+#check @NumStability.higham10_4_fl_cholesky_solve_backward_error
+#check @NumStability.higham10_4_nonsym_pd_leading_principal
+#check @NumStability.higham10_5_fl_cholesky_demmel_bound
+#check @NumStability.higham10_7_fl_cholesky_success
+#check @NumStability.higham10_7_fl_cholesky_success_sharp
+#check @NumStability.higham10_7_success_factorization
+#check @NumStability.higham10_7_success_factorization_min_eig
+#check @NumStability.higham10_7_success_factorization_spectral
+#check @NumStability.higham10_9_pivoted_cholesky_unique
+#check @NumStability.higham10_9_psd_cholesky_existence
+#check @NumStability.higham10_9_psd_pivoted_cholesky_rank
+#check @NumStability.higham10_9_psd_pivoted_cholesky_rank_unique
+#check @NumStability.higham10_9_scaled_cond_bound
+#check @NumStability.higham10_9_spd_pivoted_cholesky_full_rank
+#check @NumStability.higham10_9_unit_diag_cond_bound
+#check @NumStability.higham10_9_van_der_sluis
+#check @NumStability.higham10_problem_10_4_first_ge_entry_abs_le_initial_max
+#check @NumStability.higham10_problem_10_4_first_ge_maxEntryNorm_le
+#check @NumStability.higham10_problem_10_4_first_ge_reduced_submatrix_spd
+#check @NumStability.higham10_problem_10_4_unpivoted_ge_positive_pivots_and_growth
+#check @NumStability.kahanR_tail_eq
+#check @NumStability.min_eig_scaled_bordered_floor
+#check @NumStability.stage_interior_mass_from_full
+#check @NumStability.unit_diag_psd_maxEigenvalue_bounds

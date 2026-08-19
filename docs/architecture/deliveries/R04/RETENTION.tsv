@@ -1,0 +1,20 @@
+module	role	note
+NumStability.Algorithms.Ch10ActualSourceClosure	compatibility-shim(new)	original imports frozen per manifest; declarations moved to routed destination(s)
+NumStability.Algorithms.Ch10ComplexPositiveDefiniteSourceClosure	compatibility-shim(new)	original imports frozen per manifest; declarations moved to routed destination(s)
+NumStability.Algorithms.Ch10KahanSharpnessSource	compatibility-shim(new)	original imports frozen per manifest; declarations moved to routed destination(s)
+NumStability.Algorithms.Ch10PivotedPSDSourceClosure	compatibility-shim(new)	original imports frozen per manifest; declarations moved to routed destination(s)
+NumStability.Algorithms.Ch10Theorem108Componentwise	compatibility-shim(new)	original imports frozen per manifest; declarations moved to routed destination(s)
+NumStability.Algorithms.Ch10Theorem108Source	compatibility-shim(new)	original imports frozen per manifest; declarations moved to routed destination(s)
+NumStability.Algorithms.Cholesky.CholeskyDemmel	retained-reusable-owner	untouched; classification/documentation is R0009 integrator work
+NumStability.Algorithms.Cholesky.CholeskyFl	retained-reusable-owner	untouched; classification/documentation is R0009 integrator work
+NumStability.Algorithms.Cholesky.CholeskyNonsym	retained-reusable-owner	untouched; classification/documentation is R0009 integrator work
+NumStability.Algorithms.Cholesky.CholeskyPSD	compatibility-shim(new)	original imports frozen per manifest; declarations moved to routed destination(s)
+NumStability.Algorithms.Cholesky.CholeskySpec	retained-reusable-owner	untouched; classification/documentation is R0009 integrator work
+NumStability.Algorithms.Cholesky.Higham1014Equation1022	compatibility-shim(new)	original imports frozen per manifest; declarations moved to routed destination(s)
+NumStability.Algorithms.Cholesky.Higham1014SourceError	compatibility-shim(new)	original imports frozen per manifest; declarations moved to routed destination(s)
+NumStability.Algorithms.Cholesky.Higham1029Source	compatibility-shim(new)	original imports frozen per manifest; declarations moved to routed destination(s)
+NumStability.Algorithms.Cholesky.HighamMathiasSource	compatibility-shim(new)	original imports frozen per manifest; declarations moved to routed destination(s)
+NumStability.Algorithms.HighamChapter10	compatibility-shim(new)	original imports frozen per manifest; declarations moved to routed destination(s)
+NumStability.Source.Higham.Chapter06.Lemma06	aggregate	declaration-free source aggregate; imports its routed children
+NumStability.Source.Higham.Chapter10.Theorem07	aggregate	declaration-free source aggregate; imports its routed children
+NumStability.Source.Higham.Chapter11.Theorem07	aggregate	declaration-free source aggregate; imports its routed children

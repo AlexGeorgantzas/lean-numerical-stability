@@ -1,0 +1,9 @@
+gate	command	exit	duration_ms	note
+full_build	lake build NumStability NumStabilityTest	0	771663	all 31 destinations + 15 rewritten owners elaborate
+lake_test	lake test	0	128796	-
+r04_tests	lake build <76 R04 test modules>	0	45478	76/76 including the exhaustive private-normalization module
+layout	check_layout.py	1	130311	26 failures, all R0009 integrator hand-offs (see DELIVERY.md)
+compatibility	check_compatibility.py	0	18877	compatibility contract passed: 523 forwarding modules, 1425 canonical targets, 2 retained production-import exceptions
+provenance	check_provenance.py	0	776	provenance contract passed: 137 Apache-marked production files and 5 evidenced upstream modules
+candidate_graph	generate_baseline.py	0	139237	fresh format-2 candidate under the named mutex
+projection_replay	check_completion_phase_projection.py (P0008)	0	3328	zero mismatch; totals in PROJECTION.md
