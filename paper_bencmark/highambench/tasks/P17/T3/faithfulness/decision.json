@@ -1,82 +1,68 @@
 {
-  "accepted": false,
+  "accepted": true,
   "adjudicated": false,
   "adjudication_reasons": [],
-  "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T19:02:31.551973+00:00",
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-20T19:06:51.896956+00:00",
   "findings": [
     {
-      "category": "algorithm-linkage-and-result-identity",
-      "impact": "The proposition does not state the benchmarked recursive-summation theorem.",
-      "lean_evidence": "The target has only an arbitrary finite probability model and an arbitrary expression kappa * (centered omega + bias), with none of the paper's algorithmic quantities.",
-      "paper_evidence": "PDF pages 13-15 define a, y, the SR_{p,r} recurrence, hat y, M, A, and the relative forward error before stating equation (4.11).",
-      "severity": "critical"
+      "category": "axiomatic-generalization",
+      "impact": "The Lean proposition covers the paper execution as a special case and additionally covers other processes, making it stronger rather than different.",
+      "lean_evidence": "P17VarianceRecursiveSumRun records proof-relevant stochastic properties without requiring the rounded values to be adjacent p-bit neighbors with the exact q_r law.",
+      "paper_evidence": "Theorem 4.3 is stated for the exact SR_{p,r} recursive algorithm.",
+      "severity": "note"
     },
     {
-      "category": "random-remainder-replaced-by-fixed-bias",
-      "impact": "The paper's decomposition M + A cannot be mapped to centered omega + bias, so the abstract event does not yield the paper's final error event.",
-      "lean_evidence": "bias is one real number independent of omega, and hbias bounds only |bias|.",
-      "paper_evidence": "Lemma 3.10 and equations (4.8)-(4.10) make B_i and A depend on the rounding errors; A is controlled pathwise but is not a single deterministic scalar.",
-      "severity": "critical"
+      "category": "source-derived-certificates",
+      "impact": "Both fields can be instantiated for every paper execution from the cited source properties; they do not reduce source applicability or assume the final probability event.",
+      "lean_evidence": "D017 stores pairwise product-covariance and coefficient-remainder bounds as run fields.",
+      "paper_evidence": "Lemma 3.10 gives the B_i decomposition and bound, and the proof of Theorem 4.3 invokes the bounded mean-independent product variance estimate in (4.12).",
+      "severity": "note"
     },
     {
-      "category": "constants-indexing-and-error-notion",
-      "impact": "The exact theorem cannot be recovered from the Lean statement even if the generic probability inequality is mathematically valid.",
-      "lean_evidence": "kappa, varianceBudget, and biasRadius are unconstrained independent scalars, and no relative-error numerator or denominator appears.",
-      "paper_evidence": "Equation (4.11) contains kappa(a), gamma_{n-1}(u_p^2), lambda, u_p, u_{p+r}, and the relative error |hat y - y| / |y| with exact indexing.",
-      "severity": "major"
+      "category": "edge-condition",
+      "impact": "This is a faithful formal clarification needed to give the relative-error expression its intended meaning.",
+      "lean_evidence": "The target explicitly requires p17ExactSum run.a != 0.",
+      "paper_evidence": "The paper divides by |y| in kappa(a) and (4.11) without explicitly stating y != 0.",
+      "severity": "note"
     },
     {
-      "category": "hypothesis-domain-and-nonvacuity",
-      "impact": "The target admits trivial lambda >= 1 and kappa = 0 cases and excludes the zero-variance boundary, so its domain is not the paper's domain.",
-      "lean_evidence": "The target assumes only lambda > 0 and kappa >= 0, while separately requiring varianceBudget > 0.",
-      "paper_evidence": "Theorem 4.3 states 0 < lambda < 1; nonzero y is required by kappa and relative error, and the resulting kappa is at least one.",
-      "severity": "major"
+      "category": "execution-model generalization",
+      "impact": "The translation is not equivalent to the source because it proves the same conclusion for additional non-SR processes. Since every intended SR execution satisfies the conditions, this is a faithful strengthening rather than reduced applicability.",
+      "paper_evidence": "Theorem 4.3 is expressly about the output of recurrence (4.4) under the concrete SR_(p,r) operator.",
+      "severity": "minor",
+      "translation_evidence": "The run constructors retain the recurrence but replace concrete stochastic-rounding generation with abstract moment, covariance, boundedness, and discrepancy conditions."
     },
     {
-      "category": "algorithm-and-binders",
-      "impact": "The formal statement is no longer a proposition about the paper's summation algorithm.",
-      "paper_evidence": "Equations (4.1)-(4.5) and Theorem 4.3 concern an n-dimensional input and n-1 SR_{p,r}-rounded recursive additions.",
-      "severity": "critical",
-      "translation_evidence": "The proposition contains only an arbitrary finite probability space, arbitrary scalar function, and abstract real budgets."
+      "category": "packaged certificates",
+      "impact": "These fields shift source-derived facts into constructor obligations but do not exclude intended executions; the covariance bounds follow from the paper's mean-independence and boundedness conditions.",
+      "paper_evidence": "Lemma 3.10 guarantees the centered-error and product-remainder properties for every intended SR execution, while Theorem 4.3 invokes the corresponding variance estimate.",
+      "severity": "note",
+      "translation_evidence": "D017 packages covariance and product-discrepancy bounds as fields of every enhanced run."
     },
     {
-      "category": "error-decomposition",
-      "impact": "The fixed-bias model cannot represent the paper's random pathwise remainder, preventing translation-implies-paper.",
-      "paper_evidence": "Equations (4.8)-(4.10) define A=sum_i a_i B_i as a path-dependent remainder and control it pointwise; equation (4.12) separately controls M.",
-      "severity": "critical",
-      "translation_evidence": "The translated decomposition uses centered(omega)+bias with bias a fixed real scalar."
-    },
-    {
-      "category": "constants-and-numerical-model",
-      "impact": "The theorem's dimensions, precision dependence, exact higher-order terms, and rounding model are lost.",
-      "paper_evidence": "Equation (4.11) uses the exact n-1-indexed gamma terms with u_p, u_{p+r}, and SR_{p,r}.",
-      "severity": "major",
-      "translation_evidence": "varianceBudget and biasRadius are unconstrained abstract parameters, and no floating-point quantities occur."
-    },
-    {
-      "category": "vacuity-and-scope",
-      "impact": "Large parts of the translated quantifier domain satisfy the conclusion for trivial reasons unrelated to probabilistic error analysis.",
-      "paper_evidence": "The paper requires 0<lambda<1 and implicitly requires y!=0 for relative error and kappa(a).",
-      "severity": "major",
-      "translation_evidence": "The proposition permits lambda>=1 and kappa=0."
+      "category": "nonzero exact sum",
+      "impact": "This makes the intended domain of the paper's relative-error expression explicit and does not weaken a mathematically defined source claim.",
+      "paper_evidence": "Equations (4.2) and (4.11) divide by the absolute exact sum without explicitly stating that it is nonzero.",
+      "severity": "note",
+      "translation_evidence": "The target explicitly assumes S!=0."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean proposition does not identify its random expression with |hat y - y| / |y|, does not provide the concrete gamma budgets, and cannot instantiate its single scalar bias as the paper's outcome-dependent pathwise remainder A. Therefore its conclusion does not entail equation (4.11).",
-      "verdict": "no"
+      "reasoning": "Set m=n-1 and package the finite SR_{p,r} path distribution, errors, and inputs into the run. Lemma 3.10 supplies alpha and coefficient-remainder properties, while bounded mean-independent alpha products supply the covariance certificate used by the variance estimate. The Lean event then unfolds exactly to (4.11).",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "Theorem 4.3 concerns one SR_{p,r} recursive-summation distribution and its derived quantities. It does not assert the target's universal concentration theorem for every finite probability model, arbitrary random function, arbitrary fixed bias, and arbitrary budgets.",
+      "reasoning": "The paper states the result only for executions generated by the specific SR_{p,r} operator. Lean quantifies over a broader axiomatic class that need not be neighbor-valued or use the paper's exact q_r probabilities, provided it satisfies the same boundedness, conditional-mean, covariance, and remainder certificates. The paper statement alone does not assert this broader theorem.",
       "verdict": "no"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-different",
-    "roundtrip": "not-faithful-different"
+    "direct": "faithful-stronger",
+    "roundtrip": "faithful-stronger"
   },
-  "rationale": "Direct inspection of Theorem 4.3 and its surrounding definitions shows that the Lean target is a generic finite-space second-moment-plus-fixed-bias inequality, not the stated SR_{p,r} recursive-summation result. Its probability primitives and scalar operators are conventional, but it omits the algorithm, exact and computed sums, gamma constants, indexing, and relative-error definition. Most decisively, the paper's limited-precision remainder A is outcome-dependent and only pathwise bounded, whereas Lean supplies one deterministic scalar bias. Neither proposition implies the other under the meanings actually stated, so the result is not-faithful-different.",
+  "rationale": "After unfolding every dependency, the Lean conclusion is exactly Theorem 4.3 with n=m+1: the same left-to-right computed sum, exact sum, scalar relative error, condition number, exact gamma function, u_p^2/lambda variance term, finite-r gamma difference, and success probability. The potentially restrictive covariance and coefficient-remainder fields are source-derived certificates, not assumptions of the final event: bounded mean-independent alpha products yield the stated covariance bounds, and Lemma 3.10 yields the remainder bound. Because Lean permits additional abstract error processes satisfying these certificates while every paper SR_{p,r} execution remains an instance, Lean implies the paper result but the paper result does not imply the full generalized Lean proposition.",
   "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",

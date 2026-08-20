@@ -3,557 +3,998 @@
   "role": "direct-judge",
   "task_id": "P17-T3",
   "paper_sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d",
-  "dossier_sha256": "dd6ca79107f1911e7c97031ceebbd16ae2f44acd172bdf2e60a7dd41c6943693",
+  "dossier_sha256": "fbca1c6d18d53ff0ac160ce8ab40b20aa82601aba14adc5e3d8a667a1e5f6b09",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.P17FiniteProbability",
-      "interpretation": "A finite discrete probability model whose constructor supplies nonnegative real weights summing to one.",
-      "effect_on_target": "The theorem ranges over an arbitrary finite probability space rather than a distribution constructed from stochastic-rounding executions.",
-      "paper_match": "Finite rounding histories can be represented this way, but the dependency does not link P to SR_{p,r} or the recursive-summation algorithm.",
-      "status": "fail"
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a",
+      "interpretation": "Projection of the input vector a, indexed by Fin (m+1) and valued in the reals.",
+      "effect_on_target": "Supplies the m+1 summands to the exact sum, computed recursive sum, and condition number.",
+      "paper_match": "Matches a in R^n with n=m+1.",
+      "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p17EventProb",
-      "interpretation": "The probability of an event E is the sum of P.prob over all outcomes in E.",
-      "effect_on_target": "It gives the right-hand side the meaning of a finite event probability.",
-      "paper_match": "This is a valid finite-discrete realization of the paper's probability of the error event.",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.delta",
+      "interpretation": "Projection of the m path-dependent relative rounding errors delta_k.",
+      "effect_on_target": "Determines the computed recursive sum at every outcome omega.",
+      "paper_match": "Matches the n-1 errors delta_1 through delta_{n-1} when n=m+1.",
       "status": "pass"
     },
     {
       "id": "D003",
-      "name": "HighamBench.p17Expectation",
-      "interpretation": "The expectation of X is the finite weighted sum of P.prob omega times X omega.",
-      "effect_on_target": "The hmoment hypothesis bounds the raw second moment of centered.",
-      "paper_match": "Finite expectation is appropriate; for the paper's zero-mean M component, the second raw moment equals its variance, although the target does not establish that identification.",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.p",
+      "interpretation": "Projection of the destination precision as a natural number.",
+      "effect_on_target": "Determines u_p and both gamma terms involving u_p.",
+      "paper_match": "Matches the positive destination bit precision p.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.P17FiniteProbability.mk",
-      "interpretation": "The constructor builds a finite probability model from nonnegative weights whose total is one.",
-      "effect_on_target": "It ensures P is a normalized probability mass function.",
-      "paper_match": "These are the expected probability axioms for a finite representation of rounding outcomes.",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.probability",
+      "interpretation": "Projection of the finite probability distribution on execution outcomes.",
+      "effect_on_target": "Provides the weights used by p17EventProb.",
+      "paper_match": "A fixed finite sequence of Bernoulli SR choices has finite path support and can instantiate this distribution.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "HighamBench.P17FiniteProbability.prob",
-      "interpretation": "The projection returns the real probability weight assigned to an outcome.",
-      "effect_on_target": "It supplies weights to both event probability and expectation.",
-      "paper_match": "Outcome weights have the ordinary probabilistic meaning required by the paper.",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.r",
+      "interpretation": "Projection of the positive number of random bits.",
+      "effect_on_target": "Determines u_{p+r} in the finite-r remainder.",
+      "paper_match": "Matches finite positive r in SR_{p,r}.",
       "status": "pass"
     },
     {
       "id": "D006",
-      "name": "DivInvMonoid.toDiv",
-      "interpretation": "It obtains division from the real division-and-inversion structure.",
-      "effect_on_target": "It contributes ordinary real division to varianceBudget divided by lambda.",
-      "paper_match": "The paper likewise divides its variance expression by lambda under the square root.",
+      "name": "HighamBench.P17VarianceRecursiveSumRun",
+      "interpretation": "A run type consisting of a limited-precision recursive-sum run plus variance and remainder certificates exposed by D017.",
+      "effect_on_target": "Restricts the quantified run to processes satisfying the hypotheses sufficient for the variance-plus-bias bound.",
+      "paper_match": "Every paper SR_{p,r} execution supplies these certificates from Lemma 3.10, the variance argument used in (4.12), and the product-remainder bound.",
       "status": "pass"
     },
     {
       "id": "D007",
-      "name": "Fintype",
-      "interpretation": "A type equipped with a finite enumeration of all its elements.",
-      "effect_on_target": "Omega is restricted to finitely many outcomes, permitting probability and expectation to be finite sums.",
-      "paper_match": "A fixed finite sequence of Bernoulli rounding choices can be modeled by a finite outcome type, though this dependency alone does not encode that sequence.",
+      "name": "HighamBench.P17VarianceRecursiveSumRun.toP17LimitedPrecisionRecursiveSumRun",
+      "interpretation": "Projection from the variance-certified run to its underlying limited-precision run.",
+      "effect_on_target": "Makes the probability, parameters, inputs, delta, and beta fields available to the conclusion.",
+      "paper_match": "Preserves the same paper execution without changing its meaning.",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "HAdd.hAdd",
-      "reuse_sha256": "8e238a782a5fa590cf4b1016f83e5f0f68ef2ffa7f08828d92e4751b917d3094",
-      "effect_on_target": "It forms centered omega plus the single scalar bias, and also adds the square-root radius to biasRadius.",
-      "paper_match": "Ordinary addition is correct, but the paper adds M to the outcome-dependent remainder A; a fixed scalar bias cannot represent that pathwise random remainder.",
-      "status": "fail"
+      "name": "HighamBench.p17EventProb",
+      "interpretation": "The sum of probability weights over outcomes satisfying an event predicate.",
+      "effect_on_target": "Interprets the right side of the outer inequality as the success probability.",
+      "paper_match": "Matches the probability of the event in Theorem 4.3 on the finite path space.",
+      "status": "pass"
     },
     {
       "id": "D009",
-      "name": "HDiv.hDiv",
-      "interpretation": "Typeclass-dispatched division, instantiated here as ordinary real division.",
-      "effect_on_target": "It forms varianceBudget divided by lambda.",
-      "paper_match": "This matches the placement of division by lambda in the paper's stochastic term.",
+      "name": "HighamBench.p17ExactSum",
+      "interpretation": "The finite real sum of all entries of a.",
+      "effect_on_target": "Defines y, the exact comparator and denominator of the relative error.",
+      "paper_match": "Exactly matches y=sum_i a_i in (4.1).",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "HMul.hMul",
-      "interpretation": "Typeclass-dispatched multiplication, instantiated here as ordinary real multiplication.",
-      "effect_on_target": "It weights expectations and multiplies both sides of the event inequality by kappa.",
-      "paper_match": "Ordinary products and multiplication of the complete radius by kappa agree with the paper's scalar algebra.",
+      "name": "HighamBench.p17Gamma",
+      "interpretation": "The exact function gamma_n(u)=(1+u)^n-1.",
+      "effect_on_target": "Retains all higher-order terms in both probabilistic and finite-r components.",
+      "paper_match": "Exactly matches (4.3), not its first-order approximation.",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "HPow.hPow",
-      "reuse_sha256": "ae427df10665c63a10e9f5d6e8e18ac7b758e79d1f0955f4c3ca097fff66c85d",
-      "effect_on_target": "It squares centered omega in the second-moment hypothesis.",
-      "paper_match": "A squared M component is appropriate for the variance estimate because M is zero mean, but the target leaves centered arbitrary.",
+      "name": "HighamBench.p17RecursiveSum",
+      "interpretation": "A left fold starting at a_0 and applying (acc+a_{k+1})(1+delta_k) for k=0 through m-1.",
+      "effect_on_target": "Defines the computed value appearing in the event.",
+      "paper_match": "Exactly reindexes the left-to-right recurrence for hat{s}_1 through hat{s}_n and (4.4).",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "HSub.hSub",
-      "reuse_sha256": "acf46554bba0caeba7168c2bd11bf9a41b4510a9dac46d3f3cd39b8a2e858287",
-      "effect_on_target": "It forms the lower probability bound 1 minus lambda.",
-      "paper_match": "This matches the paper's success probability of at least 1 minus lambda.",
+      "name": "HighamBench.p17SummationCondition",
+      "interpretation": "The componentwise absolute sum divided by the absolute exact sum.",
+      "effect_on_target": "Multiplies the complete error bracket.",
+      "paper_match": "Exactly matches kappa(a) in (4.2).",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "LE.le",
-      "reuse_sha256": "0dcd4d54dc5efe73d79e4b04d175f2dca920b0224dc82b6e16091b7f8d35baaa",
-      "effect_on_target": "It supplies all non-strict inequalities in hypotheses, the event, and the probability conclusion.",
-      "paper_match": "The final error and probability inequalities have the same non-strict directions as equations (4.11) and (4.12).",
+      "name": "HighamBench.p17UnitRoundoff",
+      "interpretation": "The real value (1/2)^(p-1), with natural subtraction.",
+      "effect_on_target": "Defines u_p and u_{p+r}.",
+      "paper_match": "Because p and r are positive, this equals 2^(1-p) and 2^(1-p-r), respectively.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "LT.lt",
-      "interpretation": "The strict-order relation supplied by the relevant typeclass, instantiated as ordinary strict order on reals.",
-      "effect_on_target": "It expresses positivity of varianceBudget and lambda.",
-      "paper_match": "The positivity relation is correct; the missing upper condition lambda less than one is an omission in the target rather than a different interpretation of this operator.",
+      "name": "HighamBench.P17FiniteProbability",
+      "interpretation": "A finite probability-mass-function record.",
+      "effect_on_target": "Ensures event probabilities and expectations are finite weighted sums.",
+      "paper_match": "Adequate for the finite path distribution generated by finitely many SR choices.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "Monoid.toNatPow",
-      "reuse_sha256": "fe46aa204372eb5439324019fd0953697fe646c07328127f2604d3111db326ea",
-      "effect_on_target": "It defines the square of centered omega by repeated real multiplication.",
-      "paper_match": "This is the standard squared quantity used in a second-moment or variance estimate.",
+      "name": "HighamBench.P17FiniteProbability.prob",
+      "interpretation": "Projection of an outcome's nonnegative probability weight.",
+      "effect_on_target": "Weights each outcome in event probabilities and expectations.",
+      "paper_match": "Matches atomic path probabilities.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "Nat",
-      "interpretation": "The natural-number type used for the exponent two.",
-      "effect_on_target": "It fixes the moment in hmoment to a second moment.",
-      "paper_match": "A natural exponent two matches the paper's squared-error variance analysis.",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "interpretation": "An abstract record of one limited-precision recursive summation execution model, with fields exposed by D021.",
+      "effect_on_target": "Packages arithmetic parameters, inputs, path errors, and conditional-mean properties.",
+      "paper_match": "Contains every actual SR_{p,r} run while permitting additional abstract processes satisfying the same proof-relevant conditions.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "OfNat.ofNat",
-      "reuse_sha256": "9412c8799dd7ab5a9cd03a6289b408558cf47f44c8678d5f9fcd39132aa90a1d",
-      "effect_on_target": "It interprets the literals zero, one, and two in their required types.",
-      "paper_match": "These literals retain their ordinary meanings.",
+      "name": "HighamBench.P17VarianceRecursiveSumRun.mk",
+      "interpretation": "Adds an alpha bound, history-orthogonality expressing zero conditional mean, pairwise centered-product covariance bounds, and a coefficient-remainder bound.",
+      "effect_on_target": "Provides the variance and pathwise-bias certificates used to establish the final event probability.",
+      "paper_match": "The covariance field follows for the paper's bounded mean-independent alpha products: their means are one, shared-suffix covariances are nonnegative, and repeated conditioning bounds them by gamma_m(u_p^2). The remainder field is exactly the globalized Lemma 3.10 bound on B_i. Neither is an assumption of the final event or an applicability-reducing extra condition.",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "One.toOfNat1",
-      "reuse_sha256": "1c662a114670d76bda6f45c1caef6f56839c8751fcd1c29ba6602c9e4eac9386",
-      "effect_on_target": "It supplies the real number one in 1 minus lambda.",
-      "paper_match": "This matches the paper's probability lower bound.",
+      "name": "HighamBench.p17RecursiveSum._proof_1",
+      "interpretation": "Proof that m+1 is nonzero, permitting the initial Fin index 0.",
+      "effect_on_target": "Makes the initial summand a_0 well typed.",
+      "paper_match": "Corresponds to using at least one summand, n=m+1.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "Real",
-      "interpretation": "The mathematical real-number type.",
-      "effect_on_target": "All random values, budgets, radii, kappa, lambda, probabilities, and expectations are real scalars.",
-      "paper_match": "The paper's inputs, errors, parameters, and scalar inequalities are real-valued.",
-      "status": "pass"
+      "name": "HighamBench.p17UnitRoundoff._proof_1",
+      "interpretation": "Elaboration proof that the numeral 2 is at least two.",
+      "effect_on_target": "Supports construction of the real numeral 2 in the unit-roundoff definition.",
+      "paper_match": "Carries no independent paper-level assumption.",
+      "status": "not-applicable"
     },
     {
       "id": "D020",
-      "name": "Real.instAdd",
-      "reuse_sha256": "e64b5c91700232551ae1fd439ea5d1ba590397e612faaf16f62a23cc5c378695",
-      "effect_on_target": "It realizes all displayed additions as ordinary real addition.",
-      "paper_match": "The scalar addition operation itself agrees with the paper; the fixed-bias operand choice is a separate target-level mismatch.",
+      "name": "HighamBench.P17FiniteProbability.mk",
+      "interpretation": "Constructs a finite probability law from nonnegative weights summing to one.",
+      "effect_on_target": "Guarantees p17EventProb is a normalized probability.",
+      "paper_match": "Matches the probability axioms for the SR path distribution.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "Real.instAddGroup",
-      "reuse_sha256": "953242ba6ab9ee59ca4aeeae55b66c1f65ae1b3ec736bb896a8082722e08a850",
-      "effect_on_target": "It supplies real negation and additive structure used by absolute value.",
-      "paper_match": "This gives the usual scalar absolute-value semantics used throughout equations (4.8)-(4.12).",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk",
+      "interpretation": "Constructs an abstract run with positive p and r, bounded delta and beta, nonnegative rounding factors, the fl_{p+r}-style beta equation, zero-result conventions, beta history dependence, and conditional mean equality.",
+      "effect_on_target": "Links delta to recursive pre-round values and supplies the source model from which alpha properties and finite-r effects arise.",
+      "paper_match": "These are consequences of the SR_{p,r} model in (2.6), Lemma 3.2, and the bounds used in Lemma 3.10. The arbitrary truncate function broadens the model but every paper fl_{p+r} execution instantiates it.",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "Real.instDivInvMonoid",
-      "interpretation": "The standard real multiplication, inversion, natural and integer powers, and division structure.",
-      "effect_on_target": "It makes varianceBudget divided by lambda ordinary real division.",
-      "paper_match": "The quotient has the intended real-arithmetic meaning.",
+      "name": "HighamBench.p17Alpha",
+      "interpretation": "Defines alpha_k(omega)=delta_k(omega)-beta_k(omega).",
+      "effect_on_target": "Provides the centered errors used in the variance certificates.",
+      "paper_match": "Exactly matches alpha=delta-beta in Lemma 3.10.",
       "status": "pass"
     },
     {
       "id": "D023",
-      "name": "Real.instLE",
-      "reuse_sha256": "05753e0845504079b2a49760ce0760bba31bd490a1fbbbec350ab090bf5f6150",
-      "effect_on_target": "It interprets every non-strict comparison using the usual real order.",
-      "paper_match": "The paper's scalar bounds use the same order.",
+      "name": "HighamBench.p17CoefficientRemainder",
+      "interpretation": "The difference between the recursive coefficient formed from delta and the corresponding coefficient formed from alpha.",
+      "effect_on_target": "Represents the path-dependent finite-r product contribution for each input coefficient.",
+      "paper_match": "Exactly corresponds to B_i in (3.8) and its application in (4.8).",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "Real.instLT",
-      "interpretation": "The usual strict order on real numbers.",
-      "effect_on_target": "It gives hvariance and hlambda their ordinary positivity meanings.",
-      "paper_match": "It correctly expresses positivity, though the target does not additionally state lambda less than one.",
+      "name": "HighamBench.p17Expectation",
+      "interpretation": "Finite expectation sum_omega P(omega)X(omega).",
+      "effect_on_target": "Defines conditional-mean surrogates and covariance certificates in the run.",
+      "paper_match": "Matches ordinary expectation on the finite execution space.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "Real.instMonoid",
-      "reuse_sha256": "f4f35dbd3354a3a2c6e30a12525fb25ce21682401bd0b8c6c4a2b89afdaece9f",
-      "effect_on_target": "It provides multiplication and one for the natural power centered squared.",
-      "paper_match": "The resulting square is ordinary real squaring.",
+      "name": "HighamBench.p17HistoryMeasurable",
+      "interpretation": "A function is history-measurable at k when it is constant on outcomes having equal errors at every earlier index j<k.",
+      "effect_on_target": "Expresses dependence only on the preceding delta or alpha history.",
+      "paper_match": "Matches measurability with respect to the sequential error history used in conditional expectations.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "Real.instMul",
-      "interpretation": "Ordinary multiplication on real numbers.",
-      "effect_on_target": "It multiplies probability weights, kappa, centered-plus-bias, and the bound radius.",
-      "paper_match": "These products have the expected scalar meaning in the paper.",
+      "name": "HighamBench.p17RecursiveCoefficient",
+      "interpretation": "For the first input it is the product of every 1+error_k; for subsequent inputs it is the appropriate suffix product.",
+      "effect_on_target": "Encodes each a_i coefficient in the product representation of recursive summation.",
+      "paper_match": "Matches product_{k=max(i,2)}^n(1+delta_{k-1}) in (4.4), including the equal coefficients of the first two inputs.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "Real.instOne",
-      "reuse_sha256": "e51a242fc9e06a843daf48323e127b9a5e24e589e9139d1c4d178817cc4f01b4",
-      "effect_on_target": "It supplies the real multiplicative identity used as the numeral one.",
-      "paper_match": "It has the ordinary meaning required by 1 minus lambda.",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.beta",
+      "interpretation": "Projection of the m path-dependent p+r-bit relative errors beta_k.",
+      "effect_on_target": "Defines alpha and the finite-r remainder.",
+      "paper_match": "Matches the beta errors defined by (4.5), including their path dependence.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "Real.instSub",
-      "reuse_sha256": "cae5df6a1fe8b8368ddc76512a5e3b97db34cf5aa11faf1cff630d6f5dd7eb35",
-      "effect_on_target": "It realizes 1 minus lambda as ordinary real subtraction.",
-      "paper_match": "This exactly matches the form of the paper's probability lower bound.",
+      "name": "HighamBench.p17RecursivePreRound",
+      "interpretation": "The current computed partial sum before rounding, plus the next input.",
+      "effect_on_target": "Identifies the exact elementary-addition result to which delta and beta belong.",
+      "paper_match": "Matches hat{s}_{k-1}+a_k before SR_{p,r}.",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "Real.instZero",
-      "reuse_sha256": "add1e0d38b718ff561745d67e457a3e5a9e88523d6641af854dd815b11797de6",
-      "effect_on_target": "It supplies zero in positivity and nonnegativity hypotheses and in probability sums outside an event.",
-      "paper_match": "Zero has its ordinary scalar meaning.",
+      "name": "HighamBench.p17SuffixErrorProduct",
+      "interpretation": "Recursively computes the suffix product of factors 1+error_j from a selected index through m-1.",
+      "effect_on_target": "Implements noninitial recursive coefficients.",
+      "paper_match": "Matches the suffix products in (4.4) and (3.8).",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "Real.lattice",
-      "reuse_sha256": "5c94154655daa21d92ca5ad3ae013135ac73fc292c856c799cf18acc88e6c476",
-      "effect_on_target": "It contributes the usual ordered-lattice operations used to define real absolute value.",
-      "paper_match": "This yields the scalar absolute values used in the paper.",
+      "name": "HighamBench.p17RecursiveSumBefore",
+      "interpretation": "Computes the rounded partial sum after all error indices strictly before k.",
+      "effect_on_target": "Feeds the pre-round addition at index k.",
+      "paper_match": "Matches the sequential dependence of hat{s}_{k-1} on earlier rounding errors.",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "Real.sqrt",
-      "interpretation": "The nonnegative real square root, with nonpositive inputs mapped through their nonnegative part.",
-      "effect_on_target": "It forms the stochastic radius square root of varianceBudget divided by lambda; the hypotheses make that quotient positive.",
-      "paper_match": "This matches the nonnegative square root in equation (4.11).",
-      "status": "pass"
+      "name": "HighamBench.p17SuffixErrorProduct.match_1",
+      "interpretation": "Generated natural-number case splitter used to define suffix products.",
+      "effect_on_target": "Provides recursion infrastructure without changing the product's mathematical meaning.",
+      "paper_match": "No independent paper-level concept is introduced.",
+      "status": "not-applicable"
     },
     {
       "id": "D032",
-      "name": "Zero.toOfNat0",
-      "reuse_sha256": "4ffc57c777cabc45c64299faad3978aad738b122dda5156a2ea75d97ce8a5347",
-      "effect_on_target": "It derives the real numeral zero from the additive identity.",
-      "paper_match": "It has the intended ordinary meaning.",
+      "name": "HighamBench.p17RecursiveSumBefore._proof_1",
+      "interpretation": "Proof that an index j below k.val is also below m.",
+      "effect_on_target": "Validates the cast of earlier error indices in the partial fold.",
+      "paper_match": "Enforces the intended prefix index range.",
       "status": "pass"
     },
     {
       "id": "D033",
-      "name": "abs",
-      "interpretation": "Absolute value defined as the maximum of a real and its negation.",
-      "effect_on_target": "It bounds the scalar bias and measures the magnitude of kappa times centered-plus-bias.",
-      "paper_match": "The absolute-value operation matches the paper, although the target applies it to an abstract fixed-bias expression rather than the defined forward error M plus A.",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Extracts division from the real division structure.",
+      "effect_on_target": "Interprets the relative-error, condition-number, and lambda divisions.",
+      "paper_match": "Uses ordinary real division; nonzero y and positive lambda exclude problematic target denominators.",
       "status": "pass"
     },
     {
       "id": "D034",
-      "name": "instHAdd",
-      "reuse_sha256": "634c32b54fc9e5d8e0d6c15053ec736151828bfac08d0e430707a48416bcb433",
-      "effect_on_target": "It transparently lifts ordinary real addition into the heterogeneous-addition interface.",
-      "paper_match": "The lifting preserves ordinary addition; it does not repair the mismatch between fixed bias and the paper's random A.",
+      "name": "Fin",
+      "interpretation": "The finite index type containing natural indices strictly below a bound.",
+      "effect_on_target": "Indexes m errors and m+1 summands without out-of-range cases.",
+      "paper_match": "Matches the finite index sets of the paper.",
       "status": "pass"
     },
     {
       "id": "D035",
-      "name": "instHDiv",
-      "interpretation": "It lifts homogeneous division into the heterogeneous-division interface without changing the operation.",
-      "effect_on_target": "It makes varianceBudget divided by lambda use the real division instance.",
-      "paper_match": "The resulting quotient matches the paper.",
+      "name": "Fintype",
+      "interpretation": "A type equipped with a finite enumeration.",
+      "effect_on_target": "Makes the outcome space and its sums finite.",
+      "paper_match": "Finite path support suffices for every fixed finite SR computation.",
       "status": "pass"
     },
     {
       "id": "D036",
-      "name": "instHMul",
-      "interpretation": "It lifts homogeneous multiplication into the heterogeneous-multiplication interface without changing the operation.",
-      "effect_on_target": "It realizes all target multiplications as real multiplication.",
-      "paper_match": "The lifting is semantically transparent and compatible with the paper's products.",
+      "name": "HAdd.hAdd",
+      "interpretation": "Generic addition, instantiated here as natural or real addition.",
+      "effect_on_target": "Forms m+1, p+r, recursive additions, and gamma arguments.",
+      "paper_match": "The selected instances are the intended ordinary additions.",
       "status": "pass"
     },
     {
       "id": "D037",
-      "name": "instHPow",
-      "reuse_sha256": "265c3ec48b8a93626c5d1509c62aa0d0670a6d1f84ee18a4d0a74fe156315b23",
-      "effect_on_target": "It lifts real natural powers into the interface used to write centered squared.",
-      "paper_match": "The resulting operation is ordinary real squaring.",
+      "name": "HDiv.hDiv",
+      "interpretation": "Generic division, instantiated as real division.",
+      "effect_on_target": "Forms all displayed quotients.",
+      "paper_match": "Matches scalar real division in (4.2) and (4.11).",
       "status": "pass"
     },
     {
       "id": "D038",
-      "name": "instHSub",
-      "reuse_sha256": "9acf234ffe7767f8c9d61a522c93ace13daa9ca28ce1049c951e39128f4bf717",
-      "effect_on_target": "It lifts ordinary real subtraction into the interface used for 1 minus lambda.",
-      "paper_match": "The lifting preserves the intended probability expression.",
+      "name": "HMul.hMul",
+      "interpretation": "Generic multiplication, instantiated as real multiplication.",
+      "effect_on_target": "Forms rounding recurrences, expectations, products, and the condition-number-scaled bound.",
+      "paper_match": "Matches ordinary scalar multiplication.",
       "status": "pass"
     },
     {
       "id": "D039",
-      "name": "instOfNatNat",
-      "interpretation": "It interprets each natural numeral as that natural number.",
-      "effect_on_target": "It makes the exponent literal two denote the natural number two.",
-      "paper_match": "This gives the intended second power.",
+      "name": "HPow.hPow",
+      "interpretation": "Generic exponentiation, instantiated as natural powers of real numbers.",
+      "effect_on_target": "Forms u_p squared and exact gamma powers.",
+      "paper_match": "Matches u_p^2 and (1+u)^m.",
       "status": "pass"
     },
     {
       "id": "D040",
-      "name": "setOf",
-      "interpretation": "It constructs a set from its membership predicate.",
-      "effect_on_target": "It turns the pointwise error inequality into the event whose probability is bounded.",
-      "paper_match": "A probability event defined by the error inequality is the correct set-theoretic form.",
+      "name": "HSub.hSub",
+      "interpretation": "Generic subtraction, instantiated as natural predecessor subtraction or real subtraction.",
+      "effect_on_target": "Forms p-1, errors, 1-lambda, gamma, and the remainder difference.",
+      "paper_match": "Positive p makes natural p-1 the intended exponent; real subtractions match the paper.",
       "status": "pass"
     },
     {
       "id": "D041",
-      "name": "Classical.propDecidable",
-      "interpretation": "It supplies a classical decision procedure for propositions.",
-      "effect_on_target": "It permits the event indicator in p17EventProb to branch on membership.",
-      "paper_match": "This is an implementation detail with no mathematical counterpart or effect on the paper claim.",
-      "status": "not-applicable"
+      "name": "LE.le",
+      "interpretation": "The non-strict order relation.",
+      "effect_on_target": "States event bounds, probability lower bounds, and run certificates.",
+      "paper_match": "Matches every non-strict inequality in (4.10)-(4.12).",
+      "status": "pass"
     },
     {
       "id": "D042",
-      "name": "Finset.sum",
-      "interpretation": "It sums a real-valued function over a finite set using the additive commutative monoid structure.",
-      "effect_on_target": "It computes normalization, event probabilities, and expectations as finite sums.",
-      "paper_match": "Finite sums correctly realize probability and expectation on a finite rounding-outcome space.",
+      "name": "LT.lt",
+      "interpretation": "The strict order relation.",
+      "effect_on_target": "States positivity of parameters and 0<lambda<1.",
+      "paper_match": "Matches the theorem's strict confidence-parameter range and positive bit counts.",
       "status": "pass"
     },
     {
       "id": "D043",
-      "name": "Finset.univ",
-      "reuse_sha256": "e1c319c6b4ed4d5f6114006b06fd0104d65483830507f476dc0b7a6c1f1fe0be",
-      "effect_on_target": "It makes probability and expectation sums range over every outcome in Omega.",
-      "paper_match": "Summing over all outcomes is the expected finite probability semantics.",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-number exponentiation in a monoid.",
+      "effect_on_target": "Provides exact real powers in gamma and u_p^2.",
+      "paper_match": "Matches ordinary repeated real multiplication.",
       "status": "pass"
     },
     {
       "id": "D044",
-      "name": "Membership.mem",
-      "interpretation": "The typeclass-dispatched membership predicate, instantiated for membership of an outcome in a set.",
-      "effect_on_target": "It determines whether each outcome contributes its probability weight to an event.",
-      "paper_match": "This is the ordinary semantics of an event indicator.",
+      "name": "Nat",
+      "interpretation": "The natural-number type.",
+      "effect_on_target": "Types m, p, r, exponents, and finite dimensions.",
+      "paper_match": "Matches counts of additions, precision bits, and random bits.",
       "status": "pass"
     },
     {
       "id": "D045",
-      "name": "Real.instAddCommMonoid",
-      "interpretation": "The additive commutative monoid structure of real numbers.",
-      "effect_on_target": "It provides zero and commutative addition for all finite real sums.",
-      "paper_match": "Ordinary finite real summation matches the paper's scalar sums.",
+      "name": "Ne",
+      "interpretation": "Inequality defined as the negation of equality.",
+      "effect_on_target": "Expresses that the exact sum is nonzero.",
+      "paper_match": "Makes explicit the condition required for the paper's relative error and kappa(a) to be defined.",
       "status": "pass"
     },
     {
       "id": "D046",
-      "name": "Set",
-      "interpretation": "A set of outcomes is represented as a predicate from outcomes to propositions.",
-      "effect_on_target": "The error event is represented extensionally by its membership condition.",
-      "paper_match": "This is a standard representation of a probability event.",
+      "name": "OfNat.ofNat",
+      "interpretation": "Interprets natural-number literals in the selected type.",
+      "effect_on_target": "Supplies the literals 0, 1, and 2.",
+      "paper_match": "The literals retain their standard meanings.",
       "status": "pass"
     },
     {
       "id": "D047",
-      "name": "Set.instMembership",
-      "interpretation": "It makes membership in a set evaluate the set's predicate at the proposed element.",
-      "effect_on_target": "Event membership is exactly satisfaction of the pointwise error inequality.",
-      "paper_match": "This preserves the intended event semantics.",
+      "name": "One.toOfNat1",
+      "interpretation": "Builds the literal-one instance from a type's multiplicative identity.",
+      "effect_on_target": "Interprets real and natural occurrences of 1.",
+      "paper_match": "Matches the scalar identity used throughout the paper formulas.",
       "status": "pass"
     },
     {
       "id": "D048",
-      "name": "ite",
-      "interpretation": "A conditional expression selecting its first value when the proposition holds and its second value otherwise.",
-      "effect_on_target": "It implements the event indicator by selecting P.prob omega inside the event and zero outside.",
-      "paper_match": "This is the standard finite-sum definition of event probability.",
+      "name": "Real",
+      "interpretation": "The mathematical real-number type.",
+      "effect_on_target": "Types inputs, errors, probabilities, and bounds.",
+      "paper_match": "Matches the paper's scalar real formulation.",
       "status": "pass"
     },
     {
       "id": "D049",
-      "name": "Eq",
-      "interpretation": "Propositional equality between two terms of the same type.",
-      "effect_on_target": "It requires the sum of all probability weights to equal one in the probability-model constructor.",
-      "paper_match": "Probability normalization is required by the paper's use of probability.",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary addition on the reals.",
+      "effect_on_target": "Interprets all real additions.",
+      "paper_match": "Matches paper arithmetic.",
       "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "Real.instAddGroup",
+      "interpretation": "The additive-group structure of the reals.",
+      "effect_on_target": "Supports subtraction, negation, and absolute value.",
+      "paper_match": "Matches ordinary real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The real multiplication, inverse, and division structure.",
+      "effect_on_target": "Interprets division in relative errors and confidence terms.",
+      "paper_match": "Lean's totalized division does not alter this target because y is nonzero and lambda is positive.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "Real.instLE",
+      "interpretation": "The standard non-strict order on real numbers.",
+      "effect_on_target": "Interprets all real upper and lower bounds.",
+      "paper_match": "Matches the paper's real inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "Real.instLT",
+      "interpretation": "The standard strict order on real numbers.",
+      "effect_on_target": "Interprets 0<lambda<1.",
+      "paper_match": "Exactly matches Theorem 4.3.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "Real.instMonoid",
+      "interpretation": "The multiplicative monoid of the reals.",
+      "effect_on_target": "Supports natural powers.",
+      "paper_match": "Matches real exponentiation by a natural index.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary multiplication on the reals.",
+      "effect_on_target": "Interprets products and scalar factors.",
+      "paper_match": "Matches paper arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "Real.instOne",
+      "interpretation": "The real multiplicative identity.",
+      "effect_on_target": "Interprets 1 in products, gamma, and probability bounds.",
+      "paper_match": "Matches the paper's scalar one.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction.",
+      "effect_on_target": "Interprets computed-minus-exact error and gamma differences.",
+      "paper_match": "Matches the signs and subtraction order in (4.11).",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "Real.instZero",
+      "interpretation": "The real additive identity.",
+      "effect_on_target": "Interprets zero means, nonnegativity, and the nonzero-sum condition.",
+      "paper_match": "Matches the paper's scalar zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "Real.lattice",
+      "interpretation": "The lattice order structure on the reals.",
+      "effect_on_target": "Supports the definition of absolute value.",
+      "paper_match": "Produces ordinary scalar absolute value.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "Real.sqrt",
+      "interpretation": "The nonnegative real square root.",
+      "effect_on_target": "Forms sqrt(gamma_m(u_p^2)/lambda).",
+      "paper_match": "Exactly matches the square root in (4.11); its argument is nonnegative.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Builds the literal-zero instance from a type's zero.",
+      "effect_on_target": "Interprets occurrences of 0.",
+      "paper_match": "No semantic change from the standard zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "abs",
+      "interpretation": "Absolute value defined as max(x,-x), instantiated on the reals.",
+      "effect_on_target": "Defines scalar forward error, coefficient magnitudes, and the denominator |y|.",
+      "paper_match": "Exactly matches every scalar absolute value in (4.2), (4.10), and (4.11).",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "instAddNat",
+      "interpretation": "Ordinary addition on natural numbers.",
+      "effect_on_target": "Forms m+1 and p+r.",
+      "paper_match": "Matches n=m+1 and combined precision p+r.",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "instHAdd",
+      "interpretation": "Routes homogeneous overloaded addition to the underlying Add instance.",
+      "effect_on_target": "Selects ordinary natural or real addition.",
+      "paper_match": "Introduces no alternative operation.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "instHDiv",
+      "interpretation": "Routes homogeneous overloaded division to the underlying Div instance.",
+      "effect_on_target": "Selects ordinary real division.",
+      "paper_match": "Introduces no alternative division.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "instHMul",
+      "interpretation": "Routes homogeneous overloaded multiplication to the underlying Mul instance.",
+      "effect_on_target": "Selects ordinary real multiplication.",
+      "paper_match": "Introduces no alternative multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "instHPow",
+      "interpretation": "Routes overloaded exponentiation to the selected power operation.",
+      "effect_on_target": "Selects real natural powers.",
+      "paper_match": "Matches the exact powers in gamma and u_p^2.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "instHSub",
+      "interpretation": "Routes homogeneous overloaded subtraction to the underlying Sub instance.",
+      "effect_on_target": "Selects natural or real subtraction as determined by the arguments.",
+      "paper_match": "Preserves the intended predecessor and scalar differences.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "instOfNatNat",
+      "interpretation": "Interprets each natural literal as itself.",
+      "effect_on_target": "Supplies natural indices and exponents.",
+      "paper_match": "Matches ordinary natural-number notation.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "setOf",
+      "interpretation": "Turns a predicate on outcomes into the corresponding set.",
+      "effect_on_target": "Defines the success event passed to p17EventProb.",
+      "paper_match": "Matches event-builder notation in probability.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "Classical.propDecidable",
+      "interpretation": "Provides classical decidability for event membership.",
+      "effect_on_target": "Allows the indicator-style if-then-else in the finite event sum.",
+      "paper_match": "It is implementation machinery with no mathematical restriction on the event.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D072",
+      "name": "Fin.fintype",
+      "interpretation": "Enumerates every element of Fin n.",
+      "effect_on_target": "Supports finite sums and products over all indices.",
+      "paper_match": "Matches complete finite summation and product ranges.",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "Fin.foldl",
+      "interpretation": "Left fold over indices 0 through n-1 in order.",
+      "effect_on_target": "Fixes the recursive summation order.",
+      "paper_match": "Matches left-to-right summation rather than pairwise or arbitrary parenthesization.",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "Fin.instOfNat",
+      "interpretation": "Interprets the literal 0 as the first element of a nonempty Fin type.",
+      "effect_on_target": "Selects a_0 as the initial recursive sum.",
+      "paper_match": "Matches initialization hat{s}_1=a_1 after zero-based reindexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "Fin.succ",
+      "interpretation": "Maps an error index k to input index k+1.",
+      "effect_on_target": "Pairs each rounding step with the next summand.",
+      "paper_match": "Matches addition of a_k at paper indices k=2 through n.",
+      "status": "pass"
+    },
+    {
+      "id": "D076",
+      "name": "Finset.sum",
+      "interpretation": "Finite commutative sum over an indexed set.",
+      "effect_on_target": "Implements exact sums, expectations, event probabilities, and coefficient scales.",
+      "paper_match": "Matches the paper's finite summations.",
+      "status": "pass"
+    },
+    {
+      "id": "D077",
+      "name": "Finset.univ",
+      "interpretation": "The finite set containing every element of a Fintype.",
+      "effect_on_target": "Ensures sums and products range over all indices or outcomes.",
+      "paper_match": "Matches complete index and sample-space ranges.",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "Membership.mem",
+      "interpretation": "Generic membership relation.",
+      "effect_on_target": "Tests whether an outcome satisfies the event.",
+      "paper_match": "Matches ordinary event membership.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative-monoid structure of the reals.",
+      "effect_on_target": "Supports order-independent finite real sums.",
+      "paper_match": "Matches ordinary finite scalar summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "Real.instNatCast",
+      "interpretation": "Casts natural numerals into the reals.",
+      "effect_on_target": "Interprets real constants such as 2.",
+      "paper_match": "Uses standard real numerals.",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "Set",
+      "interpretation": "A set represented as a predicate.",
+      "effect_on_target": "Types the success event.",
+      "paper_match": "Matches an event subset of the outcome space.",
+      "status": "pass"
+    },
+    {
+      "id": "D082",
+      "name": "Set.instMembership",
+      "interpretation": "Membership in a predicate-defined set is predicate application.",
+      "effect_on_target": "Evaluates the success condition at each outcome.",
+      "paper_match": "Matches ordinary event semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "instOfNatAtLeastTwo",
+      "interpretation": "Constructs real numeral instances for natural literals at least two.",
+      "effect_on_target": "Supports the real constant 2 in the unit-roundoff base.",
+      "paper_match": "No independent paper hypothesis is introduced.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D084",
+      "name": "instSubNat",
+      "interpretation": "Truncated subtraction on natural numbers.",
+      "effect_on_target": "Forms p-1 in the unit-roundoff exponent.",
+      "paper_match": "Since the run requires p>0, p-1 is exactly the intended predecessor.",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "ite",
+      "interpretation": "If-then-else used as an event indicator.",
+      "effect_on_target": "Includes P(omega) for successful outcomes and zero otherwise.",
+      "paper_match": "Correctly implements finite event probability.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "Combines lower and upper covariance bounds.",
+      "paper_match": "Both bounds are source-derived properties of the alpha coefficients.",
+      "status": "pass"
+    },
+    {
+      "id": "D087",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "States normalization, truncation, zero handling, and expectation identities.",
+      "paper_match": "Uses exact equalities corresponding to the paper's model identities.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "Nat.AtLeastTwo",
+      "interpretation": "A typeclass witness that a natural numeral is at least two.",
+      "effect_on_target": "Supports numeral elaboration.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D089",
+      "name": "NeZero",
+      "interpretation": "A witness that a value is not zero.",
+      "effect_on_target": "Allows selection of index 0 from Fin (m+1).",
+      "paper_match": "Reflects that n=m+1 has at least one input.",
+      "status": "pass"
+    },
+    {
+      "id": "D090",
+      "name": "Zero.ofOfNat0",
+      "interpretation": "Builds a zero structure from interpretation of the literal 0.",
+      "effect_on_target": "Supports elaboration of NeZero and Fin indexing.",
+      "paper_match": "No independent paper-level content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D091",
+      "name": "Fin.cases",
+      "interpretation": "Splits an index of Fin (m+1) into the first index or a successor index.",
+      "effect_on_target": "Defines the first recursive coefficient separately from suffix coefficients.",
+      "paper_match": "Implements the max(i,2) indexing in (4.4), including the first-input case.",
+      "status": "pass"
+    },
+    {
+      "id": "D092",
+      "name": "Fin.val",
+      "interpretation": "Extracts the natural value of a finite index.",
+      "effect_on_target": "Defines history order and prefix fold lengths.",
+      "paper_match": "Matches ordinary sequential index comparison.",
+      "status": "pass"
+    },
+    {
+      "id": "D093",
+      "name": "Finset.prod",
+      "interpretation": "Finite commutative product over an index set.",
+      "effect_on_target": "Builds products of all factors 1+error_k.",
+      "paper_match": "Matches the product representation in (3.8) and (4.4).",
+      "status": "pass"
+    },
+    {
+      "id": "D094",
+      "name": "Real.instCommMonoid",
+      "interpretation": "The commutative multiplicative-monoid structure of the reals.",
+      "effect_on_target": "Supports finite products of real rounding factors.",
+      "paper_match": "Matches scalar product arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D095",
+      "name": "instLTNat",
+      "interpretation": "The standard strict order on natural numbers.",
+      "effect_on_target": "Orders histories and states positivity of p and r.",
+      "paper_match": "Matches sequential ordering and positive bit counts.",
+      "status": "pass"
+    },
+    {
+      "id": "D096",
+      "name": "Fin.castSucc",
+      "interpretation": "Embeds Fin n into Fin (n+1) while preserving its numeric index.",
+      "effect_on_target": "Carries earlier suffix indices into the larger product.",
+      "paper_match": "Preserves the intended product range.",
+      "status": "pass"
+    },
+    {
+      "id": "D097",
+      "name": "Fin.elim0",
+      "interpretation": "Eliminates an impossible element of Fin 0.",
+      "effect_on_target": "Defines the empty-error base case of suffix-product recursion.",
+      "paper_match": "Implements the conventional absence of an index in an empty range.",
+      "status": "pass"
+    },
+    {
+      "id": "D098",
+      "name": "Fin.last",
+      "interpretation": "The final index of Fin (n+1).",
+      "effect_on_target": "Selects the last rounding factor in suffix-product recursion.",
+      "paper_match": "Matches the terminal factor with index m-1.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "Fin.lastCases",
+      "interpretation": "Splits a finite index into the last index or an earlier embedded index.",
+      "effect_on_target": "Builds suffix products recursively from their final factor.",
+      "paper_match": "Correctly implements consecutive suffix ranges.",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "Nat.below",
+      "interpretation": "Stores recursive results for all smaller natural arguments.",
+      "effect_on_target": "Supports well-founded construction of suffix products.",
+      "paper_match": "No independent paper-level concept is introduced.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D101",
+      "name": "Nat.brecOn",
+      "interpretation": "Course-of-values recursion on natural numbers.",
+      "effect_on_target": "Implements the suffix-product definition.",
+      "paper_match": "It is implementation machinery and does not change the product semantics.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D102",
+      "name": "Nat.succ",
+      "interpretation": "The natural-number successor operation.",
+      "effect_on_target": "Represents dimensions and indices increased by one.",
+      "paper_match": "Matches n=m+1 and ordinary next-index semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D103",
+      "name": "Fin.mk",
+      "interpretation": "Constructs a finite index from a natural value and an in-range proof.",
+      "effect_on_target": "Builds prior indices used by recursive folds.",
+      "paper_match": "Enforces rather than alters the intended index bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D104",
+      "name": "Nat.casesOn",
+      "interpretation": "Case analysis on zero versus successor naturals.",
+      "effect_on_target": "Supports the generated suffix-product recursion helper.",
+      "paper_match": "No independent paper-level concept is introduced.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D105",
+      "name": "Nat.zero",
+      "interpretation": "The zero natural-number constructor.",
+      "effect_on_target": "Supplies empty dimensions and base cases.",
+      "paper_match": "No independent paper-level condition is introduced.",
+      "status": "not-applicable"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The inspected PDF has the required SHA-256 and is the published SIAM Journal on Scientific Computing 47(5), 2025 version. PDF page 15, printed B1241, contains Theorem 4.3 and equations (4.10)-(4.12), with the recursive-summation setup and decomposition on pages 13-14.",
-      "lean_evidence": "The supplied packet identifies p17_t3_variance_plus_bias_probability_bound as the P17-T3 target and gives its exact, readable, elaborated, and fully explicit types.",
-      "reasoning": "The selected source and passage are the correct ones for P17-T3."
+      "paper_evidence": "The inspected PDF has the required SHA-256 and is the SIAM Journal on Scientific Computing 47(5), 2025 version. Printed pages B1237 and B1239-B1241 contain Lemma 3.10, equations (4.1)-(4.4), (4.8), (4.10), and Theorem 4.3 equations (4.11)-(4.12).",
+      "lean_evidence": "The target is explicitly named P17-T3 and states the variance-plus-bias probability bound with the exact constants from (4.11).",
+      "reasoning": "The selected source, surrounding derivation, and Lean target concern the same Theorem 4.3 recursive-summation result."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Pages 13-15 bind a vector a in R^n, y as its exact sum, the recursively computed hat y, precision p, positive integer r, n-1 rounded additions, and lambda in (0,1).",
-      "lean_evidence": "The target instead binds an arbitrary finite type Omega, arbitrary probability model P, arbitrary function centered, and independent real scalars bias, varianceBudget, biasRadius, kappa, and lambda. It has no a, n, p, r, y, or hat y.",
-      "reasoning": "The target's binders are those of a generic probability inequality, not the objects and dimensions of Theorem 4.3."
+      "status": "pass",
+      "paper_evidence": "The paper has n real inputs and n-1 rounded additions/errors.",
+      "lean_evidence": "Lean uses a : Fin (m+1) -> Real and delta : Fin m -> Omega -> Real, with p,r : Nat and a finite outcome type.",
+      "reasoning": "Taking n=m+1 gives exactly the paper's dimensions and index counts."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The summation input, execution, errors, M, A, kappa, and gamma quantities are fixed or derived before Theorem 4.3 quantifies lambda.",
-      "lean_evidence": "All probability data, random values, budgets, radii, kappa, and lambda are universally quantified independently, subject only to abstract inequalities.",
-      "reasoning": "The target does not preserve the dependence of M, A, kappa, and the two radii on the input vector, rounding execution, n, p, and r."
+      "status": "pass",
+      "paper_evidence": "After fixing the input, arithmetic parameters, and execution, Theorem 4.3 states the bound for every 0<lambda<1.",
+      "lean_evidence": "The target quantifies m, Omega, and run before universally quantifying lambda and its range proofs; the run and its probability law do not depend on lambda.",
+      "reasoning": "The confidence parameter has the same pointwise scope and no witness is moved across it."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.3 requires 0 < lambda < 1. Its relative error and kappa require y nonzero. The proof uses the SR_{p,r} recurrence, mean-independent zero-mean alpha errors, |alpha| <= u_p, the beta bound u_{p+r}, and the variance result for M.",
-      "lean_evidence": "The target assumes only varianceBudget > 0, lambda > 0, kappa >= 0, a raw second-moment bound, and a fixed scalar bias bound. It has no lambda < 1, y nonzero, SR assumptions, mean-independence hypothesis, zero-mean condition, or pathwise remainder function.",
-      "reasoning": "Essential hypotheses are omitted or replaced by abstract sufficient conditions. The added strict positivity of varianceBudget also prevents direct use of the zero budget occurring when n=1."
+      "status": "pass",
+      "paper_evidence": "The paper assumes positive precision parameters through bit-count semantics, bounded delta and beta, alpha=delta-beta with zero conditional mean and |alpha|<=u_p, and implicitly requires y nonzero. Lemma 3.10 gives the product remainder and (4.12) invokes the product-variance result.",
+      "lean_evidence": "D021 requires positive p,r and the limited-precision conditional-mean model; D017 carries alpha, covariance, and remainder certificates; hsum explicitly states the exact sum is nonzero.",
+      "reasoning": "The explicit nonzero assumption resolves a source omission. The covariance and coefficient-remainder fields are consequences available for every paper execution, not independent assumptions narrowing the final event."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "Equation (4.10) gives a pathwise bound for A, equation (4.12) gives the probability bound for M, and equation (4.11) gives the concrete relative forward-error conclusion for hat y.",
-      "lean_evidence": "The conclusion is only a probability event for |kappa * (centered omega + bias)| with abstract budgets. It contains no definitions or conclusions for M, A, hat y, y, or the exact gamma expressions.",
-      "reasoning": "The selected paper conclusion and its necessary decomposition are not present as concrete statements."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.3 concludes precisely the probability-at-least-1-lambda version of (4.11). Equations (4.10) and (4.12) are supporting estimates in its proof.",
+      "lean_evidence": "The target concludes 1-lambda <= probability of the complete relative-error event with both terms in the bracket.",
+      "reasoning": "The complete theorem conclusion is present; supporting proof inequalities need not be separate conjuncts."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The paper uses ordinary real arithmetic, scalar absolute value, square root, finite coefficient sums, expectation, and probability.",
-      "lean_evidence": "D001-D049 expose finite probability as normalized weights, event probability and expectation as finite sums, real arithmetic and order, real absolute value, real square root, set predicates, and event indicators.",
-      "reasoning": "The imported operators are fully interpretable and have standard meanings. The substantive failures arise from which quantities are supplied to them, not hidden operator semantics."
+      "paper_evidence": "The paper defines y, kappa, gamma, the recursive computation, alpha, beta, B_i, and event probability in the cited passages.",
+      "lean_evidence": "D008-D013 and D022-D030 unfold these notions into finite sums, a left fold, exact powers, finite expectations, suffix coefficients, and coefficient remainders.",
+      "reasoning": "No target-level operator remains semantically opaque or changes the source formulas."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "Pages 13-15 distinguish exact y, computed hat y, the alpha-only component M, and the limited-random-bit remainder A, with hat y - y decomposed through M and A.",
-      "lean_evidence": "No exact or computed sum occurs. The expression centered omega plus a fixed scalar bias is not defined to equal a normalized hat y minus y, M plus A, or any other paper quantity.",
-      "reasoning": "The target cannot establish that its bounded random scalar is the paper's computed forward error."
+      "status": "pass",
+      "paper_evidence": "Equation (4.1) defines exact y, while (4.4) defines computed hat{y} from rounded recursive additions.",
+      "lean_evidence": "p17ExactSum and p17RecursiveSum are distinct definitions, and the event compares their difference.",
+      "reasoning": "Exact and computed quantities are not conflated."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "Equation (4.4) and Theorem 4.3 concern left-to-right recursive summation with n-1 additions rounded by SR_{p,r}.",
-      "lean_evidence": "The target contains no recursive state, addition order, rounding operation, p, r, delta, beta, alpha, or mapping from outcomes to an execution.",
-      "reasoning": "There is no statement-level linkage to the algorithm or execution model."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.3 is tied to left-to-right recursive summation under SR_{p,r}.",
+      "lean_evidence": "p17RecursiveSum fixes the same left fold, while D021 links each delta and beta to its recursive pre-round value and conditional-mean history.",
+      "reasoning": "Lean abstracts away neighbor selection and exact Bernoulli probabilities, but every source execution embeds in the abstract model; the extension to other processes satisfying the same certificates is a genuine strengthening."
     },
     {
       "id": "S09",
-      "status": "fail",
-      "paper_evidence": "The paper uses scalar absolute values, the coefficient l1 magnitude sum_i |a_i|, and kappa(a) = sum_i |a_i| / |y|. The variance estimate concerns the squared M component.",
-      "lean_evidence": "The target uses scalar absolute value and a squared function, but kappa is arbitrary and there is no coefficient l1 sum, |y| denominator, or definition connecting centered squared to M squared.",
-      "reasoning": "The primitive norm is correct, but the coefficient and normalization semantics required for the relative bound are absent."
+      "status": "pass",
+      "paper_evidence": "The theorem uses scalar absolute values and sum_i |a_i|; the squared quantity occurs only as u_p^2 inside gamma.",
+      "lean_evidence": "Lean uses real abs, a componentwise finite absolute sum in kappa, and (p17UnitRoundoff p)^2 only in the probabilistic gamma argument.",
+      "reasoning": "Scalar, componentwise, and squared semantics all match."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "Equation (4.11) uses exactly sqrt(gamma_{n-1}(u_p^2)/lambda) plus gamma_{n-1}(u_p+u_{p+r}) minus gamma_{n-1}(u_p), with n-1 reflecting the number of rounded additions.",
-      "lean_evidence": "The target replaces these expressions by independent variables varianceBudget and biasRadius and contains no n-1 index, u_p, u_{p+r}, gamma, or relation defining the budgets.",
-      "reasoning": "The constants, indexing, and parameter dependence of Theorem 4.3 are erased."
+      "status": "pass",
+      "paper_evidence": "The paper uses n-1 in every gamma index, u_p^2/lambda under the square root, and gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p).",
+      "lean_evidence": "Lean uses m with n=m+1 and reproduces exactly sqrt(gamma_m(u_p^2)/lambda) plus the same gamma difference.",
+      "reasoning": "All offsets, coefficients, signs, and parameter dependencies agree."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "Pages 5-8 define normalized binary floating point, SR_{p,r}, precision p and p+r approximation, and the zero-result convention; pages 13-15 apply that model to recursive summation.",
-      "lean_evidence": "The target is a real-valued finite probability statement with no floating-point values, rounding mode, precision, exceptional-value convention, underflow, overflow, or SR distribution.",
-      "reasoning": "The numerical model is entirely absent."
+      "status": "pass",
+      "paper_evidence": "The paper works in normalized precision-p binary arithmetic under the relative-error model, with SR_{p,r}, positive p,r, and implicit exclusion of executions violating that model.",
+      "lean_evidence": "D021 records the proof-relevant relative-error, truncation, zero, history, and boundedness properties, with u_p and u_{p+r} defined from p and r.",
+      "reasoning": "Lean is an axiomatic generalization rather than an alternative floating-point model. Actual modeled SR_{p,r} executions satisfy its fields, and exceptional executions outside the paper model are not asserted to be paper executions."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "For every 0 < lambda < 1, the paper gives non-strict error and probability inequalities. For nonzero y, its defined kappa is at least one.",
-      "lean_evidence": "The target uses the correct non-strict directions but assumes only lambda > 0 and kappa >= 0. It also requires varianceBudget > 0.",
-      "reasoning": "The logical domains are not equivalent: lambda >= 1 and kappa = 0 introduce trivial cases, while strict variance positivity excludes a legitimate zero-variance boundary case."
+      "status": "pass",
+      "paper_evidence": "The source has non-strict error and probability inequalities, with strict 0<lambda<1.",
+      "lean_evidence": "The event uses <=, the outer result is 1-lambda <= event probability, and lambda hypotheses use <.",
+      "reasoning": "Directions and strictness match exactly."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "Equation (4.11) is a relative forward-error bound for one computed sum, |hat y - y| / |y|.",
-      "lean_evidence": "The event concerns an arbitrary scaled random expression |kappa * (centered omega + bias)| and never mentions an exact result, computed result, or forward error.",
-      "reasoning": "A generic concentration expression is substituted for the paper's explicitly defined relative forward error."
+      "status": "pass",
+      "paper_evidence": "Equation (4.11) is a scalar forward relative-error bound |hat{y}-y|/|y|.",
+      "lean_evidence": "The event contains exactly the absolute computed-minus-exact difference divided by the absolute exact sum.",
+      "reasoning": "No expectation, bias-only, backward-error, or residual notion replaces the source conclusion."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.3 retains the exact gamma functions and full gamma difference. The first-order description proportional to sqrt(n)u_p + n u_{p+r} is not used in the theorem.",
-      "lean_evidence": "No gamma function or higher-order term occurs; both exact expressions are hidden behind unconstrained budget variables.",
-      "reasoning": "The target does not preserve the paper's exact higher-order dependence or assert that its budgets equal those expressions."
+      "status": "pass",
+      "paper_evidence": "Equation (4.3) defines gamma exactly; its nu+O(u^2) expansion is explanatory and is not substituted in Theorem 4.3.",
+      "lean_evidence": "p17Gamma is exactly (1+u)^m-1 in every occurrence.",
+      "reasoning": "All higher-order terms are retained and no small-u hypothesis is added."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The source result is already scalar-valued but specifically concerns vectors in R^n and finite recursive SR_{p,r} executions.",
-      "lean_evidence": "The target generalizes to arbitrary finite probability models and arbitrary random scalars while deleting the vector, algorithm, and parameter linkage.",
-      "reasoning": "Finite outcomes are compatible with rounding histories, but this is not an explicit faithful specialization or generalization of Theorem 4.3 because no instantiation theorem or semantic mapping is stated."
+      "status": "pass",
+      "paper_evidence": "The paper's result concerns finite-dimensional real recursive summation driven by finitely many Bernoulli choices.",
+      "lean_evidence": "Lean uses n=m+1, a finite outcome type, and an abstract class of runs satisfying the paper's proof-relevant certificates.",
+      "reasoning": "Finite Omega does not exclude a fixed paper execution because its path support is finite. The abstract run class is broader than exact SR_{p,r}, so the result is correctly classified as faithful-stronger."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "For y nonzero, kappa(a) is at least one, and Theorem 4.3 restricts lambda to (0,1), so its probability claim is substantive.",
-      "lean_evidence": "The target permits kappa = 0, making its event identically true, and permits lambda >= 1, making 1 - lambda nonpositive. Its hypotheses are otherwise satisfiable, so these are genuine admitted cases rather than global inconsistency.",
-      "reasoning": "The theorem is not wholly vacuous, but it includes unintended trivial regimes unavailable under the paper's intended quantities."
+      "status": "pass",
+      "paper_evidence": "Actual SR_{p,r} recursive summations with nonzero exact sum provide source models, including genuinely random paths.",
+      "lean_evidence": "For example, with m=1, a two-outcome equal-weight law, beta=0, symmetric bounded nonzero delta, identity truncate, and a nonzero exact sum, all history, alpha, covariance, and remainder fields are satisfiable.",
+      "reasoning": "The run type is inhabited beyond empty-error cases, and the probability conclusion is not forced merely by contradiction or an empty sample space."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The Lean proposition does not identify its random expression with |hat y - y| / |y|, does not provide the concrete gamma budgets, and cannot instantiate its single scalar bias as the paper's outcome-dependent pathwise remainder A. Therefore its conclusion does not entail equation (4.11)."
+      "verdict": "yes",
+      "reasoning": "Set m=n-1 and package the finite SR_{p,r} path distribution, errors, and inputs into the run. Lemma 3.10 supplies alpha and coefficient-remainder properties, while bounded mean-independent alpha products supply the covariance certificate used by the variance estimate. The Lean event then unfolds exactly to (4.11)."
     },
     "paper_implies_lean": {
       "verdict": "no",
-      "reasoning": "Theorem 4.3 concerns one SR_{p,r} recursive-summation distribution and its derived quantities. It does not assert the target's universal concentration theorem for every finite probability model, arbitrary random function, arbitrary fixed bias, and arbitrary budgets."
+      "reasoning": "The paper states the result only for executions generated by the specific SR_{p,r} operator. Lean quantifies over a broader axiomatic class that need not be neighbor-valued or use the paper's exact q_r probabilities, provided it satisfies the same boundedness, conditional-mean, covariance, and remainder certificates. The paper statement alone does not assert this broader theorem."
     }
   },
-  "classification": "not-faithful-different",
-  "accepted": false,
+  "classification": "faithful-stronger",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "algorithm-linkage-and-result-identity",
-      "paper_evidence": "PDF pages 13-15 define a, y, the SR_{p,r} recurrence, hat y, M, A, and the relative forward error before stating equation (4.11).",
-      "lean_evidence": "The target has only an arbitrary finite probability model and an arbitrary expression kappa * (centered omega + bias), with none of the paper's algorithmic quantities.",
-      "impact": "The proposition does not state the benchmarked recursive-summation theorem."
+      "severity": "note",
+      "category": "axiomatic-generalization",
+      "paper_evidence": "Theorem 4.3 is stated for the exact SR_{p,r} recursive algorithm.",
+      "lean_evidence": "P17VarianceRecursiveSumRun records proof-relevant stochastic properties without requiring the rounded values to be adjacent p-bit neighbors with the exact q_r law.",
+      "impact": "The Lean proposition covers the paper execution as a special case and additionally covers other processes, making it stronger rather than different."
     },
     {
-      "severity": "critical",
-      "category": "random-remainder-replaced-by-fixed-bias",
-      "paper_evidence": "Lemma 3.10 and equations (4.8)-(4.10) make B_i and A depend on the rounding errors; A is controlled pathwise but is not a single deterministic scalar.",
-      "lean_evidence": "bias is one real number independent of omega, and hbias bounds only |bias|.",
-      "impact": "The paper's decomposition M + A cannot be mapped to centered omega + bias, so the abstract event does not yield the paper's final error event."
+      "severity": "note",
+      "category": "source-derived-certificates",
+      "paper_evidence": "Lemma 3.10 gives the B_i decomposition and bound, and the proof of Theorem 4.3 invokes the bounded mean-independent product variance estimate in (4.12).",
+      "lean_evidence": "D017 stores pairwise product-covariance and coefficient-remainder bounds as run fields.",
+      "impact": "Both fields can be instantiated for every paper execution from the cited source properties; they do not reduce source applicability or assume the final probability event."
     },
     {
-      "severity": "major",
-      "category": "constants-indexing-and-error-notion",
-      "paper_evidence": "Equation (4.11) contains kappa(a), gamma_{n-1}(u_p^2), lambda, u_p, u_{p+r}, and the relative error |hat y - y| / |y| with exact indexing.",
-      "lean_evidence": "kappa, varianceBudget, and biasRadius are unconstrained independent scalars, and no relative-error numerator or denominator appears.",
-      "impact": "The exact theorem cannot be recovered from the Lean statement even if the generic probability inequality is mathematically valid."
-    },
-    {
-      "severity": "major",
-      "category": "hypothesis-domain-and-nonvacuity",
-      "paper_evidence": "Theorem 4.3 states 0 < lambda < 1; nonzero y is required by kappa and relative error, and the resulting kappa is at least one.",
-      "lean_evidence": "The target assumes only lambda > 0 and kappa >= 0, while separately requiring varianceBudget > 0.",
-      "impact": "The target admits trivial lambda >= 1 and kappa = 0 cases and excludes the zero-variance boundary, so its domain is not the paper's domain."
+      "severity": "note",
+      "category": "edge-condition",
+      "paper_evidence": "The paper divides by |y| in kappa(a) and (4.11) without explicitly stating y != 0.",
+      "lean_evidence": "The target explicitly requires p17ExactSum run.a != 0.",
+      "impact": "This is a faithful formal clarification needed to give the relative-error expression its intended meaning."
     }
   ],
-  "rationale": "Direct inspection of Theorem 4.3 and its surrounding definitions shows that the Lean target is a generic finite-space second-moment-plus-fixed-bias inequality, not the stated SR_{p,r} recursive-summation result. Its probability primitives and scalar operators are conventional, but it omits the algorithm, exact and computed sums, gamma constants, indexing, and relative-error definition. Most decisively, the paper's limited-precision remainder A is outcome-dependent and only pathwise bounded, whereas Lean supplies one deterministic scalar bias. Neither proposition implies the other under the meanings actually stated, so the result is not-faithful-different."
+  "rationale": "After unfolding every dependency, the Lean conclusion is exactly Theorem 4.3 with n=m+1: the same left-to-right computed sum, exact sum, scalar relative error, condition number, exact gamma function, u_p^2/lambda variance term, finite-r gamma difference, and success probability. The potentially restrictive covariance and coefficient-remainder fields are source-derived certificates, not assumptions of the final event: bounded mean-independent alpha products yield the stated covariance bounds, and Lemma 3.10 yields the remainder bound. Because Lean permits additional abstract error processes satisfying these certificates while every paper SR_{p,r} execution remains an instance, Lean implies the paper result but the paper result does not imply the full generalized Lean proposition."
 }

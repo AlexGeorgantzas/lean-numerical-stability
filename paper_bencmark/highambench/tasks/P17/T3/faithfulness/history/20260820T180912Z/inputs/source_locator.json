@@ -5,27 +5,6 @@
   "paper_version": "published journal version; SIAM Journal on Scientific Computing 47(5), 2025, pages B1227-B1249",
   "source_locations": [
     {
-      "anchor": "Lemma 3.10 equations (3.8)-(3.9)",
-      "pdf_page": 11,
-      "printed_page": "B1237",
-      "role": "mean-independent alpha errors, exact path-dependent B_i decomposition, and remainder radius",
-      "section": "3. Analysis of limited-precision SR"
-    },
-    {
-      "anchor": "recursive sum, condition number, gamma function, and computed product representation (4.1)-(4.4)",
-      "pdf_page": 13,
-      "printed_page": "B1239",
-      "role": "algorithm, exact and computed sums, and constants",
-      "section": "4.1 Recursive summation"
-    },
-    {
-      "anchor": "exact M+A error decomposition (4.8)",
-      "pdf_page": 14,
-      "printed_page": "B1240",
-      "role": "path-dependent centered and limited-precision error components",
-      "section": "4.1 Recursive summation"
-    },
-    {
       "anchor": "Theorem 4.3 equation (4.11), centered bound (4.12), and deterministic remainder bound (4.10)",
       "pdf_page": 15,
       "printed_page": "B1241",

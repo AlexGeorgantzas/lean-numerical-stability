@@ -3,163 +3,156 @@
   "role": "roundtrip-judge",
   "task_id": "P17-T3",
   "paper_sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d",
-  "blind_translation_sha256": "45c3803f78d44bff49877c547e50a7099e3fa0db742993a470b0b8c5dbe0509d",
+  "blind_translation_sha256": "f7e508c148addad76e0e0614e18be5f9c75c441d25a6058c00dd25e0ba9f09f4",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF is the published SIAM Journal on Scientific Computing 47(5), 2025 version with the specified SHA-256. PDF page 15, printed page B1241, contains Theorem 4.3, equations (4.10)-(4.12), and the variance-based recursive-summation result.",
-      "translation_evidence": "The supplied comparison identifies P17-T3 and the expected paper and translation hashes.",
-      "reasoning": "The source version and cited passage are correct; the surrounding pages establish the recursive algorithm, decomposition, and limited-precision stochastic-rounding model used by Theorem 4.3."
+      "paper_evidence": "The verified PDF is the 2025 SIAM Journal on Scientific Computing article, volume 47(5), pages B1227-B1249. The relevant result is Theorem 4.3, equation (4.11), on PDF page 15, supported by Lemma 3.10 and equations (4.4), (4.8), (4.10), and (4.12).",
+      "translation_evidence": "The translation states the gamma-based high-probability relative-error result for recursive summation and identifies the centered-product and finite-r discrepancy assumptions used in the cited proof.",
+      "reasoning": "The selected paper, theorem, and surrounding decomposition are the intended source."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "PDF pages 13-15 bind a in R^n, y=sum_i a_i, the recursively computed hat(y), precision p, positive integer r, n-1 rounding errors, and 0<lambda<1.",
-      "translation_evidence": "The translation instead binds an arbitrary finite type Omega, an arbitrary probability distribution P, an arbitrary function centered: Omega -> Real, and five unrelated real scalars.",
-      "reasoning": "The translation omits a, n, p, r, y, hat(y), and the rounding-error indices while introducing abstract binders that are not identified with the paper quantities."
+      "status": "pass",
+      "paper_evidence": "The paper has n coefficients, n-1 rounded additions, errors delta_1 through delta_(n-1), positive bit parameters p and r, and a real confidence parameter lambda.",
+      "translation_evidence": "The translation uses m natural, m+1 coefficients indexed by Fin (m+1), and m errors indexed by Fin m, so n=m+1. It takes p and r as positive naturals and lambda as real.",
+      "reasoning": "The zero-based dimensions and indices consistently reindex the paper's one-based formulation, including the n=1 empty-product case."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.3 quantifies lambda after fixing the recursive SR_{p,r} execution; M, A, alpha, and beta are determined by that execution and the input vector.",
-      "translation_evidence": "P, centered, bias, varianceBudget, biasRadius, kappa, and lambda are all universally arbitrary, subject only to scalar moment and magnitude assumptions.",
-      "reasoning": "The execution-dependent random variables and constants have been replaced by independent abstract parameters, changing quantifier scope and dependence."
+      "status": "pass",
+      "paper_evidence": "The input, arithmetic parameters, and recursive computation are fixed before Theorem 4.3 quantifies over every 0<lambda<1.",
+      "translation_evidence": "Omega and the certified run, including coefficients, parameters, distribution, and errors, are quantified before lambda. The embedded certificates do not depend on lambda.",
+      "reasoning": "The confidence statement remains pointwise for a fixed run and universal in lambda; no witness is allowed to depend improperly on lambda."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The proof uses 0<lambda<1, mean-independent zero-mean alpha_j, |alpha_j|<=u_p, |beta_j|<=u_{p+r}, the recursive SR_{p,r} construction, and the variance result applied specifically to M. Nonzero y is logically required by the relative quotient.",
-      "translation_evidence": "The hypotheses are only varianceBudget>0, lambda>0, kappa>=0, a raw second-moment upper bound for centered, and |bias|<=biasRadius.",
-      "reasoning": "The translation lacks lambda<1, the algorithmic and mean-independence assumptions, the rounding-error bounds, and nonzero y. Its raw-moment hypothesis is not linked to the paper's variance estimate for M."
+      "status": "pass",
+      "paper_evidence": "Lemma 3.10 gives zero-mean mean-independent alpha errors with |alpha_k|<=u_p and the product-remainder bound. Theorem 4.3 assumes 0<lambda<1, while its relative-error expression implicitly requires y!=0.",
+      "translation_evidence": "The run contains the corresponding delta, beta, epsilon, adapted-moment, boundedness, covariance, and discrepancy conditions. It explicitly assumes the exact sum is nonzero and 0<lambda<1.",
+      "reasoning": "The explicit nonzero-sum guard resolves an undefined source expression. The packaged covariance and discrepancy certificates do not reduce applicability: the discrepancy follows from Lemma 3.10, and the covariance bounds follow by iterated conditional expectation from mean independence, |epsilon_k|<=u_p, and u_p<=1."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "Equations (4.10)-(4.12) give a pathwise bound for A, a probability-at-least-1-lambda bound for M, and the resulting relative forward-error bound for |hat(y)-y|/|y| with the exact gamma terms.",
-      "translation_evidence": "The sole conclusion bounds the probability of |kappa*(centered(omega)+bias)| by a threshold involving varianceBudget and biasRadius.",
-      "reasoning": "The computed-sum conclusion, M and A conclusions, gamma constants, condition number definition, and relative-error quotient are absent."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.3 concludes that the relative-error event in (4.11) has probability at least 1-lambda. Equations (4.10) and (4.12) are the two supporting estimates combined in its proof.",
+      "translation_evidence": "The sole conclusion is the same probability lower bound for the same relative-error threshold. The supporting centered and remainder information is represented in the enhanced-run dependency ledger.",
+      "reasoning": "The complete theorem conclusion is present; the proof estimates are accounted for as dependencies rather than incorrectly added as separate theorem conjuncts."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The paper defines SR_{p,r}, delta, beta, alpha, B_i, M, A, kappa(a), and gamma_m(u), all of which determine the theorem's meaning.",
-      "translation_evidence": "The dependency ledger correctly interprets finite sums, event probability, raw moments, real arithmetic, square root, and absolute value, but contains none of the paper-specific definitions.",
-      "reasoning": "The ledger explains the abstract proposition internally but does not recover or interpret the nontrivial definitions that make it the paper result."
+      "status": "pass",
+      "paper_evidence": "The paper defines gamma_m(u)=(1+u)^m-1, kappa(a)=sum_i|a_i|/|sum_i a_i|, the recursive sum, alpha=delta-beta, and the suffix-product decomposition.",
+      "translation_evidence": "D008-D013 and D022-D030 explicitly interpret finite probability, expectation, exact sum, gamma, computed recurrence, kappa, unit roundoff, epsilon, multiplier products, and discrepancy.",
+      "reasoning": "All operators occurring in the translated proposition have explicit mathematical meanings. The deliberate abstraction from the concrete SR operator is assessed under S08 and S11."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "PDF page 13 distinguishes the exact recurrence s_k and y from the SR_{p,r}-computed recurrence hat(s)_k and hat(y), with delta errors in equation (4.4).",
-      "translation_evidence": "There are no exact, rounded, or computed quantities, only the abstract expression centered(omega)+bias.",
-      "reasoning": "The translation removes rather than preserves the exact-versus-computed distinction central to the forward-error theorem."
+      "status": "pass",
+      "paper_evidence": "Equation (4.1) defines the exact sum y, while (4.4) defines the computed value hat y generated by recursively rounded additions. Delta, beta, and alpha have distinct roles.",
+      "translation_evidence": "S is the exact coefficient sum, c_m is generated by the delta-perturbed recurrence, beta represents the finite-r component, and epsilon=delta-beta is the centered component.",
+      "reasoning": "Exact, computed, biased, and centered quantities are not conflated."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Theorem 4.3 expressly concerns left-to-right recursive summation hat(s)_1=a_1 and hat(s)_k=SR_{p,r}(hat(s)_{k-1}+a_k) for k=2,...,n.",
-      "translation_evidence": "The proposition contains no recurrence, addition order, rounding operation, or execution trace.",
-      "reasoning": "Nothing links the translated proposition to recursive summation or any numerical algorithm."
+      "paper_evidence": "Section 4.1 and equation (4.4) tie the result specifically to left-to-right summation in which every update is produced by SR_(p,r), as defined by the adjacent-floating-point Bernoulli rule.",
+      "translation_evidence": "D011 and D030 preserve the exact left-to-right recurrence, but D016-D017 quantify over abstract certified error processes. They do not require delta to be generated by the paper's adjacent-neighbor SR_(p,r) operator.",
+      "reasoning": "The algorithmic order is exact, but the execution model is generalized beyond concrete limited-precision stochastic rounding. This enlarges rather than narrows the theorem's applicability."
     },
     {
       "id": "S09",
-      "status": "fail",
-      "paper_evidence": "The paper uses scalar absolute values, the coefficient l1 magnitude sum_i |a_i|, and division by |y|, producing kappa(a)=(sum_i |a_i|)/|y|.",
-      "translation_evidence": "The translation uses scalar absolute value but treats kappa as an arbitrary nonnegative multiplier and contains neither sum_i |a_i| nor |y|.",
-      "reasoning": "Scalar absolute value is preserved locally, but the l1 coefficient factor and relative normalization are not."
+      "status": "pass",
+      "paper_evidence": "Theorem 4.3 uses scalar absolute value, the componentwise sum sum_i|a_i|, and scalar forward relative error.",
+      "translation_evidence": "The translation uses real absolute value throughout and defines kappa by the same coefficient l1 sum divided by the absolute exact sum.",
+      "reasoning": "No squared norm, 2-norm, infinity norm, or componentwise vector error is substituted."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The exact bound uses n-1 throughout, sqrt(gamma_{n-1}(u_p^2)/lambda), and gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p), all multiplied by kappa(a).",
-      "translation_evidence": "The threshold is kappa*(sqrt(varianceBudget/lambda)+biasRadius), with varianceBudget and biasRadius arbitrary and no n, p, r, unit roundoffs, or gamma indices.",
-      "reasoning": "Only the superficial square-root-plus-remainder shape remains; the required constants, indices, and parameter dependence are absent."
+      "status": "pass",
+      "paper_evidence": "Equation (4.11) uses n-1, u_p squared inside gamma, division by lambda inside the square root, and the correction gamma_(n-1)(u_p+u_(p+r))-gamma_(n-1)(u_p).",
+      "translation_evidence": "With m=n-1, the threshold is sqrt(gamma_m(u_p^2)/lambda)+gamma_m(u_p+u_(p+r))-gamma_m(u_p), multiplied by the same kappa. Phi_0 and Phi_1 correctly duplicate the full product for the first two summands.",
+      "reasoning": "Constants, offsets, confidence dependence, and product indexing match exactly."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "PDF pages 5-8 define normalized binary floating point, unit roundoffs u_p and u_{p+r}, and SR_{p,r} using a p+r-bit approximation and Bernoulli rounding; Lemma 3.2 supplies the zero-result convention.",
-      "translation_evidence": "The proposition has no precision, floating-point system, stochastic-rounding mode, zero-result convention, overflow, underflow, or exceptional-value assumptions.",
-      "reasoning": "The numerical model has been completely abstracted away without a hypothesis connecting the abstract variables to SR_{p,r}."
+      "paper_evidence": "The paper uses normalized precision-p binary floating point and SR_(p,r), whose Bernoulli probability is computed from fl_(p+r) and whose output is an adjacent p-bit value. The relative-error model is assumed only for valid floating-point executions.",
+      "translation_evidence": "The translation has real-valued errors and an otherwise arbitrary function T constrained only at encountered pre-update values. It does not encode adjacent floating-point values, q_r, representability, exponent range, underflow, overflow, or a concrete fl_(p+r) mode.",
+      "reasoning": "The translated numerical model is an abstract sufficient-error model, not the concrete floating-point model. Every intended paper execution satisfies it, but it also admits non-floating-point executions."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The paper asserts a nontrivial probability lower bound for every 0<lambda<1 and a pathwise remainder inequality, with kappa(a) fixed by a nonzero exact sum.",
-      "translation_evidence": "The translation permits every lambda>0 and kappa>=0; lambda>=1 makes 1-lambda nonpositive, and kappa=0 makes the event inequality 0<=0.",
-      "reasoning": "Although the displayed inequalities use compatible non-strict directions, the domains and resulting logical strength differ substantially and admit unintended trivial cases."
+      "status": "pass",
+      "paper_evidence": "The relative-error comparison is non-strict, the probability is at least 1-lambda, and lambda is strictly between zero and one.",
+      "translation_evidence": "The conclusion uses the same non-strict error inequality and probability lower bound, with the same strict lambda hypotheses.",
+      "reasoning": "All inequality directions and strictness choices match. The overall translation is stronger only because its certified execution domain is broader."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.3 is a relative forward-error result for one computed sum. Equation (4.12) controls the specifically defined alpha-only component M, not hat(y)-E(hat(y)).",
-      "translation_evidence": "The conclusion is a generic concentration statement for a function named centered plus a fixed scalar bias, with no computed or exact output.",
-      "reasoning": "The paper's forward-error notion and M/A decomposition have been replaced by an abstract deviation-plus-bias notion. In particular, the paper's A is path-dependent, whereas translation bias is a fixed scalar."
+      "status": "pass",
+      "paper_evidence": "Equation (4.11) is a scalar forward relative-error bound for the computed sum versus the exact sum.",
+      "translation_evidence": "The event is |c_m-S|/|S| bounded by kappa times the paper's threshold.",
+      "reasoning": "No backward error, residual, expectation error, or unbiasedness claim replaces the source's forward error."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "Theorem 4.3 retains the exact gamma functions (1+u)^m-1 and the full gamma difference; it does not replace them by the first-order scale sqrt(n)u_p+n u_{p+r}.",
-      "translation_evidence": "The translation replaces both exact expressions by unconstrained parameters varianceBudget and biasRadius.",
-      "reasoning": "No approximation is written, but the exact higher-order dependence required by the paper has been discarded rather than preserved."
+      "status": "pass",
+      "paper_evidence": "Equation (4.3) defines gamma exactly as (1+u)^n-1. The first-order expansion is explanatory and is not used in Theorem 4.3.",
+      "translation_evidence": "D010 defines gamma_m(t) exactly as (1+t)^m-1, and the conclusion uses this exact function.",
+      "reasoning": "All higher-order terms are retained and no small-u approximation is substituted."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The paper concerns arbitrary real vectors of dimension n and the finite sequence of SR_{p,r} choices generated by one recursive-summation execution.",
-      "translation_evidence": "The translation ranges over every finite discrete probability space and arbitrary scalar functions, with no vector dimension or algorithmic origin.",
-      "reasoning": "This is not a faithful specialization or generalization: it simultaneously specializes probability spaces to finite discrete ones and generalizes away all numerical-algorithm structure."
+      "status": "pass",
+      "paper_evidence": "The theorem concerns finite-dimensional real scalar summation and a finite sequence of Bernoulli rounding choices.",
+      "translation_evidence": "The translation uses real coefficients, m+1 finite dimensions, and a finite discrete sample space, while allowing any certified error process satisfying the proof-relevant conditions.",
+      "reasoning": "A finite sequence of SR choices has a finite-support pushforward distribution, so the finite sample-space representation loses no intended execution. The extension to non-SR certified runs is correctly treated as a strengthening."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "For a meaningful relative theorem, y must be nonzero, which makes kappa(a) positive, and the theorem restricts 0<lambda<1.",
-      "translation_evidence": "The hypotheses are satisfiable, but kappa=0 makes the event universal and lambda>=1 makes the asserted probability lower bound nonpositive.",
-      "reasoning": "The translation includes broad classes of unintended vacuous instances excluded by the meaningful paper interpretation."
+      "status": "pass",
+      "paper_evidence": "Actual SR_(p,r) recursive-summation executions provide the intended nonempty class of examples, including the trivial one-term case with no rounded additions.",
+      "translation_evidence": "Enhanced runs are satisfiable: actual paper executions supply the certificates, and m=0 with a singleton probability space and nonzero a_0 gives an immediate explicit case.",
+      "reasoning": "The proposition is not true solely because its run type is empty or because its relative-error denominator vanishes."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The generic proposition can bound an abstract function plus a fixed scalar bias, but the paper's remainder A is path-dependent rather than a fixed scalar. It also supplies no link to recursive summation or the exact gamma parameters, so it cannot establish Theorem 4.3 from the paper hypotheses without additional substantive results."
+      "verdict": "yes",
+      "reasoning": "Every intended finite SR_(p,r) summation execution can be represented by a finite-support run. Lemma 3.10 supplies centering, boundedness, and product discrepancy; its mean-independence conditions also imply the packaged suffix-product covariance bounds. Instantiating the translated theorem therefore yields Theorem 4.3."
     },
     "paper_implies_translation": {
       "verdict": "no",
-      "reasoning": "Theorem 4.3 is confined to random variables generated by SR_{p,r} recursive summation and does not imply the stated inequality for every finite probability distribution, arbitrary real-valued function, and arbitrary moment and bias parameters."
+      "reasoning": "The paper asserts the result only for executions generated by its concrete SR_(p,r) operator. The translation also quantifies over abstract certified real-error processes and arbitrary T functions that need not arise from adjacent-neighbor stochastic rounding, so the paper theorem does not establish the translated theorem over that larger domain."
     }
   },
-  "classification": "not-faithful-different",
-  "accepted": false,
+  "classification": "faithful-stronger",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "algorithm-and-binders",
-      "paper_evidence": "Equations (4.1)-(4.5) and Theorem 4.3 concern an n-dimensional input and n-1 SR_{p,r}-rounded recursive additions.",
-      "translation_evidence": "The proposition contains only an arbitrary finite probability space, arbitrary scalar function, and abstract real budgets.",
-      "impact": "The formal statement is no longer a proposition about the paper's summation algorithm."
+      "severity": "minor",
+      "category": "execution-model generalization",
+      "paper_evidence": "Theorem 4.3 is expressly about the output of recurrence (4.4) under the concrete SR_(p,r) operator.",
+      "translation_evidence": "The run constructors retain the recurrence but replace concrete stochastic-rounding generation with abstract moment, covariance, boundedness, and discrepancy conditions.",
+      "impact": "The translation is not equivalent to the source because it proves the same conclusion for additional non-SR processes. Since every intended SR execution satisfies the conditions, this is a faithful strengthening rather than reduced applicability."
     },
     {
-      "severity": "critical",
-      "category": "error-decomposition",
-      "paper_evidence": "Equations (4.8)-(4.10) define A=sum_i a_i B_i as a path-dependent remainder and control it pointwise; equation (4.12) separately controls M.",
-      "translation_evidence": "The translated decomposition uses centered(omega)+bias with bias a fixed real scalar.",
-      "impact": "The fixed-bias model cannot represent the paper's random pathwise remainder, preventing translation-implies-paper."
+      "severity": "note",
+      "category": "packaged certificates",
+      "paper_evidence": "Lemma 3.10 guarantees the centered-error and product-remainder properties for every intended SR execution, while Theorem 4.3 invokes the corresponding variance estimate.",
+      "translation_evidence": "D017 packages covariance and product-discrepancy bounds as fields of every enhanced run.",
+      "impact": "These fields shift source-derived facts into constructor obligations but do not exclude intended executions; the covariance bounds follow from the paper's mean-independence and boundedness conditions."
     },
     {
-      "severity": "major",
-      "category": "constants-and-numerical-model",
-      "paper_evidence": "Equation (4.11) uses the exact n-1-indexed gamma terms with u_p, u_{p+r}, and SR_{p,r}.",
-      "translation_evidence": "varianceBudget and biasRadius are unconstrained abstract parameters, and no floating-point quantities occur.",
-      "impact": "The theorem's dimensions, precision dependence, exact higher-order terms, and rounding model are lost."
-    },
-    {
-      "severity": "major",
-      "category": "vacuity-and-scope",
-      "paper_evidence": "The paper requires 0<lambda<1 and implicitly requires y!=0 for relative error and kappa(a).",
-      "translation_evidence": "The proposition permits lambda>=1 and kappa=0.",
-      "impact": "Large parts of the translated quantifier domain satisfy the conclusion for trivial reasons unrelated to probabilistic error analysis."
+      "severity": "note",
+      "category": "nonzero exact sum",
+      "paper_evidence": "Equations (4.2) and (4.11) divide by the absolute exact sum without explicitly stating that it is nonzero.",
+      "translation_evidence": "The target explicitly assumes S!=0.",
+      "impact": "This makes the intended domain of the paper's relative-error expression explicit and does not weaken a mathematically defined source claim."
     }
   ],
-  "rationale": "The source and passage are correctly identified, but the blind translation is a generic finite-space second-moment inequality rather than a translation of Theorem 4.3. It omits the recursive summation algorithm, input dimension, precisions, stochastic-rounding model, exact and computed sums, mean-independent alpha errors, M/A definitions, relative forward error, and exact gamma constants. Its fixed scalar bias also cannot represent the paper's path-dependent remainder A. Neither proposition implies the other under the stated binders and hypotheses, so the result is not-faithful-different."
+  "rationale": "The translation reproduces the dimensions, recurrence, exact and computed quantities, centered-error decomposition, norms, gamma constants, confidence dependence, finite-r correction, and final forward relative-error event. Its covariance and remainder certificates are guaranteed for every intended paper execution, so their packaging does not reduce applicability. The substantive difference is that the concrete normalized-binary SR_(p,r) execution model is replaced by a broader certified real-error model. Consequently the translation yields the paper theorem but covers additional executions not addressed by the paper, making it faithful-stronger rather than equivalent."
 }

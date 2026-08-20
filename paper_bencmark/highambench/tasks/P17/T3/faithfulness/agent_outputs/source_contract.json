@@ -1,138 +1,199 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "[PDF pages 13 and 15; anchors: condition number (4.2) and Theorem 4.3 equation (4.11)] Both kappa(a) and the relative forward error divide by |y|, while the section only states a in R^n.",
-      "impact": "The relative high-probability claim requires y!=0; a zero-sum case would need an absolute-error formulation.",
-      "issue": "The theorem does not explicitly exclude y=0."
-    },
-    {
-      "evidence": "[PDF page 15; anchor: proof of Theorem 4.3 preceding equation (4.12)] This paper states that mean independence and |alpha_{k-1}|<=u_p allow [11, Lemma 3.1] and Lemma 2.1 to yield (4.12), but only cites the external lemma.",
-      "impact": "Within the permitted source, the enforceable inherited conditions are those explicitly named here; additional conditions from the cited paper cannot be silently imported.",
-      "issue": "The full assumptions and exact variance statement of [11, Lemma 3.1] are not reproduced."
-    },
-    {
-      "evidence": "[PDF pages 14 and 15; anchors: equation (4.8), definition of M, and equation (4.12)] M is formed from products of 1+alpha, where alpha has zero conditional mean, but the paper does not identify M with hat(y)-E(hat(y)).",
-      "impact": "A faithful target should state the bound for M as defined, or separately prove any claimed equivalence with an output centered about its expectation.",
-      "issue": "The descriptor centered bound can be misread."
-    },
-    {
-      "evidence": "[PDF pages 5, 8, and 13; anchors: standard model (2.4), Lemma 3.2 zero case, and recursive algorithm with beta formula (4.5)] Inputs are quantified as real, initial input rounding is absent, and the displayed beta quotient can have zero denominator even though Lemma 3.2 supplies a convention.",
-      "impact": "A formalization should preserve the no-input-rounding algorithm and explicitly inherit the zero-operation-result convention without inventing exceptional arithmetic behavior.",
-      "issue": "Input representability and zero partial sums are not fully spelled out in section 4.1."
-    }
-  ],
-  "contract_plain_english": "[PDF pages 14-15; anchors: equations (4.8), (4.10), (4.11), and (4.12)] The recursive-summation error is split into an alpha-only random component M and a limited-random-bit remainder A. Chebyshev plus the cited variance result bounds M by (sum_i |a_i|)sqrt(gamma_{n-1}(u_p^2)/lambda) with probability at least 1-lambda, while A is bounded pathwise by (sum_i |a_i|)[gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p)]. For nonzero y, combining the two and dividing by |y| gives Theorem 4.3 exactly.",
-  "paper_batch_sha256": "5856f4d88e51aeb1df8e36f051f77e90c96a2896bb707ed0186c2f74cf1ebc0b",
-  "paper_sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P17-T3",
+  "paper_sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d",
   "source_evidence": [
     {
-      "anchor": "Lemma 2.1 Bienayme-Chebyshev inequality",
-      "observation": "For a finite-variance random variable X and alpha>0, the paper states a probability of at least 1-1/alpha^2 for remaining within alpha standard deviations of the mean.",
+      "pdf_page": 3,
+      "printed_page": "B1229",
+      "anchor": "Introduction paragraph defining SR_{p,r}, p, r, and u_p",
+      "observation": "The paper denotes limited-precision stochastic rounding by SR_{p,r}; p-1 is the number of fraction bits in the destination format, r is the number of random bits, ideal SR_p corresponds to r=infinity, and u_p := 2^(1-p)."
+    },
+    {
       "pdf_page": 4,
-      "printed_page": "B1230"
+      "printed_page": "B1230",
+      "anchor": "Lemma 2.1 and Definition 2.2",
+      "observation": "Lemma 2.1 states P(|X-E(X)| <= alpha sqrt(V(X))) >= 1-1/alpha^2 for finite expectation and variance and alpha>0. Definition 2.2 defines sequential mean independence by E(X_k | X_0,...,X_{k-1})=E(X_k)."
     },
     {
-      "anchor": "Lemma 3.10 mean-independent decomposition (3.8)-(3.9)",
-      "observation": "The paper defines alpha_k=delta_k-beta_k, states that these variables are mean independent with zero mean, decomposes each accumulated product into an alpha-only product plus B_i, and gives a deterministic magnitude bound on B_i.",
+      "pdf_page": 5,
+      "printed_page": "B1231",
+      "anchor": "Section 2.2, equations (2.1)-(2.4)",
+      "observation": "The arithmetic is a normalized precision-p binary floating-point system. The unit roundoff is u_p=2^(1-p), and the standard relative-error model for stochastic rounding is fl_p(x op y)=(x op y)(1+delta) with |delta| bounded by u_p."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "B1232",
+      "anchor": "Paragraphs preceding Definition 2.9",
+      "observation": "The construction first represents the exact input with p+r binary digits using fl_{p+r}. The text describes truncation as the default and notes that directed alternatives satisfy fl_{p+r}(x)=x(1+beta), |beta|<=u_{p+r}=2^(1-p-r)."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "B1233",
+      "anchor": "Definition 2.9, equation (2.6), Remarks 2.10-2.11, and equation (3.1)",
+      "observation": "SR_{p,r}(x) selects the adjacent p-bit upper value with probability q_r(x)=(fl_{p+r}(x)-floor_p(x))/ulp_p(x), and otherwise selects the adjacent lower value. Both SR_{p,r} and ideal SR_p output p-bit results. E(SR_{p,r}(x))=fl_{p+r}(x), so for SR_{p,r}(x)=x(1+delta), E(delta)=beta=(fl_{p+r}(x)-x)/x."
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "B1234",
+      "anchor": "Equation (3.2) and Lemma 3.2",
+      "observation": "A single limited-precision stochastic-rounding error satisfies V(delta)<=u_p^2/4. Lemma 3.2 gives E(delta_k | delta_1,...,delta_{k-1})=beta_k; when the exact operation result is zero, delta_k and beta_k are both set to zero."
+    },
+    {
+      "pdf_page": 9,
+      "printed_page": "B1235",
+      "anchor": "Remarks 3.3-3.5 and equation (3.3)",
+      "observation": "For k>=2, beta_k depends on earlier random rounding errors and is therefore itself random despite arising from deterministic fl_{p+r}; nevertheless E(beta_k)=E(delta_k)."
+    },
+    {
       "pdf_page": 11,
-      "printed_page": "B1237"
+      "printed_page": "B1237",
+      "anchor": "Lemma 3.10, equations (3.8)-(3.9)",
+      "observation": "For alpha_k=delta_k-beta_k, the alpha sequence is mean independent with E(alpha_k | alpha_1,...,alpha_{k-1})=E(alpha_k)=0. Products of (1+delta_k) decompose exactly into the corresponding product of (1+alpha_k) plus B_i, with |B_i|<=gamma_{n-i+1}(u_p+u_{p+r})-gamma_{n-i+1}(u_p)."
     },
     {
-      "anchor": "proof of Lemma 3.10",
-      "observation": "The proof uses |alpha_k|<=u_p and |beta_k|<=u_{p+r} to obtain the exact remainder envelope gamma_m(u_p+u_{p+r})-gamma_m(u_p).",
       "pdf_page": 12,
-      "printed_page": "B1238"
+      "printed_page": "B1238",
+      "anchor": "Proof of Lemma 3.10 and opening of section 4",
+      "observation": "The proof uses the pathwise bounds |alpha_k|<=u_p and |beta_k|<=u_{p+r}. Section 4 says the probabilistic bounds combine Lemma 3.10 with either martingale methods or the variance bound of external reference [11, Lemma 3.1] and Lemma 2.1."
     },
     {
-      "anchor": "recursive summation representation (4.4) and error definitions (4.5)",
-      "observation": "The computed recursive sum is represented coefficientwise by products of 1+delta_{k-1}; the exact sum, condition number, gamma function, and delta and beta radii are defined here.",
       "pdf_page": 13,
-      "printed_page": "B1239"
+      "printed_page": "B1239",
+      "anchor": "Recursive summation and equations (4.1)-(4.5)",
+      "observation": "For a in R^n, y=sum_{i=1}^n a_i and kappa(a)=(sum_i |a_i|)/|sum_i a_i|. The algorithm sets hat{s}_1=a_1 and hat{s}_k=SR_{p,r}(hat{s}_{k-1}+a_k) for k=2,...,n, with hat{y}=hat{s}_n. It yields hat{y}=sum_i a_i product_{k=max{i,2}}^n(1+delta_{k-1}). The exact error function is gamma_m(u)=(1+u)^m-1; the displayed expansion mu+O(u^2) is stated only for mu much less than 1."
     },
     {
-      "anchor": "error decomposition equation (4.8)",
-      "observation": "For alpha_j=delta_j-beta_j, the paper rewrites each suffix product as an alpha-only product plus B_i and derives |hat(y)-y|<=|M|+|A|.",
       "pdf_page": 14,
-      "printed_page": "B1240"
+      "printed_page": "B1240",
+      "anchor": "Theorem 4.2 proof and equation (4.8)",
+      "observation": "With I_i={k in N : max{i,2}<=k<=n}, the product containing delta_{k-1} is replaced by the product containing alpha_{k-1} plus B_i. Algebraically hat{y}-y=M+A, where M=sum_i a_i(product_{k=max{i,2}}^n(1+alpha_{k-1})-1) and A=sum_i a_i B_i; equation (4.8) applies the triangle inequality to obtain |hat{y}-y|<=|M|+|A|."
     },
     {
-      "anchor": "deterministic remainder (4.10), Theorem 4.3 equation (4.11), and centered component bound (4.12)",
-      "observation": "The page gives a pathwise bound on A, a probability-at-least-1-lambda bound on M based on a variance result and Chebyshev, and combines them into the stated high-probability relative summation-error bound.",
       "pdf_page": 15,
-      "printed_page": "B1241"
+      "printed_page": "B1241",
+      "anchor": "Equations (4.10)-(4.12) and Theorem 4.3",
+      "observation": "Equation (4.10) gives the pathwise bound |A|<=(sum_i |a_i|)[gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p)]. Theorem 4.3 states that for every 0<lambda<1, with probability at least 1-lambda, |hat{y}-y|/|y| <= kappa(a)[sqrt(gamma_{n-1}(u_p^2)/lambda)+gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p)]. Its proof obtains |M|<=(sum_i |a_i|)sqrt(gamma_{n-1}(u_p^2)/lambda) with the same probability."
     }
   ],
   "statement": {
-    "algorithm_linkage": "[PDF pages 13-15; anchors: recursive algorithm, equation (4.8), and Theorem 4.3] The result concerns left-to-right recursive summation with n-1 SR_{p,r}-rounded additions, analyzed through the alpha-plus-beta decomposition; it does not cover another summation order or algorithm variant.",
     "binders": [
-      "[PDF page 13; anchor: opening of section 4.1] A vector a in R^n, its exact sum y=sum_{i=1}^n a_i, and the SR_{p,r}-computed recursive sum hat(y) from (4.4).",
-      "[PDF page 15; anchor: Theorem 4.3 statement] A confidence parameter lambda quantified after the summation setup, with 0<lambda<1.",
-      "[PDF pages 6 and 13; anchors: Definition 2.9 and section 4.1] Precision p and positive integer r, with unit roundoffs u_p=2^(1-p) and u_{p+r}=2^(1-p-r)."
-    ],
-    "conclusions": [
-      "[PDF page 15; anchor: equation (4.10)] The remainder A=sum_{i=1}^n a_i B_i satisfies the pathwise bound |A|<=sum_{i=1}^n |a_i||B_i|<=(sum_{i=1}^n |a_i|)[gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p)].",
-      "[PDF page 15; anchor: equation (4.12)] With probability at least 1-lambda, |M|<=(sum_{i=1}^n |a_i|) sqrt(gamma_{n-1}(u_p^2)/lambda).",
-      "[PDF page 15; anchor: Theorem 4.3 equation (4.11)] With probability at least 1-lambda, |hat(y)-y|/|y| <= kappa(a)[sqrt(gamma_{n-1}(u_p^2)/lambda)+gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p)]."
-    ],
-    "constants_and_indexing": [
-      "[PDF pages 13-15; anchors: equations (4.4), (4.10), (4.11), and (4.12)] There are n-1 rounded additions, and every gamma term in Theorem 4.3 has index n-1.",
-      "[PDF page 15; anchor: equations (4.11) and (4.12)] The stochastic term is sqrt(gamma_{n-1}(u_p^2)/lambda): u_p is squared inside gamma, and the whole gamma value is divided by lambda under the square root.",
-      "[PDF page 15; anchor: equations (4.10) and (4.11)] The limited-r remainder is gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p).",
-      "[PDF page 15; anchor: Theorem 4.3 statement] The success probability is at least 1-lambda for every real lambda with 0<lambda<1."
-    ],
-    "definitions_and_conventions": [
-      "[PDF page 13; anchors: equations (4.1)-(4.3)] y=sum_i a_i, kappa(a)=(sum_i |a_i|)/|sum_i a_i|, and gamma_m(u)=(1+u)^m-1.",
-      "[PDF page 13; anchor: equation (4.4)] hat(y)=sum_{i=1}^n a_i product_{k=max{i,2}}^n(1+delta_{k-1}).",
-      "[PDF pages 11 and 14; anchors: Lemma 3.10 and equation (4.8)] alpha_j=delta_j-beta_j and product_{k=max{i,2}}^n(1+delta_{k-1})=product_{k=max{i,2}}^n(1+alpha_{k-1})+B_i.",
-      "[PDF pages 14 and 15; anchors: equation (4.8) and definitions immediately preceding (4.9)] M=sum_{i=1}^n a_i[product_{k=max{i,2}}^n(1+alpha_{k-1})-1], and A=sum_{i=1}^n a_i B_i.",
-      "[PDF page 14; anchor: equation (4.8)] The decomposition gives |hat(y)-y|<=|M|+|A|."
-    ],
-    "error_notions": [
-      "[PDF page 15; anchor: Theorem 4.3 equation (4.11)] The final result is a high-probability relative forward-error bound for one computed sum hat(y), not a bias or expected-error bound.",
-      "[PDF pages 14 and 15; anchors: equation (4.8), equation (4.10), and equation (4.12)] The forward error is separated into a probabilistically controlled alpha-only component M and a remainder A with a deterministic magnitude envelope.",
-      "[PDF page 15; anchor: equation (4.12)] The variance-based probability estimate applies to |M|, not directly to |hat(y)-E(hat(y))|."
-    ],
-    "exceptional_values": [
-      "[PDF page 8; anchor: zero-result case in Lemma 3.2] If a rounded elementary operation has exact result zero, the inherited convention sets its delta and beta errors to zero.",
-      "[PDF page 13; anchors: condition number (4.2) and beta quotient (4.5)] The final relative result is undefined for y=0, and the written beta quotient requires the Lemma 3.2 zero-result convention when a partial exact sum is zero.",
-      "[PDF pages 5 and 15; anchors: normalized floating-point model and Theorem 4.3] No explicit treatment of overflow, underflow, subnormal values, infinities, or NaNs is supplied."
-    ],
-    "higher_order_terms": [
-      "[PDF page 13; anchor: equation (4.3)] gamma_m(u) is exact: (1+u)^m-1; the paper also records gamma_n(u)=nu+O(u^2) only when nu is much less than 1.",
-      "[PDF page 15; anchor: Theorem 4.3 equation (4.11)] No terms are dropped in the theorem: both the square-root gamma term and the full gamma difference are retained.",
-      "[PDF page 12; anchor: section 4 introductory asymptotic description] The paper summarizes the resulting scale as proportional to sqrt(n)u_p+n u_{p+r}, but equation (4.11), rather than that asymptotic summary, is the exact claim."
+      "Inherited before Theorem 4.3: a is a fixed vector in R^n and y=sum_{i=1}^n a_i; n is the dimension used by the recursive algorithm. (PDF p. 13, printed B1239, anchor: section 4.1 and equation (4.1).)",
+      "Inherited: p is the destination precision and r is the positive number of random bits used by SR_{p,r}; u_p=2^(1-p) and u_{p+r}=2^(1-p-r). (PDF pp. 3 and 6, printed B1229 and B1232, anchors: introductory notation and paragraph preceding Definition 2.9.)",
+      "Explicit in Theorem 4.3: lambda is universally quantified after the summation problem and algorithm have been fixed, with 0<lambda<1. (PDF p. 15, printed B1241, anchor: Theorem 4.3.)",
+      "Generated along the computation: delta_1,...,delta_{n-1} are the SR_{p,r} relative errors, beta_j are their corresponding fl_{p+r} errors, and alpha_j=delta_j-beta_j. (PDF pp. 13-14, printed B1239-B1240, anchors: equations (4.4)-(4.5) and proof leading to (4.8).)"
     ],
     "hypotheses": [
-      "[PDF page 13; anchor: recursive-summation algorithm] hat(s)_1=a_1 and hat(s)_k=SR_{p,r}(hat(s)_{k-1}+a_k) for k=2,...,n, with hat(y)=hat(s)_n.",
-      "[PDF pages 11 and 14; anchors: Lemma 3.10 and equation (4.8)] alpha_j=delta_j-beta_j; the alpha_j are mean independent, have mean zero, and are used to decompose each accumulated product.",
-      "[PDF pages 12 and 15; anchors: proof of Lemma 3.10 and proof of Theorem 4.3] |alpha_j|<=u_p, while the corresponding beta_j are bounded by u_{p+r}.",
-      "[PDF page 15; anchor: proof of Theorem 4.3] The variance-based estimate imported as [11, Lemma 3.1], together with Lemma 2.1, is applied to the alpha-only component M."
+      "The selected algorithm is left-to-right recursive summation: hat{s}_1=a_1 and hat{s}_k=SR_{p,r}(hat{s}_{k-1}+a_k) for k=2,...,n; hat{y}=hat{s}_n. The exact recurrence is s_1=a_1, s_k=s_{k-1}+a_k, and y=s_n. (PDF p. 13, printed B1239, anchor: recursive-summation table.)",
+      "Each rounded addition has hat{s}_k=(hat{s}_{k-1}+a_k)(1+delta_{k-1}) with |delta_{k-1}|<=u_p. (PDF p. 13, printed B1239, anchor: recursive-summation table and paragraph following (4.4).)",
+      "The centered errors alpha_j are mean independent, have zero conditional and unconditional means, and satisfy |alpha_j|<=u_p. Full independence of the delta_j or alpha_j is not assumed. (PDF pp. 11-12 and 15, printed B1237-B1238 and B1241, anchors: Lemma 3.10, its proof, and proof of Theorem 4.3.)",
+      "The corresponding beta_j errors satisfy |beta_j|<=u_{p+r}; for later operations they may depend on the previous random path. (PDF pp. 9 and 12, printed B1235 and B1238, anchors: Remark 3.4 and proof of Lemma 3.10.)",
+      "The finite-expectation and finite-variance conditions needed by Bienayme-Chebyshev are inherited through the bounded-error construction; Theorem 4.3 does not restate them separately. (PDF pp. 4 and 15, printed B1230 and B1241, anchors: Lemma 2.1 and proof of Theorem 4.3.)",
+      "For the displayed relative error and kappa(a) to be defined, y=sum_i a_i must be nonzero, although this is not explicitly included as a theorem hypothesis. (PDF pp. 13 and 15, printed B1239 and B1241, anchors: equation (4.2) and Theorem 4.3 equation (4.11).)"
+    ],
+    "conclusions": [
+      "For every 0<lambda<1, P(|hat{y}-y|/|y| <= kappa(a)[sqrt(gamma_{n-1}(u_p^2)/lambda)+gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p)]) >= 1-lambda. (PDF p. 15, printed B1241, anchor: Theorem 4.3 equation (4.11).)",
+      "The probabilistic component obeys |M| <= (sum_{i=1}^n |a_i|)sqrt(gamma_{n-1}(u_p^2)/lambda) with probability at least 1-lambda. (PDF p. 15, printed B1241, anchor: equation (4.12).)",
+      "The finite-r component obeys the pathwise bound |A| <= (sum_{i=1}^n |a_i|)[gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p)]. (PDF p. 15, printed B1241, anchor: equation (4.10).)"
+    ],
+    "definitions_and_conventions": [
+      "y=sum_{i=1}^n a_i is the exact real sum, whereas hat{y}=hat{s}_n is the result of the stated limited-precision stochastic-rounding recurrence. (PDF p. 13, printed B1239, anchors: equations (4.1) and (4.4).)",
+      "kappa(a)=(sum_{i=1}^n |a_i|)/|sum_{i=1}^n a_i|. (PDF p. 13, printed B1239, anchor: equation (4.2).)",
+      "gamma_m(u)=(1+u)^m-1 exactly. (PDF p. 13, printed B1239, anchor: equation (4.3).)",
+      "SR_{p,r}(x) is a Bernoulli choice between the adjacent p-bit floating-point neighbors of x, with upper-neighbor probability based on fl_{p+r}(x). (PDF p. 7, printed B1233, anchor: Definition 2.9 and equation (2.6).)",
+      "For the summation path, beta_{k-1} is the relative error produced by applying fl_{p+r} to the exact intermediate hat{s}_{k-1}+a_k, and alpha_{k-1}=delta_{k-1}-beta_{k-1}. (PDF pp. 13-14, printed B1239-B1240, anchors: equation (4.5) and proof of Theorem 4.2.)",
+      "For I_i={k in N : max{i,2}<=k<=n}, B_i is defined by product_{k=max{i,2}}^n(1+delta_{k-1})=product_{k=max{i,2}}^n(1+alpha_{k-1})+B_i. (PDF pp. 11 and 14, printed B1237 and B1240, anchors: Lemma 3.10 equation (3.8) and application in (4.8).)"
     ],
     "implicit_context": [
-      "[PDF page 15; anchor: proof of Theorem 4.3] The probability is over the SR_{p,r} rounding choices; the remainder estimate is pathwise, so only the M estimate consumes the failure probability lambda.",
-      "[PDF pages 11 and 15; anchors: Lemma 3.10 and equation (4.12)] M is the zero-mean-alpha component of the decomposition, not explicitly the same random variable as hat(y)-E(hat(y)).",
-      "[PDF page 15; anchor: reference to [11, Lemma 3.1]] The source PDF invokes but does not reproduce the complete statement of the external variance lemma.",
-      "[PDF page 13; anchors: equations (4.2) and (4.11)] A nonzero y is logically required by the relative error and condition number, although Theorem 4.3 does not explicitly state y!=0."
+      "The theorem appears inside a section introduced as analyzing vectors of floating-point numbers, while section 4.1 formally begins with a in R^n. No separate input-rounding stage is included. (PDF pp. 12-13, printed B1238-B1239, anchors: opening of section 4 and opening of section 4.1.)",
+      "The probability is over the sequence of Bernoulli choices made by SR_{p,r} along the single recursive computation path. (PDF pp. 7-9 and 13, printed B1233-B1235 and B1239, anchors: Definition 2.9, Lemma 3.2, and recursive-summation recurrence.)",
+      "The confidence statement is pointwise for the already fixed input a and arithmetic parameters; it is not a simultaneous assertion over all inputs or all lambda. (PDF pp. 13 and 15, printed B1239 and B1241, anchors: opening of section 4.1 and Theorem 4.3.)",
+      "The proof imports the variance estimate from external reference [11, Lemma 3.1], but the present PDF exposes the resulting specialized estimate completely as equation (4.12). (PDF p. 15, printed B1241, anchors: paragraph before Theorem 4.3 and its proof.)"
+    ],
+    "algorithm_linkage": "Theorem 4.3 is tied specifically to the computed product representation (4.4) of left-to-right recursive summation under limited-precision SR_{p,r}. It is not stated for pairwise summation, compensated summation, arbitrary parenthesization, ideal SR_p except as the r-to-infinity limit, or a generic sequence of additions. (PDF pp. 13 and 15, printed B1239 and B1241, anchors: equations (4.1)-(4.4) and Theorem 4.3.)",
+    "numerical_model": [
+      "The destination is a normalized binary floating-point system with precision p, and stochastic operations use the standard relative-error model with unit roundoff u_p=2^(1-p). (PDF pp. 3 and 5, printed B1229 and B1231, anchors: introductory notation and equations (2.2)-(2.4).)",
+      "Limited-precision SR_{p,r} uses only p+r bits to form its Bernoulli probability and returns a p-bit result; its expected rounded value is fl_{p+r}(x), not x. (PDF p. 7, printed B1233, anchors: Definition 2.9, Remark 2.10, and equation (3.1).)",
+      "The finite-r error is represented by beta and the centered error by alpha=delta-beta. The alpha sequence, rather than the original delta sequence, has the zero-mean conditional structure used in Theorem 4.3. (PDF pp. 11 and 15, printed B1237 and B1241, anchors: Lemma 3.10 and proof of Theorem 4.3.)",
+      "Although equation (3.2) gives the single-rounding estimate V(delta)<=u_p^2/4, the bound printed in Theorem 4.3 is exactly sqrt(gamma_{n-1}(u_p^2)/lambda), with no displayed factor 1/2. (PDF pp. 8 and 15, printed B1234 and B1241, anchors: equation (3.2) and equations (4.11)-(4.12).)"
+    ],
+    "error_notions": [
+      "The primary error notion is scalar forward relative error |hat{y}-y|/|y|. (PDF p. 15, printed B1241, anchor: equation (4.11).)",
+      "M is the centered product-error contribution generated by alpha, while A collects all product terms containing at least one finite-r beta contribution through B_i. A may be path dependent, but equation (4.10) bounds it deterministically for every path. (PDF pp. 11, 14, and 15, printed B1237, B1240, and B1241, anchors: Lemma 3.10 and equations (4.8), (4.10).)",
+      "The final forward-error bound is the sum of a high-probability variance term and a pathwise finite-r remainder term, multiplied by the summation condition number kappa(a). (PDF p. 15, printed B1241, anchors: equations (4.10)-(4.12).)"
     ],
     "norms": [
-      "[PDF pages 13 and 15; anchors: condition number (4.2) and equations (4.10)-(4.12)] Only scalar absolute values are used; sum_i |a_i| is the coefficient l1 magnitude, and division by |y| converts it to kappa(a)."
+      "All displayed output, M, A, and coefficient magnitudes use ordinary scalar absolute value. (PDF pp. 14-15, printed B1240-B1241, anchors: equations (4.8), (4.10), and (4.12).)",
+      "The coefficient scale sum_i |a_i| is the componentwise absolute sum, equivalently the vector 1-norm, although the paper expresses it as a sum rather than introducing norm notation. (PDF pp. 13 and 15, printed B1239 and B1241, anchors: equation (4.2) and equations (4.10), (4.12).)",
+      "No 2-norm, infinity norm, componentwise relative-error vector, or backward-error norm appears in Theorem 4.3. (PDF p. 15, printed B1241, anchor: Theorem 4.3 equation (4.11).)"
     ],
-    "numerical_model": [
-      "[PDF page 6; anchor: Definition 2.9 equation (2.6)] SR_{p,r} selects an enclosing precision-p value using a Bernoulli probability derived from the p+r-bit approximation fl_{p+r}(x).",
-      "[PDF pages 12 and 13; anchors: proof of Lemma 3.10 and bounds following (4.4)] The random rounding error is controlled at scale u_p, while limited-random-bit effects enter through u_{p+r}.",
-      "[PDF page 5; anchor: standard floating-point model (2.4)] The inherited model is normalized binary floating point with relative errors for elementary operations."
+    "constants_and_indexing": [
+      "There are n-1 rounded additions and errors delta_1,...,delta_{n-1}; the kth addition for k=2,...,n carries delta_{k-1}. (PDF p. 13, printed B1239, anchor: recursive-summation table.)",
+      "The contribution of a_i is multiplied from k=max{i,2} through n, so a_1 and a_2 both encounter all n-1 rounding factors. (PDF p. 13, printed B1239, anchor: equation (4.4).)",
+      "Every gamma index in Theorem 4.3 is n-1, matching the number of rounded additions. (PDF p. 15, printed B1241, anchor: equation (4.11).)",
+      "The first gamma argument in the probabilistic term is u_p^2. It is not u_{2p}, gamma_{n-1}(u_p)^2, or u_p. (PDF p. 15, printed B1241, anchors: equations (4.11)-(4.12).)",
+      "The confidence parameter occurs as division by lambda inside the square root, and the success probability is at least 1-lambda. (PDF p. 15, printed B1241, anchor: equation (4.11).)",
+      "The finite-r term is the difference gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p), not merely gamma_{n-1}(u_{p+r}). (PDF p. 15, printed B1241, anchors: equations (4.10)-(4.11).)"
+    ],
+    "higher_order_terms": [
+      "The theorem uses gamma_m(u)=(1+u)^m-1 exactly and therefore retains all powers of u. (PDF pp. 13 and 15, printed B1239 and B1241, anchors: equation (4.3) and Theorem 4.3.)",
+      "The expansion gamma_m(u)=mu+O(u^2) for mu much less than 1 is explanatory context only; Theorem 4.3 neither substitutes this approximation nor appends an omitted big-O remainder. (PDF pp. 13 and 15, printed B1239 and B1241, anchors: equation (4.3) and equation (4.11).)",
+      "No small-u or (n-1)u_p much-less-than-one condition is explicitly imposed by Theorem 4.3 for its exact gamma-form bound. (PDF pp. 13 and 15, printed B1239 and B1241, anchors: equation (4.3) and theorem hypothesis.)"
+    ],
+    "exceptional_values": [
+      "If an exact elementary-operation result is zero, the paper's supporting Lemma 3.2 sets both delta_k and beta_k to zero, avoiding division by zero in their relative-error definitions. (PDF p. 8, printed B1234, anchor: proof of Lemma 3.2.)",
+      "The final relative error and kappa(a) are undefined when y=0; the paper does not state a y!=0 hypothesis or provide an absolute-error alternative in Theorem 4.3. (PDF pp. 13 and 15, printed B1239 and B1241, anchors: equation (4.2) and equation (4.11).)",
+      "The floating-point setup is normalized and the standard multiplicative model is assumed, but the cited passages do not explicitly discuss overflow, underflow, subnormals, infinities, or NaNs. Thus the theorem implicitly concerns executions for which the displayed real relative-error model remains valid. (PDF p. 5, printed B1231, anchor: section 2.2 and equation (2.4).)"
     ]
   },
-  "task_id": "P17-T3",
   "undebatable_constraints": [
-    "[PDF page 15; anchor: Theorem 4.3 equation (4.11)] The conclusion is probabilistic, with success probability at least 1-lambda.",
-    "[PDF page 15; anchor: equation (4.12)] The coefficient factor in the M bound is sum_i |a_i|, not |sum_i a_i|.",
-    "[PDF page 15; anchor: equation (4.10)] The A bound is pathwise and contributes no additional failure probability.",
-    "[PDF pages 11 and 15; anchors: Lemma 3.10 and proof of Theorem 4.3] The alpha errors are assumed mean independent, not fully independent.",
-    "[PDF page 15; anchor: equation (4.11)] The entire sum of the stochastic and remainder terms is multiplied by kappa(a).",
-    "[PDF page 15; anchor: equation (4.11)] The variance term uses gamma_{n-1}(u_p^2), while the limited-precision term uses both u_p and u_{p+r}; these arguments are not interchangeable.",
-    "[PDF pages 14 and 15; anchors: equation (4.8) and equation (4.12)] Equation (4.12) controls the specifically defined M component and must not be restated as a direct concentration inequality around E(hat(y))."
-  ]
+    "The computed value must be the output of the exact recursive SR_{p,r} algorithm in (4.4), with hat{s}_1=a_1 and one rounded addition for each k=2,...,n. (PDF p. 13, printed B1239, anchors: recursive-summation table and equation (4.4).)",
+    "The exact comparator is y=sum_{i=1}^n a_i, and the conditioning multiplier is kappa(a)=sum_i |a_i|/|y|. (PDF p. 13, printed B1239, anchors: equations (4.1)-(4.2).)",
+    "The centered variables are alpha_j=delta_j-beta_j; mean independence and the bound |alpha_j|<=u_p apply to alpha_j, not generally to the biased delta_j sequence. (PDF pp. 11-12 and 15, printed B1237-B1238 and B1241, anchors: Lemma 3.10 and proof of Theorem 4.3.)",
+    "The probabilistic term is exactly sqrt(gamma_{n-1}(u_p^2)/lambda). (PDF p. 15, printed B1241, anchors: equations (4.11)-(4.12).)",
+    "The limited-r remainder is exactly gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p). (PDF p. 15, printed B1241, anchors: equations (4.10)-(4.11).)",
+    "The entire bracket is multiplied by kappa(a), and the asserted probability is at least 1-lambda for every 0<lambda<1. (PDF p. 15, printed B1241, anchor: Theorem 4.3 equation (4.11).)",
+    "gamma_m(u) means the exact expression (1+u)^m-1; replacing it by mu is only an approximation and changes the theorem. (PDF p. 13, printed B1239, anchor: equation (4.3).)",
+    "The proof combines the probabilistic M estimate with the pathwise A estimate through the M+A decomposition; the finite-r term is not assigned an additional failure probability. (PDF pp. 14-15, printed B1240-B1241, anchors: equations (4.8), (4.10), and (4.12).)",
+    "The theorem is a scalar forward relative-error result and does not claim unbiasedness, backward stability, an expectation bound, or an error bound for a different summation order. (PDF pp. 13 and 15, printed B1239 and B1241, anchors: equation (4.4) and Theorem 4.3.)"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The zero exact-sum case is not covered explicitly.",
+      "evidence": "Both kappa(a) in (4.2) and the left side of (4.11) divide by |y|, but Theorem 4.3 does not state y!=0. (PDF pp. 13 and 15, printed B1239 and B1241, anchors: equations (4.2) and (4.11).)",
+      "impact": "A faithful formalization must either assume y!=0, use a convention for division by zero, or formulate a separate absolute-error statement; the PDF does not choose among these."
+    },
+    {
+      "issue": "The minimum permitted dimension is not stated.",
+      "evidence": "Section 4.1 says a in R^n and defines a recurrence for k=2,...,n, while Theorem 4.3 uses gamma_{n-1}; it does not say n>=1 or n>=2. (PDF pp. 13 and 15, printed B1239 and B1241, anchors: section 4.1 and equation (4.11).)",
+      "impact": "For n=1, empty products and gamma_0 must be interpreted conventionally; alternatively, a formal statement may require n>=2. The source does not resolve this edge case."
+    },
+    {
+      "issue": "Input representability is not stated consistently.",
+      "evidence": "Section 4 is introduced as analyzing vectors of floating-point numbers, but section 4.1 formally takes a in R^n, initializes hat{s}_1=a_1 exactly, and includes no input-rounding errors. (PDF pp. 12-13, printed B1238-B1239, anchors: opening of section 4 and recursive-summation table.)",
+      "impact": "It is unclear whether every a_i is assumed representable in the p-bit system or whether exact real inputs are supplied without initial rounding. Adding input-conversion errors would be a different theorem."
+    },
+    {
+      "issue": "The domains of p and r are partly conveyed through bit-count semantics rather than repeated theorem binders.",
+      "evidence": "The floating-point section says p>0, while the construction describes r as a positive integer and both quantities count bits; Theorem 4.3 does not rebind either parameter. (PDF pp. 3, 5-6, and 15, printed B1229, B1231-B1232, and B1241, anchors: introductory notation, section 2.2, paragraph preceding Definition 2.9, and Theorem 4.3.)",
+      "impact": "A formalization should normally take p and r as positive integers, but only r is explicitly called an integer in the surrounding prose."
+    },
+    {
+      "issue": "The implementation of fl_{p+r} admits a noted variation.",
+      "evidence": "The construction describes truncation to p+r bits but notes that fl_{p+r} could use another rounding mode, with directed modes retaining |beta|<=u_{p+r}; Definition 2.9 defines q_r through fl_{p+r}. (PDF pp. 6-7, printed B1232-B1233, anchors: paragraph preceding Definition 2.9 and equation (2.6).)",
+      "impact": "Changing fl_{p+r} changes the Bernoulli probabilities and path distribution. The printed bound appears to use only the beta bound, but the operator variant should not be silently selected when reproducing the source."
+    },
+    {
+      "issue": "Exceptional floating-point behavior is outside the explicit model.",
+      "evidence": "The paper defines a normalized finite-exponent system and assumes the multiplicative model (2.4), without stating conditions excluding overflow, underflow, or subnormal behavior in Theorem 4.3. (PDF p. 5 and p. 15, printed B1231 and B1241, anchors: section 2.2 and Theorem 4.3.)",
+      "impact": "The theorem should be understood only where all operations satisfy the stated relative-error model, but the exact range-side assumptions are not enumerated."
+    },
+    {
+      "issue": "The complete statement of the imported variance lemma is not reproduced.",
+      "evidence": "The proof cites external [11, Lemma 3.1] and Lemma 2.1 after stating that alpha_{k-1} are mean independent and bounded, then directly records the specialized result as (4.12). (PDF p. 15, printed B1241, anchor: proof of Theorem 4.3.)",
+      "impact": "Equation (4.12) and hence Theorem 4.3 are unambiguous in this PDF, but any additional general hypotheses of the external lemma cannot be recovered from the cited passage alone."
+    }
+  ],
+  "contract_plain_english": "Fix the left-to-right recursive sum of a=(a_1,...,a_n), computed by setting hat{s}_1=a_1 and rounding each subsequent addition with limited-precision stochastic rounding SR_{p,r}; let y=sum_i a_i and hat{y}=hat{s}_n. Split each biased rounding error delta_j into beta_j, the p+r-bit finite-r component, and alpha_j=delta_j-beta_j. The alpha_j are zero-mean and mean independent with |alpha_j|<=u_p, while all terms involving beta_j admit a pathwise product-remainder bound. Consequently, for every 0<lambda<1, with probability at least 1-lambda, |hat{y}-y|/|y| is at most kappa(a) times sqrt(gamma_{n-1}(u_p^2)/lambda)+gamma_{n-1}(u_p+u_{p+r})-gamma_{n-1}(u_p), where kappa(a)=sum_i|a_i|/|y|, u_p=2^(1-p), u_{p+r}=2^(1-p-r), and gamma_m(u)=(1+u)^m-1 exactly. The statement implicitly needs y!=0 and an execution satisfying the paper's standard relative-error model. (PDF pp. 11 and 13-15, printed B1237 and B1239-B1241, anchors: Lemma 3.10 and equations (4.1)-(4.5), (4.8), (4.10)-(4.12).)"
 }
