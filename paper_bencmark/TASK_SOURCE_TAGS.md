@@ -87,7 +87,7 @@ the `theorem` command.
 | `P17-T1` | `THM` | `Theorem 3.6` | The selected accumulated-error product envelope is explicitly named Theorem 3.6. |
 | `P17-T2` | `THM` | `Theorem 4.1` | The selected recursive-summation bias bound is explicitly named Theorem 4.1. |
 | `P17-T3` | `THM` | `Theorem 4.3` | The selected variance-based probabilistic summation bound is explicitly named Theorem 4.3. |
-| `P18-T1` | `EQN`, `TXT` | none | Equation (3.3) gives the additive expansion and the following prose identifies `E = E_sch + E_per`. |
+| `P18-T1` | `TXT`, `UNL` | none | The prose following equation (3.3) introduces the selected exact split, and the split itself is displayed without a number. |
 | `P18-T2` | `EQN`, `TXT` | none | Equation (4.1) defines the corrected midpoint method and the following displayed prose gives its second-order scheme and perturbation error form. |
 | `P18-T3` | `EQN`, `TXT` | none | Section 4.3 displays the smooth and nonsmooth Method 4s3pC error regimes and explains their regularity distinction in prose. |
 | `P19-T1` | `EQN` | none | The selected upper perturbation-norm inequality is the right half of equation (C.8). |

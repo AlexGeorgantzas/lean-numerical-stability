@@ -66,7 +66,7 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use the exact finite Euclidean triangle inequality underlying E = E_sch + E_per after equation (3.3).",
+      "decision": "Use the exact unnumbered E = E_sch + E_per statement after equation (3.3), derived from the unperturbed and perturbed additive Runge--Kutta outputs, with the Euclidean triangle inequality retained only as a stronger corollary.",
       "task_id": "P18-T1",
       "theorem_name": "p18_t1_scheme_perturbation_error_split"
     },
@@ -86,7 +86,7 @@
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
     "Use accuracy results derived in this paper rather than standard Runge--Kutta definitions, numerical plots, or future-work claims.",
-    "Replace asymptotic big-O statements with explicit finite-dimensional error representatives and exact norm inequalities.",
+    "Do not replace underspecified asymptotic big-O statements with exact norm inequalities; select exact source content or formalize all asymptotic semantics explicitly.",
     "Preserve the paper's distinction between scheme error, smooth perturbation error, and nonsmooth perturbation error.",
     "Keep every public definition free of NumStability imports.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json."

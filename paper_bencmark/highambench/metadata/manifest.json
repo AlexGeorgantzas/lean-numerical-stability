@@ -188,8 +188,8 @@
         "P18"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P18Definitions.lean",
-      "role": "P18-only finite Euclidean error vectors and corrected, smooth, and nonsmooth Runge--Kutta error representatives",
-      "sha256": "e8076948865057c148e1531349eca646c2cbb158637d394c47a28ec84a12cfb2",
+      "role": "P18-only additive Runge--Kutta executions, finite Euclidean error vectors, and corrected, smooth, and nonsmooth error models",
+      "sha256": "5b4e9246cece72ea077a773c6c5613edbfa4ba922dceb910fb691196110c3a07",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -3507,11 +3507,11 @@
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P18/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Expand the paper-scoped Euclidean norm and apply the finite-dimensional triangle inequality.",
-          "informal_statement_paraphrase": "An exact finite-vector bound for the paper's one-step decomposition E = E_sch + E_per.",
+          "informal_proof_paraphrase": "Expand the errors defined from the exact, unperturbed, and perturbed one-step outputs; cancel the intermediate output, then apply the Euclidean triangle inequality.",
+          "informal_statement_paraphrase": "The exact E = E_sch + E_per split for an additive Runge--Kutta one-step execution, together with a stronger Euclidean triangle corollary.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "3858ce5ab8240d8eb5d773798c857db776fbed475a5cfbddb7f4e68b059cb6d9",
+            "controlled_file_sha256": "a9b6807124a1ed5664980f475a52e135fd01dc586defc7a8877ed44e7b8674e6",
             "declaration": "p18_t1_scheme_perturbation_error_split",
             "file": "paper_bencmark/highambench/tasks/P18/T1/Target.lean",
             "must_compile_without_numstability": true,
@@ -3519,21 +3519,28 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P18Definitions.lean"
             ],
-            "statement_summary": "The norm of the sum of the scheme and perturbation error vectors is bounded by the sum of their norms."
+            "statement_summary": "The algorithm-linked total one-step error equals the sum of its scheme and perturbation errors and satisfies the corresponding Euclidean triangle bound."
           },
           "source_locations": [
             {
-              "anchor": "equation (3.3) and the displayed E = E_sch + E_per decomposition below it",
+              "anchor": "equations (3.2a)-(3.2b)",
               "pdf_page": 5,
               "printed_page": "5",
-              "role": "scheme-plus-perturbation error split",
+              "role": "additive Runge--Kutta stages, output, and perturbation convention",
+              "section": "3. A General Framework for the Analysis of Mixed Precision Runge\u2013Kutta Methods"
+            },
+            {
+              "anchor": "unnumbered E = E_sch + E_per display following equation (3.3)",
+              "pdf_page": 5,
+              "printed_page": "5",
+              "role": "selected exact one-step error decomposition",
               "section": "3. A General Framework for the Analysis of Mixed Precision Runge\u2013Kutta Methods"
             }
           ],
           "task_id": "P18-T1",
           "tier": "T1",
           "tier_name": "direct use",
-          "tier_reason": "The frozen theorem NumStability.vecNorm2_add_le has the identical Euclidean error-composition surface. The L proof is a direct paper-scoped renaming.",
+          "tier_reason": "After the coordinatewise telescoping identity exposes the paper's exact split, the L proof directly applies NumStability.vecNorm2_add_le to the inequality conjunct.",
           "title": "Scheme-plus-perturbation error split"
         },
         {
