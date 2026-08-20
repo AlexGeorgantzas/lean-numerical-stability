@@ -5,10 +5,38 @@
   "paper_version": "published open-access journal version; IMA Journal of Numerical Analysis 46(4), 2026, printed pages 1939-1993",
   "source_locations": [
     {
-      "anchor": "Theorem 6.3, contraction condition (6.17) and attainable error floors (6.18)",
+      "anchor": "definitions of normwise backward and forward errors",
+      "pdf_page": 4,
+      "printed_page": "1942",
+      "role": "actual error notions and Frobenius condition number",
+      "section": "2. Notation"
+    },
+    {
+      "anchor": "conditions (3.1)-(3.8)",
+      "pdf_page": 6,
+      "printed_page": "1944-1946",
+      "role": "modular GMRES operation models, numerical-rank assumptions, and key dimension",
+      "section": "3. Backward error analysis of MOD-GMRES"
+    },
+    {
+      "anchor": "Algorithm 2 and Theorem 4.1, equations (4.1)-(4.11)",
+      "pdf_page": 17,
+      "printed_page": "1955-1956",
+      "role": "restarted execution, inherited iterate comparison, contraction factors, and attainable floors",
+      "section": "4. Backward error analysis of restarted MOD-GMRES"
+    },
+    {
+      "anchor": "Theorem 5.2 and its proof",
+      "pdf_page": 27,
+      "printed_page": "1965-1967",
+      "role": "fully stored MGS-Arnoldi correction solve and key-dimension certificate",
+      "section": "5.3 MGS-GMRES"
+    },
+    {
+      "anchor": "Theorem 6.3 and equations (6.17)-(6.21)",
       "pdf_page": 40,
-      "printed_page": "1978",
-      "role": "mixed-precision restarted-GMRES convergence statement",
+      "printed_page": "1978-1979",
+      "role": "mixed-precision contraction, high-precision floors, residual/update models, low cast, and factor specialization",
       "section": "6.3 Mixed precision restarted GMRES"
     }
   ],

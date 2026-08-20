@@ -3,73 +3,71 @@
   "adjudicated": true,
   "adjudication_reasons": [
     "judge classifications differ",
-    "round-trip judge requested adjudication"
+    "round-trip judge requested adjudication",
+    "round-trip judge classification is undetermined",
+    "blind dependency D027 is unclear",
+    "blind dependency D037 is unclear",
+    "round-trip S02 is unclear",
+    "round-trip S04 is unclear",
+    "round-trip S06 is unclear",
+    "round-trip S08 is unclear",
+    "round-trip S11 is unclear",
+    "round-trip S14 is unclear",
+    "round-trip S15 is unclear",
+    "round-trip S16 is unclear"
   ],
   "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T18:30:29.054043+00:00",
+  "completed_at_utc": "2026-08-20T16:36:17.020276+00:00",
   "findings": [
     {
-      "category": "algorithm-and-quantifier-substitution",
-      "evidence": "Printed pages 1978-1979 derive contraction for unpreconditioned restarted MGS-GMRES with fully stored MGS-Arnoldi bases, high-precision residuals and updates, and low-precision inner work. Lean quantifies over arbitrary sequences and assumes their contractions.",
-      "impact": "The main numerical-analysis conclusion is replaced by a recurrence premise and an induction consequence.",
+      "category": "algorithm-linkage-and-assumed-core-result",
+      "evidence": "PDF pages 27-29 derive the MGS key iteration and modular bounds, and PDF pages 40-41 use them to bound both contraction factors. D037 neither requires MGS generation nor proves these properties; it assumes the bounded factors and both correction-level contraction inequalities.",
+      "impact": "The declaration states an abstract certificate-composition result rather than Theorem 6.3 for the specified algorithm.",
       "severity": "critical"
     },
     {
-      "category": "error-definitions",
-      "evidence": "Printed page 1942 defines backward error as the normalized true residual and forward error as relative 2-norm solution error. Lean's two sequences have no connection to b, x, computed iterates, residuals, or vector norms.",
-      "impact": "The declaration proves no property of either paper-defined error notion.",
-      "severity": "critical"
-    },
-    {
-      "category": "inverse-and-conditioning",
-      "evidence": "The paper assumes nonsingular A and defines kappa_F(A) using A inverse. Lean permits singular A and defines its scale using an unconstrained Ainv, including Ainv=0.",
-      "impact": "The purported condition number, contraction factor, and forward floor can be unrelated to the source quantities and admit trivial non-paper instances.",
-      "severity": "critical"
-    },
-    {
-      "category": "floating-point-model",
-      "evidence": "Equations (6.19)-(6.20) and the following proof model high-precision residual and update errors, a low-precision residual cast, and low-precision MGS-GMRES operations. Lean treats uHigh and uLow only as nonnegative reals.",
-      "impact": "The mixed-precision execution model responsible for the theorem is absent.",
+      "category": "precision-and-quantifier-scope",
+      "evidence": "The paper applies at every restart of one execution with fixed uhigh and ulow. Lean uses t-dependent precisions tending to zero and has forall i outside a separately existential and eventual first-order inequality.",
+      "impact": "No single fixed nonzero precision parameter is guaranteed to satisfy all restart recurrences, so repeated geometric contraction to the stated floors cannot be recovered.",
       "severity": "major"
     },
     {
-      "category": "relations-constants-and-indexing",
-      "evidence": "The source uses generic c(n,k), restart-dependent k_i, qualitative smallness, lesssim floors, and one-step factors bounded above by Lambda. Lean uses one exact scalar c, no k or k_i, q<1, and exact inequalities with one fixed multiplier.",
-      "impact": "The parameter dependence, admissible regime, hidden constants, and approximation semantics are changed.",
+      "category": "low-precision-operation-model",
+      "evidence": "Paper condition (3.3) is columnwise, and Section 6.3 requires all correction operations to be low-precision MGS-GMRES. D037 uses separate RHS and aggregate Frobenius perturbation bounds and leaves its accuracy functions unconnected to uLow operation models.",
+      "impact": "The formal certificate does not preserve the selected algorithm's modular floating-point hypotheses.",
       "severity": "major"
     },
     {
-      "category": "nonvacuity-and-applicability",
-      "evidence": "Lean allows arbitrary real sequences and guarded recurrence implications; singular A, Ainv=0, and identically zero sequences yield a trivial non-algorithmic instance.",
-      "impact": "The apparent universality is reduced applicability under assumed behavior, not genuine strengthening of the paper theorem.",
+      "category": "constant-and-key-dimension-model",
+      "evidence": "The paper uses unspecified low-degree c(n,k_i). Lean uses one nonnegative-coefficient polynomial evaluated at P(n,n), with no degree bound and with keyDimension fixed across t.",
+      "impact": "The inner-dimension dependence and low-degree worst-case constant convention are materially changed.",
       "severity": "major"
     },
     {
-      "category": "inherited-paper-hypothesis",
-      "evidence": "Theorem 4.1 explicitly assumes an iterate-norm comparison, but Theorem 6.3 invokes Theorem 4.1 without verifying it.",
-      "impact": "A literal formalization must address this inherited condition, but doing so would not repair the independent Lean mismatches.",
+      "category": "higher-order-terms",
+      "evidence": "The paper explicitly discards negligible second-order terms, while D008/D024 represent them by additive O((uHigh+uLow)^2) remainders.",
+      "impact": "This choice is reasonable in isolation and is not a basis for rejection, but its exact filter semantics are stronger and more specific than the paper states.",
       "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean proposition assumes exact one-step contraction and derives conditional geometric bounds for arbitrary sequences. It cannot derive that mixed-precision restarted MGS-GMRES satisfies those recurrences, cannot identify the sequences with the paper's normalized backward and relative forward errors, and contains none of the algorithmic or floating-point hypotheses needed for Theorem 6.3.",
+      "reasoning": "Lean proves per-index eventual recurrences only for filter-indexed runs already carrying abstract correction certificates. It does not establish that a fixed nonzero-precision fully stored MGS-GMRES execution supplies such a run, nor does it give one fixed precision at which every restart recurrence and attainable-floor conclusion hold.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper proves a result only for errors generated by its specified algorithm, with nonsingular A, the actual A inverse, qualitative constants, and mixed-precision kernel assumptions. It does not establish the Lean declaration's full universal exact statement for arbitrary A, unrelated Ainv, arbitrary c, arbitrary real sequences, and every exact factor q<1. At most it motivates one intended algorithm-generated instance after additional identifications and formalization choices.",
+      "reasoning": "The paper's fixed-precision theorem does not establish the declaration's arbitrary-filter family statement, a t-uniform key dimension, exact shared P(n,n), or explicit per-index Big-O witnesses. It also does not assert the result for abstract certificate-bearing runs unrelated to MGS generation.",
       "verdict": "no"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-weaker",
-    "roundtrip": "not-faithful-different"
+    "direct": "not-faithful-different",
+    "roundtrip": "undetermined"
   },
-  "rationale": "Primary evidence confirms that Theorem 6.3 is an algorithm-specific mixed-precision rounding-error result about explicitly defined errors. The Lean declaration is instead a universally quantified exact recurrence lemma whose central contraction behavior is assumed. The paper supplies, at most, an intended algorithm-generated instance after several additional identifications; it does not imply the full Lean statement, and the Lean statement cannot derive the paper's algorithmic result. Thus the target is substantively weaker but logically different, both implication verdicts are no, and the final classification is not-faithful-different.",
+  "rationale": "The declaration correctly represents the finite real system, exact and computed quantities, Euclidean and Frobenius norms, backward and forward error definitions, useful contraction inequality direction, and first-order floor scales. The complete dossier nevertheless shows that it replaces the fixed-precision fully stored MGS-GMRES theorem with a nonuniform asymptotic statement over abstract runs whose crucial correction contractions are already assumptions. Because actual paper executions are not supplied by the Lean proposition and the paper does not cover all Lean certificate families, neither implication holds.",
   "remaining_uncertainties": [
-    "The PDF gives no numerical semantics for c(n,k), the much-smaller-than condition, or the lesssim bounds, so no unique exact inequality formalization follows from the paper.",
-    "Theorem 6.3 does not clarify whether Theorem 4.1's iterate-norm comparison is tacitly assumed, expected automatically, or omitted from the proof.",
-    "The relationship between the generic k in Theorem 6.3 and the restart-dependent dimensions k_i is not formally specified."
+    "The paper does not uniquely formalize its discarded second-order terms, so the precise joint Big-O scale and filter semantics are not determined by the source.",
+    "Theorem 6.3 suppresses the restart dependence of c(n,k_i), so the exact intended uniformization over varying key dimensions is not explicit."
   ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
