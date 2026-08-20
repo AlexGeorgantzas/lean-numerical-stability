@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete 47-page local PDF sequentially and, during the audit-driven P19-T2 rebuild, rechecked Algorithm 2, equations (3.2)-(3.8), Theorem 3.1, and Appendix A in extracted text and rendered source pages; searched the frozen library and compiled private N/L constructions for the rebuilt target.",
+    "method": "Codex read the complete 47-page local PDF sequentially and, during the audit-driven P19-T2 and P19-T3 rebuilds, rechecked Algorithms 1-2, equations (3.2)-(3.20), Theorems 3.1, 3.3, and 3.4, and Appendices A, C, and D in extracted text and rendered source pages; searched the frozen library and compiled private N/L constructions for the rebuilt targets.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P19 source selection and benchmark annotation to Codex."
@@ -41,8 +41,8 @@
       "reason": "These establish the computational model and hypotheses rather than a concise selected conclusion. Their four error sources are retained in T2's exact modular aggregation."
     },
     {
-      "candidate": "the complete specialized statements of Theorems 3.2-3.4",
-      "reason": "P19-T2 now selects the general modular Theorem 3.1 with explicit polynomial and second-order semantics. The specialized left, right, and flexible results would duplicate that framework while introducing strategy-specific models reserved for separate task selection."
+      "candidate": "the complete specialized statement of Theorem 3.2",
+      "reason": "P19-T2 selects the general modular Theorem 3.1, while P19-T3 selects the specialized right and flexible results in Theorems 3.3-3.4. The left-preconditioned theorem would duplicate that framework without contributing to the selected right-versus-flexible implementation distinction."
     },
     {
       "candidate": "left-preconditioned bound (3.13) and simplified envelope (3.21)",
@@ -84,9 +84,9 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use exact paper-scoped forms of the right and flexible envelopes (3.17) and (3.20), then strengthen Remark 4 with gap, equality, and strictness certificates.",
+      "decision": "Use the complete conditional existential attainable-forward-error results of Theorems 3.3 and 3.4, equations (3.17) and (3.20), and retain Remark 4's exact identification of the right-only preconditioner-reapplication term.",
       "task_id": "P19-T3",
-      "theorem_name": "p19_t3_right_flexible_envelope_comparison"
+      "theorem_name": "p19_t3_right_flexible_attainable_forward_error"
     }
   },
   "schema_version": "highambench-paper-0.2",

@@ -197,8 +197,8 @@
         "P19"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P19Definitions.lean",
-      "role": "P19-only vector and matrix norms, modular GMRES execution and first-order analysis models, exact condition products, and right/flexible GMRES error envelopes",
-      "sha256": "e030e87c5532e4a38f23c54020413aa701e2ff2bed8284a9c3082e6b2e2f315e",
+      "role": "P19-only vector and matrix norms, modular and right/flexible GMRES execution models, inverse-linked condition numbers, and perturbation-linked first-order analyses",
+      "sha256": "759c84ed6e94f963fc82ca1563591d08c7d575325e9d2e9944dcc5f9be16f803",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -3773,45 +3773,67 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.opNorm2_nonneg"
+            "NumStability.vecNorm2_add_le",
+            "NumStability.vecNorm2_nonneg"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P19/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Show exact operator-2 condition-number products are nonnegative. Expand the two paper-scoped envelopes to identify their difference as um times etaR times kappa(MR). Nonnegativity yields the weak comparison, the zero-product property gives the equality characterization, and positivity of all three factors gives strict comparison.",
-          "informal_statement_paraphrase": "An exact strengthened version of Remark 4's comparison between right- and flexible-preconditioned error envelopes (3.17) and (3.20).",
+          "informal_proof_paraphrase": "For each execution, combine the exact Appendix-C/D error decomposition with the Euclidean triangle inequality and the separately certified source bounds, normalize by the nonzero exact-solution norm, and retain the remainder as second order in the condition-(3.16) scale. Expanding the brackets identifies the right-only preconditioner-reapplication term.",
+          "informal_statement_paraphrase": "The complete conditional attainable-forward-error bounds of Theorems 3.3 and 3.4, together with Remark 4's identification of the right-only preconditioner-reapplication term.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "f929a2fb2ece11947c9ebced0e01ea12cbca832152d92b035133e5aea4c35ae3",
-            "declaration": "p19_t3_right_flexible_envelope_comparison",
+            "controlled_file_sha256": "793e14ac90b4c3015ce2f3b3b4e1990b88acff120a3b7418bf373c1e6a9d748e",
+            "declaration": "p19_t3_right_flexible_attainable_forward_error",
             "file": "paper_bencmark/highambench/tasks/P19/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P19Definitions.lean"
             ],
-            "statement_summary": "The flexible envelope equals the right envelope with the preconditioner-reapplication term removed, with exact weak, equality, and strict comparisons."
+            "statement_summary": "At separate iterations no larger than n, right and fixed-preconditioner flexible MGS-GMRES satisfy their complete normalized first-order forward-error bounds; the right bracket contains exactly one additional preconditioner-reapplication term."
           },
           "source_locations": [
             {
-              "anchor": "equation (3.17), right-preconditioned attainable forward-error envelope",
+              "anchor": "Algorithm 1, right- and flexible-preconditioned MGS-GMRES",
+              "pdf_page": 4,
+              "printed_page": "3",
+              "role": "mixed-precision execution paths, including persistent storage of the flexible preconditioned basis",
+              "section": "1. Introduction"
+            },
+            {
+              "anchor": "equations (3.14)-(3.17) and Theorem 3.3",
               "pdf_page": 11,
               "printed_page": "10",
-              "role": "right envelope including the preconditioner-reapplication term",
+              "role": "right-preconditioner application model, rhoAR, complete applicability condition, existential iteration, and three-source attainable forward-error bound",
               "section": "3.3. Error bound for right-preconditioned GMRES"
             },
             {
-              "anchor": "equation (3.20) and Remark 4",
+              "anchor": "Theorem 3.4, equation (3.20), and Remark 4",
               "pdf_page": 12,
               "printed_page": "11",
-              "role": "flexible envelope and prose identification of the removed um etaR kappa(MR) term",
+              "role": "flexible existential forward-error bound and identification of the omitted preconditioner-reapplication term",
               "section": "3.4. Error bound for flexible-preconditioned GMRES"
+            },
+            {
+              "anchor": "Appendix C, proof of Theorem 3.3",
+              "pdf_page": 41,
+              "printed_page": "40",
+              "role": "right-preconditioned perturbation propagation, first-order contributions, and higher-order truncation",
+              "section": "C. Proof of Theorem 3.3"
+            },
+            {
+              "anchor": "Appendix D, proof of Theorem 3.4",
+              "pdf_page": 44,
+              "printed_page": "43",
+              "role": "flexible solution-formation path and removal of the reapplication contribution",
+              "section": "D. Proof of Theorem 3.4"
             }
           ],
           "task_id": "P19-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "The closest frozen fact is NumStability.opNorm2_nonneg in NumStability/Analysis/MatrixAlgebra.lean. The target additionally needs new P19 operator-norm condition products, the right and flexible three-precision envelopes, the cross-implementation gap identity, a zero-factor equality characterization, and a strict-improvement connection. Searching every source corresponding to the 24 frozen modules found no GMRES, Krylov, or right/flexible-preconditioning declaration providing those models or links.",
-          "title": "Right versus flexible envelope comparison"
+          "tier_reason": "The target requires paper-specific right and flexible MGS-GMRES transcripts, inverse-linked condition numbers, condition (3.16), separate existential iterations, perturbation-linked Appendix-C/D decompositions, and explicit second-order semantics. The L proof can reuse NumStability.vecNorm2_add_le and NumStability.vecNorm2_nonneg, but the frozen library supplies no GMRES execution model or complete form of Theorems 3.3-3.4. This remains an extend task.",
+          "title": "Right and flexible GMRES attainable forward-error bounds"
         }
       ],
       "topic": "mixed-precision strategies and attainable forward errors for preconditioned GMRES"

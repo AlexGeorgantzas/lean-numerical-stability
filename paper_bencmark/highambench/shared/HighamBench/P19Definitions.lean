@@ -437,19 +437,310 @@ noncomputable def p19Kappa2 {n : ℕ}
     (A Ainv : Fin n → Fin n → ℝ) : ℝ :=
   p19OpNorm2 A * p19OpNorm2 Ainv
 
-/-- Exact scalar envelope represented by the right-preconditioned bound (3.17). -/
-noncomputable def p19RightEnvelope {n : ℕ}
-    (ug um ua etaR rhoA : ℝ)
-    (AMRinv AMRinvInv MR MRinv A Ainv : Fin n → Fin n → ℝ) : ℝ :=
-  ug * p19Kappa2 AMRinv AMRinvInv * p19Kappa2 MR MRinv +
-    um * etaR * p19Kappa2 MR MRinv +
-      ua * p19Kappa2 A Ainv * rhoA
+/-- The initial residual used when Algorithm 1 is read as Algorithm 2 applied
+to the correction equation. -/
+noncomputable def p19InitialResidual {n : ℕ} (A : P19Matrix n)
+    (b xInitial : P19Vector n) : P19Vector n :=
+  b - p19MatVec A xInitial
 
-/-- Exact scalar envelope represented by the flexible-preconditioned bound (3.20). -/
-noncomputable def p19FlexibleEnvelope {n : ℕ}
-    (ug ua rhoA : ℝ)
-    (AMRinv AMRinvInv MR MRinv A Ainv : Fin n → Fin n → ℝ) : ℝ :=
-  ug * p19Kappa2 AMRinv AMRinvInv * p19Kappa2 MR MRinv +
-    ua * p19Kappa2 A Ainv * rhoA
+/-- Componentwise absolute matrix-vector product from equation (3.15). -/
+noncomputable def p19AbsRectMatVec {m k : ℕ} (A : P19RectMatrix m k)
+    (x : P19Vector k) : P19Vector m :=
+  fun i ↦ ∑ j : Fin k, |A i j| * |x j|
+
+/-- A nonsingular system with one fixed, nonsingular, nonidentity right
+preconditioner. The product-inverse certificate prevents condition numbers
+from being formed from unrelated matrices. -/
+structure P19FixedRightSystem (n : ℕ) where
+  dimension_pos : 0 < n
+  A : P19Matrix n
+  Ainv : P19Matrix n
+  MR : P19Matrix n
+  MRinv : P19Matrix n
+  A_inverse : p19InversePair A Ainv
+  MR_inverse : p19InversePair MR MRinv
+  right_operator_inverse :
+    p19InversePair (p19SquareRectMul A MRinv) (p19SquareRectMul MR Ainv)
+  right_preconditioner_nontrivial : MR ≠ 1
+  b : P19Vector n
+  xExact : P19Vector n
+  xInitial : P19Vector n
+  b_nonzero : b ≠ 0
+  exact_solution : p19MatVec A xExact = b
+  initial_residual_nonzero : p19InitialResidual A b xInitial ≠ 0
+
+/-- The actual right-preconditioned operator `A M_R^{-1}`. -/
+noncomputable def p19RightOperator {n : ℕ}
+    (system : P19FixedRightSystem n) : P19Matrix n :=
+  p19SquareRectMul system.A system.MRinv
+
+/-- The certified inverse `M_R A^{-1}` of the right-preconditioned operator. -/
+noncomputable def p19RightOperatorInverse {n : ℕ}
+    (system : P19FixedRightSystem n) : P19Matrix n :=
+  p19SquareRectMul system.MR system.Ainv
+
+/-- Induced-2 condition number of `A M_R^{-1}`. -/
+noncomputable def p19RightOperatorKappa2 {n : ℕ}
+    (system : P19FixedRightSystem n) : ℝ :=
+  p19Kappa2 (p19RightOperator system) (p19RightOperatorInverse system)
+
+/-- Induced-2 condition number of the fixed right preconditioner. -/
+noncomputable def p19RightPreconditionerKappa2 {n : ℕ}
+    (system : P19FixedRightSystem n) : ℝ :=
+  p19Kappa2 system.MR system.MRinv
+
+/-- Induced-2 condition number of the original system matrix. -/
+noncomputable def p19SystemKappa2 {n : ℕ}
+    (system : P19FixedRightSystem n) : ℝ :=
+  p19Kappa2 system.A system.Ainv
+
+/-- The five-term maximum in condition (3.16). -/
+noncomputable def p19Condition316Value {n : ℕ}
+    (system : P19FixedRightSystem n)
+    (ug um ua etaR rhoAR : ℝ) : ℝ :=
+  max (ug * p19RightOperatorKappa2 system)
+    (max (ug * p19RightPreconditionerKappa2 system)
+      (max (um * etaR * p19RightPreconditionerKappa2 system)
+        (max (ua * p19SystemKappa2 system * rhoAR)
+          (ua * p19RightOperatorKappa2 system *
+            p19RightPreconditionerKappa2 system))))
+
+/-- The three first-order sources in the right-preconditioned bound (3.17). -/
+noncomputable def p19RightAttainableEnvelope {n : ℕ}
+    (system : P19FixedRightSystem n)
+    (ug um ua etaR rhoAR : ℝ) : ℝ :=
+  ug * p19RightOperatorKappa2 system *
+      p19RightPreconditionerKappa2 system +
+    um * etaR * p19RightPreconditionerKappa2 system +
+      ua * p19SystemKappa2 system * rhoAR
+
+/-- The two first-order sources in the flexible-preconditioned bound (3.20). -/
+noncomputable def p19FlexibleAttainableEnvelope {n : ℕ}
+    (system : P19FixedRightSystem n)
+    (ug ua rhoAR : ℝ) : ℝ :=
+  ug * p19RightOperatorKappa2 system *
+      p19RightPreconditionerKappa2 system +
+    ua * p19SystemKappa2 system * rhoAR
+
+/-- A computed right-preconditioned MGS-GMRES transcript through the least-
+squares stage. It records (3.14), the products with `A`, equation (3.15), and
+the complete condition (3.16). -/
+structure P19FixedRightGMRESRun {n : ℕ} {ι : Type*}
+    (system : P19FixedRightSystem n) (l : Filter ι) where
+  keyDimension : ℕ
+  keyDimension_pos : 0 < keyDimension
+  keyDimension_le : keyDimension ≤ n
+  polynomialFactor : P19PolynomialFactor
+  ug : ι → ℝ
+  um : ι → ℝ
+  ua : ι → ℝ
+  etaR : ι → ℝ
+  rhoAR : ι → ℝ
+  parameters_nonneg : ∀ t,
+    0 ≤ ug t ∧ 0 ≤ um t ∧ 0 ≤ ua t ∧ 0 ≤ etaR t ∧ 0 ≤ rhoAR t
+  vHat : ι → P19RectMatrix n keyDimension
+  vHatNext : ι → P19RectMatrix n (keyDimension + 1)
+  zHat : ι → P19RectMatrix n keyDimension
+  computedAZ : ι → P19RectMatrix n keyDimension
+  beta : ι → ℝ
+  hessenberg : ι → P19RectMatrix (keyDimension + 1) keyDimension
+  hessenberg_upper : ∀ t, p19IsUpperHessenberg (hessenberg t)
+  mgs_relation : ∀ t,
+    p19Augment (p19InitialResidual system.A system.b system.xInitial)
+        (computedAZ t) =
+      p19RectMatMul (vHatNext t)
+        (p19Augment (p19ScaledFirstBasisVector (beta t)) (hessenberg t))
+  vHat_prefix : ∀ t i (j : Fin keyDimension),
+    vHat t i j = vHatNext t i j.castSucc
+  leastSquaresDeltaB : ι → P19Vector n
+  leastSquaresDeltaC : ι → P19RectMatrix n keyDimension
+  yHat : ι → P19Vector keyDimension
+  least_squares_solution : ∀ t,
+    p19IsLeastSquaresSolution
+      (computedAZ t + leastSquaresDeltaC t)
+      (p19InitialResidual system.A system.b system.xInitial +
+        leastSquaresDeltaB t) (yHat t)
+  least_squares_column_bound : ∀ t (j : Fin (keyDimension + 1)),
+    p19VecNorm2
+        (p19Column
+          (p19Augment (leastSquaresDeltaB t) (leastSquaresDeltaC t)) j) ≤
+      p19PolynomialFactorValue polynomialFactor n keyDimension * ug t *
+        p19VecNorm2
+          (p19Column
+            (p19Augment
+              (p19InitialResidual system.A system.b system.xInitial)
+              (computedAZ t)) j)
+  zHat_full_rank : ∀ t, p19FullColumnRank (zHat t)
+  preconditionerDelta : ι → Fin keyDimension → P19Matrix n
+  preconditioner_application : ∀ t j,
+    p19Column (zHat t) j =
+      p19MatVec (system.MRinv + preconditionerDelta t j)
+        (p19Column (vHat t) j)
+  preconditioner_error_bound : ∀ t j,
+    p19FrobNorm (preconditionerDelta t j) ≤
+      p19PolynomialFactorValue polynomialFactor n keyDimension *
+        um t * etaR t * p19FrobNorm system.MRinv
+  matrixDelta : ι → Fin keyDimension → P19Matrix n
+  matrix_application : ∀ t j,
+    p19Column (computedAZ t) j =
+      p19MatVec (system.A + matrixDelta t j) (p19Column (zHat t) j)
+  matrix_error_bound : ∀ t j i q,
+    |matrixDelta t j i q| ≤
+      p19PolynomialFactorValue polynomialFactor n keyDimension *
+        ua t * |system.A i q|
+  rho_denominator_pos : ∀ t,
+    0 < p19VecNorm2 (p19RectMatVec (zHat t) (yHat t))
+  rho_equation : ∀ t,
+    rhoAR t =
+      p19VecNorm2 (p19AbsRectMatVec (zHat t) (yHat t)) /
+        p19VecNorm2 (p19RectMatVec (zHat t) (yHat t))
+  condition316 :
+    p19MuchLessThanOneAt l (fun t ↦
+      p19Condition316Value system (ug t) (um t) (ua t) (etaR t) (rhoAR t))
+
+/-- Right-preconditioned line 4: form `V_hat y_hat` in precision `u_g` and
+then apply the fixed right preconditioner again in precision `u_m`. -/
+structure P19RightGMRESRun {n : ℕ} {ι : Type*}
+    {system : P19FixedRightSystem n} {l : Filter ι}
+    (run : P19FixedRightGMRESRun system l) where
+  solutionBasisDelta : ι → P19RectMatrix n run.keyDimension
+  solutionPreconditionerDelta : ι → P19Matrix n
+  xHat : ι → P19Vector n
+  solution_basis_error_bound : ∀ t i j,
+    |solutionBasisDelta t i j| ≤
+      p19PolynomialFactorValue run.polynomialFactor n run.keyDimension *
+        run.ug t * |run.vHat t i j|
+  solution_preconditioner_error_bound : ∀ t,
+    p19FrobNorm (solutionPreconditionerDelta t) ≤
+      p19PolynomialFactorValue run.polynomialFactor n run.keyDimension *
+        run.um t * run.etaR t * p19FrobNorm system.MRinv
+  solution_equation : ∀ t,
+    xHat t = p19Add system.xInitial
+      (p19MatVec (system.MRinv + solutionPreconditionerDelta t)
+        (p19RectMatVec (run.vHat t + solutionBasisDelta t) (run.yHat t)))
+
+/-- Flexible line 4: reuse the stored preconditioned basis and form
+`Z_hat y_hat` directly in precision `u_g`, with no fresh preconditioner
+application. -/
+structure P19FlexibleGMRESRun {n : ℕ} {ι : Type*}
+    {system : P19FixedRightSystem n} {l : Filter ι}
+    (run : P19FixedRightGMRESRun system l) where
+  solutionBasisDelta : ι → P19RectMatrix n run.keyDimension
+  xHat : ι → P19Vector n
+  solution_basis_error_bound : ∀ t i j,
+    |solutionBasisDelta t i j| ≤
+      p19PolynomialFactorValue run.polynomialFactor n run.keyDimension *
+        run.ug t * |run.zHat t i j|
+  solution_equation : ∀ t,
+    xHat t = p19Add system.xInitial
+      (p19RectMatVec (run.zHat t + solutionBasisDelta t) (run.yHat t))
+
+/-- Appendix-C contribution certificate. Each first-order contribution is
+linked to the perturbation family that generates it; the final three-term
+forward-error inequality is not stored. -/
+structure P19RightForwardAnalysis {n : ℕ} {ι : Type*}
+    {system : P19FixedRightSystem n} {l : Filter ι}
+    {run : P19FixedRightGMRESRun system l}
+    (algorithm : P19RightGMRESRun run) where
+  gmresPropagation : ι → P19Vector n →
+    P19RectMatrix n run.keyDimension →
+    P19RectMatrix n run.keyDimension → P19Vector n
+  reapplicationPropagation : ι → P19Matrix n → P19Vector n
+  matrixPropagation : ι →
+    (Fin run.keyDimension → P19Matrix n) → P19Vector n
+  gmresContribution : ι → P19Vector n
+  reapplicationContribution : ι → P19Vector n
+  matrixContribution : ι → P19Vector n
+  remainder : ι → P19Vector n
+  gmres_link : ∀ t,
+    gmresContribution t =
+      gmresPropagation t (run.leastSquaresDeltaB t)
+        (run.leastSquaresDeltaC t) (algorithm.solutionBasisDelta t)
+  reapplication_link : ∀ t,
+    reapplicationContribution t =
+      reapplicationPropagation t (algorithm.solutionPreconditionerDelta t)
+  matrix_link : ∀ t,
+    matrixContribution t = matrixPropagation t (run.matrixDelta t)
+  gmresPropagation_zero : ∀ t, gmresPropagation t 0 0 0 = 0
+  reapplicationPropagation_zero : ∀ t, reapplicationPropagation t 0 = 0
+  matrixPropagation_zero : ∀ t,
+    matrixPropagation t (fun _ ↦ 0) = 0
+  error_decomposition : ∀ t,
+    algorithm.xHat t - system.xExact =
+      gmresContribution t + reapplicationContribution t +
+        matrixContribution t + remainder t
+  gmres_bound : ∀ t,
+    p19VecNorm2 (gmresContribution t) / p19VecNorm2 system.xExact ≤
+      p19PolynomialFactorValue run.polynomialFactor n run.keyDimension *
+        (run.ug t * p19RightOperatorKappa2 system *
+          p19RightPreconditionerKappa2 system)
+  reapplication_bound : ∀ t,
+    p19VecNorm2 (reapplicationContribution t) / p19VecNorm2 system.xExact ≤
+      p19PolynomialFactorValue run.polynomialFactor n run.keyDimension *
+        (run.um t * run.etaR t * p19RightPreconditionerKappa2 system)
+  matrix_bound : ∀ t,
+    p19VecNorm2 (matrixContribution t) / p19VecNorm2 system.xExact ≤
+      p19PolynomialFactorValue run.polynomialFactor n run.keyDimension *
+        (run.ua t * p19SystemKappa2 system * run.rhoAR t)
+  remainder_second_order :
+    p19SecondOrderAt l
+      (fun t ↦ p19Condition316Value system
+        (run.ug t) (run.um t) (run.ua t) (run.etaR t) (run.rhoAR t))
+      (fun t ↦ p19VecNorm2 (remainder t) / p19VecNorm2 system.xExact)
+
+/-- Appendix-D contribution certificate for flexible GMRES. Its first-order
+decomposition has no preconditioner-reapplication contribution. -/
+structure P19FlexibleForwardAnalysis {n : ℕ} {ι : Type*}
+    {system : P19FixedRightSystem n} {l : Filter ι}
+    {run : P19FixedRightGMRESRun system l}
+    (algorithm : P19FlexibleGMRESRun run) where
+  gmresPropagation : ι → P19Vector n →
+    P19RectMatrix n run.keyDimension →
+    P19RectMatrix n run.keyDimension → P19Vector n
+  matrixPropagation : ι →
+    (Fin run.keyDimension → P19Matrix n) → P19Vector n
+  gmresContribution : ι → P19Vector n
+  matrixContribution : ι → P19Vector n
+  remainder : ι → P19Vector n
+  gmres_link : ∀ t,
+    gmresContribution t =
+      gmresPropagation t (run.leastSquaresDeltaB t)
+        (run.leastSquaresDeltaC t) (algorithm.solutionBasisDelta t)
+  matrix_link : ∀ t,
+    matrixContribution t = matrixPropagation t (run.matrixDelta t)
+  gmresPropagation_zero : ∀ t, gmresPropagation t 0 0 0 = 0
+  matrixPropagation_zero : ∀ t,
+    matrixPropagation t (fun _ ↦ 0) = 0
+  error_decomposition : ∀ t,
+    algorithm.xHat t - system.xExact =
+      gmresContribution t + matrixContribution t + remainder t
+  gmres_bound : ∀ t,
+    p19VecNorm2 (gmresContribution t) / p19VecNorm2 system.xExact ≤
+      p19PolynomialFactorValue run.polynomialFactor n run.keyDimension *
+        (run.ug t * p19RightOperatorKappa2 system *
+          p19RightPreconditionerKappa2 system)
+  matrix_bound : ∀ t,
+    p19VecNorm2 (matrixContribution t) / p19VecNorm2 system.xExact ≤
+      p19PolynomialFactorValue run.polynomialFactor n run.keyDimension *
+        (run.ua t * p19SystemKappa2 system * run.rhoAR t)
+  remainder_second_order :
+    p19SecondOrderAt l
+      (fun t ↦ p19Condition316Value system
+        (run.ug t) (run.um t) (run.ua t) (run.etaR t) (run.rhoAR t))
+      (fun t ↦ p19VecNorm2 (remainder t) / p19VecNorm2 system.xExact)
+
+/-- A proof-carrying right-preconditioned execution of Theorem 3.3. -/
+structure P19RightTheorem33Execution {n : ℕ} {ι : Type*}
+    (system : P19FixedRightSystem n) (l : Filter ι) where
+  run : P19FixedRightGMRESRun system l
+  algorithm : P19RightGMRESRun run
+  analysis : P19RightForwardAnalysis algorithm
+
+/-- A proof-carrying fixed-preconditioner flexible execution of Theorem 3.4. -/
+structure P19FlexibleTheorem34Execution {n : ℕ} {ι : Type*}
+    (system : P19FixedRightSystem n) (l : Filter ι) where
+  run : P19FixedRightGMRESRun system l
+  algorithm : P19FlexibleGMRESRun run
+  analysis : P19FlexibleForwardAnalysis algorithm
 
 end HighamBench
