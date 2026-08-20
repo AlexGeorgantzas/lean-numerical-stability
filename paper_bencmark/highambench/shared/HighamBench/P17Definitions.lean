@@ -139,6 +139,85 @@ noncomputable def p17SuffixErrorProduct :
           p17SuffixErrorProduct m (fun j => delta j.castSucc) i *
             (1 + delta (Fin.last m)))
 
+/-- The coefficient multiplying each exact input in the product expansion of
+left-to-right recursive summation. The first input carries the full product;
+input `i + 1` carries the suffix beginning at rounded addition `i`. -/
+noncomputable def p17RecursiveCoefficient {m : ℕ}
+    (error : Fin m → ℝ) : Fin (m + 1) → ℝ :=
+  Fin.cases (∏ k : Fin m, (1 + error k))
+    (fun i => p17SuffixErrorProduct m error i)
+
+/-- The mean-independent error `alpha_k = delta_k - beta_k` from Lemma 3.10. -/
+noncomputable def p17Alpha
+    {m : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17LimitedPrecisionRecursiveSumRun m Ω)
+    (k : Fin m) (ω : Ω) : ℝ :=
+  run.delta k ω - run.beta k ω
+
+/-- The path-dependent coefficient remainder `B_i` in equations (3.8) and
+(4.8), written as the exact difference between the `delta` and `alpha`
+suffix coefficients. -/
+noncomputable def p17CoefficientRemainder
+    {m : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17LimitedPrecisionRecursiveSumRun m Ω)
+    (i : Fin (m + 1)) (ω : Ω) : ℝ :=
+  p17RecursiveCoefficient (fun k => run.delta k ω) i -
+    p17RecursiveCoefficient (fun k => p17Alpha run k ω) i
+
+/-- The mean-independent component `M` of the recursive-summation error in
+equation (4.8). -/
+noncomputable def p17CenteredSummationError
+    {m : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17LimitedPrecisionRecursiveSumRun m Ω) (ω : Ω) : ℝ :=
+  ∑ i : Fin (m + 1),
+    run.a i *
+      (p17RecursiveCoefficient (fun k => p17Alpha run k ω) i - 1)
+
+/-- The path-dependent limited-precision remainder `A = sum_i a_i B_i` in
+equations (4.8) and (4.10). -/
+noncomputable def p17LimitedPrecisionRemainder
+    {m : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17LimitedPrecisionRecursiveSumRun m Ω) (ω : Ω) : ℝ :=
+  ∑ i : Fin (m + 1), run.a i * p17CoefficientRemainder run i ω
+
+/-- Analytic execution certificate for the variance-based recursive-summation
+bound in Theorem 4.3.
+
+The first two added fields state the `alpha` conclusions of Lemma 3.10. The
+coefficient-remainder field is its equation (3.9), uniformly enlarged to the
+`m = n-1` radius used in equation (4.10). The covariance field is the exact
+specialization of the variance result cited as reference [11, Lemma 3.1]. It
+does not assume the second-moment bound for `M` or Theorem 4.3's final event. -/
+structure P17VarianceRecursiveSumRun
+    (m : ℕ) (Ω : Type*) [Fintype Ω]
+    extends P17LimitedPrecisionRecursiveSumRun m Ω where
+  alpha_bound : ∀ k ω,
+    |p17Alpha toP17LimitedPrecisionRecursiveSumRun k ω| ≤
+      p17UnitRoundoff p
+  alpha_mean_independent : ∀ k X,
+    p17HistoryMeasurable
+        (fun j ω => p17Alpha toP17LimitedPrecisionRecursiveSumRun j ω) k X →
+      p17Expectation probability
+        (fun ω => X ω *
+          p17Alpha toP17LimitedPrecisionRecursiveSumRun k ω) = 0
+  alpha_product_covariance_bound : ∀ i j,
+    0 ≤ p17Expectation probability (fun ω =>
+        (p17RecursiveCoefficient
+              (fun k => p17Alpha toP17LimitedPrecisionRecursiveSumRun k ω) i - 1) *
+          (p17RecursiveCoefficient
+              (fun k => p17Alpha toP17LimitedPrecisionRecursiveSumRun k ω) j - 1)) ∧
+      p17Expectation probability (fun ω =>
+          (p17RecursiveCoefficient
+                (fun k => p17Alpha toP17LimitedPrecisionRecursiveSumRun k ω) i - 1) *
+            (p17RecursiveCoefficient
+                (fun k => p17Alpha toP17LimitedPrecisionRecursiveSumRun k ω) j - 1)) ≤
+        p17Gamma m ((p17UnitRoundoff p) ^ 2)
+  coefficient_remainder_bound : ∀ i ω,
+    |p17CoefficientRemainder toP17LimitedPrecisionRecursiveSumRun i ω| ≤
+      p17Gamma m
+          (p17UnitRoundoff p + p17UnitRoundoff (p + r)) -
+        p17Gamma m (p17UnitRoundoff p)
+
 /-- Expected coefficient of each exact input in equation (4.4). The first
 input carries the full product; input `i+1` carries the corresponding suffix
 product. -/

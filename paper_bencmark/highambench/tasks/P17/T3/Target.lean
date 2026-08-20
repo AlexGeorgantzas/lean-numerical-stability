@@ -2,20 +2,25 @@ import HighamBench.P17Definitions
 
 namespace HighamBench
 
-/-- P17-T3: exact finite-probability assembly behind Theorem 4.3. A centered
-second-moment radius and the limited-precision deterministic bias radius add,
-then the summation condition factor scales the resulting event. -/
+/-- P17-T3: Theorem 4.3's variance-based relative forward-error bound for
+left-to-right recursive summation under limited-precision stochastic rounding
+`SR_{p,r}`. Lean uses `m = n - 1` rounded additions. -/
 theorem p17_t3_variance_plus_bias_probability_bound
-    {Ω : Type*} [Fintype Ω] (P : P17FiniteProbability Ω)
-    (centered : Ω → ℝ) (bias varianceBudget biasRadius kappa lambda : ℝ)
-    (hvariance : 0 < varianceBudget) (hlambda : 0 < lambda)
-    (hkappa : 0 ≤ kappa)
-    (hmoment : p17Expectation P (fun ω => (centered ω) ^ 2) ≤ varianceBudget)
-    (hbias : |bias| ≤ biasRadius) :
+    {m : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17VarianceRecursiveSumRun m Ω)
+    (hsum : p17ExactSum run.a ≠ 0)
+    (lambda : ℝ) (hlambda_pos : 0 < lambda) (hlambda_lt_one : lambda < 1) :
     1 - lambda ≤
-      p17EventProb P {ω |
-        |kappa * (centered ω + bias)| ≤
-          kappa * (Real.sqrt (varianceBudget / lambda) + biasRadius)} := by
+      p17EventProb run.probability {ω |
+        |p17RecursiveSum run.a (fun k => run.delta k ω) -
+            p17ExactSum run.a| / |p17ExactSum run.a| ≤
+          p17SummationCondition run.a *
+            (Real.sqrt
+                (p17Gamma m ((p17UnitRoundoff run.p) ^ 2) / lambda) +
+              p17Gamma m
+                  (p17UnitRoundoff run.p +
+                    p17UnitRoundoff (run.p + run.r)) -
+                p17Gamma m (p17UnitRoundoff run.p))} := by
   -- PROOF_START
   sorry
 

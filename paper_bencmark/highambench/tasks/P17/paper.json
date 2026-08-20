@@ -55,7 +55,7 @@
     },
     {
       "candidate": "Lemma 3.10 in full",
-      "reason": "Its full conditional mean-independence statement and power-set remainder require a considerably larger probability filtration interface. T3 retains the exact second-moment-plus-remainder assembly used downstream."
+      "reason": "It is supporting material rather than the selected final result. T3 records its mean-independence, alpha bound, exact path-dependent remainder, and equation (3.9) consequence inside the full Theorem 4.3 execution model."
     },
     {
       "candidate": "Theorems 4.2, 4.4, 4.5, and 4.6",
@@ -85,7 +85,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use the exact finite-probability second-moment-plus-bias assembly in the proof of Theorem 4.3.",
+      "decision": "Use Theorem 4.3 in full: the SR_(p,r) recursive-summation execution, exact M+A decomposition, path-dependent limited-precision remainder, variance-derived gamma_(n-1)(u_p^2) radius, summation condition number, and final relative forward-error event.",
       "task_id": "P17-T3",
       "theorem_name": "p17_t3_variance_plus_bias_probability_bound"
     }
