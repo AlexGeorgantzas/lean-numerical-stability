@@ -5,17 +5,38 @@
   "paper_version": "published open-access journal version; IMA Journal of Numerical Analysis 46(4), 2026, printed pages 1939-1993",
   "source_locations": [
     {
-      "anchor": "Lemma 4.2, correction residual (4.14) and next-residual recurrence (4.15)",
-      "pdf_page": 19,
-      "printed_page": "1957",
-      "role": "one-step backward-error recurrence",
+      "anchor": "equation (1.1), nonsingular square real system with nonzero right-hand side",
+      "pdf_page": 1,
+      "printed_page": "1939",
+      "role": "standing system assumptions",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "convention for lesssim and approximately-equal after dropping negligible second-order terms",
+      "pdf_page": 4,
+      "printed_page": "1942",
+      "role": "first-order comparison semantics",
+      "section": "2. Notations"
+    },
+    {
+      "anchor": "residual and update models (4.1)-(4.3)",
+      "pdf_page": 17,
+      "printed_page": "1955",
+      "role": "computed iterative-refinement operation model and parameter smallness",
       "section": "4.1 The modular algorithm, error model, and error analysis"
     },
     {
-      "anchor": "exact iterative-refinement identity (4.18)",
+      "anchor": "Lemma 4.2, correction residual (4.14) and next-residual recurrence (4.15)",
+      "pdf_page": 19,
+      "printed_page": "1957",
+      "role": "selected one-step backward-error recurrence",
+      "section": "4.1 The modular algorithm, error model, and error analysis"
+    },
+    {
+      "anchor": "exact iterative-refinement identity (4.18), iterate comparison, and following norm derivation",
       "pdf_page": 20,
       "printed_page": "1958",
-      "role": "finite residual composition used before norm bounds",
+      "role": "exact composition and second-order remainder propagation",
       "section": "4.1 The modular algorithm, error model, and error analysis"
     }
   ],

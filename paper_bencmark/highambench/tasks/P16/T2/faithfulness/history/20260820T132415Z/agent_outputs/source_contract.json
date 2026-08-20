@@ -1,0 +1,117 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "T2-E5 uses the norm comparison when deriving the displayed estimate from (4.18), whereas the lemma statement in T2-E4 lists only (4.1)-(4.3) and (4.14).",
+      "impact": "A literal formalization cannot derive the displayed lambda_2^(i) from the stated assumptions alone without adding this comparison or retaining an epsilon_r||x_hat_i||_2 term.",
+      "issue": "The proof invokes ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2, but Lemma 4.2 does not state this relation among its explicit hypotheses. [T2-E4, T2-E5]"
+    },
+    {
+      "evidence": "T2-E6 defines lesssim by the omission of 'negligible' second-order terms without a numerical threshold.",
+      "impact": "A formal theorem must either state an exact bound including omitted terms or introduce an explicit interpretation of lesssim.",
+      "issue": "The paper's lesssim relation is qualitative rather than a specified numerical inequality. [T2-E6]"
+    }
+  ],
+  "contract_plain_english": "In one generic iterative-refinement step, if the computed correction leaves a residual bounded by w_i times the current true residual plus an omega_i-scaled data term, then the next true residual is bounded, up to omitted second-order terms, by w_i times the current true residual plus (epsilon_r + epsilon_u + omega_i) times the next-iterate scaling term. Before norms are taken, the residuals compose through the exact identity (4.18). [T2-E2, T2-E4, T2-E5]",
+  "paper_batch_sha256": "cc856c94ce22bcb89d018b431db65cfb6c20d25df7bb6aaeb660c48c42f5c886",
+  "paper_sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "T2-E1: equation (1.1)",
+      "observation": "The underlying system Ax = b has A in R^(n x n) nonsingular and 0 != b in R^n.",
+      "pdf_page": 1,
+      "printed_page": "1939"
+    },
+    {
+      "anchor": "T2-E2: equations (4.1)-(4.3)",
+      "observation": "At restart iteration i, r_hat_i = b - Ax_hat_i + Delta r_i with ||Delta r_i||_2 <= epsilon_r(||b||_2 + ||A||_F||x_hat_i||_2), and x_hat_(i+1) = x_hat_i + d_hat_i + Delta x_i with ||Delta x_i||_2 <= epsilon_u||x_hat_(i+1)||_2; the parameters satisfy 0 <= epsilon_r, epsilon_u << 1.",
+      "pdf_page": 17,
+      "printed_page": "1955"
+    },
+    {
+      "anchor": "T2-E3: paragraph immediately before Lemma 4.2",
+      "observation": "Lemma 4.2 is stated for iterative refinement with a generic linear solver and does not assume that the correction system is solved by MOD-GMRES.",
+      "pdf_page": 18,
+      "printed_page": "1956"
+    },
+    {
+      "anchor": "T2-E4: Lemma 4.2, equations (4.14)-(4.15)",
+      "observation": "Independently of the lemma's forward-error clause, if nonnegative w_i and omega_i satisfy ||r_hat_i - Ad_hat_i||_2 <= w_i||b - Ax_hat_i||_2 + omega_i(||b||_2 + ||A||_F||x_hat_(i+1)||_2), then ||b - Ax_hat_(i+1)||_2 lesssim Lambda_2^(i)||b - Ax_hat_i||_2 + lambda_2^(i), where Lambda_2^(i) = w_i and lambda_2^(i) = (epsilon_r + epsilon_u + omega_i)(||b||_2 + ||A||_F||x_hat_(i+1)||_2).",
+      "pdf_page": 19,
+      "printed_page": "1957"
+    },
+    {
+      "anchor": "T2-E5: equation (4.18) and its following norm estimate",
+      "observation": "Before taking norms, the proof uses the exact identity Ax_hat_(i+1) - b = Delta r_i + Ad_hat_i - r_hat_i + A Delta x_i. The subsequent estimate also invokes ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2.",
+      "pdf_page": 20,
+      "printed_page": "1958"
+    },
+    {
+      "anchor": "T2-E6: Section 2 convention for lesssim",
+      "observation": "The paper uses lesssim and approximately-equal notation when dropping negligible second-order terms.",
+      "pdf_page": 4,
+      "printed_page": "1942"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "This is a one-step result for generic iterative refinement, not specifically GMRES or MOD-GMRES; the paper subsequently specializes it to restarted MOD-GMRES. [T2-E3]",
+    "binders": [
+      "A in R^(n x n) is nonsingular, b, x_hat_i, x_hat_(i+1), r_hat_i, d_hat_i, Delta r_i, and Delta x_i are conforming real vectors, and i >= 0. [T2-E1, T2-E2, T2-E4]",
+      "epsilon_r and epsilon_u are nonnegative small accuracy parameters; w_i and omega_i are nonnegative scalars. [T2-E2, T2-E4]"
+    ],
+    "conclusions": [
+      "Exactly, Ax_hat_(i+1) - b = Delta r_i + Ad_hat_i - r_hat_i + A Delta x_i. [T2-E5]",
+      "The next true residual satisfies ||b - Ax_hat_(i+1)||_2 lesssim Lambda_2^(i)||b - Ax_hat_i||_2 + lambda_2^(i). [T2-E4]",
+      "The recurrence coefficients are Lambda_2^(i) = w_i and lambda_2^(i) = (epsilon_r + epsilon_u + omega_i)(||b||_2 + ||A||_F||x_hat_(i+1)||_2). [T2-E4]"
+    ],
+    "constants_and_indexing": [
+      "The result is local to a fixed iteration i >= 0, and w_i, omega_i, Lambda_2^(i), and lambda_2^(i) may vary with i. [T2-E4]",
+      "Lambda_2^(i) is exactly w_i; lambda_2^(i) contains the sum epsilon_r + epsilon_u + omega_i with no dimension-dependent c(n,k) in Lemma 4.2 itself. [T2-E4]"
+    ],
+    "definitions_and_conventions": [
+      "r_hat_i is the computed residual, while b - Ax_hat_i is the true residual of the computed iterate; they differ by Delta r_i. [T2-E2]",
+      "d_hat_i is the computed correction for the correction system Ad_i = r_hat_i. [T2-E3, T2-E4]",
+      "The symbol lesssim denotes a bound after negligible second-order terms have been dropped. [T2-E6]"
+    ],
+    "error_notions": [
+      "Equation (4.14) controls the residual of the computed correction system, ||r_hat_i - Ad_hat_i||_2. [T2-E4]",
+      "Equation (4.15) controls the absolute 2-norm of the next true system residual; it is not itself the normalized normwise backward error. [T2-E4]"
+    ],
+    "exceptional_values": [
+      "The system matrix is nonsingular and epsilon_r and epsilon_u are assumed much smaller than one. [T2-E1, T2-E2]",
+      "No exceptional floating-point values, overflow, underflow, or subnormal cases are treated in the lemma. [T2-E2, T2-E4]"
+    ],
+    "higher_order_terms": [
+      "Equation (4.18) is exact. [T2-E5]",
+      "Equation (4.15) uses lesssim and therefore omits negligible second-order terms under the paper's convention. [T2-E4, T2-E6]"
+    ],
+    "hypotheses": [
+      "The computed residual obeys r_hat_i = b - Ax_hat_i + Delta r_i and ||Delta r_i||_2 <= epsilon_r(||b||_2 + ||A||_F||x_hat_i||_2). [T2-E2]",
+      "The computed update obeys x_hat_(i+1) = x_hat_i + d_hat_i + Delta x_i and ||Delta x_i||_2 <= epsilon_u||x_hat_(i+1)||_2. [T2-E2]",
+      "The accuracy parameters satisfy 0 <= epsilon_r, epsilon_u << 1. [T2-E2]",
+      "The correction-system residual satisfies ||r_hat_i - Ad_hat_i||_2 <= w_i||b - Ax_hat_i||_2 + omega_i(||b||_2 + ||A||_F||x_hat_(i+1)||_2). [T2-E4]"
+    ],
+    "implicit_context": [
+      "The backward-residual clause of Lemma 4.2 begins 'Independently'; it does not require the separate forward-error hypothesis (4.12) or conclusion (4.13). [T2-E4]",
+      "The proof's aggregation of the epsilon_r term uses ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2. [T2-E5]"
+    ],
+    "norms": [
+      "All vector residuals and vector errors use the 2-norm. [T2-E2, T2-E4]",
+      "A enters the scaling terms through its Frobenius norm ||A||_F. [T2-E2, T2-E4]"
+    ],
+    "numerical_model": [
+      "Residual and update errors are modeled normwise by epsilon_r and epsilon_u rather than being required to arise from particular componentwise floating-point kernels. [T2-E2]",
+      "The exact composition identity retains Delta r_i and A Delta x_i before any norm bound or second-order omission. [T2-E5]"
+    ]
+  },
+  "task_id": "P16-T2",
+  "undebatable_constraints": [
+    "The correction residual is measured against the computed right-hand side r_hat_i, but its leading comparison term is the true residual ||b - Ax_hat_i||_2. [T2-E4]",
+    "Both w_i and omega_i are nonnegative. [T2-E4]",
+    "The exact identity has the signs Delta r_i + Ad_hat_i - r_hat_i + A Delta x_i. [T2-E5]",
+    "The recurrence must retain both Lambda_2^(i) = w_i and the full additive term lambda_2^(i). [T2-E4]",
+    "The recurrence is a lesssim estimate, not an exact equality or unqualified <= inequality. [T2-E4, T2-E6]",
+    "No MOD-GMRES-specific hypothesis belongs to this generic lemma clause. [T2-E3]"
+  ]
+}

@@ -3,67 +3,188 @@
   "role": "adjudicator",
   "task_id": "P16-T2",
   "trigger": [
+    "judge classifications differ",
     "direct judge requested adjudication",
-    "round-trip judge requested adjudication"
+    "direct judge classification is undetermined",
+    "direct D001 is unclear",
+    "direct D005 is unclear",
+    "direct D006 is unclear",
+    "direct D014 is unclear",
+    "direct D020 is unclear",
+    "direct D021 is unclear",
+    "direct D024 is unclear",
+    "direct D026 is unclear",
+    "direct D052 is unclear",
+    "direct D053 is unclear",
+    "direct D054 is unclear",
+    "direct D073 is unclear",
+    "direct D076 is unclear",
+    "direct S02 is unclear",
+    "direct S03 is unclear",
+    "direct S04 is unclear",
+    "direct S06 is unclear",
+    "direct S12 is unclear",
+    "direct S14 is unclear",
+    "direct S15 is unclear"
   ],
   "resolved_items": [
     {
-      "item": "direct judge requested adjudication",
-      "resolution": "The target is a logically different repaired theorem, not a faithful stronger or weaker version. Lean's exact residual and update hypotheses algebraically entail the exact composition identity (4.18) with the correct signs. Exact hxmono, together with nonnegativity of epsilonR and epsilonU, then supports Lean's exact <= recurrence. However, hxmono is stronger than the unstated qualitative iterate-norm comparison used by the paper and restricts applicability, so the exact conclusion is not a faithful strengthening over the paper's domain.",
-      "primary_evidence": "The PDF SHA-256 was verified as 8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a. On printed page 1958, (4.18) is the exact identity A xhat_(i+1)-b = Delta r_i + A dhat_i - rhat_i + A Delta x_i. The following derivation invokes ||xhat_i||_2 lesssim ||xhat_(i+1)||_2 before obtaining the qualitative recurrence. The Lean hypotheses rhat = b-Ax+deltaR and xNext = x+correction+deltaX entail the same identity exactly, while Lean additionally assumes ||x||_2 <= ||xNext||_2."
+      "item": "judge classifications differ",
+      "resolution": "The disagreement resolves to not-faithful-weaker. The paper's exact derivation proves the Lean conclusion under the Lean package's additional asymptotic hypotheses, but the Lean theorem cannot recover the paper's fixed-parameter, fixed-iteration statement.",
+      "primary_evidence": "PDF p. 20, printed p. 1958, gives the exact expanded bound after (4.18). D014 and D020 add a filtered O(scale^2) iterate comparison, vanishing epsilon families, and an eventual conclusion. PDF pp. 17-19, printed pp. 1955-1957, instead use fixed epsilon_r and epsilon_u and a fixed iteration i."
     },
     {
-      "item": "round-trip judge requested adjudication",
-      "resolution": "Neither complete implication holds. The paper-admissible domain does not imply Lean's exact hxmono, even if the paper's unstated qualitative comparison is treated as implicit. Conversely, the paper's lesssim conclusion does not assert Lean's exact <= bound, and the paper covers only nonsingular systems with nonzero b, small nonnegative epsilon parameters, and nonnegative w and omega, whereas Lean also asserts cases outside that domain. The omitted conditions are genuine domain generalizations for the exact algebraic lemma, but they do not compensate for the added hxmono restriction or the changed conclusion relation.",
-      "primary_evidence": "Printed page 1939 states that A is nonsingular and b is nonzero. Printed page 1955 states 0 <= epsilon_r, epsilon_u << 1. Lemma 4.2 on printed page 1957 explicitly requires nonnegative w_i and omega_i and states (4.15) with lesssim. Section 2 on printed page 1942 says lesssim is used when negligible second-order terms are dropped. Lean omits nonsingularity, b != 0, epsilon smallness, and w/omega nonnegativity, adds exact hxmono, and concludes with ordinary real <=."
+      "item": "direct judge requested adjudication",
+      "resolution": "Adjudication is completed with both implication directions determined and classification not-faithful-weaker.",
+      "primary_evidence": "The exact display following (4.18) supplies the one-way derivation, while equations (4.1)-(4.3) and Lemma 4.2 establish that the source statement is formulated for fixed parameters rather than a vanishing filtered family."
+    },
+    {
+      "item": "direct judge classification is undetermined",
+      "resolution": "The classification is determined rather than left unclear: paper_implies_lean is yes, lean_implies_paper is no, hence not-faithful-weaker.",
+      "primary_evidence": "From the exact bound on PDF p. 20 and D020's iterate comparison witness q=O(scale^2), one may take rho=epsilonR*||A||_F*q; epsilonR tending to zero makes it eventually bounded, so rho=O(scale^2). Conversely, a fixed positive epsilon_r or epsilon_u from (4.3) cannot be represented by the corresponding constant Lean function because D020 requires that function to tend to zero."
+    },
+    {
+      "item": "direct D001 is unclear",
+      "resolution": "D001 is semantically clear and is a paper mismatch in parameterization. It packages a filtered family of local steps and does not assert that any step exists. Its algebraic fields match one refinement step, but its filter, limits, and explicit iterate comparison are additional restrictions.",
+      "primary_evidence": "D020 is the constructor for D001 and lists all packaged fields and hypotheses. Lemma 4.2 on PDF p. 19, printed p. 1957, fixes one iteration i and fixed scalar parameters without introducing an auxiliary filtered family."
+    },
+    {
+      "item": "direct D005 is unclear",
+      "resolution": "D005 matches epsilon_r pointwise but not in quantifier regime: Lean makes epsilonR a function that tends to zero, whereas the paper uses a fixed given small parameter.",
+      "primary_evidence": "PDF p. 17, printed p. 1955, equations (4.1) and (4.3), use a given epsilon_r with 0 <= epsilon_r << 1. D020 declares epsilonR:iota->Real and requires Tendsto epsilonR l (nhds 0)."
+    },
+    {
+      "item": "direct D006 is unclear",
+      "resolution": "D006 matches epsilon_u pointwise but replaces the paper's fixed qualitative-smallness parameter by a function converging to zero.",
+      "primary_evidence": "PDF p. 17, printed p. 1955, equations (4.2)-(4.3), use a given epsilon_u and explain its relation to update arithmetic. D020 requires epsilonU:iota->Real and Tendsto epsilonU l (nhds 0)."
+    },
+    {
+      "item": "direct D014 is unclear",
+      "resolution": "D014 is a precise but source-underdetermined and restrictive interpretation of the paper's first-order comparison. It is not equivalent on the supplied evidence to the paper's informal lesssim notation.",
+      "primary_evidence": "PDF p. 4, printed p. 1942, says lesssim is used after dropping negligible second-order terms but gives no scale, filter, remainder, constant, or threshold. D014 requires an existential remainder O_l(scale^2) and an eventual inequality with its absolute value."
+    },
+    {
+      "item": "direct D020 is unclear",
+      "resolution": "D020 faithfully stores the local algebraic models (4.1), (4.2), and (4.14), but changes the theorem's scope by using t-indexed families, convergence assumptions, and an explicit first-order iterate comparison. It is sufficient for the Lean conclusion but is not the paper's hypothesis package.",
+      "primary_evidence": "PDF pp. 16-17, printed pp. 1954-1955, quantify (4.1)-(4.3) over algorithmic iterations with common epsilon_r and epsilon_u. PDF p. 20, printed p. 1958, merely invokes ||xHat_i|| lesssim ||xHat_{i+1}|| in the proof. D020 instead requires all local equations for every t and stores that comparison as a formal hypothesis."
+    },
+    {
+      "item": "direct D021 is unclear",
+      "resolution": "D021 is mathematically clear but has no source-specified counterpart: it defines second order to mean O_l(scale^2).",
+      "primary_evidence": "D021 unfolds to Asymptotics.IsBigO l remainder (fun t => scale t ^ 2). PDF p. 4, printed p. 1942, describes only negligible second-order terms and does not select an asymptotic scale."
+    },
+    {
+      "item": "direct D024 is unclear",
+      "resolution": "D024 is ordinary filter infrastructure, but the filter is a substantive extra binder because it changes fixed one-step assertions into eventual assertions over a family.",
+      "primary_evidence": "No filter or auxiliary limit index appears in equations (4.1)-(4.3), (4.14), or (4.15). The Lean target quantifies over l and uses it in every Tendsto, Eventually, and IsBigO condition."
+    },
+    {
+      "item": "direct D026 is unclear",
+      "resolution": "D026 has its standard convergence meaning and introduces a regime change: scale, epsilonR, and epsilonU must converge to zero, unlike the fixed parameters in the paper.",
+      "primary_evidence": "D026 unfolds Tendsto as a filter-map relation. PDF p. 17, printed p. 1955, states qualitative smallness 0 <= epsilon_r, epsilon_u << 1 rather than convergence of parameterized functions."
+    },
+    {
+      "item": "direct D052 is unclear",
+      "resolution": "D052 is standard neighborhood-filter infrastructure. It is not independently erroneous, but nhds 0 concretizes the additional zero-limit model absent from the paper.",
+      "primary_evidence": "D052 is the neighborhood filter used by the Lean Tendsto assumptions. The source passages on PDF pp. 17 and 19 contain fixed real parameters and no topological limit formulation."
+    },
+    {
+      "item": "direct D053 is unclear",
+      "resolution": "D053 is standard existential quantification, but in D014 it introduces explicit input and output remainder witnesses that the paper never states.",
+      "primary_evidence": "D014 begins with Exists remainder. PDF p. 4, printed p. 1942, only gives an informal convention of dropping terms, and equation (4.15) contains no quantified remainder."
+    },
+    {
+      "item": "direct D054 is unclear",
+      "resolution": "D054 is standard eventuality and creates a real scope mismatch: the Lean norm inequality need hold only on a filter tail, whereas the paper states a one-step first-order bound for the selected iteration.",
+      "primary_evidence": "D014 places its inequality under Filter.Eventually. Lemma 4.2 on PDF p. 19, printed p. 1957, fixes i and states (4.15) directly for xHat_{i+1}, without an eventual auxiliary parameter."
+    },
+    {
+      "item": "direct D073 is unclear",
+      "resolution": "D073 correctly denotes ordinary absolute value, but its use as nonnegative additive remainder slack is part of the Lean-specific formalization and is not specified by the paper.",
+      "primary_evidence": "D014 concludes lhs <= rhs+|remainder|. The lesssim convention on PDF p. 4 and recurrence (4.15) on PDF p. 19 contain no signed or absolute-valued remainder."
+    },
+    {
+      "item": "direct D076 is unclear",
+      "resolution": "D076 is standard norm-based big-O along a filter, but requiring an O(scale^2) remainder is an unsupported precision choice rather than a definition supplied by the source.",
+      "primary_evidence": "D021 applies D076 to remainder and scale^2. PDF p. 4, printed p. 1942, supplies neither a distinguished scale nor a uniform big-O constant for omitted terms."
+    },
+    {
+      "item": "direct S02 is unclear",
+      "resolution": "S02 fails overall. The finite real matrix and vector binders match, but the arbitrary type, filter, scale, and t-indexed families do not preserve the paper's fixed-iteration binder structure.",
+      "primary_evidence": "Lemma 4.2 on PDF p. 19 fixes i >= 0 and scalar w_i and omega_i. The Lean target adds iota, l, scale, and step fields indexed by t, while its natural iteration argument does not select entries of a trajectory."
+    },
+    {
+      "item": "direct S03 is unclear",
+      "resolution": "S03 fails as a quantifier match. Lean localizes the all-iteration operation models to a family of selected local steps and changes the residual conclusion from fixed-step to eventual scope.",
+      "primary_evidence": "Equations (4.1) and (4.2) on PDF pp. 16-17 hold for all algorithmic i with common epsilon parameters. D020 stores only current and next local vectors for every auxiliary t, and D014 makes the conclusion eventual."
+    },
+    {
+      "item": "direct S04 is unclear",
+      "resolution": "S04 fails as exact hypothesis correspondence. Lean preserves nonsingularity, b nonzero, bounds, and nonnegativity, but adds scale convergence, epsilon convergence, a nonbottom filter, and an explicit iterate-comparison hypothesis.",
+      "primary_evidence": "PDF pp. 17-19 list (4.1)-(4.3), nonnegative w_i and omega_i, and (4.14). The iterate comparison appears only in the proof after (4.18) on PDF p. 20. D020 promotes it and the convergence conditions to required fields."
+    },
+    {
+      "item": "direct S06 is unclear",
+      "resolution": "S06 passes for matrix-vector multiplication, residuals, Euclidean norms, and the Frobenius norm, but fails overall for the disputed first-order operator because D014 assigns semantics not determined by the PDF.",
+      "primary_evidence": "Equations (4.1), (4.14), and (4.15) use the same norms and algebra represented by D015-D019. Section 2 on PDF p. 4 leaves lesssim informal, whereas D014 fixes an eventual O(scale^2)-remainder interpretation."
+    },
+    {
+      "item": "direct S12 is unclear",
+      "resolution": "S12 fails for the final comparison semantics, although the exact identity has the correct direction and strength. The Lean eventual inequality is a consequence under extra hypotheses, not a source-equivalent reading of lesssim.",
+      "primary_evidence": "Equation (4.18) and the first following residual estimate on PDF p. 20 use exact equality and <=. Equation (4.15) uses lesssim. Lean preserves the equality but replaces lesssim by D014's quantified eventual inequality."
+    },
+    {
+      "item": "direct S14 is unclear",
+      "resolution": "S14 fails. The Lean declaration invents a particular scale, filtered big-O remainder, and separate iterate-comparison remainder where the paper specifies only that negligible second-order terms were dropped.",
+      "primary_evidence": "PDF p. 4 gives the complete stated convention for lesssim, and PDF p. 20 applies it without a remainder formula. D014 and D021 explicitly require O_l(scale^2) witnesses."
+    },
+    {
+      "item": "direct S15 is unclear",
+      "resolution": "S15 fails. The filtered-family formulation is neither a mere finite-dimensional specialization nor an unrestricted generalization: it broadens the data representation while narrowing applicability through convergence and eventuality requirements.",
+      "primary_evidence": "The paper already works over fixed finite-dimensional real data at a fixed iteration. The Lean theorem additionally requires scale, epsilonR, and epsilonU limits and an O(scale^2) iterate comparison, while allowing all quantities to vary with t."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "Even granting that an exact <= bound implies the paper's qualitative lesssim bound on a shared instance, Lean applies only when exact hxmono holds. The published lemma does not state that condition, and its proof uses only an unstated qualitative iterate-norm comparison. Thus Lean does not cover every source-admissible step. Its broader treatment of singular A, zero b, large epsilon values, and signed w or omega does not remove this applicability restriction."
+      "reasoning": "The Lean theorem only gives an eventual result for filtered families whose epsilonR and epsilonU tend to zero and whose iterate norms satisfy an explicit O(scale^2) comparison. A paper instance with fixed nonzero small epsilon_r or epsilon_u cannot be represented by the corresponding constant Lean functions, and placing such an instance at a non-eventual parameter value yields no conclusion about it. Thus Lean does not recover the paper's fixed-instance claim."
     },
     "paper_implies_lean": {
-      "verdict": "no",
-      "reasoning": "The paper's qualitative lesssim recurrence, with unspecified omitted second-order terms, does not entail an unqualified exact <= recurrence. Moreover, the paper is confined to nonsingular A, nonzero b, small nonnegative epsilon parameters, and nonnegative w and omega, while Lean asserts its conditional theorem for arbitrary A and b and without the latter restrictions. The source therefore does not establish the complete Lean statement."
+      "verdict": "yes",
+      "reasoning": "The exact bound following (4.18) applies pointwise to the data stored by D020. If q=O_l(scale^2) witnesses ||xHat||_2 <= ||xHatNext||_2+|q| eventually, substitution into that exact bound leaves at most epsilonR*||A||_F*|q| beyond the Lean RHS. Since epsilonR tends to zero, it is eventually bounded, so rho=epsilonR*||A||_F*q is O_l(scale^2). This proves D014's output relation under the Lean package's additional assumptions, independently of assigning a formal meaning to the paper's lesssim symbol."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "not-faithful-weaker",
   "accepted": false,
   "remaining_uncertainties": [
-    "The paper assigns no numerical constant or explicit remainder to lesssim or to the qualitative iterate-norm comparison. Consequently, the quantitative size of the gap between (4.15) and Lean's exact bound cannot be recovered, although the logical mismatch and final classification are determinate."
+    "The PDF does not define lesssim beyond dropping negligible second-order terms, so p16FirstOrderLeAt cannot be certified as the unique or equivalent formal semantics of that notation.",
+    "The PDF gives no numerical threshold for epsilon_r, epsilon_u << 1, so convergence to zero is an added asymptotic replacement rather than an exactly source-defined condition."
   ],
   "findings": [
     {
-      "severity": "critical",
-      "category": "relation-strength-and-higher-order-terms",
-      "evidence": "Section 2 defines lesssim as notation used after dropping negligible second-order terms, and Lemma 4.2 states (4.15) with lesssim. Lean concludes the same first-order right-hand side using exact real <= and includes no remainder.",
-      "impact": "The central recurrence has been changed from a qualitative first-order estimate into an exact mathematical inequality."
+      "severity": "major",
+      "category": "quantifier and parameter regime",
+      "evidence": "The paper uses fixed epsilon_r and epsilon_u and a fixed iteration i, with (4.1)-(4.3) imposed over the iterative-refinement sequence. Lean instead uses arbitrary filtered t-families, vanishing epsilon functions, and an eventual conclusion.",
+      "impact": "The Lean theorem excludes ordinary fixed positive-error instances covered by the paper and therefore cannot imply the source result."
     },
     {
       "severity": "major",
-      "category": "exact-iterate-norm-repair",
-      "evidence": "The proof following (4.18) invokes ||xhat_i||_2 lesssim ||xhat_(i+1)||_2, but Lemma 4.2 does not list it as a hypothesis. Lean instead requires the exact condition ||x||_2 <= ||xNext||_2.",
-      "impact": "This exact hypothesis repairs the derivation of the exact bound but narrows the admissible step domain. The stronger conclusion is therefore not a faithful stronger theorem."
+      "category": "higher-order semantics",
+      "evidence": "Section 2 only says lesssim drops negligible second-order terms. D014 and D021 impose an existential absolute remainder, a chosen scale, filtered eventuality, and O(scale^2).",
+      "impact": "The central first-order relation receives a precise but unsupported restrictive interpretation."
     },
     {
-      "severity": "major",
-      "category": "omitted-source-domain-conditions",
-      "evidence": "The source assumes nonsingular A, b != 0, 0 <= epsilon_r, epsilon_u << 1, and nonnegative w_i and omega_i. Lean retains only nonnegativity of epsilonR and epsilonU.",
-      "impact": "Lean generalizes the exact algebraic result to singular systems, zero right-hand sides, large error parameters, and some satisfiable signed-coefficient cases. These extensions make the domains incomparable with the source domain rather than making the target merely weaker."
-    },
-    {
-      "severity": "note",
-      "category": "exact-composition-identity",
-      "evidence": "Substituting Lean's exact hresidual and hupdate equations yields A xNext-b = deltaR + A correction-rhat + A deltaX, exactly matching (4.18). The conclusion norms b-A xNext, whose norm equals that of its negative.",
-      "impact": "There is no sign, residual-definition, or exact-versus-computed mismatch in the composition identity. Its exactness does not transfer to the paper's subsequent qualitative recurrence."
+      "severity": "minor",
+      "category": "iterate comparison",
+      "evidence": "The proof after (4.18) invokes ||xHat_i||_2 lesssim ||xHat_{i+1}||_2, but Lemma 4.2 does not list it. D020 makes an O(scale^2) version a formal hypothesis.",
+      "impact": "Lean repairs a premise used informally by the proof but narrows the published lemma's stated applicability."
     },
     {
       "severity": "note",
-      "category": "nonvacuity",
-      "evidence": "For n=1, A=1, b=1, x=0, correction=xNext=1/2, rhat=1, deltaR=deltaX=0, epsilonR=epsilonU=omega=0, and w=1/2, all Lean hypotheses hold and the nonzero residual conclusion is tight.",
-      "impact": "Lean's repaired exact theorem has genuine nonvacuous content, but that does not overcome its restricted hxmono domain or make it a faithful strengthening."
+      "category": "algebraic core",
+      "evidence": "The exact identity, true-residual placement, correction-residual bound, Euclidean and Frobenius norms, signs, and coefficients w and epsilonR+epsilonU+omega agree with equations (4.14), (4.15), and (4.18).",
+      "impact": "The mismatch concerns formal asymptotic scope and applicability, not the one-step residual algebra; the paper's exact derivation consequently proves the restricted Lean theorem."
     }
   ],
-  "rationale": "Primary evidence confirms four distinct layers: (4.18) is an exact algebraic identity; (4.15) is a qualitative lesssim recurrence; its proof uses an unstated qualitative iterate-norm comparison; and Lean replaces that comparison by exact hxmono to obtain an exact <= conclusion. The resulting Lean theorem is mathematically coherent and nonvacuous. Nonsingularity, b != 0, parameter smallness, and w/omega nonnegativity are unnecessary for its exact conditional algebra, so their omission broadens its domain, sometimes nonvacuously. Exact hxmono simultaneously narrows the domain relative to the paper, while exact <= strengthens the conclusion relative to lesssim. These mixed changes make the target neither faithfully stronger nor merely weaker but a logically different repaired theorem. The inlined dependency definitions independently confirm the intended real matrix, matrix-vector product, Euclidean norm, Frobenius norm, and residual semantics; dependency-reuse records were treated only as provenance."
+  "rationale": "Primary evidence resolves the disagreement without interpreting the paper's informal lesssim directly. The exact inequality derived after (4.18), combined with D020's additional iterate-comparison witness and epsilonR tending to zero, yields the Lean O(scale^2) conclusion, so the paper implies Lean. The converse fails because Lean addresses only eventual members of vanishing-error filtered families and cannot recover a general fixed small positive-parameter instance of Lemma 4.2. The declaration is nonvacuous and its algebraic core is correct, but its reduced applicability is not genuine theorem strength. Therefore the appropriate classification is not-faithful-weaker."
 }

@@ -6,127 +6,547 @@ Judges must interpret every dependency entry and may not infer semantics from na
 ## Exact source declaration
 
 ```lean
-theorem p16_t2_restarted_residual_recurrence {n : ℕ}
-    (A : P16Matrix n) (b x correction xNext rhat deltaR deltaX : P16Vector n)
-    (epsilonR epsilonU w omega : ℝ)
-    (hresidual : rhat = p16Residual A b x + deltaR)
-    (hupdate : xNext = x + correction + deltaX)
-    (hcorrection :
-      p16VecNorm (rhat - p16MatVec A correction) ≤
-        w * p16VecNorm (p16Residual A b x) +
-          omega * (p16VecNorm b + p16FrobNorm A * p16VecNorm xNext))
-    (hdeltaR :
-      p16VecNorm deltaR ≤
-        epsilonR * (p16VecNorm b + p16FrobNorm A * p16VecNorm x))
-    (hdeltaX : p16VecNorm deltaX ≤ epsilonU * p16VecNorm xNext)
-    (hxmono : p16VecNorm x ≤ p16VecNorm xNext)
-    (hepsilonR : 0 ≤ epsilonR) (hepsilonU : 0 ≤ epsilonU) :
-    p16VecNorm (p16Residual A b xNext) ≤
-      w * p16VecNorm (p16Residual A b x) +
-        (epsilonR + epsilonU + omega) *
-          (p16VecNorm b + p16FrobNorm A * p16VecNorm xNext)
+theorem p16_t2_restarted_residual_recurrence
+    {n : ℕ} {ι : Type*} {l : Filter ι} [l.NeBot]
+    (A : P16Matrix n) (b : P16Vector n) (iteration : ℕ)
+    (scale : ι → ℝ) (hscale : Filter.Tendsto scale l (nhds 0))
+    (hn : 0 < n) (hA : p16IsNonsingular A) (hb : b ≠ 0)
+    (step : P16Lemma42BackwardStep l scale A b iteration) :
+    (∀ t,
+      p16MatVec A (step.xHatNext t) - b =
+        step.deltaR t + p16MatVec A (step.correctionHat t) -
+          step.residualHat t + p16MatVec A (step.deltaX t)) ∧
+      p16FirstOrderLeAt l scale
+        (fun t ↦ p16VecNorm (p16Residual A b (step.xHatNext t)))
+        (fun t ↦
+          step.w t * p16VecNorm (p16Residual A b (step.xHat t)) +
+            (step.epsilonR t + step.epsilonU t + step.omega t) *
+              (p16VecNorm b +
+                p16FrobNorm A * p16VecNorm (step.xHatNext t)))
 ```
 
 ## Elaborated target type
 
 ```lean
-∀ {n : Nat} (A : HighamBench.P16Matrix n) (b x correction xNext rhat deltaR deltaX : HighamBench.P16Vector n)
-  (epsilonR epsilonU w omega : Real),
-  Eq rhat (instHAdd.hAdd (HighamBench.p16Residual A b x) deltaR) →
-    Eq xNext (instHAdd.hAdd (instHAdd.hAdd x correction) deltaX) →
-      Real.instLE.le (HighamBench.p16VecNorm (instHSub.hSub rhat (HighamBench.p16MatVec A correction)))
-          (instHAdd.hAdd (instHMul.hMul w (HighamBench.p16VecNorm (HighamBench.p16Residual A b x)))
-            (instHMul.hMul omega
-              (instHAdd.hAdd (HighamBench.p16VecNorm b)
-                (instHMul.hMul (HighamBench.p16FrobNorm A) (HighamBench.p16VecNorm xNext))))) →
-        Real.instLE.le (HighamBench.p16VecNorm deltaR)
-            (instHMul.hMul epsilonR
-              (instHAdd.hAdd (HighamBench.p16VecNorm b)
-                (instHMul.hMul (HighamBench.p16FrobNorm A) (HighamBench.p16VecNorm x)))) →
-          Real.instLE.le (HighamBench.p16VecNorm deltaX) (instHMul.hMul epsilonU (HighamBench.p16VecNorm xNext)) →
-            Real.instLE.le (HighamBench.p16VecNorm x) (HighamBench.p16VecNorm xNext) →
-              Real.instLE.le 0 epsilonR →
-                Real.instLE.le 0 epsilonU →
-                  Real.instLE.le (HighamBench.p16VecNorm (HighamBench.p16Residual A b xNext))
-                    (instHAdd.hAdd (instHMul.hMul w (HighamBench.p16VecNorm (HighamBench.p16Residual A b x)))
-                      (instHMul.hMul (instHAdd.hAdd (instHAdd.hAdd epsilonR epsilonU) omega)
-                        (instHAdd.hAdd (HighamBench.p16VecNorm b)
-                          (instHMul.hMul (HighamBench.p16FrobNorm A) (HighamBench.p16VecNorm xNext)))))
+∀ {n : Nat} {ι : Type u_1} {l : Filter ι} [l.NeBot] (A : HighamBench.P16Matrix n) (b : HighamBench.P16Vector n)
+  (iteration : Nat) (scale : ι → Real),
+  Filter.Tendsto scale l (nhds 0) →
+    instLTNat.lt 0 n →
+      HighamBench.p16IsNonsingular A →
+        Ne b 0 →
+          ∀ (step : HighamBench.P16Lemma42BackwardStep l scale A b iteration),
+            And
+              (∀ (t : ι),
+                Eq (instHSub.hSub (HighamBench.p16MatVec A (step.xHatNext t)) b)
+                  (instHAdd.hAdd
+                    (instHSub.hSub (instHAdd.hAdd (step.deltaR t) (HighamBench.p16MatVec A (step.correctionHat t)))
+                      (step.residualHat t))
+                    (HighamBench.p16MatVec A (step.deltaX t))))
+              (HighamBench.p16FirstOrderLeAt l scale
+                (fun t => HighamBench.p16VecNorm (HighamBench.p16Residual A b (step.xHatNext t))) fun t =>
+                instHAdd.hAdd
+                  (instHMul.hMul (step.w t) (HighamBench.p16VecNorm (HighamBench.p16Residual A b (step.xHat t))))
+                  (instHMul.hMul (instHAdd.hAdd (instHAdd.hAdd (step.epsilonR t) (step.epsilonU t)) (step.omega t))
+                    (instHAdd.hAdd (HighamBench.p16VecNorm b)
+                      (instHMul.hMul (HighamBench.p16FrobNorm A) (HighamBench.p16VecNorm (step.xHatNext t))))))
 ```
 
 ## Fully explicit elaborated target type
 
 ```lean
-∀ {n : Nat} (A : HighamBench.P16Matrix n) (b x correction xNext rhat deltaR deltaX : HighamBench.P16Vector n)
-  (epsilonR epsilonU w omega : Real)
-  (hresidual :
-    @Eq.{1} (HighamBench.P16Vector n) rhat
-      (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n) (HighamBench.P16Vector n)
-        (@instHAdd.{0} (HighamBench.P16Vector n)
-          (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
-        (@HighamBench.p16Residual n A b x) deltaR))
-  (hupdate :
-    @Eq.{1} (HighamBench.P16Vector n) xNext
-      (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n) (HighamBench.P16Vector n)
-        (@instHAdd.{0} (HighamBench.P16Vector n)
-          (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
-        (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n) (HighamBench.P16Vector n)
-          (@instHAdd.{0} (HighamBench.P16Vector n)
-            (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
-          x correction)
-        deltaX))
-  (hcorrection :
-    @LE.le.{0} Real Real.instLE
-      (@HighamBench.p16VecNorm n
+∀ {n : Nat} {ι : Type u_1} {l : Filter.{u_1} ι} [@Filter.NeBot.{u_1} ι l] (A : HighamBench.P16Matrix n)
+  (b : HighamBench.P16Vector n) (iteration : Nat) (scale : ι → Real)
+  (hscale :
+    @Filter.Tendsto.{u_1, 0} ι Real scale l
+      (@nhds.{0} Real
+        (@UniformSpace.toTopologicalSpace.{0} Real (@PseudoMetricSpace.toUniformSpace.{0} Real Real.pseudoMetricSpace))
+        (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))))
+  (hn : @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n)
+  (hA : @HighamBench.p16IsNonsingular n A)
+  (hb :
+    @Ne.{1} (HighamBench.P16Vector n) b
+      (@OfNat.ofNat.{0} (HighamBench.P16Vector n) (nat_lit 0)
+        (@Zero.toOfNat0.{0} (HighamBench.P16Vector n)
+          (@Pi.instZero.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instZero))))
+  (step : @HighamBench.P16Lemma42BackwardStep.{u_1} n ι l scale A b iteration),
+  And
+    (∀ (t : ι),
+      @Eq.{1} (HighamBench.P16Vector n)
         (@HSub.hSub.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n) (HighamBench.P16Vector n)
           (@instHSub.{0} (HighamBench.P16Vector n)
             (@Pi.instSub.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instSub))
-          rhat (@HighamBench.p16MatVec n A correction)))
-      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) w
-          (@HighamBench.p16VecNorm n (@HighamBench.p16Residual n A b x)))
-        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) omega
+          (@HighamBench.p16MatVec n A
+            (@HighamBench.P16Lemma42BackwardStep.xHatNext.{u_1} n ι l scale A b iteration step t))
+          b)
+        (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+          (@instHAdd.{0} (HighamBench.P16Vector n)
+            (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
+          (@HSub.hSub.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+            (@instHSub.{0} (HighamBench.P16Vector n)
+              (@Pi.instSub.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instSub))
+            (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+              (@instHAdd.{0} (HighamBench.P16Vector n)
+                (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
+              (@HighamBench.P16Lemma42BackwardStep.deltaR.{u_1} n ι l scale A b iteration step t)
+              (@HighamBench.p16MatVec n A
+                (@HighamBench.P16Lemma42BackwardStep.correctionHat.{u_1} n ι l scale A b iteration step t)))
+            (@HighamBench.P16Lemma42BackwardStep.residualHat.{u_1} n ι l scale A b iteration step t))
+          (@HighamBench.p16MatVec n A
+            (@HighamBench.P16Lemma42BackwardStep.deltaX.{u_1} n ι l scale A b iteration step t))))
+    (@HighamBench.p16FirstOrderLeAt.{u_1} ι l scale
+      (fun (t : ι) =>
+        @HighamBench.p16VecNorm n
+          (@HighamBench.p16Residual n A b
+            (@HighamBench.P16Lemma42BackwardStep.xHatNext.{u_1} n ι l scale A b iteration step t)))
+      fun (t : ι) =>
+      @HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+          (@HighamBench.P16Lemma42BackwardStep.w.{u_1} n ι l scale A b iteration step t)
+          (@HighamBench.p16VecNorm n
+            (@HighamBench.p16Residual n A b
+              (@HighamBench.P16Lemma42BackwardStep.xHat.{u_1} n ι l scale A b iteration step t))))
+        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+              (@HighamBench.P16Lemma42BackwardStep.epsilonR.{u_1} n ι l scale A b iteration step t)
+              (@HighamBench.P16Lemma42BackwardStep.epsilonU.{u_1} n ι l scale A b iteration step t))
+            (@HighamBench.P16Lemma42BackwardStep.omega.{u_1} n ι l scale A b iteration step t))
           (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) (@HighamBench.p16VecNorm n b)
             (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) (@HighamBench.p16FrobNorm n A)
-              (@HighamBench.p16VecNorm n xNext))))))
-  (hdeltaR :
-    @LE.le.{0} Real Real.instLE (@HighamBench.p16VecNorm n deltaR)
-      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) epsilonR
-        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) (@HighamBench.p16VecNorm n b)
-          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) (@HighamBench.p16FrobNorm n A)
-            (@HighamBench.p16VecNorm n x)))))
-  (hdeltaX :
-    @LE.le.{0} Real Real.instLE (@HighamBench.p16VecNorm n deltaX)
-      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) epsilonU
-        (@HighamBench.p16VecNorm n xNext)))
-  (hxmono : @LE.le.{0} Real Real.instLE (@HighamBench.p16VecNorm n x) (@HighamBench.p16VecNorm n xNext))
-  (hepsilonR :
-    @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) epsilonR)
-  (hepsilonU :
-    @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) epsilonU),
-  @LE.le.{0} Real Real.instLE (@HighamBench.p16VecNorm n (@HighamBench.p16Residual n A b xNext))
-    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) w
-        (@HighamBench.p16VecNorm n (@HighamBench.p16Residual n A b x)))
-      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) epsilonR epsilonU) omega)
-        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) (@HighamBench.p16VecNorm n b)
-          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) (@HighamBench.p16FrobNorm n A)
-            (@HighamBench.p16VecNorm n xNext)))))
+              (@HighamBench.p16VecNorm n
+                (@HighamBench.P16Lemma42BackwardStep.xHatNext.{u_1} n ι l scale A b iteration step t))))))
 ```
 
 ## Local import graph
 
 - `AuditTarget` imports: `HighamBench.P16Definitions`
 - `HighamBench.Core` imports: `Mathlib.Algebra.BigOperators.Fin`, `Mathlib.Data.Real.Basic`, `Mathlib.Tactic`
-- `HighamBench.P16Definitions` imports: `HighamBench.Core`, `Mathlib.Analysis.Matrix.Normed`
+- `HighamBench.P16Definitions` imports: `HighamBench.Core`, `Mathlib.Analysis.Asymptotics.Lemmas`, `Mathlib.Analysis.Matrix.Normed`
 
 ## Semantic dependency inventory
 
 `local` entries are recursively followed through their types and bodies. `external-frontier` entries are the exact Lean/mathlib declarations where that recursive traversal stops; their types and one-level bodies are still shown.
 
-### D001: `HighamBench.P16Matrix`
+### D001: `HighamBench.P16Lemma42BackwardStep`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `cc7e94b5850044f36dcd242407033e05f98dc02d9f2a05cbc0aee09a96890223`
+
+Type:
+
+```lean
+{n : Nat} → {ι : Type u_1} → Filter ι → (ι → Real) → HighamBench.P16Matrix n → HighamBench.P16Vector n → Nat → Type u_1
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    (l : Filter.{u_1} ι) →
+      (scale : ι → Real) → (A : HighamBench.P16Matrix n) → (b : HighamBench.P16Vector n) → (_iteration : Nat) → Type u_1
+```
+
+### D002: `HighamBench.P16Lemma42BackwardStep.correctionHat`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `769af4c909a60f885dad9d39234e5a3142e961f0a60a7f6798631757d8d57c3e`
+
+Type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} → HighamBench.P16Lemma42BackwardStep l scale A b _iteration → ι → HighamBench.P16Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter.{u_1} ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} →
+              (self : @HighamBench.P16Lemma42BackwardStep.{u_1} n ι l scale A b _iteration) →
+                ι → HighamBench.P16Vector n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n ι l scale A b _iteration self => self.2
+```
+
+### D003: `HighamBench.P16Lemma42BackwardStep.deltaR`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `cf119231a5044d1e7ac761b53aba4e6b6a506f2e53bf7f799c522867e07112fa`
+
+Type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} → HighamBench.P16Lemma42BackwardStep l scale A b _iteration → ι → HighamBench.P16Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter.{u_1} ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} →
+              (self : @HighamBench.P16Lemma42BackwardStep.{u_1} n ι l scale A b _iteration) →
+                ι → HighamBench.P16Vector n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n ι l scale A b _iteration self => self.5
+```
+
+### D004: `HighamBench.P16Lemma42BackwardStep.deltaX`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `ebbfa42b00624f7efe5b85b7004fb9f052455e50572b03554ec3b53b42972223`
+
+Type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} → HighamBench.P16Lemma42BackwardStep l scale A b _iteration → ι → HighamBench.P16Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter.{u_1} ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} →
+              (self : @HighamBench.P16Lemma42BackwardStep.{u_1} n ι l scale A b _iteration) →
+                ι → HighamBench.P16Vector n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n ι l scale A b _iteration self => self.6
+```
+
+### D005: `HighamBench.P16Lemma42BackwardStep.epsilonR`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `03a57b28d1c44cc12001aad5e9e3afb6432711741259f32cc682f98b494412b3`
+
+Type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} → HighamBench.P16Lemma42BackwardStep l scale A b _iteration → ι → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter.{u_1} ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} →
+              (self : @HighamBench.P16Lemma42BackwardStep.{u_1} n ι l scale A b _iteration) → ι → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n ι l scale A b _iteration self => self.7
+```
+
+### D006: `HighamBench.P16Lemma42BackwardStep.epsilonU`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `7883365c6ecccac756e10f63a67b7eaf4c3fc8e10afd01cc9bca10db29359bfb`
+
+Type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} → HighamBench.P16Lemma42BackwardStep l scale A b _iteration → ι → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter.{u_1} ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} →
+              (self : @HighamBench.P16Lemma42BackwardStep.{u_1} n ι l scale A b _iteration) → ι → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n ι l scale A b _iteration self => self.8
+```
+
+### D007: `HighamBench.P16Lemma42BackwardStep.omega`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `3cf6ef62e6479c1e6169bf35a5af1cdbb76b3a10a3b3ab7ffa382b37ca2b5e50`
+
+Type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} → HighamBench.P16Lemma42BackwardStep l scale A b _iteration → ι → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter.{u_1} ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} →
+              (self : @HighamBench.P16Lemma42BackwardStep.{u_1} n ι l scale A b _iteration) → ι → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n ι l scale A b _iteration self => self.10
+```
+
+### D008: `HighamBench.P16Lemma42BackwardStep.residualHat`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `ea54447d32d9fe6f17aea9ccc9cee6452ee73c31a78afe92793ed15b4b81cfe5`
+
+Type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} → HighamBench.P16Lemma42BackwardStep l scale A b _iteration → ι → HighamBench.P16Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter.{u_1} ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} →
+              (self : @HighamBench.P16Lemma42BackwardStep.{u_1} n ι l scale A b _iteration) →
+                ι → HighamBench.P16Vector n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n ι l scale A b _iteration self => self.4
+```
+
+### D009: `HighamBench.P16Lemma42BackwardStep.w`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `fe6cf77a1c88683675bad72c98883e9491e08ef4f693655d82889df6a634170a`
+
+Type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} → HighamBench.P16Lemma42BackwardStep l scale A b _iteration → ι → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter.{u_1} ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} →
+              (self : @HighamBench.P16Lemma42BackwardStep.{u_1} n ι l scale A b _iteration) → ι → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n ι l scale A b _iteration self => self.9
+```
+
+### D010: `HighamBench.P16Lemma42BackwardStep.xHat`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `30b25aa853759dbc622941333c316d071646da5d7c8db431db338a28b101598e`
+
+Type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} → HighamBench.P16Lemma42BackwardStep l scale A b _iteration → ι → HighamBench.P16Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter.{u_1} ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} →
+              (self : @HighamBench.P16Lemma42BackwardStep.{u_1} n ι l scale A b _iteration) →
+                ι → HighamBench.P16Vector n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n ι l scale A b _iteration self => self.1
+```
+
+### D011: `HighamBench.P16Lemma42BackwardStep.xHatNext`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `4084414a6b8cdfb8413b898537cfd2ec985b26f28d3e3ea7b47c59f29b18dbae`
+
+Type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} → HighamBench.P16Lemma42BackwardStep l scale A b _iteration → ι → HighamBench.P16Vector n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter.{u_1} ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} →
+              (self : @HighamBench.P16Lemma42BackwardStep.{u_1} n ι l scale A b _iteration) →
+                ι → HighamBench.P16Vector n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n ι l scale A b _iteration self => self.3
+```
+
+### D012: `HighamBench.P16Matrix`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -152,7 +572,7 @@ Definition body (one-level semantic boundary):
 fun n => Matrix (Fin n) (Fin n) Real
 ```
 
-### D002: `HighamBench.P16Vector`
+### D013: `HighamBench.P16Vector`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -178,7 +598,36 @@ Definition body (one-level semantic boundary):
 fun n => Fin n → Real
 ```
 
-### D003: `HighamBench.p16FrobNorm`
+### D014: `HighamBench.p16FirstOrderLeAt`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `f8fb89f45dff8ea408faebbf7940e52c3a8135ec7c9fa4489c8e3a8540da3a7b`
+
+Type:
+
+```lean
+{ι : Type u_1} → Filter ι → (ι → Real) → (ι → Real) → (ι → Real) → Prop
+```
+
+Fully explicit type:
+
+```lean
+{ι : Type u_1} → (l : Filter.{u_1} ι) → (scale lhs rhs : ι → Real) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {ι} l scale lhs rhs =>
+  Exists fun remainder =>
+    And (HighamBench.p16SecondOrderAt l scale remainder)
+      (Filter.Eventually (fun t => Real.instLE.le (lhs t) (instHAdd.hAdd (rhs t) (abs (remainder t)))) l)
+```
+
+### D015: `HighamBench.p16FrobNorm`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -204,7 +653,33 @@ Definition body (one-level semantic boundary):
 fun {n} A => Matrix.frobeniusNormedRing.norm A
 ```
 
-### D004: `HighamBench.p16MatVec`
+### D016: `HighamBench.p16IsNonsingular`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `85b5f4df299401a78ff2042ddbaff615a4f2e4dd7ac6d5eeddc8091ccb86d714`
+
+Type:
+
+```lean
+{n : Nat} → HighamBench.P16Matrix n → Prop
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (A : HighamBench.P16Matrix n) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} A => Function.Bijective (HighamBench.p16MatVec A)
+```
+
+### D017: `HighamBench.p16MatVec`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -230,7 +705,7 @@ Definition body (one-level semantic boundary):
 fun {n} A x i => Finset.univ.sum fun j => instHMul.hMul (A i j) (x j)
 ```
 
-### D005: `HighamBench.p16Residual`
+### D018: `HighamBench.p16Residual`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -256,7 +731,7 @@ Definition body (one-level semantic boundary):
 fun {n} A b x => instHSub.hSub b (HighamBench.p16MatVec A x)
 ```
 
-### D006: `HighamBench.p16VecNorm`
+### D019: `HighamBench.p16VecNorm`
 
 - Role: `local`
 - Owner module: `HighamBench.P16Definitions`
@@ -282,7 +757,211 @@ Definition body (one-level semantic boundary):
 fun {n} x => (Finset.univ.sum fun i => instHPow.hPow (x i) 2).sqrt
 ```
 
-### D007: `Eq`
+### D020: `HighamBench.P16Lemma42BackwardStep.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `216f0e30aef442b86f01c281f203fd669260c1cba473a8d12117075e4ff17c55`
+
+Type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} →
+              (xHat correctionHat xHatNext residualHat deltaR deltaX : ι → HighamBench.P16Vector n) →
+                (epsilonR epsilonU w omega : ι → Real) →
+                  (∀ (t : ι), Eq (residualHat t) (instHAdd.hAdd (HighamBench.p16Residual A b (xHat t)) (deltaR t))) →
+                    (∀ (t : ι), Eq (xHatNext t) (instHAdd.hAdd (instHAdd.hAdd (xHat t) (correctionHat t)) (deltaX t))) →
+                      (∀ (t : ι),
+                          Real.instLE.le
+                            (HighamBench.p16VecNorm
+                              (instHSub.hSub (residualHat t) (HighamBench.p16MatVec A (correctionHat t))))
+                            (instHAdd.hAdd
+                              (instHMul.hMul (w t) (HighamBench.p16VecNorm (HighamBench.p16Residual A b (xHat t))))
+                              (instHMul.hMul (omega t)
+                                (instHAdd.hAdd (HighamBench.p16VecNorm b)
+                                  (instHMul.hMul (HighamBench.p16FrobNorm A)
+                                    (HighamBench.p16VecNorm (xHatNext t))))))) →
+                        (∀ (t : ι),
+                            Real.instLE.le (HighamBench.p16VecNorm (deltaR t))
+                              (instHMul.hMul (epsilonR t)
+                                (instHAdd.hAdd (HighamBench.p16VecNorm b)
+                                  (instHMul.hMul (HighamBench.p16FrobNorm A) (HighamBench.p16VecNorm (xHat t)))))) →
+                          (∀ (t : ι),
+                              Real.instLE.le (HighamBench.p16VecNorm (deltaX t))
+                                (instHMul.hMul (epsilonU t) (HighamBench.p16VecNorm (xHatNext t)))) →
+                            (∀ (t : ι), Real.instLE.le 0 (epsilonR t)) →
+                              (∀ (t : ι), Real.instLE.le 0 (epsilonU t)) →
+                                (∀ (t : ι), Real.instLE.le 0 (w t)) →
+                                  (∀ (t : ι), Real.instLE.le 0 (omega t)) →
+                                    Filter.Tendsto epsilonR l (nhds 0) →
+                                      Filter.Tendsto epsilonU l (nhds 0) →
+                                        (HighamBench.p16FirstOrderLeAt l scale
+                                            (fun t => HighamBench.p16VecNorm (xHat t)) fun t =>
+                                            HighamBench.p16VecNorm (xHatNext t)) →
+                                          HighamBench.P16Lemma42BackwardStep l scale A b _iteration
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  {ι : Type u_1} →
+    {l : Filter.{u_1} ι} →
+      {scale : ι → Real} →
+        {A : HighamBench.P16Matrix n} →
+          {b : HighamBench.P16Vector n} →
+            {_iteration : Nat} →
+              (xHat correctionHat xHatNext residualHat deltaR deltaX : ι → HighamBench.P16Vector n) →
+                (epsilonR epsilonU w omega : ι → Real) →
+                  (residual_equation :
+                      ∀ (t : ι),
+                        @Eq.{1} (HighamBench.P16Vector n) (residualHat t)
+                          (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+                            (HighamBench.P16Vector n)
+                            (@instHAdd.{0} (HighamBench.P16Vector n)
+                              (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
+                            (@HighamBench.p16Residual n A b (xHat t)) (deltaR t))) →
+                    (update_equation :
+                        ∀ (t : ι),
+                          @Eq.{1} (HighamBench.P16Vector n) (xHatNext t)
+                            (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+                              (HighamBench.P16Vector n)
+                              (@instHAdd.{0} (HighamBench.P16Vector n)
+                                (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) => Real.instAdd))
+                              (@HAdd.hAdd.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+                                (HighamBench.P16Vector n)
+                                (@instHAdd.{0} (HighamBench.P16Vector n)
+                                  (@Pi.instAdd.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) =>
+                                    Real.instAdd))
+                                (xHat t) (correctionHat t))
+                              (deltaX t))) →
+                      (correction_residual_bound :
+                          ∀ (t : ι),
+                            @LE.le.{0} Real Real.instLE
+                              (@HighamBench.p16VecNorm n
+                                (@HSub.hSub.{0, 0, 0} (HighamBench.P16Vector n) (HighamBench.P16Vector n)
+                                  (HighamBench.P16Vector n)
+                                  (@instHSub.{0} (HighamBench.P16Vector n)
+                                    (@Pi.instSub.{0, 0} (Fin n) (fun (a : Fin n) => Real) fun (i : Fin n) =>
+                                      Real.instSub))
+                                  (residualHat t) (@HighamBench.p16MatVec n A (correctionHat t))))
+                              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) (w t)
+                                  (@HighamBench.p16VecNorm n (@HighamBench.p16Residual n A b (xHat t))))
+                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) (omega t)
+                                  (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                    (@HighamBench.p16VecNorm n b)
+                                    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                      (@HighamBench.p16FrobNorm n A) (@HighamBench.p16VecNorm n (xHatNext t))))))) →
+                        (residual_error_bound :
+                            ∀ (t : ι),
+                              @LE.le.{0} Real Real.instLE (@HighamBench.p16VecNorm n (deltaR t))
+                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) (epsilonR t)
+                                  (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                    (@HighamBench.p16VecNorm n b)
+                                    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                      (@HighamBench.p16FrobNorm n A) (@HighamBench.p16VecNorm n (xHat t)))))) →
+                          (update_error_bound :
+                              ∀ (t : ι),
+                                @LE.le.{0} Real Real.instLE (@HighamBench.p16VecNorm n (deltaX t))
+                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) (epsilonU t)
+                                    (@HighamBench.p16VecNorm n (xHatNext t)))) →
+                            (epsilonR_nonneg :
+                                ∀ (t : ι),
+                                  @LE.le.{0} Real Real.instLE
+                                    (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                                    (epsilonR t)) →
+                              (epsilonU_nonneg :
+                                  ∀ (t : ι),
+                                    @LE.le.{0} Real Real.instLE
+                                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                                      (epsilonU t)) →
+                                (w_nonneg :
+                                    ∀ (t : ι),
+                                      @LE.le.{0} Real Real.instLE
+                                        (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                                        (w t)) →
+                                  (omega_nonneg :
+                                      ∀ (t : ι),
+                                        @LE.le.{0} Real Real.instLE
+                                          (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                                          (omega t)) →
+                                    (epsilonR_tendsto_zero :
+                                        @Filter.Tendsto.{u_1, 0} ι Real epsilonR l
+                                          (@nhds.{0} Real
+                                            (@UniformSpace.toTopologicalSpace.{0} Real
+                                              (@PseudoMetricSpace.toUniformSpace.{0} Real Real.pseudoMetricSpace))
+                                            (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                              (@Zero.toOfNat0.{0} Real Real.instZero)))) →
+                                      (epsilonU_tendsto_zero :
+                                          @Filter.Tendsto.{u_1, 0} ι Real epsilonU l
+                                            (@nhds.{0} Real
+                                              (@UniformSpace.toTopologicalSpace.{0} Real
+                                                (@PseudoMetricSpace.toUniformSpace.{0} Real Real.pseudoMetricSpace))
+                                              (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                (@Zero.toOfNat0.{0} Real Real.instZero)))) →
+                                        (iterate_norm_comparison :
+                                            @HighamBench.p16FirstOrderLeAt.{u_1} ι l scale
+                                              (fun (t : ι) => @HighamBench.p16VecNorm n (xHat t)) fun (t : ι) =>
+                                              @HighamBench.p16VecNorm n (xHatNext t)) →
+                                          @HighamBench.P16Lemma42BackwardStep.{u_1} n ι l scale A b _iteration
+```
+
+### D021: `HighamBench.p16SecondOrderAt`
+
+- Role: `local`
+- Owner module: `HighamBench.P16Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `9f8f2149f6244d786fa2d0abae769fb5885e4da9a6f980dcd98dfdedc9dfea99`
+
+Type:
+
+```lean
+{ι : Type u_1} → Filter ι → (ι → Real) → (ι → Real) → Prop
+```
+
+Fully explicit type:
+
+```lean
+{ι : Type u_1} → (l : Filter.{u_1} ι) → (scale remainder : ι → Real) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {ι} l scale remainder => Asymptotics.IsBigO l remainder fun t => instHPow.hPow (scale t) 2
+```
+
+### D022: `And`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `37ecdc009aa953e3d4924ef10e6a1fb591f6af993cd344fd5a6b5321466517c9`
+
+Type:
+
+```lean
+Prop → Prop → Prop
+```
+
+Fully explicit type:
+
+```lean
+(a b : Prop) → Prop
+```
+
+### D023: `Eq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -302,7 +981,73 @@ Fully explicit type:
 {α : Sort u_1} → α → α → Prop
 ```
 
-### D008: `Fin`
+### D024: `Filter`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Order.Filter.Defs`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `f178b01470c6b39d870c442162d6d76a8f2124db69fab7f84fe3f0f559dd4616`
+
+Type:
+
+```lean
+Type u_1 → Type u_1
+```
+
+Fully explicit type:
+
+```lean
+(α : Type u_1) → Type u_1
+```
+
+### D025: `Filter.NeBot`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Order.Filter.Defs`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `b1a9231cff02beea54a4a940464dcfebb9366c023dc4486941e5650f09abbe2c`
+
+Type:
+
+```lean
+{α : Type u_1} → Filter α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → (f : Filter.{u_1} α) → Prop
+```
+
+### D026: `Filter.Tendsto`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Order.Filter.Defs`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `7e5f54349644c32198960083c0e0eb6c033c80a8656d02a78b3eae9a4f5131f2`
+
+Type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → (α → β) → Filter α → Filter β → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → (f : α → β) → (l₁ : Filter.{u_1} α) → (l₂ : Filter.{u_2} β) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} {β} f l₁ l₂ => Filter.instPartialOrder.le (Filter.map f l₁) l₂
+```
+
+### D027: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -322,7 +1067,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D009: `HAdd.hAdd`
+### D028: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -348,7 +1093,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D010: `HMul.hMul`
+### D029: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -374,7 +1119,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D011: `HSub.hSub`
+### D030: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -400,33 +1145,33 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D012: `LE.le`
+### D031: `LT.lt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48`
+- Semantic SHA-256: `fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009`
 
 Type:
 
 ```lean
-{α : Type u} → [self : LE α] → α → α → Prop
+{α : Type u} → [self : LT α] → α → α → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Type u} → [self : LE.{u} α] → α → α → Prop
+{α : Type u} → [self : LT.{u} α] → α → α → Prop
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun α [self : LE α] => self.1
+fun α [self : LT α] => self.1
 ```
 
-### D013: `Nat`
+### D032: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -446,7 +1191,33 @@ Fully explicit type:
 Type
 ```
 
-### D014: `OfNat.ofNat`
+### D033: `Ne`
+
+- Role: `external-frontier`
+- Owner module: `Init.Core`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `635adc1f9e4a981a5c01b21338fdf89e637bd4ef0aa6911bda4dc03acfe9fba6`
+
+Type:
+
+```lean
+{α : Sort u} → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → (a b : α) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} a b => Not (Eq a b)
+```
+
+### D034: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -472,7 +1243,7 @@ Definition body (one-level semantic boundary):
 fun α x [self : OfNat α x] => self.1
 ```
 
-### D015: `Pi.instAdd`
+### D035: `Pi.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
@@ -498,7 +1269,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [(i : ι) → Add (M i)] => { add := fun f g i => instHAdd.hAdd (f i) (g i) }
 ```
 
-### D016: `Pi.instSub`
+### D036: `Pi.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
@@ -524,7 +1295,59 @@ Definition body (one-level semantic boundary):
 fun {ι} {G} [(i : ι) → Sub (G i)] => { sub := fun f g i => instHSub.hSub (f i) (g i) }
 ```
 
-### D017: `Real`
+### D037: `Pi.instZero`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `eb5c70d9b813d7099537e8db11f59a65a3f5ad951da7314a1aa554471a122049`
+
+Type:
+
+```lean
+{ι : Type u_1} → {M : ι → Type u_5} → [(i : ι) → Zero (M i)] → Zero ((i : ι) → M i)
+```
+
+Fully explicit type:
+
+```lean
+{ι : Type u_1} → {M : ι → Type u_5} → [(i : ι) → Zero.{u_5} (M i)] → Zero.{max u_1 u_5} ((i : ι) → M i)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {ι} {M} [(i : ι) → Zero (M i)] => { zero := fun x => 0 }
+```
+
+### D038: `PseudoMetricSpace.toUniformSpace`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Topology.MetricSpace.Pseudo.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `a6831039b3ad5e37bd0e7692fd995a699d8bef791976e20262da929990521799`
+
+Type:
+
+```lean
+{α : Type u} → [self : PseudoMetricSpace α] → UniformSpace α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → [self : PseudoMetricSpace.{u} α] → UniformSpace.{u} α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : PseudoMetricSpace α] => self.7
+```
+
+### D039: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -544,7 +1367,7 @@ Fully explicit type:
 Type
 ```
 
-### D018: `Real.instAdd`
+### D040: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -570,33 +1393,7 @@ Definition body (one-level semantic boundary):
 { add := Real.add✝ }
 ```
 
-### D019: `Real.instLE`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3`
-
-Type:
-
-```lean
-LE Real
-```
-
-Fully explicit type:
-
-```lean
-LE.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ le := Real.le✝ }
-```
-
-### D020: `Real.instMul`
+### D041: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -622,7 +1419,7 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D021: `Real.instSub`
+### D042: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -648,7 +1445,7 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D022: `Real.instZero`
+### D043: `Real.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -674,7 +1471,61 @@ Definition body (one-level semantic boundary):
 { zero := Real.zero✝ }
 ```
 
-### D023: `Zero.toOfNat0`
+### D044: `Real.pseudoMetricSpace`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Topology.MetricSpace.Pseudo.Defs`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `9c0d1d56a04dd3ae3fce36b5fb3c2f4fe632c2bdaed84b5667c1a60a03491a3e`
+
+Type:
+
+```lean
+PseudoMetricSpace Real
+```
+
+Fully explicit type:
+
+```lean
+PseudoMetricSpace.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ dist := fun x y => abs (instHSub.hSub x y), dist_self := Real.pseudoMetricSpace._proof_1, dist_comm := ⋯,
+  dist_triangle := ⋯, edist_dist := Real.pseudoMetricSpace._proof_2, uniformity_dist := Real.pseudoMetricSpace._proof_3,
+  cobounded_sets := Real.pseudoMetricSpace._proof_4 }
+```
+
+### D045: `UniformSpace.toTopologicalSpace`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Topology.UniformSpace.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `4d18df801a98905221e0935ec2ddacda684a1430b8d198ebc23fad0643bce2a8`
+
+Type:
+
+```lean
+{α : Type u} → [self : UniformSpace α] → TopologicalSpace α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → [self : UniformSpace.{u} α] → TopologicalSpace.{u} α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : UniformSpace α] => self.1
+```
+
+### D046: `Zero.toOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -700,7 +1551,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Zero α] => { ofNat := inst.zero }
 ```
 
-### D024: `instHAdd`
+### D047: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -726,7 +1577,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
 ```
 
-### D025: `instHMul`
+### D048: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -752,7 +1603,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D026: `instHSub`
+### D049: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -778,7 +1629,131 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D027: `Fin.fintype`
+### D050: `instLTNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `4054f2341fdda887b2040c624c0867866ab56eabf3441d6ffc9451c94ae1663c`
+
+Type:
+
+```lean
+LT Nat
+```
+
+Fully explicit type:
+
+```lean
+LT.{0} Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ lt := Nat.lt }
+```
+
+### D051: `instOfNatNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92`
+
+Type:
+
+```lean
+(n : Nat) → OfNat Nat n
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → OfNat.{0} Nat n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n => { ofNat := n }
+```
+
+### D052: `nhds`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Topology.Defs.Filter`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `8eb445823f4b15a765f7e0cd634f73196d36b4f09054d2aef43a69d3138c6ce8`
+
+Type:
+
+```lean
+{X : Type u_3} → [TopologicalSpace X] → X → Filter X
+```
+
+Fully explicit type:
+
+```lean
+{X : Type u_3} → [TopologicalSpace.{u_3} X] → (x : X) → Filter.{u_3} X
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+wrapped✝.1
+```
+
+### D053: `Exists`
+
+- Role: `external-frontier`
+- Owner module: `Init.Core`
+- Declaration kind: `inductive`
+- Distance from target type: `2`
+- Semantic SHA-256: `a24a6eb72dcf5b3765659a28bb9d3814ed7ebd3e3fa1fd11e8f3c7acc80e0dde`
+
+Type:
+
+```lean
+{α : Sort u} → (α → Prop) → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → (p : α → Prop) → Prop
+```
+
+### D054: `Filter.Eventually`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Order.Filter.Defs`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `48c8fc03616b0f899835653f1d062e3de4f566255a80b15231ebdedcb0a5c4c4`
+
+Type:
+
+```lean
+{α : Type u_1} → (α → Prop) → Filter α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → (p : α → Prop) → (f : Filter.{u_1} α) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} p f => Filter.instMembership.mem f (setOf fun x => p x)
+```
+
+### D055: `Fin.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
@@ -804,7 +1779,7 @@ Definition body (one-level semantic boundary):
 fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
 ```
 
-### D028: `Finset.sum`
+### D056: `Finset.sum`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -830,7 +1805,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
 ```
 
-### D029: `Finset.univ`
+### D057: `Finset.univ`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Defs`
@@ -856,7 +1831,33 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Fintype α] => inst.elems
 ```
 
-### D030: `HPow.hPow`
+### D058: `Function.Bijective`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Logic.Function.Defs`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `2da1e723243113bf4396d64f6b64f6ee8db3b9e981ad6ec7448e7745e511e5e2`
+
+Type:
+
+```lean
+{α : Sort u₁} → {β : Sort u₂} → (α → β) → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u₁} → {β : Sort u₂} → (f : α → β) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} {β} f => And (Function.Injective f) (Function.Surjective f)
+```
+
+### D059: `HPow.hPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -882,7 +1883,33 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HPow α β γ] => self.1
 ```
 
-### D031: `Matrix`
+### D060: `LE.le`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48`
+
+Type:
+
+```lean
+{α : Type u} → [self : LE α] → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → [self : LE.{u} α] → α → α → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : LE α] => self.1
+```
+
+### D061: `Matrix`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -908,7 +1935,7 @@ Definition body (one-level semantic boundary):
 fun m n α => m → n → α
 ```
 
-### D032: `Matrix.frobeniusNormedRing`
+### D062: `Matrix.frobeniusNormedRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Matrix.Normed`
@@ -946,7 +1973,7 @@ fun {m} {α} [Fintype m] [RCLike α] [DecidableEq m] =>
     toPseudoMetricSpace := __src.toPseudoMetricSpace, eq_of_dist_eq_zero := ⋯, dist_eq := ⋯, norm_mul_le := ⋯ }
 ```
 
-### D033: `Monoid.toNatPow`
+### D063: `Monoid.toNatPow`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -972,7 +1999,7 @@ Definition body (one-level semantic boundary):
 fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
 ```
 
-### D034: `Norm.norm`
+### D064: `Norm.norm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Defs`
@@ -998,7 +2025,7 @@ Definition body (one-level semantic boundary):
 fun E [self : Norm E] => self.1
 ```
 
-### D035: `NormedRing.toNorm`
+### D065: `NormedRing.toNorm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Ring.Basic`
@@ -1024,7 +2051,7 @@ Definition body (one-level semantic boundary):
 fun α [self : NormedRing α] => self.1
 ```
 
-### D036: `Real.instAddCommMonoid`
+### D066: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1050,7 +2077,59 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D037: `Real.instMonoid`
+### D067: `Real.instAddGroup`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0`
+
+Type:
+
+```lean
+AddGroup Real
+```
+
+Fully explicit type:
+
+```lean
+AddGroup.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D068: `Real.instLE`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3`
+
+Type:
+
+```lean
+LE Real
+```
+
+Fully explicit type:
+
+```lean
+LE.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ le := Real.le✝ }
+```
+
+### D069: `Real.instMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1076,7 +2155,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D038: `Real.instRCLike`
+### D070: `Real.instRCLike`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.RCLike.Basic`
@@ -1107,7 +2186,33 @@ Definition body (one-level semantic boundary):
   toPartialOrder := Real.partialOrder, le_iff_re_im := @Real.instRCLike._proof_13, toDecidableEq := Real.decidableEq }
 ```
 
-### D039: `Real.sqrt`
+### D071: `Real.lattice`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510`
+
+Type:
+
+```lean
+Lattice Real
+```
+
+Fully explicit type:
+
+```lean
+Lattice.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D072: `Real.sqrt`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Sqrt`
@@ -1133,7 +2238,34 @@ Definition body (one-level semantic boundary):
 fun x => ((instFunLikeOrderIso NNReal NNReal).coe NNReal.sqrt x.toNNReal).toReal
 ```
 
-### D040: `instDecidableEqFin`
+### D073: `abs`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b`
+
+Type:
+
+```lean
+{α : Type u_1} → [Lattice α] → [AddGroup α] → α → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Lattice.{u_1} α] → [AddGroup.{u_1} α] → (a : α) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [Lattice α] [AddGroup α] a =>
+  SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
+```
+
+### D074: `instDecidableEqFin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1161,7 +2293,7 @@ fun n i j =>
     fun h => Decidable.isFalse ⋯
 ```
 
-### D041: `instHPow`
+### D075: `instHPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1187,30 +2319,58 @@ Definition body (one-level semantic boundary):
 fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
 ```
 
-### D042: `instOfNatNat`
+### D076: `Asymptotics.IsBigO`
 
 - Role: `external-frontier`
-- Owner module: `Init.Prelude`
+- Owner module: `Mathlib.Analysis.Asymptotics.Defs`
 - Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92`
+- Distance from target type: `3`
+- Semantic SHA-256: `06a15067a593fd57b03eac5fd3b1be5d0a4500012f1c2bd1c892def6eda93919`
 
 Type:
 
 ```lean
-(n : Nat) → OfNat Nat n
+{α : Type u_18} → {E : Type u_19} → {F : Type u_20} → [Norm E] → [Norm F] → Filter α → (α → E) → (α → F) → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-(n : Nat) → OfNat.{0} Nat n
+{α : Type u_18} →
+  {E : Type u_19} →
+    {F : Type u_20} → [Norm.{u_19} E] → [Norm.{u_20} F] → (l : Filter.{u_18} α) → (f : α → E) → (g : α → F) → Prop
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n => { ofNat := n }
+Asymptotics.wrapped✝.1
+```
+
+### D077: `Real.norm`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Analysis.Normed.Group.Real`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `e6d33c73e5cb8fae7d8c501ead6aad9e275f7969a4d8b80f94b9f3b5001bfe3a`
+
+Type:
+
+```lean
+Norm Real
+```
+
+Fully explicit type:
+
+```lean
+Norm.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ norm := fun r => abs r }
 ```
 
 ## Complete local imported sources
@@ -1274,10 +2434,11 @@ end HighamBench
 ### `HighamBench.P16Definitions`
 
 Path: `paper_bencmark/highambench/shared/HighamBench/P16Definitions.lean`
-SHA-256: `7f2630cf2406121b98d74782c2533349ff41d913e9e16dac3c230974b7f572ec`
+SHA-256: `d4ea17de614c48b1916c5ffba10daf092bf258761c0850111aa6c560eff72196`
 
 ```lean
 import HighamBench.Core
+import Mathlib.Analysis.Asymptotics.Lemmas
 import Mathlib.Analysis.Matrix.Normed
 
 /-!
@@ -1315,25 +2476,378 @@ noncomputable def p16Residual {n : ℕ} (A : P16Matrix n)
     (b x : P16Vector n) : P16Vector n :=
   b - p16MatVec A x
 
-/-- Frobenius condition-number factor represented by a matrix and a supplied
-inverse. The T3 target needs only its exact nonnegativity. -/
+/-- A square matrix is nonsingular when its exact matrix-vector action is a
+bijection. -/
+def p16IsNonsingular {n : ℕ} (A : P16Matrix n) : Prop :=
+  Function.Bijective (p16MatVec A)
+
+/-- The shared relative perturbation condition in the paper's normwise
+backward-error definition. -/
+def p16NormwiseBackwardErrorAdmissible {n : ℕ}
+    (A : P16Matrix n) (b xHat : P16Vector n) (epsilon : ℝ) : Prop :=
+  ∃ deltaA : P16Matrix n, ∃ deltaB : P16Vector n,
+    p16MatVec (A + deltaA) xHat = b + deltaB ∧
+      p16FrobNorm deltaA ≤ epsilon * p16FrobNorm A ∧
+      p16VecNorm deltaB ≤ epsilon * p16VecNorm b
+
+/-- The normalized residual on the right-hand side of the paper's exact
+normwise backward-error formula. -/
+noncomputable def p16NormalizedResidual {n : ℕ}
+    (A : P16Matrix n) (b xHat : P16Vector n) : ℝ :=
+  p16VecNorm (p16Residual A b xHat) /
+    (p16FrobNorm A * p16VecNorm xHat + p16VecNorm b)
+
+/-- A scalar remainder that is second order in `scale` along `l`. Dimensions
+and the fixed refinement iteration are outside the limit, so the hidden Big-O
+constant may depend on them exactly as in the paper's convention. -/
+def p16SecondOrderAt {ι : Type*} (l : Filter ι) (scale remainder : ι → ℝ) : Prop :=
+  remainder =O[l] fun t ↦ scale t ^ 2
+
+/-- A precise interpretation of the paper's `≲`: the inequality holds after
+adding an otherwise unspecified second-order remainder. -/
+def p16FirstOrderLeAt {ι : Type*} (l : Filter ι) (scale lhs rhs : ι → ℝ) : Prop :=
+  ∃ remainder : ι → ℝ,
+    p16SecondOrderAt l scale remainder ∧
+      ∀ᶠ t in l, lhs t ≤ rhs t + |remainder t|
+
+/-- One computed generic iterative-refinement step in the backward-error
+clause of Lemma 4.2. It records exactly the normwise operation models (4.1),
+(4.2), and (4.14), together with the first-order iterate comparison used in
+the proof of (4.15). -/
+structure P16Lemma42BackwardStep {n : ℕ} {ι : Type*}
+    (l : Filter ι) (scale : ι → ℝ)
+    (A : P16Matrix n) (b : P16Vector n) (_iteration : ℕ) where
+  xHat : ι → P16Vector n
+  correctionHat : ι → P16Vector n
+  xHatNext : ι → P16Vector n
+  residualHat : ι → P16Vector n
+  deltaR : ι → P16Vector n
+  deltaX : ι → P16Vector n
+  epsilonR : ι → ℝ
+  epsilonU : ι → ℝ
+  w : ι → ℝ
+  omega : ι → ℝ
+  residual_equation : ∀ t,
+    residualHat t = p16Residual A b (xHat t) + deltaR t
+  update_equation : ∀ t,
+    xHatNext t = xHat t + correctionHat t + deltaX t
+  correction_residual_bound : ∀ t,
+    p16VecNorm (residualHat t - p16MatVec A (correctionHat t)) ≤
+      w t * p16VecNorm (p16Residual A b (xHat t)) +
+        omega t *
+          (p16VecNorm b + p16FrobNorm A * p16VecNorm (xHatNext t))
+  residual_error_bound : ∀ t,
+    p16VecNorm (deltaR t) ≤
+      epsilonR t *
+        (p16VecNorm b + p16FrobNorm A * p16VecNorm (xHat t))
+  update_error_bound : ∀ t,
+    p16VecNorm (deltaX t) ≤ epsilonU t * p16VecNorm (xHatNext t)
+  epsilonR_nonneg : ∀ t, 0 ≤ epsilonR t
+  epsilonU_nonneg : ∀ t, 0 ≤ epsilonU t
+  w_nonneg : ∀ t, 0 ≤ w t
+  omega_nonneg : ∀ t, 0 ≤ omega t
+  epsilonR_tendsto_zero : Filter.Tendsto epsilonR l (nhds 0)
+  epsilonU_tendsto_zero : Filter.Tendsto epsilonU l (nhds 0)
+  iterate_norm_comparison :
+    p16FirstOrderLeAt l scale
+      (fun t ↦ p16VecNorm (xHat t))
+      (fun t ↦ p16VecNorm (xHatNext t))
+
+/-- Frobenius condition number `kappa_F(A)` represented with the certified
+inverse that occurs in the T3 execution model. -/
 noncomputable def p16ConditionNumberF {n : ℕ}
     (A Ainv : P16Matrix n) : ℝ :=
-  p16FrobNorm A * p16FrobNorm Ainv
+  p16FrobNorm Ainv * p16FrobNorm A
 
-/-- The mixed-precision contraction factor from Theorem 6.3. -/
-noncomputable def p16MixedContraction {n : ℕ}
-    (c uLow : ℝ) (A Ainv : P16Matrix n) : ℝ :=
-  c * uLow * p16ConditionNumberF A Ainv
+/-- A rectangular real matrix used for one Arnoldi restart. -/
+abbrev P16RectMatrix (m k : ℕ) := Matrix (Fin m) (Fin k) ℝ
 
-/-- High-precision backward-error floor from Theorem 6.3. -/
-noncomputable def p16BackwardFloor (c uHigh : ℝ) : ℝ :=
-  c * uHigh
+/-- Exact rectangular matrix-vector multiplication. -/
+noncomputable def p16RectMatVec {m k : ℕ} (A : P16RectMatrix m k)
+    (x : P16Vector k) : P16Vector m :=
+  fun i ↦ ∑ j : Fin k, A i j * x j
 
-/-- High-precision forward-error floor from Theorem 6.3. -/
-noncomputable def p16ForwardFloor {n : ℕ}
-    (c uHigh : ℝ) (A Ainv : P16Matrix n) : ℝ :=
-  c * uHigh * p16ConditionNumberF A Ainv
+/-- Exact multiplication of a square matrix by a rectangular matrix. -/
+noncomputable def p16SquareRectMul {n k : ℕ} (A : P16Matrix n)
+    (B : P16RectMatrix n k) : P16RectMatrix n k :=
+  fun i j ↦ ∑ q : Fin n, A i q * B q j
+
+/-- Exact multiplication of two conforming rectangular matrices. -/
+noncomputable def p16RectMatMul {m k q : ℕ} (A : P16RectMatrix m k)
+    (B : P16RectMatrix k q) : P16RectMatrix m q :=
+  fun i j ↦ ∑ r : Fin k, A i r * B r j
+
+/-- Frobenius norm for a rectangular matrix. -/
+noncomputable def p16RectFrobNorm {m k : ℕ}
+    (A : P16RectMatrix m k) : ℝ :=
+  ‖A‖
+
+/-- Append a scaled right-hand side to a rectangular matrix. This is the
+matrix `[b * phi, C]` occurring in the key-dimension condition (3.7). -/
+noncomputable def p16Augment {n k : ℕ} (b : P16Vector n)
+    (phi : ℝ) (C : P16RectMatrix n k) : P16RectMatrix n (k + 1) :=
+  fun i ↦ Fin.cases (b i * phi) (fun j ↦ C i j)
+
+/-- A lower-gain certificate. It is the inequality form of a lower bound on
+the smallest singular value and avoids choosing singular vectors. -/
+def p16MinGainAtLeast {m k : ℕ} (A : P16RectMatrix m k)
+    (sigma : ℝ) : Prop :=
+  ∀ x : P16Vector k, sigma * p16VecNorm x ≤ p16VecNorm (p16RectMatVec A x)
+
+/-- A unit vector witnessing numerical rank deficiency at tolerance `delta`.
+This is the witness form of the upper singular-value condition (3.7). -/
+def p16NearRankDeficient {m k : ℕ} (A : P16RectMatrix m k)
+    (delta : ℝ) : Prop :=
+  ∃ x : P16Vector k,
+    p16VecNorm x = 1 ∧ p16VecNorm (p16RectMatVec A x) ≤ delta
+
+/-- Exact least-squares optimality, used to record line 6 of restarted
+MOD-GMRES without prescribing a particular solver implementation. -/
+def p16IsLeastSquaresSolution {m k : ℕ} (A : P16RectMatrix m k)
+    (b : P16Vector m) (y : P16Vector k) : Prop :=
+  ∀ z : P16Vector k,
+    p16VecNorm (b - p16RectMatVec A y) ≤
+      p16VecNorm (b - p16RectMatVec A z)
+
+/-- One explicit nonnegative bivariate polynomial standing for an occurrence
+of the paper's unspecified low-degree factor `c(n,k)`. -/
+structure P16PolynomialFactor where
+  degreeN : ℕ
+  degreeK : ℕ
+  coefficient : Fin (degreeN + 1) → Fin (degreeK + 1) → ℝ
+  coefficient_nonneg : ∀ i j, 0 ≤ coefficient i j
+
+/-- Evaluation of a recorded low-degree polynomial factor. -/
+noncomputable def p16PolynomialFactorValue (c : P16PolynomialFactor)
+    (n k : ℕ) : ℝ :=
+  ∑ i : Fin (c.degreeN + 1), ∑ j : Fin (c.degreeK + 1),
+    c.coefficient i j * (n : ℝ) ^ (i : ℕ) * (k : ℝ) ^ (j : ℕ)
+
+/-- The paper's qualitative `Lambda << 1`: along the precision regime,
+`Lambda` tends to zero and is eventually a nonnegative strict contraction. -/
+def p16MuchLessThanOneAt {ι : Type*} (l : Filter ι)
+    (lambda : ι → ℝ) : Prop :=
+  Filter.Tendsto lambda l (nhds 0) ∧
+    ∀ᶠ t in l, 0 ≤ lambda t ∧ lambda t < 1
+
+/-- Actual forward error from printed page 1942. -/
+noncomputable def p16ForwardError {n : ℕ} (x xHat : P16Vector n) : ℝ :=
+  p16VecNorm (xHat - x) / p16VecNorm x
+
+/-- The normalized true residual used as the actual backward error throughout
+the paper. -/
+noncomputable def p16BackwardError {n : ℕ} (A : P16Matrix n)
+    (b xHat : P16Vector n) : ℝ :=
+  p16NormalizedResidual A b xHat
+
+/-- One fully stored, low-precision MGS-Arnoldi correction solve at a restart.
+
+The raw fields record lines 4--7 of Algorithm 2, the residual cast, the
+Arnoldi relation, the backward-stable least-squares solve, correction
+formation, and witness forms of conditions (3.5)--(3.8). The last fields are
+the correction-level consequences supplied by the Section 5.3 MGS-GMRES
+analysis. They stop before the high-precision residual/update composition that
+is the conclusion of Theorem 6.3. -/
+structure P16LowPrecisionMGSRestart {n : ℕ} {ι : Type*}
+    (l : Filter ι) (scale : ι → ℝ)
+    (A Ainv : P16Matrix n) (b xExact : P16Vector n)
+    (xCurrent xNext residualHat correctionHat : ι → P16Vector n)
+    (uLow : ι → ℝ) (poly : P16PolynomialFactor) where
+  keyDimension : ℕ
+  keyDimension_pos : 0 < keyDimension
+  keyDimension_le : keyDimension ≤ n
+  basis : ι → P16RectMatrix n keyDimension
+  basisNext : ι → P16RectMatrix n (keyDimension + 1)
+  hessenberg : ι → P16RectMatrix (keyDimension + 1) keyDimension
+  arnoldiError : ι → P16RectMatrix n keyDimension
+  arnoldi_relation : ∀ t,
+    p16SquareRectMul A (basis t) =
+      p16RectMatMul (basisNext t) (hessenberg t) + arnoldiError t
+  residualLow : ι → P16Vector n
+  residualCastError : ι → P16Vector n
+  residual_cast_equation : ∀ t,
+    residualLow t = residualHat t + residualCastError t
+  residual_cast_bound : ∀ t,
+    p16VecNorm (residualCastError t) ≤ uLow t * p16VecNorm (residualHat t)
+  arnoldiProduct : ι → P16RectMatrix n keyDimension
+  arnoldiProductError : ι → P16RectMatrix n keyDimension
+  arnoldi_product_equation : ∀ t,
+    arnoldiProduct t = p16SquareRectMul A (basis t) + arnoldiProductError t
+  epsilonC : ι → ℝ
+  epsilonB : ι → ℝ
+  epsilonLS : ι → ℝ
+  epsilonX : ι → ℝ
+  arnoldi_product_bound : ∀ t,
+    p16RectFrobNorm (arnoldiProductError t) ≤
+      epsilonC t * p16RectFrobNorm (p16SquareRectMul A (basis t))
+  leastSquaresRhsError : ι → P16Vector n
+  leastSquaresMatrixError : ι → P16RectMatrix n keyDimension
+  leastSquaresY : ι → P16Vector keyDimension
+  least_squares_solution : ∀ t,
+    p16IsLeastSquaresSolution
+      (arnoldiProduct t + leastSquaresMatrixError t)
+      (residualLow t + leastSquaresRhsError t) (leastSquaresY t)
+  least_squares_rhs_bound : ∀ t,
+    p16VecNorm (leastSquaresRhsError t) ≤
+      epsilonLS t * p16VecNorm (residualLow t)
+  least_squares_matrix_bound : ∀ t,
+    p16RectFrobNorm (leastSquaresMatrixError t) ≤
+      epsilonLS t * p16RectFrobNorm (arnoldiProduct t)
+  correctionFormationError : ι → P16Vector n
+  correction_formation_equation : ∀ t,
+    correctionHat t =
+      p16RectMatVec (basis t) (leastSquaresY t) + correctionFormationError t
+  correction_formation_bound : ∀ t,
+    p16VecNorm (correctionFormationError t) ≤
+      epsilonX t *
+        p16RectFrobNorm (basis t) * p16VecNorm (leastSquaresY t)
+  accuracy_nonneg : ∀ t,
+    0 ≤ epsilonC t ∧ 0 ≤ epsilonB t ∧ 0 ≤ epsilonLS t ∧ 0 ≤ epsilonX t
+  accuracy_tendsto_zero :
+    Filter.Tendsto epsilonC l (nhds 0) ∧
+      Filter.Tendsto epsilonB l (nhds 0) ∧
+      Filter.Tendsto epsilonLS l (nhds 0) ∧
+      Filter.Tendsto epsilonX l (nhds 0)
+  basisLowerGain : ι → ℝ
+  imageLowerGain : ι → ℝ
+  basis_gain : ∀ t, p16MinGainAtLeast (basis t) (basisLowerGain t)
+  image_gain : ∀ t,
+    p16MinGainAtLeast (p16SquareRectMul A (basis t)) (imageLowerGain t)
+  basis_not_numerically_rank_deficient : ∀ t,
+    epsilonX t * p16RectFrobNorm (basis t) < basisLowerGain t
+  key_near_dependence : keyDimension < n → ∀ t phi, 0 < phi →
+    p16NearRankDeficient
+      (p16Augment (residualLow t) phi (arnoldiProduct t))
+      (p16PolynomialFactorValue poly n keyDimension *
+        (epsilonC t + epsilonB t + epsilonLS t) *
+        p16RectFrobNorm
+          (p16Augment (residualLow t) phi (arnoldiProduct t)))
+  key_image_full_rank : ∀ t,
+    (epsilonC t + epsilonB t + epsilonLS t) *
+        p16RectFrobNorm (arnoldiProduct t) < imageLowerGain t
+  localFactor : ℝ
+  localFactor_nonneg : 0 ≤ localFactor
+  localFactor_polynomial_bound :
+    localFactor ≤ p16PolynomialFactorValue poly n keyDimension
+  localFactor_uniform_bound :
+    p16PolynomialFactorValue poly n keyDimension ≤
+      p16PolynomialFactorValue poly n n
+  backwardFactor : ι → ℝ
+  forwardFactor : ι → ℝ
+  factors_nonneg : ∀ t, 0 ≤ backwardFactor t ∧ 0 ≤ forwardFactor t
+  backward_factor_bound : ∀ t,
+    backwardFactor t ≤
+      localFactor * uLow t * p16ConditionNumberF A Ainv
+  forward_factor_bound : ∀ t,
+    forwardFactor t ≤
+      localFactor * uLow t * p16ConditionNumberF A Ainv
+  backward_correction_bound :
+    p16FirstOrderLeAt l scale
+      (fun t ↦
+        p16VecNorm (residualHat t - p16MatVec A (correctionHat t)) /
+          (p16VecNorm b + p16FrobNorm A * p16VecNorm (xNext t)))
+      (fun t ↦ backwardFactor t * p16BackwardError A b (xCurrent t))
+  forward_correction_bound :
+    p16FirstOrderLeAt l scale
+      (fun t ↦
+        p16VecNorm (xCurrent t + correctionHat t - xExact) /
+          p16VecNorm xExact)
+      (fun t ↦ forwardFactor t * p16ForwardError xExact (xCurrent t))
+
+/-- A complete abstract-real execution certificate for the unpreconditioned
+mixed-precision restarted MGS-GMRES process of Theorem 6.3. The equations are
+the paper's standard-model equations; using reals means underflow, overflow,
+NaNs, and infinities are excluded. -/
+structure P16MixedPrecisionGMRESRun {n : ℕ} {ι : Type*} (l : Filter ι) where
+  dimension_pos : 0 < n
+  A : P16Matrix n
+  Ainv : P16Matrix n
+  b : P16Vector n
+  xExact : P16Vector n
+  xHat : ℕ → ι → P16Vector n
+  residualHat : ℕ → ι → P16Vector n
+  correctionHat : ℕ → ι → P16Vector n
+  residualError : ℕ → ι → P16Vector n
+  updateError : ℕ → ι → P16Vector n
+  uHigh : ι → ℝ
+  uLow : ι → ℝ
+  polynomialFactor : P16PolynomialFactor
+  b_nonzero : b ≠ 0
+  nonsingular : p16IsNonsingular A
+  left_inverse_action : ∀ (z : P16Vector n),
+    p16MatVec Ainv (p16MatVec A z) = z
+  right_inverse_action : ∀ (z : P16Vector n),
+    p16MatVec A (p16MatVec Ainv z) = z
+  exact_solution : p16MatVec A xExact = b
+  uHigh_nonneg : ∀ t, 0 ≤ uHigh t
+  uLow_nonneg : ∀ t, 0 ≤ uLow t
+  uHigh_le_uLow : ∀ t, uHigh t ≤ uLow t
+  uHigh_tendsto_zero : Filter.Tendsto uHigh l (nhds 0)
+  uLow_tendsto_zero : Filter.Tendsto uLow l (nhds 0)
+  high_gamma_valid : ∀ t, GammaValid (uHigh t) n
+  residual_equation : ∀ i t,
+    residualHat i t = p16Residual A b (xHat i t) + residualError i t
+  residual_error_bound : ∀ i t j,
+    |residualError i t j| ≤
+      gamma (uHigh t) n *
+        (|b j| +
+          p16MatVec (fun row col ↦ |A row col|)
+            (fun col ↦ |xHat i t col|) j)
+  update_equation : ∀ i t,
+    xHat (i + 1) t = xHat i t + correctionHat i t + updateError i t
+  update_error_bound : ∀ i t j,
+    |updateError i t j| ≤ uHigh t * |xHat (i + 1) t j|
+  restart : ∀ i,
+    P16LowPrecisionMGSRestart l (fun t ↦ uHigh t + uLow t)
+      A Ainv b xExact (xHat i) (xHat (i + 1))
+      (residualHat i) (correctionHat i) uLow polynomialFactor
+  iterate_norm_current_next : ∀ i,
+    p16FirstOrderLeAt l (fun t ↦ uHigh t + uLow t)
+      (fun t ↦ p16VecNorm (xHat i t))
+      (fun t ↦ p16VecNorm (xHat (i + 1) t))
+  iterate_norm_next_solution : ∀ i,
+    p16FirstOrderLeAt l (fun t ↦ uHigh t + uLow t)
+      (fun t ↦ p16VecNorm (xHat (i + 1) t))
+      (fun _ ↦ p16VecNorm xExact)
+  backward_high_roundoff_bound : ∀ i,
+    p16FirstOrderLeAt l (fun t ↦ uHigh t + uLow t)
+      (fun t ↦
+        (p16VecNorm (residualError i t) +
+            p16VecNorm (p16MatVec A (updateError i t))) /
+          (p16VecNorm b + p16FrobNorm A * p16VecNorm (xHat (i + 1) t)))
+      (fun t ↦
+        p16PolynomialFactorValue polynomialFactor n n * uHigh t)
+  forward_high_roundoff_bound : ∀ i,
+    p16FirstOrderLeAt l (fun t ↦ uHigh t + uLow t)
+      (fun t ↦ p16VecNorm (updateError i t) / p16VecNorm xExact)
+      (fun t ↦
+        p16PolynomialFactorValue polynomialFactor n n * uHigh t *
+          p16ConditionNumberF A Ainv)
+
+/-- Combined high/low precision scale used for retained second-order terms. -/
+noncomputable def p16MixedScale {n : ℕ} {ι : Type*} {l : Filter ι}
+    (run : P16MixedPrecisionGMRESRun (n := n) l) : ι → ℝ :=
+  fun t ↦ run.uHigh t + run.uLow t
+
+/-- Uniform contraction envelope in equation (6.17). The value at `(n,n)`
+dominates every restart-dependent `c(n,k_i)` recorded by the run. -/
+noncomputable def p16MixedContraction {n : ℕ} {ι : Type*} {l : Filter ι}
+    (run : P16MixedPrecisionGMRESRun (n := n) l) : ι → ℝ :=
+  fun t ↦
+    p16PolynomialFactorValue run.polynomialFactor n n * run.uLow t *
+      p16ConditionNumberF run.A run.Ainv
+
+/-- High-precision backward-error floor in equation (6.18). -/
+noncomputable def p16BackwardFloor {n : ℕ} {ι : Type*} {l : Filter ι}
+    (run : P16MixedPrecisionGMRESRun (n := n) l) : ι → ℝ :=
+  fun t ↦ p16PolynomialFactorValue run.polynomialFactor n n * run.uHigh t
+
+/-- High-precision forward-error floor in equation (6.18). -/
+noncomputable def p16ForwardFloor {n : ℕ} {ι : Type*} {l : Filter ι}
+    (run : P16MixedPrecisionGMRESRun (n := n) l) : ι → ℝ :=
+  fun t ↦
+    p16PolynomialFactorValue run.polynomialFactor n n * run.uHigh t *
+      p16ConditionNumberF run.A run.Ainv
 
 end HighamBench
 ```

@@ -3,177 +3,163 @@
   "role": "roundtrip-judge",
   "task_id": "P16-T2",
   "paper_sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a",
-  "blind_translation_sha256": "5c9a00047f3cb9813163120f1eee6b33b1971674bf133751c7e087fe00834548",
+  "blind_translation_sha256": "612ada7e02c1017721b3f271ab06420c1c7d2fe954b21f907819a2c66db71707",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF is the 2026 IMA Journal of Numerical Analysis article 'A modular framework for the backward error analysis of GMRES'. Lemma 4.2 and equations (4.14)-(4.15) occur on printed page 1957, with identity (4.18) on page 1958.",
-      "translation_evidence": "The translation describes the residual, update, correction defect, and next-residual bound associated with this one-step clause.",
-      "reasoning": "The correct paper version and surrounding result were selected."
+      "paper_evidence": "The inspected PDF has the supplied SHA-256 and is the published 2026 IMA Journal version. Lemma 4.2 on PDF page 19, printed page 1957, contains equations (4.14)-(4.15), and PDF page 20, printed page 1958, contains identity (4.18) and its norm derivation.",
+      "translation_evidence": "The translation targets the correction-residual premise, the exact residual identity, and the next-residual estimate with coefficients w and epsilonR+epsilonU+omega.",
+      "reasoning": "The intended paper version and one-step backward-residual clause have been selected correctly."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "Lemma 4.2 concerns a fixed iteration i >= 0 of iterative refinement for the nonsingular system (1.1), where A is real n-by-n and 0 != b is a real n-vector.",
-      "translation_evidence": "The translation quantifies over every natural n, explicitly including n = 0, every real n-by-n A, and arbitrary vectors represented on Fin n; it has no iteration binder.",
-      "reasoning": "The conforming real matrix and vector types match, and erasing a fixed local index is harmless, but inclusion of the zero-dimensional case conflicts with the paper context, where 0 != b excludes it."
+      "paper_evidence": "The paper fixes a finite-dimensional real system, fixed residual and update parameters, a natural iteration i, and quantities belonging to an iterative-refinement sequence.",
+      "translation_evidence": "The translation adds an arbitrary type iota, a non-bottom filter l, a scale function, and t-dependent vectors and coefficients; its natural-number iteration binder is formula-inert.",
+      "reasoning": "The real dimensions and vector types match, but the paper's fixed iteration data are replaced by an asymptotic family with additional binders."
     },
     {
       "id": "S03",
-      "status": "pass",
-      "paper_evidence": "The residual clause is conditional on data and parameters chosen for one given iteration i.",
-      "translation_evidence": "All local data and parameters are universally quantified and followed by the corresponding conditional hypotheses.",
-      "reasoning": "For a local one-step statement, universalizing the fixed-step data preserves scope and introduces no witness-dependence or Skolemization error."
+      "status": "fail",
+      "paper_evidence": "Equations (4.1)-(4.3) are assumed for every iteration j with common epsilon_r and epsilon_u, after which Lemma 4.2 fixes one i and nonnegative w_i and omega_i and gives a pointwise one-step conclusion.",
+      "translation_evidence": "The step equations hold for every asymptotic parameter t, epsilonR and epsilonU may depend on t, and the norm conclusion holds only eventually along l with an existential remainder depending on the quantified step.",
+      "reasoning": "The quantifier domains, parameter dependence, and pointwise-versus-eventual scope are not preserved."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The paper assumes A nonsingular, 0 != b, 0 <= epsilon_r, epsilon_u << 1, and explicitly requires both w_i and omega_i to be nonnegative. The proof additionally invokes ||xhat_i||_2 ≲ ||xhat_(i+1)||_2, although Lemma 4.2 does not list that comparison among its hypotheses.",
-      "translation_evidence": "The translation includes the residual and update equations and their norm bounds, requires only 0 <= epsilonR and 0 <= epsilonU, imposes no sign condition on w or omega, permits singular A and b = 0, and adds the exact hypothesis ||x||_2 <= ||xNext||_2.",
-      "reasoning": "The epsilon lower-sign conditions are preserved, but their smallness is not. The stated nonnegativity of w and omega is omitted, so neither w nor epsilonR + epsilonU + omega is guaranteed nonnegative. The exact iterate-norm hypothesis is an added strengthening of an unstated qualitative proof condition. The independent residual clause correctly omits the unrelated forward-error hypothesis (4.12)."
+      "paper_evidence": "The paper assumes nonsingular A, nonzero b, models (4.1)-(4.3), nonnegative w_i and omega_i, and qualitatively small fixed epsilon_r and epsilon_u. The iterate comparison used after (4.18) is not stated as a Lemma 4.2 hypothesis.",
+      "translation_evidence": "The translation preserves invertibility, b != 0, signs, and local perturbation bounds, but additionally assumes NeBot l, scale tending to zero, epsilonR and epsilonU tending to zero, and an explicit O_l(scale^2) iterate-norm relation.",
+      "reasoning": "Several new asymptotic hypotheses narrow the result, while qualitative fixed-parameter smallness and the full-iteration hypotheses are replaced."
     },
     {
       "id": "S05",
       "status": "fail",
-      "paper_evidence": "The paper gives the recurrence with Lambda_2^(i) = w_i and lambda_2^(i) = (epsilon_r + epsilon_u + omega_i)(||b||_2 + ||A||_F||xhat_(i+1)||_2), while (4.18) separately gives the exact identity Axhat_(i+1) - b = Delta r_i + A dhat_i - rhat_i + A Delta x_i.",
-      "translation_evidence": "The sole stated conclusion is an exact inequality containing w and the full additive coefficient. The exact composition identity is not listed as a conclusion, although it follows algebraically from the two exact update hypotheses.",
-      "reasoning": "The full leading and additive recurrence terms are present, but the separately exact identity is only implicit rather than included among the conclusions."
+      "paper_evidence": "The selected context contains exact identity (4.18), the following exact expanded residual inequality retaining epsilon_r||A||_F||xHat_i||_2, and the first-order recurrence (4.15).",
+      "translation_evidence": "The conclusion states the exact identity and an eventual bound with an existential O_l(scale^2) remainder, but does not state the paper's exact expanded inequality as a conclusion.",
+      "reasoning": "The main algebraic identity is present and the expanded inequality is derivable, but the stated conclusion replaces the paper's two-stage exact/first-order presentation with a different asymptotic conclusion."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The paper uses ordinary real matrix-vector multiplication, the true residual b - Av, Euclidean vector norms, and the Frobenius matrix norm.",
-      "translation_evidence": "Dependency entries D001-D042 interpret Fin-indexed real matrices and vectors, pointwise operations, finite sums, Real.sqrt, Euclidean norm, matrix-vector multiplication, and Matrix.frobeniusNormedRing.",
-      "reasoning": "The nontrivial operators and imported definitions are understood consistently with the paper."
+      "paper_evidence": "The paper defines matrix-vector multiplication conventionally, uses Euclidean vector norms and the Frobenius matrix norm, and distinguishes exact inequalities from its informal first-order comparison symbol.",
+      "translation_evidence": "The dependency ledger unfolds finite vectors, square matrices, matrix-vector multiplication, residuals, Euclidean and Frobenius norms, filters, eventuality, absolute values, and big-O remainders.",
+      "reasoning": "The translation's nontrivial operators and imported definitions are explicitly and coherently interpreted; whether its big-O operator matches the paper's first-order convention is assessed separately in S14."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The paper distinguishes the computed residual rhat_i from b - Axhat_i through Delta r_i, and the computed update xhat_(i+1) from xhat_i + dhat_i through Delta x_i.",
-      "translation_evidence": "The translation keeps rhat, the true residual b - Ax, deltaR, correction, xNext, and deltaX as distinct quantities connected by exact perturbation equations.",
-      "reasoning": "The algebraic quantities are not conflated. In particular, the translation hypotheses imply the exact identity with signs deltaR + A correction - rhat + A deltaX. Loss of computational provenance is assessed under algorithm linkage."
+      "paper_evidence": "Equations (4.1), (4.2), (4.14), and (4.18) distinguish computed xHat, residualHat, and correctionHat from true residuals and perturbations deltaR and deltaX.",
+      "translation_evidence": "The translation keeps residualHat separate from b-AxHat, correctionHat separate from its correction residual, and deltaR and deltaX as explicit computation perturbations.",
+      "reasoning": "Computed, true-residual, and perturbation quantities are not conflated."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "Lemma 4.2 is a one-step iterative-refinement result for a generic linear solver; it is expressly not restricted to MOD-GMRES, though its variables are computed quantities generated by the iterative-refinement process.",
-      "translation_evidence": "The translation is an implication over arbitrary exact real matrices, vectors, and perturbations and states no iterative-refinement or computed-execution provenance.",
-      "reasoning": "It correctly adds no MOD-GMRES-specific hypothesis, but it weakens the linkage to the paper's generic iterative-refinement execution model."
+      "status": "pass",
+      "paper_evidence": "Lemma 4.2 concerns a generic iterative-refinement step consisting of residual computation, an approximate correction solve, and an update; the paper explicitly says no particular MOD-GMRES correction solver is required.",
+      "translation_evidence": "Each admissible step packages the computed residual equation, correction-residual bound, and perturbed update equation without imposing a GMRES-specific solver.",
+      "reasoning": "Despite the altered asymptotic indexing, the local data retain the intended generic iterative-refinement operation structure."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Equations (4.1), (4.2), (4.14), and (4.15) use unsquared vector 2-norms, while A appears in scaling terms through ||A||_F.",
-      "translation_evidence": "The translation defines vectors with sqrt of the sum of coordinate squares and interprets the matrix norm as the Frobenius norm.",
-      "reasoning": "Norm kind, scaling, and squared-versus-unsquared form match."
+      "paper_evidence": "Equations (4.1), (4.2), and (4.14)-(4.15) use unsquared Euclidean 2-norms for vectors and the Frobenius norm for A.",
+      "translation_evidence": "LocalDef019 is sqrt(sum x_i^2), LocalDef015 is the Frobenius matrix norm, and every displayed residual and perturbation bound uses these unsquared normwise quantities.",
+      "reasoning": "Norm kind, scaling, and squared-versus-unsquared semantics match."
     },
     {
       "id": "S10",
-      "status": "pass",
-      "paper_evidence": "For fixed i, Lambda_2^(i) is exactly w_i and lambda_2^(i) contains epsilon_r + epsilon_u + omega_i with the next iterate xhat_(i+1); no c(n,k) occurs in Lemma 4.2's residual recurrence.",
-      "translation_evidence": "The conclusion uses w on the old residual and (epsilonR + epsilonU + omega)(||b||_2 + ||A||_F||xNext||_2).",
-      "reasoning": "After harmless fixed-step renaming, the coefficients, next-iterate dependence, and indexing match."
+      "status": "fail",
+      "paper_evidence": "Equation (4.15) advances from i to i+1, has Lambda_2^(i)=w_i, and has lambda_2^(i)=(epsilon_r+epsilon_u+omega_i)(||b||_2+||A||_F||xHat_{i+1}||_2), with epsilon_r and epsilon_u fixed across iterations.",
+      "translation_evidence": "The displayed coefficients match algebraically, but xHat and xHatNext are t-dependent fields, epsilonR and epsilonU vary with t, and the natural iteration binder does not determine an actual i-to-i+1 sequence.",
+      "reasoning": "The coefficient formula is correct, but the iteration and parameter indexing semantics are changed."
     },
     {
       "id": "S11",
-      "status": "pass",
-      "paper_evidence": "Although the paper globally invokes the standard floating-point model, this lemma clause abstracts residual and update computation into the normwise epsilon_r and epsilon_u perturbation bounds and states no format-specific rounding, underflow, overflow, or subnormal condition.",
-      "translation_evidence": "The translation encodes those normwise perturbation equations and bounds without introducing a particular floating-point kernel or format.",
-      "reasoning": "At the abstraction level of the lemma clause, the numerical model matches. Parameter smallness and computed provenance are assessed separately."
+      "status": "fail",
+      "paper_evidence": "Section 2 adopts the standard floating-point model, while equations (4.1)-(4.3) abstract residual and update computations using fixed small parameters; the paper notes epsilon_u is likely the update unit roundoff but deliberately permits otherwise.",
+      "translation_evidence": "The translation encodes real-valued perturbation equations but no fixed floating-point precision or standard model, and instead requires epsilonR(t) and epsilonU(t) to converge to zero along an arbitrary filter.",
+      "reasoning": "Both formulations are abstract about exceptional values, but the paper's fixed-arithmetic error parameters are replaced by a varying asymptotic precision regime."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "Equation (4.18) is an exact equality, but (4.15) uses the qualitative relation ≲ under the paper's convention for dropping negligible second-order terms.",
-      "translation_evidence": "The translation concludes an ordinary exact <= inequality with the simplified first-order right-hand side.",
-      "reasoning": "The translation assigns exactness to the recurrence rather than only to the composition identity, changing the relation's formal strength."
+      "paper_evidence": "Equation (4.18) and the first expanded bound use exact equality and <=, whereas equation (4.15) uses the paper's informal first-order comparison symbol after dropping negligible second-order terms.",
+      "translation_evidence": "The translation gives an exact eventual <= inequality after adding the absolute value of an existential O_l(scale^2) remainder.",
+      "reasoning": "The exact identity has the correct strength, but the final relation is assigned a quantified semantics not supplied by the paper."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Equation (4.15) controls the absolute 2-norm of the next true residual, not the normalized normwise backward error and not a forward error.",
-      "translation_evidence": "The conclusion controls ||b - A xNext||_2 directly and does not normalize it or substitute a solution error.",
-      "reasoning": "The residual error notion is preserved."
+      "paper_evidence": "Equation (4.15) bounds the true residual ||b-AxHat_{i+1}||_2, which is the numerator of the normwise backward error; the independent clause contains no forward-error conclusion.",
+      "translation_evidence": "The conclusion bounds ||b-AxHatNext||_2 rather than residualHat and makes no forward-error or solution-error claim.",
+      "reasoning": "The true-residual and backward-error interpretation is preserved without substitution of a forward or computed-residual notion."
     },
     {
       "id": "S14",
       "status": "fail",
-      "paper_evidence": "Section 2 defines ≲ as notation used when negligible second-order terms are dropped. The first identity (4.18) remains exact, while aggregation into (4.15) is qualitative and also uses ||xhat_i||_2 ≲ ||xhat_(i+1)||_2.",
-      "translation_evidence": "No remainder, big-O term, threshold, or interpretation of ≲ is included; the final recurrence is asserted exactly after adding ||x||_2 <= ||xNext||_2.",
-      "reasoning": "The higher-order treatment is not preserved. Adjudication is needed to decide whether the paper's qualitative comparison may legitimately be replaced by the translation's exact hypothesis and inequality."
+      "paper_evidence": "Section 2 says the first-order comparison symbol is used after negligible second-order terms are dropped, but supplies no remainder function, asymptotic variable, coefficient, or threshold. The proof after (4.18) invokes an informal iterate-norm comparison.",
+      "translation_evidence": "LocalDef014 introduces an arbitrary scale tending to zero, an input remainder q=O_l(scale^2), and a separate output remainder rho=O_l(scale^2).",
+      "reasoning": "The translation invents a specific filtered big-O semantics and an explicit second-order iterate-comparison hypothesis that the paper neither states nor ties to a scale."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The source statement is over a nonsingular real system with nonzero b and a nonzero finite dimension implicit in that condition.",
-      "translation_evidence": "The translation explicitly generalizes to singular matrices, b = 0, n = 0, arbitrarily large epsilon parameters, and signed w and omega.",
-      "reasoning": "These are substantive generalizations beyond the paper rather than faithful specializations of its stated domain."
+      "paper_evidence": "The paper result is for fixed finite-dimensional real data and a fixed iteration of an iterative-refinement process.",
+      "translation_evidence": "The underlying vectors and matrices remain finite-dimensional and real, but the proposition generalizes the data to arbitrary filtered families while simultaneously restricting them by convergence and big-O assumptions.",
+      "reasoning": "The scalar and dimensional setting matches, but the unacknowledged filtered-family generalization and asymptotic restriction materially change the theorem."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "The paper's nonzero system and nonnegative coefficients describe an intended iterative-refinement step.",
-      "translation_evidence": "For n = 0 every norm is zero and the conclusion is 0 <= 0. Negative w or omega can also make the correction-defect antecedent inconsistent, yielding vacuous instances.",
-      "reasoning": "The translation contains unintended trivial and potentially vacuous cases excluded by the paper's dimension, system, and sign conditions."
+      "status": "pass",
+      "paper_evidence": "Nonsingular systems with nonzero right-hand sides and exact residual, correction, and update computations plainly satisfy the paper's abstract models.",
+      "translation_evidence": "The D020 conditions are jointly satisfiable, for example with n=1, A=[1], b=[1], a non-bottom filter, scale=0, xHat=0, correctionHat=b, xHatNext=b, residualHat=b, zero perturbations and epsilons, w=omega=0, and q=0.",
+      "reasoning": "The translated assumptions admit concrete inhabitants and the resulting exact identity and zero next residual are not consequences of an improper filter or an inconsistent premise."
     }
   ],
   "implications": {
     "translation_implies_paper": {
       "verdict": "no",
-      "reasoning": "Even after restricting the translation's broader domain to the paper's system and nonnegative parameters, the translation requires the exact extra hypothesis ||x||_2 <= ||xNext||_2. Lemma 4.2 does not state this hypothesis, and its proof invokes only a qualitative ≲ comparison. Therefore the translation cannot establish every paper-admissible instance."
+      "reasoning": "The translated theorem only controls eventual members of filtered families satisfying epsilonR, epsilonU -> 0 and an O_l(scale^2) iterate-norm relation. It cannot recover the paper's fixed one-step claim for arbitrary given small positive epsilon_r and epsilon_u, nor its all-iteration model, because a fixed instance need not embed as an eventual point of such a family."
     },
     "paper_implies_translation": {
-      "verdict": "no",
-      "reasoning": "The paper supplies only a qualitative first-order recurrence on nonsingular nonzero systems with small nonnegative epsilon parameters and nonnegative w_i and omega_i. It does not entail the translation's exact <= conclusion over singular systems, n = 0, arbitrary parameter magnitudes, or signed w and omega."
+      "verdict": "yes",
+      "reasoning": "Under the translation's additional hypotheses, the exact identity (4.18) and the paper's exact expanded inequality apply pointwise. Using ||xHat||_2 <= ||xHatNext||_2+|q| gives the translated bound with rho(t)=epsilonR(t)||A||_F q(t); epsilonR -> 0 makes epsilonR eventually bounded, so rho=O_l(scale^2). Thus the translated proposition is a restricted consequence of the paper's exact derivation."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "not-faithful-weaker",
   "accepted": false,
-  "requires_adjudication": true,
+  "requires_adjudication": false,
   "findings": [
     {
-      "severity": "critical",
-      "category": "relation-strength-and-higher-order-treatment",
-      "paper_evidence": "The recurrence (4.15) is stated with ≲, which Section 2 uses after dropping negligible second-order terms.",
-      "translation_evidence": "The conclusion is an unqualified exact <= inequality with no remainder semantics.",
-      "impact": "The central recurrence has been changed from a qualitative first-order estimate into an exact theorem."
+      "severity": "major",
+      "category": "quantifier-and-regime change",
+      "paper_evidence": "Lemma 4.2 fixes one natural iteration of a process governed for all iterations by common residual and update parameters.",
+      "translation_evidence": "The proposition quantifies over arbitrary filtered t-families, permits t-dependent parameters, and asserts only an eventual norm bound.",
+      "impact": "The translation does not imply the paper's fixed-instance result and substantially narrows the cases covered."
     },
     {
       "severity": "major",
-      "category": "sign-and-smallness-hypotheses",
-      "paper_evidence": "The paper states 0 <= epsilon_r, epsilon_u << 1 and requires both w_i and omega_i to be nonnegative.",
-      "translation_evidence": "Only epsilonR and epsilonU are constrained to be nonnegative; their smallness and all sign restrictions on w and omega are absent.",
-      "impact": "The translated recurrence coefficients need not be nonnegative, and the statement includes parameter cases excluded by the paper."
+      "category": "higher-order semantics",
+      "paper_evidence": "The paper's first-order symbol only records that unspecified negligible second-order terms were dropped.",
+      "translation_evidence": "The proposition chooses an explicit O_l(scale^2) remainder semantics and assumes a matching O_l(scale^2) iterate-norm comparison.",
+      "impact": "A new asymptotic scale and a stronger auxiliary hypothesis are introduced without support from the paper."
     },
     {
       "severity": "major",
-      "category": "added-iterate-norm-hypothesis",
-      "paper_evidence": "The proof invokes ||xhat_i||_2 ≲ ||xhat_(i+1)||_2, but Lemma 4.2 does not list it as an explicit hypothesis.",
-      "translation_evidence": "The exact inequality ||x||_2 <= ||xNext||_2 is an explicit antecedent.",
-      "impact": "This restricts applicability and makes the logical direction translation-implies-paper fail. Adjudication is required over whether this is an acceptable formal repair of the paper's proof."
-    },
-    {
-      "severity": "major",
-      "category": "system-domain-generalization",
-      "paper_evidence": "Lemma 4.2 applies to the nonsingular system (1.1), where 0 != b.",
-      "translation_evidence": "A and b are arbitrary, and n explicitly includes zero.",
-      "impact": "The translation asserts cases outside the paper's system domain, including a zero-dimensional case where the result is trivial."
+      "category": "error-parameter model",
+      "paper_evidence": "Equations (4.1)-(4.3) use fixed nonnegative parameters epsilon_r and epsilon_u that are qualitatively much smaller than one.",
+      "translation_evidence": "epsilonR and epsilonU are functions required to tend to zero along l, with no relation between either function and scale.",
+      "impact": "Fixed-arithmetic instances covered by the paper are excluded unless they are embedded in a separate vanishing-parameter family."
     },
     {
       "severity": "minor",
-      "category": "exact-identity-versus-recurrence",
-      "paper_evidence": "Equation (4.18) is exactly Axhat_(i+1) - b = Delta r_i + A dhat_i - rhat_i + A Delta x_i; exactness is distinct from the subsequent ≲ recurrence.",
-      "translation_evidence": "The hypotheses imply the same identity with the correct signs, but it is not stated as a conclusion, while the recurrence itself is made exact.",
-      "impact": "There is no sign error in the composition identity, but its exactness does not justify exactifying the norm recurrence."
-    },
-    {
-      "severity": "minor",
-      "category": "algorithm-linkage",
-      "paper_evidence": "The result concerns computed quantities from generic iterative refinement, independently of whether MOD-GMRES solves the correction system.",
-      "translation_evidence": "The proposition is presented only as algebra over arbitrary exact real data.",
-      "impact": "The generic nature is preserved, but the intended computed iterative-refinement provenance is not."
+      "category": "conclusion presentation",
+      "paper_evidence": "The proof exposes an exact expanded residual inequality before applying the first-order simplification.",
+      "translation_evidence": "The exact expanded inequality is not a stated conjunct, although it follows from the packaged hypotheses and exact identity.",
+      "impact": "The proof-level exact bound remains recoverable, but the translation obscures the paper's distinction between its exact estimate and its informal simplified recurrence."
     }
   ],
-  "rationale": "The translation preserves the one-step algebra, the exact signs of (4.18), the Euclidean and Frobenius norms, the true-residual error notion, and the full coefficients w and epsilonR + epsilonU + omega. It is nevertheless not the same result: it replaces the paper's qualitative ≲ recurrence by exact <=, adds an exact iterate-norm hypothesis absent from the lemma statement, omits nonsingularity, b != 0, epsilon smallness, and the stated nonnegativity of w and omega, and extends the theorem to singular and zero-dimensional cases. Neither implication holds. Adjudication is requested for the paper's unstated qualitative iterate-norm comparison and for any proposed formal interpretation of ≲ and its omitted second-order terms."
+  "rationale": "The translation correctly preserves the finite real linear algebra, computed-versus-true residual distinction, Euclidean and Frobenius norms, correction-residual structure, exact identity, and recurrence coefficients. Its central semantic change is to replace the paper's fixed one-step first-order statement by an eventual theorem over filtered parameter families with vanishing error functions and explicit O(scale^2) remainders. The paper's exact derivation entails this restricted theorem, but the restricted theorem cannot recover the paper's general fixed-instance claim. It is therefore not-faithful-weaker."
 }
