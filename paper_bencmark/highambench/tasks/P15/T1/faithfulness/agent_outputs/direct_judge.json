@@ -3,312 +3,328 @@
   "role": "direct-judge",
   "task_id": "P15-T1",
   "paper_sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7",
-  "dossier_sha256": "921be4ffc36d2a9b31af09751441156dc57ba43843c2107cc3d0dc74924b1718",
+  "dossier_sha256": "d7eff3f141b529a2f19900409bd45d002fbc7855c7cee69c9870670ed127524e",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.P15Matrix",
-      "interpretation": "P15Matrix n is Matrix (Fin n) (Fin n) Real, hence an n-by-n real matrix represented as a function of two bounded indices.",
-      "effect_on_target": "Both A and B, and therefore their product, must have the same square shape. The quantifier also includes n = 0.",
-      "paper_match": "Real finite matrices match the surrounding paper context, but requiring equal square dimensions does not match the passage's general multiplication-compatible A and B.",
-      "status": "fail"
+      "name": "HighamBench.P15RectMatrix",
+      "interpretation": "An m-by-n matrix is a function Fin m -> Fin n -> Real.",
+      "effect_on_target": "It types A as m-by-n and B as n-by-p, making their product dimensionally compatible.",
+      "paper_match": "This matches the paper's real, finite, conformable matrices.",
+      "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p15FrobNorm",
-      "interpretation": "The function returns the norm field of Matrix.frobeniusNormedRing for the supplied finite square real matrix.",
-      "effect_on_target": "All three norm occurrences use the Frobenius norm supplied by that matrix normed-ring instance.",
-      "paper_match": "This matches the paper's unsubscripted Frobenius norm on the square matrices represented by the target.",
+      "name": "HighamBench.p15RectFrobNorm",
+      "interpretation": "It returns sqrt(sum_i sum_j A_ij^2) over every row and column index.",
+      "effect_on_target": "All three norm occurrences are the entrywise Euclidean, unsquared Frobenius norm.",
+      "paper_match": "For real entries A_ij^2 equals |A_ij|^2, so this is exactly the paper's Frobenius norm.",
       "status": "pass"
     },
     {
       "id": "D003",
-      "name": "HighamBench.p15MatMul",
-      "interpretation": "Its (i,j) entry is the finite sum over every k in Fin n of A i k multiplied by B k j.",
-      "effect_on_target": "It gives ordinary matrix multiplication for two n-by-n real matrices.",
-      "paper_match": "The multiplication formula matches AB, although the available domain is square because of D001.",
+      "name": "HighamBench.p15RectMatMul",
+      "interpretation": "The product entry at i,j is sum_k A_ik * B_kj over all k in Fin n.",
+      "effect_on_target": "The left side is the Frobenius norm of the exact conventional matrix product AB.",
+      "paper_match": "This is the conformable exact product used in the paper's inequality.",
       "status": "pass"
     },
     {
       "id": "D004",
       "name": "HMul.hMul",
-      "interpretation": "This abbreviation selects the binary multiplication operation from an HMul instance.",
-      "effect_on_target": "Through D009 and D010 it denotes ordinary real multiplication on the right-hand side and inside the matrix-product sum.",
-      "paper_match": "It matches multiplication of real entries and multiplication of the two real norm values.",
+      "interpretation": "This dispatches heterogeneous multiplication through the selected HMul instance.",
+      "effect_on_target": "With the supplied real instances, it implements entry multiplication and multiplication of the two real norms.",
+      "paper_match": "Both uses are ordinary real multiplication, as in the paper.",
       "status": "pass"
     },
     {
       "id": "D005",
       "name": "LE.le",
-      "interpretation": "This abbreviation selects the non-strict order relation from an LE instance.",
-      "effect_on_target": "Through D008 it makes the conclusion an inequality between real numbers.",
-      "paper_match": "It gives the same non-strict less-than-or-equal relation used in the paper.",
+      "interpretation": "This dispatches the binary less-than-or-equal relation through an LE instance.",
+      "effect_on_target": "With Real.instLE, the target conclusion is an ordinary non-strict real inequality.",
+      "paper_match": "It preserves the paper's <= relation.",
       "status": "pass"
     },
     {
       "id": "D006",
       "name": "Nat",
-      "interpretation": "Nat supplies the target's matrix-size parameter n.",
-      "effect_on_target": "The theorem ranges over every finite common square size, including zero.",
-      "paper_match": "Natural-number dimensions are a standard formal encoding of finite matrices. The zero-size edge case is additional but does not make the theorem vacuous.",
+      "interpretation": "Natural numbers parameterize the three finite matrix dimensions.",
+      "effect_on_target": "The theorem ranges over every finite m, n, and p, including zero-dimensional boundary cases.",
+      "paper_match": "The paper leaves finite dimensions implicit. Including zero dimensions only adds trivial boundary instances and does not restrict the stated property.",
       "status": "pass"
     },
     {
       "id": "D007",
       "name": "Real",
-      "interpretation": "Real is the scalar type of every matrix entry and the codomain of the norm.",
-      "effect_on_target": "The target concerns exact real matrices and real-valued norms.",
-      "paper_match": "The surrounding article works with real matrices, so this scalar specialization is supported by the immediate context.",
+      "interpretation": "Real is the scalar and norm-value type.",
+      "effect_on_target": "Matrix entries, finite sums, square roots, products, and the inequality all live over the real numbers.",
+      "paper_match": "Section 2.1 works with real matrices, so the scalar domain matches.",
       "status": "pass"
     },
     {
       "id": "D008",
       "name": "Real.instLE",
-      "interpretation": "This instance installs the ordinary real order Real.le as LE Real.",
-      "effect_on_target": "The target's LE.le is ordinary real-number less-than-or-equal.",
-      "paper_match": "It matches the order relation in the displayed norm inequality.",
+      "interpretation": "This is the canonical order relation on real numbers.",
+      "effect_on_target": "It interprets the conclusion as the usual real-valued norm comparison.",
+      "paper_match": "This is the order intended by the paper's non-strict inequality.",
       "status": "pass"
     },
     {
       "id": "D009",
       "name": "Real.instMul",
-      "interpretation": "This instance installs ordinary real multiplication as Mul Real.",
-      "effect_on_target": "It determines multiplication of matrix entries and multiplication of the two norm values.",
-      "paper_match": "Both uses match ordinary multiplication in the paper.",
+      "interpretation": "This is ordinary multiplication of real numbers.",
+      "effect_on_target": "It determines the product of the two norms and underlies real entry products and powers.",
+      "paper_match": "It matches every scalar multiplication in the paper's formula.",
       "status": "pass"
     },
     {
       "id": "D010",
       "name": "instHMul",
-      "interpretation": "This construction turns a homogeneous Mul instance into an HMul instance by using the same multiplication operation.",
-      "effect_on_target": "Together with D009 it resolves every relevant HMul operation to real multiplication.",
-      "paper_match": "It is typeclass infrastructure that preserves the intended multiplication semantics.",
+      "interpretation": "This converts a homogeneous Mul instance into an HMul instance with the same multiplication operation.",
+      "effect_on_target": "It ensures that HMul on real values is exactly Real.instMul rather than a distinct operation.",
+      "paper_match": "The resulting operation is the paper's ordinary real multiplication.",
       "status": "pass"
     },
     {
       "id": "D011",
       "name": "Fin",
-      "interpretation": "Fin n is the finite bounded index type with n elements.",
-      "effect_on_target": "It indexes rows, columns, and the contraction variable of the square matrix product.",
-      "paper_match": "Finite bounded indices faithfully encode matrix indices; the reuse of one index type for all axes arises from the square specialization in D001.",
+      "interpretation": "Fin n is the finite index type containing the n positions from zero through n-1.",
+      "effect_on_target": "It supplies the row, column, and shared inner index sets for rectangular matrices.",
+      "paper_match": "These are the finite entry-index ranges implicit in the paper.",
       "status": "pass"
     },
     {
       "id": "D012",
       "name": "Fin.fintype",
-      "interpretation": "This instance enumerates all elements of Fin n using finRange n.",
-      "effect_on_target": "It makes the complete finite contraction sum and Frobenius construction available.",
-      "paper_match": "Enumerating every matrix index matches the finite sums implicit in matrix multiplication and the Frobenius norm.",
+      "interpretation": "This equips Fin n with an enumeration of all its elements.",
+      "effect_on_target": "It enables the Frobenius and product sums to range over complete finite dimensions.",
+      "paper_match": "It realizes the paper's sums over every matrix index.",
       "status": "pass"
     },
     {
       "id": "D013",
       "name": "Finset.sum",
-      "interpretation": "Finset.sum maps a function over a finite set and combines the results with commutative-monoid addition.",
-      "effect_on_target": "It forms the sum of products defining each entry of p15MatMul.",
-      "paper_match": "This is the standard finite summation required for matrix multiplication.",
+      "interpretation": "This is finite summation in an additive commutative monoid.",
+      "effect_on_target": "It forms both the entrywise sum of squares and the inner sum defining matrix multiplication.",
+      "paper_match": "Both are the standard finite sums required by the paper's definitions.",
       "status": "pass"
     },
     {
       "id": "D014",
       "name": "Finset.univ",
-      "interpretation": "Finset.univ selects all elements supplied by a Fintype instance.",
-      "effect_on_target": "The matrix-product contraction includes every k in Fin n exactly once.",
-      "paper_match": "This matches summation over the entire compatible inner index.",
+      "interpretation": "This is the finite set containing every element of a finite type.",
+      "effect_on_target": "No row, column, or inner-product index is omitted from any sum.",
+      "paper_match": "It matches the paper's unrestricted sums over the relevant dimensions.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "Matrix",
-      "interpretation": "Matrix m n alpha is definitionally the function type m -> n -> alpha.",
-      "effect_on_target": "Matrices are extensional arrays of real entries indexed by row and column types.",
-      "paper_match": "This faithfully represents finite mathematical matrices.",
+      "name": "HPow.hPow",
+      "interpretation": "This dispatches exponentiation through the selected HPow instance.",
+      "effect_on_target": "In the norm definition it interprets each entry raised to the exponent 2.",
+      "paper_match": "The resulting real square matches |a_ij|^2 for real entries.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "Matrix.frobeniusNormedRing",
-      "interpretation": "This instance combines the matrix ring operations with the norm inherited from Matrix.frobeniusSeminormedAddCommGroup and includes Frobenius-norm submultiplicativity.",
-      "effect_on_target": "D002 projects its inherited Frobenius norm for finite square real matrices.",
-      "paper_match": "The inherited matrix norm is the Frobenius norm used by the paper, with no normalization or dimension-dependent factor.",
+      "name": "Matrix",
+      "interpretation": "A matrix over row type m, column type n, and scalar type alpha is the function type m -> n -> alpha.",
+      "effect_on_target": "Entries are addressed by one row and one column index with no additional structure or restrictions.",
+      "paper_match": "This is an extensional representation of the paper's rectangular real matrices.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "Norm.norm",
-      "interpretation": "This abbreviation projects the norm function from a Norm instance.",
-      "effect_on_target": "It evaluates the matrix norm selected by D018 and D016.",
-      "paper_match": "It introduces no alternative norm semantics.",
+      "name": "Monoid.toNatPow",
+      "interpretation": "This defines natural-number powers by repeated monoid multiplication.",
+      "effect_on_target": "The exponent 2 in the norm computes the ordinary real square.",
+      "paper_match": "It agrees with the squared entry magnitude in the Frobenius norm.",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "NormedRing.toNorm",
-      "interpretation": "This abbreviation projects the Norm structure contained in a NormedRing.",
-      "effect_on_target": "It connects p15FrobNorm to the norm component of Matrix.frobeniusNormedRing.",
-      "paper_match": "The projected component is the Frobenius norm identified in D016.",
+      "name": "OfNat.ofNat",
+      "interpretation": "This interprets a numeral at its inferred target type.",
+      "effect_on_target": "It interprets the exponent literal 2 as the natural number two.",
+      "paper_match": "The exponent is exactly 2, as in the paper's norm definition.",
       "status": "pass"
     },
     {
       "id": "D019",
       "name": "Real.instAddCommMonoid",
-      "interpretation": "This instance supplies real zero and commutative addition for finite sums.",
-      "effect_on_target": "It combines entry products in the definition of matrix multiplication, including the empty sum at n = 0.",
-      "paper_match": "It implements ordinary real summation and does not alter the mathematical claim.",
+      "interpretation": "This supplies ordinary real addition and zero for finite sums.",
+      "effect_on_target": "All sums use real addition, and sums over empty index sets are zero.",
+      "paper_match": "This matches standard matrix and Frobenius summation.",
       "status": "pass"
     },
     {
       "id": "D020",
-      "name": "Real.instRCLike",
-      "interpretation": "This instance equips Real with the RCLike structure used by the Frobenius matrix norm construction.",
-      "effect_on_target": "It specializes the Frobenius norm construction to real entries, with real absolute-value and norm behavior.",
-      "paper_match": "This agrees with the paper's real-matrix context and its entrywise absolute values.",
+      "name": "Real.instMonoid",
+      "interpretation": "This supplies ordinary real multiplication, one, and natural powers.",
+      "effect_on_target": "It makes each second power the usual product of a real entry with itself.",
+      "paper_match": "This yields exactly the real squares required by the paper.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "instDecidableEqFin",
-      "interpretation": "This instance decides equality of Fin n indices by deciding equality of their underlying natural values.",
-      "effect_on_target": "It is implementation support required when constructing the matrix normed-ring instance and does not change the proposition's mathematical content.",
-      "paper_match": "The paper has no corresponding decidability condition because this is formalization infrastructure.",
-      "status": "not-applicable"
+      "name": "Real.sqrt",
+      "interpretation": "This is the canonical nonnegative real square root.",
+      "effect_on_target": "It takes the square root of a nonnegative finite sum of real squares, producing the unsquared Frobenius norm.",
+      "paper_match": "This matches the paper's exponent 1/2 in the Frobenius norm definition.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "instHPow",
+      "interpretation": "This adapts a Pow instance into a homogeneous HPow instance without changing exponentiation.",
+      "effect_on_target": "It connects HPow.hPow on a real base and natural exponent to the real natural-power operation.",
+      "paper_match": "The entry operation remains ordinary squaring.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "instOfNatNat",
+      "interpretation": "This interprets each natural-number numeral as that same natural number.",
+      "effect_on_target": "The norm's exponent literal denotes Nat 2 exactly.",
+      "paper_match": "There is no coefficient or exponent mismatch.",
+      "status": "pass"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "PDF p. 3, printed p. 953 defines the unsubscripted norm as the Frobenius norm and immediately states its first property as ||AB|| <= ||A||||B||; printed p. 954 continues the same list of properties.",
-      "lean_evidence": "The target is p15FrobNorm (p15MatMul A B) <= p15FrobNorm A * p15FrobNorm B.",
-      "reasoning": "The selected version, page, paragraph, and displayed property are the intended source result."
+      "paper_evidence": "The verified PDF is the IMA Journal of Numerical Analysis 42 (2022), pages 951-980 version. On PDF page 3, printed page 953, Section 2.1 defines the unsubscripted norm as Frobenius and immediately states its first property: ||AB|| <= ||A||||B||.",
+      "lean_evidence": "The target is p15_t1_frobenius_submultiplicative and contains precisely a norm-of-product inequality.",
+      "reasoning": "The selected passage, journal version, and surrounding three-property list are the intended source; the later two properties are not part of this target."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "The passage writes AB without square-size restrictions, and the surrounding discussion includes rectangular matrices such as matrices with orthonormal columns.",
-      "lean_evidence": "P15Matrix n unfolds to Matrix (Fin n) (Fin n) Real, and both A and B have that same type.",
-      "reasoning": "Lean replaces arbitrary multiplication-compatible dimensions by one common square dimension n."
+      "status": "pass",
+      "paper_evidence": "The source uses real matrices and writes AB without fixed dimensions, implicitly requiring conformability; nearby material explicitly uses rectangular real matrix dimensions.",
+      "lean_evidence": "Lean quantifies m, n, p : Nat, A : Matrix (Fin m) (Fin n) Real, and B : Matrix (Fin n) (Fin p) Real.",
+      "reasoning": "The shared Fin n index enforces exactly the compatibility needed for an m-by-n times n-by-p product."
     },
     {
       "id": "S03",
       "status": "pass",
-      "paper_evidence": "The property is stated universally for A and B wherever AB is defined, with no existential witnesses or dependent choices.",
-      "lean_evidence": "The target universally quantifies n and then independently quantifies A and B of the selected matrix type.",
-      "reasoning": "The universal quantifier structure and lack of witness dependence are preserved within Lean's restricted domain; the domain restriction is assessed separately."
+      "paper_evidence": "The norm property is stated generically for A and B, with no existential witnesses or dependent choices.",
+      "lean_evidence": "The target universally quantifies the dimensions first and then every conformable A and B.",
+      "reasoning": "This is the direct formal rendering of the paper's implicit universal scope, with no altered witness dependence or Skolemization."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The only implicit requirement is compatibility of the dimensions needed to form AB; no squareness or equality of all dimensions is stated.",
-      "lean_evidence": "Typing A and B as P15Matrix n enforces that both are n-by-n.",
-      "reasoning": "Lean adds a substantive type-level restriction beyond multiplication compatibility."
+      "status": "pass",
+      "paper_evidence": "The selected sentence imposes only the inherited Frobenius-norm convention and compatibility of AB; it adds no rank, block, orthogonality, nonsingularity, positivity, or nonzero assumptions.",
+      "lean_evidence": "The target has no hypotheses beyond the matrix types and their shared inner dimension.",
+      "reasoning": "No explicit or implicit substantive hypothesis has been added or omitted."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "The complete selected conclusion is the single inequality ||AB|| <= ||A||||B||.",
-      "lean_evidence": "The target contains the norm of p15MatMul A B on the left and the product of the separate norms on the right.",
-      "reasoning": "No conjunct, case, coefficient, or conclusion is omitted within the represented domain."
+      "paper_evidence": "The selected first property is the single conclusion ||AB|| <= ||A||||B||. The terms submultiplicative and consistent are names for that property, while the second and final properties are separate statements.",
+      "lean_evidence": "The target concludes exactly p15RectFrobNorm (p15RectMatMul A B) <= p15RectFrobNorm A * p15RectFrobNorm B.",
+      "reasoning": "The complete selected mathematical conclusion is present; a prose synonym does not require an additional logical conjunct."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "AB is ordinary matrix multiplication, all norms are Frobenius norms, and the right-hand operation is multiplication of real norm values.",
-      "lean_evidence": "p15MatMul is the full contraction sum; p15FrobNorm projects the Frobenius matrix norm; HMul and LE resolve to real multiplication and real order.",
-      "reasoning": "The nontrivial operators have the intended meanings."
+      "paper_evidence": "The paper defines the Frobenius norm entrywise and uses ordinary exact matrix multiplication, real multiplication, finite summation, square root, and real order.",
+      "lean_evidence": "D001-D023 expose matrices as finite real-valued functions, multiplication as sum_k A_ik B_kj, and the norm as sqrt(sum_i sum_j A_ij^2), with canonical real algebra and order instances.",
+      "reasoning": "Every nontrivial local operator and all target-affecting frontier operations have the intended standard interpretation."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The norm property in Section 2.1 is an exact mathematical inequality; computed and rounded quantities are introduced only later in Section 2.2.",
-      "lean_evidence": "The target uses exact real entries, exact finite sums, and exact real norms, with no computed or perturbed objects.",
-      "reasoning": "Exact quantities are not conflated with the paper's later floating-point quantities."
+      "paper_evidence": "The selected Section 2.1 property concerns exact A, B, and AB. The floating-point operator fl is introduced separately in Section 2.2, equation (2.5).",
+      "lean_evidence": "The target contains exact real matrices, exact finite sums, and no rounding operator, perturbation, or computed quantity.",
+      "reasoning": "Exact and computed products are not conflated."
     },
     {
       "id": "S08",
       "status": "not-applicable",
-      "paper_evidence": "The paper presents this as a general Frobenius-norm property used throughout the later analysis, not as an output guarantee of a particular algorithm.",
-      "lean_evidence": "The target contains only matrices, multiplication, norms, and an inequality.",
-      "reasoning": "No algorithm or execution model belongs to the selected claim."
+      "paper_evidence": "The paper presents submultiplicativity as a general Frobenius-norm property used throughout the analysis, not as a result about one BLR algorithm or execution.",
+      "lean_evidence": "The Lean proposition is likewise a general statement about conformable real matrices and contains no algorithm state.",
+      "reasoning": "There is no algorithm-specific linkage in the selected result to preserve."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "The preceding sentence defines ||A|| as the square root of the sum of squared entry magnitudes and states that unsubscripted norms are Frobenius norms.",
-      "lean_evidence": "p15FrobNorm selects the norm inherited by Matrix.frobeniusNormedRing from the Frobenius seminormed additive-group structure.",
-      "reasoning": "All three occurrences are unsquared Frobenius norms, not spectral or componentwise norms."
+      "paper_evidence": "The paper explicitly defines every unsubscripted norm as ||A||_F = (sum_i,j |a_ij|^2)^(1/2) and explains that its analysis is normwise rather than componentwise.",
+      "lean_evidence": "p15RectFrobNorm is sqrt(sum_i sum_j A_ij^2), and the theorem compares these unsquared scalar norms.",
+      "reasoning": "For real entries A_ij^2 = |A_ij|^2, so the norm kind, square-root placement, and normwise meaning agree exactly."
     },
     {
       "id": "S10",
       "status": "pass",
-      "paper_evidence": "The displayed inequality has multiplicative constant exactly 1 and no dimension-dependent factor.",
-      "lean_evidence": "The right-hand side is exactly p15FrobNorm A * p15FrobNorm B, and p15MatMul sums over the complete Fin n inner index.",
-      "reasoning": "The coefficient, product, and indexing convention match on the target domain."
+      "paper_evidence": "The paper's multiplicative constant is exactly 1, and its Frobenius definition sums over both entry indices.",
+      "lean_evidence": "The right side is exactly norm A * norm B with no coefficient; univ sums cover all row, column, and shared inner indices.",
+      "reasoning": "There is no constant, coefficient, index-range, or index-offset discrepancy."
     },
     {
       "id": "S11",
       "status": "not-applicable",
-      "paper_evidence": "The selected property precedes Section 2.2's floating-point model and has no precision, rounding, underflow, or overflow assumptions.",
-      "lean_evidence": "The target is over exact Real matrices and includes no floating-point model.",
-      "reasoning": "Floating-point assumptions are not part of this result."
+      "paper_evidence": "Precision, unit roundoff, and the model fl(x op y) appear only in the following subsection and are not hypotheses of the selected property.",
+      "lean_evidence": "The target has no floating-point type, rounding mode, unit roundoff, underflow, overflow, or exceptional-value condition.",
+      "reasoning": "The selected exact norm property has no floating-point model to encode."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The paper claims the non-strict inequality for multiplication-compatible matrices generally.",
-      "lean_evidence": "Lean has the same non-strict direction but proves it only when both matrices are n-by-n with the same n.",
-      "reasoning": "The local relation is correct, but the proposition is logically weaker in direct domain coverage."
+      "status": "pass",
+      "paper_evidence": "The paper states the non-strict inequality ||AB|| <= ||A||||B|| in this direction.",
+      "lean_evidence": "Real.instLE.le compares the norm of p15RectMatMul A B to the product of the two factor norms with the same non-strict direction.",
+      "reasoning": "Direction, strictness, and logical strength are unchanged."
     },
     {
       "id": "S13",
       "status": "not-applicable",
-      "paper_evidence": "The selected statement is a norm identity property, not a forward, backward, residual, or stability error claim.",
-      "lean_evidence": "No error, perturbation, residual, or computed quantity occurs.",
-      "reasoning": "There is no error notion to compare."
+      "paper_evidence": "Although the surrounding motivation concerns normwise error analysis, the selected sentence is a norm axiom-like property and not a forward, backward, residual, or stability bound.",
+      "lean_evidence": "The target contains no exact-versus-approximate error quantity.",
+      "reasoning": "No error notion is asserted or substituted."
     },
     {
       "id": "S14",
       "status": "not-applicable",
-      "paper_evidence": "The inequality is exact and contains no approximation, remainder, or big-O term.",
-      "lean_evidence": "The target is an exact inequality with no higher-order expression.",
-      "reasoning": "Higher-order-term handling is not relevant."
+      "paper_evidence": "The selected relation is exact and contains no first-order truncation, remainder, asymptotic qualifier, or big-O term.",
+      "lean_evidence": "The Lean target is an exact inequality with no omitted-term representation.",
+      "reasoning": "There are no higher-order terms to preserve."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The source's AB requires only compatible dimensions, and the surrounding paragraph does not confine the norm properties to square matrices.",
-      "lean_evidence": "A and B are both Matrix (Fin n) (Fin n) Real.",
-      "reasoning": "The real scalar choice is supported by context, but the equal-size square restriction is a substantive specialization omitting rectangular products."
+      "status": "pass",
+      "paper_evidence": "The passage's natural reading is over all compatible finite real matrices; it does not restrict the property to BLR blocks or one fixed square size.",
+      "lean_evidence": "Lean ranges over arbitrary finite rectangular real dimensions m, n, and p, including zero.",
+      "reasoning": "The real finite-dimensional formalization matches the paper. Zero-dimensional instances are a harmless boundary extension whose inequalities reduce to zero cases, not a narrower benchmark task."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "Ordinary compatible real matrices provide abundant instances, and equality can occur, for example for scalar identity matrices.",
-      "lean_evidence": "For n = 1, A and B may be nonzero one-by-one matrices; the theorem also ranges over every positive n despite including the trivial n = 0 case.",
-      "reasoning": "The target is satisfiable and nonvacuous; the zero-dimensional edge case does not trivialize the universal theorem."
+      "paper_evidence": "The property applies to ordinary positive-dimensional matrices without additional assumptions.",
+      "lean_evidence": "For m = n = p = 2 and A = B = I, the target becomes sqrt(2) <= 2; many other nonzero matrices are also admitted.",
+      "reasoning": "The quantified domain is inhabited by substantive nonzero examples, and the theorem is not made true solely through inconsistent hypotheses or empty dimensions."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "As stated, Lean establishes only the common-square case and supplies no case for A of shape m-by-k and B of shape k-by-p when those dimensions differ. Recovering rectangular cases would require an additional embedding argument not present in the proposition."
+      "verdict": "yes",
+      "reasoning": "After unfolding the three local definitions, Lean states that every conformable finite real A and B satisfies sqrt(sum_ij (sum_k A_ik B_kj)^2) <= sqrt(sum_ik A_ik^2) * sqrt(sum_kj B_kj^2). Because real squares equal squared absolute values, this directly gives the paper's Frobenius submultiplicativity statement."
     },
     "paper_implies_lean": {
       "verdict": "yes",
-      "reasoning": "The paper's general multiplication-compatible Frobenius inequality specializes directly to real n-by-n matrices, yielding the Lean conclusion for every represented nonzero size; the zero-size case is the same identity's trivial finite-index extension."
+      "reasoning": "The paper's universally stated Frobenius property applies to each positive-dimensional real Matrix (Fin m) (Fin n) instance and the exact product used by Lean. If conventional paper dimensions are taken as positive, every remaining zero-dimensional Lean case independently reduces to 0 <= 0 because an outer dimension is empty or the shared dimension makes both factors and the product zero."
     }
   },
-  "classification": "not-faithful-weaker",
-  "accepted": false,
+  "classification": "faithful-equivalent",
+  "accepted": true,
   "requires_adjudication": false,
   "findings": [
     {
-      "severity": "major",
-      "category": "dimensional-specialization",
-      "paper_evidence": "PDF p. 3, printed p. 953 states Frobenius submultiplicativity as ||AB|| <= ||A||||B|| with only multiplication compatibility implicit; the surrounding norm discussion also uses rectangular matrices.",
-      "lean_evidence": "P15Matrix n is Matrix (Fin n) (Fin n) Real, and the target assigns this same type to both A and B.",
-      "impact": "The target omits every genuinely rectangular compatible product, so it is a nonvacuous but weaker specialization of the selected paper result."
+      "severity": "note",
+      "category": "dimension-domain-explication",
+      "paper_evidence": "The paper leaves dimensions implicit in the generic product AB while working in a real finite-matrix setting.",
+      "lean_evidence": "Lean makes dimensions explicit as arbitrary natural numbers and therefore includes zero-dimensional matrices.",
+      "impact": "This does not change the positive-dimensional claim or the benchmark substance; the added boundary instances are valid trivial cases."
     }
   ],
-  "rationale": "The Lean target faithfully represents ordinary multiplication, the unsquared Frobenius norm, the constant-one non-strict inequality, and the paper's real-matrix context. Its sole material defect is dimensional: one common n forces both factors to be square, whereas the paper property applies to arbitrary multiplication-compatible shapes. Therefore the paper directly implies the Lean specialization, but the Lean proposition does not directly provide the paper's full claim."
+  "rationale": "The target unfolds to the exact Frobenius-norm submultiplicativity inequality for arbitrary conformable finite real matrices. Its norm is the square root of the sum of real entry squares, its product is the standard exact inner-index sum, and its relation is the paper's non-strict inequality with constant 1. It adds no algorithmic, floating-point, rank, block, or error hypotheses. Both implication directions hold, with zero-dimensional Lean instances constituting only valid boundary cases."
 }

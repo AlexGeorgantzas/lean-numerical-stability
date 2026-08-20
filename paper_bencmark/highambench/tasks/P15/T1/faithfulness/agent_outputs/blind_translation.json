@@ -1,182 +1,193 @@
 {
   "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "7ed6f37aa855cf5f82eb60ca42bce6feeac7d8cae170a77812c2eb639eb331b1",
+  "dossier_sha256": "868b6df91a461b76e93d798ba09f176a9abda8163f9060383c969f579d011ef2",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "For a natural number n, this is the type Matrix (Fin n) (Fin n) Real, definitionally the function type Fin n -> Fin n -> Real.",
-      "effect_on_target": "It makes A and B square n-by-n matrices with real entries.",
+      "meaning": "LocalDef001 m n is the type of real m-by-n matrices, represented as functions Fin m -> Fin n -> Real.",
+      "effect_on_target": "It makes A an m-by-n real matrix and B an n-by-p real matrix; their shared dimension n makes their matrix product well-defined.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "This maps a square real matrix A to Norm.norm A using the Norm component of Matrix.frobeniusNormedRing.",
-      "effect_on_target": "It supplies the real-valued matrix norm applied to A, B, and their product in the inequality.",
+      "meaning": "For an m-by-n real matrix A, LocalDef002 A is sqrt(sum_{i in Fin m} sum_{j in Fin n} (A i j)^2), the entrywise Euclidean or Frobenius norm.",
+      "effect_on_target": "It supplies all three scalar quantities in the inequality: the norm of the product, the norm of A, and the norm of B.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "For square matrices A and B, it defines a matrix C by C(i,j) = sum over all k in Fin n of A(i,k) * B(k,j).",
-      "effect_on_target": "The matrix inside the norm on the left-hand side is the usual finite matrix product of A and B.",
+      "meaning": "For A of size m-by-n and B of size n-by-p, LocalDef003 A B is the m-by-p matrix whose entry at (i,j) is sum_{k in Fin n} A i k * B k j.",
+      "effect_on_target": "It makes the matrix inside the left-hand norm the ordinary matrix product AB.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "HMul.hMul",
-      "meaning": "This is the operation extracted from a heterogeneous-multiplication structure.",
-      "effect_on_target": "With the supplied real multiplication instances, it denotes ordinary real multiplication both in each matrix-product summand and between the two norm values.",
+      "meaning": "HMul.hMul applies the binary operation supplied by a heterogeneous multiplication instance.",
+      "effect_on_target": "With the specified real multiplication instance, it denotes ordinary multiplication of real numbers on the right-hand side and in the entries of the matrix product.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LE.le",
-      "meaning": "This is the binary relation extracted from an LE structure.",
-      "effect_on_target": "Instantiated with Real.instLE, it makes the target conclusion a non-strict inequality between real numbers.",
+      "meaning": "LE.le applies the binary relation supplied by a less-than-or-equal instance.",
+      "effect_on_target": "With the real-order instance, it expresses that the norm of AB is less than or equal to the product of the two norms.",
       "status": "understood"
     },
     {
       "id": "D006",
       "name": "Nat",
-      "meaning": "This is the type of natural numbers.",
-      "effect_on_target": "The matrix dimension n ranges over every natural number, including zero.",
+      "meaning": "Nat is the type of natural numbers, including zero.",
+      "effect_on_target": "The matrix dimensions m, n, and p range over all natural numbers, so zero-dimensional cases are included.",
       "status": "understood"
     },
     {
       "id": "D007",
       "name": "Real",
-      "meaning": "This is the type of real numbers.",
-      "effect_on_target": "Matrix entries and all norm values in the target are real numbers.",
+      "meaning": "Real is the type of real numbers.",
+      "effect_on_target": "All matrix entries, sums, products, square roots, norms, and both sides of the inequality are real-valued.",
       "status": "understood"
     },
     {
       "id": "D008",
       "name": "Real.instLE",
-      "meaning": "This equips the real numbers with their usual less-than-or-equal relation.",
-      "effect_on_target": "It interprets the target relation as the ordinary real inequality <=.",
+      "meaning": "Real.instLE equips the real numbers with their standard less-than-or-equal relation.",
+      "effect_on_target": "It gives the conclusion its ordinary real inequality interpretation.",
       "status": "understood"
     },
     {
       "id": "D009",
       "name": "Real.instMul",
-      "meaning": "This equips the real numbers with ordinary real multiplication.",
-      "effect_on_target": "It determines the scalar products A(i,k) * B(k,j) and the product of the two norm values on the right-hand side.",
+      "meaning": "Real.instMul equips the real numbers with ordinary real multiplication.",
+      "effect_on_target": "It makes the right-hand side the ordinary real product of the two norms and makes each A i k * B k j an ordinary real product.",
       "status": "understood"
     },
     {
       "id": "D010",
       "name": "instHMul",
-      "meaning": "Given a multiplication operation on a type, this constructs homogeneous heterogeneous multiplication by using that same operation.",
-      "effect_on_target": "It turns Real.instMul into the HMul operation used by the target and by the explicitly defined matrix product.",
+      "meaning": "instHMul converts a homogeneous multiplication structure Mul alpha into an HMul alpha alpha alpha structure using the same multiplication operation.",
+      "effect_on_target": "Applied to Real.instMul, it resolves every relevant heterogeneous multiplication operation as ordinary real multiplication.",
       "status": "understood"
     },
     {
       "id": "D011",
       "name": "Fin",
-      "meaning": "Fin n is the finite index type with n elements, conventionally represented by the natural numbers from 0 through n-1.",
-      "effect_on_target": "It supplies the row, column, and contracted inner indices of the n-by-n matrices.",
+      "meaning": "Fin n is the finite type of natural-number indices strictly less than n.",
+      "effect_on_target": "It provides the row, column, and contracted indices for the matrices and finite sums.",
       "status": "understood"
     },
     {
       "id": "D012",
       "name": "Fin.fintype",
-      "meaning": "This gives Fin n its finite enumeration, built from the list of indices in finRange n.",
-      "effect_on_target": "It permits the universal finite set of inner indices to be formed and summed over; it also supports construction of the matrix norm instance.",
+      "meaning": "Fin.fintype n gives Fin n its finite enumeration containing every index exactly once.",
+      "effect_on_target": "It allows the universal finite sets used in the norm and matrix-product sums to range over all valid matrix indices.",
       "status": "understood"
     },
     {
       "id": "D013",
       "name": "Finset.sum",
-      "meaning": "This forms the finite sum of a function's values in an additive commutative monoid.",
-      "effect_on_target": "It adds the terms A(i,k) * B(k,j) to compute each entry of the product matrix.",
+      "meaning": "Finset.sum adds the values of a function over a finite set using a commutative additive monoid.",
+      "effect_on_target": "It forms the sums of squared entries in the norms and the contracted sum defining each entry of AB.",
       "status": "understood"
     },
     {
       "id": "D014",
       "name": "Finset.univ",
-      "meaning": "For a finite type, this is the finite set containing every element of that type.",
-      "effect_on_target": "It makes the contracted sum range over every k in Fin n, with no omitted indices.",
+      "meaning": "Finset.univ is the finite set containing every element of a finite type.",
+      "effect_on_target": "Each occurrence makes the corresponding sum range over every row, column, or contracted index of the indicated Fin type.",
       "status": "understood"
     },
     {
       "id": "D015",
-      "name": "Matrix",
-      "meaning": "A matrix with row type m, column type n, and entries in alpha is definitionally a function m -> n -> alpha.",
-      "effect_on_target": "It gives the matrices their entrywise functional representation and, with both index types equal to Fin n, makes them square.",
+      "name": "HPow.hPow",
+      "meaning": "HPow.hPow applies the exponentiation operation supplied by a heterogeneous power instance.",
+      "effect_on_target": "In LocalDef002 it raises each real matrix entry to the natural-number exponent 2.",
       "status": "understood"
     },
     {
       "id": "D016",
-      "name": "Matrix.frobeniusNormedRing",
-      "meaning": "This constructs a NormedRing structure on square matrices over an RCLike scalar type. Its Norm component is inherited from Matrix.frobeniusSeminormedAddCommGroup, while its ring operations are inherited from Matrix.instRing. The inherited norm's defining formula is not supplied in the dossier.",
-      "effect_on_target": "Only its inherited Norm component is extracted in the target, selecting the matrix norm denoted by N_n below.",
-      "status": "unclear"
+      "name": "Matrix",
+      "meaning": "Matrix I J alpha is definitionally the function type I -> J -> alpha.",
+      "effect_on_target": "It represents each matrix by its entry function and permits entries such as A i j to be evaluated directly.",
+      "status": "understood"
     },
     {
       "id": "D017",
-      "name": "Norm.norm",
-      "meaning": "This extracts the real-valued norm function from a Norm structure.",
-      "effect_on_target": "It evaluates the selected matrix norm on A, B, and the explicitly defined product matrix.",
+      "name": "Monoid.toNatPow",
+      "meaning": "Monoid.toNatPow supplies natural-number exponentiation x^n by repeated monoid multiplication.",
+      "effect_on_target": "For real numbers it interprets each entry power with exponent 2 as its ordinary square.",
       "status": "understood"
     },
     {
       "id": "D018",
-      "name": "NormedRing.toNorm",
-      "meaning": "This extracts the Norm component of a NormedRing structure.",
-      "effect_on_target": "It connects Matrix.frobeniusNormedRing to the norm function used by LocalDef002.",
+      "name": "OfNat.ofNat",
+      "meaning": "OfNat.ofNat obtains the value represented by a natural-number literal in a type having the corresponding OfNat instance.",
+      "effect_on_target": "It interprets the exponent literal 2 as the natural number two.",
       "status": "understood"
     },
     {
       "id": "D019",
       "name": "Real.instAddCommMonoid",
-      "meaning": "This supplies real addition, zero, and the additive commutative-monoid laws.",
-      "effect_on_target": "It determines how the finite matrix-product sums are added and makes an empty sum equal to real zero.",
+      "meaning": "Real.instAddCommMonoid supplies real addition, zero, and the commutative additive-monoid laws.",
+      "effect_on_target": "It makes all Finset sums ordinary finite sums of real numbers, with an empty sum equal to zero.",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "Real.instRCLike",
-      "meaning": "This gives the real numbers their RCLike structure, with zero imaginary part and the usual real normed-field structure.",
-      "effect_on_target": "It specializes the matrix NormedRing construction to real matrices and introduces no additional proposition-level hypothesis.",
+      "name": "Real.instMonoid",
+      "meaning": "Real.instMonoid supplies ordinary real multiplication, one, and natural powers.",
+      "effect_on_target": "It provides the repeated-multiplication operation used to compute each real entry squared.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "instDecidableEqFin",
-      "meaning": "This decides equality of two Fin n indices by deciding equality of their underlying natural-number values.",
-      "effect_on_target": "It is computational structure required to construct the matrix NormedRing instance; it imposes no extra mathematical restriction.",
+      "name": "Real.sqrt",
+      "meaning": "Real.sqrt is the nonnegative real square-root function; its definition sends a negative input through its nonnegative truncation, while on nonnegative inputs it is the usual principal square root.",
+      "effect_on_target": "It converts each sum of squared entries into its nonnegative square root. All inputs here are nonnegative sums of squares, so no negative-input truncation affects the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "instHPow",
+      "meaning": "instHPow converts a power structure Pow alpha beta into an HPow alpha beta alpha structure using the same exponentiation operation.",
+      "effect_on_target": "Together with real natural powers, it resolves the expression (A i j)^2 as ordinary squaring of a real number.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "instOfNatNat",
+      "meaning": "instOfNatNat n interprets the numeral n in Nat as n itself.",
+      "effect_on_target": "It ensures that the exponent appearing in every squared-entry term is exactly the natural number 2.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "n is an implicitly bound, universally quantified natural number.",
-      "A and B are universally quantified square n-by-n matrices with real entries, equivalently functions Fin n -> Fin n -> Real."
+      "m, n, and p are arbitrary natural numbers.",
+      "A is an arbitrary real m-by-n matrix, equivalently A : Fin m -> Fin n -> Real.",
+      "B is an arbitrary real n-by-p matrix, equivalently B : Fin n -> Fin p -> Real."
     ],
     "hypotheses": [],
     "conclusions": [
-      "If C is defined entrywise by C(i,j) = sum_{k in Fin n} A(i,k) * B(k,j), then N_n(C) <= N_n(A) * N_n(B)."
+      "sqrt(sum_{i in Fin m} sum_{j in Fin p} (sum_{k in Fin n} A i k * B k j)^2) <= sqrt(sum_{i in Fin m} sum_{k in Fin n} (A i k)^2) * sqrt(sum_{k in Fin n} sum_{j in Fin p} (B k j)^2)."
     ],
     "mathematical_definitions": [
-      "Let I_n = Fin n, the n-element index set.",
-      "Let M_n(R) be the set of functions I_n -> I_n -> R.",
-      "For A,B in M_n(R), define their product C by C(i,j) = sum_{k in I_n} A(i,k)B(k,j).",
-      "Define N_n(A) to be the norm of A selected by the Norm component of Matrix.frobeniusNormedRing."
+      "For any real matrix X with row index type Fin r and column index type Fin s, define N(X) = sqrt(sum_{i in Fin r} sum_{j in Fin s} (X i j)^2).",
+      "Define the m-by-p product matrix AB by (AB) i j = sum_{k in Fin n} A i k * B k j.",
+      "With these definitions, the asserted inequality is N(AB) <= N(A) * N(B), with exact multiplicative constant 1."
     ],
-    "proposition_plain_english": "For every natural number n and every pair of real n-by-n matrices A and B, the selected matrix norm of their ordinary matrix product is at most the product of their selected matrix norms. The multiplicative bound has exact constant 1 and has no assumptions on A or B."
+    "proposition_plain_english": "For every choice of natural-number dimensions m, n, and p and every pair of compatible real matrices A of size m-by-n and B of size n-by-p, the square root of the sum of the squares of all entries of their matrix product is at most the product of the corresponding square-root-of-sum-of-squares quantities for A and B."
   },
   "restrictions_and_vacuity_risks": [
-    "The statement concerns only finite square matrices over the real numbers; it does not directly quantify over rectangular or complex matrices.",
-    "The dimension n is not required to be positive. For n = 0 there is a unique empty matrix, every product-entry sum is empty, and the case is degenerate rather than logically vacuous.",
-    "There are no premises, so the proposition cannot hold merely through inconsistent or unsatisfied assumptions.",
-    "The product is defined using exact finite sums and exact real arithmetic; no floating-point computation, rounding model, or approximation error is encoded.",
-    "The conclusion contains one non-strict inequality and no conjunction, existential witness, equality characterization, optimality claim, or reverse bound.",
-    "No invertibility, symmetry, positivity, rank, or nonzero condition is imposed on either matrix."
+    "There are no hypotheses on the entries, rank, invertibility, or signs of A and B.",
+    "The dimensions are not required to be positive. If any of m, n, or p is zero, the relevant Fin types and sums can be empty; in every such case both sides reduce to zero, so the inequality is the degenerate statement 0 <= 0 rather than a logically vacuous implication.",
+    "The proposition is restricted to finite matrices with real entries and to the explicitly defined entrywise square-root-of-sum-of-squares quantity.",
+    "The proposition asserts only the inequality with constant 1. It does not encode equality conditions, strictness conditions, optimality, an operator norm, or a generalization to other scalar types.",
+    "Although Real.sqrt is defined for all real inputs using nonnegative truncation, every radicand in this proposition is a finite sum of squares and hence nonnegative."
   ],
-  "ambiguities": [
-    "The supplied body of Matrix.frobeniusNormedRing delegates its norm to Matrix.frobeniusSeminormedAddCommGroup, whose definition is absent. Consequently, the dossier alone does not justify replacing N_n(A) by a particular closed formula such as sqrt(sum_{i,j} A(i,j)^2), nor does it expose any possible normalization. Retaining N_n as the exact instance-selected norm is therefore the fully supported translation."
-  ]
+  "ambiguities": []
 }

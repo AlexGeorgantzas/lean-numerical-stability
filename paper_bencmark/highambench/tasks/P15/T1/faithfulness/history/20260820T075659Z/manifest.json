@@ -2,7 +2,7 @@
   "audit_setup": [
     {
       "path": "paper_bencmark/faithfulness_audit/METHODOLOGY.md",
-      "sha256": "d9088bbf94db5b174ad4b2b109eab388bee0078cb35134c59a1bd7fe98d21cf8"
+      "sha256": "51e5d98ad450344d5eddb29600161236cc1bbfe61df0cf9f76c3ac63e0dbe4f8"
     },
     {
       "path": "paper_bencmark/faithfulness_audit/scripts/common.py",
@@ -121,11 +121,11 @@
     "module_count": 5159,
     "sorted_module_names_sha256": "26d6d4fd61055874499f23037f6cea95ef07620e24cecc001a471b8440885fbe"
   },
-  "completed_at_utc": "2026-08-20T08:21:37.698933+00:00",
+  "completed_at_utc": "2026-08-13T17:59:00.070347+00:00",
   "context": {
     "path": "paper_bencmark/highambench/tasks/P15/T1/context.md",
     "semantic_evidence": false,
-    "sha256": "cac3a3fab6dd723d9df0087c8de18e4fd985584248e5c443b61781f5bc779cee"
+    "sha256": "872ecff13962d1d3a1641918215415bf59fdb6727f4f99b5e5e0c6713eceecee"
   },
   "dependencies": [
     {
@@ -133,30 +133,30 @@
       "distance": 1,
       "id": "D001",
       "kind": "abbrev",
-      "name": "HighamBench.P15RectMatrix",
+      "name": "HighamBench.P15Matrix",
       "owner_module": "HighamBench.P15Definitions",
       "role": "local",
-      "semantic_sha256": "8feb40d08c5292d10bb340b09678c4d176088c4c97bb1880d9f95a2c76fde9a2"
+      "semantic_sha256": "869888198c7e16028812ecb8af419ae2eacf78a03074fe8308f98d5758ed7656"
     },
     {
       "blind_name": "LocalDef002",
       "distance": 1,
       "id": "D002",
       "kind": "def",
-      "name": "HighamBench.p15RectFrobNorm",
+      "name": "HighamBench.p15FrobNorm",
       "owner_module": "HighamBench.P15Definitions",
       "role": "local",
-      "semantic_sha256": "f8df59150997c9c35d296b01efb6efe480f420d12b4d3873085fbf5fff732e33"
+      "semantic_sha256": "ba1b58b4e7fdbcda54fe1a9ee4d2ebd9f8d43b80907403bf6ea885fff386083f"
     },
     {
       "blind_name": "LocalDef003",
       "distance": 1,
       "id": "D003",
       "kind": "def",
-      "name": "HighamBench.p15RectMatMul",
+      "name": "HighamBench.p15MatMul",
       "owner_module": "HighamBench.P15Definitions",
       "role": "local",
-      "semantic_sha256": "f6707f2e526a146358f007d2349847963679a3556d53c05f30fd242f90c18238"
+      "semantic_sha256": "82a32c03123a1b58cce8a2734d2ddfed6b499db78b5c4e68d56caf8636e3bb0e"
     },
     {
       "blind_name": "HMul.hMul",
@@ -269,19 +269,9 @@
       "semantic_sha256": "194413a784fbc0b27d0cb6b1ab67ed060210172bf16ba24045aa439e58f9a8c7"
     },
     {
-      "blind_name": "HPow.hPow",
-      "distance": 2,
-      "id": "D015",
-      "kind": "abbrev",
-      "name": "HPow.hPow",
-      "owner_module": "Init.Prelude",
-      "role": "external-frontier",
-      "semantic_sha256": "6196b8cbb884c4f39841ba74b23d75f3c753fe0d044cc402bd6e4e3bd59d5cb8"
-    },
-    {
       "blind_name": "Matrix",
       "distance": 2,
-      "id": "D016",
+      "id": "D015",
       "kind": "def",
       "name": "Matrix",
       "owner_module": "Mathlib.LinearAlgebra.Matrix.Defs",
@@ -289,24 +279,34 @@
       "semantic_sha256": "e552ffc8c85b917dca38e5965ad91773fdb989246623a528d91526b75d68c2f1"
     },
     {
-      "blind_name": "Monoid.toNatPow",
+      "blind_name": "Matrix.frobeniusNormedRing",
       "distance": 2,
-      "id": "D017",
+      "id": "D016",
       "kind": "def",
-      "name": "Monoid.toNatPow",
-      "owner_module": "Mathlib.Algebra.Group.Defs",
+      "name": "Matrix.frobeniusNormedRing",
+      "owner_module": "Mathlib.Analysis.Matrix.Normed",
       "role": "external-frontier",
-      "semantic_sha256": "5b7373fe2de26535c1cdbf1b953ce34faf30f68aac8abd83ade2e78e6ec65b8a"
+      "semantic_sha256": "883d6b4ab1d783b7d3150d110714b2fc1951827b2bacd53b49e46c8b1e7d00a4"
     },
     {
-      "blind_name": "OfNat.ofNat",
+      "blind_name": "Norm.norm",
+      "distance": 2,
+      "id": "D017",
+      "kind": "abbrev",
+      "name": "Norm.norm",
+      "owner_module": "Mathlib.Analysis.Normed.Group.Defs",
+      "role": "external-frontier",
+      "semantic_sha256": "25f5aa97df9bb1faeacd7e5e6446ecbd367452a7105f098063355423713fe15a"
+    },
+    {
+      "blind_name": "NormedRing.toNorm",
       "distance": 2,
       "id": "D018",
       "kind": "abbrev",
-      "name": "OfNat.ofNat",
-      "owner_module": "Init.Prelude",
+      "name": "NormedRing.toNorm",
+      "owner_module": "Mathlib.Analysis.Normed.Ring.Basic",
       "role": "external-frontier",
-      "semantic_sha256": "6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead"
+      "semantic_sha256": "0957abfc66401a60ac36872f31eb54890d14b0b45613e38ba8f235c467f63751"
     },
     {
       "blind_name": "Real.instAddCommMonoid",
@@ -319,226 +319,181 @@
       "semantic_sha256": "11a549e6c9caa007a4627570dd86aea756ada755f141da0356b8766788f2eef7"
     },
     {
-      "blind_name": "Real.instMonoid",
+      "blind_name": "Real.instRCLike",
       "distance": 2,
       "id": "D020",
       "kind": "def",
-      "name": "Real.instMonoid",
-      "owner_module": "Mathlib.Data.Real.Basic",
+      "name": "Real.instRCLike",
+      "owner_module": "Mathlib.Analysis.RCLike.Basic",
       "role": "external-frontier",
-      "semantic_sha256": "37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8"
+      "semantic_sha256": "d2fdb97b9d861fcf61e6dbea9993dfa0ca6aa16609742f215c35b3f7ddd16b8e"
     },
     {
-      "blind_name": "Real.sqrt",
+      "blind_name": "instDecidableEqFin",
       "distance": 2,
       "id": "D021",
       "kind": "def",
-      "name": "Real.sqrt",
-      "owner_module": "Mathlib.Data.Real.Sqrt",
-      "role": "external-frontier",
-      "semantic_sha256": "67f9248ae1acb851b5392be301057ebb8b8ef2fb20f76d2d53a2d07ec8f30553"
-    },
-    {
-      "blind_name": "instHPow",
-      "distance": 2,
-      "id": "D022",
-      "kind": "def",
-      "name": "instHPow",
+      "name": "instDecidableEqFin",
       "owner_module": "Init.Prelude",
       "role": "external-frontier",
-      "semantic_sha256": "eb300d353d84392c776cad5e356479f878030744a43f9a1584942a89d16350b4"
-    },
-    {
-      "blind_name": "instOfNatNat",
-      "distance": 2,
-      "id": "D023",
-      "kind": "def",
-      "name": "instOfNatNat",
-      "owner_module": "Init.Prelude",
-      "role": "external-frontier",
-      "semantic_sha256": "7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92"
+      "semantic_sha256": "7f6d785554f797d18d5ae0b7475c25e8deca421e6ee688f036987ac99c66e1cd"
     }
   ],
   "dependency_edges": [
     {
       "child": "Fin",
       "origin": "body",
-      "parent": "HighamBench.P15RectMatrix"
+      "parent": "HighamBench.P15Matrix"
     },
     {
       "child": "Matrix",
       "origin": "body",
-      "parent": "HighamBench.P15RectMatrix"
+      "parent": "HighamBench.P15Matrix"
     },
     {
       "child": "Nat",
       "origin": "body",
-      "parent": "HighamBench.P15RectMatrix"
+      "parent": "HighamBench.P15Matrix"
     },
     {
       "child": "Nat",
       "origin": "type",
-      "parent": "HighamBench.P15RectMatrix"
+      "parent": "HighamBench.P15Matrix"
     },
     {
       "child": "Real",
       "origin": "body",
-      "parent": "HighamBench.P15RectMatrix"
+      "parent": "HighamBench.P15Matrix"
     },
     {
       "child": "Fin",
       "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
+      "parent": "HighamBench.p15FrobNorm"
     },
     {
       "child": "Fin.fintype",
       "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
+      "parent": "HighamBench.p15FrobNorm"
     },
     {
-      "child": "Finset.sum",
+      "child": "HighamBench.P15Matrix",
       "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
+      "parent": "HighamBench.p15FrobNorm"
     },
     {
-      "child": "Finset.univ",
-      "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
-    },
-    {
-      "child": "HPow.hPow",
-      "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
-    },
-    {
-      "child": "HighamBench.P15RectMatrix",
-      "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
-    },
-    {
-      "child": "HighamBench.P15RectMatrix",
+      "child": "HighamBench.P15Matrix",
       "origin": "type",
-      "parent": "HighamBench.p15RectFrobNorm"
+      "parent": "HighamBench.p15FrobNorm"
     },
     {
-      "child": "Monoid.toNatPow",
+      "child": "Matrix.frobeniusNormedRing",
       "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
+      "parent": "HighamBench.p15FrobNorm"
     },
     {
       "child": "Nat",
       "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
+      "parent": "HighamBench.p15FrobNorm"
     },
     {
       "child": "Nat",
       "origin": "type",
-      "parent": "HighamBench.p15RectFrobNorm"
+      "parent": "HighamBench.p15FrobNorm"
     },
     {
-      "child": "OfNat.ofNat",
+      "child": "Norm.norm",
       "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
+      "parent": "HighamBench.p15FrobNorm"
+    },
+    {
+      "child": "NormedRing.toNorm",
+      "origin": "body",
+      "parent": "HighamBench.p15FrobNorm"
     },
     {
       "child": "Real",
       "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
+      "parent": "HighamBench.p15FrobNorm"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.p15RectFrobNorm"
+      "parent": "HighamBench.p15FrobNorm"
     },
     {
-      "child": "Real.instAddCommMonoid",
+      "child": "Real.instRCLike",
       "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
+      "parent": "HighamBench.p15FrobNorm"
     },
     {
-      "child": "Real.instMonoid",
+      "child": "instDecidableEqFin",
       "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
-    },
-    {
-      "child": "Real.sqrt",
-      "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
-    },
-    {
-      "child": "instHPow",
-      "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
-    },
-    {
-      "child": "instOfNatNat",
-      "origin": "body",
-      "parent": "HighamBench.p15RectFrobNorm"
+      "parent": "HighamBench.p15FrobNorm"
     },
     {
       "child": "Fin",
       "origin": "body",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
       "child": "Fin.fintype",
       "origin": "body",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
       "child": "Finset.sum",
       "origin": "body",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
       "child": "Finset.univ",
       "origin": "body",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
       "child": "HMul.hMul",
       "origin": "body",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
-      "child": "HighamBench.P15RectMatrix",
+      "child": "HighamBench.P15Matrix",
       "origin": "body",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
-      "child": "HighamBench.P15RectMatrix",
+      "child": "HighamBench.P15Matrix",
       "origin": "type",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
       "child": "Nat",
       "origin": "body",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
       "child": "Nat",
       "origin": "type",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
       "child": "Real",
       "origin": "body",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
       "child": "Real.instAddCommMonoid",
       "origin": "body",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
       "child": "Real.instMul",
       "origin": "body",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
       "child": "instHMul",
       "origin": "body",
-      "parent": "HighamBench.p15RectMatMul"
+      "parent": "HighamBench.p15MatMul"
     },
     {
       "child": "HMul.hMul",
@@ -546,17 +501,17 @@
       "parent": "HighamBench.p15_t1_frobenius_submultiplicative"
     },
     {
-      "child": "HighamBench.P15RectMatrix",
+      "child": "HighamBench.P15Matrix",
       "origin": "type",
       "parent": "HighamBench.p15_t1_frobenius_submultiplicative"
     },
     {
-      "child": "HighamBench.p15RectFrobNorm",
+      "child": "HighamBench.p15FrobNorm",
       "origin": "type",
       "parent": "HighamBench.p15_t1_frobenius_submultiplicative"
     },
     {
-      "child": "HighamBench.p15RectMatMul",
+      "child": "HighamBench.p15MatMul",
       "origin": "type",
       "parent": "HighamBench.p15_t1_frobenius_submultiplicative"
     },
@@ -600,27 +555,31 @@
   "inputs": {
     "blind_dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/inputs/blind_dependency_inventory.json",
-      "sha256": "fb1523d50905aa5b69d1b4585938acb947d97fcd3cc116826776fc9a5a3c5bc1"
+      "sha256": "a2b1986507bb7cfac31736acf32ba28db4f350f409a36919c6bc45b81c972607"
     },
     "blind_dossier": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/inputs/blind_dossier.md",
-      "sha256": "868b6df91a461b76e93d798ba09f176a9abda8163f9060383c969f579d011ef2"
+      "sha256": "7ed6f37aa855cf5f82eb60ca42bce6feeac7d8cae170a77812c2eb639eb331b1"
     },
     "blind_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/inputs/blind_review_packet.md",
-      "sha256": "868b6df91a461b76e93d798ba09f176a9abda8163f9060383c969f579d011ef2"
+      "sha256": "7ed6f37aa855cf5f82eb60ca42bce6feeac7d8cae170a77812c2eb639eb331b1"
     },
     "declaration_dossier": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/inputs/declaration_dossier.md",
-      "sha256": "8c1076096f94f269cca702fd6efdf8a21316215b87e4aab89210bf3c9c964817"
+      "sha256": "7f78fc172e62b17e1628ee07ac9a280e0be4111e0eb00b4b9658f5c59ae7fe23"
     },
     "dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/inputs/dependency_inventory.json",
-      "sha256": "c00380ee615dc604146a023bc061e45d65dc27c1621ed3332c498e970391eef6"
+      "sha256": "28723b57200c4d698e93a7fb6bf5e6d8d4b28ca5cde6a3df00adc93998d7d728"
     },
     "direct_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/inputs/direct_review_packet.md",
-      "sha256": "d7eff3f141b529a2f19900409bd45d002fbc7855c7cee69c9870670ed127524e"
+      "sha256": "921be4ffc36d2a9b31af09751441156dc57ba43843c2107cc3d0dc74924b1718"
+    },
+    "paper_source_locator": {
+      "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/inputs/paper_source_locator.json",
+      "sha256": "568b244880bf84912b78ba1130fd66ae2d43016e0a25f06e4510e3d731ee5223"
     },
     "source_locator": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/inputs/source_locator.json",
@@ -656,33 +615,41 @@
       ],
       "module": "HighamBench.P15Definitions",
       "path": "paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean",
-      "sha256": "b6e99e9b2e55582ab283590cdab7dce218b8db759e425a343925af9c06f3f857"
+      "sha256": "831dce905ad8a08bb52f5b55ebad349c09ac26a06168d6ca22eb022d2cf91792"
     }
   ],
   "outputs": {
+    "adjudicator": {
+      "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/agent_outputs/adjudicator.json",
+      "sha256": "df166e54946fb567c143372583da4de8a037a233d2c9b90df3432443038c622e"
+    },
     "blind_translation": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/agent_outputs/blind_translation.json",
-      "sha256": "a5434247748f7304ceb9534a6dc1721ada16ba88e04e3b780a1b24da1e6aa6a4"
+      "sha256": "0b458727bad7eaaf02d8e49ffa42e8dd292aa46e580147536d91ef8e62825f2c"
     },
     "decision": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/decision.json",
-      "sha256": "b478a8fb1b80d4cbc605eaa17d508f6c321da0a985b16f6cec654992bf6c510b"
+      "sha256": "5db63560734a5dcafc1b4067cf8aa3db9e55fa2e55bf322588070d371ac2efb9"
     },
     "direct_judge": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/agent_outputs/direct_judge.json",
-      "sha256": "cf8f5fed7d67da97d9caf2df747f5fa25a2d969d5f8a54099e9e5e1fca2daf7f"
+      "sha256": "440655a6056b010238c94f4a0775955ee84714c0df9877ac5ad610eb2cfd4147"
+    },
+    "paper_source_contract": {
+      "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/agent_outputs/paper_source_contract.json",
+      "sha256": "339fc5a797919c9e9bcd9c7d27d579722d8bfedc8091d16c4ab89148a1eb498f"
     },
     "report": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/report.md",
-      "sha256": "e6f17c5f3f1211acdcff23cf8c281494f5b7be054e068d6b3331a1c7655bb739"
+      "sha256": "4453c7f78d428d13dd4696605e647aed8698ce9503890058edc23da365de0879"
     },
     "roundtrip_judge": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/agent_outputs/roundtrip_judge.json",
-      "sha256": "cc0cd9f75df87651433bcf42b98f1af918fed6810cfb9fd6663ee5c93a61665a"
+      "sha256": "0927ac71b3261a533e16682267056e60415477b323fba6604f461812eab87c28"
     },
     "source_contract": {
       "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/agent_outputs/source_contract.json",
-      "sha256": "ba02cacf583bb1d8290c6008e4a9d76c3baa13b171c5c89c489f9b0fceee6e37"
+      "sha256": "1c57848287524d26826de55c88776b38bceadc4a7fefc66b5e6c5dfb329908f2"
     }
   },
   "paper": {
@@ -698,7 +665,19 @@
       }
     ]
   },
-  "prepared_at_utc": "2026-08-20T07:56:59.991883+00:00",
+  "paper_batch": {
+    "paper_id": "P15",
+    "source_locator": {
+      "path": "paper_bencmark/highambench/tasks/P15/T1/faithfulness/inputs/paper_source_locator.json",
+      "sha256": "568b244880bf84912b78ba1130fd66ae2d43016e0a25f06e4510e3d731ee5223"
+    },
+    "task_ids": [
+      "P15-T1",
+      "P15-T2",
+      "P15-T3"
+    ]
+  },
+  "prepared_at_utc": "2026-08-13T17:24:09.532771+00:00",
   "schema_version": "highambench-faithfulness-0.2",
   "semantic_checks": [
     {
@@ -786,12 +765,12 @@
   "target": {
     "declaration": "HighamBench.p15_t1_frobenius_submultiplicative",
     "path": "paper_bencmark/highambench/tasks/P15/T1/Target.lean",
-    "sha256": "cd09d32b3060a89a0f9071e7d1db40086544808e7ba79c750b5c2803938399ce"
+    "sha256": "317350b3e17134b5663fd4b741ed6029642a3d73e3073e13c08bbe97dd1664b9"
   },
   "task_id": "P15-T1",
   "task_metadata": {
     "path": "paper_bencmark/highambench/tasks/P15/T1/task.json",
     "semantic_evidence": false,
-    "sha256": "86d655cb8871f3995b8da9fd825869d0562b520f7a8d0e43e384a2f7bc995514"
+    "sha256": "6e8a76328c7e8635b1657782dbc50f62c5270dd896d0a9852c8ba8e839009eb9"
   }
 }
