@@ -2,52 +2,49 @@
   "accepted": false,
   "adjudicated": true,
   "adjudication_reasons": [
-    "direct judge requested adjudication",
-    "round-trip judge requested adjudication",
-    "direct S07 is unclear",
-    "round-trip S12 is unclear"
+    "round-trip judge requested adjudication"
   ],
   "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T17:59:00.518137+00:00",
+  "completed_at_utc": "2026-08-20T12:39:03.411473+00:00",
   "findings": [
     {
-      "category": "algorithm-linkage-and-witness-production",
-      "evidence": "Theorem 4.5 applies to factors computed by Algorithm 1 or 2 and invokes Theorems 4.2-4.4 to obtain factorization and triangular-solve perturbations. Lean assumes every primitive perturbation equation and bound.",
-      "impact": "The source theorem about a computed BLR solve is replaced by a generic perturbation-composition lemma.",
+      "category": "execution-linkage-and-quantification",
+      "evidence": "Theorems 4.2-4.5 concern factors and solutions computed by Algorithms 1 or 2, with run-to-completion inherited. D027 instead assumes all factor and solve perturbation equations and bounds, while its algorithm tag has no semantic effect.",
+      "impact": "The target is an algebraic composition theorem over prepopulated certificates, not the paper's computation-to-backward-error guarantee.",
       "severity": "critical"
     },
     {
-      "category": "parameterization-and-floating-point-model",
-      "evidence": "The PDF defines gamma_k from u, c = b + 2r^(3/2) + p, and four xi_p cases. Lean has independent real variables gammaP, gammaC, and xi and no p, b, r, c, u, threshold case, or recompression case.",
-      "impact": "The declaration cannot establish the paper's dimension-, rank-, threshold-, or precision-dependent bounds.",
+      "category": "original-versus-BLR-matrix",
+      "evidence": "Section 2.1 distinguishes dense A and BLR representation A_tilde; Theorem 4.5 introduces A_tilde but concludes with A. Lean has only run.A for all these roles.",
+      "impact": "No single source-to-Lean binder mapping preserves the solved matrix, perturbed matrix, BLR structure, and norm scale without silently resolving the paper's notation gap.",
       "severity": "major"
     },
     {
-      "category": "higher-order-semantics",
-      "evidence": "The paper retains O(u*epsilon) and O(u^2). Lean uses an unconstrained factorRemainder and an explicit rational coefficient with no relation to u.",
-      "impact": "The asymptotic remainder claims are not formalized, despite preservation of the exact product terms.",
+      "category": "rank-semantics",
+      "evidence": "The paper fixes r as the maximum rank of factor off-diagonal blocks. D043 is only an upper-bound predicate, and D027 imposes it on A, L, and U.",
+      "impact": "The target changes applicability and may weaken constants through an overestimated r, preventing either implication under the stated correspondence.",
       "severity": "major"
     },
     {
-      "category": "source-notation-ambiguity",
-      "evidence": "Theorem 4.5 introduces A_tilde but its conclusion and proof use A without an explicit relation.",
-      "impact": "Lean's single A cannot be confirmed as the intended normalization, although independent defects already determine rejection.",
-      "severity": "minor"
+      "category": "higher-order-terms",
+      "evidence": "Equations (4.24)-(4.25) retain O(u*epsilon) and O(u^2). Lean uses a nonuniform run-local K for the matrix term and adds an explicit 16*c^2 coefficient for the right-hand-side term.",
+      "impact": "The matrix asymptotic guarantee is weakened while the right-hand-side conclusion is strengthened on a different domain, making the overall relation neither uniformly stronger nor uniformly weaker.",
+      "severity": "major"
     },
     {
-      "category": "faithful-algebraic-core",
-      "evidence": "The composed matrix and right-hand-side errors exactly reproduce the four and three terms on PDF page 25, and the matrix and vector norms are Frobenius and Euclidean respectively.",
-      "impact": "The declaration faithfully formalizes the exact composition step, but not the complete theorem.",
+      "category": "resolved-constructor-mapping-and-preserved-core",
+      "evidence": "The direct declarations map UFC/UCF, local/global, and with/without tags as intended, D020 matches all four Table 1 values, and D021-D022 match both exact perturbation products.",
+      "impact": "The blind constructor ambiguity is resolved and the central algebra is recognizable, but labels and correct coefficients do not supply the missing operational linkage.",
       "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Lean declaration proves composition only after arbitrary primitive factorization and solve perturbations and their bounds are supplied. It does not establish that either BLR algorithm produces those data, nor does it encode n = pb, BLR ranks, c, gamma definitions, xi_p cases, or the big-O contracts required by Theorem 4.5. Its locally sharper exact coefficients therefore cannot recover the paper theorem by themselves.",
+      "reasoning": "The Lean theorem applies only after an abstract record containing all component perturbation contracts has been supplied. It neither represents nor constructs such a record from every successful UFC/UCF computation. Its single A cannot simultaneously preserve the source's A_tilde and A roles, its common rank bound may exclude paper executions, and its run-local K does not express O(u*epsilon). Consequently it does not imply the paper's algorithm-linked asymptotic theorem.",
       "verdict": "no"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper asserts a result for outputs of Algorithms 1 and 2 under their BLR, nonsingularity, completion, truncation, and floating-point assumptions. It does not assert the Lean theorem's universal implication for arbitrary matrices and independently supplied errors or its exact bounds over unconstrained gammaP, gammaC, xi, and factorRemainder.",
+      "reasoning": "The paper theorem concerns actual computed executions and existential aggregate perturbations. It does not assert the target for every synthetic record satisfying assumed postconditions, does not require the input matrix and both factors to share one rank-at-most-r parameter, and does not state the target's F, H, and 16*c^2*u^2 conjuncts. Therefore it does not imply the complete Lean proposition under the supplied binder correspondence.",
       "verdict": "no"
     }
   },
@@ -55,10 +52,10 @@
     "direct": "not-faithful-different",
     "roundtrip": "not-faithful-different"
   },
-  "rationale": "Primary inspection of the hash-verified PDF confirms a faithful exact perturbation-composition core and correct norm semantics. It also confirms that Theorem 4.5 is an algorithm-specific BLR result whose component perturbations, constants, and floating-point meanings are derived from preceding results, whereas Lean assumes those component facts for arbitrary exact real data and leaves the controlling parameters unrelated. Natural parameter identifications reveal genuine local sharpness in part of the Lean algebra, but that is not whole-theorem strength and cannot compensate for the missing algorithmic guarantee and asymptotic contracts. Neither statement implies the other as stated, so the declaration is not-faithful-different.",
+  "rationale": "Primary PDF evidence and the complete declaration bodies establish a mixed result: dimensions, norms, c, gamma_(3c), all four xi_p values, the simultaneous backward equation, and both exact perturbation compositions are preserved. The nominal constructor mappings are also unambiguous once the direct dossier is considered. However, those constructors do not constrain an execution; all computed objects and component perturbation guarantees are assumed inside the run record. The target additionally collapses the unresolved A_tilde/A distinction, changes r from the actual factor rank to a shared upper bound, and translates the two big-O terms in incompatible ways. The explicit right-hand-side bound is a genuine nonvacuous strengthening only on this altered record domain, while the matrix K term loses uniform asymptotic content. These independent mismatches establish no implication in either direction, so the final classification is not-faithful-different.",
   "remaining_uncertainties": [
-    "The PDF does not state whether the A_tilde in Theorem 4.5's opening is a typographical error, a BLR representation of A, or a distinct intended matrix; equations (4.23)-(4.25) and the proof silently use A.",
-    "The hidden constants in O(u*epsilon) and O(u^2), and the absence of any Lean asymptotic contract for factorRemainder, prevent an exact ordering of the isolated final numerical bounds. This does not affect the two overall implication verdicts."
+    "The PDF does not locally resolve whether A_tilde in Theorem 4.5's opening is intentional inherited notation or a typographical inconsistency. Section 2.1 strongly supports a distinct BLR-representation relationship, but no local equality connecting A_tilde and A is stated.",
+    "The PDF supplies no explicit uniform constants or quantified asymptotic range for O(u*epsilon) or O(u^2), so the authors' intended hidden constants cannot be identified with the Lean coefficients from primary source evidence."
   ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
