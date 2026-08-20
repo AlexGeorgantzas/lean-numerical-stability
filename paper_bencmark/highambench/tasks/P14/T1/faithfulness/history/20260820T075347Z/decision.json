@@ -1,0 +1,91 @@
+{
+  "accepted": false,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-13T17:21:44.069486+00:00",
+  "findings": [
+    {
+      "category": "missing-computation-stage",
+      "impact": "The theorem proves only an intermediate recursive-summation lemma and cannot establish the selected paper result.",
+      "lean_evidence": "The target has no x, exp, computed exponential values, or exponential-error assumptions.",
+      "paper_evidence": "Equations (3.1)-(3.3) combine exponential-evaluation error with recursive-addition error to bound final hat(s) relative to exact s.",
+      "severity": "critical"
+    },
+    {
+      "category": "different-bound",
+      "impact": "The constants, normalization, hypotheses, and higher-order semantics differ, so neither proposition implies the other as stated.",
+      "lean_evidence": "The target uses an exact relative bound gamma u (n-1) = (n-1)u/(1-(n-1)u).",
+      "paper_evidence": "Equation (3.3) uses |Delta s| <= (n+1)u*s + O(u^2), after indexed first-order bounds.",
+      "severity": "major"
+    },
+    {
+      "category": "quantity-conflation",
+      "impact": "The formal statement cannot express the decomposition on which the paper's total error analysis depends.",
+      "lean_evidence": "Lean has only one supplied sequence w, its exact sum, and recursiveSum w.",
+      "paper_evidence": "The paper separately defines exact s, exact tilde(s) formed from computed exponentials, and recursively computed hat(s).",
+      "severity": "major"
+    },
+    {
+      "category": "source-typography",
+      "impact": "The source typo is real but does not create uncertainty in this judgment because equation (3.3) and the preceding derivation are clear, and the Lean target matches neither aggregate formulation.",
+      "lean_evidence": "Lean uses gamma rather than either the literal or intended equation (3.2) expression.",
+      "paper_evidence": "The literal last line of equation (3.2) omits u before the weighted sum, while the preceding line contains u and equation (3.3) restores the first-order u dependence.",
+      "severity": "note"
+    },
+    {
+      "category": "algorithm-and-quantity-scope",
+      "impact": "The translated proposition is not the paper's two-stage error result.",
+      "paper_evidence": "Equations (3.1)-(3.3) analyze both computed exponentials and their recursive accumulation, with s, tilde(s), and hat(s) kept distinct.",
+      "severity": "critical",
+      "translation_evidence": "The translation models only recursive addition of arbitrary exact entries and has no exponential stage or intermediate tilde(s)."
+    },
+    {
+      "category": "conclusion-constants-and-error-form",
+      "impact": "The constant, normalization, finite-u form, and represented error sources all differ.",
+      "paper_evidence": "The aggregate result is |Delta s|<=(n+1)us+O(u^2), supported by indexed first-order bounds.",
+      "severity": "major",
+      "translation_evidence": "The conclusion is an exact relative bound gamma_{n-1}=((n-1)u)/(1-(n-1)u)."
+    },
+    {
+      "category": "hypotheses-and-numerical-model",
+      "impact": "The theorem applies under a materially different contract.",
+      "paper_evidence": "The paper assumes accurate exponential evaluation, standard floating-point additions, sequential execution, and no overflow or underflow.",
+      "severity": "major",
+      "translation_evidence": "The translation assumes a global abstract addition operation, exact left-zero behavior, nonzero sum, and (n-1)u<1, but does not model exp or exceptional values."
+    },
+    {
+      "category": "higher-order-treatment",
+      "impact": "The paper's asymptotic and textual meaning is replaced rather than translated.",
+      "paper_evidence": "The source retains O(u^2), and equation (3.2) contains a documented missing factor u in its printed final line.",
+      "severity": "major",
+      "translation_evidence": "The exact gamma expression contains no O(u^2) remainder and does not disclose or represent the printed discrepancy."
+    },
+    {
+      "category": "dimension-and-vacuity",
+      "impact": "Boundary dimensions do not preserve the paper computation's behavior.",
+      "paper_evidence": "The algorithm is presented for x in R^n and retains exponential error when n=1.",
+      "severity": "minor",
+      "translation_evidence": "Natural dimensions include a vacuous n=0 branch and a definitionally exact n=1 branch."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean conclusion controls only recursive addition of supplied nonnegative values. It provides no bound on exponential-evaluation error and therefore cannot derive the paper's relation between exact s and final hat(s), its (n+1)u coefficient, or its O(u^2) remainder.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The cited paper result is stated for exponential-generated quantities under no overflow or underflow and gives first-order bounds with O(u^2). It does not state the exact gamma u (n-1) inequality for every arbitrary nonnegative sequence and every StandardAddModel satisfying GammaValid.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "The PDF hash was verified and the cited passage was checked with its surrounding Algorithm 3.1, equations (1.7), (3.1)-(3.3), and Section 3 assumptions. The Lean theorem is a coherent, nonvacuous exact gamma bound for left-to-right summation of arbitrary nonnegative real inputs under an abstract addition model. That is only the recursive-addition component of P14-T1. The paper result also models computed exponentials, distinguishes s, tilde(s), and hat(s), combines both error sources, and retains an O(u^2) remainder with aggregate coefficient n+1. Because the Lean theorem omits those obligations while asserting a different exact bound over a different domain, both implication directions fail and the result is not faithful-different.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P14-T1"
+}

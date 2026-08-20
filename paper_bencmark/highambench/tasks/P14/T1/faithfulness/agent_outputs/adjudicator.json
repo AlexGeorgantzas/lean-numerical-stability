@@ -1,0 +1,75 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P14-T1",
+  "trigger": [
+    "judge classifications differ",
+    "direct judge requested adjudication",
+    "direct S14 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "judge classifications differ",
+      "resolution": "P14-T1 is scoped to the aggregate positive-sum claim in equation (3.3), with equations (3.1)-(3.2) and the recursive bounds serving as model and derivation evidence. It is not scoped to reproducing every intermediate displayed inequality as a separate conclusion. On that scope, the Lean statement entails the paper claim and adds nonvacuous exact finite and asymptotic information, so the classification is faithful-stronger.",
+      "primary_evidence": "Printed page 2318 separately concludes hat(s)=s+Delta s and |Delta s|<=(n+1)u*s+O(u^2) as equation (3.3). In the declaration, D003 defines exactly this Delta s, D004 describes its envelope as having the paper's loose (n+1)u*s first-order term, D005 supplies its explicit remainder, and the target concludes both the aggregate bound and hat(s)=s+Delta s. The page-2317 formulas are presented as the analysis leading to this aggregate conclusion."
+    },
+    {
+      "item": "direct judge requested adjudication",
+      "resolution": "The direct judge is correct that the target's gamma(u,n-1) times the unweighted absolute sum does not by itself imply the sharper position-weighted page-2317 bound: its first-order coefficient is n-1 on every term. That local observation does not defeat implication to the scoped equation (3.3). D014 and D019 preserve the same left-to-right relative-error addition model, while D004-D005 directly provide equation (3.3) with a particular O(u^2) witness. Conversely, the paper does not state the target's exact gamma inequality, finite envelope, or particular remainder.",
+      "primary_evidence": "Printed page 2317 gives u*sum|t_i|+O(u^2), followed by coefficients n-1 for the first two computed terms and n+1-i for later terms. D002 instead defines gamma_k(u)=k*u/(1-k*u), and the target uses gamma_{n-1}(u) times the unweighted sum. D004-D005 give B=(u+gamma_n(u)(1+u))*s=(n+1)u*s+n(n+1)s*u^2/(1-nu), with the latter remainder O(u^2) as u tends to zero."
+    },
+    {
+      "item": "direct S14 is unclear",
+      "resolution": "The final line of printed equation (3.2) has an apparent typographical omission of the factor u. The coherent mathematical claim is the u-scaled one: both terms in the immediately preceding bound contain u, and printed equation (3.3) explicitly restores (n+1)u*s. The target is compared with the literally printed equation (3.3), not attributed to the malformed final line of (3.2), so S14 does not make the classification unclear.",
+      "primary_evidence": "On printed page 2317, the penultimate line is u*sum w_i + u*sum(n+1-i)*hat(w_i)+O(u^2), whereas the next line labeled (3.2) drops u. On printed page 2318, equation (3.3) explicitly states |Delta s|<=(n+1)u*s+O(u^2). Without u, the last line of (3.2) would not follow from its predecessor or tend to zero with the rounding error."
+    },
+    {
+      "item": "genuine and nonvacuous strengthening",
+      "resolution": "The explicit remainder is genuine added information rather than strength obtained by narrowing to an empty or exceptional domain. For fixed n and exactSum, u tending to zero eventually keeps 1-nu away from zero, so the declared rational remainder is O(u^2). Compatible run families exist, including exact addition with componentwise exponential errors equal to a positive u(t) tending to zero, which produces a nonzero total error.",
+      "primary_evidence": "D005 defines R=n(n+1)*exactSum*u^2/(1-nu), and the target asserts both its exact envelope identity and its IsBigO property. D012 and D019 permit nonnegative u, exact addition with zero local addition error, and independently bounded exponential errors. The NeBot and Tendsto hypotheses make the eventual assertions substantive."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "yes",
+      "reasoning": "Map exactSum to s, p14RecursiveComputedExpSum to hat(s), and p14BasicSumDelta to Delta s. The target gives hat(s)=s+Delta s and eventually bounds |Delta s| by an envelope equal to (n+1)u*s+R, with R=O(u^2). This directly yields the coherent and literally printed equation (3.3). The different gamma accumulation clause does not obstruct this aggregate implication."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "Equation (3.3) and its surrounding first-order analysis leave O(u^2) unspecified. They do not state the target's exact gamma_{n-1} accumulation inequality, exact rational finite envelope, particular remainder n(n+1)s*u^2/(1-nu), or arbitrary-filter formulation. Those additional conclusions therefore are not supplied by the paper statement."
+    }
+  },
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "remaining_uncertainties": [
+    "Equation (3.1) reuses an unindexed delta_1, so the PDF does not explicitly decide between one common error and separate local errors. The target's per-index bounded errors match the conventional componentwise reading and include the common-error case.",
+    "The paper gives no constant, parameter dependence, or finite-u range for its O(u^2) term. The target's explicit remainder is therefore a valid witness for equation (3.3), but it cannot be identified as the paper's uniquely intended remainder."
+  ],
+  "findings": [
+    {
+      "severity": "note",
+      "category": "task-scope",
+      "evidence": "Equation (3.3) is the final aggregate sum result, and the declaration's Delta, envelope, and remainder are explicitly organized around that result.",
+      "impact": "Intermediate page-2317 inequalities provide supporting context but are not all mandatory conclusions of P14-T1."
+    },
+    {
+      "severity": "minor",
+      "category": "intermediate-weighted-bounds",
+      "evidence": "The target's unweighted gamma_{n-1} bound is first-order looser on later terms than the paper's position-dependent accumulation bound.",
+      "impact": "The target must not be described as reproducing every intermediate bound, although this does not affect faithfulness to equation (3.3)."
+    },
+    {
+      "severity": "note",
+      "category": "printed-missing-u",
+      "evidence": "The final line of equation (3.2) omits u, while its preceding line and equation (3.3) contain the required first-order u scaling.",
+      "impact": "The omission is treated as a typographical defect; no literal-equivalence claim for that malformed line is accepted."
+    },
+    {
+      "severity": "note",
+      "category": "explicit-remainder-strength",
+      "evidence": "The declaration replaces the unspecified aggregate O(u^2) allowance with an exact finite envelope and a specific rational remainder proved to be O(u^2).",
+      "impact": "This is substantive, nonvacuous extra strength and makes the converse implication fail."
+    }
+  ],
+  "rationale": "Primary PDF evidence makes equation (3.3) an unambiguous coherent aggregate claim despite the missing-u typo in the preceding equation. The declaration preserves the unshifted exponential computation, exact/computed-sum distinction, left-to-right addition model, componentwise exponential errors, additive Delta s identity, and the (n+1)u*s first-order bound. Its gamma accumulation clause does not reproduce the sharper intermediate coefficient distribution, but those displays are derivation context rather than the scoped benchmark result. The explicit finite envelope and quadratic remainder genuinely strengthen equation (3.3) without reducing applicability or creating vacuity. Therefore Lean implies the scoped paper claim, the paper does not imply all added Lean conclusions, and the correct classification is faithful-stronger."
+}

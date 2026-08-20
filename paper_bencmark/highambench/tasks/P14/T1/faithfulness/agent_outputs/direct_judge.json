@@ -3,661 +3,853 @@
   "role": "direct-judge",
   "task_id": "P14-T1",
   "paper_sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd",
-  "dossier_sha256": "7ce3cae8d9eb21a1b6bbee129b6084f539e1cc46ff00963209359049ff00868c",
+  "dossier_sha256": "7dd332fc22dfebcb320353385d53a94aca659986ae9539aa6398d0a161dad3e5",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.GammaValid",
-      "interpretation": "GammaValid u k means that the real product k*u is strictly less than 1.",
-      "effect_on_target": "At k = n-1 it restricts the theorem to the domain where the denominator of gamma u (n-1) is positive.",
-      "paper_match": "The paper states first-order bounds with an O(u^2) remainder and does not impose this explicit gamma-validity hypothesis.",
-      "status": "fail"
-    },
-    {
-      "id": "D002",
-      "name": "HighamBench.StandardAddModel",
-      "interpretation": "This structure packages a nonnegative real unit roundoff, a real binary addition operation, exact addition from a left zero, and a relative-error witness for every pair of operands.",
-      "effect_on_target": "The target quantifies over every deterministic real addition operation satisfying this abstract model.",
-      "paper_match": "It represents the addition part of equation (1.7), but it contains no exponential-evaluation, overflow, or underflow semantics.",
+      "name": "HighamBench.P14BasicSumExecution",
+      "interpretation": "An execution packages a standard relative-error addition model whose unit roundoff equals u, together with one bounded relative exponential error for every Fin n index.",
+      "effect_on_target": "The family run supplies the computed exponentials and recursive floating-point sums at every asymptotic parameter value.",
+      "paper_match": "This represents the unshifted exponential evaluations and sequential additions used in Algorithm 3.1.",
       "status": "pass"
     },
     {
+      "id": "D002",
+      "name": "HighamBench.gamma",
+      "interpretation": "gamma u k is the exact rational coefficient k*u/(1-k*u).",
+      "effect_on_target": "It bounds accumulation by gamma(u,n-1) times the unweighted sum of absolute computed terms and also defines the finite aggregate envelope through gamma(u,n).",
+      "paper_match": "Its finite-error meaning is compatible with standard summation analysis near u=0, but gamma(u,n-1)*sum_i|hat(w_i)| has first-order coefficient n-1 on every term and does not reproduce the paper's partial-sum or position-dependent weighted bounds.",
+      "status": "fail"
+    },
+    {
       "id": "D003",
-      "name": "HighamBench.StandardAddModel.fl_add",
-      "interpretation": "This projection is the modeled rounded binary addition function stored in StandardAddModel.",
-      "effect_on_target": "recursiveSum applies it to each prefix sum and next term after the singleton base case.",
-      "paper_match": "It matches the floating-point additions in Algorithm 3.1's sequential accumulation.",
+      "name": "HighamBench.p14BasicSumDelta",
+      "interpretation": "The delta is the recursive computed exponential sum minus the exact exponential sum.",
+      "effect_on_target": "It makes the final identity hat(s)=s+Delta s definitional.",
+      "paper_match": "This is the additive total forward error Delta s from equation (3.3).",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.StandardAddModel.u",
-      "interpretation": "This projection returns the real unit-roundoff parameter of the addition model.",
-      "effect_on_target": "It supplies both the GammaValid hypothesis and the gamma error bound.",
-      "paper_match": "It corresponds to the paper's unit roundoff u.",
+      "name": "HighamBench.p14BasicSumFiniteEnvelope",
+      "interpretation": "The envelope is (u+gamma(u,n)*(1+u))*exactSum.",
+      "effect_on_target": "It supplies an explicit finite-u upper bound whose leading term is (n+1)u times the exact sum.",
+      "paper_match": "The exact rational envelope is not printed in the paper, but its leading term agrees with equation (3.3) and it is a legitimate strengthening near u=0.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "HighamBench.gamma",
-      "interpretation": "gamma u k is the exact rational expression k*u/(1-k*u).",
-      "effect_on_target": "The conclusion is an exact finite-u relative-error inequality with k = n-1.",
-      "paper_match": "The cited passage instead gives indexed first-order bounds and ultimately (n+1)u*s + O(u^2); it does not state this gamma expression.",
-      "status": "fail"
+      "name": "HighamBench.p14BasicSumQuadraticRemainder",
+      "interpretation": "The remainder is n*(n+1)*exactSum*u^2/(1-n*u).",
+      "effect_on_target": "It gives the exact difference between the finite envelope and (n+1)u*exactSum and is asserted to be O(u^2).",
+      "paper_match": "This is a specific higher-order remainder where the paper leaves the O(u^2) term unspecified.",
+      "status": "pass"
     },
     {
       "id": "D006",
-      "name": "HighamBench.recursiveSum",
-      "interpretation": "For zero terms it returns 0, for one term it returns that term, and for at least two terms it recursively sums the prefix and applies flAdd to the final term.",
-      "effect_on_target": "It performs left-to-right recursive summation with n-1 modeled additions, eliding the exact initial addition 0+w_1.",
-      "paper_match": "Together with exact left-zero addition, this matches the increasing-index accumulation in Algorithm 3.1.",
+      "name": "HighamBench.p14ComputedExp",
+      "interpretation": "The computed term is exp(x_i)*(1+expError_i).",
+      "effect_on_target": "It separates the exact exponential from its componentwise relative perturbation.",
+      "paper_match": "This matches equation (3.1), interpreting the unindexed delta_1 as a local bounded error for each evaluation.",
       "status": "pass"
     },
     {
       "id": "D007",
-      "name": "HighamBench.StandardAddModel.mk",
-      "interpretation": "The constructor requires 0 <= u, fl_add 0 x = x, and for every x,y an operand-dependent delta with |delta| <= u and fl_add x y = (x+y)(1+delta).",
-      "effect_on_target": "These fields provide all modeled arithmetic assumptions used by recursiveSum.",
-      "paper_match": "The relative addition equation matches (1.7), while exact left-zero addition justifies omitting Algorithm 3.1's first rounded call; exponential errors remain unmodeled.",
+      "name": "HighamBench.p14ExactComputedExpSum",
+      "interpretation": "This is the exact real sum over all computed exponential values.",
+      "effect_on_target": "It represents tilde(s), before rounding errors from recursive accumulation.",
+      "paper_match": "This exactly preserves the paper's distinction between tilde(s) and hat(s).",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "HighamBench.recursiveSum._proof_1",
-      "interpretation": "This theorem proves that 0 is a valid Fin index below n+1 when the implementation has established n=0.",
-      "effect_on_target": "It only discharges an index-safety obligation in the singleton branch.",
-      "paper_match": "It has no independent numerical meaning or paper counterpart.",
-      "status": "not-applicable"
+      "name": "HighamBench.p14ExpSum",
+      "interpretation": "This is the exact sum over Fin n of exp(x_i).",
+      "effect_on_target": "It supplies the exact positive target sum s.",
+      "paper_match": "It is the zero-based Fin representation of sum from i=1 through n of w_i.",
+      "status": "pass"
     },
     {
       "id": "D009",
-      "name": "HighamBench.recursiveSum.match_1",
-      "interpretation": "This eliminator splits a Fin-indexed vector according to whether its dimension is zero or a successor.",
-      "effect_on_target": "It implements the base and successor cases of recursiveSum.",
-      "paper_match": "It is Lean recursion plumbing rather than an additional mathematical assumption.",
-      "status": "not-applicable"
+      "name": "HighamBench.p14RecursiveComputedExpSum",
+      "interpretation": "This applies recursiveSum to the execution's floating-point addition operation and computed exponential vector.",
+      "effect_on_target": "It defines the actually accumulated result hat(s).",
+      "paper_match": "It is linked to Algorithm 3.1's original-order recursive accumulation.",
+      "status": "pass"
     },
     {
       "id": "D010",
-      "name": "DivInvMonoid.toDiv",
-      "interpretation": "This projection obtains ordinary division from the real DivInvMonoid instance.",
-      "effect_on_target": "It supplies real division in the relative-error quotient and in gamma.",
-      "paper_match": "Ordinary real scalar division is the intended algebraic operation.",
+      "name": "HighamBench.P14BasicSumExecution.expError",
+      "interpretation": "This accessor returns the execution's componentwise exponential-error function.",
+      "effect_on_target": "It determines every multiplicative perturbation in p14ComputedExp.",
+      "paper_match": "It implements the bounded exponential error assumed after equation (3.1).",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "Fin",
-      "interpretation": "Fin n is the type of natural indices 0 through n-1.",
-      "effect_on_target": "It gives w exactly n components and fixes their recursive order.",
-      "paper_match": "This is the zero-based equivalent of the paper's indices 1 through n.",
+      "name": "HighamBench.P14BasicSumExecution.fp",
+      "interpretation": "This accessor returns the execution's standard addition model.",
+      "effect_on_target": "It supplies the floating-point addition used by recursiveSum.",
+      "paper_match": "It represents the addition part of the standard model in equation (1.7).",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "Fin.fintype",
-      "interpretation": "This instance enumerates all elements of Fin n exactly once.",
-      "effect_on_target": "It makes the exact finite sum over w available.",
-      "paper_match": "It represents summation over all n components.",
+      "name": "HighamBench.P14BasicSumExecution.mk",
+      "interpretation": "The constructor requires a StandardAddModel with unit roundoff u and componentwise exponential errors satisfying |error_i|<=u.",
+      "effect_on_target": "Existence of run enforces nonnegative u through the embedded addition model and the exponential-error assumption.",
+      "paper_match": "These are the numerical assumptions used in the selected summation analysis.",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "Finset.sum",
-      "interpretation": "Finset.sum maps the indexed terms into the real additive commutative monoid and forms their exact mathematical sum.",
-      "effect_on_target": "It defines the target's reference quantity sum_i w_i.",
-      "paper_match": "It matches an exact sum, but the target has only one such sum and cannot separately represent the paper's s and tilde(s).",
+      "name": "HighamBench.StandardAddModel.fl_add",
+      "interpretation": "This accessor returns the modeled floating-point binary addition function.",
+      "effect_on_target": "Every recursive accumulation step uses this operation.",
+      "paper_match": "It corresponds to fl(a+b) in equation (1.7).",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "Finset.univ",
-      "interpretation": "Finset.univ is the finite set containing every index of Fin n.",
-      "effect_on_target": "It makes each exact sum range over all components of w.",
-      "paper_match": "It matches the paper's complete index range.",
+      "name": "HighamBench.recursiveSum",
+      "interpretation": "The recursion returns zero for no terms, the sole term directly for one term, and thereafter adds the already accumulated prefix to the final term.",
+      "effect_on_target": "For n>0 it accumulates Fin indices in increasing order and performs n-1 modeled additions.",
+      "paper_match": "This is observationally the paper's initialization at zero followed by index-order summation, with the first zero addition exact.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "HDiv.hDiv",
-      "interpretation": "This projection invokes the selected heterogeneous division operation.",
-      "effect_on_target": "With the real instances, both displayed quotients are ordinary real division.",
-      "paper_match": "The resulting scalar division has its standard paper meaning.",
+      "name": "HighamBench.StandardAddModel",
+      "interpretation": "This structure packages a nonnegative unit roundoff, an addition operation, exact addition from zero, and a relative-error witness for every addition.",
+      "effect_on_target": "It is the abstract deterministic floating-point execution model.",
+      "paper_match": "It faithfully specializes equation (1.7) to the addition operations relevant to equations (3.1)-(3.3).",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "HSub.hSub",
-      "interpretation": "This projection invokes the selected subtraction operation.",
-      "effect_on_target": "It denotes real subtraction in the error and natural-number subtraction in n-1.",
-      "paper_match": "The real subtraction is standard; the natural subtraction implements the number of rounded additions.",
+      "name": "HighamBench.StandardAddModel.u",
+      "interpretation": "This accessor returns the model's nonnegative unit roundoff.",
+      "effect_on_target": "The execution constructor equates it with each u(t).",
+      "paper_match": "It has the intended meaning of the paper's unit roundoff u.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "LE.le",
-      "interpretation": "This projection is the non-strict order relation supplied by a type's LE instance.",
-      "effect_on_target": "For reals it expresses nonnegativity and the final upper bound.",
-      "paper_match": "It matches the paper's non-strict inequalities.",
-      "status": "pass"
+      "name": "HighamBench.recursiveSum._proof_1",
+      "interpretation": "This proves that n+1 is positive in the branch where n=0.",
+      "effect_on_target": "It only discharges a Fin-index well-formedness obligation inside recursiveSum.",
+      "paper_match": "It has no independent numerical or paper-level content.",
+      "status": "not-applicable"
     },
     {
       "id": "D018",
-      "name": "Nat",
-      "interpretation": "Nat is the type of nonnegative natural numbers, including zero.",
-      "effect_on_target": "The dimension n is allowed to be zero, although hsum is then impossible.",
-      "paper_match": "The nonvacuous target cases have n >= 1, consistent with the paper's indexed vectors.",
+      "name": "HighamBench.recursiveSum.match_1",
+      "interpretation": "This is the zero-versus-successor eliminator used by recursiveSum.",
+      "effect_on_target": "It selects the empty or nonempty recursive-sum branch without changing mathematical values.",
+      "paper_match": "It correctly implements the finite sequence case split underlying the algorithm.",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "Ne",
-      "interpretation": "Ne a b means that equality a=b implies False.",
-      "effect_on_target": "hsum requires the exact sum of w to be nonzero so the relative-error denominator is nonzero.",
-      "paper_match": "The paper's exponential sum is automatically positive, so this is a redundant explicit replacement for that fact.",
+      "name": "HighamBench.StandardAddModel.mk",
+      "interpretation": "The constructor requires u>=0, fl_add(0,x)=x, and for every x,y a delta with |delta|<=u and fl_add(x,y)=(x+y)*(1+delta).",
+      "effect_on_target": "It supplies exactly bounded, potentially step-dependent relative addition errors.",
+      "paper_match": "This matches the standard addition model and the exact first addition assumed by the n-1-addition summation analysis.",
       "status": "pass"
     },
     {
       "id": "D020",
-      "name": "OfNat.ofNat",
-      "interpretation": "This projection interprets numeric literals such as 0 and 1 in the selected type.",
-      "effect_on_target": "It supplies the real and natural constants used in hypotheses, subtraction, and gamma.",
-      "paper_match": "The constants retain their ordinary meanings.",
+      "name": "And",
+      "interpretation": "And requires both component propositions.",
+      "effect_on_target": "It makes every displayed target clause jointly required.",
+      "paper_match": "Conjunction introduces no semantic mismatch.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "Real",
-      "interpretation": "Real is mathlib's exact real-number type.",
-      "effect_on_target": "The sequence, sums, errors, unit roundoff, and modeled operation all have exact real values.",
-      "paper_match": "The paper analyzes real inputs and uses real-valued error equations.",
+      "name": "Asymptotics.IsBigO",
+      "interpretation": "IsBigO states normwise eventual domination of one function by a constant multiple of another along a filter.",
+      "effect_on_target": "It formalizes the quadratic remainder as O((u(t))^2).",
+      "paper_match": "With the real norm equal to absolute value, this is a standard rigorous interpretation of the paper's scalar O(u^2).",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "Real.instAddCommMonoid",
-      "interpretation": "This instance supplies exact associative and commutative real addition with zero.",
-      "effect_on_target": "It defines the reference Finset sum independently of floating-point evaluation order.",
-      "paper_match": "It matches the paper's exact mathematical sums.",
+      "name": "Eq",
+      "interpretation": "Eq is exact propositional equality.",
+      "effect_on_target": "It is used for the envelope decomposition and computed-sum identity.",
+      "paper_match": "Those equalities have the same direction and exact meaning as the corresponding definitions and equation (3.3).",
       "status": "pass"
     },
     {
       "id": "D023",
-      "name": "Real.instAddGroup",
-      "interpretation": "This instance supplies real addition, zero, and additive inverses.",
-      "effect_on_target": "It supports subtraction and the definition of absolute value.",
-      "paper_match": "These are ordinary exact-real operations used in the paper's error expressions.",
+      "name": "Filter",
+      "interpretation": "A filter specifies the asymptotic notion of eventuality and convergence.",
+      "effect_on_target": "It turns the paper's informal limit u to zero into a family-based statement.",
+      "paper_match": "The paper does not name filters, but this is a reasonable formal representation of its first-order asymptotics.",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "Real.instDivInvMonoid",
-      "interpretation": "This instance supplies real multiplication, inversion, and division.",
-      "effect_on_target": "It defines both normalization by the exact sum and the gamma denominator.",
-      "paper_match": "The resulting operations are ordinary real arithmetic.",
+      "name": "Filter.Eventually",
+      "interpretation": "Eventually p means that p holds on a set belonging to the filter.",
+      "effect_on_target": "The accumulation, finite-envelope, and envelope-decomposition claims need hold only for sufficiently small u along l.",
+      "paper_match": "This corresponds to the local nature of O(u^2) analysis.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "Real.instLE",
-      "interpretation": "This is the standard non-strict order on real numbers.",
-      "effect_on_target": "It interprets 0 <= w_i and the final error inequality.",
-      "paper_match": "It matches real nonnegativity and upper bounds in the paper.",
+      "name": "Filter.NeBot",
+      "interpretation": "NeBot excludes the improper filter in which every proposition is eventual.",
+      "effect_on_target": "It prevents the asymptotic conclusions from being vacuous.",
+      "paper_match": "This correctly enforces a meaningful limiting regime.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "Real.instSub",
-      "interpretation": "Real subtraction is defined as addition of the additive inverse.",
-      "effect_on_target": "It forms recursiveSum minus the exact reference sum.",
-      "paper_match": "Absolute value makes the reversed paper subtraction order immaterial.",
+      "name": "Filter.Tendsto",
+      "interpretation": "Tendsto u l (nhds 0) says u(t) converges to zero along l.",
+      "effect_on_target": "It eventually keeps denominators 1-n*u(t) away from zero and realizes first-order analysis.",
+      "paper_match": "This formalizes the paper's use of u as a small asymptotic parameter.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "Real.instZero",
-      "interpretation": "This instance supplies the real number zero.",
-      "effect_on_target": "It appears in nonnegativity, nonzero-sum, and recursiveSum base conditions.",
-      "paper_match": "It has the ordinary exact-real meaning.",
+      "name": "Fin",
+      "interpretation": "Fin n is the finite type of zero-based indices 0 through n-1.",
+      "effect_on_target": "It indexes the n inputs and computed exponential terms.",
+      "paper_match": "It is equivalent to the paper's one-based indices 1 through n after shifting by one.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "Real.lattice",
-      "interpretation": "This instance supplies min and max operations for the standard real order.",
-      "effect_on_target": "It supports the lattice definition of real absolute value.",
-      "paper_match": "It yields the standard scalar absolute value used by the paper.",
+      "name": "Fin.fintype",
+      "interpretation": "This provides finite enumeration of Fin n.",
+      "effect_on_target": "It enables sums over every input index.",
+      "paper_match": "It realizes the finite n-term sums in the paper.",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "Zero.toOfNat0",
-      "interpretation": "This adapter interprets the literal 0 using a type's Zero instance.",
-      "effect_on_target": "It connects the displayed zero literals to real and natural zero.",
-      "paper_match": "It introduces no semantic difference.",
+      "name": "Finset.sum",
+      "interpretation": "Finset.sum forms the exact commutative algebraic sum of mapped elements.",
+      "effect_on_target": "It defines s, tilde(s), and the absolute-value total in the gamma bound.",
+      "paper_match": "It correctly denotes exact sums, not floating-point accumulation.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "abs",
-      "interpretation": "For reals, abs a is max(a,-a), the standard scalar absolute value.",
-      "effect_on_target": "It measures the absolute summation error and the absolute exact-sum denominator.",
-      "paper_match": "It matches the scalar absolute values in the cited passage.",
+      "name": "Finset.univ",
+      "interpretation": "Finset.univ contains every element of a finite type.",
+      "effect_on_target": "All Fin n indices occur exactly once in each exact sum.",
+      "paper_match": "This matches summation over all i=1,...,n.",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "instHDiv",
-      "interpretation": "This adapter turns homogeneous Div into homogeneous HDiv.",
-      "effect_on_target": "It resolves both real quotient expressions without changing their values.",
-      "paper_match": "It is typeclass plumbing for ordinary division.",
+      "name": "HAdd.hAdd",
+      "interpretation": "This dispatches overloaded addition to the relevant type's addition operation.",
+      "effect_on_target": "It denotes real addition in error formulas and natural addition in index machinery.",
+      "paper_match": "The elaborated instances give ordinary addition with no altered semantics.",
       "status": "pass"
     },
     {
       "id": "D032",
-      "name": "instHSub",
-      "interpretation": "This adapter turns homogeneous Sub into homogeneous HSub.",
-      "effect_on_target": "It resolves real and natural subtraction.",
-      "paper_match": "It is typeclass plumbing and introduces no new numerical meaning.",
+      "name": "HMul.hMul",
+      "interpretation": "This dispatches overloaded multiplication.",
+      "effect_on_target": "It forms relative perturbations, gamma expressions, leading error terms, and the finite envelope.",
+      "paper_match": "The real instances give ordinary multiplication.",
       "status": "pass"
     },
     {
       "id": "D033",
-      "name": "instOfNatNat",
-      "interpretation": "This instance interprets a natural-number literal as that same natural number.",
-      "effect_on_target": "It supplies the natural constants 0 and 1.",
-      "paper_match": "It introduces no mathematical discrepancy.",
+      "name": "HPow.hPow",
+      "interpretation": "This dispatches overloaded exponentiation.",
+      "effect_on_target": "It forms the real square (u(t))^2.",
+      "paper_match": "It matches the quadratic scale in O(u^2).",
       "status": "pass"
     },
     {
       "id": "D034",
-      "name": "instSubNat",
-      "interpretation": "This is truncated natural subtraction, so n-1 is zero when n is zero.",
-      "effect_on_target": "It determines the gamma index and GammaValid index.",
-      "paper_match": "For all nonvacuous target cases n >= 1, it equals the paper's number n-1 of in-term additions.",
+      "name": "HSub.hSub",
+      "interpretation": "This dispatches subtraction, using real subtraction for errors and truncated natural subtraction for n-1.",
+      "effect_on_target": "It forms differences and the count of rounded additions.",
+      "paper_match": "Because n>0, natural n-1 has the intended addition-count meaning.",
       "status": "pass"
     },
     {
       "id": "D035",
-      "name": "Eq",
-      "interpretation": "Eq is propositional equality.",
-      "effect_on_target": "It occurs in the modeled addition equation and internal recursion branches.",
-      "paper_match": "It has no distinct numerical interpretation requiring a paper counterpart.",
-      "status": "not-applicable"
+      "name": "LE.le",
+      "interpretation": "This is the non-strict order relation supplied by the relevant instance.",
+      "effect_on_target": "It expresses every absolute error upper bound.",
+      "paper_match": "It matches the paper's non-strict inequalities.",
+      "status": "pass"
     },
     {
       "id": "D036",
-      "name": "Fin.castSucc",
-      "interpretation": "Fin.castSucc embeds an index of a prefix into the successor-sized index type without changing its numeric value.",
-      "effect_on_target": "It passes the first n entries to the recursive prefix sum in their original order.",
-      "paper_match": "It preserves the paper's increasing-index recursive order.",
+      "name": "LT.lt",
+      "interpretation": "This is strict order.",
+      "effect_on_target": "It expresses n>0 and exactSum>0.",
+      "paper_match": "Positive dimension is implicit in the paper, and a nonempty exponential sum is strictly positive.",
       "status": "pass"
     },
     {
       "id": "D037",
-      "name": "Fin.last",
-      "interpretation": "Fin.last n is the final zero-based index n of Fin(n+1).",
-      "effect_on_target": "It selects the new final term appended after the recursive prefix.",
-      "paper_match": "It corresponds to adding the next and final paper-indexed term.",
+      "name": "Monoid.toNatPow",
+      "interpretation": "This supplies natural-number powers from real multiplication.",
+      "effect_on_target": "It interprets u^2 as u multiplied by itself.",
+      "paper_match": "This is the intended quadratic power.",
       "status": "pass"
     },
     {
       "id": "D038",
-      "name": "Fin.mk",
-      "interpretation": "Fin.mk constructs a bounded natural index from its value and proof of its bound.",
-      "effect_on_target": "It constructs the singleton index used by recursiveSum.",
-      "paper_match": "It is index-safety plumbing with no independent paper content.",
-      "status": "not-applicable"
+      "name": "Nat",
+      "interpretation": "Nat is the type of nonnegative integers.",
+      "effect_on_target": "It types the dimension n and finite recursion.",
+      "paper_match": "Together with hn, it represents the paper's positive integer dimension.",
+      "status": "pass"
     },
     {
       "id": "D039",
-      "name": "HAdd.hAdd",
-      "interpretation": "This projection invokes the selected heterogeneous addition operation.",
-      "effect_on_target": "It denotes exact real addition in the model equation and natural addition in successor dimensions.",
-      "paper_match": "These uses have their ordinary meanings.",
+      "name": "Nat.cast",
+      "interpretation": "Nat.cast embeds a natural number into the reals.",
+      "effect_on_target": "It turns n and n+1 into real coefficients.",
+      "paper_match": "This preserves the paper's integer constants in real inequalities.",
       "status": "pass"
     },
     {
       "id": "D040",
-      "name": "HMul.hMul",
-      "interpretation": "This projection invokes the selected heterogeneous multiplication operation.",
-      "effect_on_target": "It forms k*u, (x+y)(1+delta), and the gamma numerator and denominator.",
-      "paper_match": "It is ordinary exact-real multiplication in the error model.",
+      "name": "OfNat.ofNat",
+      "interpretation": "This interprets numeral literals in their contextual type.",
+      "effect_on_target": "It supplies the constants 0, 1, and 2.",
+      "paper_match": "The literals have their ordinary mathematical meanings.",
       "status": "pass"
     },
     {
       "id": "D041",
-      "name": "LT.lt",
-      "interpretation": "This projection invokes the selected strict-order relation.",
-      "effect_on_target": "For reals it gives the strict GammaValid condition; for naturals it supports Fin bounds.",
-      "paper_match": "The order itself is standard, although the GammaValid condition is absent from the paper result.",
+      "name": "One.toOfNat1",
+      "interpretation": "This identifies numeral 1 with the type's multiplicative identity.",
+      "effect_on_target": "It supplies real 1 in perturbation and denominator formulas.",
+      "paper_match": "It gives the intended constant one.",
       "status": "pass"
     },
     {
       "id": "D042",
-      "name": "Nat.below",
-      "interpretation": "Nat.below packages all smaller recursive results for course-of-values recursion.",
-      "effect_on_target": "It is an implementation mechanism used to retrieve the prefix recursiveSum.",
-      "paper_match": "It has no independent numerical meaning.",
-      "status": "not-applicable"
+      "name": "PseudoMetricSpace.toUniformSpace",
+      "interpretation": "This derives the real uniform structure from its metric structure.",
+      "effect_on_target": "It contributes to the topology used by nhds 0.",
+      "paper_match": "It adds only standard real convergence semantics.",
+      "status": "pass"
     },
     {
       "id": "D043",
-      "name": "Nat.brecOn",
-      "interpretation": "Nat.brecOn performs course-of-values recursion on a natural number.",
-      "effect_on_target": "It implements recursiveSum's dependence on the sum at the immediately smaller dimension.",
-      "paper_match": "It is Lean implementation machinery rather than a paper hypothesis.",
-      "status": "not-applicable"
+      "name": "Real",
+      "interpretation": "Real is mathlib's exact real-number type.",
+      "effect_on_target": "Inputs, exact values, modeled computed values, errors, and u all live in the reals.",
+      "paper_match": "This matches x in R^n and the paper's real-valued error analysis.",
+      "status": "pass"
     },
     {
       "id": "D044",
-      "name": "Nat.cast",
-      "interpretation": "Nat.cast maps a natural number to the corresponding value in a type with NatCast.",
-      "effect_on_target": "It converts n-1 to a real coefficient in GammaValid and gamma.",
-      "paper_match": "It preserves the intended integer coefficient.",
+      "name": "Real.exp",
+      "interpretation": "Real.exp is the exact real exponential function.",
+      "effect_on_target": "It defines every exact w_i before a modeled relative perturbation is applied.",
+      "paper_match": "It matches w_i=e^(x_i).",
       "status": "pass"
     },
     {
       "id": "D045",
-      "name": "Nat.succ",
-      "interpretation": "Nat.succ maps n to n+1.",
-      "effect_on_target": "It represents successor-sized vectors in recursiveSum.",
-      "paper_match": "It is standard dimension bookkeeping.",
+      "name": "Real.instAdd",
+      "interpretation": "This is ordinary real addition.",
+      "effect_on_target": "It combines exact values and error terms.",
+      "paper_match": "It introduces no discrepancy.",
       "status": "pass"
     },
     {
       "id": "D046",
-      "name": "Not",
-      "interpretation": "Not P means P implies False.",
-      "effect_on_target": "It underlies non-equality and the false branch of the dimension test.",
-      "paper_match": "It is logical plumbing with no independent numerical content.",
-      "status": "not-applicable"
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "This supplies the additive commutative-monoid structure of the reals.",
+      "effect_on_target": "It gives exact finite-sum semantics with zero.",
+      "paper_match": "It correctly models mathematical sums, distinct from recursive floating-point addition.",
+      "status": "pass"
     },
     {
       "id": "D047",
-      "name": "One.toOfNat1",
-      "interpretation": "This adapter interprets the literal 1 using a type's One instance.",
-      "effect_on_target": "It supplies real 1 in the model and gamma and natural 1 in n-1.",
-      "paper_match": "It retains the ordinary value one.",
+      "name": "Real.instAddGroup",
+      "interpretation": "This supplies real additive inverses and subtraction-compatible structure.",
+      "effect_on_target": "It supports differences and absolute values.",
+      "paper_match": "It gives standard scalar error arithmetic.",
       "status": "pass"
     },
     {
       "id": "D048",
-      "name": "Real.instLT",
-      "interpretation": "This is the standard strict order on real numbers.",
-      "effect_on_target": "It interprets the GammaValid inequality.",
-      "paper_match": "The relation is standard even though the paper does not state that particular condition.",
+      "name": "Real.instLE",
+      "interpretation": "This is the usual real less-than-or-equal relation.",
+      "effect_on_target": "It orders all real error bounds.",
+      "paper_match": "It matches the scalar inequalities in the paper.",
       "status": "pass"
     },
     {
       "id": "D049",
-      "name": "Real.instMul",
-      "interpretation": "This instance supplies ordinary exact multiplication of real numbers.",
-      "effect_on_target": "It defines the relative-error model and gamma arithmetic.",
-      "paper_match": "It matches the paper's exact algebra around rounding errors.",
+      "name": "Real.instLT",
+      "interpretation": "This is the usual strict real order.",
+      "effect_on_target": "It states positivity of the exact sum.",
+      "paper_match": "A nonempty sum of real exponentials is indeed positive.",
       "status": "pass"
     },
     {
       "id": "D050",
-      "name": "Real.instNatCast",
-      "interpretation": "This instance embeds each natural number as the corresponding real number.",
-      "effect_on_target": "It interprets the coefficient n-1 in gamma.",
-      "paper_match": "It preserves integer coefficients exactly.",
+      "name": "Real.instMonoid",
+      "interpretation": "This supplies real multiplication and identity as a monoid.",
+      "effect_on_target": "It supports natural powers such as u^2.",
+      "paper_match": "It gives ordinary real power semantics.",
       "status": "pass"
     },
     {
       "id": "D051",
-      "name": "Real.instOne",
-      "interpretation": "This instance supplies the real multiplicative identity 1.",
-      "effect_on_target": "It appears in 1+delta and 1-(n-1)u.",
-      "paper_match": "It has the ordinary real meaning.",
+      "name": "Real.instMul",
+      "interpretation": "This is ordinary real multiplication.",
+      "effect_on_target": "It forms all scaling factors and relative-error products.",
+      "paper_match": "It matches the arithmetic in equations (3.1)-(3.3).",
       "status": "pass"
     },
     {
       "id": "D052",
-      "name": "dite",
-      "interpretation": "dite selects a branch based on a decidable proposition and exposes the branch proof.",
-      "effect_on_target": "recursiveSum uses it to treat a successor dimension as a singleton when its predecessor is zero.",
-      "paper_match": "It is implementation machinery with no separate paper interpretation.",
-      "status": "not-applicable"
+      "name": "Real.instNatCast",
+      "interpretation": "This embeds natural numerals and dimensions into the reals.",
+      "effect_on_target": "It gives real coefficients n and n+1.",
+      "paper_match": "The coefficients retain their intended integer values.",
+      "status": "pass"
     },
     {
       "id": "D053",
-      "name": "instAddNat",
-      "interpretation": "This instance supplies ordinary natural-number addition.",
-      "effect_on_target": "It forms successor-sized Fin types n+1.",
-      "paper_match": "It is standard dimension arithmetic.",
+      "name": "Real.instOne",
+      "interpretation": "This supplies real one.",
+      "effect_on_target": "It occurs in 1+error and 1-n*u.",
+      "paper_match": "It has the ordinary meaning.",
       "status": "pass"
     },
     {
       "id": "D054",
-      "name": "instDecidableEqNat",
-      "interpretation": "This instance decides equality of natural numbers.",
-      "effect_on_target": "It makes the recursiveSum test n=0 executable.",
-      "paper_match": "It has no independent numerical content.",
-      "status": "not-applicable"
+      "name": "Real.instSub",
+      "interpretation": "This is ordinary real subtraction.",
+      "effect_on_target": "It forms error differences and rational denominators.",
+      "paper_match": "It gives the expected scalar subtraction.",
+      "status": "pass"
     },
     {
       "id": "D055",
-      "name": "instHAdd",
-      "interpretation": "This adapter turns homogeneous Add into homogeneous HAdd.",
-      "effect_on_target": "It resolves exact real and natural additions used in definitions.",
-      "paper_match": "It does not alter the underlying operations.",
+      "name": "Real.instZero",
+      "interpretation": "This supplies real zero.",
+      "effect_on_target": "It is the convergence target and positivity baseline.",
+      "paper_match": "It has the ordinary meaning.",
       "status": "pass"
     },
     {
       "id": "D056",
-      "name": "instHMul",
-      "interpretation": "This adapter turns homogeneous Mul into homogeneous HMul.",
-      "effect_on_target": "It resolves real multiplication in the model and gamma.",
-      "paper_match": "It does not alter the underlying multiplication.",
+      "name": "Real.lattice",
+      "interpretation": "This supplies max and min operations for the ordered reals.",
+      "effect_on_target": "It participates in the definition of scalar absolute value.",
+      "paper_match": "It yields the usual absolute value.",
       "status": "pass"
     },
     {
       "id": "D057",
-      "name": "And",
-      "interpretation": "And packages simultaneous proofs of two propositions.",
-      "effect_on_target": "Each modeled addition witness must satisfy both its magnitude bound and its exact error equation.",
-      "paper_match": "The paper likewise requires both |delta| <= u and the relative-error equation.",
+      "name": "Real.norm",
+      "interpretation": "The norm of a real is its absolute value.",
+      "effect_on_target": "It determines the norm used by IsBigO.",
+      "paper_match": "Thus the big-O clause remains a scalar absolute-error statement, not a vector norm bound.",
       "status": "pass"
     },
     {
       "id": "D058",
-      "name": "Exists",
-      "interpretation": "Exists quantifies a witness whose value may depend on preceding universally quantified operands.",
-      "effect_on_target": "For each x,y, the addition model may choose a separate delta satisfying its two obligations.",
-      "paper_match": "This matches the operation-dependent rounding errors permitted by equation (1.7).",
+      "name": "Real.pseudoMetricSpace",
+      "interpretation": "The real metric is induced by |x-y|.",
+      "effect_on_target": "It supplies standard real convergence to zero.",
+      "paper_match": "This is the intended topology for u tending to zero.",
       "status": "pass"
     },
     {
       "id": "D059",
-      "name": "Nat.casesOn",
-      "interpretation": "Nat.casesOn eliminates a natural number into zero and successor cases.",
-      "effect_on_target": "It implements recursiveSum.match_1.",
-      "paper_match": "It is Lean recursion plumbing.",
-      "status": "not-applicable"
+      "name": "UniformSpace.toTopologicalSpace",
+      "interpretation": "This extracts the topology from the real uniform structure.",
+      "effect_on_target": "It determines the neighborhood filter used in Tendsto.",
+      "paper_match": "It adds only standard real-topological semantics.",
+      "status": "pass"
     },
     {
       "id": "D060",
-      "name": "Nat.zero",
-      "interpretation": "Nat.zero is the natural number zero.",
-      "effect_on_target": "It identifies the empty and singleton recursion branches.",
-      "paper_match": "It has no independent effect beyond standard dimension bookkeeping.",
-      "status": "not-applicable"
+      "name": "Zero.toOfNat0",
+      "interpretation": "This identifies numeral 0 with the type's zero.",
+      "effect_on_target": "It supplies natural and real zero where required.",
+      "paper_match": "It has the ordinary meaning.",
+      "status": "pass"
     },
     {
       "id": "D061",
-      "name": "Real.instAdd",
-      "interpretation": "This instance supplies ordinary exact addition of real numbers.",
-      "effect_on_target": "It defines x+y in the modeled-error equation and exact reference sums.",
-      "paper_match": "It matches the exact addition appearing inside the paper's floating-point model.",
+      "name": "abs",
+      "interpretation": "For reals, abs a is max(a,-a).",
+      "effect_on_target": "It expresses componentwise, accumulation, and total scalar absolute errors.",
+      "paper_match": "It matches every vertical-bar expression in the selected passage.",
       "status": "pass"
     },
     {
       "id": "D062",
+      "name": "instHAdd",
+      "interpretation": "This lifts homogeneous addition to the overloaded HAdd interface.",
+      "effect_on_target": "It ensures elaborated additions use ordinary addition.",
+      "paper_match": "It introduces no numerical change.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "instHMul",
+      "interpretation": "This lifts homogeneous multiplication to HMul.",
+      "effect_on_target": "It ensures elaborated real products use ordinary multiplication.",
+      "paper_match": "It introduces no numerical change.",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "instHPow",
+      "interpretation": "This lifts a power operation to HPow.",
+      "effect_on_target": "It gives the elaborated square of u.",
+      "paper_match": "It preserves the intended u^2.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "instHSub",
+      "interpretation": "This lifts homogeneous subtraction to HSub.",
+      "effect_on_target": "It selects real or natural subtraction according to type.",
+      "paper_match": "The resulting operations have the intended meanings.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
       "name": "instLTNat",
-      "interpretation": "This instance supplies the standard strict order on natural numbers.",
-      "effect_on_target": "It validates bounded Fin indices used by recursiveSum.",
-      "paper_match": "It is index-safety machinery with no separate numerical claim.",
+      "interpretation": "This is the usual strict order on natural numbers.",
+      "effect_on_target": "It interprets hn as 0<n and validates Fin indices.",
+      "paper_match": "It matches positive dimension.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "instOfNatNat",
+      "interpretation": "This interprets a natural numeral as itself.",
+      "effect_on_target": "It supplies natural constants in dimensions and recursion.",
+      "paper_match": "It has no paper-level discrepancy.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "instSubNat",
+      "interpretation": "This is truncated subtraction on natural numbers.",
+      "effect_on_target": "It interprets n-1 in gamma; hn ensures this is the ordinary predecessor.",
+      "paper_match": "It matches the n-1 potentially rounded additions.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "nhds",
+      "interpretation": "nhds 0 is the neighborhood filter of real zero.",
+      "effect_on_target": "It makes hu assert convergence of unit roundoff to zero.",
+      "paper_match": "It is an appropriate formal asymptotic target.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "This extracts real division from the division-and-inverse structure.",
+      "effect_on_target": "It supports denominators in gamma and the explicit remainder.",
+      "paper_match": "It gives ordinary exact real division.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "HDiv.hDiv",
+      "interpretation": "This dispatches overloaded division.",
+      "effect_on_target": "It forms k*u/(1-k*u) and the quadratic remainder.",
+      "paper_match": "It introduces no mismatch in the sufficiently small-u regime.",
+      "status": "pass"
+    },
+    {
+      "id": "D072",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "This supplies ordinary real inverse and division.",
+      "effect_on_target": "It determines the exact rational finite-error coefficients.",
+      "paper_match": "The denominator is an added explicit refinement, not a conflicting operation.",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "instHDiv",
+      "interpretation": "This lifts homogeneous division to HDiv.",
+      "effect_on_target": "It ensures the elaborated divisions are real divisions.",
+      "paper_match": "It introduces no semantic discrepancy.",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "Fin.castSucc",
+      "interpretation": "This embeds a prefix index Fin n into Fin(n+1) without changing its numerical value.",
+      "effect_on_target": "It lets recursiveSum pass the first n terms to the recursive call.",
+      "paper_match": "It preserves original index order.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "Fin.last",
+      "interpretation": "Fin.last n is the final index n of Fin(n+1).",
+      "effect_on_target": "It selects the next term appended to the accumulated prefix.",
+      "paper_match": "It implements left-to-right sequential summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D076",
+      "name": "Fin.mk",
+      "interpretation": "Fin.mk constructs a bounded finite index from a natural value and proof.",
+      "effect_on_target": "It selects the sole term in the one-element recursive-sum case.",
+      "paper_match": "It is only index bookkeeping.",
+      "status": "pass"
+    },
+    {
+      "id": "D077",
+      "name": "Nat.below",
+      "interpretation": "Nat.below stores recursive results for smaller natural arguments.",
+      "effect_on_target": "It supports well-founded construction of recursiveSum.",
+      "paper_match": "It has no independent numerical effect.",
       "status": "not-applicable"
+    },
+    {
+      "id": "D078",
+      "name": "Nat.brecOn",
+      "interpretation": "This is course-of-values recursion on natural numbers.",
+      "effect_on_target": "It implements recursiveSum over sequence length.",
+      "paper_match": "The resulting recurrence matches sequential accumulation.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "Nat.succ",
+      "interpretation": "Nat.succ maps n to n+1.",
+      "effect_on_target": "It describes nonempty sequence lengths in recursiveSum.",
+      "paper_match": "It has the ordinary dimension meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "Not",
+      "interpretation": "Not p means p implies False.",
+      "effect_on_target": "It types the negative branch of the test deciding whether the predecessor is zero.",
+      "paper_match": "It has no independent numerical content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D081",
+      "name": "dite",
+      "interpretation": "This is a dependent conditional that may use evidence for or against its condition.",
+      "effect_on_target": "It distinguishes the one-term case from the genuine recursive-addition case.",
+      "paper_match": "The branch split preserves the algorithm's values and addition count.",
+      "status": "pass"
+    },
+    {
+      "id": "D082",
+      "name": "instAddNat",
+      "interpretation": "This is ordinary natural-number addition.",
+      "effect_on_target": "It forms n+1 in finite-index and recursion types.",
+      "paper_match": "It has the intended indexing meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "instDecidableEqNat",
+      "interpretation": "This decides equality of natural numbers.",
+      "effect_on_target": "It decides whether recursiveSum's predecessor length is zero.",
+      "paper_match": "It is computational bookkeeping with no independent paper claim.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D084",
+      "name": "Nat.casesOn",
+      "interpretation": "This eliminates a natural number into zero and successor cases.",
+      "effect_on_target": "It implements the outer shape split of recursiveSum.",
+      "paper_match": "It correctly reflects empty versus nonempty finite sequences.",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "Nat.zero",
+      "interpretation": "This is the natural number zero.",
+      "effect_on_target": "It represents the empty length and branch comparison.",
+      "paper_match": "It has the ordinary meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "Exists",
+      "interpretation": "Exists asserts that at least one witness satisfies a predicate.",
+      "effect_on_target": "For every modeled addition it supplies a possibly operation-dependent delta satisfying the relative-error equation.",
+      "paper_match": "This matches the paper's local rounding-error variable with |delta|<=u.",
+      "status": "pass"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF is the published 2021 IMA Journal version. Algorithm 3.1 is on PDF p. 6, the positive-sum derivation and equation (3.2) are on p. 7, and equation (3.3) is on p. 8.",
-      "lean_evidence": "The declaration concerns positive recursive summation, which is traceable to this passage even though it captures only an intermediate component.",
-      "reasoning": "The source version and surrounding passage are correctly selected."
+      "paper_evidence": "The verified PDF is the published 2021 journal version. Printed pages 2314 and 2316-2318 contain equation (1.7), Algorithm 3.1, equations (3.1)-(3.3), and their surrounding analysis.",
+      "lean_evidence": "The supplied target is explicitly P14-T1 and models the unshifted positive exponential sum.",
+      "reasoning": "The source version, cited pages, and selected derivation are correctly identified."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "The paper binds x in R^n, w_i=exp(x_i), computed exponentials hat(w_i), their exact sum tilde(s), the recursively computed hat(s), and Delta s.",
-      "lean_evidence": "Lean binds only n and an arbitrary w : Fin n -> Real; it has no x, exponential values, computed-exponential values, tilde(s), or Delta s.",
-      "reasoning": "The main numerical binders and their intended roles are not preserved."
+      "status": "pass",
+      "paper_evidence": "Algorithm 3.1 takes x in R^n with i=1,...,n and implicitly n>=1.",
+      "lean_evidence": "Lean has n:Nat with 0<n, x:Fin n->Real, and zero-based Fin n indices.",
+      "reasoning": "Fin n is a harmless reindexing of the paper's n real components; the additional type and filter parameter encode asymptotics."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "Each exponential evaluation and each addition may incur its own bounded error, with the resulting quantities subsequently related through exact and recursively rounded sums.",
-      "lean_evidence": "The addition model correctly permits an operand-dependent existential delta, but the target universally quantifies arbitrary w and has no exponential-error witnesses or dependencies.",
-      "reasoning": "The addition-error scope is reasonable, but the quantified exponential stage required by the paper result is absent."
+      "status": "pass",
+      "paper_evidence": "The analysis is uniform over the input vector and bounded local rounding errors, with Delta s depending on the particular computation.",
+      "lean_evidence": "Lean universally quantifies n, x, the u-family, and an execution run(t); its delta is determined by each run(t), while asymptotic bounds hold eventually.",
+      "reasoning": "Witness dependence and the scope of execution-specific errors are preserved under the filter-based encoding."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "Section 3 assumes no overflow or underflow, relative exponential error at most u, standard rounded additions, and nonnegative computed exponential terms.",
-      "lean_evidence": "Lean assumes nonnegative arbitrary w, nonzero total sum, GammaValid u (n-1), and an abstract addition model; it assumes neither exponential accuracy nor absence of overflow and underflow.",
-      "reasoning": "Several essential hypotheses are missing and an unstated gamma-validity restriction is added."
+      "status": "pass",
+      "paper_evidence": "The paper assumes no overflow or underflow, standard relative-error additions, componentwise exponential relative error at most u, and nonnegative computed terms.",
+      "lean_evidence": "P14BasicSumExecution requires a nonnegative unit roundoff, standard modeled additions, and |expError_i|<=u. Since u tends to zero, computed exponentials are eventually positive.",
+      "reasoning": "The abstract real-error model extensionally excludes exceptional arithmetic in the eventual regime and supplies the hypotheses used by the selected sum analysis."
     },
     {
       "id": "S05",
       "status": "fail",
-      "paper_evidence": "The passage gives the componentwise exponential bound, two recursive-summation bounds, the combined indexed bound, and equation (3.3): hat(s)=s+Delta s with |Delta s| <= (n+1)u*s+O(u^2).",
-      "lean_evidence": "The sole conclusion bounds recursiveSum w against the exact sum of the same w by gamma u (n-1).",
-      "reasoning": "The exponential contribution, three-way quantity distinction, indexed bounds, aggregate perturbation equation, n+1 constant, and O(u^2) remainder are omitted."
+      "paper_evidence": "Printed page 2317 states both the t_i partial-sum bound and the sharper positive-term bound with coefficients n-1 for the first two terms and n+1-i thereafter, before deriving equation (3.2).",
+      "lean_evidence": "The target replaces both displayed recursive bounds by gamma(u,n-1)*sum_i|hat(w_i)| and never states t_i or the position-dependent weights.",
+      "reasoning": "The final equation (3.3) is represented, but the selected passage's explicit recursive and weighted conclusions are not complete in the Lean proposition."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The paper's nontrivial operations are exponential evaluation, exact summation of computed terms, recursive floating-point addition, and an asymptotic remainder.",
-      "lean_evidence": "The dossier unfolds recursiveSum and gamma; gamma is k*u/(1-k*u), and there is no exponential operator or representation of an O(u^2) remainder.",
-      "reasoning": "The imported Lean operators are interpretable, but the nontrivial gamma operator substitutes a different bound and required paper operators are missing."
+      "status": "pass",
+      "paper_evidence": "The passage distinguishes exact exponentials, exact sums, floating-point additions, absolute value, and asymptotic O(u^2).",
+      "lean_evidence": "D001-D086 expose the execution structure, computed-term definitions, recursive sum, gamma, exact envelope, scalar norm, filters, and arithmetic operations.",
+      "reasoning": "All imported operators affecting the target have definite interpretations; the mismatch is in the chosen bound, not an opaque dependency."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "PDF p. 7 explicitly distinguishes s=sum w_i, tilde(s)=sum hat(w_i) evaluated exactly, and hat(s), the recursively computed sum.",
-      "lean_evidence": "Lean contains only sum w and recursiveSum w. The single w cannot simultaneously represent exact exponentials and their computed perturbations.",
-      "reasoning": "Lean distinguishes an exact input sum from its rounded recursive sum, but conflates or omits the paper's separate exact and computed exponential levels."
+      "status": "pass",
+      "paper_evidence": "The paper separately defines w_i, hat(w_i), s, tilde(s), and hat(s).",
+      "lean_evidence": "These correspond respectively to Real.exp(x i), p14ComputedExp, p14ExpSum, p14ExactComputedExpSum, and p14RecursiveComputedExpSum.",
+      "reasoning": "Exact, perturbed, exactly summed, and recursively computed quantities are not conflated."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "Algorithm 3.1 first evaluates each exp(x_i), then adds those computed terms sequentially from s=0.",
-      "lean_evidence": "recursiveSum has the correct increasing order and n-1 effective rounded additions, but it starts from arbitrary supplied w and contains no exponential-evaluation step.",
-      "reasoning": "The target is linked only to the summation subroutine, not to the complete lines 1-5 computation analyzed by the selected result."
+      "status": "pass",
+      "paper_evidence": "Algorithm 3.1 lines 1-5 compute unshifted exp(x_i) and accumulate in original order.",
+      "lean_evidence": "p14RecursiveComputedExpSum applies the execution's fl_add through recursiveSum to p14ComputedExp in increasing Fin order.",
+      "reasoning": "The formal target remains tied to the unshifted algorithm; it does not substitute the shifted log-sum-exp algorithm."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "The cited passage uses scalar absolute values and no vector norm.",
-      "lean_evidence": "Lean uses real abs for both the scalar error and scalar denominator.",
-      "reasoning": "The absolute-value operation is scalar and is not confused with a vector norm, although the target's normalization belongs to a different error statement."
+      "paper_evidence": "Vertical bars in equations (3.1)-(3.3) denote scalar absolute value; no vector norm occurs in the selected result.",
+      "lean_evidence": "Lean uses real abs, and the Real norm used by IsBigO is also absolute value.",
+      "reasoning": "The target remains a scalar componentwise and absolute forward-error analysis."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "The paper's addition-stage coefficients depend on partial-sum positions, the intended combined weights are n+2-i, and equation (3.3) uses (n+1)u.",
-      "lean_evidence": "Lean uses only gamma u (n-1), reflecting n-1 rounded additions and no exponential contribution.",
-      "reasoning": "The zero-based Fin indexing itself is sound, but the bound's coefficient and parameter dependence do not match the selected aggregate result."
+      "paper_evidence": "The paper's recursive bounds use exact partial sums t_i and coefficients n-1,n-1,n-2,...,1; the intended corrected equation (3.2) uses weights n+2-i, whose maximum gives n+1.",
+      "lean_evidence": "Lean's recursive clause uses one coefficient gamma(u,n-1) on the total absolute computed sum. Only the later aggregate leading constant n+1 is retained.",
+      "reasoning": "The aggregate constant is correct, but the order-sensitive coefficients and indexing content of the preceding paper bounds are lost."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "Equation (1.7) supplies the basic-operation model, equation (3.1) separately assumes accurate exp evaluation, and Section 3 explicitly excludes overflow and underflow.",
-      "lean_evidence": "StandardAddModel covers only total real addition, with no precision format, rounding mode, exceptional values, exponential implementation, overflow, or underflow.",
-      "reasoning": "Lean faithfully abstracts one addition assumption but does not encode the floating-point execution model needed for the paper result."
+      "status": "pass",
+      "paper_evidence": "Equation (1.7) gives deterministic relative-error arithmetic, equation (3.1) adds a relative exponential-error assumption, and Section 3 excludes overflow and underflow.",
+      "lean_evidence": "StandardAddModel and P14BasicSumExecution impose these relative-error equations over finite real outputs; run existence also forces u>=0.",
+      "reasoning": "The selected operations are modeled faithfully, although exceptional values are excluded structurally rather than by a separately named predicate."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The paper states additive absolute inequalities with an explicit first-order term plus O(u^2).",
-      "lean_evidence": "Lean states an exact normalized inequality against the rational gamma bound.",
-      "reasoning": "An exact gamma inequality for the isolated summation stage is not the same relation or logical strength as the paper's aggregate asymptotic inequality."
+      "status": "pass",
+      "paper_evidence": "The valid displayed claims use non-strict upper bounds, and equation (3.3) defines hat(s)=s+Delta s.",
+      "lean_evidence": "Lean uses <= for all error bounds and exact equality for the delta identity and envelope decomposition.",
+      "reasoning": "Inequality directions and equality meanings match once equation (3.2)'s typographical omission is treated under S14."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "Equation (3.3) is a scalar absolute forward-error result from the exact exponential sum s to the final recursively computed sum hat(s), incorporating both evaluation and addition errors.",
-      "lean_evidence": "Lean gives relative forward error only for recursively summing an already supplied sequence w.",
-      "reasoning": "An intermediate summation error has been substituted for the selected total forward error."
+      "status": "pass",
+      "paper_evidence": "Delta s is total additive forward error, while tilde(s)-hat(s) isolates accumulation error and hat(w_i)-w_i isolates exponential-evaluation error.",
+      "lean_evidence": "p14BasicSumDelta, p14ExactComputedExpSum, p14RecursiveComputedExpSum, and the componentwise computed-exp clause preserve these roles.",
+      "reasoning": "No backward, residual, relative-total, or normwise error notion is substituted."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "Every relevant displayed summation result retains O(u^2), and the paper explains its qualitative significance on PDF p. 7.",
-      "lean_evidence": "Lean has no remainder term; gamma sums a particular geometric-style finite-u bound under GammaValid.",
-      "reasoning": "The exact gamma expression neither records the paper's stated O(u^2) remainder nor its unquantified asymptotic meaning."
+      "status": "unclear",
+      "paper_evidence": "The last line labeled (3.2) literally prints sum_i(n+2-i)w_i+O(u^2) without u, despite both preceding sums carrying u and equation (3.3) restoring (n+1)u*s+O(u^2).",
+      "lean_evidence": "Lean uses the contextually intended first-order scaling and supplies the explicit remainder n(n+1)s*u^2/(1-nu); it neither states the malformed literal line nor records that an editorial correction was made.",
+      "reasoning": "The target is consistent with equation (3.3) and the evident intended correction, but not with a literal attribution of the final printed line of equation (3.2). Adjudication is required on whether P14-T1 is judged against the literal line or the coherent corrected derivation."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "P14-T1 analyzes the positive exponential sum produced by the unshifted basic algorithm, including evaluation and recursive-addition error.",
-      "lean_evidence": "The theorem generalizes the supplied terms to arbitrary nonnegative real sequences but specializes the computation to the addition-only intermediate stage.",
-      "reasoning": "This is an intermediate-lemma specialization. It does not provide the full benchmark result claimed by the source contract, so the specialization is not acceptable."
+      "status": "pass",
+      "paper_evidence": "The paper treats finite positive n, real inputs, and asymptotically small unit roundoff.",
+      "lean_evidence": "Lean uses finite positive n and real inputs, while replacing informal small-u notation by arbitrary nonbottom filter families u(t) tending to zero.",
+      "reasoning": "This is an explicit asymptotic formalization rather than a shifted-algorithm or precision-specific specialization."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "Positive exponential sums with ordinary floating-point additions provide nonempty instances of the paper assumptions.",
-      "lean_evidence": "For example, n=2, u=0.1, positive w, and a modeled fl_add with a nonzero bounded relative error satisfy GammaValid and can produce nonzero recursive-summation error.",
-      "reasoning": "The target has satisfiable, nontrivial cases. Its n=0 case is vacuous because the exact empty sum cannot satisfy hsum, but the theorem is not globally vacuous."
+      "paper_evidence": "For finite real x, every exact exponential is positive and the algorithm has ordinary finite executions when exceptional behavior is absent.",
+      "lean_evidence": "The hypotheses are satisfiable, for example with a nonnegative u-family tending to zero, exact addition, and zero exponential errors; n>0 makes exactSum positive.",
+      "reasoning": "Neither the filter clauses nor the execution structure make the theorem vacuous, and the error conclusion is not true merely because the exact sum vanishes."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "The Lean conclusion controls only recursive addition of supplied nonnegative values. It provides no bound on exponential-evaluation error and therefore cannot derive the paper's relation between exact s and final hat(s), its (n+1)u coefficient, or its O(u^2) remainder."
+      "reasoning": "Lean implies the aggregate equation (3.3) with a concrete O(u^2) witness, but its gamma(u,n-1)*sum_i|hat(w_i)| clause does not imply the paper's sharper u*sum_i|t_i|+O(u^2) or its position-dependent weighted specialization. The first-order excess on later terms is O(u), not absorbable into O(u^2)."
     },
     "paper_implies_lean": {
       "verdict": "no",
-      "reasoning": "The cited paper result is stated for exponential-generated quantities under no overflow or underflow and gives first-order bounds with O(u^2). It does not state the exact gamma u (n-1) inequality for every arbitrary nonnegative sequence and every StandardAddModel satisfying GammaValid."
+      "reasoning": "The printed passage supplies first-order bounds with an unspecified O(u^2) remainder. Those statements alone do not entail the target's particular exact rational envelope, its fixed quadratic remainder, or the exact gamma bound as stated for every admissible filter-parametric execution."
     }
   },
   "classification": "not-faithful-different",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
-      "severity": "critical",
-      "category": "missing-computation-stage",
-      "paper_evidence": "Equations (3.1)-(3.3) combine exponential-evaluation error with recursive-addition error to bound final hat(s) relative to exact s.",
-      "lean_evidence": "The target has no x, exp, computed exponential values, or exponential-error assumptions.",
-      "impact": "The theorem proves only an intermediate recursive-summation lemma and cannot establish the selected paper result."
+      "severity": "major",
+      "category": "recursive-summation-bound",
+      "paper_evidence": "Printed page 2317 bounds accumulation by u*sum_{i=1}^{n-1}|t_i|+O(u^2), then by an order-sensitive positive-term expression.",
+      "lean_evidence": "The target instead asserts an eventual gamma(u,n-1) multiple of the unweighted total sum of absolute computed terms.",
+      "impact": "The Lean clause loses the paper's first-order position-dependent sharpness and cannot directly recover the selected recursive bounds."
     },
     {
       "severity": "major",
-      "category": "different-bound",
-      "paper_evidence": "Equation (3.3) uses |Delta s| <= (n+1)u*s + O(u^2), after indexed first-order bounds.",
-      "lean_evidence": "The target uses an exact relative bound gamma u (n-1) = (n-1)u/(1-(n-1)u).",
-      "impact": "The constants, normalization, hypotheses, and higher-order semantics differ, so neither proposition implies the other as stated."
+      "category": "mixed-relation-strength",
+      "paper_evidence": "Equation (3.3) leaves its O(u^2) term unspecified.",
+      "lean_evidence": "The target adds a specific finite envelope and the exact remainder n(n+1)s*u^2/(1-nu).",
+      "impact": "Lean is more specific in its aggregate remainder while being less informative about the paper's weighted recursive error, so the statements have mixed strength rather than a single stronger-or-weaker relation."
     },
     {
       "severity": "major",
-      "category": "quantity-conflation",
-      "paper_evidence": "The paper separately defines exact s, exact tilde(s) formed from computed exponentials, and recursively computed hat(s).",
-      "lean_evidence": "Lean has only one supplied sequence w, its exact sum, and recursiveSum w.",
-      "impact": "The formal statement cannot express the decomposition on which the paper's total error analysis depends."
+      "category": "printed-missing-u",
+      "paper_evidence": "The final line of equation (3.2) is printed without u before the weighted sum, contradicting the immediately preceding line and equation (3.3).",
+      "lean_evidence": "The target follows the intended u-scaled aggregate equation (3.3) and contains no proposition corresponding to the literal malformed line.",
+      "impact": "The coherent mathematical reading supports the target's scaling, but a literal equation-(3.2) comparison differs and requires an adjudicated source-reading policy."
     },
     {
       "severity": "note",
-      "category": "source-typography",
-      "paper_evidence": "The literal last line of equation (3.2) omits u before the weighted sum, while the preceding line contains u and equation (3.3) restores the first-order u dependence.",
-      "lean_evidence": "Lean uses gamma rather than either the literal or intended equation (3.2) expression.",
-      "impact": "The source typo is real but does not create uncertainty in this judgment because equation (3.3) and the preceding derivation are clear, and the Lean target matches neither aggregate formulation."
+      "category": "asymptotic-encoding",
+      "paper_evidence": "The source uses informal first-order notation in a generic unit roundoff u.",
+      "lean_evidence": "The target quantifies a nonnegative family u(t) tending to zero and states most error bounds eventually.",
+      "impact": "This is a nonvacuous and reasonable rigorous encoding of asymptotics, not itself a faithfulness defect."
     }
   ],
-  "rationale": "The PDF hash was verified and the cited passage was checked with its surrounding Algorithm 3.1, equations (1.7), (3.1)-(3.3), and Section 3 assumptions. The Lean theorem is a coherent, nonvacuous exact gamma bound for left-to-right summation of arbitrary nonnegative real inputs under an abstract addition model. That is only the recursive-addition component of P14-T1. The paper result also models computed exponentials, distinguishes s, tilde(s), and hat(s), combines both error sources, and retains an O(u^2) remainder with aggregate coefficient n+1. Because the Lean theorem omits those obligations while asserting a different exact bound over a different domain, both implication directions fail and the result is not faithful-different."
+  "rationale": "The target correctly models the unshifted Algorithm 3.1 sum, separates exact and computed quantities, reproduces the componentwise exponential model, and proves the aggregate equation-(3.3) behavior with an explicit quadratic remainder. It is not directly equivalent to the whole selected paper passage because the paper's t_i and position-weighted recursive bounds are replaced by a materially different unweighted gamma bound, while the target simultaneously adds a specific finite envelope not stated by the paper. The printed missing-u error in equation (3.2) is real: the target follows the coherent intended scaling supported by the preceding line and equation (3.3), but the benchmark must adjudicate whether literal equation-(3.2) fidelity is required."
 }

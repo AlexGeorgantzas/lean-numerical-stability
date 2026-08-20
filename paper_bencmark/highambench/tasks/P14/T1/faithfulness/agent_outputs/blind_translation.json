@@ -1,480 +1,658 @@
 {
   "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "608e35f75ad860de70c845e29b159ef50c94cd3ed1ee1efb8c497c00e3e0da68",
+  "dossier_sha256": "41849ca34a1df2e38f65fa08815642eba40999c97af38874aba921bf8c5299db",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "For a real u and natural k, this predicate means that the real number k·u is strictly less than 1, where k is cast from Nat to Real.",
-      "effect_on_target": "With k = n ⊖ 1, it supplies the hypothesis (n ⊖ 1)u < 1, so the denominator 1 - (n ⊖ 1)u in the error bound is positive.",
+      "meaning": "For fixed n, x, and u, this is the type of run data consisting, via its constructor, of a floating-point model whose error parameter equals u and a vector of exponential relative errors bounded in absolute value by u.",
+      "effect_on_target": "The binder run supplies such data for every t, thereby implicitly enforcing u(t) >= 0, specifying the modeled addition operation, and providing the bounded errors used to define all computed quantities.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "This is the type of packages described by D007: a real parameter u, a proof 0 ≤ u, a binary real operation fl_add, an exact left-zero law fl_add(0,x)=x, and a relative-error model for every pair of real operands.",
-      "effect_on_target": "The universally quantified fp supplies both the error parameter u and the modeled addition operation used by the computed sum, together with their built-in guarantees.",
+      "meaning": "For v in the reals and k in the naturals, it is gamma_k(v) = (k v)/(1 - k v), with k cast to a real and Lean's total real division.",
+      "effect_on_target": "It gives gamma_{n-1}(u(t)) in the eventual summation-error bound and gamma_n(u(t)) inside the total-error bound.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "This projection extracts the third component of fp, namely its binary operation fl_add : Real → Real → Real.",
-      "effect_on_target": "The extracted operation is used at every internal addition of the recursively computed sum.",
+      "meaning": "For a run, it is the total computed error E = computedSum - exactSum.",
+      "effect_on_target": "Its absolute value is eventually bounded, and the target also states pointwise that computedSum = exactSum + E.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "This projection extracts the first component of fp, namely the real error parameter u.",
-      "effect_on_target": "The extracted u appears in the validity hypothesis and in the final factor ((n ⊖ 1)u)/(1-(n ⊖ 1)u).",
+      "meaning": "For n, v, and A, it is B_n(v,A) = (v + gamma_n(v)(1 + v))A.",
+      "effect_on_target": "This is the eventual upper bound for the absolute total error and is eventually decomposed into a first-order term plus the explicit remainder.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "For a real u and natural k, this defines γ_k = (k·u)/(1-k·u), with k cast to a real.",
-      "effect_on_target": "It is the right-hand side of the claimed relative-error bound, instantiated at k = n ⊖ 1.",
+      "meaning": "For n, A, and v, it is R_n(A,v) = n(n+1)A v^2/(1-nv), with natural numbers cast to reals and total real division.",
+      "effect_on_target": "It is the remainder in B_n(v,A) = (n+1)vA + R_n(A,v), and the target asserts R_n(A,u(t)) = O(u(t)^2) along l.",
       "status": "understood"
     },
     {
       "id": "D006",
       "name": "LocalDef006",
-      "meaning": "This defines a sequential computed sum. For no entries it returns 0; for one entry it returns that entry; and for k+1 entries with k ≥ 1 it recursively computes the first k entries and applies fl_add to that result and the last entry. Thus, for n ≥ 2, it is the left-associated value fl_add(...fl_add(fl_add(w₀,w₁),w₂)...,wₙ₋₁).",
-      "effect_on_target": "Its value is the computed quantity compared with the exact finite sum in the numerator of the relative error.",
+      "meaning": "For a run and index i, it is the modeled computed exponential y_i = exp(x_i)(1 + epsilon_i), where epsilon_i is the run's stored exponential error.",
+      "effect_on_target": "These y_i are bounded pointwise relative to exp(x_i), summed exactly in LocalDef007, and then summed with modeled floating-point addition in LocalDef009.",
       "status": "understood"
     },
     {
       "id": "D007",
       "name": "LocalDef007",
-      "meaning": "The constructor forms an fp package from u ∈ Real with 0 ≤ u, an operation fl_add satisfying fl_add(0,x)=x for every x, and the condition that for every x,y ∈ Real there exists a real δ, potentially depending on x and y, such that |δ| ≤ u and fl_add(x,y)=(x+y)(1+δ).",
-      "effect_on_target": "It encodes the operation's relative-error model and nonnegative unit-error parameter. Each addition in the computed sum may use its own existential error δ.",
+      "meaning": "It is the exact real-arithmetic sum q = sum over all i in Fin n of the modeled computed exponentials y_i.",
+      "effect_on_target": "The target eventually bounds the difference between q and the sequentially rounded sum.",
       "status": "understood"
     },
     {
       "id": "D008",
       "name": "LocalDef008",
-      "meaning": "For a natural n equal to 0, it proves 0 < n+1.",
-      "effect_on_target": "It only supplies the bound proof needed to construct the unique index 0 in the singleton branch of the computed-sum definition; it adds no mathematical hypothesis to the theorem.",
+      "meaning": "For x, it is the exact sum A = sum over all i in Fin n of exp(x_i).",
+      "effect_on_target": "It is bound locally as exactSum, asserted positive, and used in the total error, its bound, and the remainder formula.",
       "status": "understood"
     },
     {
       "id": "D009",
       "name": "LocalDef009",
-      "meaning": "This is a dependent case splitter for a natural-sized vector: it applies one branch when the size is 0 and another branch when the size is n+1.",
-      "effect_on_target": "It implements the empty-versus-nonempty split in the computed-sum definition.",
+      "meaning": "It is the result of applying the run's modeled floating-point addition recursively and left-to-right to the modeled computed exponentials.",
+      "effect_on_target": "This is the final computed sum whose summation error and total error are analyzed.",
       "status": "understood"
     },
     {
       "id": "D010",
-      "name": "DivInvMonoid.toDiv",
-      "meaning": "This projection extracts the division operation from a DivInvMonoid structure.",
-      "effect_on_target": "For Real, it underlies division in both the relative-error ratio and γ_{n⊖1}.",
+      "name": "LocalDef010",
+      "meaning": "It projects the exponential-error vector epsilon : Fin n -> Real from a run.",
+      "effect_on_target": "The projected errors enter y_i = exp(x_i)(1+epsilon_i) and are bounded by the run invariant.",
       "status": "understood"
     },
     {
       "id": "D011",
-      "name": "Fin",
-      "meaning": "Fin n is the finite index type whose elements are natural numbers strictly less than n.",
-      "effect_on_target": "It makes w an n-component real vector indexed by 0 through n-1.",
+      "name": "LocalDef011",
+      "meaning": "It projects the floating-point model from a run.",
+      "effect_on_target": "The projected model supplies the addition operation and its error parameter for the sequential sum.",
       "status": "understood"
     },
     {
       "id": "D012",
-      "name": "Fin.fintype",
-      "meaning": "This gives Fin n its finite enumeration, consisting of all indices 0 through n-1 without repetition.",
-      "effect_on_target": "It permits summation over every component of w.",
+      "name": "LocalDef012",
+      "meaning": "This constructor builds a run from a floating-point model fp, a proof that fp.u = u, an error vector epsilon, and proofs |epsilon_i| <= u for every i.",
+      "effect_on_target": "It makes the constraints on every run explicit and implies u(t) is nonnegative because the associated floating-point model requires a nonnegative error parameter.",
       "status": "understood"
     },
     {
       "id": "D013",
-      "name": "Finset.sum",
-      "meaning": "This maps a function over a finite set and adds all resulting values using the additive commutative monoid operation.",
-      "effect_on_target": "It forms the exact real sum S = Σ_{i∈Fin n} w_i.",
+      "name": "LocalDef013",
+      "meaning": "It projects the binary modeled floating-point addition operation from a floating-point model.",
+      "effect_on_target": "This operation is used at every nontrivial step of the recursive summation.",
       "status": "understood"
     },
     {
       "id": "D014",
-      "name": "Finset.univ",
-      "meaning": "For a finite type, univ is the finite set containing every element of that type.",
-      "effect_on_target": "It makes the exact sum range over all n indices of w.",
+      "name": "LocalDef014",
+      "meaning": "Given a binary operation op, dimension m, and v : Fin m -> Real, it defines T_0(v)=0 and T_{k+1}(v)=v_0 when k=0, while for k>0 it defines T_{k+1}(v)=op(T_k(v restricted to its first k entries),v_k).",
+      "effect_on_target": "With op equal to the run's floating-point addition and v equal to the modeled exponentials, it produces the left-to-right sequential computed sum; for one input it returns that input without performing an addition.",
       "status": "understood"
     },
     {
       "id": "D015",
-      "name": "HDiv.hDiv",
-      "meaning": "This projection applies the division operation supplied by an HDiv instance.",
-      "effect_on_target": "It expresses both quotients in the final inequality as ordinary real division.",
+      "name": "LocalDef015",
+      "meaning": "This is the type of floating-point addition models described by constructor D019.",
+      "effect_on_target": "Every run contains one such model, which supplies a nonnegative error bound and a binary addition satisfying a standard relative-error property.",
       "status": "understood"
     },
     {
       "id": "D016",
-      "name": "HSub.hSub",
-      "meaning": "This projection applies the subtraction operation supplied by an HSub instance.",
-      "effect_on_target": "It expresses real subtraction in the error numerator and denominator of γ, and natural truncated subtraction in n ⊖ 1.",
+      "name": "LocalDef016",
+      "meaning": "It projects the real error parameter u from a floating-point model.",
+      "effect_on_target": "The run constructor equates this parameter with the externally supplied value u(t).",
       "status": "understood"
     },
     {
       "id": "D017",
-      "name": "LE.le",
-      "meaning": "This projection is the non-strict order relation supplied by an LE instance.",
-      "effect_on_target": "For Real it expresses nonnegativity, the bounds |δ| ≤ u, and the final error inequality.",
+      "name": "LocalDef017",
+      "meaning": "It proves that if a natural number k equals zero, then 0 < k+1.",
+      "effect_on_target": "It supplies the proof needed to form index 0 in the singleton branch of the recursive sum and imposes no additional mathematical hypothesis.",
       "status": "understood"
     },
     {
       "id": "D018",
-      "name": "Nat",
-      "meaning": "Nat is the type of natural numbers, including zero.",
-      "effect_on_target": "The dimension n and the operation count n ⊖ 1 are natural numbers.",
+      "name": "LocalDef018",
+      "meaning": "It is dependent elimination on a natural-number dimension, selecting a base case for vectors of length zero or a successor case for vectors of length n+1.",
+      "effect_on_target": "It implements the zero-versus-successor case split inside the recursive summation.",
       "status": "understood"
     },
     {
       "id": "D019",
-      "name": "Ne",
-      "meaning": "Ne(a,b) means that equality a=b implies False; equivalently, a and b are unequal.",
-      "effect_on_target": "It states that the exact sum S is not zero, ensuring that the relative-error denominator |S| is nonzero.",
+      "name": "LocalDef019",
+      "meaning": "This constructor forms a floating-point model from u >= 0 and an operation fl_add such that fl_add(0,x)=x and, for every real x,y, there exists a delta depending on x and y with |delta| <= u and fl_add(x,y)=(x+y)(1+delta).",
+      "effect_on_target": "It supplies the exact modeled arithmetic assumptions behind each sequential addition; the existential rounding-error witness may vary with the two operands.",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "OfNat.ofNat",
-      "meaning": "This interprets a natural-number literal in a type equipped with the corresponding OfNat instance.",
-      "effect_on_target": "It supplies the literals 0 and 1 used throughout the proposition and its definitions.",
+      "name": "And",
+      "meaning": "It is logical conjunction.",
+      "effect_on_target": "It combines the seven asserted conclusions into one nested conjunction.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "Real",
-      "meaning": "Real is the type of mathematical real numbers.",
-      "effect_on_target": "All vector entries, sums, errors, operation inputs and outputs, and bounds are exact real-valued mathematical quantities.",
+      "name": "Asymptotics.IsBigO",
+      "meaning": "IsBigO l f g means that there exists a real constant C such that, eventually along l, norm(f(t)) <= C norm(g(t)).",
+      "effect_on_target": "It states that the explicit rational remainder R_n(A,u(t)) has order at most u(t)^2 along l, using the real absolute-value norm.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "Real.instAddCommMonoid",
-      "meaning": "This gives Real its commutative additive monoid structure with ordinary addition and zero.",
-      "effect_on_target": "It supplies the algebraic structure used to define the exact finite sum.",
+      "name": "Eq",
+      "meaning": "It is propositional equality.",
+      "effect_on_target": "It expresses model identities, the eventual exact decomposition of the error bound, and the pointwise computedSum = exactSum + error identity.",
       "status": "understood"
     },
     {
       "id": "D023",
-      "name": "Real.instAddGroup",
-      "meaning": "This gives Real its additive group structure, including negation.",
-      "effect_on_target": "It supports ordinary real subtraction and the absolute-value construction.",
+      "name": "Filter",
+      "meaning": "A filter on a type specifies which sets or predicates hold eventually.",
+      "effect_on_target": "The arbitrary filter l determines the limiting regime and the meaning of all eventual and big-O assertions.",
       "status": "understood"
     },
     {
       "id": "D024",
-      "name": "Real.instDivInvMonoid",
-      "meaning": "This supplies the ordinary multiplicative, inversion, and division structure on Real.",
-      "effect_on_target": "It determines the real quotients used in the relative error and γ_{n⊖1}; the theorem's hypotheses keep their displayed denominators nonzero.",
+      "name": "Filter.Eventually",
+      "meaning": "Eventually p l means that the set of points t satisfying p(t) belongs to the filter l.",
+      "effect_on_target": "It qualifies the summation-error bound, total-error bound, and algebraic decomposition as holding only eventually along l.",
       "status": "understood"
     },
     {
       "id": "D025",
-      "name": "Real.instLE",
-      "meaning": "This supplies the usual non-strict order ≤ on real numbers.",
-      "effect_on_target": "It interprets all nonnegativity and upper-bound assertions as ordinary real inequalities.",
+      "name": "Filter.NeBot",
+      "meaning": "It asserts that the filter is not the bottom, or improper, filter.",
+      "effect_on_target": "It prevents eventual statements from becoming automatically true merely because every set belongs to l.",
       "status": "understood"
     },
     {
       "id": "D026",
-      "name": "Real.instSub",
-      "meaning": "Real subtraction is defined by a-b = a+(-b).",
-      "effect_on_target": "It forms the computed-minus-exact error and the denominator 1-(n⊖1)u.",
+      "name": "Filter.Tendsto",
+      "meaning": "Tendsto u l l' means map u l <= l', equivalently that the preimage under u of every l'-eventual set is l-eventual.",
+      "effect_on_target": "With l' the neighborhood filter of 0, it is the hypothesis that u(t) tends to zero along l.",
       "status": "understood"
     },
     {
       "id": "D027",
-      "name": "Real.instZero",
-      "meaning": "This supplies the real number 0.",
-      "effect_on_target": "It is used in nonnegativity assumptions, the nonzero-sum assumption, the empty computed sum, and the left-zero law.",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type consisting of natural numbers i with 0 <= i < n.",
+      "effect_on_target": "It indexes the n inputs, exponential errors, computed exponentials, and finite sums.",
       "status": "understood"
     },
     {
       "id": "D028",
-      "name": "Real.lattice",
-      "meaning": "This gives Real its lattice order operations, including maximum.",
-      "effect_on_target": "Together with the additive group structure, it makes abs(a)=max(a,-a), the usual real absolute value.",
+      "name": "Fin.fintype",
+      "meaning": "It gives the canonical finite enumeration of Fin n.",
+      "effect_on_target": "It permits summation over every one of the n indices.",
       "status": "understood"
     },
     {
       "id": "D029",
-      "name": "Zero.toOfNat0",
-      "meaning": "This converts a Zero instance into the interpretation of the numeral 0.",
-      "effect_on_target": "It ensures every displayed real zero denotes the additive zero of Real.",
+      "name": "Finset.sum",
+      "meaning": "It sums a function over the elements of a finite set in an additive commutative monoid.",
+      "effect_on_target": "It forms the exact exponential sum, the exact sum of modeled computed exponentials, and the sum of their absolute values.",
       "status": "understood"
     },
     {
       "id": "D030",
-      "name": "abs",
-      "meaning": "For an ordered additive group, abs(a) is max(a,-a); on Real this is the ordinary absolute value |a|.",
-      "effect_on_target": "It measures the scalar forward error, the exact-sum magnitude in the relative-error denominator, and the local errors |δ|.",
+      "name": "Finset.univ",
+      "meaning": "For a finite type, it is the finite set containing every element of that type.",
+      "effect_on_target": "It makes each finite sum range over all indices in Fin n.",
       "status": "understood"
     },
     {
       "id": "D031",
-      "name": "instHDiv",
-      "meaning": "This lifts a homogeneous Div operation into an HDiv operation with the same input and output type.",
-      "effect_on_target": "It connects Real's division structure to the quotient syntax used in the target.",
+      "name": "HAdd.hAdd",
+      "meaning": "It applies the addition operation supplied by an HAdd instance.",
+      "effect_on_target": "For reals it denotes ordinary addition in expressions such as 1+u, n+1 after casting, and exactSum+error.",
       "status": "understood"
     },
     {
       "id": "D032",
-      "name": "instHSub",
-      "meaning": "This lifts a homogeneous Sub operation into an HSub operation with the same input and output type.",
-      "effect_on_target": "It connects real and natural subtraction instances to the subtraction syntax used in the target.",
+      "name": "HMul.hMul",
+      "meaning": "It applies the multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "For reals it denotes all products appearing in computed values, bounds, and remainder formulas.",
       "status": "understood"
     },
     {
       "id": "D033",
-      "name": "instOfNatNat",
-      "meaning": "For each natural n, this interprets the natural literal n as itself in Nat.",
-      "effect_on_target": "It supplies the natural literal 1 in n ⊖ 1 and related size expressions.",
+      "name": "HPow.hPow",
+      "meaning": "It applies the power operation supplied by an HPow instance.",
+      "effect_on_target": "It forms the square u(t)^2 in the explicit remainder and in the big-O comparison function.",
       "status": "understood"
     },
     {
       "id": "D034",
-      "name": "instSubNat",
-      "meaning": "This supplies natural-number subtraction Nat.sub, which truncates at zero.",
-      "effect_on_target": "Consequently n-1 in the proposition is n ⊖ 1 = max(n-1,0), not integer subtraction.",
+      "name": "HSub.hSub",
+      "meaning": "It applies the subtraction operation supplied by an HSub instance.",
+      "effect_on_target": "It gives ordinary real subtraction in errors and denominators, while its natural-number occurrence n-1 is truncated natural subtraction.",
       "status": "understood"
     },
     {
       "id": "D035",
-      "name": "Eq",
-      "meaning": "Eq is propositional equality.",
-      "effect_on_target": "It appears in the fp laws, the nonzero condition through its negation, and the case distinction n=0 in the computed sum.",
+      "name": "LE.le",
+      "meaning": "It is the less-than-or-equal relation supplied by an LE instance.",
+      "effect_on_target": "For reals it expresses all error bounds and nonnegativity conditions.",
       "status": "understood"
     },
     {
       "id": "D036",
-      "name": "Fin.castSucc",
-      "meaning": "This embeds an index i< n into Fin(n+1) without changing its numerical value.",
-      "effect_on_target": "It restricts a vector of length n+1 to its first n entries during recursive summation.",
+      "name": "LT.lt",
+      "meaning": "It is the strict less-than relation supplied by an LT instance.",
+      "effect_on_target": "It expresses both the assumption 0<n and the conclusion 0<exactSum.",
       "status": "understood"
     },
     {
       "id": "D037",
-      "name": "Fin.last",
-      "meaning": "Fin.last n is the index n in Fin(n+1), the last index of a vector of length n+1.",
-      "effect_on_target": "It selects the final entry added after recursively summing the preceding entries.",
+      "name": "Monoid.toNatPow",
+      "meaning": "It supplies natural-number powers in a monoid by repeated multiplication.",
+      "effect_on_target": "For the real multiplicative monoid it interprets u(t)^2 as the ordinary square.",
       "status": "understood"
     },
     {
       "id": "D038",
-      "name": "Fin.mk",
-      "meaning": "Given a natural value i and a proof i<n, this constructs the corresponding element of Fin n.",
-      "effect_on_target": "It constructs index 0 in the singleton-vector branch of the computed-sum definition.",
+      "name": "Nat",
+      "meaning": "It is the type of natural numbers.",
+      "effect_on_target": "The natural number n is the positive finite dimension, and natural numbers also provide n-1, n+1, and exponent 2.",
       "status": "understood"
     },
     {
       "id": "D039",
-      "name": "HAdd.hAdd",
-      "meaning": "This projection applies the addition operation supplied by an HAdd instance.",
-      "effect_on_target": "It expresses exact real additions x+y and 1+δ in the error model and natural addition n+1 in size expressions.",
+      "name": "Nat.cast",
+      "meaning": "It maps a natural number to the corresponding element of a type with natural-number casts.",
+      "effect_on_target": "It interprets n and n+1 as real coefficients in gamma, the first-order term, and the remainder.",
       "status": "understood"
     },
     {
       "id": "D040",
-      "name": "HMul.hMul",
-      "meaning": "This projection applies the multiplication operation supplied by an HMul instance.",
-      "effect_on_target": "It expresses k·u, (x+y)(1+δ), and the numerator of γ_k.",
+      "name": "OfNat.ofNat",
+      "meaning": "It interprets a natural-number literal in the requested type.",
+      "effect_on_target": "It supplies the literals 0, 1, and 2 as naturals or reals throughout the proposition.",
       "status": "understood"
     },
     {
       "id": "D041",
-      "name": "LT.lt",
-      "meaning": "This projection is the strict order relation supplied by an LT instance.",
-      "effect_on_target": "For Real it states (n⊖1)u<1; for Nat it supplies index-bound propositions.",
+      "name": "One.toOfNat1",
+      "meaning": "It interprets the literal 1 using a type's multiplicative identity.",
+      "effect_on_target": "It supplies the real number 1 in relative-error factors and rational denominators.",
       "status": "understood"
     },
     {
       "id": "D042",
-      "name": "Nat.below",
-      "meaning": "For a motive indexed by natural numbers, Nat.below t packages motive values for all smaller natural indices below t.",
-      "effect_on_target": "It provides previously computed smaller-size sums to the course-of-values recursion defining LocalDef006.",
+      "name": "PseudoMetricSpace.toUniformSpace",
+      "meaning": "It derives a uniform-space structure from a pseudo-metric-space structure.",
+      "effect_on_target": "It participates in deriving the standard topology on the reals used by the neighborhood filter at zero.",
       "status": "understood"
     },
     {
       "id": "D043",
-      "name": "Nat.brecOn",
-      "meaning": "This is course-of-values recursion on Nat: at size t, the defining function may use results at every smaller size.",
-      "effect_on_target": "It implements recursion from the sum of a length-n vector to the sum of its first n-1 entries.",
+      "name": "Real",
+      "meaning": "It is the type of real numbers.",
+      "effect_on_target": "All inputs, errors, computed quantities, bounds, and asymptotic functions are real-valued.",
       "status": "understood"
     },
     {
       "id": "D044",
-      "name": "Nat.cast",
-      "meaning": "This maps a natural number into a type with a NatCast instance; for Real it gives the corresponding nonnegative integer-valued real.",
-      "effect_on_target": "It interprets n ⊖ 1 as a real multiplier in the validity condition and γ_{n⊖1}.",
+      "name": "Real.exp",
+      "meaning": "It is the real exponential function exp(x), defined through the real part of the complex exponential on a real input.",
+      "effect_on_target": "It supplies each exact term exp(x_i), which is also multiplied by the modeled relative exponential error.",
       "status": "understood"
     },
     {
       "id": "D045",
-      "name": "Nat.succ",
-      "meaning": "Nat.succ maps n to its successor n+1.",
-      "effect_on_target": "It represents nonempty vector dimensions in the recursive computed-sum definition.",
+      "name": "Real.instAdd",
+      "meaning": "It is ordinary addition on the real numbers.",
+      "effect_on_target": "It interprets all real additions in the definitions and conclusions.",
       "status": "understood"
     },
     {
       "id": "D046",
-      "name": "Not",
-      "meaning": "Not(P) means P implies False.",
-      "effect_on_target": "It gives the logical content of S ≠ 0 and of the false branch in the decidable test n=0.",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "It is the additive commutative-monoid structure on the reals.",
+      "effect_on_target": "It makes the finite real sums well-defined with zero as the empty sum.",
       "status": "understood"
     },
     {
       "id": "D047",
-      "name": "One.toOfNat1",
-      "meaning": "This converts a One instance into the interpretation of the numeral 1.",
-      "effect_on_target": "It supplies the real 1 in the validity condition, γ denominator, and local factor 1+δ.",
+      "name": "Real.instAddGroup",
+      "meaning": "It is the additive-group structure on the reals.",
+      "effect_on_target": "It supplies negation and subtraction behavior needed by real absolute values.",
       "status": "understood"
     },
     {
       "id": "D048",
-      "name": "Real.instLT",
-      "meaning": "This supplies the usual strict order < on real numbers.",
-      "effect_on_target": "It interprets the validity condition as the ordinary strict real inequality (n⊖1)u<1.",
+      "name": "Real.instLE",
+      "meaning": "It is the ordinary non-strict order on the reals.",
+      "effect_on_target": "It interprets every real inequality in the model and target.",
       "status": "understood"
     },
     {
       "id": "D049",
-      "name": "Real.instMul",
-      "meaning": "This supplies ordinary multiplication on Real.",
-      "effect_on_target": "It determines all products in the error model, validity condition, and error-bound factor.",
+      "name": "Real.instLT",
+      "meaning": "It is the ordinary strict order on the reals.",
+      "effect_on_target": "It interprets the positivity assertion for exactSum.",
       "status": "understood"
     },
     {
       "id": "D050",
-      "name": "Real.instNatCast",
-      "meaning": "This supplies the canonical embedding of natural numbers into Real.",
-      "effect_on_target": "It turns the natural operation count n ⊖ 1 into its corresponding real value.",
+      "name": "Real.instMonoid",
+      "meaning": "It is the multiplicative monoid structure on the reals.",
+      "effect_on_target": "It supplies repeated multiplication for the square u(t)^2.",
       "status": "understood"
     },
     {
       "id": "D051",
-      "name": "Real.instOne",
-      "meaning": "This supplies the real multiplicative identity 1.",
-      "effect_on_target": "It interprets the constant 1 in (n⊖1)u<1, 1-(n⊖1)u, and 1+δ.",
+      "name": "Real.instMul",
+      "meaning": "It is ordinary multiplication on the real numbers.",
+      "effect_on_target": "It interprets products in all computed values, error models, bounds, and decompositions.",
       "status": "understood"
     },
     {
       "id": "D052",
-      "name": "dite",
-      "meaning": "This is a dependent if-then-else that selects a branch using a decidable proposition and passes the corresponding proof to that branch.",
-      "effect_on_target": "It distinguishes the singleton predecessor case n=0 from the genuinely recursive case n≠0 in LocalDef006.",
+      "name": "Real.instNatCast",
+      "meaning": "It is the standard embedding of natural numbers into the reals.",
+      "effect_on_target": "It turns n and related natural coefficients into real scalars.",
       "status": "understood"
     },
     {
       "id": "D053",
-      "name": "instAddNat",
-      "meaning": "This supplies ordinary natural-number addition.",
-      "effect_on_target": "It interprets dimensions written as n+1 in the recursive vector decomposition.",
+      "name": "Real.instOne",
+      "meaning": "It is the multiplicative identity 1 in the reals.",
+      "effect_on_target": "It supplies the constant 1 in all relative-error and denominator expressions.",
       "status": "understood"
     },
     {
       "id": "D054",
-      "name": "instDecidableEqNat",
-      "meaning": "This decides equality of natural numbers.",
-      "effect_on_target": "It makes the computed-sum branch test n=0 executable; it introduces no extra theorem assumption.",
+      "name": "Real.instSub",
+      "meaning": "It is ordinary real subtraction, implemented as addition of the negative.",
+      "effect_on_target": "It forms computed-minus-exact errors and denominators 1-ku.",
       "status": "understood"
     },
     {
       "id": "D055",
-      "name": "instHAdd",
-      "meaning": "This lifts a homogeneous Add operation into an HAdd operation.",
-      "effect_on_target": "It connects ordinary real and natural addition to the addition syntax used in the definitions.",
+      "name": "Real.instZero",
+      "meaning": "It is the real number zero.",
+      "effect_on_target": "It supplies the limit point, positivity comparisons, the recursive empty sum, and additive identities.",
       "status": "understood"
     },
     {
       "id": "D056",
-      "name": "instHMul",
-      "meaning": "This lifts a homogeneous Mul operation into an HMul operation.",
-      "effect_on_target": "It connects ordinary real multiplication to the multiplication syntax used in the validity condition, error model, and bound.",
+      "name": "Real.lattice",
+      "meaning": "It is the lattice order structure on the reals.",
+      "effect_on_target": "Together with the additive group, it supports the real absolute-value operation.",
       "status": "understood"
     },
     {
       "id": "D057",
-      "name": "And",
-      "meaning": "And(P,Q) is logical conjunction requiring both P and Q.",
-      "effect_on_target": "For each local-error witness δ, it requires both |δ|≤u and the exact equation fl_add(x,y)=(x+y)(1+δ).",
+      "name": "Real.norm",
+      "meaning": "It is the real norm defined by norm(r)=|r|.",
+      "effect_on_target": "It makes the big-O statement an eventual comparison of absolute values.",
       "status": "understood"
     },
     {
       "id": "D058",
-      "name": "Exists",
-      "meaning": "Exists(P) asserts that there is a witness satisfying predicate P.",
-      "effect_on_target": "The operation model provides a possibly different real witness δ for each operand pair and therefore for each executed addition.",
+      "name": "Real.pseudoMetricSpace",
+      "meaning": "It is the standard real pseudo-metric structure with distance dist(x,y)=|x-y|.",
+      "effect_on_target": "It induces the usual topology in which u(t) tends to zero.",
       "status": "understood"
     },
     {
       "id": "D059",
-      "name": "Nat.casesOn",
-      "meaning": "This eliminates a natural number by separate zero and successor cases.",
-      "effect_on_target": "It is the underlying zero-versus-successor case analysis used by LocalDef009.",
+      "name": "UniformSpace.toTopologicalSpace",
+      "meaning": "It extracts the topological-space structure induced by a uniform space.",
+      "effect_on_target": "It provides the standard real topology used by nhds(0).",
       "status": "understood"
     },
     {
       "id": "D060",
-      "name": "Nat.zero",
-      "meaning": "This is the natural number 0.",
-      "effect_on_target": "It is the empty dimension and the value against which predecessor sizes are tested.",
+      "name": "Zero.toOfNat0",
+      "meaning": "It interprets the literal 0 using a type's zero element.",
+      "effect_on_target": "It supplies real and natural zeros in the target and its definitions.",
       "status": "understood"
     },
     {
       "id": "D061",
-      "name": "Real.instAdd",
-      "meaning": "This supplies ordinary addition on Real.",
-      "effect_on_target": "It determines the exact x+y and 1+δ occurring in the modeled-addition equation.",
+      "name": "abs",
+      "meaning": "In an ordered additive group it defines |a| as max(a,-a); on the reals this is ordinary absolute value.",
+      "effect_on_target": "It measures exponential, summation, total, and operation errors and also equals the real norm in the big-O claim.",
       "status": "understood"
     },
     {
       "id": "D062",
+      "name": "instHAdd",
+      "meaning": "It promotes an ordinary homogeneous addition operation to HAdd.",
+      "effect_on_target": "It routes every homogeneous real or natural addition expression to the corresponding ordinary addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "instHMul",
+      "meaning": "It promotes an ordinary homogeneous multiplication operation to HMul.",
+      "effect_on_target": "It routes every homogeneous real multiplication expression to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "instHPow",
+      "meaning": "It promotes a power operation to HPow.",
+      "effect_on_target": "It routes the real base and natural exponent expression u(t)^2 to natural real exponentiation.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "instHSub",
+      "meaning": "It promotes an ordinary homogeneous subtraction operation to HSub.",
+      "effect_on_target": "It routes real subtraction to ordinary real subtraction and natural subtraction to truncated natural subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
       "name": "instLTNat",
-      "meaning": "This supplies the usual strict order < on natural numbers.",
-      "effect_on_target": "It provides the bounds carried by Fin indices and the proof that index 0 exists in a singleton vector; it does not add a numerical hypothesis to the target.",
+      "meaning": "It is the standard strict order on natural numbers.",
+      "effect_on_target": "It interprets the dimension assumption 0<n and index-bound proofs.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "instOfNatNat",
+      "meaning": "It interprets each natural-number literal as itself in Nat.",
+      "effect_on_target": "It supplies natural literals such as 0, 1, and 2 without changing their values.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "instSubNat",
+      "meaning": "It is natural-number subtraction, truncated at zero.",
+      "effect_on_target": "It interprets n-1 in gamma_{n-1}; because the target assumes n>0, this is the ordinary predecessor of n.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "nhds",
+      "meaning": "For a point in a topological space, it is that point's neighborhood filter.",
+      "effect_on_target": "nhds(0) is the target filter in the hypothesis that u tends to zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "It extracts division from a division-inverse monoid.",
+      "effect_on_target": "It supplies real division in gamma and the explicit remainder.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "HDiv.hDiv",
+      "meaning": "It applies the division operation supplied by an HDiv instance.",
+      "effect_on_target": "It forms the quotients with denominators 1-ku.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "It is the standard total division and inverse structure on the real numbers.",
+      "effect_on_target": "It interprets gamma_k(v) and R_n(A,v); in Lean, these expressions remain defined even when their displayed denominator is zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "instHDiv",
+      "meaning": "It promotes an ordinary homogeneous division operation to HDiv.",
+      "effect_on_target": "It routes the quotients in LocalDef002 and LocalDef005 to ordinary total real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "Fin.castSucc",
+      "meaning": "It embeds Fin n into Fin(n+1) while preserving the numerical index.",
+      "effect_on_target": "It restricts a successor-length input vector to its first n entries in the recursive summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "Fin.last",
+      "meaning": "Fin.last n is the final index n of Fin(n+1).",
+      "effect_on_target": "It selects the last input to be combined with the recursively summed prefix.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "Fin.mk",
+      "meaning": "It constructs a member of Fin n from a natural value together with a proof that the value is less than n.",
+      "effect_on_target": "It constructs index 0 in the singleton branch of the recursive sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "Nat.below",
+      "meaning": "For course-of-values recursion, it packages recursive results for all smaller natural numbers.",
+      "effect_on_target": "It makes the result for the prefix dimension available when computing the next sequential-sum value.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "Nat.brecOn",
+      "meaning": "It is course-of-values recursion on natural numbers.",
+      "effect_on_target": "It defines the recursive summation for every vector length while exposing prior-length results.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "Nat.succ",
+      "meaning": "It maps n to its successor n+1.",
+      "effect_on_target": "It represents successor dimensions in the recursive summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "Not",
+      "meaning": "Not P means P implies False.",
+      "effect_on_target": "It supplies the proof parameter for the false branch of the dependent test of whether a dimension equals zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "dite",
+      "meaning": "It is a dependent if-then-else whose selected branch receives a proof of the condition or its negation.",
+      "effect_on_target": "It distinguishes the singleton summation case from the longer-vector recursive addition case.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "instAddNat",
+      "meaning": "It is ordinary addition on natural numbers.",
+      "effect_on_target": "It interprets successor-size expressions written as n+1.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "instDecidableEqNat",
+      "meaning": "It decides equality of natural numbers.",
+      "effect_on_target": "It makes the recursive test n=0 computationally decidable.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "Nat.casesOn",
+      "meaning": "It performs the standard zero-or-successor case split on a natural number.",
+      "effect_on_target": "It implements the dimension split used by LocalDef018.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "Nat.zero",
+      "meaning": "It is the natural number zero.",
+      "effect_on_target": "It is the base dimension in the recursive sum and participates in zero tests.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "Exists",
+      "meaning": "It is existential quantification.",
+      "effect_on_target": "For each pair of operands x,y in the floating-point addition model, it asserts the existence of a pair-dependent relative-error witness delta satisfying the required bound and exact operation equation.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "fp is a package with a real parameter u and a binary real operation fl_add satisfying the structural conditions listed below.",
-      "n is an arbitrary natural number.",
-      "w : Fin n → Real is an n-component real vector, with entries w₀,…,wₙ₋₁ when n>0."
+      "A natural number n together with the assumption 0<n.",
+      "An arbitrary type iota and a filter l on iota equipped with the non-bottom condition l.NeBot.",
+      "A vector x : Fin n -> Real, equivalently n real inputs x_0,...,x_{n-1}.",
+      "A real-valued function u : iota -> Real.",
+      "For every t in iota, run(t) is run data at error parameter u(t), containing a floating-point addition model and an error epsilon_{t,i} for each exponential."
     ],
     "hypotheses": [
-      "The fp package has 0 ≤ u.",
-      "For every real x, fl_add(0,x)=x.",
-      "For every real x and y, there exists a real δ depending on x and y such that |δ|≤u and fl_add(x,y)=(x+y)(1+δ).",
-      "With m = n ⊖ 1 = max(n-1,0), one has m·u<1.",
-      "Every component is nonnegative: 0≤w_i for every i∈Fin n.",
-      "The exact sum S=Σ_{i∈Fin n}w_i is nonzero."
+      "The function u tends to 0 along the filter l.",
+      "For each t, the model stored in run(t) has a nonnegative parameter equal to u(t), has fl_add_t(0,z)=z, and satisfies: for every real a,b there exists delta depending on a,b with |delta|<=u(t) and fl_add_t(a,b)=(a+b)(1+delta).",
+      "For every t and i, the stored exponential error satisfies |epsilon_{t,i}|<=u(t)."
     ],
     "conclusions": [
-      "If Ŝ is the sequentially computed sum defined below, then |Ŝ-S|/|S| ≤ (m·u)/(1-m·u), where m=n⊖1."
+      "The exact sum A = sum_{i=0}^{n-1} exp(x_i) is strictly positive.",
+      "For every t and i, if y_{t,i}=exp(x_i)(1+epsilon_{t,i}), then |y_{t,i}-exp(x_i)| <= u(t) exp(x_i).",
+      "Eventually along l, |q_t-s_hat_t| <= gamma_{n-1}(u(t)) sum_i |y_{t,i}|, where q_t=sum_i y_{t,i}, s_hat_t is their modeled left-to-right floating-point sum, and gamma_k(v)=kv/(1-kv).",
+      "Eventually along l, |E_t| <= B_n(u(t),A), where E_t=s_hat_t-A and B_n(v,A)=(v+gamma_n(v)(1+v))A.",
+      "Eventually along l, the bound satisfies the exact identity B_n(u(t),A)=(n+1)u(t)A+R_n(A,u(t)), where R_n(A,v)=n(n+1)A v^2/(1-nv).",
+      "Along l, R_n(A,u(t)) is big-O of u(t)^2 in the real absolute-value norm.",
+      "For every t, s_hat_t=A+E_t."
     ],
     "mathematical_definitions": [
-      "Set m = n ⊖ 1, using natural subtraction truncated at zero.",
-      "Set S = Σ_{i=0}^{n-1} w_i, the exact real sum of all entries.",
-      "Define the computed sum by Ŝ₀=0 for an empty vector, Ŝ₁=w₀ for a singleton vector, and Ŝ_{k+1}=fl_add(Ŝ_k,w_k) for k≥1. Thus Ŝ=Ŝ_n is a fixed left-to-right, left-associated sequential sum using exactly n-1 modeled additions when n≥1.",
-      "Define γ_m = (m·u)/(1-m·u). The hypothesis m·u<1 makes its denominator strictly positive.",
-      "Every absolute value is the ordinary scalar real absolute value; no vector norm occurs."
+      "Let I_n={0,...,n-1}, represented by Fin n, and let A=sum_{i in I_n} exp(x_i).",
+      "For each t and i, let epsilon_{t,i} be the run's stored exponential error and define y_{t,i}=exp(x_i)(1+epsilon_{t,i}).",
+      "Let q_t=sum_{i in I_n} y_{t,i}, with this sum performed in exact real arithmetic.",
+      "For an operation op and vector v of length m, define T_0(v)=0; define T_1(v)=v_0; and for m>=1 define T_{m+1}(v)=op(T_m(v_0,...,v_{m-1}),v_m). Then s_hat_t=T_n(y_t) with op=fl_add_t.",
+      "Define E_t=s_hat_t-A.",
+      "For a natural k and real v, define gamma_k(v)=kv/(1-kv).",
+      "Define B_n(v,A)=(v+gamma_n(v)(1+v))A.",
+      "Define R_n(A,v)=n(n+1)A v^2/(1-nv)."
     ],
-    "proposition_plain_english": "For any modeled real addition operation with nonnegative error parameter u, exact left addition by zero, and a per-operation relative-error representation fl_add(x,y)=(x+y)(1+δ) with |δ|≤u, consider the fixed left-to-right computed sum of n nonnegative real inputs. If their exact sum is nonzero and (n⊖1)u<1, then the relative forward error of the computed sum is at most ((n⊖1)u)/(1-(n⊖1)u)."
+    "proposition_plain_english": "For every positive finite dimension n, every real input vector x, every non-bottom filtered parameter family u(t) tending to zero, and every compatible family of modeled exponential errors and floating-point additions with error bound u(t), the exact exponential sum A is positive. Each modeled exponential has relative forward error at most u(t). Eventually, the left-to-right floating-point summation error is bounded by gamma_{n-1}(u(t)) times the sum of the absolute modeled exponential values, and the final total error is bounded by B_n(u(t),A). Eventually this bound equals (n+1)u(t)A plus the explicit rational remainder R_n(A,u(t)); that remainder is O(u(t)^2) along the filter. The final computed sum equals A plus the defined total error for every t."
   },
   "restrictions_and_vacuity_risks": [
-    "Natural subtraction is truncated: n⊖1=0 for both n=0 and n=1.",
-    "When n=0, Fin 0 has no entries and its exact sum is 0, so the hypothesis S≠0 is impossible; the proposition is vacuous in dimension zero.",
-    "When n=1, the computed sum is exactly w₀, the validity condition is automatically 0<1, and both sides of the error bound are 0.",
-    "The result is restricted to componentwise nonnegative inputs. It does not assert this bound for mixed-sign data or cancellation-prone sums.",
-    "Because all entries are nonnegative and S≠0, S is in fact strictly positive, although the displayed denominator remains |S|.",
-    "The operation is evaluated in one fixed left-associated order. No claim is made for pairwise, tree-based, reordered, or otherwise associated summation.",
-    "The local witness δ is existential and may depend on both operands, hence on the current computed partial sum and next input at each step. No single shared δ is asserted.",
-    "Only a left-zero law fl_add(0,x)=x is encoded; no right-zero, commutativity, or associativity law for fl_add is assumed.",
-    "The model is over mathematical real numbers and postulates the relative-error equation for every real operand pair. No finite-format representability, rounding mode, overflow, underflow, subnormal, NaN, infinity, or exceptional-value behavior is encoded.",
-    "The conclusion is a scalar relative forward-error upper bound only; it does not state backward stability, componentwise perturbation bounds, sharpness, or attainment of the bound."
+    "The dimension is explicitly restricted to n>0; therefore Fin n is nonempty and A>0 follows from positivity of the real exponential.",
+    "No restriction is placed on the real inputs x_i.",
+    "There is no explicit hypothesis n*u(t)<1 or 1-n*u(t)>0. The rational expressions use Lean's total real division and are defined even when 1-n*u(t)=0; the relevant identities and inequalities are asserted only eventually, where convergence u(t)->0 can keep the fixed-n denominator away from zero.",
+    "The bound involving gamma_{n-1} uses truncated natural subtraction n-1, which equals the ordinary predecessor because n>0.",
+    "The run binder implicitly forces u(t)>=0 for every t. If no run family exists for a chosen u, the universal quantification over run is vacuous.",
+    "The non-bottom assumption on l excludes the completely improper filter, but l is otherwise arbitrary; this is not specifically a sequential limit or a punctured real limit.",
+    "Only the exponential-error bound is asserted for every t. The summation-error bound, total-error bound, and bound decomposition are merely eventual statements along l.",
+    "The final identity s_hat_t=A+E_t is definitional algebra because E_t was defined as s_hat_t-A; it does not provide an independent numerical estimate.",
+    "The exponential computation is modeled only by freely supplied relative errors epsilon_{t,i}; no actual exponential algorithm, underflow, overflow, or relationship among different epsilon_{t,i} values is encoded.",
+    "The addition model gives only a per-operation existential relative error delta depending on the operands. It does not select a global delta function or impose stronger hardware properties.",
+    "For n=1 the recursive computed sum returns the sole modeled exponential directly and performs no modeled addition; for n>1 it uses a fixed left-to-right order.",
+    "The big-O statement is relative to the same arbitrary filter l and uses the real norm |.|; it does not assert a uniform estimate over unrelated filters or dimensions."
   ],
   "ambiguities": []
 }

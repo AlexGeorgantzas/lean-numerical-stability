@@ -5,10 +5,31 @@
   "paper_version": "published journal version; IMA Journal of Numerical Analysis 41(4), 2021, printed pages 2311-2330",
   "source_locations": [
     {
-      "anchor": "positive exponential sum and unnumbered recursive-summation bounds preceding equations (3.2)-(3.3)",
+      "anchor": "equation (1.7), standard floating-point model",
+      "pdf_page": 4,
+      "printed_page": "2314",
+      "role": "relative-error model for basic additions",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "Algorithm 3.1, lines 1-5, and standing no-overflow/no-underflow assumption",
+      "pdf_page": 6,
+      "printed_page": "2316",
+      "role": "unshifted exponential evaluation and recursive accumulation algorithm",
+      "section": "3. Basic algorithms and error analysis"
+    },
+    {
+      "anchor": "equation (3.1), exact computed-term sum, unnumbered recursive bounds, and equation (3.2)",
       "pdf_page": 7,
       "printed_page": "2317",
-      "role": "positive recursive-summation error stage",
+      "role": "computed exponential errors, sTilde/sHat distinction, recursive error, and printed missing-u discrepancy",
+      "section": "3. Basic algorithms and error analysis"
+    },
+    {
+      "anchor": "equation (3.3)",
+      "pdf_page": 8,
+      "printed_page": "2318",
+      "role": "additive DeltaS representation and (n+1)u*s+O(u^2) aggregate bound",
       "section": "3. Basic algorithms and error analysis"
     }
   ],

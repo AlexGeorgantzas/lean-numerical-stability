@@ -1,123 +1,170 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "The immediately preceding inequality has u multiplying both first-order sums, while equation (3.3) on the next page gives an O(u) bound, |Delta s| <= (n+1)u s + O(u^2). [PDF p. 7, anchor: line preceding equation (3.2); PDF p. 8, anchor: equation (3.3)]",
-      "impact": "A literal reading of the printed final line is not first order in u and does not yield equation (3.3); the likely intended formula has u before the weighted sum, but that correction must be disclosed. [PDF p. 7, anchor: equation (3.2); PDF p. 8, anchor: equation (3.3)]",
-      "issue": "The last line of equation (3.2) omits a factor u before sum_{i=1}^n (n+2-i)w_i. [PDF p. 7, anchor: equation (3.2)]"
-    },
-    {
-      "evidence": "Algorithm 3.1 is stated for x in R^n without a local lower bound on n, while the intermediate expression contains (n-1)(hat(w_1)+hat(w_2)). [PDF p. 6, anchor: Algorithm 3.1; PDF p. 7, anchor: positivity-refined summation bound]",
-      "impact": "For n = 1 the generic recursive-error bound is zero, but this particular intermediate display is not literally well-formed and requires separate interpretation. [PDF p. 7, anchor: definition of t_i and positivity-refined bound]",
-      "issue": "The positivity-refined intermediate display mentions hat(w_2) without stating n >= 2. [PDF p. 7, anchor: second unnumbered recursive-summation bound]"
-    },
-    {
-      "evidence": "The derivation subsequently sums individual bounds |hat(w_i)-w_i| <= u w_i and therefore only requires each evaluation error to satisfy the same magnitude bound. [PDF p. 7, anchor: consequence of equation (3.1) and derivation before equation (3.2)]",
-      "impact": "A formalization must decide whether delta_1 is operation-specific or shared; either interpretation supports the displayed deterministic bound when every relevant error has magnitude at most u. [PDF p. 7, anchor: equation (3.1) through equation (3.2)]",
-      "issue": "Equation (3.1) writes delta_1 without an index even though an exponential is evaluated for every i. [PDF p. 7, anchor: equation (3.1)]"
-    },
-    {
-      "evidence": "The paper gives only a qualitative statement about when these terms become significant. [PDF p. 7, anchor: paragraph explaining O(u^2)]",
-      "impact": "The passage supplies a first-order asymptotic contract, not a fully explicit finite-u inequality uniform in n and x. [PDF p. 7, anchor: recursive-summation bounds and O(u^2) explanation]",
-      "issue": "The hidden constants and uniformity conditions in O(u^2) are not quantified. [PDF p. 7, anchor: paragraph explaining O(u^2)]"
-    }
-  ],
-  "contract_plain_english": "For the unshifted basic algorithm, each positive exponential is computed with relative error at most u and the computed terms are then summed recursively. The paper bounds the recursive-addition error using partial sums, combines it with exponential-evaluation error, and states hat(s) = s + Delta s with |Delta s| <= (n+1)u s + O(u^2). The printed final line of equation (3.2) itself is missing the otherwise required factor u, so a faithful contract must preserve that typographical discrepancy while recording the O(u) result explicitly stated in equation (3.3). [PDF p. 6, anchor: Algorithm 3.1 and standing assumption; PDF p. 7, anchor: equation (3.1) through equation (3.2); PDF p. 8, anchor: equation (3.3)]",
-  "paper_batch_sha256": "b9f05c969428f95fef40bddc0aa0b2a7c1d291ecdd7ba0ca0f5fb748131f1562",
-  "paper_sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P14-T1",
+  "paper_sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd",
   "source_evidence": [
     {
-      "anchor": "equation (1.7), standard floating-point model",
-      "observation": "Basic arithmetic is modeled by fl(a op b) = (a op b)(1 + delta), with |delta| <= u for op in {+, -, multiplication, division}. [PDF p. 4, anchor: equation (1.7)]",
       "pdf_page": 4,
-      "printed_page": "2314"
+      "printed_page": "2314",
+      "anchor": "equation (1.7), standard floating-point model",
+      "observation": "The paper adopts fl(a op b) = (a op b)(1 + delta), with |delta| <= u for op in {+, -, *, /}, where u is unit roundoff."
     },
     {
-      "anchor": "Algorithm 3.1 and the final standing-assumption paragraph",
-      "observation": "Algorithm 3.1 evaluates each w_i = exp(x_i) and accumulates them recursively in index order; Section 3 assumes throughout that no overflow or underflow occurs. [PDF p. 6, anchor: Algorithm 3.1 and standing assumption]",
       "pdf_page": 6,
-      "printed_page": "2316"
+      "printed_page": "2316",
+      "anchor": "Algorithm 3.1, lines 1-5",
+      "observation": "For x in R^n, the unshifted algorithm initializes s=0, computes w_i=exp(x_i), and recursively performs s=s+w_i for i=1,...,n."
     },
     {
-      "anchor": "positive exponential sum, equation (3.1), recursive-summation displays, and equation (3.2)",
-      "observation": "The paper defines s = sum_i w_i with w_i = exp(x_i), models each computed exponential by hat(w_i) = exp(x_i)(1 + delta_1), defines the exact sum of computed terms and the recursively computed sum, and derives the indexed first-order summation bounds. The last line of equation (3.2) is printed without a factor u before its weighted sum. [PDF p. 7, anchor: positive exponential sum through equation (3.2)]",
+      "pdf_page": 6,
+      "printed_page": "2316",
+      "anchor": "Section 3 standing assumption immediately after Algorithm 3.1",
+      "observation": "The entire Section 3 error analysis assumes that no overflow or underflow occurs."
+    },
+    {
       "pdf_page": 7,
-      "printed_page": "2317"
+      "printed_page": "2317",
+      "anchor": "opening display and equation (3.1)",
+      "observation": "The exact terms are w_i=e^(x_i), the exact target sum is s=sum_{i=1}^n w_i, and exponential evaluation gives hat(w_i)=e^(x_i)(1+delta_1), with the expected bound |delta_1|<=u and hence |hat(w_i)-w_i|<=w_i u."
     },
     {
-      "anchor": "equation (3.3)",
-      "observation": "After using hat(w_i) = w_i + O(u), the paper states hat(s) = s + Delta s with |Delta s| <= (n + 1)u s + O(u^2). [PDF p. 8, anchor: equation (3.3)]",
+      "pdf_page": 7,
+      "printed_page": "2317",
+      "anchor": "exact sum of computed quantities and first unnumbered summation bound",
+      "observation": "The paper distinguishes tilde(s)=sum_{i=1}^n hat(w_i), the exact sum of computed exponential values, from hat(s), the recursively computed floating-point sum. With t_i=sum_{j=1}^{i+1}hat(w_j), it states |tilde(s)-hat(s)| <= u sum_{i=1}^{n-1}|t_i| + O(u^2)."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "2317",
+      "anchor": "nonnegative-term specialization of the recursive summation bound",
+      "observation": "Using hat(w_i)>=0, the paper states |tilde(s)-hat(s)| <= u(n-1)(hat(w_1)+hat(w_2)) + u sum_{i=3}^n (n+1-i)hat(w_i) + O(u^2)."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "2317",
+      "anchor": "error decomposition leading to equation (3.2)",
+      "observation": "The paper decomposes s-hat(s)=s-tilde(s)+tilde(s)-hat(s), then bounds |s-hat(s)| by u sum_i w_i + u sum_i(n+1-i)hat(w_i) + O(u^2). The final displayed line labeled (3.2) is printed as sum_i(n+2-i)w_i + O(u^2), without the factor u that the preceding line and subsequent result require."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "2317",
+      "anchor": "paragraph immediately before equation (3.2)",
+      "observation": "The paper declares its O(u^2) terms innocuous in the sense that they become significant only after the corresponding first-order term is already too large to provide useful information."
+    },
+    {
       "pdf_page": 8,
-      "printed_page": "2318"
+      "printed_page": "2318",
+      "anchor": "equation (3.3)",
+      "observation": "Using hat(w_i)=w_i+O(u), the paper concludes hat(s)=s+Delta s with |Delta s| <= (n+1)u s + O(u^2)."
     }
   ],
   "statement": {
-    "algorithm_linkage": "This contract covers Algorithm 3.1 lines 1-5: compute unshifted w_i = exp(x_i), then form s by sequential recursive addition; it does not cover the later logarithm or component divisions. [PDF p. 6, anchor: Algorithm 3.1; PDF p. 7, anchor: opening positive exponential sum]",
     "binders": [
-      "The input is x in R^n, with components indexed i = 1,...,n. [PDF p. 6, anchor: Algorithm 3.1]",
-      "For each index, w_i := exp(x_i), and s := sum_{i=1}^n w_i. [PDF p. 7, anchor: opening positive exponential sum]",
-      "hat(w_i) denotes the computed exponential, tilde(s) denotes the exact sum sum_i hat(w_i), and hat(s) denotes the recursively computed floating-point sum. [PDF p. 7, anchor: equation (3.1) and exact-sum definition]",
-      "For i = 1,...,n-1, t_i := sum_{j=1}^{i+1} hat(w_j). [PDF p. 7, anchor: unnumbered recursive-summation bound]",
-      "Delta s is introduced by hat(s) = s + Delta s. [PDF p. 8, anchor: equation (3.3)]"
-    ],
-    "conclusions": [
-      "Each exponential satisfies |hat(w_i) - w_i| <= u w_i. [PDF p. 7, anchor: consequence immediately following equation (3.1)]",
-      "The recursive summation error satisfies |tilde(s) - hat(s)| <= u sum_{i=1}^{n-1}|t_i| + O(u^2). [PDF p. 7, anchor: first unnumbered recursive-summation bound]",
-      "Using nonnegativity, the paper refines this to |tilde(s) - hat(s)| <= u(n-1)(hat(w_1) + hat(w_2)) + u sum_{i=3}^n (n+1-i)hat(w_i) + O(u^2). [PDF p. 7, anchor: second unnumbered recursive-summation bound]",
-      "Before equation (3.2), the paper explicitly obtains |s - hat(s)| <= u sum_{i=1}^n w_i + u sum_{i=1}^n (n+1-i)hat(w_i) + O(u^2). [PDF p. 7, anchor: derivation immediately preceding equation (3.2)]",
-      "The final line labeled (3.2) is printed as |s - hat(s)| <= sum_{i=1}^n (n+2-i)w_i + O(u^2), without a displayed u multiplying the weighted sum. [PDF p. 7, anchor: equation (3.2)]",
-      "The subsequent stated aggregate result is hat(s) = s + Delta s with |Delta s| <= (n+1)u s + O(u^2). [PDF p. 8, anchor: equation (3.3)]"
-    ],
-    "constants_and_indexing": [
-      "The partial sum t_i contains the first i+1 computed terms and is indexed from 1 through n-1. [PDF p. 7, anchor: definition of t_i]",
-      "The positivity-refined recursive bound assigns coefficient n-1 to both hat(w_1) and hat(w_2), and coefficient n+1-i to hat(w_i) for i >= 3. [PDF p. 7, anchor: second unnumbered recursive-summation bound]",
-      "The loose combined first-order weights are n+2-i, whose maximum over i = 1,...,n is n+1; this is the constant used in equation (3.3). [PDF p. 7, anchor: derivation and equation (3.2); PDF p. 8, anchor: equation (3.3)]"
-    ],
-    "definitions_and_conventions": [
-      "tilde(s) is an exact real sum of already computed quantities, whereas hat(s) includes the rounding incurred by recursive summation. [PDF p. 7, anchor: exact-sum definition and recursive-summation bound]",
-      "The coefficient of hat(w_i) in the loose indexed summation bound immediately before (3.2) is n+1-i; after adding exponential-evaluation error, the intended first-order coefficient of w_i is n+2-i. [PDF p. 7, anchor: derivation immediately preceding equation (3.2)]",
-      "The O(u^2) notation suppresses terms of second and higher order in unit roundoff. [PDF p. 7, anchor: paragraph explaining O(u^2)]"
-    ],
-    "error_notions": [
-      "The exponential-stage bound is componentwise absolute error derived from a relative-error model. [PDF p. 7, anchor: equation (3.1) and its immediate consequence]",
-      "The summation-stage bounds are scalar absolute forward-error bounds for tilde(s) versus hat(s), and then s versus hat(s). [PDF p. 7, anchor: recursive-summation displays through equation (3.2)]",
-      "Equation (3.3) expresses the computed sum as an exact sum plus an additive perturbation Delta s. [PDF p. 8, anchor: equation (3.3)]"
-    ],
-    "exceptional_values": [
-      "The analysis explicitly excludes overflow and underflow. [PDF p. 6, anchor: standing assumption following Algorithm 3.1]",
-      "Inputs are real vectors, and this passage supplies no behavior for NaNs, infinities, or other IEEE exceptional inputs. [PDF p. 6, anchor: Algorithm 3.1]"
-    ],
-    "higher_order_terms": [
-      "Every summation-stage result retains an O(u^2) remainder rather than claiming an exact first-order inequality. [PDF p. 7, anchor: recursive-summation displays through equation (3.2); PDF p. 8, anchor: equation (3.3)]",
-      "The paper describes these remainders as innocuous only in the qualitative sense that they become significant when the corresponding first-order term is already too large to be useful. [PDF p. 7, anchor: paragraph explaining O(u^2)]"
+      "The input is x=[x_1,...,x_n]^T in R^n, with loop indices i=1,...,n; n is implicitly a positive integer dimension. [PDF p. 6, Algorithm 3.1 heading and lines 1-5]",
+      "u denotes the unit roundoff of the floating-point arithmetic. [PDF p. 4, equation (1.7)]",
+      "For each i, w_i=e^(x_i) is exact and hat(w_i) is its computed exponential value. [PDF p. 7, opening display and equation (3.1)]",
+      "s, tilde(s), and hat(s) respectively denote the exact sum of exact exponential terms, the exact sum of computed exponential terms, and the recursively computed floating-point sum. [PDF p. 7, opening display and exact-sum definition]",
+      "Delta s is the aggregate additive error defined by hat(s)=s+Delta s. [PDF p. 8, equation (3.3)]"
     ],
     "hypotheses": [
-      "Algorithm 3.1 performs the unshifted exponential evaluations and recursive additions in increasing index order. [PDF p. 6, anchor: Algorithm 3.1, lines 1-5]",
-      "No overflow or underflow occurs during the Section 3 computation. [PDF p. 6, anchor: standing assumption following Algorithm 3.1]",
-      "Each exponential evaluation is assumed to have relative error at most u: hat(w_i) = exp(x_i)(1 + delta_1), |delta_1| <= u. [PDF p. 7, anchor: equation (3.1)]",
-      "The additions use the standard unit-roundoff model for basic floating-point operations. [PDF p. 4, anchor: equation (1.7)]",
-      "The computed exponential terms are nonnegative, which is used to remove absolute values from the partial sums. [PDF p. 7, anchor: recursive-summation bound following the definition of t_i]"
+      "Inherited standing assumption: no overflow or underflow occurs during the Section 3 computation. [PDF p. 6, final sentence of Section 3 opening]",
+      "Basic arithmetic obeys fl(a op b)=(a op b)(1+delta), |delta|<=u, for op in {+, -, *, /}. [PDF p. 4, equation (1.7)]",
+      "Each exponential evaluation is assumed or expected to satisfy hat(w_i)=e^(x_i)(1+delta_1) with |delta_1|<=u. [PDF p. 7, equation (3.1) and following sentence]",
+      "The terms are accumulated sequentially in the original order after initializing the accumulator to zero. [PDF p. 6, Algorithm 3.1 lines 1-5]",
+      "The summation specialization uses the nonnegativity hat(w_i)>=0. [PDF p. 7, sentence preceding the weighted recursive bound]"
+    ],
+    "conclusions": [
+      "Each exponential term satisfies |hat(w_i)-w_i|<=w_i u. [PDF p. 7, display following equation (3.1)]",
+      "For t_i=sum_{j=1}^{i+1}hat(w_j), the recursive summation error satisfies |tilde(s)-hat(s)| <= u sum_{i=1}^{n-1}|t_i| + O(u^2). [PDF p. 7, first unnumbered summation bound]",
+      "Positivity yields |tilde(s)-hat(s)| <= u(n-1)(hat(w_1)+hat(w_2)) + u sum_{i=3}^n(n+1-i)hat(w_i) + O(u^2). [PDF p. 7, second unnumbered summation bound]",
+      "The total error obeys |s-hat(s)| <= sum_{i=1}^n|hat(w_i)-w_i| + |tilde(s)-hat(s)|. [PDF p. 7, decomposition preceding equation (3.2)]",
+      "The next displayed bound is |s-hat(s)| <= u sum_{i=1}^n w_i + u sum_{i=1}^n(n+1-i)hat(w_i) + O(u^2). [PDF p. 7, penultimate line of equation (3.2) derivation]",
+      "Literally as printed, equation (3.2) ends with sum_{i=1}^n(n+2-i)w_i + O(u^2), omitting u before the sum. The context supports u sum_{i=1}^n(n+2-i)w_i + O(u^2) as the intended first-order expression, but that correction is inferred rather than printed. [PDF p. 7, equation (3.2)]",
+      "The aggregate result is hat(s)=s+Delta s with |Delta s| <= (n+1)u s + O(u^2). [PDF p. 8, equation (3.3)]"
+    ],
+    "definitions_and_conventions": [
+      "s=sum_{i=1}^n e^(x_i)=sum_{i=1}^n w_i and w_i=e^(x_i). [PDF p. 7, opening display]",
+      "tilde(s)=sum_{i=1}^n hat(w_i) is explicitly an exact sum, despite its summands already being computed quantities. [PDF p. 7, exact-sum definition]",
+      "hat(s) is the result of floating-point recursive accumulation, not the exact sum tilde(s). [PDF p. 7, paragraph introducing the summation bound]",
+      "t_i=sum_{j=1}^{i+1}hat(w_j) is the exact partial sum used in the recursive-error analysis. [PDF p. 7, definition following the first summation bound]",
+      "O(u^2) denotes omitted higher-order rounding terms under the paper's stated innocuous-term convention. [PDF p. 7, paragraph immediately before the total-error decomposition]"
     ],
     "implicit_context": [
-      "The analysis concerns the positive scalar sum used by the basic, unshifted log-sum-exp and softmax algorithm, not the shifted algorithm of Section 4. [PDF p. 6, anchor: Algorithm 3.1; PDF p. 7, anchor: opening positive exponential sum]",
-      "The paper notes that more refined summation bounds require additional assumptions on the floating-point arithmetic; those refinements are not used here. [PDF p. 7, anchor: footnote 6]"
+      "The dimension condition n>=1 is implicit in x in R^n and the loop 1:n; it is not separately stated beside the bounds. [PDF p. 6, Algorithm 3.1]",
+      "The x_i are treated as given exact inputs: the displayed analysis introduces errors for exponential evaluation and accumulation but no input-representation error. This is inferred from the model used in equation (3.1). [PDF p. 7, equation (3.1)]",
+      "The analysis is generic in unit roundoff u and does not select a particular IEEE or bfloat precision in this passage. [PDF p. 4, equation (1.7)]",
+      "Because w_i=e^(x_i) and the computed terms are taken nonnegative, the result is specifically a positive-term summation analysis. [PDF p. 7, opening display and nonnegativity sentence]"
+    ],
+    "algorithm_linkage": "The claim concerns the unshifted exponential-and-sum portion of Algorithm 3.1: lines 1-5 compute exp(x_i) directly and accumulate the results sequentially. The later logarithm and softmax divisions are not involved in equation (3.3). [PDF p. 6, Algorithm 3.1; PDF pp. 7-8, equations (3.1)-(3.3)]",
+    "numerical_model": [
+      "Basic operations use the relative-error model fl(a op b)=(a op b)(1+delta), |delta|<=u. [PDF p. 4, equation (1.7)]",
+      "The transcendental exponential is separately assigned a relative error bounded by u; this is described as what can be expected, rather than derived from equation (1.7). [PDF p. 7, equation (3.1) and following prose]",
+      "Recursive summation is analyzed to first order in u with O(u^2) terms retained symbolically. [PDF p. 7, unnumbered summation bounds]",
+      "No probabilistic rounding model is used in the selected derivation. [PDF p. 7, deterministic absolute-value bounds through equation (3.2)]"
+    ],
+    "error_notions": [
+      "The exponential error is componentwise relative error, equivalently bounded componentwise absolute error |hat(w_i)-w_i|<=w_i u. [PDF p. 7, equation (3.1) and following display]",
+      "The distinction |tilde(s)-hat(s)| isolates accumulation error from exponential-evaluation error. [PDF p. 7, exact-sum definition and first summation bound]",
+      "The final quantity Delta s is total additive forward error in the sum, including both exponential evaluation and accumulation. [PDF pp. 7-8, decomposition before equation (3.2) and equation (3.3)]",
+      "Equation (3.3) is an absolute error bound scaled by the positive exact sum s, not a separately stated relative-error theorem. [PDF p. 8, equation (3.3)]"
     ],
     "norms": [
-      "No vector norm occurs in this passage; all displayed errors are scalar absolute values. [PDF p. 7, anchor: positive-sum error derivation; PDF p. 8, anchor: equation (3.3)]"
+      "No vector or matrix norm occurs in this selected result; vertical bars denote scalar absolute value. [PDF pp. 7-8, equations (3.1)-(3.3)]"
     ],
-    "numerical_model": [
-      "Unit roundoff is u, and each basic arithmetic operation obeys the relative-error model of equation (1.7). [PDF p. 4, anchor: equation (1.7)]",
-      "Exponential evaluation is separately assumed to return a value with relative error bounded by u; this does not follow directly from the basic-operation model because exp is not among the operations listed in equation (1.7). [PDF p. 4, anchor: equation (1.7); PDF p. 7, anchor: equation (3.1)]",
-      "Summation is ordinary recursive summation in the order w_1,...,w_n. [PDF p. 6, anchor: Algorithm 3.1, lines 1-5]"
+    "constants_and_indexing": [
+      "The exact and computed sums run from i=1 through n. [PDF pp. 6-7, Algorithm 3.1 and opening sum display]",
+      "The partial sums are t_i=sum_{j=1}^{i+1}hat(w_j) for summation-error indices i=1,...,n-1. [PDF p. 7, first unnumbered summation bound and t_i definition]",
+      "The sharper displayed positive-term bound gives coefficient n-1 to both hat(w_1) and hat(w_2), and coefficient n+1-i to hat(w_i) for i=3,...,n. [PDF p. 7, second unnumbered summation bound]",
+      "The subsequent looser line uses coefficient n+1-i for i=1,...,n before combining exponential and accumulation errors. [PDF p. 7, derivation immediately before equation (3.2)]",
+      "After the intended first-order combination, the term weights are n+2-i and their maximum is n+1, producing the aggregate constant n+1 in equation (3.3). [PDF pp. 7-8, equation (3.2) context and equation (3.3)]"
+    ],
+    "higher_order_terms": [
+      "The recursive, weighted, total, and aggregate error bounds all retain an unspecified O(u^2) remainder. [PDF pp. 7-8, summation bounds and equations (3.2)-(3.3)]",
+      "The paper states that these remainders matter only when the first-order bound is already too large to be informative. [PDF p. 7, paragraph immediately before the total-error decomposition]",
+      "No explicit constants, dependence on n or w, or valid finite-u range for O(u^2) are supplied in the selected passage. [PDF pp. 7-8, equations (3.2)-(3.3)]"
+    ],
+    "exceptional_values": [
+      "Overflow and underflow are expressly excluded. [PDF p. 6, standing Section 3 assumption]",
+      "The passage gives no separate handling rule for NaNs, infinities, subnormals, or failed transcendental evaluations. [PDF pp. 6-8, Algorithm 3.1 and equations (3.1)-(3.3)]"
     ]
   },
-  "task_id": "P14-T1",
   "undebatable_constraints": [
-    "The exact sum of computed exponentials and the recursively computed sum are distinct objects and must not be conflated. [PDF p. 7, anchor: exact-sum definition and recursive-summation bound]",
-    "The recursive-summation result depends on positivity of the exponential terms and on the stated sequential order. [PDF p. 6, anchor: Algorithm 3.1; PDF p. 7, anchor: positivity refinement]",
-    "The bound ultimately stated in equation (3.3) contains the factor u and the constant n+1. [PDF p. 8, anchor: equation (3.3)]",
-    "Any repaired version of equation (3.2) that inserts u must be identified as an interpretation supported by the preceding line and equation (3.3), not as the literal printed formula. [PDF p. 7, anchor: equation (3.2); PDF p. 8, anchor: equation (3.3)]",
-    "The O(u^2) remainder must be retained. [PDF p. 7, anchor: equation (3.2); PDF p. 8, anchor: equation (3.3)]"
-  ]
+    "The algorithm variant must be the unshifted computation w_i=exp(x_i), followed by sequential summation in index order. [PDF p. 6, Algorithm 3.1 lines 1-5]",
+    "A faithful statement must distinguish exact w_i, computed hat(w_i), exact s, exact sum tilde(s) of computed terms, and recursively computed hat(s). [PDF p. 7, opening definitions and summation analysis]",
+    "The source assumes no overflow or underflow. [PDF p. 6, standing Section 3 assumption]",
+    "Each computed exponential is modeled with componentwise relative error at most u. [PDF p. 7, equation (3.1)]",
+    "The accumulation result is first-order and includes an O(u^2) remainder. [PDF pp. 7-8, equations (3.2)-(3.3)]",
+    "The final explicit aggregate claim is hat(s)=s+Delta s and |Delta s|<=(n+1)u s+O(u^2). [PDF p. 8, equation (3.3)]",
+    "The source's printed equation (3.2) lacks a factor u before its final weighted sum; a reconstruction must preserve or explicitly flag this discrepancy rather than silently attribute the corrected formula to the print. [PDF p. 7, equation (3.2)]",
+    "The result concerns scalar absolute error in a positive sum, not a normwise vector error or a shifted log-sum-exp algorithm. [PDF pp. 6-8, Algorithm 3.1 and equations (3.1)-(3.3)]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "Equation (3.2) is missing a factor u in its final printed line.",
+      "evidence": "The preceding line has u multiplying both sums, while the line labeled (3.2) prints sum_{i=1}^n(n+2-i)w_i+O(u^2); equation (3.3) then restores first-order scaling by u. [PDF p. 7, equation (3.2); PDF p. 8, equation (3.3)]",
+      "impact": "Taken literally, (3.2) does not support (3.3) and is not a first-order rounding-error bound. Inserting u is strongly indicated but remains an editorial correction, not the literal printed equation."
+    },
+    {
+      "issue": "The exponential-error symbol delta_1 is not indexed by i.",
+      "evidence": "Equation (3.1) uses hat(w_i)=e^(x_i)(1+delta_1) while discussing evaluation of each w_i. [PDF p. 7, equation (3.1)]",
+      "impact": "The notation does not literally clarify whether one common delta_1 or independent local errors are intended. The componentwise analysis naturally permits a separate bounded error for each i, but that indexing is inferred."
+    },
+    {
+      "issue": "The admissible small values of n are not stated beside the weighted bound.",
+      "evidence": "Algorithm 3.1 permits the loop 1:n, but the specialized bound explicitly refers to hat(w_2) and sum_{i=3}^n without stating n>=2. [PDF p. 6, Algorithm 3.1; PDF p. 7, second unnumbered summation bound]",
+      "impact": "That displayed specialization requires an empty-sum convention and, for n=1, separate interpretation because hat(w_2) is undefined. The earlier partial-sum bound and final equation (3.3) remain meaningful for n=1."
+    },
+    {
+      "issue": "The O(u^2) remainder is not quantitatively specified.",
+      "evidence": "The paper characterizes the remainder informally as innocuous but gives no constant, parameter dependence, or finite-u validity condition in this passage. [PDF p. 7, paragraph before equation (3.2); PDF p. 8, equation (3.3)]",
+      "impact": "Equation (3.3) is an asymptotic first-order contract and cannot be converted from this passage alone into a fully explicit nonasymptotic inequality."
+    },
+    {
+      "issue": "The exponential accuracy bound is presented as an expectation, and the exact rounding mode is not restated.",
+      "evidence": "The prose says the exponential relative error can be expected to satisfy |delta_1|<=u, while equation (1.7) covers only +, -, *, and /. [PDF p. 7, equation (3.1) and following sentence; PDF p. 4, equation (1.7)]",
+      "impact": "The exponential bound must be taken as an additional numerical-model assumption. The passage does not independently specify a correctly rounded exponential implementation or a rounding mode beyond the stated error models."
+    }
+  ],
+  "contract_plain_english": "Given x in R^n, Algorithm 3.1 directly computes each unshifted exponential and then sums those computed positive terms sequentially. Assuming no overflow or underflow, each exponential has relative error at most u, and the recursive additions follow the standard floating-point model. The paper separates the exact sum s, the exact sum tilde(s) of computed exponentials, and the actually accumulated result hat(s). Combining exponential and accumulation errors, it states hat(s)=s+Delta s with |Delta s|<=(n+1)u s+O(u^2). [PDF pp. 4, 6-8, equations (1.7) and (3.1)-(3.3)] The weighted final line of equation (3.2) is printed without a necessary factor u; the surrounding derivation makes the corrected first-order form clear, but the discrepancy must remain explicit. [PDF p. 7, equation (3.2); PDF p. 8, equation (3.3)]"
 }
