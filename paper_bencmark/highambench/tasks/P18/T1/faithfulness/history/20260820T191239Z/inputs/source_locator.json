@@ -5,18 +5,11 @@
   "paper_version": "published journal version; Journal of Scientific Computing 92, article 6, 2022, pages 1-20",
   "source_locations": [
     {
-      "anchor": "equations (3.2a)-(3.2b)",
+      "anchor": "equation (3.3) and the displayed E = E_sch + E_per decomposition below it",
       "pdf_page": 5,
       "printed_page": "5",
-      "role": "additive Runge--Kutta stages, output, and perturbation convention",
-      "section": "3. A General Framework for the Analysis of Mixed Precision Runge--Kutta Methods"
-    },
-    {
-      "anchor": "unnumbered E = E_sch + E_per display following equation (3.3)",
-      "pdf_page": 5,
-      "printed_page": "5",
-      "role": "selected exact one-step error decomposition",
-      "section": "3. A General Framework for the Analysis of Mixed Precision Runge--Kutta Methods"
+      "role": "scheme-plus-perturbation error split",
+      "section": "3. A General Framework for the Analysis of Mixed Precision Runge\u2013Kutta Methods"
     }
   ],
   "task_id": "P18-T1"

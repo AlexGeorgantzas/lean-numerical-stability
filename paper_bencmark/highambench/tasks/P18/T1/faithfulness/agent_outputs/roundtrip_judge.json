@@ -3,177 +3,177 @@
   "role": "roundtrip-judge",
   "task_id": "P18-T1",
   "paper_sha256": "b18628ffc348d7aeec2da02efb989b6e012f0b0fae09b27fbff735bb8a5877cd",
-  "blind_translation_sha256": "38f96c2cd655f4e4e945d1d9c775afd51122bcc97a01535552e7a68c88895502",
+  "blind_translation_sha256": "53cba453663af24b6170d390124ecf374be3a59b817ecb30243dc74b350a7d80",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The verified PDF has SHA-256 b18628ffc348d7aeec2da02efb989b6e012f0b0fae09b27fbff735bb8a5877cd and is the 2022 Journal of Scientific Computing article 92:6. PDF page 5 contains Eq. (3.3), the E = E_sch + E_per decomposition, and the local and stable-global error envelopes. Pages 2-8 supply the stated stability qualification, algorithm, perturbation definition, and order-condition context.",
-      "translation_evidence": "The supplied blind translation is the object being compared against that located result and has the required SHA-256.",
-      "reasoning": "The source version, passage, and surrounding framework specified by the locator are correct."
+      "paper_evidence": "The published 2022 Journal of Scientific Computing PDF, page 5, states immediately after (3.3) that the one-step error is the sum of the scheme approximation error and perturbation error, E = E_sch + E_per. The same passage subsequently gives asymptotic and conditional global-error statements.",
+      "translation_evidence": "The first conclusion is the exact one-step vector decomposition exactNext - perturbedNext = (exactNext - schemeNext) + (schemeNext - perturbedNext).",
+      "reasoning": "The locator selects the exact one-step decomposition. The adjacent asymptotic and global estimates are surrounding context rather than omitted target conclusions."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "Equations (3.1)-(3.3) concern an s-stage additive Runge-Kutta method with stages y^(i), stage index j = 1,...,s, time-step index n, operators F and F^epsilon, coefficients A, A^epsilon, b, b^epsilon, step size Delta t, and order indices p and m.",
-      "translation_evidence": "The translation binds only a natural number n as a vector dimension and two arbitrary functions Fin n -> Real.",
-      "reasoning": "The translation replaces the method's binders and parameter roles with unrelated finite-vector binders. In particular, the paper's n is a time-step index, while the translation's n is a vector dimension."
+      "paper_evidence": "The paper uses an s-stage method with indices j = 1,...,s and coefficient dimensions s by s and 1 by s, but it does not fix the state-space dimension or identify the state space as finite-dimensional real Euclidean space.",
+      "translation_evidence": "The translation universally quantifies a positive natural dimension n, represents every state as Fin n -> Real, requires s > 0, and uses zero-based Fin s indices.",
+      "reasoning": "Reindexing the stages is harmless, but fixing a positive finite real state dimension is an unsupported specialization. The paper's n is also a time-step index, whereas the translation uses n solely as a state dimension."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The paper's local envelope is conditional on scheme and perturbation order conditions, and the global envelope additionally requires stability. The exact joint-limit order for Delta t and epsilon is unstated.",
-      "translation_evidence": "The translation universally quantifies arbitrary vectors without Delta t, epsilon, p, m, method coefficients, order conditions, or stability.",
-      "reasoning": "Regardless of the paper's unresolved two-parameter quantifier order, the translation omits all relevant parameters and conditional scopes and instead asserts an unconditional universal inequality."
+      "status": "unclear",
+      "paper_evidence": "The paper informally states the decomposition for the error at one time-step of the additive Runge-Kutta scheme, without explicit quantifier order for the state space, reference solution, operators, coefficients, or stages.",
+      "translation_evidence": "All dimensions and run records are universally quantified, all equation witnesses are packaged inside the run, and exactNext is an arbitrary unconstrained vector.",
+      "reasoning": "It is unclear whether universal quantification over arbitrary run records and arbitrary exactNext preserves the intended dependence on an exact ODE step."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The framework assumes the additive method (3.1), F^epsilon(y) - F(y) = O(epsilon), corresponding consistency and perturbation conditions, and stability for the global-error claim. The derivative expansion also belongs to the smooth setting unless the separate nonsmooth analysis is used.",
-      "translation_evidence": "The translation has no hypotheses on its two vectors.",
-      "reasoning": "Essential algorithmic, approximation, order, smoothness, and stability hypotheses are absent."
+      "paper_evidence": "The framework assumes the autonomous ODE u_t = F(u), an additive Runge-Kutta method, F^epsilon(y) - F(y) = O(epsilon), and tau = (F - F^epsilon)/epsilon. The definition of tau implicitly requires treatment of epsilon = 0.",
+      "translation_evidence": "The run has arbitrary F and tau, contains no F^epsilon or approximation hypothesis, does not connect exactNext to the ODE flow, adds step >= 0 and epsilon >= 0, and explicitly permits epsilon = 0.",
+      "reasoning": "Several source hypotheses and semantic links are absent, while positivity assumptions not stated in the selected passage are introduced."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "The paper gives a second-order B-series expansion, distinguishes E_sch from E_per, states E = O(Delta t^(p+1)) + O(epsilon Delta t^(m+1)) per step, and conditionally states Error = O(Delta t^p) + O(epsilon Delta t^m) globally.",
-      "translation_evidence": "The sole conclusion is the Euclidean triangle inequality for schemeError + perturbationError.",
-      "reasoning": "The expansion, error decomposition as an algorithmic assertion, both asymptotic envelopes, their separate orders, and the stability-conditioned global conclusion are missing."
+      "status": "pass",
+      "paper_evidence": "The selected conclusion is the exact local split E = E_sch + E_per at one time-step.",
+      "translation_evidence": "The translation includes the corresponding exact vector equality and additionally asserts a Euclidean triangle inequality.",
+      "reasoning": "The exact structural split is present. The local asymptotic orders and conditional global estimate are not part of the locator-selected exact conclusion."
     },
     {
       "id": "S06",
       "status": "fail",
-      "paper_evidence": "The paper uses the additive Runge-Kutta update, A-tilde = A + A^epsilon, b-tilde = b + b^epsilon, the perturbation operator tau, derivatives F_y and tau_y, and big-O expressions.",
-      "translation_evidence": "The dependency ledger correctly unfolds coordinatewise addition, finite sums, real squaring, square root, and the Euclidean norm, but contains none of the paper's operators.",
-      "reasoning": "The ledger accurately explains the unrelated formal inequality; it does not interpret or preserve the nontrivial operators and definitions of the paper result."
+      "paper_evidence": "The paper defines tau through F and F^epsilon and defines the combined coefficients by A-tilde = A + A^epsilon and b-tilde = b + b^epsilon.",
+      "translation_evidence": "The run treats tau, aTilde, aPerturbation, bTilde, and bPerturbation as independent primitive data and contains neither F^epsilon nor the combined-coefficient definitions.",
+      "reasoning": "The vector operations are fully interpreted, but essential paper-level operator and coefficient definitions are not represented."
     },
     {
       "id": "S07",
       "status": "fail",
-      "paper_evidence": "The paper distinguishes F from its approximation F^epsilon and introduces tau to track their perturbation through the computed Runge-Kutta stages.",
-      "translation_evidence": "Both inputs are arbitrary exact real vectors whose names alone call them schemeError and perturbationError.",
-      "reasoning": "The translation provides no exact, approximate, perturbed, or computed quantities and no relation connecting its vectors to such quantities."
+      "paper_evidence": "The paper distinguishes the exact ODE evolution, the approximation error of the unperturbed scheme, and the perturbation associated with the approximate operator F^epsilon.",
+      "translation_evidence": "Although separate schemeNext and perturbedNext vectors are present, exactNext is unconstrained and no approximate or computed operator F^epsilon is represented.",
+      "reasoning": "The translation does not establish that exactNext is an exact ODE value or that the perturbed update arises from the paper's approximate computation."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "The result applies specifically to the additive mixed-precision Runge-Kutta algorithm (3.1), represented in perturbed form by (3.2).",
-      "translation_evidence": "The proposition applies to every pair of finite real vectors and mentions no stages, update, coefficients, ODE, or execution.",
-      "reasoning": "All algorithm linkage has been removed."
+      "status": "pass",
+      "paper_evidence": "Equations (3.2a)-(3.2b) define the s-stage perturbation-form Runge-Kutta stages and update using A-tilde, A^epsilon, b-tilde, b^epsilon, F, tau, epsilon, and the step size.",
+      "translation_evidence": "The run packages matching stage and update equations for an unperturbed scheme and a perturbed scheme with epsilon*step tau contributions.",
+      "reasoning": "The proposition is structurally placed in the paper's one-step algorithmic setting, although missing operator definitions and the semantic irrelevance of these equations are addressed separately."
     },
     {
       "id": "S09",
       "status": "unclear",
-      "paper_evidence": "The paper does not specify a vector, matrix, componentwise, absolute, relative, or other norm for E, Error, or its big-O terms in the cited passage.",
-      "translation_evidence": "The translation explicitly selects the unsquared Euclidean 2-norm and asserts its triangle inequality.",
-      "reasoning": "The Euclidean choice is unsupported, but the paper's norm is missing rather than demonstrably different. A match cannot be established without adjudicating the source's norm ambiguity."
+      "paper_evidence": "The selected passage specifies no norm, scalar error functional, or componentwise interpretation for E, E_sch, or E_per.",
+      "translation_evidence": "The translation fixes the errors as finite real vectors and adds an inequality in the Euclidean 2-norm defined by sqrt of a sum of squares.",
+      "reasoning": "The paper provides no evidence that Euclidean norm semantics are intended, so the added norm conclusion cannot be confirmed or contradicted."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The paper has stages indexed 1 through s, coefficient families A, A^epsilon, b, b^epsilon, step levels n and n+1, explicit epsilon dependence, and local/global exponents p+1, m+1, p, and m.",
-      "translation_evidence": "The only indexing is Fin n, conventionally 0 through n-1, and the only displayed constant exponent is the square 2.",
-      "reasoning": "The paper's constants, coefficients, indices, exponents, and parameter dependence are absent and replaced by unrelated coordinate indexing."
+      "status": "unclear",
+      "paper_evidence": "The printed (3.2) formulas use plus epsilon*step perturbation terms and stage sums from 1 through s. However, substituting the printed definition tau = (F - F^epsilon)/epsilon into (3.1) would produce minus rather than plus perturbation terms.",
+      "translation_evidence": "Fin s supplies an equivalent zero-based stage index set, and the run uses the printed plus epsilon*step factors without relating tau to F^epsilon.",
+      "reasoning": "Index ranges and explicit factors otherwise align, but the paper's internal sign inconsistency prevents a definitive judgment of the intended signed algorithm."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The numerical model is the abstract operator approximation F^epsilon(y) - F(y) = O(epsilon), motivated by reduced precision or relaxed solver tolerance; no IEEE operation-level model or exceptional-value assumptions are imposed.",
-      "translation_evidence": "The translation is entirely over exact real numbers and contains neither F^epsilon nor epsilon nor any approximation model.",
-      "reasoning": "Although the paper also lacks an IEEE rounding law, its essential mixed-precision perturbation model is omitted rather than preserved."
+      "paper_evidence": "The paper's numerical model is an abstract approximate operator satisfying F^epsilon - F = O(epsilon), with chopping discussed as a specialization and no specified IEEE rounding or exceptional-value rules.",
+      "translation_evidence": "All quantities are exact real values, tau is arbitrary, F^epsilon is absent, and no approximation, chopping, rounding, overflow, underflow, or exceptional-value semantics are encoded.",
+      "reasoning": "Omitting unspecified IEEE details is appropriate, but omitting the paper's defining approximate-operator relation changes the numerical model."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The paper asserts an additive error decomposition and big-O asymptotic forms, with the global form conditional on stability.",
-      "translation_evidence": "The translation asserts a non-strict less-than-or-equal relation between three Euclidean norms.",
-      "reasoning": "A norm triangle inequality is a different relation from the paper's equalities, asymptotic order claims, and conditional conclusion."
+      "status": "unclear",
+      "paper_evidence": "The selected paper result asserts an exact additive equality between three error quantities and does not state a norm inequality.",
+      "translation_evidence": "The translation asserts an exact vector equality and an additional less-than-or-equal Euclidean triangle bound.",
+      "reasoning": "The equality has the expected algebraic direction, but whether the additional conjunct is a faithful consequence depends on the unsupported vector and norm interpretation."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "E_sch and E_per are one-step scheme and perturbation errors, while Error is accumulated global error whose claimed order requires stability.",
-      "translation_evidence": "The two vectors are arbitrary and have no definition as one-step, global, forward, backward, residual, or stability errors.",
-      "reasoning": "The paper's distinct error notions and local-to-global stability treatment are lost."
+      "status": "unclear",
+      "paper_evidence": "The paper calls E_sch the scheme approximation error and E_per the perturbation error but does not define their signed differences, reference states, or comparison baseline.",
+      "translation_evidence": "The translation defines them concretely as exactNext - schemeNext and schemeNext - perturbedNext, with total error exactNext - perturbedNext.",
+      "reasoning": "These definitions are a plausible telescoping realization, but the PDF does not establish that they are the paper's intended error quantities or orientations."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "Equation (3.3) retains terms through second order in Delta t, including epsilon and epsilon^2 contributions, followed by O(Delta t^3); the subsequent envelopes use O(Delta t^(p+1)) and O(epsilon Delta t^(m+1)).",
-      "translation_evidence": "The translation is an exact inequality with no expansion, remainder, asymptotic variable, or big-O term.",
-      "reasoning": "Neither the explicit higher-order remainder nor the two-source asymptotic treatment is represented."
+      "status": "not-applicable",
+      "paper_evidence": "Equation (3.3) and the adjacent big-O estimates provide higher-order context, but the locator selects only the exact one-step decomposition E = E_sch + E_per.",
+      "translation_evidence": "The translation asserts an exact identity and does not assert a first-order approximation, remainder formula, local order, or global order.",
+      "reasoning": "No higher-order or asymptotic assertion belongs to the selected target, so its absence is not a translation defect for this task."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The paper specifies s as the Runge-Kutta stage count but does not identify the ODE state dimension with the time-step index n or select a finite-dimensional Euclidean state norm.",
-      "translation_evidence": "The translation makes n an arbitrary finite real-vector dimension, permits n = 0, and generalizes over all vector pairs independently of a Runge-Kutta method.",
-      "reasoning": "This is not a justified specialization of the paper result: it both imposes an unsupported finite-real Euclidean setting and generalizes away the algorithm and error-generation constraints."
+      "paper_evidence": "The selected framework leaves the state dimension and error norm unspecified and does not restrict the state space to finite real coordinate vectors.",
+      "translation_evidence": "The proposition is restricted to positive-dimensional finite real vectors and explicitly uses their Euclidean 2-norm.",
+      "reasoning": "This is a substantive specialization of applicability, not genuine strengthening of the paper result."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "The paper's conclusions concern errors produced by methods satisfying specific approximation and order conditions, with stability required globally.",
-      "translation_evidence": "The proposition holds for every vector pair solely by the Euclidean triangle inequality; for n = 0 it degenerates to 0 <= 0.",
-      "reasoning": "The formal proposition has nondegenerate instances for n > 0, but its truth is independent of every substantive paper hypothesis and therefore arises for an unintended generic reason."
+      "status": "unclear",
+      "paper_evidence": "The paper motivates the split by grouping scheme and perturbation terms in the additive B-series expansion.",
+      "translation_evidence": "Positive-dimensional run records are satisfiable, but both conclusions are generic algebraic facts; they do not depend on the stage equations, coefficients, maps, step, epsilon, or the claimed exactness of exactNext.",
+      "reasoning": "The proposition is not vacuous from impossible hypotheses, but it is unclear whether its truth solely by telescoping and the triangle inequality captures the intended B-series error decomposition or trivializes it."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The Euclidean triangle inequality supplies no Runge-Kutta update, operator-approximation assumption, consistency or perturbation conditions, asymptotic bounds, separate p and m orders, or stability-conditioned global result."
+      "verdict": "unclear",
+      "reasoning": "The vector equality yields the selected split if the three concrete differences are accepted as the paper's E, E_sch, and E_per. The PDF does not define those baselines or orientations, and the translation omits the F^epsilon and tau linkage, so that correspondence cannot be established."
     },
     "paper_implies_translation": {
-      "verdict": "no",
-      "reasoning": "The paper discusses errors generated by a particular additive Runge-Kutta framework and does not assert a universally quantified Euclidean triangle inequality for arbitrary finite real vectors or select the Euclidean norm."
+      "verdict": "unclear",
+      "reasoning": "The paper's exact split would yield the translated equality and triangle inequality under the translation's finite-real-vector and Euclidean-norm interpretation. The paper specifies neither that interpretation nor the concrete error differences, so this implication cannot be asserted without additional assumptions."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "undetermined",
   "accepted": false,
   "requires_adjudication": true,
   "findings": [
     {
-      "severity": "critical",
-      "category": "result-substitution",
-      "paper_evidence": "PDF page 5 states an algorithm-specific scheme/perturbation error decomposition and local and global big-O envelopes.",
-      "translation_evidence": "The translation states only the Euclidean triangle inequality for arbitrary vectors.",
-      "impact": "The translated proposition is a different theorem and cannot establish the paper result."
+      "severity": "major",
+      "category": "error-notion",
+      "paper_evidence": "The PDF names scheme and perturbation errors but does not define their reference states or signed differences.",
+      "translation_evidence": "The translation chooses exactNext - schemeNext and schemeNext - perturbedNext, while exactNext itself is unconstrained.",
+      "impact": "The central correspondence between the paper's error sources and the translated telescoping differences remains unresolved."
     },
     {
       "severity": "major",
-      "category": "algorithm-and-hypotheses",
-      "paper_evidence": "Equations (3.1)-(3.2), the approximation F^epsilon - F = O(epsilon), order conditions, and stability govern the result.",
-      "translation_evidence": "No algorithm, approximation relation, order conditions, or stability hypothesis appears.",
-      "impact": "The conclusion is detached from mixed-precision Runge-Kutta computation."
+      "category": "numerical-model",
+      "paper_evidence": "The perturbation framework uses an approximate operator F^epsilon with F^epsilon - F = O(epsilon) and tau = (F - F^epsilon)/epsilon.",
+      "translation_evidence": "F^epsilon and its approximation relation are absent, and tau is arbitrary.",
+      "impact": "The translated run need not represent the perturbation or mixed-precision model analyzed by the paper."
     },
     {
       "severity": "major",
-      "category": "asymptotic-error-orders",
-      "paper_evidence": "The one-step exponents are p+1 and m+1, and the stable global exponents are p and m, with an explicit epsilon factor on perturbation error.",
-      "translation_evidence": "There are no asymptotic variables, orders, or epsilon dependence.",
-      "impact": "The central quantitative content of the paper is absent."
+      "category": "unsupported-specialization",
+      "paper_evidence": "No state dimension or norm is specified for the selected error decomposition.",
+      "translation_evidence": "The translation restricts states to Fin n -> Real and adds a Euclidean 2-norm inequality.",
+      "impact": "The extra conclusion and restricted domain prevent a definite implication judgment without choosing semantics absent from the source."
     },
     {
       "severity": "major",
-      "category": "norm-ambiguity",
-      "paper_evidence": "No norm is specified for the errors or big-O terms.",
-      "translation_evidence": "The translation chooses the Euclidean 2-norm.",
-      "impact": "The norm choice is unsupported and requires adjudication; it cannot be inferred from the paper."
+      "category": "nonvacuity-and-linkage",
+      "paper_evidence": "The paper derives the decomposition by distinguishing scheme and perturbation contributions in an additive B-series.",
+      "translation_evidence": "The theorem's conclusions are true independently of every stage and update equation and of all numerical-method data.",
+      "impact": "The formal proposition may reduce the paper's algorithm-specific bookkeeping claim to a generic telescoping identity."
     },
     {
-      "severity": "major",
-      "category": "perturbation-sign-ambiguity",
-      "paper_evidence": "Equation (2.3) defines tau = (F - F^epsilon)/epsilon, while Eqs. (3.2)-(3.3) print positive epsilon tau terms, producing an internal sign conflict.",
-      "translation_evidence": "The translation contains no F, F^epsilon, tau, epsilon, or perturbation coefficient.",
-      "impact": "The translation neither preserves the printed expansion nor records the source ambiguity."
+      "severity": "minor",
+      "category": "source-sign-ambiguity",
+      "paper_evidence": "Equation (2.3) defines tau = (F - F^epsilon)/epsilon, while equations (3.2a)-(3.2b) print plus epsilon*tau terms.",
+      "translation_evidence": "The translation follows the printed plus signs but does not include F^epsilon, so it cannot resolve the inconsistency.",
+      "impact": "The intended signed perturbation algorithm requires adjudication, although the sign does not affect the bare telescoping equality."
     },
     {
-      "severity": "major",
-      "category": "unintended-generic-truth",
-      "paper_evidence": "The paper's error statements depend on the mixed-precision method and its conditions.",
-      "translation_evidence": "The proposition holds for arbitrary vectors by a generic norm theorem, including the degenerate n = 0 case.",
-      "impact": "Formal provability would provide no evidence for the paper's numerical-analysis claim."
+      "severity": "note",
+      "category": "source-scope",
+      "paper_evidence": "The local big-O orders and stability-conditional global estimate occur adjacent to the exact decomposition.",
+      "translation_evidence": "The translation contains no asymptotic or global-error conclusion.",
+      "impact": "This is not treated as an omission because the locator specifically selects the exact one-step decomposition."
     }
   ],
-  "rationale": "The verified source concerns the asymptotic one-step and stable-global errors of a specific additive mixed-precision Runge-Kutta framework. The blind translation instead expresses Minkowski's inequality for arbitrary finite real vectors. It omits the method, operators, coefficients, perturbation model, hypotheses, error orders, stability condition, higher-order remainder, and local/global distinction. Neither statement semantically implies the other in the intended comparison, so the classification is not-faithful-different. Adjudication is requested because the paper leaves its error norm unspecified while the translation selects the Euclidean norm, and the source also contains a perturbation-sign inconsistency, although neither ambiguity alters the decisive mismatch."
+  "rationale": "The blind translation contains a plausible concrete realization of the locator-selected exact split and correctly does not attempt to formalize the neighboring asymptotic or global statements. Definitive equivalence nevertheless cannot be established: the paper leaves the error baseline and norm unspecified, while the translation fixes finite real vectors, concrete signed differences, and a Euclidean norm; it also omits the approximate operator and perturbation definitions and proves conclusions independent of the algorithmic hypotheses. The PDF's tau sign inconsistency adds a separate unresolved issue. Both implication directions therefore require adjudication."
 }

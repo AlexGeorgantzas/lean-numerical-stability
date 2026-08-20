@@ -2,61 +2,69 @@
   "accepted": false,
   "adjudicated": true,
   "adjudication_reasons": [
+    "judge classifications differ",
     "round-trip judge requested adjudication",
-    "round-trip S09 is unclear"
+    "round-trip judge classification is undetermined",
+    "round-trip S03 is unclear",
+    "round-trip S09 is unclear",
+    "round-trip S10 is unclear",
+    "round-trip S12 is unclear",
+    "round-trip S13 is unclear",
+    "round-trip S16 is unclear"
   ],
-  "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T19:29:05.673097+00:00",
+  "classification": "undetermined",
+  "completed_at_utc": "2026-08-20T20:22:52.679297+00:00",
   "findings": [
     {
-      "category": "result-substitution",
-      "evidence": "PDF page 5 gives an algorithm-linked error decomposition and separate local and stability-conditional global asymptotic envelopes; Lean gives only the Euclidean triangle inequality for arbitrary vectors.",
-      "impact": "The formal declaration does not express or establish the selected paper result.",
-      "severity": "critical"
-    },
-    {
-      "category": "algorithm-and-asymptotic-omission",
-      "evidence": "Equations (3.1)-(3.5) involve the additive Runge-Kutta method, F, F^epsilon, epsilon, coefficients, order conditions, p, m, and stability. None occurs in the Lean proposition.",
-      "impact": "The declaration is provable without any mixed-precision Runge-Kutta analysis.",
-      "severity": "critical"
-    },
-    {
-      "category": "unsupported-norm-specialization",
-      "evidence": "The paper does not specify a norm, while Lean fixes sqrt(sum_i x_i^2).",
-      "impact": "The Euclidean choice cannot be attributed to the source, but this ambiguity is not classification-decisive because the principal algorithmic and asymptotic conclusions are absent regardless of norm.",
+      "category": "error-correspondence",
+      "evidence": "PDF p. 5 names the two error sources without defining their signed baselines; D003-D005 replace them by a concrete three-state telescope with unconstrained exactNext.",
+      "impact": "The exact Lean equality is plausible but cannot be identified definitively with the paper's B-series error partition.",
       "severity": "major"
     },
     {
-      "category": "unintended-generic-truth",
-      "evidence": "For n greater than zero the Lean theorem is nonvacuous but follows for every vector pair from Euclidean geometry; for n = 0 it reduces to 0 <= 0.",
-      "impact": "Its broader quantification is not genuine strength over the paper result because it achieves that applicability by replacing the substantive conclusion.",
+      "category": "mixed-scope",
+      "evidence": "D008 broadens the operator and baseline data by allowing arbitrary tau and exactNext, while D001 and the state fields restrict the theorem to positive-dimensional finite real vectors. The PDF specifies neither that broader semantic freedom nor that state-space restriction.",
+      "impact": "The Lean and paper applicability domains are not demonstrably nested, so faithful-stronger is not justified.",
       "severity": "major"
+    },
+    {
+      "category": "non-genuine-strengthening",
+      "evidence": "The Euclidean inequality in the second conjunct follows from the first conjunct and the standard triangle inequality for D006.",
+      "impact": "This redundant consequence cannot by itself make the theorem genuinely stronger than the selected decomposition.",
+      "severity": "minor"
     },
     {
       "category": "source-sign-ambiguity",
-      "evidence": "The printed definition of tau on PDF page 3 conflicts algebraically with the positive perturbation signs on PDF page 5.",
-      "impact": "The ambiguity must be preserved, but it cannot affect this classification because the Lean declaration contains no tau or perturbation coefficients.",
+      "evidence": "The PDF defines tau = (F - F^epsilon)/epsilon on p. 3 but prints plus epsilon times tau terms in (3.2) on p. 5; D008 follows the printed plus terms.",
+      "impact": "Literal (3.2) linkage is present, but consistency with the paper's perturbation definition cannot be certified.",
+      "severity": "minor"
+    },
+    {
+      "category": "source-scope",
+      "evidence": "PDF p. 5 places local big-O orders and a stability-conditional global estimate after the exact split.",
+      "impact": "Those statements are surrounding context under the supplied locator and are not missing conclusions of this target.",
       "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "The Euclidean triangle inequality for arbitrary finite real vectors does not entail the paper's Runge-Kutta error decomposition, consistency and perturbation conditions, epsilon-scaled asymptotic orders, or stability-conditional global result. Even assuming Euclidean norm compatibility would provide only a generic norm bound, not the paper's complete conclusions.",
-      "verdict": "no"
+      "reasoning": "For a finite-real paper execution, if E, E_sch, and E_per are identified respectively with exactNext - perturbedNext, exactNext - schemeNext, and schemeNext - perturbedNext, the first Lean conjunct yields the selected split immediately. The PDF does not define those signed quantities or its state space, so that interpretation cannot be established from primary evidence.",
+      "verdict": "unclear"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper does not select finite real vectors or the Euclidean norm and does not quantify over every vector pair. Its equality could yield a triangle-inequality bound for its particular errors only after adding an external Euclidean-space interpretation and the general norm theorem; it does not entail the Lean declaration under the preserved binders.",
+      "reasoning": "The paper's split is stated in its F^epsilon perturbation framework. It does not establish the complete Lean proposition for every finite-real run with arbitrary tau and arbitrary exactNext, nor does it state that universal concrete Euclidean package. Intended paper instances may satisfy the Lean conclusions, but that is weaker than implication of the full Lean target.",
       "verdict": "no"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-different",
-    "roundtrip": "not-faithful-different"
+    "direct": "faithful-stronger",
+    "roundtrip": "undetermined"
   },
-  "rationale": "The primary source states a method-specific decomposition of one-step error followed by separate scheme and epsilon-scaled perturbation orders, and it conditions the global envelope on stability. The Lean declaration instead states Minkowski's inequality for arbitrary finite real vectors. The missing paper norm makes Euclidean compatibility genuinely uncertain, so S09 should not be converted into a claim of demonstrated norm contradiction. Nevertheless, assuming the Euclidean norm would not restore the omitted algorithm, hypotheses, asymptotic orders, local/global distinction, or stability qualification. Consequently neither complete statement implies the other under its actual binders, and the decisive classification remains not-faithful-different.",
+  "rationale": "The selected paper result is the exact structural split E = E_sch + E_per; the adjacent asymptotic and global statements are context. Lean supplies a coherent finite-real realization in which the equality telescopes and the Euclidean bound is valid, and its run type is inhabited. Primary evidence nevertheless does not define the paper errors as Lean's concrete signed differences, constrain their baseline, select finite Euclidean state semantics, or resolve the tau sign conflict. Lean also both broadens the operator and baseline scope and specializes the state model. Consequently Lean implying the paper remains unclear, while the paper does not imply the full universal Lean package. The implication pattern requires an undetermined classification rather than faithful-stronger.",
   "remaining_uncertainties": [
-    "Primary evidence does not determine which norm, if any, governs E, E_sch, E_per, Error, or the big-O terms; Euclidean compatibility therefore remains unresolved.",
-    "Equation (2.3) prints tau = (F - F^epsilon)/epsilon, while equations (3.2)-(3.3) print positive epsilon tau contributions. The PDF does not resolve which sign is intended."
+    "The PDF does not define E, E_sch, and E_per as signed differences or identify their exact comparison baseline.",
+    "The PDF does not determine whether its state space is specifically a positive-dimensional finite real vector space or which norm, if any, interprets its errors.",
+    "The intended sign of the perturbed algorithm remains inconsistent between equation (2.3) and equations (3.1)-(3.2)."
   ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
