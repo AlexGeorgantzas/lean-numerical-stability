@@ -88,7 +88,7 @@ the `theorem` command.
 | `P17-T2` | `THM` | `Theorem 4.1` | The selected recursive-summation bias bound is explicitly named Theorem 4.1. |
 | `P17-T3` | `THM` | `Theorem 4.3` | The selected variance-based probabilistic summation bound is explicitly named Theorem 4.3. |
 | `P18-T1` | `TXT`, `UNL` | none | The prose following equation (3.3) introduces the selected exact split, and the split itself is displayed without a number. |
-| `P18-T2` | `EQN`, `TXT` | none | Equation (4.1) defines the corrected midpoint method and the following displayed prose gives its second-order scheme and perturbation error form. |
+| `P18-T2` | `TXT`, `UNL` | none | The selected corrected-midpoint arrays and cancellation certificate are unnumbered displays introduced and interpreted in prose; numbered conditions (3.4)-(3.5) supply the general order-condition definitions instantiated by the certificate. |
 | `P18-T3` | `EQN`, `TXT` | none | Section 4.3 displays the smooth and nonsmooth Method 4s3pC error regimes and explains their regularity distinction in prose. |
 | `P19-T1` | `EQN` | none | The selected upper perturbation-norm inequality is the right half of equation (C.8). |
 | `P19-T2` | `EQN` | none | The selected four-source modular aggregate is the definition of `xi` in equation (3.8). |

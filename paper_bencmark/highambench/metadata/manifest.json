@@ -188,8 +188,8 @@
         "P18"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P18Definitions.lean",
-      "role": "P18-only additive Runge--Kutta executions, finite Euclidean error vectors, and corrected, smooth, and nonsmooth error models",
-      "sha256": "5b4e9246cece72ea077a773c6c5613edbfa4ba922dceb910fb691196110c3a07",
+      "role": "P18-only additive Runge--Kutta executions, finite Euclidean error vectors, corrected-midpoint coefficient certificates, and smooth and nonsmooth error models",
+      "sha256": "2fd2602f6b6aa56a3710a5751ca7ab23a88037c5f3c271dfbbed3aff35dda6bb",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -3489,7 +3489,7 @@
         "volume": "92"
       },
       "paper_id": "P18",
-      "paper_structure_note": "The paper derives additive B-series consistency and perturbation conditions, distinguishes smooth from chopped nonsmooth perturbations, develops corrected midpoint, SDIRK, and Lobatto methods, and designs new four-stage schemes. The selected targets progress from the basic scheme-plus-perturbation split through the corrected midpoint envelope to an exact comparison of Method 4s3pC's two regularity regimes.",
+      "paper_structure_note": "The paper derives additive B-series consistency and perturbation conditions, distinguishes smooth from chopped nonsmooth perturbations, develops corrected midpoint, SDIRK, and Lobatto methods, and designs new four-stage schemes. The selected targets progress from the basic scheme-plus-perturbation split through an exact corrected-midpoint coefficient certificate to Method 4s3pC's two regularity regimes.",
       "paper_version": "published journal version; Journal of Scientific Computing 92, article 6, 2022, pages 1-20",
       "source": {
         "journal_page_map": "PDF pages 1-20 are article pages 1-20 respectively.",
@@ -3546,16 +3546,16 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.vecNorm2_add_le",
-            "NumStability.vecNorm2_smul"
+            "NumStability.vecNorm2_zero",
+            "NumStability.vecNorm2_eq_zero_iff"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P18/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Use vector triangle inequality and norm homogeneity on the two scaled components, then factor out the common h-squared term.",
-          "informal_statement_paraphrase": "An exact finite-vector version of the corrected implicit midpoint estimate O(\u0394t\u00b2) + O(\u03b5 \u0394t\u00b2).",
+          "informal_proof_paraphrase": "Expand the displayed two-stage arrays and their finite matrix and dot products; the printed coefficients give the consistency values and make every selected smooth and nonsmooth perturbation expression zero.",
+          "informal_statement_paraphrase": "The corrected implicit-midpoint arrays satisfy the exact second-order consistency and perturbation cancellations used after equation (4.1).",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "85c598e55eecc695203ffa1b9b6aabe2b1b261c4a93f13a5c142128a917160b1",
+            "controlled_file_sha256": "3a157ed5c3b2e49991471ea7564525d59d1bd378dd32747d519d26359e2a3fa1",
             "declaration": "p18_t2_corrected_midpoint_order_bound",
             "file": "paper_bencmark/highambench/tasks/P18/T2/Target.lean",
             "must_compile_without_numstability": true,
@@ -3563,29 +3563,36 @@
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P18Definitions.lean"
             ],
-            "statement_summary": "The corrected midpoint's scheme and precision components have the exact common h-squared Euclidean envelope."
+            "statement_summary": "The displayed corrected-midpoint arrays satisfy their exact sum, row-sum, order-two consistency, and smooth and nonsmooth perturbation identities."
           },
           "source_locations": [
             {
-              "anchor": "corrected implicit midpoint method (4.1) and its displayed global error form",
-              "pdf_page": 11,
-              "printed_page": "11",
-              "role": "corrected O(\u0394t\u00b2) plus O(\u03b5 \u0394t\u00b2) envelope",
-              "section": "4.1.1 Implicit Midpoint Rule with Correction"
+              "anchor": "conditions (3.4a)-(3.4b)",
+              "pdf_page": 7,
+              "printed_page": "7",
+              "role": "nonsmooth perturbation conditions through order two",
+              "section": "3.1.1 Perturbation Conditions when tau is not Well Behaved"
             },
             {
-              "anchor": "numerical interpretation of the p = 2 corrected method",
-              "pdf_page": 12,
-              "printed_page": "12",
-              "role": "second-order perturbation confirmation",
+              "anchor": "conditions (3.5a)-(3.5c)",
+              "pdf_page": 8,
+              "printed_page": "8",
+              "role": "smooth perturbation conditions through order two",
+              "section": "3.1.2 Perturbation Conditions when tau is Well Behaved"
+            },
+            {
+              "anchor": "corrected method (4.1a)-(4.1c), displayed Butcher arrays, and the two unnumbered cancellation identities below them",
+              "pdf_page": 11,
+              "printed_page": "11",
+              "role": "corrected implicit-midpoint coefficients and their exact order-two cancellation certificate",
               "section": "4.1.1 Implicit Midpoint Rule with Correction"
             }
           ],
           "task_id": "P18-T2",
           "tier": "T2",
           "tier_name": "combine",
-          "tier_reason": "The L proof combines the frozen vector triangle and homogeneity theorems, then performs paper-specific coefficient normalization and h-squared factorization.",
-          "title": "Corrected midpoint second-order envelope"
+          "tier_reason": "The L proof combines the frozen zero-vector norm characterization with exact paper-specific matrix sums, row sums, dot products, and both smooth and nonsmooth perturbation conditions.",
+          "title": "Corrected midpoint order-two coefficient certificate"
         },
         {
           "availability": "available",

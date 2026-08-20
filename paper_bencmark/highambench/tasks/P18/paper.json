@@ -39,8 +39,8 @@
       "reason": "These introduce standard Runge--Kutta notation and motivate the mixed-precision midpoint method; the convergence plot is empirical. The selected targets use the paper's derived error framework."
     },
     {
-      "candidate": "the full consistency and perturbation condition lists (3.4) and (3.5)",
-      "reason": "These long B-series coefficient catalogs require a substantial rooted-tree and differentiability interface. T1 captures their common exact error-composition consequence, and T3 captures the key smooth versus nonsmooth distinction."
+      "candidate": "the full consistency and perturbation condition lists (3.4) and (3.5) beyond order two",
+      "reason": "The higher-order catalogs require a substantial rooted-tree and differentiability interface. T2 uses only the exact order-two subset instantiated by the corrected midpoint arrays, while T3 addresses the higher-order Method 4s3pC construction."
     },
     {
       "candidate": "low-precision and naive mixed-precision midpoint error forms in Section 3.2",
@@ -72,7 +72,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use an exact finite-vector realization of the corrected midpoint O(\u0394t\u00b2)+O(\u03b5\u0394t\u00b2) envelope following equation (4.1).",
+      "decision": "Use the exact corrected-midpoint Butcher arrays after equation (4.1), together with their order-two consistency conditions and the smooth and nonsmooth perturbation cancellations from (3.4)-(3.5). Do not assign exact norm or hidden-constant semantics to the following conditional global big-O expectation.",
       "task_id": "P18-T2",
       "theorem_name": "p18_t2_corrected_midpoint_order_bound"
     },
