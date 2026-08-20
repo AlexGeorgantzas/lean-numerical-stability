@@ -391,16 +391,41 @@ with zero identities, 79 branch test modules, and a zero-mismatch P0009 replay
 (1,229 signature and 2,886 body edges), after the reviewed Variant A
 import-manifest amendment (29 additions, zero removals) recorded in the branch
 delivery evidence. Each delivery carries its evidence under
-`docs/architecture/deliveries/` on its branch. Integration remains pending:
-the reviewed 37-path R0009/R0010 union is still integrator-only and unapplied;
-one union row (`docs/architecture/MIGRATION.md`) requires the drafted preimage
-re-anchor amendment; two frozen-plan defects await reviewed amendments (the
-`Chapter10.Theorem07` aggregate's manifest-frozen import of the now-historical
-`Algorithms.HighamChapter10`, and the union-registered canonical target
-`Algorithms.ComplexBackwardError` lacking a direct test import); and the
-completion checker's delivered-state ratchet for B0008/B0009 has not been
-authored. No integration commit, C0005 checkpoint, acceptance, or retirement
-exists.
+`docs/architecture/deliveries/`.
+
+Both deliveries are now integrated. Integration commit
+`7beb0e7985f2a884c2462acc12055bf4db38a9c0` preserves each immutable tip by a
+separate true merge and then applies the reviewed 37-path R0009/R0010
+common-base union exactly once. Thirty-six union postimages verified
+byte-exact. The thirty-seventh, the control-line document
+`docs/architecture/MIGRATION.md`, is re-anchored by the reviewed
+[`union-migration amendment`](docs/architecture/phases/2026-08-repository-reorganization-completion/reviews/R0009-R0010-union-migration-amendment.md):
+the frozen union pinned that preimage to exact C0004 code, but the C0004
+acceptance commit had already rewritten the document, so the zero-context hunk
+landed at a stale offset. The frozen union patch and its `patch_sha256` pin are
+unmodified and the as-reviewed ledger stays immutable in planned-control
+history; only the ledger row and its evidence pins move. Two reviewed
+integration follow-ups outside both worker selectors, each forced by the union
+itself, are included: `Chapter10.Theorem07` now imports its thirteen routed
+destinations rather than the newly historical
+`NumStability.Algorithms.HighamChapter10`, and `Import/SourceCanonical.lean`
+gains the direct test import of the union-registered canonical target
+`NumStability.Algorithms.ComplexBackwardError`.
+
+`check_completion_phase.py` gains the delivered-state ratchet: a synchronous
+delivered epoch, pinned delivery records, a production allowlist of exactly the
+two immutable delivery diffs plus the union plus those two follow-ups, applied
+union postimage verification, and explicit amended-row exemptions that still
+materialize the frozen patch against its original postimages. The integrated
+tree passes the full battery — completion phase, phase contract, layout,
+compatibility, provenance, the complete `NumStability`/`NumStabilityTest`
+build, and `lake test`. Layout now reports no legacy debt increased: applying
+the union closed every aggregate-reachability, tier-registration and
+umbrella-baseline hand-off both waves had deferred to the integrator.
+
+`C0005` acceptance, milestone acceptance for M04/M08, and branch retirement
+remain outstanding; both branch records stand at `delivered` with null
+integration metadata until the acceptance control records them.
 
 The official C0004 baseline, inventory, and 111-path integration ledger have
 SHA-256 values
