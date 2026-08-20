@@ -1,125 +1,202 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "PDF p. 6, printed p. 956, anchor: Lemma 3.1 says \"for some beta > 0\"; PDF p. 3, printed p. 953, anchor: equation (2.4) defines epsilon > 0 as the LR threshold.",
-      "impact": "Positivity of epsilon is inherited from the paper's threshold convention rather than independently quantified in the lemma.",
-      "issue": "Lemma 3.1 explicitly requires beta > 0 but does not restate epsilon > 0."
-    },
-    {
-      "evidence": "PDF p. 6, printed p. 956, anchor: conditional clause preceding (3.1), followed by the replacement of A_tilde with A + E in the proof.",
-      "impact": "The literal computation uses A_tilde = X Y^T; its interpretation as a computation of Av is justified only through the backward perturbation in (3.2).",
-      "issue": "The phrase \"the matrix-vector product Av is computed as X(Y^T v)\" conflates the target product with evaluation using its approximation."
-    },
-    {
-      "evidence": "PDF p. 6, printed p. 956, anchor: second line of equation (3.2); the exact preceding line exposes epsilon gamma_c beta.",
-      "impact": "A faithful exact statement should prefer epsilon(1 + gamma_c) beta and treat the O-form only as the paper's lower-order simplification.",
-      "issue": "The constants hidden by O(u epsilon) are not specified."
-    }
-  ],
-  "contract_plain_english": "Given a b-by-b real matrix A, a factorized low-rank approximation A_tilde = X Y^T with orthonormal columns in X and Frobenius error at most epsilon beta, evaluating X(Y^T v) in floating-point arithmetic produces a result that is exactly (A + Delta A)v for a normwise matrix perturbation bounded by gamma_c||A|| + epsilon(1 + gamma_c)beta, where c = b + r^(3/2); the mixed epsilon gamma_c beta term is only later abbreviated as O(u epsilon) (PDF p. 6, printed p. 956, anchor: Lemma 3.1 and equation (3.2)).",
-  "paper_batch_sha256": "339fc5a797919c9e9bcd9c7d27d579722d8bfedc8091d16c4ab89148a1eb498f",
-  "paper_sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P15-T2",
+  "paper_sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7",
   "source_evidence": [
     {
-      "anchor": "Lemma 3.1, equations (3.1)-(3.4), and the final sentence of the proof",
-      "observation": "Lemma 3.1 specifies the dimensions, low-rank factorization, orthonormality and approximation hypotheses, the evaluation order X(Y^T v), the backward-error bounds relative to both A_tilde and A, and the replacement A_tilde = A + E with ||E|| <= epsilon beta.",
-      "pdf_page": 6,
-      "printed_page": "956"
-    },
-    {
-      "anchor": "paragraph beginning \"Note that for the particular choice beta = ||A||\"",
-      "observation": "The paper specializes (3.2) to beta = ||A|| and states the resulting normwise forward-error bound.",
-      "pdf_page": 6,
-      "printed_page": "956"
-    },
-    {
-      "anchor": "paragraph beginning \"Throughout this article the unsubscripted norm\"",
-      "observation": "Unsubscripted norms are Frobenius norms, which are submultiplicative and invariant under left multiplication by a matrix with orthonormal columns.",
       "pdf_page": 3,
-      "printed_page": "953"
+      "printed_page": "953",
+      "anchor": "Alternative LR representation Ã = XYᵀ and orthonormality of X",
+      "observation": "The paper represents an LR approximation as Ã = XYᵀ, with X having orthonormal columns. In the block setting, ε > 0 is the LR threshold and β is commonly a local block norm or the global matrix norm."
     },
     {
-      "anchor": "equation (2.5) and the definition of gamma_k",
-      "observation": "The analysis uses fl(x op y) = (x op y)(1 + delta), |delta| <= u, and gamma_k = ku/(1-ku) for ku < 1; noninteger gamma indices are permitted.",
+      "pdf_page": 3,
+      "printed_page": "953",
+      "anchor": "Frobenius norm convention and normwise approximation discussion",
+      "observation": "Every unsubscripted norm in the analysis is the Frobenius norm. The page states submultiplicativity, invariance under left multiplication by an orthonormal-column matrix, and that LR approximation bounds are normwise rather than componentwise."
+    },
+    {
       "pdf_page": 4,
-      "printed_page": "954"
+      "printed_page": "954",
+      "anchor": "Equation (2.5), definition of γ_k, and gamma relations",
+      "observation": "The paper assumes fl(x op y) = (x op y)(1 + δ), |δ| ≤ u, and defines γ_k = ku/(1-ku) when ku < 1. Gamma relations are explicitly allowed for non-integer indices."
     },
     {
-      "anchor": "Assumption 2.1 and the paragraph following it",
-      "observation": "The paper ignores rounding errors in truncated-SVD compression and assumes throughout the analysis that unit roundoff u is safely smaller than the low-rank threshold epsilon.",
+      "pdf_page": 4,
+      "printed_page": "954",
+      "anchor": "Lemma 2.1, equation (2.6)",
+      "observation": "A computed matrix-vector product with inner dimension b has a normwise backward representation ŵ = (A + ΔA)v with ‖ΔA‖ ≤ γ_b‖A‖."
+    },
+    {
       "pdf_page": 5,
-      "printed_page": "955"
+      "printed_page": "955",
+      "anchor": "Assumption 2.1 and following u safely smaller than ε convention",
+      "observation": "For truncated-SVD LR construction, the paper ignores construction roundoff and assumes Ã_ij = A_ij + ΔA_ij with ‖ΔA_ij‖ ≤ εβ_ij. It states that this requires u to be safely smaller than ε and assumes that condition throughout the analysis."
     },
     {
-      "anchor": "paragraph beginning \"The bounds (3.1) and (3.5) generalize\" and paragraph beginning \"It is important to note\"",
-      "observation": "The epsilon term is identified with low-rank truncation, gamma_c with floating-point error, and epsilon gamma_c with their mixed accumulation; the results are explicitly normwise rather than componentwise.",
+      "pdf_page": 6,
+      "printed_page": "956",
+      "anchor": "Lemma 3.1 opening hypotheses and ordered computation",
+      "observation": "Lemma 3.1 takes A ∈ ℝ^{b×b}, X,Y ∈ ℝ^{b×r}, and v ∈ ℝ^b, assumes X has orthonormal columns, Ã = XYᵀ, β > 0, and ‖A-Ã‖ ≤ εβ, and evaluates the product through z = X(Yᵀv)."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "956",
+      "anchor": "Lemma 3.1, equations (3.1) and (3.2)",
+      "observation": "With c = b + r^{3/2}, the computed ẑ satisfies ẑ = (Ã + ΔÃ)v with ‖ΔÃ‖ ≤ γ_c‖Ã‖, and therefore ẑ = (A + ΔA)v with ‖ΔA‖ ≤ γ_c‖A‖ + ε(1+γ_c)β = γ_c‖A‖ + εβ + O(uε)."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "956",
+      "anchor": "Proof equations (3.3) and (3.4), combination, and Ã = A + E replacement",
+      "observation": "The first computed stage has ŵ = (Y+ΔY)ᵀv and ‖ΔY‖ ≤ γ_b‖Y‖ = γ_b‖Ã‖. The second has ẑ = (X+ΔX)ŵ and ‖ΔX‖ ≤ γ_r‖X‖ = γ_r√r. Combining them gives the γ_c bound; replacing Ã by A+E with ‖E‖ ≤ εβ gives the bound relative to A."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "956",
+      "anchor": "β = ‖A‖ specialization and forward-error consequence",
+      "observation": "For β = ‖A‖, the backward bound becomes ‖ΔA‖ ≤ (ε+γ_c+εγ_c)‖A‖, and the paper derives ‖ẑ-Av‖ ≤ (ε+γ_c+εγ_c)‖A‖‖v‖."
+    },
+    {
       "pdf_page": 7,
-      "printed_page": "957"
+      "printed_page": "957",
+      "anchor": "Interpretation of ε, γ_c, and εγ_c after Lemma 3.2",
+      "observation": "The paper identifies truncation, floating-point, and accumulated mixed contributions, calls the mixed O(uε) contribution lower order, and says it will not always be tracked. Under u ≪ ε it interprets Lemma 3.1 as dominated by εβ and, for β = ‖A‖, as backward stable with respect to ε."
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "957",
+      "anchor": "Final paragraph on normwise-only scope",
+      "observation": "The paper explicitly says that Lemma 3.1 provides only a normwise error bound because useful componentwise bounds are unavailable for LR approximations."
     }
   ],
   "statement": {
-    "algorithm_linkage": "The claim applies specifically to computing the approximate matrix-vector action through the low-rank factors as X(Y^T v); it is not a claim about directly multiplying the full matrix A by v or about the opposite parenthesization (PDF p. 6, printed p. 956, anchor: algorithm clause in Lemma 3.1).",
     "binders": [
-      "A is in R^(b x b), X and Y are in R^(b x r), and v is in R^b (PDF p. 6, printed p. 956, anchor: opening sentence of Lemma 3.1).",
-      "A_tilde = X Y^T is the low-rank approximation, beta is a positive scalar, epsilon is the low-rank threshold inherited from Section 2, and zhat denotes the floating-point result (PDF p. 6, printed p. 956, anchor: Lemma 3.1; PDF p. 3, printed p. 953, anchor: definition of epsilon in (2.4))."
-    ],
-    "conclusions": [
-      "There is a perturbation Delta A_tilde such that zhat = (A_tilde + Delta A_tilde)v and ||Delta A_tilde|| <= gamma_c ||A_tilde||, where c = b + r^(3/2) (PDF p. 6, printed p. 956, anchor: equation (3.1) and the following definition of c).",
-      "There is a perturbation Delta A such that zhat = (A + Delta A)v and ||Delta A|| <= gamma_c ||A|| + epsilon(1 + gamma_c) beta (PDF p. 6, printed p. 956, anchor: equation (3.2)).",
-      "The second bound is also written as ||Delta A|| <= gamma_c ||A|| + epsilon beta + O(u epsilon); this rewriting retains the mixed epsilon gamma_c beta contribution inside O(u epsilon) (PDF p. 6, printed p. 956, anchor: second line of equation (3.2)).",
-      "For the particular choice beta = ||A||, the paper explicitly specializes the bound to ||Delta A|| <= (epsilon + gamma_c + epsilon gamma_c)||A|| and derives ||zhat - Av|| <= (epsilon + gamma_c + epsilon gamma_c)||A|| ||v|| (PDF p. 6, printed p. 956, anchor: paragraph immediately following the proof of Lemma 3.1)."
-    ],
-    "constants_and_indexing": [
-      "The error constant is c = b + r^(3/2), not b + r, b + r^2, or a block-count parameter (PDF p. 6, printed p. 956, anchor: line immediately following equation (3.1)).",
-      "gamma_c is a single gamma quantity indexed by c; it is not c times gamma or gamma raised to a power (PDF pp. 4 and 6, printed pp. 954 and 956, anchors: definition of gamma_k and equation (3.1))."
-    ],
-    "definitions_and_conventions": [
-      "Writing A_tilde = A + E with ||E|| <= epsilon beta, the final perturbation can be understood as E plus the floating-point perturbation from (3.1); the triangle inequality and ||A_tilde|| <= ||A|| + epsilon beta give (3.2) (PDF p. 6, printed p. 956, anchor: final sentence of the proof).",
-      "All unsubscripted matrix and vector norms in the lemma are Frobenius norms; for vectors this agrees with the Euclidean norm (PDF p. 3, printed p. 953, anchor: definition of the unsubscripted Frobenius norm).",
-      "The proof forms what = fl(Y^T v) and then zhat = fl(X what), rather than forming A_tilde explicitly (PDF p. 6, printed p. 956, anchor: equations (3.3) and (3.4))."
-    ],
-    "error_notions": [
-      "Equation (3.1) is a normwise backward error relative to the low-rank matrix A_tilde (PDF p. 6, printed p. 956, anchor: equation (3.1)).",
-      "Equation (3.2) is a combined normwise backward error relative to the original matrix A, incorporating both low-rank truncation and floating-point errors (PDF p. 6, printed p. 956, anchor: equation (3.2) and final proof sentence).",
-      "The subsequent forward-error inequality follows from the backward relation and submultiplicativity; it is not an independent componentwise guarantee (PDF p. 6, printed p. 956, anchor: paragraph after the proof; PDF p. 7, printed p. 957, anchor: normwise-only discussion)."
-    ],
-    "exceptional_values": [
-      "The gamma definition requires c u < 1 (PDF p. 4, printed p. 954, anchor: gamma_k = ku/(1-ku) for ku < 1).",
-      "Lemma 3.1 states no separate overflow, underflow, NaN or infinity hypothesis; those cases are outside the elementary relative-error model (PDF p. 4, printed p. 954, anchor: equation (2.5); PDF p. 6, printed p. 956, anchor: Lemma 3.1)."
-    ],
-    "higher_order_terms": [
-      "The exact stated combined bound contains epsilon gamma_c beta through epsilon(1 + gamma_c) beta; the paper then denotes this mixed contribution by O(u epsilon) (PDF p. 6, printed p. 956, anchor: the two lines of equation (3.2)).",
-      "The O(u epsilon) notation does not license dropping the explicit epsilon beta truncation term or the gamma_c ||A|| floating-point term (PDF p. 6, printed p. 956, anchor: equation (3.2); PDF p. 7, printed p. 957, anchor: three-term interpretation)."
+      "Fix matrix dimensions b and r and inputs A ∈ ℝ^{b×b}, X ∈ ℝ^{b×r}, Y ∈ ℝ^{b×r}, and v ∈ ℝ^b. [PDF p. 6, printed p. 956, Lemma 3.1 opening]",
+      "Fix β > 0. The ε appearing in Lemma 3.1 is inherited from the paper's positive LR-threshold convention rather than separately rebound in the lemma. [PDF p. 6, printed p. 956, Lemma 3.1 opening; PDF p. 3, printed p. 953, equation (2.4) discussion]",
+      "Let u be the unit roundoff, set c = b + r^{3/2}, and interpret γ_c as cu/(1-cu), requiring cu < 1 under the preceding gamma convention. [PDF p. 6, printed p. 956, equation (3.1); PDF p. 4, printed p. 954, definition of γ_k]",
+      "The quantifier order fixes v and the resulting computation before asserting perturbations ΔY, ΔX, ΔÃ, and ΔA; the source does not assert one perturbation that works simultaneously for every v. [PDF p. 6, printed p. 956, Lemma 3.1 and proof equations (3.3)-(3.4)]"
     ],
     "hypotheses": [
-      "X has orthonormal columns, equivalently X^T X = I in the paper's convention (PDF p. 6, printed p. 956, anchor: hypotheses of Lemma 3.1; PDF p. 3, printed p. 953, anchor: discussion of orthonormal columns).",
-      "The approximation satisfies ||A - A_tilde|| <= epsilon beta for some beta > 0 (PDF p. 6, printed p. 956, anchor: hypotheses of Lemma 3.1).",
-      "The multiplication is evaluated in the specific order z = X(Y^T v), first forming Y^T v and then multiplying by X (PDF p. 6, printed p. 956, anchor: conditional clause immediately before equation (3.1))."
+      "X has orthonormal columns, equivalently XᵀX = I; X need not be square or unitary. [PDF p. 6, printed p. 956, Lemma 3.1 opening; PDF p. 4, printed p. 954, continuation of Frobenius-norm convention]",
+      "Ã is exactly the represented LR matrix XYᵀ. [PDF p. 6, printed p. 956, Lemma 3.1 opening]",
+      "The approximation satisfies the normwise truncation bound ‖A-Ã‖ ≤ εβ with β > 0. [PDF p. 6, printed p. 956, Lemma 3.1 opening]",
+      "Each floating-point matrix-vector multiplication obeys the paper's standard relative-error model and the inherited matrix-vector backward bound. [PDF p. 4, printed p. 954, equation (2.5) and Lemma 2.1, equation (2.6)]",
+      "The standing analysis convention is that u is safely smaller than ε; this convention supports the later dominance interpretation but is not restated inside Lemma 3.1's formal hypotheses. [PDF p. 5, printed p. 955, paragraph following Assumption 2.1; PDF p. 7, printed p. 957, interpretation of equation (3.2)]"
+    ],
+    "conclusions": [
+      "There exists a perturbation ΔÃ such that ẑ = (Ã+ΔÃ)v and ‖ΔÃ‖ ≤ γ_c‖Ã‖, where c = b+r^{3/2}. [PDF p. 6, printed p. 956, equation (3.1)]",
+      "There exists a combined perturbation ΔA such that ẑ = (A+ΔA)v and ‖ΔA‖ ≤ γ_c‖A‖ + ε(1+γ_c)β. [PDF p. 6, printed p. 956, equation (3.2)]",
+      "The source also writes the combined bound as γ_c‖A‖ + εβ + O(uε), while its exact mixed contribution in the preceding inequality is εγ_cβ. [PDF p. 6, printed p. 956, equation (3.2)]",
+      "In the proof, there exist stage perturbations satisfying ŵ = (Y+ΔY)ᵀv with ‖ΔY‖ ≤ γ_b‖Y‖ = γ_b‖Ã‖ and ẑ = (X+ΔX)ŵ with ‖ΔX‖ ≤ γ_r‖X‖ = γ_r√r. [PDF p. 6, printed p. 956, equations (3.3) and (3.4)]",
+      "The combined LR perturbation obeys ‖ΔÃ‖ ≤ (γ_b+γ_r√r+γ_bγ_r√r)‖Ã‖ ≤ γ_c‖Ã‖. [PDF p. 6, printed p. 956, proof immediately following equation (3.4)]",
+      "For the special choice β = ‖A‖, the bound becomes ‖ΔA‖ ≤ (ε+γ_c+εγ_c)‖A‖. [PDF p. 6, printed p. 956, paragraph following the proof]",
+      "For β = ‖A‖, the backward result implies the forward bound ‖ẑ-Av‖ ≤ (ε+γ_c+εγ_c)‖A‖‖v‖. [PDF p. 6, printed p. 956, forward-error display following the specialization]"
+    ],
+    "definitions_and_conventions": [
+      "Unsubscripted ‖·‖ means the Frobenius norm throughout the error analysis. [PDF p. 3, printed p. 953, Frobenius norm convention]",
+      "Ã denotes the represented LR approximation XYᵀ; A denotes the original exact matrix. [PDF p. 6, printed p. 956, Lemma 3.1 opening]",
+      "Hats distinguish computed quantities such as ŵ and ẑ from exact mathematical expressions. [PDF p. 6, printed p. 956, Lemma 3.1 and equations (3.3)-(3.4)]",
+      "In the proof, E = Ã-A is the truncation perturbation, so Ã = A+E and ‖E‖ ≤ εβ; the final ΔA combines E with floating-point perturbation. [PDF p. 6, printed p. 956, final sentence of the proof]",
+      "β is generic in Lemma 3.1. The surrounding BLR convention supplies local and global norm choices, and the lemma separately highlights β = ‖A‖. [PDF p. 3, printed p. 953, equation (2.4) discussion; PDF p. 6, printed p. 956, β = ‖A‖ specialization]",
+      "γ_k is the exact shorthand ku/(1-ku), not merely ku, and the paper permits non-integer gamma indices such as c. [PDF p. 4, printed p. 954, definition of γ_k and following relations; PDF p. 6, printed p. 956, c = b+r^{3/2}]"
     ],
     "implicit_context": [
-      "The paper's standing analysis assumes u is safely smaller than epsilon and treats truncated-SVD compression as satisfying the prescribed approximation bound without additional SVD-rounding error; Lemma 3.1 itself directly assumes the approximation inequality (PDF p. 5, printed p. 955, anchor: Assumption 2.1 and following paragraph; PDF p. 6, printed p. 956, anchor: Lemma 3.1 hypotheses).",
-      "The result is normwise only; no componentwise backward-error claim is made (PDF p. 7, printed p. 957, anchor: paragraph beginning \"It is important to note that Lemma 3.1\")."
+      "Matrix dimensions are dimension indices, and orthonormality of the r columns entails r ≤ b when r is positive; the lemma does not separately state a strict low-rank inequality r < b. [PDF p. 6, printed p. 956, dimensions and orthonormal-column hypothesis]",
+      "Assumption 2.1 ignores rounding errors incurred while constructing truncated-SVD LR factors; Lemma 3.1 itself only needs given factors satisfying Ã = XYᵀ and the norm bound. [PDF p. 5, printed p. 955, Assumption 2.1; PDF p. 6, printed p. 956, Lemma 3.1 opening]",
+      "The analysis is parameterized by unit roundoff u and does not fix IEEE double precision for Lemma 3.1. [PDF p. 4, printed p. 954, equation (2.5); PDF p. 5, printed p. 955, distinction between analysis and experimental setting]",
+      "The paper-wide u ≪ ε convention is used to interpret the truncation term as dominant, whereas equations (3.1)-(3.2) retain both roundoff and truncation terms. [PDF p. 5, printed p. 955, paragraph following Assumption 2.1; PDF p. 7, printed p. 957, interpretation of equation (3.2)]"
+    ],
+    "algorithm_linkage": "The result is specifically for the ordered two-stage vector computation: first compute Yᵀv to obtain ŵ, then compute Xŵ to obtain ẑ. The actual arithmetic uses X, Y, and v, so its exact factorized target is Ãv; equation (3.1) is backward relative to Ã, while equation (3.2) adds the LR approximation error to become backward relative to A. This is the vector variant; the following full-matrix variant has only a forward bound. [PDF p. 6, printed p. 956, Section 3.1 introduction, Lemma 3.1, and equations (3.1)-(3.4)]",
+    "numerical_model": [
+      "Every scalar operation is modeled by fl(x op y) = (x op y)(1+δ), |δ| ≤ u, for op ∈ {+,−,×,/}. [PDF p. 4, printed p. 954, equation (2.5)]",
+      "The first product has inner dimension b and contributes γ_b; the second has inner dimension r and contributes γ_r. [PDF p. 6, printed p. 956, equations (3.3) and (3.4)]",
+      "The exact accumulation of the two product errors is bounded using γ_b+γ_r√r+γ_bγ_r√r ≤ γ_{b+r^{3/2}}. [PDF p. 6, printed p. 956, proof following equation (3.4)]",
+      "Validity of γ_c inherits the condition cu < 1 from the definition γ_k = ku/(1-ku). [PDF p. 4, printed p. 954, definition of γ_k; PDF p. 6, printed p. 956, definition of c]",
+      "Rounding in construction of truncated-SVD factors is excluded by the paper's standing Assumption 2.1 rather than included in ΔÃ. [PDF p. 5, printed p. 955, Assumption 2.1]"
+    ],
+    "error_notions": [
+      "Equation (3.1) is a normwise backward error for multiplication by the represented LR matrix Ã. [PDF p. 6, printed p. 956, equation (3.1)]",
+      "Equation (3.2) is a normwise combined backward error relative to the original matrix A, incorporating both LR truncation and floating-point multiplication errors. [PDF p. 6, printed p. 956, equation (3.2) and final proof sentence]",
+      "The β = ‖A‖ specialization additionally yields an absolute normwise forward error bound for ẑ-Av. [PDF p. 6, printed p. 956, forward-error display]",
+      "No componentwise backward or forward guarantee is claimed. [PDF p. 3, printed p. 953, normwise approximation discussion; PDF p. 7, printed p. 957, final paragraph]"
     ],
     "norms": [
-      "Every displayed error bound uses the Frobenius norm, including ||A||, ||A_tilde|| and the perturbation norms (PDF p. 3, printed p. 953, anchor: convention for unsubscripted norms).",
-      "The proof uses Frobenius-norm invariance under left multiplication by X with orthonormal columns to identify ||Y|| with ||A_tilde||, and uses ||X|| = sqrt(r) (PDF p. 6, printed p. 956, anchor: equations (3.3)-(3.4) and their explanatory text)."
+      "‖M‖ = (Σ_i,j |m_ij|²)^{1/2}, the Frobenius norm. [PDF p. 3, printed p. 953, Frobenius norm definition]",
+      "The proof uses ‖AB‖ ≤ ‖A‖‖B‖. [PDF p. 3, printed p. 953, submultiplicativity statement]",
+      "For orthonormal-column X, ‖XM‖ = ‖M‖; hence ‖XYᵀ‖ = ‖Y‖ and the proof writes ‖Y‖ = ‖Ã‖. [PDF p. 3, printed p. 953, orthonormal-column invariance; PDF p. 6, printed p. 956, equation (3.3)]",
+      "Because X has r orthonormal columns, ‖X‖ = √r. [PDF p. 6, printed p. 956, equation (3.4) and following sentence]"
     ],
-    "numerical_model": [
-      "Each elementary operation obeys fl(x op y) = (x op y)(1 + delta), |delta| <= u, for op in {+, -, multiplication, division} (PDF p. 4, printed p. 954, anchor: equation (2.5)).",
-      "gamma_k means ku/(1-ku), defined when ku < 1; therefore gamma_c requires c u < 1, and the paper permits noninteger indices such as c = b + r^(3/2) (PDF p. 4, printed p. 954, anchor: definition of gamma_k and the sentence allowing noninteger j and k).",
-      "The proof bounds the first multiplication with gamma_b and the second with gamma_r, then combines them into gamma_c (PDF p. 6, printed p. 956, anchor: equations (3.3)-(3.4) and the following combination)."
+    "constants_and_indexing": [
+      "The bound uses c = b+r^{3/2}, with no offset or replacement by b+r. [PDF p. 6, printed p. 956, text between equations (3.1) and (3.2)]",
+      "γ_c means cu/(1-cu), and c may be non-integer under the paper's explicit real-index gamma convention. [PDF p. 4, printed p. 954, gamma definition and relations; PDF p. 6, printed p. 956, c definition]",
+      "The first-stage constant is γ_b because Yᵀv has inner dimension b; the second-stage constant is γ_r because Xŵ has inner dimension r. [PDF p. 6, printed p. 956, equations (3.3) and (3.4)]",
+      "The √r factor comes from the Frobenius norm of X, producing the r^{3/2} contribution inside c. [PDF p. 6, printed p. 956, equation (3.4) and combination immediately below it]"
+    ],
+    "higher_order_terms": [
+      "The exact generic mixed term is εγ_cβ inside ε(1+γ_c)β. [PDF p. 6, printed p. 956, equation (3.2)]",
+      "The paper abbreviates that contribution as O(uε) in the second line of equation (3.2), without displaying β or a hidden constant. [PDF p. 6, printed p. 956, equation (3.2)]",
+      "For β = ‖A‖, the mixed coefficient is retained explicitly as εγ_c in the exact specialized backward and forward bounds. [PDF p. 6, printed p. 956, displays following the proof]",
+      "The discussion calls the mixed contribution lower order and says it may be omitted later, but Lemma 3.1's exact bound includes it. [PDF p. 7, printed p. 957, three-term interpretation]"
+    ],
+    "exceptional_values": [
+      "The gamma expression requires cu < 1; γ_c is not covered by the stated definition at cu ≥ 1. [PDF p. 4, printed p. 954, definition of γ_k; PDF p. 6, printed p. 956, c definition]",
+      "Lemma 3.1 imposes no nonzero condition on v, so its unnormalized equalities and bounds do not exclude v = 0. [PDF p. 6, printed p. 956, Lemma 3.1 opening and equations (3.1)-(3.2)]",
+      "The special choice β = ‖A‖ conflicts with the lemma's β > 0 wording when A = 0; the source does not separately resolve that edge case. [PDF p. 6, printed p. 956, Lemma 3.1 opening and β = ‖A‖ specialization]",
+      "Overflow, underflow, subnormal behavior, NaNs, and infinities are not discussed; the claim is conditional on operations satisfying equation (2.5). [PDF p. 4, printed p. 954, equation (2.5)]"
     ]
   },
-  "task_id": "P15-T2",
   "undebatable_constraints": [
-    "The dimensions are A in R^(b x b), X,Y in R^(b x r), and v in R^b (PDF p. 6, printed p. 956, anchor: Lemma 3.1 opening sentence).",
-    "X must have orthonormal columns and A_tilde must equal X Y^T (PDF p. 6, printed p. 956, anchor: Lemma 3.1 hypotheses).",
-    "The low-rank approximation condition is normwise: ||A - A_tilde|| <= epsilon beta with beta > 0 (PDF p. 6, printed p. 956, anchor: Lemma 3.1 hypotheses).",
-    "The evaluation order is X(Y^T v) (PDF p. 6, printed p. 956, anchor: computation clause before (3.1)).",
-    "Both backward-error conclusions, relative first to A_tilde and then to A, must be preserved (PDF p. 6, printed p. 956, anchors: equations (3.1) and (3.2)).",
-    "The exact combined bound must retain epsilon(1 + gamma_c) beta, including its mixed epsilon gamma_c beta part (PDF p. 6, printed p. 956, anchor: first line of equation (3.2)).",
-    "The constant is c = b + r^(3/2), and all norms are Frobenius norms (PDF p. 6, printed p. 956, anchor: definition of c; PDF p. 3, printed p. 953, anchor: norm convention)."
-  ]
+    "The theorem concerns real A ∈ ℝ^{b×b}, X,Y ∈ ℝ^{b×r}, and v ∈ ℝ^b. [PDF p. 6, printed p. 956, Lemma 3.1 opening]",
+    "X must have orthonormal columns and Ã must equal XYᵀ. [PDF p. 6, printed p. 956, Lemma 3.1 opening]",
+    "The approximation hypothesis is the Frobenius-norm inequality ‖A-Ã‖ ≤ εβ with β > 0. [PDF p. 6, printed p. 956, Lemma 3.1 opening; PDF p. 3, printed p. 953, norm convention]",
+    "The required algorithm is the ordered factorized evaluation X(Yᵀv), not a direct multiplication by A or Ã. [PDF p. 6, printed p. 956, Lemma 3.1 and proof equations (3.3)-(3.4)]",
+    "The first conclusion is ẑ = (Ã+ΔÃ)v with ‖ΔÃ‖ ≤ γ_c‖Ã‖. [PDF p. 6, printed p. 956, equation (3.1)]",
+    "The second conclusion is ẑ = (A+ΔA)v with ‖ΔA‖ ≤ γ_c‖A‖+ε(1+γ_c)β. [PDF p. 6, printed p. 956, equation (3.2)]",
+    "The constant is exactly c = b+r^{3/2}, and γ_c uses the finite expression cu/(1-cu). [PDF p. 6, printed p. 956, c definition; PDF p. 4, printed p. 954, γ_k definition]",
+    "The exact combined inequality contains the mixed term εγ_cβ; it cannot be dropped merely because the source subsequently labels it lower order. [PDF p. 6, printed p. 956, equation (3.2); PDF p. 7, printed p. 957, three-term interpretation]",
+    "All error bounds are normwise Frobenius-norm bounds, not componentwise bounds. [PDF p. 3, printed p. 953, norm convention; PDF p. 7, printed p. 957, normwise-only statement]",
+    "The β = ‖A‖ result is a specialization, not a hypothesis of the generic form of Lemma 3.1. [PDF p. 6, printed p. 956, lemma statement and following specialization]",
+    "The perturbations are obtained after fixing v; the lemma does not state a single ΔA or ΔÃ valid uniformly over every right-hand side. [PDF p. 6, printed p. 956, Lemma 3.1 and proof]",
+    "The backward-error conclusion belongs to the vector algorithm; the following full-matrix algorithm is treated separately and receives only a forward-error bound. [PDF p. 6, printed p. 956, Section 3.1 introduction and final paragraph]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The phrase u safely smaller than ε is not quantified.",
+      "evidence": "The standing convention uses prose on PDF p. 5, printed p. 955, immediately after Assumption 2.1; PDF p. 7, printed p. 957, writes u ≪ ε when interpreting equation (3.2).",
+      "impact": "It supports a qualitative dominance claim but supplies no numerical inequality from which γ_c‖A‖ ≤ εβ follows."
+    },
+    {
+      "issue": "The O(uε) notation suppresses scale information.",
+      "evidence": "PDF p. 6, printed p. 956, equation (3.2), first gives the exact mixed term εγ_cβ and then writes O(uε); PDF p. 7, printed p. 957, calls the normalized mixed contribution εγ_c.",
+      "impact": "A formal contract should retain ε(1+γ_c)β unless an asymptotic regime and hidden dependence on β, c, and matrix scales are supplied."
+    },
+    {
+      "issue": "The lemma calls the computation a product Av even though the executed expression is X(Yᵀv) = Ãv in exact arithmetic.",
+      "evidence": "PDF p. 6, printed p. 956, Lemma 3.1 opening uses both descriptions, while equations (3.1) and (3.2) separately give backward interpretations relative to Ã and A.",
+      "impact": "The computational contract must model the factorized Ã product and then add truncation error to relate it to A; it must not model direct arithmetic on A."
+    },
+    {
+      "issue": "The admissible integer range of b and r is implicit.",
+      "evidence": "PDF p. 6, printed p. 956, gives matrix dimensions b and r and assumes orthonormal columns, but does not explicitly state 1 ≤ r ≤ b or r < b.",
+      "impact": "A translation may infer positive dimension indices and r ≤ b from orthonormality, but strict low rank r < b is descriptive rather than a stated theorem hypothesis."
+    },
+    {
+      "issue": "The β = ‖A‖ specialization has an unaddressed zero-matrix edge case.",
+      "evidence": "PDF p. 6, printed p. 956, first requires β > 0 and later sets β = ‖A‖ without adding A ≠ 0.",
+      "impact": "Either the specialization is read with an implicit A ≠ 0 condition, or its algebraic bound is extended beyond the lemma's stated β-domain."
+    },
+    {
+      "issue": "The floating-point model does not specify exceptional arithmetic behavior or a named rounding mode.",
+      "evidence": "PDF p. 4, printed p. 954, equation (2.5), states only the relative-error model with unit roundoff u.",
+      "impact": "The result applies when that model holds; behavior involving overflow, underflow, subnormals, NaNs, or infinities is outside the explicit contract."
+    },
+    {
+      "issue": "The claimed dominance by εβ is qualitative and scale-dependent.",
+      "evidence": "PDF p. 7, printed p. 957, says equation (3.2) is dominated by εβ under u ≪ ε, while the exact bound on PDF p. 6 also contains γ_c‖A‖ and c = b+r^{3/2}.",
+      "impact": "No additional formal inequality eliminating dependence on c, ‖A‖/β, or the denominator 1-cu should be inferred from the prose."
+    }
+  ],
+  "contract_plain_english": "Fix real A, X, Y, and v of the dimensions in Lemma 3.1, with X having orthonormal columns, Ã = XYᵀ, and ‖A-Ã‖ ≤ εβ for β > 0. Compute Yᵀv first and then multiply the computed intermediate by X. [PDF p. 6, printed p. 956, Lemma 3.1 and equations (3.3)-(3.4)] Under the standard floating-point model, with c = b+r^{3/2} and γ_c = cu/(1-cu), the computed ẑ is the exact product of v by a perturbation of Ã of relative Frobenius size at most γ_c. [PDF p. 4, printed p. 954, equation (2.5) and γ definition; PDF p. 6, printed p. 956, equation (3.1)] Combining this multiplication error with the LR truncation error gives ẑ = (A+ΔA)v and ‖ΔA‖ ≤ γ_c‖A‖+ε(1+γ_c)β. [PDF p. 6, printed p. 956, equation (3.2)] For β = ‖A‖ this becomes the exact coefficient ε+γ_c+εγ_c and implies the corresponding forward bound. [PDF p. 6, printed p. 956, displays following the proof] The mixed term is lower order only as an interpretation under the unquantified convention u ≪ ε, and every guarantee is normwise rather than componentwise. [PDF p. 7, printed p. 957, interpretation and normwise-only paragraph]"
 }

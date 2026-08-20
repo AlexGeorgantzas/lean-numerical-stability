@@ -3,177 +3,170 @@
   "role": "roundtrip-judge",
   "task_id": "P15-T2",
   "paper_sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7",
-  "blind_translation_sha256": "6513e9977d82f2fbf471fa04470e52c75ed30468725029cfd59b291203411832",
+  "blind_translation_sha256": "1eb449a82757820adc5d8558d2a5dc5a247bcf277ccb4f0bf410a1b4f5440719",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The inspected PDF has the supplied SHA-256 and is the published IMA Journal of Numerical Analysis 42(2) version. Lemma 3.1 and equations (3.1)-(3.4) occur on PDF page 6, printed page 956.",
-      "translation_evidence": "The translation contains the exact combined bound from the first line of equation (3.2).",
-      "reasoning": "The source version and intended passage are correctly selected."
+      "paper_evidence": "The source packet identifies the published IMA Journal of Numerical Analysis version and Lemma 3.1 on PDF page 6, with the norm, gamma, and precision conventions on PDF pages 3-5 and the interpretation on page 7.",
+      "translation_evidence": "The translation concerns the same real low-rank matrix-vector product, the two perturbation bounds, c = b + r sqrt(r), and the exact mixed term.",
+      "reasoning": "The selected paper version, lemma, equations (3.1)-(3.4), and surrounding conventions correspond to the translated subject."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Lemma 3.1 binds A in R^(b x b), X and Y in R^(b x r), and v in R^b, with A_tilde = X Y^T.",
-      "translation_evidence": "The translation binds one natural dimension n, square matrices A, Atilde, truncError, roundingError, and vectors v and computed; it has no b, r, X, or Y.",
-      "reasoning": "The rank dimension and low-rank factor binders are absent, while error matrices are promoted to universally quantified inputs."
+      "status": "unclear",
+      "paper_evidence": "Lemma 3.1 uses A in R^{b x b}, X and Y in R^{b x r}, and v in R^b, but does not explicitly state whether b and r may be zero.",
+      "translation_evidence": "The translation quantifies over all natural b and r, explicitly allowing zero, and uses Fin-indexed real matrices and vectors of the correct shapes.",
+      "reasoning": "The matrix and vector types otherwise match exactly, but equivalence at zero dimensions cannot be established because the paper leaves the admissible dimension range implicit."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "After the factors and floating-point computation are fixed, the paper asserts perturbations Delta A_tilde and Delta A witnessing the two backward-error relations.",
-      "translation_evidence": "roundingError is universally quantified and its backward relation and bound are antecedents; only totalError remains existential.",
-      "reasoning": "The first perturbation witness has been moved from a derived existential conclusion into universally supplied hypothesis data."
+      "paper_evidence": "After v and the computed stages are fixed, equations (3.3)-(3.4) obtain stage perturbations, and equations (3.1)-(3.2) assert resulting perturbation witnesses; no perturbation is required to work uniformly for every v.",
+      "translation_evidence": "deltaY and deltaX are already fields of the universally quantified run, while deltaAtilde and deltaA are fixed definitions. The proposition contains no existential perturbation witnesses.",
+      "reasoning": "Although separate runs permit perturbations to vary with v, the translation replaces witness existence for a computation by a conditional theorem over records that already contain the witnesses."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "The paper requires orthonormal columns of X, A_tilde = X Y^T, ||A-A_tilde|| <= epsilon beta for beta > 0, epsilon > 0 by the threshold convention, gamma_c defined when c u < 1, and the standing assumption u safely smaller than epsilon.",
-      "translation_evidence": "It assumes only epsilon >= 0, beta >= 0, gammaC >= 0 and perturbation equations and bounds. It has no factors, orthonormality, unit roundoff, c u < 1, or strict positivity.",
-      "reasoning": "Several structural and numerical hypotheses are omitted, and strict positivity is weakened to nonnegativity."
+      "paper_evidence": "The paper assumes orthonormal columns, Atilde = X Y^T, the truncation bound, beta > 0, the scalar floating-point model, and its derived matrix-vector backward-error result. It also adopts the qualitative convention that u is safely smaller than epsilon.",
+      "translation_evidence": "The record assumes the truncation facts and orthonormality, but also assumes the exact stagewise perturbation representations and their bounds. It replaces the qualitative precision convention by 0 < u < epsilon.",
+      "reasoning": "Core algebraic hypotheses match, but facts derived from floating-point execution are promoted to record hypotheses. Moreover, u < epsilon is not demonstrably equivalent to the paper's unquantified 'safely smaller' convention."
     },
     {
       "id": "S05",
       "status": "fail",
-      "paper_evidence": "Equation (3.1) gives a backward error relative to A_tilde, and equation (3.2) gives a combined backward error relative to A.",
-      "translation_evidence": "Only the combined totalError statement is concluded. The equation-(3.1) relation and bound appear as assumptions on roundingError.",
-      "reasoning": "One of the two required backward-error conclusions is not proved by the translated proposition."
+      "paper_evidence": "The paper gives both backward representations and bounds, derives the stage perturbations, and records the beta = ||A|| specialization and its forward-error consequence.",
+      "translation_evidence": "The six conjuncts contain both generic backward representations, both generic bounds, the total-perturbation decomposition, and the exact mixed-term expansion. They do not establish existence of the stage perturbations or state the beta = ||A|| forward bound.",
+      "reasoning": "The central generic bounds are present, but the translated proposition is not complete relative to all conclusions recorded in the source contract."
     },
     {
       "id": "S06",
-      "status": "unclear",
-      "paper_evidence": "The paper uses matrix transpose and factor multiplication, the Frobenius norm, and gamma_k = k u/(1-k u).",
-      "translation_evidence": "The ledger unfolds matrix addition and matrix-vector multiplication, but D003 and D029 explicitly leave the inherited matrix norm's exact entrywise definition unclear. The factorization and gamma operators are absent.",
-      "reasoning": "Most operators actually present in the translation are interpreted, but the supplied dependency information is insufficient to establish the exact norm semantics."
+      "status": "pass",
+      "paper_evidence": "The proof uses Atilde = X Y^T, E = Atilde - A, gamma(k,u) = ku/(1-ku), ordinary transpose and matrix products, and the expansion of the two perturbed stages.",
+      "translation_evidence": "The dependency ledger unfolds every matrix operation, transpose, Frobenius norm, gamma, Atilde, deltaAtilde, and deltaA. Its E_tr convention is X Y^T = A + E_tr.",
+      "reasoning": "The definitions are explicit and consistent, including the sign of E_tr and the three-term expansion of deltaAtilde."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "The quantity zhat is the floating-point result of first computing fl(Y^T v) and then fl(X what).",
-      "translation_evidence": "computed is an exact real vector assumed to equal (Atilde + roundingError)v; no rounded operation or computed execution is represented.",
-      "reasoning": "The floating-point computation has been replaced by an exact perturbation equation that assumes its essential backward-error property."
+      "status": "pass",
+      "paper_evidence": "A and Atilde are exact matrices, wHat and zHat are computed quantities, and the delta terms are perturbations used in exact backward representations.",
+      "translation_evidence": "A, Atilde, wHat, zHat, E_tr, and the product perturbations remain distinct, with exact equalities relating the computed-result fields to perturbed exact products.",
+      "reasoning": "The exact and perturbed quantities are not algebraically conflated, although the provenance of the computed fields is missing under S08 and S11."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "Lemma 3.1 is specifically linked to evaluation as X(Y^T v), with Y^T v formed before multiplication by X.",
-      "translation_evidence": "There are no X or Y binders, transpose operation, low-rank factorization, or two-stage evaluation order.",
-      "reasoning": "The translated proposition is a generic perturbation-composition lemma rather than a statement about the paper's algorithm."
+      "paper_evidence": "The result concerns the ordered floating-point execution that first computes Y^T v and then multiplies the computed intermediate by X.",
+      "translation_evidence": "The record preserves the order through wHat = (Y + deltaY)^T v and zHat = (X + deltaX)wHat, but it contains no execution relation or assertion that wHat and zHat arose from floating-point evaluations.",
+      "reasoning": "The factorized order is visible, but the proposition is linked only to an abstract pre-certified perturbation record, not to the paper's executed algorithm."
     },
     {
       "id": "S09",
-      "status": "unclear",
-      "paper_evidence": "The paper explicitly defines every unsubscripted norm as the Frobenius norm and states that the analysis is normwise rather than componentwise.",
-      "translation_evidence": "The bounds are normwise and refer to Matrix.frobeniusNormedRing, but the dependency ledger states that the inherited norm was not unfolded to a closed formula.",
-      "reasoning": "The identifier suggests the intended Frobenius norm, but the permitted evidence does not fully determine that its mathematical formula matches the paper."
+      "status": "pass",
+      "paper_evidence": "All unsubscripted matrix norms are unsquared Frobenius norms, and Lemma 3.1 gives normwise rather than componentwise bounds.",
+      "translation_evidence": "Every matrix norm is explicitly sqrt(sum of entry squares), and all error inequalities are Frobenius-norm inequalities.",
+      "reasoning": "Norm kind, unsquared form, and normwise interpretation match."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The constant is c = b + r^(3/2), and gamma_c is the single quantity c u/(1-c u).",
-      "translation_evidence": "gammaC is an arbitrary nonnegative real with no b, r, c, or u dependence.",
-      "reasoning": "The defining constant, its noninteger index, and its dependence on dimension, rank, and unit roundoff are missing."
+      "status": "pass",
+      "paper_evidence": "The paper uses c = b + r^{3/2}, gamma_c = cu/(1-cu), gamma_b for the first stage, and gamma_r with a sqrt(r) factor for the second stage.",
+      "translation_evidence": "The translation uses b + r sqrt(r), gamma(k,u) = ku/(1-ku), and the stage indices b and r.",
+      "reasoning": "For nonnegative natural r, r sqrt(r) equals r^{3/2}; all constants, indices, denominators, and parameter dependencies match."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The analysis uses fl(x op y) = (x op y)(1+delta), |delta| <= u, gamma_k for k u < 1, and implicitly excludes exceptional behavior outside that model.",
-      "translation_evidence": "All operations are exact real arithmetic; there is no precision, unit roundoff, rounding model, overflow, underflow, NaN, or infinity treatment.",
-      "reasoning": "The numerical model supporting the rounding-error bound is absent."
+      "paper_evidence": "The source models each scalar arithmetic operation by fl(x op y) = (x op y)(1 + delta), with |delta| <= u, and derives the stagewise matrix-vector backward representations from that model.",
+      "translation_evidence": "All quantities are exact reals. The record directly assumes the stage equations and norm bounds and contains no fl operation, scalar rounding errors, representability condition, or connection to exceptional arithmetic.",
+      "reasoning": "The translation encodes a consequence of the paper's floating-point model but not the model or the claim that actual rounded operations satisfy that consequence."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The paper derives existence of perturbations satisfying exact action equalities and non-strict norm bounds from the low-rank computation.",
-      "translation_evidence": "The corresponding Atilde-level equality and norm bound are assumed, and strict beta positivity is weakened, before the combined bound is concluded.",
-      "reasoning": "Although the displayed inequality direction in the final bound matches, relocating the substantive conclusion into the antecedent materially weakens and changes the claim."
+      "paper_evidence": "The source gives existential backward perturbations after a fixed computation, with exact representation equalities and non-strict norm bounds.",
+      "translation_evidence": "The equality and inequality directions match, but the perturbations are fixed from universally quantified, already-certified record fields.",
+      "reasoning": "The numerical relations have the correct directions and strictness, but changing derived existential witnesses into hypotheses changes the proposition's logical strength."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "Equation (3.1) is normwise backward error relative to A_tilde, while equation (3.2) combines low-rank truncation and floating-point backward errors relative to A.",
-      "translation_evidence": "The combined relation is retained, but the floating-point backward error relative to Atilde is supplied as a hypothesis rather than established for the algorithm.",
-      "reasoning": "The translated result proves only composition of two assumed perturbations, not the paper's numerical backward-stability result."
+      "status": "pass",
+      "paper_evidence": "Equation (3.1) is a normwise backward error relative to Atilde, and equation (3.2) is a combined normwise backward error relative to A.",
+      "translation_evidence": "The translation gives exactly those two perturbed-matrix representations and their respective Frobenius-norm bounds.",
+      "reasoning": "The central backward-error notions are correctly distinguished and are not replaced by residual or componentwise statements. Omission of the specialized forward consequence is recorded under S05 and S15."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "The exact bound is gamma_c||A|| + epsilon(1+gamma_c)beta; only afterward is the mixed epsilon gamma_c beta contribution abbreviated as O(u epsilon).",
-      "translation_evidence": "The conclusion retains epsilon*(1+gammaC)*beta exactly and does not discard the mixed term.",
-      "reasoning": "At the formula level, the exact higher-order contribution is preserved rather than replaced by an unsupported first-order truncation."
+      "paper_evidence": "The exact generic bound contains epsilon(1 + gamma_c)beta, whose mixed contribution is epsilon gamma_c beta; only the later interpretation abbreviates it as O(u epsilon).",
+      "translation_evidence": "The target retains epsilon(1 + gammaC)beta and explicitly expands it into the truncation and mixed contributions.",
+      "reasoning": "No higher-order term is dropped or replaced by an unjustified first-order approximation."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The result concerns b-by-b matrices represented by b-by-r factors and therefore depends on both the block dimension and low rank.",
-      "translation_evidence": "It ranges over arbitrary n-by-n perturbation data, includes n = 0, and contains no rank parameter or factor structure.",
-      "reasoning": "This is an unclassified generalization to arbitrary perturbation decompositions coupled with loss of the paper's low-rank specialization."
+      "status": "unclear",
+      "paper_evidence": "The generic lemma permits arbitrary positive beta and then specializes to beta = ||A||, despite an unresolved conflict with beta > 0 when A = 0.",
+      "translation_evidence": "The translation retains generic positive beta but does not state the beta = ||A|| specialization; it also extends the dimensional syntax to zero-sized matrices.",
+      "reasoning": "The generic real finite-dimensional setting matches, but completeness of the specialization at A = 0 and the legitimacy of zero-dimensional generalization cannot be resolved from the paper."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "The substantive content of Lemma 3.1 is deriving the A_tilde-level rounding perturbation from the two-stage floating-point computation.",
-      "translation_evidence": "Once its hypotheses are assumed, totalError = truncError + roundingError directly proves the conclusion by matrix algebra and the norm inequalities; n = 0 also gives a degenerate instance.",
-      "reasoning": "The antecedent is satisfiable, but the translated conclusion becomes elementary because the paper's main numerical result has already been assumed."
+      "status": "pass",
+      "paper_evidence": "For ordinary dimensions with r <= b, orthonormal X and matrices satisfying the truncation condition exist; v is allowed to be zero but is not required to be zero.",
+      "translation_evidence": "Admissible records are satisfiable for positive dimensions such as b = r = 1 with sufficiently small positive u. Records are impossible for r > b, and zero dimensions may give degenerate instances.",
+      "reasoning": "The translated proposition has nontrivial intended instances and is not globally vacuous, although individual impossible or degenerate dimension choices are vacuous or trivial."
     }
   ],
   "implications": {
     "translation_implies_paper": {
       "verdict": "no",
-      "reasoning": "The translation cannot derive the existence and bound of the A_tilde-level floating-point perturbation, because it assumes that perturbation. It also has no factors, execution order, or definition of gamma_c."
+      "reasoning": "The translation proves only an aggregation result for records that already contain stage perturbations and their bounds. It neither represents the scalar floating-point execution nor proves that the actual two-stage computation admits such a record, so it cannot by itself recover the paper's stability claim."
     },
     "paper_implies_translation": {
-      "verdict": "no",
-      "reasoning": "The paper's stated result applies to computed products from orthonormal low-rank factors with gamma_c fixed by b, r, and u. It does not state the translation's universally quantified algebraic theorem for arbitrary Atilde, error matrices, gammaC, and zero dimension, even though its proof uses the same composition argument for the particular perturbations it derives."
+      "verdict": "yes",
+      "reasoning": "Once equations (3.3)-(3.4) and their bounds hold, the paper's proof expands the same deltaAtilde, obtains the gamma_c bound, adds E = Atilde - A, and derives every generic target conjunct. Thus the translation is a conditional sub-result of the paper's analysis."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "not-faithful-weaker",
   "accepted": false,
   "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "algorithm-and-primary-conclusion",
-      "paper_evidence": "Lemma 3.1 derives equation (3.1) from the floating-point evaluation X(Y^T v), then uses it to obtain equation (3.2).",
-      "translation_evidence": "The factors and evaluation are absent, while the equation-(3.1) perturbation relation and bound are hypotheses.",
-      "impact": "The translation presupposes the central numerical-stability result and proves only the subsequent perturbation-composition step."
+      "category": "floating-point execution model",
+      "paper_evidence": "The paper analyzes zHat produced by two ordered floating-point matrix-vector products under equation (2.5), using Lemma 2.1 to derive equations (3.3)-(3.4).",
+      "translation_evidence": "The proposition quantifies over exact-real run records that assume equations (3.3)-(3.4)-style representations and bounds, with no floating-point execution or bridge from it.",
+      "impact": "The proposition does not establish numerical stability of the paper's actual algorithm; it establishes only algebraic error aggregation for pre-certified data."
     },
     {
       "severity": "major",
-      "category": "quantifiers-and-dimensions",
-      "paper_evidence": "The paper binds b, r, A, X, Y, and v, with perturbations arising existentially after computation.",
-      "translation_evidence": "It binds only n and arbitrary square perturbation matrices, universally quantifies roundingError, and permits n = 0.",
-      "impact": "The translated statement has materially different scope and witness dependence."
+      "category": "quantifier scope and witness existence",
+      "paper_evidence": "Perturbations are obtained after fixing v and the computed stages.",
+      "translation_evidence": "deltaY and deltaX are input fields of run, while deltaAtilde and deltaA are deterministic definitions; no existential witnesses are produced.",
+      "impact": "Existence of the perturbations required by the paper is assumed rather than concluded, weakening the translated result."
     },
     {
-      "severity": "major",
-      "category": "floating-point-constant",
-      "paper_evidence": "gamma_c has c = b + r^(3/2), gamma_c = c u/(1-c u), and requires c u < 1 under the standard floating-point model.",
-      "translation_evidence": "gammaC is any nonnegative real and all arithmetic is exact.",
-      "impact": "The bound no longer expresses floating-point error or the paper's dependence on dimension, rank, and precision."
+      "severity": "minor",
+      "category": "conclusion completeness",
+      "paper_evidence": "The source records the beta = ||A|| backward coefficient and the resulting forward bound after Lemma 3.1.",
+      "translation_evidence": "Only the generic backward bounds and an exact scalar expansion are conclusions.",
+      "impact": "The translated proposition omits source conclusions identified in the contract, although the generic bound contains most of the algebra needed to recover them away from the source's A = 0 ambiguity."
     },
     {
-      "severity": "major",
-      "category": "hypothesis-domain",
-      "paper_evidence": "The paper requires beta > 0, inherits epsilon > 0, assumes X has orthonormal columns, and works with u safely below epsilon.",
-      "translation_evidence": "It permits epsilon = 0 and beta = 0 and contains none of the factor or unit-roundoff hypotheses.",
-      "impact": "The domain is changed and includes cases outside the stated numerical result."
+      "severity": "minor",
+      "category": "dimension domain",
+      "paper_evidence": "The paper uses dimensions b and r without explicitly admitting zero.",
+      "translation_evidence": "b and r range over natural numbers including zero.",
+      "impact": "The translation contains degenerate zero-dimensional instances whose correspondence to the paper is unclear and therefore requires adjudication."
     },
     {
-      "severity": "major",
-      "category": "norm-definition",
-      "paper_evidence": "The paper explicitly defines the norm as the square root of the sum of squared entries.",
-      "translation_evidence": "D003 and D029 identify a Frobenius-named normed-ring instance but explicitly report its inherited norm formula as unclear.",
-      "impact": "Exact agreement of the norm semantics cannot be certified from the permitted dependency evidence and requires adjudication."
-    },
-    {
-      "severity": "note",
-      "category": "combined-bound-form",
-      "paper_evidence": "Equation (3.2) contains epsilon(1+gamma_c)beta before its O(u epsilon) abbreviation.",
-      "translation_evidence": "The same exact multiplicative form is retained.",
-      "impact": "The mixed truncation-rounding term itself has not been dropped."
+      "severity": "minor",
+      "category": "precision scope",
+      "paper_evidence": "The paper assumes qualitatively that u is safely smaller than epsilon and later writes u much smaller than epsilon.",
+      "translation_evidence": "The record assumes only the precise inequality u < epsilon.",
+      "impact": "The source provides no threshold proving that this formal inequality captures its qualitative precision convention, although the exact displayed backward bounds do not use the stronger dominance interpretation."
     }
   ],
-  "rationale": "The translation preserves the algebraic form of the combined perturbation bound, including the mixed epsilon*gammaC*beta term. It does not preserve the paper result that produces the rounding perturbation from the low-rank floating-point algorithm: that result is moved into the hypotheses, while X, Y, r, orthonormality, evaluation order, unit roundoff, and c = b + r^(3/2) are removed. The result is therefore a different generic perturbation-composition theorem, not an equivalent or merely stronger rendering of Lemma 3.1. Adjudication is requested because the supplied dependency ledger does not fully unfold the selected matrix norm, although resolving that ambiguity cannot repair the independent algorithmic and quantifier mismatches."
+  "rationale": "The translation correctly preserves the real dimensions and shapes apart from zero-dimension ambiguity, the ordered factor structure, Frobenius norms, gamma constants, two generic backward-error bounds, and the exact epsilon gamma_c beta mixed term. Its decisive defect is logical and computational: stagewise backward perturbations are packaged as assumptions in an exact-real run rather than derived for the paper's floating-point computation. Consequently it is a weaker conditional aggregation theorem and does not imply the paper result. Adjudication is requested for the paper's unstated dimension range and its unquantified 'safely smaller' precision convention."
 }

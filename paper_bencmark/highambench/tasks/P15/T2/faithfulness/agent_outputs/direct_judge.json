@@ -3,437 +3,704 @@
   "role": "direct-judge",
   "task_id": "P15-T2",
   "paper_sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7",
-  "dossier_sha256": "3b30d3820cc27dbc331b4cebf11fc6a683bcd53528095602359a30f709d2e46e",
+  "dossier_sha256": "93ef55e0534a58b594fa4137719861ecb9c821bd6ff3d14ce91a7c7ece773aed",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.P15Matrix",
-      "interpretation": "P15Matrix n is the type of square n-by-n real matrices indexed by Fin n in both dimensions.",
-      "effect_on_target": "It makes A, Atilde, truncError, roundingError, and totalError square real matrices of one common size.",
-      "paper_match": "This matches A, Atilde, and their perturbations in R^(b x b) after identifying n with b.",
+      "name": "HighamBench.P15LowRankMatVecExecution",
+      "interpretation": "A record-like inductive indexed by natural dimensions b and r. Its constructor packages the inputs, computed stages, perturbation witnesses, and all hypotheses.",
+      "effect_on_target": "The target is universally conditional on complete execution packages, with perturbations fixed after v and the computed outputs.",
+      "paper_match": "This faithfully packages the data and assumptions used in Lemma 3.1 without requiring a perturbation uniform over all right-hand sides.",
       "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.P15Vector",
-      "interpretation": "P15Vector n is the function type Fin n to Real.",
-      "effect_on_target": "It makes v and computed real vectors with n entries.",
-      "paper_match": "This matches v and the computed result zhat in R^b after identifying n with b.",
+      "name": "HighamBench.P15LowRankMatVecExecution.A",
+      "interpretation": "Projection of the original real b by b matrix A.",
+      "effect_on_target": "It is the matrix relative to which the combined backward perturbation and final norm bound are stated.",
+      "paper_match": "Matches A in Lemma 3.1 and equation (3.2).",
       "status": "pass"
     },
     {
       "id": "D003",
-      "name": "HighamBench.p15FrobNorm",
-      "reuse_sha256": "6a91bf9c84bfcbacb1ea3b560b005b8de47822ea8755913ca95adfd0a9e1869d",
-      "effect_on_target": "Every perturbation and matrix magnitude in the assumptions and conclusion is measured by the matrix Frobenius norm.",
-      "paper_match": "The paper explicitly uses the Frobenius norm for all unsubscripted matrix norms in Lemma 3.1.",
+      "name": "HighamBench.P15LowRankMatVecExecution.X",
+      "interpretation": "Projection of the real b by r left low-rank factor X.",
+      "effect_on_target": "It enters Atilde = X Y^T, the second computed stage, orthonormality, and deltaAtilde.",
+      "paper_match": "Matches the orthonormal-column factor X in Lemma 3.1.",
       "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.p15MatVec",
-      "interpretation": "p15MatVec A x is exact real matrix-vector multiplication, with component i equal to the finite sum of A i j times x j over all j in Fin n.",
-      "effect_on_target": "It gives exact meanings to computed = (Atilde + roundingError)v and computed = (A + totalError)v.",
-      "paper_match": "It matches the exact matrix-vector actions appearing in the backward-error equations, although it does not encode the rounded factorized evaluation X(Y^T v).",
+      "name": "HighamBench.P15LowRankMatVecExecution.Y",
+      "interpretation": "Projection of the real b by r right low-rank factor Y.",
+      "effect_on_target": "It enters Atilde = X Y^T, the first computed stage, and deltaAtilde.",
+      "paper_match": "Matches Y in Lemma 3.1.",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "And",
-      "interpretation": "And forms the conjunction of two propositions.",
-      "effect_on_target": "The totalError witness must satisfy both the exact backward relation and the norm bound.",
-      "paper_match": "This conjunction matches the two parts of equation (3.2), but the target separately omits equation (3.1).",
+      "name": "HighamBench.P15LowRankMatVecExecution.beta",
+      "interpretation": "Projection of the positive real approximation scale beta.",
+      "effect_on_target": "It scales the truncation bound and the epsilon times one-plus-gamma term in the combined error bound.",
+      "paper_match": "Matches the generic beta greater than zero in Lemma 3.1 rather than forcing beta = norm A.",
       "status": "pass"
     },
     {
       "id": "D006",
-      "name": "Eq",
-      "interpretation": "Eq denotes exact propositional equality at the relevant matrix or vector type.",
-      "effect_on_target": "The approximation decomposition and both matrix-vector representations are exact equalities.",
-      "paper_match": "The paper likewise writes Atilde = A + E and exact backward representations for the computed result.",
+      "name": "HighamBench.P15LowRankMatVecExecution.epsilon",
+      "interpretation": "Projection of the positive real low-rank threshold epsilon.",
+      "effect_on_target": "It controls the truncation hypothesis and both exact truncation and mixed terms in the final bound.",
+      "paper_match": "Matches the paper's positive LR threshold.",
       "status": "pass"
     },
     {
       "id": "D007",
-      "name": "Exists",
-      "interpretation": "Exists asserts that at least one matrix satisfying the supplied predicate exists.",
-      "effect_on_target": "It quantifies a totalError only after roundingError has already been supplied as an input.",
-      "paper_match": "It matches the existential combined perturbation Delta A in (3.2), but not the additional perturbation existence asserted in (3.1).",
+      "name": "HighamBench.P15LowRankMatVecExecution.truncError",
+      "interpretation": "Projection of a b by b matrix E satisfying Atilde = A + E and norm E <= epsilon beta.",
+      "effect_on_target": "It is added to deltaAtilde to form the perturbation relative to A.",
+      "paper_match": "Matches the proof's replacement Atilde = A + E with norm E <= epsilon beta.",
       "status": "pass"
     },
     {
       "id": "D008",
-      "name": "Fin",
-      "reuse_sha256": "e737486c67f9dbea0f2bcbe83634be51e58d0d92cf1cfb23c776a2f4a7e59c97",
-      "effect_on_target": "Fin n supplies the finite row, column, and vector index set.",
-      "paper_match": "It represents the paper's finite b-dimensional index sets when n = b, while also permitting the unmentioned case n = 0.",
+      "name": "HighamBench.P15LowRankMatVecExecution.unitRoundoff",
+      "interpretation": "Projection of the positive real unit roundoff u.",
+      "effect_on_target": "It parameterizes all gamma factors and is constrained by u < epsilon and c u < 1.",
+      "paper_match": "Matches the unit roundoff in equation (2.5), the gamma definition, and the standing u safely smaller than epsilon convention.",
       "status": "pass"
     },
     {
       "id": "D009",
-      "name": "HAdd.hAdd",
-      "interpretation": "HAdd.hAdd selects the addition operation from the active heterogeneous-addition instance.",
-      "effect_on_target": "Its target occurrences resolve to pointwise matrix addition and ordinary real addition.",
-      "paper_match": "These are the ordinary additions used in Atilde = A + E, A + Delta A, and the scalar error bound.",
+      "name": "HighamBench.P15LowRankMatVecExecution.v",
+      "interpretation": "Projection of the fixed real vector v indexed by Fin b.",
+      "effect_on_target": "Both backward equalities are asserted for this particular right-hand side.",
+      "paper_match": "Matches the fixed v in Lemma 3.1 and preserves witness dependence on v.",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "HMul.hMul",
-      "reuse_sha256": "3572f804982d8e02cdb90fefa4ba09c86e248bb74e338dbccdf5e34e05538eb1",
-      "effect_on_target": "Its occurrences resolve to ordinary real multiplication in epsilon*beta, gammaC*norm, and the final bound.",
-      "paper_match": "This matches the scalar products in the exact bound of equation (3.2).",
+      "name": "HighamBench.P15LowRankMatVecExecution.zHat",
+      "interpretation": "Projection of the computed second-stage output vector zHat.",
+      "effect_on_target": "It is identified with products by perturbed Atilde and perturbed A.",
+      "paper_match": "Matches the computed z-hat in equations (3.1) and (3.2).",
       "status": "pass"
     },
     {
       "id": "D011",
-      "name": "LE.le",
-      "reuse_sha256": "ba63226d47485a0686b361b82ac9938d26080ba88527d42eda0b433bc8a394af",
-      "effect_on_target": "It gives non-strict real inequalities for parameter signs and all norm bounds.",
-      "paper_match": "The error bounds use non-strict inequalities, although the paper requires beta and its threshold epsilon to be strictly positive.",
+      "name": "HighamBench.P15Matrix",
+      "interpretation": "The type Fin b -> Fin b -> Real, representing a finite real b by b matrix.",
+      "effect_on_target": "It fixes all square matrices and perturbations to the paper's real finite-dimensional setting.",
+      "paper_match": "Matches R^(b by b).",
       "status": "pass"
     },
     {
       "id": "D012",
-      "name": "Matrix.add",
-      "interpretation": "Matrix.add installs entrywise addition for matrices.",
-      "effect_on_target": "A + truncError, Atilde + roundingError, and A + totalError are entrywise matrix sums.",
-      "paper_match": "This is the matrix addition used in the paper's backward perturbation decompositions.",
+      "name": "HighamBench.P15Vector",
+      "interpretation": "The type Fin b -> Real, representing a finite real vector of length b.",
+      "effect_on_target": "It fixes v and zHat to the correct dimension and scalar field.",
+      "paper_match": "Matches R^b.",
       "status": "pass"
     },
     {
       "id": "D013",
-      "name": "Nat",
-      "reuse_sha256": "ed4370998b8d9dbde5a6b5b4d574c7c396509b78ab3bca72cc8b612c8d4357de",
-      "effect_on_target": "Nat supplies the sole matrix-size parameter n, including zero.",
-      "paper_match": "It can represent the block size b, but the target has no separate rank parameter r and imposes no positive-dimension condition.",
+      "name": "HighamBench.p15FrobNorm",
+      "interpretation": "The square-matrix Frobenius norm, delegated to p15RectFrobNorm.",
+      "effect_on_target": "Every displayed perturbation bound uses the unsquared Frobenius norm.",
+      "paper_match": "Matches the paper-wide unsubscripted Frobenius-norm convention.",
       "status": "pass"
     },
     {
       "id": "D014",
-      "name": "OfNat.ofNat",
-      "interpretation": "OfNat.ofNat interprets natural-number literals through the selected type-class instance.",
-      "effect_on_target": "It interprets the literals 0 and 1 as real numbers.",
-      "paper_match": "These are the ordinary real constants in nonnegativity conditions and epsilon*(1+gammaC)*beta.",
+      "name": "HighamBench.p15GammaReal",
+      "interpretation": "The exact real function gamma(k,u) = k u / (1 - k u).",
+      "effect_on_target": "It supplies gamma_c and the stage gamma_b and gamma_r values; constructor validity keeps the target gamma denominator positive.",
+      "paper_match": "Matches the exact gamma definition on printed page 954, including real indices.",
       "status": "pass"
     },
     {
       "id": "D015",
-      "name": "One.toOfNat1",
-      "interpretation": "One.toOfNat1 turns the real One instance into the interpretation of the numeral 1.",
-      "effect_on_target": "It supplies the real coefficient 1 in 1 + gammaC.",
-      "paper_match": "This matches the coefficient in epsilon*(1+gamma_c)*beta.",
+      "name": "HighamBench.p15LowRankKernelCost",
+      "interpretation": "The real quantity b + r sqrt(r), with naturals cast to reals.",
+      "effect_on_target": "It makes gammaC equal gamma_(b+r^(3/2)).",
+      "paper_match": "Matches c = b + r^(3/2) exactly for nonnegative natural r.",
       "status": "pass"
     },
     {
       "id": "D016",
-      "name": "Real",
-      "reuse_sha256": "33b5a5009512de034973263c33e6107bb25484411cca37b571a00491e1dc8681",
-      "effect_on_target": "All matrix entries, vector entries, norms, and scalar error parameters are real.",
-      "paper_match": "Lemma 3.1 is stated for real matrices and vectors with real error parameters.",
+      "name": "HighamBench.p15LowRankMatrix",
+      "interpretation": "Rectangular matrix multiplication X times transpose(Y).",
+      "effect_on_target": "It defines Atilde as the represented low-rank matrix X Y^T.",
+      "paper_match": "Matches the paper's exact representation Atilde = X Y^T.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "Real.instAdd",
-      "interpretation": "Real.instAdd supplies ordinary real addition.",
-      "effect_on_target": "It interprets gammaC*norm(A) + epsilon*(1+gammaC)*beta and 1+gammaC as real sums.",
-      "paper_match": "This matches the arithmetic in the paper's exact combined bound.",
+      "name": "HighamBench.p15LowRankRoundingError",
+      "interpretation": "The matrix X deltaY^T + deltaX Y^T + deltaX deltaY^T.",
+      "effect_on_target": "It is the exact aggregate perturbation obtained by expanding (X+deltaX)(Y+deltaY)^T - X Y^T.",
+      "paper_match": "Matches the perturbation constructed in the proof immediately after equations (3.3) and (3.4).",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "Real.instLE",
-      "reuse_sha256": "6005e17e5289b370343d36a1373b58f2243742c58aacd4708762ee2b8f8403e7",
-      "effect_on_target": "All displayed order relations are the ordinary order on real numbers.",
-      "paper_match": "This matches the real inequalities used for norm and positivity bounds.",
+      "name": "HighamBench.p15LowRankTotalError",
+      "interpretation": "The matrix truncError + p15LowRankRoundingError run.",
+      "effect_on_target": "It defines the combined perturbation deltaA relative to the original matrix A.",
+      "paper_match": "Matches the paper's combination of E and deltaAtilde in deriving equation (3.2).",
       "status": "pass"
     },
     {
       "id": "D019",
-      "name": "Real.instMul",
-      "reuse_sha256": "bc3810a73f8d595e308695fedc5608856bba227a7ac7eb8d39a9aea9023506a9",
-      "effect_on_target": "All scalar products in assumptions and conclusion are ordinary real multiplication.",
-      "paper_match": "This matches the scalar arithmetic of equations (3.1) and (3.2).",
+      "name": "HighamBench.p15MatVec",
+      "interpretation": "Exact finite matrix-vector multiplication using a sum over all Fin n column indices.",
+      "effect_on_target": "It gives the mathematical products in both backward equalities, rather than performing additional rounded arithmetic.",
+      "paper_match": "Matches the exact products (Atilde+DeltaAtilde)v and (A+DeltaA)v.",
       "status": "pass"
     },
     {
       "id": "D020",
-      "name": "Real.instOne",
-      "interpretation": "Real.instOne supplies the ordinary real multiplicative identity.",
-      "effect_on_target": "It determines the value of the literal 1 in the mixed-error factor.",
-      "paper_match": "It matches the real number one in 1 + gamma_c.",
+      "name": "HighamBench.P15LowRankMatVecExecution.deltaX",
+      "interpretation": "Projection of the b by r perturbation deltaX for the second multiplication.",
+      "effect_on_target": "It contributes to the specified aggregate deltaAtilde and is constrained by the gamma_r stage bound.",
+      "paper_match": "Matches DeltaX in equation (3.4).",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "Real.instZero",
-      "interpretation": "Real.instZero supplies ordinary real zero.",
-      "effect_on_target": "It determines the lower bound in the three nonnegativity hypotheses.",
-      "paper_match": "It is the correct zero, although nonnegativity is weaker than the paper's strict positivity for epsilon and beta.",
+      "name": "HighamBench.P15LowRankMatVecExecution.deltaY",
+      "interpretation": "Projection of the b by r perturbation deltaY for the first multiplication.",
+      "effect_on_target": "It contributes to the specified aggregate deltaAtilde and is constrained by the gamma_b stage bound.",
+      "paper_match": "Matches DeltaY in equation (3.3).",
       "status": "pass"
     },
     {
       "id": "D022",
-      "name": "Zero.toOfNat0",
-      "interpretation": "Zero.toOfNat0 turns the real Zero instance into the interpretation of the numeral 0.",
-      "effect_on_target": "It supplies real zero in hepsilon, hbeta, and hgammaC.",
-      "paper_match": "The literal has the intended real meaning; the mismatch lies in using non-strict rather than strict positivity.",
+      "name": "HighamBench.P15LowRankMatVecExecution.mk",
+      "interpretation": "The sole constructor packages A, X, Y, v, epsilon, beta, u, positivity, u < epsilon, c u < 1, orthonormality of X, Atilde = A + E, the truncation bound, wHat, zHat, deltaY, deltaX, both stage equations, and both stage norm bounds.",
+      "effect_on_target": "All paper hypotheses and the inherited matrix-vector backward models are premises hidden in run. The aggregate perturbations remain conclusions, and the stage witnesses may depend on the fixed v and computed stages.",
+      "paper_match": "The fields reproduce Lemma 3.1's hypotheses and equations (3.3)-(3.4). Treating Lemma 2.1's stagewise consequences as an execution contract is semantically faithful to the source computation.",
       "status": "pass"
     },
     {
       "id": "D023",
-      "name": "instHAdd",
-      "interpretation": "instHAdd converts a homogeneous Add operation into homogeneous HAdd using the same addition.",
-      "effect_on_target": "It routes matrix additions to Matrix.add and scalar additions to Real.instAdd without changing their meanings.",
-      "paper_match": "The resulting additions are the standard matrix and scalar additions used by the paper.",
+      "name": "HighamBench.P15RectMatrix",
+      "interpretation": "The type Fin m -> Fin n -> Real for finite real rectangular matrices.",
+      "effect_on_target": "It assigns X, Y, deltaX, and deltaY their b by r dimensions and transposes the correct dimensions.",
+      "paper_match": "Matches the paper's real b by r factors and perturbations.",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "instHMul",
-      "reuse_sha256": "3b55530701c5ce29596c1bf762341e1b88002ec2ffa277efcd64bb97025789ef",
-      "effect_on_target": "It routes homogeneous real HMul expressions to ordinary real multiplication.",
-      "paper_match": "The resulting scalar multiplication agrees with the paper's bound.",
+      "name": "HighamBench.p15RectFrobNorm",
+      "interpretation": "The nonnegative square root of the double finite sum of squared real entries.",
+      "effect_on_target": "It supplies the Frobenius norms for square matrices and all stage perturbation bounds.",
+      "paper_match": "For real entries this is exactly sqrt(sum |a_ij|^2), with no squaring mismatch.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "Fin.fintype",
-      "reuse_sha256": "8457a8d4ad0d78e4cf0c14700f1480df720d518fa77b11738bbce3325090eee5",
-      "effect_on_target": "It enumerates every Fin n index used by the exact matrix-vector sum.",
-      "paper_match": "This implements summation over every coordinate of a finite-dimensional vector.",
+      "name": "HighamBench.p15RectMatMul",
+      "interpretation": "Exact rectangular matrix multiplication by a finite sum over the shared index.",
+      "effect_on_target": "It defines X Y^T and every term in the aggregate rounding perturbation.",
+      "paper_match": "Matches ordinary real matrix multiplication used throughout the paper proof.",
       "status": "pass"
     },
     {
       "id": "D026",
-      "name": "Finset.sum",
-      "reuse_sha256": "fa5c7c8cb376d6defbad0c4b48ccd19139f66e98f56c7ce2c55d211e8fbea4d6",
-      "effect_on_target": "It combines all coordinate products using exact real addition.",
-      "paper_match": "This matches exact mathematical matrix-vector multiplication, not floating-point accumulation.",
+      "name": "HighamBench.p15RectTranspose",
+      "interpretation": "Ordinary transpose obtained by swapping matrix indices.",
+      "effect_on_target": "It realizes Y^T and deltaY^T in the factorized product and perturbation expansion.",
+      "paper_match": "Matches the real transpose in Lemma 3.1; no conjugation is needed.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "Finset.univ",
-      "reuse_sha256": "d34f479cade36f2caaaeb813b8e491070246e5aa1c89610ed2939d9020326955",
-      "effect_on_target": "It selects the complete Fin n index set in each matrix-vector dot product.",
-      "paper_match": "This matches summation over all b coordinates.",
+      "name": "HighamBench.p15OrthonormalColumns",
+      "interpretation": "For every pair of columns j and k, their real inner product equals one when j=k and zero otherwise.",
+      "effect_on_target": "It states X^T X = I and supports norm X = sqrt(r) and norm(XY^T) = norm Y.",
+      "paper_match": "Matches the paper's orthonormal-column hypothesis, which does not require X X^T = I.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "Matrix",
-      "reuse_sha256": "9f65add277408970718ba49cc0f20472a0d50ce11ba23dfae35afc9b92aa201a",
-      "effect_on_target": "Matrices are represented extensionally as two-index real-valued functions.",
-      "paper_match": "This is a faithful representation of finite real matrices.",
+      "name": "HighamBench.p15RectMatVec",
+      "interpretation": "Exact rectangular matrix-vector multiplication by a finite sum over the input index.",
+      "effect_on_target": "It expresses wHat = (Y+deltaY)^T v and zHat = (X+deltaX) wHat in the execution contract.",
+      "paper_match": "Matches the ordered two-stage products in equations (3.3) and (3.4).",
       "status": "pass"
     },
     {
       "id": "D029",
-      "name": "Matrix.frobeniusNormedRing",
-      "reuse_sha256": "9c4583ea78f575b045680ee6d7f1b24bc850c7fc1e7c142d50ce821c0c823c4f",
-      "effect_on_target": "It supplies the Frobenius norm and its normed-ring properties for square real matrices.",
-      "paper_match": "The paper uses the Frobenius norm and its submultiplicativity in deriving equation (3.2).",
+      "name": "And",
+      "interpretation": "Logical conjunction of propositions.",
+      "effect_on_target": "It requires all six displayed target conclusions simultaneously.",
+      "paper_match": "Correctly combines the two backward equalities, two bounds, perturbation decomposition, and exact bound expansion.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "Norm.norm",
-      "reuse_sha256": "d85b24047182364c6d653ef7a6dc1b8fbf56132f7c05e7422dff98364ef3b656",
-      "effect_on_target": "It extracts the matrix norm used by p15FrobNorm.",
-      "paper_match": "Through the selected instance, this is exactly the paper's Frobenius norm.",
+      "name": "Eq",
+      "interpretation": "Propositional equality at the relevant matrix, vector, or real type.",
+      "effect_on_target": "It makes the product identities, perturbation decomposition, and scalar expansion exact.",
+      "paper_match": "Matches the exact backward representations and exact algebraic identity used by the paper.",
       "status": "pass"
     },
     {
       "id": "D031",
-      "name": "NormedRing.toNorm",
-      "reuse_sha256": "7b650485a13ebb4f91630d4a15ff66e9b6446a56cf1c892594741b7c2e7cc33e",
-      "effect_on_target": "It exposes the Norm component of the Frobenius normed-ring instance.",
-      "paper_match": "It introduces no norm different from the paper's Frobenius norm.",
+      "name": "Fin",
+      "interpretation": "The finite index type containing natural indices below a dimension.",
+      "effect_on_target": "It provides finite row, column, and vector index sets, including the conventional empty case at dimension zero.",
+      "paper_match": "Implements finite b and r dimensions; the positive-dimensional paper cases are represented exactly.",
       "status": "pass"
     },
     {
       "id": "D032",
-      "name": "Real.instAddCommMonoid",
-      "reuse_sha256": "9535fc8b7317cb6988393fc4e210d35fb791659d51385e14049518b93614fcee",
-      "effect_on_target": "It supplies real zero and commutative addition for finite coordinate sums.",
-      "paper_match": "This is the exact real summation underlying mathematical matrix-vector multiplication.",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-dispatched addition.",
+      "effect_on_target": "At instantiated types it denotes pointwise matrix addition or ordinary real addition.",
+      "paper_match": "Matches addition of perturbation matrices and scalar error terms.",
       "status": "pass"
     },
     {
       "id": "D033",
-      "name": "Real.instRCLike",
-      "reuse_sha256": "6cd230752e597453d6b57a967a53b590162a3a2cf6278ed6e067438550193c58",
-      "effect_on_target": "It equips Real with the structure required to construct the Frobenius matrix norm.",
-      "paper_match": "The resulting norm on real matrices matches the paper's Frobenius norm.",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "At instantiated types it denotes ordinary real scalar multiplication.",
+      "paper_match": "Matches multiplication among gamma, norms, epsilon, and beta.",
       "status": "pass"
     },
     {
       "id": "D034",
+      "name": "LE.le",
+      "interpretation": "Typeclass-dispatched non-strict order relation.",
+      "effect_on_target": "At Real it supplies every <= error bound.",
+      "paper_match": "Matches the non-strict inequalities in equations (3.1)-(3.4).",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "Matrix.add",
+      "interpretation": "The pointwise additive instance for matrices.",
+      "effect_on_target": "It interprets Atilde+deltaAtilde, A+deltaA, truncError+deltaAtilde, and the three perturbation terms entrywise.",
+      "paper_match": "Matches ordinary matrix addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "Nat",
+      "interpretation": "The natural-number type used for dimensions b and r.",
+      "effect_on_target": "It makes all dimensions finite and nonnegative.",
+      "paper_match": "Matches dimension and rank indices; zero dimensions are a harmless formal extension, while the intended positive cases remain included.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "OfNat.ofNat",
+      "interpretation": "Interpretation of numeric literals in an inferred type.",
+      "effect_on_target": "It supplies the real literal 1 in the final coefficient and related definitions.",
+      "paper_match": "Matches the scalar constants in 1+gamma and the gamma denominator.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "One.toOfNat1",
+      "interpretation": "Builds the literal-one instance from a type's One operation.",
+      "effect_on_target": "It resolves the literal 1 as real one.",
+      "paper_match": "Matches the exact coefficient one in epsilon(1+gamma).",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "Real",
+      "interpretation": "The mathematical real-number type.",
+      "effect_on_target": "It is the scalar field for matrices, vectors, parameters, norms, and bounds.",
+      "paper_match": "Matches the paper's R-valued theorem.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary addition on real numbers.",
+      "effect_on_target": "It combines real error terms and forms 1+gamma.",
+      "paper_match": "Matches real arithmetic in the paper bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "Real.instLE",
+      "interpretation": "The standard non-strict order on real numbers.",
+      "effect_on_target": "It gives the intended meaning to all norm inequalities.",
+      "paper_match": "Matches the paper's real-valued <= relation.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary multiplication on real numbers.",
+      "effect_on_target": "It interprets every product in gamma, the cost, and the error bounds.",
+      "paper_match": "Matches real multiplication in the source formulas.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "Real.instOne",
+      "interpretation": "The multiplicative identity one in Real.",
+      "effect_on_target": "It supplies the exact constants in 1-ku and 1+gamma.",
+      "paper_match": "Matches the paper's scalar one.",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "instHAdd",
+      "interpretation": "Lifts a homogeneous Add operation to HAdd.",
+      "effect_on_target": "It routes matrix and real additions to their standard homogeneous operations.",
+      "paper_match": "Introduces no nonstandard addition semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "instHMul",
+      "interpretation": "Lifts a homogeneous Mul operation to HMul.",
+      "effect_on_target": "It routes real products to standard real multiplication.",
+      "paper_match": "Introduces no nonstandard multiplication semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Provides division from a division-and-inverse monoid structure.",
+      "effect_on_target": "It supplies real division in gamma(k,u).",
+      "paper_match": "Makes gamma use exact division by 1-ku as in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "Fin.fintype",
+      "interpretation": "The canonical finite enumeration of Fin n.",
+      "effect_on_target": "It lets univ and finite sums range over every matrix or vector index exactly once.",
+      "paper_match": "Matches finite-dimensional sums over all indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "Finset.sum",
+      "interpretation": "Finite commutative-monoid summation.",
+      "effect_on_target": "It defines dot products, matrix products, matrix-vector products, and Frobenius squared sums.",
+      "paper_match": "Matches the finite sums implicit in standard matrix algebra and the Frobenius norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "Finset.univ",
+      "interpretation": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It ensures all rows, columns, and inner-product indices are included.",
+      "paper_match": "Matches complete finite index ranges in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D050",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-dispatched division.",
+      "effect_on_target": "At Real it forms k u divided by 1-k u.",
+      "paper_match": "Matches the exact gamma quotient.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "At Real it forms the gamma denominator 1-k u.",
+      "paper_match": "Matches the denominator in gamma_k.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "Matrix",
+      "interpretation": "A matrix is represented as a curried function from row and column indices to entries.",
+      "effect_on_target": "It gives the extensional finite-matrix semantics used by all local operations.",
+      "paper_match": "This is a standard exact representation of the paper's matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "Nat.cast",
+      "interpretation": "Casts a natural number into a target type with NatCast.",
+      "effect_on_target": "It converts b and r to reals in gamma indices and the kernel cost.",
+      "paper_match": "Matches treating dimension indices as real arguments of gamma.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative monoid structure on Real.",
+      "effect_on_target": "It supplies zero and associative, commutative addition for finite sums.",
+      "paper_match": "Matches ordinary real summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The standard real multiplication, inverse, and division structure.",
+      "effect_on_target": "It determines the division operation in p15GammaReal.",
+      "paper_match": "Matches real division in ku/(1-ku); gamma validity excludes a zero or negative denominator in the intended cases.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "Real.instNatCast",
+      "interpretation": "The standard embedding of natural numbers into Real.",
+      "effect_on_target": "It interprets b and r numerically without offsets.",
+      "paper_match": "Matches the paper's use of b and r in c and gamma factors.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary subtraction on Real.",
+      "effect_on_target": "It realizes 1-k u in gamma.",
+      "paper_match": "Matches the exact gamma denominator.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "Real.sqrt",
+      "interpretation": "The nonnegative real square root.",
+      "effect_on_target": "It defines Frobenius norms and the r sqrt(r) term in c.",
+      "paper_match": "Matches both sqrt(sum squares) and r^(3/2) for natural r.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "instHDiv",
+      "interpretation": "Lifts homogeneous division to HDiv.",
+      "effect_on_target": "It dispatches the gamma quotient to standard real division.",
+      "paper_match": "Introduces no altered division semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "instHSub",
+      "interpretation": "Lifts homogeneous subtraction to HSub.",
+      "effect_on_target": "It dispatches 1-k u to standard real subtraction.",
+      "paper_match": "Introduces no altered subtraction semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "HPow.hPow",
+      "interpretation": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "It interprets each matrix entry raised to the natural exponent two in the Frobenius norm.",
+      "paper_match": "Matches squaring real entries in the Frobenius norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "LT.lt",
+      "interpretation": "Typeclass-dispatched strict order.",
+      "effect_on_target": "It expresses positivity, u < epsilon, and c u < 1 in the execution constructor.",
+      "paper_match": "Matches the paper's positivity and gamma-validity conditions; u < epsilon is a concrete consequence of the stated safely-smaller convention.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-number exponentiation supplied by a monoid.",
+      "effect_on_target": "It makes x^2 ordinary repeated real multiplication.",
+      "paper_match": "Matches the square of each real matrix entry.",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "Real.instLT",
+      "interpretation": "The standard strict order on Real.",
+      "effect_on_target": "It gives the intended meaning to all constructor inequalities using <.",
+      "paper_match": "Matches ordinary strict real inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "Real.instMonoid",
+      "interpretation": "The multiplicative monoid structure on Real.",
+      "effect_on_target": "It supplies natural powers used for entry squares.",
+      "paper_match": "Matches ordinary real multiplication and powers.",
+      "status": "pass"
+    },
+    {
+      "id": "D066",
+      "name": "Real.instZero",
+      "interpretation": "The additive identity zero in Real.",
+      "effect_on_target": "It supplies positivity comparisons and off-diagonal orthonormality values.",
+      "paper_match": "Matches real zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Builds the literal-zero instance from a type's Zero operation.",
+      "effect_on_target": "It resolves zero in positivity and orthonormality formulas as real zero.",
+      "paper_match": "Matches the corresponding paper constants.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "instHPow",
+      "interpretation": "Lifts a Pow operation to homogeneous HPow.",
+      "effect_on_target": "It routes real entry squares to natural-power exponentiation.",
+      "paper_match": "Introduces no altered power semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "instOfNatNat",
+      "interpretation": "The canonical interpretation of natural literals as natural numbers.",
+      "effect_on_target": "It supplies the exponent two and other natural literals without changing their values.",
+      "paper_match": "Matches ordinary integer indexing and squaring.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
       "name": "instDecidableEqFin",
-      "reuse_sha256": "44a573b68a98935896e14a575844e3cd0229658a863bdabc933be0e006f683c0",
-      "effect_on_target": "It provides decidable equality for finite indices as an implementation requirement.",
-      "paper_match": "It has no independent mathematical counterpart or effect on the numerical result.",
-      "status": "not-applicable"
+      "interpretation": "Decidable equality for finite indices.",
+      "effect_on_target": "It decides whether two column indices coincide in the orthonormality definition.",
+      "paper_match": "Correctly supports the Kronecker-delta condition for X^T X = I.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "ite",
+      "interpretation": "A decidable if-then-else expression.",
+      "effect_on_target": "It returns one for equal column indices and zero otherwise in p15OrthonormalColumns.",
+      "paper_match": "Matches the identity-matrix entries in the paper's orthonormal-column hypothesis.",
+      "status": "pass"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The inspected published IMA Journal of Numerical Analysis version contains Lemma 3.1 on printed page 956, with the factorized computation and backward bounds (3.1) and (3.2).",
-      "lean_evidence": "The target is named p15_t2_low_rank_matvec_backward_error and its conclusion has the exact scalar expression from the first line of (3.2).",
-      "reasoning": "The cited paper version, page, lemma, and equation are the correct source for this task."
+      "paper_evidence": "The verified PDF hash is a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7. Printed pages 953-957 contain the norm convention, floating-point model, Assumption 2.1, Lemma 3.1, and its interpretation.",
+      "lean_evidence": "The supplied target is p15_t2_low_rank_matvec_backward_error and directly formalizes the two backward-error displays from Lemma 3.1.",
+      "reasoning": "The cited version, pages, result, and surrounding context are the correct source for this target."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Lemma 3.1 binds A in R^(b x b), X and Y in R^(b x r), and v in R^b, with b and r playing distinct dimensional roles.",
-      "lean_evidence": "The target binds only square P15Matrix n objects and P15Vector n objects; it has no X, Y, transpose, or rank r.",
-      "reasoning": "The original matrix and vector dimensions are representable with n = b, but the low-rank factors and rank dimension are absent."
+      "status": "pass",
+      "paper_evidence": "Lemma 3.1 uses real A of size b by b, real X and Y of size b by r, and real v of length b.",
+      "lean_evidence": "P15Matrix b is Matrix (Fin b) (Fin b) Real, P15RectMatrix b r is Matrix (Fin b) (Fin r) Real, and P15Vector b is Fin b -> Real.",
+      "reasoning": "All principal types and dimensions match. Nat also admits degenerate dimensions, but the intended positive-dimensional cases are unchanged and zero rank is compatible with the surrounding paper discussion."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "From the low-rank computation hypotheses, the paper asserts a perturbation Delta Atilde satisfying (3.1), and then a combined perturbation Delta A satisfying (3.2).",
-      "lean_evidence": "roundingError is universally supplied before the implication and hcomputed and hround assume the properties of Delta Atilde; only totalError remains existential.",
-      "reasoning": "The first perturbation witness has been externalized as an arbitrary input with its key properties assumed, changing witness dependence and quantifier structure."
+      "status": "pass",
+      "paper_evidence": "The paper fixes v and the computed wHat and zHat before obtaining DeltaY, DeltaX, DeltaAtilde, and DeltaA; it does not assert a single perturbation valid for every v.",
+      "lean_evidence": "The constructor packages v, wHat, zHat, deltaY, and deltaX in one run, and the theorem quantifies over that completed run.",
+      "reasoning": "The witnesses may depend on the fixed right-hand side and computed stages. Packaging them in run does not Skolemize them uniformly over v."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The paper requires Atilde = XY^T, orthonormal columns of X, beta > 0, epsilon > 0 by the threshold convention, evaluation as X(Y^T v), gamma_c with c*u < 1, and a standing assumption that u is safely below epsilon.",
-      "lean_evidence": "The target requires only nonnegativity of epsilon, beta, and gammaC plus abstract approximation and perturbation bounds; it permits zero values and has no factors, orthonormality, u, c, or c*u < 1.",
-      "reasoning": "Several essential explicit and standing hypotheses are missing, while strict positivity has been relaxed."
+      "status": "pass",
+      "paper_evidence": "The source requires orthonormal columns of X, Atilde = X Y^T, norm(A-Atilde) <= epsilon beta, beta > 0, positive epsilon, the standard stage error model, gamma validity, and the standing u safely smaller than epsilon convention.",
+      "lean_evidence": "D022 includes epsilon > 0, beta > 0, u > 0, u < epsilon, c u < 1, p15OrthonormalColumns X, Atilde = A+truncError, the truncation bound, and both stage equations and bounds.",
+      "reasoning": "The explicit and inherited assumptions are all represented. The stagewise perturbation premises are precisely the consequences of Lemma 2.1 used in the paper proof."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "Lemma 3.1 states both the backward error relative to Atilde in (3.1) and the combined backward error relative to A in (3.2).",
-      "lean_evidence": "The target concludes only existence of totalError for the analogue of (3.2); the analogue of (3.1) appears only as assumptions hcomputed and hround about a supplied roundingError.",
-      "reasoning": "A required conclusion and the main floating-point derivation are absent from the conclusion."
+      "status": "pass",
+      "paper_evidence": "Equations (3.1) and (3.2) give backward representations relative to Atilde and A, with bounds gamma_c norm(Atilde) and gamma_c norm(A)+epsilon(1+gamma_c)beta.",
+      "lean_evidence": "The target contains both product equalities, both bounds, deltaA = truncError+deltaAtilde, and the exact expansion into roundoff, truncation, and mixed terms.",
+      "reasoning": "The complete selected generic backward-error conclusion is present. The later beta = norm(A) forward-error display is an immediate corollary rather than a missing conjunct of this generic backward-error target."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "The relevant displayed relations use ordinary matrix addition, exact matrix-vector action, real arithmetic, and the Frobenius norm.",
-      "lean_evidence": "The dependency dossier unfolds P15Matrix, P15Vector, p15MatVec, pointwise matrix addition, ordinary real operations, order, and p15FrobNorm.",
-      "reasoning": "Every operator actually present in the target has a clear interpretation matching its corresponding mathematical operator; absent factorization and gamma operators are separate omissions."
+      "paper_evidence": "The source uses Atilde = X Y^T, exact matrix-vector products, Frobenius norms, c = b+r^(3/2), and gamma_k = ku/(1-ku).",
+      "lean_evidence": "D013-D019 and D023-D028 unfold these operations into finite sums, transpose, exact multiplication, square-root Frobenius norm, exact gamma, and the exact perturbation formulas.",
+      "reasoning": "Every target-specific imported operator has the intended mathematical interpretation, and the external dependencies only supply standard logic, finite indexing, and real arithmetic."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "The proof first forms what = fl(Y^T v) and then zhat = fl(X what), deriving the exact perturbed relation only afterward.",
-      "lean_evidence": "computed is an arbitrary exact real vector, and hcomputed directly assumes computed = p15MatVec (Atilde + roundingError) v.",
-      "reasoning": "The target does not distinguish or construct the rounded intermediate computations; it assumes their backward representation."
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes exact A and Atilde, computed wHat and zHat, stage perturbations DeltaY and DeltaX, aggregate DeltaAtilde, and total DeltaA.",
+      "lean_evidence": "The run has separate A, X, Y, v, wHat, zHat, deltaY, deltaX, and truncError fields; deltaAtilde and deltaA are separate definitions.",
+      "reasoning": "No exact, computed, rounded, or perturbed quantity is conflated."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "The result is specifically linked to evaluating the approximation through X(Y^T v), with X orthonormal and Atilde = XY^T.",
-      "lean_evidence": "No X, Y, transpose, rank, parenthesization, or floating-point evaluation occurs in the proposition.",
-      "reasoning": "The proposition is an abstract perturbation-composition lemma and is not linked to the paper's low-rank algorithm."
+      "status": "pass",
+      "paper_evidence": "Lemma 3.1 specifically computes Y^T v first and then multiplies the computed intermediate by X.",
+      "lean_evidence": "D022 requires wHat = (Y+deltaY)^T v and zHat = (X+deltaX) wHat; D017 expands exactly this ordered factorized computation.",
+      "reasoning": "The target remains tied to the paper's two-stage low-rank matvec algorithm rather than a direct multiplication by A or Atilde."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "The paper declares all unsubscripted matrix norms to be unsquared Frobenius norms and describes the result as normwise.",
-      "lean_evidence": "p15FrobNorm uses the Frobenius normed-ring norm, and every target error bound applies it directly to a matrix perturbation.",
-      "reasoning": "The represented bounds are unsquared, normwise Frobenius bounds with no componentwise substitution."
+      "paper_evidence": "Printed page 953 defines every unsubscripted norm in the analysis as the unsquared Frobenius norm and states that the results are normwise, not componentwise.",
+      "lean_evidence": "p15RectFrobNorm is sqrt(sum_i sum_j A_ij^2), and all error conclusions compare these unsquared norms.",
+      "reasoning": "The norm kind, scaling, and normwise interpretation agree exactly."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "The paper fixes c = b + r^(3/2) and gamma_c = c*u/(1-c*u), subject to c*u < 1.",
-      "lean_evidence": "gammaC is an arbitrary nonnegative real with no relation to n, a rank r, unit roundoff u, or the gamma function.",
-      "reasoning": "The defining constant, index, and parameter dependence of the rounding term are absent."
+      "status": "pass",
+      "paper_evidence": "The paper uses gamma_b for the first stage, gamma_r for the second, and c = b+r^(3/2) for the combined bound.",
+      "lean_evidence": "The run uses p15GammaReal b u and p15GammaReal r u in the stage bounds, while gammaC uses b + r*sqrt(r).",
+      "reasoning": "There is no index offset, coefficient loss, or replacement of r^(3/2) by a different cost."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "Section 2.2 uses fl(x op y) = (x op y)(1+delta), |delta| <= u, defines gamma_k, and implicitly excludes exceptional behavior not covered by that model.",
-      "lean_evidence": "The target contains exact real arithmetic only and postulates hround; it has no unit roundoff, rounding operation, precision, rounding mode, overflow, underflow, NaN, or infinity condition.",
-      "reasoning": "The floating-point execution model underlying Lemma 3.1 is not formalized."
+      "status": "pass",
+      "paper_evidence": "Equation (2.5) gives the standard relative-error model, while Lemma 2.1 supplies the stagewise backward representations. The paper does not specify overflow, underflow, subnormal, NaN, infinity, or a named rounding mode.",
+      "lean_evidence": "The execution contract assumes exactly the two stagewise backward representations and gamma bounds, with u > 0 and c u < 1.",
+      "reasoning": "The Lean proposition abstracts the scalar model at the same derived boundary used in the proof. Neither source nor target claims behavior for exceptional arithmetic outside that model."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The error relations and bounds use exact equality and non-strict norm inequalities, while beta and the threshold epsilon are positive and the first backward relation is a conclusion.",
-      "lean_evidence": "The target preserves equality and inequality directions in (3.2), but weakens positivity to nonnegativity and moves the first backward relation and bound into antecedents.",
-      "reasoning": "Although the displayed second bound has the right direction, strictness and overall logical strength are not preserved."
+      "status": "pass",
+      "paper_evidence": "The backward representations are equalities and all norm bounds use <=. The combined bound is gamma_c norm(A)+epsilon(1+gamma_c)beta.",
+      "lean_evidence": "The target uses Eq for both product representations and LE for both norm bounds, with the same direction and non-strictness.",
+      "reasoning": "The relations have the correct direction, strictness, and logical strength."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Equation (3.2) is a combined normwise backward error relative to A, incorporating truncation and floating-point perturbations.",
-      "lean_evidence": "The target concludes computed = (A + totalError)v together with a norm bound on totalError.",
-      "reasoning": "The conclusion that remains is genuinely a normwise backward-error statement, not a forward error, residual, or componentwise substitute."
+      "paper_evidence": "Equation (3.1) is backward error relative to Atilde and equation (3.2) is combined backward error relative to A; the forward bound appears only as a later consequence for beta = norm(A).",
+      "lean_evidence": "The target supplies perturbation matrices whose exact products equal zHat and bounds their Frobenius norms.",
+      "reasoning": "The proposition formalizes the two backward-error notions and does not substitute a residual or forward-only estimate."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "The exact first line of (3.2) contains epsilon*(1+gamma_c)*beta; only the following line abbreviates the mixed epsilon*gamma_c term as O(u*epsilon).",
-      "lean_evidence": "The target retains gammaC*norm(A) + epsilon*(1+gammaC)*beta exactly.",
-      "reasoning": "The mixed term is preserved and is not dropped or replaced by an unspecified big-O term."
+      "paper_evidence": "The exact bound contains epsilon(1+gamma_c)beta, hence the exact mixed term epsilon gamma_c beta, before the paper abbreviates it as O(u epsilon).",
+      "lean_evidence": "The final target conjunct proves the exact algebraic expansion gamma_c norm(A)+epsilon beta+epsilon gamma_c beta.",
+      "reasoning": "The mixed term is retained exactly and is not dropped or replaced by an unformalized big-O claim."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The paper uses finite-dimensional real data with separate block size b and rank r and restricts Atilde to an orthonormal-factor low-rank approximation.",
-      "lean_evidence": "The target uses finite real square matrices, but generalizes Atilde and roundingError arbitrarily, omits r and the low-rank factors, and permits n = 0.",
-      "reasoning": "This is not merely a faithful finite or real specialization; it removes the structure that defines the benchmark task."
+      "status": "pass",
+      "paper_evidence": "Lemma 3.1 is already finite-dimensional and real, with generic beta > 0; beta = norm(A) is presented afterward as a specialization.",
+      "lean_evidence": "The target is finite-dimensional over Real and retains generic positive beta rather than assuming beta = p15FrobNorm A.",
+      "reasoning": "There is no substantive scalar or dimensional specialization. The highlighted beta = norm(A) case follows by substitution when its positivity premise is available."
     },
     {
       "id": "S16",
-      "status": "fail",
-      "paper_evidence": "The substantive proof derives the rounding perturbation bound by analyzing the two rounded products Y^T v and X what.",
-      "lean_evidence": "The hypotheses are satisfiable, including for n = 1, but once hcomputed and hround are supplied the conclusion follows by taking totalError = truncError + roundingError and applying norm inequalities.",
-      "reasoning": "The proposition is logically nonvacuous, but the claimed numerical-stability task becomes an elementary perturbation-composition result because its difficult conclusion is assumed."
+      "status": "pass",
+      "paper_evidence": "The source hypotheses permit ordinary nonzero low-rank computations, for example b=r=1 with X and Y equal to the one-by-one identity.",
+      "lean_evidence": "A run can be formed with b=r=1, A=X=Y=[1], v=[1], zero truncation and stage perturbations, epsilon=0.1, beta=1, and u=0.01; then u<epsilon and (b+r*sqrt(r))u<1.",
+      "reasoning": "The execution type has intended nontrivial inhabitants, and the conclusions are substantive perturbation bounds rather than consequences of inconsistent hypotheses."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The Lean proposition cannot derive equation (3.1), the existence of its rounding perturbation, or its gamma_c bound from the factorized floating-point computation. It assumes those properties and contains no X, Y, r, orthonormality, evaluation order, or floating-point model."
+      "verdict": "yes",
+      "reasoning": "For a paper computation, Lemma 2.1 supplies the stage perturbations used to construct a run. The target's explicitly defined deltaAtilde and deltaA then witness equations (3.1) and (3.2) with exactly the paper's Frobenius bounds and mixed term."
     },
     "paper_implies_lean": {
       "verdict": "yes",
-      "reasoning": "For an intended paper instance, set n = b, truncError = Atilde - A, gammaC = gamma_c, computed = zhat, and use the Delta Atilde supplied by (3.1) as roundingError. The paper's final replacement Atilde = A + E and equation (3.2) then provide the target's totalError conclusion and exact bound."
+      "reasoning": "For any run, its stage equations and bounds are exactly equations (3.3) and (3.4). The paper's expansion gives the specific D017 perturbation, and substituting Atilde = A+truncError gives D018 and every target conjunct, including the exact scalar expansion."
     }
   },
-  "classification": "not-faithful-weaker",
-  "accepted": false,
+  "classification": "faithful-equivalent",
+  "accepted": true,
   "requires_adjudication": false,
-  "findings": [
-    {
-      "severity": "critical",
-      "category": "algorithm-and-rounding-derivation-omitted",
-      "paper_evidence": "Lemma 3.1 derives (3.1) by analyzing fl(Y^T v) followed by fl(X what), using Atilde = XY^T and orthonormal columns of X.",
-      "lean_evidence": "The target has no factors or rounded operations and instead assumes hcomputed and hround for a supplied roundingError.",
-      "impact": "The formal statement does not measure the benchmark's central task of proving numerical stability of the low-rank matrix-vector algorithm."
-    },
-    {
-      "severity": "major",
-      "category": "missing-conclusion-and-quantifier-shift",
-      "paper_evidence": "The paper concludes both the backward perturbation relative to Atilde in (3.1) and the combined perturbation relative to A in (3.2).",
-      "lean_evidence": "Only totalError is existential; the first perturbation is universally supplied and its defining relation and bound are antecedents.",
-      "impact": "The theorem formalizes only the final perturbation-combination step and assumes the first backward-error result."
-    },
-    {
-      "severity": "major",
-      "category": "floating-point-constant-disconnected",
-      "paper_evidence": "The paper specifies c = b + r^(3/2), gamma_c = c*u/(1-c*u), and c*u < 1 under the standard relative-error model.",
-      "lean_evidence": "gammaC is any nonnegative real and is unrelated to dimensions, rank, unit roundoff, or an admissibility condition.",
-      "impact": "The claimed rounding bound has no formal connection to floating-point precision or operation count."
-    },
-    {
-      "severity": "minor",
-      "category": "hypothesis-and-domain-relaxation",
-      "paper_evidence": "The lemma requires beta > 0, inherits epsilon > 0, and concerns positive finite dimensions with a rank-r factorization.",
-      "lean_evidence": "The target assumes only epsilon >= 0 and beta >= 0, permits n = 0, and has no rank parameter.",
-      "impact": "These extra cases are not justified as a paper specialization and include trivial instances, though they are secondary to the algorithmic omission."
-    }
-  ],
-  "rationale": "The target correctly represents the Frobenius norm, exact matrix-vector backward relation, and the full mixed bound gamma_c*||A|| + epsilon*(1+gamma_c)*beta. However, it formalizes only the elementary step that combines a truncation perturbation with an already-supplied rounding perturbation. Lemma 3.1's substantive content is deriving that rounding perturbation from the specific floating-point evaluation X(Y^T v), with orthonormal X and gamma_c indexed by b + r^(3/2). Because those facts are assumed or absent, the paper result yields the Lean conclusion on the intended instantiation, but the Lean proposition does not yield the paper result."
+  "findings": [],
+  "rationale": "The proposition faithfully formalizes the generic normwise backward-error result of Lemma 3.1. Its execution structure makes all hypotheses visible: real finite dimensions, orthonormal X, low-rank approximation error, positive parameters, gamma validity, and the two ordered stagewise backward models. The aggregate perturbation is exactly the expansion used in the paper, the total perturbation adds the truncation error with the correct orientation, c and gamma_c are exact, and the epsilon gamma_c beta term is retained. Witness packaging preserves dependence on the fixed v, and explicit nontrivial runs show that the statement is not vacuous."
 }

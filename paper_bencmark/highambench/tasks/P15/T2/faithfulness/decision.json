@@ -1,71 +1,52 @@
 {
-  "accepted": false,
+  "accepted": true,
   "adjudicated": true,
   "adjudication_reasons": [
     "judge classifications differ",
     "round-trip judge requested adjudication",
-    "blind dependency D003 is unclear",
-    "blind dependency D029 is unclear",
-    "round-trip S06 is unclear",
-    "round-trip S09 is unclear"
+    "round-trip S02 is unclear",
+    "round-trip S15 is unclear"
   ],
-  "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-13T17:59:00.265222+00:00",
+  "classification": "faithful-equivalent",
+  "completed_at_utc": "2026-08-20T10:37:51.984390+00:00",
   "findings": [
     {
-      "category": "algorithmic-result-assumed",
-      "evidence": "Lemma 3.1 derives zhat = (Atilde + Delta Atilde)v and ||Delta Atilde|| <= gamma_c||Atilde|| from the rounded evaluation X(Y^T v). Lean supplies roundingError universally and assumes exactly these properties.",
-      "impact": "The central numerical-stability result is an antecedent rather than a conclusion.",
-      "severity": "critical"
+      "category": "abstraction boundary",
+      "evidence": "Lemma 2.1 on printed page 954 provides the exact stagewise interface, and the proof of Lemma 3.1 on printed page 956 uses only that interface. D022 packages it without assuming either aggregate conclusion.",
+      "impact": "No floating-point-model faithfulness defect exists for this selected theorem; scalar-operation verification belongs to the supporting Lemma 2.1 layer.",
+      "severity": "note"
     },
     {
-      "category": "incomparable-quantifier-scope",
-      "evidence": "The paper binds low-rank factors and derives perturbations for their computed output. Lean ranges over arbitrary square matrices, supplied perturbations, arbitrary nonnegative gammaC, and n including zero.",
-      "impact": "Neither complete proposition implies the other; broader conditional applicability does not compensate for omission of the algorithmic existence theorem.",
-      "severity": "major"
+      "category": "precision wording",
+      "evidence": "Printed page 955 uses the qualitative phrase u safely smaller than epsilon, while D022 uses u < epsilon.",
+      "impact": "The declaration must not be cited as a quantitative formalization of the later dominance prose, but equations (3.1) and (3.2) remain faithfully represented.",
+      "severity": "note"
     },
     {
-      "category": "floating-point-constant-disconnected",
-      "evidence": "PDF pp. 4 and 6 define gamma_c = cu/(1-cu), c = b + r^(3/2), with cu < 1. Lean treats gammaC as any nonnegative real and contains only exact real arithmetic.",
-      "impact": "The formal bound has no certified connection to precision, operation count, rank, or the paper's floating-point model.",
-      "severity": "major"
-    },
-    {
-      "category": "domain-and-hypothesis-change",
-      "evidence": "The paper requires beta > 0, inherits epsilon > 0, and uses positive finite dimensions with a rank-r factorization. Lean permits beta = 0, epsilon = 0, and n = 0 and has no factorization hypotheses.",
-      "impact": "Lean includes unsupported and sometimes degenerate cases outside the paper's stated result.",
-      "severity": "minor"
-    },
-    {
-      "category": "norm-match-uncertified",
-      "evidence": "The PDF explicitly defines the Frobenius norm entrywise, whereas D029 delegates its norm to an inherited declaration whose body is not supplied.",
-      "impact": "Exact norm agreement cannot be certified, although the independent algorithmic and quantifier failures already determine nonacceptance.",
-      "severity": "minor"
-    },
-    {
-      "category": "combined-bound-preserved",
-      "evidence": "Lean retains gammaC||A|| + epsilon(1 + gammaC)beta, matching the exact first line of equation (3.2).",
-      "impact": "The mixed epsilon*gammaC*beta contribution is represented correctly, but this does not repair the missing derivation.",
+      "category": "scope",
+      "evidence": "The beta = norm(A) backward formula and forward bound follow the completed proof of the generic result on printed page 956.",
+      "impact": "They are later specialization and corollary prose, not missing conclusions from the selected equations (3.1) and (3.2).",
       "severity": "note"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "Lean assumes the existence and bound of the Atilde-level rounding perturbation through the supplied roundingError. It contains no X, Y, rank r, orthonormality, two-stage floating-point evaluation, unit roundoff, or derivation of gamma_c, so it cannot recover equation (3.1) or the full Lemma 3.1.",
-      "verdict": "no"
+      "reasoning": "Every source two-stage computation covered by equation (2.5) obtains the D022 stage certificates from Lemma 2.1, exactly as the paper does in (3.3) and (3.4). Encoding those certificates as a run and applying the Lean theorem yields explicit perturbations satisfying both selected paper conclusions (3.1) and (3.2).",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "The paper guarantees perturbations for outputs of the specified low-rank floating-point computation with gamma_c fixed by b, r, and u. It does not assert Lean's universal conditional for arbitrary Atilde, roundingError, gammaC, and natural n. Its final replacement argument validates the intended paper-generated instance, not the full universal Lean proposition.",
-      "verdict": "no"
+      "reasoning": "For any admissible run, its fields instantiate (3.3), (3.4), orthonormality, and Atilde = A + E. The algebra on PDF page 6 constructs exactly D017 and D018 and proves both target bounds. The final target equality is ordinary distributive expansion of the exact coefficient in (3.2).",
+      "verdict": "yes"
     }
   },
   "judge_classifications": {
-    "direct": "not-faithful-weaker",
-    "roundtrip": "not-faithful-different"
+    "direct": "faithful-equivalent",
+    "roundtrip": "not-faithful-weaker"
   },
-  "rationale": "The target faithfully preserves the algebraic form of the combined bound and proves a nonvacuous perturbation-composition fact. It does not formalize the paper's derivation of the rounding perturbation from X(Y^T v), and its arbitrary-input universal scope is not the proposition stated by Lemma 3.1. Thus Lean does not imply the paper, and the paper's intended instance does not imply Lean's full universal theorem. The correct classification is not-faithful-different, with rejection unaffected by the remaining uncertainty about the inherited norm formula.",
+  "rationale": "Primary evidence resolves the disagreement in favor of faithful equivalence. The paper itself crosses from scalar floating-point arithmetic to the matrix-vector backward-error interface in Lemma 2.1, and its proof of Lemma 3.1 begins from exactly the two stage certificates stored by the Lean execution record. The record preserves the fixed-right-hand-side dependence and ordered computation; it does not assume the aggregate perturbations or their bounds. The theorem constructs the same explicit DeltaAtilde and DeltaA, uses the exact Frobenius norm, gamma definition, cost b + r^(3/2), and mixed epsilon gamma_c beta term, and states both selected generic backward conclusions. Requiring this theorem itself to reconstruct the stage witnesses from scalar fl operations would collapse a legitimate source-level lemma boundary and is not necessary for statement faithfulness.",
   "remaining_uncertainties": [
-    "The exact entrywise formula of the norm selected through D003 and D029 cannot be independently certified from the supplied declaration bodies because Matrix.frobeniusSeminormedAddCommGroup is referenced but not unfolded. Consequently the exact D003/D029 paper match and checks S06 and S09 remain unclear."
+    "The PDF does not quantify the phrase u safely smaller than epsilon, so no numerical equivalence between that phrase and the declaration's u < epsilon field can be established. This affects only the qualitative dominance and construction-roundoff interpretation, not the retained exact bounds.",
+    "The PDF does not explicitly state whether the block dimension b may be zero. Lean's b = 0 cases are degenerate extensions and do not affect correspondence on the paper's ordinary dimension domain."
   ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",

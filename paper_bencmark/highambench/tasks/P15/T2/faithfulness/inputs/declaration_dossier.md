@@ -6,85 +6,118 @@ Judges must interpret every dependency entry and may not infer semantics from na
 ## Exact source declaration
 
 ```lean
-theorem p15_t2_low_rank_matvec_backward_error {n : ℕ}
-    (A Atilde truncError roundingError : P15Matrix n)
-    (v computed : P15Vector n) (epsilon beta gammaC : ℝ)
-    (hepsilon : 0 ≤ epsilon) (hbeta : 0 ≤ beta) (hgammaC : 0 ≤ gammaC)
-    (happrox : Atilde = A + truncError)
-    (hcomputed : computed = p15MatVec (Atilde + roundingError) v)
-    (htrunc : p15FrobNorm truncError ≤ epsilon * beta)
-    (hround : p15FrobNorm roundingError ≤ gammaC * p15FrobNorm Atilde) :
-    ∃ totalError : P15Matrix n,
-      computed = p15MatVec (A + totalError) v ∧
-      p15FrobNorm totalError ≤
-        gammaC * p15FrobNorm A + epsilon * (1 + gammaC) * beta
+theorem p15_t2_low_rank_matvec_backward_error {b r : ℕ}
+    (run : P15LowRankMatVecExecution b r) :
+    let Atilde := p15LowRankMatrix run.X run.Y
+    let deltaAtilde := p15LowRankRoundingError run
+    let deltaA := p15LowRankTotalError run
+    let gammaC :=
+      p15GammaReal (p15LowRankKernelCost b r) run.unitRoundoff
+    run.zHat = p15MatVec (Atilde + deltaAtilde) run.v ∧
+    p15FrobNorm deltaAtilde ≤ gammaC * p15FrobNorm Atilde ∧
+    deltaA = run.truncError + deltaAtilde ∧
+    run.zHat = p15MatVec (run.A + deltaA) run.v ∧
+    p15FrobNorm deltaA ≤
+      gammaC * p15FrobNorm run.A +
+        run.epsilon * (1 + gammaC) * run.beta ∧
+    gammaC * p15FrobNorm run.A +
+        run.epsilon * (1 + gammaC) * run.beta =
+      gammaC * p15FrobNorm run.A + run.epsilon * run.beta +
+        run.epsilon * gammaC * run.beta
 ```
 
 ## Elaborated target type
 
 ```lean
-∀ {n : Nat} (A Atilde truncError roundingError : HighamBench.P15Matrix n) (v computed : HighamBench.P15Vector n)
-  (epsilon beta gammaC : Real),
-  Real.instLE.le 0 epsilon →
-    Real.instLE.le 0 beta →
-      Real.instLE.le 0 gammaC →
-        Eq Atilde (instHAdd.hAdd A truncError) →
-          Eq computed (HighamBench.p15MatVec (instHAdd.hAdd Atilde roundingError) v) →
-            Real.instLE.le (HighamBench.p15FrobNorm truncError) (instHMul.hMul epsilon beta) →
-              Real.instLE.le (HighamBench.p15FrobNorm roundingError)
-                  (instHMul.hMul gammaC (HighamBench.p15FrobNorm Atilde)) →
-                Exists fun totalError =>
-                  And (Eq computed (HighamBench.p15MatVec (instHAdd.hAdd A totalError) v))
-                    (Real.instLE.le (HighamBench.p15FrobNorm totalError)
-                      (instHAdd.hAdd (instHMul.hMul gammaC (HighamBench.p15FrobNorm A))
-                        (instHMul.hMul (instHMul.hMul epsilon (instHAdd.hAdd 1 gammaC)) beta)))
+∀ {b r : Nat} (run : HighamBench.P15LowRankMatVecExecution b r),
+  have Atilde := HighamBench.p15LowRankMatrix run.X run.Y;
+  have deltaAtilde := HighamBench.p15LowRankRoundingError run;
+  have deltaA := HighamBench.p15LowRankTotalError run;
+  have gammaC := HighamBench.p15GammaReal (HighamBench.p15LowRankKernelCost b r) run.unitRoundoff;
+  And (Eq run.zHat (HighamBench.p15MatVec (instHAdd.hAdd Atilde deltaAtilde) run.v))
+    (And (Real.instLE.le (HighamBench.p15FrobNorm deltaAtilde) (instHMul.hMul gammaC (HighamBench.p15FrobNorm Atilde)))
+      (And (Eq deltaA (instHAdd.hAdd run.truncError deltaAtilde))
+        (And (Eq run.zHat (HighamBench.p15MatVec (instHAdd.hAdd run.A deltaA) run.v))
+          (And
+            (Real.instLE.le (HighamBench.p15FrobNorm deltaA)
+              (instHAdd.hAdd (instHMul.hMul gammaC (HighamBench.p15FrobNorm run.A))
+                (instHMul.hMul (instHMul.hMul run.epsilon (instHAdd.hAdd 1 gammaC)) run.beta)))
+            (Eq
+              (instHAdd.hAdd (instHMul.hMul gammaC (HighamBench.p15FrobNorm run.A))
+                (instHMul.hMul (instHMul.hMul run.epsilon (instHAdd.hAdd 1 gammaC)) run.beta))
+              (instHAdd.hAdd
+                (instHAdd.hAdd (instHMul.hMul gammaC (HighamBench.p15FrobNorm run.A))
+                  (instHMul.hMul run.epsilon run.beta))
+                (instHMul.hMul (instHMul.hMul run.epsilon gammaC) run.beta)))))))
 ```
 
 ## Fully explicit elaborated target type
 
 ```lean
-∀ {n : Nat} (A Atilde truncError roundingError : HighamBench.P15Matrix n) (v computed : HighamBench.P15Vector n)
-  (epsilon beta gammaC : Real)
-  (hepsilon :
-    @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) epsilon)
-  (hbeta : @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) beta)
-  (hgammaC :
-    @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) gammaC)
-  (happrox :
-    @Eq.{1} (HighamBench.P15Matrix n) Atilde
-      (@HAdd.hAdd.{0, 0, 0} (HighamBench.P15Matrix n) (HighamBench.P15Matrix n) (HighamBench.P15Matrix n)
-        (@instHAdd.{0} (HighamBench.P15Matrix n) (@Matrix.add.{0, 0, 0} (Fin n) (Fin n) Real Real.instAdd)) A
-        truncError))
-  (hcomputed :
-    @Eq.{1} (HighamBench.P15Vector n) computed
-      (@HighamBench.p15MatVec n
-        (@HAdd.hAdd.{0, 0, 0} (HighamBench.P15Matrix n) (HighamBench.P15Matrix n) (HighamBench.P15Matrix n)
-          (@instHAdd.{0} (HighamBench.P15Matrix n) (@Matrix.add.{0, 0, 0} (Fin n) (Fin n) Real Real.instAdd)) Atilde
-          roundingError)
-        v))
-  (htrunc :
-    @LE.le.{0} Real Real.instLE (@HighamBench.p15FrobNorm n truncError)
-      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) epsilon beta))
-  (hround :
-    @LE.le.{0} Real Real.instLE (@HighamBench.p15FrobNorm n roundingError)
-      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) gammaC
-        (@HighamBench.p15FrobNorm n Atilde))),
-  @Exists.{1} (HighamBench.P15Matrix n) fun (totalError : HighamBench.P15Matrix n) =>
-    And
-      (@Eq.{1} (HighamBench.P15Vector n) computed
-        (@HighamBench.p15MatVec n
-          (@HAdd.hAdd.{0, 0, 0} (HighamBench.P15Matrix n) (HighamBench.P15Matrix n) (HighamBench.P15Matrix n)
-            (@instHAdd.{0} (HighamBench.P15Matrix n) (@Matrix.add.{0, 0, 0} (Fin n) (Fin n) Real Real.instAdd)) A
-            totalError)
-          v))
-      (@LE.le.{0} Real Real.instLE (@HighamBench.p15FrobNorm n totalError)
-        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) gammaC (@HighamBench.p15FrobNorm n A))
-          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) epsilon
+∀ {b r : Nat} (run : HighamBench.P15LowRankMatVecExecution b r),
+  have Atilde : HighamBench.P15Matrix b :=
+    @HighamBench.p15LowRankMatrix b r (@HighamBench.P15LowRankMatVecExecution.X b r run)
+      (@HighamBench.P15LowRankMatVecExecution.Y b r run);
+  have deltaAtilde : HighamBench.P15Matrix b := @HighamBench.p15LowRankRoundingError b r run;
+  have deltaA : HighamBench.P15Matrix b := @HighamBench.p15LowRankTotalError b r run;
+  have gammaC : Real :=
+    HighamBench.p15GammaReal (HighamBench.p15LowRankKernelCost b r)
+      (@HighamBench.P15LowRankMatVecExecution.unitRoundoff b r run);
+  And
+    (@Eq.{1} (HighamBench.P15Vector b) (@HighamBench.P15LowRankMatVecExecution.zHat b r run)
+      (@HighamBench.p15MatVec b
+        (@HAdd.hAdd.{0, 0, 0} (HighamBench.P15Matrix b) (HighamBench.P15Matrix b) (HighamBench.P15Matrix b)
+          (@instHAdd.{0} (HighamBench.P15Matrix b) (@Matrix.add.{0, 0, 0} (Fin b) (Fin b) Real Real.instAdd)) Atilde
+          deltaAtilde)
+        (@HighamBench.P15LowRankMatVecExecution.v b r run)))
+    (And
+      (@LE.le.{0} Real Real.instLE (@HighamBench.p15FrobNorm b deltaAtilde)
+        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) gammaC
+          (@HighamBench.p15FrobNorm b Atilde)))
+      (And
+        (@Eq.{1} (HighamBench.P15Matrix b) deltaA
+          (@HAdd.hAdd.{0, 0, 0} (HighamBench.P15Matrix b) (HighamBench.P15Matrix b) (HighamBench.P15Matrix b)
+            (@instHAdd.{0} (HighamBench.P15Matrix b) (@Matrix.add.{0, 0, 0} (Fin b) (Fin b) Real Real.instAdd))
+            (@HighamBench.P15LowRankMatVecExecution.truncError b r run) deltaAtilde))
+        (And
+          (@Eq.{1} (HighamBench.P15Vector b) (@HighamBench.P15LowRankMatVecExecution.zHat b r run)
+            (@HighamBench.p15MatVec b
+              (@HAdd.hAdd.{0, 0, 0} (HighamBench.P15Matrix b) (HighamBench.P15Matrix b) (HighamBench.P15Matrix b)
+                (@instHAdd.{0} (HighamBench.P15Matrix b) (@Matrix.add.{0, 0, 0} (Fin b) (Fin b) Real Real.instAdd))
+                (@HighamBench.P15LowRankMatVecExecution.A b r run) deltaA)
+              (@HighamBench.P15LowRankMatVecExecution.v b r run)))
+          (And
+            (@LE.le.{0} Real Real.instLE (@HighamBench.p15FrobNorm b deltaA)
               (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) gammaC))
-            beta)))
+                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) gammaC
+                  (@HighamBench.p15FrobNorm b (@HighamBench.P15LowRankMatVecExecution.A b r run)))
+                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                    (@HighamBench.P15LowRankMatVecExecution.epsilon b r run)
+                    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                      (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) gammaC))
+                  (@HighamBench.P15LowRankMatVecExecution.beta b r run))))
+            (@Eq.{1} Real
+              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) gammaC
+                  (@HighamBench.p15FrobNorm b (@HighamBench.P15LowRankMatVecExecution.A b r run)))
+                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                    (@HighamBench.P15LowRankMatVecExecution.epsilon b r run)
+                    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                      (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) gammaC))
+                  (@HighamBench.P15LowRankMatVecExecution.beta b r run)))
+              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) gammaC
+                    (@HighamBench.p15FrobNorm b (@HighamBench.P15LowRankMatVecExecution.A b r run)))
+                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                    (@HighamBench.P15LowRankMatVecExecution.epsilon b r run)
+                    (@HighamBench.P15LowRankMatVecExecution.beta b r run)))
+                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                    (@HighamBench.P15LowRankMatVecExecution.epsilon b r run) gammaC)
+                  (@HighamBench.P15LowRankMatVecExecution.beta b r run))))))))
 ```
 
 ## Local import graph
@@ -97,7 +130,261 @@ theorem p15_t2_low_rank_matvec_backward_error {n : ℕ}
 
 `local` entries are recursively followed through their types and bodies. `external-frontier` entries are the exact Lean/mathlib declarations where that recursive traversal stops; their types and one-level bodies are still shown.
 
-### D001: `HighamBench.P15Matrix`
+### D001: `HighamBench.P15LowRankMatVecExecution`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `67a164adfad3cffa94f2cf1fde51e4f3703e1403fde3b8ae568b6895ec64299b`
+
+Type:
+
+```lean
+Nat → Nat → Type
+```
+
+Fully explicit type:
+
+```lean
+(b r : Nat) → Type
+```
+
+### D002: `HighamBench.P15LowRankMatVecExecution.A`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `6e30d22cfc669f6856dbab37de86385c57e1b4dc4d742c07ef8518fd6b803249`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → HighamBench.P15Matrix b
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (self : HighamBench.P15LowRankMatVecExecution b r) → HighamBench.P15Matrix b
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b r self => self.1
+```
+
+### D003: `HighamBench.P15LowRankMatVecExecution.X`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `8e77e19d70fd221905e4136fe4b01d621a7939fc4f27aaa6638e6e70ed54907c`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → HighamBench.P15RectMatrix b r
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (self : HighamBench.P15LowRankMatVecExecution b r) → HighamBench.P15RectMatrix b r
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b r self => self.2
+```
+
+### D004: `HighamBench.P15LowRankMatVecExecution.Y`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `62a00b7ed147a54c969c3b9660854e1b7e8aa27e7064637ecc439065f7c1f1e7`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → HighamBench.P15RectMatrix b r
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (self : HighamBench.P15LowRankMatVecExecution b r) → HighamBench.P15RectMatrix b r
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b r self => self.3
+```
+
+### D005: `HighamBench.P15LowRankMatVecExecution.beta`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `df90d9c7d4607e6e387b46e97cffd3aa7280ed588826bdd4b208fbbfad78ddac`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → Real
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (self : HighamBench.P15LowRankMatVecExecution b r) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b r self => self.6
+```
+
+### D006: `HighamBench.P15LowRankMatVecExecution.epsilon`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `3b183d83dcac470a80c6c878f5c2f45c8387c8a490b6b03555df117bcac25509`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → Real
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (self : HighamBench.P15LowRankMatVecExecution b r) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b r self => self.5
+```
+
+### D007: `HighamBench.P15LowRankMatVecExecution.truncError`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `48809e8b04fca8107ec6b21aa9221313129c4e765111be9f48e218792888b74a`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → HighamBench.P15Matrix b
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (self : HighamBench.P15LowRankMatVecExecution b r) → HighamBench.P15Matrix b
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b r self => self.14
+```
+
+### D008: `HighamBench.P15LowRankMatVecExecution.unitRoundoff`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `ab98e38f648e04dd2490415472c70d00d3b4d586006201b69d23196c9f026fc4`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → Real
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (self : HighamBench.P15LowRankMatVecExecution b r) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b r self => self.7
+```
+
+### D009: `HighamBench.P15LowRankMatVecExecution.v`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `3dcb50974bdb8854d08a5bb633d7d01ceaab930f21239aa688f0fcaf7e683a1f`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → HighamBench.P15Vector b
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (self : HighamBench.P15LowRankMatVecExecution b r) → HighamBench.P15Vector b
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b r self => self.4
+```
+
+### D010: `HighamBench.P15LowRankMatVecExecution.zHat`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `47cc025833c11804ed58cb1e81c0ec91285a182bc64d4e15591de45494fd650a`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → HighamBench.P15Vector b
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (self : HighamBench.P15LowRankMatVecExecution b r) → HighamBench.P15Vector b
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b r self => self.18
+```
+
+### D011: `HighamBench.P15Matrix`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -123,7 +410,7 @@ Definition body (one-level semantic boundary):
 fun n => Matrix (Fin n) (Fin n) Real
 ```
 
-### D002: `HighamBench.P15Vector`
+### D012: `HighamBench.P15Vector`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -149,13 +436,13 @@ Definition body (one-level semantic boundary):
 fun n => Fin n → Real
 ```
 
-### D003: `HighamBench.p15FrobNorm`
+### D013: `HighamBench.p15FrobNorm`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `ba1b58b4e7fdbcda54fe1a9ee4d2ebd9f8d43b80907403bf6ea885fff386083f`
+- Semantic SHA-256: `837bd1b4fd433e90b49e653f1245c95156c8bd043250d89a7117737646408c28`
 
 Type:
 
@@ -172,10 +459,144 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} A => Matrix.frobeniusNormedRing.norm A
+fun {n} A => HighamBench.p15RectFrobNorm A
 ```
 
-### D004: `HighamBench.p15MatVec`
+### D014: `HighamBench.p15GammaReal`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `271296c936d7dd54bb763543aed321ddd01215dbcf43ad0f046996eedec71821`
+
+Type:
+
+```lean
+Real → Real → Real
+```
+
+Fully explicit type:
+
+```lean
+(k u : Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun k u => instHDiv.hDiv (instHMul.hMul k u) (instHSub.hSub 1 (instHMul.hMul k u))
+```
+
+### D015: `HighamBench.p15LowRankKernelCost`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `c2fe5f62aae01995df6fd00f4964b121fe67637620e558fead3ee0984d93d978`
+
+Type:
+
+```lean
+Nat → Nat → Real
+```
+
+Fully explicit type:
+
+```lean
+(b r : Nat) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b r => instHAdd.hAdd b.cast (instHMul.hMul r.cast r.cast.sqrt)
+```
+
+### D016: `HighamBench.p15LowRankMatrix`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `1842193034dc631c3f6c3edebfa469daf6e8b41c15a0037f9331a904ad932e6f`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15RectMatrix b r → HighamBench.P15RectMatrix b r → HighamBench.P15Matrix b
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (X Y : HighamBench.P15RectMatrix b r) → HighamBench.P15Matrix b
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {b r} X Y => HighamBench.p15RectMatMul X (HighamBench.p15RectTranspose Y)
+```
+
+### D017: `HighamBench.p15LowRankRoundingError`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `0166a93fefabdd5c8742e70f488e51ff14d6f04a642f1928cf4c446d5fdc9483`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → HighamBench.P15Matrix b
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (run : HighamBench.P15LowRankMatVecExecution b r) → HighamBench.P15Matrix b
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {b r} run =>
+  instHAdd.hAdd
+    (instHAdd.hAdd (HighamBench.p15RectMatMul run.X (HighamBench.p15RectTranspose run.deltaY))
+      (HighamBench.p15RectMatMul run.deltaX (HighamBench.p15RectTranspose run.Y)))
+    (HighamBench.p15RectMatMul run.deltaX (HighamBench.p15RectTranspose run.deltaY))
+```
+
+### D018: `HighamBench.p15LowRankTotalError`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `0d552b63905aa2488b56da39ce2722e44456405d7caf4cba2224db361cbc47f0`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → HighamBench.P15Matrix b
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (run : HighamBench.P15LowRankMatVecExecution b r) → HighamBench.P15Matrix b
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {b r} run => instHAdd.hAdd run.truncError (HighamBench.p15LowRankRoundingError run)
+```
+
+### D019: `HighamBench.p15MatVec`
 
 - Role: `local`
 - Owner module: `HighamBench.P15Definitions`
@@ -201,7 +622,329 @@ Definition body (one-level semantic boundary):
 fun {n} A x i => Finset.univ.sum fun j => instHMul.hMul (A i j) (x j)
 ```
 
-### D005: `And`
+### D020: `HighamBench.P15LowRankMatVecExecution.deltaX`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `87c2eb3b57cef1e88e0d9b5554099487b3cacf3e5ed82a787eb90098423a4c72`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → HighamBench.P15RectMatrix b r
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (self : HighamBench.P15LowRankMatVecExecution b r) → HighamBench.P15RectMatrix b r
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b r self => self.20
+```
+
+### D021: `HighamBench.P15LowRankMatVecExecution.deltaY`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `2bf98a6c631b0b7707666fca51c464d756448a67f8213576e729bfc681bcadf9`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15LowRankMatVecExecution b r → HighamBench.P15RectMatrix b r
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (self : HighamBench.P15LowRankMatVecExecution b r) → HighamBench.P15RectMatrix b r
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun b r self => self.19
+```
+
+### D022: `HighamBench.P15LowRankMatVecExecution.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `1f282b82b969ca6e09539ac78b6cb586f7df10620bacb33764f3f855bd2a275c`
+
+Type:
+
+```lean
+{b r : Nat} →
+  (A : HighamBench.P15Matrix b) →
+    (X Y : HighamBench.P15RectMatrix b r) →
+      (v : HighamBench.P15Vector b) →
+        (epsilon beta unitRoundoff : Real) →
+          Real.instLT.lt 0 epsilon →
+            Real.instLT.lt 0 beta →
+              Real.instLT.lt 0 unitRoundoff →
+                Real.instLT.lt unitRoundoff epsilon →
+                  Real.instLT.lt (instHMul.hMul (HighamBench.p15LowRankKernelCost b r) unitRoundoff) 1 →
+                    HighamBench.p15OrthonormalColumns X →
+                      (truncError : HighamBench.P15Matrix b) →
+                        Eq (HighamBench.p15LowRankMatrix X Y) (instHAdd.hAdd A truncError) →
+                          Real.instLE.le (HighamBench.p15FrobNorm truncError) (instHMul.hMul epsilon beta) →
+                            (wHat : HighamBench.P15Vector r) →
+                              (zHat : HighamBench.P15Vector b) →
+                                (deltaY deltaX : HighamBench.P15RectMatrix b r) →
+                                  Eq wHat
+                                      (HighamBench.p15RectMatVec (HighamBench.p15RectTranspose (instHAdd.hAdd Y deltaY))
+                                        v) →
+                                    Real.instLE.le (HighamBench.p15RectFrobNorm deltaY)
+                                        (instHMul.hMul (HighamBench.p15GammaReal b.cast unitRoundoff)
+                                          (HighamBench.p15RectFrobNorm Y)) →
+                                      Eq zHat (HighamBench.p15RectMatVec (instHAdd.hAdd X deltaX) wHat) →
+                                        Real.instLE.le (HighamBench.p15RectFrobNorm deltaX)
+                                            (instHMul.hMul (HighamBench.p15GammaReal r.cast unitRoundoff)
+                                              (HighamBench.p15RectFrobNorm X)) →
+                                          HighamBench.P15LowRankMatVecExecution b r
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} →
+  (A : HighamBench.P15Matrix b) →
+    (X Y : HighamBench.P15RectMatrix b r) →
+      (v : HighamBench.P15Vector b) →
+        (epsilon beta unitRoundoff : Real) →
+          (epsilon_pos :
+              @LT.lt.{0} Real Real.instLT (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                epsilon) →
+            (beta_pos :
+                @LT.lt.{0} Real Real.instLT (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                  beta) →
+              (unitRoundoff_pos :
+                  @LT.lt.{0} Real Real.instLT
+                    (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) unitRoundoff) →
+                (unitRoundoff_lt_epsilon : @LT.lt.{0} Real Real.instLT unitRoundoff epsilon) →
+                  (gamma_valid :
+                      @LT.lt.{0} Real Real.instLT
+                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                          (HighamBench.p15LowRankKernelCost b r) unitRoundoff)
+                        (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))) →
+                    (x_orthonormal : @HighamBench.p15OrthonormalColumns b r X) →
+                      (truncError : HighamBench.P15Matrix b) →
+                        (approximation_eq :
+                            @Eq.{1} (HighamBench.P15Matrix b) (@HighamBench.p15LowRankMatrix b r X Y)
+                              (@HAdd.hAdd.{0, 0, 0} (HighamBench.P15Matrix b) (HighamBench.P15Matrix b)
+                                (HighamBench.P15Matrix b)
+                                (@instHAdd.{0} (HighamBench.P15Matrix b)
+                                  (@Matrix.add.{0, 0, 0} (Fin b) (Fin b) Real Real.instAdd))
+                                A truncError)) →
+                          (truncError_le :
+                              @LE.le.{0} Real Real.instLE (@HighamBench.p15FrobNorm b truncError)
+                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) epsilon beta)) →
+                            (wHat : HighamBench.P15Vector r) →
+                              (zHat : HighamBench.P15Vector b) →
+                                (deltaY deltaX : HighamBench.P15RectMatrix b r) →
+                                  (first_stage_eq :
+                                      @Eq.{1} (HighamBench.P15Vector r) wHat
+                                        (@HighamBench.p15RectMatVec r b
+                                          (@HighamBench.p15RectTranspose b r
+                                            (@HAdd.hAdd.{0, 0, 0} (HighamBench.P15RectMatrix b r)
+                                              (HighamBench.P15RectMatrix b r) (HighamBench.P15RectMatrix b r)
+                                              (@instHAdd.{0} (HighamBench.P15RectMatrix b r)
+                                                (@Matrix.add.{0, 0, 0} (Fin b) (Fin r) Real Real.instAdd))
+                                              Y deltaY))
+                                          v)) →
+                                    (first_stage_error_le :
+                                        @LE.le.{0} Real Real.instLE (@HighamBench.p15RectFrobNorm b r deltaY)
+                                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                            (HighamBench.p15GammaReal (@Nat.cast.{0} Real Real.instNatCast b)
+                                              unitRoundoff)
+                                            (@HighamBench.p15RectFrobNorm b r Y))) →
+                                      (second_stage_eq :
+                                          @Eq.{1} (HighamBench.P15Vector b) zHat
+                                            (@HighamBench.p15RectMatVec b r
+                                              (@HAdd.hAdd.{0, 0, 0} (HighamBench.P15RectMatrix b r)
+                                                (HighamBench.P15RectMatrix b r) (HighamBench.P15RectMatrix b r)
+                                                (@instHAdd.{0} (HighamBench.P15RectMatrix b r)
+                                                  (@Matrix.add.{0, 0, 0} (Fin b) (Fin r) Real Real.instAdd))
+                                                X deltaX)
+                                              wHat)) →
+                                        (second_stage_error_le :
+                                            @LE.le.{0} Real Real.instLE (@HighamBench.p15RectFrobNorm b r deltaX)
+                                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                (HighamBench.p15GammaReal (@Nat.cast.{0} Real Real.instNatCast r)
+                                                  unitRoundoff)
+                                                (@HighamBench.p15RectFrobNorm b r X))) →
+                                          HighamBench.P15LowRankMatVecExecution b r
+```
+
+### D023: `HighamBench.P15RectMatrix`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `8feb40d08c5292d10bb340b09678c4d176088c4c97bb1880d9f95a2c76fde9a2`
+
+Type:
+
+```lean
+Nat → Nat → Type
+```
+
+Fully explicit type:
+
+```lean
+(m n : Nat) → Type
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m n => Matrix (Fin m) (Fin n) Real
+```
+
+### D024: `HighamBench.p15RectFrobNorm`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `f8df59150997c9c35d296b01efb6efe480f420d12b4d3873085fbf5fff732e33`
+
+Type:
+
+```lean
+{m n : Nat} → HighamBench.P15RectMatrix m n → Real
+```
+
+Fully explicit type:
+
+```lean
+{m n : Nat} → (A : HighamBench.P15RectMatrix m n) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m n} A => (Finset.univ.sum fun i => Finset.univ.sum fun j => instHPow.hPow (A i j) 2).sqrt
+```
+
+### D025: `HighamBench.p15RectMatMul`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `f6707f2e526a146358f007d2349847963679a3556d53c05f30fd242f90c18238`
+
+Type:
+
+```lean
+{m n p : Nat} → HighamBench.P15RectMatrix m n → HighamBench.P15RectMatrix n p → HighamBench.P15RectMatrix m p
+```
+
+Fully explicit type:
+
+```lean
+{m n p : Nat} →
+  (A : HighamBench.P15RectMatrix m n) → (B : HighamBench.P15RectMatrix n p) → HighamBench.P15RectMatrix m p
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m n p} A B i j => Finset.univ.sum fun k => instHMul.hMul (A i k) (B k j)
+```
+
+### D026: `HighamBench.p15RectTranspose`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `5d09057ba3a21630e320ba9e9e5153de687ba08c185951b20149ba794d3de258`
+
+Type:
+
+```lean
+{m n : Nat} → HighamBench.P15RectMatrix m n → HighamBench.P15RectMatrix n m
+```
+
+Fully explicit type:
+
+```lean
+{m n : Nat} → (A : HighamBench.P15RectMatrix m n) → HighamBench.P15RectMatrix n m
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m n} A j i => A i j
+```
+
+### D027: `HighamBench.p15OrthonormalColumns`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `deb9d644f031d8e71a57f0238d55fc37a145cb41cbb82b90abe8a87780c03815`
+
+Type:
+
+```lean
+{b r : Nat} → HighamBench.P15RectMatrix b r → Prop
+```
+
+Fully explicit type:
+
+```lean
+{b r : Nat} → (X : HighamBench.P15RectMatrix b r) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {b r} X => ∀ (j k : Fin r), Eq (Finset.univ.sum fun i => instHMul.hMul (X i j) (X i k)) (ite (Eq j k) 1 0)
+```
+
+### D028: `HighamBench.p15RectMatVec`
+
+- Role: `local`
+- Owner module: `HighamBench.P15Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `970543238cae5239ce90751326e588c2728317ac37bdac78ce2f145b8ad3cf35`
+
+Type:
+
+```lean
+{m n : Nat} → HighamBench.P15RectMatrix m n → (Fin n → Real) → Fin m → Real
+```
+
+Fully explicit type:
+
+```lean
+{m n : Nat} → (A : HighamBench.P15RectMatrix m n) → (x : Fin n → Real) → Fin m → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m n} A x i => Finset.univ.sum fun j => instHMul.hMul (A i j) (x j)
+```
+
+### D029: `And`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -221,7 +964,7 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D006: `Eq`
+### D030: `Eq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -241,27 +984,7 @@ Fully explicit type:
 {α : Sort u_1} → α → α → Prop
 ```
 
-### D007: `Exists`
-
-- Role: `external-frontier`
-- Owner module: `Init.Core`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
-- Semantic SHA-256: `a24a6eb72dcf5b3765659a28bb9d3814ed7ebd3e3fa1fd11e8f3c7acc80e0dde`
-
-Type:
-
-```lean
-{α : Sort u} → (α → Prop) → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Sort u} → (p : α → Prop) → Prop
-```
-
-### D008: `Fin`
+### D031: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -281,7 +1004,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D009: `HAdd.hAdd`
+### D032: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -307,7 +1030,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D010: `HMul.hMul`
+### D033: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -333,7 +1056,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D011: `LE.le`
+### D034: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -359,7 +1082,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LE α] => self.1
 ```
 
-### D012: `Matrix.add`
+### D035: `Matrix.add`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -385,7 +1108,7 @@ Definition body (one-level semantic boundary):
 fun {m} {n} {α} [Add α] => Pi.instAdd
 ```
 
-### D013: `Nat`
+### D036: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -405,7 +1128,7 @@ Fully explicit type:
 Type
 ```
 
-### D014: `OfNat.ofNat`
+### D037: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -431,7 +1154,7 @@ Definition body (one-level semantic boundary):
 fun α x [self : OfNat α x] => self.1
 ```
 
-### D015: `One.toOfNat1`
+### D038: `One.toOfNat1`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -457,7 +1180,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : One α] => { ofNat := inst.one }
 ```
 
-### D016: `Real`
+### D039: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -477,7 +1200,7 @@ Fully explicit type:
 Type
 ```
 
-### D017: `Real.instAdd`
+### D040: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -503,7 +1226,7 @@ Definition body (one-level semantic boundary):
 { add := Real.add✝ }
 ```
 
-### D018: `Real.instLE`
+### D041: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -529,7 +1252,7 @@ Definition body (one-level semantic boundary):
 { le := Real.le✝ }
 ```
 
-### D019: `Real.instMul`
+### D042: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -555,7 +1278,7 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D020: `Real.instOne`
+### D043: `Real.instOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -581,59 +1304,7 @@ Definition body (one-level semantic boundary):
 { one := Real.one✝ }
 ```
 
-### D021: `Real.instZero`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882`
-
-Type:
-
-```lean
-Zero Real
-```
-
-Fully explicit type:
-
-```lean
-Zero.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ zero := Real.zero✝ }
-```
-
-### D022: `Zero.toOfNat0`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Zero`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a`
-
-Type:
-
-```lean
-{α : Type u_1} → [Zero α] → OfNat α 0
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Zero.{u_1} α] → OfNat.{u_1} α (nat_lit 0)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Zero α] => { ofNat := inst.zero }
-```
-
-### D023: `instHAdd`
+### D044: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -659,7 +1330,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
 ```
 
-### D024: `instHMul`
+### D045: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -685,7 +1356,33 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D025: `Fin.fintype`
+### D046: `DivInvMonoid.toDiv`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea`
+
+Type:
+
+```lean
+{G : Type u} → [self : DivInvMonoid G] → Div G
+```
+
+Fully explicit type:
+
+```lean
+{G : Type u} → [self : DivInvMonoid.{u} G] → Div.{u} G
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun G [self : DivInvMonoid G] => self.3
+```
+
+### D047: `Fin.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
@@ -711,7 +1408,7 @@ Definition body (one-level semantic boundary):
 fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
 ```
 
-### D026: `Finset.sum`
+### D048: `Finset.sum`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -737,7 +1434,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
 ```
 
-### D027: `Finset.univ`
+### D049: `Finset.univ`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Defs`
@@ -763,7 +1460,59 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Fintype α] => inst.elems
 ```
 
-### D028: `Matrix`
+### D050: `HDiv.hDiv`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `10d75d9f08ad8c923109392866fba5fb3645de144bc824cefdd353658fe9f06b`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HDiv α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HDiv.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HDiv α β γ] => self.1
+```
+
+### D051: `HSub.hSub`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `98025b38d523c0eadea77ba4961a20b2a913b23c079c4bfeba24a7bfaa24a4bc`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HSub α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HSub.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HSub α β γ] => self.1
+```
+
+### D052: `Matrix`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.LinearAlgebra.Matrix.Defs`
@@ -789,97 +1538,33 @@ Definition body (one-level semantic boundary):
 fun m n α => m → n → α
 ```
 
-### D029: `Matrix.frobeniusNormedRing`
+### D053: `Nat.cast`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Analysis.Matrix.Normed`
+- Owner module: `Init.Data.Cast`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `883d6b4ab1d783b7d3150d110714b2fc1951827b2bacd53b49e46c8b1e7d00a4`
+- Semantic SHA-256: `6e24327ea908b1837083bb15aef27d593e950a2ff8ade81d8aa94bfe33b64450`
 
 Type:
 
 ```lean
-{m : Type u_3} → {α : Type u_5} → [Fintype m] → [RCLike α] → [DecidableEq m] → NormedRing (Matrix m m α)
+{R : Type u} → [NatCast R] → Nat → R
 ```
 
 Fully explicit type:
 
 ```lean
-{m : Type u_3} →
-  {α : Type u_5} →
-    [Fintype.{u_3} m] →
-      [RCLike.{u_5} α] → [DecidableEq.{u_3 + 1} m] → NormedRing.{max u_5 u_3} (Matrix.{u_3, u_3, u_5} m m α)
+{R : Type u} → [NatCast.{u} R] → Nat → R
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {m} {α} [Fintype m] [RCLike α] [DecidableEq m] =>
-  let __src := Matrix.frobeniusSeminormedAddCommGroup;
-  let __src_1 := Matrix.instRing;
-  { toNorm := __src.toNorm, toAddMonoid := __src.toAddMonoid, add_comm := ⋯, toMul := __src_1.toMul, left_distrib := ⋯,
-    right_distrib := ⋯, zero_mul := ⋯, mul_zero := ⋯, mul_assoc := ⋯, toOne := __src_1.toOne, one_mul := ⋯,
-    mul_one := ⋯, toNatCast := __src_1.toNatCast, natCast_zero := ⋯, natCast_succ := ⋯, npow := __src_1.npow,
-    npow_zero := ⋯, npow_succ := ⋯, toNeg := __src.toNeg, toSub := __src.toSub, sub_eq_add_neg := ⋯,
-    zsmul := __src.zsmul, zsmul_zero' := ⋯, zsmul_succ' := ⋯, zsmul_neg' := ⋯, neg_add_cancel := ⋯,
-    toIntCast := __src_1.toIntCast, intCast_ofNat := ⋯, intCast_negSucc := ⋯,
-    toPseudoMetricSpace := __src.toPseudoMetricSpace, eq_of_dist_eq_zero := ⋯, dist_eq := ⋯, norm_mul_le := ⋯ }
+fun {R} [inst : NatCast R] => inst.natCast
 ```
 
-### D030: `Norm.norm`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Analysis.Normed.Group.Defs`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `25f5aa97df9bb1faeacd7e5e6446ecbd367452a7105f098063355423713fe15a`
-
-Type:
-
-```lean
-{E : Type u_8} → [self : Norm E] → E → Real
-```
-
-Fully explicit type:
-
-```lean
-{E : Type u_8} → [self : Norm.{u_8} E] → E → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun E [self : Norm E] => self.1
-```
-
-### D031: `NormedRing.toNorm`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Analysis.Normed.Ring.Basic`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `0957abfc66401a60ac36872f31eb54890d14b0b45613e38ba8f235c467f63751`
-
-Type:
-
-```lean
-{α : Type u_5} → [self : NormedRing α] → Norm α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_5} → [self : NormedRing.{u_5} α] → Norm.{u_5} α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : NormedRing α] => self.1
-```
-
-### D032: `Real.instAddCommMonoid`
+### D054: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -905,43 +1590,404 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D033: `Real.instRCLike`
+### D055: `Real.instDivInvMonoid`
 
 - Role: `external-frontier`
-- Owner module: `Mathlib.Analysis.RCLike.Basic`
+- Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `d2fdb97b9d861fcf61e6dbea9993dfa0ca6aa16609742f215c35b3f7ddd16b8e`
+- Semantic SHA-256: `166f2abb65bf1271e5e8d70fdb78c55672c7e366b30439e83b517f803cdefac3`
 
 Type:
 
 ```lean
-RCLike Real
+DivInvMonoid Real
 ```
 
 Fully explicit type:
 
 ```lean
-RCLike.{0} Real
+DivInvMonoid.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-{ toDenselyNormedField := Real.denselyNormedField, toStarRing := instStarRingReal,
-  toNormedAlgebra := NormedAlgebra.id Real, toCompleteSpace := Real.instCompleteSpace, re := AddMonoidHom.id Real,
-  im := 0, I := 0, I_re_ax := Real.instRCLike._proof_1, I_mul_I_ax := Real.instRCLike._proof_8, re_add_im_ax := ⋯,
-  ofReal_re_ax := Real.instRCLike._proof_11, ofReal_im_ax := Real.instRCLike._proof_12, mul_re_ax := ⋯, mul_im_ax := ⋯,
-  conj_re_ax := ⋯, conj_im_ax := ⋯, conj_I_ax := Real.instRCLike._proof_7, norm_sq_eq_def_ax := ⋯, mul_im_I_ax := ⋯,
-  toPartialOrder := Real.partialOrder, le_iff_re_im := @Real.instRCLike._proof_13, toDecidableEq := Real.decidableEq }
+{ toMonoid := Real.instMonoid, toInv := Real.instInv, div := DivInvMonoid.div',
+  div_eq_mul_inv := Real.instDivInvMonoid._proof_1, zpow := zpowRec, zpow_zero' := Real.instDivInvMonoid._proof_2,
+  zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
 ```
 
-### D034: `instDecidableEqFin`
+### D056: `Real.instNatCast`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15`
+
+Type:
+
+```lean
+NatCast Real
+```
+
+Fully explicit type:
+
+```lean
+NatCast.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ natCast := fun n => { cauchy := n.cast } }
+```
+
+### D057: `Real.instSub`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `926d9e8fcca2819a885d446e168b20c7c8aac2e542d59ed2b48e32c9a4659a36`
+
+Type:
+
+```lean
+Sub Real
+```
+
+Fully explicit type:
+
+```lean
+Sub.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
+```
+
+### D058: `Real.sqrt`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Sqrt`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `67f9248ae1acb851b5392be301057ebb8b8ef2fb20f76d2d53a2d07ec8f30553`
+
+Type:
+
+```lean
+Real → Real
+```
+
+Fully explicit type:
+
+```lean
+(x : Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun x => ((instFunLikeOrderIso NNReal NNReal).coe NNReal.sqrt x.toNNReal).toReal
+```
+
+### D059: `instHDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `def`
 - Distance from target type: `2`
+- Semantic SHA-256: `ea3478ce3daf37e2cbdcd4bfaf7b5142fd7d274b56d75d2fae007c15e1b89871`
+
+Type:
+
+```lean
+{α : Type u_1} → [Div α] → HDiv α α α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Div.{u_1} α] → HDiv.{u_1, u_1, u_1} α α α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
+```
+
+### D060: `instHSub`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `aa782f2b5af3d068f4c5340de4b32b193fece2c659a45582cc3024a19b550c87`
+
+Type:
+
+```lean
+{α : Type u_1} → [Sub α] → HSub α α α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Sub.{u_1} α] → HSub.{u_1, u_1, u_1} α α α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
+```
+
+### D061: `HPow.hPow`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `6196b8cbb884c4f39841ba74b23d75f3c753fe0d044cc402bd6e4e3bd59d5cb8`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HPow α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HPow.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HPow α β γ] => self.1
+```
+
+### D062: `LT.lt`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009`
+
+Type:
+
+```lean
+{α : Type u} → [self : LT α] → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → [self : LT.{u} α] → α → α → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : LT α] => self.1
+```
+
+### D063: `Monoid.toNatPow`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `5b7373fe2de26535c1cdbf1b953ce34faf30f68aac8abd83ade2e78e6ec65b8a`
+
+Type:
+
+```lean
+{M : Type u_2} → [Monoid M] → Pow M Nat
+```
+
+Fully explicit type:
+
+```lean
+{M : Type u_2} → [Monoid.{u_2} M] → Pow.{u_2, 0} M Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
+```
+
+### D064: `Real.instLT`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a`
+
+Type:
+
+```lean
+LT Real
+```
+
+Fully explicit type:
+
+```lean
+LT.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ lt := Real.lt✝ }
+```
+
+### D065: `Real.instMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8`
+
+Type:
+
+```lean
+Monoid Real
+```
+
+Fully explicit type:
+
+```lean
+Monoid.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D066: `Real.instZero`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882`
+
+Type:
+
+```lean
+Zero Real
+```
+
+Fully explicit type:
+
+```lean
+Zero.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ zero := Real.zero✝ }
+```
+
+### D067: `Zero.toOfNat0`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Zero`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a`
+
+Type:
+
+```lean
+{α : Type u_1} → [Zero α] → OfNat α 0
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Zero.{u_1} α] → OfNat.{u_1} α (nat_lit 0)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Zero α] => { ofNat := inst.zero }
+```
+
+### D068: `instHPow`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `eb300d353d84392c776cad5e356479f878030744a43f9a1584942a89d16350b4`
+
+Type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → [Pow α β] → HPow α β α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → [Pow.{u_1, u_2} α β] → HPow.{u_1, u_2, u_1} α β α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
+```
+
+### D069: `instOfNatNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92`
+
+Type:
+
+```lean
+(n : Nat) → OfNat Nat n
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → OfNat.{0} Nat n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n => { ofNat := n }
+```
+
+### D070: `instDecidableEqFin`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `4`
 - Semantic SHA-256: `7f6d785554f797d18d5ae0b7475c25e8deca421e6ee688f036987ac99c66e1cd`
 
 Type:
@@ -962,6 +2008,32 @@ Definition body (one-level semantic boundary):
 fun n i j =>
   instDecidableEqFin.match_1 n i j (fun x => Decidable (Eq i j)) (decEq i.val j.val) (fun h => Decidable.isTrue ⋯)
     fun h => Decidable.isFalse ⋯
+```
+
+### D071: `ite`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `3029bae29d2d16b5aeb879ad3c12a1b3c4e78998083bf1ab4614942fafdece0e`
+
+Type:
+
+```lean
+{α : Sort u} → (c : Prop) → [h : Decidable c] → α → α → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → (c : Prop) → [h : Decidable c] → (t e : α) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} c [h : Decidable c] t e => Decidable.casesOn h (fun x => e) fun x => t
 ```
 
 ## Complete local imported sources
@@ -1025,7 +2097,7 @@ end HighamBench
 ### `HighamBench.P15Definitions`
 
 Path: `paper_bencmark/highambench/shared/HighamBench/P15Definitions.lean`
-SHA-256: `831dce905ad8a08bb52f5b55ebad349c09ac26a06168d6ca22eb022d2cf91792`
+SHA-256: `b6e99e9b2e55582ab283590cdab7dce218b8db759e425a343925af9c06f3f857`
 
 ```lean
 import HighamBench.Core
@@ -1045,8 +2117,17 @@ open scoped BigOperators Matrix.Norms.Frobenius
 /-- A finite square real matrix in the P15 model. -/
 abbrev P15Matrix (n : ℕ) := Matrix (Fin n) (Fin n) ℝ
 
+/-- A finite rectangular real matrix in the P15 model. -/
+abbrev P15RectMatrix (m n : ℕ) := Matrix (Fin m) (Fin n) ℝ
+
 /-- A finite real vector in the P15 model. -/
 abbrev P15Vector (n : ℕ) := Fin n → ℝ
+
+/-- Exact multiplication of compatible finite rectangular matrices. -/
+noncomputable def p15RectMatMul {m n p : ℕ}
+    (A : P15RectMatrix m n) (B : P15RectMatrix n p) :
+    P15RectMatrix m p :=
+  fun i j ↦ ∑ k : Fin n, A i k * B k j
 
 /-- Exact finite matrix multiplication. -/
 noncomputable def p15MatMul {n : ℕ} (A B : P15Matrix n) : P15Matrix n :=
@@ -1057,13 +2138,240 @@ noncomputable def p15MatVec {n : ℕ} (A : P15Matrix n)
     (x : P15Vector n) : P15Vector n :=
   fun i ↦ ∑ j : Fin n, A i j * x j
 
-/-- Frobenius norm used throughout P15. -/
+/-- The paper's unsquared, unnormalized Frobenius norm for a rectangular
+matrix, written explicitly as `sqrt (sum_i sum_j A_ij^2)`. -/
+noncomputable def p15RectFrobNorm {m n : ℕ}
+    (A : P15RectMatrix m n) : ℝ :=
+  Real.sqrt (∑ i : Fin m, ∑ j : Fin n, A i j ^ 2)
+
+/-- Square specialization of the Frobenius norm used throughout P15. -/
 noncomputable def p15FrobNorm {n : ℕ} (A : P15Matrix n) : ℝ :=
-  ‖A‖
+  p15RectFrobNorm A
+
+/-- Exact transpose of a finite rectangular matrix. -/
+def p15RectTranspose {m n : ℕ} (A : P15RectMatrix m n) :
+    P15RectMatrix n m :=
+  fun j i ↦ A i j
+
+/-- Exact action of a finite rectangular matrix on a vector. -/
+noncomputable def p15RectMatVec {m n : ℕ}
+    (A : P15RectMatrix m n) (x : Fin n → ℝ) : Fin m → ℝ :=
+  fun i ↦ ∑ j : Fin n, A i j * x j
+
+/-- The low-rank matrix `Atilde = X Y^T` in Lemma 3.1. -/
+noncomputable def p15LowRankMatrix {b r : ℕ}
+    (X Y : P15RectMatrix b r) : P15Matrix b :=
+  p15RectMatMul X (p15RectTranspose Y)
+
+/-- Column orthonormality `X^T X = I` in the real finite model. -/
+def p15OrthonormalColumns {b r : ℕ} (X : P15RectMatrix b r) : Prop :=
+  ∀ j k, (∑ i : Fin b, X i j * X i k) = if j = k then 1 else 0
+
+/-- The paper's real-index gamma function `gamma_k = ku/(1-ku)`. -/
+noncomputable def p15GammaReal (k u : ℝ) : ℝ :=
+  k * u / (1 - k * u)
+
+/-- The operation-count index `c = b + r^(3/2)` from Lemma 3.1. For a
+nonnegative integer rank, `r^(3/2) = r * sqrt r`. -/
+noncomputable def p15LowRankKernelCost (b r : ℕ) : ℝ :=
+  (b : ℝ) + (r : ℝ) * Real.sqrt (r : ℝ)
+
+/-- A proof-carrying finite execution of the ordered computation
+`wHat = fl(Y^T v)` followed by `zHat = fl(X wHat)` in Lemma 3.1. The stage
+perturbation fields are the standard matrix-vector backward-error interface
+recalled in Lemma 2.1; the aggregate perturbations in (3.1) and (3.2) are not
+assumed here. -/
+structure P15LowRankMatVecExecution (b r : ℕ) where
+  A : P15Matrix b
+  X : P15RectMatrix b r
+  Y : P15RectMatrix b r
+  v : P15Vector b
+  epsilon : ℝ
+  beta : ℝ
+  unitRoundoff : ℝ
+  epsilon_pos : 0 < epsilon
+  beta_pos : 0 < beta
+  unitRoundoff_pos : 0 < unitRoundoff
+  unitRoundoff_lt_epsilon : unitRoundoff < epsilon
+  gamma_valid :
+    p15LowRankKernelCost b r * unitRoundoff < 1
+  x_orthonormal : p15OrthonormalColumns X
+  truncError : P15Matrix b
+  approximation_eq : p15LowRankMatrix X Y = A + truncError
+  truncError_le : p15FrobNorm truncError ≤ epsilon * beta
+  wHat : P15Vector r
+  zHat : P15Vector b
+  deltaY : P15RectMatrix b r
+  deltaX : P15RectMatrix b r
+  first_stage_eq :
+    wHat = p15RectMatVec (p15RectTranspose (Y + deltaY)) v
+  first_stage_error_le :
+    p15RectFrobNorm deltaY ≤
+      p15GammaReal (b : ℝ) unitRoundoff * p15RectFrobNorm Y
+  second_stage_eq :
+    zHat = p15RectMatVec (X + deltaX) wHat
+  second_stage_error_le :
+    p15RectFrobNorm deltaX ≤
+      p15GammaReal (r : ℝ) unitRoundoff * p15RectFrobNorm X
+
+/-- The explicit low-rank floating-point perturbation obtained by expanding
+`(X + deltaX)(Y + deltaY)^T`. -/
+noncomputable def p15LowRankRoundingError {b r : ℕ}
+    (run : P15LowRankMatVecExecution b r) : P15Matrix b :=
+  p15RectMatMul run.X (p15RectTranspose run.deltaY) +
+    p15RectMatMul run.deltaX (p15RectTranspose run.Y) +
+    p15RectMatMul run.deltaX (p15RectTranspose run.deltaY)
+
+/-- The equation (3.2) perturbation: low-rank truncation plus the equation
+(3.1) floating-point perturbation. -/
+noncomputable def p15LowRankTotalError {b r : ℕ}
+    (run : P15LowRankMatVecExecution b r) : P15Matrix b :=
+  run.truncError + p15LowRankRoundingError run
 
 /-- Euclidean vector norm used for the right-hand-side estimate in Theorem 4.5. -/
 noncomputable def p15VecNorm {n : ℕ} (x : P15Vector n) : ℝ :=
   Real.sqrt (∑ i : Fin n, x i ^ 2)
+
+/-- The two BLR LU factorization orders covered by Theorem 4.5. -/
+inductive P15BLRFactorizationAlgorithm where
+  | ufc
+  | ucf
+  deriving DecidableEq, Repr
+
+/-- The local and global low-rank threshold choices in Table 1. -/
+inductive P15BLRThreshold where
+  | local
+  | global
+  deriving DecidableEq, Repr
+
+/-- Whether the factorization performs the intermediate recompressions from
+Section 4.1.3. -/
+inductive P15BLRRecompression where
+  | without
+  | with
+  deriving DecidableEq, Repr
+
+/-- The four exact values of `xi_p` in Table 1. -/
+noncomputable def p15BLRXi (p : ℕ) (threshold : P15BLRThreshold)
+    (recompression : P15BLRRecompression) : ℝ :=
+  match recompression, threshold with
+  | .without, .local => 1
+  | .without, .global => p
+  | .with, .local => p
+  | .with, .global => (p : ℝ) ^ 2 / Real.sqrt 6
+
+/-- The common operation-count index `c = b + 2*r^(3/2) + p` in Theorem
+4.5. -/
+noncomputable def p15BLRSolveCost (b p r : ℕ) : ℝ :=
+  (b : ℝ) + 2 * (r : ℝ) * Real.sqrt (r : ℝ) + (p : ℝ)
+
+/-- Flatten a block-row and within-block row into an index of a `p*b` matrix. -/
+def p15BlockIndex {p b : ℕ} (i : Fin p) (row : Fin b) : Fin (p * b) :=
+  ⟨i.1 * b + row.1, by
+    have hi : i.1 + 1 ≤ p := Nat.succ_le_iff.mpr i.2
+    have hblock : (i.1 + 1) * b ≤ p * b := Nat.mul_le_mul_right b hi
+    have hrow : i.1 * b + row.1 < (i.1 + 1) * b := by
+      simpa [Nat.add_mul] using Nat.add_lt_add_left row.2 (i.1 * b)
+    exact lt_of_lt_of_le hrow hblock⟩
+
+/-- Extract one `b`-by-`b` block from a matrix of order `p*b`. -/
+def p15MatrixBlock {p b : ℕ} (A : P15Matrix (p * b))
+    (i j : Fin p) : P15Matrix b :=
+  fun row col => A (p15BlockIndex i row) (p15BlockIndex j col)
+
+/-- A `p*b` matrix whose off-diagonal blocks have rank at most `r`, represented
+by uniformly padded `b`-by-`r` factors. -/
+def p15IsBLRMatrix {p b : ℕ} (r : ℕ) (A : P15Matrix (p * b)) : Prop :=
+  ∃ X Y : Fin p → Fin p → P15RectMatrix b r,
+    ∀ i j, i ≠ j →
+      p15MatrixBlock A i j = p15LowRankMatrix (X i j) (Y i j)
+
+/-- Block lower-triangular shape. -/
+def p15IsBlockLowerTriangular {p b : ℕ} (L : P15Matrix (p * b)) : Prop :=
+  ∀ i j : Fin p, i < j → p15MatrixBlock L i j = 0
+
+/-- Block upper-triangular shape. -/
+def p15IsBlockUpperTriangular {p b : ℕ} (U : P15Matrix (p * b)) : Prop :=
+  ∀ i j : Fin p, j < i → p15MatrixBlock U i j = 0
+
+/-- Exact identity matrix in the P15 finite model. -/
+def p15Identity (n : ℕ) : P15Matrix n :=
+  fun i j => if i = j then 1 else 0
+
+/-- Two-sided nonsingularity certificate for the input matrix. -/
+def p15IsNonsingular {n : ℕ} (A : P15Matrix n) : Prop :=
+  ∃ Ainv : P15Matrix n,
+    p15MatMul Ainv A = p15Identity n ∧
+      p15MatMul A Ainv = p15Identity n
+
+/-- A proof-carrying real-valued execution of the complete computation in
+Theorem 4.5. A value records a completed UFC or UCF factorization and the two
+ordered BLR triangular solves. The fields are the exact finite conclusions of
+Theorems 4.2--4.4, with every coefficient tied to `b`, `p`, `r`, `u`, the
+threshold case, and the recompression case. Exceptional floating-point values
+are outside this standard-model trace. -/
+structure P15BLRLinearSolveExecution (b p r : ℕ) where
+  block_size_pos : 0 < b
+  block_count_pos : 0 < p
+  rank_le_block_size : r ≤ b
+  algorithm : P15BLRFactorizationAlgorithm
+  threshold : P15BLRThreshold
+  recompression : P15BLRRecompression
+  A : P15Matrix (p * b)
+  L : P15Matrix (p * b)
+  U : P15Matrix (p * b)
+  v : P15Vector (p * b)
+  A_nonsingular : p15IsNonsingular A
+  A_is_blr : p15IsBLRMatrix r A
+  L_is_blr : p15IsBLRMatrix r L
+  U_is_blr : p15IsBLRMatrix r U
+  L_lower_triangular : p15IsBlockLowerTriangular L
+  U_upper_triangular : p15IsBlockUpperTriangular U
+  epsilon : ℝ
+  unitRoundoff : ℝ
+  epsilon_pos : 0 < epsilon
+  unitRoundoff_pos : 0 < unitRoundoff
+  unitRoundoff_lt_epsilon : unitRoundoff < epsilon
+  gamma_valid :
+    3 * p15BLRSolveCost b p r * unitRoundoff < 1
+  factorCoreError : P15Matrix (p * b)
+  factorMixedError : P15Matrix (p * b)
+  factorError : P15Matrix (p * b)
+  factorError_eq : factorError = factorCoreError + factorMixedError
+  factorization_eq : p15MatMul L U = A + factorError
+  factorCoreError_le :
+    p15FrobNorm factorCoreError ≤
+      (p15BLRXi p threshold recompression * epsilon +
+          p15GammaReal (p : ℝ) unitRoundoff) * p15FrobNorm A +
+        p15GammaReal (p15BLRSolveCost b p r) unitRoundoff *
+          p15FrobNorm L * p15FrobNorm U
+  factorMixedConstant : ℝ
+  factorMixedConstant_nonneg : 0 ≤ factorMixedConstant
+  factorMixedError_le :
+    p15FrobNorm factorMixedError ≤
+      factorMixedConstant * unitRoundoff * epsilon
+  yHat : P15Vector (p * b)
+  xHat : P15Vector (p * b)
+  lowerError : P15Matrix (p * b)
+  upperError : P15Matrix (p * b)
+  lowerRhsError : P15Vector (p * b)
+  upperRhsError : P15Vector (p * b)
+  lowerSolve_eq :
+    p15MatVec (L + lowerError) yHat = v + lowerRhsError
+  upperSolve_eq :
+    p15MatVec (U + upperError) xHat = yHat + upperRhsError
+  lowerError_le :
+    p15FrobNorm lowerError ≤
+      p15GammaReal (p15BLRSolveCost b p r) unitRoundoff * p15FrobNorm L
+  upperError_le :
+    p15FrobNorm upperError ≤
+      p15GammaReal (p15BLRSolveCost b p r) unitRoundoff * p15FrobNorm U
+  lowerRhsError_le :
+    p15VecNorm lowerRhsError ≤
+      p15GammaReal (p : ℝ) unitRoundoff * p15VecNorm v
+  upperRhsError_le :
+    p15VecNorm upperRhsError ≤
+      p15GammaReal (p : ℝ) unitRoundoff * p15VecNorm yHat
 
 /-- Exact matrix perturbation obtained by composing a perturbed factorization
 with perturbed forward and backward substitutions. -/

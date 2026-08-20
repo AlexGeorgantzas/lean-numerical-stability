@@ -1,0 +1,125 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "PDF p. 6, printed p. 956, anchor: Lemma 3.1 says \"for some beta > 0\"; PDF p. 3, printed p. 953, anchor: equation (2.4) defines epsilon > 0 as the LR threshold.",
+      "impact": "Positivity of epsilon is inherited from the paper's threshold convention rather than independently quantified in the lemma.",
+      "issue": "Lemma 3.1 explicitly requires beta > 0 but does not restate epsilon > 0."
+    },
+    {
+      "evidence": "PDF p. 6, printed p. 956, anchor: conditional clause preceding (3.1), followed by the replacement of A_tilde with A + E in the proof.",
+      "impact": "The literal computation uses A_tilde = X Y^T; its interpretation as a computation of Av is justified only through the backward perturbation in (3.2).",
+      "issue": "The phrase \"the matrix-vector product Av is computed as X(Y^T v)\" conflates the target product with evaluation using its approximation."
+    },
+    {
+      "evidence": "PDF p. 6, printed p. 956, anchor: second line of equation (3.2); the exact preceding line exposes epsilon gamma_c beta.",
+      "impact": "A faithful exact statement should prefer epsilon(1 + gamma_c) beta and treat the O-form only as the paper's lower-order simplification.",
+      "issue": "The constants hidden by O(u epsilon) are not specified."
+    }
+  ],
+  "contract_plain_english": "Given a b-by-b real matrix A, a factorized low-rank approximation A_tilde = X Y^T with orthonormal columns in X and Frobenius error at most epsilon beta, evaluating X(Y^T v) in floating-point arithmetic produces a result that is exactly (A + Delta A)v for a normwise matrix perturbation bounded by gamma_c||A|| + epsilon(1 + gamma_c)beta, where c = b + r^(3/2); the mixed epsilon gamma_c beta term is only later abbreviated as O(u epsilon) (PDF p. 6, printed p. 956, anchor: Lemma 3.1 and equation (3.2)).",
+  "paper_batch_sha256": "339fc5a797919c9e9bcd9c7d27d579722d8bfedc8091d16c4ab89148a1eb498f",
+  "paper_sha256": "a5cb8eb779c1571f1549ea6838c7f2269302c960fb4ea21f8410060811270cd7",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "Lemma 3.1, equations (3.1)-(3.4), and the final sentence of the proof",
+      "observation": "Lemma 3.1 specifies the dimensions, low-rank factorization, orthonormality and approximation hypotheses, the evaluation order X(Y^T v), the backward-error bounds relative to both A_tilde and A, and the replacement A_tilde = A + E with ||E|| <= epsilon beta.",
+      "pdf_page": 6,
+      "printed_page": "956"
+    },
+    {
+      "anchor": "paragraph beginning \"Note that for the particular choice beta = ||A||\"",
+      "observation": "The paper specializes (3.2) to beta = ||A|| and states the resulting normwise forward-error bound.",
+      "pdf_page": 6,
+      "printed_page": "956"
+    },
+    {
+      "anchor": "paragraph beginning \"Throughout this article the unsubscripted norm\"",
+      "observation": "Unsubscripted norms are Frobenius norms, which are submultiplicative and invariant under left multiplication by a matrix with orthonormal columns.",
+      "pdf_page": 3,
+      "printed_page": "953"
+    },
+    {
+      "anchor": "equation (2.5) and the definition of gamma_k",
+      "observation": "The analysis uses fl(x op y) = (x op y)(1 + delta), |delta| <= u, and gamma_k = ku/(1-ku) for ku < 1; noninteger gamma indices are permitted.",
+      "pdf_page": 4,
+      "printed_page": "954"
+    },
+    {
+      "anchor": "Assumption 2.1 and the paragraph following it",
+      "observation": "The paper ignores rounding errors in truncated-SVD compression and assumes throughout the analysis that unit roundoff u is safely smaller than the low-rank threshold epsilon.",
+      "pdf_page": 5,
+      "printed_page": "955"
+    },
+    {
+      "anchor": "paragraph beginning \"The bounds (3.1) and (3.5) generalize\" and paragraph beginning \"It is important to note\"",
+      "observation": "The epsilon term is identified with low-rank truncation, gamma_c with floating-point error, and epsilon gamma_c with their mixed accumulation; the results are explicitly normwise rather than componentwise.",
+      "pdf_page": 7,
+      "printed_page": "957"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "The claim applies specifically to computing the approximate matrix-vector action through the low-rank factors as X(Y^T v); it is not a claim about directly multiplying the full matrix A by v or about the opposite parenthesization (PDF p. 6, printed p. 956, anchor: algorithm clause in Lemma 3.1).",
+    "binders": [
+      "A is in R^(b x b), X and Y are in R^(b x r), and v is in R^b (PDF p. 6, printed p. 956, anchor: opening sentence of Lemma 3.1).",
+      "A_tilde = X Y^T is the low-rank approximation, beta is a positive scalar, epsilon is the low-rank threshold inherited from Section 2, and zhat denotes the floating-point result (PDF p. 6, printed p. 956, anchor: Lemma 3.1; PDF p. 3, printed p. 953, anchor: definition of epsilon in (2.4))."
+    ],
+    "conclusions": [
+      "There is a perturbation Delta A_tilde such that zhat = (A_tilde + Delta A_tilde)v and ||Delta A_tilde|| <= gamma_c ||A_tilde||, where c = b + r^(3/2) (PDF p. 6, printed p. 956, anchor: equation (3.1) and the following definition of c).",
+      "There is a perturbation Delta A such that zhat = (A + Delta A)v and ||Delta A|| <= gamma_c ||A|| + epsilon(1 + gamma_c) beta (PDF p. 6, printed p. 956, anchor: equation (3.2)).",
+      "The second bound is also written as ||Delta A|| <= gamma_c ||A|| + epsilon beta + O(u epsilon); this rewriting retains the mixed epsilon gamma_c beta contribution inside O(u epsilon) (PDF p. 6, printed p. 956, anchor: second line of equation (3.2)).",
+      "For the particular choice beta = ||A||, the paper explicitly specializes the bound to ||Delta A|| <= (epsilon + gamma_c + epsilon gamma_c)||A|| and derives ||zhat - Av|| <= (epsilon + gamma_c + epsilon gamma_c)||A|| ||v|| (PDF p. 6, printed p. 956, anchor: paragraph immediately following the proof of Lemma 3.1)."
+    ],
+    "constants_and_indexing": [
+      "The error constant is c = b + r^(3/2), not b + r, b + r^2, or a block-count parameter (PDF p. 6, printed p. 956, anchor: line immediately following equation (3.1)).",
+      "gamma_c is a single gamma quantity indexed by c; it is not c times gamma or gamma raised to a power (PDF pp. 4 and 6, printed pp. 954 and 956, anchors: definition of gamma_k and equation (3.1))."
+    ],
+    "definitions_and_conventions": [
+      "Writing A_tilde = A + E with ||E|| <= epsilon beta, the final perturbation can be understood as E plus the floating-point perturbation from (3.1); the triangle inequality and ||A_tilde|| <= ||A|| + epsilon beta give (3.2) (PDF p. 6, printed p. 956, anchor: final sentence of the proof).",
+      "All unsubscripted matrix and vector norms in the lemma are Frobenius norms; for vectors this agrees with the Euclidean norm (PDF p. 3, printed p. 953, anchor: definition of the unsubscripted Frobenius norm).",
+      "The proof forms what = fl(Y^T v) and then zhat = fl(X what), rather than forming A_tilde explicitly (PDF p. 6, printed p. 956, anchor: equations (3.3) and (3.4))."
+    ],
+    "error_notions": [
+      "Equation (3.1) is a normwise backward error relative to the low-rank matrix A_tilde (PDF p. 6, printed p. 956, anchor: equation (3.1)).",
+      "Equation (3.2) is a combined normwise backward error relative to the original matrix A, incorporating both low-rank truncation and floating-point errors (PDF p. 6, printed p. 956, anchor: equation (3.2) and final proof sentence).",
+      "The subsequent forward-error inequality follows from the backward relation and submultiplicativity; it is not an independent componentwise guarantee (PDF p. 6, printed p. 956, anchor: paragraph after the proof; PDF p. 7, printed p. 957, anchor: normwise-only discussion)."
+    ],
+    "exceptional_values": [
+      "The gamma definition requires c u < 1 (PDF p. 4, printed p. 954, anchor: gamma_k = ku/(1-ku) for ku < 1).",
+      "Lemma 3.1 states no separate overflow, underflow, NaN or infinity hypothesis; those cases are outside the elementary relative-error model (PDF p. 4, printed p. 954, anchor: equation (2.5); PDF p. 6, printed p. 956, anchor: Lemma 3.1)."
+    ],
+    "higher_order_terms": [
+      "The exact stated combined bound contains epsilon gamma_c beta through epsilon(1 + gamma_c) beta; the paper then denotes this mixed contribution by O(u epsilon) (PDF p. 6, printed p. 956, anchor: the two lines of equation (3.2)).",
+      "The O(u epsilon) notation does not license dropping the explicit epsilon beta truncation term or the gamma_c ||A|| floating-point term (PDF p. 6, printed p. 956, anchor: equation (3.2); PDF p. 7, printed p. 957, anchor: three-term interpretation)."
+    ],
+    "hypotheses": [
+      "X has orthonormal columns, equivalently X^T X = I in the paper's convention (PDF p. 6, printed p. 956, anchor: hypotheses of Lemma 3.1; PDF p. 3, printed p. 953, anchor: discussion of orthonormal columns).",
+      "The approximation satisfies ||A - A_tilde|| <= epsilon beta for some beta > 0 (PDF p. 6, printed p. 956, anchor: hypotheses of Lemma 3.1).",
+      "The multiplication is evaluated in the specific order z = X(Y^T v), first forming Y^T v and then multiplying by X (PDF p. 6, printed p. 956, anchor: conditional clause immediately before equation (3.1))."
+    ],
+    "implicit_context": [
+      "The paper's standing analysis assumes u is safely smaller than epsilon and treats truncated-SVD compression as satisfying the prescribed approximation bound without additional SVD-rounding error; Lemma 3.1 itself directly assumes the approximation inequality (PDF p. 5, printed p. 955, anchor: Assumption 2.1 and following paragraph; PDF p. 6, printed p. 956, anchor: Lemma 3.1 hypotheses).",
+      "The result is normwise only; no componentwise backward-error claim is made (PDF p. 7, printed p. 957, anchor: paragraph beginning \"It is important to note that Lemma 3.1\")."
+    ],
+    "norms": [
+      "Every displayed error bound uses the Frobenius norm, including ||A||, ||A_tilde|| and the perturbation norms (PDF p. 3, printed p. 953, anchor: convention for unsubscripted norms).",
+      "The proof uses Frobenius-norm invariance under left multiplication by X with orthonormal columns to identify ||Y|| with ||A_tilde||, and uses ||X|| = sqrt(r) (PDF p. 6, printed p. 956, anchor: equations (3.3)-(3.4) and their explanatory text)."
+    ],
+    "numerical_model": [
+      "Each elementary operation obeys fl(x op y) = (x op y)(1 + delta), |delta| <= u, for op in {+, -, multiplication, division} (PDF p. 4, printed p. 954, anchor: equation (2.5)).",
+      "gamma_k means ku/(1-ku), defined when ku < 1; therefore gamma_c requires c u < 1, and the paper permits noninteger indices such as c = b + r^(3/2) (PDF p. 4, printed p. 954, anchor: definition of gamma_k and the sentence allowing noninteger j and k).",
+      "The proof bounds the first multiplication with gamma_b and the second with gamma_r, then combines them into gamma_c (PDF p. 6, printed p. 956, anchor: equations (3.3)-(3.4) and the following combination)."
+    ]
+  },
+  "task_id": "P15-T2",
+  "undebatable_constraints": [
+    "The dimensions are A in R^(b x b), X,Y in R^(b x r), and v in R^b (PDF p. 6, printed p. 956, anchor: Lemma 3.1 opening sentence).",
+    "X must have orthonormal columns and A_tilde must equal X Y^T (PDF p. 6, printed p. 956, anchor: Lemma 3.1 hypotheses).",
+    "The low-rank approximation condition is normwise: ||A - A_tilde|| <= epsilon beta with beta > 0 (PDF p. 6, printed p. 956, anchor: Lemma 3.1 hypotheses).",
+    "The evaluation order is X(Y^T v) (PDF p. 6, printed p. 956, anchor: computation clause before (3.1)).",
+    "Both backward-error conclusions, relative first to A_tilde and then to A, must be preserved (PDF p. 6, printed p. 956, anchors: equations (3.1) and (3.2)).",
+    "The exact combined bound must retain epsilon(1 + gamma_c) beta, including its mixed epsilon gamma_c beta part (PDF p. 6, printed p. 956, anchor: first line of equation (3.2)).",
+    "The constant is c = b + r^(3/2), and all norms are Frobenius norms (PDF p. 6, printed p. 956, anchor: definition of c; PDF p. 3, printed p. 953, anchor: norm convention)."
+  ]
+}
