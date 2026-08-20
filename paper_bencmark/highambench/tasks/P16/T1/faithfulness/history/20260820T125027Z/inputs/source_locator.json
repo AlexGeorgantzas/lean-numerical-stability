@@ -5,17 +5,10 @@
   "paper_version": "published open-access journal version; IMA Journal of Numerical Analysis 46(4), 2026, printed pages 1939-1993",
   "source_locations": [
     {
-      "anchor": "equation (1.1), nonsingular square system with nonzero right-hand side",
-      "pdf_page": 1,
-      "printed_page": "1939",
-      "role": "standing system assumptions",
-      "section": "1. Introduction"
-    },
-    {
-      "anchor": "unnumbered normwise backward-error minimum and normalized-residual identity",
+      "anchor": "normwise backward-error perturbation definition and normalized-residual identity",
       "pdf_page": 4,
       "printed_page": "1942",
-      "role": "exact minimum characterization",
+      "role": "exact perturbation-to-residual bridge",
       "section": "2. Notations"
     }
   ],

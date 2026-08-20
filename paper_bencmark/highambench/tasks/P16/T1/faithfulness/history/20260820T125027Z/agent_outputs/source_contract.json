@@ -1,0 +1,91 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "Equation T1-E3 writes a minimum over epsilon while the perturbations occur as implicitly quantified conforming objects.",
+      "impact": "A formalization must make the existential quantification and conforming real dimensions explicit; it should not replace the common epsilon by independently minimized perturbation levels.",
+      "issue": "The display does not explicitly bind DeltaA, Deltab, their domains, or epsilon >= 0 inside the set-builder notation. [T1-E3]"
+    }
+  ],
+  "contract_plain_english": "For any computed candidate x_hat for the nonsingular real system Ax = b, the smallest common relative size of simultaneous Frobenius-norm perturbations to A and 2-norm perturbations to b that makes x_hat exact is precisely the 2-norm residual divided by ||A||_F||x_hat||_2 + ||b||_2. [T1-E1, T1-E3, T1-E4]",
+  "paper_batch_sha256": "cc856c94ce22bcb89d018b431db65cfb6c20d25df7bb6aaeb660c48c42f5c886",
+  "paper_sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "T1-E1: equation (1.1)",
+      "observation": "The standing problem is Ax = b with A in R^(n x n) nonsingular and 0 != b in R^n; x denotes its exact solution.",
+      "pdf_page": 1,
+      "printed_page": "1939"
+    },
+    {
+      "anchor": "T1-E2: opening paragraph of Section 2",
+      "observation": "The paper uses the standard floating-point model, fl(.) for a computed expression, and hats for computed quantities.",
+      "pdf_page": 4,
+      "printed_page": "1942"
+    },
+    {
+      "anchor": "T1-E3: normwise backward-error definition",
+      "observation": "For a computed solution x_hat, the paper defines the minimum common relative perturbation epsilon by (A + DeltaA)x_hat = b + Deltab, ||DeltaA||_F <= epsilon||A||_F, and ||Deltab||_2 <= epsilon||b||_2, and states that this minimum equals ||b - Ax_hat||_2/(||A||_F||x_hat||_2 + ||b||_2).",
+      "pdf_page": 4,
+      "printed_page": "1942"
+    },
+    {
+      "anchor": "T1-E4: norm conventions and final sentence of Section 2",
+      "observation": "Vector residuals use the 2-norm, matrix perturbations use the Frobenius norm, and the unqualified phrase 'backward error' subsequently means this normwise backward error.",
+      "pdf_page": 4,
+      "printed_page": "1942"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "The identity is an algorithm-independent definition for a computed solution of (1.1); it does not require a particular GMRES variant or iteration index. [T1-E1, T1-E3]",
+    "binders": [
+      "A in R^(n x n) is nonsingular, 0 != b in R^n, and x solves Ax = b. [T1-E1]",
+      "x_hat is a computed solution candidate; DeltaA and Deltab have the conforming matrix and vector dimensions, and epsilon is the common relative perturbation level. [T1-E2, T1-E3]"
+    ],
+    "conclusions": [
+      "min{epsilon : (A + DeltaA)x_hat = b + Deltab, ||DeltaA||_F <= epsilon||A||_F, ||Deltab||_2 <= epsilon||b||_2} = ||b - Ax_hat||_2/(||A||_F||x_hat||_2 + ||b||_2). [T1-E3]",
+      "Thus the normalized residual is exactly the simultaneous normwise backward error, not merely an upper bound. [T1-E3]"
+    ],
+    "constants_and_indexing": [
+      "There is one shared perturbation level epsilon; separate matrix and right-hand-side tolerances are not introduced. [T1-E3]",
+      "No iteration index or dimension-dependent generic constant appears in this identity. [T1-E3]"
+    ],
+    "definitions_and_conventions": [
+      "A hat marks a computed quantity, whereas x without a hat is the exact solution of Ax = b. [T1-E1, T1-E2]",
+      "After this definition, 'backward error' means 'normwise backward error' unless qualified otherwise. [T1-E4]"
+    ],
+    "error_notions": [
+      "The backward error permits simultaneous perturbations of both A and b, controlled by one relative tolerance epsilon. [T1-E3]",
+      "The right-hand side is the true residual norm ||b - Ax_hat||_2 normalized by ||A||_F||x_hat||_2 + ||b||_2. [T1-E3]"
+    ],
+    "exceptional_values": [
+      "The standing assumption b != 0 makes the denominator strictly positive; this follows from (1.1) and the denominator in the definition. [T1-E1, T1-E3]",
+      "The paper does not discuss NaNs, infinities, overflow, underflow, or subnormal behavior in this definition. [T1-E2, T1-E3]"
+    ],
+    "higher_order_terms": [
+      "No higher-order or big-O terms are omitted in the displayed identity. [T1-E3]"
+    ],
+    "hypotheses": [
+      "The admissible perturbations satisfy (A + DeltaA)x_hat = b + Deltab. [T1-E3]",
+      "The same epsilon bounds both perturbations: ||DeltaA||_F <= epsilon||A||_F and ||Deltab||_2 <= epsilon||b||_2. [T1-E3]"
+    ],
+    "implicit_context": [
+      "The linear system is the nonsingular square real system (1.1), with nonzero right-hand side. [T1-E1]"
+    ],
+    "norms": [
+      "DeltaA and A are measured in the Frobenius norm. [T1-E3, T1-E4]",
+      "Deltab, b, x_hat, and b - Ax_hat are measured in the vector 2-norm. [T1-E3, T1-E4]"
+    ],
+    "numerical_model": [
+      "The surrounding section adopts the standard floating-point model and hat notation, but the perturbation-to-residual identity itself is an exact mathematical equality and contains no unit-roundoff parameter. [T1-E2, T1-E3]"
+    ]
+  },
+  "task_id": "P16-T1",
+  "undebatable_constraints": [
+    "The perturbation equation must have the signs (A + DeltaA)x_hat = b + Deltab. [T1-E3]",
+    "The matrix norm is Frobenius and the vector norms are 2-norms. [T1-E3, T1-E4]",
+    "The denominator is ||A||_F||x_hat||_2 + ||b||_2. [T1-E3]",
+    "The claim is an equality with a minimum simultaneous perturbation, not an asymptotic estimate. [T1-E3]"
+  ]
+}

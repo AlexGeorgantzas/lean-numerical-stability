@@ -1,0 +1,488 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P16-T1",
+  "paper_sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a",
+  "dossier_sha256": "7f23f2d0b4f1229ed096548f1d0ec13f16c0969460b94375ef415ea0e1e7e1fc",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.P16Matrix",
+      "interpretation": "P16Matrix n is the type of square n-by-n real matrices, encoded as Matrix (Fin n) (Fin n) Real.",
+      "effect_on_target": "It makes A and deltaA conforming square real matrices.",
+      "paper_match": "This matches the paper's A and DeltaA in R^(n-by-n).",
+      "status": "pass"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.P16Vector",
+      "interpretation": "P16Vector n is the type Fin n -> Real.",
+      "effect_on_target": "It gives b, deltaB, and x the same n-dimensional real-vector type.",
+      "paper_match": "This matches the conforming vectors b, Deltab, and x-hat in R^n.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.p16FrobNorm",
+      "interpretation": "p16FrobNorm applies the Frobenius norm supplied by Matrix.frobeniusNormedRing.",
+      "effect_on_target": "The matrix-perturbation contribution is measured as ||deltaA||_F.",
+      "paper_match": "The paper measures A and DeltaA with the Frobenius norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.p16MatVec",
+      "interpretation": "p16MatVec A x has component i equal to the sum over all j of A(i,j)x(j).",
+      "effect_on_target": "It gives standard matrix-vector multiplication in the perturbed equation and residual.",
+      "paper_match": "This matches multiplication of an n-by-n real matrix by an n-vector.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "HighamBench.p16Residual",
+      "interpretation": "p16Residual A b x is b minus p16MatVec A x.",
+      "effect_on_target": "The left side is the norm of the true residual b-Ax.",
+      "paper_match": "This is exactly the residual orientation used in the normalized-residual formula on printed page 1942.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "HighamBench.p16VecNorm",
+      "interpretation": "p16VecNorm x is sqrt(sum_i x(i)^2), the Euclidean norm of a finite real vector.",
+      "effect_on_target": "It measures the residual, x, and deltaB in the unsquared vector 2-norm.",
+      "paper_match": "The paper uses the vector 2-norm for all these quantities.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "Eq",
+      "interpretation": "Eq is propositional equality.",
+      "effect_on_target": "hsolve asserts an exact equation (A+deltaA)x=b+deltaB.",
+      "paper_match": "The admissibility condition in the paper is the same exact perturbed solve equation.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "Fin",
+      "interpretation": "Fin n is the finite index type with n elements.",
+      "effect_on_target": "It indexes all matrix rows, columns, and vector coordinates.",
+      "paper_match": "It faithfully encodes finite n-dimensional coordinates, although unrestricted n also admits the degenerate n=0 case.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "HAdd.hAdd",
+      "interpretation": "HAdd.hAdd dispatches to the selected addition instance.",
+      "effect_on_target": "It expresses A+deltaA, b+deltaB, and addition of the two real norm contributions.",
+      "paper_match": "The selected instances give ordinary pointwise matrix/vector addition and real addition, with the paper's signs.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "HMul.hMul",
+      "interpretation": "HMul.hMul dispatches to the selected multiplication instance.",
+      "effect_on_target": "It multiplies the real quantities ||deltaA||_F and ||x||_2.",
+      "paper_match": "This is ordinary real multiplication and matches the perturbation residual estimate.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "LE.le",
+      "interpretation": "LE.le dispatches to a type's non-strict order relation.",
+      "effect_on_target": "With Real.instLE it makes the target conclusion a real-valued less-than-or-equal inequality.",
+      "paper_match": "The ordering itself is correct, but its use as the outer conclusion is weaker than the paper's minimum equality.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "Matrix.add",
+      "interpretation": "Matrix.add supplies pointwise addition of matrices.",
+      "effect_on_target": "A+deltaA has entries A(i,j)+deltaA(i,j).",
+      "paper_match": "This matches the matrix perturbation A+DeltaA.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "Nat",
+      "interpretation": "Nat supplies the finite dimension parameter n.",
+      "effect_on_target": "The theorem is quantified over every natural n, including zero.",
+      "paper_match": "Natural dimensions encode the paper's finite systems, but the paper implicitly concerns positive dimensions.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Pi.instAdd",
+      "interpretation": "Pi.instAdd defines addition of functions pointwise.",
+      "effect_on_target": "Vector addition b+deltaB is coordinatewise real addition.",
+      "paper_match": "This is the standard addition of vectors used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "Real",
+      "interpretation": "Real is the scalar type of real numbers.",
+      "effect_on_target": "All entries and norm values are real.",
+      "paper_match": "The selected paper system and perturbations are real.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instAdd",
+      "interpretation": "Real.instAdd supplies ordinary real addition.",
+      "effect_on_target": "It underlies scalar, vector, matrix, and right-hand-side additions.",
+      "paper_match": "This matches ordinary real arithmetic in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instLE",
+      "interpretation": "Real.instLE supplies the usual order on real numbers.",
+      "effect_on_target": "It interprets the residual bound as an ordinary real inequality.",
+      "paper_match": "This matches the non-strict norm bounds used in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instMul",
+      "interpretation": "Real.instMul supplies ordinary real multiplication.",
+      "effect_on_target": "It forms ||deltaA||_F times ||x||_2.",
+      "paper_match": "This matches the product of norm magnitudes in the residual estimate.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "instHAdd",
+      "interpretation": "instHAdd converts an Add instance into homogeneous addition notation.",
+      "effect_on_target": "It connects matrix, vector, and real addition instances to every displayed plus sign.",
+      "paper_match": "It introduces no semantic change beyond ordinary addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "instHMul",
+      "interpretation": "instHMul converts a Mul instance into homogeneous multiplication notation.",
+      "effect_on_target": "It connects ordinary real multiplication to the norm product.",
+      "paper_match": "It introduces no semantic change beyond real multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "Fin.fintype",
+      "interpretation": "Fin.fintype enumerates all members of Fin n.",
+      "effect_on_target": "It enables sums and the Frobenius construction over every finite coordinate.",
+      "paper_match": "This correctly implements finite-dimensional matrix and vector norms.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "Finset.sum",
+      "interpretation": "Finset.sum is finite commutative-monoid summation.",
+      "effect_on_target": "It forms matrix-vector products and sums of coordinate squares.",
+      "paper_match": "These are the finite sums underlying the paper's matrix operations and Euclidean norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "Finset.univ",
+      "interpretation": "Finset.univ is the finite set of every element of a Fintype.",
+      "effect_on_target": "All matrix-vector and vector-norm sums range over every coordinate.",
+      "paper_match": "No coordinate is omitted or duplicated relative to the paper's finite-dimensional operations.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "HPow.hPow",
+      "interpretation": "HPow.hPow dispatches exponentiation to the selected power instance.",
+      "effect_on_target": "It interprets x(i)^2 in p16VecNorm.",
+      "paper_match": "Squaring each real coordinate is the correct Euclidean-norm construction.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "HSub.hSub",
+      "interpretation": "HSub.hSub dispatches to the selected subtraction instance.",
+      "effect_on_target": "It expresses the vector subtraction b-Ax in the residual.",
+      "paper_match": "This matches the residual b-Ax in the selected formula.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "Matrix",
+      "interpretation": "Matrix m n alpha is the function type m -> n -> alpha.",
+      "effect_on_target": "Matrices are extensional arrays of real entries indexed by rows and columns.",
+      "paper_match": "This is a standard faithful representation of real matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "Matrix.frobeniusNormedRing",
+      "interpretation": "This instance equips finite square matrices over an RCLike scalar with the Frobenius norm and ring operations.",
+      "effect_on_target": "Its norm field determines p16FrobNorm for real square matrices.",
+      "paper_match": "The resulting norm is the Frobenius norm required by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Monoid.toNatPow supplies natural-number powers through repeated multiplication.",
+      "effect_on_target": "For real coordinates and exponent 2 it computes the ordinary square.",
+      "paper_match": "This gives the squared components needed for the vector 2-norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "Norm.norm",
+      "interpretation": "Norm.norm extracts the real-valued norm function from a Norm instance.",
+      "effect_on_target": "It invokes the Frobenius norm selected for matrices.",
+      "paper_match": "The extracted matrix norm has the intended Frobenius semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "NormedRing.toNorm",
+      "interpretation": "NormedRing.toNorm projects the norm structure from a normed ring.",
+      "effect_on_target": "It exposes the Frobenius norm field of Matrix.frobeniusNormedRing.",
+      "paper_match": "This is structural plumbing for the correct matrix norm and adds no mismatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "OfNat.ofNat",
+      "interpretation": "OfNat.ofNat interprets a natural-number literal in its inferred type.",
+      "effect_on_target": "It supplies the literal exponent 2 in each coordinate square.",
+      "paper_match": "The exponent is exactly two, as required for the Euclidean norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D032",
+      "name": "Pi.instSub",
+      "interpretation": "Pi.instSub defines subtraction of functions pointwise.",
+      "effect_on_target": "The residual vector has coordinates b(i)-(Ax)(i).",
+      "paper_match": "This is standard vector subtraction and matches b-Ax.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "This instance supplies zero, addition, associativity, and commutativity for finite real sums.",
+      "effect_on_target": "It supports matrix-vector summation and the sum of coordinate squares.",
+      "paper_match": "It implements ordinary finite real summation with no paper-level discrepancy.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "Real.instMonoid",
+      "interpretation": "This instance supplies real multiplication, one, and natural powers.",
+      "effect_on_target": "It supports squaring coordinates in p16VecNorm.",
+      "paper_match": "It gives ordinary real squares as required by the vector 2-norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instRCLike",
+      "interpretation": "Real.instRCLike equips Real with the analytic and normed-field structure needed by the matrix Frobenius instance.",
+      "effect_on_target": "It allows Matrix.frobeniusNormedRing to construct the standard real Frobenius norm.",
+      "paper_match": "Although structurally general, its specialization is exactly to real matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "Real.instSub",
+      "interpretation": "Real.instSub defines a-b as a plus the negation of b.",
+      "effect_on_target": "Together with Pi.instSub it implements b-Ax coordinatewise.",
+      "paper_match": "This is ordinary real subtraction and has the paper's residual sign.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "Real.sqrt",
+      "interpretation": "Real.sqrt is the nonnegative real square-root function.",
+      "effect_on_target": "Applied to the nonnegative sum of coordinate squares, it produces the Euclidean norm.",
+      "paper_match": "This matches the unsquared vector 2-norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "instDecidableEqFin",
+      "interpretation": "instDecidableEqFin decides equality of finite indices.",
+      "effect_on_target": "It satisfies an implementation requirement of the matrix Frobenius-norm instance.",
+      "paper_match": "It has no independent mathematical content and does not alter the paper interpretation.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "instHPow",
+      "interpretation": "instHPow converts a Pow instance into homogeneous exponentiation notation.",
+      "effect_on_target": "It connects real natural powers to x(i)^2.",
+      "paper_match": "It introduces no change from ordinary coordinate squaring.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "instHSub",
+      "interpretation": "instHSub converts a Sub instance into homogeneous subtraction notation.",
+      "effect_on_target": "It connects pointwise vector subtraction to p16Residual.",
+      "paper_match": "It introduces no semantic change from ordinary subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "instOfNatNat",
+      "interpretation": "instOfNatNat interprets a natural-number literal as that natural number.",
+      "effect_on_target": "It makes the exponent in p16VecNorm exactly the natural number 2.",
+      "paper_match": "This correctly implements squared coordinates.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The inspected PDF has the required SHA-256. Equation (1.1) is on printed page 1939, and the normwise backward-error identity is in Section 2 on printed page 1942.",
+      "lean_evidence": "The dossier target is the stated P16 theorem about a perturbed solve and a residual inequality.",
+      "reasoning": "The cited version and passage are correct, and surrounding context confirms that the selected claim is the exact normwise backward-error identity."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper binds a nonsingular square real A, nonzero real b, a computed candidate x-hat, conforming DeltaA and Deltab, and one common perturbation level epsilon.",
+      "lean_evidence": "Lean binds conforming real A, deltaA, b, deltaB, and x, but has no epsilon binder and imposes no nonsingularity, nonzero-b, or computed-candidate condition.",
+      "reasoning": "Matrix and vector dimensions are correct, but essential binders and their intended roles in the minimum characterization are absent."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The displayed minimum ranges over a common epsilon for which conforming perturbations exist and satisfy the solve equation and both relative bounds.",
+      "lean_evidence": "Lean universally quantifies fixed deltaA and deltaB and proves an implication from their solve equation.",
+      "reasoning": "Existential witness dependence, the shared epsilon, and minimization are replaced by a universal fixed-perturbation lemma."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The standing system has nonsingular A and b != 0, while admissibility requires the perturbed equation and both epsilon-relative norm bounds.",
+      "lean_evidence": "The only hypothesis is (A+deltaA)x=b+deltaB.",
+      "reasoning": "Lean omits the standing assumptions and both relative perturbation bounds needed by the selected paper claim."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The complete conclusion identifies the minimum simultaneous relative perturbation exactly with the normalized residual.",
+      "lean_evidence": "The conclusion is only ||b-Ax||_2 <= ||deltaA||_F||x||_2+||deltaB||_2.",
+      "reasoning": "The minimum, attainability, existential perturbations, denominator, and equality are all missing."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "The paper uses ordinary matrix/vector operations, b-Ax, Frobenius and Euclidean norms, real multiplication, inequalities, and equality.",
+      "lean_evidence": "The dependencies unfold to pointwise real operations, standard finite matrix-vector multiplication, b-Ax, the Frobenius matrix norm, and sqrt(sum of squares) for vectors.",
+      "reasoning": "Every operator actually present in the Lean target has the intended mathematical interpretation; the failure is omitted structure, not a misdefined operator."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes the exact solution x from the computed candidate x-hat.",
+      "lean_evidence": "Lean contains only one candidate vector x in the perturbed equation and never identifies it with an exact solution of Ax=b.",
+      "reasoning": "The Lean x can consistently represent x-hat, so no exact and computed quantities are conflated, although the computed designation is not formalized."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "The Section 2 identity applies to any computed solution candidate and has no GMRES iteration index or variant-specific hypothesis.",
+      "lean_evidence": "The theorem is algorithm-independent and applies to any vector satisfying the fixed perturbed equation.",
+      "reasoning": "No stronger algorithm linkage is required for this selected identity."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "The paper uses Frobenius norms for A and DeltaA and unsquared vector 2-norms for b, Deltab, x-hat, and the residual.",
+      "lean_evidence": "p16FrobNorm is the Frobenius norm and p16VecNorm is sqrt(sum_i x_i^2).",
+      "reasoning": "The norm kinds and squared-versus-unsquared forms match exactly for every quantity present."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "One shared epsilon controls both perturbations, and the normalized residual denominator is ||A||_F||x-hat||_2+||b||_2.",
+      "lean_evidence": "The target has neither epsilon nor the denominator; it only has coefficient-one terms involving the fixed perturbations.",
+      "reasoning": "The central shared parameter and normalization structure are absent."
+    },
+    {
+      "id": "S11",
+      "status": "pass",
+      "paper_evidence": "Although Section 2 states a standard floating-point model, the selected backward-error identity is an exact real equality with no unit-roundoff or exceptional-value term.",
+      "lean_evidence": "The Lean theorem is an exact proposition over real matrices and vectors.",
+      "reasoning": "No rounding mode, precision, underflow, overflow, NaN, or infinity condition belongs inside this identity."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper states equality between a minimum backward error and a normalized residual.",
+      "lean_evidence": "Lean states a one-sided less-than-or-equal residual bound for each fixed perturbation pair.",
+      "reasoning": "The Lean relation supplies only a lower-bound ingredient for the minimum proof and does not establish equality or attainability."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The selected quantity is a simultaneous normwise backward error, defined by minimizing a common relative perturbation level.",
+      "lean_evidence": "The target bounds a residual using the absolute norms of one fixed matrix perturbation and one fixed right-hand-side perturbation.",
+      "reasoning": "A fixed-perturbation residual estimate is substituted for the complete backward-error characterization."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "The displayed backward-error identity contains no approximation sign, big-O term, or discarded higher-order term.",
+      "lean_evidence": "The Lean inequality is exact and contains no asymptotic or remainder notation.",
+      "reasoning": "There is no higher-order-term mismatch."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The paper concerns a positive-dimensional nonsingular square real system with nonzero b.",
+      "lean_evidence": "Lean uses the same real finite square shapes but quantifies over n=0, singular A, and b=0 as well.",
+      "reasoning": "Lean generalizes the domain of an algebraic lemma, but this does not compensate for removing the paper's defining minimum and equality."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "For nonsingular A and nonzero b the denominator is positive, and admissible perturbations exist; for example Deltab=-b makes x-hat=0 exact.",
+      "lean_evidence": "The hsolve hypothesis is satisfiable in nontrivial positive dimensions; for n=1, A=1, b=1, x=0, deltaA=0, and deltaB=-1 give equality in the Lean bound.",
+      "reasoning": "The target is nonvacuous and can be sharp, even though it is substantially weaker than the selected claim."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean inequality can establish that any admissible common epsilon is at least the normalized residual after adding the omitted relative bounds. It provides no perturbation witnesses attaining that value and therefore cannot prove the minimum equality."
+    },
+    "paper_implies_lean": {
+      "verdict": "yes",
+      "reasoning": "On the paper's intended domain, the fixed-perturbation estimate follows from its admissibility equation and norm semantics by rearranging b-Ax-hat=DeltaA x-hat-Deltab, applying the triangle inequality, and bounding ||DeltaA x-hat||_2 by ||DeltaA||_F||x-hat||_2. Lean additionally proves this algebraic consequence for degenerate inputs outside the paper's standing assumptions."
+    }
+  },
+  "classification": "not-faithful-weaker",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "missing-minimum-equality",
+      "paper_evidence": "Printed page 1942 identifies the minimum simultaneous relative perturbation exactly with ||b-Ax-hat||_2/(||A||_F||x-hat||_2+||b||_2).",
+      "lean_evidence": "The theorem concludes only ||b-Ax||_2 <= ||deltaA||_F||x||_2+||deltaB||_2.",
+      "impact": "The target does not formalize the selected result's minimum, equality, or attainability and measures only an elementary lemma used in one direction of its proof."
+    },
+    {
+      "severity": "major",
+      "category": "lost-quantification-and-scaling",
+      "paper_evidence": "The paper uses existential conforming perturbations bounded by one common relative level epsilon against ||A||_F and ||b||_2.",
+      "lean_evidence": "Lean universally fixes deltaA and deltaB and includes neither epsilon nor either relative norm constraint.",
+      "impact": "The target cannot define or compare backward-error levels and cannot recover the normalized denominator without substantial additional statements."
+    },
+    {
+      "severity": "major",
+      "category": "domain-hypotheses-omitted",
+      "paper_evidence": "Equation (1.1) assumes a nonsingular square A and nonzero b, which also guarantees positivity of the displayed denominator.",
+      "lean_evidence": "Lean permits arbitrary A, b, and natural n, including singular matrices, zero right-hand sides, and n=0.",
+      "impact": "The broader domain is valid for the residual lemma but is not a faithful strengthening of the complete paper claim."
+    }
+  ],
+  "rationale": "The PDF directly confirms that P16-T1 is an exact characterization of simultaneous normwise backward error as a minimum with existential perturbations, a shared relative epsilon, and a normalized-residual equality. The Lean declaration correctly formalizes the standard fixed-perturbation residual inequality with the intended matrix-vector operations and norms. That inequality is only the lower-bound ingredient in the paper result: it neither constructs optimal perturbations nor states the minimum, common relative scaling, denominator, or equality. The target is therefore nonvacuous and mathematically related, but not faithful to the complete selected claim."
+}

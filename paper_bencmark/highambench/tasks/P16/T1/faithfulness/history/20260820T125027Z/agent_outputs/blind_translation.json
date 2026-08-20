@@ -1,0 +1,329 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "69429830512376754ec300085bf21f7c9f0283cff25ad599d4f6a033fea952e0",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For a natural number n, this is the type of real n-by-n matrices, represented as functions Fin n -> Fin n -> Real.",
+      "effect_on_target": "It types A and deltaA as square real matrices of the same dimension n.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For a natural number n, this is the type of real vectors indexed by Fin n, namely functions Fin n -> Real.",
+      "effect_on_target": "It types b, deltaB, and x as real n-dimensional vectors.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "It returns the norm of a square real matrix in the Frobenius normed-ring structure; for A this is ||A||_F = sqrt(sum_i sum_j A_ij^2).",
+      "effect_on_target": "It makes the matrix factor on the right-hand side exactly the Frobenius norm ||deltaA||_F.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "It is matrix-vector multiplication: for a matrix A and vector x, its ith component is sum over all j in Fin n of A_ij x_j.",
+      "effect_on_target": "It interprets both (A + deltaA)x in the hypothesis and Ax in the residual.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "It is the residual vector b - Ax, with subtraction performed componentwise.",
+      "effect_on_target": "The left-hand side of the conclusion is the Euclidean norm of the residual b - Ax.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "It is the Euclidean vector norm ||v||_2 = sqrt(sum_i v_i^2), where the sum ranges over Fin n.",
+      "effect_on_target": "It supplies the norms ||b - Ax||_2, ||x||_2, and ||deltaB||_2 appearing in the inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "Eq",
+      "meaning": "It is exact equality between two terms of the same type.",
+      "effect_on_target": "The perturbed linear-system hypothesis is exact vector equality, not an approximation or tolerance condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type with n elements, conventionally identified with 0 through n-1.",
+      "effect_on_target": "It indexes every row, column, vector component, and finite sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "HAdd.hAdd",
+      "meaning": "It projects the heterogeneous addition operation supplied by an HAdd instance.",
+      "effect_on_target": "With the explicit instances, it denotes ordinary pointwise matrix addition, pointwise vector addition, and ordinary real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "HMul.hMul",
+      "meaning": "It projects the heterogeneous multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "With the explicit real instance, it denotes ordinary multiplication in matrix-vector summands and in ||deltaA||_F ||x||_2.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LE.le",
+      "meaning": "It projects the less-than-or-equal relation supplied by an LE instance.",
+      "effect_on_target": "With Real.instLE, it makes the conclusion an inequality in the usual order on real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Matrix.add",
+      "meaning": "It equips matrices with pointwise addition inherited from addition of their entries.",
+      "effect_on_target": "It makes (A + deltaA)_ij equal to A_ij + deltaA_ij in the perturbed system.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Nat",
+      "meaning": "It is the type of natural numbers.",
+      "effect_on_target": "The universally quantified natural number n determines the dimension and may be zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Pi.instAdd",
+      "meaning": "It defines addition of dependent functions pointwise: (f + g)(i) = f(i) + g(i).",
+      "effect_on_target": "It makes b + deltaB pointwise vector addition and underlies pointwise matrix addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "Real",
+      "meaning": "It is the type of real numbers.",
+      "effect_on_target": "All matrix entries, vector components, norms, products, sums, and inequalities are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instAdd",
+      "meaning": "It supplies ordinary real-number addition.",
+      "effect_on_target": "It determines scalar addition and the entrywise additions lifted to matrices and vectors.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instLE",
+      "meaning": "It supplies the usual less-than-or-equal relation on real numbers.",
+      "effect_on_target": "It determines the ordering used in the final norm bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instMul",
+      "meaning": "It supplies ordinary real-number multiplication.",
+      "effect_on_target": "It determines multiplication of matrix entries by vector components and multiplication of the two norms on the right-hand side.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "instHAdd",
+      "meaning": "It converts an ordinary Add instance into the corresponding homogeneous HAdd instance.",
+      "effect_on_target": "It ensures every displayed heterogeneous addition is the ordinary addition supplied for the relevant real, vector, or matrix type.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "instHMul",
+      "meaning": "It converts an ordinary Mul instance into the corresponding homogeneous HMul instance.",
+      "effect_on_target": "It ensures the displayed scalar products are ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Fin.fintype",
+      "meaning": "It provides the canonical finite enumeration of all elements of Fin n.",
+      "effect_on_target": "It permits sums over every vector coordinate and matrix column, including empty sums when n = 0.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Finset.sum",
+      "meaning": "It sums the values of a function over a finite set in an additive commutative monoid.",
+      "effect_on_target": "It computes matrix-vector products and the finite sums of coordinate squares used by the vector norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Finset.univ",
+      "meaning": "It is the finite set containing every element of a finite type.",
+      "effect_on_target": "It makes each sum range over all indices in Fin n rather than a proper subset.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "HPow.hPow",
+      "meaning": "It projects the exponentiation operation supplied by an HPow instance.",
+      "effect_on_target": "Here it raises each real coordinate to the natural-number power 2 in the Euclidean norm formula.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "HSub.hSub",
+      "meaning": "It projects the heterogeneous subtraction operation supplied by an HSub instance.",
+      "effect_on_target": "With the pointwise function instance, it forms the residual vector b - Ax component by component.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "Matrix",
+      "meaning": "A matrix with row type m, column type n, and entries in alpha is represented as a function m -> n -> alpha.",
+      "effect_on_target": "It fixes the interpretation of A_ij, deltaA_ij, and all pointwise matrix operations.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Matrix.frobeniusNormedRing",
+      "meaning": "It equips square matrices over an RCLike scalar field with the normed-ring structure whose norm is the Frobenius norm.",
+      "effect_on_target": "Its norm field is explicitly selected for deltaA, so the theorem uses the Frobenius matrix norm rather than an operator norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Monoid.toNatPow",
+      "meaning": "It supplies natural-number exponentiation in a monoid by repeated multiplication.",
+      "effect_on_target": "For real numbers, it makes each coordinate power v_i^2 equal the ordinary square v_i v_i.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Norm.norm",
+      "meaning": "It projects the real-valued norm function from a Norm instance.",
+      "effect_on_target": "It extracts the matrix norm from the explicitly selected Frobenius normed-ring structure.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "NormedRing.toNorm",
+      "meaning": "It extracts the Norm structure contained in a NormedRing instance.",
+      "effect_on_target": "It connects Matrix.frobeniusNormedRing to the norm operation used in LocalDef003.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "OfNat.ofNat",
+      "meaning": "It interprets a natural-number literal in a type having the corresponding OfNat instance.",
+      "effect_on_target": "It interprets the exponent literal 2 as a natural number.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "Pi.instSub",
+      "meaning": "It defines subtraction of functions pointwise: (f - g)(i) = f(i) - g(i).",
+      "effect_on_target": "It makes the residual b - Ax the vector whose ith component is b_i - (Ax)_i.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "It supplies the additive commutative monoid structure of the real numbers.",
+      "effect_on_target": "It validates the finite real sums used in matrix-vector multiplication and vector norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Real.instMonoid",
+      "meaning": "It supplies the multiplicative monoid structure of the real numbers.",
+      "effect_on_target": "It provides natural powers of real coordinates, particularly their squares.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Real.instRCLike",
+      "meaning": "It supplies the RCLike structure on the real numbers.",
+      "effect_on_target": "It permits construction of the Frobenius normed-ring instance for real square matrices; it introduces no additional hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Real.instSub",
+      "meaning": "It supplies ordinary real subtraction, defined as addition of the additive inverse.",
+      "effect_on_target": "It determines each component b_i - (Ax)_i of the residual vector.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "Real.sqrt",
+      "meaning": "It is the nonnegative real square-root function; on the nonnegative sums of squares here it is the ordinary principal square root.",
+      "effect_on_target": "It converts each sum of coordinate squares into the Euclidean vector norm.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "instDecidableEqFin",
+      "meaning": "It supplies decidable equality for indices in Fin n.",
+      "effect_on_target": "It supports the Frobenius matrix norm structure and finite-index constructions without imposing a mathematical assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "instHPow",
+      "meaning": "It converts a Pow instance into the corresponding HPow instance.",
+      "effect_on_target": "It connects real natural-number exponentiation to the coordinate-square notation used in LocalDef006.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "instHSub",
+      "meaning": "It converts an ordinary Sub instance into the corresponding homogeneous HSub instance.",
+      "effect_on_target": "It connects pointwise vector subtraction to the subtraction operation used in the residual definition.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "instOfNatNat",
+      "meaning": "It interprets each natural-number literal n as that same element of Nat.",
+      "effect_on_target": "It makes the exponent literal 2 exactly the natural number two.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "An arbitrary natural number n.",
+      "Two real n-by-n matrices A and deltaA.",
+      "Three real n-dimensional vectors b, deltaB, and x."
+    ],
+    "hypotheses": [
+      "The vector x satisfies the perturbed system (A + deltaA)x = b + deltaB exactly; equivalently, for every i in Fin n, sum_j (A_ij + deltaA_ij)x_j = b_i + deltaB_i."
+    ],
+    "conclusions": [
+      "The Euclidean residual norm satisfies ||b - Ax||_2 <= ||deltaA||_F ||x||_2 + ||deltaB||_2."
+    ],
+    "mathematical_definitions": [
+      "Fin n is the n-element coordinate set {0, ..., n-1}.",
+      "For a matrix M and vector v, (Mv)_i = sum over j in Fin n of M_ij v_j.",
+      "Matrix and vector addition, and vector subtraction, are pointwise.",
+      "The residual is r(A,b,x) = b - Ax.",
+      "For a real vector v, ||v||_2 = sqrt(sum over i in Fin n of v_i^2).",
+      "For a real matrix M, ||M||_F is its Frobenius norm, sqrt(sum over i and j in Fin n of M_ij^2)."
+    ],
+    "proposition_plain_english": "For every dimension n, every pair of real n-by-n matrices A and deltaA, and every three real n-vectors b, deltaB, and x, if x is an exact solution of the perturbed linear system (A + deltaA)x = b + deltaB, then its residual for the unperturbed system Ax = b has Euclidean norm at most the Frobenius norm of deltaA times the Euclidean norm of x, plus the Euclidean norm of deltaB."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The dimension n is unrestricted and may be zero. When n = 0, all relevant sums are empty and the norm inequality reduces to 0 <= 0.",
+    "The statement is conditional. For values not satisfying (A + deltaA)x = b + deltaB, the implication is vacuously true and gives no residual bound.",
+    "No invertibility, nonsingularity, rank, conditioning, or spectral assumption is imposed on A or A + deltaA.",
+    "No existence or uniqueness of x is asserted; x is merely any vector satisfying the displayed exact equation.",
+    "No smallness, relative-size, or nonzero assumptions are imposed on deltaA, deltaB, b, or x.",
+    "The matrix norm is specifically the Frobenius norm, not the induced Euclidean operator norm.",
+    "The vector norms are explicitly finite-dimensional Euclidean norms, not the default function-space norm.",
+    "The perturbation convention in the hypothesis is b + deltaB. Under that hypothesis, b - Ax = deltaA x - deltaB.",
+    "The proposition concerns square real matrices only; it does not encode complex scalars, rectangular matrices, or infinite-dimensional spaces.",
+    "No floating-point computation, rounding model, algorithm, computed-solution status, forward error, relative backward error, or error tolerance is encoded."
+  ],
+  "ambiguities": []
+}

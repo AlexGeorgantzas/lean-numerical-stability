@@ -1,0 +1,48 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ"
+  ],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-13T18:30:28.823123+00:00",
+  "findings": [
+    {
+      "category": "minimum-equality-omitted",
+      "evidence": "Printed page 1942 states an exact equality between the minimum simultaneous relative perturbation and the normalized residual, whereas Lean states only a one-sided inequality for already fixed perturbations.",
+      "impact": "Lean omits the paper claim's optimization, shared epsilon, normalization, attainability, and reverse-bound content.",
+      "severity": "critical"
+    },
+    {
+      "category": "no-full-paper-to-lean-implication",
+      "evidence": "Printed page 1939 assumes nonsingular A and nonzero b, while Lean ranges over arbitrary A and b and permits n = 0; the paper statement also does not universally bind each fixed perturbation pair.",
+      "impact": "The complete paper proposition does not imply the complete universally quantified Lean proposition.",
+      "severity": "major"
+    },
+    {
+      "category": "supporting-lemma-substituted",
+      "evidence": "From the Lean inequality and the omitted relative perturbation hypotheses one obtains normalized residual <= epsilon for every admissible epsilon, but no attaining perturbations.",
+      "impact": "Lean formalizes a proof ingredient for one direction of the paper equality rather than the selected equality itself.",
+      "severity": "major"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "After separately adding the paper's relative bounds, the Lean inequality shows that every admissible epsilon is at least the normalized residual, giving only the lower-bound direction for the minimum. It neither constructs perturbations attaining that value nor proves the reverse inequality, minimum equality, or shared-epsilon characterization.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper's equality is restricted to nonsingular A and nonzero b and concerns an existential minimization over a shared relative epsilon; it does not state a universal additive inequality for every fixed DeltaA and Deltab, including singular systems, b = 0, and n = 0. Even on the common domain, inserting a fixed perturbation pair into the minimum characterization directly yields only a bound using the maximum of its two relative sizes, not ||DeltaA||_F||x||_2 + ||Deltab||_2. The latter follows from a separate rearrangement, triangle inequality, and Frobenius matrix-vector bound, not from the minimum equality as the asserted proposition.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-weaker",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "Primary evidence confirms that the selected paper result is the complete minimum-backward-error equality, not merely the perturbation-to-residual estimate. The Lean theorem is mathematically related and nonvacuous, but it has fixed universal perturbations, an absolute additive bound, and a broader domain. It proves only the necessary lower-bound ingredient for the paper result, while the paper equality does not assert Lean's full universal proposition. With both implication directions negative, not-faithful-different is the consistent classification.",
+  "remaining_uncertainties": [],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P16-T1"
+}
