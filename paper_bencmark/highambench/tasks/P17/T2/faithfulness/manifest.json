@@ -2,7 +2,7 @@
   "audit_setup": [
     {
       "path": "paper_bencmark/faithfulness_audit/METHODOLOGY.md",
-      "sha256": "51e5d98ad450344d5eddb29600161236cc1bbfe61df0cf9f76c3ac63e0dbe4f8"
+      "sha256": "d9088bbf94db5b174ad4b2b109eab388bee0078cb35134c59a1bd7fe98d21cf8"
     },
     {
       "path": "paper_bencmark/faithfulness_audit/scripts/common.py",
@@ -121,27 +121,57 @@
     "module_count": 5158,
     "sorted_module_names_sha256": "156517df042e9174114daced9d3bf6e163c1f9cca3f639a847d1958789bb9cef"
   },
-  "completed_at_utc": "2026-08-13T19:02:31.525454+00:00",
+  "completed_at_utc": "2026-08-20T17:38:51.174976+00:00",
   "context": {
     "path": "paper_bencmark/highambench/tasks/P17/T2/context.md",
     "semantic_evidence": false,
-    "sha256": "250f1c9c12f6d65457d631090d50a7e3dc8fbe23e5f89f714876c42f7bbdb442"
+    "sha256": "40992f28b74a288a88e0dff4bc1d35425a953dc9d45545037ac9ce3328f97b5d"
   },
   "dependencies": [
     {
       "blind_name": "LocalDef001",
       "distance": 1,
       "id": "D001",
-      "kind": "def",
-      "name": "HighamBench.p17EffectiveExpectedSum",
+      "kind": "inductive",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
       "owner_module": "HighamBench.P17Definitions",
       "role": "local",
-      "semantic_sha256": "66445ac9433be7023c619dca67a5b17da2057eee4c9759a121e4a54069f4b7ae"
+      "semantic_sha256": "ace3179ccf30cf04c14ebcee55d2b8f502cdfa9f8ce0fe0e41db599a443a794b"
     },
     {
       "blind_name": "LocalDef002",
       "distance": 1,
       "id": "D002",
+      "kind": "abbrev",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "e50cfccf69dab2200459c7b74d24519fdd75a6840c847029aeb9d20f5a6bca0e"
+    },
+    {
+      "blind_name": "LocalDef003",
+      "distance": 1,
+      "id": "D003",
+      "kind": "abbrev",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.p",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "4b1bd1650658fb1e16d1132aaeffd9eceb794491263e09494ae574b85b83e4e2"
+    },
+    {
+      "blind_name": "LocalDef004",
+      "distance": 1,
+      "id": "D004",
+      "kind": "abbrev",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.r",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "1a1252dd1f75472f55596d2ab59186740870c583d8da51c043f12fb95ffe1038"
+    },
+    {
+      "blind_name": "LocalDef005",
+      "distance": 1,
+      "id": "D005",
       "kind": "def",
       "name": "HighamBench.p17ExactSum",
       "owner_module": "HighamBench.P17Definitions",
@@ -149,9 +179,29 @@
       "semantic_sha256": "848417c7f33279dafd13c76e57c16d106352e6d30f31556f926cf1df05292c9f"
     },
     {
-      "blind_name": "LocalDef003",
+      "blind_name": "LocalDef006",
       "distance": 1,
-      "id": "D003",
+      "id": "D006",
+      "kind": "def",
+      "name": "HighamBench.p17ExpectedRecursiveSum",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "45bbb166d4419f1260709601b2a2a2e83ba179088ef6e807d7da6b2a8416cf7e"
+    },
+    {
+      "blind_name": "LocalDef007",
+      "distance": 1,
+      "id": "D007",
+      "kind": "def",
+      "name": "HighamBench.p17Gamma",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "b618e3f80d471499c2e719ece1298451cd8b322884851dc6e31f84efc4bffba9"
+    },
+    {
+      "blind_name": "LocalDef008",
+      "distance": 1,
+      "id": "D008",
       "kind": "def",
       "name": "HighamBench.p17SummationCondition",
       "owner_module": "HighamBench.P17Definitions",
@@ -159,9 +209,159 @@
       "semantic_sha256": "fc08de23529c01f8faa80a18a0d4ed5a7e469e253e5a60e2f2665e0187753fd9"
     },
     {
+      "blind_name": "LocalDef009",
+      "distance": 1,
+      "id": "D009",
+      "kind": "def",
+      "name": "HighamBench.p17UnitRoundoff",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "2e1b884518fe748bc9c633d226f6ce911dc8b29df0c965e62309ecbe8fe0c3fc"
+    },
+    {
+      "blind_name": "LocalDef010",
+      "distance": 2,
+      "id": "D010",
+      "kind": "abbrev",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.delta",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "5e28f16149b568261491969bc0508e984b4bc02e17efe5111be77b1fc848e02f"
+    },
+    {
+      "blind_name": "LocalDef011",
+      "distance": 2,
+      "id": "D011",
+      "kind": "constructor",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "93782331e6c436ef83cda017924420324703c857d1c60bc662f3f415eac6d837"
+    },
+    {
+      "blind_name": "LocalDef012",
+      "distance": 2,
+      "id": "D012",
+      "kind": "abbrev",
+      "name": "HighamBench.P17LimitedPrecisionRecursiveSumRun.probability",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "b0371bd5bae152cc489cceecaa14f2f1e20aa725fa021fdd17c221532b1c48b8"
+    },
+    {
+      "blind_name": "LocalDef013",
+      "distance": 2,
+      "id": "D013",
+      "kind": "def",
+      "name": "HighamBench.p17Expectation",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "11fae07829d61b57addb3f2e2be7e9036d8a1f8a8ef1b16838117ee6186916da"
+    },
+    {
+      "blind_name": "LocalDef014",
+      "distance": 2,
+      "id": "D014",
+      "kind": "def",
+      "name": "HighamBench.p17RecursiveSum",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "db5a2e19747e9a6d254bee6309e21c422212116f4b169ea1a3f6280382091206"
+    },
+    {
+      "blind_name": "LocalDef015",
+      "distance": 2,
+      "id": "D015",
+      "kind": "theorem",
+      "name": "HighamBench.p17UnitRoundoff._proof_1",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "6add6f3a805986e842859d18df685b1be0e6256f312fa0e9c6957e13f62d7365"
+    },
+    {
+      "blind_name": "LocalDef016",
+      "distance": 3,
+      "id": "D016",
+      "kind": "inductive",
+      "name": "HighamBench.P17FiniteProbability",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "cdc6900d6b44706c8faf4d7e391274862067cb6d95b1131a47b2560a766d95d3"
+    },
+    {
+      "blind_name": "LocalDef017",
+      "distance": 3,
+      "id": "D017",
+      "kind": "abbrev",
+      "name": "HighamBench.P17FiniteProbability.prob",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "3636c9f4d2f36ba03c4caf5f0ddd2ad616a29ee70ad7e10bc918a28de663df17"
+    },
+    {
+      "blind_name": "LocalDef018",
+      "distance": 3,
+      "id": "D018",
+      "kind": "def",
+      "name": "HighamBench.p17HistoryMeasurable",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "abb40cf56e6f17c27b1223311cf80c7107d7c0f71e4293e9c61fc91ae0ce516f"
+    },
+    {
+      "blind_name": "LocalDef019",
+      "distance": 3,
+      "id": "D019",
+      "kind": "def",
+      "name": "HighamBench.p17RecursivePreRound",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "dae4d26f8b0f7e7b45d38512bbd65f64aabda62baf6e10c4c8970649403c3921"
+    },
+    {
+      "blind_name": "LocalDef020",
+      "distance": 3,
+      "id": "D020",
+      "kind": "theorem",
+      "name": "HighamBench.p17RecursiveSum._proof_1",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "18694e9c1d9246eac6354d260a132cdf303f1118117c94cb9e1e005712488d03"
+    },
+    {
+      "blind_name": "LocalDef021",
+      "distance": 4,
+      "id": "D021",
+      "kind": "constructor",
+      "name": "HighamBench.P17FiniteProbability.mk",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "fd0a240d1fc266d3cd085bc0f6cc5d37e8496bf562c971bd11b5f95e9e7b4d90"
+    },
+    {
+      "blind_name": "LocalDef022",
+      "distance": 4,
+      "id": "D022",
+      "kind": "def",
+      "name": "HighamBench.p17RecursiveSumBefore",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "b0cffd1b1978ca87c8b1ea80b35b4d982b7eba4c987f85d7d535854b2eec865a"
+    },
+    {
+      "blind_name": "LocalDef023",
+      "distance": 5,
+      "id": "D023",
+      "kind": "theorem",
+      "name": "HighamBench.p17RecursiveSumBefore._proof_1",
+      "owner_module": "HighamBench.P17Definitions",
+      "role": "local",
+      "semantic_sha256": "aed4abfdb1053e620927af170c3392a2edc788934a058c8727ae9f49dfacd8df"
+    },
+    {
       "blind_name": "DivInvMonoid.toDiv",
       "distance": 1,
-      "id": "D004",
+      "id": "D024",
       "kind": "abbrev",
       "name": "DivInvMonoid.toDiv",
       "owner_module": "Mathlib.Algebra.Group.Defs",
@@ -169,19 +369,29 @@
       "semantic_sha256": "cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea"
     },
     {
-      "blind_name": "Fin",
+      "blind_name": "Fintype",
       "distance": 1,
-      "id": "D005",
+      "id": "D025",
       "kind": "inductive",
-      "name": "Fin",
+      "name": "Fintype",
+      "owner_module": "Mathlib.Data.Fintype.Defs",
+      "role": "external-frontier",
+      "semantic_sha256": "ff39697629d53c72a76ae41500ef08888ff834898920af48012f83225b729e55"
+    },
+    {
+      "blind_name": "HAdd.hAdd",
+      "distance": 1,
+      "id": "D026",
+      "kind": "abbrev",
+      "name": "HAdd.hAdd",
       "owner_module": "Init.Prelude",
       "role": "external-frontier",
-      "semantic_sha256": "59788903be5da78a88e4dc3844df38effdaabdfa82bb364602790d2271da7fda"
+      "semantic_sha256": "e0bf2a92addd6ea713343e4ef69f67e4e1155781d08f46957b9f71412d865f59"
     },
     {
       "blind_name": "HDiv.hDiv",
       "distance": 1,
-      "id": "D006",
+      "id": "D027",
       "kind": "abbrev",
       "name": "HDiv.hDiv",
       "owner_module": "Init.Prelude",
@@ -191,7 +401,7 @@
     {
       "blind_name": "HMul.hMul",
       "distance": 1,
-      "id": "D007",
+      "id": "D028",
       "kind": "abbrev",
       "name": "HMul.hMul",
       "owner_module": "Init.Prelude",
@@ -201,7 +411,7 @@
     {
       "blind_name": "HSub.hSub",
       "distance": 1,
-      "id": "D008",
+      "id": "D029",
       "kind": "abbrev",
       "name": "HSub.hSub",
       "owner_module": "Init.Prelude",
@@ -211,7 +421,7 @@
     {
       "blind_name": "LE.le",
       "distance": 1,
-      "id": "D009",
+      "id": "D030",
       "kind": "abbrev",
       "name": "LE.le",
       "owner_module": "Init.Prelude",
@@ -221,7 +431,7 @@
     {
       "blind_name": "Nat",
       "distance": 1,
-      "id": "D010",
+      "id": "D031",
       "kind": "inductive",
       "name": "Nat",
       "owner_module": "Init.Prelude",
@@ -231,7 +441,7 @@
     {
       "blind_name": "Ne",
       "distance": 1,
-      "id": "D011",
+      "id": "D032",
       "kind": "def",
       "name": "Ne",
       "owner_module": "Init.Core",
@@ -241,7 +451,7 @@
     {
       "blind_name": "OfNat.ofNat",
       "distance": 1,
-      "id": "D012",
+      "id": "D033",
       "kind": "abbrev",
       "name": "OfNat.ofNat",
       "owner_module": "Init.Prelude",
@@ -249,19 +459,9 @@
       "semantic_sha256": "6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead"
     },
     {
-      "blind_name": "One.toOfNat1",
-      "distance": 1,
-      "id": "D013",
-      "kind": "def",
-      "name": "One.toOfNat1",
-      "owner_module": "Init.Data.Zero",
-      "role": "external-frontier",
-      "semantic_sha256": "cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5"
-    },
-    {
       "blind_name": "Real",
       "distance": 1,
-      "id": "D014",
+      "id": "D034",
       "kind": "inductive",
       "name": "Real",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -271,7 +471,7 @@
     {
       "blind_name": "Real.instAddGroup",
       "distance": 1,
-      "id": "D015",
+      "id": "D035",
       "kind": "def",
       "name": "Real.instAddGroup",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -281,7 +481,7 @@
     {
       "blind_name": "Real.instDivInvMonoid",
       "distance": 1,
-      "id": "D016",
+      "id": "D036",
       "kind": "def",
       "name": "Real.instDivInvMonoid",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -291,7 +491,7 @@
     {
       "blind_name": "Real.instLE",
       "distance": 1,
-      "id": "D017",
+      "id": "D037",
       "kind": "def",
       "name": "Real.instLE",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -301,7 +501,7 @@
     {
       "blind_name": "Real.instMul",
       "distance": 1,
-      "id": "D018",
+      "id": "D038",
       "kind": "def",
       "name": "Real.instMul",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -309,19 +509,9 @@
       "semantic_sha256": "459ccbe28a1d29ccd2b329ea29e1a84b329b8064b8a8ecc52764b69b23e229ed"
     },
     {
-      "blind_name": "Real.instOne",
-      "distance": 1,
-      "id": "D019",
-      "kind": "def",
-      "name": "Real.instOne",
-      "owner_module": "Mathlib.Data.Real.Basic",
-      "role": "external-frontier",
-      "semantic_sha256": "b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81"
-    },
-    {
       "blind_name": "Real.instSub",
       "distance": 1,
-      "id": "D020",
+      "id": "D039",
       "kind": "def",
       "name": "Real.instSub",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -331,7 +521,7 @@
     {
       "blind_name": "Real.instZero",
       "distance": 1,
-      "id": "D021",
+      "id": "D040",
       "kind": "def",
       "name": "Real.instZero",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -341,7 +531,7 @@
     {
       "blind_name": "Real.lattice",
       "distance": 1,
-      "id": "D022",
+      "id": "D041",
       "kind": "def",
       "name": "Real.lattice",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -351,7 +541,7 @@
     {
       "blind_name": "Zero.toOfNat0",
       "distance": 1,
-      "id": "D023",
+      "id": "D042",
       "kind": "def",
       "name": "Zero.toOfNat0",
       "owner_module": "Init.Data.Zero",
@@ -361,7 +551,7 @@
     {
       "blind_name": "abs",
       "distance": 1,
-      "id": "D024",
+      "id": "D043",
       "kind": "def",
       "name": "abs",
       "owner_module": "Mathlib.Algebra.Order.Group.Unbundled.Abs",
@@ -369,9 +559,29 @@
       "semantic_sha256": "8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b"
     },
     {
+      "blind_name": "instAddNat",
+      "distance": 1,
+      "id": "D044",
+      "kind": "def",
+      "name": "instAddNat",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "a1534bcd3e1888406ac787d30eeff8a284cb6688c23f5e8de09351dda91a280c"
+    },
+    {
+      "blind_name": "instHAdd",
+      "distance": 1,
+      "id": "D045",
+      "kind": "def",
+      "name": "instHAdd",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "38066efd17aeeca52ec2890d9aafca2fa3cce8fda7f5843c1b8e5da130d93981"
+    },
+    {
       "blind_name": "instHDiv",
       "distance": 1,
-      "id": "D025",
+      "id": "D046",
       "kind": "def",
       "name": "instHDiv",
       "owner_module": "Init.Prelude",
@@ -381,7 +591,7 @@
     {
       "blind_name": "instHMul",
       "distance": 1,
-      "id": "D026",
+      "id": "D047",
       "kind": "def",
       "name": "instHMul",
       "owner_module": "Init.Prelude",
@@ -391,7 +601,7 @@
     {
       "blind_name": "instHSub",
       "distance": 1,
-      "id": "D027",
+      "id": "D048",
       "kind": "def",
       "name": "instHSub",
       "owner_module": "Init.Prelude",
@@ -399,9 +609,29 @@
       "semantic_sha256": "aa782f2b5af3d068f4c5340de4b32b193fece2c659a45582cc3024a19b550c87"
     },
     {
+      "blind_name": "instOfNatNat",
+      "distance": 1,
+      "id": "D049",
+      "kind": "def",
+      "name": "instOfNatNat",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92"
+    },
+    {
+      "blind_name": "Fin",
+      "distance": 2,
+      "id": "D050",
+      "kind": "inductive",
+      "name": "Fin",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "59788903be5da78a88e4dc3844df38effdaabdfa82bb364602790d2271da7fda"
+    },
+    {
       "blind_name": "Fin.fintype",
       "distance": 2,
-      "id": "D028",
+      "id": "D051",
       "kind": "def",
       "name": "Fin.fintype",
       "owner_module": "Mathlib.Data.Fintype.Basic",
@@ -411,7 +641,7 @@
     {
       "blind_name": "Finset.sum",
       "distance": 2,
-      "id": "D029",
+      "id": "D052",
       "kind": "def",
       "name": "Finset.sum",
       "owner_module": "Mathlib.Algebra.BigOperators.Group.Finset.Defs",
@@ -421,7 +651,7 @@
     {
       "blind_name": "Finset.univ",
       "distance": 2,
-      "id": "D030",
+      "id": "D053",
       "kind": "def",
       "name": "Finset.univ",
       "owner_module": "Mathlib.Data.Fintype.Defs",
@@ -429,131 +659,1451 @@
       "semantic_sha256": "194413a784fbc0b27d0cb6b1ab67ed060210172bf16ba24045aa439e58f9a8c7"
     },
     {
+      "blind_name": "HPow.hPow",
+      "distance": 2,
+      "id": "D054",
+      "kind": "abbrev",
+      "name": "HPow.hPow",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "6196b8cbb884c4f39841ba74b23d75f3c753fe0d044cc402bd6e4e3bd59d5cb8"
+    },
+    {
+      "blind_name": "Monoid.toNatPow",
+      "distance": 2,
+      "id": "D055",
+      "kind": "def",
+      "name": "Monoid.toNatPow",
+      "owner_module": "Mathlib.Algebra.Group.Defs",
+      "role": "external-frontier",
+      "semantic_sha256": "5b7373fe2de26535c1cdbf1b953ce34faf30f68aac8abd83ade2e78e6ec65b8a"
+    },
+    {
+      "blind_name": "One.toOfNat1",
+      "distance": 2,
+      "id": "D056",
+      "kind": "def",
+      "name": "One.toOfNat1",
+      "owner_module": "Init.Data.Zero",
+      "role": "external-frontier",
+      "semantic_sha256": "cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5"
+    },
+    {
+      "blind_name": "Real.instAdd",
+      "distance": 2,
+      "id": "D057",
+      "kind": "def",
+      "name": "Real.instAdd",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "f99208c181266311bec9c890b688378f329076f9e6be38fe93d9cedf4d7f50ce"
+    },
+    {
       "blind_name": "Real.instAddCommMonoid",
       "distance": 2,
-      "id": "D031",
+      "id": "D058",
       "kind": "def",
       "name": "Real.instAddCommMonoid",
       "owner_module": "Mathlib.Data.Real.Basic",
       "role": "external-frontier",
       "semantic_sha256": "11a549e6c9caa007a4627570dd86aea756ada755f141da0356b8766788f2eef7"
+    },
+    {
+      "blind_name": "Real.instMonoid",
+      "distance": 2,
+      "id": "D059",
+      "kind": "def",
+      "name": "Real.instMonoid",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8"
+    },
+    {
+      "blind_name": "Real.instNatCast",
+      "distance": 2,
+      "id": "D060",
+      "kind": "def",
+      "name": "Real.instNatCast",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15"
+    },
+    {
+      "blind_name": "Real.instOne",
+      "distance": 2,
+      "id": "D061",
+      "kind": "def",
+      "name": "Real.instOne",
+      "owner_module": "Mathlib.Data.Real.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81"
+    },
+    {
+      "blind_name": "instHPow",
+      "distance": 2,
+      "id": "D062",
+      "kind": "def",
+      "name": "instHPow",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "eb300d353d84392c776cad5e356479f878030744a43f9a1584942a89d16350b4"
+    },
+    {
+      "blind_name": "instOfNatAtLeastTwo",
+      "distance": 2,
+      "id": "D063",
+      "kind": "def",
+      "name": "instOfNatAtLeastTwo",
+      "owner_module": "Mathlib.Data.Nat.Cast.Defs",
+      "role": "external-frontier",
+      "semantic_sha256": "37355febc51d6fa8ff12fc8e7b429771db340390d46411d7608c566bdffd358d"
+    },
+    {
+      "blind_name": "instSubNat",
+      "distance": 2,
+      "id": "D064",
+      "kind": "def",
+      "name": "instSubNat",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "5b0e20a4d2b3e0a67bd35de1b5c84cc60d6dc867658112d84cad483055804868"
+    },
+    {
+      "blind_name": "Eq",
+      "distance": 3,
+      "id": "D065",
+      "kind": "inductive",
+      "name": "Eq",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "63e9afa87e04d13393a2fe09e8e76489d96be3982734b4b40a52fc6ebea863d7"
+    },
+    {
+      "blind_name": "Fin.foldl",
+      "distance": 3,
+      "id": "D066",
+      "kind": "def",
+      "name": "Fin.foldl",
+      "owner_module": "Init.Data.Fin.Fold",
+      "role": "external-frontier",
+      "semantic_sha256": "5ab599c7f2f67b41cf899570d42ffbfae3263cdad61b9afc24765cd587fdf181"
+    },
+    {
+      "blind_name": "Fin.instOfNat",
+      "distance": 3,
+      "id": "D067",
+      "kind": "def",
+      "name": "Fin.instOfNat",
+      "owner_module": "Init.Data.Fin.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "8f9c302902ae8c66b3f71728ffe02994a026b562f27b9df8d4f84793e455e26b"
+    },
+    {
+      "blind_name": "Fin.succ",
+      "distance": 3,
+      "id": "D068",
+      "kind": "def",
+      "name": "Fin.succ",
+      "owner_module": "Init.Data.Fin.Basic",
+      "role": "external-frontier",
+      "semantic_sha256": "72d7aaf169e5a264dac79e6aeec8a81c4436ffab27e5dbad2956eaeb4a147cad"
+    },
+    {
+      "blind_name": "LT.lt",
+      "distance": 3,
+      "id": "D069",
+      "kind": "abbrev",
+      "name": "LT.lt",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009"
+    },
+    {
+      "blind_name": "Nat.AtLeastTwo",
+      "distance": 3,
+      "id": "D070",
+      "kind": "inductive",
+      "name": "Nat.AtLeastTwo",
+      "owner_module": "Mathlib.Data.Nat.Init",
+      "role": "external-frontier",
+      "semantic_sha256": "318e11b8f9340f2f451d638786dd4fca470dece62824f4adc3bd18b5289aa911"
+    },
+    {
+      "blind_name": "instLTNat",
+      "distance": 3,
+      "id": "D071",
+      "kind": "def",
+      "name": "instLTNat",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "4054f2341fdda887b2040c624c0867866ab56eabf3441d6ffc9451c94ae1663c"
+    },
+    {
+      "blind_name": "Fin.val",
+      "distance": 4,
+      "id": "D072",
+      "kind": "abbrev",
+      "name": "Fin.val",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "74cc6296b3a13207507ec372ef420f5e52b6935895dd25bcc6331abde2a4b328"
+    },
+    {
+      "blind_name": "NeZero",
+      "distance": 4,
+      "id": "D073",
+      "kind": "inductive",
+      "name": "NeZero",
+      "owner_module": "Init.Data.NeZero",
+      "role": "external-frontier",
+      "semantic_sha256": "b995ca083c15c268a4faa60a710cd8ff05c7de4dd8e301783fe0e0adeee47a06"
+    },
+    {
+      "blind_name": "Zero.ofOfNat0",
+      "distance": 4,
+      "id": "D074",
+      "kind": "def",
+      "name": "Zero.ofOfNat0",
+      "owner_module": "Init.Data.Zero",
+      "role": "external-frontier",
+      "semantic_sha256": "d610ee8a0a2a61b7850d6032e696e6ae93221da787dff4096e98d4122502f26d"
+    },
+    {
+      "blind_name": "Fin.mk",
+      "distance": 5,
+      "id": "D075",
+      "kind": "constructor",
+      "name": "Fin.mk",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "2fb605c17aa879bf453f735ede02a7306496f461d34549bf61cb6c85662ce182"
     }
   ],
   "dependency_edges": [
     {
-      "child": "Fin",
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability"
+    },
+    {
+      "child": "HighamBench.P17FiniteProbability.mk",
+      "origin": "constructor",
+      "parent": "HighamBench.P17FiniteProbability"
+    },
+    {
+      "child": "Eq",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "Finset.sum",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "Finset.univ",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "HighamBench.P17FiniteProbability",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "LE.le",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "One.toOfNat1",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "Real.instAddCommMonoid",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "Real.instLE",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "Real.instOne",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "Zero.toOfNat0",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.mk"
+    },
+    {
+      "child": "Fintype",
       "origin": "body",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.P17FiniteProbability.prob"
+    },
+    {
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.prob"
+    },
+    {
+      "child": "HighamBench.P17FiniteProbability",
+      "origin": "body",
+      "parent": "HighamBench.P17FiniteProbability.prob"
+    },
+    {
+      "child": "HighamBench.P17FiniteProbability",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.prob"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P17FiniteProbability.prob"
+    },
+    {
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk",
+      "origin": "constructor",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun"
     },
     {
       "child": "Fin",
       "origin": "type",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "Fintype",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.delta"
+    },
+    {
+      "child": "Fintype",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.delta"
+    },
+    {
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.delta"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.delta"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.delta"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.delta"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.delta"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.delta"
+    },
+    {
+      "child": "Eq",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "HMul.hMul",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "HighamBench.P17FiniteProbability",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "HighamBench.p17Expectation",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "HighamBench.p17HistoryMeasurable",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "HighamBench.p17RecursivePreRound",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "HighamBench.p17UnitRoundoff",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "LE.le",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "LT.lt",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "One.toOfNat1",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Real.instAdd",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Real.instAddGroup",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Real.instLE",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Real.instMul",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Real.instOne",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Real.lattice",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Zero.toOfNat0",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "abs",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "instHMul",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "instLTNat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.mk"
+    },
+    {
+      "child": "Fintype",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.p"
+    },
+    {
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.p"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.p"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.p"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.p"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.p"
+    },
+    {
+      "child": "Fintype",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.probability"
+    },
+    {
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.probability"
+    },
+    {
+      "child": "HighamBench.P17FiniteProbability",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.probability"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.probability"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.probability"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.probability"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.probability"
+    },
+    {
+      "child": "Fintype",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.r"
+    },
+    {
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.r"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.r"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.r"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.r"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P17LimitedPrecisionRecursiveSumRun.r"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p17ExactSum"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p17ExactSum"
     },
     {
       "child": "Fin.fintype",
       "origin": "body",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.p17ExactSum"
     },
     {
       "child": "Finset.sum",
       "origin": "body",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.p17ExactSum"
     },
     {
       "child": "Finset.univ",
       "origin": "body",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.p17ExactSum"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p17ExactSum"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p17ExactSum"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p17ExactSum"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p17ExactSum"
+    },
+    {
+      "child": "Real.instAddCommMonoid",
+      "origin": "body",
+      "parent": "HighamBench.p17ExactSum"
+    },
+    {
+      "child": "Finset.sum",
+      "origin": "body",
+      "parent": "HighamBench.p17Expectation"
+    },
+    {
+      "child": "Finset.univ",
+      "origin": "body",
+      "parent": "HighamBench.p17Expectation"
+    },
+    {
+      "child": "Fintype",
+      "origin": "body",
+      "parent": "HighamBench.p17Expectation"
+    },
+    {
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.p17Expectation"
     },
     {
       "child": "HMul.hMul",
       "origin": "body",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.p17Expectation"
     },
     {
-      "child": "Nat",
+      "child": "HighamBench.P17FiniteProbability",
       "origin": "body",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.p17Expectation"
     },
     {
-      "child": "Nat",
+      "child": "HighamBench.P17FiniteProbability",
       "origin": "type",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.p17Expectation"
+    },
+    {
+      "child": "HighamBench.P17FiniteProbability.prob",
+      "origin": "body",
+      "parent": "HighamBench.p17Expectation"
     },
     {
       "child": "Real",
       "origin": "body",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.p17Expectation"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.p17Expectation"
     },
     {
       "child": "Real.instAddCommMonoid",
       "origin": "body",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.p17Expectation"
     },
     {
       "child": "Real.instMul",
       "origin": "body",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.p17Expectation"
     },
     {
       "child": "instHMul",
       "origin": "body",
-      "parent": "HighamBench.p17EffectiveExpectedSum"
+      "parent": "HighamBench.p17Expectation"
     },
     {
       "child": "Fin",
       "origin": "body",
-      "parent": "HighamBench.p17ExactSum"
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "Fintype",
+      "origin": "body",
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "body",
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "type",
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a",
+      "origin": "body",
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun.delta",
+      "origin": "body",
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun.probability",
+      "origin": "body",
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "HighamBench.p17Expectation",
+      "origin": "body",
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "HighamBench.p17RecursiveSum",
+      "origin": "body",
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p17ExpectedRecursiveSum"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "HPow.hPow",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "HSub.hSub",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "Monoid.toNatPow",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "One.toOfNat1",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "Real.instAdd",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "Real.instMonoid",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "Real.instOne",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "Real.instSub",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "instHPow",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "instHSub",
+      "origin": "body",
+      "parent": "HighamBench.p17Gamma"
+    },
+    {
+      "child": "Eq",
+      "origin": "body",
+      "parent": "HighamBench.p17HistoryMeasurable"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p17HistoryMeasurable"
     },
     {
       "child": "Fin",
       "origin": "type",
-      "parent": "HighamBench.p17ExactSum"
+      "parent": "HighamBench.p17HistoryMeasurable"
     },
     {
-      "child": "Fin.fintype",
+      "child": "Fin.val",
       "origin": "body",
-      "parent": "HighamBench.p17ExactSum"
+      "parent": "HighamBench.p17HistoryMeasurable"
     },
     {
-      "child": "Finset.sum",
+      "child": "LT.lt",
       "origin": "body",
-      "parent": "HighamBench.p17ExactSum"
-    },
-    {
-      "child": "Finset.univ",
-      "origin": "body",
-      "parent": "HighamBench.p17ExactSum"
+      "parent": "HighamBench.p17HistoryMeasurable"
     },
     {
       "child": "Nat",
       "origin": "body",
-      "parent": "HighamBench.p17ExactSum"
+      "parent": "HighamBench.p17HistoryMeasurable"
     },
     {
       "child": "Nat",
       "origin": "type",
-      "parent": "HighamBench.p17ExactSum"
+      "parent": "HighamBench.p17HistoryMeasurable"
     },
     {
       "child": "Real",
       "origin": "body",
-      "parent": "HighamBench.p17ExactSum"
+      "parent": "HighamBench.p17HistoryMeasurable"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.p17ExactSum"
+      "parent": "HighamBench.p17HistoryMeasurable"
     },
     {
-      "child": "Real.instAddCommMonoid",
+      "child": "instLTNat",
       "origin": "body",
-      "parent": "HighamBench.p17ExactSum"
+      "parent": "HighamBench.p17HistoryMeasurable"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "Fin.succ",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "HighamBench.p17RecursiveSumBefore",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "Real.instAdd",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursivePreRound"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "Fin.foldl",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "Fin.instOfNat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "Fin.succ",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "HMul.hMul",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "HighamBench.p17RecursiveSum._proof_1",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "One.toOfNat1",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "Real.instAdd",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "Real.instMul",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "Real.instOne",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "instHMul",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum._proof_1"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum._proof_1"
+    },
+    {
+      "child": "NeZero",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum._proof_1"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum._proof_1"
+    },
+    {
+      "child": "Zero.ofOfNat0",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum._proof_1"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum._proof_1"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum._proof_1"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSum._proof_1"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Fin.foldl",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Fin.instOfNat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Fin.mk",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Fin.succ",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "HMul.hMul",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "HighamBench.p17RecursiveSum._proof_1",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "HighamBench.p17RecursiveSumBefore._proof_1",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "One.toOfNat1",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Real.instAdd",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Real.instMul",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Real.instOne",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "instHMul",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "body",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore._proof_1"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore._proof_1"
+    },
+    {
+      "child": "LT.lt",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore._proof_1"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore._proof_1"
+    },
+    {
+      "child": "instLTNat",
+      "origin": "type",
+      "parent": "HighamBench.p17RecursiveSumBefore._proof_1"
     },
     {
       "child": "DivInvMonoid.toDiv",
@@ -647,11 +2197,161 @@
     },
     {
       "child": "DivInvMonoid.toDiv",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "HDiv.hDiv",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "HPow.hPow",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "HSub.hSub",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "HighamBench.p17UnitRoundoff._proof_1",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "Monoid.toNatPow",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "One.toOfNat1",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "Real.instDivInvMonoid",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "Real.instMonoid",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "Real.instNatCast",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "Real.instOne",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "instHDiv",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "instHPow",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "instHSub",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "instOfNatAtLeastTwo",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "instSubNat",
+      "origin": "body",
+      "parent": "HighamBench.p17UnitRoundoff"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.p17UnitRoundoff._proof_1"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p17UnitRoundoff._proof_1"
+    },
+    {
+      "child": "Nat.AtLeastTwo",
+      "origin": "type",
+      "parent": "HighamBench.p17UnitRoundoff._proof_1"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.p17UnitRoundoff._proof_1"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.p17UnitRoundoff._proof_1"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.p17UnitRoundoff._proof_1"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.p17UnitRoundoff._proof_1"
+    },
+    {
+      "child": "DivInvMonoid.toDiv",
       "origin": "type",
       "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
     },
     {
-      "child": "Fin",
+      "child": "Fintype",
+      "origin": "type",
+      "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
+    },
+    {
+      "child": "HAdd.hAdd",
       "origin": "type",
       "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
     },
@@ -671,7 +2371,22 @@
       "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
     },
     {
-      "child": "HighamBench.p17EffectiveExpectedSum",
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun",
+      "origin": "type",
+      "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun.a",
+      "origin": "type",
+      "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun.p",
+      "origin": "type",
+      "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
+    },
+    {
+      "child": "HighamBench.P17LimitedPrecisionRecursiveSumRun.r",
       "origin": "type",
       "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
     },
@@ -681,7 +2396,22 @@
       "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
     },
     {
+      "child": "HighamBench.p17ExpectedRecursiveSum",
+      "origin": "type",
+      "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
+    },
+    {
+      "child": "HighamBench.p17Gamma",
+      "origin": "type",
+      "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
+    },
+    {
       "child": "HighamBench.p17SummationCondition",
+      "origin": "type",
+      "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
+    },
+    {
+      "child": "HighamBench.p17UnitRoundoff",
       "origin": "type",
       "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
     },
@@ -702,11 +2432,6 @@
     },
     {
       "child": "OfNat.ofNat",
-      "origin": "type",
-      "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
-    },
-    {
-      "child": "One.toOfNat1",
       "origin": "type",
       "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
     },
@@ -736,11 +2461,6 @@
       "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
     },
     {
-      "child": "Real.instOne",
-      "origin": "type",
-      "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
-    },
-    {
       "child": "Real.instSub",
       "origin": "type",
       "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
@@ -766,6 +2486,16 @@
       "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
     },
     {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
+    },
+    {
       "child": "instHDiv",
       "origin": "type",
       "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
@@ -779,15 +2509,13 @@
       "child": "instHSub",
       "origin": "type",
       "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.p17_t2_recursive_sum_bias_condition_bound"
     }
   ],
-  "dependency_reuse": {
-    "blind_count": 0,
-    "direct_count": 15,
-    "source_task_ids": [
-      "P17-T1"
-    ]
-  },
   "direct_external_imports": [
     "Mathlib.Algebra.BigOperators.Fin",
     "Mathlib.Analysis.SpecialFunctions.Pow.Real",
@@ -797,35 +2525,27 @@
   "inputs": {
     "blind_dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/inputs/blind_dependency_inventory.json",
-      "sha256": "dff0e8bf5222ec42cd8d87f3a6044ef897994e3b93903d5ede0438d523f98953"
+      "sha256": "f43dba575756cabd06479f93cb42c9725ae73edf7d950d25973d025396784964"
     },
     "blind_dossier": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/inputs/blind_dossier.md",
-      "sha256": "4eb2cc402bc41763a1b4108896fc4eb6855080cf71bc679ec5fd0ef665421610"
+      "sha256": "a82002a4b16de3d720b3d68e1a5b70cfa3584bf3e82edd1c1b04f2b34aac979d"
     },
     "blind_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/inputs/blind_review_packet.md",
-      "sha256": "4eb2cc402bc41763a1b4108896fc4eb6855080cf71bc679ec5fd0ef665421610"
+      "sha256": "a82002a4b16de3d720b3d68e1a5b70cfa3584bf3e82edd1c1b04f2b34aac979d"
     },
     "declaration_dossier": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/inputs/declaration_dossier.md",
-      "sha256": "c2da7f09d1f7ec56c31208d2ecbe1762e47da908f2169dd61fe2fb403d0c7966"
+      "sha256": "6157bab16d58fb74a2c920a0215091f223ab61362f38c6fa88d15ab9df590f83"
     },
     "dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/inputs/dependency_inventory.json",
-      "sha256": "a89493e0ffb03f26ac52608bad6cdf9e6cf86da04f500c282809b2ec6488d88f"
-    },
-    "dependency_reuse_direct": {
-      "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/inputs/dependency_reuse_direct.json",
-      "sha256": "90e88341c3bf5b33102d90da13363efc3287883e9f8c49d2b1b4df7ee53d8ea2"
+      "sha256": "4eeae640003b4b9478427021ce2bc842269e40ab70be176eb3293c496f81c065"
     },
     "direct_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/inputs/direct_review_packet.md",
-      "sha256": "5ff13a33521f8b3f9922a38183ea5dde74528edd5f222ab435b6c8e6d9980f19"
-    },
-    "paper_source_locator": {
-      "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/inputs/paper_source_locator.json",
-      "sha256": "7b6e846a522a4293bd50e70522a875cdc8dd30515338efc2e70d99739bcb7161"
+      "sha256": "5193411242693d04316eb204049b12487eb2d97d5828cf77faa67fbfd9b36db3"
     },
     "source_locator": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/inputs/source_locator.json",
@@ -861,37 +2581,33 @@
       ],
       "module": "HighamBench.P17Definitions",
       "path": "paper_bencmark/highambench/shared/HighamBench/P17Definitions.lean",
-      "sha256": "e14850408c10ac1811546bbbf928e1493f9bd87b566c23ecd7aa46d670c8ec29"
+      "sha256": "5402369043678beac601ab6e3b25b069da3cd903b65ab6f9ba9700488ad8594b"
     }
   ],
   "outputs": {
     "blind_translation": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/agent_outputs/blind_translation.json",
-      "sha256": "6332c30f05ab15cb13ca46bb0a1d888b84841112b675e1eb38f76aa02899933e"
+      "sha256": "c6f424ea6793eef2fc16f8161c5fbc6198c9e78b3ba064ceced1a816d4caa523"
     },
     "decision": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/decision.json",
-      "sha256": "466c78f162e3db5cca4703be22cad1bfc630cfcf11db9f57d7c5c61274c5529d"
+      "sha256": "99441adcfc7cea165c44e4b8bdfdbc3c39f1f9ad800f987c7491b1300e40d106"
     },
     "direct_judge": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/agent_outputs/direct_judge.json",
-      "sha256": "00ae22fa556a524eaa9c821df0bb5408bb7656526520e8904c50685efa4ba25e"
-    },
-    "paper_source_contract": {
-      "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/agent_outputs/paper_source_contract.json",
-      "sha256": "5856f4d88e51aeb1df8e36f051f77e90c96a2896bb707ed0186c2f74cf1ebc0b"
+      "sha256": "471dbc490a4b69f3c707355a31b90f941fc438c8ace4114eb8b1110e9c9a3541"
     },
     "report": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/report.md",
-      "sha256": "ec9043edda8a2cdb3acedda4a0ac936a9a70fd1f3a4b79ee3f34713099ee8054"
+      "sha256": "7e092ef64d381e28aa348e504468867c99854f50dee4990ac0a143a477e90de0"
     },
     "roundtrip_judge": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/agent_outputs/roundtrip_judge.json",
-      "sha256": "260448e421ebbac232ab700c392a78735e24930948120b491b6436170e4e4a55"
+      "sha256": "ca1a1f8c89ddb9d7f849181c3c01ae410fe54e5c49ac167c757af13847d4ff44"
     },
     "source_contract": {
       "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/agent_outputs/source_contract.json",
-      "sha256": "55db3e8fcc0a0f797e636c3a45c40f019c2835877bc94939b27e831b674a76a2"
+      "sha256": "339d6a1f0ac1b94329b6dd33cd6b0496c3e7215b8ad7b98d6141466f7fa9a9f1"
     }
   },
   "paper": {
@@ -914,19 +2630,7 @@
       }
     ]
   },
-  "paper_batch": {
-    "paper_id": "P17",
-    "source_locator": {
-      "path": "paper_bencmark/highambench/tasks/P17/T2/faithfulness/inputs/paper_source_locator.json",
-      "sha256": "7b6e846a522a4293bd50e70522a875cdc8dd30515338efc2e70d99739bcb7161"
-    },
-    "task_ids": [
-      "P17-T1",
-      "P17-T2",
-      "P17-T3"
-    ]
-  },
-  "prepared_at_utc": "2026-08-13T18:38:07.012159+00:00",
+  "prepared_at_utc": "2026-08-20T16:40:53.029840+00:00",
   "schema_version": "highambench-faithfulness-0.2",
   "semantic_checks": [
     {
@@ -1014,12 +2718,12 @@
   "target": {
     "declaration": "HighamBench.p17_t2_recursive_sum_bias_condition_bound",
     "path": "paper_bencmark/highambench/tasks/P17/T2/Target.lean",
-    "sha256": "361691c5f22f9529aca157de13f54a97ea32535889829e0f13877470d39da880"
+    "sha256": "2a91b322f57d9538107713cf09209199c753850bdaee198795e77ae8f1cd56e4"
   },
   "task_id": "P17-T2",
   "task_metadata": {
     "path": "paper_bencmark/highambench/tasks/P17/T2/task.json",
     "semantic_evidence": false,
-    "sha256": "ff302c680f40259bb30bfc33684d0f58fb86cf23b630460d156f209f034144bd"
+    "sha256": "b8b9b79400e524c2f251d639af94f568c23f5704c90eea89a169c2f23d895c2b"
   }
 }

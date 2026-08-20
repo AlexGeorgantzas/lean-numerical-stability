@@ -1,0 +1,408 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P17-T2",
+  "paper_sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d",
+  "dossier_sha256": "5ff13a33521f8b3f9922a38183ea5dde74528edd5f222ab435b6c8e6d9980f19",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.p17EffectiveExpectedSum",
+      "interpretation": "The finite real sum of a_i times factor_i over every i in Fin n.",
+      "effect_on_target": "It makes the numerator the difference between sum_i a_i factor_i and the exact sum.",
+      "paper_match": "This equals the paper's expected computed sum only after factor_i is defined as the expectation of the suffix product in (4.4) and linearity of expectation is applied. The Lean definition and theorem impose no such identification.",
+      "status": "fail"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p17ExactSum",
+      "interpretation": "The finite real sum of all components of a.",
+      "effect_on_target": "It supplies the exact value in the numerator, denominator, nonzero hypothesis, and condition number.",
+      "paper_match": "It matches y = sum_i a_i in equation (4.1), modulo the harmless reindexing from 1 through n to Fin n.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.p17SummationCondition",
+      "interpretation": "The sum of the componentwise absolute values divided by the absolute value of the exact sum.",
+      "effect_on_target": "It is the condition-number factor on the right-hand side.",
+      "paper_match": "It matches kappa(a) in equation (4.2); hsum prevents its denominator from vanishing in the theorem.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Extracts the division operation from a division-and-inversion monoid instance.",
+      "effect_on_target": "It provides ordinary real division for the relative-error ratio and condition number.",
+      "paper_match": "The paper uses the same ordinary real quotients by |y|.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "Fin",
+      "reuse_sha256": "d05d585f676acfd732971ee0ae6111e21d36611835a2fe6aba866fa407dc233b",
+      "effect_on_target": "It indexes exactly n input coefficients and n factors using indices 0 through n-1.",
+      "paper_match": "It is a harmless reindexing of the paper's input indices 1 through n.",
+      "status": "pass"
+    },
+    {
+      "id": "D006",
+      "name": "HDiv.hDiv",
+      "interpretation": "Selects typeclass-provided heterogeneous division, instantiated here as real division.",
+      "effect_on_target": "It forms both quotients by the absolute exact sum.",
+      "paper_match": "It agrees with the scalar real division in equations (4.2) and (4.6).",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "HMul.hMul",
+      "interpretation": "Selects typeclass-provided heterogeneous multiplication, instantiated here as real multiplication.",
+      "effect_on_target": "It forms each a_i factor_i term and the product gamma times the condition number.",
+      "paper_match": "These are ordinary scalar products, as in the coefficientwise representation and final bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "HSub.hSub",
+      "reuse_sha256": "acf46554bba0caeba7168c2bd11bf9a41b4510a9dac46d3f3cd39b8a2e858287",
+      "effect_on_target": "It forms factor_i - 1 and the effective-sum-minus-exact-sum difference.",
+      "paper_match": "Ordinary real subtraction matches the deviations used in the proof of Theorem 4.1.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "LE.le",
+      "reuse_sha256": "0dcd4d54dc5efe73d79e4b04d175f2dca920b0224dc82b6e16091b7f8d35baaa",
+      "effect_on_target": "It supplies the non-strict inequalities in the coefficient hypothesis and conclusion.",
+      "paper_match": "Theorem 4.1 and its coefficientwise estimates also use non-strict upper bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "Nat",
+      "interpretation": "The natural-number type used for the vector dimension n.",
+      "effect_on_target": "It permits any finite dimension; n = 0 cannot satisfy hsum because the empty exact sum is zero.",
+      "paper_match": "The paper uses a finite natural dimension and implicitly needs at least one input for the recursive algorithm.",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "Ne",
+      "interpretation": "Inequality defined as the negation of equality.",
+      "effect_on_target": "It states that the exact sum is not zero.",
+      "paper_match": "This makes explicit the condition logically required by the divisions in kappa(a) and equation (4.6).",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "OfNat.ofNat",
+      "reuse_sha256": "9412c8799dd7ab5a9cd03a6289b408558cf47f44c8678d5f9fcd39132aa90a1d",
+      "effect_on_target": "It interprets the literals zero and one as real numbers.",
+      "paper_match": "Those literals have their ordinary real meanings in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "One.toOfNat1",
+      "reuse_sha256": "1c662a114670d76bda6f45c1caef6f56839c8751fcd1c29ba6602c9e4eac9386",
+      "effect_on_target": "It makes the one in factor_i - 1 the real multiplicative identity.",
+      "paper_match": "This matches the coefficient deviation from one in the paper's proof.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "Real",
+      "interpretation": "The mathematical real-number type.",
+      "effect_on_target": "All input values, factors, bounds, sums, and ratios are exact real quantities.",
+      "paper_match": "Section 4.1 begins with a in R^n and states its bounds as real inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "Real.instAddGroup",
+      "reuse_sha256": "953242ba6ab9ee59ca4aeeae55b66c1f65ae1b3ec736bb896a8082722e08a850",
+      "effect_on_target": "It provides ordinary real addition, negation, and zero, including the structure used by absolute value.",
+      "paper_match": "These operations agree with the scalar real arithmetic in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The usual real multiplication, inversion, and division structure, with Lean's totalized inverse at zero.",
+      "effect_on_target": "It implements the real quotients in the relative bound and condition number.",
+      "paper_match": "The operations match the paper on the theorem's nonzero exact-sum domain; hsum removes the totalized-zero discrepancy.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "Real.instLE",
+      "reuse_sha256": "05753e0845504079b2a49760ce0760bba31bd490a1fbbbec350ab090bf5f6150",
+      "effect_on_target": "It interprets every displayed inequality using the usual real order.",
+      "paper_match": "This is the order used by the paper's error bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D018",
+      "name": "Real.instMul",
+      "interpretation": "The ordinary multiplication operation on real numbers.",
+      "effect_on_target": "It multiplies coefficients by factors and gamma by the condition number.",
+      "paper_match": "It matches the real multiplication in equations (4.4) and (4.6); the reversed gamma-kappa order is immaterial by commutativity.",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "Real.instOne",
+      "reuse_sha256": "e51a242fc9e06a843daf48323e127b9a5e24e589e9139d1c4d178817cc4f01b4",
+      "effect_on_target": "It supplies the real value one against which each factor is compared.",
+      "paper_match": "The paper likewise bounds each expected product's deviation from one.",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instSub",
+      "reuse_sha256": "cae5df6a1fe8b8368ddc76512a5e3b97db34cf5aa11faf1cff630d6f5dd7eb35",
+      "effect_on_target": "It supplies ordinary real subtraction in both absolute deviations.",
+      "paper_match": "It matches the subtraction in |E(yhat) - y| and |E(product) - 1|.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instZero",
+      "reuse_sha256": "add1e0d38b718ff561745d67e457a3e5a9e88523d6641af854dd815b11797de6",
+      "effect_on_target": "It supplies the real zero in the exact-sum nonzero hypothesis.",
+      "paper_match": "It correctly expresses the nonzero denominator condition implicit in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "Real.lattice",
+      "reuse_sha256": "5c94154655daa21d92ca5ad3ae013135ac73fc292c856c799cf18acc88e6c476",
+      "effect_on_target": "It supplies the usual ordered lattice used to define real absolute value.",
+      "paper_match": "It yields the scalar absolute-value semantics used throughout equations (4.2) and (4.6).",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "Zero.toOfNat0",
+      "reuse_sha256": "4ffc57c777cabc45c64299faad3978aad738b122dda5156a2ea75d97ce8a5347",
+      "effect_on_target": "It interprets the numeral zero from the real additive identity.",
+      "paper_match": "It has the ordinary real-zero meaning required for y != 0.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "abs",
+      "interpretation": "Absolute value defined as the maximum of a real number and its additive inverse.",
+      "effect_on_target": "It produces scalar magnitudes for coefficient deviations, sum error, denominator, and condition numerator.",
+      "paper_match": "This is the standard scalar absolute value used by the paper, not an expectation of absolute error or a different norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "instHDiv",
+      "interpretation": "Lifts homogeneous division into the heterogeneous-division interface.",
+      "effect_on_target": "It connects HDiv.hDiv to ordinary real division.",
+      "paper_match": "It introduces no semantic difference from the paper's real quotients.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "instHMul",
+      "interpretation": "Lifts homogeneous multiplication into the heterogeneous-multiplication interface.",
+      "effect_on_target": "It connects HMul.hMul to ordinary real multiplication.",
+      "paper_match": "It introduces no semantic difference from the paper's real products.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "instHSub",
+      "reuse_sha256": "9acf234ffe7767f8c9d61a522c93ace13daa9ca28ce1049c951e39128f4bf717",
+      "effect_on_target": "It connects HSub.hSub to homogeneous real subtraction.",
+      "paper_match": "It introduces no semantic difference from the paper's scalar subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D028",
+      "name": "Fin.fintype",
+      "reuse_sha256": "bb5eeb14ad1877de1ed4712c0e8554e0344e0e15ff5b6be2220338e93e0baf67",
+      "effect_on_target": "It provides the finite enumeration needed to sum over every component of Fin n.",
+      "paper_match": "It represents the same finite collection of n coefficients as the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D029",
+      "name": "Finset.sum",
+      "interpretation": "The finite sum of a function over a finite set using real addition and zero.",
+      "effect_on_target": "It constructs the exact sum, weighted effective sum, and sum of componentwise absolute values.",
+      "paper_match": "These finite sums match the corresponding sums over i = 1 through n in equations (4.1), (4.2), and the proof.",
+      "status": "pass"
+    },
+    {
+      "id": "D030",
+      "name": "Finset.univ",
+      "reuse_sha256": "e1c319c6b4ed4d5f6114006b06fd0104d65483830507f476dc0b7a6c1f1fe0be",
+      "effect_on_target": "It makes each finite sum range over every index in Fin n.",
+      "paper_match": "It includes exactly all n input components, matching the paper's full index range.",
+      "status": "pass"
+    },
+    {
+      "id": "D031",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The usual commutative additive monoid structure on the reals.",
+      "effect_on_target": "It supplies addition and zero to Finset.sum.",
+      "paper_match": "It gives the ordinary finite real sums used in the paper.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The verified PDF has SHA-256 df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d. PDF pages 13-14, printed pages B1239-B1240, contain section 4.1, equations (4.1)-(4.6), Theorem 4.1, and its proof.",
+      "lean_evidence": "The packet identifies P17-T2 and supplies the exact source, readable elaborated, and fully explicit target types.",
+      "reasoning": "The selected source is the stated journal result and the cited passage is the recursive-summation bias theorem."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper binds a real n-vector and a precision-p recursive computation using SR_{p,r}; p and r determine the stochastic errors and u_{p+r}.",
+      "lean_evidence": "Lean binds n, a, an arbitrary real factor vector, and an arbitrary real gamma. It has no precision, random-bit count, stochastic errors, or computed recursive sequence.",
+      "reasoning": "The real vector and finite dimension match, but the key paper binders are replaced by unconstrained summary variables whose intended meanings are not enforced."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "For a given recursive SR_{p,r} computation, each coefficient factor is determined by the suffix product in (4.4), and gamma is determined by n, p, and r.",
+      "lean_evidence": "The target universally quantifies factor and gamma before assuming only a componentwise deviation bound.",
+      "reasoning": "The Lean quantifier scope asserts a generic algebraic implication for arbitrary factors rather than a result about factors generated by the paper's computation."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "Theorem 4.1 relies on the SR_{p,r} recursion, |delta_{k-1}| <= u_p, the conditional-mean relation with beta, |beta_{k-1}| <= u_{p+r}, and Theorem 3.6. A nonzero y is implicitly required by the displayed ratios.",
+      "lean_evidence": "Lean correctly assumes p17ExactSum a != 0, but replaces all stochastic and floating-point hypotheses by the already-derived premise |factor i - 1| <= gamma.",
+      "reasoning": "The nonzero condition is faithful, but the hypothesis assumes the coefficientwise conclusion that constitutes the probabilistic core of the paper's argument."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Theorem 4.1 concludes the relative bias bound for the actual expected recursive sum, with gamma_{n-1}(u_{p+r}); its proof also derives the coefficientwise suffix-product bound.",
+      "lean_evidence": "The target concludes only a bound for sum_i a_i factor_i under an assumed uniform factor bound.",
+      "reasoning": "It omits the identities and bounds needed to make its weighted sum the expectation of the paper's computed result and to make gamma the paper's exact error function."
+    },
+    {
+      "id": "S06",
+      "status": "pass",
+      "paper_evidence": "Equations (4.1), (4.2), and (4.4) define the exact sum, condition number, and coefficientwise product representation using ordinary real operations.",
+      "lean_evidence": "The local definitions unfold to sum_i a_i, sum_i |a_i|/|sum_i a_i|, and sum_i a_i factor_i; every external dependency has an explicit or hash-verified interpretation.",
+      "reasoning": "All nontrivial Lean operators and definitions can be interpreted exactly. This check exposes, rather than repairs, the missing expectation and algorithm linkage in D001."
+    },
+    {
+      "id": "S07",
+      "status": "fail",
+      "paper_evidence": "The paper distinguishes exact partial sums s_k, rounded random partial sums shat_k, the random output yhat, and E(yhat).",
+      "lean_evidence": "p17ExactSum is an exact finite sum, but p17EffectiveExpectedSum is definitionally only a deterministic weighted sum and contains no random computed quantity or expectation operator.",
+      "reasoning": "The exact quantity is represented correctly, but the claimed expected computed quantity is only an unlinked algebraic surrogate."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Equation (4.4) is derived specifically from left-to-right recursion shat_k = SR_{p,r}(shat_{k-1}+a_k), with exactly n-1 rounded additions.",
+      "lean_evidence": "The target contains no recursion, SR operator, operation ordering, partial sums, or rounding-error variables.",
+      "reasoning": "Nothing in the proposition restricts factor to a left-to-right stochastic summation execution, so the required algorithm linkage is absent."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Equation (4.2) uses sum_i |a_i| divided by |sum_i a_i|, and equation (4.6) uses scalar absolute value around E(yhat)-y.",
+      "lean_evidence": "p17SummationCondition is sum_i |a_i|/|p17ExactSum a|, and the conclusion uses the scalar absolute value of the effective-minus-exact difference.",
+      "reasoning": "The scalar absolute values and l1-style condition numerator match; no squared, Euclidean, or componentwise norm is substituted."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The coefficient for a_i contains n-max{i,2}+1 suffix factors, uniformly bounded by n-1 factors, and the final constant is gamma_{n-1}(u_{p+r}) = (1+u_{p+r})^(n-1)-1.",
+      "lean_evidence": "The target has no suffix-product indices, no n-1, no p or r, no u_{p+r}, and no definition constraining gamma.",
+      "reasoning": "Although Fin n correctly counts the inputs, the paper's essential operation indexing and parameter-dependent constant are absent."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "The PDF defines normalized precision-p binary floating point, limited-precision SR_{p,r}, p-bit outputs using r random bits, truncation error bounded by u_{p+r}, and the standard relative-error operation model.",
+      "lean_evidence": "The proposition is entirely over exact real arithmetic and contains no precision, rounding mode, representability, random bits, overflow, underflow, or exceptional-value assumptions.",
+      "reasoning": "A generic real inequality cannot by itself express the floating-point execution model to which Theorem 4.1 applies."
+    },
+    {
+      "id": "S12",
+      "status": "pass",
+      "paper_evidence": "Equation (4.6) is a non-strict upper bound on an absolute relative difference, with kappa(a) multiplied by the gamma factor.",
+      "lean_evidence": "The target uses the same non-strict <= relation and bounds the absolute relative difference by gamma times p17SummationCondition.",
+      "reasoning": "At the conclusion-expression level, direction and strictness match, and the reversed product order is equivalent over the reals. Overall theorem strength still fails because the quantities and hypotheses are not linked."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "Theorem 4.1 bounds bias |E(yhat)-y|/|y|, not E(|yhat-y|)/|y|, a samplewise error, variance, or a probability event.",
+      "lean_evidence": "The target bounds |p17EffectiveExpectedSum-p17ExactSum|/|p17ExactSum|, but the effective sum's body has no expectation semantics.",
+      "reasoning": "The algebraic shape is compatible with bias only after an external identification that the proposition does not state; therefore the paper's error notion is not secured."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Equation (4.3) defines gamma_m(u) exactly as (1+u)^m-1; Theorem 4.1 uses the exact gamma_{n-1}(u_{p+r}), not its first-order expansion.",
+      "lean_evidence": "gamma is an arbitrary real satisfying the assumed factor inequalities, with no exact formula or dependence on n, p, and r.",
+      "reasoning": "Lean does not incorrectly truncate the gamma expression, but it omits the exact higher-order expression required by the selected result."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The source result is already finite-dimensional, scalar-valued, and real, but is specialized to factors generated by the SR_{p,r} recursive-summation algorithm.",
+      "lean_evidence": "Lean generalizes to arbitrary factor vectors and arbitrary uniform bounds while weakening the task by taking the coefficientwise stochastic estimate as a hypothesis.",
+      "reasoning": "This mixed generalization and assumption shift is not a faithful specialization of Theorem 4.1 and does not retain the benchmark's stochastic-rounding result."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's theorem has ordinary nonzero-sum instances, and its exact gamma bound is meaningful for such inputs.",
+      "lean_evidence": "For example, with n=2, a=(1,1), factor=(2,2), and gamma=1, the exact sum is 2, every factor deviation is 1, and both sides of the conclusion equal 1.",
+      "reasoning": "The Lean hypotheses are satisfiable and its algebraic conclusion is substantive rather than vacuous, even though the example also illustrates that its factors need not come from the paper's algorithm."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean proposition alone does not identify factor_i with E[product_{k=max{i,2}}^n(1+delta_{k-1})], identify its weighted sum with E(yhat), establish the coefficient bound from SR_{p,r}, or set gamma to gamma_{n-1}(u_{p+r}). Those missing facts are necessary to obtain Theorem 4.1."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper theorem concerns the particular factors generated by one SR_{p,r} recursive computation. It does not state the Lean proposition's universal algebraic claim for every arbitrary factor vector and every arbitrary gamma satisfying hfactor."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "algorithm-linkage",
+      "paper_evidence": "PDF pages 13-14 derive Theorem 4.1 for the left-to-right SR_{p,r} recursion and its suffix products of stochastic rounding errors.",
+      "lean_evidence": "The target has no SR operator, recursive partial sums, rounding errors, expectation, precision, or random-bit parameter.",
+      "impact": "The formal theorem is not a theorem about the paper's computed recursive sum."
+    },
+    {
+      "severity": "major",
+      "category": "assumed-probabilistic-core",
+      "paper_evidence": "Theorem 3.6 is applied on PDF page 14 to prove each suffix-product expectation is within gamma_{n-1}(u_{p+r}) of one.",
+      "lean_evidence": "The coefficientwise estimate appears directly as hfactor with arbitrary factor and gamma.",
+      "impact": "The target assumes rather than formalizes the main stochastic estimate and therefore measures only the final triangle-inequality reduction."
+    },
+    {
+      "severity": "major",
+      "category": "quantity-and-constant-identification",
+      "paper_evidence": "Equation (4.6) bounds |E(yhat)-y|/|y| using the exact constant gamma_{n-1}(u_{p+r}).",
+      "lean_evidence": "p17EffectiveExpectedSum unfolds to sum_i a_i factor_i, and gamma has no defining relation to n, p, r, or u_{p+r}.",
+      "impact": "The conclusion has the paper's algebraic shape but does not denote the paper's bias bound without substantial external definitions and lemmas."
+    }
+  ],
+  "rationale": "The exact sum, condition number, scalar absolute values, nonzero denominator condition, and final non-strict inequality shape are represented correctly. However, Theorem 4.1 is an algorithm-specific stochastic-rounding result, while the Lean target is only a generic deterministic weighted-sum lemma. It omits the recursive SR_{p,r} computation, expectation semantics, suffix-product factors, conditional-mean model, and the exact gamma_{n-1}(u_{p+r}) constant, replacing the paper's central coefficientwise result with an assumption. The target is nonvacuous but neither proposition implies the other as stated, so it is not faithful to the selected paper result."
+}

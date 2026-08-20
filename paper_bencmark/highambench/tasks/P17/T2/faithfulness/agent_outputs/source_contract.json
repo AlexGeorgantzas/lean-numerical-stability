@@ -1,113 +1,163 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "[PDF page 13; anchors: condition number (4.2) and Theorem 4.1 equation (4.6)] Both displayed ratios divide by |sum_i a_i|, but the opening only states a in R^n.",
-      "impact": "The relative contract is meaningful only for y!=0; for y=0, an unnormalized absolute-bias statement would be needed.",
-      "issue": "The relative statement does not explicitly exclude a zero exact sum."
-    },
-    {
-      "evidence": "[PDF pages 5 and 13; anchors: standard model (2.4) and opening of section 4.1] The standard model is introduced for floating-point operands, while section 4.1 quantifies a in R^n and assigns hat(s)_1=a_1 without modeling input conversion.",
-      "impact": "A formalization must decide whether the a_i are assumed exactly representable or are exact real inputs with unmodeled loading; it should not add input-rounding errors to this theorem.",
-      "issue": "Input representability is not stated consistently with the inherited elementary-operation model."
-    },
-    {
-      "evidence": "[PDF pages 8 and 13; anchors: zero-result case in Lemma 3.2 and beta definition (4.5)] Lemma 3.2 supplies delta=beta=0 when c=0, but (4.5) does not repeat that case split.",
-      "impact": "The zero-result convention should be inherited explicitly if beta_{k-1} is formalized as a total function.",
-      "issue": "Equation (4.5) is undefined when a partial exact addition result is zero."
-    },
-    {
-      "evidence": "[PDF page 13; anchor: sentence immediately following equation (4.6)] Equation (4.6) and the proof on PDF page 14 clearly use gamma_{n-1}; the following sentence refers generically to kappa(a) and gamma_n as defined in (4.2)-(4.3).",
-      "impact": "The theorem's bound must use the explicit equation and proof value gamma_{n-1}; the prose reference is best read as naming the gamma function family.",
-      "issue": "The prose after (4.6) names gamma_n(u_{p+r}) although the formula uses gamma_{n-1}(u_{p+r})."
-    }
-  ],
-  "contract_plain_english": "[PDF pages 13-14; anchors: equations (4.1)-(4.6) and proof of Theorem 4.1] For left-to-right summation of a real n-vector using n-1 limited-precision stochastic roundings, the expected computed sum differs from the exact sum by at most sum_i |a_i| times gamma_{n-1}(u_{p+r}). When the exact sum is nonzero, division by |y| gives the relative-bias bound kappa(a) gamma_{n-1}(u_{p+r}).",
-  "paper_batch_sha256": "5856f4d88e51aeb1df8e36f051f77e90c96a2896bb707ed0186c2f74cf1ebc0b",
-  "paper_sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P17-T2",
+  "paper_sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d",
   "source_evidence": [
     {
-      "anchor": "Definition 2.9 and truncation-error model",
-      "observation": "The limited-precision rounding model uses p-bit outputs, r additional random bits, and a p+r-bit truncation error bounded by u_{p+r}=2^(1-p-r).",
+      "pdf_page": 3,
+      "printed_page": "B1229",
+      "anchor": "Introduction, paragraph defining SR_{p,r} and unit roundoff",
+      "observation": "The paper uses p-1 fraction bits, r limited random bits, and unit roundoff u_p := 2^(1-p)."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "B1231",
+      "anchor": "Section 2.2, equations (2.1)-(2.4)",
+      "observation": "The arithmetic is a normalized precision-p binary floating-point system. An elementary operation rounded stochastically has multiplicative error bounded by u_p."
+    },
+    {
       "pdf_page": 6,
-      "printed_page": "B1232"
+      "printed_page": "B1232",
+      "anchor": "Definition 2.9 and equation (2.6)",
+      "observation": "SR_{p,r}(x) rounds to one of the two enclosing precision-p values, with probability determined by fl_{p+r}(x). The p+r-bit directed-rounding error beta satisfies |beta| <= u_{p+r} = 2^(1-p-r)."
     },
     {
-      "anchor": "recursive-sum definitions (4.1)-(4.5) and Theorem 4.1 equation (4.6)",
-      "observation": "The paper defines y=sum_i a_i, kappa(a), gamma_n(u), the SR_{p,r} recursive summation, its coefficientwise product representation, the stepwise delta and beta errors, and the relative expected-bias bound.",
+      "pdf_page": 7,
+      "printed_page": "B1233",
+      "anchor": "Section 3, equation (3.1)",
+      "observation": "For SR_{p,r}(x) = x(1+delta), E(delta) = beta = (fl_{p+r}(x)-x)/x, so limited-precision stochastic rounding is generally biased."
+    },
+    {
+      "pdf_page": 8,
+      "printed_page": "B1234",
+      "anchor": "Lemma 3.2",
+      "observation": "For successive operations, E(delta_k | delta_1,...,delta_{k-1}) = beta_k. When the exact pre-rounding result is zero, the proof sets delta_k = beta_k = 0."
+    },
+    {
+      "pdf_page": 9,
+      "printed_page": "B1235",
+      "anchor": "Theorem 3.6",
+      "observation": "If the conditional-bias relations hold and |beta_k| <= B, then (1-B)^m <= E[product_{k=1}^m(1+delta_k)] <= (1+B)^m."
+    },
+    {
       "pdf_page": 13,
-      "printed_page": "B1239"
+      "printed_page": "B1239",
+      "anchor": "Section 4.1, equations (4.1)-(4.5)",
+      "observation": "For a in R^n, the paper defines y = sum_i a_i, kappa(a) = sum_i |a_i|/|sum_i a_i|, gamma_m(u) = (1+u)^m-1, the left-to-right SR_{p,r} recurrence, and its coefficientwise product representation."
     },
     {
-      "anchor": "proof of Theorem 4.1 using Theorem 3.6 and triangle inequality",
-      "observation": "The proof applies the product expectation envelope to each coefficient, bounds a product of length n-max{i,2}+1 by its upper envelope, then replaces every such length by n-1 and divides by |y| to obtain kappa(a) gamma_{n-1}(u_{p+r}).",
+      "pdf_page": 13,
+      "printed_page": "B1239",
+      "anchor": "Theorem 4.1, equation (4.6)",
+      "observation": "The stated summation-bias bound is |E(hat_y)-y|/|y| <= kappa(a) gamma_{n-1}(u_{p+r})."
+    },
+    {
       "pdf_page": 14,
-      "printed_page": "B1240"
+      "printed_page": "B1240",
+      "anchor": "Proof of Theorem 4.1",
+      "observation": "Linearity, the triangle inequality, and Theorem 3.6 give a coefficientwise factor (1+u_{p+r})^(n-max{i,2}+1)-1, which is bounded by gamma_{n-1}(u_{p+r}); summing |a_i| and dividing by |y| produces kappa(a)."
     }
   ],
   "statement": {
-    "algorithm_linkage": "[PDF page 13; anchor: recursive-summation algorithm and equation (4.4)] The claim is specifically for left-to-right recursive summation with n-1 SR_{p,r}-rounded additions; it is not a claim about pairwise, compensated, sorted, or parallel summation.",
     "binders": [
-      "[PDF page 13; anchor: opening of section 4.1] A vector a in R^n and the exact scalar sum y=sum_{i=1}^n a_i.",
-      "[PDF pages 6 and 13; anchors: Definition 2.9 and recursive summation setup] A precision-p binary floating-point computation using SR_{p,r}, where r is the number of additional random bits and u_{p+r}=2^(1-p-r)."
-    ],
-    "conclusions": [
-      "[PDF page 13; anchor: Theorem 4.1 equation (4.6)] |E(hat(y))-y|/|y| <= kappa(a) gamma_{n-1}(u_{p+r}).",
-      "[PDF page 14; anchor: coefficientwise Theorem 3.6 step in the proof] For the coefficient of a_i, |E[product_{k=max{i,2}}^n(1+delta_{k-1})]-1| <= (1+u_{p+r})^(n-max{i,2}+1)-1 <= gamma_{n-1}(u_{p+r})."
-    ],
-    "constants_and_indexing": [
-      "[PDF page 13; anchor: recursive-summation table] The n inputs generate n-1 rounding errors delta_1,...,delta_{n-1}.",
-      "[PDF pages 13 and 14; anchors: product representation (4.4) and proof] The coefficient a_i is multiplied by errors indexed k=max{i,2},...,n, using delta_{k-1}; the longest suffix has n-1 factors.",
-      "[PDF page 13; anchor: equation (4.6)] The final error function is gamma_{n-1}, not gamma_n.",
-      "[PDF pages 6 and 13; anchors: truncation-error radius and equation (4.6)] The argument of gamma is u_{p+r}=2^(1-p-r), not u_p."
-    ],
-    "definitions_and_conventions": [
-      "[PDF page 13; anchor: equation (4.1)] y=sum_{i=1}^n a_i is the exact real sum.",
-      "[PDF page 13; anchor: equation (4.2)] kappa(a)=(sum_{i=1}^n |a_i|)/|sum_{i=1}^n a_i|.",
-      "[PDF page 13; anchor: equation (4.3)] gamma_m(u)=(1+u)^m-1; the page writes gamma_n(u)=nu+O(u^2) when nu is much less than 1.",
-      "[PDF page 13; anchor: equation (4.4)] hat(y)=sum_{i=1}^n a_i product_{k=max{i,2}}^n(1+delta_{k-1}).",
-      "[PDF page 13; anchor: equation (4.5)] beta_{k-1}=[fl_{p+r}(hat(s)_{k-1}+a_k)-(hat(s)_{k-1}+a_k)]/(hat(s)_{k-1}+a_k)."
-    ],
-    "error_notions": [
-      "[PDF page 13; anchor: Theorem 4.1 equation (4.6)] The result bounds relative bias, namely the absolute difference between the expected computed sum and the exact sum divided by |y|.",
-      "[PDF page 13; anchor: Theorem 4.1 equation (4.6)] It does not bound E(|hat(y)-y|), a samplewise error, variance, or a high-probability event."
-    ],
-    "exceptional_values": [
-      "[PDF page 8; anchor: proof of Lemma 3.2] The inherited convention sets delta=beta=0 when an exact elementary-operation result is zero, although formula (4.5) itself is written as a quotient.",
-      "[PDF page 13; anchor: equations (4.2) and (4.6)] If y=0, both kappa(a) and the relative-bias expression are undefined.",
-      "[PDF pages 5 and 13; anchors: normalized model and Theorem 4.1] No explicit behavior for overflow, underflow, subnormal values, infinities, or NaNs is included."
-    ],
-    "higher_order_terms": [
-      "[PDF page 13; anchor: equation (4.3)] gamma_m(u) is retained exactly as (1+u)^m-1; the displayed expansion gamma_n(u)=nu+O(u^2) is stated only for nu much less than 1.",
-      "[PDF page 13; anchor: Theorem 4.1 equation (4.6)] The theorem uses the exact gamma_{n-1}(u_{p+r}), so the small-error condition attached to the expansion is not an additional theorem hypothesis."
+      "Fix the vector length n and an input vector a = (a_1,...,a_n) in R^n; n is implicitly a positive integer because it is a vector dimension and the recursion starts at index 1. (PDF p. 13, printed B1239, Section 4.1 and equation (4.1).)",
+      "Fix precision p and a positive integer r specifying the limited number of random bits; u_p = 2^(1-p) and u_{p+r} = 2^(1-p-r). (PDF p. 3, printed B1229, introduction; PDF p. 6, printed B1232, Definition 2.9.)",
+      "For the fixed input, construct the random computed result hat_y using the successive SR_{p,r} rounding decisions, and take expectation over those decisions. (PDF p. 13, printed B1239, recurrence and Theorem 4.1.)"
     ],
     "hypotheses": [
-      "[PDF page 13; anchor: recursive-summation algorithm] The computed values satisfy hat(s)_1=a_1 and hat(s)_k=SR_{p,r}(hat(s)_{k-1}+a_k) for k=2,...,n, with hat(y)=hat(s)_n.",
-      "[PDF page 13; anchor: text following equation (4.4)] Each addition error satisfies |delta_{k-1}|<=u_p and |E(delta_{k-1})|=|E(beta_{k-1})|<=u_{p+r} for 2<=k<=n.",
-      "[PDF pages 8-10 and 14; anchors: Lemma 3.2, Remark 3.7, and Theorem 4.1 proof] The step errors inherit the conditional-mean relation needed to apply Theorem 3.6 to every suffix product in (4.4)."
+      "The exact target is y = sum_{i=1}^n a_i. (PDF p. 13, printed B1239, equation (4.1).)",
+      "The computed recursion is hat_s_1 = a_1 and hat_s_k = SR_{p,r}(hat_s_{k-1}+a_k) = (hat_s_{k-1}+a_k)(1+delta_{k-1}) for k=2,...,n, with hat_y = hat_s_n. (PDF p. 13, printed B1239, recursive-summation table.)",
+      "The corresponding exact recursion is s_1=a_1 and s_k=s_{k-1}+a_k, with y=s_n. (PDF p. 13, printed B1239, recursive-summation table.)",
+      "Each stochastic rounding error satisfies |delta_{k-1}| <= u_p. (PDF p. 13, printed B1239, paragraph following equation (4.4).)",
+      "For each addition, beta_{k-1} is the p+r-bit truncation error of hat_s_{k-1}+a_k, is bounded pathwise by u_{p+r}, and satisfies the inherited conditional relation E(delta_{k-1} | preceding rounding errors) = beta_{k-1}. (PDF p. 6, printed B1232, paragraph before Definition 2.9; PDF p. 8, printed B1234, Lemma 3.2; PDF p. 13, printed B1239, equation (4.5).)",
+      "To interpret the displayed relative bound and kappa(a) as real-valued quantities, y must be nonzero, although Theorem 4.1 does not state this hypothesis explicitly. (PDF p. 13, printed B1239, equations (4.2) and (4.6).)"
+    ],
+    "conclusions": [
+      "The summation bias satisfies |E(hat_y)-y|/|y| <= kappa(a) gamma_{n-1}(u_{p+r}). (PDF p. 13, printed B1239, Theorem 4.1, equation (4.6).)",
+      "Equivalently, after expanding the definitions, |E(hat_y)-y| <= (sum_{i=1}^n |a_i|) ((1+u_{p+r})^(n-1)-1). (PDF p. 13, printed B1239, equations (4.2), (4.3), and (4.6); PDF p. 14, printed B1240, final proof lines.)",
+      "For coefficient a_i, the proof uses |E[product_{k=max{i,2}}^n(1+delta_{k-1})]-1| <= (1+u_{p+r})^(n-max{i,2}+1)-1 <= gamma_{n-1}(u_{p+r}). (PDF p. 14, printed B1240, proof of Theorem 4.1.)"
+    ],
+    "definitions_and_conventions": [
+      "kappa(a) := (sum_{i=1}^n |a_i|)/|sum_{i=1}^n a_i|. (PDF p. 13, printed B1239, equation (4.2).)",
+      "gamma_m(u) := (1+u)^m-1; equation (4.3) also gives gamma_m(u)=m u+O(u^2) when m u is much smaller than 1. (PDF p. 13, printed B1239, equation (4.3).)",
+      "The computed result has the exact product representation hat_y = sum_{i=1}^n a_i product_{k=max{i,2}}^n(1+delta_{k-1}). (PDF p. 13, printed B1239, equation (4.4).)",
+      "beta_{k-1} := (fl_{p+r}(hat_s_{k-1}+a_k)-(hat_s_{k-1}+a_k))/(hat_s_{k-1}+a_k), subject to the zero-result convention inherited from Lemma 3.2. (PDF p. 13, printed B1239, equation (4.5); PDF p. 8, printed B1234, Lemma 3.2.)",
+      "An empty product is implicitly 1 where an index range is empty, notably for the n=1 edge case, although this convention is not restated in Section 4.1. (PDF p. 13, printed B1239, equation (4.4).)"
     ],
     "implicit_context": [
-      "[PDF pages 13 and 14; anchors: Theorem 4.1 and its proof] E is expectation over the stochastic choices made by SR_{p,r}.",
-      "[PDF page 13; anchor: equations (4.2) and (4.6)] A nonzero exact sum y is logically required for kappa(a) and the displayed relative bias, but the theorem does not explicitly state y!=0.",
-      "[PDF page 13; anchor: recursive-summation table] The initial assignment hat(s)_1=a_1 and all inputs a_i are treated without a separately modeled input-rounding error."
+      "The conditional-bias property and pathwise beta bound required by Theorem 3.6 are inherited from the general SR_{p,r} model; no independence or mean-independence assumption on the original delta errors is made. (PDF p. 8, printed B1234, Lemma 3.2; PDF p. 9, printed B1235, Theorem 3.6.)",
+      "The expectation is taken after fixing a, n, p, and r; y is deterministic while hat_y is random. (PDF p. 13, printed B1239, equations (4.1), (4.4), and (4.6).)",
+      "The normalized floating-point model and relative-error formulas implicitly require operations to remain in the range where the enclosing floating-point values and multiplicative error model are defined. The paper does not state a separate no-overflow or no-underflow hypothesis here. (PDF p. 5, printed B1231, Section 2.2; PDF p. 13, printed B1239, recursive-summation setup.)"
+    ],
+    "algorithm_linkage": "The result applies specifically to left-to-right recursive summation with n-1 additions, exact initialization hat_s_1=a_1, and one limited-precision stochastic rounding SR_{p,r} after each subsequent addition. It is not a pairwise, compensated, or high-probability summation result. (PDF p. 13, printed B1239, Section 4.1 recurrence and Theorem 4.1.)",
+    "numerical_model": [
+      "The base system is normalized binary precision-p floating-point arithmetic with unit roundoff u_p=2^(1-p). (PDF p. 3, printed B1229, introduction; PDF p. 5, printed B1231, Section 2.2.)",
+      "SR_{p,r}(x) returns a precision-p enclosing value, but its Bernoulli probability is computed from the p+r-bit quantity fl_{p+r}(x). (PDF p. 6, printed B1232, Definition 2.9 and equation (2.6).)",
+      "Limited-precision SR is biased: E[SR_{p,r}(x)] = fl_{p+r}(x), and if SR_{p,r}(x)=x(1+delta), then E(delta)=beta. (PDF p. 7, printed B1233, equation (3.1).)",
+      "The stochastic rounding error is bounded by u_p, while the directed p+r-bit truncation error governing the bias is bounded by u_{p+r}. (PDF p. 6, printed B1232, paragraph before Definition 2.9; PDF p. 13, printed B1239, paragraph following equation (4.4).)"
+    ],
+    "error_notions": [
+      "The bounded quantity is relative absolute bias, |E(hat_y)-y|/|y|. (PDF p. 13, printed B1239, equation (4.6).)",
+      "It is not E(|hat_y-y|)/|y|, not a bound on each realization, and not a high-probability forward-error bound. (PDF p. 13, printed B1239, Theorem 4.1; PDF p. 14, printed B1240, transition to the distinct probabilistic Theorem 4.2.)",
+      "The local delta variables are relative stochastic rounding errors, while beta variables are relative p+r-bit directed-rounding errors controlling their conditional means. (PDF p. 7, printed B1233, equation (3.1); PDF p. 8, printed B1234, Lemma 3.2.)"
     ],
     "norms": [
-      "[PDF page 13; anchor: condition number (4.2)] Only scalar absolute values occur; sum_i |a_i| is the l1 magnitude of the coefficient vector, although the paper writes it explicitly rather than naming a vector norm."
+      "All displayed error magnitudes use the scalar absolute value. (PDF p. 13, printed B1239, equations (4.2) and (4.6).)",
+      "The numerator sum_i |a_i| in kappa(a) is the vector l1 norm written componentwise; no other vector norm occurs in Theorem 4.1. (PDF p. 13, printed B1239, equation (4.2).)"
     ],
-    "numerical_model": [
-      "[PDF pages 6 and 13; anchors: Definition 2.9 and section 4.1 setup] Every addition is rounded by limited-precision stochastic rounding to precision p using r random bits.",
-      "[PDF page 13; anchor: bounds following equation (4.4)] The random output error has radius u_p, while its expected bias is controlled by the finer-stage radius u_{p+r}.",
-      "[PDF page 5; anchor: standard floating-point model (2.4)] The inherited arithmetic model is normalized binary floating point and assumes the usual relative-error model for elementary operations."
+    "constants_and_indexing": [
+      "There are n-1 rounding errors, indexed delta_1,...,delta_{n-1}; addition k uses delta_{k-1}. (PDF p. 13, printed B1239, recursive-summation table.)",
+      "Coefficient a_i is multiplied by errors with k=max{i,2},...,n, so it contains L_i=n-max{i,2}+1 factors. (PDF p. 13, printed B1239, equation (4.4); PDF p. 14, printed B1240, proof.)",
+      "The common worst-case factor count is n-1, producing gamma_{n-1}(u_{p+r})=(1+u_{p+r})^(n-1)-1. (PDF p. 14, printed B1240, proof of Theorem 4.1.)",
+      "u_{p+r}=2^(1-p-r), not u_p+r and not u_p+u_r. (PDF p. 3, printed B1229, definition of u_p; PDF p. 6, printed B1232, bound |beta|<=2^(1-p-r)=u_{p+r}.)"
+    ],
+    "higher_order_terms": [
+      "The theorem uses the exact function gamma_{n-1}(u_{p+r})=(1+u_{p+r})^(n-1)-1, so no higher-order term is omitted from the bound. (PDF p. 13, printed B1239, equations (4.3) and (4.6).)",
+      "The expression gamma_m(u)=m u+O(u^2) for m u much smaller than 1 is only an accompanying small-u expansion, not an additional hypothesis needed for the exact inequality. (PDF p. 13, printed B1239, equation (4.3).)"
+    ],
+    "exceptional_values": [
+      "If an exact pre-rounding operation result is zero, Lemma 3.2 sets its delta and beta errors to zero, resolving the relative-error formula's zero denominator. (PDF p. 8, printed B1234, proof of Lemma 3.2.)",
+      "If the final exact sum y is zero, both kappa(a) and the relative bias in (4.6) divide by zero; the paper gives no convention for this case. (PDF p. 13, printed B1239, equations (4.2) and (4.6).)",
+      "The paper's normalized finite-exponent model does not state how Theorem 4.1 handles overflow, underflow, subnormal values, infinities, or NaNs. (PDF p. 5, printed B1231, Section 2.2; PDF p. 13, printed B1239, theorem setup.)"
     ]
   },
-  "task_id": "P17-T2",
   "undebatable_constraints": [
-    "[PDF page 13; anchor: equation (4.6)] The left side is |E(hat(y))-y|/|y|, not E(|hat(y)-y|)/|y|.",
-    "[PDF page 13; anchor: equations (4.2) and (4.6)] The condition number kappa(a) multiplies the complete gamma factor.",
-    "[PDF page 14; anchor: proof of Theorem 4.1] The proof is coefficientwise and uses the triangle inequality after linearity of expectation.",
-    "[PDF page 14; anchor: application of Theorem 3.6] The suffix-product exponent is n-max{i,2}+1 before being uniformly bounded by n-1.",
-    "[PDF page 13; anchor: recursive-summation algorithm] The algorithm performs exactly n-1 rounded additions and introduces no rounding at hat(s)_1=a_1.",
-    "[PDF page 13; anchor: equation (4.3)] No assumption such as n u_{p+r} much less than 1 is needed for the exact gamma-form conclusion."
-  ]
+    "The conclusion must retain the factor kappa(a); replacing it by 1 would require an unstated sign or conditioning assumption on the summands. (PDF p. 13, printed B1239, equations (4.2) and (4.6).)",
+    "The gamma index is n-1, corresponding to the n-1 rounded additions. (PDF p. 13, printed B1239, equation (4.6); PDF p. 14, printed B1240, proof.)",
+    "The precision entering the bias factor is u_{p+r}, whereas u_p bounds individual stochastic rounding errors. (PDF p. 13, printed B1239, paragraph after equation (4.4) and equation (4.6).)",
+    "The result concerns |E(hat_y)-y|, not E|hat_y-y| and not a realization-wise error. (PDF p. 13, printed B1239, equation (4.6).)",
+    "No independence assumption may be added; the derivation uses conditional expected errors beta_k and their uniform bound through Theorem 3.6. (PDF p. 8, printed B1234, Lemma 3.2; PDF p. 9, printed B1235, Theorem 3.6.)",
+    "The algorithm is the stated left-to-right recursive sum with exact initialization and n-1 SR_{p,r}-rounded additions. (PDF p. 13, printed B1239, recursive-summation table.)",
+    "The exact gamma function retains all powers of u_{p+r}; the small-u big-O expansion is not the theorem's conclusion. (PDF p. 13, printed B1239, equations (4.3) and (4.6).)",
+    "A real-valued reading of the relative statement requires y=sum_i a_i to be nonzero because both sides contain |y| in a denominator. (PDF p. 13, printed B1239, equations (4.2) and (4.6).)"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The theorem does not explicitly assume y != 0.",
+      "evidence": "Both kappa(a) in (4.2) and the left side of (4.6) divide by |y|, with no zero-sum convention stated. (PDF p. 13, printed B1239, equations (4.2) and (4.6).)",
+      "impact": "The ordinary real-valued contract must either add y != 0 as an implicit well-definedness condition or leave the zero-sum case outside the theorem's domain."
+    },
+    {
+      "issue": "Input representability and exceptional floating-point range behavior are not specified in Section 4.1.",
+      "evidence": "The section binds a in R^n and sets hat_s_1=a_1, while the earlier model describes a normalized finite-exponent floating-point system; no no-overflow, no-underflow, or a_i in F assumption is stated. (PDF p. 5, printed B1231, Section 2.2; PDF p. 13, printed B1239, Section 4.1 recurrence.)",
+      "impact": "One must not silently strengthen the theorem to representable inputs or silently assign IEEE exceptional-value semantics; only the abstract relative-error model is supported."
+    },
+    {
+      "issue": "Equation (4.5) is syntactically undefined when hat_s_{k-1}+a_k=0.",
+      "evidence": "Equation (4.5) divides by the pre-rounding sum, while the proof of Lemma 3.2 separately declares delta_k=beta_k=0 when the corresponding exact operation result is zero. (PDF p. 13, printed B1239, equation (4.5); PDF p. 8, printed B1234, Lemma 3.2 proof.)",
+      "impact": "A complete formalization must import the zero-result convention rather than treating (4.5) as an unrestricted quotient."
+    },
+    {
+      "issue": "The prose after (4.6) refers to gamma_n(u_{p+r}), although the displayed theorem and proof use gamma_{n-1}(u_{p+r}).",
+      "evidence": "Equation (4.6) displays gamma_{n-1}, its following sentence names gamma_n as the function defined in (4.3), and the proof ends with gamma_{n-1}. (PDF p. 13, printed B1239, Theorem 4.1; PDF p. 14, printed B1240, proof.)",
+      "impact": "The displayed equation and proof agree on n-1, so the contract uses n-1 and treats the prose as a generic reference to the gamma family rather than a competing bound."
+    },
+    {
+      "issue": "The exact directed mode used for fl_{p+r} is not uniquely fixed by the general definition.",
+      "evidence": "The setup describes truncation to p+r bits but immediately notes that fl_{p+r} could use another directed rounding mode, all satisfying |beta|<=u_{p+r}. (PDF p. 6, printed B1232, paragraph before Definition 2.9.)",
+      "impact": "Theorem 4.1 depends on the directed-error bound and conditional-bias model, not on a uniquely selected directed mode beyond those properties."
+    }
+  ],
+  "contract_plain_english": "Fix a real vector a and compute its sum by the stated left-to-right recursion, applying limited-precision stochastic rounding SR_{p,r} after each of the n-1 additions. The expected computed sum may be biased because its rounding probabilities use only p+r bits, but the absolute relative bias is at most the summation condition number kappa(a) times (1+u_{p+r})^(n-1)-1. This is an expectation-level bias bound, not a bound on individual runs or an expected absolute error, and it is ordinarily meaningful only when the exact sum is nonzero. (PDF p. 13, printed B1239, equations (4.1)-(4.6); PDF p. 14, printed B1240, proof of Theorem 4.1.)"
 }

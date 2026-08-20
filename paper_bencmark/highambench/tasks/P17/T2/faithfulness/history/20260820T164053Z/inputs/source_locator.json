@@ -1,0 +1,23 @@
+{
+  "evidence_policy": "Use the referenced PDF and surrounding paper context as evidence. Do not use context.md or task.json paraphrases as semantic evidence.",
+  "paper_path": "paper_bencmark/reference_papers/P17_PROBABILISTIC ERROR ANALYSIS OF LIMITED-PRECISIONSTOCHASTIC ROUNDING.pdf",
+  "paper_sha256": "df1ce5dd33285adfcffc6a4c7ab94f9604b46739cb848c6cbb5f997e8fac597d",
+  "paper_version": "published journal version; SIAM Journal on Scientific Computing 47(5), 2025, pages B1227-B1249",
+  "source_locations": [
+    {
+      "anchor": "recursive-sum product representation (4.4), condition number (4.2), and Theorem 4.1 equation (4.6)",
+      "pdf_page": 13,
+      "printed_page": "B1239",
+      "role": "summation bias conclusion",
+      "section": "4.1 Recursive summation"
+    },
+    {
+      "anchor": "proof of Theorem 4.1 using Theorem 3.6 and triangle inequality",
+      "pdf_page": 14,
+      "printed_page": "B1240",
+      "role": "coefficientwise-to-condition-number derivation",
+      "section": "4.1 Recursive summation"
+    }
+  ],
+  "task_id": "P17-T2"
+}

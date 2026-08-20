@@ -6,49 +6,64 @@ Judges must interpret every dependency entry and may not infer semantics from na
 ## Exact source declaration
 
 ```lean
-theorem p17_t2_recursive_sum_bias_condition_bound {n : ℕ}
-    (a factor : Fin n → ℝ) (gamma : ℝ)
-    (hsum : p17ExactSum a ≠ 0)
-    (hfactor : ∀ i, |factor i - 1| ≤ gamma) :
-    |p17EffectiveExpectedSum a factor - p17ExactSum a| /
-        |p17ExactSum a| ≤
-      gamma * p17SummationCondition a
+theorem p17_t2_recursive_sum_bias_condition_bound
+    {m : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17LimitedPrecisionRecursiveSumRun m Ω)
+    (hsum : p17ExactSum run.a ≠ 0) :
+    |p17ExpectedRecursiveSum run - p17ExactSum run.a| /
+        |p17ExactSum run.a| ≤
+      p17SummationCondition run.a *
+        p17Gamma m (p17UnitRoundoff (run.p + run.r))
 ```
 
 ## Elaborated target type
 
 ```lean
-∀ {n : Nat} (a factor : Fin n → Real) (gamma : Real),
-  Ne (HighamBench.p17ExactSum a) 0 →
-    (∀ (i : Fin n), Real.instLE.le (abs (instHSub.hSub (factor i) 1)) gamma) →
-      Real.instLE.le
-        (instHDiv.hDiv (abs (instHSub.hSub (HighamBench.p17EffectiveExpectedSum a factor) (HighamBench.p17ExactSum a)))
-          (abs (HighamBench.p17ExactSum a)))
-        (instHMul.hMul gamma (HighamBench.p17SummationCondition a))
+∀ {m : Nat} {Ω : Type u_1} [inst : Fintype Ω] (run : HighamBench.P17LimitedPrecisionRecursiveSumRun m Ω),
+  Ne (HighamBench.p17ExactSum run.a) 0 →
+    Real.instLE.le
+      (instHDiv.hDiv (abs (instHSub.hSub (HighamBench.p17ExpectedRecursiveSum run) (HighamBench.p17ExactSum run.a)))
+        (abs (HighamBench.p17ExactSum run.a)))
+      (instHMul.hMul (HighamBench.p17SummationCondition run.a)
+        (HighamBench.p17Gamma m (HighamBench.p17UnitRoundoff (instHAdd.hAdd run.p run.r))))
 ```
 
 ## Fully explicit elaborated target type
 
 ```lean
-∀ {n : Nat} (a factor : Fin n → Real) (gamma : Real)
+∀ {m : Nat} {Ω : Type u_1} [inst : Fintype.{u_1} Ω]
+  (run : @HighamBench.P17LimitedPrecisionRecursiveSumRun.{u_1} m Ω inst)
   (hsum :
-    @Ne.{1} Real (@HighamBench.p17ExactSum n a)
-      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)))
-  (hfactor :
-    ∀ (i : Fin n),
-      @LE.le.{0} Real Real.instLE
-        (@abs.{0} Real Real.lattice Real.instAddGroup
-          (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub) (factor i)
-            (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))))
-        gamma),
+    @Ne.{1} Real
+      (@HighamBench.p17ExactSum
+        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+        (@HighamBench.P17LimitedPrecisionRecursiveSumRun.a.{u_1} m Ω inst run))
+      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))),
   @LE.le.{0} Real Real.instLE
     (@HDiv.hDiv.{0, 0, 0} Real Real Real (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
       (@abs.{0} Real Real.lattice Real.instAddGroup
         (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
-          (@HighamBench.p17EffectiveExpectedSum n a factor) (@HighamBench.p17ExactSum n a)))
-      (@abs.{0} Real Real.lattice Real.instAddGroup (@HighamBench.p17ExactSum n a)))
-    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) gamma
-      (@HighamBench.p17SummationCondition n a))
+          (@HighamBench.p17ExpectedRecursiveSum.{u_1} m Ω inst run)
+          (@HighamBench.p17ExactSum
+            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+              (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+            (@HighamBench.P17LimitedPrecisionRecursiveSumRun.a.{u_1} m Ω inst run))))
+      (@abs.{0} Real Real.lattice Real.instAddGroup
+        (@HighamBench.p17ExactSum
+          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+          (@HighamBench.P17LimitedPrecisionRecursiveSumRun.a.{u_1} m Ω inst run))))
+    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+      (@HighamBench.p17SummationCondition
+        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+        (@HighamBench.P17LimitedPrecisionRecursiveSumRun.a.{u_1} m Ω inst run))
+      (HighamBench.p17Gamma m
+        (HighamBench.p17UnitRoundoff
+          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+            (@HighamBench.P17LimitedPrecisionRecursiveSumRun.p.{u_1} m Ω inst run)
+            (@HighamBench.P17LimitedPrecisionRecursiveSumRun.r.{u_1} m Ω inst run)))))
 ```
 
 ## Local import graph
@@ -61,33 +76,118 @@ theorem p17_t2_recursive_sum_bias_condition_bound {n : ℕ}
 
 `local` entries are recursively followed through their types and bodies. `external-frontier` entries are the exact Lean/mathlib declarations where that recursive traversal stops; their types and one-level bodies are still shown.
 
-### D001: `HighamBench.p17EffectiveExpectedSum`
+### D001: `HighamBench.P17LimitedPrecisionRecursiveSumRun`
 
 - Role: `local`
 - Owner module: `HighamBench.P17Definitions`
-- Declaration kind: `def`
+- Declaration kind: `inductive`
 - Distance from target type: `1`
-- Semantic SHA-256: `66445ac9433be7023c619dca67a5b17da2057eee4c9759a121e4a54069f4b7ae`
+- Semantic SHA-256: `ace3179ccf30cf04c14ebcee55d2b8f502cdfa9f8ce0fe0e41db599a443a794b`
 
 Type:
 
 ```lean
-{n : Nat} → (Fin n → Real) → (Fin n → Real) → Real
+Nat → (Ω : Type u_1) → [Fintype Ω] → Type u_1
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} → (a factor : Fin n → Real) → Real
+(m : Nat) → (Ω : Type u_1) → [Fintype.{u_1} Ω] → Type u_1
+```
+
+### D002: `HighamBench.P17LimitedPrecisionRecursiveSumRun.a`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `e50cfccf69dab2200459c7b74d24519fdd75a6840c847029aeb9d20f5a6bca0e`
+
+Type:
+
+```lean
+{m : Nat} →
+  {Ω : Type u_1} →
+    [inst : Fintype Ω] → HighamBench.P17LimitedPrecisionRecursiveSumRun m Ω → Fin (instHAdd.hAdd m 1) → Real
+```
+
+Fully explicit type:
+
+```lean
+{m : Nat} →
+  {Ω : Type u_1} →
+    [inst : Fintype.{u_1} Ω] →
+      (self : @HighamBench.P17LimitedPrecisionRecursiveSumRun.{u_1} m Ω inst) →
+        Fin
+            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+              (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
+          Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} a factor => Finset.univ.sum fun i => instHMul.hMul (a i) (factor i)
+fun m Ω [Fintype Ω] self => self.6
 ```
 
-### D002: `HighamBench.p17ExactSum`
+### D003: `HighamBench.P17LimitedPrecisionRecursiveSumRun.p`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `4b1bd1650658fb1e16d1132aaeffd9eceb794491263e09494ae574b85b83e4e2`
+
+Type:
+
+```lean
+{m : Nat} → {Ω : Type u_1} → [inst : Fintype Ω] → HighamBench.P17LimitedPrecisionRecursiveSumRun m Ω → Nat
+```
+
+Fully explicit type:
+
+```lean
+{m : Nat} →
+  {Ω : Type u_1} →
+    [inst : Fintype.{u_1} Ω] → (self : @HighamBench.P17LimitedPrecisionRecursiveSumRun.{u_1} m Ω inst) → Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m Ω [Fintype Ω] self => self.2
+```
+
+### D004: `HighamBench.P17LimitedPrecisionRecursiveSumRun.r`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `1a1252dd1f75472f55596d2ab59186740870c583d8da51c043f12fb95ffe1038`
+
+Type:
+
+```lean
+{m : Nat} → {Ω : Type u_1} → [inst : Fintype Ω] → HighamBench.P17LimitedPrecisionRecursiveSumRun m Ω → Nat
+```
+
+Fully explicit type:
+
+```lean
+{m : Nat} →
+  {Ω : Type u_1} →
+    [inst : Fintype.{u_1} Ω] → (self : @HighamBench.P17LimitedPrecisionRecursiveSumRun.{u_1} m Ω inst) → Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m Ω [Fintype Ω] self => self.3
+```
+
+### D005: `HighamBench.p17ExactSum`
 
 - Role: `local`
 - Owner module: `HighamBench.P17Definitions`
@@ -113,7 +213,62 @@ Definition body (one-level semantic boundary):
 fun {n} a => Finset.univ.sum fun i => a i
 ```
 
-### D003: `HighamBench.p17SummationCondition`
+### D006: `HighamBench.p17ExpectedRecursiveSum`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `45bbb166d4419f1260709601b2a2a2e83ba179088ef6e807d7da6b2a8416cf7e`
+
+Type:
+
+```lean
+{m : Nat} → {Ω : Type u_1} → [inst : Fintype Ω] → HighamBench.P17LimitedPrecisionRecursiveSumRun m Ω → Real
+```
+
+Fully explicit type:
+
+```lean
+{m : Nat} →
+  {Ω : Type u_1} →
+    [inst : Fintype.{u_1} Ω] → (run : @HighamBench.P17LimitedPrecisionRecursiveSumRun.{u_1} m Ω inst) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m} {Ω} [Fintype Ω] run =>
+  HighamBench.p17Expectation run.probability fun ω => HighamBench.p17RecursiveSum run.a fun k => run.delta k ω
+```
+
+### D007: `HighamBench.p17Gamma`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `b618e3f80d471499c2e719ece1298451cd8b322884851dc6e31f84efc4bffba9`
+
+Type:
+
+```lean
+Nat → Real → Real
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → (u : Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n u => instHSub.hSub (instHPow.hPow (instHAdd.hAdd 1 u) n) 1
+```
+
+### D008: `HighamBench.p17SummationCondition`
 
 - Role: `local`
 - Owner module: `HighamBench.P17Definitions`
@@ -139,7 +294,510 @@ Definition body (one-level semantic boundary):
 fun {n} a => instHDiv.hDiv (Finset.univ.sum fun i => abs (a i)) (abs (HighamBench.p17ExactSum a))
 ```
 
-### D004: `DivInvMonoid.toDiv`
+### D009: `HighamBench.p17UnitRoundoff`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `2e1b884518fe748bc9c633d226f6ce911dc8b29df0c965e62309ecbe8fe0c3fc`
+
+Type:
+
+```lean
+Nat → Real
+```
+
+Fully explicit type:
+
+```lean
+(p : Nat) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun p => instHPow.hPow (1 / 2) (instHSub.hSub p 1)
+```
+
+### D010: `HighamBench.P17LimitedPrecisionRecursiveSumRun.delta`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `5e28f16149b568261491969bc0508e984b4bc02e17efe5111be77b1fc848e02f`
+
+Type:
+
+```lean
+{m : Nat} → {Ω : Type u_1} → [inst : Fintype Ω] → HighamBench.P17LimitedPrecisionRecursiveSumRun m Ω → Fin m → Ω → Real
+```
+
+Fully explicit type:
+
+```lean
+{m : Nat} →
+  {Ω : Type u_1} →
+    [inst : Fintype.{u_1} Ω] →
+      (self : @HighamBench.P17LimitedPrecisionRecursiveSumRun.{u_1} m Ω inst) → Fin m → Ω → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m Ω [Fintype Ω] self => self.7
+```
+
+### D011: `HighamBench.P17LimitedPrecisionRecursiveSumRun.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `93782331e6c436ef83cda017924420324703c857d1c60bc662f3f415eac6d837`
+
+Type:
+
+```lean
+{m : Nat} →
+  {Ω : Type u_1} →
+    [inst : Fintype Ω] →
+      (probability : HighamBench.P17FiniteProbability Ω) →
+        (p r : Nat) →
+          instLTNat.lt 0 p →
+            instLTNat.lt 0 r →
+              (a : Fin (instHAdd.hAdd m 1) → Real) →
+                (delta beta : Fin m → Ω → Real) →
+                  (truncate : Real → Real) →
+                    (∀ (k : Fin m) (ω : Ω), Real.instLE.le (abs (delta k ω)) (HighamBench.p17UnitRoundoff p)) →
+                      (∀ (k : Fin m) (ω : Ω), Real.instLE.le 0 (instHAdd.hAdd 1 (delta k ω))) →
+                        (∀ (k : Fin m) (ω : Ω),
+                            Real.instLE.le (abs (beta k ω)) (HighamBench.p17UnitRoundoff (instHAdd.hAdd p r))) →
+                          (∀ (k : Fin m) (ω : Ω),
+                              Eq (truncate (HighamBench.p17RecursivePreRound a (fun j => delta j ω) k))
+                                (instHMul.hMul (HighamBench.p17RecursivePreRound a (fun j => delta j ω) k)
+                                  (instHAdd.hAdd 1 (beta k ω)))) →
+                            (∀ (k : Fin m) (ω : Ω),
+                                Eq (HighamBench.p17RecursivePreRound a (fun j => delta j ω) k) 0 → Eq (delta k ω) 0) →
+                              (∀ (k : Fin m) (ω : Ω),
+                                  Eq (HighamBench.p17RecursivePreRound a (fun j => delta j ω) k) 0 → Eq (beta k ω) 0) →
+                                (∀ (k : Fin m), HighamBench.p17HistoryMeasurable delta k (beta k)) →
+                                  (∀ (k : Fin m) (X : Ω → Real),
+                                      HighamBench.p17HistoryMeasurable delta k X →
+                                        Eq
+                                          (HighamBench.p17Expectation probability fun ω =>
+                                            instHMul.hMul (X ω) (delta k ω))
+                                          (HighamBench.p17Expectation probability fun ω =>
+                                            instHMul.hMul (X ω) (beta k ω))) →
+                                    HighamBench.P17LimitedPrecisionRecursiveSumRun m Ω
+```
+
+Fully explicit type:
+
+```lean
+{m : Nat} →
+  {Ω : Type u_1} →
+    [inst : Fintype.{u_1} Ω] →
+      (probability : @HighamBench.P17FiniteProbability.{u_1} Ω inst) →
+        (p r : Nat) →
+          (p_pos : @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) p) →
+            (r_pos : @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) r) →
+              (a :
+                  Fin
+                      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+                        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
+                    Real) →
+                (delta beta : Fin m → Ω → Real) →
+                  (truncate : Real → Real) →
+                    (delta_bound :
+                        ∀ (k : Fin m) (ω : Ω),
+                          @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (delta k ω))
+                            (HighamBench.p17UnitRoundoff p)) →
+                      (rounding_factor_nonneg :
+                          ∀ (k : Fin m) (ω : Ω),
+                            @LE.le.{0} Real Real.instLE
+                              (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
+                                (delta k ω))) →
+                        (beta_bound :
+                            ∀ (k : Fin m) (ω : Ω),
+                              @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (beta k ω))
+                                (HighamBench.p17UnitRoundoff
+                                  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) p r))) →
+                          (truncation_equation :
+                              ∀ (k : Fin m) (ω : Ω),
+                                @Eq.{1} Real
+                                  (truncate (@HighamBench.p17RecursivePreRound m a (fun (j : Fin m) => delta j ω) k))
+                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                    (@HighamBench.p17RecursivePreRound m a (fun (j : Fin m) => delta j ω) k)
+                                    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                      (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
+                                      (beta k ω)))) →
+                            (delta_zero :
+                                ∀ (k : Fin m) (ω : Ω),
+                                  @Eq.{1} Real (@HighamBench.p17RecursivePreRound m a (fun (j : Fin m) => delta j ω) k)
+                                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) →
+                                    @Eq.{1} Real (delta k ω)
+                                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))) →
+                              (beta_zero :
+                                  ∀ (k : Fin m) (ω : Ω),
+                                    @Eq.{1} Real
+                                        (@HighamBench.p17RecursivePreRound m a (fun (j : Fin m) => delta j ω) k)
+                                        (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) →
+                                      @Eq.{1} Real (beta k ω)
+                                        (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))) →
+                                (beta_history :
+                                    ∀ (k : Fin m), @HighamBench.p17HistoryMeasurable.{u_1} m Ω delta k (beta k)) →
+                                  (conditional_mean :
+                                      ∀ (k : Fin m) (X : Ω → Real),
+                                        @HighamBench.p17HistoryMeasurable.{u_1} m Ω delta k X →
+                                          @Eq.{1} Real
+                                            (@HighamBench.p17Expectation.{u_1} Ω inst probability fun (ω : Ω) =>
+                                              @HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                (X ω) (delta k ω))
+                                            (@HighamBench.p17Expectation.{u_1} Ω inst probability fun (ω : Ω) =>
+                                              @HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                (X ω) (beta k ω))) →
+                                    @HighamBench.P17LimitedPrecisionRecursiveSumRun.{u_1} m Ω inst
+```
+
+### D012: `HighamBench.P17LimitedPrecisionRecursiveSumRun.probability`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `b0371bd5bae152cc489cceecaa14f2f1e20aa725fa021fdd17c221532b1c48b8`
+
+Type:
+
+```lean
+{m : Nat} →
+  {Ω : Type u_1} →
+    [inst : Fintype Ω] → HighamBench.P17LimitedPrecisionRecursiveSumRun m Ω → HighamBench.P17FiniteProbability Ω
+```
+
+Fully explicit type:
+
+```lean
+{m : Nat} →
+  {Ω : Type u_1} →
+    [inst : Fintype.{u_1} Ω] →
+      (self : @HighamBench.P17LimitedPrecisionRecursiveSumRun.{u_1} m Ω inst) →
+        @HighamBench.P17FiniteProbability.{u_1} Ω inst
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun m Ω [Fintype Ω] self => self.1
+```
+
+### D013: `HighamBench.p17Expectation`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `11fae07829d61b57addb3f2e2be7e9036d8a1f8a8ef1b16838117ee6186916da`
+
+Type:
+
+```lean
+{Ω : Type u_1} → [inst : Fintype Ω] → HighamBench.P17FiniteProbability Ω → (Ω → Real) → Real
+```
+
+Fully explicit type:
+
+```lean
+{Ω : Type u_1} → [inst : Fintype.{u_1} Ω] → (P : @HighamBench.P17FiniteProbability.{u_1} Ω inst) → (X : Ω → Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {Ω} [Fintype Ω] P X => Finset.univ.sum fun ω => instHMul.hMul (P.prob ω) (X ω)
+```
+
+### D014: `HighamBench.p17RecursiveSum`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `db5a2e19747e9a6d254bee6309e21c422212116f4b169ea1a3f6280382091206`
+
+Type:
+
+```lean
+{m : Nat} → (Fin (instHAdd.hAdd m 1) → Real) → (Fin m → Real) → Real
+```
+
+Fully explicit type:
+
+```lean
+{m : Nat} →
+  (a :
+      Fin
+          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
+        Real) →
+    (delta : Fin m → Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m} a delta =>
+  Fin.foldl m (fun acc k => instHMul.hMul (instHAdd.hAdd acc (a k.succ)) (instHAdd.hAdd 1 (delta k))) (a 0)
+```
+
+### D015: `HighamBench.p17UnitRoundoff._proof_1`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `theorem`
+- Distance from target type: `2`
+- Semantic SHA-256: `6add6f3a805986e842859d18df685b1be0e6256f312fa0e9c6957e13f62d7365`
+
+Type:
+
+```lean
+(instHAdd.hAdd 1 1).AtLeastTwo
+```
+
+Fully explicit type:
+
+```lean
+Nat.AtLeastTwo
+  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
+    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D016: `HighamBench.P17FiniteProbability`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `cdc6900d6b44706c8faf4d7e391274862067cb6d95b1131a47b2560a766d95d3`
+
+Type:
+
+```lean
+(Ω : Type u_1) → [Fintype Ω] → Type u_1
+```
+
+Fully explicit type:
+
+```lean
+(Ω : Type u_1) → [Fintype.{u_1} Ω] → Type u_1
+```
+
+### D017: `HighamBench.P17FiniteProbability.prob`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `3636c9f4d2f36ba03c4caf5f0ddd2ad616a29ee70ad7e10bc918a28de663df17`
+
+Type:
+
+```lean
+{Ω : Type u_1} → [inst : Fintype Ω] → HighamBench.P17FiniteProbability Ω → Ω → Real
+```
+
+Fully explicit type:
+
+```lean
+{Ω : Type u_1} → [inst : Fintype.{u_1} Ω] → (self : @HighamBench.P17FiniteProbability.{u_1} Ω inst) → Ω → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun Ω [Fintype Ω] self => self.1
+```
+
+### D018: `HighamBench.p17HistoryMeasurable`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `abb40cf56e6f17c27b1223311cf80c7107d7c0f71e4293e9c61fc91ae0ce516f`
+
+Type:
+
+```lean
+{m : Nat} → {Ω : Type u_1} → (Fin m → Ω → Real) → Fin m → (Ω → Real) → Prop
+```
+
+Fully explicit type:
+
+```lean
+{m : Nat} → {Ω : Type u_1} → (delta : Fin m → Ω → Real) → (k : Fin m) → (X : Ω → Real) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m} {Ω} delta k X =>
+  ∀ (ω₁ ω₂ : Ω), (∀ (j : Fin m), instLTNat.lt j.val k.val → Eq (delta j ω₁) (delta j ω₂)) → Eq (X ω₁) (X ω₂)
+```
+
+### D019: `HighamBench.p17RecursivePreRound`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `dae4d26f8b0f7e7b45d38512bbd65f64aabda62baf6e10c4c8970649403c3921`
+
+Type:
+
+```lean
+{m : Nat} → (Fin (instHAdd.hAdd m 1) → Real) → (Fin m → Real) → Fin m → Real
+```
+
+Fully explicit type:
+
+```lean
+{m : Nat} →
+  (a :
+      Fin
+          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
+        Real) →
+    (delta : Fin m → Real) → (k : Fin m) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m} a delta k => instHAdd.hAdd (HighamBench.p17RecursiveSumBefore a delta k) (a k.succ)
+```
+
+### D020: `HighamBench.p17RecursiveSum._proof_1`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `theorem`
+- Distance from target type: `3`
+- Semantic SHA-256: `18694e9c1d9246eac6354d260a132cdf303f1118117c94cb9e1e005712488d03`
+
+Type:
+
+```lean
+∀ {m : Nat}, NeZero (instHAdd.hAdd m 1)
+```
+
+Fully explicit type:
+
+```lean
+∀ {m : Nat},
+  @NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0)))
+    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D021: `HighamBench.P17FiniteProbability.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `4`
+- Semantic SHA-256: `fd0a240d1fc266d3cd085bc0f6cc5d37e8496bf562c971bd11b5f95e9e7b4d90`
+
+Type:
+
+```lean
+{Ω : Type u_1} →
+  [inst : Fintype Ω] →
+    (prob : Ω → Real) →
+      (∀ (ω : Ω), Real.instLE.le 0 (prob ω)) →
+        Eq (Finset.univ.sum fun ω => prob ω) 1 → HighamBench.P17FiniteProbability Ω
+```
+
+Fully explicit type:
+
+```lean
+{Ω : Type u_1} →
+  [inst : Fintype.{u_1} Ω] →
+    (prob : Ω → Real) →
+      (prob_nonneg :
+          ∀ (ω : Ω),
+            @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+              (prob ω)) →
+        (prob_sum :
+            @Eq.{1} Real
+              (@Finset.sum.{u_1, 0} Ω Real Real.instAddCommMonoid (@Finset.univ.{u_1} Ω inst) fun (ω : Ω) => prob ω)
+              (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))) →
+          @HighamBench.P17FiniteProbability.{u_1} Ω inst
+```
+
+### D022: `HighamBench.p17RecursiveSumBefore`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `b0cffd1b1978ca87c8b1ea80b35b4d982b7eba4c987f85d7d535854b2eec865a`
+
+Type:
+
+```lean
+{m : Nat} → (Fin (instHAdd.hAdd m 1) → Real) → (Fin m → Real) → Fin m → Real
+```
+
+Fully explicit type:
+
+```lean
+{m : Nat} →
+  (a :
+      Fin
+          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
+        Real) →
+    (delta : Fin m → Real) → (k : Fin m) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m} a delta k =>
+  Fin.foldl k.val
+    (fun acc j =>
+      have q := ⟨j.val, ⋯⟩;
+      instHMul.hMul (instHAdd.hAdd acc (a q.succ)) (instHAdd.hAdd 1 (delta q)))
+    (a 0)
+```
+
+### D023: `HighamBench.p17RecursiveSumBefore._proof_1`
+
+- Role: `local`
+- Owner module: `HighamBench.P17Definitions`
+- Declaration kind: `theorem`
+- Distance from target type: `5`
+- Semantic SHA-256: `aed4abfdb1053e620927af170c3392a2edc788934a058c8727ae9f49dfacd8df`
+
+Type:
+
+```lean
+∀ {m : Nat} (k : Fin m) (j : Fin k.val), instLTNat.lt j.val m
+```
+
+Fully explicit type:
+
+```lean
+∀ {m : Nat} (k : Fin m) (j : Fin (@Fin.val m k)), @LT.lt.{0} Nat instLTNat (@Fin.val (@Fin.val m k) j) m
+```
+
+### D024: `DivInvMonoid.toDiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -165,27 +823,53 @@ Definition body (one-level semantic boundary):
 fun G [self : DivInvMonoid G] => self.3
 ```
 
-### D005: `Fin`
+### D025: `Fintype`
 
 - Role: `external-frontier`
-- Owner module: `Init.Prelude`
+- Owner module: `Mathlib.Data.Fintype.Defs`
 - Declaration kind: `inductive`
 - Distance from target type: `1`
-- Semantic SHA-256: `59788903be5da78a88e4dc3844df38effdaabdfa82bb364602790d2271da7fda`
+- Semantic SHA-256: `ff39697629d53c72a76ae41500ef08888ff834898920af48012f83225b729e55`
 
 Type:
 
 ```lean
-Nat → Type
+Type u_4 → Type u_4
 ```
 
 Fully explicit type:
 
 ```lean
-(n : Nat) → Type
+(α : Type u_4) → Type u_4
 ```
 
-### D006: `HDiv.hDiv`
+### D026: `HAdd.hAdd`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `e0bf2a92addd6ea713343e4ef69f67e4e1155781d08f46957b9f71412d865f59`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HAdd α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HAdd.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HAdd α β γ] => self.1
+```
+
+### D027: `HDiv.hDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -211,7 +895,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HDiv α β γ] => self.1
 ```
 
-### D007: `HMul.hMul`
+### D028: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -237,7 +921,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D008: `HSub.hSub`
+### D029: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -263,7 +947,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D009: `LE.le`
+### D030: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -289,7 +973,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LE α] => self.1
 ```
 
-### D010: `Nat`
+### D031: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -309,7 +993,7 @@ Fully explicit type:
 Type
 ```
 
-### D011: `Ne`
+### D032: `Ne`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -335,7 +1019,7 @@ Definition body (one-level semantic boundary):
 fun {α} a b => Not (Eq a b)
 ```
 
-### D012: `OfNat.ofNat`
+### D033: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -361,33 +1045,7 @@ Definition body (one-level semantic boundary):
 fun α x [self : OfNat α x] => self.1
 ```
 
-### D013: `One.toOfNat1`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Zero`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5`
-
-Type:
-
-```lean
-{α : Type u_1} → [One α] → OfNat α 1
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [One.{u_1} α] → OfNat.{u_1} α (nat_lit 1)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : One α] => { ofNat := inst.one }
-```
-
-### D014: `Real`
+### D034: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -407,7 +1065,7 @@ Fully explicit type:
 Type
 ```
 
-### D015: `Real.instAddGroup`
+### D035: `Real.instAddGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -433,7 +1091,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D016: `Real.instDivInvMonoid`
+### D036: `Real.instDivInvMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -461,7 +1119,7 @@ Definition body (one-level semantic boundary):
   zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
 ```
 
-### D017: `Real.instLE`
+### D037: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -487,7 +1145,7 @@ Definition body (one-level semantic boundary):
 { le := Real.le✝ }
 ```
 
-### D018: `Real.instMul`
+### D038: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -513,33 +1171,7 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D019: `Real.instOne`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `1`
-- Semantic SHA-256: `b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81`
-
-Type:
-
-```lean
-One Real
-```
-
-Fully explicit type:
-
-```lean
-One.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ one := Real.one✝ }
-```
-
-### D020: `Real.instSub`
+### D039: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -565,7 +1197,7 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D021: `Real.instZero`
+### D040: `Real.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -591,7 +1223,7 @@ Definition body (one-level semantic boundary):
 { zero := Real.zero✝ }
 ```
 
-### D022: `Real.lattice`
+### D041: `Real.lattice`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -617,7 +1249,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D023: `Zero.toOfNat0`
+### D042: `Zero.toOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -643,7 +1275,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Zero α] => { ofNat := inst.zero }
 ```
 
-### D024: `abs`
+### D043: `abs`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
@@ -670,7 +1302,59 @@ fun {α} [Lattice α] [AddGroup α] a =>
   SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
 ```
 
-### D025: `instHDiv`
+### D044: `instAddNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `a1534bcd3e1888406ac787d30eeff8a284cb6688c23f5e8de09351dda91a280c`
+
+Type:
+
+```lean
+Add Nat
+```
+
+Fully explicit type:
+
+```lean
+Add.{0} Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ add := Nat.add }
+```
+
+### D045: `instHAdd`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `38066efd17aeeca52ec2890d9aafca2fa3cce8fda7f5843c1b8e5da130d93981`
+
+Type:
+
+```lean
+{α : Type u_1} → [Add α] → HAdd α α α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Add.{u_1} α] → HAdd.{u_1, u_1, u_1} α α α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
+```
+
+### D046: `instHDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -696,7 +1380,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
 ```
 
-### D026: `instHMul`
+### D047: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -722,7 +1406,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D027: `instHSub`
+### D048: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -748,7 +1432,53 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D028: `Fin.fintype`
+### D049: `instOfNatNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92`
+
+Type:
+
+```lean
+(n : Nat) → OfNat Nat n
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → OfNat.{0} Nat n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n => { ofNat := n }
+```
+
+### D050: `Fin`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `2`
+- Semantic SHA-256: `59788903be5da78a88e4dc3844df38effdaabdfa82bb364602790d2271da7fda`
+
+Type:
+
+```lean
+Nat → Type
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → Type
+```
+
+### D051: `Fin.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
@@ -774,7 +1504,7 @@ Definition body (one-level semantic boundary):
 fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
 ```
 
-### D029: `Finset.sum`
+### D052: `Finset.sum`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -800,7 +1530,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
 ```
 
-### D030: `Finset.univ`
+### D053: `Finset.univ`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Defs`
@@ -826,7 +1556,111 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Fintype α] => inst.elems
 ```
 
-### D031: `Real.instAddCommMonoid`
+### D054: `HPow.hPow`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `6196b8cbb884c4f39841ba74b23d75f3c753fe0d044cc402bd6e4e3bd59d5cb8`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HPow α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HPow.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HPow α β γ] => self.1
+```
+
+### D055: `Monoid.toNatPow`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `5b7373fe2de26535c1cdbf1b953ce34faf30f68aac8abd83ade2e78e6ec65b8a`
+
+Type:
+
+```lean
+{M : Type u_2} → [Monoid M] → Pow M Nat
+```
+
+Fully explicit type:
+
+```lean
+{M : Type u_2} → [Monoid.{u_2} M] → Pow.{u_2, 0} M Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
+```
+
+### D056: `One.toOfNat1`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Zero`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `cc544b5b2a2aabc84389a9fe2f052127dc6dae9964782b117b9b19b773e542d5`
+
+Type:
+
+```lean
+{α : Type u_1} → [One α] → OfNat α 1
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [One.{u_1} α] → OfNat.{u_1} α (nat_lit 1)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : One α] => { ofNat := inst.one }
+```
+
+### D057: `Real.instAdd`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `f99208c181266311bec9c890b688378f329076f9e6be38fe93d9cedf4d7f50ce`
+
+Type:
+
+```lean
+Add Real
+```
+
+Fully explicit type:
+
+```lean
+Add.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ add := Real.add✝ }
+```
+
+### D058: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -850,6 +1684,428 @@ Definition body (one-level semantic boundary):
 
 ```lean
 inferInstance
+```
+
+### D059: `Real.instMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8`
+
+Type:
+
+```lean
+Monoid Real
+```
+
+Fully explicit type:
+
+```lean
+Monoid.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D060: `Real.instNatCast`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15`
+
+Type:
+
+```lean
+NatCast Real
+```
+
+Fully explicit type:
+
+```lean
+NatCast.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ natCast := fun n => { cauchy := n.cast } }
+```
+
+### D061: `Real.instOne`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `b4e24b050b7fb50c4c115c51d5cd4c1b180cae53633f58a38c7d5ce3ccf86c81`
+
+Type:
+
+```lean
+One Real
+```
+
+Fully explicit type:
+
+```lean
+One.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ one := Real.one✝ }
+```
+
+### D062: `instHPow`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `eb300d353d84392c776cad5e356479f878030744a43f9a1584942a89d16350b4`
+
+Type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → [Pow α β] → HPow α β α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → {β : Type u_2} → [Pow.{u_1, u_2} α β] → HPow.{u_1, u_2, u_1} α β α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
+```
+
+### D063: `instOfNatAtLeastTwo`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Nat.Cast.Defs`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `37355febc51d6fa8ff12fc8e7b429771db340390d46411d7608c566bdffd358d`
+
+Type:
+
+```lean
+{R : Type u_1} → {n : Nat} → [NatCast R] → [n.AtLeastTwo] → OfNat R n
+```
+
+Fully explicit type:
+
+```lean
+{R : Type u_1} → {n : Nat} → [NatCast.{u_1} R] → [Nat.AtLeastTwo n] → OfNat.{u_1} R n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
+```
+
+### D064: `instSubNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `5b0e20a4d2b3e0a67bd35de1b5c84cc60d6dc867658112d84cad483055804868`
+
+Type:
+
+```lean
+Sub Nat
+```
+
+Fully explicit type:
+
+```lean
+Sub.{0} Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ sub := Nat.sub }
+```
+
+### D065: `Eq`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `63e9afa87e04d13393a2fe09e8e76489d96be3982734b4b40a52fc6ebea863d7`
+
+Type:
+
+```lean
+{α : Sort u_1} → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u_1} → α → α → Prop
+```
+
+### D066: `Fin.foldl`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Fold`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `5ab599c7f2f67b41cf899570d42ffbfae3263cdad61b9afc24765cd587fdf181`
+
+Type:
+
+```lean
+{α : Sort u_1} → (n : Nat) → (α → Fin n → α) → α → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u_1} → (n : Nat) → (f : α → Fin n → α) → (init : α) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} n f init => Fin.foldl.loop✝ n f init 0
+```
+
+### D067: `Fin.instOfNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `8f9c302902ae8c66b3f71728ffe02994a026b562f27b9df8d4f84793e455e26b`
+
+Type:
+
+```lean
+{n : Nat} → [NeZero n] → {i : Nat} → OfNat (Fin n) i
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → [@NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0))) n] → {i : Nat} → OfNat.{0} (Fin n) i
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} [NeZero n] {i} => { ofNat := Fin.ofNat n i }
+```
+
+### D068: `Fin.succ`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `72d7aaf169e5a264dac79e6aeec8a81c4436ffab27e5dbad2956eaeb4a147cad`
+
+Type:
+
+```lean
+{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  Fin n →
+    Fin
+      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} x => Fin.succ.match_1 (fun x => Fin (instHAdd.hAdd n 1)) x fun i h => ⟨instHAdd.hAdd i 1, ⋯⟩
+```
+
+### D069: `LT.lt`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009`
+
+Type:
+
+```lean
+{α : Type u} → [self : LT α] → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → [self : LT.{u} α] → α → α → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : LT α] => self.1
+```
+
+### D070: `Nat.AtLeastTwo`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Nat.Init`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `318e11b8f9340f2f451d638786dd4fca470dece62824f4adc3bd18b5289aa911`
+
+Type:
+
+```lean
+Nat → Prop
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → Prop
+```
+
+### D071: `instLTNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `4054f2341fdda887b2040c624c0867866ab56eabf3441d6ffc9451c94ae1663c`
+
+Type:
+
+```lean
+LT Nat
+```
+
+Fully explicit type:
+
+```lean
+LT.{0} Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ lt := Nat.lt }
+```
+
+### D072: `Fin.val`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `4`
+- Semantic SHA-256: `74cc6296b3a13207507ec372ef420f5e52b6935895dd25bcc6331abde2a4b328`
+
+Type:
+
+```lean
+{n : Nat} → Fin n → Nat
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (self : Fin n) → Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n self => self.1
+```
+
+### D073: `NeZero`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.NeZero`
+- Declaration kind: `inductive`
+- Distance from target type: `4`
+- Semantic SHA-256: `b995ca083c15c268a4faa60a710cd8ff05c7de4dd8e301783fe0e0adeee47a06`
+
+Type:
+
+```lean
+{R : Type u_1} → [Zero R] → R → Prop
+```
+
+Fully explicit type:
+
+```lean
+{R : Type u_1} → [Zero.{u_1} R] → (n : R) → Prop
+```
+
+### D074: `Zero.ofOfNat0`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Zero`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `d610ee8a0a2a61b7850d6032e696e6ae93221da787dff4096e98d4122502f26d`
+
+Type:
+
+```lean
+{α : Type u_1} → [OfNat α 0] → Zero α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [OfNat.{u_1} α (nat_lit 0)] → Zero.{u_1} α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [OfNat α 0] => { zero := 0 }
+```
+
+### D075: `Fin.mk`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `constructor`
+- Distance from target type: `5`
+- Semantic SHA-256: `2fb605c17aa879bf453f735ede02a7306496f461d34549bf61cb6c85662ce182`
+
+Type:
+
+```lean
+{n : Nat} → (val : Nat) → instLTNat.lt val n → Fin n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (val : Nat) → (isLt : @LT.lt.{0} Nat instLTNat val n) → Fin n
 ```
 
 ## Complete local imported sources
@@ -913,7 +2169,7 @@ end HighamBench
 ### `HighamBench.P17Definitions`
 
 Path: `paper_bencmark/highambench/shared/HighamBench/P17Definitions.lean`
-SHA-256: `e14850408c10ac1811546bbbf928e1493f9bd87b566c23ecd7aa46d670c8ec29`
+SHA-256: `5402369043678beac601ab6e3b25b069da3cd903b65ab6f9ba9700488ad8594b`
 
 ```lean
 import HighamBench.Core
@@ -934,6 +2190,12 @@ open scoped BigOperators
 noncomputable def p17Gamma (n : ℕ) (u : ℝ) : ℝ :=
   (1 + u) ^ n - 1
 
+/-- Binary unit roundoff `u_p = 2^(1-p)`, on the paper's domain `p > 0`.
+The natural-power form is equal to the printed expression whenever `p` is
+positive and makes its nonnegativity explicit. -/
+noncomputable def p17UnitRoundoff (p : ℕ) : ℝ :=
+  ((1 : ℝ) / 2) ^ (p - 1)
+
 /-- Exact finite sum. -/
 noncomputable def p17ExactSum {n : ℕ} (a : Fin n → ℝ) : ℝ :=
   ∑ i, a i
@@ -949,7 +2211,7 @@ noncomputable def p17EffectiveExpectedSum {n : ℕ}
   ∑ i, a i * factor i
 
 /-- A lightweight finite probability law, kept paper-scoped so the public
-benchmark package does not import NumStability. -/
+benchmark package remains independent of the evaluated formal library. -/
 structure P17FiniteProbability (Ω : Type*) [Fintype Ω] where
   prob : Ω → ℝ
   prob_nonneg : ∀ ω, 0 ≤ prob ω
@@ -965,6 +2227,183 @@ noncomputable def p17EventProb {Ω : Type*} [Fintype Ω]
 noncomputable def p17Expectation {Ω : Type*} [Fintype Ω]
     (P : P17FiniteProbability Ω) (X : Ω → ℝ) : ℝ :=
   ∑ ω, P.prob ω * X ω
+
+/-- A random variable determined by the rounding errors preceding step `k`.
+This finite-history formulation is the test-function semantics of conditional
+expectation used in Lemma 3.2. -/
+def p17HistoryMeasurable {m : ℕ} {Ω : Type*}
+    (delta : Fin m → Ω → ℝ) (k : Fin m) (X : Ω → ℝ) : Prop :=
+  ∀ ω₁ ω₂,
+    (∀ j : Fin m, j.val < k.val → delta j ω₁ = delta j ω₂) →
+      X ω₁ = X ω₂
+
+/-- Left-to-right recursive summation of `m+1` inputs using the `m` supplied
+relative rounding errors. The first input is exact, as in the table preceding
+equation (4.4). -/
+noncomputable def p17RecursiveSum {m : ℕ}
+    (a : Fin (m + 1) → ℝ) (delta : Fin m → ℝ) : ℝ :=
+  Fin.foldl m
+    (fun acc k => (acc + a k.succ) * (1 + delta k))
+    (a 0)
+
+/-- The accumulated value immediately before recursive-summation addition
+`k`. -/
+noncomputable def p17RecursiveSumBefore {m : ℕ}
+    (a : Fin (m + 1) → ℝ) (delta : Fin m → ℝ) (k : Fin m) : ℝ :=
+  Fin.foldl k.val
+    (fun acc j =>
+      let q : Fin m := ⟨j.val, Nat.lt_trans j.isLt k.isLt⟩
+      (acc + a q.succ) * (1 + delta q))
+    (a 0)
+
+/-- The exact real addition rounded at recursive-summation step `k`. -/
+noncomputable def p17RecursivePreRound {m : ℕ}
+    (a : Fin (m + 1) → ℝ) (delta : Fin m → ℝ) (k : Fin m) : ℝ :=
+  p17RecursiveSumBefore a delta k + a k.succ
+
+/-- Analytic execution certificate for recursive summation under
+limited-precision stochastic rounding `SR_{p,r}`.
+
+The conditional-mean field is the finite test-function form of
+`E(delta_k | delta_0,...,delta_{k-1}) = beta_k`. The truncation equation links
+`beta_k` to the deterministic `p+r`-bit truncation of the actual pre-rounding
+value instead of leaving it as an unrelated perturbation. -/
+structure P17LimitedPrecisionRecursiveSumRun
+    (m : ℕ) (Ω : Type*) [Fintype Ω] where
+  probability : P17FiniteProbability Ω
+  p : ℕ
+  r : ℕ
+  p_pos : 0 < p
+  r_pos : 0 < r
+  a : Fin (m + 1) → ℝ
+  delta : Fin m → Ω → ℝ
+  beta : Fin m → Ω → ℝ
+  truncate : ℝ → ℝ
+  delta_bound : ∀ k ω, |delta k ω| ≤ p17UnitRoundoff p
+  rounding_factor_nonneg : ∀ k ω, 0 ≤ 1 + delta k ω
+  beta_bound : ∀ k ω, |beta k ω| ≤ p17UnitRoundoff (p + r)
+  truncation_equation : ∀ k ω,
+    truncate (p17RecursivePreRound a (fun j => delta j ω) k) =
+      p17RecursivePreRound a (fun j => delta j ω) k * (1 + beta k ω)
+  delta_zero : ∀ k ω,
+    p17RecursivePreRound a (fun j => delta j ω) k = 0 → delta k ω = 0
+  beta_zero : ∀ k ω,
+    p17RecursivePreRound a (fun j => delta j ω) k = 0 → beta k ω = 0
+  beta_history : ∀ k, p17HistoryMeasurable delta k (beta k)
+  conditional_mean : ∀ k X,
+    p17HistoryMeasurable delta k X →
+      p17Expectation probability (fun ω => X ω * delta k ω) =
+        p17Expectation probability (fun ω => X ω * beta k ω)
+
+/-- Expected output of the paper's limited-precision stochastic recursive
+sum. -/
+noncomputable def p17ExpectedRecursiveSum {m : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17LimitedPrecisionRecursiveSumRun m Ω) : ℝ :=
+  p17Expectation run.probability
+    (fun ω => p17RecursiveSum run.a (fun k => run.delta k ω))
+
+/-- Product of the suffix of local factors affecting a tail input in equation
+(4.4). -/
+noncomputable def p17SuffixErrorProduct :
+    (m : ℕ) → (Fin m → ℝ) → Fin m → ℝ
+  | 0, _ => fun i => i.elim0
+  | m + 1, delta =>
+      Fin.lastCases (1 + delta (Fin.last m))
+        (fun i =>
+          p17SuffixErrorProduct m (fun j => delta j.castSucc) i *
+            (1 + delta (Fin.last m)))
+
+/-- The coefficient multiplying each exact input in the product expansion of
+left-to-right recursive summation. The first input carries the full product;
+input `i + 1` carries the suffix beginning at rounded addition `i`. -/
+noncomputable def p17RecursiveCoefficient {m : ℕ}
+    (error : Fin m → ℝ) : Fin (m + 1) → ℝ :=
+  Fin.cases (∏ k : Fin m, (1 + error k))
+    (fun i => p17SuffixErrorProduct m error i)
+
+/-- The mean-independent error `alpha_k = delta_k - beta_k` from Lemma 3.10. -/
+noncomputable def p17Alpha
+    {m : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17LimitedPrecisionRecursiveSumRun m Ω)
+    (k : Fin m) (ω : Ω) : ℝ :=
+  run.delta k ω - run.beta k ω
+
+/-- The path-dependent coefficient remainder `B_i` in equations (3.8) and
+(4.8), written as the exact difference between the `delta` and `alpha`
+suffix coefficients. -/
+noncomputable def p17CoefficientRemainder
+    {m : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17LimitedPrecisionRecursiveSumRun m Ω)
+    (i : Fin (m + 1)) (ω : Ω) : ℝ :=
+  p17RecursiveCoefficient (fun k => run.delta k ω) i -
+    p17RecursiveCoefficient (fun k => p17Alpha run k ω) i
+
+/-- The mean-independent component `M` of the recursive-summation error in
+equation (4.8). -/
+noncomputable def p17CenteredSummationError
+    {m : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17LimitedPrecisionRecursiveSumRun m Ω) (ω : Ω) : ℝ :=
+  ∑ i : Fin (m + 1),
+    run.a i *
+      (p17RecursiveCoefficient (fun k => p17Alpha run k ω) i - 1)
+
+/-- The path-dependent limited-precision remainder `A = sum_i a_i B_i` in
+equations (4.8) and (4.10). -/
+noncomputable def p17LimitedPrecisionRemainder
+    {m : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17LimitedPrecisionRecursiveSumRun m Ω) (ω : Ω) : ℝ :=
+  ∑ i : Fin (m + 1), run.a i * p17CoefficientRemainder run i ω
+
+/-- Analytic execution certificate for the variance-based recursive-summation
+bound in Theorem 4.3.
+
+The first two added fields state the `alpha` conclusions of Lemma 3.10. The
+coefficient-remainder field is its equation (3.9), uniformly enlarged to the
+`m = n-1` radius used in equation (4.10). The covariance field is the exact
+specialization of the variance result cited as reference [11, Lemma 3.1]. It
+does not assume the second-moment bound for `M` or Theorem 4.3's final event. -/
+structure P17VarianceRecursiveSumRun
+    (m : ℕ) (Ω : Type*) [Fintype Ω]
+    extends P17LimitedPrecisionRecursiveSumRun m Ω where
+  alpha_bound : ∀ k ω,
+    |p17Alpha toP17LimitedPrecisionRecursiveSumRun k ω| ≤
+      p17UnitRoundoff p
+  alpha_mean_independent : ∀ k X,
+    p17HistoryMeasurable
+        (fun j ω => p17Alpha toP17LimitedPrecisionRecursiveSumRun j ω) k X →
+      p17Expectation probability
+        (fun ω => X ω *
+          p17Alpha toP17LimitedPrecisionRecursiveSumRun k ω) = 0
+  alpha_product_covariance_bound : ∀ i j,
+    0 ≤ p17Expectation probability (fun ω =>
+        (p17RecursiveCoefficient
+              (fun k => p17Alpha toP17LimitedPrecisionRecursiveSumRun k ω) i - 1) *
+          (p17RecursiveCoefficient
+              (fun k => p17Alpha toP17LimitedPrecisionRecursiveSumRun k ω) j - 1)) ∧
+      p17Expectation probability (fun ω =>
+          (p17RecursiveCoefficient
+                (fun k => p17Alpha toP17LimitedPrecisionRecursiveSumRun k ω) i - 1) *
+            (p17RecursiveCoefficient
+                (fun k => p17Alpha toP17LimitedPrecisionRecursiveSumRun k ω) j - 1)) ≤
+        p17Gamma m ((p17UnitRoundoff p) ^ 2)
+  coefficient_remainder_bound : ∀ i ω,
+    |p17CoefficientRemainder toP17LimitedPrecisionRecursiveSumRun i ω| ≤
+      p17Gamma m
+          (p17UnitRoundoff p + p17UnitRoundoff (p + r)) -
+        p17Gamma m (p17UnitRoundoff p)
+
+/-- Expected coefficient of each exact input in equation (4.4). The first
+input carries the full product; input `i+1` carries the corresponding suffix
+product. -/
+noncomputable def p17ExpectedCoefficient
+    {m : ℕ} {Ω : Type*} [Fintype Ω]
+    (run : P17LimitedPrecisionRecursiveSumRun m Ω) : Fin (m + 1) → ℝ :=
+  Fin.cases
+    (p17Expectation run.probability
+      (fun ω => ∏ k : Fin m, (1 + run.delta k ω)))
+    (fun i =>
+      p17Expectation run.probability
+        (fun ω => p17SuffixErrorProduct m (fun k => run.delta k ω) i))
 
 end HighamBench
 ```
