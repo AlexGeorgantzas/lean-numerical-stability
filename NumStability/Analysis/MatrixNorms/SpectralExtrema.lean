@@ -1,4 +1,5 @@
 import NumStability.Analysis.MatrixNorms.SpectralExtrema.Basic
+import NumStability.Analysis.MatrixNorms.SpectralExtrema.PrincipalSubmatrices.Bounds
 
 /-!
 # Analysis MatrixNorms SpectralExtrema

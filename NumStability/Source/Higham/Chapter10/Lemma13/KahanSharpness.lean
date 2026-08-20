@@ -2,6 +2,8 @@ import NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.CompletePivot
 import NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.Endpoints
 import NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.GramFamily
 import NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.Limit
+import NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.OperatorNorm.SourceBound
+import NumStability.Source.Higham.Chapter10.Lemma13.KahanSharpness.UnboundedGrowth.Construction
 
 /-!
 # Source Higham Chapter10 Lemma13 KahanSharpness

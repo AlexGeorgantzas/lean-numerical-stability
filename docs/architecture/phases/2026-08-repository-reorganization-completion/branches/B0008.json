@@ -5,9 +5,15 @@
  "branch_id": "B0008",
  "branch_name": "codex/reorg-completion-2026-08-r04-cholesky-higham-ch10",
  "delivery": {
-  "commit_sha": null,
-  "report": null,
-  "scope_evidence": null
+  "commit_sha": "e92d0fa270b1113ea630f41c4c797051e68e5d26",
+  "report": {
+   "path": "docs/architecture/deliveries/R04/DELIVERY.md",
+   "sha256": "7BF2595C90D0EF596E775551E6720CEBD7E0B0EC4771E4301D4487096FE56B5A"
+  },
+  "scope_evidence": {
+   "path": "docs/architecture/deliveries/R04/CHANGED_PATHS.md",
+   "sha256": "7E8DDFF03575A1FE0A06BFFA6ED0179704C0719008D07C9476486497B8A69B59"
+  }
  },
  "destination_prefixes": [
   {
@@ -11353,7 +11359,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0009-R0010-union-postimages.tsv",
-    "sha256": "22C2D8B31096FC7B9268C3B75FC1C243A652C3916FC496FC07F61E90995DCE5C"
+    "sha256": "5863BBC2098493D221F3EF0DD50EA82874E50D1A2E7F720DDA4D340985FF67FE"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0009-R0010-union-review.md",
@@ -11410,6 +11416,6 @@
  "shared_request_ids": [
   "R0009"
  ],
- "status": "active",
+ "status": "delivered",
  "wave_id": "R04"
 }

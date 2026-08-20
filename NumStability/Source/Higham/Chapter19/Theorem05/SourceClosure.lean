@@ -1,5 +1,5 @@
+import NumStability.Source.Higham.Chapter06.Lemma06.Core.Results
 import NumStability.Source.Higham.Chapter19.Labels
-import NumStability.Source.Higham.Chapter06.Lemma06
 import NumStability.Source.Higham.Chapter20.Theorem03.ZeroDeltaB
 
 /-!

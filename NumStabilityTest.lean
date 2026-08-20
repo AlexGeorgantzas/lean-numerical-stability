@@ -523,8 +523,10 @@ import NumStabilityTest.Import.TridiagonalCondCanonical
 import NumStabilityTest.Reorganization.R01
 import NumStabilityTest.Reorganization.R02
 import NumStabilityTest.Reorganization.R03.All
+import NumStabilityTest.Reorganization.R04.All
 import NumStabilityTest.Reorganization.R05.All
 import NumStabilityTest.Reorganization.R06.All
+import NumStabilityTest.Reorganization.R08.All
 import NumStabilityTest.Reorganization.R11.All
 import NumStabilityTest.Reorganization.R12.All
 import NumStabilityTest.Reorganization.W01.Canonical.ExactSubtraction

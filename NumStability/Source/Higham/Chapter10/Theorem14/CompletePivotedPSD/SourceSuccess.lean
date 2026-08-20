@@ -1,7 +1,7 @@
 import NumStability.Algorithms.LinearSystems.Cholesky.RoundedFactorization.Basic
 import NumStability.Analysis.MatrixNorms.SpectralExtrema.Basic
 import NumStability.Source.Higham.Chapter10.Problem01.PositiveSemidefiniteEntries.Basic
-import NumStability.Source.Higham.Chapter10.Theorem07
+import NumStability.Source.Higham.Chapter10.Theorem07.Core.Results
 
 /-!
 # Chapter10 Theorem14 CompletePivotedPSD SourceSuccess

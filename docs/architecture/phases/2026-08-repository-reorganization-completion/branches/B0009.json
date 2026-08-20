@@ -5,9 +5,15 @@
  "branch_id": "B0009",
  "branch_name": "codex/reorg-completion-2026-08-r08-matrix-inversion-ch14",
  "delivery": {
-  "commit_sha": null,
-  "report": null,
-  "scope_evidence": null
+  "commit_sha": "e9a09b17deabe14baaa56036e55eeb6ac67b04fb",
+  "report": {
+   "path": "docs/architecture/deliveries/R08/DELIVERY.md",
+   "sha256": "075999311C84BB0D5840FC404E037FCBAC7F30448A18CA4B4D231EEF9AC3CB07"
+  },
+  "scope_evidence": {
+   "path": "docs/architecture/deliveries/R08/CHANGED_PATHS.md",
+   "sha256": "2DECA01F09462F4259533447CF580640D67A32A78C84AF90C4C20780451F6A1F"
+  }
  },
  "destination_prefixes": [
   {
@@ -11320,7 +11326,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0009-R0010-union-postimages.tsv",
-    "sha256": "22C2D8B31096FC7B9268C3B75FC1C243A652C3916FC496FC07F61E90995DCE5C"
+    "sha256": "5863BBC2098493D221F3EF0DD50EA82874E50D1A2E7F720DDA4D340985FF67FE"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0009-R0010-union-review.md",
@@ -11377,6 +11383,6 @@
  "shared_request_ids": [
   "R0010"
  ],
- "status": "active",
+ "status": "delivered",
  "wave_id": "R08"
 }

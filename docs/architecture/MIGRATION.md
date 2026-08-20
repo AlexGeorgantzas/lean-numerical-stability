@@ -92,6 +92,15 @@ delivery branches remain preserved at
 [`R05/R06 retirement review`](phases/2026-08-repository-reorganization-completion/reviews/R05-R06-retirement.md)
 records the exact leases, archive, cleanup, and preserved refs.
 
+## Planned Chapter 14 matrix-inversion compatibility completion
+
+R08 preserves 42 historical Algorithm import paths as declaration-free compatibility
+modules, relocates their remaining C0004 declarations whole-owner into 21 new Source
+leaves, and converts the Chapter 14 Problem13, Problem14, and Problem15 entry points
+into declaration-free aggregates. The accepted W08 regression suite remains unchanged;
+the R08 delivery adds isolated old-path, canonical, consumer, focused, private-name, and
+aggregate-completeness tests under `NumStabilityTest.Reorganization.R08`.
+
 1. **Current baseline.** Regenerate and version the architecture and build
    report at the exact migration commit using tracked tooling.
 2. **Safety net.** Track CI, a test target, API/import smoke tests, and clean and

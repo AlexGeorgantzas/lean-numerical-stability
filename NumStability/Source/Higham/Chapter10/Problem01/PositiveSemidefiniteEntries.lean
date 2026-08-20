@@ -1,4 +1,5 @@
 import NumStability.Source.Higham.Chapter10.Problem01.PositiveSemidefiniteEntries.Basic
+import NumStability.Source.Higham.Chapter10.Problem01.PositiveSemidefiniteEntries.EntryBounds.Results
 
 /-!
 # Source Higham Chapter10 Problem01 PositiveSemidefiniteEntries

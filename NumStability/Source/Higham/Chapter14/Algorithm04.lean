@@ -1,5 +1,6 @@
 import NumStability.Source.Higham.Chapter14.Algorithm04.Accumulation
 import NumStability.Source.Higham.Chapter14.Algorithm04.Execution
+import NumStability.Source.Higham.Chapter14.Algorithm04.FinalDivisionStage.FinalizedErrorFamilies
 import NumStability.Source.Higham.Chapter14.Algorithm04.Pivoting
 import NumStability.Source.Higham.Chapter14.Algorithm04.SecondStage
 

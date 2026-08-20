@@ -1,6 +1,6 @@
 import NumStability.Algorithms.LinearSystems.Cholesky.RoundedFactorization.Basic
 import NumStability.Source.Higham.Chapter09.DoolittleClosure
-import NumStability.Source.Higham.Chapter10.Theorem07
+import NumStability.Source.Higham.Chapter10.Theorem07.Core.Results
 
 /-!
 # Chapter10 Theorem14 CompletePivotedPSD SourceError

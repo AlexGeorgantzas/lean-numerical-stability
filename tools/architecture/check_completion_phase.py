@@ -359,6 +359,38 @@ C0005_REQUEST_INTERSECTION = frozenset(
 C0005_REQUEST_UNION_PATH_SHA256 = (
     "6DB1CD2A1AAB1DAD67924B2FA0ECD5F3FA2B315AB18BED68F7A3559C2DF63B81"
 )
+# Delivered-state amendments.  The reviewed union pinned every preimage to exact
+# C0004 code, which is right for the 36 worker-facing paths but wrong for the
+# control-line document docs/architecture/MIGRATION.md: the C0004 acceptance
+# commit had already rewritten it before the union was frozen, so the
+# zero-context hunk lands at a stale offset.  reviews/
+# R0009-R0010-union-migration-amendment.md re-anchors exactly that row; the
+# frozen patch and its patch_sha256 pin are deliberately left unmodified.
+C0005_UNION_AMENDED_LEDGER_SHA256 = (
+    "5863BBC2098493D221F3EF0DD50EA82874E50D1A2E7F720DDA4D340985FF67FE"
+)
+C0005_UNION_AMENDED_PATH = "docs/architecture/MIGRATION.md"
+C0005_UNION_AMENDED_ROW = {
+    "preimage_blob_oid": "58a651b6528a5ce4048d163806e010e41290dc54",
+    "preimage_sha256": "226D4E19DFDF28BBB29AEE8548A94D1AE7C613D586AFA717A6C306199FA4B1D4",
+    "postimage_sha256": "CC990867A876342C255D093F5B32AA5D12E79F96A7CF4499FE6A877569D2198A",
+}
+C0005_UNION_MIGRATION_AMENDMENT_PATH = (
+    "docs/architecture/phases/2026-08-repository-reorganization-completion/"
+    "reviews/R0009-R0010-union-migration-amendment.md"
+)
+# Two integration follow-ups outside both worker selectors, each forced by the
+# union itself: registering the 12 R04 wrappers makes
+# NumStability.Algorithms.HighamChapter10 a historical path, so the B0008-owned
+# Chapter10.Theorem07 aggregate must reach its 13 routed destinations directly;
+# and the union's COMPATIBILITY.md rows name canonical target
+# NumStability.Algorithms.ComplexBackwardError, which needs a direct test import.
+C0005_INTEGRATION_FOLLOWUPS = frozenset(
+    {
+        "NumStability/Source/Higham/Chapter10/Theorem07.lean",
+        "NumStabilityTest/Import/SourceCanonical.lean",
+    }
+)
 C0005_BRANCH_FACTS = {
     "R04": {
         "branch_id": "B0008",
@@ -369,6 +401,15 @@ C0005_BRANCH_FACTS = {
         "planned_worktree": r"C:\Users\qed_s\higham-worktrees\completion-r04-codex",
         "assignment": "Codex",
         "implementation_operator": "claude-local",
+        "delivery_sha": "e92d0fa270b1113ea630f41c4c797051e68e5d26",
+        "delivery_report": (
+            "docs/architecture/deliveries/R04/DELIVERY.md",
+            "7BF2595C90D0EF596E775551E6720CEBD7E0B0EC4771E4301D4487096FE56B5A",
+        ),
+        "delivery_scope": (
+            "docs/architecture/deliveries/R04/CHANGED_PATHS.md",
+            "7E8DDFF03575A1FE0A06BFFA6ED0179704C0719008D07C9476486497B8A69B59",
+        ),
         "planned_record_sha256": "CE8FCEB5B26821077A112E3192517CBE7E641A2EA364C1815C0A596D216DC90F",
         "active_record_sha256": "137F39C642FEFD7BB19D64E9E27C2D6449C32C4E801FEEEBFA1CE7026725727B",
         "operators": ["claude-local", "codex-local"],
@@ -419,6 +460,15 @@ C0005_BRANCH_FACTS = {
         "planned_worktree": r"C:\Users\qed_s\higham-worktrees\completion-r08-claude",
         "assignment": "Claude exclusively",
         "implementation_operator": "claude-local",
+        "delivery_sha": "e9a09b17deabe14baaa56036e55eeb6ac67b04fb",
+        "delivery_report": (
+            "docs/architecture/deliveries/R08/DELIVERY.md",
+            "075999311C84BB0D5840FC404E037FCBAC7F30448A18CA4B4D231EEF9AC3CB07",
+        ),
+        "delivery_scope": (
+            "docs/architecture/deliveries/R08/CHANGED_PATHS.md",
+            "2DECA01F09462F4259533447CF580640D67A32A78C84AF90C4C20780451F6A1F",
+        ),
         "planned_record_sha256": "81D29E44AA256057F9EBBCA09F1A5185C7FC63DE5973A36C55BACD7896692804",
         "active_record_sha256": "A0230F7F3B2D2E729B8C579B2E0810975C9957C2C1A072798687E1E8676D4A32",
         "operators": ["claude-local"],
@@ -497,6 +547,13 @@ C0005_REQUEST_FACTS = {
         "patch_sha256": "0D646D4658D0AEDBEDCDE397553B1AEF31662130545750DA27061299BD11545B",
         "postimages_sha256": "22C2D8B31096FC7B9268C3B75FC1C243A652C3916FC496FC07F61E90995DCE5C",
         "review_sha256": "8D7085A7335E6B73C7A201DAA6C2FE5A2A557F19957B2F1EAED44AAFFD829CEA",
+        # What the frozen patch itself still produces for the re-anchored
+        # control-line row when materialized from exact C0004.  The live tree is
+        # held to C0005_UNION_AMENDED_ROW instead; see the union-migration
+        # amendment.
+        "frozen_migration_postimage_sha256": (
+            "FEA9781677F28093430E34D6B45FB38EAA3A53552B457F620EB3B7FC11E62D21"
+        ),
     },
 }
 C0005_REVIEW_FACTS = {
@@ -1279,10 +1336,10 @@ def validate_c0005_epoch_state(
     values = set(statuses.values())
     state = next(iter(values)) if len(values) == 1 else None
     problems.require(
-        state in {"planned", "active"},
+        state in {"planned", "active", "delivered"},
         f"{context}.status",
-        "B0008/B0009 must be synchronously both planned or both active; "
-        f"found {statuses!r}",
+        "B0008/B0009 must be synchronously all planned, all active, or all "
+        f"delivered; found {statuses!r}",
     )
     if state == "planned":
         problems.require(
@@ -1290,11 +1347,11 @@ def validate_c0005_epoch_state(
             f"{context}.activation",
             "planned state must not create reviews/R04-R08-activation.md",
         )
-    elif state == "active":
+    elif state in {"active", "delivered"}:
         problems.require(
             activation_review_exists,
             f"{context}.activation",
-            "active state requires reviews/R04-R08-activation.md",
+            f"{state} state requires reviews/R04-R08-activation.md",
         )
     problems.require(
         not c0005_exists,
@@ -1312,9 +1369,27 @@ def validate_c0005_branch_lifecycle(
     *,
     context: str,
 ) -> None:
-    """Pure pre-delivery lifecycle/evidence ratchet for C0004-rooted workers."""
+    """Lifecycle/evidence ratchet for C0004-rooted workers.
 
-    expected_delivery = {"commit_sha": None, "report": None, "scope_evidence": None}
+    planned/active keep a null delivery record; delivered pins the immutable
+    worker tip and its two evidence artifacts while integration stays null
+    until the C0005 acceptance control records it.
+    """
+
+    if state == "delivered":
+        expected_delivery = {
+            "commit_sha": facts["delivery_sha"],
+            "report": {
+                "path": facts["delivery_report"][0],
+                "sha256": facts["delivery_report"][1],
+            },
+            "scope_evidence": {
+                "path": facts["delivery_scope"][0],
+                "sha256": facts["delivery_scope"][1],
+            },
+        }
+    else:
+        expected_delivery = {"commit_sha": None, "report": None, "scope_evidence": None}
     expected_integration = {
         "accepted_checkpoint_id": None,
         "accepted_sha": None,
@@ -1331,17 +1406,19 @@ def validate_c0005_branch_lifecycle(
     problems.require(
         record.get("delivery") == expected_delivery,
         f"{context}.delivery",
-        "planned/active worker must retain the exact null delivery record",
+        "delivered worker must pin the exact immutable tip and evidence"
+        if state == "delivered"
+        else "planned/active worker must retain the exact null delivery record",
     )
     problems.require(
         record.get("integration") == expected_integration,
         f"{context}.integration",
-        "planned/active worker must retain the exact null integration record",
+        "pre-acceptance worker must retain the exact null integration record",
     )
     problems.require(
         record.get("retirement") == expected_retirement,
         f"{context}.retirement",
-        "planned/active worker must retain exact not-due retirement metadata",
+        "pre-acceptance worker must retain exact not-due retirement metadata",
     )
 
     refresh = record.get("refresh")
@@ -1402,7 +1479,7 @@ def validate_c0005_branch_lifecycle(
             f"{context}.refresh.evidence",
             "planned state may not carry activation/ref/worktree evidence",
         )
-    elif state == "active":
+    elif state in {"active", "delivered"}:
         problems.require(
             activation
             == (
@@ -1412,7 +1489,7 @@ def validate_c0005_branch_lifecycle(
                 ),
             ),
             f"{context}.refresh.evidence",
-            "active state must hash-pin exactly the reviewed R04/R08 activation",
+            f"{state} state must hash-pin exactly the reviewed R04/R08 activation",
         )
 
 
@@ -8145,22 +8222,25 @@ class CompletionValidator:
             f"{context}.planned control",
             "planned-control commit must retain its exact reviewed parent",
         )
-        production_diff = self.git(
-            "diff",
-            "--name-only",
-            C0004_CODE_SHA,
-            "--",
+        production_scope = (
             "NumStability",
             "NumStability.lean",
             "NumStabilityTest",
             "NumStabilityTest.lean",
             "benchmark-results",
+        )
+        production_diff = self.git(
+            "diff",
+            "--name-only",
+            C0004_CODE_SHA,
+            "--",
+            *production_scope,
             check=False,
         )
-        self.problems.require(
-            production_diff.returncode == 0 and not production_diff.stdout.strip(),
-            context,
-            "C0004-to-live control state must not change production, tests, or benchmark evidence",
+        live_production_paths = (
+            {line.strip() for line in production_diff.stdout.splitlines() if line.strip()}
+            if production_diff.returncode == 0
+            else None
         )
 
         activation_path = self.root / C0005_ACTIVATION_REVIEW_PATH
@@ -8198,6 +8278,63 @@ class CompletionValidator:
             problems=self.problems,
             context=context,
         )
+
+        if live_production_paths is None:
+            self.problems.add(context, "cannot diff live production against exact C0004")
+        elif state == "delivered":
+            # The integrated tree is exactly: both immutable delivery diffs, the
+            # union's production paths, and the two reviewed integration
+            # follow-ups.  Nothing else may differ from exact C0004.
+            allowed: set[str] = set(C0005_INTEGRATION_FOLLOWUPS)
+            for wave_facts in C0005_BRANCH_FACTS.values():
+                delivery_diff = self.git(
+                    "diff",
+                    "--name-only",
+                    C0004_CODE_SHA,
+                    wave_facts["delivery_sha"],
+                    "--",
+                    *production_scope,
+                    check=False,
+                )
+                if delivery_diff.returncode != 0:
+                    self.problems.add(
+                        context,
+                        f"cannot diff delivery {wave_facts['delivery_sha']} against C0004",
+                    )
+                    continue
+                allowed |= {
+                    line.strip()
+                    for line in delivery_diff.stdout.splitlines()
+                    if line.strip()
+                }
+            union_manifest_path = (
+                self.phase_dir / "requests/R0009-R0010-union-postimages.tsv"
+            )
+            _, union_manifest_rows = self.read_tsv(
+                union_manifest_path,
+                self.relative(union_manifest_path),
+                ("path", "preimage_blob_oid", "preimage_sha256", "postimage_sha256"),
+            )
+            allowed |= {
+                row.get("path")
+                for row in union_manifest_rows
+                if isinstance(row.get("path"), str)
+                and row["path"].startswith(("NumStability", "benchmark-results"))
+            }
+            unexpected = sorted(live_production_paths - allowed)
+            self.problems.require(
+                not unexpected,
+                context,
+                "delivered production state may only differ from exact C0004 by the "
+                "two immutable delivery diffs, the reviewed union, and the reviewed "
+                f"integration follow-ups; unexpected: {unexpected[:5]}",
+            )
+        else:
+            self.problems.require(
+                not live_production_paths,
+                context,
+                "C0004-to-live control state must not change production, tests, or benchmark evidence",
+            )
         if state == "active" and activation_path.is_file():
             self.problems.require(
                 sha256_path(activation_path) == C0005_ACTIVATION_REVIEW_SHA256,
@@ -8838,7 +8975,14 @@ class CompletionValidator:
         )
         validate_c0005_request_activation_state(
             request_records,
-            request_diff.returncode == 0 and not request_diff.stdout.strip(),
+            request_diff.returncode == 0
+            and (
+                not request_diff.stdout.strip()
+                # Delivered: the union is applied, so its paths necessarily
+                # differ from the planned-control tree.  Their exact content is
+                # verified against the ledger postimages immediately below.
+                or state == "delivered"
+            ),
             self.problems,
             context=f"{context}.request state",
         )
@@ -8855,9 +8999,14 @@ class CompletionValidator:
         union_patch = self.phase_dir / "requests/R0009-R0010-union.patch"
         union_manifest = self.phase_dir / "requests/R0009-R0010-union-postimages.tsv"
         union_review = self.phase_dir / "requests/R0009-R0010-union-review.md"
+        expected_ledger = (
+            C0005_UNION_AMENDED_LEDGER_SHA256
+            if state == "delivered"
+            else C0005_REQUEST_FACTS["union"]["postimages_sha256"]
+        )
         for path, expected in (
             (union_patch, C0005_REQUEST_FACTS["union"]["patch_sha256"]),
-            (union_manifest, C0005_REQUEST_FACTS["union"]["postimages_sha256"]),
+            (union_manifest, expected_ledger),
             (union_review, C0005_REQUEST_FACTS["union"]["review_sha256"]),
         ):
             self.problems.require(
@@ -8865,29 +9014,110 @@ class CompletionValidator:
                 self.relative(path),
                 f"must hash to exact union value {expected}",
             )
+        if state == "delivered":
+            # The as-reviewed ledger stays immutable in planned-control history,
+            # and the re-anchor must be accompanied by its reviewed amendment.
+            historical_ledger = self.git_bytes(
+                "show",
+                f"{C0005_PLANNED_CONTROL_SHA}:{self.relative(union_manifest)}",
+                check=False,
+            )
+            self.problems.require(
+                historical_ledger.returncode == 0
+                and hashlib.sha256(historical_ledger.stdout).hexdigest().upper()
+                == C0005_REQUEST_FACTS["union"]["postimages_sha256"],
+                f"{context}.union ledger history",
+                "planned-control history must retain the as-reviewed union ledger",
+            )
+            amendment = self.root / C0005_UNION_MIGRATION_AMENDMENT_PATH
+            self.problems.require(
+                amendment.is_file(),
+                C0005_UNION_MIGRATION_AMENDMENT_PATH,
+                "delivered union re-anchor requires its reviewed amendment",
+            )
         _, union_rows = self.read_tsv(
             union_manifest,
             self.relative(union_manifest),
             ("path", "preimage_blob_oid", "preimage_sha256", "postimage_sha256"),
         )
-        union_postimages = self.validate_postimage_rows(
-            ("path", "preimage_blob_oid", "preimage_sha256", "postimage_sha256"),
-            union_rows,
-            self.relative(union_manifest),
-            union_paths,
-            "postimage_sha256",
-            base_sha=C0004_CODE_SHA,
-            base_label="C0004",
-        )
-        self.materialize_patch_postimages(
-            f"{context}[union]",
-            union_patch,
-            union_paths,
-            union_postimages,
-            base_sha=C0004_CODE_SHA,
-            base_label="C0004",
-            unidiff_zero=True,
-        )
+        if state == "delivered":
+            # Validate the 36 C0004-anchored rows exactly as frozen, then the
+            # re-anchored control-line row against its amendment constants.
+            amended_row = next(
+                (row for row in union_rows if row.get("path") == C0005_UNION_AMENDED_PATH),
+                None,
+            )
+            self.problems.require(
+                amended_row is not None
+                and all(
+                    amended_row.get(key) == value
+                    for key, value in C0005_UNION_AMENDED_ROW.items()
+                ),
+                f"{context}.union[{C0005_UNION_AMENDED_PATH}]",
+                "re-anchored union row must carry the reviewed amendment values",
+            )
+            anchored_rows = [
+                row for row in union_rows if row.get("path") != C0005_UNION_AMENDED_PATH
+            ]
+            anchored_paths = union_paths - {C0005_UNION_AMENDED_PATH}
+            union_postimages = self.validate_postimage_rows(
+                ("path", "preimage_blob_oid", "preimage_sha256", "postimage_sha256"),
+                anchored_rows,
+                self.relative(union_manifest),
+                anchored_paths,
+                "postimage_sha256",
+                base_sha=C0004_CODE_SHA,
+                base_label="C0004",
+            )
+            # The frozen patch still legitimately produces all 37 paths from
+            # exact C0004, including the stale control-line postimage; verify it
+            # unchanged, then hold the live tree to the amended row instead.
+            self.materialize_patch_postimages(
+                f"{context}[union]",
+                union_patch,
+                union_paths,
+                {
+                    **union_postimages,
+                    C0005_UNION_AMENDED_PATH: C0005_REQUEST_FACTS["union"][
+                        "frozen_migration_postimage_sha256"
+                    ],
+                },
+                base_sha=C0004_CODE_SHA,
+                base_label="C0004",
+                unidiff_zero=True,
+            )
+            union_postimages[C0005_UNION_AMENDED_PATH] = C0005_UNION_AMENDED_ROW[
+                "postimage_sha256"
+            ]
+            # Applied, not merely reviewed: every union path must now match its
+            # ledger postimage in the live tree.
+            for path in sorted(union_paths):
+                live = self.root / path
+                self.problems.require(
+                    live.is_file()
+                    and sha256_path(live) == union_postimages.get(path),
+                    f"{context}.union applied[{path}]",
+                    "delivered tree must materialize the reviewed union postimage",
+                )
+        else:
+            union_postimages = self.validate_postimage_rows(
+                ("path", "preimage_blob_oid", "preimage_sha256", "postimage_sha256"),
+                union_rows,
+                self.relative(union_manifest),
+                union_paths,
+                "postimage_sha256",
+                base_sha=C0004_CODE_SHA,
+                base_label="C0004",
+            )
+            self.materialize_patch_postimages(
+                f"{context}[union]",
+                union_patch,
+                union_paths,
+                union_postimages,
+                base_sha=C0004_CODE_SHA,
+                base_label="C0004",
+                unidiff_zero=True,
+            )
         for path in sorted(r0009 - r0010):
             self.problems.require(
                 union_postimages.get(path) == request_postimages.get("R0009", {}).get(path),
@@ -8895,6 +9125,10 @@ class CompletionValidator:
                 "R0009-only union postimage must equal standalone R0009",
             )
         for path in sorted(r0010 - r0009):
+            if state == "delivered" and path == C0005_UNION_AMENDED_PATH:
+                # The standalone R0010 postimage carries the same stale anchor
+                # the amendment corrects, so equality no longer holds here.
+                continue
             self.problems.require(
                 union_postimages.get(path) == request_postimages.get("R0010", {}).get(path),
                 f"{context}.union[{path}]",

@@ -1,3 +1,4 @@
+import NumStability.Algorithms.ComplexBackwardError
 import NumStability.Source.Higham.Chapter01.Section17.ErrorSpread
 import NumStability.Source.Higham.Chapter01.Section17.GridVariation
 import NumStability.Source.Higham.Chapter01.Section17.HornerEvaluation

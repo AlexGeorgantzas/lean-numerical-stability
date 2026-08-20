@@ -11,12 +11,12 @@ import Mathlib.LinearAlgebra.Matrix.Rank
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
-import NumStability.Algorithms.LU.GaussianElimination
-import NumStability.Algorithms.LU.GrowthFactor
-import NumStability.Algorithms.LU.LUSolve
 import NumStability.Algorithms.LinearSystems.Cholesky.RoundedFactorization.Basic
 import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
+import NumStability.Algorithms.LU.GaussianElimination
+import NumStability.Algorithms.LU.GrowthFactor
+import NumStability.Algorithms.LU.LUSolve
 import NumStability.Analysis.FirstOrder.AsymptoticFamilies
 import NumStability.Analysis.MatrixNorms.EntrywiseAbsolute.Basic
 import NumStability.Analysis.MatrixSpectral
@@ -36,7 +36,7 @@ import NumStability.Source.Higham.Chapter09.Section08
 import NumStability.Source.Higham.Chapter09.Section10
 import NumStability.Source.Higham.Chapter09.Section11
 import NumStability.Source.Higham.Chapter10.Section03.PositiveSemidefinite.SchurComplement
-import NumStability.Source.Higham.Chapter10.Theorem07
+import NumStability.Source.Higham.Chapter10.Theorem07.Core.Results
 import NumStability.Source.Higham.Chapter10.Theorem14.CompletePivotedPSD.SourceError
 
 /-!
