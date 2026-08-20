@@ -1,6 +1,6 @@
 {
   "annotation": {
-    "method": "Codex read the complete 47-page local PDF sequentially, including the HAL cover, all 46 printed article pages, Algorithms 1-2, Theorems 3.1-3.4, six mixed-precision strategy sections, synthetic and SuiteSparse experiments, conclusion, Appendices A-D, and references; visually checked every selected source page; searched all 24 frozen mounted object modules; and compiled private N/L proofs before accepting the targets.",
+    "method": "Codex read the complete 47-page local PDF sequentially and, during the audit-driven P19-T2 rebuild, rechecked Algorithm 2, equations (3.2)-(3.8), Theorem 3.1, and Appendix A in extracted text and rendered source pages; searched the frozen library and compiled private N/L constructions for the rebuilt target.",
     "not_human_reviewer": true,
     "performed_by": "Codex",
     "reason": "The project owner assigned the P19 source selection and benchmark annotation to Codex."
@@ -41,8 +41,8 @@
       "reason": "These establish the computational model and hypotheses rather than a concise selected conclusion. Their four error sources are retained in T2's exact modular aggregation."
     },
     {
-      "candidate": "the complete asymptotic statements of Theorems 3.1-3.4",
-      "reason": "Their conclusions suppress low-degree factors through the relation less-similar c(n,k), rely on detailed nonsingularity and rank hypotheses, and delegate their long proofs to Appendices A-D. T2 and T3 isolate exact, auditable mathematical content from their displayed envelopes without pretending to formalize the suppressed constants."
+      "candidate": "the complete specialized statements of Theorems 3.2-3.4",
+      "reason": "P19-T2 now selects the general modular Theorem 3.1 with explicit polynomial and second-order semantics. The specialized left, right, and flexible results would duplicate that framework while introducing strategy-specific models reserved for separate task selection."
     },
     {
       "candidate": "left-preconditioned bound (3.13) and simplified envelope (3.21)",
@@ -78,9 +78,9 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use an exact finite-vector realization of the four weighted error sources collected in xi in equation (3.8).",
+      "decision": "Use Theorem 3.1, including Algorithm 2's modular hypotheses, the existential 4/3 basis-conditioning result, and the complete normalized first-order forward-error bound (3.8).",
       "task_id": "P19-T2",
-      "theorem_name": "p19_t2_modular_four_source_error_bound"
+      "theorem_name": "p19_t2_modular_gmres_forward_error"
     },
     "T3": {
       "available": true,
@@ -91,7 +91,7 @@
   },
   "schema_version": "highambench-paper-0.2",
   "selection_policy": [
-    "Prefer exact inequalities and comparisons over conclusions expressed only through suppressed asymptotic constants.",
+    "Represent a selected asymptotic theorem with an explicit polynomial witness and second-order remainder instead of deleting its approximation semantics.",
     "Represent the paper's four modular error sources and right/flexible precision distinction explicitly.",
     "Do not promote empirical heatmaps, iteration counts, qualified recommendations, or future-work claims to theorem targets.",
     "Keep every public definition free of NumStability imports.",

@@ -1,14 +1,17 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": true,
-    "kind": "source selection, tier label, and exact finite-vector realization of the four-source xi aggregate in equation (3.8)",
+    "kind": "faithful reconstruction of Theorem 3.1 with an explicit Frobenius-condition-number interpretation, polynomial witness for c(n,k), and second-order remainder semantics for lesssim",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The weights alpha, beta, and lambda are nonnegative.",
-    "Each of the four error-vector norms is bounded by its corresponding source magnitude."
+    "The dimension n is positive, A and the left preconditioner ML have certified inverses, b is nonzero, and xExact solves A*xExact=b.",
+    "The search spaces form an increasing full-column-rank basis family and the MGS analysis records a positive key dimension k<=n.",
+    "The four Algorithm 2 modules satisfy equations (3.2)-(3.4), the MGS/Givens least-squares perturbation model, numerical nonsingularity, and conditions (3.5)-(3.6).",
+    "For each certified nonsingular analytical right preconditioner MR, the Appendix-A certificate supplies exact singular-value data and four separately typed propagated contributions whose sum equals the computed forward error up to a second-order remainder.",
+    "All matrix and vector quantities are real, so exceptional floating-point values and range failures are outside the model."
   ],
-  "author_label": null,
+  "author_label": "Theorem 3.1",
   "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P19 shared files are present; the frozen NumStability library is also present.",
@@ -16,14 +19,14 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P19/T2/context.md",
   "formal_statement": {
-    "lean_header": "theorem p19_t2_modular_four_source_error_bound {n : Nat} (alpha beta lambda epsilonC epsilonB ug epsilonX : Real) (computationError rhsError gmresError solutionError : Fin n -> Real) (halpha : 0 <= alpha) (hbeta : 0 <= beta) (hlambda : 0 <= lambda) (hcomputation : p19VecNorm2 computationError <= epsilonC) (hrhs : p19VecNorm2 rhsError <= epsilonB) (hgmres : p19VecNorm2 gmresError <= ug) (hsolution : p19VecNorm2 solutionError <= epsilonX) : p19VecNorm2 (p19ModularError alpha beta lambda computationError rhsError gmresError solutionError) <= p19ModularEnvelope alpha beta lambda epsilonC epsilonB ug epsilonX",
+    "lean_header": "theorem p19_t2_modular_gmres_forward_error {n : Nat} {iota : Type*} {l : Filter iota} [l.NeBot] (execution : P19Theorem31Execution (n := n) l) : exists k : Nat, k = execution.run.keyDimension and 0 < k and k <= n and (forall eventually t in l, 1 / (execution.run.vHatSpectrum t).sigmaMin <= 4 / 3 and (execution.run.vHatSpectrum t).sigmaMax <= 4 / 3) and forall MR MRinv, p19InversePair MR MRinv -> p19FirstOrderLeAt l (p19PrecisionScale execution.run) (fun t => p19ForwardError execution.run.xExact (execution.run.xHat t)) (fun t => p19PolynomialFactorValue execution.run.polynomialFactor n k * p19Xi execution.run MR MRinv (execution.forwardAnalysis MR MRinv _).quantities t * p19ConditionNumberF (p19SplitOperator execution.run MRinv) (p19SplitInverse execution.run MR))",
     "namespace": "HighamBench",
-    "plain_language": "A four-source modular error vector has norm bounded by the exact weighted xi envelope from equation (3.8).",
+    "plain_language": "At an MGS-selected dimension k no larger than n, the computed Krylov basis satisfies both 4/3 conditioning bounds and, for every nonsingular analytical right preconditioner, Algorithm 2's computed solution satisfies Theorem 3.1's normalized first-order forward-error bound with the exact alpha, beta, lambda, and xi formulas.",
     "target_file": "paper_bencmark/highambench/tasks/P19/T2/Target.lean",
-    "theorem_name": "p19_t2_modular_four_source_error_bound"
+    "theorem_name": "p19_t2_modular_gmres_forward_error"
   },
-  "informal_proof": "Apply Euclidean homogeneity to each weighted source, use its supplied norm bound, and combine the four contributions with three applications of the triangle inequality.",
-  "informal_statement": "An exact finite-vector certificate for the four weighted terms collected in xi in the modular forward-error bound (3.8).",
+  "informal_proof": "Use the MGS orthogonality-defect estimates and the certified extremal singular values to obtain the two 4/3 bounds at the recorded key dimension. For an arbitrary certified right preconditioner, apply the Euclidean triangle inequality to the exact Appendix-A decomposition, divide by the nonzero exact-solution norm, apply the four source-specific propagation bounds, collect their coefficients into xi, and retain the normalized remainder as O((epsilonC+epsilonB+ug+epsilonX)^2).",
+  "informal_statement": "The complete modular attainable-forward-error result of Theorem 3.1, with explicit norm and first-order semantics.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -40,40 +43,79 @@
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
       "NumStability.vecNorm2_add_le",
-      "NumStability.vecNorm2_smul"
+      "NumStability.vecNorm2_nonneg"
     ],
-    "note": "The frozen MatrixAlgebra module supplies triangle inequality and homogeneity. It does not contain the paper's alpha/beta/lambda four-source model or its xi aggregation."
+    "note": "The frozen library supplies reusable Euclidean norm facts for combining the four Appendix-A contributions. It contains no preconditioned GMRES execution model, MGS key-dimension theorem, coefficient formulas, or complete Theorem 3.1 result."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
-    "p19VecNorm2Sq",
+    "P19Matrix",
+    "P19RectMatrix",
+    "P19Vector",
     "p19VecNorm2",
-    "p19Add",
-    "p19Scale",
-    "p19ModularError",
-    "p19ModularEnvelope"
+    "p19FrobNorm",
+    "p19InversePair",
+    "P19SingularValueData",
+    "P19PolynomialFactor",
+    "p19PolynomialFactorValue",
+    "p19FirstOrderLeAt",
+    "P19IncreasingBasisFamily",
+    "p19ConditionNumberF",
+    "P19ModularGMRESRun",
+    "p19PrecisionScale",
+    "p19SplitOperator",
+    "p19SplitInverse",
+    "p19ForwardError",
+    "P19RightPreconditionedQuantities",
+    "p19Alpha",
+    "p19Beta",
+    "p19Lambda",
+    "p19Xi",
+    "P19ForwardAnalysis",
+    "P19Theorem31Execution"
   ],
   "source_locations": [
     {
-      "anchor": "equation (3.8), definition xi = alpha epsilon_c + beta epsilon_b + beta u_g + lambda epsilon_x",
+      "anchor": "Algorithm 2, Modular GMRES",
+      "pdf_page": 7,
+      "printed_page": "6",
+      "role": "four-module algorithm and increasing search-space basis",
+      "section": "3.1. Modular error bound"
+    },
+    {
+      "anchor": "equations (3.2)-(3.6) and the MGS/Givens least-squares model",
+      "pdf_page": 8,
+      "printed_page": "7",
+      "role": "heterogeneous rounding-error models and smallness conditions",
+      "section": "3.1. Modular error bound"
+    },
+    {
+      "anchor": "Theorem 3.1 and equations (3.7)-(3.8)",
       "pdf_page": 9,
       "printed_page": "8",
-      "role": "four-source modular attainable-error aggregate",
-      "section": "3.1. Improved modular framework"
+      "role": "selected basis-conditioning and normalized forward-error result",
+      "section": "3.1. Modular error bound"
+    },
+    {
+      "anchor": "equation (A.11) and the closing recovery of (3.8)",
+      "pdf_page": 39,
+      "printed_page": "38",
+      "role": "first-order propagation and omitted second-order terms",
+      "section": "Appendix A. Proof of Theorem 3.1"
     }
   ],
   "source_tags": [
-    "EQN"
+    "THM"
   ],
   "task_id": "P19-T2",
   "tier": "T2",
   "tier_label": "combine",
-  "tier_rationale": "The L proof combines NumStability.vecNorm2_add_le and NumStability.vecNorm2_smul from frozen NumStability/Analysis/MatrixAlgebra.lean, then supplies the P19-specific four-source association, nonnegative coefficient normalization, individual source bounds, and xi assembly.",
+  "tier_rationale": "The target combines the paper-scoped Algorithm 2 and Appendix-A certificate with several Euclidean norm steps, nonzero normalization, singular-value algebra, four source-specific inequalities, and an asymptotic remainder. The L construction uses NumStability.vecNorm2_add_le and NumStability.vecNorm2_nonneg, but the frozen library does not provide the P19 execution or theorem.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P19/T2/Target.lean",
     "mode": "shared automatic validator",
     "reject_sorry_admit_new_axiom_unsafe_or_forbidden_import": true,
     "reject_statement_changes": true,
-    "required_declaration": "HighamBench.p19_t2_modular_four_source_error_bound"
+    "required_declaration": "HighamBench.p19_t2_modular_gmres_forward_error"
   }
 }

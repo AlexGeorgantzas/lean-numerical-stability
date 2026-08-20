@@ -91,7 +91,7 @@ the `theorem` command.
 | `P18-T2` | `TXT`, `UNL` | none | The selected corrected-midpoint arrays and cancellation certificate are unnumbered displays introduced and interpreted in prose; numbered conditions (3.4)-(3.5) supply the general order-condition definitions instantiated by the certificate. |
 | `P18-T3` | `TXT`, `UNL` | none | Section 4.3 introduces Method 4s3pC and its regularity distinction in prose; the selected certificate uses the unnumbered coefficient and following error-form displays. |
 | `P19-T1` | `EQN` | none | The selected upper perturbation-norm inequality is the right half of equation (C.8). |
-| `P19-T2` | `EQN` | none | The selected four-source modular aggregate is the definition of `xi` in equation (3.8). |
+| `P19-T2` | `THM` | Theorem 3.1 | The selected result is Theorem 3.1, including equations (3.7)-(3.8) and the four-source definition of `xi`. |
 | `P19-T3` | `EQN`, `TXT` | none | Equations (3.17) and (3.20) give the two envelopes, and Remark 4 identifies the removed preconditioner-reapplication term. |
 | `P20-T1` | `EQN` | none | Equation (3.4a) gives the selected row-scaling interval and its exact maximum-coefficient consequence. |
 | `P20-T2` | `EQN`, `TXT` | none | Equation (3.26) isolates the two underflow terms and the following prose compares them in the theta-at-least-one regime. |
