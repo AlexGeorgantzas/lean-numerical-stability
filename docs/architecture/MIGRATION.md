@@ -5,12 +5,15 @@ only when its stated evidence is checked into the repository or recorded by CI.
 
 The active repository-wide operating contract is
 [`phases/2026-08-repository-reorganization-completion/`](phases/2026-08-repository-reorganization-completion/README.md).
-Its current C0004 checkpoint freezes the complete 2,766-module inventory,
-assigns every current debt row to a lane and dependency wave, distinguishes
-bounded-phase from repository-wide completion, and records branch, baseline,
-shared-request, build-lock, and checkpoint lifecycle rules. Validate it with
-`python tools/architecture/check_phase.py`. Dated packets and migration reports
-are evidence, not current worker instructions.
+Its current C0005 checkpoint accepts M04/R04 and M08/R08 at exact integrated
+code commit `ad92bbfae62d538f3e52829a269a846688a8e213`. Generated evidence records
+2,818 production modules: 2,685 classified, 133 unclassified, and 0 mixed. M04
+and M08 are accepted; M07 is ready, while R07 remains blocked until the exact
+acceptance-control CI is green. Branch retirement is a separate later control.
+The checkpoint distinguishes bounded-phase from repository-wide completion and
+records branch, baseline, shared-request, build-lock, and lifecycle rules.
+Validate it with `python tools/architecture/check_phase.py`. Dated packets and
+migration reports are evidence, not current worker instructions.
 
 C0003 accepts M03/R03 at exact code commit
 `e20de2f931caa12221e708c341e9cb4f64d29b25`, but it does not claim bounded or

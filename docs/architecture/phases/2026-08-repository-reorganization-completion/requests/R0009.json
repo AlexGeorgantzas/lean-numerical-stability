@@ -159,15 +159,20 @@
  "request_id": "R0009",
  "requester_id": "primary-human",
  "resolution": {
-  "checkpoint_id": null,
-  "commit_sha": null,
-  "reason": null,
-  "resolved_at": null,
-  "resolved_by": null,
-  "validation_evidence": []
+  "checkpoint_id": "C0005",
+  "commit_sha": "ad92bbfae62d538f3e52829a269a846688a8e213",
+  "reason": "Applied as the independently replayed and reviewed R0009/R0010 shared-file union after both immutable delivery merges, with the reviewed migration-ledger re-anchor and two bounded integration follow-ups.",
+  "resolved_at": "2026-08-20T16:23:16Z",
+  "resolved_by": "primary-human",
+  "validation_evidence": [
+   {
+    "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/checkpoints/C0005-gates.md",
+    "sha256": "EA0192C5965E1D36B59417D35074E70A075619BBF72ADA24E985C2A632B19C47"
+   }
+  ]
  },
  "schema_version": 1,
- "status": "active",
+ "status": "applied",
  "superseded_by": null,
  "supersedes": null,
  "target_base_sha": "783ae9a4951407ece046adb8631d5a8ff1795a18",

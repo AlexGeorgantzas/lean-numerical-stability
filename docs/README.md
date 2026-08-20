@@ -1,5 +1,11 @@
 # Documentation map
 
+C0005 accepts M04/R04 and M08/R08 at exact integrated code commit
+`ad92bbfae62d538f3e52829a269a846688a8e213`. Its generated evidence records
+2,818 production modules: 2,685 classified, 133 unclassified, and 0 mixed. M04
+and M08 are accepted; M07 is ready, while R07 remains blocked until the exact
+acceptance-control CI is green. Branch retirement is a separate later control.
+
 This directory separates current policy from dated evidence and source-audit
 history. When two documents disagree, use the precedence order below.
 
@@ -17,12 +23,11 @@ history. When two documents disagree, use the precedence order below.
    per-file licensing and upstream-attribution policy.
 6. [`architecture/phases/2026-08-repository-reorganization-completion/`](architecture/phases/2026-08-repository-reorganization-completion/README.md)
    is the active repository-wide scope, authority, wave, checkpoint, and branch
-   contract. Its current checkpoint is C0004 at exact green code commit
-   `783ae9a4951407ece046adb8631d5a8ff1795a18`; Lean CI run 31962707569
-   (job 95203051003) passed. M05/R05 and M06/R06 are accepted,
-   P0006/P0007 are retired, and R0006/R0007/R0008 are applied. The temporary
-   operator expansion and wave reservations are released. M04/R04 and M08/R08
-   are ready; every other unaccepted milestone remains planned and no successor
+   contract. Its current checkpoint is C0005 at exact integrated code commit
+   `ad92bbfae62d538f3e52829a269a846688a8e213`. M04/R04 and M08/R08 are
+   accepted; P0008/P0009 are retired evidence, R0009/R0010 are applied, and the
+   temporary operator expansion and wave reservations are released. M07/R07 is
+   ready but remains blocked pending exact acceptance-control CI; no successor
    wave is activated.
    Acceptance-control commit `131a0c6f333de0eb47a67698decf36ee82e01dab`
    passed Lean CI run 31966141900 (job 95211495907); `primary-human` retired

@@ -9,8 +9,7 @@
       {
         "lane_id": "claude-lane",
         "operator_ids": [
-          "claude-local",
-          "codex-local"
+          "claude-local"
         ],
         "owner_id": "primary-human"
       },
@@ -103,7 +102,7 @@
     }
   },
   "created_at": "2026-08-11T09:20:00Z",
-  "current_checkpoint_id": "C0004",
+  "current_checkpoint_id": "C0005",
   "milestones": [
     {
       "acceptance_gate_ids": [
@@ -191,13 +190,13 @@
         "scope",
         "strict_source"
       ],
-      "accepted_checkpoint_id": null,
+      "accepted_checkpoint_id": "C0005",
       "depends_on": [
         "M03",
         "M06"
       ],
       "milestone_id": "M04",
-      "status": "ready",
+      "status": "accepted",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -275,7 +274,7 @@
       "accepted_checkpoint_id": null,
       "depends_on": [],
       "milestone_id": "M07",
-      "status": "planned",
+      "status": "ready",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -296,13 +295,13 @@
         "scope",
         "strict_source"
       ],
-      "accepted_checkpoint_id": null,
+      "accepted_checkpoint_id": "C0005",
       "depends_on": [
         "M03",
         "M06"
       ],
       "milestone_id": "M08",
-      "status": "ready",
+      "status": "accepted",
       "superseded_by": null,
       "unblocks": [],
       "wave_ids": [
@@ -515,14 +514,6 @@
     },
     {
       "match": "exact",
-      "path": "NumStability/Algorithms/LinearSystems/Cholesky/ErrorAnalysis.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Algorithms/LinearSystems/Cholesky/PositiveSemidefinite.lean"
-    },
-    {
-      "match": "exact",
       "path": "NumStability/Algorithms/LinearSystems/LeastSquares/Basic.lean"
     },
     {
@@ -667,10 +658,6 @@
     },
     {
       "match": "exact",
-      "path": "NumStability/Analysis/MatrixNorms/SpectralExtrema.lean"
-    },
-    {
-      "match": "exact",
       "path": "NumStability/Analysis/Perturbation/LeastSquares/Contract.lean"
     },
     {
@@ -763,114 +750,6 @@
     },
     {
       "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter06/Lemma06/OperatorTwoNormBound/Bridge.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Equation07/AbsoluteFactorNorm/Bridge.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Equation29/Mathias.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Equation30/ComplexPositiveDefinite.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Lemma13/KahanSharpness.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Problem01/PositiveSemidefiniteEntries.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Problem04/UnpivotedGrowth.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Section01/Factorization.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Section02/ErrorAnalysis.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Section03/PositiveSemidefinite.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Section04/PositiveDefiniteSymmetricPart.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Theorem06/RoundedCholesky.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Theorem08/ComponentwisePerturbation.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Theorem08/NormwiseDiscrepancy.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/Equation22.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/SourceError.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter10/Theorem14/CompletePivotedPSD/SourceSuccess.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter14/Algorithm04.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter14/Corollary06.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter14/Corollary07.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter14/Problem02.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter14/Problem12.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter14/Section01.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter14/Section02.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter14/Section03/ResidualOperatorTwoNorm/Bridge.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter14/Theorem05.lean"
-    },
-    {
-      "match": "exact",
       "path": "NumStability/Source/Higham/Chapter15.lean"
     },
     {
@@ -924,10 +803,6 @@
     {
       "match": "exact",
       "path": "NumStability/Source/Higham/Chapter19/StoredLoop/StrongModel.lean"
-    },
-    {
-      "match": "exact",
-      "path": "NumStability/Source/Higham/Chapter19/Theorem05/SourceClosure.lean"
     },
     {
       "match": "exact",
@@ -1188,10 +1063,6 @@
     {
       "match": "exact",
       "path": "docs/architecture/COMPATIBILITY.md"
-    },
-    {
-      "match": "exact",
-      "path": "docs/architecture/MIGRATION.md"
     },
     {
       "match": "exact",

@@ -11160,9 +11160,9 @@
   }
  ],
  "integration": {
-  "accepted_checkpoint_id": null,
-  "accepted_sha": null,
-  "method": null
+  "accepted_checkpoint_id": "C0005",
+  "accepted_sha": "ad92bbfae62d538f3e52829a269a846688a8e213",
+  "method": "merge"
  },
  "lane_id": "claude-lane",
  "operator_ids": [
@@ -11351,7 +11351,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0008.json",
-    "sha256": "90449CE8A3095BCBC0731FACF0F2B8ACD36BB3B67EEDFEC0E9A6D0C3417AC79F"
+    "sha256": "4E455E14CA6EFE7A8EEFC6319BF822C6FD08906F102CFB50E156B7017B1CA41F"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/projections/P0008.tsv.gz",
@@ -11375,7 +11375,7 @@
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0009.json",
-    "sha256": "470664403259B3D777D11410F1631148065CD2BAC824986BF468050186456135"
+    "sha256": "FA10EFE39EF3F822187BB529528CB89F8886C2B65C21AE70A389B311023D2DE5"
    },
    {
     "path": "docs/architecture/phases/2026-08-repository-reorganization-completion/requests/R0009.patch",
@@ -11410,12 +11410,12 @@
   "retired_at": null,
   "retired_by": null,
   "rule": "delivery_ancestor_of_green_checkpoint",
-  "status": "not_due"
+  "status": "due"
  },
  "schema_version": 1,
  "shared_request_ids": [
   "R0009"
  ],
- "status": "delivered",
+ "status": "accepted",
  "wave_id": "R04"
 }

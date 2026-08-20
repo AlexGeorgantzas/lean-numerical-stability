@@ -4,11 +4,13 @@ The active operating contract is the
 [`2026-08 repository reorganization completion`](2026-08-repository-reorganization-completion/README.md),
 selected by [`active-phase.json`](active-phase.json). It is rooted at C0000 on
 accepted predecessor code commit
-`b1b18772d80185ec08f49c818919558645c330a1`; its current checkpoint is C0004
-at green code commit `783ae9a4951407ece046adb8631d5a8ff1795a18`. C0004 accepts
-R05/R06 on top of C0003's accepted R03, C0002's accepted R11/R12, and C0001's
-accepted R01/R02 integrations. This
-successor has precedence over
+`b1b18772d80185ec08f49c818919558645c330a1`; its current checkpoint is C0005
+at exact integrated code commit `ad92bbfae62d538f3e52829a269a846688a8e213`.
+C0005 accepts M04/R04 and M08/R08 on top of C0004's accepted R05/R06. Its
+generated evidence records 2,818 production modules: 2,685 classified, 133
+unclassified, and 0 mixed. M04 and M08 are accepted; M07 is ready, while R07
+remains blocked until the exact acceptance-control CI is green. Branch
+retirement is a separate later control. This successor has precedence over
 dated migration packets and historical handoffs.
 
 After C0001 acceptance-control commit

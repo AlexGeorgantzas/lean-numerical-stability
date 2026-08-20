@@ -1,5 +1,13 @@
 # NumStability
 
+## C0005 R04/R08 acceptance
+
+C0005 accepts M04/R04 and M08/R08 at exact integrated code commit
+`ad92bbfae62d538f3e52829a269a846688a8e213`. Its generated evidence records
+2,818 production modules: 2,685 classified, 133 unclassified, and 0 mixed. M04
+and M08 are accepted; M07 is ready, while R07 remains blocked until the exact
+acceptance-control CI is green. Branch retirement is a separate later control.
+
 A Lean 4 library for formally verified floating-point error analysis, following
 Nicholas J. Higham's *Accuracy and Stability of Numerical Algorithms*
 (2nd ed., SIAM, 2002), together with a randomized numerical linear algebra
