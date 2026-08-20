@@ -188,8 +188,8 @@
         "P18"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P18Definitions.lean",
-      "role": "P18-only additive Runge--Kutta executions, finite Euclidean error vectors, corrected-midpoint coefficient certificates, and smooth and nonsmooth error models",
-      "sha256": "2fd2602f6b6aa56a3710a5751ca7ab23a88037c5f3c271dfbbed3aff35dda6bb",
+      "role": "P18-only additive Runge--Kutta executions, finite Euclidean error vectors, and corrected-midpoint and Method 4s3pC coefficient certificates",
+      "sha256": "a11687548e70c89c129470e3165fc7a5d0c24e72d264e41282bc54107355d509",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     },
     {
@@ -3489,7 +3489,7 @@
         "volume": "92"
       },
       "paper_id": "P18",
-      "paper_structure_note": "The paper derives additive B-series consistency and perturbation conditions, distinguishes smooth from chopped nonsmooth perturbations, develops corrected midpoint, SDIRK, and Lobatto methods, and designs new four-stage schemes. The selected targets progress from the basic scheme-plus-perturbation split through an exact corrected-midpoint coefficient certificate to Method 4s3pC's two regularity regimes.",
+      "paper_structure_note": "The paper derives additive B-series consistency and perturbation conditions, distinguishes smooth from chopped nonsmooth perturbations, develops corrected midpoint, SDIRK, and Lobatto methods, and designs new four-stage schemes. The selected targets progress from the basic scheme-plus-perturbation split through an exact corrected-midpoint certificate to a print-precision Method 4s3pC consistency and perturbation certificate.",
       "paper_version": "published journal version; Journal of Scientific Computing 92, article 6, 2022, pages 1-20",
       "source": {
         "journal_page_map": "PDF pages 1-20 are article pages 1-20 respectively.",
@@ -3597,47 +3597,53 @@
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.vecNorm2_add_le",
-            "NumStability.vecNorm2_smul",
-            "NumStability.vecNorm2_nonneg"
+            "NumStability.vecNorm2_zero",
+            "NumStability.vecNorm2_eq_zero_iff"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P18/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Apply triangle inequality and homogeneity to both regime representatives; use h cubed at most h squared for h in [0,1] to compare their nonnegative perturbation terms.",
-          "informal_statement_paraphrase": "Exact finite-vector bounds for the smooth and nonsmooth Method 4s3pC error regimes, plus their small-step ordering.",
+          "informal_proof_paraphrase": "Expand the four-stage printed coefficient arrays and evaluate their finite row sums, dot products, and matrix-vector products. Bound every consistency and smooth-condition residual by 2e-15, then evaluate the nonsmooth absolute expression above 1/100.",
+          "informal_statement_paraphrase": "The printed Method 4s3pC coefficients satisfy third-order consistency and the simplified smooth perturbation conditions to print precision, while failing the stricter nonsmooth condition.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "19c676db2955c73a38faa19bd0b61c955f08938f1434ac37844445c26a3ebbaf",
-            "declaration": "p18_t3_smooth_nonsmooth_method_error_bounds",
+            "controlled_file_sha256": "c840feeef03171551b63d4517e814fd8d34a9aa6904d6b965f7cebd27fa3dbc0",
+            "declaration": "p18_t3_method4s3pc_order_certificate",
             "file": "paper_bencmark/highambench/tasks/P18/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P18Definitions.lean"
             ],
-            "statement_summary": "Exact smooth and nonsmooth Method 4s3pC error envelopes are proved together with their small-step ordering."
+            "statement_summary": "Four Method 4s3pC consistency residuals and six smooth perturbation residuals are below the print tolerance, while the nonsmooth absolute condition is quantitatively nonzero."
           },
           "source_locations": [
             {
-              "anchor": "Method 4s3pC coefficients and the two displayed smooth and nonsmooth error forms",
-              "pdf_page": 18,
-              "printed_page": "18",
-              "role": "third-order versus second-order perturbation regimes",
-              "section": "4.3 A Method that Satisfies the Simplified Order Conditions"
+              "anchor": "third-order consistency conditions preceding Section 3.1.1",
+              "pdf_page": 7,
+              "printed_page": "7",
+              "role": "consistency conditions through order three",
+              "section": "3.1 Perturbation Conditions"
             },
             {
-              "anchor": "Figure 6 interpretation of well-behaved and chopped perturbations",
-              "pdf_page": 19,
-              "printed_page": "19",
-              "role": "regime interpretation and observed order reduction",
+              "anchor": "simplified perturbation conditions (3.5a)-(3.5f)",
+              "pdf_page": 8,
+              "printed_page": "8",
+              "role": "smooth perturbation conditions through order three",
+              "section": "3.1.2 Perturbation Conditions when tau is Well Behaved"
+            },
+            {
+              "anchor": "Method 4s3pC coefficient displays and following smooth and nonsmooth error-form discussion",
+              "pdf_page": 18,
+              "printed_page": "18",
+              "role": "four-stage coefficient data and the intended regularity distinction",
               "section": "4.3 A Method that Satisfies the Simplified Order Conditions"
             }
           ],
           "task_id": "P18-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "The proof uses frozen Euclidean norm primitives but adds both paper-specific Method 4s3pC representatives and the exact small-step ordering between the smooth and nonsmooth asymptotic envelopes.",
-          "title": "Smooth versus nonsmooth Method 4s3pC bounds"
+          "tier_reason": "The task extends beyond the frozen library by transcribing a four-stage mixed-precision Runge--Kutta method, deriving its node vectors, checking four consistency and six smooth perturbation residuals, and proving a quantitative obstruction to the nonsmooth condition.",
+          "title": "Method 4s3pC order-condition certificate"
         }
       ],
       "topic": "mixed-precision perturbed Runge\u2013Kutta accuracy and correction methods"

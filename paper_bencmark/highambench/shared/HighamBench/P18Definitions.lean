@@ -161,22 +161,61 @@ noncomputable def p18CorrectedMidpointBTilde : Fin 2 → ℝ :=
 noncomputable def p18CorrectedMidpointE : Fin 2 → ℝ :=
   ![1, 1]
 
-/-- Exact representative of the corrected-midpoint error envelope on page 11. -/
-def p18CorrectedMidpointError {n : ℕ} (h epsilon : ℝ)
-    (scheme perturbation : Fin n → ℝ) : Fin n → ℝ :=
-  p18Add (p18Scale (h ^ 2) scheme)
-    (p18Scale (epsilon * h ^ 2) perturbation)
+/-- Pointwise coefficient product used in Runge--Kutta order conditions. -/
+def p18CoeffHadamard {s : ℕ}
+    (x y : Fin s → ℝ) : Fin s → ℝ :=
+  fun i => x i * y i
 
-/-- Exact representative of Method 4s3pC's smooth-perturbation error. -/
-def p18SmoothMethodError {n : ℕ} (h epsilon : ℝ)
-    (scheme perturbation : Fin n → ℝ) : Fin n → ℝ :=
-  p18Add (p18Scale (h ^ 3) scheme)
-    (p18Scale (epsilon * h ^ 3) perturbation)
+/-- Tolerance used to certify identities from coefficients printed to fifteen
+decimal places. -/
+noncomputable def p18PrintedCoeffTolerance : ℝ :=
+  2 / 10 ^ 15
 
-/-- Exact representative of Method 4s3pC's nonsmooth-perturbation error. -/
-def p18NonsmoothMethodError {n : ℕ} (h epsilon : ℝ)
-    (scheme perturbation : Fin n → ℝ) : Fin n → ℝ :=
-  p18Add (p18Scale (h ^ 3) scheme)
-    (p18Scale (epsilon * h ^ 2) perturbation)
+/-- The full-precision Method 4s3pC matrix printed on page 18. -/
+noncomputable def p18Method4s3pCA : Fin 4 → Fin 4 → ℝ :=
+  !![0, 0, 0, 0;
+     -0.050470366527530, 0, 0, 0;
+     0.368613367355336, 0.273504374252976, 0, 0;
+     1.803794668975043, 0.097485042980759, -1.895660952342050, 0]
+
+/-- The perturbation matrix `A^epsilon` for Method 4s3pC. -/
+noncomputable def p18Method4s3pCAPerturbation : Fin 4 → Fin 4 → ℝ :=
+  !![0.511243008730995, 0, 0, 0;
+     -1.999347282862640, 1.957161067302390, 0, 0;
+     0.443312893511937, -0.573131033672219, 0.128283796414019, 0;
+     -2, -0.160330320741428, 0.579597314161362, 1.484688928981990]
+
+/-- The Method 4s3pC output weights `b`. -/
+noncomputable def p18Method4s3pCB : Fin 4 → ℝ :=
+  ![0.002837446974069, 0.336264433650450,
+    0.806376720267787, -0.145478600892306]
+
+/-- The Method 4s3pC perturbation output weights `b^epsilon`. -/
+noncomputable def p18Method4s3pCBPerturbation : Fin 4 → ℝ :=
+  ![0, 0, 0, 0]
+
+/-- The all-ones vector for the four-stage Method 4s3pC conditions. -/
+noncomputable def p18Method4s3pCE : Fin 4 → ℝ :=
+  ![1, 1, 1, 1]
+
+/-- The Method 4s3pC full-precision nodes `c = A*e`. -/
+noncomputable def p18Method4s3pCC : Fin 4 → ℝ :=
+  p18CoeffMatVec p18Method4s3pCA p18Method4s3pCE
+
+/-- The Method 4s3pC perturbation nodes `c^epsilon = A^epsilon*e`. -/
+noncomputable def p18Method4s3pCCPerturbation : Fin 4 → ℝ :=
+  p18CoeffMatVec p18Method4s3pCAPerturbation p18Method4s3pCE
+
+/-- The combined Method 4s3pC matrix `A tilde`. -/
+noncomputable def p18Method4s3pCATilde : Fin 4 → Fin 4 → ℝ :=
+  p18CoeffMatAdd p18Method4s3pCA p18Method4s3pCAPerturbation
+
+/-- The combined Method 4s3pC nodes `c tilde`. -/
+noncomputable def p18Method4s3pCCTilde : Fin 4 → ℝ :=
+  p18Add p18Method4s3pCC p18Method4s3pCCPerturbation
+
+/-- The combined Method 4s3pC weights `b tilde`. -/
+noncomputable def p18Method4s3pCBTilde : Fin 4 → ℝ :=
+  p18Add p18Method4s3pCB p18Method4s3pCBPerturbation
 
 end HighamBench

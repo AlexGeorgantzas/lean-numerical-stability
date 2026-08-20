@@ -2,19 +2,42 @@ import HighamBench.P18Definitions
 
 namespace HighamBench
 
-/-- P18-T3: exact smooth and nonsmooth perturbation envelopes for Method
-4s3pC, together with their ordering on a normalized small time step. -/
-theorem p18_t3_smooth_nonsmooth_method_error_bounds {n : ℕ}
-    (h epsilon : ℝ) (scheme perturbation : Fin n → ℝ)
-    (hh0 : 0 ≤ h) (hh1 : h ≤ 1) (hepsilon : 0 ≤ epsilon) :
-    p18VecNorm2 (p18SmoothMethodError h epsilon scheme perturbation) ≤
-        h ^ 3 * (p18VecNorm2 scheme + epsilon * p18VecNorm2 perturbation) ∧
-      p18VecNorm2 (p18NonsmoothMethodError h epsilon scheme perturbation) ≤
-        h ^ 3 * p18VecNorm2 scheme +
-          epsilon * h ^ 2 * p18VecNorm2 perturbation ∧
-      h ^ 3 * (p18VecNorm2 scheme + epsilon * p18VecNorm2 perturbation) ≤
-        h ^ 3 * p18VecNorm2 scheme +
-          epsilon * h ^ 2 * p18VecNorm2 perturbation := by
+/-- P18-T3: the printed Method 4s3pC coefficients satisfy the third-order
+consistency and simplified smooth-perturbation conditions to their print
+precision, while failing the corresponding nonsmooth absolute condition. -/
+theorem p18_t3_method4s3pc_order_certificate :
+    p18Method4s3pCBPerturbation = (fun _ => 0) ∧
+      |p18CoeffDot p18Method4s3pCBTilde p18Method4s3pCE - 1| ≤
+        p18PrintedCoeffTolerance ∧
+      |p18CoeffDot p18Method4s3pCBTilde p18Method4s3pCCTilde - 1 / 2| ≤
+        p18PrintedCoeffTolerance ∧
+      |p18CoeffDot p18Method4s3pCBTilde
+          (p18CoeffHadamard p18Method4s3pCCTilde
+            p18Method4s3pCCTilde) - 1 / 3| ≤
+        p18PrintedCoeffTolerance ∧
+      |p18CoeffDot p18Method4s3pCBTilde
+          (p18CoeffMatVec p18Method4s3pCATilde
+            p18Method4s3pCCTilde) - 1 / 6| ≤
+        p18PrintedCoeffTolerance ∧
+      |p18CoeffDot p18Method4s3pCBTilde
+          p18Method4s3pCCPerturbation| ≤ p18PrintedCoeffTolerance ∧
+      |p18CoeffDot p18Method4s3pCBTilde
+          (p18CoeffMatVec p18Method4s3pCAPerturbation
+            p18Method4s3pCCTilde)| ≤ p18PrintedCoeffTolerance ∧
+      |p18CoeffDot p18Method4s3pCBTilde
+          (p18CoeffMatVec p18Method4s3pCATilde
+            p18Method4s3pCCPerturbation)| ≤ p18PrintedCoeffTolerance ∧
+      |p18CoeffDot p18Method4s3pCBTilde
+          (p18CoeffHadamard p18Method4s3pCCTilde
+            p18Method4s3pCCPerturbation)| ≤ p18PrintedCoeffTolerance ∧
+      |p18CoeffDot p18Method4s3pCBTilde
+          (p18CoeffMatVec p18Method4s3pCAPerturbation
+            p18Method4s3pCCPerturbation)| ≤ p18PrintedCoeffTolerance ∧
+      |p18CoeffDot p18Method4s3pCBTilde
+          (p18CoeffHadamard p18Method4s3pCCPerturbation
+            p18Method4s3pCCPerturbation)| ≤ p18PrintedCoeffTolerance ∧
+      1 / 100 < p18CoeffAbsDot p18Method4s3pCBTilde
+        p18Method4s3pCCPerturbation := by
   -- PROOF_START
   sorry
 

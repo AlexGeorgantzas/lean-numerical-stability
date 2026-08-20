@@ -89,7 +89,7 @@ the `theorem` command.
 | `P17-T3` | `THM` | `Theorem 4.3` | The selected variance-based probabilistic summation bound is explicitly named Theorem 4.3. |
 | `P18-T1` | `TXT`, `UNL` | none | The prose following equation (3.3) introduces the selected exact split, and the split itself is displayed without a number. |
 | `P18-T2` | `TXT`, `UNL` | none | The selected corrected-midpoint arrays and cancellation certificate are unnumbered displays introduced and interpreted in prose; numbered conditions (3.4)-(3.5) supply the general order-condition definitions instantiated by the certificate. |
-| `P18-T3` | `EQN`, `TXT` | none | Section 4.3 displays the smooth and nonsmooth Method 4s3pC error regimes and explains their regularity distinction in prose. |
+| `P18-T3` | `TXT`, `UNL` | none | Section 4.3 introduces Method 4s3pC and its regularity distinction in prose; the selected certificate uses the unnumbered coefficient and following error-form displays. |
 | `P19-T1` | `EQN` | none | The selected upper perturbation-norm inequality is the right half of equation (C.8). |
 | `P19-T2` | `EQN` | none | The selected four-source modular aggregate is the definition of `xi` in equation (3.8). |
 | `P19-T3` | `EQN`, `TXT` | none | Equations (3.17) and (3.20) give the two envelopes, and Remark 4 identifies the removed preconditioner-reapplication term. |
