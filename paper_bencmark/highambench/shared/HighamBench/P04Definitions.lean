@@ -29,24 +29,61 @@ dot product of entrywise absolute values, not a norm. -/
 noncomputable def p04AbsDot {n : ℕ} (x y : Fin n → ℝ) : ℝ :=
   ∑ i : Fin n, |x i| * |y i|
 
-/-- A scalar output of the chained block-FMA loop in Algorithm 3.1, represented
-by the compact perturbation factorization immediately preceding equation
-(3.4). The certificate is the paper's finite real standard-model semantics:
-underflow, overflow, exceptional IEEE values, and the omitted second output
-rounding are outside this model.
+/-- Evaluation-order cases discussed after P04 equation (3.4). The `other`
+constructor represents any further parenthesization covered by the paper's
+unsharpened all-orders bound. -/
+inductive P04BlockEvaluationOrder where
+  | leftToRight
+  | rightToLeft
+  | other (code : ℕ)
+  deriving DecidableEq
 
-The unconditional `beta_bound` records the paper's statement that (3.4) is
-valid for every evaluation order admitted by its analysis. `rightToLeft`
-marks the blocked right-to-left case for which the paper supplies the sharper
-`q+b-1` bound. -/
+/-- Exact dot product in the block indexing of recurrence (3.1). -/
+noncomputable def p04BlockedDot {q b : ℕ}
+    (x y : Fin q → Fin b → ℝ) : ℝ :=
+  ∑ k : Fin q, ∑ j : Fin b, x k j * y k j
+
+/-- The componentwise scale `|x|ᵀ|y|` in block indexing. -/
+noncomputable def p04BlockedAbsDot {q b : ℕ}
+    (x y : Fin q → Fin b → ℝ) : ℝ :=
+  ∑ k : Fin q, ∑ j : Fin b, |x k j| * |y k j|
+
+/-- Extend a block-indexed error by zero outside its valid natural range. -/
+noncomputable def p04ErrorAt {q : ℕ} (error : Fin q → ℝ) (k : ℕ) : ℝ :=
+  if h : k < q then error ⟨k, h⟩ else 0
+
+/-- Product of the modeled output-rounding factors from block `k` onward. -/
+noncomputable def p04InclusiveErrorProduct {q : ℕ}
+    (error : Fin q → ℝ) (k : Fin q) : ℝ :=
+  ∏ l ∈ Finset.Ico k.val q, (1 + p04ErrorAt error l)
+
+/-- Product of the modeled carry factors strictly after block `k`. -/
+noncomputable def p04StrictErrorProduct {q : ℕ}
+    (error : Fin q → ℝ) (k : Fin q) : ℝ :=
+  ∏ l ∈ Finset.Ico (k.val + 1) q, (1 + p04ErrorAt error l)
+
+/-- A finite-real execution of the scalar recurrence (3.1) underlying P04
+Algorithm 3.1.
+
+Each `state_step` is the local standard-model representation (3.2): the old
+state and the `b` products carry internal-precision `theta` factors, followed
+by the single output-rounding factor `delta`. For the first block, `s₀ = 0`
+removes one operation and all term paths fit in `gamma uBar b`; later term
+paths fit in `gamma uBar (b+1)`. A generic carry path fits in `gamma uBar b`,
+while right-to-left evaluation gives the one-operation carry path responsible
+for the `q+b-1` refinement.
+
+The structure contains no compact `alpha`/`beta` witnesses and no final error
+bound. Those are consequences of the trace. As in the paper's analysis, the
+real-valued local model excludes underflow, overflow, and exceptional IEEE
+values and represents the deliberate single-rounding simplification. -/
 structure P04BlockFmaDotRun (n b q : ℕ) where
   dimension_pos : 0 < n
   block_size_pos : 0 < b
   block_count_pos : 0 < q
   dimension_eq : n = q * b
-  x : Fin n → ℝ
-  y : Fin n → ℝ
-  computed : ℝ
+  x : Fin q → Fin b → ℝ
+  y : Fin q → Fin b → ℝ
   uBar : ℝ
   uFma : ℝ
   uOut : ℝ
@@ -57,19 +94,46 @@ structure P04BlockFmaDotRun (n b q : ℕ) where
   effective_gamma_valid :
     GammaValid (p04EffectiveFmaRoundoff uBar uFma uOut) q
   internal_gamma_valid : GammaValid uBar n
-  alpha : Fin n → ℝ
-  beta : Fin n → ℝ
-  algorithm3_1_factorization :
-    computed = ∑ i : Fin n,
-      x i * y i * (1 + alpha i) * (1 + beta i)
-  alpha_bound : ∀ i,
-    |alpha i| ≤ gamma (p04EffectiveFmaRoundoff uBar uFma uOut) q
-  beta_bound : ∀ i, |beta i| ≤ gamma uBar n
-  rightToLeft : Prop
-  right_to_left_gamma_valid :
-    rightToLeft → GammaValid uBar (q + b - 1)
-  right_to_left_beta_bound :
-    rightToLeft → ∀ i, |beta i| ≤ gamma uBar (q + b - 1)
+  order : P04BlockEvaluationOrder
+  state : ℕ → ℝ
+  carryTheta : Fin q → ℝ
+  termTheta : Fin q → Fin b → ℝ
+  delta : Fin q → ℝ
+  state_zero : state 0 = 0
+  state_step : ∀ k : Fin q,
+    state (k.val + 1) =
+      (state k.val * (1 + carryTheta k) +
+        ∑ j : Fin b, x k j * y k j * (1 + termTheta k j)) *
+          (1 + delta k)
+  delta_bound : ∀ k,
+    |delta k| ≤ p04EffectiveFmaRoundoff uBar uFma uOut
+  carry_theta_bound : ∀ k, |carryTheta k| ≤ gamma uBar b
+  term_theta_bound : ∀ k j,
+    |termTheta k j| ≤ gamma uBar (if k.val = 0 then b else b + 1)
+  right_to_left_carry_bound :
+    order = P04BlockEvaluationOrder.rightToLeft →
+      ∀ k, |carryTheta k| ≤ gamma uBar 1
+  innerPathError : Fin q → Fin b → Fin n → ℝ
+  inner_path_error_bound : ∀ k j r, |innerPathError k j r| ≤ uBar
+  inner_path_factor : ∀ k j,
+    (∏ r : Fin n, (1 + innerPathError k j r)) =
+      (1 + termTheta k j) * p04StrictErrorProduct carryTheta k
+  rightToLeftPathError : Fin q → Fin b → Fin (q + b - 1) → ℝ
+  right_to_left_path_error_bound :
+    order = P04BlockEvaluationOrder.rightToLeft →
+      ∀ k j r, |rightToLeftPathError k j r| ≤ uBar
+  right_to_left_path_factor :
+    order = P04BlockEvaluationOrder.rightToLeft →
+      ∀ k j,
+        (∏ r : Fin (q + b - 1),
+          (1 + rightToLeftPathError k j r)) =
+            (1 + termTheta k j) *
+              p04StrictErrorProduct carryTheta k
+
+/-- The final state of the modeled Algorithm 3.1 scalar recurrence. -/
+noncomputable def P04BlockFmaDotRun.computed
+    {n b q : ℕ} (run : P04BlockFmaDotRun n b q) : ℝ :=
+  run.state q
 
 /-- Rectangular matrix multiplication in the notation of P04 Theorem 3.2. -/
 noncomputable def p04RectMatMul {m n t : ℕ}

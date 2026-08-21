@@ -2,32 +2,34 @@ import HighamBench.P04Definitions
 
 namespace HighamBench
 
-/-- P04-T1: Algorithm 3.1's compact perturbation factorization, equation
-(3.4), its right-to-left refinement, and its same-precision specialization. -/
+/-- P04-T1: derive Algorithm 3.1's compact perturbation factorization and
+equation (3.4) from the local rounded recurrence (3.2), including the
+right-to-left refinement and same-precision specialization. -/
 theorem p04_t1_chained_rounding_factor
     {n b q : ℕ} (run : P04BlockFmaDotRun n b q) :
-    ∃ alpha beta : Fin n → ℝ,
-      run.computed = ∑ i : Fin n,
-        run.x i * run.y i * (1 + alpha i) * (1 + beta i) ∧
-      (∀ i, |alpha i| ≤
+    ∃ alpha beta : Fin q → Fin b → ℝ,
+      run.computed = ∑ k : Fin q, ∑ j : Fin b,
+        run.x k j * run.y k j *
+          (1 + alpha k j) * (1 + beta k j) ∧
+      (∀ k j, |alpha k j| ≤
         gamma (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut) q) ∧
-      (∀ i, |beta i| ≤ gamma run.uBar n) ∧
-      |p04Dot run.x run.y - run.computed| ≤
+      (∀ k j, |beta k j| ≤ gamma run.uBar n) ∧
+      |p04BlockedDot run.x run.y - run.computed| ≤
         p04BlockFmaCoeff
             (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut)
             run.uBar q n *
-          p04AbsDot run.x run.y ∧
-      (run.rightToLeft →
-        (∀ i, |beta i| ≤ gamma run.uBar (q + b - 1)) ∧
-        |p04Dot run.x run.y - run.computed| ≤
+          p04BlockedAbsDot run.x run.y ∧
+      (run.order = P04BlockEvaluationOrder.rightToLeft →
+        (∀ k j, |beta k j| ≤ gamma run.uBar (q + b - 1)) ∧
+        |p04BlockedDot run.x run.y - run.computed| ≤
           p04BlockFmaCoeff
               (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut)
               run.uBar q (q + b - 1) *
-            p04AbsDot run.x run.y) ∧
+            p04BlockedAbsDot run.x run.y) ∧
       (run.uOut ≤ run.uFma ∧ run.uBar = run.uFma →
-        (∀ i, alpha i = 0) ∧
-        |p04Dot run.x run.y - run.computed| ≤
-          gamma run.uBar n * p04AbsDot run.x run.y) := by
+        (∀ k j, alpha k j = 0) ∧
+        |p04BlockedDot run.x run.y - run.computed| ≤
+          gamma run.uBar n * p04BlockedAbsDot run.x run.y) := by
   -- PROOF_START
   sorry
 

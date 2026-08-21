@@ -65,7 +65,7 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use Algorithm 3.1's full indexed factorization and equation (3.4), retaining the distinct effective/internal gamma factors, q+b-1 right-to-left refinement, and zero-alpha same-precision specialization.",
+      "decision": "Derive Algorithm 3.1's full indexed factorization and equation (3.4) from recurrence (3.1), local model (3.2), and effective roundoff (3.3), retaining the distinct effective/internal gamma factors, q+b-1 right-to-left refinement, and zero-alpha same-precision specialization.",
       "task_id": "P04-T1",
       "theorem_name": "p04_t1_chained_rounding_factor"
     },

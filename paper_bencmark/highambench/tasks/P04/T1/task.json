@@ -1,17 +1,19 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, Algorithm 3.1 execution certificate, equation (3.4), evaluation-order consequences, and tier label",
+    "kind": "source selection, Algorithm 3.1 trace semantics, equations (3.1)-(3.4), evaluation-order consequences, and tier label",
     "performed_by": "Codex"
   },
   "assumptions": [
     "The inner dimension n, block size b, and block count q are positive and satisfy n=q*b.",
-    "The vectors x and y define one exact scalar dot product, and computed is the corresponding output of Algorithm 3.1's chained block-FMA loop.",
+    "The block-indexed x and y values are the post-input-conversion values for one scalar dot product in Algorithm 3.1.",
+    "The trace starts at state 0 = 0, follows the local rounded recurrence (3.2) for every block, and defines computed as the final state.",
     "The internal, FMA-output, and final-output unit roundoffs are nonnegative, with uBar <= uFma.",
     "The effective output-rounding parameter follows the prioritized cases in equation (3.3).",
     "The relevant gamma denominators are positive.",
-    "The computed result has the paper's indexed compact factorization with |alpha_i| <= gamma_q(effective) and |beta_i| <= gamma_n(uBar).",
-    "A run marked right-to-left has the sharper |beta_i| <= gamma_(q+b-1)(uBar) certificate.",
+    "The local output errors, carry theta factors, and term theta factors satisfy the bounds stated in the derivation of (3.2), including the first-block theta_b adjustment.",
+    "Primitive internal errors bounded by uBar are linked to each term's internal operation path; the generic path has length n.",
+    "A right-to-left trace has the paper's shorter q+b-1 primitive-error path and one-operation carry bound.",
     "The finite real standard model excludes underflow, overflow, NaNs, and infinities and retains the paper's single modeled output rounding."
   ],
   "author_label": null,
@@ -22,13 +24,13 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P04/T1/context.md",
   "formal_statement": {
-    "lean_header": "theorem p04_t1_chained_rounding_factor {n b q : \u2115} (run : P04BlockFmaDotRun n b q) : \u2203 alpha beta : Fin n \u2192 \u211d, run.computed = \u2211 i : Fin n, run.x i * run.y i * (1 + alpha i) * (1 + beta i) \u2227 (\u2200 i, |alpha i| \u2264 gamma (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut) q) \u2227 (\u2200 i, |beta i| \u2264 gamma run.uBar n) \u2227 |p04Dot run.x run.y - run.computed| \u2264 p04BlockFmaCoeff (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut) run.uBar q n * p04AbsDot run.x run.y \u2227 (run.rightToLeft \u2192 (\u2200 i, |beta i| \u2264 gamma run.uBar (q + b - 1)) \u2227 |p04Dot run.x run.y - run.computed| \u2264 p04BlockFmaCoeff (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut) run.uBar q (q + b - 1) * p04AbsDot run.x run.y) \u2227 (run.uOut \u2264 run.uFma \u2227 run.uBar = run.uFma \u2192 (\u2200 i, alpha i = 0) \u2227 |p04Dot run.x run.y - run.computed| \u2264 gamma run.uBar n * p04AbsDot run.x run.y)",
+    "lean_header": "theorem p04_t1_chained_rounding_factor {n b q : \u2115} (run : P04BlockFmaDotRun n b q) : \u2203 alpha beta : Fin q \u2192 Fin b \u2192 \u211d, run.computed = \u2211 k : Fin q, \u2211 j : Fin b, run.x k j * run.y k j * (1 + alpha k j) * (1 + beta k j) \u2227 (\u2200 k j, |alpha k j| \u2264 gamma (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut) q) \u2227 (\u2200 k j, |beta k j| \u2264 gamma run.uBar n) \u2227 |p04BlockedDot run.x run.y - run.computed| \u2264 p04BlockFmaCoeff (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut) run.uBar q n * p04BlockedAbsDot run.x run.y \u2227 (run.order = P04BlockEvaluationOrder.rightToLeft \u2192 (\u2200 k j, |beta k j| \u2264 gamma run.uBar (q + b - 1)) \u2227 |p04BlockedDot run.x run.y - run.computed| \u2264 p04BlockFmaCoeff (p04EffectiveFmaRoundoff run.uBar run.uFma run.uOut) run.uBar q (q + b - 1) * p04BlockedAbsDot run.x run.y) \u2227 (run.uOut \u2264 run.uFma \u2227 run.uBar = run.uFma \u2192 (\u2200 k j, alpha k j = 0) \u2227 |p04BlockedDot run.x run.y - run.computed| \u2264 gamma run.uBar n * p04BlockedAbsDot run.x run.y)",
     "namespace": "HighamBench",
-    "plain_language": "Every certified scalar execution of Algorithm 3.1 exposes term-indexed perturbations satisfying the exact mixed-precision factorization and equation (3.4), the q+b-1 right-to-left refinement, and the zero-alpha same-precision reduction.",
+    "plain_language": "From every local rounded trace of Algorithm 3.1, construct term-indexed perturbations satisfying the exact mixed-precision factorization and equation (3.4), the q+b-1 right-to-left refinement, and the zero-alpha same-precision reduction.",
     "target_file": "paper_bencmark/highambench/tasks/P04/T1/Target.lean",
     "theorem_name": "p04_t1_chained_rounding_factor"
   },
-  "informal_proof": "Expand each factor (1+alpha_i)(1+beta_i), retain alpha_i*beta_i, bound the resulting componentwise perturbation by the exact mixed gamma coefficient, and apply the finite summation perturbation bound. For right-to-left evaluation substitute the sharper beta radius. Under equal internal/FMA precision and no coarser final rounding, unfold the prioritized effective-roundoff definition to zero, force every alpha_i to zero, and simplify equation (3.4).",
+  "informal_proof": "Inductively unroll recurrence (3.2). Apply the accumulated-product lemma to each suffix of output errors to construct alpha, and to each primitive internal operation path to construct beta. Substitute these factors into the unrolled trace, expand (1+alpha)(1+beta), retain alpha*beta, and bound the absolute finite sum by the exact coefficient in (3.4). Use the q+b-1 primitive path for right-to-left evaluation. Under equal internal/FMA precision and no coarser final rounding, equation (3.3) gives zero effective roundoff, so alpha is zero and the bound reduces to gamma_n(uBar).",
   "informal_statement": "The indexed Algorithm 3.1 factorization and absolute dot-product forward-error bound (3.4), including its right-to-left and same-precision consequences.",
   "limits": {
     "total_model_tokens": 5000000,
@@ -45,13 +47,12 @@
     "exact_target_found_in_mathlib": false,
     "exact_target_found_in_numstability_baseline": false,
     "nearby_numstability_declarations": [
-      "NumStability.summationComponentwisePerturbation_abs_error_le",
+      "NumStability.prod_error_bound",
       "NumStability.gamma_nonneg",
-      "NumStability.gamma_mul"
+      "NumStability.gammaValid_mono"
     ],
-    "note": "The L proof directly reuses NumStability.summationComponentwisePerturbation_abs_error_le for the absolute finite-sum step. The library has no Algorithm 3.1 block-FMA execution model, prioritized effective-roundoff definition, mixed coefficient theorem, or evaluation-order specialization.",
+    "note": "The L proof directly reuses NumStability.prod_error_bound to compact each primitive rounding-error product. The library has no Algorithm 3.1 block-FMA trace, prioritized effective-roundoff definition, mixed coefficient theorem, or evaluation-order specialization.",
     "searched_locations": [
-      "NumStability/Analysis/Summation/ErrorBounds.lean",
       "NumStability/Analysis/Rounding.lean",
       "NumStability/Algorithms/DotProduct.lean",
       "Mathlib/Algebra/Order/BigOperators"
@@ -63,8 +64,11 @@
     "GammaValid",
     "p04BlockFmaCoeff",
     "p04EffectiveFmaRoundoff",
-    "p04Dot",
-    "p04AbsDot",
+    "P04BlockEvaluationOrder",
+    "p04BlockedDot",
+    "p04BlockedAbsDot",
+    "p04InclusiveErrorProduct",
+    "p04StrictErrorProduct",
     "P04BlockFmaDotRun"
   ],
   "source_locations": [
@@ -104,7 +108,7 @@
   "task_id": "P04-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "The L proof applies NumStability.summationComponentwisePerturbation_abs_error_le directly after a source-specific adapter turns the two indexed perturbation factors into one componentwise term error. The remaining work unfolds the exact mixed coefficient and the two explicit precision specializations; no new general numerical-analysis lemma is required.",
+  "tier_rationale": "The L proof applies NumStability.prod_error_bound directly to the output-rounding and internal-operation paths supplied by the Algorithm 3.1 trace. The remaining work is source-specific recurrence unrolling, finite-sum algebra, and the two explicit evaluation/precision specializations; no additional general numerical-analysis result is required.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P04/T1/Target.lean",
     "mode": "shared automatic validator",
