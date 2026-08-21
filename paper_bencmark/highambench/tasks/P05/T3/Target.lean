@@ -6,6 +6,7 @@ namespace HighamBench
 with zero-based Lean indices. -/
 theorem p05_t3_cholesky_backward_error
     {n : ℕ} (run : P05CholeskyRun n) :
+    (∀ i j, run.format.representable (run.RHat i j)) ∧
     (∀ i j, i.val < j.val →
       |run.A i j - p05CholeskyThroughDot run.RHat i j| ≤
         ((i.val + 1 : ℕ) : ℝ) * run.format.unitRoundoff *

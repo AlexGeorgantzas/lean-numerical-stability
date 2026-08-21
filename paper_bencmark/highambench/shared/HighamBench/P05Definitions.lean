@@ -22,9 +22,9 @@ noncomputable def p05AbsMatMul {n : ℕ}
 
 /-- A finite radix format interface for P05's round-to-nearest arithmetic.
 `safeRange` excludes underflow and overflow for an exact operation result. The
-last two error laws are equations (2.1b) and (2.2) of the paper; unlike an
-unconstrained rounding oracle, they connect the format metadata and unit
-roundoff to every recorded operation. -/
+error laws expose equations (2.1b), (2.2), and the square-root estimate (3.7)
+proved in Corollary 3.2. Unlike an unconstrained rounding oracle, they connect
+the format metadata and unit roundoff to every recorded operation. -/
 structure P05FiniteRoundToNearestFormat where
   radix : ℕ
   precision : ℕ
@@ -35,6 +35,11 @@ structure P05FiniteRoundToNearestFormat where
   exponent_range_nonempty : minExponent < maxExponent
   representable : ℝ → Prop
   representable_finite : Set.Finite {x | representable x}
+  representable_radix_expansion : ∀ x, representable x →
+    x = 0 ∨ ∃ m e : ℤ,
+      m.natAbs < radix ^ precision ∧
+      minExponent ≤ e ∧ e ≤ maxExponent ∧
+      x = (m : ℝ) * (radix : ℝ) ^ (e - ((precision : ℤ) - 1))
   safeRange : ℝ → Prop
   round : ℝ → ℝ
   unitRoundoff : ℝ
@@ -50,6 +55,11 @@ structure P05FiniteRoundToNearestFormat where
     |x - round x| ≤ |x - z|
   round_error_to_output : ∀ x, safeRange x →
     |round x - x| ≤ unitRoundoff * |round x|
+  round_nonnegative : ∀ x, 0 ≤ x → safeRange x → 0 ≤ round x
+  sqrt_round_square_error : ∀ x, 0 ≤ x → representable x →
+    safeRange (Real.sqrt x) →
+      |(round (Real.sqrt x)) ^ 2 - x| ≤
+        2 * unitRoundoff * |(round (Real.sqrt x)) ^ 2|
   round_exact : ∀ x, representable x → round x = x
 
 /-- A binary tree encoding an arbitrary pairwise evaluation order for a
@@ -267,9 +277,8 @@ structure P05DoolittleRun (m n : ℕ) where
     P05DoolittleLowerEntry format A LHat UHat i k
 
 /-- A range-certified execution of P05 Lemma 4.3's rounded square-root
-expression with `m` product terms. The residual field is the generic scalar
-consequence inherited from Corollary 3.2, before any Cholesky entry is
-substituted. -/
+expression with `m` product terms. Its protected trace records the actual
+arbitrary-order subtraction sum without storing Lemma 4.3's residual bound. -/
 structure P05Lemma43Run (m : ℕ) where
   format : P05FiniteRoundToNearestFormat
   a : Fin m → ℝ
@@ -286,15 +295,13 @@ structure P05Lemma43Run (m : ℕ) where
   numerator : ℝ
   numerator_eq : numerator = p05SumTreeEval format tree
     (fun i => p05Lemma41Summands format a b c (order i))
+  protected_sum_trace : P05ProtectedSumTrace format (m + 1) c
+    (-(∑ i : Fin m, a i * b i))
+    (∑ i : Fin m, |a i * b i|) numerator
   numerator_nonneg : 0 ≤ numerator
   sqrt_safe : format.safeRange (Real.sqrt numerator)
   yHat : ℝ
   rounded_sqrt : yHat = format.round (Real.sqrt numerator)
-  yHat_nonneg : 0 ≤ yHat
-  sqrt_residual_bound :
-    |(c - ∑ i : Fin m, a i * b i) - yHat ^ 2| ≤
-      ((m + 2 : ℕ) : ℝ) * format.unitRoundoff *
-        (|yHat ^ 2| + ∑ i : Fin m, |a i * b i|)
 
 /-- Exact prefix Gram entry used by the conventional Cholesky algorithm. -/
 noncomputable def p05CholeskyPrefixDot {n : ℕ}
@@ -354,7 +361,6 @@ structure P05CholeskyRun (n : ℕ) where
   A : Fin n → Fin n → ℝ
   RHat : Fin n → Fin n → ℝ
   A_representable : ∀ i j, format.representable (A i j)
-  RHat_representable : ∀ i j, format.representable (RHat i j)
   A_symmetric : ∀ i j, A i j = A j i
   RHat_lower_zero : ∀ i j, j.val < i.val → RHat i j = 0
   off_diagonal_entry : ∀ i j, i.val < j.val →

@@ -42,26 +42,39 @@ triangle and the full theorem.
 
 ## Lean encoding
 
-`P05CholeskyRun n` is an abstract analytic certificate for a completed
-conventional floating-point Cholesky execution. It records `n>0`, one common
-finite radix round-to-nearest format, representability of `A` and `RHat`,
-symmetry of `A`, upper-triangular support of `RHat`, and every computed entry.
+`P05CholeskyRun n` records a completed conventional floating-point Cholesky
+execution. It contains `n>0`, one common finite symmetric radix
+round-to-nearest format, representability and symmetry of `A`,
+upper-triangular support of `RHat`, and every computed entry. Representability
+of `RHat` is not a run premise; it is derived from those entry executions and
+is the first conclusion of the target.
+
+The format interface leaves tie-breaking abstract, as the paper does, but it
+does not leave the floating set unrelated to its parameters: every
+representable value has a bounded radix expansion using the recorded
+precision and exponent range. A `safeRange` witness is the operation-level
+certificate that the source's no-underflow/no-overflow laws apply. Every paper
+format instantiates these laws; allowing additional finite formats satisfying
+the same laws only strengthens the quantified theorem.
 
 Each off-diagonal entry is linked to a `P05Lemma41Run`, including its rounded
 products, arbitrary permuted binary subtraction tree, pivot division, and
 range checks. Each diagonal entry is linked to a `P05Lemma43Run`, which adds a
-nonnegative computed radicand and a range-safe rounded square root. Their
-generic scalar residual fields are the inherited consequences of Theorem 3.1
-and Corollary 3.2 used by Lemmas 4.1 and 4.3; they mention no Cholesky matrix
-entry or final matrix conclusion.
+nonnegative computed radicand and a range-safe rounded square root. Both scalar
+runs expose a protected-leaf trace of the actual arbitrary-order subtraction
+sum. The format supplies the source's standalone square-root rounding estimate
+(3.7). The Lemma 4.1 and Lemma 4.3 residual estimates are then proved from
+these ingredients; no local Cholesky or final matrix bound is stored.
 
 Lean indices are zero-based. Therefore (4.5a)'s `i*u` becomes
 `(i.val+1)*u`, (4.5b)'s `(j+1)u` becomes `(j.val+2)*u`, and equation (4.4)'s
 row coefficient `(i+1)u` becomes `(i.val+2)*u`.
 
-The target derives both local estimates from the entry executions, identifies
-their through-row sums with the full Gram product using upper-triangular
-support, and performs the paper's symmetry extension. It then sets
+The target first proves that every `RHat` entry is representable: upper and
+diagonal entries are rounded outputs, while lower entries are zero. It derives
+both local estimates from the entry executions, identifies their through-row
+sums with the full Gram product using upper-triangular support, and performs
+the paper's symmetry extension. It then sets
 `DeltaA=transpose(RHat)*RHat-A` and proves both bounds in (4.4).
 
 The run type is inhabited: a private construction check executes the exact
