@@ -2,46 +2,46 @@ import HighamBench.P15Definitions
 
 namespace HighamBench
 
-/-- P15-T3: the complete finite execution form of Theorem 4.5, equations
-(4.23)--(4.25), for a completed UFC or UCF BLR solve. -/
+/-- P15-T3: Theorem 4.5, equations (4.23)--(4.25), uniformly over a
+successful UFC or UCF BLR solve family. -/
 theorem p15_t3_blr_lu_solve_backward_error {b p r : ℕ}
-    (run : P15BLRLinearSolveExecution b p r) :
+    (run : P15BLRLinearSolveFamily b p r) :
     let c := p15BLRSolveCost b p r
-    let gammaP := p15GammaReal (p : ℝ) run.unitRoundoff
-    let gammaC := p15GammaReal c run.unitRoundoff
-    let gamma3C := p15GammaReal (3 * c) run.unitRoundoff
     let xi := p15BLRXi p run.threshold run.recompression
-    let matrixError :=
-      p15ComposedMatrixError run.factorError run.lowerError run.upperError
-        run.L run.U
-    let rhsError :=
-      p15ComposedRhsError run.lowerRhsError run.upperRhsError
-        run.L run.lowerError
-    let solveScale :=
-      p15FrobNorm run.L * p15FrobNorm run.U * p15VecNorm run.xHat
-    let rhsFiniteCoefficient :=
-      gammaP * (1 + gammaC) ^ 2 / (1 - gammaP)
-    let rhsHigherOrderCoefficient := rhsFiniteCoefficient - gammaP
-    p15MatVec (run.A + matrixError) run.xHat = run.v + rhsError ∧
-    p15FrobNorm matrixError ≤
-      (xi * run.epsilon + gammaP) * p15FrobNorm run.A +
-        (3 * gammaC + gammaC ^ 2) *
-          p15FrobNorm run.L * p15FrobNorm run.U +
-        run.factorMixedConstant * run.unitRoundoff * run.epsilon ∧
-    p15FrobNorm matrixError ≤
-      (xi * run.epsilon + gammaP) * p15FrobNorm run.A +
-        gamma3C * p15FrobNorm run.L * p15FrobNorm run.U +
-        run.factorMixedConstant * run.unitRoundoff * run.epsilon ∧
-    p15VecNorm rhsError ≤
-      gammaP * p15VecNorm run.v + rhsFiniteCoefficient * solveScale ∧
-    p15VecNorm rhsError ≤
-      gammaP * (p15VecNorm run.v + solveScale) +
-        rhsHigherOrderCoefficient * solveScale ∧
-    p15VecNorm rhsError ≤
-      gammaP * (p15VecNorm run.v + solveScale) +
-        16 * c ^ 2 * run.unitRoundoff ^ 2 * solveScale ∧
-    0 ≤ rhsHigherOrderCoefficient ∧
-      rhsHigherOrderCoefficient ≤ 16 * c ^ 2 * run.unitRoundoff ^ 2 := by
+    let solveScale := fun u epsilon =>
+      p15FrobNorm (run.L u epsilon) *
+        p15FrobNorm (run.U u epsilon) *
+        p15VecNorm (run.xHat u epsilon)
+    ∃ matrixError : ℝ → ℝ → P15Matrix (p * b),
+      ∃ rhsError : ℝ → ℝ → P15Vector (p * b),
+        ∃ rhsRemainder : ℝ → ℝ → ℝ,
+          matrixError = (fun u epsilon =>
+            p15ComposedMatrixError (run.factorError u epsilon)
+              (run.lowerError u epsilon) (run.upperError u epsilon)
+              (run.L u epsilon) (run.U u epsilon)) ∧
+          rhsError = (fun u epsilon =>
+            p15ComposedRhsError (run.lowerRhsError u epsilon)
+              (run.upperRhsError u epsilon) (run.L u epsilon)
+              (run.lowerError u epsilon)) ∧
+          p15IsBigOMixedAtZero run.factorRemainder ∧
+          p15IsBigOSquareRelativeAtZero rhsRemainder solveScale ∧
+          ∀ u epsilon,
+            p15AdmissiblePrecision c u epsilon →
+              let gammaP := p15GammaReal (p : ℝ) u
+              let gamma3C := p15GammaReal (3 * c) u
+              0 ≤ run.factorRemainder u epsilon ∧
+              0 ≤ rhsRemainder u epsilon ∧
+              p15MatVec (run.A + matrixError u epsilon)
+                  (run.xHat u epsilon) =
+                run.v + rhsError u epsilon ∧
+              p15FrobNorm (matrixError u epsilon) ≤
+                (xi * epsilon + gammaP) * p15FrobNorm run.A +
+                  gamma3C * p15FrobNorm (run.L u epsilon) *
+                    p15FrobNorm (run.U u epsilon) +
+                  run.factorRemainder u epsilon ∧
+              p15VecNorm (rhsError u epsilon) ≤
+                gammaP * (p15VecNorm run.v + solveScale u epsilon) +
+                  rhsRemainder u epsilon := by
   -- PROOF_START
   sorry
 

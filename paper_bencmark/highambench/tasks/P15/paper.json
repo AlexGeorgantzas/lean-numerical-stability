@@ -54,7 +54,7 @@
     },
     {
       "candidate": "Theorem 4.1 blockwise UFC factorization expansion",
-      "reason": "Its blockwise recurrence would require a substantially more detailed step semantics than the completed algorithm-level execution certificate selected for Theorem 4.5; its global guarantee is already an input to the final theorem composition."
+      "reason": "Its full blockwise recurrence is below the source-level Theorems 4.2-4.4 interface selected for Theorem 4.5; the T3 precision family still records the UFC/UCF block updates, factor/compress order, floating-point operations, compression semantics, output provenance, and successful completion before composing those established guarantees."
     },
     {
       "candidate": "Corollary 4.1 and Theorems 4.2-4.3 factorization bounds",
@@ -84,7 +84,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use the complete finite form of Theorem 4.5 over a proof-carrying completed UFC or UCF execution, with dimensions, BLR structure, threshold and recompression cases, gamma indices, both triangular solves, and explicit finite O(u epsilon) and O(u^2) replacements.",
+      "decision": "Use Theorem 4.5 over a precision family of completed UFC or UCF executions, retaining dense A versus represented Atilde, exact factor-rank semantics, algorithm-specific threshold and recompression traces, both ordered solves, existential aggregate perturbations, and uniform O(u epsilon) and O(u^2) remainders.",
       "task_id": "P15-T3",
       "theorem_name": "p15_t3_blr_lu_solve_backward_error"
     }
@@ -93,7 +93,7 @@
   "selection_policy": [
     "Use results proved or exact norm properties explicitly adopted in this paper, not empirical plots or results delegated to earlier sources.",
     "Preserve the paper's Frobenius-norm setting and distinguish low-rank truncation errors from floating-point errors.",
-    "Replace big-O terms by disclosed finite expressions tied to unit roundoff: a K*u*epsilon factorization term and a proved 16*c^2*u^2 right-hand-side term.",
+    "Formalize big-O terms uniformly over precision families; do not replace them by coefficients selected after an isolated run or expose proof-only finite coefficients in a controlled target.",
     "Keep every public definition paper-scoped and free of NumStability imports.",
     "Assign tiers only from the 24 modules in metadata/library_olean.json."
   ],
