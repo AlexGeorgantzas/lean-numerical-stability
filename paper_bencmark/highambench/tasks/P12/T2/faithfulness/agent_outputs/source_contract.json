@@ -7,131 +7,165 @@
     {
       "pdf_page": 2,
       "printed_page": "384",
-      "anchor": "equation (1), rounding definitions, and original FastTwoSum algorithm",
-      "observation": "The paper defines F = {m beta^e : m,e integers, -beta^p < m < beta^p, e_min <= e <= e_max}; defines nearest and faithful rounding; and gives FastTwoSum as s := x ⊕ y, t := s ⊖ x, e := y ⊖ t."
+      "anchor": "equation (1)",
+      "observation": "The floating-point set is F = {m beta^e : m,e are integers, -beta^p < m < beta^p, and emin <= e <= emax}."
+    },
+    {
+      "pdf_page": 2,
+      "printed_page": "384",
+      "anchor": "rounding definitions preceding FastTwoSum",
+      "observation": "A nearest operation returns a member of F minimizing absolute error; a faithfully rounded operation has no other floating-point number between its rounded and exact real result."
+    },
+    {
+      "pdf_page": 2,
+      "printed_page": "384",
+      "anchor": "FastTwoSum algorithm, lines 1-3",
+      "observation": "The algorithm computes s <- x oplus y, t <- s ominus x, and e <- y ominus t, in that order."
     },
     {
       "pdf_page": 3,
       "printed_page": "385",
-      "anchor": "multiple representations and exponent convention",
-      "observation": "The notation e(f) denotes the exponent belonging to a representation f = m_f beta^{e(f)} satisfying equation (1). Such representations, and therefore e(f), need not be unique."
+      "anchor": "definition of e(f) and Section 2 multiple-representation example",
+      "observation": "The notation e(f) denotes the exponent in a representation f = m_f beta^(e(f)) satisfying equation (1); this exponent need not be unique, and Dekker's exponent condition is existential over feasible representations."
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "386",
+      "anchor": "Section 3 introduction immediately before Theorem 2",
+      "observation": "The section seeks a replacement for Dekker's base restriction and presents Theorem 2 as a generalization for arbitrary floating-point bases."
     },
     {
       "pdf_page": 5,
       "printed_page": "387",
-      "anchor": "Theorem 2 and equations (3), (7), (8), and (9)",
-      "observation": "Theorem 2 assumes x,y in F, nearest addition, faithful subtraction, and the existence of a representation of x satisfying |y| <= ceil(beta^p - beta/2) beta^{e(x)}. It concludes that the computed s,e in F satisfy s + e = x + y with s = x ⊕ y. Its proof establishes t = s - x and invokes the exact-subtraction implication (8), explicitly qualified by absence of overflow."
+      "anchor": "Theorem 2 and equation (7)",
+      "observation": "For x,y in F, nearest addition, faithful subtraction, and some representation of x satisfying |y| <= ceil(beta^p - beta/2) beta^(e(x)), the computed s,e in F satisfy equation (3)."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "387",
+      "anchor": "equation (8) and the proof of Theorem 2",
+      "observation": "In the absence of overflow, |a-b| <= beta^p beta^(min(e(a),e(b))) implies a ominus b = a-b; the proof applies this to establish t = s-x."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "387",
+      "anchor": "equation (9)",
+      "observation": "Nearest addition gives |s-(x+y)| <= |y| in the nontrivial third proof case, because x itself is an available floating-point candidate."
     },
     {
       "pdf_page": 6,
       "printed_page": "388",
-      "anchor": "completion of Theorem 2 and equation (10)",
-      "observation": "The proof completes the second exact subtraction, e = y - t. The discussion then identifies |x ⊕ y - (x + y)| <= |y| as the only nearest-addition property used, while saying that condition (7) must be adapted for a general addition mapping satisfying this bound."
+      "anchor": "completion of the proof of Theorem 2",
+      "observation": "The proof establishes e = y-t exactly and hence, together with t = s-x, obtains s+e = x+y."
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "388",
+      "anchor": "equation (10) and discussion following Theorem 2",
+      "observation": "Faithful addition alone does not necessarily satisfy |x oplus y-(x+y)| <= |y|; therefore Theorem 2's nearest-addition hypothesis cannot simply be weakened to faithful addition while retaining equation (7)."
     }
   ],
   "statement": {
     "binders": [
-      "Implicitly fix a floating-point system F with base beta, mantissa length p, and exponent range [e_min,e_max] as in equation (1). [PDF page 2 (printed 384), equation (1)]",
-      "Given inputs x,y in F, execute the original three-step FastTwoSum algorithm. [PDF page 5 (printed 387), Theorem 2; PDF page 2 (printed 384), FastTwoSum algorithm]",
-      "Existentially choose a feasible representation x = m_x beta^{e(x)} satisfying equation (1); the bound in equation (7) is imposed on that representation-specific exponent. [PDF page 5 (printed 387), Theorem 2 and equation (7); PDF page 3 (printed 385), multiple-representation discussion]",
-      "The algorithm computes s, the intermediate t, and the returned residual e; the theorem explicitly identifies s,e as elements of F. [PDF page 2 (printed 384), FastTwoSum algorithm; PDF page 5 (printed 387), Theorem 2]"
+      "Fix the paper's floating-point system F with base beta, mantissa length p, and exponent range [emin,emax] (PDF p. 2, printed p. 384, equation (1)).",
+      "Consider arbitrary inputs x,y in F (PDF p. 5, printed p. 387, Theorem 2).",
+      "Existentially choose a feasible representation x = m_x beta^(e(x)) satisfying equation (1); the theorem's bound is imposed using that representation's exponent (PDF p. 3, printed p. 385, definition of e(f); PDF p. 5, printed p. 387, equation (7)).",
+      "Let s,t,e be computed sequentially by the three FastTwoSum instructions (PDF p. 2, printed p. 384, FastTwoSum lines 1-3)."
     ],
     "hypotheses": [
-      "x and y belong to the same scalar floating-point set F. [PDF page 5 (printed 387), Theorem 2]",
-      "The operation ⊕ realizes nearest addition. [PDF page 5 (printed 387), Theorem 2; PDF page 2 (printed 384), nearest-addition definition]",
-      "The operation ⊖ used in both subtraction steps realizes some faithful subtraction. [PDF page 5 (printed 387), Theorem 2; PDF page 2 (printed 384), faithful-rounding definition and FastTwoSum algorithm]",
-      "There exists a feasible representation of x for which |y| <= ceil(beta^p - beta/2) beta^{e(x)}. [PDF page 5 (printed 387), equation (7)]",
-      "The proof's exact-subtraction implication is stated to apply in the absence of overflow, although Theorem 2 does not separately list this qualification. [PDF page 5 (printed 387), equation (8)]"
+      "x and y belong to F (PDF p. 5, printed p. 387, Theorem 2).",
+      "The circled-plus operation realizes nearest addition (PDF p. 5, printed p. 387, Theorem 2; PDF p. 2, printed p. 384, nearest-addition definition).",
+      "The circled-minus operation realizes some faithful subtraction in both subtraction steps (PDF p. 5, printed p. 387, Theorem 2; PDF p. 2, printed p. 384, faithful-rounding definition).",
+      "There exists a feasible representation of x for which |y| <= ceil(beta^p - beta/2) beta^(e(x)) (PDF p. 5, printed p. 387, equation (7)).",
+      "No hypothesis |x| >= |y| is stated, and no normalized representation of x is required (PDF p. 3, printed p. 385, multiple-representation discussion; PDF p. 5, printed p. 387, Theorem 2)."
     ],
     "conclusions": [
-      "Explicit theorem conclusion: the computed s,e in F satisfy the exact real identity s + e = x + y and s = x ⊕ y. [PDF page 5 (printed 387), Theorem 2 referring to equation (3); PDF page 3 (printed 385), equation (3)]",
-      "Proof-established intermediate conclusion: the first computed subtraction is exact, t = s - x. [PDF page 5 (printed 387), proof of Theorem 2 following equation (8)]",
-      "Proof-established final conclusion: the second computed subtraction is exact, e = y - t. [PDF page 6 (printed 388), completion of the proof of Theorem 2]",
-      "Consequently, e is exactly the real rounding residual x + y - s, not an approximation to that residual. [PDF page 5 (printed 387), equation (3); PDF page 6 (printed 388), e = y - t]"
+      "The stated conclusion is the exact real identity s + e = x + y, with s = x oplus y (PDF p. 3, printed p. 385, equation (3); PDF p. 5, printed p. 387, Theorem 2).",
+      "The proof additionally establishes that line 2 is exact: t = s-x as a real subtraction (PDF p. 5, printed p. 387, equation (8) and the three-case proof).",
+      "The proof additionally establishes that line 3 is exact: e = y-t as a real subtraction (PDF p. 6, printed p. 388, completion of Theorem 2).",
+      "Consequently, e is exactly the addition residual (x+y)-s, not merely an approximation or bounded error estimate (PDF p. 5, printed p. 387, Theorem 2; PDF p. 6, printed p. 388, proof completion)."
     ],
     "definitions_and_conventions": [
-      "F consists of real numbers m beta^e with integer m,e, strict mantissa bounds -beta^p < m < beta^p, and e_min <= e <= e_max. Normalization is not required. [PDF page 2 (printed 384), equation (1)]",
-      "A floating-point operation approximating a real operation is modeled by x ⊙ y = fl(x circle y), where fl maps real numbers into F. [PDF page 2 (printed 384), paragraph following equation (1)]",
-      "Nearest addition means |(x ⊕ y) - (x + y)| equals the minimum of |f - (x + y)| over f in F. [PDF page 2 (printed 384), nearest-addition definition]",
-      "An operation is faithfully rounded when no other floating-point number lies between its rounded result and the exact real result. [PDF page 2 (printed 384), faithful-rounding definition]",
-      "The exponent e(f) belongs to a chosen representation f = m_f beta^{e(f)} satisfying equation (1), and can have multiple feasible values for the same f. [PDF page 3 (printed 385), exponent convention and multiple-representation example]",
-      "The brackets in equation (7) are a ceiling: ceil(beta^p - beta/2), multiplied by beta^{e(x)}. [PDF page 5 (printed 387), equation (7)]",
-      "Unadorned + and - in the conclusions denote exact real arithmetic; ⊕ and ⊖ denote floating-point operations. [PDF page 2 (printed 384), operation model and FastTwoSum algorithm; PDF page 5 (printed 387), equations (3) and (8)]"
+      "F consists of real values m beta^e with integer m,e, -beta^p < m < beta^p, and emin <= e <= emax (PDF p. 2, printed p. 384, equation (1)).",
+      "A computed binary operation maps exact real arithmetic back into F through the paper's rounding map fl (PDF p. 2, printed p. 384, paragraph following equation (1)).",
+      "Nearest addition minimizes absolute distance to the exact sum among all members of F; the definition does not prescribe a tie-breaking rule (PDF p. 2, printed p. 384, nearest-addition display).",
+      "Faithful rounding means that no other floating-point number lies between the rounded and exact real result (PDF p. 2, printed p. 384, faithful-rounding paragraph).",
+      "The exponent notation e(f) is representation-dependent and may have several feasible values for one floating-point number (PDF p. 3, printed p. 385, definition of e(f) and x=3 example).",
+      "The returned residual e and the exponent notation e(x) are distinct uses of the same letter, distinguished in the paper by the argument parentheses (PDF p. 2, printed p. 384, FastTwoSum output; PDF p. 3, printed p. 385, definition of e(f))."
     ],
     "implicit_context": [
-      "The paper's standing default is rounding to nearest unless stated otherwise; Theorem 2 expressly weakens the subtraction requirement to faithful rounding while retaining nearest addition. [PDF page 2 (printed 384), rounding convention; PDF page 5 (printed 387), Theorem 2]",
-      "Theorem 2 is the arbitrary-base generalization and does not impose Theorem 1's beta in {2,3} restriction; its proof explicitly uses 2 <= beta. [PDF page 5 (printed 387), Theorem 2 and proof following equation (9)]",
-      "Condition (7) makes Dekker's exponent-order condition satisfiable, meaning suitable representations can be chosen with e(x) >= e(y). [PDF page 5 (printed 387), first sentence of the proof; PDF page 3 (printed 385), equation (2) and multiple-representation discussion]",
-      "For beta in {2,3}, the paper says condition (7) is equivalent to Dekker's representation-dependent condition e(x) >= e(y). [PDF page 6 (printed 388), paragraph immediately after the proof of Theorem 2]"
+      "The proof uses 2 <= beta, inherited from beta being a floating-point base, rather than restating a domain for beta in Theorem 2 (PDF p. 5, printed p. 387, Case 3 immediately after equation (9)).",
+      "Equation (7) implies that Dekker's representation-dependent ordering e(x) >= e(y) is satisfiable, but this is a derived proof fact rather than an additional theorem hypothesis (PDF p. 5, printed p. 387, first sentence of the proof; PDF p. 3, printed p. 385, equation (2)).",
+      "For beta in {2,3}, the paper states that equation (7) is equivalent to Dekker's original exponent condition, but Theorem 2 itself is not restricted to those two bases (PDF p. 6, printed p. 388, paragraph following the proof).",
+      "The exact-subtraction implication used by the proof is explicitly qualified by absence of overflow, although Theorem 2's displayed hypothesis list does not separately state that qualification (PDF p. 5, printed p. 387, equation (8) and Theorem 2)."
     ],
-    "algorithm_linkage": "The result concerns the original FastTwoSum execution in this exact order: line 1 s := x ⊕ y, line 2 t := s ⊖ x, line 3 e := y ⊖ t. Theorem 2's s and e are the values computed by those lines. [PDF page 2 (printed 384), original FastTwoSum algorithm; PDF page 5 (printed 387), Theorem 2]",
+    "algorithm_linkage": "This contract concerns the original three-operation FastTwoSum variant: s <- x oplus y; t <- s ominus x; e <- y ominus t. Theorem 2 applies equation (7) to that exact instruction order and returns the pair (s,e) (PDF p. 2, printed p. 384, FastTwoSum algorithm; PDF p. 5, printed p. 387, Theorem 2).",
     "numerical_model": [
-      "The theorem uses a radix-beta, precision-p finite real-number model F with bounded exponents and potentially nonnormalized representations. [PDF page 2 (printed 384), equation (1); PDF page 3 (printed 385), multiple-representation discussion]",
-      "Addition is nearest rounded, with no prescribed tie-breaking rule beyond selection of a nearest member of F. [PDF page 2 (printed 384), nearest-addition definition; PDF page 5 (printed 387), Theorem 2]",
-      "Subtraction need only be faithful, not nearest, and the same subtraction operation appears in lines 2 and 3. [PDF page 2 (printed 384), faithful-rounding definition and algorithm; PDF page 5 (printed 387), Theorem 2]",
-      "Equation (8) states that, absent overflow, |a-b| <= beta^p beta^{min(e(a),e(b))} implies the floating-point subtraction is exact: a ⊖ b = a-b. [PDF page 5 (printed 387), equation (8)]",
-      "After Theorem 2, the paper isolates |x ⊕ y - (x+y)| <= |y| as the nearest-addition property used by the proof. [PDF page 6 (printed 388), equation (10)]"
+      "Exact symbols + and - denote real arithmetic, whereas oplus and ominus denote rounded operations with codomain F (PDF p. 2, printed p. 384, operation model following equation (1)).",
+      "Line 1 must be nearest-rounded; requiring only faithful addition is insufficient for the theorem as stated (PDF p. 5, printed p. 387, Theorem 2; PDF p. 6, printed p. 388, discussion of equation (10)).",
+      "Lines 2 and 3 require only faithful subtraction, and the proof shows that both particular subtractions are nevertheless exact under its bounds (PDF p. 5, printed p. 387, equation (8); PDF p. 6, printed p. 388, proof completion).",
+      "The theorem is formulated for the radix model of equation (1), not specifically for IEEE binary arithmetic (PDF p. 2, printed p. 384, equation (1); PDF p. 4, printed p. 386, Section 3 introduction)."
     ],
     "error_notions": [
-      "The primary notion is an error-free transformation: the rounded sum s and residual e exactly reconstruct x+y. [PDF page 5 (printed 387), Theorem 2 and equation (3)]",
-      "The residual is exact: e = x+y-s, because t = s-x and e = y-t are exact real equalities. [PDF page 5 (printed 387), proof of t = s-x; PDF page 6 (printed 388), e = y-t]",
-      "The addition error property isolated in equation (10) is the scalar absolute bound |x ⊕ y - (x+y)| <= |y|. [PDF page 6 (printed 388), equation (10)]",
-      "The selected result contains no relative-error, backward-error, componentwise-error, or asymptotic-error conclusion. [PDF page 5 (printed 387), Theorem 2 and equations (3), (7); PDF page 6 (printed 388), completion of the theorem]"
+      "The principal error notion is an error-free transformation: the rounded sum s and residual e add in exact real arithmetic to x+y (PDF p. 3, printed p. 385, equation (3); PDF p. 5, printed p. 387, Theorem 2).",
+      "The residual is exact, e=(x+y)-s, because t=s-x and e=y-t are exact (PDF p. 5, printed p. 387, proof of Theorem 2; PDF p. 6, printed p. 388, proof completion).",
+      "The proof uses the nearest-addition estimate |s-(x+y)| <= |y| in Case 3, but this bound is proof machinery rather than the theorem's stated final conclusion (PDF p. 5, printed p. 387, equation (9))."
     ],
     "norms": [
-      "All inequalities use ordinary absolute value on real scalars. No vector or matrix dimension and no separately chosen norm occur. [PDF page 2 (printed 384), nearest-addition definition; PDF page 5 (printed 387), equations (7)-(9)]"
+      "All magnitudes and errors in the selected result use scalar absolute value on real numbers; no vector, matrix, componentwise, or induced norm occurs (PDF p. 5, printed p. 387, equations (7)-(9); PDF p. 6, printed p. 388, proof completion)."
     ],
     "constants_and_indexing": [
-      "The exact threshold is ceil(beta^p - beta/2) beta^{e(x)}; the ceiling, beta^p, beta/2, and the representation-specific exponent e(x) must be preserved. [PDF page 5 (printed 387), equation (7)]",
-      "The exact-subtraction threshold in equation (8) is beta^p beta^{min(e(a),e(b))}. [PDF page 5 (printed 387), equation (8)]",
-      "The only operational indices are FastTwoSum lines 1, 2, and 3; the result has no sequence indices or index offsets. [PDF page 2 (printed 384), FastTwoSum algorithm; PDF page 5 (printed 387), Theorem 2 proof]"
+      "The exact threshold is ceil(beta^p - beta/2) beta^(e(x)); the ceiling applies only to beta^p - beta/2, before multiplication by beta^(e(x)) (PDF p. 5, printed p. 387, equation (7)).",
+      "The threshold is non-strict: |y| is allowed to equal ceil(beta^p - beta/2) beta^(e(x)) (PDF p. 5, printed p. 387, equation (7)).",
+      "The exponent in the threshold belongs to an existentially selected representation of x, not necessarily a normalized or unique exponent (PDF p. 3, printed p. 385, multiple-representation discussion; PDF p. 5, printed p. 387, Theorem 2).",
+      "The algorithm has exactly three numbered operations, with the rounded addition at line 1 and faithful subtractions at lines 2 and 3 (PDF p. 2, printed p. 384, FastTwoSum algorithm).",
+      "Equation (8)'s exact-subtraction threshold is beta^p beta^(min(e(a),e(b))) and uses a non-strict inequality (PDF p. 5, printed p. 387, equation (8))."
     ],
     "higher_order_terms": [
-      "There are no big-O terms, omitted higher-order terms, or asymptotic qualifications: s+e=x+y and the two subtraction equalities are exact. [PDF page 5 (printed 387), equation (3) and proof; PDF page 6 (printed 388), completion of the proof]"
+      "There are no big-O terms, omitted higher-order terms, or asymptotic qualifications: the final identity and both subtraction equalities are exact (PDF p. 5, printed p. 387, Theorem 2 and equation (8); PDF p. 6, printed p. 388, proof completion)."
     ],
     "exceptional_values": [
-      "The set F is defined as a subset of the reals, so the model does not introduce NaNs, infinities, or IEEE signed-zero distinctions; zero is represented by m=0. [PDF page 2 (printed 384), equation (1)]",
-      "Equation (8), on which the proof relies, is explicitly qualified by absence of overflow. [PDF page 5 (printed 387), text immediately preceding equation (8)]",
-      "Theorem 2 states no separate underflow exception or nonzero-input requirement. [PDF page 5 (printed 387), Theorem 2; PDF page 2 (printed 384), equation (1)]"
+      "The model F contains finite real values of the form m beta^e and does not include NaN or infinity (PDF p. 2, printed p. 384, equation (1)).",
+      "Zero is included by taking m=0, and Theorem 2 states no nonzero-input restriction (PDF p. 2, printed p. 384, equation (1); PDF p. 5, printed p. 387, Theorem 2).",
+      "Theorem 2 states no separate underflow exclusion; small values remain governed by the finite exponent-range model in equation (1) (PDF p. 2, printed p. 384, equation (1); PDF p. 5, printed p. 387, Theorem 2).",
+      "The general exact-subtraction implication is explicitly stated only in the absence of overflow (PDF p. 5, printed p. 387, equation (8))."
     ]
   },
   "undebatable_constraints": [
-    "Use the original three-operation FastTwoSum algorithm with s := x ⊕ y, t := s ⊖ x, and e := y ⊖ t. [PDF page 2 (printed 384), FastTwoSum algorithm]",
-    "Inputs x and y are scalar members of the same F defined by equation (1). [PDF page 2 (printed 384), equation (1); PDF page 5 (printed 387), Theorem 2]",
-    "Addition must be nearest rounded and subtraction must be faithfully rounded. [PDF page 5 (printed 387), Theorem 2]",
-    "The size hypothesis is existential over a feasible representation of x and is exactly |y| <= ceil(beta^p - beta/2) beta^{e(x)}. [PDF page 5 (printed 387), equation (7); PDF page 3 (printed 385), exponent convention]",
-    "A normalized or otherwise canonical exponent may not silently replace the representation witness e(x). [PDF page 3 (printed 385), multiple-representation discussion; PDF page 5 (printed 387), equation (7)]",
-    "The required output relation has both parts: s+e=x+y exactly and s=x ⊕ y. [PDF page 3 (printed 385), equation (3); PDF page 5 (printed 387), Theorem 2]",
-    "The proof establishes both subtraction steps as exact: t=s-x and e=y-t. [PDF page 5 (printed 387), proof of Theorem 2; PDF page 6 (printed 388), completion of the proof]",
-    "Equation (10) does not by itself authorize replacing nearest addition while retaining equation (7) unchanged; the paper says equation (7) must be adapted. [PDF page 6 (printed 388), equation (10) and following sentence]",
-    "The result is exact and contains no omitted higher-order term. [PDF page 5 (printed 387), equation (3); PDF page 6 (printed 388), completion of the proof]"
+    "The algorithm must be the three-step FastTwoSum sequence s=x oplus y, t=s ominus x, e=y ominus t (PDF p. 2, printed p. 384, FastTwoSum algorithm).",
+    "The inputs are scalar floating-point values x,y in F, and the relevant representation of x is existential rather than fixed as normalized (PDF p. 3, printed p. 385, exponent discussion; PDF p. 5, printed p. 387, Theorem 2).",
+    "The magnitude condition is exactly |y| <= ceil(beta^p - beta/2) beta^(e(x)) for that representation of x (PDF p. 5, printed p. 387, equation (7)).",
+    "Addition must be nearest-rounded and subtraction need only be faithfully rounded; faithful addition is not an interchangeable hypothesis (PDF p. 5, printed p. 387, Theorem 2; PDF p. 6, printed p. 388, equation (10) discussion).",
+    "The required result is the exact identity s+e=x+y together with s=x oplus y, not merely an inequality or approximate residual (PDF p. 3, printed p. 385, equation (3); PDF p. 5, printed p. 387, Theorem 2).",
+    "The proof establishes exactness of both subtraction instructions, t=s-x and e=y-t (PDF p. 5, printed p. 387, equation (8) and proof; PDF p. 6, printed p. 388, proof completion).",
+    "No condition |x| >= |y| and no restriction beta in {2,3} may be added to Theorem 2 (PDF p. 4, printed p. 386, Section 3 introduction; PDF p. 5, printed p. 387, Theorem 2; PDF p. 6, printed p. 388, post-proof comparison)."
   ],
   "ambiguities": [
     {
-      "issue": "The exponent witness e(x) is nonunique.",
-      "evidence": "The paper defines e(f) through a representation satisfying equation (1), demonstrates multiple valid exponents for one number, and phrases equation (7) as existence of a representation of x. [PDF page 3 (printed 385), exponent convention and example; PDF page 5 (printed 387), Theorem 2 and equation (7)]",
-      "impact": "A formalization must preserve the existential representation or define an equivalent representation-independent condition; silently using the normalized exponent can strengthen or alter the theorem. [PDF page 3 (printed 385), multiple-representation discussion]"
+      "issue": "The treatment of overflow is not fully surfaced in the theorem statement.",
+      "evidence": "Equation (8), used to prove both exact subtraction steps, is introduced with the qualification 'in the absence of overflow,' while Theorem 2 does not list a separate overflow hypothesis (PDF p. 5, printed p. 387, Theorem 2 and equation (8)).",
+      "impact": "A formal contract should either preserve this as an inherited no-overflow condition for the relevant subtractions or explicitly justify from the theorem hypotheses that those subtraction results cannot overflow; it should not silently claim IEEE exceptional-value behavior."
     },
     {
-      "issue": "The theorem statement does not explicitly state a no-overflow hypothesis, but its proof invokes one.",
-      "evidence": "Immediately before equation (8), the paper qualifies the exact-subtraction implication with 'in the absence of overflow'; Theorem 2 itself lists no overflow condition. [PDF page 5 (printed 387), Theorem 2 and text preceding equation (8)]",
-      "impact": "A formal contract must determine whether absence of overflow follows from the chosen arithmetic model and bounds or must be added as an operational side condition. [PDF page 5 (printed 387), equation (8) and its uses]"
+      "issue": "The exponent e(x) is not a canonical function of x in the paper's model.",
+      "evidence": "Section 2 explicitly gives one floating-point number several compliant exponents, and Theorem 2 says there is a representation of x satisfying equation (7) (PDF p. 3, printed p. 385, multiple-representation example; PDF p. 5, printed p. 387, Theorem 2).",
+      "impact": "Replacing the existential representation witness with a normalized exponent or a fixed implementation exponent can strengthen or change the theorem."
     },
     {
-      "issue": "Nearest and faithful rounding do not specify tie-breaking or a unique faithful result.",
-      "evidence": "Nearest addition is defined only by minimum distance, and faithful rounding only by absence of an intervening floating-point number. [PDF page 2 (printed 384), nearest-addition and faithful-rounding definitions]",
-      "impact": "The contract cannot assume ties-to-even, directed tie resolution, or a particular faithful subtraction result beyond those stated semantic properties. [PDF page 2 (printed 384), rounding definitions]"
+      "issue": "Nearest-addition ties are left unspecified.",
+      "evidence": "Nearest addition is defined only by attaining the minimum absolute error over F; no ties-to-even or other tie rule is named (PDF p. 2, printed p. 384, nearest-addition definition).",
+      "impact": "The contract must allow any minimizing result in a tie and must not import an IEEE tie-breaking convention absent from the selected result."
     },
     {
-      "issue": "The adaptation associated with equation (10) is not given explicitly.",
-      "evidence": "The paper says that for a mapping satisfying |x ⊕ y-(x+y)| <= |y|, 'the inequality in (7) can be adapted' so that equation (3) remains valid, but it does not state the adapted inequality there. [PDF page 6 (printed 388), equation (10) and following sentence]",
-      "impact": "Theorem 2 should remain contracted with nearest addition and equation (7); no specific generalized theorem with an unchanged or guessed threshold can be extracted from this passage. [PDF page 6 (printed 388), discussion following equation (10)]"
+      "issue": "The phrase 'some faithful-subtraction' does not select a directed or nearest subtraction mode.",
+      "evidence": "Theorem 2 asks only for some faithful-subtraction, using the paper's no-intervening-float definition of faithfulness (PDF p. 2, printed p. 384, faithful-rounding definition; PDF p. 5, printed p. 387, Theorem 2).",
+      "impact": "The hypothesis must not be strengthened to nearest subtraction; exactness of the two executed subtractions is a proved consequence."
     },
     {
-      "issue": "The paper uses the standard notion of a radix but does not formally type every system parameter in equation (1).",
-      "evidence": "Equation (1) calls beta the base and p the mantissa length while explicitly typing only m and e as integers; the proof later uses 2 <= beta. [PDF page 2 (printed 384), equation (1); PDF page 5 (printed 387), proof following equation (9)]",
-      "impact": "A formalization must supply conventional domains such as a radix beta at least 2 and an integral precision p without changing the numerical inequalities. [PDF page 2 (printed 384), equation (1); PDF page 5 (printed 387), proof]"
+      "issue": "The theorem inherits standard domain assumptions for beta and p instead of quantifying them explicitly.",
+      "evidence": "Equation (1) introduces beta as the base and p as the mantissa length, while the proof later explicitly uses 2 <= beta (PDF p. 2, printed p. 384, equation (1); PDF p. 5, printed p. 387, Case 3 after equation (9)).",
+      "impact": "A formalization must supply the usual valid-radix and mantissa-length domains, but should label them inherited model assumptions rather than additional numerical restrictions peculiar to Theorem 2."
     }
   ],
-  "contract_plain_english": "For scalar floating-point inputs x,y in the paper's radix-beta system, run the original FastTwoSum steps s := x ⊕ y, t := s ⊖ x, and e := y ⊖ t. [PDF page 2 (printed 384), equation (1) and FastTwoSum algorithm] Assume nearest-rounded addition, faithfully rounded subtraction, and the existence of a valid representation of x whose exponent satisfies |y| <= ceil(beta^p - beta/2) beta^{e(x)}; that exponent is representation-dependent and need not be normalized. [PDF page 5 (printed 387), Theorem 2 and equation (7); PDF page 3 (printed 385), multiple-representation discussion] Then the returned values satisfy s=x ⊕ y and s+e=x+y exactly. The proof additionally shows that both floating-point subtractions are exact, t=s-x and e=y-t, so e is the exact residual x+y-s. [PDF page 5 (printed 387), equation (3) and proof; PDF page 6 (printed 388), completion of the proof] There are no norm choices, dimensions, relative-error claims, or higher-order terms. The proof's exact-subtraction rule is qualified by absence of overflow. [PDF page 5 (printed 387), equation (8)] Equation (10) records the addition-error property used by the proof, but the paper does not specify the adapted replacement for equation (7), so it does not support an unchanged-threshold generalization to arbitrary non-nearest addition. [PDF page 6 (printed 388), equation (10) and following discussion]"
+  "contract_plain_english": "In the radix floating-point system F, take any x,y in F and run the original FastTwoSum instructions s=x oplus y, t=s ominus x, and e=y ominus t. Addition is nearest-rounded, while subtraction may be any faithful subtraction (PDF p. 2, printed p. 384, rounding definitions and algorithm; PDF p. 5, printed p. 387, Theorem 2). If some feasible representation of x has exponent e(x) and satisfies |y| <= ceil(beta^p - beta/2) beta^(e(x)), then both subtraction instructions are exact and the returned values obey s+e=x+y with s=x oplus y (PDF p. 5, printed p. 387, equations (7)-(9); PDF p. 6, printed p. 388, proof completion). The exponent witness need not be normalized or unique, no |x|>=|y| condition is required, and the theorem is not restricted to bases 2 and 3 (PDF p. 3, printed p. 385, multiple-representation discussion; PDF p. 6, printed p. 388, post-proof comparison)."
 }

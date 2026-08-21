@@ -1,0 +1,554 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "b1b5a8881b75bbe43d8a06f8113bddab22ee7f419a36b7d5585f796da189ab00",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "An inductively generated admissible-run relation on a format, inputs x and y, and a trace. Its supplied constructor requires a nearest-representable rounding of x+y, adjacent-representable roundings of the two residuals, and no-overflow conditions for all three exact quantities.",
+      "effect_on_target": "The target assumes an admissible run for fmt, x, y, and tr, thereby constraining the trace fields through the three rounding steps and overflow premises.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "A trace type constructed from three real numbers.",
+      "effect_on_target": "The quantified trace tr supplies three real fields, denoted s, t, and e.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "The third real field of a trace.",
+      "effect_on_target": "This is tr.e, the rounded second residual and final correction term.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "The first real field of a trace.",
+      "effect_on_target": "This is tr.s, the rounded value of the exact sum x+y.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "The second real field of a trace.",
+      "effect_on_target": "This is tr.t, the rounded value of the exact residual s-x.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "A finite radix-format record consisting of a natural radix beta, natural precision, integer exponent bounds emin and emax, and proofs that 2 <= beta, 0 < precision, and emin <= emax.",
+      "effect_on_target": "The theorem is universally quantified over every format satisfying these embedded parameter restrictions.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "The radix beta of a format cast from a natural number to a real number.",
+      "effect_on_target": "It supplies the real base used in division, mantissa bounds, and powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "The real mantissa bound beta^precision, where beta is cast to a real and precision is a natural exponent.",
+      "effect_on_target": "It bounds integer mantissas strictly and appears in the size condition and overflow threshold.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "The scale at integer exponent q, defined as beta^q using integer exponentiation over the reals.",
+      "effect_on_target": "It determines represented values m beta^q, the witness-dependent bound on |y|, and the overflow threshold.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "A representation witness for a real x in fmt. It contains integers m and q satisfying -beta^precision < m < beta^precision, emin <= q <= emax, and x = m beta^q, with m cast to a real.",
+      "effect_on_target": "Such witnesses define representability; the special existential hypothesis also reads the witness exponent q.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "The integer exponent field of a representation witness.",
+      "effect_on_target": "The existential size condition uses this particular exponent to scale its upper bound on |y|.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LocalDef012",
+      "meaning": "Representability of x in fmt, defined as nonemptiness of the type of representation witnesses for x.",
+      "effect_on_target": "The target assumes x and y are representable, and the run relation requires s, t, and e to be representable.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LocalDef013",
+      "meaning": "The constructor for an admissible run. It requires s to minimize absolute error among all representable values for x+y; t to have no representable value strictly between it and s-x; e to have no representable value strictly between it and y-t; and no overflow for x+y, s-x, and y-t.",
+      "effect_on_target": "It gives the precise mathematical content of the run hypothesis used by the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "LocalDef014",
+      "meaning": "The constructor mapping three real numbers to a trace whose fields are those numbers in order.",
+      "effect_on_target": "It identifies a trace as the ordered triple (s,t,e).",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "LocalDef015",
+      "meaning": "The first field of a format, namely its natural radix beta.",
+      "effect_on_target": "It determines the real radix and all radix powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "LocalDef016",
+      "meaning": "The format constructor taking beta and precision in the natural numbers, emin and emax in the integers, and proofs of 2 <= beta, 0 < precision, and emin <= emax.",
+      "effect_on_target": "It ensures every quantified format carries exactly these basic radix, precision, and exponent-range restrictions.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "LocalDef017",
+      "meaning": "The second field of a format, namely its natural precision.",
+      "effect_on_target": "It is the natural exponent in the mantissa bound beta^precision.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "LocalDef018",
+      "meaning": "The constructor of a representation witness from integer mantissa m and exponent q, strict mantissa bounds, inclusive exponent bounds, and the equality x = m beta^q.",
+      "effect_on_target": "It expands every representability assumption and the existential representation of x into explicit integer data and inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "LocalDef019",
+      "meaning": "The fourth field of a format, namely the maximum integer exponent emax.",
+      "effect_on_target": "It is the upper exponent limit for representations and is used in the no-overflow threshold.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "LocalDef020",
+      "meaning": "The third field of a format, namely the minimum integer exponent emin.",
+      "effect_on_target": "It is the lower exponent limit for representation witnesses.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "LocalDef021",
+      "meaning": "No overflow for a real z means |z| < beta^precision beta^emax.",
+      "effect_on_target": "The run hypothesis imposes this strict bound on x+y, s-x, and y-t.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "LocalDef022",
+      "meaning": "An adjacent-representable rounding relation: rounded is representable, and no representable candidate c satisfies rounded < c <= exact or exact <= c < rounded.",
+      "effect_on_target": "It constrains t relative to s-x and e relative to y-t, but does not require global nearest rounding or prescribe which side of the exact value is chosen.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "LocalDef023",
+      "meaning": "Nearest-representable rounding in fmt, obtained by applying the generic absolute-error minimization relation to fmt-representability.",
+      "effect_on_target": "It requires s to be a globally nearest representable value to x+y, with ties permitted.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "LocalDef024",
+      "meaning": "For a predicate R, exact value a, and rounded value r, this means R(r) and |a-r| <= |a-c| for every c satisfying R(c).",
+      "effect_on_target": "With R equal to format representability, it gives the exact global absolute-error property of s.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "It combines the four asserted conclusions and combines component conditions inside rounding and representation-related definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "The division operation extracted from a division-and-inverse monoid.",
+      "effect_on_target": "It provides ordinary real division in beta/2.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "It states the three exact identities t=s-x, e=y-t, and s+e=x+y, as well as represented-value equalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "Exists",
+      "meaning": "Existential quantification over a type.",
+      "effect_on_target": "It asserts the existence of a particular representation witness for x satisfying the bound involving that witness's exponent.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "HAdd.hAdd",
+      "meaning": "The addition operation selected by a heterogeneous-addition instance.",
+      "effect_on_target": "For real arguments it denotes ordinary addition in x+y and s+e.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "HDiv.hDiv",
+      "meaning": "The division operation selected by a heterogeneous-division instance.",
+      "effect_on_target": "For real arguments it denotes ordinary real division, specifically beta/2.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "HMul.hMul",
+      "meaning": "The multiplication operation selected by a heterogeneous-multiplication instance.",
+      "effect_on_target": "For real arguments it denotes ordinary multiplication in represented values, bounds, and overflow thresholds.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "HSub.hSub",
+      "meaning": "The subtraction operation selected by a heterogeneous-subtraction instance.",
+      "effect_on_target": "For real arguments it denotes ordinary subtraction in residuals, errors, and beta^precision-beta/2.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "LE.le",
+      "meaning": "The non-strict order relation supplied by an LE instance.",
+      "effect_on_target": "For reals and integers it supplies the inequalities in the size condition, error bound, nearest-rounding condition, and exponent bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "The radix and precision are natural numbers, and natural numerals and natural powers are used in the format definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "meaning": "A proof-producing instance showing that n+1 is at least two when n is nonzero.",
+      "effect_on_target": "It participates only in elaborating the numeral 2 for the real expression beta/2; it adds no independent mathematical hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "Nat.instNeZeroSucc",
+      "meaning": "A proof that every natural successor n+1 is nonzero.",
+      "effect_on_target": "It supports elaboration of the numeral 2 and contributes no additional proposition-level restriction.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "OfNat.ofNat",
+      "meaning": "Interpretation of a natural numeral in a type carrying the corresponding OfNat instance.",
+      "effect_on_target": "It interprets 2 as a real number in beta/2 and interprets auxiliary natural numerals used by typeclass elaboration.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "The inputs, trace fields, represented values, scales, bounds, and errors are all scalar real quantities.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "Real.instAdd",
+      "meaning": "The ordinary addition operation on real numbers.",
+      "effect_on_target": "It gives the mathematical sums x+y and s+e.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive-group structure on the real numbers.",
+      "effect_on_target": "It supplies negation and subtraction structure needed by the real absolute-value operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The real multiplication, inverse, division, and integer-power structure.",
+      "effect_on_target": "It supplies real division in beta/2 and integer powers beta^q, including reciprocal powers when q is negative.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "Real.instLE",
+      "meaning": "The usual non-strict order on real numbers.",
+      "effect_on_target": "All real-valued <= comparisons use the standard real order.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "Real.instMul",
+      "meaning": "The ordinary multiplication operation on real numbers.",
+      "effect_on_target": "It multiplies mantissas by scales and forms the size and overflow bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "Real.instNatCast",
+      "meaning": "The canonical embedding of natural numbers into the real numbers.",
+      "effect_on_target": "It converts the natural radix beta and the numeral 2 into real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "Real.instSub",
+      "meaning": "Ordinary real subtraction, defined as addition of the additive inverse.",
+      "effect_on_target": "It forms s-x, y-t, s-(x+y), exact-minus-rounded errors, and beta^precision-beta/2.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "Real.lattice",
+      "meaning": "The lattice structure induced by the usual order on the real numbers.",
+      "effect_on_target": "It supports the definition of absolute value as the maximum of a real and its negation.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "abs",
+      "meaning": "Absolute value, defined as max(a,-a) in a lattice-ordered additive group.",
+      "effect_on_target": "For reals it yields |y|, rounding errors, the final error |s-(x+y)|, and no-overflow magnitudes.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "instHAdd",
+      "meaning": "The adapter turning an ordinary homogeneous addition operation into heterogeneous-addition notation.",
+      "effect_on_target": "It ensures all displayed additions of reals are ordinary real addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "instHDiv",
+      "meaning": "The adapter turning ordinary homogeneous division into heterogeneous-division notation.",
+      "effect_on_target": "It ensures beta/2 is ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "instHMul",
+      "meaning": "The adapter turning ordinary homogeneous multiplication into heterogeneous-multiplication notation.",
+      "effect_on_target": "It ensures the products in representations and bounds are ordinary real products.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "instHSub",
+      "meaning": "The adapter turning ordinary homogeneous subtraction into heterogeneous-subtraction notation.",
+      "effect_on_target": "It ensures all residual and error differences are ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "An OfNat instance that interprets a natural numeral n in a type with a natural-number cast when n is known to be at least two.",
+      "effect_on_target": "It converts the literal 2 to the real number 2 in beta/2 and introduces no new mathematical condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "instOfNatNat",
+      "meaning": "The canonical interpretation of each natural numeral as itself in Nat.",
+      "effect_on_target": "It supports the auxiliary natural literals used while elaborating the real numeral 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "DivInvMonoid.toZPow",
+      "meaning": "The integer-power operation associated with a division-and-inverse monoid.",
+      "effect_on_target": "It interprets beta^q for integer representation exponents and beta^emax in the overflow threshold.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "HPow.hPow",
+      "meaning": "The exponentiation operation selected by a heterogeneous-power instance.",
+      "effect_on_target": "It expresses both the natural power beta^precision and integer powers beta^q.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "Int",
+      "meaning": "The type of integers.",
+      "effect_on_target": "Mantissas, representation exponents, and format exponent bounds are integers.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "Monoid.toNatPow",
+      "meaning": "The natural-power operation associated with a monoid.",
+      "effect_on_target": "It interprets beta^precision with natural precision in the mantissa bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "Nat.cast",
+      "meaning": "The canonical cast from natural numbers into a type with a NatCast structure.",
+      "effect_on_target": "It realizes the real radix beta and real numeral 2.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "Nonempty",
+      "meaning": "The proposition that a type has at least one inhabitant.",
+      "effect_on_target": "Representability asserts that at least one representation witness exists without selecting it; the separate existential condition does select a witness whose exponent is used.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure on the real numbers.",
+      "effect_on_target": "It supplies natural powers of the real radix and underlies the integer-power structure.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "instHPow",
+      "meaning": "The adapter turning a homogeneous power operation into heterogeneous-power notation.",
+      "effect_on_target": "It connects real natural and integer powers to the notation used in mantissaBound and scale.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "Int.cast",
+      "meaning": "The canonical cast from integers into a type with an IntCast structure.",
+      "effect_on_target": "It views integer mantissas as real numbers in their bounds and represented-value equations.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "Int.instLEInt",
+      "meaning": "The usual non-strict order on integers.",
+      "effect_on_target": "It gives emin <= q <= emax and the format condition emin <= emax.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "LT.lt",
+      "meaning": "The strict order relation supplied by an LT instance.",
+      "effect_on_target": "It expresses strict mantissa bounds, strict no-overflow bounds, and strict portions of the adjacency relation.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "Neg.neg",
+      "meaning": "The negation operation supplied by a Neg instance.",
+      "effect_on_target": "It forms the lower mantissa bound -beta^precision and participates in real absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Real.instIntCast",
+      "meaning": "The canonical embedding of integers into the real numbers.",
+      "effect_on_target": "It interprets integer mantissas as reals.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "Real.instLT",
+      "meaning": "The usual strict order on real numbers.",
+      "effect_on_target": "It governs strict mantissa inequalities, no-overflow inequalities, and strict interval endpoints in adjacent rounding.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Real.instNeg",
+      "meaning": "Ordinary additive negation on real numbers.",
+      "effect_on_target": "It supplies -beta^precision, subtraction, and absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "instLENat",
+      "meaning": "The usual non-strict order on natural numbers.",
+      "effect_on_target": "It interprets the format restriction 2 <= beta.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "instLTNat",
+      "meaning": "The usual strict order on natural numbers.",
+      "effect_on_target": "It interprets the format restriction 0 < precision.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "Not",
+      "meaning": "Logical negation, defined as implication to falsehood.",
+      "effect_on_target": "It asserts that no representable candidate lies in either forbidden interval between an adjacent rounded value and its exact value.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "Or",
+      "meaning": "Logical disjunction.",
+      "effect_on_target": "It combines the two possible order orientations in the forbidden-between condition for adjacent rounding.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "fmt ranges over finite radix formats with natural radix beta, natural precision p, integer exponent bounds emin and emax, and embedded proofs 2 <= beta, 0 < p, and emin <= emax.",
+      "x and y range over scalar real numbers.",
+      "tr ranges over triples of real numbers; write tr=(s,t,e), where s, t, and e are respectively its first, second, and third fields."
+    ],
+    "hypotheses": [
+      "x is representable in fmt.",
+      "y is representable in fmt.",
+      "There is a particular representation witness x=m_x beta^q_x, with integers m_x and q_x satisfying -beta^p < m_x < beta^p and emin <= q_x <= emax, such that |y| <= (beta^p-beta/2) beta^q_x. Here beta and the integer mantissa are viewed as real numbers, beta/2 is real division, beta^p is a natural power, and beta^q_x is an integer power.",
+      "tr is an admissible run: s is a globally nearest representable value to the exact sum x+y; t is representable and no representable value lies in either half-open interval strictly from t toward the exact residual s-x; e is representable and no representable value lies in either half-open interval strictly from e toward the exact residual y-t; and each of x+y, s-x, and y-t has magnitude strictly below beta^p beta^emax."
+    ],
+    "conclusions": [
+      "t = s-x.",
+      "e = y-t.",
+      "s+e = x+y.",
+      "|s-(x+y)| <= |y|."
+    ],
+    "mathematical_definitions": [
+      "Let b be the real number obtained by casting the natural radix beta.",
+      "Let M=b^p, where p is the natural precision, and let scale(q)=b^q for every integer q.",
+      "A real z is representable exactly when there are integers m and q such that -M < m < M, emin <= q <= emax, and z=m scale(q), with m cast to a real.",
+      "NoOverflow(z) means |z| < M scale(emax).",
+      "Nearest(a,r) means r is representable and |a-r| <= |a-c| for every representable real c.",
+      "Adjacent(a,r) means r is representable and, for every representable c, neither r < c <= a nor a <= c < r holds.",
+      "An admissible run for tr=(s,t,e) requires Nearest(x+y,s), Adjacent(s-x,t), Adjacent(y-t,e), NoOverflow(x+y), NoOverflow(s-x), and NoOverflow(y-t)."
+    ],
+    "proposition_plain_english": "For every permitted finite radix format, all real representable inputs x and y, and every admissible three-stage trace (s,t,e), suppose there is a representation x=m_x beta^q_x whose exponent makes |y| no larger than (beta^p-beta/2) beta^q_x. Then the second rounded quantity is exactly the residual s-x, the third rounded quantity is exactly y-t, the compensated sum s+e is exactly x+y, and the first-stage sum error satisfies |s-(x+y)| <= |y|."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The proposition is a chain of implications. It is vacuously true for any fmt, x, y, and tr for which representability, the witness-dependent size condition, or the admissible-run relation has no witness.",
+    "The separate assumption that x is representable is logically redundant with the existential size hypothesis, because that hypothesis already contains a representation witness for x.",
+    "The bound on |y| depends on the exponent of one existentially chosen representation of x. If x has multiple representations, it is enough that one exponent makes the inequality true; zero in particular can be represented with mantissa zero at every allowed exponent.",
+    "Representations are not required to be normalized or unique. Any integer mantissa strictly between -beta^p and beta^p is allowed, including zero, with any exponent in the inclusive exponent range.",
+    "The adjacent-rounding relation used for t and e is weaker than global nearest rounding: it excludes representable points between the chosen rounded value and the exact value but can choose the neighboring value on either side, even if the opposite-side neighbor is closer.",
+    "The nearest-rounding relation used for s permits ties because it requires only non-strict minimality and encodes no tie-breaking rule.",
+    "The run hypothesis assumes strict no-overflow bounds for the exact values x+y, s-x, and y-t; the proposition does not prove that such a run exists.",
+    "The expression beta/2 is division in the real numbers, not natural-number division or integer truncation.",
+    "The mantissa bounds and no-overflow bounds are strict, while exponent bounds and the main |y| and final-error bounds are non-strict.",
+    "Only scalar real arithmetic is modeled. No vectors, matrices, dimensions, other norms, relative-error measure, underflow behavior, subnormal classification, signed zero, infinities, NaNs, hardware evaluation order, or explicit IEEE rounding mode is encoded.",
+    "The conclusion does not say that s=x+y; it only bounds the first-stage rounding error. Exactness is asserted specifically for t and e, from which s+e=x+y follows."
+  ],
+  "ambiguities": []
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "adjudicator",
+  "task_id": "P12-T2",
+  "trigger": [
+    "round-trip judge requested adjudication",
+    "round-trip S11 is unclear",
+    "round-trip S16 is unclear"
+  ],
+  "resolved_items": [
+    {
+      "item": "round-trip judge requested adjudication",
+      "resolution": "The final classification is not-faithful-weaker and the declaration is not accepted. Its antecedent is strictly narrower because condition (7) omits the ceiling and the execution predicate adds three no-overflow premises. The additional target conjuncts are already established by the paper's proof, so they are not genuine compensating strength. Consequently, lean_implies_paper is no and paper_implies_lean is yes.",
+      "primary_evidence": "The inspected PDF has the supplied SHA-256. Printed page 387 states |y| <= ceil(beta^p-beta/2) beta^e(x), whereas the Lean target uses (beta^p-beta/2) beta^rx.exponent. D013 additionally requires noOverflow for x+y, s-x, and y-t. Printed pages 387-388 establish t=s-x, e=y-t, exact reconstruction, and the addition-error bound."
+    },
+    {
+      "item": "round-trip S11 is unclear",
+      "resolution": "S11 resolves to fail. At least add_no_overflow is unequivocally an extra restriction. Theorem 2 lists membership in F, nearest addition, faithful subtraction, and condition (7), but no range premise for x+y. The phrase 'in the absence of overflow' qualifies the exact-difference implication (8), not the initial addition. Thus the Lean execution model excludes source executions even independently of any ambiguity about the two subtraction range premises.",
+      "primary_evidence": "Printed page 384 defines operations through a total mapping fl : R -> F and nearest addition as selection of a nearest member of F. Printed page 387 states Theorem 2 without no-overflow hypotheses and places the qualification immediately before the difference rule (8). Concretely, for beta=2, p=2, emin=emax=0, F={-3,-2,-1,0,1,2,3}, and x=y=3, condition (7) holds. The source execution s=3, t=0, e=3 uses nearest addition and exact faithful subtractions and satisfies s+e=6. Lean rejects it solely because D021 makes add_no_overflow require |6|<4."
+    },
+    {
+      "item": "round-trip S16 is unclear",
+      "resolution": "S16 resolves to pass. The formal antecedent has substantive nonzero executions, and exact reconstruction is not obtained merely because every value is zero or the rounded sum is exact. False run premises for some paper-covered cases are a reduced-applicability defect, not global vacuity.",
+      "primary_evidence": "Using the declaration definitions, take beta=3, p=2, emin=0, emax=2, x=21 with representation 7*3^1, y=2 with representation 2*3^0, and trace (s,t,e)=(24,3,-1). The size premise is 2 <= (9-3/2)*3. The value 24 is the unique nearest representable value to 23, both subtractions are exact faithful roundings, and all three exact quantities have magnitude below the noOverflow bound 9*3^2=81. The conclusions give 3=24-21, -1=2-3, and 24+(-1)=21+2, with s differing from the exact sum."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean theorem covers only a proper subset of the source domain. For beta=3, p=1, exponent range 0 through 1, and x=y=2 represented at exponent 0, the paper permits |y|=2 because ceil(3-3/2)=2, while Lean requires |y|<=3/2. The source execution s=3, t=1, e=1 is nontrivial and satisfies exact reconstruction. Separately, beta=2, p=2, emin=emax=0, x=y=3 isolates a source case excluded only by Lean's addition noOverflow premise."
+    },
+    "paper_implies_lean": {
+      "verdict": "yes",
+      "reasoning": "The unceiled Lean bound implies the paper's ceiled bound because beta^e is positive, and Lean assumes nearest addition, faithful subtraction, and additional range conditions. On this narrower domain, Theorem 2 and its proof yield t=s-x, e=y-t, and s+e=x+y. Nearest addition also gives |s-(x+y)|<=|y| by using representable x as a candidate."
+    }
+  },
+  "classification": "not-faithful-weaker",
+  "accepted": false,
+  "remaining_uncertainties": [
+    "The paper does not separately define overflow or state whether the qualification preceding equation (8) is an omitted global side condition. Primary evidence therefore does not determine whether Lean's first_sub_no_overflow and second_sub_no_overflow predicates are exact intended formalizations of that qualification. This does not affect the classification: add_no_overflow is independently unsupported, and the missing ceiling independently narrows condition (7)."
+  ],
+  "findings": [
+    {
+      "severity": "major",
+      "category": "condition-7-ceiling",
+      "evidence": "Printed page 387 visibly uses ceil(beta^p-beta/2) beta^e(x). The Lean target instead uses (fmt.mantissaBound-fmt.betaR/2)*fmt.scale rx.exponent, with no ceiling operation.",
+      "impact": "Every odd radix loses valid boundary cases. For beta=3 and p=1, the source coefficient is 2 while the Lean coefficient is 3/2."
+    },
+    {
+      "severity": "major",
+      "category": "extra-overflow-hypotheses",
+      "evidence": "Theorem 2 has no no-overflow premise for x+y, while D013 requires add_no_overflow, first_sub_no_overflow, and second_sub_no_overflow. Equation (8)'s textual qualification concerns exact subtraction.",
+      "impact": "The target excludes source executions such as beta=2, p=2, emin=emax=0, x=y=3, where nearest saturation followed by exact subtractions satisfies the paper conclusion but |x+y|<beta^p beta^emax is false."
+    },
+    {
+      "severity": "note",
+      "category": "nonvacuity-and-extra-conclusions",
+      "evidence": "The beta=3, p=2 execution x=21, y=2, (s,t,e)=(24,3,-1) satisfies all Lean premises with a nonzero correction. Printed pages 387-388 explicitly prove both subtraction equalities and support the addition-error bound.",
+      "impact": "The target is globally nonvacuous, but its extra conjuncts are source-supported consequences rather than genuine theorem strengthening that could offset its narrower applicability."
+    }
+  ],
+  "rationale": "Primary PDF evidence resolves both unclear checklist items. The Lean model has substantive admissible executions, so S16 passes. S11 fails because the execution predicate undeniably adds a no-overflow requirement for the initial addition, despite Theorem 2 having no such premise; uncertainty remains only about how the paper intended the subtraction-specific overflow qualification. Independently, omission of the ceiling in condition (7) excludes nontrivial odd-radix source cases. The paper result therefore entails the Lean target on its restricted domain, while the Lean target does not recover the paper theorem's full domain."
+}

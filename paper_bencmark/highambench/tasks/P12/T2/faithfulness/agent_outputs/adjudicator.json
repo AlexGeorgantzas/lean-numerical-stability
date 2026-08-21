@@ -3,61 +3,96 @@
   "role": "adjudicator",
   "task_id": "P12-T2",
   "trigger": [
+    "judge classifications differ",
     "round-trip judge requested adjudication",
-    "round-trip S11 is unclear",
-    "round-trip S16 is unclear"
+    "round-trip judge classification is undetermined",
+    "round-trip S04 is unclear",
+    "round-trip S11 is unclear"
   ],
   "resolved_items": [
     {
+      "item": "judge classifications differ",
+      "resolution": "The direct classification is sustained: the declaration is faithful-equivalent. The contrary uncertainty results from treating equation (8)'s local no-overflow qualification as an unstated additional premise of Theorem 2.",
+      "primary_evidence": "Theorem 2 on PDF p. 5, printed p. 387, explicitly lists x,y in F, nearest addition, faithful subtraction, and equation (7), then states without an overflow premise that the computed s,e satisfy equation (3). The declaration has those same hypotheses and directly includes equation (3)."
+    },
+    {
       "item": "round-trip judge requested adjudication",
-      "resolution": "The final classification is not-faithful-weaker and the declaration is not accepted. Its antecedent is strictly narrower because condition (7) omits the ceiling and the execution predicate adds three no-overflow premises. The additional target conjuncts are already established by the paper's proof, so they are not genuine compensating strength. Consequently, lean_implies_paper is no and paper_implies_lean is yes.",
-      "primary_evidence": "The inspected PDF has the supplied SHA-256. Printed page 387 states |y| <= ceil(beta^p-beta/2) beta^e(x), whereas the Lean target uses (beta^p-beta/2) beta^rx.exponent. D013 additionally requires noOverflow for x+y, s-x, and y-t. Printed pages 387-388 establish t=s-x, e=y-t, exact reconstruction, and the addition-error bound."
+      "resolution": "Fresh comparison of the PDF and both declaration dossiers establishes both implication directions and acceptance.",
+      "primary_evidence": "PDF pp. 5-6, printed pp. 387-388, state the theorem and prove t=s-x followed by e=y-t. The dossier's execution relation applies nearest rounding to x+y and faithful rounding to s-x and y-t in exactly that order."
+    },
+    {
+      "item": "round-trip judge classification is undetermined",
+      "resolution": "The classification is resolved to faithful-equivalent. The three conclusions added beside equation (3) are consequences asserted or immediately entailed by the paper under the same hypotheses.",
+      "primary_evidence": "The proof on printed pp. 387-388 explicitly says it first verifies t=s-x and then e=y-t, and concludes by validating e=y-t. The nearest-rounding definition on printed p. 384, using x in F as a candidate, entails |s-(x+y)| <= |y|."
+    },
+    {
+      "item": "round-trip S04 is unclear",
+      "resolution": "S04 resolves to pass. The phrase 'in the absence of overflow' qualifies the general sufficient implication (8); it is not separately quantified as a hypothesis of Theorem 2 and therefore should not be inserted into the formal theorem contract.",
+      "primary_evidence": "On printed p. 387, the displayed Theorem 2 statement contains no overflow premise, while the qualification occurs only in the paragraph introducing implication (8). The same proof then unqualifiedly announces and derives both subtraction equalities. Printed p. 391 separately announces a general no-overflow convention for Section 4 applications, showing that the paper states such a scope convention explicitly when intended."
     },
     {
       "item": "round-trip S11 is unclear",
-      "resolution": "S11 resolves to fail. At least add_no_overflow is unequivocally an extra restriction. Theorem 2 lists membership in F, nearest addition, faithful subtraction, and condition (7), but no range premise for x+y. The phrase 'in the absence of overflow' qualifies the exact-difference implication (8), not the initial addition. Thus the Lean execution model excludes source executions even independently of any ambiguity about the two subtraction range premises.",
-      "primary_evidence": "Printed page 384 defines operations through a total mapping fl : R -> F and nearest addition as selection of a nearest member of F. Printed page 387 states Theorem 2 without no-overflow hypotheses and places the qualification immediately before the difference rule (8). Concretely, for beta=2, p=2, emin=emax=0, F={-3,-2,-1,0,1,2,3}, and x=y=3, condition (7) holds. The source execution s=3, t=0, e=3 uses nearest addition and exact faithful subtractions and satisfies s+e=6. Lean rejects it solely because D021 makes add_no_overflow require |6|<4."
+      "resolution": "S11 resolves to pass. The declaration matches the paper's finite-real radix model, unrestricted nearest ties, and faithful rather than nearest subtraction. It makes no claim about IEEE infinities, NaNs, or exceptional-value execution.",
+      "primary_evidence": "Printed p. 384 defines F as finite real values, operations through a map fl:R->F, nearest rounding by minimum distance over F, and faithful rounding by absence of another floating-point number between the rounded and exact values. D009-D024 reproduce those semantics."
     },
     {
-      "item": "round-trip S16 is unclear",
-      "resolution": "S16 resolves to pass. The formal antecedent has substantive nonzero executions, and exact reconstruction is not obtained merely because every value is zero or the rounded sum is exact. False run premises for some paper-covered cases are a reduced-applicability defect, not global vacuity.",
-      "primary_evidence": "Using the declaration definitions, take beta=3, p=2, emin=0, emax=2, x=21 with representation 7*3^1, y=2 with representation 2*3^0, and trace (s,t,e)=(24,3,-1). The size premise is 2 <= (9-3/2)*3. The value 24 is the unique nearest representable value to 23, both subtractions are exact faithful roundings, and all three exact quantities have magnitude below the noOverflow bound 9*3^2=81. The conclusions give 3=24-21, -1=2-3, and 24+(-1)=21+2, with s differing from the exact sum."
+      "item": "equation (7) ceiling encoding",
+      "resolution": "The encoding is exact. For integral beta and B=beta^p, ceil(B-beta/2)=B-floor(beta/2). The declaration computes beta^p-(beta/2) in Nat and then casts it to Real.",
+      "primary_evidence": "Equation (7) on printed p. 387 places the ceiling around beta^p-beta/2 before multiplication by beta^e(x). D007 uses Nat division, hence floor(beta/2). D016 gives beta>=2 and p>0, so beta^p>=beta>=floor(beta/2) and truncated Nat subtraction cannot alter the result."
+    },
+    {
+      "item": "existential representation witness",
+      "resolution": "The representation dependence is preserved exactly: the size condition need hold for one feasible representation of x, not a normalized, canonical, or universally quantified exponent.",
+      "primary_evidence": "Printed p. 385 explains that one value may have several compliant exponents, and Theorem 2 says 'there is a representation of x' satisfying equation (7). The declaration existentially quantifies rx:P12Representation fmt x and uses rx.exponent."
+    },
+    {
+      "item": "rounding modes and operation order",
+      "resolution": "The declaration preserves nearest addition, merely faithful subtraction, arbitrary nearest ties, and all three FastTwoSum data dependencies.",
+      "primary_evidence": "The algorithm on printed p. 384 is s=x oplus y, t=s ominus x, e=y ominus t. Theorem 2 requires nearest addition and some faithful subtraction. D012 requires nearest(x+y,s), faithful(s-x,t), and faithful(y-t,e), while D022 encodes the no-intervening-float predicate rather than nearest subtraction."
+    },
+    {
+      "item": "implication directions and additional conclusions",
+      "resolution": "Lean implies the displayed paper result directly, and the paper implies every Lean conjunct. The t/e identities are explicit proof conclusions, while the error bound follows from the paper's nearest definition with x as a representable comparison value.",
+      "primary_evidence": "Printed pp. 387-388 explicitly establish t=s-x and e=y-t, hence s+e=x+y. Printed p. 384 defines nearest addition globally; choosing f=x gives |s-(x+y)|<=|x-(x+y)|=|y|, matching the declaration after symmetry of absolute value."
+    },
+    {
+      "item": "nonvacuity",
+      "resolution": "The strengthening represented by the explicit conjuncts is not obtained through inconsistent or empty hypotheses.",
+      "primary_evidence": "In the dossier model, beta=2, p=2, emin=-2, emax=0, x=1, y=1/4, and trace (s,t,e)=(3/2,1/2,-1/4) satisfy representability and equation (7). The sum 5/4 is tied nearest between 1 and 3/2; both subtractions are exact, the residual is nonzero, and s+e=5/4 with error 1/4=|y|."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The Lean theorem covers only a proper subset of the source domain. For beta=3, p=1, exponent range 0 through 1, and x=y=2 represented at exponent 0, the paper permits |y|=2 because ceil(3-3/2)=2, while Lean requires |y|<=3/2. The source execution s=3, t=1, e=1 is nontrivial and satisfies exact reconstruction. Separately, beta=2, p=2, emin=emax=0, x=y=3 isolates a source case excluded only by Lean's addition noOverflow premise."
+      "verdict": "yes",
+      "reasoning": "Under paper-matching format, representation, magnitude, and execution hypotheses, the declaration directly concludes s+e=x+y, while the execution relation identifies s as the nearest-rounded x+y. This is equation (3)."
     },
     "paper_implies_lean": {
       "verdict": "yes",
-      "reasoning": "The unceiled Lean bound implies the paper's ceiled bound because beta^e is positive, and Lean assumes nearest addition, faithful subtraction, and additional range conditions. On this narrower domain, Theorem 2 and its proof yield t=s-x, e=y-t, and s+e=x+y. Nearest addition also gives |s-(x+y)|<=|y| by using representable x as a candidate."
+      "reasoning": "Theorem 2 gives equation (3), and its proof explicitly establishes t=s-x and e=y-t under the same hypotheses. Nearest addition and representability of x independently give |s-(x+y)|<=|y|. Equation (8)'s local qualification does not add a premise absent from Theorem 2's statement."
     }
   },
-  "classification": "not-faithful-weaker",
-  "accepted": false,
-  "remaining_uncertainties": [
-    "The paper does not separately define overflow or state whether the qualification preceding equation (8) is an omitted global side condition. Primary evidence therefore does not determine whether Lean's first_sub_no_overflow and second_sub_no_overflow predicates are exact intended formalizations of that qualification. This does not affect the classification: add_no_overflow is independently unsupported, and the missing ceiling independently narrows condition (7)."
-  ],
+  "classification": "faithful-equivalent",
+  "accepted": true,
+  "remaining_uncertainties": [],
   "findings": [
     {
-      "severity": "major",
-      "category": "condition-7-ceiling",
-      "evidence": "Printed page 387 visibly uses ceil(beta^p-beta/2) beta^e(x). The Lean target instead uses (fmt.mantissaBound-fmt.betaR/2)*fmt.scale rx.exponent, with no ceiling operation.",
-      "impact": "Every odd radix loses valid boundary cases. For beta=3 and p=1, the source coefficient is 2 while the Lean coefficient is 3/2."
-    },
-    {
-      "severity": "major",
-      "category": "extra-overflow-hypotheses",
-      "evidence": "Theorem 2 has no no-overflow premise for x+y, while D013 requires add_no_overflow, first_sub_no_overflow, and second_sub_no_overflow. Equation (8)'s textual qualification concerns exact subtraction.",
-      "impact": "The target excludes source executions such as beta=2, p=2, emin=emax=0, x=y=3, where nearest saturation followed by exact subtractions satisfies the paper conclusion but |x+y|<beta^p beta^emax is false."
+      "severity": "note",
+      "category": "overflow qualification",
+      "evidence": "Equation (8) on printed p. 387 is introduced with 'in the absence of overflow,' but Theorem 2 states no separate overflow premise and its proof claims both subtraction equalities without such a qualification.",
+      "impact": "This is a proof-exposition caveat, not a declaration mismatch. The result must not be reinterpreted as specifying IEEE infinity or NaN behavior."
     },
     {
       "severity": "note",
-      "category": "nonvacuity-and-extra-conclusions",
-      "evidence": "The beta=3, p=2 execution x=21, y=2, (s,t,e)=(24,3,-1) satisfies all Lean premises with a nonzero correction. Printed pages 387-388 explicitly prove both subtraction equalities and support the addition-error bound.",
-      "impact": "The target is globally nonvacuous, but its extra conjuncts are source-supported consequences rather than genuine theorem strengthening that could offset its narrower applicability."
+      "category": "ceiling encoding",
+      "evidence": "The paper's ceil(beta^p-beta/2) equals beta^p-floor(beta/2), which is the declaration's Nat computation; valid-format constraints prevent subtraction truncation.",
+      "impact": "Equation (7)'s coefficient, ceiling placement, non-strict boundary, and scaling are preserved exactly."
+    },
+    {
+      "severity": "note",
+      "category": "explicit proof consequences",
+      "evidence": "The declaration exposes t=s-x, e=y-t, and the nearest error bound in addition to the displayed equation (3). The first two are established in the paper's proof, and the bound follows immediately from its nearest-rounding definition.",
+      "impact": "These conjuncts do not make the declaration semantically different or merely reduce applicability; they are nonvacuous consequences under the same hypotheses."
     }
   ],
-  "rationale": "Primary PDF evidence resolves both unclear checklist items. The Lean model has substantive admissible executions, so S16 passes. S11 fails because the execution predicate undeniably adds a no-overflow requirement for the initial addition, despite Theorem 2 having no such premise; uncertainty remains only about how the paper intended the subtraction-specific overflow qualification. Independently, omission of the ceiling in condition (7) excludes nontrivial odd-radix source cases. The paper result therefore entails the Lean target on its restricted domain, while the Lean target does not recover the paper theorem's full domain."
+  "rationale": "The declaration reproduces the paper's arbitrary-radix finite-real format, existential representation exponent, exact equation (7) threshold, nearest first operation, faithful subtraction operations, and three-step FastTwoSum execution. The local no-overflow wording attached to implication (8) does not modify Theorem 2's expressly stated hypothesis list. The proof itself presents both subtraction equalities as steps of Theorem 2, and the additional nearest error bound follows directly from the source definition. Both implication directions therefore hold, the proposition is nonvacuous, and the appropriate classification is faithful-equivalent."
 }

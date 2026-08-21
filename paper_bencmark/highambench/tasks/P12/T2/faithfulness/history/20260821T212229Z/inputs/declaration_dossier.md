@@ -10,7 +10,8 @@ theorem p12_t2_fast_two_sum_exact
     (fmt : P12RadixFormat) (x y : ℝ) (tr : P12FastTwoSumTrace)
     (hx : p12Representable fmt x) (hy : p12Representable fmt y)
     (hcondition7 : ∃ rx : P12Representation fmt x,
-      |y| ≤ fmt.condition7Ceiling * fmt.scale rx.exponent)
+      |y| ≤
+        (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale rx.exponent)
     (run : P12FastTwoSumExecution fmt x y tr) :
     tr.t = tr.s - x ∧
       tr.e = y - tr.t ∧
@@ -24,7 +25,9 @@ theorem p12_t2_fast_two_sum_exact
 ∀ (fmt : HighamBench.P12RadixFormat) (x y : Real) (tr : HighamBench.P12FastTwoSumTrace),
   HighamBench.p12Representable fmt x →
     HighamBench.p12Representable fmt y →
-      (Exists fun rx => Real.instLE.le (abs y) (instHMul.hMul fmt.condition7Ceiling (fmt.scale rx.exponent))) →
+      (Exists fun rx =>
+          Real.instLE.le (abs y)
+            (instHMul.hMul (instHSub.hSub fmt.mantissaBound (instHDiv.hDiv fmt.betaR 2)) (fmt.scale rx.exponent))) →
         HighamBench.P12FastTwoSumExecution fmt x y tr →
           And (Eq tr.t (instHSub.hSub tr.s x))
             (And (Eq tr.e (instHSub.hSub y tr.t))
@@ -41,7 +44,15 @@ theorem p12_t2_fast_two_sum_exact
     @Exists.{1} (HighamBench.P12Representation fmt x) fun (rx : HighamBench.P12Representation fmt x) =>
       @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup y)
         (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-          (HighamBench.P12RadixFormat.condition7Ceiling fmt)
+          (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
+            (HighamBench.P12RadixFormat.mantissaBound fmt)
+            (@HDiv.hDiv.{0, 0, 0} Real Real Real
+              (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+              (HighamBench.P12RadixFormat.betaR fmt)
+              (@OfNat.ofNat.{0} Real (nat_lit 2)
+                (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
+                  (@Nat.instAtLeastTwoHAddOfNat (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
+                    (@Nat.instNeZeroSucc (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))))))
           (HighamBench.P12RadixFormat.scale fmt (@HighamBench.P12Representation.exponent fmt x rx))))
   (run : HighamBench.P12FastTwoSumExecution fmt x y tr),
   And
@@ -210,13 +221,13 @@ Fully explicit type:
 Type
 ```
 
-### D007: `HighamBench.P12RadixFormat.condition7Ceiling`
+### D007: `HighamBench.P12RadixFormat.betaR`
 
 - Role: `local`
 - Owner module: `HighamBench.P12Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `7cde9ccda0b25d58314b0e6e8c986d12f8c690c8392816be1e445d365ca69535`
+- Semantic SHA-256: `03c195fec72dece4f9a192ae9817181f3999f6355b885b3a3c002b687b4637d6`
 
 Type:
 
@@ -233,10 +244,36 @@ Fully explicit type:
 Definition body (one-level semantic boundary):
 
 ```lean
-fun fmt => (instHSub.hSub (instHPow.hPow fmt.beta fmt.precision) (instHDiv.hDiv fmt.beta 2)).cast
+fun fmt => fmt.beta.cast
 ```
 
-### D008: `HighamBench.P12RadixFormat.scale`
+### D008: `HighamBench.P12RadixFormat.mantissaBound`
+
+- Role: `local`
+- Owner module: `HighamBench.P12Definitions`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `fecbead56154f0b704b8757c954ec63c18b3fcf73f8166f18ab5855d63fd9339`
+
+Type:
+
+```lean
+HighamBench.P12RadixFormat → Real
+```
+
+Fully explicit type:
+
+```lean
+(fmt : HighamBench.P12RadixFormat) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun fmt => instHPow.hPow fmt.betaR fmt.precision
+```
+
+### D009: `HighamBench.P12RadixFormat.scale`
 
 - Role: `local`
 - Owner module: `HighamBench.P12Definitions`
@@ -262,7 +299,7 @@ Definition body (one-level semantic boundary):
 fun fmt e => instHPow.hPow fmt.betaR e
 ```
 
-### D009: `HighamBench.P12Representation`
+### D010: `HighamBench.P12Representation`
 
 - Role: `local`
 - Owner module: `HighamBench.P12Definitions`
@@ -282,7 +319,7 @@ Fully explicit type:
 (fmt : HighamBench.P12RadixFormat) → (x : Real) → Type
 ```
 
-### D010: `HighamBench.P12Representation.exponent`
+### D011: `HighamBench.P12Representation.exponent`
 
 - Role: `local`
 - Owner module: `HighamBench.P12Definitions`
@@ -308,7 +345,7 @@ Definition body (one-level semantic boundary):
 fun fmt x self => self.2
 ```
 
-### D011: `HighamBench.p12Representable`
+### D012: `HighamBench.p12Representable`
 
 - Role: `local`
 - Owner module: `HighamBench.P12Definitions`
@@ -334,13 +371,13 @@ Definition body (one-level semantic boundary):
 fun fmt x => Nonempty (HighamBench.P12Representation fmt x)
 ```
 
-### D012: `HighamBench.P12FastTwoSumExecution.mk`
+### D013: `HighamBench.P12FastTwoSumExecution.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P12Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `520f29dcaa56a9b40b486695bc24410448218bdbec6fbcfc651550aec3136ca8`
+- Semantic SHA-256: `f28dba02810eb00e666096914d817e2c6478b73ee41104a83cfe7d11e3a10c5a`
 
 Type:
 
@@ -348,7 +385,10 @@ Type:
 ∀ {fmt : HighamBench.P12RadixFormat} {x y : Real} {tr : HighamBench.P12FastTwoSumTrace},
   HighamBench.p12NearestInFormat fmt (instHAdd.hAdd x y) tr.s →
     HighamBench.p12FaithfulInFormat fmt (instHSub.hSub tr.s x) tr.t →
-      HighamBench.p12FaithfulInFormat fmt (instHSub.hSub y tr.t) tr.e → HighamBench.P12FastTwoSumExecution fmt x y tr
+      HighamBench.p12FaithfulInFormat fmt (instHSub.hSub y tr.t) tr.e →
+        fmt.noOverflow (instHAdd.hAdd x y) →
+          fmt.noOverflow (instHSub.hSub tr.s x) →
+            fmt.noOverflow (instHSub.hSub y tr.t) → HighamBench.P12FastTwoSumExecution fmt x y tr
 ```
 
 Fully explicit type:
@@ -365,11 +405,20 @@ Fully explicit type:
   (second_sub :
     HighamBench.p12FaithfulInFormat fmt
       (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub) y (HighamBench.P12FastTwoSumTrace.t tr))
-      (HighamBench.P12FastTwoSumTrace.e tr)),
+      (HighamBench.P12FastTwoSumTrace.e tr))
+  (add_no_overflow :
+    HighamBench.P12RadixFormat.noOverflow fmt
+      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd) x y))
+  (first_sub_no_overflow :
+    HighamBench.P12RadixFormat.noOverflow fmt
+      (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub) (HighamBench.P12FastTwoSumTrace.s tr) x))
+  (second_sub_no_overflow :
+    HighamBench.P12RadixFormat.noOverflow fmt
+      (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub) y (HighamBench.P12FastTwoSumTrace.t tr))),
   HighamBench.P12FastTwoSumExecution fmt x y tr
 ```
 
-### D013: `HighamBench.P12FastTwoSumTrace.mk`
+### D014: `HighamBench.P12FastTwoSumTrace.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P12Definitions`
@@ -389,7 +438,7 @@ Fully explicit type:
 (s t e : Real) → HighamBench.P12FastTwoSumTrace
 ```
 
-### D014: `HighamBench.P12RadixFormat.beta`
+### D015: `HighamBench.P12RadixFormat.beta`
 
 - Role: `local`
 - Owner module: `HighamBench.P12Definitions`
@@ -413,32 +462,6 @@ Definition body (one-level semantic boundary):
 
 ```lean
 fun self => self.1
-```
-
-### D015: `HighamBench.P12RadixFormat.betaR`
-
-- Role: `local`
-- Owner module: `HighamBench.P12Definitions`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `03c195fec72dece4f9a192ae9817181f3999f6355b885b3a3c002b687b4637d6`
-
-Type:
-
-```lean
-HighamBench.P12RadixFormat → Real
-```
-
-Fully explicit type:
-
-```lean
-(fmt : HighamBench.P12RadixFormat) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun fmt => fmt.beta.cast
 ```
 
 ### D016: `HighamBench.P12RadixFormat.mk`
@@ -588,30 +611,30 @@ Definition body (one-level semantic boundary):
 fun self => self.3
 ```
 
-### D021: `HighamBench.P12RadixFormat.mantissaBound`
+### D021: `HighamBench.P12RadixFormat.noOverflow`
 
 - Role: `local`
 - Owner module: `HighamBench.P12Definitions`
 - Declaration kind: `def`
 - Distance from target type: `3`
-- Semantic SHA-256: `fecbead56154f0b704b8757c954ec63c18b3fcf73f8166f18ab5855d63fd9339`
+- Semantic SHA-256: `c54879e1cbb5fa40d0432c2b576d60e8fedf1ee2683683c2845c178e79223cea`
 
 Type:
 
 ```lean
-HighamBench.P12RadixFormat → Real
+HighamBench.P12RadixFormat → Real → Prop
 ```
 
 Fully explicit type:
 
 ```lean
-(fmt : HighamBench.P12RadixFormat) → Real
+(fmt : HighamBench.P12RadixFormat) → (z : Real) → Prop
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun fmt => instHPow.hPow fmt.betaR fmt.precision
+fun fmt z => Real.instLT.lt (abs z) (instHMul.hMul fmt.mantissaBound (fmt.scale fmt.emax))
 ```
 
 ### D022: `HighamBench.p12FaithfulInFormat`
@@ -722,7 +745,33 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D026: `Eq`
+### D026: `DivInvMonoid.toDiv`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Group.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `cf21e4a4c962ee0db8a97bd649d849a798a693692bf09312f7855ddcbeb125ea`
+
+Type:
+
+```lean
+{G : Type u} → [self : DivInvMonoid G] → Div G
+```
+
+Fully explicit type:
+
+```lean
+{G : Type u} → [self : DivInvMonoid.{u} G] → Div.{u} G
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun G [self : DivInvMonoid G] => self.3
+```
+
+### D027: `Eq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -742,7 +791,7 @@ Fully explicit type:
 {α : Sort u_1} → α → α → Prop
 ```
 
-### D027: `Exists`
+### D028: `Exists`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -762,7 +811,7 @@ Fully explicit type:
 {α : Sort u} → (p : α → Prop) → Prop
 ```
 
-### D028: `HAdd.hAdd`
+### D029: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -788,7 +837,33 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D029: `HMul.hMul`
+### D030: `HDiv.hDiv`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `10d75d9f08ad8c923109392866fba5fb3645de144bc824cefdd353658fe9f06b`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HDiv α β γ] → α → β → γ
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HDiv.{u, v, w} α β γ] → α → β → γ
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β {γ} [self : HDiv α β γ] => self.1
+```
+
+### D031: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -814,7 +889,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D030: `HSub.hSub`
+### D032: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -840,7 +915,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D031: `LE.le`
+### D033: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -866,7 +941,99 @@ Definition body (one-level semantic boundary):
 fun α [self : LE α] => self.1
 ```
 
-### D032: `Real`
+### D034: `Nat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `2e1c25ca42e1e377a41827f0d2f09ae02cfb28ab155c30e277f1000f5e79b32c`
+
+Type:
+
+```lean
+Type
+```
+
+Fully explicit type:
+
+```lean
+Type
+```
+
+### D035: `Nat.instAtLeastTwoHAddOfNat`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Nat.Init`
+- Declaration kind: `theorem`
+- Distance from target type: `1`
+- Semantic SHA-256: `309ef94c4b7cfbe2e668952e6915279353921d5d48b6123a30f90dd932dac3e6`
+
+Type:
+
+```lean
+∀ (n : Nat) [NeZero n], (instHAdd.hAdd n 1).AtLeastTwo
+```
+
+Fully explicit type:
+
+```lean
+∀ (n : Nat) [@NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0))) n],
+  Nat.AtLeastTwo
+    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D036: `Nat.instNeZeroSucc`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Nat.Basic`
+- Declaration kind: `theorem`
+- Distance from target type: `1`
+- Semantic SHA-256: `a0735a528184c05594c4c79312c1225bb4dcffcdf0df7eb1a50c5733047c85ad`
+
+Type:
+
+```lean
+∀ {n : Nat}, NeZero (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+∀ {n : Nat},
+  @NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0)))
+    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D037: `OfNat.ofNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead`
+
+Type:
+
+```lean
+{α : Type u} → (x : Nat) → [self : OfNat α x] → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → (x : Nat) → [self : OfNat.{u} α x] → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α x [self : OfNat α x] => self.1
+```
+
+### D038: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -886,7 +1053,7 @@ Fully explicit type:
 Type
 ```
 
-### D033: `Real.instAdd`
+### D039: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -912,7 +1079,7 @@ Definition body (one-level semantic boundary):
 { add := Real.add✝ }
 ```
 
-### D034: `Real.instAddGroup`
+### D040: `Real.instAddGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -938,7 +1105,35 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D035: `Real.instLE`
+### D041: `Real.instDivInvMonoid`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `166f2abb65bf1271e5e8d70fdb78c55672c7e366b30439e83b517f803cdefac3`
+
+Type:
+
+```lean
+DivInvMonoid Real
+```
+
+Fully explicit type:
+
+```lean
+DivInvMonoid.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ toMonoid := Real.instMonoid, toInv := Real.instInv, div := DivInvMonoid.div',
+  div_eq_mul_inv := Real.instDivInvMonoid._proof_1, zpow := zpowRec, zpow_zero' := Real.instDivInvMonoid._proof_2,
+  zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
+```
+
+### D042: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -964,7 +1159,7 @@ Definition body (one-level semantic boundary):
 { le := Real.le✝ }
 ```
 
-### D036: `Real.instMul`
+### D043: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -990,7 +1185,33 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D037: `Real.instSub`
+### D044: `Real.instNatCast`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15`
+
+Type:
+
+```lean
+NatCast Real
+```
+
+Fully explicit type:
+
+```lean
+NatCast.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ natCast := fun n => { cauchy := n.cast } }
+```
+
+### D045: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1016,7 +1237,7 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D038: `Real.lattice`
+### D046: `Real.lattice`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1042,7 +1263,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D039: `abs`
+### D047: `abs`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
@@ -1069,7 +1290,7 @@ fun {α} [Lattice α] [AddGroup α] a =>
   SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
 ```
 
-### D040: `instHAdd`
+### D048: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1095,7 +1316,33 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
 ```
 
-### D041: `instHMul`
+### D049: `instHDiv`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `ea3478ce3daf37e2cbdcd4bfaf7b5142fd7d274b56d75d2fae007c15e1b89871`
+
+Type:
+
+```lean
+{α : Type u_1} → [Div α] → HDiv α α α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Div.{u_1} α] → HDiv.{u_1, u_1, u_1} α α α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
+```
+
+### D050: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1121,7 +1368,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D042: `instHSub`
+### D051: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1147,7 +1394,59 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D043: `DivInvMonoid.toZPow`
+### D052: `instOfNatAtLeastTwo`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Nat.Cast.Defs`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `37355febc51d6fa8ff12fc8e7b429771db340390d46411d7608c566bdffd358d`
+
+Type:
+
+```lean
+{R : Type u_1} → {n : Nat} → [NatCast R] → [n.AtLeastTwo] → OfNat R n
+```
+
+Fully explicit type:
+
+```lean
+{R : Type u_1} → {n : Nat} → [NatCast.{u_1} R] → [Nat.AtLeastTwo n] → OfNat.{u_1} R n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
+```
+
+### D053: `instOfNatNat`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92`
+
+Type:
+
+```lean
+(n : Nat) → OfNat Nat n
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → OfNat.{0} Nat n
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n => { ofNat := n }
+```
+
+### D054: `DivInvMonoid.toZPow`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -1173,33 +1472,7 @@ Definition body (one-level semantic boundary):
 fun {M} [inst : DivInvMonoid M] => { pow := fun x n => inst.zpow n x }
 ```
 
-### D044: `HDiv.hDiv`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `10d75d9f08ad8c923109392866fba5fb3645de144bc824cefdd353658fe9f06b`
-
-Type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HDiv α β γ] → α → β → γ
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HDiv.{u, v, w} α β γ] → α → β → γ
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α β {γ} [self : HDiv α β γ] => self.1
-```
-
-### D045: `HPow.hPow`
+### D055: `HPow.hPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1225,7 +1498,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HPow α β γ] => self.1
 ```
 
-### D046: `Int`
+### D056: `Int`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Int.Basic`
@@ -1245,7 +1518,7 @@ Fully explicit type:
 Type
 ```
 
-### D047: `Monoid.toNatPow`
+### D057: `Monoid.toNatPow`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -1271,27 +1544,7 @@ Definition body (one-level semantic boundary):
 fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
 ```
 
-### D048: `Nat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `inductive`
-- Distance from target type: `2`
-- Semantic SHA-256: `2e1c25ca42e1e377a41827f0d2f09ae02cfb28ab155c30e277f1000f5e79b32c`
-
-Type:
-
-```lean
-Type
-```
-
-Fully explicit type:
-
-```lean
-Type
-```
-
-### D049: `Nat.cast`
+### D058: `Nat.cast`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Cast`
@@ -1317,59 +1570,7 @@ Definition body (one-level semantic boundary):
 fun {R} [inst : NatCast R] => inst.natCast
 ```
 
-### D050: `Nat.instDiv`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `d1a575e4d3992bff91963f04214d6927a83247751daeb27b784cb08b80d95d82`
-
-Type:
-
-```lean
-Div Nat
-```
-
-Fully explicit type:
-
-```lean
-Div.{0} Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ div := Nat.div }
-```
-
-### D051: `Nat.instMonoid`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Group.Nat.Defs`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `de0cbde8dd75c1a0c6d5d08b9cfa1cd5908aeb874409a1c880c9c9616deb1709`
-
-Type:
-
-```lean
-Monoid Nat
-```
-
-Fully explicit type:
-
-```lean
-Monoid.{0} Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D052: `Nonempty`
+### D059: `Nonempty`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1389,113 +1590,33 @@ Fully explicit type:
 (α : Sort u) → Prop
 ```
 
-### D053: `OfNat.ofNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead`
-
-Type:
-
-```lean
-{α : Type u} → (x : Nat) → [self : OfNat α x] → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → (x : Nat) → [self : OfNat.{u} α x] → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α x [self : OfNat α x] => self.1
-```
-
-### D054: `Real.instDivInvMonoid`
+### D060: `Real.instMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `166f2abb65bf1271e5e8d70fdb78c55672c7e366b30439e83b517f803cdefac3`
+- Semantic SHA-256: `37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8`
 
 Type:
 
 ```lean
-DivInvMonoid Real
+Monoid Real
 ```
 
 Fully explicit type:
 
 ```lean
-DivInvMonoid.{0} Real
+Monoid.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-{ toMonoid := Real.instMonoid, toInv := Real.instInv, div := DivInvMonoid.div',
-  div_eq_mul_inv := Real.instDivInvMonoid._proof_1, zpow := zpowRec, zpow_zero' := Real.instDivInvMonoid._proof_2,
-  zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
+inferInstance
 ```
 
-### D055: `Real.instNatCast`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15`
-
-Type:
-
-```lean
-NatCast Real
-```
-
-Fully explicit type:
-
-```lean
-NatCast.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ natCast := fun n => { cauchy := n.cast } }
-```
-
-### D056: `instHDiv`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `ea3478ce3daf37e2cbdcd4bfaf7b5142fd7d274b56d75d2fae007c15e1b89871`
-
-Type:
-
-```lean
-{α : Type u_1} → [Div α] → HDiv α α α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Div.{u_1} α] → HDiv.{u_1, u_1, u_1} α α α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
-```
-
-### D057: `instHPow`
+### D061: `instHPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1521,59 +1642,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
 ```
 
-### D058: `instOfNatNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92`
-
-Type:
-
-```lean
-(n : Nat) → OfNat Nat n
-```
-
-Fully explicit type:
-
-```lean
-(n : Nat) → OfNat.{0} Nat n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n => { ofNat := n }
-```
-
-### D059: `instSubNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `5b0e20a4d2b3e0a67bd35de1b5c84cc60d6dc867658112d84cad483055804868`
-
-Type:
-
-```lean
-Sub Nat
-```
-
-Fully explicit type:
-
-```lean
-Sub.{0} Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ sub := Nat.sub }
-```
-
-### D060: `Int.cast`
+### D062: `Int.cast`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Int.Basic`
@@ -1599,7 +1668,7 @@ Definition body (one-level semantic boundary):
 fun {R} [inst : IntCast R] => inst.intCast
 ```
 
-### D061: `Int.instLEInt`
+### D063: `Int.instLEInt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Int.Basic`
@@ -1625,7 +1694,7 @@ Definition body (one-level semantic boundary):
 { le := Int.le }
 ```
 
-### D062: `LT.lt`
+### D064: `LT.lt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1651,7 +1720,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LT α] => self.1
 ```
 
-### D063: `Neg.neg`
+### D065: `Neg.neg`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1677,7 +1746,7 @@ Definition body (one-level semantic boundary):
 fun α [self : Neg α] => self.1
 ```
 
-### D064: `Real.instIntCast`
+### D066: `Real.instIntCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1703,7 +1772,7 @@ Definition body (one-level semantic boundary):
 { intCast := fun z => { cauchy := z.cast } }
 ```
 
-### D065: `Real.instLT`
+### D067: `Real.instLT`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1729,7 +1798,7 @@ Definition body (one-level semantic boundary):
 { lt := Real.lt✝ }
 ```
 
-### D066: `Real.instNeg`
+### D068: `Real.instNeg`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -1755,7 +1824,7 @@ Definition body (one-level semantic boundary):
 { neg := Real.neg✝ }
 ```
 
-### D067: `instLENat`
+### D069: `instLENat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1781,7 +1850,7 @@ Definition body (one-level semantic boundary):
 { le := Nat.le }
 ```
 
-### D068: `instLTNat`
+### D070: `instLTNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1807,7 +1876,7 @@ Definition body (one-level semantic boundary):
 { lt := Nat.lt }
 ```
 
-### D069: `Not`
+### D071: `Not`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1833,7 +1902,7 @@ Definition body (one-level semantic boundary):
 fun a => a → False
 ```
 
-### D070: `Or`
+### D072: `Or`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1851,32 +1920,6 @@ Fully explicit type:
 
 ```lean
 (a b : Prop) → Prop
-```
-
-### D071: `Real.instMonoid`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `37978679365b30167654c1ef9ecb0fa938325c2047191daa7208aee389c0b4b8`
-
-Type:
-
-```lean
-Monoid Real
-```
-
-Fully explicit type:
-
-```lean
-Monoid.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
 ```
 
 ## Complete local imported sources
@@ -1940,7 +1983,7 @@ end HighamBench
 ### `HighamBench.P12Definitions`
 
 Path: `paper_bencmark/highambench/shared/HighamBench/P12Definitions.lean`
-SHA-256: `46bf4ab1fa6101892881af97d833b2781bafdf1788ef98c62831ed48c3e186cc`
+SHA-256: `3e58eed419082337e49fab333f872c016fd6c0bec01cc02a9dad52a6033771bb`
 
 ```lean
 import HighamBench.Core
@@ -1974,33 +2017,15 @@ def betaR (fmt : P12RadixFormat) : ℝ :=
 def mantissaBound (fmt : P12RadixFormat) : ℝ :=
   fmt.betaR ^ fmt.precision
 
-/-- The integer part `floor(beta / 2)` appearing in the proof of Theorem 2. -/
-def halfRadixFloor (fmt : P12RadixFormat) : ℝ :=
-  (fmt.beta / 2 : ℕ)
-
-/-- The exact coefficient `ceil(beta^p - beta / 2)` in equation (7), evaluated
-as the equal natural number `beta^p - floor(beta / 2)`. -/
-def condition7Ceiling (fmt : P12RadixFormat) : ℝ :=
-  (fmt.beta ^ fmt.precision - fmt.beta / 2 : ℕ)
-
-/-- The largest nonnegative mantissa admitted by the strict equation-(1)
-mantissa interval. -/
-def maxMantissa (fmt : P12RadixFormat) : ℝ :=
-  (fmt.beta ^ fmt.precision - 1 : ℕ)
-
 /-- The exponent scale `beta^e` used by a particular representation. -/
 noncomputable def scale (fmt : P12RadixFormat) (e : ℤ) : ℝ :=
   fmt.betaR ^ e
 
-/-- The largest positive element of the finite equation-(1) set. -/
-noncomputable def maxValue (fmt : P12RadixFormat) : ℝ :=
-  fmt.maxMantissa * fmt.scale fmt.emax
-
-/-- An exact real operation result lies in the finite range of equation (1).
-This is the Section 4 meaning of "absence of overflow": the exact result does
-not lie beyond either finite endpoint. -/
+/-- Explicit range-validity for an exact real operation result.  The strict
+upper endpoint matches equation (1) and makes the paper's "absence of
+overflow" qualification in equation (8) visible. -/
 def noOverflow (fmt : P12RadixFormat) (z : ℝ) : Prop :=
-  |z| ≤ fmt.maxValue
+  |z| < fmt.mantissaBound * fmt.scale fmt.emax
 
 theorem betaR_pos (fmt : P12RadixFormat) : 0 < fmt.betaR := by
   change (0 : ℝ) < (fmt.beta : ℝ)
@@ -2048,96 +2073,6 @@ theorem betaR_le_mantissaBound (fmt : P12RadixFormat) :
     one_le_pow₀ fmt.betaR_one_le
   rw [mantissaBound, ← hp, pow_succ]
   nlinarith [fmt.betaR_pos]
-
-theorem halfRadixFloor_add_condition7Ceiling (fmt : P12RadixFormat) :
-    fmt.halfRadixFloor + fmt.condition7Ceiling = fmt.mantissaBound := by
-  have hhalf_le_beta : fmt.beta / 2 ≤ fmt.beta := Nat.div_le_self _ _
-  have hbeta_le_bound_nat : fmt.beta ≤ fmt.beta ^ fmt.precision := by
-    have hreal : (fmt.beta : ℝ) ≤ (fmt.beta ^ fmt.precision : ℕ) := by
-      simpa [betaR, mantissaBound] using fmt.betaR_le_mantissaBound
-    exact_mod_cast hreal
-  have hhalf_le_bound : fmt.beta / 2 ≤ fmt.beta ^ fmt.precision :=
-    le_trans hhalf_le_beta hbeta_le_bound_nat
-  norm_num [halfRadixFloor, condition7Ceiling, mantissaBound, betaR]
-  exact_mod_cast (by
-    simpa [Nat.add_comm] using Nat.sub_add_cancel hhalf_le_bound)
-
-theorem halfRadixFloor_le_half (fmt : P12RadixFormat) :
-    fmt.halfRadixFloor ≤ fmt.betaR / 2 := by
-  have hdiv : (fmt.beta / 2) * 2 ≤ fmt.beta := Nat.div_mul_le_self _ _
-  have hdiv_real : ((fmt.beta / 2 : ℕ) : ℝ) * 2 ≤ (fmt.beta : ℝ) := by
-    exact_mod_cast hdiv
-  norm_num [halfRadixFloor, betaR]
-  nlinarith
-
-theorem half_lt_halfRadixFloor_add_one (fmt : P12RadixFormat) :
-    fmt.betaR / 2 < fmt.halfRadixFloor + 1 := by
-  have hdiv : fmt.beta < (fmt.beta / 2 + 1) * 2 := by omega
-  have hdiv_real :
-      (fmt.beta : ℝ) < ((fmt.beta / 2 + 1 : ℕ) : ℝ) * 2 := by
-    exact_mod_cast hdiv
-  norm_num at hdiv_real
-  norm_num [halfRadixFloor, betaR]
-  nlinarith
-
-theorem one_le_halfRadixFloor (fmt : P12RadixFormat) :
-    (1 : ℝ) ≤ fmt.halfRadixFloor := by
-  have htwo := fmt.beta_ge_two
-  have hone : 1 ≤ fmt.beta / 2 := by omega
-  simpa [halfRadixFloor] using (show (1 : ℝ) ≤ (fmt.beta / 2 : ℕ) by
-    exact_mod_cast hone)
-
-theorem condition7Ceiling_eq_intCeil (fmt : P12RadixFormat) :
-    fmt.condition7Ceiling =
-      ((⌈fmt.mantissaBound - fmt.betaR / 2⌉ : ℤ) : ℝ) := by
-  have hlower :
-      fmt.condition7Ceiling - 1 < fmt.mantissaBound - fmt.betaR / 2 := by
-    nlinarith [fmt.halfRadixFloor_add_condition7Ceiling,
-      fmt.half_lt_halfRadixFloor_add_one]
-  have hupper :
-      fmt.mantissaBound - fmt.betaR / 2 ≤ fmt.condition7Ceiling := by
-    nlinarith [fmt.halfRadixFloor_add_condition7Ceiling,
-      fmt.halfRadixFloor_le_half]
-  have hceil :
-      ⌈fmt.mantissaBound - fmt.betaR / 2⌉ =
-        (fmt.beta ^ fmt.precision - fmt.beta / 2 : ℕ) := by
-    rw [Int.ceil_eq_iff]
-    simpa [condition7Ceiling] using And.intro hlower hupper
-  rw [hceil]
-  simp [condition7Ceiling]
-
-theorem condition7Ceiling_lt_mantissaBound (fmt : P12RadixFormat) :
-    fmt.condition7Ceiling < fmt.mantissaBound := by
-  nlinarith [fmt.halfRadixFloor_add_condition7Ceiling,
-    fmt.one_le_halfRadixFloor]
-
-theorem maxMantissa_nonneg (fmt : P12RadixFormat) :
-    0 ≤ fmt.maxMantissa := by
-  simp [maxMantissa]
-
-theorem maxMantissa_add_one (fmt : P12RadixFormat) :
-    fmt.maxMantissa + 1 = fmt.mantissaBound := by
-  have hbeta_pos : 0 < fmt.beta :=
-    lt_of_lt_of_le (by decide : 0 < 2) fmt.beta_ge_two
-  have hpow_pos : 0 < fmt.beta ^ fmt.precision := pow_pos hbeta_pos _
-  have hnat :
-      fmt.beta ^ fmt.precision - 1 + 1 = fmt.beta ^ fmt.precision :=
-    Nat.sub_add_cancel hpow_pos
-  norm_num [maxMantissa, mantissaBound, betaR]
-  exact_mod_cast hnat
-
-theorem maxMantissa_lt_mantissaBound (fmt : P12RadixFormat) :
-    fmt.maxMantissa < fmt.mantissaBound := by
-  have hbeta_pos : 0 < fmt.beta :=
-    lt_of_lt_of_le (by decide : 0 < 2) fmt.beta_ge_two
-  have hpow_pos : 0 < fmt.beta ^ fmt.precision := pow_pos hbeta_pos _
-  have hnat : fmt.beta ^ fmt.precision - 1 < fmt.beta ^ fmt.precision := by
-    omega
-  have hreal :
-      ((fmt.beta ^ fmt.precision - 1 : ℕ) : ℝ) <
-        ((fmt.beta ^ fmt.precision : ℕ) : ℝ) := by
-    exact_mod_cast hnat
-  simpa [maxMantissa, mantissaBound, betaR] using hreal
 
 end P12RadixFormat
 
@@ -2209,41 +2144,6 @@ theorem p12IntegerMultiple_sub
   rw [hkx, hky, Int.cast_sub]
   ring
 
-/-- Products multiply their radix scales. -/
-theorem p12IntegerMultiple_mul
-    {fmt : P12RadixFormat} {x y : ℝ} {e f : ℤ}
-    (hx : p12IntegerMultiple fmt x e)
-    (hy : p12IntegerMultiple fmt y f) :
-    p12IntegerMultiple fmt (x * y) (e + f) := by
-  rcases hx with ⟨kx, hkx⟩
-  rcases hy with ⟨ky, hky⟩
-  refine ⟨kx * ky, ?_⟩
-  rw [hkx, hky, Int.cast_mul, fmt.scale_add]
-  ring
-
-/-- A multiple of a coarser radix scale is also a multiple of every finer
-radix scale. -/
-theorem p12IntegerMultiple_of_le
-    {fmt : P12RadixFormat} {x : ℝ} {e f : ℤ}
-    (hef : e ≤ f) (hx : p12IntegerMultiple fmt x f) :
-    p12IntegerMultiple fmt x e := by
-  rcases hx with ⟨k, hk⟩
-  let d : ℕ := (f - e).toNat
-  have hdiff_nonneg : 0 ≤ f - e := sub_nonneg.mpr hef
-  have hd : (d : ℤ) = f - e := Int.toNat_of_nonneg hdiff_nonneg
-  refine ⟨k * (fmt.beta : ℤ) ^ d, ?_⟩
-  calc
-    x = (k : ℝ) * fmt.scale f := hk
-    _ = (k : ℝ) * (fmt.scale e * fmt.betaR ^ d) := by
-      rw [P12RadixFormat.scale, P12RadixFormat.scale]
-      have hexp : f = e + (d : ℤ) := by omega
-      rw [hexp, zpow_add₀ (ne_of_gt fmt.betaR_pos), zpow_natCast]
-    _ = ((k * (fmt.beta : ℤ) ^ d : ℤ) : ℝ) * fmt.scale e := by
-      simp only [Int.cast_mul, Int.cast_pow, Int.cast_natCast]
-      change (k : ℝ) * (fmt.scale e * ((fmt.beta : ℝ) ^ d)) =
-        (k : ℝ) * ((fmt.beta : ℝ) ^ d) * fmt.scale e
-      ring
-
 namespace P12Representation
 
 theorem abs_lt_mantissaBound_mul_scale
@@ -2259,83 +2159,7 @@ theorem abs_lt_mantissaBound_mul_scale
     _ < fmt.mantissaBound * fmt.scale r.exponent :=
       mul_lt_mul_of_pos_right hm (fmt.scale_pos r.exponent)
 
-theorem abs_le_maxValue
-    {fmt : P12RadixFormat} {x : ℝ} (r : P12Representation fmt x) :
-    |x| ≤ fmt.maxValue := by
-  have hbeta_pos : 0 < fmt.beta :=
-    lt_of_lt_of_le (by decide : 0 < 2) fmt.beta_ge_two
-  have hbound_nat_pos : 0 < fmt.beta ^ fmt.precision := pow_pos hbeta_pos _
-  have hupper_int : r.mantissa < (fmt.beta ^ fmt.precision : ℕ) := by
-    have hupper_real :
-        (r.mantissa : ℝ) < (fmt.beta ^ fmt.precision : ℕ) := by
-      simpa [P12RadixFormat.mantissaBound,
-        P12RadixFormat.betaR] using r.mantissa_upper
-    exact_mod_cast hupper_real
-  have hlower_int : -((fmt.beta ^ fmt.precision : ℕ) : ℤ) < r.mantissa := by
-    have hlower_real :
-        -((fmt.beta ^ fmt.precision : ℕ) : ℝ) < (r.mantissa : ℝ) := by
-      simpa [P12RadixFormat.mantissaBound,
-        P12RadixFormat.betaR] using r.mantissa_lower
-    exact_mod_cast hlower_real
-  have habs_int : |r.mantissa| ≤
-      ((fmt.beta ^ fmt.precision - 1 : ℕ) : ℤ) := by
-    rw [abs_le]
-    constructor <;> omega
-  have habs_mantissa : |(r.mantissa : ℝ)| ≤ fmt.maxMantissa := by
-    have habs_cast :
-        (|r.mantissa| : ℝ) ≤
-          (((fmt.beta ^ fmt.precision - 1 : ℕ) : ℤ) : ℝ) := by
-      exact_mod_cast habs_int
-    simpa [P12RadixFormat.maxMantissa] using habs_cast
-  have hscale : fmt.scale r.exponent ≤ fmt.scale fmt.emax :=
-    fmt.scale_mono r.exponent_upper
-  calc
-    |x| = |(r.mantissa : ℝ) * fmt.scale r.exponent| :=
-      congrArg abs r.value_eq
-    _ = |(r.mantissa : ℝ)| * fmt.scale r.exponent := by
-      rw [abs_mul, abs_of_pos (fmt.scale_pos r.exponent)]
-    _ ≤ fmt.maxMantissa * fmt.scale r.exponent :=
-      mul_le_mul_of_nonneg_right habs_mantissa (fmt.scale_pos _).le
-    _ ≤ fmt.maxMantissa * fmt.scale fmt.emax :=
-      mul_le_mul_of_nonneg_left hscale fmt.maxMantissa_nonneg
-    _ = fmt.maxValue := rfl
-
 end P12Representation
-
-/-- The positive finite endpoint of equation (1). -/
-noncomputable def p12PositiveMaxRepresentation (fmt : P12RadixFormat) :
-    P12Representation fmt fmt.maxValue where
-  mantissa := (fmt.beta ^ fmt.precision - 1 : ℕ)
-  exponent := fmt.emax
-  mantissa_lower := by
-    have hnonneg : (0 : ℝ) ≤ fmt.maxMantissa := fmt.maxMantissa_nonneg
-    have hbound := fmt.mantissaBound_pos
-    simpa [P12RadixFormat.maxMantissa] using (show
-      -fmt.mantissaBound < fmt.maxMantissa by linarith)
-  mantissa_upper := by
-    simpa [P12RadixFormat.maxMantissa] using fmt.maxMantissa_lt_mantissaBound
-  exponent_lower := fmt.emin_le_emax
-  exponent_upper := le_rfl
-  value_eq := by
-    simp [P12RadixFormat.maxValue, P12RadixFormat.maxMantissa]
-
-/-- The negative finite endpoint of equation (1). -/
-noncomputable def p12NegativeMaxRepresentation (fmt : P12RadixFormat) :
-    P12Representation fmt (-fmt.maxValue) where
-  mantissa := -((fmt.beta ^ fmt.precision - 1 : ℕ) : ℤ)
-  exponent := fmt.emax
-  mantissa_lower := by
-    simpa [P12RadixFormat.maxMantissa] using
-      neg_lt_neg fmt.maxMantissa_lt_mantissaBound
-  mantissa_upper := by
-    have hnonneg : (0 : ℝ) ≤ fmt.maxMantissa := fmt.maxMantissa_nonneg
-    have hbound := fmt.mantissaBound_pos
-    simpa [P12RadixFormat.maxMantissa] using (show
-      -fmt.maxMantissa < fmt.mantissaBound by linarith)
-  exponent_lower := fmt.emin_le_emax
-  exponent_upper := le_rfl
-  value_eq := by
-    simp [P12RadixFormat.maxValue, P12RadixFormat.maxMantissa]
 
 /-- Nearest rounding into the concrete radix set from equation (1). -/
 def p12NearestInFormat (fmt : P12RadixFormat) (exact rounded : ℝ) : Prop :=
@@ -2399,22 +2223,6 @@ theorem p12NearestInFormat_abs_le_of_symmetric_candidates
     linarith
   exact (abs_le).2 ⟨hroundLower, hroundUpper⟩
 
-/-- Nearest rounding is faithful, independently of tie breaking. -/
-theorem p12NearestInFormat_faithful
-    {fmt : P12RadixFormat} {exact rounded : ℝ}
-    (h : p12NearestInFormat fmt exact rounded) :
-    p12FaithfulInFormat fmt exact rounded := by
-  refine ⟨h.1, ?_⟩
-  intro candidate hcandidate hbetween
-  have hminimal := h.2 candidate hcandidate
-  rcases hbetween with hbetween | hbetween
-  · rw [abs_of_nonneg (by linarith : 0 ≤ exact - rounded),
-      abs_of_nonneg (by linarith : 0 ≤ exact - candidate)] at hminimal
-    linarith
-  · rw [abs_of_nonpos (by linarith : exact - rounded ≤ 0),
-      abs_of_nonpos (by linarith : exact - candidate ≤ 0)] at hminimal
-    linarith
-
 theorem p12FaithfulInFormat_mem
     {fmt : P12RadixFormat} {exact rounded : ℝ}
     (h : p12FaithfulInFormat fmt exact rounded) :
@@ -2434,9 +2242,7 @@ theorem p12FaithfulInFormat_eq_of_representable
 /-- The elementary radix-grid facts used in Theorem 2's three-case proof.
 Each field is a general consequence of equation (1), independent of a
 particular FastTwoSum execution.  The bounded addition/subtraction fields are
-the representability content of equation (8) and its addition analogue; their
-range obligations are derived from an available larger exponent or a strict
-magnitude bound rather than attached to an execution. -/
+the representability content of equation (8) and its addition analogue. -/
 structure P12RadixGeometry (fmt : P12RadixFormat) : Prop where
   representation_at_or_below_of_abs_lt :
     ∀ {x y : ℝ} (rx : P12Representation fmt x),
@@ -2446,7 +2252,7 @@ structure P12RadixGeometry (fmt : P12RadixFormat) : Prop where
   add_representation_of_bound :
     ∀ {a b : ℝ} (ra : P12Representation fmt a)
       (rb : P12Representation fmt b),
-      min ra.exponent rb.exponent < fmt.emax →
+      fmt.noOverflow (a + b) →
       |a + b| ≤
         fmt.mantissaBound * fmt.scale (min ra.exponent rb.exponent) →
       ∃ rsum : P12Representation fmt (a + b),
@@ -2454,35 +2260,28 @@ structure P12RadixGeometry (fmt : P12RadixFormat) : Prop where
   sub_representation_of_bound :
     ∀ {a b : ℝ} (ra : P12Representation fmt a)
       (rb : P12Representation fmt b),
-      min ra.exponent rb.exponent < fmt.emax →
+      fmt.noOverflow (a - b) →
       |a - b| ≤
         fmt.mantissaBound * fmt.scale (min ra.exponent rb.exponent) →
       ∃ rdiff : P12Representation fmt (a - b),
         min ra.exponent rb.exponent ≤ rdiff.exponent
-  sub_representation_of_strict_bound :
-    ∀ {a b : ℝ} (ra : P12Representation fmt a)
-      (rb : P12Representation fmt b),
-      |a - b| <
-        fmt.mantissaBound * fmt.scale (min ra.exponent rb.exponent) →
-      ∃ rdiff : P12Representation fmt (a - b),
-        rdiff.exponent = min ra.exponent rb.exponent
   same_exponent_nearest_add :
     ∀ {x y s : ℝ} (rx : P12Representation fmt x)
       (ry : P12Representation fmt y),
       rx.exponent = ry.exponent →
       |y| ≤
-        fmt.condition7Ceiling * fmt.scale rx.exponent →
-      rx.exponent < fmt.emax →
+        (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale rx.exponent →
+      fmt.noOverflow (x + y) →
       p12NearestInFormat fmt (x + y) s →
       ∃ rs : P12Representation fmt s,
         rx.exponent ≤ rs.exponent ∧
-          |s - (x + y)| ≤
-            fmt.halfRadixFloor * fmt.scale rx.exponent
+          |s - (x + y)| ≤ fmt.betaR / 2 * fmt.scale rx.exponent
   large_sum_nearest_exponent :
     ∀ {x y s : ℝ} (rx : P12Representation fmt x)
       (ry : P12Representation fmt y),
       ry.exponent < rx.exponent →
       fmt.mantissaBound * fmt.scale ry.exponent < |x + y| →
+      fmt.noOverflow (x + y) →
       p12NearestInFormat fmt (x + y) s →
       ∃ rs : P12Representation fmt s, ry.exponent < rs.exponent
 
@@ -2654,34 +2453,8 @@ private theorem representation_of_integer_multiple_of_bound
     have heplus : e + 1 ≤ fmt.emax := by
       by_contra hnot
       have heeq : e = fmt.emax := by omega
-      rw [P12RadixFormat.noOverflow, habs, heeq,
-        P12RadixFormat.maxValue] at hno
-      nlinarith [fmt.maxMantissa_add_one, fmt.scale_pos fmt.emax]
-    have hendpoint_nonneg :
-        0 ≤ fmt.mantissaBound * fmt.scale e :=
-      (mul_pos fmt.mantissaBound_pos (fmt.scale_pos e)).le
-    rcases (abs_eq hendpoint_nonneg).mp habs with hzpos | hzneg
-    · rw [hzpos]
-      refine ⟨positive_boundary_representation fmt e hemin heplus, ?_⟩
-      change e ≤ e + 1
-      omega
-    · rw [hzneg]
-      refine ⟨negative_boundary_representation fmt e hemin heplus, ?_⟩
-      change e ≤ e + 1
-      omega
-
-private theorem representation_of_integer_multiple_of_bound_of_exponent_lt
-    {fmt : P12RadixFormat} {z : ℝ} {e : ℤ}
-    (hemin : fmt.emin ≤ e) (helt : e < fmt.emax)
-    (k : ℤ) (hz : z = (k : ℝ) * fmt.scale e)
-    (hbound : |z| ≤ fmt.mantissaBound * fmt.scale e) :
-    ∃ rz : P12Representation fmt z, e ≤ rz.exponent := by
-  by_cases hstrict : |z| < fmt.mantissaBound * fmt.scale e
-  · exact ⟨representation_of_integer_multiple_of_abs_lt
-      hemin helt.le k hz hstrict, le_rfl⟩
-  · have habs : |z| = fmt.mantissaBound * fmt.scale e :=
-      le_antisymm hbound (le_of_not_gt hstrict)
-    have heplus : e + 1 ≤ fmt.emax := by omega
+      rw [P12RadixFormat.noOverflow, ← heeq, habs] at hno
+      exact (lt_irrefl _ hno)
     have hendpoint_nonneg :
         0 ≤ fmt.mantissaBound * fmt.scale e :=
       (mul_pos fmt.mantissaBound_pos (fmt.scale_pos e)).le
@@ -2723,117 +2496,10 @@ theorem p12IntegerMultiple_of_representation_at
     p12IntegerMultiple fmt x e := by
   exact representation_integer_multiple_at r he
 
-/-- Nearest rounding of an in-range value preserves every radix grid on which
-the exact value lies.  This is the reusable no-range-clipping fact needed by
-the Section 4 applications. -/
-theorem p12NearestInFormat_integerMultiple
-    {fmt : P12RadixFormat} {exact rounded : ℝ} {e : ℤ}
-    (hgrid : p12IntegerMultiple fmt exact e)
-    (hno : fmt.noOverflow exact)
-    (hround : p12NearestInFormat fmt exact rounded) :
-    p12IntegerMultiple fmt rounded e := by
-  rcases hround.1 with ⟨rr⟩
-  by_cases helow : e < fmt.emin
-  · exact p12IntegerMultiple_of_le
-      (le_trans helow.le rr.exponent_lower)
-      (p12IntegerMultiple_of_representation_at rr le_rfl)
-  · have hemin : fmt.emin ≤ e := le_of_not_gt helow
-    by_cases hehigh : e ≤ fmt.emax
-    · by_cases hsmall :
-          |exact| < fmt.mantissaBound * fmt.scale e
-      · rcases p12Representation_exists_of_integerMultiple_of_abs_lt
-            hemin hehigh hgrid hsmall with ⟨rexact, _⟩
-        have hrounded : rounded = exact :=
-          p12NearestInFormat_eq_of_representable ⟨rexact⟩ hround
-        rw [hrounded]
-        exact hgrid
-      · have hlarge :
-            fmt.mantissaBound * fmt.scale e ≤ |exact| :=
-          le_of_not_gt hsmall
-        have helt : e < fmt.emax := by
-          by_contra hnot
-          have heq : e = fmt.emax := le_antisymm hehigh (le_of_not_gt hnot)
-          rw [P12RadixFormat.noOverflow,
-            P12RadixFormat.maxValue] at hno
-          rw [heq] at hlarge
-          nlinarith [fmt.maxMantissa_add_one,
-            fmt.scale_pos fmt.emax]
-        have hre : e ≤ rr.exponent := by
-          by_contra hnot
-          have hrlt : rr.exponent < e := lt_of_not_ge hnot
-          have hsucc : rr.exponent + 1 ≤ e := by omega
-          have hscaleStep :
-              fmt.scale (rr.exponent + 1) ≤ fmt.scale e :=
-            fmt.scale_mono hsucc
-          have hbetaTwo : (2 : ℝ) ≤ fmt.betaR := by
-            change (2 : ℝ) ≤ (fmt.beta : ℝ)
-            exact_mod_cast fmt.beta_ge_two
-          have hscaleTwo :
-              2 * fmt.scale rr.exponent ≤ fmt.scale e := by
-            rw [fmt.scale_succ] at hscaleStep
-            nlinarith [fmt.scale_pos rr.exponent]
-          have hroundedSmall :
-              |rounded| <
-                fmt.mantissaBound / 2 * fmt.scale e := by
-            have hrr := rr.abs_lt_mantissaBound_mul_scale
-            have hboundPos := fmt.mantissaBound_pos
-            nlinarith
-          let endpoint := fmt.mantissaBound * fmt.scale e
-          have hendpointPos : 0 < endpoint :=
-            mul_pos fmt.mantissaBound_pos (fmt.scale_pos e)
-          have hhalfEndpoint :
-              fmt.mantissaBound / 2 * fmt.scale e = endpoint / 2 := by
-            dsimp [endpoint]
-            ring
-          have hroundedUpper : rounded < endpoint := by
-            have := le_abs_self rounded
-            rw [hhalfEndpoint] at hroundedSmall
-            nlinarith
-          have hroundedLower : -endpoint < rounded := by
-            have := neg_abs_le rounded
-            rw [hhalfEndpoint] at hroundedSmall
-            nlinarith
-          by_cases hexactNonneg : 0 ≤ exact
-          · have hpositive : endpoint ≤ exact := by
-              simpa [endpoint, abs_of_nonneg hexactNonneg] using hlarge
-            have hcandidate : p12Representable fmt endpoint :=
-              ⟨positive_boundary_representation fmt e hemin (by omega)⟩
-            have hminimal := hround.2 endpoint hcandidate
-            rw [abs_of_nonneg (by linarith : 0 ≤ exact - rounded),
-              abs_of_nonneg (by linarith : 0 ≤ exact - endpoint)] at hminimal
-            linarith
-          · have hexactNeg : exact < 0 := lt_of_not_ge hexactNonneg
-            have hnegative : exact ≤ -endpoint := by
-              rw [abs_of_neg hexactNeg] at hlarge
-              dsimp [endpoint]
-              linarith
-            have hcandidate : p12Representable fmt (-endpoint) :=
-              ⟨negative_boundary_representation fmt e hemin (by omega)⟩
-            have hminimal := hround.2 (-endpoint) hcandidate
-            rw [abs_of_nonpos (by linarith : exact - rounded ≤ 0),
-              abs_of_nonpos (by linarith : exact - -endpoint ≤ 0)] at hminimal
-            linarith
-        exact p12IntegerMultiple_of_representation_at rr hre
-    · have hemax : fmt.emax ≤ e := by omega
-      have hgridMax : p12IntegerMultiple fmt exact fmt.emax :=
-        p12IntegerMultiple_of_le hemax hgrid
-      have hstrict :
-          |exact| < fmt.mantissaBound * fmt.scale fmt.emax := by
-        rw [P12RadixFormat.noOverflow,
-          P12RadixFormat.maxValue] at hno
-        nlinarith [fmt.maxMantissa_add_one,
-          fmt.scale_pos fmt.emax]
-      rcases p12Representation_exists_of_integerMultiple_of_abs_lt
-          fmt.emin_le_emax le_rfl hgridMax hstrict with ⟨rexact, _⟩
-      have hrounded : rounded = exact :=
-        p12NearestInFormat_eq_of_representable ⟨rexact⟩ hround
-      rw [hrounded]
-      exact hgrid
-
 private theorem add_representation_of_bound
     {fmt : P12RadixFormat} {a b : ℝ}
     (ra : P12Representation fmt a) (rb : P12Representation fmt b)
-    (helt : min ra.exponent rb.exponent < fmt.emax)
+    (hno : fmt.noOverflow (a + b))
     (hbound : |a + b| ≤
       fmt.mantissaBound * fmt.scale (min ra.exponent rb.exponent)) :
     ∃ rsum : P12Representation fmt (a + b),
@@ -2847,15 +2513,16 @@ private theorem add_representation_of_bound
     rw [hka, hkb]
     simp only [Int.cast_add]
     ring
-  apply representation_of_integer_multiple_of_bound_of_exponent_lt
+  apply representation_of_integer_multiple_of_bound
     (le_min ra.exponent_lower rb.exponent_lower)
-    helt (ka + kb) hz
+    (le_trans (min_le_left _ _) ra.exponent_upper)
+    (ka + kb) hz hno
   simpa [e] using hbound
 
 private theorem sub_representation_of_bound
     {fmt : P12RadixFormat} {a b : ℝ}
     (ra : P12Representation fmt a) (rb : P12Representation fmt b)
-    (helt : min ra.exponent rb.exponent < fmt.emax)
+    (hno : fmt.noOverflow (a - b))
     (hbound : |a - b| ≤
       fmt.mantissaBound * fmt.scale (min ra.exponent rb.exponent)) :
     ∃ rdiff : P12Representation fmt (a - b),
@@ -2869,45 +2536,29 @@ private theorem sub_representation_of_bound
     rw [hka, hkb]
     simp only [Int.cast_sub]
     ring
-  apply representation_of_integer_multiple_of_bound_of_exponent_lt
-    (le_min ra.exponent_lower rb.exponent_lower)
-    helt (ka - kb) hz
-  simpa [e] using hbound
-
-private theorem sub_representation_of_strict_bound
-    {fmt : P12RadixFormat} {a b : ℝ}
-    (ra : P12Representation fmt a) (rb : P12Representation fmt b)
-    (hbound : |a - b| <
-      fmt.mantissaBound * fmt.scale (min ra.exponent rb.exponent)) :
-    ∃ rdiff : P12Representation fmt (a - b),
-      rdiff.exponent = min ra.exponent rb.exponent := by
-  let e := min ra.exponent rb.exponent
-  rcases representation_integer_multiple_at ra (min_le_left _ _) with
-    ⟨ka, hka⟩
-  rcases representation_integer_multiple_at rb (min_le_right _ _) with
-    ⟨kb, hkb⟩
-  have hz : a - b = ((ka - kb : ℤ) : ℝ) * fmt.scale e := by
-    rw [hka, hkb]
-    simp only [Int.cast_sub]
-    ring
-  let rdiff := representation_of_integer_multiple_of_abs_lt
+  apply representation_of_integer_multiple_of_bound
     (le_min ra.exponent_lower rb.exponent_lower)
     (le_trans (min_le_left _ _) ra.exponent_upper)
-    (ka - kb) hz (by simpa [e] using hbound)
-  exact ⟨rdiff, rfl⟩
+    (ka - kb) hz hno
+  simpa [e] using hbound
 
 private theorem large_sum_nearest_exponent
     {fmt : P12RadixFormat} {x y s : ℝ}
     (rx : P12Representation fmt x) (ry : P12Representation fmt y)
-    (hryx : ry.exponent < rx.exponent)
+    (_hryx : ry.exponent < rx.exponent)
     (hlarge : fmt.mantissaBound * fmt.scale ry.exponent < |x + y|)
+    (hno : fmt.noOverflow (x + y))
     (hnearest : p12NearestInFormat fmt (x + y) s) :
     ∃ rs : P12Representation fmt s, ry.exponent < rs.exponent := by
   let endpoint := fmt.mantissaBound * fmt.scale ry.exponent
   have hendpoint_pos : 0 < endpoint :=
     mul_pos fmt.mantissaBound_pos (fmt.scale_pos ry.exponent)
   have heplus : ry.exponent + 1 ≤ fmt.emax := by
-    exact le_trans (by omega) rx.exponent_upper
+    by_contra hnot
+    have hry_upper := ry.exponent_upper
+    have heeq : ry.exponent = fmt.emax := by omega
+    rw [P12RadixFormat.noOverflow, ← heeq] at hno
+    exact (not_lt_of_ge hlarge.le hno)
   have hs_endpoint : endpoint ≤ |s| := by
     have htriangle : |x + y| ≤ |(x + y) - s| + |s| := by
       calc
@@ -2957,30 +2608,27 @@ private theorem same_exponent_nearest_add
     (rx : P12Representation fmt x) (ry : P12Representation fmt y)
     (hsame : rx.exponent = ry.exponent)
     (hcondition : |y| ≤
-      fmt.condition7Ceiling * fmt.scale rx.exponent)
-    (hexponent_lt : rx.exponent < fmt.emax)
+      (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale rx.exponent)
+    (hno : fmt.noOverflow (x + y))
     (hnearest : p12NearestInFormat fmt (x + y) s) :
     ∃ rs : P12Representation fmt s,
       rx.exponent ≤ rs.exponent ∧
-        |s - (x + y)| ≤
-          fmt.halfRadixFloor * fmt.scale rx.exponent := by
+        |s - (x + y)| ≤ fmt.betaR / 2 * fmt.scale rx.exponent := by
   let z := x + y
   let e := rx.exponent
   have hscale_pos : 0 < fmt.scale e := fmt.scale_pos e
   have hx_abs := rx.abs_lt_mantissaBound_mul_scale
   have hz_upper :
-      |z| < (fmt.mantissaBound + fmt.condition7Ceiling) *
-        fmt.scale e := by
+      |z| < (2 * fmt.mantissaBound - fmt.betaR / 2) * fmt.scale e := by
     calc
       |z| ≤ |x| + |y| := by
         simpa [z] using abs_add_le x y
       _ < fmt.mantissaBound * fmt.scale e + |y| := by
         nlinarith
       _ ≤ fmt.mantissaBound * fmt.scale e +
-          fmt.condition7Ceiling * fmt.scale e := by
+          (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale e := by
         nlinarith
-      _ = (fmt.mantissaBound + fmt.condition7Ceiling) *
-          fmt.scale e := by
+      _ = (2 * fmt.mantissaBound - fmt.betaR / 2) * fmt.scale e := by
         ring
   by_cases hsmall : |z| ≤ fmt.mantissaBound * fmt.scale e
   · have hmin : min rx.exponent ry.exponent = e := by
@@ -2989,9 +2637,7 @@ private theorem same_exponent_nearest_add
         fmt.mantissaBound *
           fmt.scale (min rx.exponent ry.exponent) := by
       simpa [z, hmin] using hsmall
-    have hmin_lt : min rx.exponent ry.exponent < fmt.emax := by
-      simpa [hmin, e] using hexponent_lt
-    rcases add_representation_of_bound rx ry hmin_lt hbound with
+    rcases add_representation_of_bound rx ry hno hbound with
       ⟨rsum, hrsum⟩
     have hs : s = x + y :=
       p12NearestInFormat_eq_of_representable ⟨rsum⟩ hnearest
@@ -2999,13 +2645,16 @@ private theorem same_exponent_nearest_add
     refine ⟨rsum, ?_, ?_⟩
     · simpa [e, hmin] using hrsum
     · simp
-      exact mul_nonneg (by
-        simp [P12RadixFormat.halfRadixFloor])
+      exact mul_nonneg (div_nonneg fmt.betaR_pos.le (by norm_num))
         (fmt.scale_pos rx.exponent).le
   · have hlarge : fmt.mantissaBound * fmt.scale e < |z| :=
       lt_of_not_ge hsmall
     have heplus : e + 1 ≤ fmt.emax := by
-      simpa [e] using hexponent_lt
+      by_contra hnot
+      have he_upper := rx.exponent_upper
+      have heeq : e = fmt.emax := by omega
+      rw [P12RadixFormat.noOverflow, ← heeq] at hno
+      exact (not_lt_of_ge hlarge.le hno)
     rcases representation_integer_multiple_at rx (by
       change rx.exponent ≤ rx.exponent
       exact le_rfl) with
@@ -3020,7 +2669,7 @@ private theorem same_exponent_nearest_add
       simp only [k, Int.cast_add]
       ring
     have hk_upper : |(k : ℝ)| <
-        fmt.mantissaBound + fmt.condition7Ceiling := by
+        2 * fmt.mantissaBound - fmt.betaR / 2 := by
       rw [hz_mul, abs_mul, abs_of_pos hscale_pos] at hz_upper
       nlinarith
     let n : ℤ := round ((k : ℝ) / fmt.betaR)
@@ -3040,47 +2689,27 @@ private theorem same_exponent_nearest_add
             |(k : ℝ)| / fmt.betaR := by
           rw [abs_neg, abs_div, abs_of_pos fmt.betaR_pos]
     have hk_div : |(k : ℝ)| / fmt.betaR <
-        (fmt.mantissaBound + fmt.condition7Ceiling) / fmt.betaR :=
+        (2 * fmt.mantissaBound - fmt.betaR / 2) / fmt.betaR :=
       div_lt_div_of_pos_right hk_upper fmt.betaR_pos
-    have hcoefficient_le :
-        fmt.condition7Ceiling ≤ fmt.mantissaBound - 1 := by
-      nlinarith [fmt.halfRadixFloor_add_condition7Ceiling,
-        fmt.one_le_halfRadixFloor]
-    have hn_pre : |(n : ℝ)| <
-        1 / 2 + (2 * fmt.mantissaBound - 1) / fmt.betaR := by
+    have hn_pre : |(n : ℝ)| < 2 * fmt.mantissaBound / fmt.betaR := by
       calc
         |(n : ℝ)| ≤
             |(k : ℝ) / fmt.betaR - (n : ℝ)| +
               |(k : ℝ)| / fmt.betaR := hn_triangle
         _ ≤ 1 / 2 + |(k : ℝ)| / fmt.betaR := by linarith
         _ < 1 / 2 +
-            (fmt.mantissaBound + fmt.condition7Ceiling) /
-              fmt.betaR := by
+            (2 * fmt.mantissaBound - fmt.betaR / 2) / fmt.betaR := by
           linarith
-        _ ≤ 1 / 2 + (2 * fmt.mantissaBound - 1) / fmt.betaR := by
-          have hquot :
-              (fmt.mantissaBound + fmt.condition7Ceiling) / fmt.betaR ≤
-                (2 * fmt.mantissaBound - 1) / fmt.betaR :=
-            (div_le_div_iff_of_pos_right fmt.betaR_pos).2 (by linarith)
-          linarith
+        _ = 2 * fmt.mantissaBound / fmt.betaR := by
+          field_simp [ne_of_gt fmt.betaR_pos]
+          ring
     have htwo : (2 : ℝ) ≤ fmt.betaR := by
       change (2 : ℝ) ≤ (fmt.beta : ℝ)
       exact_mod_cast fmt.beta_ge_two
-    have hshift_nonneg :
-        0 ≤ (fmt.betaR - 2) * (fmt.mantissaBound - 1 / 2) := by
-      exact mul_nonneg (sub_nonneg.mpr htwo) (by
-        have hbound_one : (1 : ℝ) ≤ fmt.mantissaBound :=
-          le_trans fmt.betaR_one_le fmt.betaR_le_mantissaBound
-        linarith)
     have htwo_bound :
-        1 / 2 + (2 * fmt.mantissaBound - 1) / fmt.betaR ≤
-          fmt.mantissaBound := by
-      rw [show 1 / 2 + (2 * fmt.mantissaBound - 1) / fmt.betaR =
-          (fmt.betaR / 2 + 2 * fmt.mantissaBound - 1) / fmt.betaR by
-        field_simp [ne_of_gt fmt.betaR_pos]
-        ring]
+        2 * fmt.mantissaBound / fmt.betaR ≤ fmt.mantissaBound := by
       rw [div_le_iff₀ fmt.betaR_pos]
-      nlinarith
+      nlinarith [fmt.mantissaBound_pos]
     have hn_bound : |(n : ℝ)| < fmt.mantissaBound :=
       lt_of_lt_of_le hn_pre htwo_bound
     let candidate := (n : ℝ) * fmt.scale (e + 1)
@@ -3093,8 +2722,7 @@ private theorem same_exponent_nearest_add
       representation_of_integer_multiple_of_abs_lt
         (le_trans rx.exponent_lower (by omega)) heplus n rfl hcand_bound
     have hscaled_round :
-        |(k : ℝ) - (n : ℝ) * fmt.betaR| ≤
-          fmt.halfRadixFloor := by
+        |(k : ℝ) - (n : ℝ) * fmt.betaR| ≤ fmt.betaR / 2 := by
       have hmul := mul_le_mul_of_nonneg_left hround fmt.betaR_pos.le
       have hrewrite :
           fmt.betaR *
@@ -3112,52 +2740,9 @@ private theorem same_exponent_nearest_add
             congr 1
             field_simp [ne_of_gt fmt.betaR_pos]
       rw [hrewrite] at hmul
-      have hraw :
-          |(k : ℝ) - (n : ℝ) * fmt.betaR| ≤ fmt.betaR / 2 := by
-        nlinarith
-      let d : ℤ := k - n * (fmt.beta : ℤ)
-      have hd_cast :
-          (d : ℝ) = (k : ℝ) - (n : ℝ) * fmt.betaR := by
-        simp [d, P12RadixFormat.betaR]
-      have hd_upper_real : (d : ℝ) < fmt.halfRadixFloor + 1 := by
-        calc
-          (d : ℝ) ≤ |(d : ℝ)| := le_abs_self _
-          _ = |(k : ℝ) - (n : ℝ) * fmt.betaR| := by rw [hd_cast]
-          _ ≤ fmt.betaR / 2 := hraw
-          _ < fmt.halfRadixFloor + 1 := fmt.half_lt_halfRadixFloor_add_one
-      have hd_lower_real : -(fmt.halfRadixFloor + 1) < (d : ℝ) := by
-        calc
-          -(fmt.halfRadixFloor + 1) < -(fmt.betaR / 2) := by
-            linarith [fmt.half_lt_halfRadixFloor_add_one]
-          _ ≤ -|(d : ℝ)| := by
-            rw [hd_cast]
-            exact neg_le_neg hraw
-          _ ≤ (d : ℝ) := neg_abs_le _
-      have hd_upper_int : d ≤ (fmt.beta / 2 : ℕ) := by
-        have hd_upper_real' :
-            (d : ℝ) < (((fmt.beta / 2 : ℕ) : ℤ) : ℝ) + 1 := by
-          simpa [P12RadixFormat.halfRadixFloor] using hd_upper_real
-        have : d < ((fmt.beta / 2 : ℕ) : ℤ) + 1 := by
-          exact_mod_cast hd_upper_real'
-        omega
-      have hd_lower_int : -((fmt.beta / 2 : ℕ) : ℤ) ≤ d := by
-        have hd_lower_real' :
-            -((((fmt.beta / 2 : ℕ) : ℤ) : ℝ) + 1) < (d : ℝ) := by
-          simpa [P12RadixFormat.halfRadixFloor] using hd_lower_real
-        have : -(((fmt.beta / 2 : ℕ) : ℤ) + 1) < d := by
-          exact_mod_cast hd_lower_real'
-        omega
-      rw [← hd_cast]
-      have hd_lower_real' :
-          -((((fmt.beta / 2 : ℕ) : ℤ) : ℝ)) ≤ (d : ℝ) := by
-        exact_mod_cast hd_lower_int
-      have hd_upper_real' :
-          (d : ℝ) ≤ (((fmt.beta / 2 : ℕ) : ℤ) : ℝ) := by
-        exact_mod_cast hd_upper_int
-      have habs := abs_le.2 ⟨hd_lower_real', hd_upper_real'⟩
-      simpa [P12RadixFormat.halfRadixFloor] using habs
+      nlinarith
     have hcandidate_error :
-        |z - candidate| ≤ fmt.halfRadixFloor * fmt.scale e := by
+        |z - candidate| ≤ fmt.betaR / 2 * fmt.scale e := by
       rw [hz_mul, show candidate = (n : ℝ) * fmt.scale (e + 1) by rfl,
         fmt.scale_succ]
       have heq :
@@ -3168,15 +2753,14 @@ private theorem same_exponent_nearest_add
       rw [heq, abs_mul, abs_of_pos hscale_pos]
       exact mul_le_mul_of_nonneg_right hscaled_round hscale_pos.le
     have hnearest_error :
-        |z - s| ≤ fmt.halfRadixFloor * fmt.scale e :=
+        |z - s| ≤ fmt.betaR / 2 * fmt.scale e :=
       le_trans (hnearest.2 candidate ⟨rcandidate⟩) hcandidate_error
     have hs_lower :
-        fmt.condition7Ceiling * fmt.scale e < |s| := by
+        (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale e < |s| := by
       have htriangle : |z| ≤ |z - s| + |s| := by
         calc
           |z| = |(z - s) + s| := by congr 1 <;> ring
           _ ≤ |z - s| + |s| := abs_add_le _ _
-      rw [← fmt.halfRadixFloor_add_condition7Ceiling] at hlarge
       nlinarith
     rcases hnearest.1 with ⟨rs⟩
     have hrs_ge : e ≤ rs.exponent := by
@@ -3202,19 +2786,11 @@ private theorem same_exponent_nearest_add
             mul_le_mul_of_nonneg_left hscale_step hunit_nonneg
       have hthreshold :
           fmt.betaR ^ (fmt.precision - 1) * fmt.scale e ≤
-            fmt.condition7Ceiling * fmt.scale e :=
+            (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale e :=
         mul_le_mul_of_nonneg_right
-          (by
-            calc
-              fmt.betaR ^ (fmt.precision - 1) ≤
-                  fmt.mantissaBound - fmt.betaR / 2 :=
-                mantissaUnit_le_bound_sub_half fmt
-              _ ≤ fmt.condition7Ceiling := by
-                nlinarith [fmt.halfRadixFloor_add_condition7Ceiling,
-                  fmt.halfRadixFloor_le_half])
-          hscale_pos.le
+          (mantissaUnit_le_bound_sub_half fmt) hscale_pos.le
       have : |s| <
-          fmt.condition7Ceiling * fmt.scale e :=
+          (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale e :=
         lt_of_lt_of_le hrs_upper (le_trans hcoarse hthreshold)
       exact (not_lt_of_ge hs_lower.le this)
     refine ⟨rs, ?_, ?_⟩
@@ -3228,8 +2804,6 @@ theorem p12RadixGeometry (fmt : P12RadixFormat) :
     representation_at_or_below_of_abs_lt
   add_representation_of_bound := add_representation_of_bound
   sub_representation_of_bound := sub_representation_of_bound
-  sub_representation_of_strict_bound :=
-    sub_representation_of_strict_bound
   same_exponent_nearest_add := same_exponent_nearest_add
   large_sum_nearest_exponent := large_sum_nearest_exponent
 
@@ -3241,13 +2815,16 @@ structure P12FastTwoSumTrace where
 
 /-- One execution of the original three-operation FastTwoSum algorithm from
 the paper: nearest addition followed by two uses of the same faithful
-subtraction model.  Theorem 2 states no separate range premise; exactness and
-representability of both differences are consequences of condition (7). -/
+subtraction model.  Range validity makes equation (8)'s overflow qualification
+explicit without assuming either exact difference is representable. -/
 structure P12FastTwoSumExecution (fmt : P12RadixFormat)
     (x y : ℝ) (tr : P12FastTwoSumTrace) : Prop where
   add : p12NearestInFormat fmt (x + y) tr.s
   first_sub : p12FaithfulInFormat fmt (tr.s - x) tr.t
   second_sub : p12FaithfulInFormat fmt (y - tr.t) tr.e
+  add_no_overflow : fmt.noOverflow (x + y)
+  first_sub_no_overflow : fmt.noOverflow (tr.s - x)
+  second_sub_no_overflow : fmt.noOverflow (y - tr.t)
 
 /-- The values needed to state the exact ThreeProduct composition in Lemma 4. -/
 structure P12ThreeProductTrace where
@@ -3262,43 +2839,37 @@ structure P12ThreeProductTrace where
   r : ℝ
   s3 : ℝ
 
-/-- The observable meaning of "no underflow errors" for a delegated
-`TwoProduct` call in Lemma 4.  The transformation remains exact, a nonzero
-product is not rounded to zero, and the returned residual retains the product
-scale propagated by `FourSumThreeProduct`. -/
-def P12TwoProductNoUnderflowError
-    (fmt : P12RadixFormat) (left right high low : ℝ)
-    (productGrid : ℤ) : Prop :=
-  high + low = left * right ∧
-    (left * right ≠ 0 → high ≠ 0) ∧
-    |low| ≤ fmt.mantissaBound / 2 * fmt.scale productGrid
-
-/-- The concrete equation-(17) contract of one `TwoProduct` call.  `leftGrid`
-and `rightGrid` identify the residual scale propagated by the corresponding
-`FourSumThreeProduct` call; unlike the old contract, no operand or output grid
-is stored as an execution certificate. -/
+/-- The semantic contract of the `TwoProduct` subroutine used in equation (17).
+The exact decomposition is delegated background in Lemma 4.  The remaining
+fields expose its nearest product, local half-ULP error, radix-grid, and range
+properties so that the ThreeProduct proof cannot replace an execution with an
+arbitrary decomposition.  Product-grid range obligations are conditional on a
+nonzero exact product, preserving Lemma 4's trivial zero case. -/
 structure P12TwoProductExecution
     (fmt : P12RadixFormat) {left right : ℝ}
     (leftRep : P12LeastRepresentation fmt left)
     (rightRep : P12LeastRepresentation fmt right)
-    (leftGrid rightGrid : ℤ)
     (high low : ℝ) where
   highRep : P12LeastRepresentation fmt high
   lowRep : P12LeastRepresentation fmt low
   high_round : p12NearestInFormat fmt (left * right) high
-  no_underflow_error : P12TwoProductNoUnderflowError fmt
-    left right high low (leftGrid + rightGrid)
+  exact : high + low = left * right
   product_no_overflow : fmt.noOverflow (left * right)
+  product_grid_in_range : left * right ≠ 0 →
+    fmt.emin ≤ leftRep.exponent + rightRep.exponent ∧
+      leftRep.exponent + rightRep.exponent ≤ fmt.emax
+  high_nonzero : left * right ≠ 0 → high ≠ 0
   low_error : |low| ≤ (1 / 2) * fmt.scale highRep.exponent
-
-/-- The Section 4 instance of FastTwoSum: all three operations use nearest
-rounding.  The more general Theorem 2 execution remains available for the
-paper's faithful-subtraction result. -/
-structure P12NearestFastTwoSumExecution (fmt : P12RadixFormat)
-    (x y : ℝ) (tr : P12FastTwoSumTrace) : Prop where
-  add : p12NearestInFormat fmt (x + y) tr.s
-  first_sub : p12NearestInFormat fmt (tr.s - x) tr.t
-  second_sub : p12NearestInFormat fmt (y - tr.t) tr.e
+  high_envelope_candidates :
+    let bound :=
+      fmt.mantissaBound * fmt.scale leftRep.exponent * |right|
+    p12Representable fmt bound ∧ p12Representable fmt (-bound)
+  grid_preserving :
+    ∀ {leftExponent rightExponent : ℤ},
+      p12IntegerMultiple fmt left leftExponent →
+      p12IntegerMultiple fmt right rightExponent →
+      p12IntegerMultiple fmt high (leftExponent + rightExponent) ∧
+        p12IntegerMultiple fmt low (leftExponent + rightExponent)
 
 /-- The FastTwoSum trace formed by lines 1--2 of `ThreeProduct` after the three
 `TwoProduct` calls have produced the four-term expansion. -/
@@ -3308,30 +2879,33 @@ def P12ThreeProductTrace.mergeTrace
   t := tr.t
   e := tr.r
 
-/-- One execution of the paper's `ThreeProduct` procedure.  The propagated
-scales are exactly those in the proof of Lemma 4: the first product uses the
-input scales, and both following products use their sum.  Every arithmetic
-operation is nearest-rounded, and the explicit range fields are precisely
-Section 4's standing absence-of-overflow convention.  No exact merge, final
-representability, or target equality is stored in the execution. -/
+/-- One execution of the paper's `ThreeProduct` procedure.  The range witness
+for the middle addition states that nearest rounding is not clipped by an
+underflow or overflow boundary at the product grid.  Neither the exact merge
+nor representability of the final exact sum is assumed. -/
 structure P12ThreeProductExecution
     (fmt : P12RadixFormat) (x1 x2 x3 : ℝ)
     (tr : P12ThreeProductTrace) where
   x1Rep : P12LeastRepresentation fmt x1
   x2Rep : P12LeastRepresentation fmt x2
   x3Rep : P12LeastRepresentation fmt x3
-  first : P12TwoProductExecution fmt x2Rep x3Rep
-    x2Rep.exponent x3Rep.exponent tr.th tr.tl
-  second : P12TwoProductExecution fmt x1Rep first.highRep
-    x1Rep.exponent (x2Rep.exponent + x3Rep.exponent) tr.s1 tr.a2
-  third : P12TwoProductExecution fmt x1Rep first.lowRep
-    x1Rep.exponent (x2Rep.exponent + x3Rep.exponent) tr.a3 tr.a4
-  merge : P12NearestFastTwoSumExecution fmt tr.a2 tr.a3 tr.mergeTrace
-  merge_add_no_overflow : fmt.noOverflow (tr.a2 + tr.a3)
-  merge_first_sub_no_overflow : fmt.noOverflow (tr.s2 - tr.a2)
-  merge_second_sub_no_overflow : fmt.noOverflow (tr.a3 - tr.t)
+  first : P12TwoProductExecution fmt x2Rep x3Rep tr.th tr.tl
+  second : P12TwoProductExecution fmt x1Rep first.highRep tr.s1 tr.a2
+  third : P12TwoProductExecution fmt x1Rep first.lowRep tr.a3 tr.a4
+  merge : P12FastTwoSumExecution fmt tr.a2 tr.a3 tr.mergeTrace
+  merge_high_grid :
+    p12IntegerMultiple fmt tr.s2
+      (x1Rep.exponent + x2Rep.exponent + x3Rep.exponent)
+  merge_no_range_error :
+    ∃ candidate : ℝ, p12Representable fmt candidate ∧
+      |(tr.a2 + tr.a3) - candidate| ≤
+        fmt.mantissaBound / 2 *
+          fmt.scale (x1Rep.exponent + x2Rep.exponent + x3Rep.exponent)
   final_add : p12NearestInFormat fmt (tr.r + tr.a4) tr.s3
   final_no_overflow : fmt.noOverflow (tr.r + tr.a4)
+  triple_grid_in_range : x1 * x2 * x3 ≠ 0 →
+    fmt.emin ≤ x1Rep.exponent + x2Rep.exponent + x3Rep.exponent ∧
+      x1Rep.exponent + x2Rep.exponent + x3Rep.exponent ≤ fmt.emax
 
 end HighamBench
 ```

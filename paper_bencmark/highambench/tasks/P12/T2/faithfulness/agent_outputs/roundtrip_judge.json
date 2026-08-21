@@ -3,149 +3,156 @@
   "role": "roundtrip-judge",
   "task_id": "P12-T2",
   "paper_sha256": "0569d969cebaabe42de69fef10fa91002af12d62149af7485d0712414b53c2a1",
-  "blind_translation_sha256": "7893e6ed9cda7453e65ea06ec0285e91ac56e083e5ff660fccb796f0466f9569",
+  "blind_translation_sha256": "ef86fa99c6f60fbc3939e43df6180f461eafbbf30f2870a106e0ffdc8f48df5d",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The packet identifies Theorem 2 of the stated journal paper, with equation (1), the original FastTwoSum algorithm, equations (7)-(10), and the proof on PDF pages 2, 3, 5, and 6.",
-      "translation_evidence": "The translation concerns the arbitrary-radix finite format, three-stage FastTwoSum trace, representation-dependent size condition, nearest first rounding, faithful residual roundings, and exact reconstruction.",
-      "reasoning": "The selected result and surrounding passages match the mathematical subject translated."
+      "paper_evidence": "The inspected PDF has the supplied SHA-256 and contains Theorem 2 on printed pages 387-388, following the floating-point definitions and FastTwoSum algorithm on printed pages 384-385.",
+      "translation_evidence": "The translation targets the finite-radix FastTwoSum result with equation (7)'s size condition and the three computed trace components.",
+      "reasoning": "The selected version, theorem, equations, and surrounding definitions are the correct source for P12-T2."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "Theorem 2 uses scalar real floating-point inputs x and y in one radix-beta, precision-p format with integer representation exponents.",
-      "translation_evidence": "The translation quantifies a format with natural beta and p, integer exponent bounds, scalar reals x and y, and a real triple (s,t,e).",
-      "reasoning": "The scalar types, format parameters, trace fields, and absence of dimensions or sequence indices are preserved."
+      "paper_evidence": "Theorem 2 concerns scalar x,y in F and computed scalar values s,t,e in a format with radix beta, precision p, and finite integer exponent bounds.",
+      "translation_evidence": "The binders quantify one format, scalar real x and y, a three-real trace, representability proofs, a representation witness, and a run proof.",
+      "reasoning": "Representability predicates replace membership in F without changing the scalar types or dimensions, and the trace faithfully packages the three algorithm values."
     },
     {
       "id": "S03",
       "status": "pass",
-      "paper_evidence": "Equation (7) is existential over a feasible representation of x, and its exponent is the exponent of that selected representation.",
-      "translation_evidence": "The translation existentially selects a witness x=m_x beta^q_x and applies the size bound to that witness's q_x.",
-      "reasoning": "The nonunique representation witness and its dependent exponent remain within the correct existential scope."
+      "paper_evidence": "Theorem 2 requires that there be a representation of x whose representation-dependent exponent e(x) satisfies equation (7); Section 2 explicitly permits several exponents for one value.",
+      "translation_evidence": "The size hypothesis existentially selects one representation witness rx of x, and only that witness's exponent q is used in the bound.",
+      "reasoning": "The existential exponent witness, its dependence on x and the format, and the fact that the bound need hold for only one feasible representation are preserved."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "Theorem 2 assumes |y| <= ceil(beta^p-beta/2) beta^e(x), with nearest addition and faithful subtraction.",
-      "translation_evidence": "The translation assumes |y| <= (beta^p-beta/2) beta^q_x, omitting the ceiling, and includes explicit no-overflow premises in the admissible-run hypothesis.",
-      "reasoning": "The unceiled size hypothesis is strictly stronger for odd beta, so the hypothesis set does not match."
+      "status": "unclear",
+      "paper_evidence": "Theorem 2 explicitly assumes x,y in F, nearest addition, faithful subtraction, and equation (7). It states no separate overflow hypothesis, but equation (8), used for both exact-subtraction arguments, is expressly qualified by absence of overflow.",
+      "translation_evidence": "The translation includes the representability, format, size, nearest-addition, and faithful-subtraction conditions but contains no no-overflow antecedent.",
+      "reasoning": "All displayed hypotheses match, including 2<=beta, positive p, and the absence of an |x|>=|y| condition. It is nevertheless unclear whether absence of overflow is an inherited source hypothesis or is meant to follow from the theorem conditions."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "The theorem gives s+e=x+y and identifies s as the rounded sum; its proof establishes t=s-x and e=y-t, while equation (10) gives the addition-error property used.",
-      "translation_evidence": "The admissible-run premise identifies s as the nearest-rounded first result, and the conclusions assert t=s-x, e=y-t, s+e=x+y, and |s-(x+y)| <= |y|.",
-      "reasoning": "The explicit result and the proof-established exact residual properties are represented; the first-stage operation linkage is encoded by the run relation."
+      "paper_evidence": "Theorem 2 states s+e=x+y with s the rounded sum. Its proof first establishes t=s-x and then e=y-t. Nearest addition with x as a candidate gives |s-(x+y)|<=|y|.",
+      "translation_evidence": "The conclusion contains t=s-x, e=y-t, s+e=x+y, and |s-(x+y)|<=|y|.",
+      "reasoning": "The stated theorem conclusion and the additional exactness and nearest-error facts established in the paper are all present. Their overflow scope is addressed separately under S04 and S11."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The size constant contains the nontrivial ceiling operator ceil(beta^p-beta/2).",
-      "translation_evidence": "The translated definitions and proposition contain beta^p-beta/2 directly and define no ceiling operation.",
-      "reasoning": "Although representation, nearest rounding, faithful rounding, powers, and absolute value are unfolded, one essential source operator is omitted."
+      "status": "pass",
+      "paper_evidence": "Printed page 384 defines F, nearest rounding, and faithful rounding; faithful rounding excludes another floating-point number between the rounded and exact results.",
+      "translation_evidence": "The dependency ledger unfolds representability, integer-power scaling, global nearest rounding, and the half-open interval GapFree predicate used for both subtractions.",
+      "reasoning": "The nontrivial imported definitions are interpreted consistently. GapFree expresses faithful rather than nearest subtraction, while the first operation minimizes absolute distance and permits ties."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The symbols s, t, and e are computed rounded quantities, while x+y, s-x, y-t, and s+e use exact real arithmetic.",
-      "translation_evidence": "The run relates rounded fields s, t, and e to exact real expressions, and the conclusions separately assert when the residual computations are exact.",
-      "reasoning": "Rounded outputs and exact real quantities are not conflated."
+      "paper_evidence": "The algorithm's circled operations are rounded operations, whereas the equalities t=s-x, e=y-t, and s+e=x+y use exact real arithmetic.",
+      "translation_evidence": "The run relation supplies rounded representable trace values, while the conclusions use ordinary real addition and subtraction.",
+      "reasoning": "Computed and exact quantities remain distinct, and exactness is asserted only as a conclusion about the particular rounded subtraction stages."
     },
     {
       "id": "S08",
       "status": "pass",
-      "paper_evidence": "FastTwoSum executes s := x plus-rounded y, t := s minus-rounded x, and e := y minus-rounded t in that order.",
-      "translation_evidence": "The admissible run requires Nearest(x+y,s), Adjacent(s-x,t), and Adjacent(y-t,e) in the same order.",
-      "reasoning": "The relational encoding preserves the three operations, their dependencies, and their execution order."
+      "paper_evidence": "FastTwoSum executes s=x plus y, then t=s minus x, then e=y minus t, using rounded operations in that order.",
+      "translation_evidence": "D001 and D012 require Nearest(x+y,s), GapFree(s-x,t), and GapFree(y-t,e) in the ordered trace (s,t,e).",
+      "reasoning": "The translation retains the original three-stage algorithm, data dependencies, and instruction order."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "All bounds use ordinary scalar real absolute value; no vector or matrix norm occurs.",
-      "translation_evidence": "Every magnitude and error expression uses real absolute value on scalar quantities.",
-      "reasoning": "The norm semantics match exactly."
+      "paper_evidence": "Equations (7)-(10) use ordinary scalar absolute value on real quantities.",
+      "translation_evidence": "Every magnitude and distance is real absolute value; no vector or matrix norm occurs.",
+      "reasoning": "The norm semantics, scalar dimension, and unsquared form match exactly."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "Equation (7) uses the exact coefficient ceil(beta^p-beta/2) multiplied by beta^e(x).",
-      "translation_evidence": "The translated coefficient is beta^p-beta/2 without the ceiling.",
-      "reasoning": "For odd beta the source coefficient exceeds the translated coefficient by one half, changing the admissible input range."
+      "status": "pass",
+      "paper_evidence": "Equation (7) is |y|<=ceil(beta^p-beta/2)*beta^e(x), with the ceiling confined to the coefficient and a non-strict inequality.",
+      "translation_evidence": "The coefficient is the real cast of the natural number beta^p-(beta/2), where natural division computes floor(beta/2), and it is multiplied by beta_R^q for the selected witness.",
+      "reasoning": "For N=beta^p, ceil(N-beta/2)=N-floor(beta/2). Since beta>=2 and p>0, N is at least floor(beta/2), so natural subtraction does not truncate. Thus the translated coefficient, ceiling placement, exponent dependence, and non-strict boundary are exact."
     },
     {
       "id": "S11",
       "status": "unclear",
-      "paper_evidence": "Theorem 2 does not separately state a no-overflow hypothesis, but the exact-subtraction implication used in its proof is qualified by absence of overflow.",
-      "translation_evidence": "An admissible run explicitly requires |x+y|, |s-x|, and |y-t| each to be strictly below beta^p beta^emax.",
-      "reasoning": "The packet does not establish that these three strict bounds are precisely equivalent to the paper's implicit absence-of-overflow requirement, particularly for the initial addition."
+      "paper_evidence": "The paper uses a finite-real radix set without NaN or infinity and distinguishes nearest addition from faithful subtraction. Equation (8)'s exact-subtraction implication applies only in the absence of overflow.",
+      "translation_evidence": "The format likewise contains only finite representable reals and preserves the two rounding modes, but GapFree remains satisfiable at a finite endpoint for an exact result outside the representable range and no overflow restriction is stated.",
+      "reasoning": "Precision, ties, underflow treatment, and exceptional-value scope otherwise match. The source does not explicitly discharge equation (8)'s overflow qualification before using it, so the translation's unrestricted exact-subtraction conclusions may cover executions whose source status is unresolved."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "The source permits the non-strict bound with the ceiled coefficient and states exact equalities for the reconstruction and residual steps.",
-      "translation_evidence": "The exact equalities and non-strict error inequality agree, but the antecedent uses a smaller unceiled coefficient and additional strict no-overflow conditions.",
-      "reasoning": "The conclusion relations match, but the translated proposition has a strictly narrower antecedent and therefore weaker theorem coverage."
+      "status": "pass",
+      "paper_evidence": "The mantissa bounds are strict, equation (7) is non-strict, nearest rounding compares distances non-strictly, and the final reconstruction and subtraction claims are exact equalities.",
+      "translation_evidence": "The same strict representation bounds, non-strict size and error bounds, tie-permitting nearest relation, and exact equalities appear in the translation.",
+      "reasoning": "Directions, endpoints, and equality strength agree, apart from the separately identified uncertainty about the domain in which the exact subtraction conclusions apply."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "The result is an error-free transformation with exact residual e=x+y-s, together with an absolute first-stage rounding-error bound.",
-      "translation_evidence": "The translation asserts exact reconstruction, exact residual computations, and the scalar absolute bound |s-(x+y)| <= |y|.",
-      "reasoning": "No relative, backward, componentwise, or asymptotic error notion is substituted."
+      "paper_evidence": "The selected result is an error-free transformation: e is the exact residual (x+y)-s, with equation (9) serving as a nearest-rounding error estimate.",
+      "translation_evidence": "The conclusions reconstruct x+y exactly and include the same absolute forward-error bound for s.",
+      "reasoning": "The exact residual and forward rounding-error notions are not replaced by relative, backward, or approximate-error claims."
     },
     {
       "id": "S14",
-      "status": "pass",
-      "paper_evidence": "Theorem 2 and its proof state exact identities without big-O terms or omitted remainders.",
-      "translation_evidence": "All residual and reconstruction statements are exact equalities, with no higher-order qualification.",
-      "reasoning": "The higher-order treatment is faithful."
+      "status": "not-applicable",
+      "paper_evidence": "Theorem 2 and its proof contain exact identities and inequalities, with no asymptotic expansion or omitted higher-order term.",
+      "translation_evidence": "The proposition contains only exact equalities and finite inequalities and introduces no big-O expression.",
+      "reasoning": "There are no higher-order terms to translate."
     },
     {
       "id": "S15",
       "status": "pass",
-      "paper_evidence": "Theorem 2 is scalar, real, finite-format, and valid for arbitrary radix beta at least two rather than only beta in {2,3}.",
-      "translation_evidence": "The translation is scalar and real and universally quantifies finite formats with natural beta >= 2.",
-      "reasoning": "There is no dimensional or radix-family specialization; the odd-radix coverage defect comes from the altered constant rather than the binder domain."
+      "paper_evidence": "Theorem 2 applies to the paper's arbitrary finite radix systems and scalar real floating-point values; it is not restricted to beta in {2,3} or to |x|>=|y|.",
+      "translation_evidence": "The format permits every natural beta>=2 with positive precision and finite integer exponent bounds, and the proposition imposes no magnitude ordering or binary-only restriction.",
+      "reasoning": "The translation neither specializes the theorem to IEEE binary arithmetic nor generalizes it to vectors, infinite formats, or exceptional values."
     },
     {
       "id": "S16",
-      "status": "unclear",
-      "paper_evidence": "The paper presents an execution of FastTwoSum for its stated inputs, while its proof invokes an incompletely scoped absence-of-overflow qualification.",
-      "translation_evidence": "The proposition assumes an admissible run whose existence fails whenever any of three explicit no-overflow bounds fails, although the hypotheses are satisfiable, for example on an all-zero trace.",
-      "reasoning": "The proposition is not globally vacuous, but whether its run premise creates unintended vacuity for paper-admissible overflowing sums depends on the unresolved overflow interpretation."
+      "status": "pass",
+      "paper_evidence": "The floating-point set contains zero, and the theorem admits zero inputs and exact executions.",
+      "translation_evidence": "For example, beta=2, p=1, emin=emax=0, x=y=0, and trace (0,0,0) satisfy representability, the existential size condition, Nearest, and both GapFree stages.",
+      "reasoning": "The hypotheses and run relation are jointly satisfiable, so the result is not vacuous for an unintended reason."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The translation proves the result only under the smaller unceiled bound and explicit no-overflow premises. For example, with beta=3, p=1, exponent range 0 through 1, and x=y=2 using q_x=0, the paper bound is 2 <= ceil(3-3/2)=2, while the translation requires 2 <= 3-3/2=1.5. Thus the translation does not cover every paper-admissible case."
+      "verdict": "yes",
+      "reasoning": "A paper execution supplies a trace satisfying the translated nearest and faithful rounding relations, and the translation directly concludes the paper's required exact reconstruction s+e=x+y. Any inherited no-overflow restriction in the paper would only narrow those executions."
     },
     "paper_implies_translation": {
-      "verdict": "yes",
-      "reasoning": "Every case satisfying the translated unceiled size bound also satisfies the paper's ceiled bound. On the translated no-overflow domain, the theorem and its proof provide t=s-x, e=y-t, and s+e=x+y. Nearest rounding also gives |s-(x+y)| <= |y| because representable x is a candidate at distance |y|."
+      "verdict": "unclear",
+      "reasoning": "The paper proof supports the translated exact t and e identities, and nearest rounding directly supports the added error bound. However, both exact-subtraction arguments invoke equation (8), which is qualified by absence of overflow, while neither the displayed theorem nor the translation states that condition or explicitly proves it from the other hypotheses."
     }
   },
-  "classification": "not-faithful-weaker",
+  "classification": "undetermined",
   "accepted": false,
   "requires_adjudication": true,
   "findings": [
     {
       "severity": "major",
-      "category": "size-bound constant",
-      "paper_evidence": "Equation (7) requires |y| <= ceil(beta^p-beta/2) beta^e(x).",
-      "translation_evidence": "The translated hypothesis requires |y| <= (beta^p-beta/2) beta^q_x.",
-      "impact": "Omitting the ceiling excludes valid odd-radix cases and makes the translated theorem weaker in coverage."
+      "category": "overflow qualification",
+      "paper_evidence": "Equation (8) is stated only in the absence of overflow and is then used to establish both t=s-x and e=y-t, without a separate no-overflow hypothesis in Theorem 2.",
+      "translation_evidence": "The proposition concludes both subtractions are exact for every GapFree run but has no no-overflow antecedent; GapFree alone can select a finite endpoint when the exact result lies beyond the finite format.",
+      "impact": "Unless no overflow for the two executed subtractions is inherited or derivable from equation (7) and the run hypotheses, paper-implies-translation is not established."
     },
     {
-      "severity": "major",
-      "category": "overflow model",
-      "paper_evidence": "Absence of overflow appears as a qualification on the proof's exact-subtraction rule but is not separately stated in Theorem 2.",
-      "translation_evidence": "The admissible-run relation requires strict no-overflow bounds for x+y, s-x, and y-t.",
-      "impact": "These premises may exclude additional source cases, especially overflowing exact sums whose residual operations remain exact. The source packet does not resolve whether all three bounds are intended, so adjudication is required."
+      "severity": "note",
+      "category": "equation (7) coefficient",
+      "paper_evidence": "The coefficient is ceil(beta^p-beta/2).",
+      "translation_evidence": "The coefficient is beta^p-floor(beta/2), computed in natural arithmetic before casting.",
+      "impact": "These expressions are equal for the translated valid formats, and natural subtraction cannot truncate, so this is not a faithfulness defect."
+    },
+    {
+      "severity": "note",
+      "category": "additional conclusions",
+      "paper_evidence": "The proof establishes exactness of both subtraction instructions, and nearest addition gives the stated absolute error estimate.",
+      "translation_evidence": "Those three proof-level consequences are explicit conjuncts in addition to exact reconstruction.",
+      "impact": "They do not otherwise change the result's strength, subject to adjudicating the overflow scope."
     }
   ],
-  "rationale": "The translation preserves the scalar radix format, existential representation exponent, three-step algorithm, nearest and faithful rounding relations, exact residual meaning, and absence of higher-order terms. It is nevertheless not faithful because it drops the ceiling from the decisive equation (7) constant. This strictly narrows the theorem for odd radices, so the paper entails the translated result on its restricted domain but the translation does not recover the full paper theorem. The translation's additional strict no-overflow premises create a second possible narrowing whose precise status cannot be settled from the supplied paper evidence."
+  "rationale": "The translation accurately preserves the existential representation exponent, equation (7)'s ceiling through an equivalent natural-arithmetic encoding, the nearest-addition versus faithful-subtraction distinction, the three-stage FastTwoSum execution, scalar absolute values, and the exact proof-level conclusions. The sole material uncertainty is the source's unresolved overflow qualification around equation (8). Because that qualification may delimit the exact-subtraction claims while the translation does not encode it, translation-implies-paper is clear but paper-implies-translation requires adjudication."
 }
