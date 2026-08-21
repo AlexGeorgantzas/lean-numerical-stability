@@ -6,8 +6,8 @@
 - Baseline status: completed, with 59 fully validated eligible results
 - Pass-3 scope: the 25 fully validated Audit 2 results that were not accepted
 - Processing order: the order in the ledger below
-- Active task: `P16-T2`
-- Rebuilds started: 19/25
+- Active task: `P16-T3`
+- Rebuilds started: 20/25
 - Rebuilds committed and pushed: 16/25
 - Pass-3 audits accepted: 0/25
 
@@ -16,7 +16,9 @@ rebuilt and pushed. `P07-T2` is blocked on source clarification; `P08-T3`,
 `P09-T2`, `P09-T3`, `P10-T1`, and `P10-T2` have also been rebuilt and pushed,
 `P10-T3` is blocked by a contradiction in the printed first-order recurrence,
 `P11-T1`, `P11-T3`, `P12-T2`, and `P12-T3` have been rebuilt and pushed, and
-`P15-T3` has been rebuilt and pushed. `P16-T2` is in progress.
+`P15-T3` has been rebuilt and pushed. `P16-T2` is blocked by a missing
+iterate-comparison hypothesis in the printed recurrence, and `P16-T3` is in
+progress.
 
 ## Operating rules
 
@@ -77,8 +79,8 @@ Audit 2 versions.
 | 16 | `P12-T2` | `not-faithful-weaker` | `no / yes` | `b7d3d843d9a0` | [decision](../highambench/tasks/P12/T2/faithfulness/decision.json), [report](../highambench/tasks/P12/T2/faithfulness/report.md) | `rebuilt-pushed` | `deff8248e` | - |
 | 17 | `P12-T3` | `not-faithful-weaker` | `no / yes` | `c3afb57814be` | [decision](../highambench/tasks/P12/T3/faithfulness/decision.json), [report](../highambench/tasks/P12/T3/faithfulness/report.md) | `rebuilt-pushed` | `16d97346f` | - |
 | 18 | `P15-T3` | `not-faithful-different` | `no / no` | `74f8c0a42173` | [decision](../highambench/tasks/P15/T3/faithfulness/decision.json), [report](../highambench/tasks/P15/T3/faithfulness/report.md) | `rebuilt-pushed` | `779eb38a8` | - |
-| 19 | `P16-T2` | `not-faithful-weaker` | `no / yes` | `e2edb9b4c0cd` | [decision](../highambench/tasks/P16/T2/faithfulness/decision.json), [report](../highambench/tasks/P16/T2/faithfulness/report.md) | `in-progress` | - | - |
-| 20 | `P16-T3` | `not-faithful-different` | `no / no` | `40fd4df778a1` | [decision](../highambench/tasks/P16/T3/faithfulness/decision.json), [report](../highambench/tasks/P16/T3/faithfulness/report.md) | `pending` | - | - |
+| 19 | `P16-T2` | `not-faithful-weaker` | `no / yes` | `e2edb9b4c0cd` | [decision](../highambench/tasks/P16/T2/faithfulness/decision.json), [report](../highambench/tasks/P16/T2/faithfulness/report.md) | `blocked` | - | source contradiction documented below |
+| 20 | `P16-T3` | `not-faithful-different` | `no / no` | `40fd4df778a1` | [decision](../highambench/tasks/P16/T3/faithfulness/decision.json), [report](../highambench/tasks/P16/T3/faithfulness/report.md) | `in-progress` | - | - |
 | 21 | `P18-T1` | `undetermined` | `unclear / no` | `ec13f9585b76` | [decision](../highambench/tasks/P18/T1/faithfulness/decision.json), [report](../highambench/tasks/P18/T1/faithfulness/report.md) | `pending` | - | - |
 | 22 | `P18-T3` | `not-faithful-weaker` | `no / yes` | `b1616ce83dca` | [decision](../highambench/tasks/P18/T3/faithfulness/decision.json), [report](../highambench/tasks/P18/T3/faithfulness/report.md) | `pending` | - | - |
 | 23 | `P19-T2` | `not-faithful-different` | `no / no` | `a88a277ace1e` | [decision](../highambench/tasks/P19/T2/faithfulness/decision.json), [report](../highambench/tasks/P19/T2/faithfulness/report.md) | `pending` | - | - |
@@ -131,6 +133,29 @@ bound. Retaining equation (20) instead requires assuming the unsupported
 simplification and would reproduce Audit 2's critical assumed-local-analysis
 failure. Either changing the selected source claim or formalizing a corrected
 variant requires project-owner approval under operating rule 8. No P10-T3
+construction files were changed in pass 3.
+
+### P16-T2
+
+The backward-error clause of Lemma 4.2 uses
+`||xHat_i||_2 lesssim ||xHat_(i+1)||_2` in the proof after equation (4.18), but
+does not state that comparison as a hypothesis. Without it, the displayed
+first-order recurrence (4.15) is false even for a one-dimensional nonsingular
+system satisfying the printed residual, update, and correction models.
+
+For any fixed `0 < epsilonR < 1`, take `A = [1]`, `b = [1]`,
+`xHat_i = [1/epsilonR - 1]`, `xHat_(i+1) = [0]`, `deltaR_i = [-1]`,
+`correctionHat_i = [-(1/epsilonR - 1)]`, `deltaX_i = [0]`, and
+`epsilonU = w_i = omega_i = 0`. Equations (4.1) and (4.2) hold, the correction
+residual in (4.14) is zero, and every required coefficient is nonnegative.
+Equation (4.15), however, reduces to `1 lesssim epsilonR`, which is not a
+first-order consequence as `epsilonR` becomes small.
+
+Audit 2 already rejected making the missing iterate comparison an explicit
+Lean hypothesis because that narrows the printed lemma. The exact expanded
+inequality immediately following (4.18) is valid without it, but selecting
+that bound instead of (4.15) is a source reselection. Either correction
+requires project-owner approval under operating rule 8. No P16-T2
 construction files were changed in pass 3.
 
 ## End-of-pass checkpoint
