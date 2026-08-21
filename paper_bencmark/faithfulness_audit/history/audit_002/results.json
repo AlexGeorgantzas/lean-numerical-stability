@@ -1,8 +1,8 @@
 {
   "schema_version": "highambench-audit-history-2",
   "audit_id": "audit_002",
-  "status": "in-progress",
-  "recorded_at_utc": "2026-08-21T09:13:19Z",
+  "status": "completed",
+  "recorded_at_utc": "2026-08-21T10:16:27Z",
   "baseline_audit": {
     "audit_id": "audit_001",
     "repository_commit": "df483a11408fa7b7440bbc1907c93bb9b3e610fa",
@@ -11,11 +11,11 @@
   },
   "audit_window": {
     "earliest_second_pass_completed_at_utc": "2026-08-14T13:31:48.966150+00:00",
-    "latest_second_pass_completed_at_utc": "2026-08-21T09:09:06.047857+00:00"
+    "latest_second_pass_completed_at_utc": "2026-08-21T10:14:28.274481+00:00"
   },
   "repository_reference": {
     "branch": "benchmark_faithfulness_audit",
-    "latest_audit_commit": "d1ca8c6b6626ed750fec1eec727f02282344ae34",
+    "latest_audit_commit": "50ef267005b75d218510bbc148093a2bea89cbc6",
     "evidence_is_pinned_per_task": true
   },
   "scope": {
@@ -23,41 +23,38 @@
     "corpus_task_count": 60,
     "eligible_task_count": 59,
     "excluded_task_count": 1,
-    "pending_task_count": 2,
-    "fully_validated_resolved_task_count": 57,
-    "reported_resolved_task_count_including_provisional": 57,
+    "pending_task_count": 0,
+    "fully_validated_resolved_task_count": 59,
+    "reported_resolved_task_count_including_provisional": 59,
     "carried_forward_task_count": 17,
-    "second_pass_validated_task_count": 40,
+    "second_pass_validated_task_count": 42,
     "second_pass_provisional_task_count": 0,
-    "pending_tasks": [
-      "P13-T1",
-      "P20-T2"
-    ],
+    "pending_tasks": [],
     "excluded_tasks": [
       "P17-T1"
     ]
   },
   "validation": {
-    "all_task_bundles_valid": false,
+    "all_task_bundles_valid": true,
     "validated_carry_forward_count": 17,
-    "validated_second_pass_count": 40,
+    "validated_second_pass_count": 42,
     "provisional_unpinned_count": 0,
     "notes": [
-      "Thirty-eight second-pass bundles validate at their single evidence commits.",
+      "Forty second-pass bundles validate at their single evidence commits.",
       "P20-T1 and P20-T3 passed complete-phase validation against exact controlled inputs committed at f29d0da116de60c6c23f7d79c75b70997693304d; their audit artifacts are committed separately and hash-pinned per task.",
       "All 17 carried-forward accepted results retain identical target and dependency semantics; 11 were checked by regenerated semantic inventories and six P01/P02 tasks had unchanged targets and paper-specific shared source.",
-      "P13-T1 and the rebuilt P20-T2 have no current second-pass audit, so the corpus snapshot remains in progress."
+      "All 59 eligible tasks are resolved. P17-T1 remains excluded under the recorded source-validity exception and is outside this snapshot denominator."
     ]
   },
   "aggregates": {
     "fully_validated": {
-      "total": 57,
-      "accepted": 32,
+      "total": 59,
+      "accepted": 34,
       "not_accepted": 25,
-      "adjudicated": 35,
+      "adjudicated": 36,
       "classifications": {
-        "faithful-equivalent": 12,
-        "faithful-stronger": 20,
+        "faithful-equivalent": 13,
+        "faithful-stronger": 21,
         "not-faithful-different": 13,
         "not-faithful-weaker": 11,
         "undetermined": 1
@@ -66,15 +63,15 @@
         "no/no": 13,
         "no/yes": 11,
         "unclear/no": 1,
-        "yes/no": 20,
-        "yes/yes": 12
+        "yes/no": 21,
+        "yes/yes": 13
       },
       "by_tier": {
         "T1": {
-          "total": 18,
-          "accepted": 12,
+          "total": 19,
+          "accepted": 13,
           "classifications": {
-            "faithful-equivalent": 3,
+            "faithful-equivalent": 4,
             "faithful-stronger": 9,
             "not-faithful-different": 1,
             "not-faithful-weaker": 4,
@@ -82,11 +79,11 @@
           }
         },
         "T2": {
-          "total": 19,
-          "accepted": 11,
+          "total": 20,
+          "accepted": 12,
           "classifications": {
             "faithful-equivalent": 6,
-            "faithful-stronger": 5,
+            "faithful-stronger": 6,
             "not-faithful-different": 5,
             "not-faithful-weaker": 3
           }
@@ -104,13 +101,13 @@
       }
     },
     "including_provisional_decisions": {
-      "total": 57,
-      "accepted": 32,
+      "total": 59,
+      "accepted": 34,
       "not_accepted": 25,
-      "adjudicated": 35,
+      "adjudicated": 36,
       "classifications": {
-        "faithful-equivalent": 12,
-        "faithful-stronger": 20,
+        "faithful-equivalent": 13,
+        "faithful-stronger": 21,
         "not-faithful-different": 13,
         "not-faithful-weaker": 11,
         "undetermined": 1
@@ -119,15 +116,15 @@
         "no/no": 13,
         "no/yes": 11,
         "unclear/no": 1,
-        "yes/no": 20,
-        "yes/yes": 12
+        "yes/no": 21,
+        "yes/yes": 13
       },
       "by_tier": {
         "T1": {
-          "total": 18,
-          "accepted": 12,
+          "total": 19,
+          "accepted": 13,
           "classifications": {
-            "faithful-equivalent": 3,
+            "faithful-equivalent": 4,
             "faithful-stronger": 9,
             "not-faithful-different": 1,
             "not-faithful-weaker": 4,
@@ -135,11 +132,11 @@
           }
         },
         "T2": {
-          "total": 19,
-          "accepted": 11,
+          "total": 20,
+          "accepted": 12,
           "classifications": {
             "faithful-equivalent": 6,
-            "faithful-stronger": 5,
+            "faithful-stronger": 6,
             "not-faithful-different": 5,
             "not-faithful-weaker": 3
           }
@@ -159,10 +156,10 @@
   },
   "comparison_to_audit_001": {
     "baseline_accepted": 17,
-    "validated_accepted": 32,
-    "validated_net_gain": 15,
-    "reported_accepted_including_provisional": 32,
-    "reported_net_gain_including_provisional": 15,
+    "validated_accepted": 34,
+    "validated_net_gain": 17,
+    "reported_accepted_including_provisional": 34,
+    "reported_net_gain_including_provisional": 17,
     "newly_accepted_validated": [
       "P03-T2",
       "P03-T3",
@@ -170,6 +167,7 @@
       "P06-T3",
       "P07-T1",
       "P11-T2",
+      "P13-T1",
       "P13-T3",
       "P14-T1",
       "P15-T1",
@@ -178,7 +176,8 @@
       "P17-T2",
       "P17-T3",
       "P18-T2",
-      "P20-T1"
+      "P20-T1",
+      "P20-T2"
     ],
     "newly_accepted_including_provisional": [
       "P03-T2",
@@ -187,6 +186,7 @@
       "P06-T3",
       "P07-T1",
       "P11-T2",
+      "P13-T1",
       "P13-T3",
       "P14-T1",
       "P15-T1",
@@ -195,7 +195,8 @@
       "P17-T2",
       "P17-T3",
       "P18-T2",
-      "P20-T1"
+      "P20-T1",
+      "P20-T2"
     ],
     "still_not_accepted_validated": [
       "P04-T1",
@@ -257,7 +258,8 @@
       "not-faithful-different -> not-faithful-different": 11,
       "not-faithful-different -> not-faithful-weaker": 11,
       "not-faithful-different -> undetermined": 1,
-      "not-faithful-weaker -> faithful-equivalent": 1,
+      "not-faithful-weaker -> faithful-equivalent": 2,
+      "not-faithful-weaker -> faithful-stronger": 1,
       "not-faithful-weaker -> not-faithful-different": 2,
       "undetermined -> faithful-equivalent": 1
     }
@@ -3290,47 +3292,48 @@
           }
         }
       },
-      "disposition": "pending-second-audit",
-      "counted_in_validated_aggregate": false,
-      "counted_in_reported_aggregate": false,
-      "reason": "The target was rebuilt after Audit 1, but no second-pass faithfulness audit was run. The Audit 1 decision does not apply to the rebuilt target.",
-      "current_target": {
-        "path": "paper_bencmark/highambench/tasks/P13/T1/Target.lean",
-        "sha256": "d3c2d2f5f1b80abd0e6dd41f569a7299253fbef7d89a2c4b319ba69c31df4cbb",
-        "rebuild_commit": "0b352487ea2b4b55e09486be9ff06a082724e371"
-      },
-      "latest_valid_decision": {
-        "accepted": false,
+      "disposition": "second-pass-validated",
+      "counted_in_validated_aggregate": true,
+      "counted_in_reported_aggregate": true,
+      "result": {
+        "accepted": true,
         "adjudicated": true,
-        "classification": "not-faithful-weaker",
-        "completed_at_utc": "2026-08-13T16:53:55.970618+00:00",
+        "classification": "faithful-equivalent",
+        "completed_at_utc": "2026-08-21T10:14:28.274481+00:00",
         "implications": {
-          "lean_implies_paper": "no",
+          "lean_implies_paper": "yes",
           "paper_implies_lean": "yes"
         },
         "protocol_version": "highambench-faithfulness-0.2",
         "target": {
           "declaration": "HighamBench.p13_t1_condition_ge_one",
           "path": "paper_bencmark/highambench/tasks/P13/T1/Target.lean",
-          "sha256": "9c331535dfca807cb7a0aae7523f78ebad9de6564b9a9e66d0762cf08fd12892"
+          "sha256": "d3c2d2f5f1b80abd0e6dd41f569a7299253fbef7d89a2c4b319ba69c31df4cbb"
         },
         "paper": {
           "path": "paper_bencmark/reference_papers/P13_The numerical stability of barycentric Lagrange interpolation.pdf",
           "sha256": "9ebf8adb699f96c82ccbb153dd6ca592c64475a8bc3e0703a50cb659b012c520"
         },
         "artifacts": {
+          "manifest": {
+            "path": "paper_bencmark/highambench/tasks/P13/T1/faithfulness/manifest.json",
+            "sha256": "19c5fc54e6163a3e7dde06f7bfa9df499b12e7a2dabd75a964dfb145bca82c89"
+          },
           "decision": {
             "path": "paper_bencmark/highambench/tasks/P13/T1/faithfulness/decision.json",
-            "sha256": "6ea8121cb207ba6d546d5e30e964a78655eeb64323a56d75d9076e20ddd1e7e0"
-          },
-          "manifest": {
-            "path": "paper_bencmark/highambench/tasks/P13/T1/faithfulness/manifest.json"
+            "sha256": "2a8a825bbeeaf71d5e8b570cea4ac2d1a2f74b2af43e0c70649f74c710315410"
           },
           "report": {
             "path": "paper_bencmark/highambench/tasks/P13/T1/faithfulness/report.md",
-            "sha256": "0f3b2743309da90dea9524903cf8f7f3c479f380eb79b4b436d2f9117945423f"
+            "sha256": "4951876afb5108a23b2b442be36fba44b280cc23523450ad665006e9acc1f266"
           }
         }
+      },
+      "evidence_commit": "250cb75358d2dda2d6c0a355e880d1683a105eb2",
+      "validation": {
+        "status": "validated",
+        "phase": "complete",
+        "validated_at_evidence_commit": true
       }
     },
     {
@@ -5094,24 +5097,23 @@
           }
         }
       },
-      "disposition": "pending-audit",
-      "counted_in_validated_aggregate": false,
-      "counted_in_reported_aggregate": false,
-      "reason": "Rebuilt from equation (3.13), but the rebuilt controlled inputs have not yet received a second-pass faithfulness audit.",
-      "latest_attempt": {
-        "accepted": false,
-        "adjudicated": true,
-        "classification": "not-faithful-weaker",
-        "completed_at_utc": "2026-08-21T05:18:01.220163+00:00",
+      "disposition": "second-pass-validated",
+      "counted_in_validated_aggregate": true,
+      "counted_in_reported_aggregate": true,
+      "result": {
+        "accepted": true,
+        "adjudicated": false,
+        "classification": "faithful-stronger",
+        "completed_at_utc": "2026-08-21T10:11:37.742980+00:00",
         "implications": {
-          "lean_implies_paper": "no",
-          "paper_implies_lean": "yes"
+          "lean_implies_paper": "yes",
+          "paper_implies_lean": "no"
         },
         "protocol_version": "highambench-faithfulness-0.2",
         "target": {
-          "declaration": "HighamBench.p20_t2_accumulation_underflow_le_input",
+          "declaration": "HighamBench.p20_t2_scaled_input_error",
           "path": "paper_bencmark/highambench/tasks/P20/T2/Target.lean",
-          "sha256": "2a604cf4f4cd6b18f577e1a745ab2cd8d552d71ed6079b5b7b99bd36b6a37acc"
+          "sha256": "fb95ee7956f7e12ea8d77a263a09660b727555fa2b3d617185a4baba787e08b0"
         },
         "paper": {
           "path": "paper_bencmark/reference_papers/P20_ERROR ANALYSIS OF MATRIX MULTIPLICATION WITHNARROW RANGE FLOATING-POINT ARITHMETIC.pdf",
@@ -5120,20 +5122,24 @@
         "artifacts": {
           "manifest": {
             "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/manifest.json",
-            "sha256": "5cc74c26090300e8f9ec1354f02483ede63d1bc5442383fe85681ccd3d91373b"
+            "sha256": "8efaeb6e7ccbbc3e604e39e75e1eb9ab840d42a85f9dfd8ddb82fc24d81dca95"
           },
           "decision": {
             "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/decision.json",
-            "sha256": "c57ad736ffb6bffbf73504fc6335b6ff745d6cf918d1be061dd5efd60ad4c0b4"
+            "sha256": "e082c9caa673dd57bd8e7252f0909acf1ea902fb0e1f23f07b738adb3a58f212"
           },
           "report": {
             "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/report.md",
-            "sha256": "9b15024256702dbcea129e8846bb321606b1f52f51a4a3192bc24a4c6b249884"
+            "sha256": "29dedd1194491335648bdd56c71d1110de6871473e03a16ef48dff1d4c92cc51"
           }
         }
       },
-      "latest_attempt_commit": "3f34421ab846462e62decccd002b42c39d6bdd81",
-      "latest_rebuild_commit": "e0f85adc65085b733efe5097e962bf52b6827123"
+      "evidence_commit": "50ef267005b75d218510bbc148093a2bea89cbc6",
+      "validation": {
+        "status": "validated",
+        "phase": "complete",
+        "validated_at_evidence_commit": true
+      }
     },
     {
       "task_id": "P20-T3",

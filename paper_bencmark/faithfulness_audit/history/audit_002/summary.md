@@ -2,14 +2,14 @@
 
 ## Snapshot
 
-- Status: `in-progress`
+- Status: `completed`
 - Baseline: `audit_001` at `df483a11408fa7b7440bbc1907c93bb9b3e610fa`
 - Corpus: 20 papers and 60 tasks
 - Eligible scope: 59 tasks after excluding `P17-T1`
-- Fully validated results: 57 tasks
-- Pending: `P13-T1`, `P20-T2`
-- Recorded: `2026-08-21T09:13:19Z`
-- Latest audit reference: branch `benchmark_faithfulness_audit`, commit `d1ca8c6b6626ed750fec1eec727f02282344ae34`
+- Fully validated results: 59 tasks
+- Pending: none
+- Recorded: `2026-08-21T10:16:27Z`
+- Latest audit reference: branch `benchmark_faithfulness_audit`, commit `50ef267005b75d218510bbc148093a2bea89cbc6`
 - Evidence model: every rerun is pinned to its own audit commit because later
   sibling repairs may change a paper's shared definitions. P20-T1 and P20-T3
   use the exact input snapshot at `f29d0da116de60c6c23f7d79c75b70997693304d`,
@@ -23,33 +23,38 @@ evidence commit, and validation status.
 
 | View | Resolved | Accepted | Not accepted | Change from Audit 1 |
 |---|---:|---:|---:|---:|
-| Fully validated | 57 | 32 | 25 | +15 accepted |
+| Fully validated | 59 | 34 | 25 | +17 accepted |
 | Audit 1 baseline | 60 | 17 | 43 | - |
 
-The validated total consists of 17 unchanged Audit 1 successes and 40 rebuilt
+The validated total consists of 17 unchanged Audit 1 successes and 42 rebuilt
 tasks whose second-pass bundles validate against their exact controlled inputs.
-Of those 40 rebuilds, 15 became accepted and 25 remain unaccepted.
+Of those 42 rebuilds, 17 became accepted and 25 remain unaccepted.
 
 Newly accepted, fully validated:
-`P03-T2`, `P03-T3`, `P04-T3`, `P06-T3`, `P07-T1`, `P11-T2`, `P13-T3`, `P14-T1`, `P15-T1`, `P15-T2`, `P16-T1`, `P17-T2`, `P17-T3`, `P18-T2`, `P20-T1`.
+`P03-T2`, `P03-T3`, `P04-T3`, `P06-T3`, `P07-T1`, `P11-T2`, `P13-T1`, `P13-T3`, `P14-T1`, `P15-T1`, `P15-T2`, `P16-T1`, `P17-T2`, `P17-T3`, `P18-T2`, `P20-T1`, `P20-T2`.
+
+The final two audits classified `P13-T1` as `faithful-equivalent` and
+`P20-T2` as `faithful-stronger`. P13's finite perturbation bound and attaining
+witness are exact consequences of the formalized condition-number statement.
+P20 proves equation (3.13) for a broader abstract class of input-rounding maps.
 
 ## Validated aggregate
 
 | Classification | Count | Accepted |
 |---|---:|---|
-| `faithful-equivalent` | 12 | yes |
-| `faithful-stronger` | 20 | yes |
+| `faithful-equivalent` | 13 | yes |
+| `faithful-stronger` | 21 | yes |
 | `not-faithful-weaker` | 11 | no |
 | `not-faithful-different` | 13 | no |
 | `undetermined` | 1 | no |
-| **Total** | **57** | **32** |
+| **Total** | **59** | **34** |
 
 ## Results by tier
 
 | Tier | Equivalent | Stronger | Weaker | Different | Undetermined | Accepted |
 |---|---:|---:|---:|---:|---:|---:|
-| T1 | 3 | 9 | 4 | 1 | 1 | 12/18 |
-| T2 | 6 | 5 | 3 | 5 | 0 | 11/19 |
+| T1 | 4 | 9 | 4 | 1 | 1 | 13/19 |
+| T2 | 6 | 6 | 3 | 5 | 0 | 12/20 |
 | T3 | 3 | 6 | 4 | 7 | 0 | 9/20 |
 
 ## Paper matrix
@@ -71,34 +76,30 @@ undetermined, `P` pending, and `X` excluded. Only `E` and `S` are accepted.
 | P10 | W | D | D | 0/3 |
 | P11 | W | S | D | 1/3 |
 | P12 | S | W | W | 1/3 |
-| P13 | P | E | S | 2/2 |
+| P13 | E | E | S | 3/3 |
 | P14 | S | S | E | 3/3 |
 | P15 | E | E | D | 2/3 |
 | P16 | E | W | D | 1/3 |
 | P17 | X | S | S | 2/2 |
 | P18 | U | E | W | 1/3 |
 | P19 | S | D | W | 1/3 |
-| P20 | S | P | D | 1/2 |
-| **Validated total** |  |  |  | **32/57** |
+| P20 | S | S | D | 2/3 |
+| **Validated total** |  |  |  | **34/59** |
 
 ## Still not accepted
 
 The 25 fully validated second-pass results that remain unaccepted are:
 `P04-T1`, `P04-T2`, `P05-T1`, `P05-T2`, `P05-T3`, `P06-T1`, `P07-T2`, `P08-T3`, `P09-T2`, `P09-T3`, `P10-T1`, `P10-T2`, `P10-T3`, `P11-T1`, `P11-T3`, `P12-T2`, `P12-T3`, `P15-T3`, `P16-T2`, `P16-T3`, `P18-T1`, `P18-T3`, `P19-T2`, `P19-T3`, `P20-T3`.
 
-## Open items
+## Excluded task
 
-- `P13-T1`: rebuilt at `0b352487ea2b4b55e09486be9ff06a082724e371`, but never re-audited. Its
-  Audit 1 decision is stale for the rebuilt target.
-- `P20-T2`: rebuilt from equation (3.13) at
-  `e0f85adc65085b733efe5097e962bf52b6827123`, but not yet re-audited.
 - `P17-T1`: excluded because published Theorem 3.6 is contradicted. Its normal
   audit classification remains historical provenance and is not an acceptance
-  signal.
+  signal. The later corrected rebuild is outside this Audit 2 snapshot.
 
 ## Interpretation
 
-The second repair pass produced substantial progress: validated acceptance rose
-from 17 to 32 tasks, with 15 repaired tasks crossing into an accepted category.
-Audit 2 is not complete until `P13-T1` and `P20-T2` are audited; these totals
-must not be presented as the final 59-task eligible-corpus result.
+The second repair pass raised validated acceptance from 17 to 34 tasks, with 17
+repaired tasks crossing into an accepted category. Audit 2 is complete for its
+59-task eligible corpus; `P17-T1` remains outside the denominator under the
+recorded source-validity exception.

@@ -1,19 +1,19 @@
 {
   "schema_version": "highambench-audit-history-2",
   "audit_id": "audit_002",
-  "status": "in-progress",
-  "recorded_at_utc": "2026-08-21T09:13:19Z",
+  "status": "completed",
+  "recorded_at_utc": "2026-08-21T10:16:27Z",
   "baseline_audit": {
     "audit_id": "audit_001",
     "repository_commit": "df483a11408fa7b7440bbc1907c93bb9b3e610fa"
   },
   "audit_window": {
     "earliest_second_pass_completed_at_utc": "2026-08-14T13:31:48.966150+00:00",
-    "latest_second_pass_completed_at_utc": "2026-08-21T09:09:06.047857+00:00"
+    "latest_second_pass_completed_at_utc": "2026-08-21T10:14:28.274481+00:00"
   },
   "repository_reference": {
     "branch": "benchmark_faithfulness_audit",
-    "latest_audit_commit": "d1ca8c6b6626ed750fec1eec727f02282344ae34",
+    "latest_audit_commit": "50ef267005b75d218510bbc148093a2bea89cbc6",
     "evidence_is_pinned_per_task": true
   },
   "scope": {
@@ -21,41 +21,38 @@
     "corpus_task_count": 60,
     "eligible_task_count": 59,
     "excluded_task_count": 1,
-    "pending_task_count": 2,
-    "fully_validated_resolved_task_count": 57,
-    "reported_resolved_task_count_including_provisional": 57,
+    "pending_task_count": 0,
+    "fully_validated_resolved_task_count": 59,
+    "reported_resolved_task_count_including_provisional": 59,
     "carried_forward_task_count": 17,
-    "second_pass_validated_task_count": 40,
+    "second_pass_validated_task_count": 42,
     "second_pass_provisional_task_count": 0,
-    "pending_tasks": [
-      "P13-T1",
-      "P20-T2"
-    ],
+    "pending_tasks": [],
     "excluded_tasks": [
       "P17-T1"
     ]
   },
   "validation": {
-    "all_task_bundles_valid": false,
+    "all_task_bundles_valid": true,
     "validated_carry_forward_count": 17,
-    "validated_second_pass_count": 40,
+    "validated_second_pass_count": 42,
     "provisional_unpinned_count": 0,
     "notes": [
-      "Thirty-eight second-pass bundles validate at their single evidence commits.",
+      "Forty second-pass bundles validate at their single evidence commits.",
       "P20-T1 and P20-T3 passed complete-phase validation against exact controlled inputs committed at f29d0da116de60c6c23f7d79c75b70997693304d; their audit artifacts are committed separately and hash-pinned per task.",
       "All 17 carried-forward accepted results retain identical target and dependency semantics; 11 were checked by regenerated semantic inventories and six P01/P02 tasks had unchanged targets and paper-specific shared source.",
-      "P13-T1 and the rebuilt P20-T2 have no current second-pass audit, so the corpus snapshot remains in progress."
+      "All 59 eligible tasks are resolved. P17-T1 remains excluded under the recorded source-validity exception and is outside this snapshot denominator."
     ]
   },
   "aggregates": {
     "fully_validated": {
-      "total": 57,
-      "accepted": 32,
+      "total": 59,
+      "accepted": 34,
       "not_accepted": 25,
-      "adjudicated": 35,
+      "adjudicated": 36,
       "classifications": {
-        "faithful-equivalent": 12,
-        "faithful-stronger": 20,
+        "faithful-equivalent": 13,
+        "faithful-stronger": 21,
         "not-faithful-different": 13,
         "not-faithful-weaker": 11,
         "undetermined": 1
@@ -64,15 +61,15 @@
         "no/no": 13,
         "no/yes": 11,
         "unclear/no": 1,
-        "yes/no": 20,
-        "yes/yes": 12
+        "yes/no": 21,
+        "yes/yes": 13
       },
       "by_tier": {
         "T1": {
-          "total": 18,
-          "accepted": 12,
+          "total": 19,
+          "accepted": 13,
           "classifications": {
-            "faithful-equivalent": 3,
+            "faithful-equivalent": 4,
             "faithful-stronger": 9,
             "not-faithful-different": 1,
             "not-faithful-weaker": 4,
@@ -80,11 +77,11 @@
           }
         },
         "T2": {
-          "total": 19,
-          "accepted": 11,
+          "total": 20,
+          "accepted": 12,
           "classifications": {
             "faithful-equivalent": 6,
-            "faithful-stronger": 5,
+            "faithful-stronger": 6,
             "not-faithful-different": 5,
             "not-faithful-weaker": 3
           }
@@ -102,13 +99,13 @@
       }
     },
     "including_provisional_decisions": {
-      "total": 57,
-      "accepted": 32,
+      "total": 59,
+      "accepted": 34,
       "not_accepted": 25,
-      "adjudicated": 35,
+      "adjudicated": 36,
       "classifications": {
-        "faithful-equivalent": 12,
-        "faithful-stronger": 20,
+        "faithful-equivalent": 13,
+        "faithful-stronger": 21,
         "not-faithful-different": 13,
         "not-faithful-weaker": 11,
         "undetermined": 1
@@ -117,15 +114,15 @@
         "no/no": 13,
         "no/yes": 11,
         "unclear/no": 1,
-        "yes/no": 20,
-        "yes/yes": 12
+        "yes/no": 21,
+        "yes/yes": 13
       },
       "by_tier": {
         "T1": {
-          "total": 18,
-          "accepted": 12,
+          "total": 19,
+          "accepted": 13,
           "classifications": {
-            "faithful-equivalent": 3,
+            "faithful-equivalent": 4,
             "faithful-stronger": 9,
             "not-faithful-different": 1,
             "not-faithful-weaker": 4,
@@ -133,11 +130,11 @@
           }
         },
         "T2": {
-          "total": 19,
-          "accepted": 11,
+          "total": 20,
+          "accepted": 12,
           "classifications": {
             "faithful-equivalent": 6,
-            "faithful-stronger": 5,
+            "faithful-stronger": 6,
             "not-faithful-different": 5,
             "not-faithful-weaker": 3
           }
@@ -159,12 +156,12 @@
     {
       "path": "paper_bencmark/faithfulness_audit/history/audit_002/results.json",
       "role": "machine-readable task index and Audit 1 comparison",
-      "sha256": "4d095030d522f151efb64c6ec61d31cf18d3c80cdfcb989748c007bbe6d942d6"
+      "sha256": "8607b0f6cdca0b000583c6e44fed27006b7e7d1fc3d6ec52b3d8b35f1556d86b"
     },
     {
       "path": "paper_bencmark/faithfulness_audit/history/audit_002/summary.md",
       "role": "human-readable progress summary",
-      "sha256": "0d22063476d2f03bce7c03bd4280b0b0b186f6d166cfa6682e8f31728549f3c6"
+      "sha256": "ac2f777b58c0e801ed7708c01c3fc635544d43beb8ad6919eaad423fa66ba036"
     }
   ],
   "detailed_evidence": {
