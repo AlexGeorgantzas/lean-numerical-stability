@@ -5,18 +5,39 @@
   "paper_version": "HAL preprint hal-05071696v2, submitted 2026-05-19; IMA Journal of Numerical Analysis, in press, article pages 1-46",
   "source_locations": [
     {
-      "anchor": "equation (3.17), right-preconditioned attainable forward-error envelope",
+      "anchor": "Algorithm 1, right- and flexible-preconditioned MGS-GMRES",
+      "pdf_page": 4,
+      "printed_page": "3",
+      "role": "mixed-precision execution paths, including persistent storage of the flexible preconditioned basis",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "equations (3.14)-(3.17) and Theorem 3.3",
       "pdf_page": 11,
       "printed_page": "10",
-      "role": "right envelope including the preconditioner-reapplication term",
+      "role": "right-preconditioner application model, rhoAR, complete applicability condition, existential iteration, and three-source attainable forward-error bound",
       "section": "3.3. Error bound for right-preconditioned GMRES"
     },
     {
-      "anchor": "equation (3.20) and Remark 4",
+      "anchor": "Theorem 3.4, equation (3.20), and Remark 4",
       "pdf_page": 12,
       "printed_page": "11",
-      "role": "flexible envelope and prose identification of the removed um etaR kappa(MR) term",
+      "role": "flexible existential forward-error bound and identification of the omitted preconditioner-reapplication term",
       "section": "3.4. Error bound for flexible-preconditioned GMRES"
+    },
+    {
+      "anchor": "Appendix C, proof of Theorem 3.3",
+      "pdf_page": 41,
+      "printed_page": "40",
+      "role": "right-preconditioned perturbation propagation, first-order contributions, and higher-order truncation",
+      "section": "C. Proof of Theorem 3.3"
+    },
+    {
+      "anchor": "Appendix D, proof of Theorem 3.4",
+      "pdf_page": 44,
+      "printed_page": "43",
+      "role": "flexible solution-formation path and removal of the reapplication contribution",
+      "section": "D. Proof of Theorem 3.4"
     }
   ],
   "task_id": "P19-T3"

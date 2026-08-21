@@ -3,177 +3,184 @@
   "role": "roundtrip-judge",
   "task_id": "P19-T3",
   "paper_sha256": "67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad",
-  "blind_translation_sha256": "c4e2a0efe45f5d2d9dc61e0849a741c76dbf2482ab77ccdf3af3c9cc2f432f20",
+  "blind_translation_sha256": "d60e179319dc002bb75a5b551f196654883df492c0f325619672988828573729",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The cited HAL preprint passages are equations (3.17), (3.20), and Remark 4 on PDF pages 11-12, which compare right- and flexible-preconditioned attainable forward-error envelopes.",
-      "translation_evidence": "The quantities E and B contain respectively the three-term and two-term bracket expressions from those passages, including the added um * etaR * K(MR,MRinv) term.",
-      "reasoning": "The selected paper result and passages are the correct source for the structural added-term comparison represented by the translation."
+      "paper_evidence": "The PDF hash matches. Its cover identifies HAL hal-05071696v2, submitted 19 May 2026, and the cited passages contain Algorithm 1, Theorems 3.3-3.4, and Appendices C-D.",
+      "translation_evidence": "The translation targets the right three-term and flexible two-term bounds corresponding to equations (3.17) and (3.20).",
+      "reasoning": "The source version and principal result selection are correct."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "The paper assumes nonsingular A and MR, nonzero b, an original system Ax=b, computed Krylov data, and a fixed right preconditioner; matrix dimensions are tied to that system.",
-      "translation_evidence": "The translation quantifies an unrestricted natural n, five arbitrary reals, and six arbitrary matrices. Ainv, MRinv, and AMRinvInv are not required to be inverses, and b and all computed Krylov quantities are absent.",
-      "reasoning": "The binder meanings and admissible matrix instances are substantially broader and no longer describe the paper's linear system or algorithmic objects."
+      "paper_evidence": "The paper fixes a finite real system Ax=b, a nonsingular fixed MR, fixed unit roundoffs, and considers each GMRES execution with an existential iteration k<=n.",
+      "translation_evidence": "The translation introduces an arbitrary type iota, a nonbottom filter, asymptotic families, two simultaneous package binders, explicit certificates, and separate stored key dimensions.",
+      "reasoning": "These additional binders change the mathematical object from fixed floating-point executions into certified asymptotic families."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "Each theorem asserts that there exists an iteration k <= n at which the corresponding attainable forward-error bound holds.",
-      "translation_evidence": "There is no iteration binder, existential witness, or witness dependence; all conclusions are universal algebraic facts about B and E.",
-      "reasoning": "The paper's essential existential iteration quantifier is erased."
+      "paper_evidence": "Theorems 3.3 and 3.4 derive existence of an iteration k<=n; Appendix C obtains that witness from Theorem 3.1.",
+      "translation_evidence": "Each existential k is required to equal a key dimension already stored in the corresponding run, whose positivity and upper bound are package fields.",
+      "reasoning": "The substantive attainable-iteration existential is replaced by repackaging a preselected dimension. The paper's precise scope of the k-dependent condition is itself not fully explicit."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "Theorems 3.3 and 3.4 require the perturbation model (3.14), the definition of rho_A^R, nonsingularity conditions, fixed flexible preconditioning, and the complete five-term smallness condition (3.16).",
-      "translation_evidence": "The only hypotheses are um >= 0 and etaR >= 0. No inverse, smallness, perturbation, fixed-preconditioner, or computed-data hypothesis appears.",
-      "reasoning": "Nearly all hypotheses governing applicability of the paper's numerical result are missing."
+      "paper_evidence": "Equation (3.14) and the complete five-entry condition (3.16) are the hypotheses for both results.",
+      "translation_evidence": "The five products occur in theta, but the translation instead assumes theta tends to zero along a filter and eventually lies in [0,1), together with injectivity, exact run relations, polynomial restrictions, and error-analysis certificates.",
+      "reasoning": "The complete five terms are represented, but the fixed qualitative applicability hypothesis is replaced by a stronger and structurally different collection of assumptions."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "The paper concludes two conditional attainable normalized forward-error bounds and explains that their explicit bracket difference is the preconditioner-reapplication term.",
-      "translation_evidence": "The conclusions are B <= E, an exact decomposition of E, an equality characterization, and a strict-order implication. No error bound for either computed approximation is stated.",
-      "reasoning": "The translation retains only an elementary consequence of the displayed right-hand-side expressions and omits the principal conclusions."
+      "status": "pass",
+      "paper_evidence": "Equation (3.17) has the ug, um etaR, and ua rhoAR sources; equation (3.20) retains only the ug and ua rhoAR sources.",
+      "translation_evidence": "Both leading expressions are present, and the extra pointwise identity algebraically isolates the omitted um etaR kappaR term.",
+      "reasoning": "At the term-list level, both displayed bounds and the flexible omission are present; their altered scope and relation strength are assessed separately."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The paper uses condition numbers of actual matrices, rho_A^R as a cancellation ratio involving computed Z_k and y_k, and c(n,k) as a varying low-degree polynomial.",
-      "translation_evidence": "K(X,Y) is defined as the product of norms of two unrelated arbitrary matrices, rhoA is an unrestricted real scalar, and c(n,k) is absent. The dependency ledger otherwise interprets the formal real, order, and norm operations.",
-      "reasoning": "The formal operators are internally understood, but central paper definitions are replaced by unconstrained inputs or omitted."
+      "status": "pass",
+      "paper_evidence": "The relevant operators include Euclidean and Frobenius norms, condition factors, componentwise absolute values, polynomial factors, and relative error.",
+      "translation_evidence": "D001-D164 provide meanings and target effects for all local projections, constructors, matrix operations, norms, filters, big-O, arithmetic, and logical operators.",
+      "reasoning": "The dependency ledger adequately unfolds the translation's imported definitions, although several chosen definitions do not match the paper semantically."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "The quantities hat_x_k, hat_z_j, hat_Z_k, and hat_y_k are computed quantities produced by rounded operations and perturbed preconditioner applications.",
-      "translation_evidence": "Every quantity is an exact real scalar, exact matrix norm, product, or sum; no computed or perturbed object exists.",
-      "reasoning": "The translation eliminates rather than preserves the distinction between exact and computed quantities."
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes exact x, computed xHat, computed ZHat, application-dependent perturbations, and the inaccessible mathematical basis ZTilde.",
+      "translation_evidence": "The translation distinguishes xExact from xHat, exact matrices from deltaA and deltaMR, and computedAZ, V, and zHat from system data.",
+      "reasoning": "No direct identification of exact and computed solutions or operators occurs. Omission of the separate ZTilde construction affects algorithm linkage rather than causing an explicit conflation."
     },
     {
       "id": "S08",
       "status": "fail",
-      "paper_evidence": "The missing term is specifically caused by flexible GMRES reusing stored preconditioned vectors instead of reapplying MR^-1 during solution formation.",
-      "translation_evidence": "No GMRES iteration, basis construction, stored vector, solution-formation path, or preconditioner application is represented.",
-      "reasoning": "The added-term identity is detached from the algorithmic mechanism that gives it meaning."
+      "paper_evidence": "Algorithm 1 specifies MGS, Givens-based least squares, a triangular solve, right solution formation through VHat followed by fresh MR inverse application, and flexible formation from stored ZHat.",
+      "translation_evidence": "The packages impose abstract augmented relations, minimizer properties, perturbation bounds, and certificates, but do not derive them from that floating-point execution or reproduce the well-conditioned MGS witness.",
+      "reasoning": "The right-versus-flexible solution paths are recognizable, but the proposition is linked to a certified abstract model rather than the paper's algorithm. It also silently chooses residual b-A*xInitial although Algorithm 1 displays A*xInitial-b."
     },
     {
       "id": "S09",
       "status": "fail",
-      "paper_evidence": "Forward errors and rho_A^R use vector 2-norms, the perturbation model uses a Frobenius norm, and generic kappa denotes an appropriate condition number involving a matrix and its actual inverse.",
-      "translation_evidence": "Only the matrix L2 operator norm appears. K multiplies norms of arbitrary paired matrices, while the forward-error, Frobenius, and componentwise-cancellation norms are absent.",
-      "reasoning": "The selected norm can model one condition-number convention after specialization, but the paper's complete norm semantics are not preserved."
+      "paper_evidence": "Vector errors and rhoAR use the 2-norm, application errors use Frobenius norm, and the theorem deliberately uses generic kappa after defining kappaF, kappa2, and kappaF,2.",
+      "translation_evidence": "Vector and perturbation norms match, but kappaA, kappaR, and kappaAR are fixed to induced Euclidean operator-norm condition numbers.",
+      "reasoning": "The silent selection of kappa2 resolves an ambiguity that the paper intentionally leaves generic."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "The conclusions depend on an existential k <= n and an unspecified c(n,k), and the hypotheses and rho_A^R depend on the computed basis indexed by j <= k.",
-      "translation_evidence": "There is no k, j, c(n,k), or indexed basis. The coefficient of the isolated increment is correctly represented as um * etaR * K(MR,MRinv).",
-      "reasoning": "One coefficient pattern is retained, but the theorem's constants, indexing, and parameter dependence are largely absent."
+      "paper_evidence": "The witness satisfies k<=n, bases use k and k+1 columns as appropriate, and c(n,k) denotes unspecified low-degree polynomials whose exact values are not tracked.",
+      "translation_evidence": "The dimensions and offsets are mostly correct, but each run carries one exact nonnegative-coefficient polynomial with unrestricted degrees and coefficients.",
+      "reasoning": "An arbitrary exact polynomial record is not the paper's unspecified low-degree c(n,k), and the modular 4/3 witness constants are absent."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "The paper distinguishes precisions ua, um, and ug, models rounded products and normwise perturbations, and works under the ordinary finite floating-point model.",
-      "translation_evidence": "ug, um, and ua are merely exact real numbers. No rounding, precision semantics, exceptional-value assumptions, underflow, or overflow model is encoded.",
-      "reasoning": "The numerical model central to the paper result has been erased."
+      "paper_evidence": "Section 2 invokes the standard floating-point model with fixed unit roundoffs um, ua, and ug substantially below one; exceptional-value behavior is not separately specified.",
+      "translation_evidence": "The parameters are arbitrary nonnegative real-valued functions tending to zero, and computation is represented only through admitted perturbation relations and certificates.",
+      "reasoning": "This is an asymptotic perturbation-family model, not the stated fixed floating-point execution model."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The paper gives first-order approximate upper bounds on normalized forward errors; Remark 4 identifies a term absent from one displayed bound.",
-      "translation_evidence": "The translation proves exact equality and order relations between newly defined algebraic quantities and adds an exact equality iff and strictness result.",
-      "reasoning": "The order of the bracket quantities is a valid corollary, but it is not the paper's approximate error-bound relation and the additional exact logical characterizations are not the stated result."
+      "paper_evidence": "The conclusions are qualitative lesssim inequalities after neglected second-order terms, and the hypotheses use qualitative much-less-than relations.",
+      "translation_evidence": "LocalDef019 asserts an exact eventual inequality with an absolute remainder, while the proposition adds an exact pointwise algebraic identity.",
+      "reasoning": "The upper-bound direction is retained, but the exact logical relation is materially stronger and different."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "Equations (3.17) and (3.20) concern attainable normalized forward error for Ax=b.",
-      "translation_evidence": "No computed solution, exact solution, error numerator, normalization denominator, residual, or other numerical error notion occurs.",
-      "reasoning": "The forward-error notion is omitted entirely."
+      "status": "pass",
+      "paper_evidence": "Equation (2.1) defines relative 2-norm forward error in the solution of the original system.",
+      "translation_evidence": "EX is defined as ||xHatX-xExact||_2/||xExact||_2 with A*xExact=b.",
+      "reasoning": "The translation does not substitute residual, backward, or preconditioned-variable error."
     },
     {
       "id": "S14",
       "status": "fail",
-      "paper_evidence": "The less-than-or-approximately-equal bounds omit negligible second-order terms and retain a dimension- and iteration-dependent factor c(n,k).",
-      "translation_evidence": "All conclusions are exact real identities and inequalities, with no approximation convention, remainder, higher-order term, or c(n,k).",
-      "reasoning": "The first-order status of the paper result is not represented."
+      "paper_evidence": "The paper says negligible second-order terms are dropped and supplies no explicit remainder, coefficient, or big-O statement in (3.17) or (3.20).",
+      "translation_evidence": "Both certificates and conclusions require normalized remainders that are O_l(theta^2).",
+      "reasoning": "An exact filter-based quadratic remainder is invented rather than justified by the source."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The paper concerns finite-dimensional real systems with nonsingular A and MR and condition numbers formed using genuine inverses.",
-      "translation_evidence": "The translation permits n=0, singular or zero matrices, and unrelated matrices bearing inverse-like names.",
-      "reasoning": "This is an unjustified generalization of the data domain, although the resulting elementary algebra remains true."
+      "paper_evidence": "The source already concerns finite-dimensional real matrices and fixed floating-point parameters while retaining generic normwise kappa notation.",
+      "translation_evidence": "The translation adds arbitrary filtered parameter families and specializes all condition factors to induced 2-norm condition numbers without classifying or justifying either change.",
+      "reasoning": "The finite real specialization matches, but the asymptotic generalization and norm specialization do not."
     },
     {
       "id": "S16",
       "status": "fail",
-      "paper_evidence": "The paper's bounds are nontrivial conditional statements about computed GMRES approximations at some iteration.",
-      "translation_evidence": "The translated proposition follows directly from the definitions of B and E and norm nonnegativity; at n=0 the norm-product increment necessarily vanishes, and the strict implication is then vacuous.",
-      "reasoning": "The formal hypotheses are satisfiable, but the result is true for elementary definitional reasons that do not establish the intended numerical claim."
+      "paper_evidence": "The paper derives its attainable bounds from the GMRES model and applicability assumptions.",
+      "translation_evidence": "Right and flexible binders are required to contain D067 and D065 certificates already supplying the error decomposition, all normalized leading bounds, and the O(theta^2) remainder; no package-existence theorem is asserted.",
+      "reasoning": "The conclusion follows from assumptions packaged into the binder and is vacuous when no certified package exists, so it does not establish the paper's substantive result."
     }
   ],
   "implications": {
     "translation_implies_paper": {
       "verdict": "no",
-      "reasoning": "The algebraic comparison of B and E supplies no computed GMRES approximation, existential iteration, smallness condition, perturbation model, or attainable forward-error bound, so it cannot imply either paper theorem."
+      "reasoning": "The translation establishes nothing for an ordinary paper-admissible GMRES run unless a package containing the desired error certificate is first constructed. Its existential iteration is preselected, so it cannot recover the paper's attainable-witness theorem."
     },
     "paper_implies_translation": {
       "verdict": "yes",
-      "reasoning": "After specializing the paired matrices to the paper's matrices and their inverses and selecting the corresponding operator-norm condition numbers, the displayed three-term bracket is exactly the two-term bracket plus um * etaR * kappa(MR). Nonnegativity of unit roundoff, etaR, and norms yields the translated order, equality, and strictness facts by real algebra. These are only corollaries of the paper expressions."
+      "reasoning": "For every inhabited translation package, D065 or D067 already supplies a decomposition, the required component bounds, and an O(theta^2) remainder; the target inequality follows by the triangle inequality, and the final identity is algebraic. Thus the restricted translated proposition is already implied by its own binder data and is weaker in statement content."
     }
   },
   "classification": "not-faithful-weaker",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "main-result-omission",
-      "paper_evidence": "Theorems 3.3 and 3.4 are conditional existential attainable normalized forward-error bounds for computed right- and flexible-preconditioned GMRES solutions.",
-      "translation_evidence": "The translation states only exact algebraic relations between two scalar expressions B and E.",
-      "impact": "Proving the translation does not establish either numerical theorem or any bound on a computed solution."
+      "category": "certificate-assumed conclusion",
+      "paper_evidence": "Theorems 3.3 and 3.4 derive the error bounds from Algorithm 1, (3.14), and (3.16).",
+      "translation_evidence": "D065 and D067 are mandatory package fields and already contain the decomposition, leading bounds, and quadratic remainder needed for the target.",
+      "impact": "The formal proposition is circularly restricted to already-certified runs and can be vacuous for the executions covered by the paper."
     },
     {
       "severity": "critical",
-      "category": "algorithm-and-floating-point-model",
-      "paper_evidence": "The removed term arises specifically from avoiding a fresh low-precision application of MR^-1 during flexible solution formation.",
-      "translation_evidence": "There are no rounded operations, computed basis vectors, stored preconditioned vectors, or solution-formation procedures.",
-      "impact": "The formal result cannot express why the term is present or absent and is disconnected from the GMRES algorithms."
+      "category": "existential witness collapse",
+      "paper_evidence": "Theorem 3.1 supplies a well-conditioned-basis iteration, which Appendices C and D use to obtain some k<=n.",
+      "translation_evidence": "kR and kF must equal stored key dimensions whose bounds are already package fields.",
+      "impact": "The paper's attainable-iteration conclusion is lost."
     },
     {
       "severity": "major",
-      "category": "hypotheses-and-quantifiers",
-      "paper_evidence": "The paper assumes nonsingularity, a fixed preconditioner, a perturbation model, condition (3.16), and existence of some k <= n.",
-      "translation_evidence": "Only um and etaR nonnegativity are assumed, and no iteration witness exists.",
-      "impact": "The applicability conditions and existential attainable-error character of the paper result are lost."
+      "category": "invented higher-order semantics",
+      "paper_evidence": "Section 2 only states that negligible second-order terms are dropped under lesssim notation.",
+      "translation_evidence": "The result asserts exact eventual inequalities with explicit O_l(theta^2) remainders.",
+      "impact": "This claims uniform asymptotic remainder structure not supplied by the paper."
     },
     {
       "severity": "major",
-      "category": "condition-number-semantics",
-      "paper_evidence": "The kappa factors are condition numbers of A, MR, and A MR^-1, using actual inverses under the paper's norm convention.",
-      "translation_evidence": "K is the product of operator norms of arbitrary unrelated matrix pairs; inverse-like names carry no inverse equations.",
-      "impact": "Outside the intended specialization, the matrix-dependent factors do not denote the paper's condition numbers."
+      "category": "altered numerical regime",
+      "paper_evidence": "Equation (3.16) is a fixed five-entry qualitative smallness condition for the execution.",
+      "translation_evidence": "The five-entry theta is a function required to converge to zero along an arbitrary nonbottom filter.",
+      "impact": "Fixed mixed-precision GMRES runs are replaced by asymptotic parameter families."
     },
     {
       "severity": "major",
-      "category": "first-order-forward-error-semantics",
-      "paper_evidence": "The envelopes are approximate first-order bounds with c(n,k) and omitted higher-order terms.",
-      "translation_evidence": "The statement contains exact identities and inequalities but no forward error, c(n,k), or approximation semantics.",
-      "impact": "The translation changes a numerical error analysis result into an exact scalar arithmetic lemma."
+      "category": "unsupported norm and polynomial choices",
+      "paper_evidence": "The paper deliberately leaves kappa generic and describes c(n,k) only as unspecified low-degree polynomials.",
+      "translation_evidence": "All condition factors use induced 2-norms, while polynomial records may have arbitrary degree and coefficients.",
+      "impact": "The constants and norm semantics are specialized or generalized without source support."
     },
     {
-      "severity": "note",
-      "category": "captured-algebraic-corollary",
-      "paper_evidence": "Remark 4 identifies um * etaR * kappa(MR) as the explicit term removed from the flexible displayed bracket.",
-      "translation_evidence": "E is defined as B plus exactly um * etaR * K(MR,MRinv), and the translation derives its nonnegative contribution.",
-      "impact": "The translation correctly captures the structural added-term comparison after the intended specialization, but only as a weak corollary."
+      "severity": "major",
+      "category": "algorithm abstraction mismatch",
+      "paper_evidence": "Algorithm 1 and Sections 3.3-3.4 specify MGS-GMRES and distinct right and flexible solution-formation executions.",
+      "translation_evidence": "The proposition assumes abstract run relations and certificates and omits the source's derivation of the well-conditioned Krylov witness and inaccessible ZTilde basis.",
+      "impact": "The packages do not establish that their certified data arise from the paper's floating-point algorithm."
+    },
+    {
+      "severity": "minor",
+      "category": "initial-guess ambiguity",
+      "paper_evidence": "Algorithm 1 displays r0=A*x0-b and xk=x0 plus a correction, while Algorithm 2 suppresses x0.",
+      "translation_evidence": "The run fixes r0=b-A*xInitial and uses xHat=xInitial plus a correction.",
+      "impact": "The source does not resolve this sign and shifting convention, so adjudication is required before a faithful reconstruction silently chooses one."
     }
   ],
-  "rationale": "The blind translation correctly isolates the explicit um * etaR * kappa(MR) contribution distinguishing the two displayed right-hand-side brackets. It does not translate the paper's actual conditional, existential, first-order attainable-forward-error theorems: their computed quantities, algorithmic linkage, smallness condition, iteration witness, normalization, c(n,k), and floating-point model are all absent. The resulting proposition is an elementary exact real-algebra consequence of the paper's bracket structure, so the paper implies it under the intended specialization, while it cannot imply the paper result in return. It is therefore not-faithful-weaker."
+  "rationale": "The leading right and flexible error terms are recognizable, and the dependency ledger is detailed, but the proposition does not translate the paper's theorem. It universally quantifies only over packages that already contain essentially the desired proof certificates, replaces the derived existential iteration by stored data, converts qualitative first-order bounds into exact filtered big-O assertions, and changes norm, polynomial, and floating-point semantics. The result is therefore a weaker, potentially vacuous certified-package theorem rather than a faithful formalization. Adjudication is requested for the unresolved initial-residual and k-scope conventions, although those ambiguities do not alter the rejection."
 }

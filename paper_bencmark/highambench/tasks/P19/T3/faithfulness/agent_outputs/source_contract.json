@@ -1,174 +1,206 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "Equation (3.20) has no explicit u_m factor and Remark 4 says it removes dependence on u_m, but Theorem 3.4 still assumes condition (3.16), which contains u_m eta_R kappa(M_R), and rho_A^R is built from vectors computed by fl(M_R^-1 hat_v_j) in precision u_m (PDF p. 11, printed p. 10, anchors: equations (3.14)-(3.16); PDF p. 12, printed p. 11, anchors: equation (3.20) and Remark 4).",
-      "impact": "The safest reading is that flexible solution formation removes the explicit reapplication contribution from the envelope; it does not make theorem applicability or all computed intermediate quantities mathematically independent of u_m.",
-      "issue": "Remark 4's removal-of-u_m language is broader than the literal theorem statement."
-    },
-    {
-      "evidence": "Section 3.5 reports rho_A^R behaving like c(n,k) in the main experiments but also mentions extreme unreported cases where it was of order kappa(M_R), and says further investigation is needed (PDF p. 13, printed p. 12, anchor: rho_A^R simplification bullet).",
-      "impact": "Replacing rho_A^R by an order-one constant, or claiming complete u_m insensitivity through it, belongs only to the simplified or empirical discussion and not to the original theorem.",
-      "issue": "The magnitude and possible precision dependence of rho_A^R are not theoretically resolved."
-    },
-    {
-      "evidence": "Remark 3 says the u_a kappa(A M_R^-1)kappa(M_R) requirement is likely pessimistic and offers condition (3.18) involving tilde_Z_k; Remark 5 says the corresponding requirement and u_m eta_R kappa(M_R) are likely pessimistic for the flexible theorem (PDF pp. 11-12, printed pp. 10-11, anchors: Remarks 3 and 5).",
-      "impact": "The displayed theorems remain conditional on (3.16), while informal discussion may ignore those conditions; a formal contract must not silently drop them.",
-      "issue": "Some applicability requirements are explicitly described as likely pessimistic."
-    },
-    {
-      "evidence": "Section 2 defines several normwise condition numbers and then permits the generic notation kappa (PDF p. 6, printed p. 5, anchor: condition-number notation); equations (3.16), (3.17), and (3.20) use generic kappa (PDF pp. 11-12, printed pp. 10-11).",
-      "impact": "A formalization must either retain an abstract condition-number convention or select the appropriate 2-norm/Frobenius variant explicitly.",
-      "issue": "The exact condition-number norm is abbreviated."
-    },
-    {
-      "evidence": "Algorithm 1 forms x_k from x_0 plus a Krylov correction, while Algorithm 2 line 4 writes x_k = tilde_Z_k y_k and the theorem passages do not restate how x_0 is absorbed (PDF p. 3, printed p. 2, anchor: Algorithm 1 lines 17-18; PDF p. 7, printed p. 6, anchor: Algorithm 2 line 4).",
-      "impact": "The source formulas clearly govern the analyzed computed approximation, but a literal algorithm-level formalization should specify whether x_0 = 0 or whether the analyzed system is the correction system.",
-      "issue": "Algorithm 1 displays an initial guess x_0, whereas modular Algorithm 2 writes the approximation simply as tilde_Z_k y_k."
-    }
-  ],
-  "contract_plain_english": "Under the complete smallness condition (3.16), right-preconditioned GMRES attains at some k <= n a first-order forward-error envelope with three sources: ordinary GMRES rounding, a fresh low-precision right-preconditioner application during solution formation, and multiplication by A. Flexible-preconditioned GMRES stores the already preconditioned basis and therefore has the same conditional envelope with the middle term u_m eta_R kappa(M_R) removed. This is a proved difference in the displayed bounds, but the flexible theorem still retains u_m in its applicability condition and may retain implicit u_m effects through its computed basis and rho_A^R. Experiments support improved flexible robustness when preconditioner precision is lowered, while also showing increased iteration counts and some real-problem outliers (PDF pp. 11-12, printed pp. 10-11, anchors: equations (3.16), (3.17), (3.20), and Remark 4; PDF pp. 20-21 and 32, printed pp. 19-20 and 31, anchors: Sections 4.2.3 and 5.1).",
-  "paper_batch_sha256": "282bdf4dba3e70c740465a2c4663b96debd1a66ef82c3debf273ad41cdbf76e0",
-  "paper_sha256": "67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P19-T3",
+  "paper_sha256": "67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad",
   "source_evidence": [
     {
-      "anchor": "Algorithm 1, right-preconditioned variant and surrounding text",
-      "observation": "Right-preconditioned MGS-GMRES applies M_R^-1 to hat_v_j in precision u_m, applies A in precision u_a, performs the remaining GMRES operations in precision u_g, and at solution formation computes hat_V_k hat_y_k before reapplying M_R^-1. Flexible-preconditioning instead stores the vectors z_j and forms the solution from Z_k y_k.",
       "pdf_page": 3,
-      "printed_page": "2"
+      "printed_page": "2",
+      "anchor": "equations (1.1)-(1.2) and introduction of Algorithm 1",
+      "observation": "The standing problem is Ax = b with A in R^{n x n} nonsingular and 0 != b in R^n; the right preconditioner M_R is nonsingular. The surrounding text assigns preconditioner applications to u_m, products with A to u_a, and remaining GMRES work to u_g, and introduces flexible GMRES as persistently storing Z_k = [z_1,...,z_k]. (PDF p. 3, printed p. 2, equations (1.1)-(1.2) and paragraph introducing Algorithm 1.)"
     },
     {
-      "anchor": "equations (3.14)-(3.17), Theorem 3.3",
-      "observation": "The preconditioner model is fl(M_R^-1 hat_v_j) = (M_R^-1 + Delta M_R^(j))hat_v_j with normF(Delta M_R^(j)) <= c(n,k)u_m eta_R normF(M_R^-1). rho_A^R is defined by (3.15). Under the five-term smallness condition (3.16), there exists k <= n satisfying the right-preconditioned forward-error bound (3.17).",
+      "pdf_page": 4,
+      "printed_page": "3",
+      "anchor": "Algorithm 1, right-preconditioned MGS-GMRES",
+      "observation": "The right branch computes z_j = M^{-1}v_j in u_m, w_j = Az_j in u_a, MGS and the least-squares coefficients in u_g, y'_k = V_k y_k in u_g, and x_k = x_0 + M^{-1}y'_k in u_m. The text below states that this study fixes M_R for all iterations. (PDF p. 4, printed p. 3, Algorithm 1 and following paragraph.)"
+    },
+    {
+      "pdf_page": 6,
+      "printed_page": "5",
+      "anchor": "Section 2, notation and equation (2.1)",
+      "observation": "The paper invokes the standard floating-point model, defines fl(.) as a computed value, treats c(n,k) as unspecified low-degree polynomials, uses lesssim and approximately-equal after dropping negligible second-order terms, defines the vector 2-norm and matrix Frobenius and induced 2-norms, uses an undifferentiated kappa when norm distinctions are unnecessary, and defines relative forward error by ||hat{x}-x||_2/||x||_2. (PDF p. 6, printed p. 5, Section 2 and equation (2.1).)"
+    },
+    {
+      "pdf_page": 7,
+      "printed_page": "6",
+      "anchor": "Section 3.1 and Algorithm 2",
+      "observation": "Algorithm 2 represents the search-space basis by tilde{Z}_k, while the discussion distinguishes it from the computed basis hat{Z}_k and says the difference is technical and used in the appendices. The least-squares process uses MGS, Givens rotations, and a triangular solve. (PDF p. 7, printed p. 6, Section 3.1 and Algorithm 2.)"
+    },
+    {
+      "pdf_page": 9,
+      "printed_page": "8",
+      "anchor": "Theorem 3.1, equations (3.7)-(3.8)",
+      "observation": "The modular result supplies an existential dimension k <= n, with the selected computed Krylov basis satisfying sigma_min(hat{V}_k)^{-1} <= 4/3 and sigma_max(hat{V}_k) <= 4/3, and gives the generic forward-error estimate later specialized in Theorems 3.3 and 3.4. (PDF p. 9, printed p. 8, Theorem 3.1 and equations (3.7)-(3.8).)"
+    },
+    {
       "pdf_page": 11,
-      "printed_page": "10"
+      "printed_page": "10",
+      "anchor": "equations (3.14)-(3.17) and Theorem 3.3",
+      "observation": "Equation (3.14) models each computed right-preconditioner application, equation (3.15) defines rho_A^R from the computed basis and coefficients, equation (3.16) gives five smallness requirements, and Theorem 3.3 asserts existence of k <= n with the three-term right-preconditioned forward-error bound (3.17). (PDF p. 11, printed p. 10, equations (3.14)-(3.17) and Theorem 3.3.)"
     },
     {
-      "anchor": "condition (3.16)",
-      "observation": "The condition is max{u_g kappa(A M_R^-1), u_g kappa(M_R), u_m eta_R kappa(M_R), u_a kappa(A)rho_A^R, u_a kappa(A M_R^-1)kappa(M_R)} << 1.",
-      "pdf_page": 11,
-      "printed_page": "10"
-    },
-    {
-      "anchor": "Section 3.4 and equation (3.20), Theorem 3.4",
-      "observation": "Flexible-preconditioned GMRES uses a fixed M_R^(j) = M_R != I, stores hat_Z_k explicitly, and forms the approximation directly by a standard matrix-vector product with hat_Z_k in precision u_g without reapplying M_R^-1. Assuming (3.16), there exists k <= n satisfying bound (3.20), whose right-hand side omits u_m eta_R kappa(M_R).",
       "pdf_page": 12,
-      "printed_page": "11"
+      "printed_page": "11",
+      "anchor": "Theorem 3.4, equation (3.20), and Remarks 4-5",
+      "observation": "Flexible GMRES uses a fixed M_R, stores hat{Z}_k explicitly, computes the solution directly by a u_g matrix-vector product with hat{Z}_k, and does not reapply M_R^{-1}. Theorem 3.4 assumes the complete condition (3.16), asserts existence of k <= n, and gives the two-term bound (3.20); Remark 4 identifies the omitted u_m eta_R kappa(M_R) term. (PDF p. 12, printed p. 11, Section 3.4, Theorem 3.4, equation (3.20), and Remarks 4-5.)"
     },
     {
-      "anchor": "Remarks 4-5",
-      "observation": "Remark 4 attributes removal of u_m eta_R kappa(M_R) to avoiding reapplication of M_R^-1 and says this removes dependence on precision u_m. Remark 5 nevertheless says the u_m eta_R kappa(M_R) and u_a kappa(A M_R^-1)kappa(M_R) requirements retained through condition (3.16) are likely pessimistic.",
-      "pdf_page": 12,
-      "printed_page": "11"
+      "pdf_page": 41,
+      "printed_page": "40",
+      "anchor": "Appendix C, equations (C.1)-(C.2)",
+      "observation": "The proof models the A product by |Delta A^{(j)}| lesssim c(n,k)u_a|A| and defines tilde{z}_j = hat{z}_j + A^{-1}Delta A^{(j)}hat{z}_j, thereby absorbing this rounding error into the mathematical search space and setting epsilon_c = 0. It explicitly says tilde{Z}_k is not algorithmically accessible. (PDF p. 41, printed p. 40, Appendix C, equations (C.1)-(C.2).)"
     },
     {
-      "anchor": "Section 3.5, equations (3.22)-(3.23)",
-      "observation": "After heuristically assuming eta_R and rho_A^R are order-constant, ignoring c(n,k), and ignoring the applicability conditions, the paper simplifies the right bound to u_g kappa(A M_R^-1)kappa(M_R) + u_m kappa(M_R) + u_a kappa(A), and the flexible bound to u_g kappa(A M_R^-1)kappa(M_R) + u_a kappa(A). It reports observed order-constant rho_A^R in its main experiments but also unreported extreme non-practical cases where rho_A^R was of order kappa(M_R).",
-      "pdf_page": 13,
-      "printed_page": "12"
+      "pdf_page": 42,
+      "printed_page": "41",
+      "anchor": "Appendix C, equations (C.3)-(C.10)",
+      "observation": "After explicitly dropping second-order terms, equation (C.3) expands right-preconditioned solution formation through a u_g product with hat{V}_k followed by a fresh u_m application of M_R^{-1}. Equations (C.7)-(C.10) propagate the A-product perturbation through rho_A^R and relate computed and mathematical search-space products. (PDF p. 42, printed p. 41, Appendix C, equations (C.3)-(C.10).)"
     },
     {
-      "anchor": "Appendix D, equations (D.1)-(D.2)",
-      "observation": "For flexible-preconditioning, hat_x_k = fl(hat_Z_k hat_y_k) and the solution-formation perturbation satisfies norm2(Delta x) <= c(n,k)[u_g kappa(M_R) + u_a kappa(A)rho_A^R]norm2(tilde_Z_k hat_y_k). Comparing this with (C.11), the proof explicitly identifies the absent reapplication term.",
+      "pdf_page": 43,
+      "printed_page": "42",
+      "anchor": "Appendix C, equation (C.11)",
+      "observation": "Equation (C.11) bounds the solution-formation perturbation by c(n,k)(u_m eta_R kappa(M_R) + u_g kappa(M_R) + u_a kappa(A)rho_A^R)||tilde{Z}_k hat{y}_k||_2 and identifies the corresponding epsilon_x; the proof also has epsilon_b = 0 because M_L = I. (PDF p. 43, printed p. 42, Appendix C, equation (C.11) and following paragraphs.)"
+    },
+    {
       "pdf_page": 44,
-      "printed_page": "43"
+      "printed_page": "43",
+      "anchor": "Appendix C conclusion and Appendix D, equation (D.1)",
+      "observation": "Appendix C invokes Theorem 3.1 to obtain an existential k <= n and derives (3.17). Appendix D replaces right-preconditioned solution formation by hat{x}_k = fl(hat{Z}_k hat{y}_k) = (hat{Z}_k + Delta Z_k^{(3)})hat{y}_k with |Delta Z_k^{(3)}| lesssim c(n,k)u_g|hat{Z}_k|. (PDF p. 44, printed p. 43, conclusion of Appendix C and Appendix D, equation (D.1).)"
     },
     {
-      "anchor": "Appendix D, closing recovery of equation (3.20)",
-      "observation": "The proof substitutes the new epsilon_x into the modular bound and states that it recovers forward-error bound (3.20).",
       "pdf_page": 45,
-      "printed_page": "44"
-    },
-    {
-      "anchor": "Section 4.2.3, flexible-preconditioned experiments",
-      "observation": "In synthetic experiments for u_a = u_g << u_m, lowering preconditioner precision leaves flexible variants' observed robustness unchanged but significantly increases their iteration counts.",
-      "pdf_page": 20,
-      "printed_page": "19"
-    },
-    {
-      "anchor": "Section 4.2.3, right-preconditioned experiments",
-      "observation": "For right-preconditioning, the paper reports the additional u_m kappa(M_R) term becoming dominant in the low-preconditioner-precision strategy and observes reduced robustness, while noting that right-preconditioning uses less basis storage than flexible-preconditioning.",
-      "pdf_page": 21,
-      "printed_page": "20"
-    },
-    {
-      "anchor": "Section 5.1 discussion following Table 5",
-      "observation": "On SuiteSparse experiments, flexible-preconditioning usually has better robustness and iteration counts for the low-preconditioner-precision variants, but the paper explicitly records outliers and a more nuanced comparison between right and left preconditioning.",
-      "pdf_page": 32,
-      "printed_page": "31"
+      "printed_page": "44",
+      "anchor": "Appendix D, equation (D.2) and recovery of (3.20)",
+      "observation": "Equation (D.2) contains only the u_g kappa(M_R) and u_a kappa(A)rho_A^R contributions to the local solution-formation error. The proof states that avoiding preconditioner reapplication spares u_m eta_R kappa(M_R), then substitutes the new epsilon_x into (3.8) to recover (3.20). (PDF p. 45, printed p. 44, Appendix D, equation (D.2) and final paragraph.)"
     }
   ],
   "statement": {
-    "algorithm_linkage": "Both variants compute hat_z_j = fl(M_R^-1 hat_v_j) and Ahat_z_j during basis construction. Right-preconditioned GMRES later computes hat_V_k hat_y_k and applies M_R^-1 again, whereas flexible-preconditioned GMRES stores hat_Z_k and computes hat_Z_k hat_y_k directly; the removed final reapplication is the source of the missing u_m eta_R kappa(M_R) term (PDF p. 3, printed p. 2, anchor: Algorithm 1 and flexible modification; PDF pp. 11-12, printed pp. 10-11, anchors: Sections 3.3-3.4 and Remark 4).",
     "binders": [
-      "Let A in R^(n x n) be nonsingular, let 0 != b in R^n, and let M_R in R^(n x n) be a nonsingular right preconditioner with M_L = I; the sections consider M_R != I (PDF p. 2, printed p. 1, anchor: equation (1.1); PDF p. 11, printed p. 10, anchor: opening of Section 3.3).",
-      "Let u_a, u_m, and u_g be the unit roundoffs for multiplication by A, application of M_R^-1, and the remaining GMRES operations respectively, and let eta_R quantify preconditioner-application error (PDF p. 3, printed p. 2, anchor: Algorithm 1; PDF p. 11, printed p. 10, anchor: equation (3.14)).",
-      "For j <= k, let hat_z_j = fl(M_R^-1 hat_v_j), hat_Z_k = [hat_z_1,...,hat_z_k], and let hat_y_k be the computed least-squares coefficient vector (PDF p. 11, printed p. 10, anchor: equations (3.14)-(3.15)).",
-      "For flexible-preconditioning, M_R^(j) = M_R is fixed for every j <= k, despite the method's ability in general to vary the preconditioner (PDF p. 12, printed p. 11, anchor: opening of Section 3.4)."
-    ],
-    "conclusions": [
-      "For right-preconditioned GMRES, there exists an iteration k <= n such that norm2(hat_x_k - x)/norm2(x) is less than or approximately equal to c(n,k)[u_g kappa(A M_R^-1)kappa(M_R) + u_m eta_R kappa(M_R) + u_a kappa(A)rho_A^R] (PDF p. 11, printed p. 10, anchor: equation (3.17)).",
-      "For flexible-preconditioned GMRES with fixed M_R, there exists an iteration k <= n such that norm2(hat_x_k - x)/norm2(x) is less than or approximately equal to c(n,k)[u_g kappa(A M_R^-1)kappa(M_R) + u_a kappa(A)rho_A^R] (PDF p. 12, printed p. 11, anchor: equation (3.20)).",
-      "The explicit difference between the displayed envelopes is precisely the right-preconditioned term u_m eta_R kappa(M_R) (PDF p. 12, printed p. 11, anchor: Remark 4).",
-      "The paper attributes this difference to flexible-preconditioning's reuse of stored preconditioned vectors rather than a fresh application of M_R^-1 during solution formation (PDF p. 12, printed p. 11, anchor: Section 3.4 and Remark 4; PDF p. 44, printed p. 43, anchor: equations (D.1)-(D.2))."
-    ],
-    "constants_and_indexing": [
-      "Both conclusions are existential: each asserts some k <= n, not all k and not a prescribed iteration (PDF pp. 11-12, printed pp. 10-11, anchors: Theorems 3.3-3.4).",
-      "Flexible-preconditioning uses the same fixed M_R for all j <= k (PDF p. 12, printed p. 11, anchor: opening of Section 3.4).",
-      "The five quantities inside the maximum in condition (3.16) must all be small (PDF p. 11, printed p. 10, anchor: equation (3.16)).",
-      "c(n,k) is an unspecified low-degree polynomial and may change between estimates (PDF p. 6, printed p. 5, anchor: Section 2 definition of c(n,k))."
-    ],
-    "definitions_and_conventions": [
-      "The normalized forward error is norm2(hat_x_k - x)/norm2(x) for the original system Ax = b (PDF p. 6, printed p. 5, anchor: equation (2.1); PDF pp. 11-12, printed pp. 10-11, anchors: equations (3.17) and (3.20)).",
-      "eta_R is a scalar measuring the magnitude of error in applying M_R^-1; the original theorems do not set eta_R to one or assume it is constant (PDF p. 11, printed p. 10, anchor: equation (3.14) and following sentence).",
-      "rho_A^R measures componentwise cancellation in the stored basis product through norm2(|hat_Z_k||hat_y_k|)/norm2(hat_Z_k hat_y_k) (PDF p. 11, printed p. 10, anchor: equation (3.15)).",
-      "The later equations (3.22)-(3.23) are simplified discussion bounds obtained only after additional assumptions; they are not the original theorem statements (PDF p. 13, printed p. 12, anchor: Section 3.5 and equations (3.22)-(3.23))."
-    ],
-    "error_notions": [
-      "Equations (3.17) and (3.20) bound attainable normalized forward error, not backward error and not residual norm (PDF pp. 11-12, printed pp. 10-11, anchors: Theorems 3.3-3.4; PDF p. 7, printed p. 6, anchor: statement that Section 3 focuses solely on forward error).",
-      "The u_m eta_R kappa(M_R) term represents error from reapplying the right preconditioner during right-preconditioned solution formation (PDF p. 12, printed p. 11, anchor: Remark 4; PDF p. 43, printed p. 42, anchor: equation (C.11)).",
-      "The u_a kappa(A)rho_A^R term captures error from multiplication by A together with componentwise cancellation in the stored basis product (PDF p. 11, printed p. 10, anchor: equations (3.15)-(3.17); PDF p. 42, printed p. 41, anchor: equation (C.7))."
-    ],
-    "exceptional_values": [
-      "A and M_R must be nonsingular, and b is nonzero, so x and the displayed normalized forward-error denominator are nonzero (PDF p. 2, printed p. 1, anchor: equation (1.1); PDF p. 11, printed p. 10, anchor: Theorem 3.3 and use of M_R^-1).",
-      "rho_A^R has denominator norm2(hat_Z_k hat_y_k); the paper does not explicitly exclude a zero denominator (PDF p. 11, printed p. 10, anchor: equation (3.15)).",
-      "The standard floating-point model does not explicitly describe overflow, underflow, NaN, or infinity, so the bounds presume ordinary finite modeled operations (PDF p. 5, printed p. 4, anchor: standard floating-point model statement)."
-    ],
-    "higher_order_terms": [
-      "Both envelopes use the paper's less-than-or-approximately-equal symbol, which denotes omission of negligible second-order terms (PDF p. 6, printed p. 5, anchor: approximation convention; PDF pp. 11-12, printed pp. 10-11, anchors: equations (3.17) and (3.20)).",
-      "The simplified envelopes (3.22)-(3.23) additionally discard c(n,k), treat eta_R and rho_A^R as order-constant, and ignore the theorem applicability conditions (PDF p. 13, printed p. 12, anchor: assumptions preceding equations (3.21)-(3.23))."
+      "The standing exact problem is Ax = b with A in R^{n x n} nonsingular, 0 != b in R^n, and exact solution x = A^{-1}b in R^n. (PDF p. 3, printed p. 2, equation (1.1).)",
+      "M_R in R^{n x n} is a nonsingular right preconditioner and M_L = I; in the flexible case M_R^{(j)} = M_R != I for every j <= k. (PDF p. 3, printed p. 2, equation (1.2); PDF p. 11, printed p. 10, opening of Section 3.3; PDF p. 12, printed p. 11, opening of Section 3.4.)",
+      "u_m, u_a, and u_g denote the relevant floating-point arithmetics or their unit roundoffs: u_m for applying M_R^{-1}, u_a for multiplying by A, and u_g for the remaining GMRES operations. (PDF p. 3, printed p. 2, paragraph introducing Algorithm 1; PDF p. 6, printed p. 5, Section 2.)",
+      "For j <= k, hat{v}_j is a computed Krylov vector, hat{z}_j = fl(M_R^{-1}hat{v}_j), hat{Z}_k = [hat{z}_1,...,hat{z}_k] in R^{n x k}, hat{y}_k in R^k is computed from the GMRES least-squares problem, and hat{x}_k is the computed solution. (PDF p. 4, printed p. 3, Algorithm 1; PDF p. 11, printed p. 10, equations (3.14)-(3.15).)",
+      "The conclusions quantify existentially over an iteration k satisfying k <= n, rather than asserting the bounds at every iteration. (PDF p. 11, printed p. 10, Theorem 3.3; PDF p. 12, printed p. 11, Theorem 3.4.)"
     ],
     "hypotheses": [
-      "For every relevant j, fl(M_R^-1 hat_v_j) = (M_R^-1 + Delta M_R^(j))hat_v_j and normF(Delta M_R^(j)) <= c(n,k)u_m eta_R normF(M_R^-1) (PDF p. 11, printed p. 10, anchor: equation (3.14)).",
-      "rho_A^R = norm2(|hat_Z_k||hat_y_k|)/norm2(hat_Z_k hat_y_k) (PDF p. 11, printed p. 10, anchor: equation (3.15)).",
-      "The full condition max{u_g kappa(A M_R^-1), u_g kappa(M_R), u_m eta_R kappa(M_R), u_a kappa(A)rho_A^R, u_a kappa(A M_R^-1)kappa(M_R)} << 1 is assumed for both Theorems 3.3 and 3.4 (PDF p. 11, printed p. 10, anchor: equation (3.16); PDF p. 12, printed p. 11, anchor: Theorem 3.4).",
-      "Right-preconditioned solution formation multiplies by hat_V_k in precision u_g and then reapplies M_R^-1 in precision u_m; flexible solution formation multiplies directly by the stored hat_Z_k in precision u_g (PDF p. 11, printed p. 10, anchor: paragraph preceding equation (3.15); PDF p. 12, printed p. 11, anchor: paragraphs preceding Theorem 3.4)."
+      "Each computed preconditioner application satisfies fl(M_R^{-1}hat{v}_j) = (M_R^{-1} + Delta M_R^{(j)})hat{v}_j with ||Delta M_R^{(j)}||_F <= c(n,k)u_m eta_R||M_R^{-1}||_F for j <= k, where eta_R is a scalar measuring application error. (PDF p. 11, printed p. 10, equation (3.14).)",
+      "For right-preconditioned GMRES, products AM_R^{-1}hat{v}_j are executed by applying M_R^{-1} in u_m and then A in u_a; the solution is formed by a u_g product with hat{V}_k followed by a fresh u_m application of M_R^{-1}. (PDF p. 11, printed p. 10, Section 3.3; PDF p. 4, printed p. 3, Algorithm 1, lines 6-18.)",
+      "The complete applicability condition is max(u_g kappa(AM_R^{-1}), u_g kappa(M_R), u_m eta_R kappa(M_R), u_a kappa(A)rho_A^R, u_a kappa(AM_R^{-1})kappa(M_R)) << 1. No one of these five displayed requirements may be omitted from Theorem 3.3's stated hypothesis. (PDF p. 11, printed p. 10, equation (3.16) and Theorem 3.3.)",
+      "Flexible-preconditioned GMRES uses the same product model (3.14), the same complete condition (3.16), and a fixed preconditioner M_R^{(j)} = M_R for all j <= k, but forms the solution directly from stored hat{Z}_k in u_g. (PDF p. 12, printed p. 11, Section 3.4 and Theorem 3.4.)",
+      "The analysis uses the standard floating-point model and assumes the relevant unit roundoffs are substantially below 1. (PDF p. 6, printed p. 5, Section 2.)"
+    ],
+    "conclusions": [
+      "Right-preconditioned conclusion: there exists an iteration k <= n such that ||hat{x}_k-x||_2/||x||_2 lesssim c(n,k)(u_g kappa(AM_R^{-1})kappa(M_R) + u_m eta_R kappa(M_R) + u_a kappa(A)rho_A^R). (PDF p. 11, printed p. 10, Theorem 3.3 and equation (3.17).)",
+      "Flexible-preconditioned conclusion: under the same condition (3.16), there exists an iteration k <= n such that ||hat{x}_k-x||_2/||x||_2 lesssim c(n,k)(u_g kappa(AM_R^{-1})kappa(M_R) + u_a kappa(A)rho_A^R). (PDF p. 12, printed p. 11, Theorem 3.4 and equation (3.20).)",
+      "The flexible displayed bound omits the additive u_m eta_R kappa(M_R) contribution because the stored computed preconditioned basis is used directly and M_R^{-1} is not reapplied during solution formation; the full applicability condition (3.16), including its u_m terms, nevertheless remains a hypothesis. (PDF p. 12, printed p. 11, Remark 4 and Theorem 3.4; PDF p. 45, printed p. 44, equation (D.2).)"
+    ],
+    "definitions_and_conventions": [
+      "rho_A^R := || |hat{Z}_k| |hat{y}_k| ||_2 / ||hat{Z}_k hat{y}_k||_2, with hat{Z}_k = [hat{z}_1,...,hat{z}_k] and hat{z}_j = fl(M_R^{-1}hat{v}_j) for j <= k. (PDF p. 11, printed p. 10, equations (3.14)-(3.15).)",
+      "The relative forward error is ||hat{x}-x||_2/||x||_2, where x is exact and hat{x} is computed. (PDF p. 6, printed p. 5, equation (2.1).)",
+      "fl(.) denotes a computed floating-point value; hats denote computed quantities, whereas tilde{Z}_k is a mathematical search-space basis introduced to absorb selected rounding errors and is not algorithmically accessible. (PDF p. 6, printed p. 5, Section 2; PDF p. 7, printed p. 6, Section 3.1; PDF p. 41, printed p. 40, equation (C.2).)",
+      "eta_R is not a precision: it is a scalar quantifying the magnitude of error in applying the right preconditioner. (PDF p. 11, printed p. 10, text following equation (3.14).)",
+      "c(n,k) denotes unspecified low-degree polynomials in the dimension n and iteration count k. (PDF p. 6, printed p. 5, Section 2.)",
+      "The symbols lesssim and approximately-equal are used after negligible second-order terms have been dropped, so the displayed conclusions are asymptotic rounding-error bounds rather than exact inequalities with a stated numerical constant. (PDF p. 6, printed p. 5, Section 2.)"
     ],
     "implicit_context": [
-      "With fixed M_R, right- and flexible-preconditioned GMRES are mathematically equivalent in exact arithmetic, but their different solution-formation paths produce different rounding-error bounds (PDF p. 3, printed p. 2, anchor: text following Algorithm 1; PDF p. 12, printed p. 11, anchor: opening of Section 3.4).",
-      "The bounds are worst-case attainable-error results and do not provide a convergence-rate guarantee or a bound at every iteration (PDF p. 6, printed p. 5, anchor: opening of Section 3; PDF pp. 11-12, printed pp. 10-11, anchors: Theorems 3.3-3.4).",
-      "Synthetic experiments support robustness insensitivity of flexible-preconditioning to lower u_m but also show significantly more iterations, so omission of the u_m term is not a claim of unchanged convergence rate or runtime (PDF p. 20, printed p. 19, anchor: Section 4.2.3 flexible-preconditioned discussion).",
-      "Real-life experiments generally favor flexible-preconditioning for low-precision preconditioner application but contain explicit outliers, so the empirical preference is not universal (PDF p. 32, printed p. 31, anchor: Section 5.1 discussion following Table 5)."
+      "There is no left preconditioner: M_L = I, so the preconditioned right-hand side equals b and incurs no computation or epsilon_b contribution. (PDF p. 11, printed p. 10, Section 3.3; PDF p. 43, printed p. 42, paragraph following equation (C.11).)",
+      "Theorems 3.3 and 3.4 specialize the modular Theorem 3.1, which supplies an existential k <= n and a well-conditioned computed Krylov basis at that k. (PDF p. 9, printed p. 8, Theorem 3.1 and equation (3.7); PDF p. 44, printed p. 43, conclusion of Appendix C.)",
+      "The GMRES variant uses Modified Gram-Schmidt; the least-squares implementation is described as MGS followed by Givens rotations and a triangular solve. (PDF p. 4, printed p. 3, Algorithm 1; PDF p. 7, printed p. 6, Section 3.1.)",
+      "With the right preconditioner fixed, right- and flexible-preconditioned GMRES are mathematically equivalent in exact arithmetic, although their floating-point solution-formation paths differ. (PDF p. 4, printed p. 3, paragraph following Algorithm 1; PDF p. 12, printed p. 11, opening paragraphs of Section 3.4.)",
+      "The displayed algorithm and theorem use one sequence indexed through k <= n; no restart parameter or restarted-cycle conclusion is stated. (PDF p. 4, printed p. 3, Algorithm 1; PDF p. 11, printed p. 10, Theorem 3.3.)"
+    ],
+    "algorithm_linkage": "Algorithm 1's right branch computes hat{z}_j = fl(M_R^{-1}hat{v}_j) in u_m, applies A in u_a, performs MGS and the least-squares work in u_g, computes hat{V}_k hat{y}_k in u_g, and then reapplies M_R^{-1} in u_m. Flexible GMRES persistently stores the computed hat{z}_j vectors and instead forms the final correction directly as hat{Z}_k hat{y}_k in u_g, with no final preconditioner reapplication. (PDF p. 3, printed p. 2, paragraph introducing flexible GMRES; PDF p. 4, printed p. 3, Algorithm 1; PDF p. 12, printed p. 11, Section 3.4.)",
+    "numerical_model": [
+      "The paper uses the standard floating-point model with u_m, u_a, and u_g interpreted as unit roundoffs in the error formulas. (PDF p. 6, printed p. 5, Section 2.)",
+      "Preconditioner application is normwise modeled in Frobenius norm by ||Delta M_R^{(j)}||_F <= c(n,k)u_m eta_R||M_R^{-1}||_F. (PDF p. 11, printed p. 10, equation (3.14).)",
+      "The A product is modeled componentwise by |Delta A^{(j)}| lesssim c(n,k)u_a|A|, and its error is absorbed into tilde{z}_j = hat{z}_j + A^{-1}Delta A^{(j)}hat{z}_j. (PDF p. 41, printed p. 40, equations (C.1)-(C.2).)",
+      "For right preconditioning, the proof expands hat{x}_k = fl(M_R^{-1}hat{V}_k hat{y}_k) after dropping second-order terms; the resulting local solution-formation parameter is c(n,k)(u_m eta_R kappa(M_R) + u_g kappa(M_R) + u_a kappa(A)rho_A^R). (PDF p. 42, printed p. 41, equation (C.3); PDF p. 43, printed p. 42, equation (C.11).)",
+      "For flexible preconditioning, hat{x}_k = fl(hat{Z}_k hat{y}_k) = (hat{Z}_k + Delta Z_k^{(3)})hat{y}_k with |Delta Z_k^{(3)}| lesssim c(n,k)u_g|hat{Z}_k|; its local parameter is c(n,k)(u_g kappa(M_R) + u_a kappa(A)rho_A^R). (PDF p. 44, printed p. 43, equation (D.1); PDF p. 45, printed p. 44, equation (D.2).)",
+      "The fixed operator M_R does not imply fixed rounding perturbations: equation (3.14) permits an application-dependent Delta M_R^{(j)}. (PDF p. 11, printed p. 10, equation (3.14); PDF p. 12, printed p. 11, fixed-preconditioner statement.)"
+    ],
+    "error_notions": [
+      "The claimed quantity is relative forward error in the original system Ax = b, not residual error, backward error, or error in the preconditioned variable. (PDF p. 6, printed p. 5, equation (2.1) and opening of Section 3.)",
+      "The bound is attainable and existential: it holds at at least one iteration k <= n under the hypotheses, not uniformly for every k. (PDF p. 11, printed p. 10, Theorem 3.3; PDF p. 12, printed p. 11, Theorem 3.4.)",
+      "The right-preconditioned bound separates a u_g contribution, a preconditioner-reapplication contribution proportional to u_m eta_R, and an A-product contribution proportional to u_a rho_A^R. (PDF p. 11, printed p. 10, equation (3.17); PDF p. 43, printed p. 42, equation (C.11).)",
+      "The flexible bound retains the u_g and u_a rho_A^R contributions but has no explicit additive u_m eta_R term. (PDF p. 12, printed p. 11, equation (3.20) and Remark 4.)"
     ],
     "norms": [
-      "The forward errors and rho_A^R use vector 2-norms (PDF pp. 11-12, printed pp. 10-11, anchors: equations (3.15), (3.17), and (3.20)).",
-      "The preconditioner perturbation model uses the Frobenius matrix norm (PDF p. 11, printed p. 10, anchor: equation (3.14)).",
-      "The condition numbers are written with generic kappa; Section 2 permits this abbreviation among its 2-norm/Frobenius-based condition measures (PDF p. 6, printed p. 5, anchor: condition-number notation)."
+      "The forward error and rho_A^R use the vector 2-norm; for matrices, ||.||_2 is the induced 2-norm. (PDF p. 6, printed p. 5, Section 2 and equation (2.1); PDF p. 11, printed p. 10, equation (3.15).)",
+      "The application-error model (3.14) uses the matrix Frobenius norm. (PDF p. 11, printed p. 10, equation (3.14).)",
+      "The paper defines kappa_F, kappa_2, and kappa_{F,2}, then writes generic kappa(B) when it does not differentiate among these equivalent normwise quantities. (PDF p. 6, printed p. 5, Section 2.)",
+      "The numerator of rho_A^R is the 2-norm of the product displayed as |hat{Z}_k||hat{y}_k|, preserving cancellation sensitivity relative to ||hat{Z}_k hat{y}_k||_2. (PDF p. 11, printed p. 10, equation (3.15); PDF p. 42, printed p. 41, equation (C.7).)"
     ],
-    "numerical_model": [
-      "Applications of M_R^-1 are modeled by normwise matrix perturbations proportional to c(n,k)u_m eta_R, while products with A are performed in precision u_a and other GMRES operations in precision u_g (PDF p. 3, printed p. 2, anchor: Algorithm 1; PDF p. 11, printed p. 10, anchor: equation (3.14)).",
-      "Right solution formation incurs a fresh preconditioner-application perturbation; flexible solution formation instead has the standard product model hat_x_k = fl(hat_Z_k hat_y_k) = (hat_Z_k + Delta Z_k^(3))hat_y_k with |Delta Z_k^(3)| bounded by c(n,k)u_g|hat_Z_k| (PDF p. 42, printed p. 41, anchor: equation (C.3); PDF p. 44, printed p. 43, anchor: equation (D.1)).",
-      "The paper adopts a traditional worst-case floating-point analysis and does not track exact values of all dimension-dependent constants (PDF p. 6, printed p. 5, anchor: Section 2 definition of c(n,k))."
+    "constants_and_indexing": [
+      "The witness iteration satisfies k <= n exactly; the theorem does not use k < n or k <= n+1. (PDF p. 11, printed p. 10, Theorem 3.3; PDF p. 12, printed p. 11, Theorem 3.4.)",
+      "The computed preconditioned basis has columns indexed j = 1,...,k, while Arnoldi also forms v_{j+1} and h_{j+1,j}. (PDF p. 4, printed p. 3, Algorithm 1, lines 5-14; PDF p. 11, printed p. 10, equation (3.15).)",
+      "rho_A^R is iteration-dependent because both hat{Z}_k and hat{y}_k depend on k. (PDF p. 11, printed p. 10, equation (3.15).)",
+      "The multiplicative c(n,k) is not numerically specified; only its status as a low-degree polynomial is guaranteed. (PDF p. 6, printed p. 5, Section 2.)",
+      "The proof's cross-referenced modular witness uses the explicit constants 4/3 in equation (3.7), while intermediate lower bounds use a leading 3/4 before small perturbations; these constants do not appear as explicit factors in final bounds (3.17) or (3.20). (PDF p. 9, printed p. 8, equation (3.7); PDF p. 43, printed p. 42, equation (C.13); PDF p. 44, printed p. 43, equation (C.15).)"
+    ],
+    "higher_order_terms": [
+      "The symbol lesssim in the theorem bounds signals that negligible second-order terms have been dropped. (PDF p. 6, printed p. 5, notation convention; PDF p. 11, printed p. 10, equation (3.17); PDF p. 12, printed p. 11, equation (3.20).)",
+      "Appendix C explicitly says it drops second-order terms when expanding the right-preconditioned solution-formation path in equation (C.3). (PDF p. 42, printed p. 41, equation (C.3).)",
+      "The smallness assumptions in (3.16) are used in the proof to discard products of perturbation terms and certify the modular applicability conditions. (PDF p. 42, printed p. 41, equations (C.4)-(C.10); PDF p. 43, printed p. 42, equations (C.11)-(C.14).)",
+      "Neither final theorem supplies an explicit Big-O remainder, coefficient for the omitted terms, or exact value of c(n,k). (PDF p. 6, printed p. 5, notation convention; PDF p. 11, printed p. 10, equation (3.17); PDF p. 12, printed p. 11, equation (3.20).)"
+    ],
+    "exceptional_values": [
+      "A is nonsingular and b != 0, so the exact solution x is nonzero and the denominator ||x||_2 in the relative forward error is nonzero. (PDF p. 3, printed p. 2, equation (1.1); PDF p. 6, printed p. 5, equation (2.1).)",
+      "M_R is nonsingular, making M_R^{-1} and AM_R^{-1} well-defined; the flexible section additionally states M_R != I. (PDF p. 3, printed p. 2, equation (1.2); PDF p. 12, printed p. 11, opening of Section 3.4.)",
+      "Equation (3.15) does not explicitly state that ||hat{Z}_k hat{y}_k||_2 is nonzero, so rho_A^R is not defined by the displayed ratio if that denominator vanishes. (PDF p. 11, printed p. 10, equation (3.15).)",
+      "The selected passages invoke the standard floating-point model but do not separately specify behavior for overflow, underflow, subnormals, NaNs, infinities, or Arnoldi breakdown. (PDF p. 6, printed p. 5, Section 2; PDF p. 4, printed p. 3, Algorithm 1.)"
     ]
   },
-  "task_id": "P19-T3",
   "undebatable_constraints": [
-    "The right envelope contains all three terms u_g kappa(A M_R^-1)kappa(M_R), u_m eta_R kappa(M_R), and u_a kappa(A)rho_A^R (PDF p. 11, printed p. 10, anchor: equation (3.17)).",
-    "The flexible envelope contains the first and third of those terms but not u_m eta_R kappa(M_R) (PDF p. 12, printed p. 11, anchor: equation (3.20)).",
-    "Both theorem statements assume the same condition (3.16), including its explicit u_m eta_R kappa(M_R) requirement (PDF pp. 11-12, printed pp. 10-11, anchors: condition (3.16) and Theorem 3.4).",
-    "The missing term is linked specifically to avoiding reapplication of M_R^-1 during solution formation, not to eliminating preconditioner applications during Krylov-basis construction (PDF p. 12, printed p. 11, anchor: Section 3.4 and Remark 4).",
-    "The flexible theorem assumes a fixed preconditioner M_R^(j) = M_R for all j <= k (PDF p. 12, printed p. 11, anchor: opening of Section 3.4).",
-    "The envelopes are conditional, first-order, existential attainable-forward-error claims; they are not unconditional convergence or runtime claims (PDF pp. 11-12, printed pp. 10-11, anchors: Theorems 3.3-3.4; PDF p. 6, printed p. 5, anchor: approximation convention)."
-  ]
+    "Both results concern right or flexible right preconditioning of a nonsingular n-dimensional system and assert existence of an iteration k <= n. (PDF p. 11, printed p. 10, Theorem 3.3; PDF p. 12, printed p. 11, Theorem 3.4.)",
+    "The full five-entry maximum in equation (3.16) is the stated hypothesis for both Theorem 3.3 and Theorem 3.4. (PDF p. 11, printed p. 10, equation (3.16); PDF p. 12, printed p. 11, Theorem 3.4.)",
+    "The right-preconditioned bound has exactly the three displayed first-order sources u_g kappa(AM_R^{-1})kappa(M_R), u_m eta_R kappa(M_R), and u_a kappa(A)rho_A^R, up to c(n,k) and omitted second-order terms. (PDF p. 11, printed p. 10, equation (3.17).)",
+    "The flexible bound has exactly the two displayed sources u_g kappa(AM_R^{-1})kappa(M_R) and u_a kappa(A)rho_A^R, up to c(n,k) and omitted second-order terms. (PDF p. 12, printed p. 11, equation (3.20).)",
+    "Flexible GMRES in this paper uses a fixed, not iteration-varying, right preconditioner. (PDF p. 4, printed p. 3, paragraph following Algorithm 1; PDF p. 12, printed p. 11, opening of Section 3.4.)",
+    "rho_A^R must be formed from the computed hat{Z}_k and computed hat{y}_k using the exact ratio in equation (3.15), not replaced silently by 1, kappa(M_R), or a generic constant. (PDF p. 11, printed p. 10, equation (3.15).)",
+    "The u_m term is removed from the flexible displayed error bound specifically because flexible solution formation does not reapply M_R^{-1}. (PDF p. 12, printed p. 11, Remark 4; PDF p. 45, printed p. 44, equation (D.2).)",
+    "Removal of the explicit u_m term from (3.20) does not remove u_m eta_R kappa(M_R) or the other u_m-dependent quantities from the assumed condition (3.16). (PDF p. 11, printed p. 10, equation (3.16); PDF p. 12, printed p. 11, Theorem 3.4 and Remark 5.)",
+    "The error notion is relative 2-norm forward error in x, and the claims do not provide a backward-error or residual bound. (PDF p. 6, printed p. 5, equation (2.1) and opening of Section 3.)",
+    "The final relations are lesssim bounds with unspecified c(n,k) and omitted second-order terms, not exact equalities or fully quantified numerical inequalities. (PDF p. 6, printed p. 5, notation convention; PDF p. 11, printed p. 10, equation (3.17); PDF p. 12, printed p. 11, equation (3.20).)"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The norm underlying each unqualified kappa in (3.16), (3.17), and (3.20) is not uniquely selected.",
+      "evidence": "The paper defines kappa_F, kappa_2, and kappa_{F,2} and then says it often writes only kappa(B) because the 2- and Frobenius-norm quantities are equivalent; the theorem formulas use this generic kappa notation. (PDF p. 6, printed p. 5, Section 2; PDF p. 11, printed p. 10, equations (3.16)-(3.17).)",
+      "impact": "A formal statement must either preserve an abstract/generic condition number or explicitly justify a particular norm choice; silently choosing kappa_2 or kappa_F strengthens the paper beyond its notation."
+    },
+    {
+      "issue": "The symbols << and lesssim and the polynomial c(n,k) are qualitative rather than numerically quantified.",
+      "evidence": "Section 2 describes c(n,k) only as a low-degree polynomial and defines lesssim through dropping negligible second-order terms; equations (3.16), (3.17), and (3.20) provide no threshold, coefficient, or remainder. (PDF p. 6, printed p. 5, Section 2; PDF p. 11, printed p. 10, equations (3.16)-(3.17); PDF p. 12, printed p. 11, equation (3.20).)",
+      "impact": "The source does not determine an exact epsilon threshold, an exact universal constant, or a closed-form remainder."
+    },
+    {
+      "issue": "The textual quantifier order for k is not fully formalized.",
+      "evidence": "rho_A^R is defined using k before Theorem 3.3, condition (3.16) uses rho_A^R, and only afterward the theorem says there exists an iteration k <= n; Appendix C ties the witness to the existential iteration supplied by Theorem 3.1. (PDF p. 11, printed p. 10, equations (3.15)-(3.17); PDF p. 44, printed p. 43, conclusion of Appendix C.)",
+      "impact": "The text does not explicitly distinguish between a condition required for every candidate k, a condition evaluated at the eventual witness k, or existence of a k satisfying both the condition and bound. A formalization should preserve this issue rather than silently reorder the quantifiers."
+    },
+    {
+      "issue": "The ratio defining rho_A^R has an unstated nonzero-denominator requirement, and the vertical-bar notation is not separately defined in the selected notation section.",
+      "evidence": "Equation (3.15) displays rho_A^R = || |hat{Z}_k||hat{y}_k| ||_2/||hat{Z}_k hat{y}_k||_2 without an explicit assumption that the denominator is nonzero or a separate definition of |.|. (PDF p. 11, printed p. 10, equation (3.15).)",
+      "impact": "The conventional reading is componentwise absolute value, but the ratio is undefined when hat{Z}_k hat{y}_k = 0; neither point should be repaired silently."
+    },
+    {
+      "issue": "eta_R is intentionally generic and has no formula or universal bound in the selected result.",
+      "evidence": "The text following (3.14) only calls eta_R a scalar quantifying the magnitude of the application error. (PDF p. 11, printed p. 10, equation (3.14) and following sentence.)",
+      "impact": "eta_R cannot faithfully be set to 1 or eliminated without an additional assumption about how the preconditioner is represented and applied."
+    },
+    {
+      "issue": "Remark 4's phrase that flexible preconditioning removes dependence on u_m applies directly to the displayed attainable-error bound, but not literally to all theorem hypotheses.",
+      "evidence": "Equation (3.20) has no explicit u_m term, while Theorem 3.4 assumes all of (3.16), which includes u_m eta_R kappa(M_R); Remark 5 expressly discusses that retained requirement. (PDF p. 11, printed p. 10, equation (3.16); PDF p. 12, printed p. 11, Theorem 3.4 and Remarks 4-5.)",
+      "impact": "The source supports omission of u_m eta_R kappa(M_R) from the flexible conclusion, not an unconditional claim that applicability or all intermediate quantities are independent of u_m."
+    },
+    {
+      "issue": "The treatment of the initial guess is not reconciled explicitly between Algorithm 1 and the modular analysis.",
+      "evidence": "Algorithm 1 displays r_0 = Ax_0-b and x_k = x_0 plus a correction, whereas Algorithm 2 writes the approximation as x_k = tilde{Z}_k y_k without displaying x_0. (PDF p. 4, printed p. 3, Algorithm 1, lines 1-18; PDF p. 7, printed p. 6, Algorithm 2, line 4.)",
+      "impact": "The selected theorem does not specify whether the modular variable is a shifted correction or whether x_0 is specialized. A formal algorithmic reconstruction should record this mismatch rather than infer a sign or initial-guess convention."
+    }
+  ],
+  "contract_plain_english": "For the mixed-precision right-preconditioned MGS-GMRES path, assume the normwise preconditioner-application model (3.14), the exact cancellation ratio rho_A^R from (3.15), and every one of the five smallness requirements in (3.16); then the paper claims only that some iteration k <= n attains the three-source relative 2-norm forward-error bound (3.17). (PDF p. 11, printed p. 10, equations (3.14)-(3.17) and Theorem 3.3.) For the fixed-preconditioner flexible variant, the same model and full condition are retained, but the computed preconditioned basis is stored and used directly, so some k <= n attains (3.20), which omits the additive u_m eta_R kappa(M_R) reapplication term while retaining the u_g and u_a rho_A^R terms. (PDF p. 12, printed p. 11, Theorem 3.4, equation (3.20), and Remark 4; PDF p. 45, printed p. 44, equation (D.2).) Both are qualitative first-order attainable bounds with unspecified c(n,k), generic normwise kappa notation, and omitted second-order terms, not exact all-iteration guarantees. (PDF p. 6, printed p. 5, Section 2; PDF p. 11, printed p. 10, equation (3.17); PDF p. 12, printed p. 11, equation (3.20).)"
 }

@@ -3,420 +3,1491 @@
   "role": "direct-judge",
   "task_id": "P19-T3",
   "paper_sha256": "67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad",
-  "dossier_sha256": "5dd422ef13089cd2fe52aa06ad2faa961e844c7eae45cc6d1fba7f46b293ecaa",
+  "dossier_sha256": "c9000e7763181b2645f0239da5602a3ec3eed165ee297d1f094364cf77efc6cf",
   "dependency_coverage": [
     {
       "id": "D001",
-      "name": "HighamBench.p19FlexibleEnvelope",
-      "interpretation": "Defines the real expression ug * kappa2(AMRinv) * kappa2(MR) + ua * kappa2(A) * rhoA, using separately supplied inverse-like matrices in each kappa2.",
-      "effect_on_target": "This is the purported flexible envelope used in every comparison, equality, and strict inequality.",
-      "paper_match": "Its two-term structure matches the expression inside parentheses in equation (3.20), but equation (3.20) is a conditional first-order forward-error bound multiplied by c(n,k), not an unconditional exact definition over arbitrary matrices.",
-      "status": "fail"
+      "name": "HighamBench.P19FixedRightGMRESRun.etaR",
+      "interpretation": "Projection of the run's real-valued etaR parameter family.",
+      "effect_on_target": "Supplies etaR to condition (3.16), the right envelope, and the omitted flexible term.",
+      "paper_match": "It represents the paper's scalar preconditioner-application error factor, parametrized by the formal asymptotic index.",
+      "status": "pass"
     },
     {
       "id": "D002",
-      "name": "HighamBench.p19Kappa2",
-      "interpretation": "Multiplies the induced matrix 2-norm of its first matrix by the induced matrix 2-norm of its second matrix.",
-      "effect_on_target": "It supplies all three purported condition numbers and makes them nonnegative, which is used by the envelope ordering.",
-      "paper_match": "It equals the paper's 2-norm condition number only when the second argument is the actual inverse of a nonsingular first argument. The target imposes no inverse or nonsingularity relation, and AMRinv is not linked to A and MRinv.",
+      "name": "HighamBench.P19FixedRightGMRESRun.keyDimension",
+      "interpretation": "Projection of one natural-number dimension stored in a run.",
+      "effect_on_target": "The existential witness is required to equal this already supplied dimension.",
+      "paper_match": "The paper derives existence of some k <= n; it does not quantify over a run with an externally preselected witness.",
       "status": "fail"
     },
     {
       "id": "D003",
-      "name": "HighamBench.p19RightEnvelope",
-      "interpretation": "Defines the real expression ug * kappa2(AMRinv) * kappa2(MR) + um * etaR * kappa2(MR) + ua * kappa2(A) * rhoA.",
-      "effect_on_target": "This definition makes the claimed exact difference from the flexible expression equal to the middle product by construction.",
-      "paper_match": "The three-term structure matches the expression inside parentheses in equation (3.17), but the paper states a conditional approximate forward-error bound with c(n,k), computed quantities, and an existential iteration.",
-      "status": "fail"
+      "name": "HighamBench.P19FixedRightGMRESRun.polynomialFactor",
+      "interpretation": "Projection of the run's polynomial-factor data.",
+      "effect_on_target": "Provides the multiplicative c(n,k) used in both conclusions.",
+      "paper_match": "It is intended to represent the paper's unspecified polynomial c(n,k); constructor restrictions are assessed at D049.",
+      "status": "pass"
     },
     {
       "id": "D004",
-      "name": "HighamBench.p19OpNorm2",
-      "interpretation": "Returns Mathlib's induced Euclidean operator norm of a finite real matrix.",
-      "effect_on_target": "It is the norm used in every p19Kappa2 value.",
-      "paper_match": "The paper explicitly defines the matrix 2-norm as the induced norm, so this norm itself matches the permitted kappa2 convention.",
+      "name": "HighamBench.P19FixedRightGMRESRun.rhoAR",
+      "interpretation": "Projection of a real-valued rhoAR family.",
+      "effect_on_target": "Supplies the cancellation ratio to the condition and attainable envelopes.",
+      "paper_match": "The run constructor ties it to the exact ratio from computed zHat and yHat, matching (3.15).",
       "status": "pass"
     },
     {
       "id": "D005",
-      "name": "And",
-      "interpretation": "Logical conjunction requiring both component propositions, nested here to require all four target conclusions.",
-      "effect_on_target": "It combines ordering, exact decomposition, a zero-factor equivalence, and conditional strictness into one theorem.",
-      "paper_match": "Conjunction is interpreted correctly, but the paper does not state all four conjuncts, particularly the exact zero-factor equivalence and strict-order claim.",
-      "status": "fail"
-    },
-    {
-      "id": "D006",
-      "name": "Eq",
-      "interpretation": "Exact equality in the indicated type, here principally exact equality of real envelope expressions and real values with zero.",
-      "effect_on_target": "It turns term omission into an exact identity and supplies exact equality cases.",
-      "paper_match": "Equations (3.17) and (3.20) use a first-order approximate inequality with generic c(n,k); Remark 4 identifies an absent term but does not assert these exact equalities.",
-      "status": "fail"
-    },
-    {
-      "id": "D007",
-      "name": "Fin",
-      "reuse_sha256": "012cb4c09296cda2d2b719f4985dbc0a11be1509d6ee40d26e35dcf294e8836e",
-      "effect_on_target": "It indexes each supplied n by n matrix and permits the empty index type when n is zero.",
-      "paper_match": "Finite n by n indexing matches the paper for positive n, but the paper's nonzero b in R^n excludes n = 0 while the target admits it.",
-      "status": "fail"
-    },
-    {
-      "id": "D008",
-      "name": "HAdd.hAdd",
-      "reuse_sha256": "7bc69b64c45ef63c0bf6f48fe61dcfeb042b100678d2dff2765d90c13ddcdec1",
-      "effect_on_target": "With the selected homogeneous real-addition instance, it adds the envelope terms.",
-      "paper_match": "Ordinary addition is the operation used to combine the terms in equations (3.17) and (3.20).",
+      "name": "HighamBench.P19FixedRightGMRESRun.ua",
+      "interpretation": "Projection of the A-product unit-roundoff family.",
+      "effect_on_target": "Controls the A-product terms in the condition and conclusions.",
+      "paper_match": "Matches the role of ua in Algorithm 1 and equations (3.16), (3.17), and (3.20).",
       "status": "pass"
     },
     {
+      "id": "D006",
+      "name": "HighamBench.P19FixedRightGMRESRun.ug",
+      "interpretation": "Projection of the remaining-GMRES unit-roundoff family.",
+      "effect_on_target": "Controls the GMRES terms in the condition and conclusions.",
+      "paper_match": "Matches the paper's ug parameter, modulo the formal asymptotic-family interpretation.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "HighamBench.P19FixedRightGMRESRun.um",
+      "interpretation": "Projection of the preconditioner-application unit-roundoff family.",
+      "effect_on_target": "Appears in condition (3.16), the right bound, and the envelope-difference identity.",
+      "paper_match": "Matches the paper's um parameter and its omission only from the flexible displayed bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "HighamBench.P19FixedRightSystem",
+      "interpretation": "Bundled finite-dimensional real system whose constructor carries matrices, inverses, vectors, and side conditions.",
+      "effect_on_target": "Restricts both theorem branches to systems inhabiting this stronger bundle.",
+      "paper_match": "Core nonsingularity and Ax=b assumptions match, but the bundle also requires a nonzero initial residual and other extra data.",
+      "status": "fail"
+    },
+    {
       "id": "D009",
-      "name": "HMul.hMul",
-      "interpretation": "Projects heterogeneous multiplication from the selected HMul instance; all target occurrences resolve to ordinary real multiplication.",
-      "effect_on_target": "It forms precision, error-factor, condition-number, and cancellation-factor products.",
-      "paper_match": "Ordinary scalar multiplication matches the products displayed in the paper's envelope expressions.",
+      "name": "HighamBench.P19FixedRightSystem.xExact",
+      "interpretation": "Projection of the exact solution vector.",
+      "effect_on_target": "Forms the denominator and difference in relative forward error.",
+      "paper_match": "Matches the exact x satisfying Ax=b.",
       "status": "pass"
     },
     {
       "id": "D010",
-      "name": "Iff",
-      "interpretation": "Logical equivalence requiring implications in both directions.",
-      "effect_on_target": "It asserts that the two formal envelopes are equal exactly when one of three factors is zero.",
-      "paper_match": "The paper neither states nor analyzes this biconditional, and two of its cases, zero unit roundoff and zero condition number of a nonsingular matrix, are outside the stated numerical setting.",
-      "status": "fail"
+      "name": "HighamBench.P19FlexibleGMRESRun.xHat",
+      "interpretation": "Projection of the flexible run's computed-solution family.",
+      "effect_on_target": "Provides the left-hand side of the flexible forward-error conclusion.",
+      "paper_match": "Matches the computed flexible approximation xHat_k.",
+      "status": "pass"
     },
     {
       "id": "D011",
-      "name": "LE.le",
-      "reuse_sha256": "015523018340c026a6d6478d6d9dd768e7e6f18d5a84f2955ce0c4e73cfc3753",
-      "effect_on_target": "It expresses nonnegativity of um and etaR and an exact real ordering of the two formal envelopes.",
-      "paper_match": "Nonnegativity is compatible with error magnitudes, but the paper gives approximate forward-error bounds and a qualitative term comparison, not this exact ordering as a theorem about the displayed bounds.",
+      "name": "HighamBench.P19FlexibleTheorem34Execution",
+      "interpretation": "Bundle of a fixed-k run, flexible algorithm, and flexible forward-analysis record.",
+      "effect_on_target": "The theorem applies only after the analytical decomposition and component bounds have already been supplied.",
+      "paper_match": "Theorem 3.4 derives those analytical facts from its execution model and condition; it does not assume an analysis record containing them.",
       "status": "fail"
     },
     {
       "id": "D012",
-      "name": "LT.lt",
-      "interpretation": "Projects the strict-order relation from the selected LT instance, here ordinary strict order on real numbers.",
-      "effect_on_target": "It expresses positivity assumptions and a strict inequality between the formal envelopes.",
-      "paper_match": "The paper does not claim strict inequality between attainable errors or between bounds with unspecified generic constants.",
-      "status": "fail"
+      "name": "HighamBench.P19FlexibleTheorem34Execution.algorithm",
+      "interpretation": "Projection of the flexible algorithm record.",
+      "effect_on_target": "Connects the flexible xHat used in the conclusion to its run.",
+      "paper_match": "Preserves the stored-Z solution-formation path.",
+      "status": "pass"
     },
     {
       "id": "D013",
-      "name": "Nat",
-      "reuse_sha256": "d7c8470c709a528daa626ea536a4c305a0f55c913c79a3c9247a337e503474c2",
-      "effect_on_target": "It supplies the matrix dimension n and includes n = 0.",
-      "paper_match": "The paper uses a finite natural dimension, but its assumption 0 != b in R^n entails a positive dimension; the target omits that restriction.",
-      "status": "fail"
+      "name": "HighamBench.P19FlexibleTheorem34Execution.run",
+      "interpretation": "Projection of the common fixed-right run data from a flexible execution.",
+      "effect_on_target": "Supplies k, parameters, bases, perturbations, and c(n,k).",
+      "paper_match": "The projected data represent the fixed-preconditioner flexible execution, subject to the bundle-level concerns.",
+      "status": "pass"
     },
     {
       "id": "D014",
-      "name": "OfNat.ofNat",
-      "reuse_sha256": "aa002abdfb6b6111ce60315ea786fba756ac83c928babd7cd98f1862dae1b420",
-      "effect_on_target": "It interprets every displayed 0 as exact real zero.",
-      "paper_match": "Exact zero is used to introduce equality cases not stated by the paper; in particular, a genuine unit roundoff is positive and the condition number of a nonsingular matrix is nonzero.",
-      "status": "fail"
+      "name": "HighamBench.P19RightGMRESRun.xHat",
+      "interpretation": "Projection of the right-preconditioned computed-solution family.",
+      "effect_on_target": "Provides the left-hand side of the right forward-error conclusion.",
+      "paper_match": "Matches the computed right-preconditioned approximation.",
+      "status": "pass"
     },
     {
       "id": "D015",
-      "name": "Or",
-      "interpretation": "Logical disjunction, nested here to state that um, etaR, or the formal kappa2 value is zero.",
-      "effect_on_target": "It supplies the complete right-hand side of the equality-characterization biconditional.",
-      "paper_match": "Remark 4 identifies the omitted product term but does not state this disjunction or discuss these exceptional equality cases.",
+      "name": "HighamBench.P19RightTheorem33Execution",
+      "interpretation": "Bundle of a fixed-k run, right algorithm, and right forward-analysis record.",
+      "effect_on_target": "Makes the result conditional on analytical component bounds and a decomposition already being available.",
+      "paper_match": "Theorem 3.3 is supposed to derive these facts from (3.14)-(3.16), not receive them as theorem input.",
       "status": "fail"
     },
     {
       "id": "D016",
-      "name": "Real",
-      "reuse_sha256": "06e65360d3e77fdde32d1b45c7ac0c74dbef89732b9437af5effe10a33cf292d",
-      "effect_on_target": "All matrix entries, precision parameters, factors, and envelope values are exact real numbers.",
-      "paper_match": "The paper's matrices and analytical scalar quantities are real, although its computed quantities additionally require a floating-point error model.",
+      "name": "HighamBench.P19RightTheorem33Execution.algorithm",
+      "interpretation": "Projection of the right algorithm record.",
+      "effect_on_target": "Connects right xHat to the corresponding run.",
+      "paper_match": "Preserves the fresh-preconditioner-reapplication solution path.",
       "status": "pass"
     },
     {
       "id": "D017",
-      "name": "Real.instAdd",
-      "reuse_sha256": "fb910383674d6aa41258cec5ed260c8d083be2a0491c4346e4fded114bc95540",
-      "effect_on_target": "It makes every envelope sum ordinary real addition.",
-      "paper_match": "This matches the arithmetic used to add the terms in the paper's bounds.",
+      "name": "HighamBench.P19RightTheorem33Execution.run",
+      "interpretation": "Projection of fixed-right run data from a right execution.",
+      "effect_on_target": "Supplies the stored dimension, parameters, and model data.",
+      "paper_match": "Its field meanings generally match the paper, apart from the enclosing fixed-witness formulation.",
       "status": "pass"
     },
     {
       "id": "D018",
-      "name": "Real.instLE",
-      "reuse_sha256": "6eada6dc8e6f54bf851e9d68dc2f87b2be3d22403ea011e1cbaa417c7d45a0d9",
-      "effect_on_target": "It makes the hypotheses and first conclusion exact statements in the ordinary real order.",
-      "paper_match": "The order itself is standard, but applying exact <= to these stripped formal expressions overstates the paper's approximate, constant-dependent bound comparison.",
-      "status": "fail"
+      "name": "HighamBench.p19Condition316Value",
+      "interpretation": "Maximum of the five nonnegative terms ug*kappa(AMRinv), ug*kappa(MR), um*etaR*kappa(MR), ua*kappa(A)*rhoAR, and ua*kappa(AMRinv)*kappa(MR).",
+      "effect_on_target": "Acts as both the smallness scale and the scale for the second-order remainder.",
+      "paper_match": "It preserves all five entries of (3.16), with every generic kappa explicitly specialized to induced 2-norm condition numbers.",
+      "status": "pass"
     },
     {
       "id": "D019",
-      "name": "Real.instLT",
-      "interpretation": "The ordinary strict less-than relation on exact real numbers.",
-      "effect_on_target": "It gives exact meaning to all three positivity premises and the strict envelope conclusion.",
-      "paper_match": "The paper does not establish an exact strict comparison, and its generic c(n,k) factors prevent deriving one between the displayed forward-error bounds.",
-      "status": "fail"
+      "name": "HighamBench.p19FirstOrderLeAt",
+      "interpretation": "Existence of a remainder that is O(scale^2), together with an eventual exact inequality lhs <= rhs + abs(remainder).",
+      "effect_on_target": "Replaces the paper's qualitative lesssim relation by a filter-based exact asymptotic assertion.",
+      "paper_match": "The paper says negligible second-order terms are dropped but supplies no limiting family, exact remainder, or Big-O statement, so this interpretation is not source-determined.",
+      "status": "unclear"
     },
     {
       "id": "D020",
-      "name": "Real.instMul",
-      "interpretation": "The ordinary multiplication operation on real numbers.",
-      "effect_on_target": "It supplies all multiplications in kappa2 and both envelope definitions.",
-      "paper_match": "This matches the scalar products appearing in equations (3.17) and (3.20).",
+      "name": "HighamBench.p19FlexibleAttainableEnvelope",
+      "interpretation": "The sum ug*kappa2(AMRinv)*kappa2(MR) + ua*kappa2(A)*rhoAR.",
+      "effect_on_target": "Forms the two-source flexible first-order envelope.",
+      "paper_match": "Matches the displayed terms of (3.20), under the explicit kappa2 specialization.",
       "status": "pass"
     },
     {
       "id": "D021",
-      "name": "Real.instZero",
-      "interpretation": "The distinguished additive identity zero of the real numbers.",
-      "effect_on_target": "It supplies the nonnegativity bounds, positivity tests, and three exceptional equality cases.",
-      "paper_match": "The literal is mathematically standard, but its target uses introduce cases outside the paper's nonsingular, positive-unit-roundoff setting.",
-      "status": "fail"
+      "name": "HighamBench.p19ForwardError",
+      "interpretation": "The Euclidean norm of xHat-x divided by the Euclidean norm of x.",
+      "effect_on_target": "Defines the error quantity in both conclusions.",
+      "paper_match": "Exactly matches relative 2-norm forward error (2.1); system assumptions make the denominator nonzero.",
+      "status": "pass"
     },
     {
       "id": "D022",
-      "name": "Zero.toOfNat0",
-      "interpretation": "Builds the numeric-literal instance for 0 from a type's Zero instance, so the target's zero literals reduce to real zero.",
-      "effect_on_target": "It connects every syntactic 0 to Real.instZero.",
-      "paper_match": "Its mechanics are correct, but it supports unsupported zero-factor conclusions rather than a source-stated exceptional-value analysis.",
-      "status": "fail"
+      "name": "HighamBench.p19PolynomialFactorValue",
+      "interpretation": "Evaluation of a finite bivariate real polynomial at natural n and k.",
+      "effect_on_target": "Provides the formal value of c(n,k).",
+      "paper_match": "The evaluation form is compatible with a polynomial c(n,k), though the source does not specify its coefficients or degrees.",
+      "status": "pass"
     },
     {
       "id": "D023",
-      "name": "instHAdd",
-      "reuse_sha256": "000c506fa5d7241283852e7fb942d058f19bfdd130e97f4af46525062e434105",
-      "effect_on_target": "It converts ordinary real addition into the homogeneous HAdd operation used by the envelope definitions.",
-      "paper_match": "It introduces no semantic change from the ordinary additions in the paper's formulas.",
+      "name": "HighamBench.p19RightAttainableEnvelope",
+      "interpretation": "The sum of the ug operator term, um*etaR preconditioner-reapplication term, and ua*rhoAR matrix-product term.",
+      "effect_on_target": "Forms the three-source right-preconditioned envelope.",
+      "paper_match": "Matches the three terms in (3.17), using kappa2.",
       "status": "pass"
     },
     {
       "id": "D024",
-      "name": "instHMul",
-      "interpretation": "Builds homogeneous multiplication from a type's Mul instance; for Real it delegates to ordinary real multiplication.",
-      "effect_on_target": "It resolves all HMul operations in the definitions and target.",
-      "paper_match": "It faithfully implements the ordinary scalar multiplication used in the source formulas.",
+      "name": "HighamBench.p19RightPreconditionerKappa2",
+      "interpretation": "Product of the induced 2-norms of MR and its supplied inverse.",
+      "effect_on_target": "Supplies kappa2(MR) throughout the condition, envelopes, and identity.",
+      "paper_match": "It is a valid explicit choice among the paper's generic normwise condition-number notation.",
       "status": "pass"
     },
     {
       "id": "D025",
-      "name": "Fin.fintype",
-      "reuse_sha256": "cb25fd9e6ef05eeebed955028e958dd2b2bd04eb2e1f74710f37029067bb973a",
-      "effect_on_target": "It provides the finite enumeration required to construct the matrix L2 operator norm.",
-      "paper_match": "Finite row and column index sets match finite-dimensional matrices in the paper; the separate admission of n = 0 is already a binder mismatch.",
-      "status": "pass"
+      "name": "HighamBench.P19FixedRightGMRESRun",
+      "interpretation": "A dependent bundle describing one positive fixed dimension, parameter families, computed bases, perturbation models, rho, and smallness.",
+      "effect_on_target": "Replaces an increasing GMRES process and theorem-selected iteration by a fully supplied record at one chosen k.",
+      "paper_match": "This loses the paper's attainment mechanism and assumes properties at the selected k that the paper's proof establishes.",
+      "status": "fail"
     },
     {
       "id": "D026",
-      "name": "Matrix",
-      "interpretation": "Represents an m by n matrix over alpha as a function from row indices to column indices to entries.",
-      "effect_on_target": "It identifies each Fin n -> Fin n -> Real argument as an n by n real matrix for the norm instance.",
-      "paper_match": "This is a faithful representation of the paper's square real matrices, though the target supplies several such matrices without algebraic relations among them.",
+      "name": "HighamBench.P19FixedRightSystem.MR",
+      "interpretation": "Projection of the fixed right-preconditioner matrix.",
+      "effect_on_target": "Defines its condition number and the algorithmic preconditioner.",
+      "paper_match": "Matches the fixed nonsingular MR used in Sections 3.3 and 3.4.",
       "status": "pass"
     },
     {
       "id": "D027",
-      "name": "Matrix.instL2OpNormedAddCommGroup",
-      "interpretation": "Provides finite real matrices with a normed additive-group structure whose norm is the induced L2 operator norm.",
-      "effect_on_target": "It determines the concrete matrix norm returned by p19OpNorm2.",
-      "paper_match": "For a valid matrix and its actual inverse, this is the paper's explicitly defined 2-norm condition-number convention.",
+      "name": "HighamBench.P19FixedRightSystem.MRinv",
+      "interpretation": "Projection of the supplied inverse of MR.",
+      "effect_on_target": "Defines applications of the right preconditioner and kappa2(MR).",
+      "paper_match": "Matches MR^{-1}.",
       "status": "pass"
     },
     {
       "id": "D028",
-      "name": "Norm.norm",
-      "interpretation": "Projects the real-valued norm function from a selected Norm instance.",
-      "effect_on_target": "It evaluates each matrix under the selected L2 operator norm.",
-      "paper_match": "The projection preserves the induced 2-norm semantics required for kappa2.",
-      "status": "pass"
+      "name": "HighamBench.P19FixedRightSystem.mk",
+      "interpretation": "Constructor requiring n>0, two-sided inverses for A and MR, a supplied inverse for AMRinv, MR != I, b != 0, AxExact=b, and a nonzero initial residual.",
+      "effect_on_target": "Excludes exact initial guesses and requires additional explicit inverse and initial-guess data before either theorem applies.",
+      "paper_match": "A, b, x, and MR assumptions mostly match, but nonzero initial residual is not a stated Theorem 3.3/3.4 hypothesis and narrows the claimed result.",
+      "status": "fail"
     },
     {
       "id": "D029",
-      "name": "NormedAddCommGroup.toNorm",
-      "interpretation": "Extracts the Norm structure carried by a NormedAddCommGroup instance.",
-      "effect_on_target": "It connects the matrix L2 normed-group instance to Norm.norm.",
-      "paper_match": "This is typeclass infrastructure and does not alter the source-compatible induced 2-norm.",
+      "name": "HighamBench.P19FlexibleGMRESRun",
+      "interpretation": "A flexible solution-formation record dependent on a fixed-right run.",
+      "effect_on_target": "Ensures flexible and right variants use the same fixed system representation.",
+      "paper_match": "Matches the fixed-preconditioner flexible setting.",
       "status": "pass"
     },
     {
       "id": "D030",
-      "name": "Real.instRCLike",
-      "interpretation": "Equips the real numbers with Mathlib's RCLike structure, including their usual absolute-value norm and field operations.",
-      "effect_on_target": "It enables construction of the finite real-matrix L2 operator norm.",
-      "paper_match": "Using the standard real scalar field and Euclidean norm matches the paper's real-matrix setting.",
-      "status": "pass"
+      "name": "HighamBench.P19FlexibleTheorem34Execution.mk",
+      "interpretation": "Constructor requiring a run, flexible algorithm, and P19FlexibleForwardAnalysis.",
+      "effect_on_target": "Requires the high-level error analysis as input to the target theorem.",
+      "paper_match": "This assumes central Appendix D conclusions rather than deriving them from the paper's stated hypotheses.",
+      "status": "fail"
     },
     {
       "id": "D031",
-      "name": "instDecidableEqFin",
-      "interpretation": "Provides a decision procedure for equality of Fin n indices.",
-      "effect_on_target": "It is implementation infrastructure required by the matrix norm instance and contributes no numerical proposition.",
-      "paper_match": "The paper has no corresponding semantic claim; this dependency is computationally transparent.",
+      "name": "HighamBench.P19PolynomialFactor",
+      "interpretation": "Bundle of two degrees, coefficients, and nonnegativity evidence.",
+      "effect_on_target": "Determines the formal class of admissible c(n,k) factors.",
+      "paper_match": "The source requires an unspecified low-degree polynomial, whereas the bundle has no low-degree bound.",
+      "status": "unclear"
+    },
+    {
+      "id": "D032",
+      "name": "HighamBench.P19PolynomialFactor.coefficient",
+      "interpretation": "Projection of a polynomial's coefficient table.",
+      "effect_on_target": "Determines each term in p19PolynomialFactorValue.",
+      "paper_match": "A coefficient representation is compatible with the source's polynomial notation.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "HighamBench.P19PolynomialFactor.degreeK",
+      "interpretation": "Projection of the degree bound in k.",
+      "effect_on_target": "Controls the finite k-power sum.",
+      "paper_match": "The source allows polynomial dependence on k but does not give a numerical degree.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "HighamBench.P19PolynomialFactor.degreeN",
+      "interpretation": "Projection of the degree bound in n.",
+      "effect_on_target": "Controls the finite n-power sum.",
+      "paper_match": "The source allows polynomial dependence on n but does not give a numerical degree.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "HighamBench.P19RightGMRESRun",
+      "interpretation": "Right-preconditioned solution-formation record dependent on a fixed-right run.",
+      "effect_on_target": "Carries the final basis-product and fresh-preconditioner perturbations.",
+      "paper_match": "Matches the right branch's solution-formation structure.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "HighamBench.P19RightTheorem33Execution.mk",
+      "interpretation": "Constructor requiring a run, right algorithm, and P19RightForwardAnalysis.",
+      "effect_on_target": "Makes pre-established first-order component estimates a prerequisite.",
+      "paper_match": "Appendix C derives these estimates; Theorem 3.3 does not assume them.",
+      "status": "fail"
+    },
+    {
+      "id": "D037",
+      "name": "HighamBench.P19Vector",
+      "interpretation": "The real function type Fin n -> Real.",
+      "effect_on_target": "Models finite-dimensional real vectors.",
+      "paper_match": "Equivalent to R^n up to zero-based indexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D038",
+      "name": "HighamBench.p19Kappa2",
+      "interpretation": "Product of induced 2-norms of a matrix and its supplied inverse.",
+      "effect_on_target": "Defines every condition number in the target.",
+      "paper_match": "For nonsingular matrices this is kappa2; the paper permits but does not uniquely require this norm choice.",
+      "status": "pass"
+    },
+    {
+      "id": "D039",
+      "name": "HighamBench.p19RightOperatorKappa2",
+      "interpretation": "kappa2 of AMRinv with inverse MRAinv.",
+      "effect_on_target": "Supplies kappa2(AMR^{-1}) in condition (3.16) and both envelopes.",
+      "paper_match": "Matches the right-preconditioned operator condition number.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "HighamBench.p19SecondOrderAt",
+      "interpretation": "The assertion remainder = O(scale^2) along a filter.",
+      "effect_on_target": "Gives an exact asymptotic meaning to omitted second-order terms.",
+      "paper_match": "The paper drops negligible second-order terms but does not assert this precise filter-based Big-O relation.",
+      "status": "unclear"
+    },
+    {
+      "id": "D041",
+      "name": "HighamBench.p19SystemKappa2",
+      "interpretation": "kappa2 of A using its supplied inverse.",
+      "effect_on_target": "Supplies kappa2(A) to the ua terms.",
+      "paper_match": "Matches an explicit 2-norm reading of kappa(A).",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "HighamBench.p19VecNorm2",
+      "interpretation": "Square root of the sum of coordinate squares.",
+      "effect_on_target": "Defines Euclidean norms in forward error, rhoAR, and perturbation bounds.",
+      "paper_match": "Matches the paper's vector 2-norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "HighamBench.P19FixedRightGMRESRun.mk",
+      "interpretation": "Constructor for one fixed k requiring 0<k<=n, nonnegative parameter families, an MGS relation, perturbed least squares, full-rank zHat, preconditioner and A-product error models, positive rho denominator, exact rho equation, and asymptotic condition (3.16).",
+      "effect_on_target": "Supplies a selected k and many properties that the source derives or leaves implicit, without representing the increasing-dimensional existential argument of Theorem 3.1.",
+      "paper_match": "The local models largely mirror the paper, but the fixed-witness quantification, assumed full rank, asymptotic reinterpretation, and residual convention do not reproduce Theorems 3.3 and 3.4 directly.",
+      "status": "fail"
+    },
+    {
+      "id": "D044",
+      "name": "HighamBench.P19FixedRightSystem.A",
+      "interpretation": "Projection of the system matrix A.",
+      "effect_on_target": "Defines Ax=b, matrix products, and kappa2(A).",
+      "paper_match": "Matches the paper's nonsingular real matrix A.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "HighamBench.P19FixedRightSystem.Ainv",
+      "interpretation": "Projection of the supplied inverse of A.",
+      "effect_on_target": "Defines kappa2(A) and the inverse of the right operator.",
+      "paper_match": "Matches A^{-1}.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "HighamBench.P19FlexibleForwardAnalysis",
+      "interpretation": "Type of a record containing flexible error decomposition, contribution bounds, and a second-order remainder.",
+      "effect_on_target": "Its inhabitants already encode the essential first-order estimate needed for the flexible conclusion.",
+      "paper_match": "These are Appendix D proof results, not hypotheses of Theorem 3.4.",
+      "status": "fail"
+    },
+    {
+      "id": "D047",
+      "name": "HighamBench.P19FlexibleGMRESRun.mk",
+      "interpretation": "Constructor modeling xHat=xInitial+(zHat+DeltaZ)yHat with componentwise DeltaZ bounded by c(n,k)ug|zHat|.",
+      "effect_on_target": "Links flexible xHat to direct multiplication by the stored computed preconditioned basis.",
+      "paper_match": "Matches Algorithm 1's flexible modification and equation (D.1), with an explicit initial-guess shift.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "HighamBench.P19Matrix",
+      "interpretation": "The real matrix type Matrix (Fin n) (Fin n) Real.",
+      "effect_on_target": "Models square real matrices.",
+      "paper_match": "Matches R^{n x n}.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "HighamBench.P19PolynomialFactor.mk",
+      "interpretation": "Constructor permitting arbitrary natural degrees and arbitrary nonnegative real coefficients.",
+      "effect_on_target": "Allows polynomial factors of unrestricted degree.",
+      "paper_match": "The paper guarantees low degree; the formal constructor does not encode that restriction.",
+      "status": "fail"
+    },
+    {
+      "id": "D050",
+      "name": "HighamBench.P19RightForwardAnalysis",
+      "interpretation": "Type of a record containing right-error decomposition, three component bounds, and second-order remainder.",
+      "effect_on_target": "Its inhabitants already carry the estimates whose sum is the target conclusion.",
+      "paper_match": "These estimates are derived in Appendix C and should not be additional assumptions of Theorem 3.3.",
+      "status": "fail"
+    },
+    {
+      "id": "D051",
+      "name": "HighamBench.P19RightGMRESRun.mk",
+      "interpretation": "Constructor modeling xHat=xInitial+(MRinv+DeltaMR)(vHat+DeltaV)yHat with ug and um perturbation bounds.",
+      "effect_on_target": "Encodes the u_g basis product followed by a fresh u_m preconditioner application.",
+      "paper_match": "Matches Algorithm 1's right solution-formation path and equation (C.3), up to the unresolved initial-residual convention.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "HighamBench.p19InitialResidual",
+      "interpretation": "Defines the initial residual as b-A*xInitial.",
+      "effect_on_target": "Appears in the MGS and perturbed least-squares relations.",
+      "paper_match": "Algorithm 1 explicitly prints A*x0-b, while the Lean definition uses the opposite sign; the paper's modular treatment does not reconcile this apparent internal inconsistency.",
+      "status": "unclear"
+    },
+    {
+      "id": "D053",
+      "name": "HighamBench.p19InversePair",
+      "interpretation": "Two-sided inverse property stated through matrix-vector action on every vector.",
+      "effect_on_target": "Establishes nonsingularity of A, MR, and AMRinv.",
+      "paper_match": "Faithfully formalizes the required inverse relations.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "HighamBench.p19MatVec",
+      "interpretation": "Standard finite matrix-vector multiplication.",
+      "effect_on_target": "Defines system equations and all square-matrix applications.",
+      "paper_match": "Matches ordinary real matrix-vector multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "HighamBench.p19OpNorm2",
+      "interpretation": "Mathlib's induced Euclidean operator norm on finite matrices.",
+      "effect_on_target": "Defines kappa2.",
+      "paper_match": "Matches the paper's induced matrix 2-norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "HighamBench.p19RightOperator",
+      "interpretation": "Matrix product A*MRinv.",
+      "effect_on_target": "Defines the right-preconditioned operator.",
+      "paper_match": "Matches AMR^{-1}.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "HighamBench.p19RightOperatorInverse",
+      "interpretation": "Matrix product MR*Ainv.",
+      "effect_on_target": "Provides the supplied inverse used in kappa2(AMRinv).",
+      "paper_match": "Correctly equals (AMR^{-1})^{-1}.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "HighamBench.p19SquareRectMul",
+      "interpretation": "Standard finite multiplication of a square matrix by a rectangular matrix.",
+      "effect_on_target": "Defines AMRinv and computed search-space products.",
+      "paper_match": "Matches the corresponding matrix products.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "HighamBench.p19VecNorm2Sq",
+      "interpretation": "Sum of squared real coordinates.",
+      "effect_on_target": "Provides the squared quantity under p19VecNorm2's square root.",
+      "paper_match": "Matches the Euclidean norm squared.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "HighamBench.P19FixedRightGMRESRun.vHat",
+      "interpretation": "Projection of the computed Krylov-basis family.",
+      "effect_on_target": "Links preconditioner applications and right solution formation to computed vHat.",
+      "paper_match": "Matches the computed basis VHat_k.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "HighamBench.P19FixedRightGMRESRun.yHat",
+      "interpretation": "Projection of computed least-squares coefficient vectors.",
+      "effect_on_target": "Defines rhoAR and both computed solution paths.",
+      "paper_match": "Matches computed yHat_k.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "HighamBench.P19FixedRightGMRESRun.zHat",
+      "interpretation": "Projection of the computed preconditioned-basis family.",
+      "effect_on_target": "Defines rhoAR and flexible solution formation.",
+      "paper_match": "Matches ZHat_k formed from computed preconditioner applications.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "HighamBench.P19FixedRightSystem.b",
+      "interpretation": "Projection of the right-hand side vector.",
+      "effect_on_target": "Appears in Ax=b and the initial residual.",
+      "paper_match": "Matches nonzero b in (1.1).",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "HighamBench.P19FixedRightSystem.xInitial",
+      "interpretation": "Projection of the initial guess.",
+      "effect_on_target": "Shifts both formal solution approximations and defines the residual.",
+      "paper_match": "Algorithm 1 has x0, although the modular theorem does not explicitly reconcile its shifted formulation.",
+      "status": "pass"
+    },
+    {
+      "id": "D065",
+      "name": "HighamBench.P19FlexibleForwardAnalysis.mk",
+      "interpretation": "Constructor requiring an exact error decomposition, separate ug and ua contribution bounds with the final coefficients, and an O(condition^2) remainder.",
+      "effect_on_target": "These assumptions imply the flexible target inequality by norm and triangle estimates, so the central analytical result is already packaged in the input.",
+      "paper_match": "Appendix D proves these contributions from the execution model; Theorem 3.4 does not assume them.",
+      "status": "fail"
+    },
+    {
+      "id": "D066",
+      "name": "HighamBench.P19RectMatrix",
+      "interpretation": "The real rectangular matrix type Matrix (Fin m) (Fin k) Real.",
+      "effect_on_target": "Models bases, Hessenberg matrices, and perturbation matrices.",
+      "paper_match": "Matches finite real rectangular matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "HighamBench.P19RightForwardAnalysis.mk",
+      "interpretation": "Constructor requiring an exact four-part error decomposition, the final ug, um*etaR, and ua*rhoAR component bounds, and an O(condition^2) remainder.",
+      "effect_on_target": "Directly assumes the ingredients whose sum yields the right attainable-error conclusion.",
+      "paper_match": "These are Appendix C proof products rather than hypotheses in Theorem 3.3.",
+      "status": "fail"
+    },
+    {
+      "id": "D068",
+      "name": "HighamBench.p19AbsRectMatVec",
+      "interpretation": "Computes the vector |A|*|x| by finite sums of componentwise absolute values.",
+      "effect_on_target": "Forms the numerator of rhoAR.",
+      "paper_match": "Exactly matches the conventional componentwise interpretation of |ZHat_k||yHat_k| in (3.15).",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "HighamBench.p19Add",
+      "interpretation": "Pointwise vector addition.",
+      "effect_on_target": "Adds xInitial to solution corrections.",
+      "paper_match": "Matches vector addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "HighamBench.p19Augment",
+      "interpretation": "Prepends a vector as column zero before a rectangular matrix.",
+      "effect_on_target": "Represents [b,C] and [beta*e1,H] in the MGS relation.",
+      "paper_match": "Matches the block-column notation used in Section 3.1.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "HighamBench.p19Column",
+      "interpretation": "Extracts one matrix column as a vector.",
+      "effect_on_target": "States columnwise perturbation bounds and basis-application equations.",
+      "paper_match": "Matches ordinary column extraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D072",
+      "name": "HighamBench.p19FrobNorm",
+      "interpretation": "Mathlib's Frobenius norm on finite matrices.",
+      "effect_on_target": "Defines the preconditioner perturbation bounds.",
+      "paper_match": "Matches the Frobenius norm in (3.14).",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "HighamBench.p19FullColumnRank",
+      "interpretation": "Injectivity of the rectangular matrix-vector map.",
+      "effect_on_target": "Requires zHat to have full column rank at every asymptotic index.",
+      "paper_match": "This is the standard full-column-rank notion, though the paper's modular theorem discusses full rank of the mathematical basis ZTilde rather than imposing this field directly on ZHat.",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "HighamBench.p19IsLeastSquaresSolution",
+      "interpretation": "A vector y whose residual norm is no greater than that of any competing vector.",
+      "effect_on_target": "Models the exact solution of the perturbed least-squares problem.",
+      "paper_match": "Matches the backward-error formulation of computed yHat as an exact minimizer for perturbed data.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "HighamBench.p19IsUpperHessenberg",
+      "interpretation": "Entries below the first subdiagonal are zero.",
+      "effect_on_target": "Constrains the formal Hessenberg matrix in the MGS relation.",
+      "paper_match": "Matches the upper-Hessenberg structure of HBar_k.",
+      "status": "pass"
+    },
+    {
+      "id": "D076",
+      "name": "HighamBench.p19MuchLessThanOneAt",
+      "interpretation": "The scale tends to zero and is eventually between zero inclusive and one exclusive.",
+      "effect_on_target": "Formalizes condition (3.16) as a limiting family rather than a fixed qualitative smallness assumption.",
+      "paper_match": "The paper gives no filter or convergence-to-zero quantifier, so this is a plausible but noncanonical strengthening of the notation.",
+      "status": "unclear"
+    },
+    {
+      "id": "D077",
+      "name": "HighamBench.p19RectMatMul",
+      "interpretation": "Standard finite rectangular matrix multiplication.",
+      "effect_on_target": "Defines the MGS block relation.",
+      "paper_match": "Matches ordinary matrix multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "HighamBench.p19RectMatVec",
+      "interpretation": "Standard finite rectangular matrix-vector multiplication.",
+      "effect_on_target": "Defines basis corrections, rhoAR's denominator, and full column rank.",
+      "paper_match": "Matches ZHat_k*yHat_k and related products.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "HighamBench.p19ScaledFirstBasisVector",
+      "interpretation": "Vector with beta in coordinate zero and zero elsewhere.",
+      "effect_on_target": "Represents beta*e1 in the MGS relation.",
+      "paper_match": "Matches beta e1 after zero-based reindexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "HighamBench.P19FixedRightGMRESRun.leastSquaresDeltaB",
+      "interpretation": "Projection of the least-squares right-hand-side perturbation family.",
+      "effect_on_target": "Feeds the analytical propagation records.",
+      "paper_match": "Matches Delta b_ls in the modular least-squares model.",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "HighamBench.P19FixedRightGMRESRun.leastSquaresDeltaC",
+      "interpretation": "Projection of the least-squares matrix perturbation family.",
+      "effect_on_target": "Feeds the analytical propagation records.",
+      "paper_match": "Matches Delta c_ls in the modular least-squares model.",
+      "status": "pass"
+    },
+    {
+      "id": "D082",
+      "name": "HighamBench.P19FixedRightGMRESRun.matrixDelta",
+      "interpretation": "Projection of the per-column A-product perturbation matrices.",
+      "effect_on_target": "Feeds the ua contribution in both analyses.",
+      "paper_match": "Matches the application-dependent Delta A^(j) in (C.1).",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "HighamBench.P19FlexibleGMRESRun.solutionBasisDelta",
+      "interpretation": "Projection of the flexible final matrix-vector-product perturbation.",
+      "effect_on_target": "Feeds the flexible ug contribution.",
+      "paper_match": "Matches Delta Z_k^(3) in (D.1).",
+      "status": "pass"
+    },
+    {
+      "id": "D084",
+      "name": "HighamBench.P19RightGMRESRun.solutionBasisDelta",
+      "interpretation": "Projection of the right final VHat*yHat product perturbation.",
+      "effect_on_target": "Feeds the right ug contribution.",
+      "paper_match": "Matches Delta V_k in (C.3).",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "HighamBench.P19RightGMRESRun.solutionPreconditionerDelta",
+      "interpretation": "Projection of the fresh right-preconditioner perturbation used in solution formation.",
+      "effect_on_target": "Feeds the right um*etaR reapplication contribution.",
+      "paper_match": "Matches Delta MR^(x) in Appendix C.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "Combines both paper theorems and the envelope identity into one proposition requiring both execution inputs simultaneously.",
+      "paper_match": "The paper states Theorems 3.3 and 3.4 separately; this pairing narrows applicability and is not equivalent without existence assumptions for both execution bundles.",
+      "status": "fail"
+    },
+    {
+      "id": "D087",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "Fixes each witness to keyDimension and states the envelope identity.",
+      "paper_match": "Equality itself is standard; the problematic witness equality is assessed at D002.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "Exists",
+      "interpretation": "Existential quantification.",
+      "effect_on_target": "Introduces k in each branch, although equality immediately fixes it to stored keyDimension.",
+      "paper_match": "The logical operator matches the paper's existential wording, but its scope is altered by the equality constraint.",
+      "status": "pass"
+    },
+    {
+      "id": "D089",
+      "name": "Filter",
+      "interpretation": "A filter describing the direction of the formal asymptotic family.",
+      "effect_on_target": "Indexes unit-roundoff families, eventual inequalities, and limits.",
+      "paper_match": "No filter or limiting index occurs in the paper's theorem statements.",
+      "status": "unclear"
+    },
+    {
+      "id": "D090",
+      "name": "Filter.NeBot",
+      "interpretation": "The filter is nontrivial and not the bottom filter.",
+      "effect_on_target": "Prevents eventual claims from becoming vacuous through a degenerate filter.",
+      "paper_match": "This is a sound formal nonvacuity condition for the added asymptotic interpretation.",
+      "status": "pass"
+    },
+    {
+      "id": "D091",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-dispatched addition.",
+      "effect_on_target": "Implements real addition in envelopes and the identity.",
+      "paper_match": "Reduces to ordinary real addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D092",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "Implements products of roundoffs, condition numbers, rhoAR, and c(n,k).",
+      "paper_match": "Reduces to ordinary real multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D093",
+      "name": "LE.le",
+      "interpretation": "Typeclass-dispatched non-strict order.",
+      "effect_on_target": "Expresses k<=n and all norm/error inequalities.",
+      "paper_match": "Matches non-strict inequalities in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D094",
+      "name": "LT.lt",
+      "interpretation": "Typeclass-dispatched strict order.",
+      "effect_on_target": "Expresses positive dimensions and denominators.",
+      "paper_match": "Positive k and nonzero denominators are reasonable explicit side conditions, though some are only implicit in the source.",
+      "status": "pass"
+    },
+    {
+      "id": "D095",
+      "name": "Nat",
+      "interpretation": "Natural numbers.",
+      "effect_on_target": "Index dimensions, polynomial degrees, and iteration counts.",
+      "paper_match": "Matches nonnegative integer dimensions and iteration indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D096",
+      "name": "OfNat.ofNat",
+      "interpretation": "Interpretation of numeric literals in a target type.",
+      "effect_on_target": "Provides zero and one in dimensions and inequalities.",
+      "paper_match": "Semantically neutral.",
+      "status": "pass"
+    },
+    {
+      "id": "D097",
+      "name": "Real",
+      "interpretation": "The real-number type.",
+      "effect_on_target": "Scalar field for matrices, vectors, roundoffs, norms, and bounds.",
+      "paper_match": "Matches the paper's real setting.",
+      "status": "pass"
+    },
+    {
+      "id": "D098",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary real addition.",
+      "effect_on_target": "Combines first-order terms and remainders.",
+      "paper_match": "Matches real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary real multiplication.",
+      "effect_on_target": "Forms all multiplicative error terms.",
+      "paper_match": "Matches real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "instHAdd",
+      "interpretation": "Homogeneous addition instance derived from Add.",
+      "effect_on_target": "Routes hAdd expressions to real, vector, and matrix addition.",
+      "paper_match": "Semantically neutral dispatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D101",
+      "name": "instHMul",
+      "interpretation": "Homogeneous multiplication instance derived from Mul.",
+      "effect_on_target": "Routes hMul expressions to real multiplication.",
+      "paper_match": "Semantically neutral dispatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D102",
+      "name": "instLENat",
+      "interpretation": "Natural-number non-strict order.",
+      "effect_on_target": "Interprets k<=n.",
+      "paper_match": "Matches the paper's k <= n bound.",
+      "status": "pass"
+    },
+    {
+      "id": "D103",
+      "name": "instLTNat",
+      "interpretation": "Natural-number strict order.",
+      "effect_on_target": "Interprets 0<k and Hessenberg index conditions.",
+      "paper_match": "Matches positive iteration indexing and standard index comparisons.",
+      "status": "pass"
+    },
+    {
+      "id": "D104",
+      "name": "instOfNatNat",
+      "interpretation": "Natural-number literal instance.",
+      "effect_on_target": "Interprets literal zero and one in Nat.",
+      "paper_match": "Semantically neutral.",
+      "status": "pass"
+    },
+    {
+      "id": "D105",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Division obtained from the real multiplicative structure.",
+      "effect_on_target": "Implements norm ratios.",
+      "paper_match": "Matches ordinary real division where denominators are nonzero.",
+      "status": "pass"
+    },
+    {
+      "id": "D106",
+      "name": "Filter.Eventually",
+      "interpretation": "A predicate holds on a set belonging to a filter.",
+      "effect_on_target": "Makes the final exact inequalities valid only eventually.",
+      "paper_match": "The paper has no explicit eventual quantifier; this belongs to the noncanonical asymptotic interpretation.",
+      "status": "unclear"
+    },
+    {
+      "id": "D107",
+      "name": "Fin",
+      "interpretation": "Finite zero-based index type with a specified cardinality.",
+      "effect_on_target": "Indexes vector coordinates, matrix rows and columns, and iterations within a fixed k.",
+      "paper_match": "Equivalent to the paper's finite index sets up to reindexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D108",
+      "name": "Fin.fintype",
+      "interpretation": "Finite enumeration instance for Fin n.",
+      "effect_on_target": "Allows finite sums and norms to be computed over all coordinates.",
+      "paper_match": "Implementation support with no independent paper-level content.",
       "status": "not-applicable"
+    },
+    {
+      "id": "D109",
+      "name": "Fin.val",
+      "interpretation": "Underlying natural value of a finite index.",
+      "effect_on_target": "Defines powers, Hessenberg offsets, and e1 coordinates.",
+      "paper_match": "Preserves standard zero-based indexing.",
+      "status": "pass"
+    },
+    {
+      "id": "D110",
+      "name": "Finset.sum",
+      "interpretation": "Finite commutative sum.",
+      "effect_on_target": "Defines matrix products, norms, and polynomial evaluation.",
+      "paper_match": "Matches finite summation in the paper's linear algebra.",
+      "status": "pass"
+    },
+    {
+      "id": "D111",
+      "name": "Finset.univ",
+      "interpretation": "The finite set of all elements of a finite type.",
+      "effect_on_target": "Provides full coordinate ranges for sums.",
+      "paper_match": "Matches summing over all coordinates.",
+      "status": "pass"
+    },
+    {
+      "id": "D112",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-dispatched division.",
+      "effect_on_target": "Forms forward-error and rhoAR ratios.",
+      "paper_match": "Reduces to ordinary real division under established nonzero denominators.",
+      "status": "pass"
+    },
+    {
+      "id": "D113",
+      "name": "HPow.hPow",
+      "interpretation": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "Forms polynomial powers and scale squared.",
+      "paper_match": "Matches ordinary natural powers.",
+      "status": "pass"
+    },
+    {
+      "id": "D114",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "Forms residuals and forward-error differences.",
+      "paper_match": "Reduces to ordinary pointwise subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D115",
+      "name": "Max.max",
+      "interpretation": "Binary maximum.",
+      "effect_on_target": "Builds the five-entry condition (3.16).",
+      "paper_match": "Matches the maximum in (3.16).",
+      "status": "pass"
+    },
+    {
+      "id": "D116",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural exponentiation in a monoid.",
+      "effect_on_target": "Raises real n and k values to polynomial powers.",
+      "paper_match": "Matches polynomial evaluation.",
+      "status": "pass"
+    },
+    {
+      "id": "D117",
+      "name": "Nat.cast",
+      "interpretation": "Embedding of natural numbers into reals.",
+      "effect_on_target": "Lets polynomial factors be evaluated at n and k as real values.",
+      "paper_match": "Semantically standard.",
+      "status": "pass"
+    },
+    {
+      "id": "D118",
+      "name": "Pi.instSub",
+      "interpretation": "Pointwise subtraction on function-valued vectors.",
+      "effect_on_target": "Defines xHat-x and perturbed residual vectors.",
+      "paper_match": "Matches vector subtraction.",
+      "status": "pass"
+    },
+    {
+      "id": "D119",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "Commutative additive monoid structure on reals.",
+      "effect_on_target": "Supports finite real sums.",
+      "paper_match": "Standard real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D120",
+      "name": "Real.instAddGroup",
+      "interpretation": "Additive group structure on reals.",
+      "effect_on_target": "Supports subtraction, negation, and absolute value.",
+      "paper_match": "Standard real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D121",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "Totalized real division and inversion structure.",
+      "effect_on_target": "Implements formal ratios, with division by zero totalized by Lean.",
+      "paper_match": "All target-relevant denominators are forced nonzero by system or run assumptions, so totalization does not alter intended cases.",
+      "status": "pass"
+    },
+    {
+      "id": "D122",
+      "name": "Real.instLE",
+      "interpretation": "Usual order <= on reals.",
+      "effect_on_target": "Interprets error and norm bounds.",
+      "paper_match": "Matches real inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D123",
+      "name": "Real.instMax",
+      "interpretation": "Maximum under the usual real lattice order.",
+      "effect_on_target": "Combines the five smallness terms.",
+      "paper_match": "Matches real max in (3.16).",
+      "status": "pass"
+    },
+    {
+      "id": "D124",
+      "name": "Real.instMonoid",
+      "interpretation": "Multiplicative monoid structure on reals.",
+      "effect_on_target": "Supports natural powers in polynomial and second-order terms.",
+      "paper_match": "Standard real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D125",
+      "name": "Real.instNatCast",
+      "interpretation": "Natural-number embedding into reals.",
+      "effect_on_target": "Interprets n and k in polynomial evaluation.",
+      "paper_match": "Standard scalar coercion.",
+      "status": "pass"
+    },
+    {
+      "id": "D126",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction.",
+      "effect_on_target": "Supports pointwise vector subtraction.",
+      "paper_match": "Standard real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D127",
+      "name": "Real.lattice",
+      "interpretation": "Usual lattice order on reals.",
+      "effect_on_target": "Supports absolute values and maxima.",
+      "paper_match": "Standard real order semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D128",
+      "name": "abs",
+      "interpretation": "Absolute value as max(a,-a).",
+      "effect_on_target": "Defines componentwise error bounds and the magnitude of the asymptotic remainder.",
+      "paper_match": "Matches scalar absolute value and componentwise matrix absolute value.",
+      "status": "pass"
+    },
+    {
+      "id": "D129",
+      "name": "instAddNat",
+      "interpretation": "Natural-number addition.",
+      "effect_on_target": "Builds k+1 dimensions and polynomial coefficient ranges.",
+      "paper_match": "Matches standard dimension arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D130",
+      "name": "instHDiv",
+      "interpretation": "Homogeneous division instance derived from Div.",
+      "effect_on_target": "Routes ratio expressions to real division.",
+      "paper_match": "Semantically neutral dispatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D131",
+      "name": "instHPow",
+      "interpretation": "Homogeneous power instance derived from Pow.",
+      "effect_on_target": "Routes exponentiation expressions to real natural powers.",
+      "paper_match": "Semantically neutral dispatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D132",
+      "name": "instHSub",
+      "interpretation": "Homogeneous subtraction instance derived from Sub.",
+      "effect_on_target": "Routes vector and real subtraction expressions.",
+      "paper_match": "Semantically neutral dispatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D133",
+      "name": "Asymptotics.IsBigO",
+      "interpretation": "Norm-based eventual big-O relation with an unspecified constant.",
+      "effect_on_target": "States that the exact remainder is bounded by a constant times the squared condition scale.",
+      "paper_match": "The PDF provides no explicit Big-O remainder theorem, so this precise semantics requires adjudication.",
+      "status": "unclear"
+    },
+    {
+      "id": "D134",
+      "name": "Matrix.one",
+      "interpretation": "Identity matrix with ones on the diagonal and zeros elsewhere.",
+      "effect_on_target": "Defines the condition MR != I.",
+      "paper_match": "Matches the identity preconditioner matrix.",
+      "status": "pass"
+    },
+    {
+      "id": "D135",
+      "name": "Ne",
+      "interpretation": "Negated equality.",
+      "effect_on_target": "Expresses nonzero vectors and MR differing from identity.",
+      "paper_match": "Matches b != 0 and MR != I.",
+      "status": "pass"
+    },
+    {
+      "id": "D136",
+      "name": "One.toOfNat1",
+      "interpretation": "Interprets literal one through a One instance.",
+      "effect_on_target": "Provides identity matrices and scalar one.",
+      "paper_match": "Semantically standard.",
+      "status": "pass"
+    },
+    {
+      "id": "D137",
+      "name": "Pi.instZero",
+      "interpretation": "Pointwise zero for function-valued vectors.",
+      "effect_on_target": "Defines zero vectors and zero propagation inputs.",
+      "paper_match": "Matches ordinary zero vectors.",
+      "status": "pass"
+    },
+    {
+      "id": "D138",
+      "name": "Real.instOne",
+      "interpretation": "The real number one.",
+      "effect_on_target": "Appears in smallness and identity constructions.",
+      "paper_match": "Standard real constant.",
+      "status": "pass"
+    },
+    {
+      "id": "D139",
+      "name": "Real.instZero",
+      "interpretation": "The real number zero.",
+      "effect_on_target": "Appears in nonnegativity, limits, and zero vectors.",
+      "paper_match": "Standard real constant.",
+      "status": "pass"
+    },
+    {
+      "id": "D140",
+      "name": "Real.norm",
+      "interpretation": "The norm on reals given by absolute value.",
+      "effect_on_target": "Determines scalar norms inside IsBigO.",
+      "paper_match": "Standard scalar norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D141",
+      "name": "Real.sqrt",
+      "interpretation": "Nonnegative real square root.",
+      "effect_on_target": "Converts squared-coordinate sums into Euclidean norms.",
+      "paper_match": "Matches the 2-norm formula.",
+      "status": "pass"
+    },
+    {
+      "id": "D142",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Interprets literal zero through a Zero instance.",
+      "effect_on_target": "Provides scalar, vector, and matrix zeros.",
+      "paper_match": "Semantically standard.",
+      "status": "pass"
+    },
+    {
+      "id": "D143",
+      "name": "instDecidableEqFin",
+      "interpretation": "Decidable equality for finite indices.",
+      "effect_on_target": "Supports identity matrices and finite computations.",
+      "paper_match": "Computational infrastructure with no paper-level semantic content.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D144",
+      "name": "Fin.castSucc",
+      "interpretation": "Embeds Fin k into the first k positions of Fin(k+1).",
+      "effect_on_target": "States that vHat is the prefix of vHatNext.",
+      "paper_match": "Matches VHat_k being the first k columns of VHat_{k+1}.",
+      "status": "pass"
+    },
+    {
+      "id": "D145",
+      "name": "Matrix",
+      "interpretation": "Matrices represented as doubly indexed functions.",
+      "effect_on_target": "Underlying representation for all finite matrices.",
+      "paper_match": "Extensionally matches finite real matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D146",
+      "name": "Matrix.add",
+      "interpretation": "Pointwise matrix addition.",
+      "effect_on_target": "Forms A+DeltaA, MRinv+DeltaMR, and perturbed bases.",
+      "paper_match": "Matches matrix perturbation notation.",
+      "status": "pass"
+    },
+    {
+      "id": "D147",
+      "name": "Matrix.instL2OpNormedAddCommGroup",
+      "interpretation": "Induced l2 operator norm structure for finite matrices.",
+      "effect_on_target": "Implements p19OpNorm2.",
+      "paper_match": "Matches the induced matrix 2-norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D148",
+      "name": "Norm.norm",
+      "interpretation": "Projection of a type's norm operation.",
+      "effect_on_target": "Evaluates operator and Frobenius norms.",
+      "paper_match": "Semantically standard.",
+      "status": "pass"
+    },
+    {
+      "id": "D149",
+      "name": "NormedAddCommGroup.toNorm",
+      "interpretation": "Extracts a norm from a normed additive commutative group.",
+      "effect_on_target": "Connects matrix norm structures to norm notation.",
+      "paper_match": "Semantically standard.",
+      "status": "pass"
+    },
+    {
+      "id": "D150",
+      "name": "Pi.instAdd",
+      "interpretation": "Pointwise addition on function-valued vectors and matrices.",
+      "effect_on_target": "Implements vector and matrix perturbation sums.",
+      "paper_match": "Matches ordinary componentwise addition.",
+      "status": "pass"
+    },
+    {
+      "id": "D151",
+      "name": "Real.instLT",
+      "interpretation": "Usual strict order on reals.",
+      "effect_on_target": "States positive rho denominators and eventual scale<1.",
+      "paper_match": "Matches strict positivity where explicitly required.",
+      "status": "pass"
+    },
+    {
+      "id": "D152",
+      "name": "Real.instRCLike",
+      "interpretation": "RCLike structure allowing real matrices to use the l2 operator norm implementation.",
+      "effect_on_target": "Technical support for p19OpNorm2.",
+      "paper_match": "Does not change the real scalar semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D153",
+      "name": "Filter.Tendsto",
+      "interpretation": "Convergence of a function from one filter to another.",
+      "effect_on_target": "Requires the condition (3.16) scale to converge to zero.",
+      "paper_match": "This convergence requirement is absent from the fixed-precision theorem statements and is part of the unresolved asymptotic formalization.",
+      "status": "unclear"
+    },
+    {
+      "id": "D154",
+      "name": "Fin.cases",
+      "interpretation": "Case split between coordinate zero and successor coordinates.",
+      "effect_on_target": "Implements column augmentation with the leading b or beta*e1 column.",
+      "paper_match": "Preserves the intended block-column construction.",
+      "status": "pass"
+    },
+    {
+      "id": "D155",
+      "name": "Function.Injective",
+      "interpretation": "Equality of outputs implies equality of inputs.",
+      "effect_on_target": "Defines full column rank of a rectangular matrix map.",
+      "paper_match": "Matches the standard full-column-rank notion.",
+      "status": "pass"
+    },
+    {
+      "id": "D156",
+      "name": "Matrix.frobeniusNormedAddCommGroup",
+      "interpretation": "Frobenius norm structure on finite matrices.",
+      "effect_on_target": "Implements p19FrobNorm in perturbation bounds.",
+      "paper_match": "Matches the Frobenius norm in (3.14).",
+      "status": "pass"
+    },
+    {
+      "id": "D157",
+      "name": "Matrix.zero",
+      "interpretation": "Pointwise zero matrix.",
+      "effect_on_target": "Supplies zero perturbations and zero propagation inputs.",
+      "paper_match": "Matches ordinary zero matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D158",
+      "name": "PseudoMetricSpace.toUniformSpace",
+      "interpretation": "Uniform structure induced by a metric.",
+      "effect_on_target": "Supports real neighborhood filters used by Tendsto.",
+      "paper_match": "Technical infrastructure for the added asymptotic model.",
+      "status": "pass"
+    },
+    {
+      "id": "D159",
+      "name": "Real.normedAddCommGroup",
+      "interpretation": "Normed additive group structure on reals.",
+      "effect_on_target": "Supports norms and asymptotic estimates.",
+      "paper_match": "Standard real analysis structure.",
+      "status": "pass"
+    },
+    {
+      "id": "D160",
+      "name": "Real.pseudoMetricSpace",
+      "interpretation": "Usual metric on reals given by absolute difference.",
+      "effect_on_target": "Supports convergence of the condition scale.",
+      "paper_match": "Standard real topology.",
+      "status": "pass"
+    },
+    {
+      "id": "D161",
+      "name": "UniformSpace.toTopologicalSpace",
+      "interpretation": "Topology induced by a uniform structure.",
+      "effect_on_target": "Provides the topology used for neighborhoods of zero.",
+      "paper_match": "Technical infrastructure for the filter interpretation.",
+      "status": "pass"
+    },
+    {
+      "id": "D162",
+      "name": "instDecidableEqNat",
+      "interpretation": "Decidable equality on natural numbers.",
+      "effect_on_target": "Supports the conditional definition of beta*e1.",
+      "paper_match": "Computational infrastructure with no independent semantic effect.",
+      "status": "not-applicable"
+    },
+    {
+      "id": "D163",
+      "name": "ite",
+      "interpretation": "Decidable if-then-else.",
+      "effect_on_target": "Selects beta at coordinate zero and zero elsewhere.",
+      "paper_match": "Correctly implements beta*e1.",
+      "status": "pass"
+    },
+    {
+      "id": "D164",
+      "name": "nhds",
+      "interpretation": "Neighborhood filter at a topological point.",
+      "effect_on_target": "Defines convergence of the condition scale to real zero.",
+      "paper_match": "The underlying real neighborhood is standard, but the paper does not prescribe this limiting semantics for much-less-than or lesssim.",
+      "status": "unclear"
     }
   ],
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "Printed pages 10-11 contain Theorems 3.3-3.4, equations (3.16), (3.17), and (3.20), and Remarks 4-5; Appendix D on printed pages 43-44 derives the missing solution-formation term.",
-      "lean_evidence": "The target names right and flexible envelopes and contains exactly the three-term versus two-term expressions associated with those passages.",
-      "reasoning": "The selected paper passages are the correct source for the intended right-versus-flexible comparison."
+      "paper_evidence": "The inspected file has SHA-256 67af427c72ae891b7863e386db542ef775b1e3eb306f812bb1a78bdbef86aaad and identifies HAL hal-05071696v2, submitted 19 May 2026. Physical PDF pages 11-12 contain equations (3.14)-(3.20), Theorems 3.3-3.4, and Remarks 3-5; pages 41-45 contain Appendices C-D.",
+      "lean_evidence": "The target names the right and fixed-flexible attainable forward-error result and uses definitions corresponding to (3.15)-(3.17) and (3.20).",
+      "reasoning": "The selected version and passages are the intended authoritative source."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "The paper assumes a positive-dimensional nonsingular system Ax = b with b nonzero, nonsingular fixed MR, genuine inverses and products, unit roundoffs, and algorithm-derived etaR and rhoA.",
-      "lean_evidence": "The target allows n = 0, arbitrary real ug, ua, and rhoA, and six unrelated matrix functions whose names do not enforce inversion or AMRinv = A * MRinv.",
-      "reasoning": "Several binders have only suggestive names and lack the types or relations needed to denote the paper's quantities."
+      "paper_evidence": "The paper uses real n-dimensional systems and derives an iteration k<=n for each algorithm.",
+      "lean_evidence": "The target additionally binds an arbitrary type iota, filter l, NeBot instance, system bundle, and both execution bundles; each witness must equal a stored keyDimension.",
+      "reasoning": "Finite real matrix and vector types match, but the run and asymptotic binders change the theorem domain and the meaning of the iteration binder."
     },
     {
       "id": "S03",
       "status": "fail",
-      "paper_evidence": "Each theorem is conditional and existential: there exists an iteration k <= n at which the corresponding computed solution satisfies its forward-error bound; the witnesses for the two algorithms need not be the same.",
-      "lean_evidence": "The target universally quantifies only n, scalars, and matrices and contains no iteration, existential witness, or computed solution.",
-      "reasoning": "The source quantifier structure has been replaced by a pointwise universal algebraic identity."
+      "paper_evidence": "Theorems 3.3 and 3.4 separately assert that there exists an iteration k<=n; Appendix C obtains that witness from Theorem 3.1.",
+      "lean_evidence": "Each existential includes k=run.keyDimension, while run.keyDimension was supplied before the theorem. The outer theorem also requires right and flexible executions simultaneously.",
+      "reasoning": "The paper's generated existential witness is replaced by a preselected fixed dimension under stronger bundled assumptions."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "Both results require the complete five-term smallness condition (3.16), the perturbation model (3.14), nonsingular A and MR, fixed MR for flexible GMRES, and the algorithmic definitions of rhoA and the computed basis.",
-      "lean_evidence": "The only hypotheses are 0 <= um and 0 <= etaR.",
-      "reasoning": "Nearly all explicit and implicit hypotheses governing applicability and meaning are absent."
+      "paper_evidence": "The stated hypotheses are the nonsingular system and preconditioner, model (3.14), complete five-term condition (3.16), and the specified algorithm paths.",
+      "lean_evidence": "D028 adds a nonzero initial residual; D043 assumes full rank of zHat and all fixed-k model data; D065 and D067 assume exact error decompositions, final component bounds, and second-order remainder estimates.",
+      "reasoning": "Several proof conclusions and extra domain restrictions are promoted to theorem inputs."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "The principal conclusions are attainable normalized forward-error bounds for right- and flexible-preconditioned computed solutions, plus the explanation that solution formation removes one explicit term.",
-      "lean_evidence": "The target states only algebraic relations between two definitions and adds an equality iff zero-factor characterization and a strictness theorem.",
-      "reasoning": "The forward-error conclusions are omitted while unsupported extra conclusions are introduced."
+      "status": "pass",
+      "paper_evidence": "Equation (3.17) has the three ug, um*etaR, and ua*rhoAR sources; equation (3.20) retains only the ug and ua*rhoAR sources while still assuming (3.16).",
+      "lean_evidence": "D023 and D020 contain exactly those respective source terms, D018 retains all five condition terms, and the final equality isolates the removed um*etaR*kappa(MR) term.",
+      "reasoning": "At the formula level, both displayed envelopes and the flexible omission are complete."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "The paper's kappa values are condition numbers of actual nonsingular matrices, AMRinv is a matrix product, and rhoA is a computed-basis cancellation ratio.",
-      "lean_evidence": "p19Kappa2 multiplies norms of two independent arguments; AMRinv and its alleged inverse are independent of A, MR, and MRinv; rhoA is an unconstrained real.",
-      "reasoning": "Although the primitive operators are interpretable, the central imported definitions do not enforce the paper meanings."
+      "status": "pass",
+      "paper_evidence": "The paper defines rhoAR in (3.15), forward error in (2.1), generic condition numbers in Section 2, and the two solution paths in Algorithm 1 and Appendices C-D.",
+      "lean_evidence": "D018-D024, D038-D042, D047, D051, and D068 explicitly define these operators and quantities.",
+      "reasoning": "The nontrivial local operators are unfolded and interpretable; the remaining concern is the chosen specialization, not hidden meaning."
     },
     {
       "id": "S07",
-      "status": "fail",
-      "paper_evidence": "Equations (3.17) and (3.20) concern computed solutions, computed Krylov bases, rounded preconditioner applications, and exact system solutions.",
-      "lean_evidence": "The target contains only exact real matrices, scalars, norms, and exact arithmetic expressions.",
-      "reasoning": "Exact, computed, and perturbed quantities are not represented, so their distinctions are lost."
+      "status": "pass",
+      "paper_evidence": "The PDF distinguishes exact x, computed xHat, computed VHat and ZHat, mathematical ZTilde, and application-dependent perturbations.",
+      "lean_evidence": "The system stores xExact, algorithm records store xHat, run records distinguish vHat and zHat, and separate perturbation fields model preconditioner, A-product, and solution-formation errors.",
+      "reasoning": "Exact and computed quantities are not conflated in the exposed types."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "Remark 4 and Appendix D tie the absent term specifically to storing Zk and avoiding a fresh application of MR^-1 during flexible solution formation.",
-      "lean_evidence": "No algorithm, basis, preconditioner application, solution-formation path, or fixed-preconditioner relation appears in the target.",
-      "reasoning": "The declaration is disconnected from the execution-model fact that gives the comparison its paper meaning."
+      "status": "unclear",
+      "paper_evidence": "Algorithm 1 prints r0=A*x0-b and xk=x0 plus a correction, while the modular Algorithm 2 omits x0 and does not reconcile the sign convention.",
+      "lean_evidence": "D052 defines r0=b-A*xInitial, and D047/D051 use xInitial plus a correction.",
+      "reasoning": "Lean follows the conventional GMRES sign, but it conflicts with the authoritative displayed Algorithm 1; the paper appears internally inconsistent and requires adjudication."
     },
     {
       "id": "S09",
-      "status": "fail",
-      "paper_evidence": "Forward errors and rhoA use vector 2-norms, the perturbation model uses a Frobenius norm, and kappa may denote one of the paper's specified normwise condition measures.",
-      "lean_evidence": "The target correctly uses an induced matrix 2-norm inside its formal kappa2, but omits forward-error norms, the Frobenius perturbation bound, and the norm-ratio definition of rhoA.",
-      "reasoning": "The selected kappa2 norm is acceptable in isolation, but the result's full norm semantics are not preserved."
+      "status": "pass",
+      "paper_evidence": "Forward error and rhoAR use vector 2-norms, (3.14) uses the Frobenius norm, and matrix 2-norm is induced.",
+      "lean_evidence": "D042/D059 define Euclidean vector norms, D055/D147 define induced l2 operator norms, D072/D156 define Frobenius norms, and D068 implements componentwise absolute values.",
+      "reasoning": "Norm kinds, squared versus unsquared forms, and componentwise semantics match; generic kappa is explicitly specialized to kappa2."
     },
     {
       "id": "S10",
       "status": "fail",
-      "paper_evidence": "Both bounds contain an unspecified low-degree c(n,k), depend on an existential iteration k, and use iteration-dependent rhoA.",
-      "lean_evidence": "There is no k or c(n,k), and rhoA is an arbitrary scalar independent of n, an iteration, or a computed basis.",
-      "reasoning": "Essential constant and indexing dependence has been removed, even though the three displayed leading terms have the correct unit coefficients."
+      "paper_evidence": "The witness satisfies k<=n and c(n,k) is guaranteed to be a low-degree polynomial, though its coefficients are unspecified.",
+      "lean_evidence": "The target also requires 0<k and k=keyDimension. D049 permits arbitrary polynomial degrees.",
+      "reasoning": "The term coefficients are correct, but witness indexing is preselected and the source's low-degree restriction is absent."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "The paper uses the standard floating-point model, assigns u_m, u_a, and u_g to distinct operations, assumes small unit roundoffs, and implicitly excludes exceptional unmodeled operations.",
-      "lean_evidence": "The precision symbols are unrestricted exact reals except for nonnegativity of um; no rounding, underflow, overflow, NaN, infinity, or operation assignment is encoded.",
-      "reasoning": "The floating-point execution model is absent."
+      "status": "unclear",
+      "paper_evidence": "Section 2 invokes the standard floating-point model and unit roundoffs substantially below one, without separately specifying rounding mode, overflow, underflow, subnormals, NaNs, or infinities.",
+      "lean_evidence": "The execution records use real perturbation equations and nonnegative real parameter families; no concrete floating-point format, rounding mode, or exceptional-value behavior is modeled.",
+      "reasoning": "Both are abstract error models, but the source is insufficient to prove exact agreement on exceptional-value assumptions."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The forward-error relations use the paper's approximately-less-than notation after dropping second-order terms, and c(n,k) is generic and may vary between estimates.",
-      "lean_evidence": "The target asserts exact <=, exact equality, an exact biconditional, and exact strict inequality.",
-      "reasoning": "The formal relations are materially stronger and different from the source relations."
+      "paper_evidence": "The final relations use qualitative lesssim after dropping negligible second-order terms and assert existence at some k.",
+      "lean_evidence": "D019 asserts an eventual exact inequality with an O(scale^2) remainder at the stored keyDimension.",
+      "reasoning": "Both the relation semantics and witness scope are stronger and more specific than the source states."
     },
     {
       "id": "S13",
-      "status": "fail",
-      "paper_evidence": "Theorems 3.3 and 3.4 bound normalized forward error ||xhat_k - x||_2 / ||x||_2.",
-      "lean_evidence": "No exact solution, computed approximation, error numerator, denominator, residual, or other error measure occurs.",
-      "reasoning": "The target does not formalize the paper's error notion at all."
+      "status": "pass",
+      "paper_evidence": "Section 3 explicitly restricts attention to relative forward error in the original system.",
+      "lean_evidence": "D021 is norm(xHat-x)/norm(xExact).",
+      "reasoning": "No residual, backward-error, or preconditioned-variable error is substituted."
     },
     {
       "id": "S14",
-      "status": "fail",
-      "paper_evidence": "The symbol used in (3.17) and (3.20) explicitly drops negligible second-order terms; Appendix C and D repeatedly invoke first-order approximations.",
-      "lean_evidence": "All target identities and inequalities are exact and contain no remainder, asymptotic relation, or first-order qualification.",
-      "reasoning": "First-order analytical bounds have been converted into exact algebra."
+      "status": "unclear",
+      "paper_evidence": "Section 2 and Appendix C say negligible second-order terms are dropped, but no exact remainder, coefficient, or Big-O theorem is supplied.",
+      "lean_evidence": "D040 and D133 require an explicit remainder satisfying IsBigO of the square of the five-term condition scale.",
+      "reasoning": "This is a reasonable formalization candidate but is not entailed uniquely by the cited text."
     },
     {
       "id": "S15",
       "status": "fail",
-      "paper_evidence": "The paper already works with finite real matrices and permits choosing the 2-norm condition number, but only for actual nonsingular matrices and a positive-dimensional system.",
-      "lean_evidence": "The target selects the 2-norm but generalizes to arbitrary matrix/inverse pairs and n = 0 without classifying or constraining that broader domain.",
-      "reasoning": "The norm specialization is acceptable, but the simultaneous domain generalization is not a faithful specialization of the result."
+      "paper_evidence": "The paper already concerns finite real systems and uses generic normwise kappa notation.",
+      "lean_evidence": "Lean correctly uses Fin n and Real and explicitly chooses kappa2, but restricts to bundled fixed-k executions with nonzero initial residual, supplied full-rank and analysis evidence, and simultaneous right/flexible availability.",
+      "reasoning": "The finite-real and kappa2 choices are acceptable specializations; the much narrower execution domain does not preserve the benchmark task claimed by the paper theorem."
     },
     {
       "id": "S16",
       "status": "fail",
-      "paper_evidence": "The paper's conclusion follows from a nontrivial rounding-error analysis under condition (3.16) and concerns attainable accuracy of computed GMRES iterates.",
-      "lean_evidence": "The target is an algebraic consequence of the two envelope definitions, real no-zero-divisors, and norm nonnegativity; it remains true for degenerate zero matrices and n = 0.",
-      "reasoning": "The formal hypotheses are satisfiable, but the conclusion is true for a definitionally trivial reason that does not test the paper's numerical result."
+      "paper_evidence": "The paper's result is intended to derive an attainable bound from the execution model and condition (3.16).",
+      "lean_evidence": "NeBot, positive dimensions, and positive rho denominators avoid simple empty or undefined cases, but D065 and D067 already assume the error decomposition and each final first-order component bound.",
+      "reasoning": "The types appear inhabitable, yet the target conclusion follows for an unintended near-circular reason rather than formalizing the paper's attainment argument."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "The Lean theorem supplies only exact algebraic relations between two defined expressions. It cannot yield existence of an iteration, a computed-solution forward-error bound, condition (3.16), or the algorithmic solution-formation analysis required by Theorems 3.3 and 3.4."
+      "reasoning": "The Lean proposition only handles already supplied right and flexible execution bundles at their stored dimensions, and those bundles contain the central analytical component bounds. It does not construct an iteration or execution from model (3.14) and condition (3.16), so it cannot recover the paper's general existential theorems."
     },
     "paper_implies_lean": {
       "verdict": "no",
-      "reasoning": "The paper proves approximate conditional bounds for genuine nonsingular matrices and computed quantities. It does not prove exact universal identities, zero-factor equivalence, or strict ordering for arbitrary independent matrix and inverse-like arguments, especially with generic c(n,k) factors omitted."
+      "reasoning": "The paper separately guarantees a bound at some iteration k<=n. It does not guarantee the bound at every externally stored keyDimension, require both execution bundles simultaneously, or assert the exact filter-based eventual inequality with an O(condition^2) remainder used by Lean."
     }
   },
   "classification": "not-faithful-different",
   "accepted": false,
-  "requires_adjudication": false,
+  "requires_adjudication": true,
   "findings": [
     {
       "severity": "critical",
-      "category": "result-substitution",
-      "paper_evidence": "Theorems 3.3 and 3.4 assert conditional existential attainable normalized forward-error bounds for computed GMRES solutions.",
-      "lean_evidence": "The declaration contains no computed solution, forward error, iteration witness, or applicability condition and instead proves an algebraic comparison of definitions.",
-      "impact": "The formal theorem does not measure or imply the numerical result selected from the paper."
+      "category": "assumed-analysis",
+      "paper_evidence": "Appendices C and D derive the error decompositions and the ug, um*etaR, and ua*rhoAR contribution estimates before recovering (3.17) and (3.20).",
+      "lean_evidence": "D065 and D067 require those decompositions, component bounds, and second-order remainder estimates as fields of the execution arguments.",
+      "impact": "The formal target assumes the core analytical work it is meant to measure, so the resulting theorem is a conditional summation lemma rather than a formalization of Theorems 3.3 and 3.4."
     },
     {
       "severity": "major",
-      "category": "exactness-and-relation-strength",
-      "paper_evidence": "Equations (3.17) and (3.20) use a first-order approximate inequality and generic c(n,k); Remark 4 only identifies the omitted reapplication term.",
-      "lean_evidence": "The target removes c(n,k) and asserts exact equality, exact equality cases, exact ordering, and conditional strictness.",
-      "impact": "The declaration turns a qualitative comparison of first-order error envelopes into unsupported exact claims."
+      "category": "quantifier-scope",
+      "paper_evidence": "Theorems 3.3 and 3.4 derive existence of some k<=n, with Appendix C obtaining the witness from Theorem 3.1.",
+      "lean_evidence": "Both existential witnesses must equal a keyDimension supplied inside the corresponding input run.",
+      "impact": "The attainment claim is replaced by a bound at a preselected dimension under stronger assumptions."
     },
     {
       "severity": "major",
-      "category": "condition-number-domain",
-      "paper_evidence": "The paper's condition numbers apply to actual nonsingular A, MR, and AMR^-1 with genuine inverses.",
-      "lean_evidence": "p19Kappa2 receives unrelated matrix pairs, and no hypothesis links AMRinv to A and MRinv or any inverse-like argument to an actual inverse.",
-      "impact": "The formal kappa2 values need not be condition numbers and can be zero in cases excluded by the paper."
+      "category": "domain-restriction",
+      "paper_evidence": "The stated results assume the algorithmic error model and complete condition (3.16).",
+      "lean_evidence": "D028 adds a nonzero initial residual, D043 assumes full rank and fixed-k data, and the target requires both right and flexible executions at once.",
+      "impact": "The theorem covers a narrower, differently bundled domain and does not provide the benchmark task advertised by the paper."
     },
     {
       "severity": "major",
-      "category": "missing-algorithmic-hypotheses",
-      "paper_evidence": "The flexible result still assumes all of condition (3.16), including its u_m term, and removes only the explicit solution-reapplication contribution from the envelope.",
-      "lean_evidence": "The flexible definition has no um argument, while the theorem omits condition (3.16), the perturbation model, fixed-preconditioner assumptions, and all computed-basis definitions.",
-      "impact": "The statement can be read as unconditional independence from u_m, which is broader than the literal theorem."
+      "category": "asymptotic-semantics",
+      "paper_evidence": "The PDF uses qualitative much-less-than and lesssim notation and says negligible second-order terms are dropped, without defining a limiting family or exact remainder.",
+      "lean_evidence": "D019, D040, D076, D089, D106, D133, D153, and D164 impose filter convergence, eventual inequalities, and an O(scale^2) remainder.",
+      "impact": "This exact interpretation may be mathematically reasonable but is not determined by the source and affects both implication directions; adjudication is required."
     },
     {
-      "severity": "note",
-      "category": "matched-term-structure",
-      "paper_evidence": "The right bracket in (3.17) has three terms, while the flexible bracket in (3.20) omits um * etaR * kappa(MR), as explained in Remark 4.",
-      "lean_evidence": "The two local envelope definitions reproduce exactly that three-term versus two-term symbolic pattern.",
-      "impact": "The declaration captures the paper's leading-term mnemonic, but this partial match does not repair the missing theorem semantics."
+      "severity": "minor",
+      "category": "algorithm-linkage",
+      "paper_evidence": "Algorithm 1 prints r0=A*x0-b while retaining xk=x0 plus a correction; Algorithm 2 does not reconcile the shift or sign.",
+      "lean_evidence": "D052 uses b-A*xInitial, while D047 and D051 add the resulting correction to xInitial.",
+      "impact": "The formal algorithm follows the conventional sign but not the literal displayed source; the paper's apparent internal inconsistency needs adjudication."
+    },
+    {
+      "severity": "minor",
+      "category": "polynomial-factor",
+      "paper_evidence": "Section 2 guarantees c(n,k) is a low-degree polynomial.",
+      "lean_evidence": "D049 permits arbitrary natural degrees with no low-degree restriction.",
+      "impact": "The formal class of polynomial factors is broader than the source specifies."
     }
   ],
-  "rationale": "The declaration accurately copies the leading term lists inside equations (3.17) and (3.20) and proves their elementary algebraic difference. It nevertheless replaces the paper's conditional, first-order, existential forward-error results and algorithmic explanation with exact tautological relations over unconstrained data. Missing inverse relations, condition (3.16), c(n,k), the iteration witness, computed quantities, and the forward-error expression prevent Lean from implying the paper; the paper likewise does not imply the target's universal exact biconditional and strictness claims. The propositions are therefore different rather than faithfully equivalent or merely stronger."
+  "rationale": "The formulas for condition (3.16), rhoAR, relative forward error, the three-term right envelope, the two-term flexible envelope, and the omitted reapplication term are represented accurately. The proposition nevertheless changes the theorem fundamentally: it takes fixed-k execution bundles as inputs, forces each existential witness to equal that preselected k, requires both variants simultaneously, and assumes forward-analysis records containing the component estimates and remainder decomposition that Appendices C and D derive. It also chooses an exact filter and Big-O semantics not fixed by the PDF. Consequently neither implication holds. The asymptotic interpretation and the PDF's unresolved initial-residual sign require adjudication, but the fixed-witness and assumed-analysis defects independently establish a not-faithful-different classification."
 }
