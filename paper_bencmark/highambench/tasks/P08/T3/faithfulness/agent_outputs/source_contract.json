@@ -7,171 +7,196 @@
     {
       "pdf_page": 3,
       "printed_page": "818",
-      "anchor": "Section 2 floating-point and componentwise conventions",
-      "observation": "The paper studies Ax=b with n equations in n unknowns over a floating-point subset of the reals. Relative roundoff is bounded by u>0 with n*u <= 0.01; referenced floating-point results are assumed well defined; array absolute values and inequalities are componentwise."
+      "anchor": "Section 2 opening arithmetic paragraph",
+      "observation": "The problem has n equations in n unknowns. Floating-point numbers form a subset of the reals with floating operations addition, subtraction, multiplication, and division. Relative roundoff is bounded by a positive u, nu <= 0.01, and every referenced floating-point operation is assumed well defined."
+    },
+    {
+      "pdf_page": 3,
+      "printed_page": "818",
+      "anchor": "Section 2 componentwise perturbation paragraph",
+      "observation": "The condition |delta A| <= epsilon|A| uses componentwise absolute value and componentwise ordering."
     },
     {
       "pdf_page": 4,
       "printed_page": "819",
-      "anchor": "absolute monotone norm convention",
-      "observation": "Only absolute vector norms are considered: || |v| ||=||v||, equivalently monotonicity under componentwise domination. The norm is normalized by ||e_j||=1 and extended to row vectors and matrices."
+      "anchor": "Section 2 absolute norm convention",
+      "observation": "Only absolute vector norms are used: |||v||| = ||v||, equivalently ||v|| <= ||w|| whenever |v| <= |w|. The norm is normalized by ||e_j|| = 1 for 1 <= j <= n and extended to row vectors and matrices in the usual way."
     },
     {
       "pdf_page": 5,
       "printed_page": "820",
-      "anchor": "definition of kappa(A^-1)",
-      "observation": "The paper defines kappa(A^-1)=|| |A| |A^-1| || and warns that this is not a standard norm-based condition number."
+      "anchor": "Definition of kappa(A^{-1})",
+      "observation": "The paper defines kappa(A^{-1}) = || |A| |A^{-1}| || and emphasizes that this is nonstandard and is not a condition number formed as a product of norms."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "820",
+      "anchor": "Theorem 2.2 proof, first upper bound",
+      "observation": "For the perturbation proof, removable singularities of a rational delta x are assumed removed, while ||A delta x|| is treated as +infinity at poles; the paper also notes that A + delta A need not be nonsingular there."
     },
     {
       "pdf_page": 7,
       "printed_page": "822",
-      "anchor": "Section 3 anonymous-constant convention",
-      "observation": "Lower-case c_j and upper-case C_j denote scalar and matrix quantities, respectively, which the paper calls positive and bounded above by functions of n only."
+      "anchor": "Section 3 anonymous-quantity convention",
+      "observation": "Symbols C_1, c_1, C_2, c_3, and so on denote positive quantities bounded above by functions of n only; lowercase symbols are scalars and uppercase symbols are matrices."
     },
     {
       "pdf_page": 8,
       "printed_page": "823",
-      "anchor": "equation (3.1) and following Note",
-      "observation": "A column-pivoted solve for x=A^-1 b satisfies |A x_hat-b| <= u C_2 |A| |x| when c_1*u*kappa(A^-1) <= 1/2, where c_1=||C_1|| and C_2=(I-u C_1|A||A^-1|)^-1 C_1. The preceding certificate is |A x_hat-b| <= u C_1|A||x_hat| with C_1 nonnegative."
+      "anchor": "Column-pivoted solve certificate, equation (3.1), and following Note",
+      "observation": "Column-pivoted Gaussian elimination produces an approximation x_hat to x = A^{-1}b with |A x_hat-b| <= uC_1|A||x_hat| for a nonnegative C_1 depending only on n. Equation (3.1) gives |A x_hat-b| <= uC_2|A||x| when c_1 u kappa(A^{-1}) <= 1/2, with c_1 = ||C_1|| and C_2 = (I-uC_1|A||A^{-1}|)^{-1}C_1."
     },
     {
       "pdf_page": 9,
       "printed_page": "824",
-      "anchor": "Section 4 algorithm and residual-precision paragraph",
-      "observation": "The initial x_1 is computed by column pivoting. For m>=1, r_m is the computed Ax_m-b, d_m is the column-pivoted computed value of A^-1 r_m, and x_(m+1) is the floating-point subtraction x_m-d_m. The conventions are x_0=0, r_0=-b, d_0=-x_1. Residual subtraction is last; s.p.r.a. uses single precision, while d.p.r.a. uses double precision followed by conversion to single precision."
+      "anchor": "Section 4 iterative-refinement algorithm and residual-precision paragraph",
+      "observation": "The initial x_1 and each correction d_m are computed by column pivoting; r_m is the computed value of Ax_m-b and x_{m+1} is the floating-point subtraction x_m minus d_m. The auxiliary initialization is x_0 = 0, r_0 = -b, d_0 = -x_1. Residual subtraction is last; SPRA uses single precision, while DPRA uses double precision followed by conversion to single precision."
     },
     {
       "pdf_page": 10,
       "printed_page": "825",
       "anchor": "Lemma 4.1",
-      "observation": "The paper defines q_(m+1)=A(x_m-d_m)-b as the exact residual of x_m-d_m and bounds it for every m>=0. It defines bar_u=u for s.p.r.a. and bar_u=u^2 for d.p.r.a."
+      "observation": "The exact residual is q_{m+1} = A(x_m-d_m)-b. Lemma 4.1 bounds it for m >= 0 by uC_6|A||x_m-x| + (n u_bar+c_3u^2)|A||x| + u_bar u C_7|A||A^{-1}||A||x|, where u_bar = u for SPRA and u_bar = u^2 for DPRA."
     },
     {
       "pdf_page": 11,
       "printed_page": "826",
       "anchor": "Note following Lemma 4.1 and Lemma 4.2",
-      "observation": "The Note defines c_3,c_4,c_5,C_6,C_7. Lemma 4.2 gives both a bound on |A(x_(m+1)-x)| and a bound on |x_(m+1)-x| in terms of |q_(m+1)|."
+      "observation": "The Note defines c_3, c_4, c_5, C_6, and C_7. The second conclusion of Lemma 4.2 is |x_{m+1}-x| <= (1+u)|A^{-1}||q_{m+1}|+u|x|, which is the conclusion used in Lemma 4.3."
     },
     {
       "pdf_page": 12,
       "printed_page": "827",
       "anchor": "Lemma 4.3, following Note, and proof recurrence",
-      "observation": "Lemma 4.3 states a four-term componentwise finite bound for |q_(m+1)| for every m>=0 under c_8*u*kappa(A^-1) <= 1/2. The Note defines C_8,c_8,C_9,C_10,C_11,C_12, and the proof records a one-step recurrence and a separate m=0 base case."
+      "observation": "Lemma 4.3 states its four-term componentwise finite bound under c_8 u kappa(A^{-1}) <= 1/2, defines C_8, c_8, and C_9 through C_12, and derives a recurrence from Lemmas 4.1 and 4.2 before completing the proof by a separate m = 0 base case and induction."
     }
   ],
   "statement": {
     "binders": [
-      "n is the positive-integer system dimension; A is an n by n real matrix, b is an n-vector, and x=A^-1 b is the exact solution, so nonsingularity of A is inherited. [PDF p. 3 (printed 818), anchor: Section 2 opening; PDF p. 8 (printed 823), anchor: equation (3.1)]",
-      "u>0 is the single-precision relative-roundoff bound, and one residual variant, s.p.r.a. or d.p.r.a., is fixed; that choice determines bar_u. [PDF p. 3 (printed 818), anchor: floating-point model; PDF p. 10 (printed 825), anchor: Lemma 4.1]",
-      "x_m,r_m,d_m are generated by the Section 4 algorithm, and q_(m+1) is defined from x_m and d_m. [PDF p. 9 (printed 824), anchor: Section 4 algorithm; PDF p. 10 (printed 825), anchor: Lemma 4.1]",
-      "The displayed quantifier is m=0,1,2,...; the surrounding section fixes the data, arithmetic variant, norm, and constants before this quantifier. [PDF p. 12 (printed 827), anchor: Lemma 4.3]"
+      "n is the system dimension, conventionally a positive integer: the paper says there are n equations in n unknowns and uses basis indices 1 <= j <= n, but does not print a formal n in positive naturals binder. [PDF p. 3, printed p. 818, Section 2 opening; PDF p. 4, printed p. 819, norm normalization.]",
+      "A is a real n-by-n matrix, b is a real n-vector, and x = A^{-1}b; nonsingularity of A is implicit in the displayed inverse rather than separately stated. [PDF p. 3, printed p. 818, Section 2 opening; PDF p. 8, printed p. 823, column-pivoted solve result.]",
+      "u is a positive single-precision relative-roundoff bound satisfying nu <= 0.01. [PDF p. 3, printed p. 818, Section 2 arithmetic paragraph.]",
+      "A residual mode is selected: SPRA has u_bar = u, while DPRA has u_bar = u^2. [PDF p. 10, printed p. 825, Lemma 4.1.]",
+      "The selected conclusion quantifies m = 0,1,2,... and concerns q_{m+1}. [PDF p. 12, printed p. 827, Lemma 4.3.]"
     ],
     "hypotheses": [
-      "The standing arithmetic model has relative roundoff at most u>0, n*u <= 0.01, and every referenced floating-point operation is well defined. [PDF p. 3 (printed 818), anchor: Section 2 floating-point model]",
-      "A is nonsingular and x=A^-1 b is the exact solution used in the bound. [PDF p. 8 (printed 823), anchor: equation (3.1)]",
-      "The iterates use Gaussian elimination with column pivoting and iterative refinement, with residual subtraction performed last in the selected s.p.r.a. or d.p.r.a. mode. [PDF p. 9 (printed 824), anchor: Section 4 algorithm and residual-precision paragraph]",
-      "The Lemma 4.3 smallness condition is c_8*u*kappa(A^-1) <= 1/2, where c_8=||C_8|| and kappa(A^-1)=|| |A| |A^-1| ||. [PDF p. 5 (printed 820), anchor: definition of kappa(A^-1); PDF p. 12 (printed 827), anchor: Lemma 4.3 and following Note]"
+      "Every referenced floating-point operation is within the paper's real floating-point system, has relative roundoff bounded by the applicable precision, and is well defined. [PDF p. 3, printed p. 818, Section 2 arithmetic paragraph.]",
+      "Absolute values and inequalities in the error certificates are componentwise. [PDF p. 3, printed p. 818, componentwise perturbation convention; PDF p. 8, printed p. 823, equation (3.1).]",
+      "Initial and correction solves use the column-pivoted Gaussian-elimination certificate (3.1). [PDF p. 8, printed p. 823, equation (3.1); PDF p. 11, printed p. 826, application of (3.1) to d_m.]",
+      "Residuals are formed with subtraction last; SPRA computes them in single precision, and DPRA computes them in double precision and then converts them to single precision. Double-precision relative roundoff is bounded by u^2 and conversion relative error by u. [PDF p. 9, printed p. 824, residual-precision paragraph.]",
+      "Lemma 4.3 assumes c_8 u kappa(A^{-1}) <= 1/2, with c_8 = ||C_8|| and kappa(A^{-1}) = || |A| |A^{-1}| ||. [PDF p. 12, printed p. 827, Lemma 4.3 and Note; PDF p. 5, printed p. 820, kappa definition.]"
     ],
     "conclusions": [
-      "For every m=0,1,2,..., componentwise: |q_(m+1)| <= (u C_8 |A| |A^-1|)^m u C_10 |A| |x| + n bar_u |A| |x| + u^2 C_11 |A| |x| + bar_u*u C_12 |A| |A^-1| |A| |x|. The matrix-product order and exponent m are part of the statement. [PDF p. 12 (printed 827), anchor: Lemma 4.3]"
+      "|q_{m+1}| <= (u C_8 |A| |A^{-1}|)^m u C_10 |A| |x| + n u_bar |A| |x| + u^2 C_11 |A| |x| + u_bar u C_12 |A| |A^{-1}| |A| |x|. [PDF p. 12, printed p. 827, Lemma 4.3.]",
+      "The inequality is componentwise, preserves the displayed matrix multiplication order, and holds for every m = 0,1,2,...; at m = 0 the conclusion is a bound on q_1 and the powered factor has exponent zero. [PDF p. 12, printed p. 827, Lemma 4.3 and proof; PDF p. 3, printed p. 818, componentwise convention.]",
+      "The selected bound is finite and explicit: it contains an explicit u^2 C_11 term and an explicit u_bar u C_12 term, but no O(u^2) remainder. [PDF p. 12, printed p. 827, Lemma 4.3.]"
     ],
     "definitions_and_conventions": [
-      "The exact solution is x=A^-1 b; |v| and |A| denote entrywise absolute value, and inequalities between arrays are componentwise. [PDF p. 3 (printed 818), anchor: componentwise convention; PDF p. 8 (printed 823), anchor: equation (3.1)]",
-      "The algorithm is x_1=the value of A^-1 b computed by column pivoting; for m=1,2,..., r_m is the computed Ax_m-b, d_m is the value of A^-1 r_m computed by column pivoting, and x_(m+1) is the rounded subtraction x_m-d_m. [PDF p. 9 (printed 824), anchor: Section 4 algorithm]",
-      "The initialization convention is x_0=0, r_0=-b, d_0=-x_1. [PDF p. 9 (printed 824), anchor: Section 4 initialization]",
-      "q_(m+1)=A(x_m-d_m)-b is the exact residual before the rounded update; the subtraction in this definition is exact mathematical subtraction. [PDF p. 9 (printed 824), anchor: rounded update; PDF p. 10 (printed 825), anchor: definition of q_(m+1)]",
-      "bar_u=u for s.p.r.a. and bar_u=u^2 for d.p.r.a. [PDF p. 10 (printed 825), anchor: Lemma 4.1]",
-      "Lower-case c_j are scalars, upper-case C_j are matrices, and I is the conformable identity matrix. [PDF p. 7 (printed 822), anchor: anonymous-constant convention; PDF p. 8 (printed 823), anchor: Note after equation (3.1)]"
+      "For vectors and matrices, |.| is entrywise absolute value and <= between such nonnegative expressions is componentwise ordering. [PDF p. 3, printed p. 818, componentwise perturbation paragraph.]",
+      "Column pivoting is the partial-pivoting variant in which the largest element of the next column is selected as pivot. [PDF p. 3, printed p. 818, overview of Section 3.]",
+      "The iteration is x_1 = the column-pivoted computed value of A^{-1}b; for m >= 1, r_m is the computed value of Ax_m-b, d_m is the column-pivoted computed value of A^{-1}r_m, and x_{m+1} is the floating-point subtraction x_m minus d_m. [PDF p. 9, printed p. 824, Section 4 algorithm.]",
+      "The auxiliary values are x_0 = 0, r_0 = -b, and d_0 = -x_1. Hence q_1 = A(x_0-d_0)-b = Ax_1-b is the exact residual of the initial computed solution, whereas r_1 is a separately computed residual. [PDF p. 9, printed p. 824, auxiliary initialization; PDF p. 10, printed p. 825, definition of q_{m+1}.]",
+      "q_{m+1} = A(x_m-d_m)-b is the exact residual of the unrounded corrected vector x_m-d_m; it is not the computed residual r_{m+1} and is not defined using the rounded x_{m+1}. [PDF p. 10, printed p. 825, paragraph preceding and statement of Lemma 4.1; PDF p. 11, printed p. 826, Lemma 4.2 proof.]",
+      "I denotes the compatible identity matrix; juxtaposition denotes ordinary matrix or matrix-vector multiplication in the written order. [PDF p. 8, printed p. 823, definition of C_2; PDF p. 12, printed p. 827, definitions of C_11 and C_12.]"
     ],
     "implicit_context": [
-      "[Inherited] Column pivoting is the partial-pivoting variant that chooses the largest element of the next column as pivot. [PDF p. 3 (printed 818), anchor: paragraph beginning 'In Section 3']",
-      "[Inherited] The norm appearing in c_1,c_8 and kappa is an arbitrary fixed normalized absolute norm extended to matrices, not a uniquely named norm. [PDF p. 4 (printed 819), anchor: absolute monotone norm convention]",
-      "[Inferred from conformability] x,b,x_m,r_m,d_m and q_(m+1) are n-vectors; A,A^-1,I and every upper-case C_j are n by n matrices; lower-case c_j,u and bar_u are scalars. [PDF p. 7 (printed 822), anchor: scalar/matrix convention; PDF p. 9 (printed 824), anchor: algorithm; PDF p. 12 (printed 827), anchor: Lemma 4.3]",
-      "[Cross-referenced] Lemma 4.1 states |q_(m+1)| <= u C_6|A||x_m-x| + (n bar_u+c_3 u^2)|A||x| + bar_u*u C_7|A||A^-1||A||x| under c_1*u*kappa(A^-1) <= 1/2. [PDF p. 10 (printed 825), anchor: Lemma 4.1]",
-      "[Cross-referenced, both parts] Lemma 4.2 states |A(x_(m+1)-x)| <= (I+u|A||A^-1|)|q_(m+1)|+u|A||x| and |x_(m+1)-x| <= (1+u)|A^-1||q_(m+1)|+u|x|. [PDF p. 11 (printed 826), anchor: Lemma 4.2]",
-      "[Proof detail] Substitution yields |q_(m+1)| <= u C_8|A||A^-1||q_m| + n bar_u|A||x| + u^2 C_9|A||x| + bar_u*u C_7|A||A^-1||A||x|; the proof then uses Lemma 4.1 for the m=0 base and induction. [PDF p. 12 (printed 827), anchor: Lemma 4.3 proof recurrence]"
+      "Positive integrality of n and nonsingularity of A are inherited from the linear-system context and use of A^{-1}; neither is separately quantified in Lemma 4.3. [PDF p. 3, printed p. 818, Section 2 opening; PDF p. 8, printed p. 823, x = A^{-1}b.]",
+      "The conventional interpretation of the m = 0 powered factor is M^0 = I. The paper uses exponent zero but does not state this convention explicitly. [PDF p. 12, printed p. 827, Lemma 4.3.]",
+      "The paper's n-only claim is an upper-bound claim: except for C_1, which is said to depend only on n, the displayed formulas may contain u, A, and A^{-1}, while the resulting quantities are asserted to be bounded above by functions of n only under the standing restrictions. [PDF p. 7, printed p. 822, anonymous-quantity convention; PDF p. 8, printed p. 823, Note; PDF p. 11, printed p. 826, Note; PDF p. 12, printed p. 827, Note.]",
+      "The recurrence in the proof contains q_m although q is introduced only as q_{m+1} for m >= 0. The separate base-case sentence makes the recurrence operative only after q_1 has been established. [PDF p. 10, printed p. 825, definition of q_{m+1}; PDF p. 12, printed p. 827, recurrence and induction.]"
     ],
-    "algorithm_linkage": "The result is specific to Gaussian elimination with column pivoting followed by iterative refinement. Both the initial solve and each correction solve use column pivoting; the update is rounded subtraction; only residual accumulation varies between s.p.r.a. and d.p.r.a. The exact q_(m+1) is an analytical residual, not an additional computed output. [PDF p. 9 (printed 824), anchor: Section 4 algorithm and residual-precision paragraph; PDF p. 10 (printed 825), anchor: definition of q_(m+1)]",
+    "algorithm_linkage": "Equation (3.1) is the solve contract used both for x_1 and for every correction d_m. For the original solve it gives |A x_hat-b| <= uC_2|A||x|. In Lemma 4.1's proof it is applied to Ad_m = r_m, yielding Ad_m-r_m = g_m with |g_m| <= uC_2|A||A^{-1}r_m| when c_1u kappa(A^{-1}) <= 1/2. This links the column-pivoted solve error, the computed residual r_m, and the exact corrected residual q_{m+1}. [PDF p. 8, printed p. 823, equation (3.1); PDF p. 9, printed p. 824, algorithm; PDF p. 11, printed p. 826, Lemma 4.1 proof.]",
     "numerical_model": [
-      "Ordinary floating-point relative roundoff is bounded by u, with u>0 and n*u <= 0.01. [PDF p. 3 (printed 818), anchor: Section 2 floating-point model]",
-      "For s.p.r.a., residual computation is in single precision with subtraction last, and bar_u=u. [PDF p. 9 (printed 824), anchor: residual-precision paragraph; PDF p. 10 (printed 825), anchor: Lemma 4.1]",
-      "For d.p.r.a., residual computation is in double precision with subtraction last, followed by conversion to single precision; double roundoff is bounded by u^2, conversion relative error by u, and bar_u=u^2. [PDF p. 9 (printed 824), anchor: residual-precision paragraph; PDF p. 10 (printed 825), anchor: Lemma 4.1]",
-      "A computed column-pivoted solve is controlled by |A x_hat-b| <= u C_2|A||x| under its precursor smallness condition. [PDF p. 8 (printed 823), anchor: equation (3.1)]"
+      "The floating-point system is a subset of the reals with floating addition, subtraction, multiplication, and division; its relative roundoff error is bounded by positive u. The paper does not give a more explicit fl(a op b) equation. [PDF p. 3, printed p. 818, Section 2 arithmetic paragraph.]",
+      "The standing restriction is nu <= 0.01. [PDF p. 3, printed p. 818, Section 2 arithmetic paragraph.]",
+      "The update subtraction is rounded: x_{m+1} = x_m minus-hat d_m. Lemma 4.2 represents this as x_{m+1} = x_m-d_m+h_{m+1}, with |h_{m+1}| <= u|x_m-d_m|. [PDF p. 9, printed p. 824, algorithm; PDF p. 11, printed p. 826, Lemma 4.2 proof.]",
+      "SPRA forms Ax_m-b in single precision. DPRA forms it in double precision, performs the subtraction last, and converts the resulting residual to single precision; double roundoff is bounded by u^2 and conversion error by u. [PDF p. 9, printed p. 824, residual-precision paragraph.]"
     ],
     "error_notions": [
-      "q_(m+1) is the exact residual A(x_m-d_m)-b of the exact pre-update vector x_m-d_m. [PDF p. 10 (printed 825), anchor: definition of q_(m+1)]",
-      "r_m is instead the computed residual value of Ax_m-b; Lemma 4.3 does not identify q_(m+1) with r_(m+1). [PDF p. 9 (printed 824), anchor: Section 4 algorithm; PDF p. 10 (printed 825), anchor: definition of q_(m+1)]",
-      "The conclusion is a componentwise residual bound, not itself a normwise residual bound, forward-error bound, or backward-error assertion. [PDF p. 12 (printed 827), anchor: Lemma 4.3]"
+      "Lemma 4.1 supplies the bound used by Lemma 4.3: |q_{m+1}| <= uC_6|A||x_m-x| + (n u_bar+c_3u^2)|A||x| + u_bar u C_7|A||A^{-1}||A||x|, under c_1u kappa(A^{-1}) <= 1/2. [PDF p. 10, printed p. 825, Lemma 4.1.]",
+      "The only Lemma 4.2 conclusion substituted in Lemma 4.3 is |x_{m+1}-x| <= (1+u)|A^{-1}||q_{m+1}|+u|x|. [PDF p. 11, printed p. 826, Lemma 4.2; PDF p. 12, printed p. 827, Lemma 4.3 proof.]",
+      "After the necessary index shift, substitution gives |q_{m+1}| <= uC_8|A||A^{-1}||q_m| + n u_bar|A||x| + u^2C_9|A||x| + u_bar u C_7|A||A^{-1}||A||x|. The m = 0 case is handled separately from Lemma 4.1, followed by induction. [PDF p. 12, printed p. 827, Lemma 4.3 proof.]"
     ],
     "norms": [
-      "The norm is absolute, || |v| ||=||v||, equivalently monotone under componentwise domination; it is normalized by ||e_j||=1 and extended to matrices. [PDF p. 4 (printed 819), anchor: absolute monotone norm convention]",
-      "kappa(A^-1)=|| |A| |A^-1| || is explicitly nonstandard and appears in the smallness condition. [PDF p. 5 (printed 820), anchor: definition of kappa(A^-1); PDF p. 12 (printed 827), anchor: Lemma 4.3]",
-      "The main conclusion places no norm around q_(m+1); its absolute values and inequality are entrywise/componentwise. [PDF p. 3 (printed 818), anchor: componentwise convention; PDF p. 12 (printed 827), anchor: Lemma 4.3]"
+      "The vector norm is absolute: |||v||| = ||v||. Equivalently it is monotone, so ||v|| <= ||w|| whenever |v| <= |w|. [PDF p. 4, printed p. 819, absolute norm paragraph.]",
+      "The scaling normalization is ||e_j|| = 1 for 1 <= j <= n; consequently ||v||_infinity <= ||v|| <= ||v||_1. The norm is extended to row vectors and matrices in the usual way. [PDF p. 4, printed p. 819, norm normalization paragraph.]",
+      "The required nonstandard quantity is kappa(A^{-1}) = || |A| |A^{-1}| ||, with |A| multiplied by |A^{-1}| inside the matrix norm in that order; it is not ||A|| ||A^{-1}||. [PDF p. 5, printed p. 820, kappa definition and warning.]"
     ],
     "constants_and_indexing": [
-      "c_1=||C_1|| and C_2=(I-u C_1|A||A^-1|)^-1 C_1; equation (3.1) assumes c_1*u*kappa(A^-1) <= 1/2. [PDF p. 8 (printed 823), anchor: equation (3.1) and following Note]",
-      "For s.p.r.a., c_3=(1+u)((1+u)^n-1)/u^2-n/u and c_4=0. For d.p.r.a., c_3=(1+u)(1+u^2)((1+u^2)^n-1)/u^2-n and c_4=1+u. [PDF p. 11 (printed 826), anchor: Note following Lemma 4.1]",
-      "c_5=n+(c_3+c_4)u^2/bar_u; C_6=C_2+(1+c_5*bar_u/u)(I+u C_2|A||A^-1|); C_7=(n+c_3*u^2/bar_u)C_2. [PDF p. 11 (printed 826), anchor: Note following Lemma 4.1]",
-      "C_8=(1+u)C_6, c_8=||C_8||, and C_9=C_6+c_3 I. [PDF p. 12 (printed 827), anchor: Note following Lemma 4.3]",
-      "C_10=C_6+(n*bar_u/u+c_3*u)I+bar_u C_7|A||A^-1|. [PDF p. 12 (printed 827), anchor: Note following Lemma 4.3]",
-      "C_11=(I-u C_8|A||A^-1|)^-1 C_9 and C_12=(I-u C_8|A||A^-1|)^-1(n C_8+C_7); the noncommutative factor order is as printed. [PDF p. 12 (printed 827), anchor: Note following Lemma 4.3]",
-      "The paper states that the quantities C_8,c_8,C_9,C_10,C_11,C_12 are bounded above by functions of n only. [PDF p. 12 (printed 827), anchor: Note following Lemma 4.3]",
-      "The residual index is m+1 and the first term uses matrix exponent m. At m=0 the result concerns q_1 and the zeroth matrix power is the identity. [PDF p. 12 (printed 827), anchor: Lemma 4.3 and proof]"
+      "The general convention is that lowercase c_i are scalars, uppercase C_i are matrices, and the quantities are bounded above by functions of n only. [PDF p. 7, printed p. 822, anonymous-quantity convention.]",
+      "C_1 is nonnegative and depends only on n; c_1 = ||C_1|| and C_2 = (I-uC_1|A||A^{-1}|)^{-1}C_1. These are asserted bounded above by functions of n only when c_1u kappa(A^{-1}) <= 1/2. [PDF p. 8, printed p. 823, solve certificate, equation (3.1), and Note.]",
+      "u_bar = u for SPRA and u_bar = u^2 for DPRA. [PDF p. 10, printed p. 825, Lemma 4.1.]",
+      "For SPRA, c_3 = (1+u)((1+u)^n-1)/u^2 - n/u; for DPRA, c_3 = (1+u)(1+u^2)((1+u^2)^n-1)/u^2 - n. [PDF p. 11, printed p. 826, Note following Lemma 4.1.]",
+      "For SPRA, c_4 = 0; for DPRA, c_4 = 1+u. [PDF p. 11, printed p. 826, Note following Lemma 4.1.]",
+      "c_5 = n + (c_3+c_4)u^2/u_bar. [PDF p. 11, printed p. 826, Note following Lemma 4.1.]",
+      "C_6 = C_2 + (1+c_5u_bar/u)(I+uC_2|A||A^{-1}|), and C_7 = (n+c_3u^2/u_bar)C_2. [PDF p. 11, printed p. 826, Note following Lemma 4.1.]",
+      "C_8 = (1+u)C_6, c_8 = ||C_8||, and C_9 = C_6+c_3I. [PDF p. 12, printed p. 827, Note following Lemma 4.3.]",
+      "C_10 = C_6 + (n u_bar/u+c_3u)I + u_bar C_7|A||A^{-1}|. [PDF p. 12, printed p. 827, Note following Lemma 4.3.]",
+      "C_11 = (I-uC_8|A||A^{-1}|)^{-1}C_9. [PDF p. 12, printed p. 827, Note following Lemma 4.3.]",
+      "C_12 = (I-uC_8|A||A^{-1}|)^{-1}(nC_8+C_7). [PDF p. 12, printed p. 827, Note following Lemma 4.3.]",
+      "The Note explicitly asserts that C_8, c_8, and C_9 through C_12 are bounded above by functions of n only. [PDF p. 12, printed p. 827, Note following Lemma 4.3.]",
+      "The conclusion uses q_{m+1} and exponent m for m >= 0. Its base is therefore q_1 with exponent zero, while subsequent bounds arise by induction from the recurrence. [PDF p. 12, printed p. 827, Lemma 4.3 and proof.]"
     ],
     "higher_order_terms": [
-      "Lemma 4.3 is a finite four-term inequality with no O(u^k) remainder. [PDF p. 12 (printed 827), anchor: Lemma 4.3]",
-      "For s.p.r.a., the explicit second and fourth terms carry n*u and u^2; for d.p.r.a., they carry n*u^2 and u^3. The third term is explicitly u^2 in both variants. [PDF p. 10 (printed 825), anchor: definition of bar_u; PDF p. 12 (printed 827), anchor: Lemma 4.3]",
-      "The iteration-dependent term remains exactly (u C_8|A||A^-1|)^m u C_10|A||x| rather than being replaced by asymptotic notation. [PDF p. 12 (printed 827), anchor: Lemma 4.3]"
+      "No asymptotic O(u^2) term occurs in Lemma 4.3. All contributions are displayed as finite expressions. [PDF p. 12, printed p. 827, Lemma 4.3.]",
+      "The third term is explicitly u^2C_11|A||x|, and the fourth is explicitly u_bar u C_12|A||A^{-1}||A||x|. [PDF p. 12, printed p. 827, Lemma 4.3.]",
+      "The earlier informal one-refinement discussion does contain O(u^2), but that notation is replaced by explicit constants in the detailed lemmas and is not part of the selected bound. [PDF p. 10, printed p. 825, informal refinement discussion; PDF p. 12, printed p. 827, Lemma 4.3.]"
     ],
     "exceptional_values": [
-      "Every referenced floating-point operation is assumed well defined, and the floating-point set is a subset of the reals. [PDF p. 3 (printed 818), anchor: Section 2 floating-point model]",
-      "A^-1 is used throughout, so singular A lies outside the setting. [PDF p. 8 (printed 823), anchor: x=A^-1 b and equation (3.1)]",
-      "The definitions of C_2,C_11,C_12 contain matrix inverses and are used under the corresponding smallness assumptions; Lemma 4.3 adds no separate exceptional-value clause. [PDF p. 8 (printed 823), anchor: Note after equation (3.1); PDF p. 12 (printed 827), anchor: Lemma 4.3 Note]"
+      "Every floating-point result is conditional on being well defined. The model supplies no separate NaN, infinity, overflow, underflow, or division-by-zero semantics. [PDF p. 3, printed p. 818, Section 2 arithmetic paragraph.]",
+      "In the surrounding Theorem 2.2 proof, removable singularities of delta x as a rational function are removed and its residual norm is treated as +infinity at poles. This is an extended-real proof convention, not a floating-point exceptional value. [PDF p. 5, printed p. 820, proof of Theorem 2.2's first upper bound.]",
+      "Lemma 4.3 uses A^{-1}, (I-uC_1|A||A^{-1}|)^{-1}, and (I-uC_8|A||A^{-1}|)^{-1}; it specifies smallness hypotheses rather than defining values for singular cases. [PDF p. 8, printed p. 823, equation (3.1) Note; PDF p. 12, printed p. 827, Lemma 4.3 Note.]"
     ]
   },
   "undebatable_constraints": [
-    "The target is q_(m+1)=A(x_m-d_m)-b, the exact residual before the rounded update, not r_m, r_(m+1), or A x_(m+1)-b. [PDF p. 10 (printed 825), anchor: definition of q_(m+1)]",
-    "The result applies for every integer m>=0, with q_1 corresponding to m=0 and the geometric matrix factor raised to exactly m. [PDF p. 12 (printed 827), anchor: Lemma 4.3]",
-    "All four additive terms must be preserved, including n*bar_u|A||x|, u^2 C_11|A||x|, and bar_u*u C_12|A||A^-1||A||x|. [PDF p. 12 (printed 827), anchor: Lemma 4.3]",
-    "The smallness condition is c_8*u*kappa(A^-1) <= 1/2, with c_8=||C_8|| and the paper's nonstandard kappa(A^-1)=|| |A| |A^-1| ||. [PDF p. 5 (printed 820), anchor: kappa definition; PDF p. 12 (printed 827), anchor: Lemma 4.3 and Note]",
-    "bar_u=u for s.p.r.a. and bar_u=u^2 for d.p.r.a. [PDF p. 10 (printed 825), anchor: Lemma 4.1]",
-    "The conclusion is componentwise and uses ordered matrix products; replacing it by only a norm inequality changes the claim. [PDF p. 3 (printed 818), anchor: componentwise convention; PDF p. 12 (printed 827), anchor: Lemma 4.3]",
-    "Upper-case C_8,C_10,C_11,C_12 are matrices, while lower-case c_8 is a scalar norm. [PDF p. 7 (printed 822), anchor: anonymous-constant convention; PDF p. 12 (printed 827), anchor: Note following Lemma 4.3]",
-    "Both the initial and correction solves use Gaussian elimination with column pivoting. [PDF p. 9 (printed 824), anchor: Section 4 algorithm]",
-    "Residual accumulation retains the subtraction-last rule and the distinct single- and double-precision models. [PDF p. 9 (printed 824), anchor: residual-precision paragraph]",
-    "No big-O remainder may replace the explicit u^2 and bar_u*u terms. [PDF p. 12 (printed 827), anchor: Lemma 4.3]"
+    "The selected object is q_{m+1} = A(x_m-d_m)-b, an exact residual, not the computed residual r_m. [PDF p. 10, printed p. 825, definition in Lemma 4.1.]",
+    "The final smallness condition is c_8u kappa(A^{-1}) <= 1/2, not merely the c_1 condition appearing in Lemma 4.1 and the recurrence. [PDF p. 12, printed p. 827, Lemma 4.3 and proof.]",
+    "kappa(A^{-1}) must be || |A| |A^{-1}| || with that multiplication order; replacing it by a norm-product condition changes the source. [PDF p. 5, printed p. 820, kappa definition.]",
+    "The powered transient factor is exactly (uC_8|A||A^{-1}|)^m followed by uC_10|A||x|. [PDF p. 12, printed p. 827, Lemma 4.3.]",
+    "All four summands must remain: the powered C_10 term, n u_bar|A||x|, u^2C_11|A||x|, and u_bar u C_12|A||A^{-1}||A||x|. [PDF p. 12, printed p. 827, Lemma 4.3.]",
+    "The fourth term contains the ordered product |A||A^{-1}||A||x|; matrices may not be commuted or collapsed into norm products. [PDF p. 12, printed p. 827, Lemma 4.3.]",
+    "u_bar is mode dependent: u for SPRA and u^2 for DPRA. [PDF p. 10, printed p. 825, Lemma 4.1.]",
+    "The iteration subtracts d_m because r_m approximates Ax_m-b; changing to an additive update without changing the residual sign is not source-faithful. [PDF p. 9, printed p. 824, Section 4 algorithm.]",
+    "m starts at zero in Lemma 4.3, so the base conclusion concerns q_1 and exponent zero. [PDF p. 12, printed p. 827, Lemma 4.3 and proof.]",
+    "No O(u^2) remainder may be appended to or substituted for the selected finite bound. [PDF p. 12, printed p. 827, Lemma 4.3.]",
+    "The constants are claimed to be bounded above by functions of n only; that wording must not be strengthened into literal syntactic independence from A and u for C_2 and C_6 through C_12. [PDF p. 7, printed p. 822, anonymous-quantity convention; PDF pp. 8, 11-12, printed pp. 823, 826-827, Notes.]"
   ],
   "ambiguities": [
     {
-      "issue": "The paper leaves the choice of normalized absolute norm open. [PDF p. 4 (printed 819), anchor: absolute monotone norm convention]",
-      "evidence": "It specifies the absolute and normalization properties but does not select, for example, the infinity norm for Lemma 4.3. [PDF p. 4 (printed 819), anchor: absolute monotone norm convention]",
-      "impact": "A formal contract must fix or quantify over such a norm; c_8, kappa(A^-1), and satisfaction of the smallness condition can depend on that choice. [PDF p. 5 (printed 820), anchor: kappa definition; PDF p. 12 (printed 827), anchor: Lemma 4.3 hypothesis]"
+      "issue": "The paper never formally quantifies n as a positive integer.",
+      "evidence": "It describes n equations in n unknowns and later normalizes e_j for 1 <= j <= n, which conventionally implies a positive integer dimension but is not a printed binder. [PDF p. 3, printed p. 818, Section 2 opening; PDF p. 4, printed p. 819, norm normalization.]",
+      "impact": "A formal contract should make n >= 1 explicit while recording that this is inherited mathematical context rather than verbatim quantification."
     },
     {
-      "issue": "The anonymous matrices are symbolic rather than uniquely specified numerical constants. [PDF p. 7 (printed 822), anchor: anonymous-constant convention; PDF p. 12 (printed 827), anchor: Note following Lemma 4.3]",
-      "evidence": "C_1 is introduced as a nonnegative solve-bound matrix depending on n, while its detailed norm estimate is conditional on unspecified minor computation details; later C_j are built from it. [PDF p. 8 (printed 823), anchor: column-pivoted solve certificate; PDF pp. 11-12 (printed 826-827), anchors: constant Notes]",
-      "impact": "The source supports the displayed family of certified matrices, not unstated canonical numeric values for C_8,C_10,C_11 or C_12. [PDF p. 7 (printed 822), anchor: anonymous-constant convention]"
+      "issue": "The recurrence's printed index range is incomplete.",
+      "evidence": "q is defined only as q_{m+1} for m >= 0, but the proof writes a recurrence for q_{m+1} in terms of q_m without defining q_0; it then separately proves m = 0 from Lemma 4.1 and proceeds by induction. [PDF p. 10, printed p. 825, Lemma 4.1; PDF p. 12, printed p. 827, Lemma 4.3 proof.]",
+      "impact": "The recurrence must be used only after the q_1 base case, equivalently for the appropriately reindexed positive steps; q_0 must not be invented from forbidden material."
     },
     {
-      "issue": "For matrix-valued C_j, the phrase 'bounded above by functions of n only' does not specify entrywise domination, a norm bound, or another matrix order. [PDF p. 7 (printed 822), anchor: anonymous-constant convention; PDF p. 12 (printed 827), anchor: Note following Lemma 4.3]",
-      "evidence": "The convention calls upper-case symbols matrices, while nearby scalar companions are separately introduced as c_j=||C_j||. [PDF p. 7 (printed 822), anchor: scalar/matrix convention; PDF p. 12 (printed 827), anchor: c_8=||C_8||]",
-      "impact": "The explicit matrix definitions and boundedness assertion should be preserved without silently replacing every C_j by a scalar. [PDF p. 12 (printed 827), anchor: Lemma 4.3 Note]"
+      "issue": "The zero matrix-power convention is implicit.",
+      "evidence": "Lemma 4.3 permits m = 0 while displaying (uC_8|A||A^{-1}|)^m, but does not explicitly define the zeroth power. [PDF p. 12, printed p. 827, Lemma 4.3.]",
+      "impact": "The standard interpretation M^0 = I is required to read the base bound, but should be marked as conventional rather than explicitly defined by the paper."
     },
     {
-      "issue": "The proof recurrence has no explicit index range and contains q_m, although q_(m+1) was defined only for m>=0, leaving q_0 undefined. [PDF p. 10 (printed 825), anchor: definition of q_(m+1); PDF p. 12 (printed 827), anchor: proof recurrence]",
-      "evidence": "The proof separately establishes m=0 from Lemma 4.1 and then applies induction. [PDF p. 12 (printed 827), anchor: final sentences of Lemma 4.3 proof]",
-      "impact": "The recurrence is intended for the induction step after the q_1 base case; a formalization must not invent q_0 or require the recurrence at m=0. [PDF p. 12 (printed 827), anchor: Lemma 4.3 proof]"
+      "issue": "The extension of the vector norm to matrices is not given by a formula.",
+      "evidence": "The paper says only that the norm is extended to row vectors and matrices 'in the usual way.' [PDF p. 4, printed p. 819, absolute norm paragraph.]",
+      "impact": "The standard induced matrix norm is the natural reading for kappa, c_1, and c_8, but the PDF does not print the supremum definition."
     },
     {
-      "issue": "The algorithm paragraph does not state whether correction solves reuse the initial factorization or refactor A. [PDF p. 9 (printed 824), anchor: Section 4 algorithm]",
-      "evidence": "It states only that x_1 and each d_m are values computed by column pivoting. [PDF p. 9 (printed 824), anchor: Section 4 algorithm]",
-      "impact": "The contract should require the stated column-pivoted solve behavior without adding a factorization-reuse requirement. [PDF p. 8 (printed 823), anchor: equation (3.1); PDF p. 9 (printed 824), anchor: Section 4 algorithm]"
+      "issue": "The low-level floating-point and column-pivoting implementations are underspecified.",
+      "evidence": "Section 2 states only a relative-roundoff bound and well-definedness, while Section 3 delegates the basic C_1 result to Skeel (1979) and mentions unspecified assumptions on minor computational details. [PDF p. 3, printed p. 818, arithmetic paragraph; PDF p. 8, printed p. 823, basic column-pivoting result.]",
+      "impact": "The source-faithful formal interface is the displayed solve certificate and residual model; operation ordering or exceptional semantics beyond what the PDF states cannot be uniquely reconstructed."
     },
     {
-      "issue": "The floating-point model does not specify a concrete format, tie rule, subnormal behavior, overflow model, or complete evaluation order beyond well-defined operations and subtraction-last residuals. [PDF p. 3 (printed 818), anchor: floating-point model; PDF p. 9 (printed 824), anchor: residual-precision paragraph]",
-      "evidence": "Its explicit assumptions are the relative-error bounds u and u^2, conversion error u, n*u <= 0.01, well-defined referenced results, and subtraction performed last. [PDF p. 3 (printed 818), anchor: floating-point model; PDF p. 9 (printed 824), anchor: residual-precision paragraph]",
-      "impact": "A formal model may instantiate these assumptions but must not attribute unstated IEEE-specific semantics to the paper. [PDF p. 3 (printed 818), anchor: floating-point model]"
+      "issue": "The word 'positive' is used loosely for the anonymous constants.",
+      "evidence": "Section 3 calls the anonymous quantities positive, but the later exact definition gives c_4 = 0 for SPRA and C_1 is described as nonnegative. [PDF p. 7, printed p. 822, anonymous-quantity convention; PDF p. 8, printed p. 823, C_1 description; PDF p. 11, printed p. 826, c_4 definition.]",
+      "impact": "Strict positivity must not be imposed on every named constant; nonnegativity is the only reading compatible with the explicit definitions."
+    },
+    {
+      "issue": "The phrase 'bounded above by functions of n only' does not specify a matrix comparison relation or explicit bounding functions.",
+      "evidence": "The paper states the convention generally and repeats it after the matrix definitions, but does not provide a uniform entrywise or norm-bound formula for C_2 and C_6 through C_12. [PDF p. 7, printed p. 822, anonymous-quantity convention; PDF pp. 8, 11-12, printed pp. 823, 826-827, Notes.]",
+      "impact": "The contract should preserve the existential dimension-only upper-bound claim and should not manufacture explicit functions or claim literal independence of the displayed matrices from A and u."
     }
   ],
-  "contract_plain_english": "For a nonsingular real n by n system Ax=b, run the paper's column-pivoted Gaussian-elimination iterative refinement, computing residuals with subtraction last and choosing either single-precision residual accumulation (bar_u=u) or double-precision accumulation followed by single conversion (bar_u=u^2). Let q_(m+1)=A(x_m-d_m)-b be the exact residual of the pre-rounded corrected vector. Under the standing roundoff assumptions and c_8*u*|| |A| |A^-1| || <= 1/2, every m>=0 satisfies the exact four-term componentwise bound |q_(m+1)| <= (u C_8|A||A^-1|)^m u C_10|A||x| + n bar_u|A||x| + u^2 C_11|A||x| + bar_u*u C_12|A||A^-1||A||x|, with C_8 through C_12 defined by the paper's Notes. No term is an omitted big-O remainder, q is not the computed residual r, and the norm in the smallness condition is any fixed normalized absolute norm allowed by the paper. [PDF p. 3 (printed 818), anchor: floating-point conventions; PDF p. 4 (printed 819), anchor: norm convention; PDF p. 5 (printed 820), anchor: kappa definition; PDF p. 9 (printed 824), anchor: Section 4 algorithm; PDF pp. 10-12 (printed 825-827), anchors: Lemmas 4.1-4.3]"
+  "contract_plain_english": "For a positive-dimensional nonsingular real system Ax=b, under the paper's absolute componentwise error model, positive roundoff u with nu <= 0.01, and well-defined floating operations, run column-pivoted Gaussian elimination and the Section 4 subtractive iterative-refinement algorithm. Residuals may use SPRA with u_bar=u or DPRA with u_bar=u^2, with subtraction last and DPRA converted back to single precision. [PDF pp. 3-5, printed pp. 818-820, Section 2; PDF pp. 8-10, printed pp. 823-825, equation (3.1), algorithm, and Lemma 4.1.] Define q_{m+1}=A(x_m-d_m)-b as the exact residual. With the constants exactly as defined in the Notes and under c_8u kappa(A^{-1}) <= 1/2, Lemma 4.3 bounds q_{m+1} by the sum of the powered C_10 transient term, n u_bar|A||x|, u^2C_11|A||x|, and u_bar u C_12|A||A^{-1}||A||x| for every m>=0. The products retain their printed order, the m=0 base concerns q_1, and no O(u^2) term remains. [PDF pp. 11-12, printed pp. 826-827, Lemma 4.2, Lemma 4.3, Notes, and proof.]"
 }

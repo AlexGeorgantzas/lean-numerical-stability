@@ -1,0 +1,63 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "round-trip judge requested adjudication",
+    "round-trip S11 is unclear"
+  ],
+  "classification": "not-faithful-different",
+  "completed_at_utc": "2026-08-14T23:46:10.123478+00:00",
+  "findings": [
+    {
+      "category": "constant-parameter-dependence",
+      "evidence": "Printed pp. 822-823 and 827 require anonymous constants to be bounded independently of A and b by functions of n only; D017 and D018 contain no such property.",
+      "impact": "The target proves a potentially data- or execution-dependent bound and therefore loses the uniform quantitative assertion central to the paper.",
+      "severity": "major"
+    },
+    {
+      "category": "dependency-as-hypothesis",
+      "evidence": "Printed p. 827 invokes already proved Lemmas 4.1 and 4.2, whereas the target explicitly assumes P08Lemma43PriorBounds and no reuse record or furnishing theorem exists.",
+      "impact": "The proposition does not establish Lemma 4.3 from the paper's standing hypotheses alone.",
+      "severity": "major"
+    },
+    {
+      "category": "algorithm-linkage",
+      "evidence": "Printed pp. 818 and 824 require Gaussian elimination with column pivoting; D060 contains only a residual equation and backward-error inequality.",
+      "impact": "The theorem applies to a different behavioral solver class and cannot certify that its solves came from the paper's algorithm.",
+      "severity": "major"
+    },
+    {
+      "category": "floating-point-model",
+      "evidence": "Printed pp. 818 and 824 leave accumulation order and concrete exceptional-value semantics unspecified while imposing relative-error and subtraction-last rules; D063, D064, D067, and D071 instantiate those rules with total operations and left-associated accumulation.",
+      "impact": "This is an acceptable implementation specialization and is not a reason for rejection.",
+      "severity": "note"
+    },
+    {
+      "category": "core-formula",
+      "evidence": "D007 and D021-D025 expand to the exact q_(m+1), exponent m, four coefficients, and ordered products displayed on printed p. 827.",
+      "impact": "The central finite componentwise inequality, precision dependence, and indexing are faithfully represented.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "The Lean theorem establishes the matching inequality only after constants and prior estimates are supplied. It neither establishes their existence for every paper execution nor proves that the constants are bounded solely as functions of n. Its solve certificates also do not establish column-pivoted Gaussian-elimination provenance. Therefore it does not entail the complete paper result.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "The paper proves Lemma 4.3 for its column-pivoted iterative-refinement execution. It does not assert the Lean theorem's universal rule for arbitrary behavioral solve certificates and arbitrary supplied prior packages. The acceptable floating-point specialization does not bridge that broader algorithmic domain.",
+      "verdict": "no"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-different"
+  },
+  "rationale": "The floating-point-model dispute is resolved in favor of faithfulness: the Lean total relative-error operations and left-associated sum instantiate assumptions the PDF deliberately leaves abstract. The decisive defects lie elsewhere. The source result remains tied to column-pivoted Gaussian elimination, uses preceding lemmas as established results, and gives anonymous constants uniform dimension-only meaning. The Lean proposition instead uses generic behavioral solve certificates, takes the preceding estimates as an explicit proof-valued premise, and omits uniform constant dependence. Since it combines broader solver scope with reduced applicability and quantitative content, neither implication holds and the correct classification is not-faithful-different.",
+  "remaining_uncertainties": [
+    "The PDF does not formalize whether a matrix-valued anonymous quantity being 'bounded above by functions of n only' means entrywise domination or a norm bound. Either interpretation imposes dimension-only uniformity absent from the Lean proposition, so this ambiguity does not affect the classification."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P08-T3"
+}

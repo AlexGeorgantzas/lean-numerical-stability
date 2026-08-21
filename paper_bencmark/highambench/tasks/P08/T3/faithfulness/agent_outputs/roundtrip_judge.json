@@ -3,163 +3,163 @@
   "role": "roundtrip-judge",
   "task_id": "P08-T3",
   "paper_sha256": "f520066b46331dcbf25e51345c5ff5ffffe8fcad573d7f46e68834f83b3a2c54",
-  "blind_translation_sha256": "331084f1500a2fcdb1ffc8e5566870fe4d78a3f61728d4d6cc70501b16bd3a57",
+  "blind_translation_sha256": "4ea3e0ad9e1e2dafe235128a4cb0b1f679e4c3695f159eff77e049dbf236313c",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The hash-verified PDF is Robert D. Skeel, 'Iterative Refinement Implies Numerical Stability for Gaussian Elimination,' Mathematics of Computation 35(151), July 1980, pp. 817-832. The target is Lemma 4.3 on printed page 827 with its Section 2-4 context.",
-      "translation_evidence": "The translation targets the four-term residual bound associated with Lemma 4.3 and uses the supplied paper and translation hashes.",
-      "reasoning": "The paper version, section, lemma, and supporting passages are correctly selected."
+      "paper_evidence": "The published journal version, volume 35 issue 151, places the Section 4 iterative-refinement algorithm on printed page 824, Lemmas 4.1 and 4.2 on pages 825-826, and the selected four-term residual bound in Lemma 4.3 on page 827.",
+      "translation_evidence": "The translation selects the exact residual A*(x_m-correction_m)-b and the B^m*p0+q0 bound with C8, C10, C11, and C12, uniquely identifying Lemma 4.3 rather than the preceding informal O(u^2) discussion or Theorem 4.4.",
+      "reasoning": "The paper version, passage, selected result, and required surrounding lemmas are correctly identified."
     },
     {
       "id": "S02",
       "status": "pass",
-      "paper_evidence": "Sections 2 and 4 use a positive integer n, an n by n real nonsingular matrix A, n-vectors b and x, and iterations m=0,1,2,...; Lemma 4.3 is componentwise.",
-      "translation_evidence": "The run requires n>0; vectors are Fin n -> Real, matrices are Fin n -> Fin n -> Real, m is natural, and i ranges over Fin n.",
-      "reasoning": "Dimensions, scalar types, matrix and vector types, and iteration/component index sets agree."
+      "paper_evidence": "Sections 2-4 concern a positive-dimensional real n-by-n nonsingular system Ax=b, positive roundoff u, one of two residual modes, and every integer m>=0; componentwise claims range over the n vector entries.",
+      "translation_evidence": "The translation uses n in Nat with n>0, vectors Fin n -> Real, matrices Fin n -> Fin n -> Real, a two-sided Ainv, an exact solution x*, a precision tag, m in Nat, and i in Fin n.",
+      "reasoning": "The core types, dimensions, and index sets match. The additional package binders are certificate encodings whose quantifier effect is assessed separately."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The paper fixes the column-pivoted iterative-refinement execution, its norm, and its dimension-dependent anonymous constants before quantifying m in Lemma 4.3.",
-      "translation_evidence": "The proposition universally quantifies arbitrary run, norm, constants, and prior-proof packages, with package inhabitation and the prior proof becoming additional applicability conditions.",
-      "reasoning": "The quantification over arbitrary behavioral packages and the explicit prior-proof binder do not preserve the paper's scope over executions of its fixed algorithm."
+      "status": "unclear",
+      "paper_evidence": "The paper defines the constants and local errors from the execution, then states the result for both precision modes and every m>=0. The inverse resolvents and residual/backward-error quantities arise in the Notes and proof rather than as independent universally quantified inputs.",
+      "translation_evidence": "A dimension-bounds package, constants certificate, and roundoff certificate are universally bound before the smallness assumption and before m. They contain global inverse witnesses and error sequences for every iteration; only their inhabitance, not their construction, is required.",
+      "reasoning": "The final m and component quantifiers and the q_(m+1) shift are correct, but treating derived witnesses as antecedent certificates is equivalent only if every paper execution can be equipped with them. The supplied evidence does not establish that for the translation's exact execution model."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The standing hypotheses include u>0, n*u<=0.01, well-defined floating-point operations, nonsingular A, column-pivoted initial and correction solves, subtraction-last residuals, and c8*u*kappa(A^-1)<=1/2.",
-      "translation_evidence": "Positivity, n*u<=1/100, exact inverse identities, residual precision, and the c8 condition are present, but column pivoting is replaced by generic solve certificates. A prior-estimate proof and inhabited constants package are additionally required, while dimension-only bounds on C1 and later constants are absent.",
-      "reasoning": "Several numerical assumptions match, but the algorithmic hypothesis and constant-uniformity conditions are replaced, and extra package/proof hypotheses restrict applicability."
+      "status": "unclear",
+      "paper_evidence": "The paper assumes u>0, n*u<=0.01, well-defined referenced floating operations, the displayed column-pivoted solve bound, the stated residual precision, an absolute normalized norm, and c8*u*kappa(A^{-1})<=1/2. Its low-level operation order and minor solve details are explicitly underspecified.",
+      "translation_evidence": "Besides those conditions, the run requires total real-valued arithmetic models, exact Gaussian-elimination and residual traces, certified correction solves at every natural index, a floating-subtraction recurrence at every natural index, two resolvent inverse witnesses, dimension-entry bounds, and roundoff certificates.",
+      "reasoning": "Many additions faithfully expose definitions or proof obligations, including n>0 and inverse witnesses under smallness. It is unclear from the paper whether all exact trace and certificate requirements are derivable context or consequential restrictions."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "Lemma 4.3 bounds |q_(m+1)| by exactly four terms: the B^m term, n*ubar term, u^2*C11 term, and ubar*u*C12 term.",
-      "translation_evidence": "The conclusion is |A(x_m-d_m)-b| componentwise bounded by B^m*q+s, where q is the paper's first term and s expands to the other three terms in the printed order.",
-      "reasoning": "The displayed inequality contains every term, the exponent m, the residual index correspondence, and the required ordered products."
+      "paper_evidence": "Lemma 4.3 bounds |q_(m+1)| by exactly four summands: the powered C10 transient, n*u_bar*|A|*|x|, u^2*C11*|A|*|x|, and u_bar*u*C12*|A|*|A^{-1}|*|A|*|x|, for every m>=0.",
+      "translation_evidence": "The conclusion is componentwise |E_m,i|<=(B^m*p0+q0)_i, where p0 is the transient vector and q0 is the sum of the other three displayed terms.",
+      "reasoning": "Every conclusion, summand, coefficient, dependency, and the m=0 case is retained."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "Pages 819-827 define entrywise absolute values, induced matrix operations, kappa(A^-1), q_(m+1), ubar, and C2 and C6 through C12.",
-      "translation_evidence": "The dependency ledger unfolds exact matrix and matrix-vector multiplication, entrywise absolute values, matrix powers, the norm package, kappa, residual, precision branches, and every auxiliary-constant formula.",
-      "reasoning": "The nontrivial mathematical operators and definitions used in the final formula are explicitly and correctly interpreted."
+      "paper_evidence": "The paper uses entrywise absolute values, componentwise ordering, ordinary ordered matrix products, an identity matrix, natural matrix powers, and the explicitly defined constants C2 and C6-C12.",
+      "translation_evidence": "Dependencies D022-D030 define entrywise absolute values, exact finite matrix and vector products, vector operations, and powers; D057-D066 define identity, constants-related operations, u_bar, and scaling. D092-D163 are standard real arithmetic, logic, finite indexing, and recursion operations. The nontrivial algorithmic dependencies D031-D091 are assessed under S08.",
+      "reasoning": "The imported mathematical operators preserve their standard meanings, including noncommutative multiplication order and B^0=I."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "Printed pages 824-825 distinguish computed r_m from q_(m+1)=A(x_m-d_m)-b, the exact residual before the rounded update.",
-      "translation_evidence": "The stored computedResidual sequence is separate from r_m=A(x_m-d_m)-b, which the translation explicitly identifies as exact real arithmetic and not A*x_(m+1)-b.",
-      "reasoning": "Computed residuals, exact post-correction residuals, and rounded iterates are not conflated."
+      "paper_evidence": "Printed page 825 defines q_(m+1)=A(x_m-d_m)-b as the exact residual of the unrounded corrected vector. It is distinct from computed residual r_m and from the rounded next iterate x_(m+1).",
+      "translation_evidence": "D008 and the mathematical definitions identify E_m=A*(iterate_m-correction_m)-b as exact. Separate fields represent computedResidual_m, residual error e_m, modeled residual traces, and rounded iterate updates.",
+      "reasoning": "Exact, computed, converted, and rounded quantities are not conflated, and E_m corresponds exactly to q_(m+1)."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "Printed page 824 requires both x_1 and every d_m to be computed by Gaussian elimination with column pivoting; printed page 818 defines that pivoting variant.",
-      "translation_evidence": "Solve packages require only Ay=rhs+e with a componentwise C1 backward-error certificate. They contain no pivot choices, elimination steps, or predicate identifying the solver as column-pivoted Gaussian elimination.",
-      "reasoning": "The translation abstracts away the specific algorithm and admits certified solves not produced by the paper's method."
+      "status": "unclear",
+      "paper_evidence": "Printed pages 823-824 require solves computed by column pivoting, meaning selection of the largest entry in the next column, and use equation (3.1) as the solve certificate. The paper does not fix low-level reduction order and mentions unspecified assumptions on minor computational details.",
+      "translation_evidence": "D073-D091 require a particular modeled elimination trace with pivot-row maximality, row swaps, Schur updates, sequential modeled sums, and back substitution. Row swapping in the active column is consistent with the paper's terminology despite D073 calling it row pivoting. The run also appears to require correction_0=-x_1 to be a certified correction-solve output and the m=0 update to be flSub(0,-x_1).",
+      "reasoning": "The trace is compatible with a conventional implementation of the paper's column-pivoted solve, but the PDF does not establish that every execution covered by Lemma 4.3 satisfies this exact trace, especially at auxiliary index zero."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Printed pages 819-820 use an arbitrary normalized absolute vector norm extended to matrices and define kappa(A^-1)=|| |A||A^-1| ||; Lemma 4.3 itself is componentwise.",
-      "translation_evidence": "The norm package specifies an absolute normalized vector norm and its induced matrix norm; kappa uses that matrix norm, while the conclusion quantifies component indices without placing a norm around the residual.",
-      "reasoning": "Norm kind, normalization, induced matrix interpretation, and componentwise conclusion agree."
+      "paper_evidence": "Printed pages 819-820 use any normalized absolute vector norm, its usual induced matrix norm, and the nonstandard kappa(A^{-1})=|||A|*|A^{-1}||| rather than ||A||*||A^{-1}||.",
+      "translation_evidence": "D001 and D012 encode an absolute monotone normalized vector norm and induced subordinate matrix norm. D009 defines kappa as the matrix norm of P=|A|*|Ainv|.",
+      "reasoning": "The norm is neither squared nor replaced by a norm product, and the componentwise versus normwise roles match."
     },
     {
       "id": "S10",
-      "status": "fail",
-      "paper_evidence": "Printed pages 822-823 require C1 to be a nonnegative matrix depending only on n, and the Notes on pages 826-827 state that the later C_j and c_j are bounded above by functions of n only. The formulas and m versus m+1 indexing are explicit.",
-      "translation_evidence": "The formulas for alpha, beta, c5, C6 through C12, c8, B, q, and s and all index offsets agree, but C1 is arbitrary run data and no uniform function-of-n bound is imposed on C1 or the later constants.",
-      "reasoning": "Although coefficients and indices match, the essential dimension-only parameter dependence is lost; translated constants may depend on A, b, u, or the execution and may grow as u varies."
+      "status": "unclear",
+      "paper_evidence": "The Notes on printed pages 823, 826, and 827 give the formulas for c1, c3-c5, C2, and C6-C12 and assert that the anonymous quantities are bounded above by functions of n only. The paper does not specify whether matrix bounds are entrywise or normwise or provide explicit bound functions.",
+      "translation_evidence": "The alpha and beta selectors reproduce c3 and c4; all formulas for c5, C2, and C6-C12 match, as do exponent m and residual index m+1. D002, D013, D020, D034, and D035 instead use a supplied package of scalar(n) and matrixEntry(n) upper bounds.",
+      "reasoning": "The constants, coefficients, offsets, and matrix order are exact. It is unclear whether a per-certificate entrywise bounds package faithfully expresses the paper's uniform existential n-only boundedness claim or merely assumes a locally selectable bound."
     },
     {
       "id": "S11",
       "status": "unclear",
-      "paper_evidence": "Printed pages 818 and 824 assume a floating-point subset of the reals, relative errors bounded by u or u^2, well-defined referenced operations, conversion error bounded by u, and subtraction performed last. They do not state a complete summation order or concrete exceptional-value model.",
-      "translation_evidence": "The model consists of total real-valued operations satisfying multiplicative relative-error equations for every real input, and residual dot products use a fixed left-associated summation. It has no representability, overflow, underflow, or partial-operation semantics.",
-      "reasoning": "Precision bounds and subtraction order match, but the PDF does not determine whether the total-real model and fixed summation order are equivalent to, or merely one specialization of, its execution model."
+      "paper_evidence": "Printed page 818 assumes a positive relative-roundoff bound and that every referenced operation is well defined. Printed page 824 assigns roundoff u to working arithmetic, u^2 to double residual arithmetic, and u to conversion. No NaN, infinity, overflow, or underflow semantics are supplied.",
+      "translation_evidence": "D050 and D070 use total Real-valued flAdd, flSub, flMul, and flDiv functions with multiplicative relative-error witnesses for all operands, except that the division guarantee requires a nonzero divisor. D071 models single residuals directly and double residuals followed by conversion. Exceptional values are absent.",
+      "reasoning": "The precision and on-trace rounding rules match, and both descriptions exclude exceptional results from the analyzed execution. The translation's global total-real operation axioms are stronger than the paper's local well-definedness convention, so equivalence of applicability is not established."
     },
     {
       "id": "S12",
-      "status": "fail",
-      "paper_evidence": "Lemma 4.3 gives a non-strict componentwise upper bound for every execution of the stated column-pivoted algorithm under its smallness condition.",
-      "translation_evidence": "The final inequality is also non-strict and has the same direction, but it is conditional on arbitrary constants and prior-proof packages and ranges over generic certified solves.",
-      "reasoning": "The local inequality direction matches, but the proposition's overall logical strength and applicability differ because its hypotheses and execution domain differ."
+      "status": "unclear",
+      "paper_evidence": "Lemma 4.3 is a non-strict componentwise upper bound under a non-strict c8 smallness condition.",
+      "translation_evidence": "The translation uses <= for the smallness condition and each component of the final bound, with the same right-hand side. It adds certificate and execution prerequisites without strengthening the conclusion.",
+      "reasoning": "The displayed relation has exactly the paper's strength. Whether the whole proposition is weaker through narrower applicability depends on the unresolved trace, certificate, and operation-model questions; added assumptions would not constitute genuine strengthening."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "Lemma 4.3 bounds the exact componentwise residual q_(m+1), not a forward error, backward error, normwise residual, or computed r_m.",
-      "translation_evidence": "The left side is exactly |[A(x_m-d_m)-b]_i| and the translation explicitly excludes computedResidual_m and A*x_(m+1)-b.",
-      "reasoning": "The residual error notion is preserved."
+      "paper_evidence": "The selected result is a componentwise finite bound on the exact corrected residual q_(m+1). Residual errors f_m and solve errors g_m are intermediate roundoff quantities; the result is not a forward-error, backward-stability, or norm-residual conclusion.",
+      "translation_evidence": "The conclusion bounds exact E_m componentwise. D007 and D021 separately encode residual-error and correction backward-error certificates, without replacing the target by either intermediate notion.",
+      "reasoning": "The target error notion and the roles of intermediate errors are preserved."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Lemma 4.3 is a finite four-term bound retaining B^m, n*ubar, u^2, and ubar*u terms, with no big-O remainder.",
-      "translation_evidence": "B^m*q+s retains the exact matrix power and all explicit u^2 and ubar*u terms without asymptotic notation or discarded remainders.",
-      "reasoning": "Higher-order terms and the iteration-dependent term are handled exactly as printed."
+      "paper_evidence": "Unlike the informal discussion on printed page 825, Lemma 4.3 contains no O term; it displays explicit u^2*C11 and u_bar*u*C12 contributions.",
+      "translation_evidence": "q0 contains the explicit u^2 and u_bar*u terms, and neither the conclusion nor its definitions contain asymptotic notation or an omitted remainder.",
+      "reasoning": "The translation is the exact finite bound, not a first-order truncation."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The paper concerns finite real n by n systems and specifically column-pivoted iterative refinement, while specifying only subtraction-last residual accumulation.",
-      "translation_evidence": "Finite real dimensions are preserved, but generic certified solves broaden the algorithm class, whereas total-real arithmetic and a fixed left-associated residual sum specialize the execution model.",
-      "reasoning": "The translation simultaneously generalizes one material aspect and specializes another, so it is not a uniform faithful specialization or generalization."
+      "status": "pass",
+      "paper_evidence": "The paper studies finite positive-dimensional square real linear systems and both SPRA and DPRA modes.",
+      "translation_evidence": "The translation uses finite Fin n indexing, square real matrices, real vectors, n>0, and exactly the two stated precision modes.",
+      "reasoning": "There is no scalar, complex, infinite-dimensional, zero-dimensional, or precision-mode generalization. The possible implementation specialization is isolated under S08."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper's assumptions are satisfiable for sufficiently small u and nonsingular systems, and its bound is a substantive induction from Lemmas 4.1 and 4.2.",
-      "translation_evidence": "Positive-dimensional exact-arithmetic runs with A=I, sufficiently small u, an induced absolute norm, and the displayed nonnegative constants provide satisfiable package instances. The prior estimates still require substantive inequalities.",
-      "reasoning": "Although individual package choices or false smallness premises can make an instance vacuous, the translated hypothesis set is globally inhabitable and the conclusion is not universally trivial."
+      "paper_evidence": "The paper's setting presupposes a positive-dimensional nonsingular system and sufficiently small positive u; it is not intended to cover n=0.",
+      "translation_evidence": "The restrictions list records vacuity only at n=0. For example, n=1, A=Ainv=I, b=x*=0, exact modeled operations with sufficiently small positive u, zero solve errors, sufficiently large dimension bounds, and constants from the displayed formulas provide a satisfiable positive-dimensional instance with invertible resolvents.",
+      "reasoning": "The hypotheses are jointly satisfiable and the all-m conclusion is substantive. Excluding n=0 makes implicit paper context explicit rather than creating unintended vacuity."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The translated proposition does not recover the full paper result because it neither identifies solves as column-pivoted Gaussian elimination nor requires the anonymous constants to be bounded solely as functions of n. Its fixed residual execution model also does not cover every execution allowed by the paper's stated conventions."
+      "verdict": "unclear",
+      "reasoning": "The core conclusion and analytic contracts match, but establishing the full paper result from the translated proposition would require showing that every paper-admissible column-pivoted execution can be represented by the translation's exact operation traces, auxiliary-index-zero requirements, globally total arithmetic models, and certificate packages. The PDF deliberately leaves some of those details unspecified."
     },
     "paper_implies_translation": {
-      "verdict": "no",
-      "reasoning": "The paper establishes Lemma 4.3 for its column-pivoted iterative-refinement algorithm. It does not assert the translated universal claim for arbitrary generic solve packages satisfying behavioral certificates and supplied prior estimates."
+      "verdict": "yes",
+      "reasoning": "For any instance that already satisfies the translation's certificates and traces, its positive dimension, inverse, norm, residual modes, solve bounds, c8 smallness condition, and exact residual are within the paper's stated setting, and Lemma 4.3 supplies exactly B^m*p0+q0 componentwise. The added prerequisites do not demand a stronger conclusion."
     }
   },
-  "classification": "not-faithful-different",
+  "classification": "undetermined",
   "accepted": false,
   "requires_adjudication": true,
   "findings": [
     {
       "severity": "major",
-      "category": "algorithm-linkage",
-      "paper_evidence": "Printed page 824 explicitly requires the initial and correction solves to be computed by column pivoting.",
-      "translation_evidence": "The solve-result package records only a perturbed-system equation and componentwise error bound, with no column-pivoting requirement.",
-      "impact": "The translated theorem concerns a different, behaviorally axiomatized solver class and no longer states the paper's algorithm-specific result."
+      "category": "algorithm-execution-model",
+      "paper_evidence": "The paper specifies column pivoting, equation (3.1), subtraction-last residuals, and precision, while explicitly leaving minor implementation details and operation ordering unspecified.",
+      "translation_evidence": "D073-D091 impose a concrete pivot, elimination, sequential-summation, and back-substitution trace, apparently including a certified correction solve and floating update at auxiliary index zero.",
+      "impact": "This may restrict the theorem to one execution realization rather than all executions covered by the paper, leaving translation-implies-paper unresolved."
     },
     {
       "severity": "major",
-      "category": "constant-parameter-dependence",
-      "paper_evidence": "Printed pages 822-823 state that C1 depends only on n, and the Notes on pages 826-827 state that C8 through C12 and their scalar companions are bounded above by functions of n only.",
-      "translation_evidence": "C1 is unconstrained run data beyond nonnegativity, and no function-of-n bound is present for any auxiliary constant.",
-      "impact": "The constants may depend on the data or arithmetic execution and grow with u, so the translated bound loses the uniform dimension-only meaning central to the paper."
-    },
-    {
-      "severity": "major",
-      "category": "dependency-as-hypothesis",
-      "paper_evidence": "Lemmas 4.1 and 4.2 are established preceding results and Lemma 4.3 follows from them for the paper's algorithm.",
-      "translation_evidence": "A proof of the packaged prior estimates is an explicit binder; the run package itself does not entail or construct that proof.",
-      "impact": "Applicability is conditional on an additional proof object, so the proposition alone does not establish Lemma 4.3 for every run satisfying its computational fields."
+      "category": "certificate-skolemization",
+      "paper_evidence": "The constants, inverse resolvents, residual errors, and correction-error bounds are defined or derived in the Notes and proof.",
+      "translation_evidence": "Constants and roundoff certificates carrying all witnesses and inequalities are antecedent binders; the theorem does not establish their existence from the run.",
+      "impact": "The encoding is faithful only if certificate inhabitance follows for every intended paper execution. Otherwise it creates narrower applicability even though positive-dimensional instances exist."
     },
     {
       "severity": "minor",
-      "category": "floating-point-execution-scope",
-      "paper_evidence": "The PDF requires well-defined floating-point operations and subtraction last but leaves the dot-product evaluation order and concrete exceptional-value semantics unstated.",
-      "translation_evidence": "Residual dot products are explicitly left-associated and all modeled operations are total functions on the reals.",
-      "impact": "It is unclear whether this is an acceptable implementation instance or an unintended restriction; adjudication is required for this model-scope issue."
+      "category": "dimension-only-bounds",
+      "paper_evidence": "The paper asserts upper bounds by functions of n only but does not choose explicit functions or an entrywise matrix comparison.",
+      "translation_evidence": "A supplied dimension-bounds object places scalar and entrywise matrix bounds on each constants certificate.",
+      "impact": "The formulas remain correct, but it is unclear whether this captures uniform independence from A, b, and u or only a per-instance admissibility condition."
+    },
+    {
+      "severity": "minor",
+      "category": "floating-point-domain",
+      "paper_evidence": "Only referenced floating operations must be well defined, and no exceptional-value semantics are stated.",
+      "translation_evidence": "The arithmetic operations are total functions on Real with global relative-error axioms and no exceptional values.",
+      "impact": "This is a reasonable idealized model on the analyzed trace, but its stronger global domain may exclude paper models that satisfy only local well-definedness."
     }
   ],
-  "rationale": "The blind translation accurately reproduces the displayed four-term componentwise inequality, its exact residual, matrix-product order, exponent, precision-dependent ubar, norm, and higher-order terms. It nevertheless changes the theorem's semantic domain: column-pivoted Gaussian elimination is replaced by generic certified solves, established preceding lemmas become an explicit prior-proof hypothesis, and the paper's dimension-only bounds on anonymous constants disappear. The translation also fixes floating-point execution details that the PDF does not settle. These changes prevent either result from implying the other as a complete statement, yielding not-faithful-different. Adjudication is requested for the unresolved execution-model specialization."
+  "rationale": "The blind translation reproduces the mathematical heart of Lemma 4.3: exact q_(m+1) indexing, all four ordered terms, SPRA/DPRA precision, the nonstandard kappa norm, c8 smallness, componentwise semantics, and the absence of an O term. Acceptance cannot be determined because the paper leaves low-level execution and exceptional semantics underspecified while the translation requires exact traces and pre-existing certificates, and because the dimension-only bound is represented as an antecedent package. These issues affect applicability rather than strengthen the conclusion, so the unresolved implication requires adjudication."
 }

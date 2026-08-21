@@ -121,11 +121,11 @@
     "module_count": 5158,
     "sorted_module_names_sha256": "dbe614969932782f0f6d3a91a8332720d98f7a36cee47b488efdf89e77f49caa"
   },
-  "completed_at_utc": "2026-08-14T23:46:10.123478+00:00",
+  "completed_at_utc": "2026-08-21T18:05:35.653751+00:00",
   "context": {
     "path": "paper_bencmark/highambench/tasks/P08/T3/context.md",
     "semantic_evidence": false,
-    "sha256": "1166b0ac7fc6ccd11be9c757ed98fe9a1fde7bde6799007b64ac2fe7fcdac05e"
+    "sha256": "2923342b1c2153bdb21c9e5ec0d7618fe13f7d780de980dcca51aed6e353a116"
   },
   "dependencies": [
     {
@@ -143,15 +143,25 @@
       "distance": 1,
       "id": "D002",
       "kind": "inductive",
+      "name": "HighamBench.P08DimensionOnlyConstantBounds",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "4dd8b7025f930376404b6a7dddeea3bb578073682211d233857649dc325a5f68"
+    },
+    {
+      "blind_name": "LocalDef003",
+      "distance": 1,
+      "id": "D003",
+      "kind": "inductive",
       "name": "HighamBench.P08IterativeRefinementRun",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
       "semantic_sha256": "74c20dc7827a5cbd4fe74d9eb34378daa2c4739f993fcee66863d0ec4aff993d"
     },
     {
-      "blind_name": "LocalDef003",
+      "blind_name": "LocalDef004",
       "distance": 1,
-      "id": "D003",
+      "id": "D004",
       "kind": "abbrev",
       "name": "HighamBench.P08IterativeRefinementRun.u",
       "owner_module": "HighamBench.P08Definitions",
@@ -159,39 +169,39 @@
       "semantic_sha256": "d92d8e8ea4be1097fd2e64076c9c9d9d41d04452c46a6bb284a4fd8a0351fae4"
     },
     {
-      "blind_name": "LocalDef004",
+      "blind_name": "LocalDef005",
       "distance": 1,
-      "id": "D004",
+      "id": "D005",
       "kind": "inductive",
       "name": "HighamBench.P08Lemma43Constants",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "c912c51712aa9c6cc9d8c87a9b6194c1d8834a793d3ab6ef4aa9890518f101a7"
-    },
-    {
-      "blind_name": "LocalDef005",
-      "distance": 1,
-      "id": "D005",
-      "kind": "abbrev",
-      "name": "HighamBench.P08Lemma43Constants.c8",
-      "owner_module": "HighamBench.P08Definitions",
-      "role": "local",
-      "semantic_sha256": "5dd1e06a94a93cc403bce146c7e007c3fffc9ea74d8a1de9e210db98d622b708"
+      "semantic_sha256": "0adef817138f4a0901fa7c892048022fa14bf009fedc27ce043ae20778a33f27"
     },
     {
       "blind_name": "LocalDef006",
       "distance": 1,
       "id": "D006",
-      "kind": "inductive",
-      "name": "HighamBench.P08Lemma43PriorBounds",
+      "kind": "abbrev",
+      "name": "HighamBench.P08Lemma43Constants.c8",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "3c92834e8150575c8325b4e75451c469293f8ae1edcfd831528768447f193691"
+      "semantic_sha256": "b24d536ae870e768229a42191b43bbaa320bac9410946d6c7ba49140378bcc32"
     },
     {
       "blind_name": "LocalDef007",
       "distance": 1,
       "id": "D007",
+      "kind": "inductive",
+      "name": "HighamBench.P08Lemma43RoundoffAnalysis",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "17c73f1751e8c2ae2ee80c48aaf56093805596b4f0200ba2e61484f5862dda1d"
+    },
+    {
+      "blind_name": "LocalDef008",
+      "distance": 1,
+      "id": "D008",
       "kind": "def",
       "name": "HighamBench.p08ExactResidualAfterCorrection",
       "owner_module": "HighamBench.P08Definitions",
@@ -199,9 +209,9 @@
       "semantic_sha256": "89c907d225e6345e34dadb67383fc546189772a4d5602bb4b9ab06ae0758fad1"
     },
     {
-      "blind_name": "LocalDef008",
+      "blind_name": "LocalDef009",
       "distance": 1,
-      "id": "D008",
+      "id": "D009",
       "kind": "def",
       "name": "HighamBench.p08KappaInverse",
       "owner_module": "HighamBench.P08Definitions",
@@ -209,19 +219,19 @@
       "semantic_sha256": "bfd0f39983da4c12e3f750ed71076fbdd2f5522eadc206111adf42edf2facde8"
     },
     {
-      "blind_name": "LocalDef009",
+      "blind_name": "LocalDef010",
       "distance": 1,
-      "id": "D009",
+      "id": "D010",
       "kind": "def",
       "name": "HighamBench.p08Lemma43Bound",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "a5bee951bf713d6c844a60be935194ee54cf43a603565a9a7ffa61517f91c33c"
+      "semantic_sha256": "3059b4edb0e06983e98da42488edf26e73e7a05fb9285f72affa64f8f765da55"
     },
     {
-      "blind_name": "LocalDef010",
+      "blind_name": "LocalDef011",
       "distance": 2,
-      "id": "D010",
+      "id": "D011",
       "kind": "abbrev",
       "name": "HighamBench.P08AbsoluteMonotoneNorm.matrixNorm",
       "owner_module": "HighamBench.P08Definitions",
@@ -229,9 +239,9 @@
       "semantic_sha256": "cb6f2c04a418b2caa76e756725fcea42ee330eb2025b1c853e005a409b93b65b"
     },
     {
-      "blind_name": "LocalDef011",
+      "blind_name": "LocalDef012",
       "distance": 2,
-      "id": "D011",
+      "id": "D012",
       "kind": "constructor",
       "name": "HighamBench.P08AbsoluteMonotoneNorm.mk",
       "owner_module": "HighamBench.P08Definitions",
@@ -239,9 +249,19 @@
       "semantic_sha256": "7dd24e6fd070f0254a34fafc339c24a872f093b562989902deb8ec0012c991d5"
     },
     {
-      "blind_name": "LocalDef012",
+      "blind_name": "LocalDef013",
       "distance": 2,
-      "id": "D012",
+      "id": "D013",
+      "kind": "constructor",
+      "name": "HighamBench.P08DimensionOnlyConstantBounds.mk",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "610355c3cbe90d966e947b5d8cecd1135a6194218b00313b1e2510582dcd4d80"
+    },
+    {
+      "blind_name": "LocalDef014",
+      "distance": 2,
+      "id": "D014",
       "kind": "abbrev",
       "name": "HighamBench.P08IterativeRefinementRun.A",
       "owner_module": "HighamBench.P08Definitions",
@@ -249,9 +269,9 @@
       "semantic_sha256": "85f2f086955453d6a2d870b44117beca5f3a6d0996f8607a8118d458a36419fe"
     },
     {
-      "blind_name": "LocalDef013",
+      "blind_name": "LocalDef015",
       "distance": 2,
-      "id": "D013",
+      "id": "D015",
       "kind": "abbrev",
       "name": "HighamBench.P08IterativeRefinementRun.Ainv",
       "owner_module": "HighamBench.P08Definitions",
@@ -259,9 +279,9 @@
       "semantic_sha256": "b13393dd2007ec7b119a102881fb8d9ce6e29491cad66c4a82b842082e01280d"
     },
     {
-      "blind_name": "LocalDef014",
+      "blind_name": "LocalDef016",
       "distance": 2,
-      "id": "D014",
+      "id": "D016",
       "kind": "abbrev",
       "name": "HighamBench.P08IterativeRefinementRun.b",
       "owner_module": "HighamBench.P08Definitions",
@@ -269,9 +289,9 @@
       "semantic_sha256": "90deb8b3cf8e5a340ce1bde5cb32f2d0f43225d06d77b01f9d60ccaa450814ba"
     },
     {
-      "blind_name": "LocalDef015",
+      "blind_name": "LocalDef017",
       "distance": 2,
-      "id": "D015",
+      "id": "D017",
       "kind": "abbrev",
       "name": "HighamBench.P08IterativeRefinementRun.correction",
       "owner_module": "HighamBench.P08Definitions",
@@ -279,9 +299,9 @@
       "semantic_sha256": "95a14dfc4c0311ba3f7c922d3d473a2e213593713bf86d6ec9d9bcfb6571368c"
     },
     {
-      "blind_name": "LocalDef016",
+      "blind_name": "LocalDef018",
       "distance": 2,
-      "id": "D016",
+      "id": "D018",
       "kind": "abbrev",
       "name": "HighamBench.P08IterativeRefinementRun.iterate",
       "owner_module": "HighamBench.P08Definitions",
@@ -289,39 +309,39 @@
       "semantic_sha256": "836574bf044469fb2e1989ada8641ce5e2ba72a65a90b5546b99d2138b17f1ff"
     },
     {
-      "blind_name": "LocalDef017",
-      "distance": 2,
-      "id": "D017",
-      "kind": "constructor",
-      "name": "HighamBench.P08IterativeRefinementRun.mk",
-      "owner_module": "HighamBench.P08Definitions",
-      "role": "local",
-      "semantic_sha256": "5fc3658a782ddb9568e29b7a7ab51353c8c3fd40b6229aed73afd6aa1c8aeeb5"
-    },
-    {
-      "blind_name": "LocalDef018",
-      "distance": 2,
-      "id": "D018",
-      "kind": "constructor",
-      "name": "HighamBench.P08Lemma43Constants.mk",
-      "owner_module": "HighamBench.P08Definitions",
-      "role": "local",
-      "semantic_sha256": "dddc36709eadfb0b6343373eb876099afe788de917e669739a91b5a520f05a76"
-    },
-    {
       "blind_name": "LocalDef019",
       "distance": 2,
       "id": "D019",
       "kind": "constructor",
-      "name": "HighamBench.P08Lemma43PriorBounds.mk",
+      "name": "HighamBench.P08IterativeRefinementRun.mk",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "6c1c605f89d4b18be199e86b750500fb95395f9bc123da5531d3ffabd1ada0ca"
+      "semantic_sha256": "ab1d4981689407c76646be74fcb3dad9570376f69a96a275e6e8a4b1a5810373"
     },
     {
       "blind_name": "LocalDef020",
       "distance": 2,
       "id": "D020",
+      "kind": "constructor",
+      "name": "HighamBench.P08Lemma43Constants.mk",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "4c70837cf08b2e18d98b6610cf5e128d140ba43a36c9028930ab1b413ccb483b"
+    },
+    {
+      "blind_name": "LocalDef021",
+      "distance": 2,
+      "id": "D021",
+      "kind": "constructor",
+      "name": "HighamBench.P08Lemma43RoundoffAnalysis.mk",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "820b5da34de9963773519b1a761c8c11371c85943cd5809a2713d99d0df5290b"
+    },
+    {
+      "blind_name": "LocalDef022",
+      "distance": 2,
+      "id": "D022",
       "kind": "def",
       "name": "HighamBench.p08AbsMatrix",
       "owner_module": "HighamBench.P08Definitions",
@@ -329,39 +349,39 @@
       "semantic_sha256": "e805548fdc53f300f35b23b599d9e0cce148e3d8c77b379efa381e734712ca5e"
     },
     {
-      "blind_name": "LocalDef021",
-      "distance": 2,
-      "id": "D021",
-      "kind": "def",
-      "name": "HighamBench.p08Lemma43InitialVector",
-      "owner_module": "HighamBench.P08Definitions",
-      "role": "local",
-      "semantic_sha256": "9ec709d17d95d069fcc12a3102ce1ee312df3df528a79e9507ec604a2905bead"
-    },
-    {
-      "blind_name": "LocalDef022",
-      "distance": 2,
-      "id": "D022",
-      "kind": "def",
-      "name": "HighamBench.p08Lemma43Propagation",
-      "owner_module": "HighamBench.P08Definitions",
-      "role": "local",
-      "semantic_sha256": "10367d516e13eb84ddf10ad3fd37995263de896d257fbf64bea1a690180219a2"
-    },
-    {
       "blind_name": "LocalDef023",
       "distance": 2,
       "id": "D023",
       "kind": "def",
-      "name": "HighamBench.p08Lemma43StationaryVector",
+      "name": "HighamBench.p08Lemma43InitialVector",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "2ae95b9dcd4166e4c23eaf6b5e6b5d26f90f1682c3e0a70a82d4213e1a520ea1"
+      "semantic_sha256": "6f51903a6cd95edb972bc40fd17d2fcf52fd559ea050fae065f3832c41a69c78"
     },
     {
       "blind_name": "LocalDef024",
       "distance": 2,
       "id": "D024",
+      "kind": "def",
+      "name": "HighamBench.p08Lemma43Propagation",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "fc8538d8bc9f07d48d50e64d015175e1119275cd83e232fb005dcd46ace4b037"
+    },
+    {
+      "blind_name": "LocalDef025",
+      "distance": 2,
+      "id": "D025",
+      "kind": "def",
+      "name": "HighamBench.p08Lemma43StationaryVector",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "1b5c03a53e3e7fcebe6bb0e4a313ad7a6b359634ffdb49d664ddd58f39f707c9"
+    },
+    {
+      "blind_name": "LocalDef026",
+      "distance": 2,
+      "id": "D026",
       "kind": "def",
       "name": "HighamBench.p08MatMul",
       "owner_module": "HighamBench.P08Definitions",
@@ -369,9 +389,9 @@
       "semantic_sha256": "d0da17f42708be972b7710bd91ed5479fc07923ec7ea0e2767ff54131b2c3ec0"
     },
     {
-      "blind_name": "LocalDef025",
+      "blind_name": "LocalDef027",
       "distance": 2,
-      "id": "D025",
+      "id": "D027",
       "kind": "def",
       "name": "HighamBench.p08MatPow",
       "owner_module": "HighamBench.P08Definitions",
@@ -379,9 +399,9 @@
       "semantic_sha256": "489fa9aeca464a7c43c76f1d8f771ecb486c6f1109d220d5f27db122c28f21b7"
     },
     {
-      "blind_name": "LocalDef026",
+      "blind_name": "LocalDef028",
       "distance": 2,
-      "id": "D026",
+      "id": "D028",
       "kind": "def",
       "name": "HighamBench.p08MatVec",
       "owner_module": "HighamBench.P08Definitions",
@@ -389,9 +409,9 @@
       "semantic_sha256": "a592839d471927bb3cc257d8a1d685487e1a3d3378b7ad9ee731c33e3c99b742"
     },
     {
-      "blind_name": "LocalDef027",
+      "blind_name": "LocalDef029",
       "distance": 2,
-      "id": "D027",
+      "id": "D029",
       "kind": "def",
       "name": "HighamBench.p08VecAdd",
       "owner_module": "HighamBench.P08Definitions",
@@ -399,9 +419,9 @@
       "semantic_sha256": "48044aa432a436b28ce14db73d143a7f56206968c45cb1e2a875ac972c0c05c8"
     },
     {
-      "blind_name": "LocalDef028",
+      "blind_name": "LocalDef030",
       "distance": 2,
-      "id": "D028",
+      "id": "D030",
       "kind": "def",
       "name": "HighamBench.p08VecSub",
       "owner_module": "HighamBench.P08Definitions",
@@ -409,29 +429,59 @@
       "semantic_sha256": "441efa53ccbc8055dbb223ccd54794324a03325218e39203ecb218d295342c86"
     },
     {
-      "blind_name": "LocalDef029",
+      "blind_name": "LocalDef031",
       "distance": 3,
-      "id": "D029",
+      "id": "D031",
       "kind": "inductive",
       "name": "HighamBench.P08ColumnPivotedSolveCertificate",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "b694445b6edb36738cb9972cfec4a23fb96652d48e65d25a3e8d15c761a1e258"
+      "semantic_sha256": "4a742ed2a083d341d7389896497910c6584f007dcf88c3b7bfa64bc38080b51b"
     },
     {
-      "blind_name": "LocalDef030",
+      "blind_name": "LocalDef032",
       "distance": 3,
-      "id": "D030",
+      "id": "D032",
+      "kind": "abbrev",
+      "name": "HighamBench.P08ColumnPivotedSolveCertificate.backwardError",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "7f2bf591bcaf3e103d5204bbda24f4ed2597fea06069bee014ae32c14d9ba5a6"
+    },
+    {
+      "blind_name": "LocalDef033",
+      "distance": 3,
+      "id": "D033",
       "kind": "abbrev",
       "name": "HighamBench.P08ColumnPivotedSolveCertificate.output",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "26474c9523e744eabd7c64a71be338ecf1547a53130c1a6c3f05a19f89763bce"
+      "semantic_sha256": "54cbe1342c9bdf08751602d675ad8f7beb46818f6a52638defa77739b6b0ac3c"
     },
     {
-      "blind_name": "LocalDef031",
+      "blind_name": "LocalDef034",
       "distance": 3,
-      "id": "D031",
+      "id": "D034",
+      "kind": "abbrev",
+      "name": "HighamBench.P08DimensionOnlyConstantBounds.matrixEntry",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "7807c5b0443354e41892839092dfb1798c40704ab6a59916d3426e87f4a0dc34"
+    },
+    {
+      "blind_name": "LocalDef035",
+      "distance": 3,
+      "id": "D035",
+      "kind": "abbrev",
+      "name": "HighamBench.P08DimensionOnlyConstantBounds.scalar",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "d6088e0225cfe0110055e45e4e97c0da46a8f6f891a1d079662801ffc7f89006"
+    },
+    {
+      "blind_name": "LocalDef036",
+      "distance": 3,
+      "id": "D036",
       "kind": "abbrev",
       "name": "HighamBench.P08IterativeRefinementRun.C1",
       "owner_module": "HighamBench.P08Definitions",
@@ -439,9 +489,29 @@
       "semantic_sha256": "11db68dc524b6f4453b97274ae61cebe6f397e015f167ebc73d342d233c94d77"
     },
     {
-      "blind_name": "LocalDef032",
+      "blind_name": "LocalDef037",
       "distance": 3,
-      "id": "D032",
+      "id": "D037",
+      "kind": "abbrev",
+      "name": "HighamBench.P08IterativeRefinementRun.computedResidual",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "58270e7b7c127cccb8493ee87248f50d8b8227e2332d1c36b3359b50eacfbfa0"
+    },
+    {
+      "blind_name": "LocalDef038",
+      "distance": 3,
+      "id": "D038",
+      "kind": "abbrev",
+      "name": "HighamBench.P08IterativeRefinementRun.correctionSolve",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "49c7a58fecc0b38fa47e1a7aee4d392460fab5da334be050109887a543bdff61"
+    },
+    {
+      "blind_name": "LocalDef039",
+      "distance": 3,
+      "id": "D039",
       "kind": "abbrev",
       "name": "HighamBench.P08IterativeRefinementRun.exactSolution",
       "owner_module": "HighamBench.P08Definitions",
@@ -449,9 +519,9 @@
       "semantic_sha256": "14d7b8a66771d4d9ee275d3281507a2d8dcedc0f9509dd1004df9cff35fa15e9"
     },
     {
-      "blind_name": "LocalDef033",
+      "blind_name": "LocalDef040",
       "distance": 3,
-      "id": "D033",
+      "id": "D040",
       "kind": "abbrev",
       "name": "HighamBench.P08IterativeRefinementRun.precision",
       "owner_module": "HighamBench.P08Definitions",
@@ -459,79 +529,89 @@
       "semantic_sha256": "0545949cc8af01a726c7a3c120fdc1d5a19e5cfd531d7d911c451b33f08dc85a"
     },
     {
-      "blind_name": "LocalDef034",
+      "blind_name": "LocalDef041",
       "distance": 3,
-      "id": "D034",
+      "id": "D041",
+      "kind": "abbrev",
+      "name": "HighamBench.P08IterativeRefinementRun.workingModel",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "197f8cf0352d97d80831ac9a763d9dda5f4184951698067c96f49e3b7ab078ff"
+    },
+    {
+      "blind_name": "LocalDef042",
+      "distance": 3,
+      "id": "D042",
       "kind": "abbrev",
       "name": "HighamBench.P08Lemma43Constants.C10",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "3f89230489efa2acd4b87eef9416f6823b5ad4aaaa9833968c8ec9c226b61de4"
+      "semantic_sha256": "9ae892a2919f5ef5d7fe83095ff14f0a21e44885747984d04716d888e20ef5d5"
     },
     {
-      "blind_name": "LocalDef035",
+      "blind_name": "LocalDef043",
       "distance": 3,
-      "id": "D035",
+      "id": "D043",
       "kind": "abbrev",
       "name": "HighamBench.P08Lemma43Constants.C11",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "b488c8fc7a2055f6c645f84b731807126e6dcf8d76e9b4037de1c02fc5ce2fd7"
+      "semantic_sha256": "cb40f032154afa002ddf244eb17b91237ab04da771de5b8c16d652cb11007012"
     },
     {
-      "blind_name": "LocalDef036",
+      "blind_name": "LocalDef044",
       "distance": 3,
-      "id": "D036",
+      "id": "D044",
       "kind": "abbrev",
       "name": "HighamBench.P08Lemma43Constants.C12",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "046bb31ccf0eec67c502aa1c75b21aa05264d263a7fde0c47f4f26dcdaa176a9"
+      "semantic_sha256": "3bc8aadae3baed9f5b7f93e37032d0ba4fa9392b68373b08bf9b9cec3e567831"
     },
     {
-      "blind_name": "LocalDef037",
+      "blind_name": "LocalDef045",
       "distance": 3,
-      "id": "D037",
+      "id": "D045",
       "kind": "abbrev",
-      "name": "HighamBench.P08Lemma43Constants.C6",
+      "name": "HighamBench.P08Lemma43Constants.C2",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "ca15d893794305e77e09c02277a8c451656dfb9e0446207dcbcf65183257d813"
+      "semantic_sha256": "e11b1c218c5e0cea9b24a56d21cbee0568cfb7345d668eab797fb33f0c0baba0"
     },
     {
-      "blind_name": "LocalDef038",
+      "blind_name": "LocalDef046",
       "distance": 3,
-      "id": "D038",
-      "kind": "abbrev",
-      "name": "HighamBench.P08Lemma43Constants.C7",
-      "owner_module": "HighamBench.P08Definitions",
-      "role": "local",
-      "semantic_sha256": "433d8137960836976369880de134edcb0fca599a99306d918ffb293ebcc53dbb"
-    },
-    {
-      "blind_name": "LocalDef039",
-      "distance": 3,
-      "id": "D039",
+      "id": "D046",
       "kind": "abbrev",
       "name": "HighamBench.P08Lemma43Constants.C8",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "74f9157d15d939e8df3b310c18b63c26faf46fb4389b85a593a3f0c8881fe268"
+      "semantic_sha256": "94053baacd4d4d794b4cee0ddcaf96dbe87eb45844dc2cdb37a0fd8d0cf0d7b8"
     },
     {
-      "blind_name": "LocalDef040",
+      "blind_name": "LocalDef047",
       "distance": 3,
-      "id": "D040",
+      "id": "D047",
       "kind": "abbrev",
       "name": "HighamBench.P08Lemma43Constants.c1",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "21c9b73f75387b205c7c6fca385f7080561a919097ef680780383b275c19342b"
+      "semantic_sha256": "e92ead70a36524d08e7dd1894512923400272f9edd8e09a1b7602a0b7c90daf8"
     },
     {
-      "blind_name": "LocalDef041",
+      "blind_name": "LocalDef048",
       "distance": 3,
-      "id": "D041",
+      "id": "D048",
+      "kind": "abbrev",
+      "name": "HighamBench.P08Lemma43Constants.c5",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "6e796277136197ddf99f6c60f55184168c4471f64b47901dc73a08b828484c15"
+    },
+    {
+      "blind_name": "LocalDef049",
+      "distance": 3,
+      "id": "D049",
       "kind": "inductive",
       "name": "HighamBench.P08ResidualPrecision",
       "owner_module": "HighamBench.P08Definitions",
@@ -539,9 +619,9 @@
       "semantic_sha256": "d7549ecbed39af141999846c1c07ed08e8f2c8780d0dfe8c5b2006e7fc1faea4"
     },
     {
-      "blind_name": "LocalDef042",
+      "blind_name": "LocalDef050",
       "distance": 3,
-      "id": "D042",
+      "id": "D050",
       "kind": "inductive",
       "name": "HighamBench.P08ScalarArithmeticModel",
       "owner_module": "HighamBench.P08Definitions",
@@ -549,9 +629,9 @@
       "semantic_sha256": "e7bbc2335c38e8a786a9d00d6341c669a3a2294cbf8f0288fb3e9880eab5f68d"
     },
     {
-      "blind_name": "LocalDef043",
+      "blind_name": "LocalDef051",
       "distance": 3,
-      "id": "D043",
+      "id": "D051",
       "kind": "abbrev",
       "name": "HighamBench.P08ScalarArithmeticModel.flSub",
       "owner_module": "HighamBench.P08Definitions",
@@ -559,9 +639,9 @@
       "semantic_sha256": "8adc77897914530b6395788942bbc1bf0bcf3f0c982d3510fbafa07bd301f628"
     },
     {
-      "blind_name": "LocalDef044",
+      "blind_name": "LocalDef052",
       "distance": 3,
-      "id": "D044",
+      "id": "D052",
       "kind": "abbrev",
       "name": "HighamBench.P08ScalarArithmeticModel.unitRoundoff",
       "owner_module": "HighamBench.P08Definitions",
@@ -569,9 +649,9 @@
       "semantic_sha256": "79af0e36b62b3ea8268fe82fc682fe415d0aa3c886259b931dbd042931597b88"
     },
     {
-      "blind_name": "LocalDef045",
+      "blind_name": "LocalDef053",
       "distance": 3,
-      "id": "D045",
+      "id": "D053",
       "kind": "inductive",
       "name": "HighamBench.P08SubtractionLastResidualTrace",
       "owner_module": "HighamBench.P08Definitions",
@@ -579,9 +659,9 @@
       "semantic_sha256": "853ac33b96eada40f12ea75106ed15e56a6c8b83e44c7a5e212fcb29695b75a6"
     },
     {
-      "blind_name": "LocalDef046",
+      "blind_name": "LocalDef054",
       "distance": 3,
-      "id": "D046",
+      "id": "D054",
       "kind": "abbrev",
       "name": "HighamBench.P08SubtractionLastResidualTrace.output",
       "owner_module": "HighamBench.P08Definitions",
@@ -589,19 +669,9 @@
       "semantic_sha256": "42f5c5faaadde417e3048fe02066ab5f3088fa6f1e36636a3fc3a06cc41a686b"
     },
     {
-      "blind_name": "LocalDef047",
+      "blind_name": "LocalDef055",
       "distance": 3,
-      "id": "D047",
-      "kind": "def",
-      "name": "HighamBench.p08AbsAction",
-      "owner_module": "HighamBench.P08Definitions",
-      "role": "local",
-      "semantic_sha256": "2e411afdeeff87e69866a73e67fc559f4099fa28d728bac01a806d5050ad1e33"
-    },
-    {
-      "blind_name": "LocalDef048",
-      "distance": 3,
-      "id": "D048",
+      "id": "D055",
       "kind": "def",
       "name": "HighamBench.p08AbsVec",
       "owner_module": "HighamBench.P08Definitions",
@@ -609,9 +679,9 @@
       "semantic_sha256": "251d18073f7d0601a1d26c052e923b84818bac3d391608244c9b58516ce6c9f2"
     },
     {
-      "blind_name": "LocalDef049",
+      "blind_name": "LocalDef056",
       "distance": 3,
-      "id": "D049",
+      "id": "D056",
       "kind": "def",
       "name": "HighamBench.p08BasisVector",
       "owner_module": "HighamBench.P08Definitions",
@@ -619,9 +689,9 @@
       "semantic_sha256": "943e670d3ba4601b3fd4545be0b69f3b002661c43ddc5c52382f72aab70e4a78"
     },
     {
-      "blind_name": "LocalDef050",
+      "blind_name": "LocalDef057",
       "distance": 3,
-      "id": "D050",
+      "id": "D057",
       "kind": "def",
       "name": "HighamBench.p08IdMatrix",
       "owner_module": "HighamBench.P08Definitions",
@@ -629,9 +699,9 @@
       "semantic_sha256": "5e6389de03e053212362456681133b045c00c04678538b53fc2e2c60f503e204"
     },
     {
-      "blind_name": "LocalDef051",
+      "blind_name": "LocalDef058",
       "distance": 3,
-      "id": "D051",
+      "id": "D058",
       "kind": "def",
       "name": "HighamBench.p08Lemma43c3",
       "owner_module": "HighamBench.P08Definitions",
@@ -639,9 +709,9 @@
       "semantic_sha256": "1b7b6fc388731fbbe5e5edf509e81718c2ece61301cd270a32ea630188cf2f8d"
     },
     {
-      "blind_name": "LocalDef052",
+      "blind_name": "LocalDef059",
       "distance": 3,
-      "id": "D052",
+      "id": "D059",
       "kind": "def",
       "name": "HighamBench.p08Lemma43c4",
       "owner_module": "HighamBench.P08Definitions",
@@ -649,9 +719,9 @@
       "semantic_sha256": "672fe46b40849d9eecb89e024cded83bba77838b4bf46f06b9ae1d6a7c0afa72"
     },
     {
-      "blind_name": "LocalDef053",
+      "blind_name": "LocalDef060",
       "distance": 3,
-      "id": "D053",
+      "id": "D060",
       "kind": "def",
       "name": "HighamBench.p08MatAdd",
       "owner_module": "HighamBench.P08Definitions",
@@ -659,9 +729,9 @@
       "semantic_sha256": "2609ed33694abd0b60e21ae93a7ddeb0a0f5d699c42a86f70667bc3993bf0295"
     },
     {
-      "blind_name": "LocalDef054",
+      "blind_name": "LocalDef061",
       "distance": 3,
-      "id": "D054",
+      "id": "D061",
       "kind": "def",
       "name": "HighamBench.p08MatNonnegative",
       "owner_module": "HighamBench.P08Definitions",
@@ -669,9 +739,9 @@
       "semantic_sha256": "64127facdf54b3e4aee2946afe35ed21a0566b4759a2439fec1c8ac316f56cd3"
     },
     {
-      "blind_name": "LocalDef055",
+      "blind_name": "LocalDef062",
       "distance": 3,
-      "id": "D055",
+      "id": "D062",
       "kind": "abbrev",
       "name": "HighamBench.p08MatPow.match_1",
       "owner_module": "HighamBench.P08Definitions",
@@ -679,9 +749,9 @@
       "semantic_sha256": "0d4b2b6183d9d2349786d34e92b9461732ad4ea08fe3e26ebfab22261a830af1"
     },
     {
-      "blind_name": "LocalDef056",
+      "blind_name": "LocalDef063",
       "distance": 3,
-      "id": "D056",
+      "id": "D063",
       "kind": "def",
       "name": "HighamBench.p08MatScale",
       "owner_module": "HighamBench.P08Definitions",
@@ -689,9 +759,9 @@
       "semantic_sha256": "699272c225366e6c2d1ef283454245411d0c3bad0dba6a9659dfb3c225479071"
     },
     {
-      "blind_name": "LocalDef057",
+      "blind_name": "LocalDef064",
       "distance": 3,
-      "id": "D057",
+      "id": "D064",
       "kind": "def",
       "name": "HighamBench.p08MatSub",
       "owner_module": "HighamBench.P08Definitions",
@@ -699,9 +769,9 @@
       "semantic_sha256": "499546f906ee1c73a8bc14fd14b5362b8af21b67ad4c407dc75360ad3b3ecb8d"
     },
     {
-      "blind_name": "LocalDef058",
+      "blind_name": "LocalDef065",
       "distance": 3,
-      "id": "D058",
+      "id": "D065",
       "kind": "def",
       "name": "HighamBench.p08ResidualUnitRoundoff",
       "owner_module": "HighamBench.P08Definitions",
@@ -709,9 +779,9 @@
       "semantic_sha256": "ba0c3c6a8980bf14670536e3c01d93fe3e449716ef3c0122d4f2136d3f8aa1fd"
     },
     {
-      "blind_name": "LocalDef059",
+      "blind_name": "LocalDef066",
       "distance": 3,
-      "id": "D059",
+      "id": "D066",
       "kind": "def",
       "name": "HighamBench.p08VecScale",
       "owner_module": "HighamBench.P08Definitions",
@@ -719,19 +789,19 @@
       "semantic_sha256": "fb1211b6e3f0aa8c81abbea4ef17958ce920ab3ada9211d91ffb6eab3118d704"
     },
     {
-      "blind_name": "LocalDef060",
+      "blind_name": "LocalDef067",
       "distance": 4,
-      "id": "D060",
+      "id": "D067",
       "kind": "constructor",
       "name": "HighamBench.P08ColumnPivotedSolveCertificate.mk",
       "owner_module": "HighamBench.P08Definitions",
       "role": "local",
-      "semantic_sha256": "32cb8ef3635ca87399bad3910b77b3802f3d739e78e4457e871a6069935efa42"
+      "semantic_sha256": "d44df443c4835549078a664241bff572d99a62f4d3e457329d0c4d8a5d2b0696"
     },
     {
-      "blind_name": "LocalDef061",
+      "blind_name": "LocalDef068",
       "distance": 4,
-      "id": "D061",
+      "id": "D068",
       "kind": "constructor",
       "name": "HighamBench.P08ResidualPrecision.double",
       "owner_module": "HighamBench.P08Definitions",
@@ -739,9 +809,9 @@
       "semantic_sha256": "338a37198896bd23dd4b9df74ea75f587c793386b8fcd6edd3cdaf1722fa8ded"
     },
     {
-      "blind_name": "LocalDef062",
+      "blind_name": "LocalDef069",
       "distance": 4,
-      "id": "D062",
+      "id": "D069",
       "kind": "constructor",
       "name": "HighamBench.P08ResidualPrecision.single",
       "owner_module": "HighamBench.P08Definitions",
@@ -749,9 +819,9 @@
       "semantic_sha256": "295399acf2b054574bf28389bfa961fb4a8c6d0ddca4892fb93bf4d33d6cc840"
     },
     {
-      "blind_name": "LocalDef063",
+      "blind_name": "LocalDef070",
       "distance": 4,
-      "id": "D063",
+      "id": "D070",
       "kind": "constructor",
       "name": "HighamBench.P08ScalarArithmeticModel.mk",
       "owner_module": "HighamBench.P08Definitions",
@@ -759,9 +829,9 @@
       "semantic_sha256": "24f2ea7999198982ad4a308c8470d6081fb22bd0a25b8593d507e73993ab37f9"
     },
     {
-      "blind_name": "LocalDef064",
+      "blind_name": "LocalDef071",
       "distance": 4,
-      "id": "D064",
+      "id": "D071",
       "kind": "constructor",
       "name": "HighamBench.P08SubtractionLastResidualTrace.mk",
       "owner_module": "HighamBench.P08Definitions",
@@ -769,9 +839,9 @@
       "semantic_sha256": "9f043e9784e45839aa3b5f755595e064c62125610855a11b0c177fe25902f99f"
     },
     {
-      "blind_name": "LocalDef065",
+      "blind_name": "LocalDef072",
       "distance": 4,
-      "id": "D065",
+      "id": "D072",
       "kind": "abbrev",
       "name": "HighamBench.p08ResidualUnitRoundoff.match_1",
       "owner_module": "HighamBench.P08Definitions",
@@ -779,9 +849,19 @@
       "semantic_sha256": "49e9dd09a1edbfc9990270754d1cd4f0aa0fce2302a26e1874b995b1f0c07d72"
     },
     {
-      "blind_name": "LocalDef066",
+      "blind_name": "LocalDef073",
       "distance": 5,
-      "id": "D066",
+      "id": "D073",
+      "kind": "inductive",
+      "name": "HighamBench.P08ColumnPivotedGaussianEliminationTrace",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "04ef73fc38e76e7aa817d01e5e91d746fd8a6d6d1369d6142456a8c1e7a9638e"
+    },
+    {
+      "blind_name": "LocalDef074",
+      "distance": 5,
+      "id": "D074",
       "kind": "abbrev",
       "name": "HighamBench.P08ResidualPrecision.casesOn",
       "owner_module": "HighamBench.P08Definitions",
@@ -789,9 +869,19 @@
       "semantic_sha256": "ef6bb9641dd3962a514e35510b1298ed2e76b6beb424f5eb5b4f9e369ab97fd2"
     },
     {
-      "blind_name": "LocalDef067",
+      "blind_name": "LocalDef075",
       "distance": 5,
-      "id": "D067",
+      "id": "D075",
+      "kind": "def",
+      "name": "HighamBench.p08AbsAction",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "2e411afdeeff87e69866a73e67fc559f4099fa28d728bac01a806d5050ad1e33"
+    },
+    {
+      "blind_name": "LocalDef076",
+      "distance": 5,
+      "id": "D076",
       "kind": "def",
       "name": "HighamBench.p08RoundedDot",
       "owner_module": "HighamBench.P08Definitions",
@@ -799,9 +889,19 @@
       "semantic_sha256": "5ed6a73db466e72c573339b7f8660f2cd8603f77c90d1ed10f24aa41f15e75b9"
     },
     {
-      "blind_name": "LocalDef068",
+      "blind_name": "LocalDef077",
       "distance": 6,
-      "id": "D068",
+      "id": "D077",
+      "kind": "constructor",
+      "name": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "5c979a9ca09c426bc2ed032a04c306277455a9accc6d7f0f552352ce087aeefa"
+    },
+    {
+      "blind_name": "LocalDef078",
+      "distance": 6,
+      "id": "D078",
       "kind": "recursor",
       "name": "HighamBench.P08ResidualPrecision.rec",
       "owner_module": "HighamBench.P08Definitions",
@@ -809,9 +909,9 @@
       "semantic_sha256": "ea639447496f6c9e2a35485c6927422f54b5c8c94811e8c659e89ac626e80beb"
     },
     {
-      "blind_name": "LocalDef069",
+      "blind_name": "LocalDef079",
       "distance": 6,
-      "id": "D069",
+      "id": "D079",
       "kind": "abbrev",
       "name": "HighamBench.P08ScalarArithmeticModel.flAdd",
       "owner_module": "HighamBench.P08Definitions",
@@ -819,9 +919,9 @@
       "semantic_sha256": "f37bcf5a6659cff51cd1b022d2627bd079c93426b02455c6a219dc49fae413af"
     },
     {
-      "blind_name": "LocalDef070",
+      "blind_name": "LocalDef080",
       "distance": 6,
-      "id": "D070",
+      "id": "D080",
       "kind": "abbrev",
       "name": "HighamBench.P08ScalarArithmeticModel.flMul",
       "owner_module": "HighamBench.P08Definitions",
@@ -829,9 +929,9 @@
       "semantic_sha256": "251455074a55a647642d6f6bfec0f277e2acf648d8ca2ce8cb324f29bc1e750f"
     },
     {
-      "blind_name": "LocalDef071",
+      "blind_name": "LocalDef081",
       "distance": 6,
-      "id": "D071",
+      "id": "D081",
       "kind": "def",
       "name": "HighamBench.recursiveSum",
       "owner_module": "HighamBench.Core",
@@ -839,9 +939,49 @@
       "semantic_sha256": "3a24e7a5c707c014d59b9d90d536db1f1c79ef135d2ba34adb6af8a4258efe41"
     },
     {
-      "blind_name": "LocalDef072",
+      "blind_name": "LocalDef082",
       "distance": 7,
-      "id": "D072",
+      "id": "D082",
+      "kind": "abbrev",
+      "name": "HighamBench.P08ScalarArithmeticModel.flDiv",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "e89ab6cb2f2f523f7cb018bdfc5e5e280ac7b52c225d3490a0126ff08d339b2a"
+    },
+    {
+      "blind_name": "LocalDef083",
+      "distance": 7,
+      "id": "D083",
+      "kind": "def",
+      "name": "HighamBench.p08ColumnPivotedMatrixStep",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "309cb8a5d5954c0c8eb38407c8d1f1223ca7491444f306ba2ccdce14b967ff64"
+    },
+    {
+      "blind_name": "LocalDef084",
+      "distance": 7,
+      "id": "D084",
+      "kind": "def",
+      "name": "HighamBench.p08ColumnPivotedRhsStep",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "73efa32de8540c40dd4faddb7e508fdd616fbd985fe9b2e9847cfc54d8baea37"
+    },
+    {
+      "blind_name": "LocalDef085",
+      "distance": 7,
+      "id": "D085",
+      "kind": "def",
+      "name": "HighamBench.p08RoundedUpperTailDot",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "096124e2679f3fa41ab051e331b5aa95013b219c956664030878e8932f480f34"
+    },
+    {
+      "blind_name": "LocalDef086",
+      "distance": 7,
+      "id": "D086",
       "kind": "theorem",
       "name": "HighamBench.recursiveSum._proof_1",
       "owner_module": "HighamBench.Core",
@@ -849,9 +989,9 @@
       "semantic_sha256": "7f01e5fdb761df0e050b0929b93312fc9084bc345726c816952ed0fd4844be27"
     },
     {
-      "blind_name": "LocalDef073",
+      "blind_name": "LocalDef087",
       "distance": 7,
-      "id": "D073",
+      "id": "D087",
       "kind": "abbrev",
       "name": "HighamBench.recursiveSum.match_1",
       "owner_module": "HighamBench.Core",
@@ -859,9 +999,49 @@
       "semantic_sha256": "56d4f4744c0103a83d3305dc49473baf5a72c1037bbec52ff87f6f4a5419f79e"
     },
     {
+      "blind_name": "LocalDef088",
+      "distance": 8,
+      "id": "D088",
+      "kind": "def",
+      "name": "HighamBench.p08SwapRowsMatrix",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "f22db28acb57c47540470b2443d37f59d2b41281d6e9f25ac2af5f6f7b8dc238"
+    },
+    {
+      "blind_name": "LocalDef089",
+      "distance": 8,
+      "id": "D089",
+      "kind": "def",
+      "name": "HighamBench.p08SwapRowsVector",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "697d1103f6d5a8aef9aa5bcf7afe54af67419b72a4479ae1f1c04969c16a2aa4"
+    },
+    {
+      "blind_name": "LocalDef090",
+      "distance": 8,
+      "id": "D090",
+      "kind": "def",
+      "name": "HighamBench.p08UpperTailIndex",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "ba1de8e9f5ed31084b6b5adda945b1c8c9dca6e1153a406a978b4b09f15a55c7"
+    },
+    {
+      "blind_name": "LocalDef091",
+      "distance": 9,
+      "id": "D091",
+      "kind": "theorem",
+      "name": "HighamBench.p08UpperTailIndex._proof_2",
+      "owner_module": "HighamBench.P08Definitions",
+      "role": "local",
+      "semantic_sha256": "ee246c405abf2f153e4341862aad32b4ad86ebd9874969b6c70b1d7948e3dcf2"
+    },
+    {
       "blind_name": "DivInvMonoid.toDiv",
       "distance": 1,
-      "id": "D074",
+      "id": "D092",
       "kind": "abbrev",
       "name": "DivInvMonoid.toDiv",
       "owner_module": "Mathlib.Algebra.Group.Defs",
@@ -871,7 +1051,7 @@
     {
       "blind_name": "Fin",
       "distance": 1,
-      "id": "D075",
+      "id": "D093",
       "kind": "inductive",
       "name": "Fin",
       "owner_module": "Init.Prelude",
@@ -881,7 +1061,7 @@
     {
       "blind_name": "HDiv.hDiv",
       "distance": 1,
-      "id": "D076",
+      "id": "D094",
       "kind": "abbrev",
       "name": "HDiv.hDiv",
       "owner_module": "Init.Prelude",
@@ -891,7 +1071,7 @@
     {
       "blind_name": "HMul.hMul",
       "distance": 1,
-      "id": "D077",
+      "id": "D095",
       "kind": "abbrev",
       "name": "HMul.hMul",
       "owner_module": "Init.Prelude",
@@ -901,7 +1081,7 @@
     {
       "blind_name": "LE.le",
       "distance": 1,
-      "id": "D078",
+      "id": "D096",
       "kind": "abbrev",
       "name": "LE.le",
       "owner_module": "Init.Prelude",
@@ -911,7 +1091,7 @@
     {
       "blind_name": "Nat",
       "distance": 1,
-      "id": "D079",
+      "id": "D097",
       "kind": "inductive",
       "name": "Nat",
       "owner_module": "Init.Prelude",
@@ -921,7 +1101,7 @@
     {
       "blind_name": "Nat.instAtLeastTwoHAddOfNat",
       "distance": 1,
-      "id": "D080",
+      "id": "D098",
       "kind": "theorem",
       "name": "Nat.instAtLeastTwoHAddOfNat",
       "owner_module": "Mathlib.Data.Nat.Init",
@@ -931,7 +1111,7 @@
     {
       "blind_name": "Nat.instNeZeroSucc",
       "distance": 1,
-      "id": "D081",
+      "id": "D099",
       "kind": "theorem",
       "name": "Nat.instNeZeroSucc",
       "owner_module": "Init.Data.Nat.Basic",
@@ -941,7 +1121,7 @@
     {
       "blind_name": "OfNat.ofNat",
       "distance": 1,
-      "id": "D082",
+      "id": "D100",
       "kind": "abbrev",
       "name": "OfNat.ofNat",
       "owner_module": "Init.Prelude",
@@ -951,7 +1131,7 @@
     {
       "blind_name": "One.toOfNat1",
       "distance": 1,
-      "id": "D083",
+      "id": "D101",
       "kind": "def",
       "name": "One.toOfNat1",
       "owner_module": "Init.Data.Zero",
@@ -961,7 +1141,7 @@
     {
       "blind_name": "Real",
       "distance": 1,
-      "id": "D084",
+      "id": "D102",
       "kind": "inductive",
       "name": "Real",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -971,7 +1151,7 @@
     {
       "blind_name": "Real.instAddGroup",
       "distance": 1,
-      "id": "D085",
+      "id": "D103",
       "kind": "def",
       "name": "Real.instAddGroup",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -981,7 +1161,7 @@
     {
       "blind_name": "Real.instDivInvMonoid",
       "distance": 1,
-      "id": "D086",
+      "id": "D104",
       "kind": "def",
       "name": "Real.instDivInvMonoid",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -991,7 +1171,7 @@
     {
       "blind_name": "Real.instLE",
       "distance": 1,
-      "id": "D087",
+      "id": "D105",
       "kind": "def",
       "name": "Real.instLE",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1001,7 +1181,7 @@
     {
       "blind_name": "Real.instMul",
       "distance": 1,
-      "id": "D088",
+      "id": "D106",
       "kind": "def",
       "name": "Real.instMul",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1011,7 +1191,7 @@
     {
       "blind_name": "Real.instNatCast",
       "distance": 1,
-      "id": "D089",
+      "id": "D107",
       "kind": "def",
       "name": "Real.instNatCast",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1021,7 +1201,7 @@
     {
       "blind_name": "Real.instOne",
       "distance": 1,
-      "id": "D090",
+      "id": "D108",
       "kind": "def",
       "name": "Real.instOne",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1031,7 +1211,7 @@
     {
       "blind_name": "Real.lattice",
       "distance": 1,
-      "id": "D091",
+      "id": "D109",
       "kind": "def",
       "name": "Real.lattice",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1041,7 +1221,7 @@
     {
       "blind_name": "abs",
       "distance": 1,
-      "id": "D092",
+      "id": "D110",
       "kind": "def",
       "name": "abs",
       "owner_module": "Mathlib.Algebra.Order.Group.Unbundled.Abs",
@@ -1051,7 +1231,7 @@
     {
       "blind_name": "instHDiv",
       "distance": 1,
-      "id": "D093",
+      "id": "D111",
       "kind": "def",
       "name": "instHDiv",
       "owner_module": "Init.Prelude",
@@ -1061,7 +1241,7 @@
     {
       "blind_name": "instHMul",
       "distance": 1,
-      "id": "D094",
+      "id": "D112",
       "kind": "def",
       "name": "instHMul",
       "owner_module": "Init.Prelude",
@@ -1071,7 +1251,7 @@
     {
       "blind_name": "instOfNatAtLeastTwo",
       "distance": 1,
-      "id": "D095",
+      "id": "D113",
       "kind": "def",
       "name": "instOfNatAtLeastTwo",
       "owner_module": "Mathlib.Data.Nat.Cast.Defs",
@@ -1081,7 +1261,7 @@
     {
       "blind_name": "instOfNatNat",
       "distance": 1,
-      "id": "D096",
+      "id": "D114",
       "kind": "def",
       "name": "instOfNatNat",
       "owner_module": "Init.Prelude",
@@ -1091,7 +1271,7 @@
     {
       "blind_name": "And",
       "distance": 3,
-      "id": "D097",
+      "id": "D115",
       "kind": "inductive",
       "name": "And",
       "owner_module": "Init.Prelude",
@@ -1101,7 +1281,7 @@
     {
       "blind_name": "Eq",
       "distance": 3,
-      "id": "D098",
+      "id": "D116",
       "kind": "inductive",
       "name": "Eq",
       "owner_module": "Init.Prelude",
@@ -1111,7 +1291,7 @@
     {
       "blind_name": "Exists",
       "distance": 3,
-      "id": "D099",
+      "id": "D117",
       "kind": "inductive",
       "name": "Exists",
       "owner_module": "Init.Core",
@@ -1121,7 +1301,7 @@
     {
       "blind_name": "Fin.fintype",
       "distance": 3,
-      "id": "D100",
+      "id": "D118",
       "kind": "def",
       "name": "Fin.fintype",
       "owner_module": "Mathlib.Data.Fintype.Basic",
@@ -1131,7 +1311,7 @@
     {
       "blind_name": "Finset.sum",
       "distance": 3,
-      "id": "D101",
+      "id": "D119",
       "kind": "def",
       "name": "Finset.sum",
       "owner_module": "Mathlib.Algebra.BigOperators.Group.Finset.Defs",
@@ -1141,7 +1321,7 @@
     {
       "blind_name": "Finset.univ",
       "distance": 3,
-      "id": "D102",
+      "id": "D120",
       "kind": "def",
       "name": "Finset.univ",
       "owner_module": "Mathlib.Data.Fintype.Defs",
@@ -1151,7 +1331,7 @@
     {
       "blind_name": "HAdd.hAdd",
       "distance": 3,
-      "id": "D103",
+      "id": "D121",
       "kind": "abbrev",
       "name": "HAdd.hAdd",
       "owner_module": "Init.Prelude",
@@ -1161,7 +1341,7 @@
     {
       "blind_name": "HPow.hPow",
       "distance": 3,
-      "id": "D104",
+      "id": "D122",
       "kind": "abbrev",
       "name": "HPow.hPow",
       "owner_module": "Init.Prelude",
@@ -1171,7 +1351,7 @@
     {
       "blind_name": "HSub.hSub",
       "distance": 3,
-      "id": "D105",
+      "id": "D123",
       "kind": "abbrev",
       "name": "HSub.hSub",
       "owner_module": "Init.Prelude",
@@ -1181,7 +1361,7 @@
     {
       "blind_name": "Iff",
       "distance": 3,
-      "id": "D106",
+      "id": "D124",
       "kind": "inductive",
       "name": "Iff",
       "owner_module": "Init.Core",
@@ -1191,7 +1371,7 @@
     {
       "blind_name": "LT.lt",
       "distance": 3,
-      "id": "D107",
+      "id": "D125",
       "kind": "abbrev",
       "name": "LT.lt",
       "owner_module": "Init.Prelude",
@@ -1201,7 +1381,7 @@
     {
       "blind_name": "Monoid.toNatPow",
       "distance": 3,
-      "id": "D108",
+      "id": "D126",
       "kind": "def",
       "name": "Monoid.toNatPow",
       "owner_module": "Mathlib.Algebra.Group.Defs",
@@ -1211,7 +1391,7 @@
     {
       "blind_name": "Nat.below",
       "distance": 3,
-      "id": "D109",
+      "id": "D127",
       "kind": "abbrev",
       "name": "Nat.below",
       "owner_module": "Init.Prelude",
@@ -1221,7 +1401,7 @@
     {
       "blind_name": "Nat.brecOn",
       "distance": 3,
-      "id": "D110",
+      "id": "D128",
       "kind": "abbrev",
       "name": "Nat.brecOn",
       "owner_module": "Init.Prelude",
@@ -1231,7 +1411,7 @@
     {
       "blind_name": "Nat.cast",
       "distance": 3,
-      "id": "D111",
+      "id": "D129",
       "kind": "def",
       "name": "Nat.cast",
       "owner_module": "Init.Data.Cast",
@@ -1241,7 +1421,7 @@
     {
       "blind_name": "Nat.succ",
       "distance": 3,
-      "id": "D112",
+      "id": "D130",
       "kind": "constructor",
       "name": "Nat.succ",
       "owner_module": "Init.Prelude",
@@ -1251,7 +1431,7 @@
     {
       "blind_name": "Neg.neg",
       "distance": 3,
-      "id": "D113",
+      "id": "D131",
       "kind": "abbrev",
       "name": "Neg.neg",
       "owner_module": "Init.Prelude",
@@ -1261,7 +1441,7 @@
     {
       "blind_name": "Pi.instZero",
       "distance": 3,
-      "id": "D114",
+      "id": "D132",
       "kind": "def",
       "name": "Pi.instZero",
       "owner_module": "Mathlib.Algebra.Notation.Pi.Defs",
@@ -1271,7 +1451,7 @@
     {
       "blind_name": "Real.instAdd",
       "distance": 3,
-      "id": "D115",
+      "id": "D133",
       "kind": "def",
       "name": "Real.instAdd",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1281,7 +1461,7 @@
     {
       "blind_name": "Real.instAddCommMonoid",
       "distance": 3,
-      "id": "D116",
+      "id": "D134",
       "kind": "def",
       "name": "Real.instAddCommMonoid",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1291,7 +1471,7 @@
     {
       "blind_name": "Real.instLT",
       "distance": 3,
-      "id": "D117",
+      "id": "D135",
       "kind": "def",
       "name": "Real.instLT",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1301,7 +1481,7 @@
     {
       "blind_name": "Real.instMonoid",
       "distance": 3,
-      "id": "D118",
+      "id": "D136",
       "kind": "def",
       "name": "Real.instMonoid",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1311,7 +1491,7 @@
     {
       "blind_name": "Real.instNeg",
       "distance": 3,
-      "id": "D119",
+      "id": "D137",
       "kind": "def",
       "name": "Real.instNeg",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1321,7 +1501,7 @@
     {
       "blind_name": "Real.instSub",
       "distance": 3,
-      "id": "D120",
+      "id": "D138",
       "kind": "def",
       "name": "Real.instSub",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1331,7 +1511,7 @@
     {
       "blind_name": "Real.instZero",
       "distance": 3,
-      "id": "D121",
+      "id": "D139",
       "kind": "def",
       "name": "Real.instZero",
       "owner_module": "Mathlib.Data.Real.Basic",
@@ -1341,7 +1521,7 @@
     {
       "blind_name": "Unit",
       "distance": 3,
-      "id": "D122",
+      "id": "D140",
       "kind": "abbrev",
       "name": "Unit",
       "owner_module": "Init.Prelude",
@@ -1351,7 +1531,7 @@
     {
       "blind_name": "Zero.toOfNat0",
       "distance": 3,
-      "id": "D123",
+      "id": "D141",
       "kind": "def",
       "name": "Zero.toOfNat0",
       "owner_module": "Init.Data.Zero",
@@ -1361,7 +1541,7 @@
     {
       "blind_name": "instAddNat",
       "distance": 3,
-      "id": "D124",
+      "id": "D142",
       "kind": "def",
       "name": "instAddNat",
       "owner_module": "Init.Prelude",
@@ -1371,7 +1551,7 @@
     {
       "blind_name": "instHAdd",
       "distance": 3,
-      "id": "D125",
+      "id": "D143",
       "kind": "def",
       "name": "instHAdd",
       "owner_module": "Init.Prelude",
@@ -1381,7 +1561,7 @@
     {
       "blind_name": "instHPow",
       "distance": 3,
-      "id": "D126",
+      "id": "D144",
       "kind": "def",
       "name": "instHPow",
       "owner_module": "Init.Prelude",
@@ -1391,7 +1571,7 @@
     {
       "blind_name": "instHSub",
       "distance": 3,
-      "id": "D127",
+      "id": "D145",
       "kind": "def",
       "name": "instHSub",
       "owner_module": "Init.Prelude",
@@ -1401,7 +1581,7 @@
     {
       "blind_name": "instLTNat",
       "distance": 3,
-      "id": "D128",
+      "id": "D146",
       "kind": "def",
       "name": "instLTNat",
       "owner_module": "Init.Prelude",
@@ -1411,7 +1591,7 @@
     {
       "blind_name": "Nat.casesOn",
       "distance": 4,
-      "id": "D129",
+      "id": "D147",
       "kind": "abbrev",
       "name": "Nat.casesOn",
       "owner_module": "Init.Prelude",
@@ -1421,7 +1601,7 @@
     {
       "blind_name": "Unit.unit",
       "distance": 4,
-      "id": "D130",
+      "id": "D148",
       "kind": "abbrev",
       "name": "Unit.unit",
       "owner_module": "Init.Prelude",
@@ -1431,7 +1611,7 @@
     {
       "blind_name": "instDecidableEqFin",
       "distance": 4,
-      "id": "D131",
+      "id": "D149",
       "kind": "def",
       "name": "instDecidableEqFin",
       "owner_module": "Init.Prelude",
@@ -1441,7 +1621,7 @@
     {
       "blind_name": "ite",
       "distance": 4,
-      "id": "D132",
+      "id": "D150",
       "kind": "def",
       "name": "ite",
       "owner_module": "Init.Prelude",
@@ -1451,7 +1631,7 @@
     {
       "blind_name": "Ne",
       "distance": 5,
-      "id": "D133",
+      "id": "D151",
       "kind": "def",
       "name": "Ne",
       "owner_module": "Init.Core",
@@ -1461,7 +1641,7 @@
     {
       "blind_name": "Fin.castSucc",
       "distance": 7,
-      "id": "D134",
+      "id": "D152",
       "kind": "def",
       "name": "Fin.castSucc",
       "owner_module": "Init.Data.Fin.Basic",
@@ -1471,7 +1651,7 @@
     {
       "blind_name": "Fin.last",
       "distance": 7,
-      "id": "D135",
+      "id": "D153",
       "kind": "def",
       "name": "Fin.last",
       "owner_module": "Init.Data.Fin.Basic",
@@ -1481,7 +1661,7 @@
     {
       "blind_name": "Fin.mk",
       "distance": 7,
-      "id": "D136",
+      "id": "D154",
       "kind": "constructor",
       "name": "Fin.mk",
       "owner_module": "Init.Prelude",
@@ -1489,9 +1669,19 @@
       "semantic_sha256": "2fb605c17aa879bf453f735ede02a7306496f461d34549bf61cb6c85662ce182"
     },
     {
+      "blind_name": "Fin.val",
+      "distance": 7,
+      "id": "D155",
+      "kind": "abbrev",
+      "name": "Fin.val",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "74cc6296b3a13207507ec372ef420f5e52b6935895dd25bcc6331abde2a4b328"
+    },
+    {
       "blind_name": "Not",
       "distance": 7,
-      "id": "D137",
+      "id": "D156",
       "kind": "def",
       "name": "Not",
       "owner_module": "Init.Prelude",
@@ -1501,7 +1691,7 @@
     {
       "blind_name": "dite",
       "distance": 7,
-      "id": "D138",
+      "id": "D157",
       "kind": "def",
       "name": "dite",
       "owner_module": "Init.Prelude",
@@ -1511,7 +1701,7 @@
     {
       "blind_name": "instDecidableEqNat",
       "distance": 7,
-      "id": "D139",
+      "id": "D158",
       "kind": "def",
       "name": "instDecidableEqNat",
       "owner_module": "Init.Prelude",
@@ -1519,14 +1709,54 @@
       "semantic_sha256": "658bdfe7785c44f21a851cae8ec44aec53d69bb69af955a9d42028df3fe37d22"
     },
     {
+      "blind_name": "instLENat",
+      "distance": 7,
+      "id": "D159",
+      "kind": "def",
+      "name": "instLENat",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "002e628e28a06e89ab80e69408fa3be9fc3e200fafd33e0f71d9111a8944875e"
+    },
+    {
+      "blind_name": "Nat.decLe",
+      "distance": 8,
+      "id": "D160",
+      "kind": "def",
+      "name": "Nat.decLe",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "931f48339aefbc000a30f94b69a993dd27e00f38323c7b45743dc5d6ffe51c35"
+    },
+    {
+      "blind_name": "Nat.decLt",
+      "distance": 8,
+      "id": "D161",
+      "kind": "def",
+      "name": "Nat.decLt",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "652ffb54717682f55eafca6c2b47fca31dfea599c9898709ba2f56fbc9113d99"
+    },
+    {
       "blind_name": "Nat.zero",
       "distance": 8,
-      "id": "D140",
+      "id": "D162",
       "kind": "constructor",
       "name": "Nat.zero",
       "owner_module": "Init.Prelude",
       "role": "external-frontier",
       "semantic_sha256": "514797223f88553aabb4307fa99de406677fb8a482f74b8d4694356cbd803a51"
+    },
+    {
+      "blind_name": "instSubNat",
+      "distance": 8,
+      "id": "D163",
+      "kind": "def",
+      "name": "instSubNat",
+      "owner_module": "Init.Prelude",
+      "role": "external-frontier",
+      "semantic_sha256": "5b0e20a4d2b3e0a67bd35de1b5c84cc60d6dc867658112d84cad483055804868"
     }
   ],
   "dependency_edges": [
@@ -1713,11 +1943,181 @@
     {
       "child": "Fin",
       "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace"
+    },
+    {
+      "child": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk",
+      "origin": "constructor",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace"
+    },
+    {
+      "child": "Eq",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "HighamBench.P08ColumnPivotedGaussianEliminationTrace",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel.flDiv",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel.flSub",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "HighamBench.p08ColumnPivotedMatrixStep",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "HighamBench.p08ColumnPivotedRhsStep",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "HighamBench.p08RoundedUpperTailDot",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "LE.le",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "LT.lt",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "Ne",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "Real.instAddGroup",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "Real.instLE",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "Real.lattice",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "Zero.toOfNat0",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "abs",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "instLENat",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "instLTNat",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
       "parent": "HighamBench.P08ColumnPivotedSolveCertificate"
     },
     {
       "child": "HighamBench.P08ColumnPivotedSolveCertificate.mk",
       "origin": "constructor",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "type",
       "parent": "HighamBench.P08ColumnPivotedSolveCertificate"
     },
     {
@@ -1729,6 +2129,56 @@
       "child": "Real",
       "origin": "type",
       "parent": "HighamBench.P08ColumnPivotedSolveCertificate"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.backwardError"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.backwardError"
+    },
+    {
+      "child": "HighamBench.P08ColumnPivotedSolveCertificate",
+      "origin": "body",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.backwardError"
+    },
+    {
+      "child": "HighamBench.P08ColumnPivotedSolveCertificate",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.backwardError"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "body",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.backwardError"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.backwardError"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.backwardError"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.backwardError"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.backwardError"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.backwardError"
     },
     {
       "child": "Eq",
@@ -1746,7 +2196,17 @@
       "parent": "HighamBench.P08ColumnPivotedSolveCertificate.mk"
     },
     {
+      "child": "HighamBench.P08ColumnPivotedGaussianEliminationTrace",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.mk"
+    },
+    {
       "child": "HighamBench.P08ColumnPivotedSolveCertificate",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.mk"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
       "origin": "type",
       "parent": "HighamBench.P08ColumnPivotedSolveCertificate.mk"
     },
@@ -1831,6 +2291,16 @@
       "parent": "HighamBench.P08ColumnPivotedSolveCertificate.output"
     },
     {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "body",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.output"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "type",
+      "parent": "HighamBench.P08ColumnPivotedSolveCertificate.output"
+    },
+    {
       "child": "Nat",
       "origin": "body",
       "parent": "HighamBench.P08ColumnPivotedSolveCertificate.output"
@@ -1849,6 +2319,91 @@
       "child": "Real",
       "origin": "type",
       "parent": "HighamBench.P08ColumnPivotedSolveCertificate.output"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds.mk",
+      "origin": "constructor",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.matrixEntry"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.matrixEntry"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.matrixEntry"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.matrixEntry"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.mk"
+    },
+    {
+      "child": "LE.le",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.mk"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.mk"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.mk"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.mk"
+    },
+    {
+      "child": "Real.instLE",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.mk"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.mk"
+    },
+    {
+      "child": "Zero.toOfNat0",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.mk"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.scalar"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.scalar"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.scalar"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P08DimensionOnlyConstantBounds.scalar"
     },
     {
       "child": "HighamBench.P08IterativeRefinementRun.mk",
@@ -1983,6 +2538,36 @@
     {
       "child": "Fin",
       "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.computedResidual"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun",
+      "origin": "body",
+      "parent": "HighamBench.P08IterativeRefinementRun.computedResidual"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.computedResidual"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P08IterativeRefinementRun.computedResidual"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.computedResidual"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.computedResidual"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
       "parent": "HighamBench.P08IterativeRefinementRun.correction"
     },
     {
@@ -2009,6 +2594,56 @@
       "child": "Real",
       "origin": "type",
       "parent": "HighamBench.P08IterativeRefinementRun.correction"
+    },
+    {
+      "child": "HighamBench.P08ColumnPivotedSolveCertificate",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.correctionSolve"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun",
+      "origin": "body",
+      "parent": "HighamBench.P08IterativeRefinementRun.correctionSolve"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.correctionSolve"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun.A",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.correctionSolve"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun.C1",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.correctionSolve"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun.computedResidual",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.correctionSolve"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun.u",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.correctionSolve"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun.workingModel",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.correctionSolve"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P08IterativeRefinementRun.correctionSolve"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.correctionSolve"
     },
     {
       "child": "Fin",
@@ -2381,7 +3016,37 @@
       "parent": "HighamBench.P08IterativeRefinementRun.u"
     },
     {
+      "child": "HighamBench.P08IterativeRefinementRun",
+      "origin": "body",
+      "parent": "HighamBench.P08IterativeRefinementRun.workingModel"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.workingModel"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.workingModel"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P08IterativeRefinementRun.workingModel"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P08IterativeRefinementRun.workingModel"
+    },
+    {
       "child": "HighamBench.P08AbsoluteMonotoneNorm",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
       "origin": "type",
       "parent": "HighamBench.P08Lemma43Constants"
     },
@@ -2416,6 +3081,16 @@
       "parent": "HighamBench.P08Lemma43Constants.C10"
     },
     {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.P08Lemma43Constants.C10"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.C10"
+    },
+    {
       "child": "HighamBench.P08IterativeRefinementRun",
       "origin": "body",
       "parent": "HighamBench.P08Lemma43Constants.C10"
@@ -2466,6 +3141,16 @@
       "parent": "HighamBench.P08Lemma43Constants.C11"
     },
     {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.P08Lemma43Constants.C11"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.C11"
+    },
+    {
       "child": "HighamBench.P08IterativeRefinementRun",
       "origin": "body",
       "parent": "HighamBench.P08Lemma43Constants.C11"
@@ -2516,6 +3201,16 @@
       "parent": "HighamBench.P08Lemma43Constants.C12"
     },
     {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.P08Lemma43Constants.C12"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.C12"
+    },
+    {
       "child": "HighamBench.P08IterativeRefinementRun",
       "origin": "body",
       "parent": "HighamBench.P08Lemma43Constants.C12"
@@ -2553,102 +3248,62 @@
     {
       "child": "Fin",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43Constants.C6"
+      "parent": "HighamBench.P08Lemma43Constants.C2"
     },
     {
       "child": "HighamBench.P08AbsoluteMonotoneNorm",
       "origin": "body",
-      "parent": "HighamBench.P08Lemma43Constants.C6"
+      "parent": "HighamBench.P08Lemma43Constants.C2"
     },
     {
       "child": "HighamBench.P08AbsoluteMonotoneNorm",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43Constants.C6"
+      "parent": "HighamBench.P08Lemma43Constants.C2"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.P08Lemma43Constants.C2"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.C2"
     },
     {
       "child": "HighamBench.P08IterativeRefinementRun",
       "origin": "body",
-      "parent": "HighamBench.P08Lemma43Constants.C6"
+      "parent": "HighamBench.P08Lemma43Constants.C2"
     },
     {
       "child": "HighamBench.P08IterativeRefinementRun",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43Constants.C6"
+      "parent": "HighamBench.P08Lemma43Constants.C2"
     },
     {
       "child": "HighamBench.P08Lemma43Constants",
       "origin": "body",
-      "parent": "HighamBench.P08Lemma43Constants.C6"
+      "parent": "HighamBench.P08Lemma43Constants.C2"
     },
     {
       "child": "HighamBench.P08Lemma43Constants",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43Constants.C6"
+      "parent": "HighamBench.P08Lemma43Constants.C2"
     },
     {
       "child": "Nat",
       "origin": "body",
-      "parent": "HighamBench.P08Lemma43Constants.C6"
+      "parent": "HighamBench.P08Lemma43Constants.C2"
     },
     {
       "child": "Nat",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43Constants.C6"
+      "parent": "HighamBench.P08Lemma43Constants.C2"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43Constants.C6"
-    },
-    {
-      "child": "Fin",
-      "origin": "type",
-      "parent": "HighamBench.P08Lemma43Constants.C7"
-    },
-    {
-      "child": "HighamBench.P08AbsoluteMonotoneNorm",
-      "origin": "body",
-      "parent": "HighamBench.P08Lemma43Constants.C7"
-    },
-    {
-      "child": "HighamBench.P08AbsoluteMonotoneNorm",
-      "origin": "type",
-      "parent": "HighamBench.P08Lemma43Constants.C7"
-    },
-    {
-      "child": "HighamBench.P08IterativeRefinementRun",
-      "origin": "body",
-      "parent": "HighamBench.P08Lemma43Constants.C7"
-    },
-    {
-      "child": "HighamBench.P08IterativeRefinementRun",
-      "origin": "type",
-      "parent": "HighamBench.P08Lemma43Constants.C7"
-    },
-    {
-      "child": "HighamBench.P08Lemma43Constants",
-      "origin": "body",
-      "parent": "HighamBench.P08Lemma43Constants.C7"
-    },
-    {
-      "child": "HighamBench.P08Lemma43Constants",
-      "origin": "type",
-      "parent": "HighamBench.P08Lemma43Constants.C7"
-    },
-    {
-      "child": "Nat",
-      "origin": "body",
-      "parent": "HighamBench.P08Lemma43Constants.C7"
-    },
-    {
-      "child": "Nat",
-      "origin": "type",
-      "parent": "HighamBench.P08Lemma43Constants.C7"
-    },
-    {
-      "child": "Real",
-      "origin": "type",
-      "parent": "HighamBench.P08Lemma43Constants.C7"
+      "parent": "HighamBench.P08Lemma43Constants.C2"
     },
     {
       "child": "Fin",
@@ -2666,6 +3321,16 @@
       "parent": "HighamBench.P08Lemma43Constants.C8"
     },
     {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.P08Lemma43Constants.C8"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.C8"
+    },
+    {
       "child": "HighamBench.P08IterativeRefinementRun",
       "origin": "body",
       "parent": "HighamBench.P08Lemma43Constants.C8"
@@ -2711,6 +3376,16 @@
       "parent": "HighamBench.P08Lemma43Constants.c1"
     },
     {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.P08Lemma43Constants.c1"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.c1"
+    },
+    {
       "child": "HighamBench.P08IterativeRefinementRun",
       "origin": "body",
       "parent": "HighamBench.P08Lemma43Constants.c1"
@@ -2744,6 +3419,61 @@
       "child": "Real",
       "origin": "type",
       "parent": "HighamBench.P08Lemma43Constants.c1"
+    },
+    {
+      "child": "HighamBench.P08AbsoluteMonotoneNorm",
+      "origin": "body",
+      "parent": "HighamBench.P08Lemma43Constants.c5"
+    },
+    {
+      "child": "HighamBench.P08AbsoluteMonotoneNorm",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.c5"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.P08Lemma43Constants.c5"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.c5"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun",
+      "origin": "body",
+      "parent": "HighamBench.P08Lemma43Constants.c5"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.c5"
+    },
+    {
+      "child": "HighamBench.P08Lemma43Constants",
+      "origin": "body",
+      "parent": "HighamBench.P08Lemma43Constants.c5"
+    },
+    {
+      "child": "HighamBench.P08Lemma43Constants",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.c5"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.P08Lemma43Constants.c5"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.c5"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.c5"
     },
     {
       "child": "HighamBench.P08AbsoluteMonotoneNorm",
@@ -2752,6 +3482,16 @@
     },
     {
       "child": "HighamBench.P08AbsoluteMonotoneNorm",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.c8"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.P08Lemma43Constants.c8"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
       "origin": "type",
       "parent": "HighamBench.P08Lemma43Constants.c8"
     },
@@ -2832,6 +3572,21 @@
     },
     {
       "child": "HighamBench.P08AbsoluteMonotoneNorm.matrixNorm",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.mk"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.mk"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds.matrixEntry",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43Constants.mk"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds.scalar",
       "origin": "type",
       "parent": "HighamBench.P08Lemma43Constants.mk"
     },
@@ -3028,317 +3783,337 @@
     {
       "child": "HighamBench.P08AbsoluteMonotoneNorm",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis"
     },
     {
       "child": "HighamBench.P08IterativeRefinementRun",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis"
     },
     {
       "child": "HighamBench.P08Lemma43Constants",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis"
     },
     {
-      "child": "HighamBench.P08Lemma43PriorBounds.mk",
+      "child": "HighamBench.P08Lemma43RoundoffAnalysis.mk",
       "origin": "constructor",
-      "parent": "HighamBench.P08Lemma43PriorBounds"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis"
     },
     {
       "child": "Nat",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis"
     },
     {
       "child": "DivInvMonoid.toDiv",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
+    },
+    {
+      "child": "Eq",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Fin",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HAdd.hAdd",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HDiv.hDiv",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HMul.hMul",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HPow.hPow",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
-    },
-    {
-      "child": "HSub.hSub",
-      "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.P08AbsoluteMonotoneNorm",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
+    },
+    {
+      "child": "HighamBench.P08ColumnPivotedSolveCertificate.backwardError",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.P08IterativeRefinementRun",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.P08IterativeRefinementRun.A",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.P08IterativeRefinementRun.Ainv",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun.C1",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun.b",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun.computedResidual",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun.correctionSolve",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.P08IterativeRefinementRun.exactSolution",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.P08IterativeRefinementRun.iterate",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.P08IterativeRefinementRun.precision",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.P08IterativeRefinementRun.u",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
+    },
+    {
+      "child": "HighamBench.P08IterativeRefinementRun.workingModel",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.P08Lemma43Constants",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
-      "child": "HighamBench.P08Lemma43Constants.C6",
+      "child": "HighamBench.P08Lemma43Constants.C2",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
-    },
-    {
-      "child": "HighamBench.P08Lemma43Constants.C7",
-      "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.P08Lemma43Constants.c1",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
-      "child": "HighamBench.P08Lemma43PriorBounds",
+      "child": "HighamBench.P08Lemma43Constants.c5",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
-      "child": "HighamBench.p08AbsAction",
+      "child": "HighamBench.P08Lemma43RoundoffAnalysis",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.p08AbsMatrix",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.p08AbsVec",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
-    },
-    {
-      "child": "HighamBench.p08ExactResidualAfterCorrection",
-      "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.p08KappaInverse",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.p08Lemma43c3",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.p08MatMul",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.p08MatVec",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.p08ResidualUnitRoundoff",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
+    },
+    {
+      "child": "HighamBench.p08VecAdd",
+      "origin": "type",
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.p08VecSub",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "LE.le",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Monoid.toNatPow",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Nat",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Nat.cast",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Nat.instAtLeastTwoHAddOfNat",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Nat.instNeZeroSucc",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "OfNat.ofNat",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "One.toOfNat1",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Real",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Real.instAdd",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Real.instAddGroup",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Real.instDivInvMonoid",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Real.instLE",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Real.instMonoid",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Real.instMul",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Real.instNatCast",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Real.instOne",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
-    },
-    {
-      "child": "Real.instSub",
-      "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "Real.lattice",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "abs",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
-    },
-    {
-      "child": "instAddNat",
-      "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "instHAdd",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "instHDiv",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "instHMul",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "instHPow",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
-    },
-    {
-      "child": "instHSub",
-      "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "instOfNatAtLeastTwo",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "instOfNatNat",
       "origin": "type",
-      "parent": "HighamBench.P08Lemma43PriorBounds.mk"
+      "parent": "HighamBench.P08Lemma43RoundoffAnalysis.mk"
     },
     {
       "child": "HighamBench.P08ResidualPrecision.double",
@@ -3444,6 +4219,21 @@
       "child": "Real",
       "origin": "type",
       "parent": "HighamBench.P08ScalarArithmeticModel.flAdd"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "body",
+      "parent": "HighamBench.P08ScalarArithmeticModel.flDiv"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "type",
+      "parent": "HighamBench.P08ScalarArithmeticModel.flDiv"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.P08ScalarArithmeticModel.flDiv"
     },
     {
       "child": "HighamBench.P08ScalarArithmeticModel",
@@ -4021,6 +4811,221 @@
       "parent": "HighamBench.p08BasisVector"
     },
     {
+      "child": "Eq",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "type",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel.flDiv",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel.flMul",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel.flSub",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "HighamBench.p08SwapRowsMatrix",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "LE.le",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "LT.lt",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "Nat.decLe",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "Nat.decLt",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "Real.instZero",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "Zero.toOfNat0",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "instDecidableEqFin",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "instLENat",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "instLTNat",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "ite",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedMatrixStep"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "type",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel.flDiv",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel.flMul",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel.flSub",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "HighamBench.p08SwapRowsMatrix",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "HighamBench.p08SwapRowsVector",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "LE.le",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "Nat.decLe",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "instLENat",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
+      "child": "ite",
+      "origin": "body",
+      "parent": "HighamBench.p08ColumnPivotedRhsStep"
+    },
+    {
       "child": "Fin",
       "origin": "type",
       "parent": "HighamBench.p08ExactResidualAfterCorrection"
@@ -4226,6 +5231,16 @@
       "parent": "HighamBench.p08Lemma43Bound"
     },
     {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.p08Lemma43Bound"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.p08Lemma43Bound"
+    },
+    {
       "child": "HighamBench.P08IterativeRefinementRun",
       "origin": "body",
       "parent": "HighamBench.p08Lemma43Bound"
@@ -4302,6 +5317,16 @@
     },
     {
       "child": "HighamBench.P08AbsoluteMonotoneNorm",
+      "origin": "type",
+      "parent": "HighamBench.p08Lemma43InitialVector"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.p08Lemma43InitialVector"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
       "origin": "type",
       "parent": "HighamBench.p08Lemma43InitialVector"
     },
@@ -4397,6 +5422,16 @@
     },
     {
       "child": "HighamBench.P08AbsoluteMonotoneNorm",
+      "origin": "type",
+      "parent": "HighamBench.p08Lemma43Propagation"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.p08Lemma43Propagation"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
       "origin": "type",
       "parent": "HighamBench.p08Lemma43Propagation"
     },
@@ -4497,6 +5532,16 @@
     },
     {
       "child": "HighamBench.P08AbsoluteMonotoneNorm",
+      "origin": "type",
+      "parent": "HighamBench.p08Lemma43StationaryVector"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "body",
+      "parent": "HighamBench.p08Lemma43StationaryVector"
+    },
+    {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
       "origin": "type",
       "parent": "HighamBench.p08Lemma43StationaryVector"
     },
@@ -5548,6 +6593,386 @@
     {
       "child": "Fin",
       "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "HSub.hSub",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel",
+      "origin": "type",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel.flAdd",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "HighamBench.P08ScalarArithmeticModel.flMul",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "HighamBench.p08UpperTailIndex",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "HighamBench.recursiveSum",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "instHSub",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "instSubNat",
+      "origin": "body",
+      "parent": "HighamBench.p08RoundedUpperTailDot"
+    },
+    {
+      "child": "Eq",
+      "origin": "body",
+      "parent": "HighamBench.p08SwapRowsMatrix"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p08SwapRowsMatrix"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p08SwapRowsMatrix"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p08SwapRowsMatrix"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p08SwapRowsMatrix"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p08SwapRowsMatrix"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p08SwapRowsMatrix"
+    },
+    {
+      "child": "instDecidableEqFin",
+      "origin": "body",
+      "parent": "HighamBench.p08SwapRowsMatrix"
+    },
+    {
+      "child": "ite",
+      "origin": "body",
+      "parent": "HighamBench.p08SwapRowsMatrix"
+    },
+    {
+      "child": "Eq",
+      "origin": "body",
+      "parent": "HighamBench.p08SwapRowsVector"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p08SwapRowsVector"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p08SwapRowsVector"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p08SwapRowsVector"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p08SwapRowsVector"
+    },
+    {
+      "child": "Real",
+      "origin": "body",
+      "parent": "HighamBench.p08SwapRowsVector"
+    },
+    {
+      "child": "Real",
+      "origin": "type",
+      "parent": "HighamBench.p08SwapRowsVector"
+    },
+    {
+      "child": "instDecidableEqFin",
+      "origin": "body",
+      "parent": "HighamBench.p08SwapRowsVector"
+    },
+    {
+      "child": "ite",
+      "origin": "body",
+      "parent": "HighamBench.p08SwapRowsVector"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "Fin.mk",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "HSub.hSub",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "HSub.hSub",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "HighamBench.p08UpperTailIndex._proof_2",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "Nat",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "instHSub",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "instHSub",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "instSubNat",
+      "origin": "body",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "instSubNat",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex"
+    },
+    {
+      "child": "Fin",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "Fin.val",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "HAdd.hAdd",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "HSub.hSub",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "LT.lt",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "Nat",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "OfNat.ofNat",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "instAddNat",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "instHAdd",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "instHSub",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "instLTNat",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "instOfNatNat",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "instSubNat",
+      "origin": "type",
+      "parent": "HighamBench.p08UpperTailIndex._proof_2"
+    },
+    {
+      "child": "Fin",
+      "origin": "body",
       "parent": "HighamBench.p08VecAdd"
     },
     {
@@ -5706,6 +7131,11 @@
       "parent": "HighamBench.p08_t3_lemma_4_3_exact_residual_bound"
     },
     {
+      "child": "HighamBench.P08DimensionOnlyConstantBounds",
+      "origin": "type",
+      "parent": "HighamBench.p08_t3_lemma_4_3_exact_residual_bound"
+    },
+    {
       "child": "HighamBench.P08IterativeRefinementRun",
       "origin": "type",
       "parent": "HighamBench.p08_t3_lemma_4_3_exact_residual_bound"
@@ -5726,7 +7156,7 @@
       "parent": "HighamBench.p08_t3_lemma_4_3_exact_residual_bound"
     },
     {
-      "child": "HighamBench.P08Lemma43PriorBounds",
+      "child": "HighamBench.P08Lemma43RoundoffAnalysis",
       "origin": "type",
       "parent": "HighamBench.p08_t3_lemma_4_3_exact_residual_bound"
     },
@@ -6119,27 +7549,27 @@
   "inputs": {
     "blind_dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/inputs/blind_dependency_inventory.json",
-      "sha256": "2db81bd7429744339aee1f03d1f45498e4d93aa49d4694c7dea87aa918f02b45"
+      "sha256": "7f9b0159e87b807f95bfc410e9a56053f635585ea4714380ed745bc973615065"
     },
     "blind_dossier": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/inputs/blind_dossier.md",
-      "sha256": "f48089a5d4b9b9e92462355712e713a034db249b15ab4315392e4564aa8d942d"
+      "sha256": "cdb0eac04ce01005e363ce48548ea336183f04d5f626f23fe0b7440d675f82fb"
     },
     "blind_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/inputs/blind_review_packet.md",
-      "sha256": "f48089a5d4b9b9e92462355712e713a034db249b15ab4315392e4564aa8d942d"
+      "sha256": "cdb0eac04ce01005e363ce48548ea336183f04d5f626f23fe0b7440d675f82fb"
     },
     "declaration_dossier": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/inputs/declaration_dossier.md",
-      "sha256": "240fd8846a6e8431c8810e4c6a3c8bf6e6d2149e385af14a4099e02607ee6ee4"
+      "sha256": "6395389f349c8bcf7e6f15d6145584b53c26777ee8d375f9417128eb5991ec31"
     },
     "dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/inputs/dependency_inventory.json",
-      "sha256": "4cdeca65c93377e296a946befc6e7b3ebf18b17c4bae9382d6a93148b78d4e08"
+      "sha256": "0c6dae466b77fc7b3c712e100f8fac46260efdcd0f0a447e29e4bb0935ea3950"
     },
     "direct_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/inputs/direct_review_packet.md",
-      "sha256": "38c87221fa8c220de3326c72a138763a34713d5ec0150278f7be1d329b6bcc09"
+      "sha256": "8c678f4d53b147e4d2cef2f291e0fbf53482055b27a0766258663943e03aeb1d"
     },
     "source_locator": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/inputs/source_locator.json",
@@ -6174,37 +7604,37 @@
       ],
       "module": "HighamBench.P08Definitions",
       "path": "paper_bencmark/highambench/shared/HighamBench/P08Definitions.lean",
-      "sha256": "64149b9a6617083dd7dd78f55692760290ebb53614063091c7f017e2087cf837"
+      "sha256": "a8ee8212c2fb281cac5afbbbea92cc09f4a07e22414a692fb103cb08b92a4845"
     }
   ],
   "outputs": {
     "adjudicator": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/agent_outputs/adjudicator.json",
-      "sha256": "d57519457a3decbbad2e0423ae97cf551b87e54c39c9f8098fe3c7e1590a1b4f"
+      "sha256": "973eda5beca3830d93e134b24368ae41ce90a1308f7fac7279437acfc754c27e"
     },
     "blind_translation": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/agent_outputs/blind_translation.json",
-      "sha256": "331084f1500a2fcdb1ffc8e5566870fe4d78a3f61728d4d6cc70501b16bd3a57"
+      "sha256": "4ea3e0ad9e1e2dafe235128a4cb0b1f679e4c3695f159eff77e049dbf236313c"
     },
     "decision": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/decision.json",
-      "sha256": "74951898138eeaf4b46d0cd512f481f6f4bddf21b6fa52b60d5215405c42b597"
+      "sha256": "652503074741a699ca24065ce57442037a953bd8b8170448321e58b70a8d2f91"
     },
     "direct_judge": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/agent_outputs/direct_judge.json",
-      "sha256": "839fdaac258bcd751e2e9bc7c025374512f929241d1cda300ce63d41765a5fe9"
+      "sha256": "82860f8f7a44d3f63c404709365ae6954686cd3bb4f2849c91f9bb8319bae793"
     },
     "report": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/report.md",
-      "sha256": "07a20890511da10f4b848bf43e8c25ce59207bc64efff6c506c3f326414ee1d1"
+      "sha256": "4275e712180209f89c1e20b9f3ac0a8de433280cc2dec8e969852e07529e333b"
     },
     "roundtrip_judge": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/agent_outputs/roundtrip_judge.json",
-      "sha256": "26fc5feeac5e482bedc8ec6400508390804f64264ea240a33124d29988f7bf40"
+      "sha256": "25c92f92a9e0bdad4a97c98144a7c7999de4dac512e43d9749f50ee52fd9e4f6"
     },
     "source_contract": {
       "path": "paper_bencmark/highambench/tasks/P08/T3/faithfulness/agent_outputs/source_contract.json",
-      "sha256": "d43479623be815d3b81b22ed1a371799b4747b437850ac06861d4445fb1a140a"
+      "sha256": "9f43526a96137e80f2db89f7780080d7bc0065560c100456abb2aa01e48d6d97"
     }
   },
   "paper": {
@@ -6269,7 +7699,7 @@
       }
     ]
   },
-  "prepared_at_utc": "2026-08-14T23:11:58.498686+00:00",
+  "prepared_at_utc": "2026-08-21T17:29:45.785269+00:00",
   "schema_version": "highambench-faithfulness-0.2",
   "semantic_checks": [
     {
@@ -6357,12 +7787,12 @@
   "target": {
     "declaration": "HighamBench.p08_t3_lemma_4_3_exact_residual_bound",
     "path": "paper_bencmark/highambench/tasks/P08/T3/Target.lean",
-    "sha256": "3e2146203b4b72c536a5f0354845ccd4c8d1113eedeb5765186e57631c052057"
+    "sha256": "2e0ed250d2dc54230f8aaf3da4399ba60c88847d15786c10b7a3d0bfc389cd97"
   },
   "task_id": "P08-T3",
   "task_metadata": {
     "path": "paper_bencmark/highambench/tasks/P08/T3/task.json",
     "semantic_evidence": false,
-    "sha256": "7eef89d4e28af87b23a87c3d382790108a909178647fd4f89ca8d4a075ca0960"
+    "sha256": "a14420579e4fa1635a6d61b709e43070b0d4db41c80e2397bc1c3d50634467ff"
   }
 }

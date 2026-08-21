@@ -7,13 +7,10 @@ Judges must interpret every dependency entry and may not infer semantics from na
 
 ```lean
 theorem p08_t3_lemma_4_3_exact_residual_bound
-    {n : ℕ}
-    (dimensionBounds : P08DimensionOnlyConstantBounds)
-    (run : P08IterativeRefinementRun n)
+    {n : ℕ} (run : P08IterativeRefinementRun n)
     (norm : P08AbsoluteMonotoneNorm n)
-    (constants : P08Lemma43Constants run norm dimensionBounds)
-    (roundoff :
-      P08Lemma43RoundoffAnalysis run norm dimensionBounds constants)
+    (constants : P08Lemma43Constants run norm)
+    (prior : P08Lemma43PriorBounds run norm constants)
     (hsmall :
       constants.c8 * run.u * p08KappaInverse run norm ≤ 1 / 2) :
     ∀ m i,
@@ -24,29 +21,26 @@ theorem p08_t3_lemma_4_3_exact_residual_bound
 ## Elaborated target type
 
 ```lean
-∀ {n : Nat} (dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds)
-  (run : HighamBench.P08IterativeRefinementRun n) (norm : HighamBench.P08AbsoluteMonotoneNorm n)
-  (constants : HighamBench.P08Lemma43Constants run norm dimensionBounds)
-  (roundoff : HighamBench.P08Lemma43RoundoffAnalysis run norm dimensionBounds constants),
-  Real.instLE.le (instHMul.hMul (instHMul.hMul constants.c8 run.u) (HighamBench.p08KappaInverse run norm)) (1 / 2) →
-    ∀ (m : Nat) (i : Fin n),
-      Real.instLE.le (abs (HighamBench.p08ExactResidualAfterCorrection run m i))
-        (HighamBench.p08Lemma43Bound constants m i)
+∀ {n : Nat} (run : HighamBench.P08IterativeRefinementRun n) (norm : HighamBench.P08AbsoluteMonotoneNorm n)
+  (constants : HighamBench.P08Lemma43Constants run norm),
+  HighamBench.P08Lemma43PriorBounds run norm constants →
+    Real.instLE.le (instHMul.hMul (instHMul.hMul constants.c8 run.u) (HighamBench.p08KappaInverse run norm)) (1 / 2) →
+      ∀ (m : Nat) (i : Fin n),
+        Real.instLE.le (abs (HighamBench.p08ExactResidualAfterCorrection run m i))
+          (HighamBench.p08Lemma43Bound constants m i)
 ```
 
 ## Fully explicit elaborated target type
 
 ```lean
-∀ {n : Nat} (dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds)
-  (run : HighamBench.P08IterativeRefinementRun n) (norm : HighamBench.P08AbsoluteMonotoneNorm n)
-  (constants : @HighamBench.P08Lemma43Constants n run norm dimensionBounds)
-  (roundoff : @HighamBench.P08Lemma43RoundoffAnalysis n run norm dimensionBounds constants)
+∀ {n : Nat} (run : HighamBench.P08IterativeRefinementRun n) (norm : HighamBench.P08AbsoluteMonotoneNorm n)
+  (constants : @HighamBench.P08Lemma43Constants n run norm)
+  (prior : @HighamBench.P08Lemma43PriorBounds n run norm constants)
   (hsmall :
     @LE.le.{0} Real Real.instLE
       (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
         (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-          (@HighamBench.P08Lemma43Constants.c8 n run norm dimensionBounds constants)
-          (@HighamBench.P08IterativeRefinementRun.u n run))
+          (@HighamBench.P08Lemma43Constants.c8 n run norm constants) (@HighamBench.P08IterativeRefinementRun.u n run))
         (@HighamBench.p08KappaInverse n run norm))
       (@HDiv.hDiv.{0, 0, 0} Real Real Real (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
         (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
@@ -57,7 +51,7 @@ theorem p08_t3_lemma_4_3_exact_residual_bound
   (m : Nat) (i : Fin n),
   @LE.le.{0} Real Real.instLE
     (@abs.{0} Real Real.lattice Real.instAddGroup (@HighamBench.p08ExactResidualAfterCorrection n run m i))
-    (@HighamBench.p08Lemma43Bound n run norm dimensionBounds constants m i)
+    (@HighamBench.p08Lemma43Bound n run norm constants m i)
 ```
 
 ## Local import graph
@@ -90,27 +84,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D002: `HighamBench.P08DimensionOnlyConstantBounds`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
-- Semantic SHA-256: `4dd8b7025f930376404b6a7dddeea3bb578073682211d233857649dc325a5f68`
-
-Type:
-
-```lean
-Type
-```
-
-Fully explicit type:
-
-```lean
-Type
-```
-
-### D003: `HighamBench.P08IterativeRefinementRun`
+### D002: `HighamBench.P08IterativeRefinementRun`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -130,7 +104,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D004: `HighamBench.P08IterativeRefinementRun.u`
+### D003: `HighamBench.P08IterativeRefinementRun.u`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -156,47 +130,40 @@ Definition body (one-level semantic boundary):
 fun n self => self.3
 ```
 
-### D005: `HighamBench.P08Lemma43Constants`
+### D004: `HighamBench.P08Lemma43Constants`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `inductive`
 - Distance from target type: `1`
-- Semantic SHA-256: `0adef817138f4a0901fa7c892048022fa14bf009fedc27ce043ae20778a33f27`
+- Semantic SHA-256: `c912c51712aa9c6cc9d8c87a9b6194c1d8834a793d3ab6ef4aa9890518f101a7`
 
 Type:
 
 ```lean
-{n : Nat} →
-  HighamBench.P08IterativeRefinementRun n →
-    HighamBench.P08AbsoluteMonotoneNorm n → HighamBench.P08DimensionOnlyConstantBounds → Type
+{n : Nat} → HighamBench.P08IterativeRefinementRun n → HighamBench.P08AbsoluteMonotoneNorm n → Type
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} →
-  (run : HighamBench.P08IterativeRefinementRun n) →
-    (norm : HighamBench.P08AbsoluteMonotoneNorm n) →
-      (dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds) → Type
+{n : Nat} → (run : HighamBench.P08IterativeRefinementRun n) → (norm : HighamBench.P08AbsoluteMonotoneNorm n) → Type
 ```
 
-### D006: `HighamBench.P08Lemma43Constants.c8`
+### D005: `HighamBench.P08Lemma43Constants.c8`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `b24d536ae870e768229a42191b43bbaa320bac9410946d6c7ba49140378bcc32`
+- Semantic SHA-256: `5dd1e06a94a93cc403bce146c7e007c3fffc9ea74d8a1de9e210db98d622b708`
 
 Type:
 
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → HighamBench.P08Lemma43Constants run norm → Real
 ```
 
 Fully explicit type:
@@ -204,33 +171,29 @@ Fully explicit type:
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (self : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → (self : @HighamBench.P08Lemma43Constants n run norm) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n run norm dimensionBounds self => self.11
+fun n run norm self => self.11
 ```
 
-### D007: `HighamBench.P08Lemma43RoundoffAnalysis`
+### D006: `HighamBench.P08Lemma43PriorBounds`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `inductive`
 - Distance from target type: `1`
-- Semantic SHA-256: `17c73f1751e8c2ae2ee80c48aaf56093805596b4f0200ba2e61484f5862dda1d`
+- Semantic SHA-256: `3c92834e8150575c8325b4e75451c469293f8ae1edcfd831528768447f193691`
 
 Type:
 
 ```lean
 {n : Nat} →
   (run : HighamBench.P08IterativeRefinementRun n) →
-    (norm : HighamBench.P08AbsoluteMonotoneNorm n) →
-      (dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds) →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Type
+    (norm : HighamBench.P08AbsoluteMonotoneNorm n) → HighamBench.P08Lemma43Constants run norm → Prop
 ```
 
 Fully explicit type:
@@ -238,12 +201,10 @@ Fully explicit type:
 ```lean
 {n : Nat} →
   (run : HighamBench.P08IterativeRefinementRun n) →
-    (norm : HighamBench.P08AbsoluteMonotoneNorm n) →
-      (dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds) →
-        (constants : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → Type
+    (norm : HighamBench.P08AbsoluteMonotoneNorm n) → (constants : @HighamBench.P08Lemma43Constants n run norm) → Prop
 ```
 
-### D008: `HighamBench.p08ExactResidualAfterCorrection`
+### D007: `HighamBench.p08ExactResidualAfterCorrection`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -270,7 +231,7 @@ fun {n} run m =>
   HighamBench.p08VecSub (HighamBench.p08MatVec run.A (HighamBench.p08VecSub (run.iterate m) (run.correction m))) run.b
 ```
 
-### D009: `HighamBench.p08KappaInverse`
+### D008: `HighamBench.p08KappaInverse`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -297,22 +258,20 @@ fun {n} run norm =>
   norm.matrixNorm (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A) (HighamBench.p08AbsMatrix run.Ainv))
 ```
 
-### D010: `HighamBench.p08Lemma43Bound`
+### D009: `HighamBench.p08Lemma43Bound`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `3059b4edb0e06983e98da42488edf26e73e7a05fb9285f72affa64f8f765da55`
+- Semantic SHA-256: `a5bee951bf713d6c844a60be935194ee54cf43a603565a9a7ffa61517f91c33c`
 
 Type:
 
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Nat → Fin n → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → HighamBench.P08Lemma43Constants run norm → Nat → Fin n → Real
 ```
 
 Fully explicit type:
@@ -321,21 +280,20 @@ Fully explicit type:
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
     {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (constants : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → (m : Nat) → Fin n → Real
+      (constants : @HighamBench.P08Lemma43Constants n run norm) → (m : Nat) → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} {run} {norm} {dimensionBounds} constants m =>
+fun {n} {run} {norm} constants m =>
   HighamBench.p08VecAdd
     (HighamBench.p08MatVec (HighamBench.p08MatPow (HighamBench.p08Lemma43Propagation constants) m)
       (HighamBench.p08Lemma43InitialVector constants))
     (HighamBench.p08Lemma43StationaryVector constants)
 ```
 
-### D011: `HighamBench.P08AbsoluteMonotoneNorm.matrixNorm`
+### D010: `HighamBench.P08AbsoluteMonotoneNorm.matrixNorm`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -361,7 +319,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.2
 ```
 
-### D012: `HighamBench.P08AbsoluteMonotoneNorm.mk`
+### D011: `HighamBench.P08AbsoluteMonotoneNorm.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -457,38 +415,7 @@ Fully explicit type:
                           HighamBench.P08AbsoluteMonotoneNorm n
 ```
 
-### D013: `HighamBench.P08DimensionOnlyConstantBounds.mk`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `2`
-- Semantic SHA-256: `610355c3cbe90d966e947b5d8cecd1135a6194218b00313b1e2510582dcd4d80`
-
-Type:
-
-```lean
-(scalar matrixEntry : Nat → Real) →
-  (∀ (n : Nat), Real.instLE.le 0 (scalar n)) →
-    (∀ (n : Nat), Real.instLE.le 0 (matrixEntry n)) → HighamBench.P08DimensionOnlyConstantBounds
-```
-
-Fully explicit type:
-
-```lean
-(scalar matrixEntry : Nat → Real) →
-  (scalar_nonnegative :
-      ∀ (n : Nat),
-        @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-          (scalar n)) →
-    (matrixEntry_nonnegative :
-        ∀ (n : Nat),
-          @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-            (matrixEntry n)) →
-      HighamBench.P08DimensionOnlyConstantBounds
-```
-
-### D014: `HighamBench.P08IterativeRefinementRun.A`
+### D012: `HighamBench.P08IterativeRefinementRun.A`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -514,7 +441,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.12
 ```
 
-### D015: `HighamBench.P08IterativeRefinementRun.Ainv`
+### D013: `HighamBench.P08IterativeRefinementRun.Ainv`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -540,7 +467,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.13
 ```
 
-### D016: `HighamBench.P08IterativeRefinementRun.b`
+### D014: `HighamBench.P08IterativeRefinementRun.b`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -566,7 +493,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.16
 ```
 
-### D017: `HighamBench.P08IterativeRefinementRun.correction`
+### D015: `HighamBench.P08IterativeRefinementRun.correction`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -592,7 +519,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.24
 ```
 
-### D018: `HighamBench.P08IterativeRefinementRun.iterate`
+### D016: `HighamBench.P08IterativeRefinementRun.iterate`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -618,13 +545,13 @@ Definition body (one-level semantic boundary):
 fun n self => self.22
 ```
 
-### D019: `HighamBench.P08IterativeRefinementRun.mk`
+### D017: `HighamBench.P08IterativeRefinementRun.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `ab1d4981689407c76646be74fcb3dad9570376f69a96a275e6e8a4b1a5810373`
+- Semantic SHA-256: `5fc3658a782ddb9568e29b7a7ab51353c8c3fd40b6229aed73afd6aa1c8aeeb5`
 
 Type:
 
@@ -651,8 +578,7 @@ Type:
                                 Eq (HighamBench.p08MatVec A exactSolution) b →
                                   (C1 : Fin n → Fin n → Real) →
                                     HighamBench.p08MatNonnegative C1 →
-                                      (initialSolve :
-                                          HighamBench.P08ColumnPivotedSolveCertificate workingModel A b C1 u) →
+                                      (initialSolve : HighamBench.P08ColumnPivotedSolveCertificate A b C1 u) →
                                         (iterate computedResidual correction : Nat → Fin n → Real) →
                                           (Eq (iterate 0) fun x => 0) →
                                             Eq (iterate 1) initialSolve.output →
@@ -667,7 +593,7 @@ Type:
                                                           (residualTrace m).output) →
                                                       (correctionSolve :
                                                           (m : Nat) →
-                                                            HighamBench.P08ColumnPivotedSolveCertificate workingModel A
+                                                            HighamBench.P08ColumnPivotedSolveCertificate A
                                                               (computedResidual m) C1 u) →
                                                         (∀ (m : Nat), Eq (correction m) (correctionSolve m).output) →
                                                           (∀ (m : Nat) (i : Fin n),
@@ -723,8 +649,7 @@ Fully explicit type:
                                 (exact_system : @Eq.{1} (Fin n → Real) (@HighamBench.p08MatVec n A exactSolution) b) →
                                   (C1 : Fin n → Fin n → Real) →
                                     (C1_nonnegative : @HighamBench.p08MatNonnegative n C1) →
-                                      (initialSolve :
-                                          @HighamBench.P08ColumnPivotedSolveCertificate n workingModel A b C1 u) →
+                                      (initialSolve : @HighamBench.P08ColumnPivotedSolveCertificate n A b C1 u) →
                                         (iterate computedResidual correction : Nat → Fin n → Real) →
                                           (iterate_zero :
                                               @Eq.{1} (Fin n → Real)
@@ -736,8 +661,8 @@ Fully explicit type:
                                                 @Eq.{1} (Fin n → Real)
                                                   (iterate
                                                     (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-                                                  (@HighamBench.P08ColumnPivotedSolveCertificate.output n workingModel A
-                                                    b C1 u initialSolve)) →
+                                                  (@HighamBench.P08ColumnPivotedSolveCertificate.output n A b C1 u
+                                                    initialSolve)) →
                                               (residual_zero :
                                                   @Eq.{1} (Fin n → Real)
                                                     (computedResidual
@@ -779,14 +704,13 @@ Fully explicit type:
                                                               (residualTrace m))) →
                                                       (correctionSolve :
                                                           (m : Nat) →
-                                                            @HighamBench.P08ColumnPivotedSolveCertificate n workingModel
-                                                              A (computedResidual m) C1 u) →
+                                                            @HighamBench.P08ColumnPivotedSolveCertificate n A
+                                                              (computedResidual m) C1 u) →
                                                         (correction_output :
                                                             ∀ (m : Nat),
                                                               @Eq.{1} (Fin n → Real) (correction m)
                                                                 (@HighamBench.P08ColumnPivotedSolveCertificate.output n
-                                                                  workingModel A (computedResidual m) C1 u
-                                                                  (correctionSolve m))) →
+                                                                  A (computedResidual m) C1 u (correctionSolve m))) →
                                                           (update_computation :
                                                               ∀ (m : Nat) (i : Fin n),
                                                                 @Eq.{1} Real
@@ -801,13 +725,13 @@ Fully explicit type:
                                                             HighamBench.P08IterativeRefinementRun n
 ```
 
-### D020: `HighamBench.P08Lemma43Constants.mk`
+### D018: `HighamBench.P08Lemma43Constants.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `4c70837cf08b2e18d98b6610cf5e128d140ba43a36c9028930ab1b413ccb483b`
+- Semantic SHA-256: `dddc36709eadfb0b6343373eb876099afe788de917e669739a91b5a520f05a76`
 
 Type:
 
@@ -815,163 +739,122 @@ Type:
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
     {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (C2 C6 C7 C8 C9 C10 C11 C12 : Fin n → Fin n → Real) →
-          (c1 c5 c8 : Real) →
-            (C2ResolventInv C11ResolventInv : Fin n → Fin n → Real) →
-              Eq c1 (norm.matrixNorm run.C1) →
-                Eq c5
-                    (instHAdd.hAdd n.cast
-                      (instHDiv.hDiv
-                        (instHMul.hMul (instHAdd.hAdd (HighamBench.p08Lemma43c3 run) (HighamBench.p08Lemma43c4 run))
-                          (instHPow.hPow run.u 2))
-                        (HighamBench.p08ResidualUnitRoundoff run.precision run.u))) →
+      (C2 C6 C7 C8 C9 C10 C11 C12 : Fin n → Fin n → Real) →
+        (c1 c5 c8 : Real) →
+          (C2ResolventInv C11ResolventInv : Fin n → Fin n → Real) →
+            Eq c1 (norm.matrixNorm run.C1) →
+              Eq c5
+                  (instHAdd.hAdd n.cast
+                    (instHDiv.hDiv
+                      (instHMul.hMul (instHAdd.hAdd (HighamBench.p08Lemma43c3 run) (HighamBench.p08Lemma43c4 run))
+                        (instHPow.hPow run.u 2))
+                      (HighamBench.p08ResidualUnitRoundoff run.precision run.u))) →
+                Eq
+                    (HighamBench.p08MatMul
+                      (HighamBench.p08MatSub (HighamBench.p08IdMatrix n)
+                        (HighamBench.p08MatScale run.u
+                          (HighamBench.p08MatMul run.C1
+                            (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
+                              (HighamBench.p08AbsMatrix run.Ainv)))))
+                      C2ResolventInv)
+                    (HighamBench.p08IdMatrix n) →
                   Eq
-                      (HighamBench.p08MatMul
+                      (HighamBench.p08MatMul C2ResolventInv
                         (HighamBench.p08MatSub (HighamBench.p08IdMatrix n)
                           (HighamBench.p08MatScale run.u
                             (HighamBench.p08MatMul run.C1
                               (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
-                                (HighamBench.p08AbsMatrix run.Ainv)))))
-                        C2ResolventInv)
+                                (HighamBench.p08AbsMatrix run.Ainv))))))
                       (HighamBench.p08IdMatrix n) →
-                    Eq
-                        (HighamBench.p08MatMul C2ResolventInv
-                          (HighamBench.p08MatSub (HighamBench.p08IdMatrix n)
-                            (HighamBench.p08MatScale run.u
-                              (HighamBench.p08MatMul run.C1
-                                (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
-                                  (HighamBench.p08AbsMatrix run.Ainv))))))
-                        (HighamBench.p08IdMatrix n) →
-                      Eq C2 (HighamBench.p08MatMul C2ResolventInv run.C1) →
-                        Eq C6
-                            (HighamBench.p08MatAdd C2
-                              (HighamBench.p08MatScale
-                                (instHAdd.hAdd 1
-                                  (instHDiv.hDiv
-                                    (instHMul.hMul c5 (HighamBench.p08ResidualUnitRoundoff run.precision run.u)) run.u))
-                                (HighamBench.p08MatAdd (HighamBench.p08IdMatrix n)
-                                  (HighamBench.p08MatScale run.u
-                                    (HighamBench.p08MatMul C2
-                                      (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
-                                        (HighamBench.p08AbsMatrix run.Ainv))))))) →
-                          Eq C7
-                              (HighamBench.p08MatScale
-                                (instHAdd.hAdd n.cast
-                                  (instHDiv.hDiv (instHMul.hMul (HighamBench.p08Lemma43c3 run) (instHPow.hPow run.u 2))
-                                    (HighamBench.p08ResidualUnitRoundoff run.precision run.u)))
-                                C2) →
-                            Eq C8 (HighamBench.p08MatScale (instHAdd.hAdd 1 run.u) C6) →
-                              Eq c8 (norm.matrixNorm C8) →
-                                Eq C9
-                                    (HighamBench.p08MatAdd C6
-                                      (HighamBench.p08MatScale (HighamBench.p08Lemma43c3 run)
-                                        (HighamBench.p08IdMatrix n))) →
-                                  Eq C10
-                                      (HighamBench.p08MatAdd
-                                        (HighamBench.p08MatAdd C6
-                                          (HighamBench.p08MatScale
-                                            (instHAdd.hAdd
-                                              (instHDiv.hDiv
-                                                (instHMul.hMul n.cast
-                                                  (HighamBench.p08ResidualUnitRoundoff run.precision run.u))
-                                                run.u)
-                                              (instHMul.hMul (HighamBench.p08Lemma43c3 run) run.u))
-                                            (HighamBench.p08IdMatrix n)))
+                    Eq C2 (HighamBench.p08MatMul C2ResolventInv run.C1) →
+                      Eq C6
+                          (HighamBench.p08MatAdd C2
+                            (HighamBench.p08MatScale
+                              (instHAdd.hAdd 1
+                                (instHDiv.hDiv
+                                  (instHMul.hMul c5 (HighamBench.p08ResidualUnitRoundoff run.precision run.u)) run.u))
+                              (HighamBench.p08MatAdd (HighamBench.p08IdMatrix n)
+                                (HighamBench.p08MatScale run.u
+                                  (HighamBench.p08MatMul C2
+                                    (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
+                                      (HighamBench.p08AbsMatrix run.Ainv))))))) →
+                        Eq C7
+                            (HighamBench.p08MatScale
+                              (instHAdd.hAdd n.cast
+                                (instHDiv.hDiv (instHMul.hMul (HighamBench.p08Lemma43c3 run) (instHPow.hPow run.u 2))
+                                  (HighamBench.p08ResidualUnitRoundoff run.precision run.u)))
+                              C2) →
+                          Eq C8 (HighamBench.p08MatScale (instHAdd.hAdd 1 run.u) C6) →
+                            Eq c8 (norm.matrixNorm C8) →
+                              Eq C9
+                                  (HighamBench.p08MatAdd C6
+                                    (HighamBench.p08MatScale (HighamBench.p08Lemma43c3 run)
+                                      (HighamBench.p08IdMatrix n))) →
+                                Eq C10
+                                    (HighamBench.p08MatAdd
+                                      (HighamBench.p08MatAdd C6
                                         (HighamBench.p08MatScale
-                                          (HighamBench.p08ResidualUnitRoundoff run.precision run.u)
-                                          (HighamBench.p08MatMul C7
-                                            (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
-                                              (HighamBench.p08AbsMatrix run.Ainv))))) →
+                                          (instHAdd.hAdd
+                                            (instHDiv.hDiv
+                                              (instHMul.hMul n.cast
+                                                (HighamBench.p08ResidualUnitRoundoff run.precision run.u))
+                                              run.u)
+                                            (instHMul.hMul (HighamBench.p08Lemma43c3 run) run.u))
+                                          (HighamBench.p08IdMatrix n)))
+                                      (HighamBench.p08MatScale (HighamBench.p08ResidualUnitRoundoff run.precision run.u)
+                                        (HighamBench.p08MatMul C7
+                                          (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
+                                            (HighamBench.p08AbsMatrix run.Ainv))))) →
+                                  Eq
+                                      (HighamBench.p08MatMul
+                                        (HighamBench.p08MatSub (HighamBench.p08IdMatrix n)
+                                          (HighamBench.p08MatScale run.u
+                                            (HighamBench.p08MatMul C8
+                                              (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
+                                                (HighamBench.p08AbsMatrix run.Ainv)))))
+                                        C11ResolventInv)
+                                      (HighamBench.p08IdMatrix n) →
                                     Eq
-                                        (HighamBench.p08MatMul
+                                        (HighamBench.p08MatMul C11ResolventInv
                                           (HighamBench.p08MatSub (HighamBench.p08IdMatrix n)
                                             (HighamBench.p08MatScale run.u
                                               (HighamBench.p08MatMul C8
                                                 (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
-                                                  (HighamBench.p08AbsMatrix run.Ainv)))))
-                                          C11ResolventInv)
+                                                  (HighamBench.p08AbsMatrix run.Ainv))))))
                                         (HighamBench.p08IdMatrix n) →
-                                      Eq
-                                          (HighamBench.p08MatMul C11ResolventInv
-                                            (HighamBench.p08MatSub (HighamBench.p08IdMatrix n)
-                                              (HighamBench.p08MatScale run.u
-                                                (HighamBench.p08MatMul C8
-                                                  (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
-                                                    (HighamBench.p08AbsMatrix run.Ainv))))))
-                                          (HighamBench.p08IdMatrix n) →
-                                        Eq C11 (HighamBench.p08MatMul C11ResolventInv C9) →
-                                          Eq C12
-                                              (HighamBench.p08MatMul C11ResolventInv
-                                                (HighamBench.p08MatAdd (HighamBench.p08MatScale n.cast C8) C7)) →
-                                            Eq C11
-                                                (HighamBench.p08MatAdd C9
+                                      Eq C11 (HighamBench.p08MatMul C11ResolventInv C9) →
+                                        Eq C12
+                                            (HighamBench.p08MatMul C11ResolventInv
+                                              (HighamBench.p08MatAdd (HighamBench.p08MatScale n.cast C8) C7)) →
+                                          Eq C11
+                                              (HighamBench.p08MatAdd C9
+                                                (HighamBench.p08MatMul
+                                                  (HighamBench.p08MatScale run.u
+                                                    (HighamBench.p08MatMul C8
+                                                      (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
+                                                        (HighamBench.p08AbsMatrix run.Ainv))))
+                                                  C11)) →
+                                            Eq C12
+                                                (HighamBench.p08MatAdd
+                                                  (HighamBench.p08MatAdd (HighamBench.p08MatScale n.cast C8) C7)
                                                   (HighamBench.p08MatMul
                                                     (HighamBench.p08MatScale run.u
                                                       (HighamBench.p08MatMul C8
                                                         (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
                                                           (HighamBench.p08AbsMatrix run.Ainv))))
-                                                    C11)) →
-                                              Eq C12
-                                                  (HighamBench.p08MatAdd
-                                                    (HighamBench.p08MatAdd (HighamBench.p08MatScale n.cast C8) C7)
-                                                    (HighamBench.p08MatMul
-                                                      (HighamBench.p08MatScale run.u
-                                                        (HighamBench.p08MatMul C8
-                                                          (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A)
-                                                            (HighamBench.p08AbsMatrix run.Ainv))))
-                                                      C12)) →
-                                                HighamBench.p08MatNonnegative C2 →
-                                                  HighamBench.p08MatNonnegative C6 →
-                                                    HighamBench.p08MatNonnegative C7 →
-                                                      HighamBench.p08MatNonnegative C8 →
-                                                        HighamBench.p08MatNonnegative C9 →
-                                                          HighamBench.p08MatNonnegative C10 →
-                                                            HighamBench.p08MatNonnegative C11 →
-                                                              HighamBench.p08MatNonnegative C12 →
-                                                                Real.instLE.le 0 c1 →
-                                                                  Real.instLE.le 0 c8 →
-                                                                    Real.instLE.le c1 c8 →
-                                                                      (∀ (i j : Fin n),
-                                                                          Real.instLE.le (run.C1 i j)
-                                                                            (dimensionBounds.matrixEntry n)) →
-                                                                        (∀ (i j : Fin n),
-                                                                            Real.instLE.le (C2 i j)
-                                                                              (dimensionBounds.matrixEntry n)) →
-                                                                          (∀ (i j : Fin n),
-                                                                              Real.instLE.le (C6 i j)
-                                                                                (dimensionBounds.matrixEntry n)) →
-                                                                            (∀ (i j : Fin n),
-                                                                                Real.instLE.le (C7 i j)
-                                                                                  (dimensionBounds.matrixEntry n)) →
-                                                                              (∀ (i j : Fin n),
-                                                                                  Real.instLE.le (C8 i j)
-                                                                                    (dimensionBounds.matrixEntry n)) →
-                                                                                (∀ (i j : Fin n),
-                                                                                    Real.instLE.le (C9 i j)
-                                                                                      (dimensionBounds.matrixEntry n)) →
-                                                                                  (∀ (i j : Fin n),
-                                                                                      Real.instLE.le (C10 i j)
-                                                                                        (dimensionBounds.matrixEntry
-                                                                                          n)) →
-                                                                                    (∀ (i j : Fin n),
-                                                                                        Real.instLE.le (C11 i j)
-                                                                                          (dimensionBounds.matrixEntry
-                                                                                            n)) →
-                                                                                      (∀ (i j : Fin n),
-                                                                                          Real.instLE.le (C12 i j)
-                                                                                            (dimensionBounds.matrixEntry
-                                                                                              n)) →
-                                                                                        Real.instLE.le c1
-                                                                                            (dimensionBounds.scalar n) →
-                                                                                          Real.instLE.le c5
-                                                                                              (dimensionBounds.scalar
-                                                                                                n) →
-                                                                                            Real.instLE.le c8
-                                                                                                (dimensionBounds.scalar
-                                                                                                  n) →
-                                                                                              HighamBench.P08Lemma43Constants
-                                                                                                run norm dimensionBounds
+                                                    C12)) →
+                                              HighamBench.p08MatNonnegative C2 →
+                                                HighamBench.p08MatNonnegative C6 →
+                                                  HighamBench.p08MatNonnegative C7 →
+                                                    HighamBench.p08MatNonnegative C8 →
+                                                      HighamBench.p08MatNonnegative C9 →
+                                                        HighamBench.p08MatNonnegative C10 →
+                                                          HighamBench.p08MatNonnegative C11 →
+                                                            HighamBench.p08MatNonnegative C12 →
+                                                              Real.instLE.le 0 c1 →
+                                                                Real.instLE.le 0 c8 →
+                                                                  Real.instLE.le c1 c8 →
+                                                                    HighamBench.P08Lemma43Constants run norm
 ```
 
 Fully explicit type:
@@ -980,138 +863,148 @@ Fully explicit type:
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
     {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (C2 C6 C7 C8 C9 C10 C11 C12 : Fin n → Fin n → Real) →
-          (c1 c5 c8 : Real) →
-            (C2ResolventInv C11ResolventInv : Fin n → Fin n → Real) →
-              (c1_definition :
-                  @Eq.{1} Real c1
-                    (@HighamBench.P08AbsoluteMonotoneNorm.matrixNorm n norm
-                      (@HighamBench.P08IterativeRefinementRun.C1 n run))) →
-                (c5_definition :
-                    @Eq.{1} Real c5
-                      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                        (@Nat.cast.{0} Real Real.instNatCast n)
-                        (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                          (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                              (@HighamBench.p08Lemma43c3 n run) (@HighamBench.p08Lemma43c4 n run))
-                            (@HPow.hPow.{0, 0, 0} Real Nat Real
-                              (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                              (@HighamBench.P08IterativeRefinementRun.u n run)
-                              (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))
-                          (HighamBench.p08ResidualUnitRoundoff (@HighamBench.P08IterativeRefinementRun.precision n run)
-                            (@HighamBench.P08IterativeRefinementRun.u n run))))) →
-                  (C2_resolvent_left :
+      (C2 C6 C7 C8 C9 C10 C11 C12 : Fin n → Fin n → Real) →
+        (c1 c5 c8 : Real) →
+          (C2ResolventInv C11ResolventInv : Fin n → Fin n → Real) →
+            (c1_definition :
+                @Eq.{1} Real c1
+                  (@HighamBench.P08AbsoluteMonotoneNorm.matrixNorm n norm
+                    (@HighamBench.P08IterativeRefinementRun.C1 n run))) →
+              (c5_definition :
+                  @Eq.{1} Real c5
+                    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                      (@Nat.cast.{0} Real Real.instNatCast n)
+                      (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                        (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                            (@HighamBench.p08Lemma43c3 n run) (@HighamBench.p08Lemma43c4 n run))
+                          (@HPow.hPow.{0, 0, 0} Real Nat Real
+                            (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
+                            (@HighamBench.P08IterativeRefinementRun.u n run)
+                            (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))
+                        (HighamBench.p08ResidualUnitRoundoff (@HighamBench.P08IterativeRefinementRun.precision n run)
+                          (@HighamBench.P08IterativeRefinementRun.u n run))))) →
+                (C2_resolvent_left :
+                    @Eq.{1} (Fin n → Fin n → Real)
+                      (@HighamBench.p08MatMul n
+                        (@HighamBench.p08MatSub n (HighamBench.p08IdMatrix n)
+                          (@HighamBench.p08MatScale n (@HighamBench.P08IterativeRefinementRun.u n run)
+                            (@HighamBench.p08MatMul n (@HighamBench.P08IterativeRefinementRun.C1 n run)
+                              (@HighamBench.p08MatMul n
+                                (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run))
+                                (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.Ainv n run))))))
+                        C2ResolventInv)
+                      (HighamBench.p08IdMatrix n)) →
+                  (C2_resolvent_right :
                       @Eq.{1} (Fin n → Fin n → Real)
-                        (@HighamBench.p08MatMul n
+                        (@HighamBench.p08MatMul n C2ResolventInv
                           (@HighamBench.p08MatSub n (HighamBench.p08IdMatrix n)
                             (@HighamBench.p08MatScale n (@HighamBench.P08IterativeRefinementRun.u n run)
                               (@HighamBench.p08MatMul n (@HighamBench.P08IterativeRefinementRun.C1 n run)
                                 (@HighamBench.p08MatMul n
                                   (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run))
-                                  (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.Ainv n run))))))
-                          C2ResolventInv)
+                                  (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.Ainv n run)))))))
                         (HighamBench.p08IdMatrix n)) →
-                    (C2_resolvent_right :
-                        @Eq.{1} (Fin n → Fin n → Real)
-                          (@HighamBench.p08MatMul n C2ResolventInv
-                            (@HighamBench.p08MatSub n (HighamBench.p08IdMatrix n)
-                              (@HighamBench.p08MatScale n (@HighamBench.P08IterativeRefinementRun.u n run)
-                                (@HighamBench.p08MatMul n (@HighamBench.P08IterativeRefinementRun.C1 n run)
-                                  (@HighamBench.p08MatMul n
-                                    (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run))
-                                    (@HighamBench.p08AbsMatrix n
-                                      (@HighamBench.P08IterativeRefinementRun.Ainv n run)))))))
-                          (HighamBench.p08IdMatrix n)) →
-                      (C2_definition :
-                          @Eq.{1} (Fin n → Fin n → Real) C2
-                            (@HighamBench.p08MatMul n C2ResolventInv
-                              (@HighamBench.P08IterativeRefinementRun.C1 n run))) →
-                        (C6_definition :
-                            @Eq.{1} (Fin n → Fin n → Real) C6
-                              (@HighamBench.p08MatAdd n C2
+                    (C2_definition :
+                        @Eq.{1} (Fin n → Fin n → Real) C2
+                          (@HighamBench.p08MatMul n C2ResolventInv (@HighamBench.P08IterativeRefinementRun.C1 n run))) →
+                      (C6_definition :
+                          @Eq.{1} (Fin n → Fin n → Real) C6
+                            (@HighamBench.p08MatAdd n C2
+                              (@HighamBench.p08MatScale n
+                                (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                  (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
+                                  (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                                    (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                                    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) c5
+                                      (HighamBench.p08ResidualUnitRoundoff
+                                        (@HighamBench.P08IterativeRefinementRun.precision n run)
+                                        (@HighamBench.P08IterativeRefinementRun.u n run)))
+                                    (@HighamBench.P08IterativeRefinementRun.u n run)))
+                                (@HighamBench.p08MatAdd n (HighamBench.p08IdMatrix n)
+                                  (@HighamBench.p08MatScale n (@HighamBench.P08IterativeRefinementRun.u n run)
+                                    (@HighamBench.p08MatMul n C2
+                                      (@HighamBench.p08MatMul n
+                                        (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run))
+                                        (@HighamBench.p08AbsMatrix n
+                                          (@HighamBench.P08IterativeRefinementRun.Ainv n run))))))))) →
+                        (C7_definition :
+                            @Eq.{1} (Fin n → Fin n → Real) C7
+                              (@HighamBench.p08MatScale n
+                                (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                  (@Nat.cast.{0} Real Real.instNatCast n)
+                                  (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                                    (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                                    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                      (@HighamBench.p08Lemma43c3 n run)
+                                      (@HPow.hPow.{0, 0, 0} Real Nat Real
+                                        (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
+                                        (@HighamBench.P08IterativeRefinementRun.u n run)
+                                        (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))
+                                    (HighamBench.p08ResidualUnitRoundoff
+                                      (@HighamBench.P08IterativeRefinementRun.precision n run)
+                                      (@HighamBench.P08IterativeRefinementRun.u n run))))
+                                C2)) →
+                          (C8_definition :
+                              @Eq.{1} (Fin n → Fin n → Real) C8
                                 (@HighamBench.p08MatScale n
                                   (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
                                     (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
-                                    (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                                      (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) c5
-                                        (HighamBench.p08ResidualUnitRoundoff
-                                          (@HighamBench.P08IterativeRefinementRun.precision n run)
-                                          (@HighamBench.P08IterativeRefinementRun.u n run)))
-                                      (@HighamBench.P08IterativeRefinementRun.u n run)))
-                                  (@HighamBench.p08MatAdd n (HighamBench.p08IdMatrix n)
-                                    (@HighamBench.p08MatScale n (@HighamBench.P08IterativeRefinementRun.u n run)
-                                      (@HighamBench.p08MatMul n C2
-                                        (@HighamBench.p08MatMul n
-                                          (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run))
-                                          (@HighamBench.p08AbsMatrix n
-                                            (@HighamBench.P08IterativeRefinementRun.Ainv n run))))))))) →
-                          (C7_definition :
-                              @Eq.{1} (Fin n → Fin n → Real) C7
-                                (@HighamBench.p08MatScale n
-                                  (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                    (@Nat.cast.{0} Real Real.instNatCast n)
-                                    (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                                      (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                        (@HighamBench.p08Lemma43c3 n run)
-                                        (@HPow.hPow.{0, 0, 0} Real Nat Real
-                                          (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                                          (@HighamBench.P08IterativeRefinementRun.u n run)
-                                          (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))
-                                      (HighamBench.p08ResidualUnitRoundoff
-                                        (@HighamBench.P08IterativeRefinementRun.precision n run)
-                                        (@HighamBench.P08IterativeRefinementRun.u n run))))
-                                  C2)) →
-                            (C8_definition :
-                                @Eq.{1} (Fin n → Fin n → Real) C8
-                                  (@HighamBench.p08MatScale n
-                                    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                      (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
-                                      (@HighamBench.P08IterativeRefinementRun.u n run))
-                                    C6)) →
-                              (c8_definition :
-                                  @Eq.{1} Real c8 (@HighamBench.P08AbsoluteMonotoneNorm.matrixNorm n norm C8)) →
-                                (C9_definition :
-                                    @Eq.{1} (Fin n → Fin n → Real) C9
-                                      (@HighamBench.p08MatAdd n C6
-                                        (@HighamBench.p08MatScale n (@HighamBench.p08Lemma43c3 n run)
-                                          (HighamBench.p08IdMatrix n)))) →
-                                  (C10_definition :
-                                      @Eq.{1} (Fin n → Fin n → Real) C10
-                                        (@HighamBench.p08MatAdd n
-                                          (@HighamBench.p08MatAdd n C6
-                                            (@HighamBench.p08MatScale n
-                                              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                                (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                                                  (@instHDiv.{0} Real
-                                                    (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                    (@Nat.cast.{0} Real Real.instNatCast n)
-                                                    (HighamBench.p08ResidualUnitRoundoff
-                                                      (@HighamBench.P08IterativeRefinementRun.precision n run)
-                                                      (@HighamBench.P08IterativeRefinementRun.u n run)))
-                                                  (@HighamBench.P08IterativeRefinementRun.u n run))
-                                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                  (@HighamBench.p08Lemma43c3 n run)
-                                                  (@HighamBench.P08IterativeRefinementRun.u n run)))
-                                              (HighamBench.p08IdMatrix n)))
+                                    (@HighamBench.P08IterativeRefinementRun.u n run))
+                                  C6)) →
+                            (c8_definition :
+                                @Eq.{1} Real c8 (@HighamBench.P08AbsoluteMonotoneNorm.matrixNorm n norm C8)) →
+                              (C9_definition :
+                                  @Eq.{1} (Fin n → Fin n → Real) C9
+                                    (@HighamBench.p08MatAdd n C6
+                                      (@HighamBench.p08MatScale n (@HighamBench.p08Lemma43c3 n run)
+                                        (HighamBench.p08IdMatrix n)))) →
+                                (C10_definition :
+                                    @Eq.{1} (Fin n → Fin n → Real) C10
+                                      (@HighamBench.p08MatAdd n
+                                        (@HighamBench.p08MatAdd n C6
                                           (@HighamBench.p08MatScale n
-                                            (HighamBench.p08ResidualUnitRoundoff
-                                              (@HighamBench.P08IterativeRefinementRun.precision n run)
-                                              (@HighamBench.P08IterativeRefinementRun.u n run))
-                                            (@HighamBench.p08MatMul n C7
-                                              (@HighamBench.p08MatMul n
-                                                (@HighamBench.p08AbsMatrix n
-                                                  (@HighamBench.P08IterativeRefinementRun.A n run))
-                                                (@HighamBench.p08AbsMatrix n
-                                                  (@HighamBench.P08IterativeRefinementRun.Ainv n run))))))) →
-                                    (C11_resolvent_left :
+                                            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                                              (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                                                (@instHDiv.{0} Real
+                                                  (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                  (@Nat.cast.{0} Real Real.instNatCast n)
+                                                  (HighamBench.p08ResidualUnitRoundoff
+                                                    (@HighamBench.P08IterativeRefinementRun.precision n run)
+                                                    (@HighamBench.P08IterativeRefinementRun.u n run)))
+                                                (@HighamBench.P08IterativeRefinementRun.u n run))
+                                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                                (@HighamBench.p08Lemma43c3 n run)
+                                                (@HighamBench.P08IterativeRefinementRun.u n run)))
+                                            (HighamBench.p08IdMatrix n)))
+                                        (@HighamBench.p08MatScale n
+                                          (HighamBench.p08ResidualUnitRoundoff
+                                            (@HighamBench.P08IterativeRefinementRun.precision n run)
+                                            (@HighamBench.P08IterativeRefinementRun.u n run))
+                                          (@HighamBench.p08MatMul n C7
+                                            (@HighamBench.p08MatMul n
+                                              (@HighamBench.p08AbsMatrix n
+                                                (@HighamBench.P08IterativeRefinementRun.A n run))
+                                              (@HighamBench.p08AbsMatrix n
+                                                (@HighamBench.P08IterativeRefinementRun.Ainv n run))))))) →
+                                  (C11_resolvent_left :
+                                      @Eq.{1} (Fin n → Fin n → Real)
+                                        (@HighamBench.p08MatMul n
+                                          (@HighamBench.p08MatSub n (HighamBench.p08IdMatrix n)
+                                            (@HighamBench.p08MatScale n (@HighamBench.P08IterativeRefinementRun.u n run)
+                                              (@HighamBench.p08MatMul n C8
+                                                (@HighamBench.p08MatMul n
+                                                  (@HighamBench.p08AbsMatrix n
+                                                    (@HighamBench.P08IterativeRefinementRun.A n run))
+                                                  (@HighamBench.p08AbsMatrix n
+                                                    (@HighamBench.P08IterativeRefinementRun.Ainv n run))))))
+                                          C11ResolventInv)
+                                        (HighamBench.p08IdMatrix n)) →
+                                    (C11_resolvent_right :
                                         @Eq.{1} (Fin n → Fin n → Real)
-                                          (@HighamBench.p08MatMul n
+                                          (@HighamBench.p08MatMul n C11ResolventInv
                                             (@HighamBench.p08MatSub n (HighamBench.p08IdMatrix n)
                                               (@HighamBench.p08MatScale n
                                                 (@HighamBench.P08IterativeRefinementRun.u n run)
@@ -1120,35 +1013,38 @@ Fully explicit type:
                                                     (@HighamBench.p08AbsMatrix n
                                                       (@HighamBench.P08IterativeRefinementRun.A n run))
                                                     (@HighamBench.p08AbsMatrix n
-                                                      (@HighamBench.P08IterativeRefinementRun.Ainv n run))))))
-                                            C11ResolventInv)
+                                                      (@HighamBench.P08IterativeRefinementRun.Ainv n run)))))))
                                           (HighamBench.p08IdMatrix n)) →
-                                      (C11_resolvent_right :
-                                          @Eq.{1} (Fin n → Fin n → Real)
-                                            (@HighamBench.p08MatMul n C11ResolventInv
-                                              (@HighamBench.p08MatSub n (HighamBench.p08IdMatrix n)
-                                                (@HighamBench.p08MatScale n
-                                                  (@HighamBench.P08IterativeRefinementRun.u n run)
-                                                  (@HighamBench.p08MatMul n C8
-                                                    (@HighamBench.p08MatMul n
-                                                      (@HighamBench.p08AbsMatrix n
-                                                        (@HighamBench.P08IterativeRefinementRun.A n run))
-                                                      (@HighamBench.p08AbsMatrix n
-                                                        (@HighamBench.P08IterativeRefinementRun.Ainv n run)))))))
-                                            (HighamBench.p08IdMatrix n)) →
-                                        (C11_definition :
-                                            @Eq.{1} (Fin n → Fin n → Real) C11
-                                              (@HighamBench.p08MatMul n C11ResolventInv C9)) →
-                                          (C12_definition :
-                                              @Eq.{1} (Fin n → Fin n → Real) C12
-                                                (@HighamBench.p08MatMul n C11ResolventInv
+                                      (C11_definition :
+                                          @Eq.{1} (Fin n → Fin n → Real) C11
+                                            (@HighamBench.p08MatMul n C11ResolventInv C9)) →
+                                        (C12_definition :
+                                            @Eq.{1} (Fin n → Fin n → Real) C12
+                                              (@HighamBench.p08MatMul n C11ResolventInv
+                                                (@HighamBench.p08MatAdd n
+                                                  (@HighamBench.p08MatScale n (@Nat.cast.{0} Real Real.instNatCast n)
+                                                    C8)
+                                                  C7))) →
+                                          (C11_fixed_point :
+                                              @Eq.{1} (Fin n → Fin n → Real) C11
+                                                (@HighamBench.p08MatAdd n C9
+                                                  (@HighamBench.p08MatMul n
+                                                    (@HighamBench.p08MatScale n
+                                                      (@HighamBench.P08IterativeRefinementRun.u n run)
+                                                      (@HighamBench.p08MatMul n C8
+                                                        (@HighamBench.p08MatMul n
+                                                          (@HighamBench.p08AbsMatrix n
+                                                            (@HighamBench.P08IterativeRefinementRun.A n run))
+                                                          (@HighamBench.p08AbsMatrix n
+                                                            (@HighamBench.P08IterativeRefinementRun.Ainv n run)))))
+                                                    C11))) →
+                                            (C12_fixed_point :
+                                                @Eq.{1} (Fin n → Fin n → Real) C12
                                                   (@HighamBench.p08MatAdd n
-                                                    (@HighamBench.p08MatScale n (@Nat.cast.{0} Real Real.instNatCast n)
-                                                      C8)
-                                                    C7))) →
-                                            (C11_fixed_point :
-                                                @Eq.{1} (Fin n → Fin n → Real) C11
-                                                  (@HighamBench.p08MatAdd n C9
+                                                    (@HighamBench.p08MatAdd n
+                                                      (@HighamBench.p08MatScale n
+                                                        (@Nat.cast.{0} Real Real.instNatCast n) C8)
+                                                      C7)
                                                     (@HighamBench.p08MatMul n
                                                       (@HighamBench.p08MatScale n
                                                         (@HighamBench.P08IterativeRefinementRun.u n run)
@@ -1158,281 +1054,153 @@ Fully explicit type:
                                                               (@HighamBench.P08IterativeRefinementRun.A n run))
                                                             (@HighamBench.p08AbsMatrix n
                                                               (@HighamBench.P08IterativeRefinementRun.Ainv n run)))))
-                                                      C11))) →
-                                              (C12_fixed_point :
-                                                  @Eq.{1} (Fin n → Fin n → Real) C12
-                                                    (@HighamBench.p08MatAdd n
-                                                      (@HighamBench.p08MatAdd n
-                                                        (@HighamBench.p08MatScale n
-                                                          (@Nat.cast.{0} Real Real.instNatCast n) C8)
-                                                        C7)
-                                                      (@HighamBench.p08MatMul n
-                                                        (@HighamBench.p08MatScale n
-                                                          (@HighamBench.P08IterativeRefinementRun.u n run)
-                                                          (@HighamBench.p08MatMul n C8
-                                                            (@HighamBench.p08MatMul n
-                                                              (@HighamBench.p08AbsMatrix n
-                                                                (@HighamBench.P08IterativeRefinementRun.A n run))
-                                                              (@HighamBench.p08AbsMatrix n
-                                                                (@HighamBench.P08IterativeRefinementRun.Ainv n run)))))
-                                                        C12))) →
-                                                (C2_nonnegative : @HighamBench.p08MatNonnegative n C2) →
-                                                  (C6_nonnegative : @HighamBench.p08MatNonnegative n C6) →
-                                                    (C7_nonnegative : @HighamBench.p08MatNonnegative n C7) →
-                                                      (C8_nonnegative : @HighamBench.p08MatNonnegative n C8) →
-                                                        (C9_nonnegative : @HighamBench.p08MatNonnegative n C9) →
-                                                          (C10_nonnegative : @HighamBench.p08MatNonnegative n C10) →
-                                                            (C11_nonnegative : @HighamBench.p08MatNonnegative n C11) →
-                                                              (C12_nonnegative : @HighamBench.p08MatNonnegative n C12) →
-                                                                (c1_nonnegative :
+                                                      C12))) →
+                                              (C2_nonnegative : @HighamBench.p08MatNonnegative n C2) →
+                                                (C6_nonnegative : @HighamBench.p08MatNonnegative n C6) →
+                                                  (C7_nonnegative : @HighamBench.p08MatNonnegative n C7) →
+                                                    (C8_nonnegative : @HighamBench.p08MatNonnegative n C8) →
+                                                      (C9_nonnegative : @HighamBench.p08MatNonnegative n C9) →
+                                                        (C10_nonnegative : @HighamBench.p08MatNonnegative n C10) →
+                                                          (C11_nonnegative : @HighamBench.p08MatNonnegative n C11) →
+                                                            (C12_nonnegative : @HighamBench.p08MatNonnegative n C12) →
+                                                              (c1_nonnegative :
+                                                                  @LE.le.{0} Real Real.instLE
+                                                                    (@OfNat.ofNat.{0} Real (nat_lit 0)
+                                                                      (@Zero.toOfNat0.{0} Real Real.instZero))
+                                                                    c1) →
+                                                                (c8_nonnegative :
                                                                     @LE.le.{0} Real Real.instLE
                                                                       (@OfNat.ofNat.{0} Real (nat_lit 0)
                                                                         (@Zero.toOfNat0.{0} Real Real.instZero))
-                                                                      c1) →
-                                                                  (c8_nonnegative :
-                                                                      @LE.le.{0} Real Real.instLE
-                                                                        (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                                                          (@Zero.toOfNat0.{0} Real Real.instZero))
-                                                                        c8) →
-                                                                    (c1_le_c8 : @LE.le.{0} Real Real.instLE c1 c8) →
-                                                                      (C1_dimension_bound :
-                                                                          ∀ (i j : Fin n),
-                                                                            @LE.le.{0} Real Real.instLE
-                                                                              (@HighamBench.P08IterativeRefinementRun.C1
-                                                                                n run i j)
-                                                                              (HighamBench.P08DimensionOnlyConstantBounds.matrixEntry
-                                                                                dimensionBounds n)) →
-                                                                        (C2_dimension_bound :
-                                                                            ∀ (i j : Fin n),
-                                                                              @LE.le.{0} Real Real.instLE (C2 i j)
-                                                                                (HighamBench.P08DimensionOnlyConstantBounds.matrixEntry
-                                                                                  dimensionBounds n)) →
-                                                                          (C6_dimension_bound :
-                                                                              ∀ (i j : Fin n),
-                                                                                @LE.le.{0} Real Real.instLE (C6 i j)
-                                                                                  (HighamBench.P08DimensionOnlyConstantBounds.matrixEntry
-                                                                                    dimensionBounds n)) →
-                                                                            (C7_dimension_bound :
-                                                                                ∀ (i j : Fin n),
-                                                                                  @LE.le.{0} Real Real.instLE (C7 i j)
-                                                                                    (HighamBench.P08DimensionOnlyConstantBounds.matrixEntry
-                                                                                      dimensionBounds n)) →
-                                                                              (C8_dimension_bound :
-                                                                                  ∀ (i j : Fin n),
-                                                                                    @LE.le.{0} Real Real.instLE (C8 i j)
-                                                                                      (HighamBench.P08DimensionOnlyConstantBounds.matrixEntry
-                                                                                        dimensionBounds n)) →
-                                                                                (C9_dimension_bound :
-                                                                                    ∀ (i j : Fin n),
-                                                                                      @LE.le.{0} Real Real.instLE
-                                                                                        (C9 i j)
-                                                                                        (HighamBench.P08DimensionOnlyConstantBounds.matrixEntry
-                                                                                          dimensionBounds n)) →
-                                                                                  (C10_dimension_bound :
-                                                                                      ∀ (i j : Fin n),
-                                                                                        @LE.le.{0} Real Real.instLE
-                                                                                          (C10 i j)
-                                                                                          (HighamBench.P08DimensionOnlyConstantBounds.matrixEntry
-                                                                                            dimensionBounds n)) →
-                                                                                    (C11_dimension_bound :
-                                                                                        ∀ (i j : Fin n),
-                                                                                          @LE.le.{0} Real Real.instLE
-                                                                                            (C11 i j)
-                                                                                            (HighamBench.P08DimensionOnlyConstantBounds.matrixEntry
-                                                                                              dimensionBounds n)) →
-                                                                                      (C12_dimension_bound :
-                                                                                          ∀ (i j : Fin n),
-                                                                                            @LE.le.{0} Real Real.instLE
-                                                                                              (C12 i j)
-                                                                                              (HighamBench.P08DimensionOnlyConstantBounds.matrixEntry
-                                                                                                dimensionBounds n)) →
-                                                                                        (c1_dimension_bound :
-                                                                                            @LE.le.{0} Real Real.instLE
-                                                                                              c1
-                                                                                              (HighamBench.P08DimensionOnlyConstantBounds.scalar
-                                                                                                dimensionBounds n)) →
-                                                                                          (c5_dimension_bound :
-                                                                                              @LE.le.{0} Real
-                                                                                                Real.instLE c5
-                                                                                                (HighamBench.P08DimensionOnlyConstantBounds.scalar
-                                                                                                  dimensionBounds n)) →
-                                                                                            (c8_dimension_bound :
-                                                                                                @LE.le.{0} Real
-                                                                                                  Real.instLE c8
-                                                                                                  (HighamBench.P08DimensionOnlyConstantBounds.scalar
-                                                                                                    dimensionBounds
-                                                                                                    n)) →
-                                                                                              @HighamBench.P08Lemma43Constants
-                                                                                                n run norm
-                                                                                                dimensionBounds
+                                                                      c8) →
+                                                                  (c1_le_c8 : @LE.le.{0} Real Real.instLE c1 c8) →
+                                                                    @HighamBench.P08Lemma43Constants n run norm
 ```
 
-### D021: `HighamBench.P08Lemma43RoundoffAnalysis.mk`
+### D019: `HighamBench.P08Lemma43PriorBounds.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `820b5da34de9963773519b1a761c8c11371c85943cd5809a2713d99d0df5290b`
+- Semantic SHA-256: `6c1c605f89d4b18be199e86b750500fb95395f9bc123da5531d3ffabd1ada0ca`
 
 Type:
 
 ```lean
-{n : Nat} →
-  {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        {constants : HighamBench.P08Lemma43Constants run norm dimensionBounds} →
-          (residualError : Nat → Fin n → Real) →
-            (∀ (m : Nat),
-                Eq (run.computedResidual m)
-                  (HighamBench.p08VecAdd (HighamBench.p08VecSub (HighamBench.p08MatVec run.A (run.iterate m)) run.b)
-                    (residualError m))) →
-              (∀ (m : Nat) (i : Fin n),
-                  Real.instLE.le (abs (residualError m i))
-                    (instHAdd.hAdd
-                      (instHAdd.hAdd
-                        (instHMul.hMul
-                          (instHAdd.hAdd
-                            (instHMul.hMul n.cast (HighamBench.p08ResidualUnitRoundoff run.precision run.u))
-                            (instHMul.hMul (HighamBench.p08Lemma43c3 run) (instHPow.hPow run.u 2)))
-                          (HighamBench.p08MatVec (HighamBench.p08AbsMatrix run.A)
-                            (HighamBench.p08AbsVec run.exactSolution) i))
-                        (instHMul.hMul
-                          (instHMul.hMul constants.c5 (HighamBench.p08ResidualUnitRoundoff run.precision run.u))
-                          (HighamBench.p08MatVec (HighamBench.p08AbsMatrix run.A)
-                            (HighamBench.p08AbsVec (HighamBench.p08VecSub (run.iterate m) run.exactSolution)) i)))
-                      (instHMul.hMul run.u
-                        (abs
-                          (HighamBench.p08MatVec run.A (HighamBench.p08VecSub (run.iterate m) run.exactSolution)
-                            i))))) →
-                (Real.instLE.le
-                      (instHMul.hMul (instHMul.hMul constants.c1 run.u) (HighamBench.p08KappaInverse run norm))
-                      (1 / 2) →
-                    ∀ (m : Nat) (i : Fin n),
-                      Real.instLE.le (abs ((run.correctionSolve m).backwardError i))
-                        (instHAdd.hAdd
-                          (instHMul.hMul run.u
-                            (HighamBench.p08MatVec (HighamBench.p08MatMul constants.C2 (HighamBench.p08AbsMatrix run.A))
-                              (HighamBench.p08AbsVec (HighamBench.p08VecSub (run.iterate m) run.exactSolution)) i))
-                          (instHMul.hMul run.u
-                            (HighamBench.p08MatVec
-                              (HighamBench.p08MatMul
-                                (HighamBench.p08MatMul constants.C2 (HighamBench.p08AbsMatrix run.A))
-                                (HighamBench.p08AbsMatrix run.Ainv))
-                              (HighamBench.p08AbsVec (residualError m)) i)))) →
-                  HighamBench.P08Lemma43RoundoffAnalysis run norm dimensionBounds constants
+∀ {n : Nat} {run : HighamBench.P08IterativeRefinementRun n} {norm : HighamBench.P08AbsoluteMonotoneNorm n}
+  {constants : HighamBench.P08Lemma43Constants run norm},
+  (Real.instLE.le (instHMul.hMul (instHMul.hMul constants.c1 run.u) (HighamBench.p08KappaInverse run norm)) (1 / 2) →
+      ∀ (m : Nat) (i : Fin n),
+        Real.instLE.le (abs (HighamBench.p08ExactResidualAfterCorrection run m i))
+          (instHAdd.hAdd
+            (instHAdd.hAdd
+              (instHMul.hMul run.u
+                (HighamBench.p08MatVec (HighamBench.p08MatMul constants.C6 (HighamBench.p08AbsMatrix run.A))
+                  (HighamBench.p08AbsVec (HighamBench.p08VecSub (run.iterate m) run.exactSolution)) i))
+              (instHMul.hMul
+                (instHAdd.hAdd (instHMul.hMul n.cast (HighamBench.p08ResidualUnitRoundoff run.precision run.u))
+                  (instHMul.hMul (HighamBench.p08Lemma43c3 run) (instHPow.hPow run.u 2)))
+                (HighamBench.p08MatVec (HighamBench.p08AbsMatrix run.A) (HighamBench.p08AbsVec run.exactSolution) i)))
+            (instHMul.hMul (instHMul.hMul (HighamBench.p08ResidualUnitRoundoff run.precision run.u) run.u)
+              (HighamBench.p08MatVec
+                (HighamBench.p08MatMul
+                  (HighamBench.p08MatMul constants.C7
+                    (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A) (HighamBench.p08AbsMatrix run.Ainv)))
+                  (HighamBench.p08AbsMatrix run.A))
+                (HighamBench.p08AbsVec run.exactSolution) i)))) →
+    (∀ (m : Nat) (i : Fin n),
+        Real.instLE.le (abs (instHSub.hSub (run.iterate (instHAdd.hAdd m 1) i) (run.exactSolution i)))
+          (instHAdd.hAdd
+            (instHMul.hMul (instHAdd.hAdd 1 run.u)
+              (HighamBench.p08AbsAction run.Ainv (HighamBench.p08ExactResidualAfterCorrection run m) i))
+            (instHMul.hMul run.u (abs (run.exactSolution i))))) →
+      HighamBench.P08Lemma43PriorBounds run norm constants
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} →
-  {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        {constants : @HighamBench.P08Lemma43Constants n run norm dimensionBounds} →
-          (residualError : Nat → Fin n → Real) →
-            (residual_equation :
-                ∀ (m : Nat),
-                  @Eq.{1} (Fin n → Real) (@HighamBench.P08IterativeRefinementRun.computedResidual n run m)
-                    (@HighamBench.p08VecAdd n
-                      (@HighamBench.p08VecSub n
-                        (@HighamBench.p08MatVec n (@HighamBench.P08IterativeRefinementRun.A n run)
-                          (@HighamBench.P08IterativeRefinementRun.iterate n run m))
-                        (@HighamBench.P08IterativeRefinementRun.b n run))
-                      (residualError m))) →
-              (residual_error_bound :
-                  ∀ (m : Nat) (i : Fin n),
-                    @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (residualError m i))
-                      (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                (@Nat.cast.{0} Real Real.instNatCast n)
-                                (HighamBench.p08ResidualUnitRoundoff
-                                  (@HighamBench.P08IterativeRefinementRun.precision n run)
-                                  (@HighamBench.P08IterativeRefinementRun.u n run)))
-                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                (@HighamBench.p08Lemma43c3 n run)
-                                (@HPow.hPow.{0, 0, 0} Real Nat Real
-                                  (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                                  (@HighamBench.P08IterativeRefinementRun.u n run)
-                                  (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2))))))
-                            (@HighamBench.p08MatVec n
-                              (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run))
-                              (@HighamBench.p08AbsVec n (@HighamBench.P08IterativeRefinementRun.exactSolution n run))
-                              i))
-                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                              (@HighamBench.P08Lemma43Constants.c5 n run norm dimensionBounds constants)
-                              (HighamBench.p08ResidualUnitRoundoff
-                                (@HighamBench.P08IterativeRefinementRun.precision n run)
-                                (@HighamBench.P08IterativeRefinementRun.u n run)))
-                            (@HighamBench.p08MatVec n
-                              (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run))
-                              (@HighamBench.p08AbsVec n
-                                (@HighamBench.p08VecSub n (@HighamBench.P08IterativeRefinementRun.iterate n run m)
-                                  (@HighamBench.P08IterativeRefinementRun.exactSolution n run)))
-                              i)))
-                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                          (@HighamBench.P08IterativeRefinementRun.u n run)
-                          (@abs.{0} Real Real.lattice Real.instAddGroup
-                            (@HighamBench.p08MatVec n (@HighamBench.P08IterativeRefinementRun.A n run)
-                              (@HighamBench.p08VecSub n (@HighamBench.P08IterativeRefinementRun.iterate n run m)
-                                (@HighamBench.P08IterativeRefinementRun.exactSolution n run))
-                              i))))) →
-                (correction_error_bound :
-                    @LE.le.{0} Real Real.instLE
-                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                            (@HighamBench.P08Lemma43Constants.c1 n run norm dimensionBounds constants)
-                            (@HighamBench.P08IterativeRefinementRun.u n run))
-                          (@HighamBench.p08KappaInverse n run norm))
-                        (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                          (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                          (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
-                          (@OfNat.ofNat.{0} Real (nat_lit 2)
-                            (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
-                              (@Nat.instAtLeastTwoHAddOfNat
-                                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
-                                (@Nat.instNeZeroSucc
-                                  (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))))) →
-                      ∀ (m : Nat) (i : Fin n),
-                        @LE.le.{0} Real Real.instLE
-                          (@abs.{0} Real Real.lattice Real.instAddGroup
-                            (@HighamBench.P08ColumnPivotedSolveCertificate.backwardError n
-                              (@HighamBench.P08IterativeRefinementRun.workingModel n run)
-                              (@HighamBench.P08IterativeRefinementRun.A n run)
-                              (@HighamBench.P08IterativeRefinementRun.computedResidual n run m)
-                              (@HighamBench.P08IterativeRefinementRun.C1 n run)
-                              (@HighamBench.P08IterativeRefinementRun.u n run)
-                              (@HighamBench.P08IterativeRefinementRun.correctionSolve n run m) i))
-                          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                              (@HighamBench.P08IterativeRefinementRun.u n run)
-                              (@HighamBench.p08MatVec n
-                                (@HighamBench.p08MatMul n
-                                  (@HighamBench.P08Lemma43Constants.C2 n run norm dimensionBounds constants)
-                                  (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run)))
-                                (@HighamBench.p08AbsVec n
-                                  (@HighamBench.p08VecSub n (@HighamBench.P08IterativeRefinementRun.iterate n run m)
-                                    (@HighamBench.P08IterativeRefinementRun.exactSolution n run)))
-                                i))
-                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                              (@HighamBench.P08IterativeRefinementRun.u n run)
-                              (@HighamBench.p08MatVec n
-                                (@HighamBench.p08MatMul n
-                                  (@HighamBench.p08MatMul n
-                                    (@HighamBench.P08Lemma43Constants.C2 n run norm dimensionBounds constants)
-                                    (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run)))
-                                  (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.Ainv n run)))
-                                (@HighamBench.p08AbsVec n (residualError m)) i)))) →
-                  @HighamBench.P08Lemma43RoundoffAnalysis n run norm dimensionBounds constants
+∀ {n : Nat} {run : HighamBench.P08IterativeRefinementRun n} {norm : HighamBench.P08AbsoluteMonotoneNorm n}
+  {constants : @HighamBench.P08Lemma43Constants n run norm}
+  (lemma41 :
+    @LE.le.{0} Real Real.instLE
+        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+            (@HighamBench.P08Lemma43Constants.c1 n run norm constants) (@HighamBench.P08IterativeRefinementRun.u n run))
+          (@HighamBench.p08KappaInverse n run norm))
+        (@HDiv.hDiv.{0, 0, 0} Real Real Real (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+          (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
+          (@OfNat.ofNat.{0} Real (nat_lit 2)
+            (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
+              (@Nat.instAtLeastTwoHAddOfNat (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
+                (@Nat.instNeZeroSucc (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))))) →
+      ∀ (m : Nat) (i : Fin n),
+        @LE.le.{0} Real Real.instLE
+          (@abs.{0} Real Real.lattice Real.instAddGroup (@HighamBench.p08ExactResidualAfterCorrection n run m i))
+          (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                (@HighamBench.P08IterativeRefinementRun.u n run)
+                (@HighamBench.p08MatVec n
+                  (@HighamBench.p08MatMul n (@HighamBench.P08Lemma43Constants.C6 n run norm constants)
+                    (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run)))
+                  (@HighamBench.p08AbsVec n
+                    (@HighamBench.p08VecSub n (@HighamBench.P08IterativeRefinementRun.iterate n run m)
+                      (@HighamBench.P08IterativeRefinementRun.exactSolution n run)))
+                  i))
+              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                    (@Nat.cast.{0} Real Real.instNatCast n)
+                    (HighamBench.p08ResidualUnitRoundoff (@HighamBench.P08IterativeRefinementRun.precision n run)
+                      (@HighamBench.P08IterativeRefinementRun.u n run)))
+                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                    (@HighamBench.p08Lemma43c3 n run)
+                    (@HPow.hPow.{0, 0, 0} Real Nat Real
+                      (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
+                      (@HighamBench.P08IterativeRefinementRun.u n run)
+                      (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2))))))
+                (@HighamBench.p08MatVec n (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run))
+                  (@HighamBench.p08AbsVec n (@HighamBench.P08IterativeRefinementRun.exactSolution n run)) i)))
+            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                (HighamBench.p08ResidualUnitRoundoff (@HighamBench.P08IterativeRefinementRun.precision n run)
+                  (@HighamBench.P08IterativeRefinementRun.u n run))
+                (@HighamBench.P08IterativeRefinementRun.u n run))
+              (@HighamBench.p08MatVec n
+                (@HighamBench.p08MatMul n
+                  (@HighamBench.p08MatMul n (@HighamBench.P08Lemma43Constants.C7 n run norm constants)
+                    (@HighamBench.p08MatMul n
+                      (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run))
+                      (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.Ainv n run))))
+                  (@HighamBench.p08AbsMatrix n (@HighamBench.P08IterativeRefinementRun.A n run)))
+                (@HighamBench.p08AbsVec n (@HighamBench.P08IterativeRefinementRun.exactSolution n run)) i))))
+  (lemma42_forward :
+    ∀ (m : Nat) (i : Fin n),
+      @LE.le.{0} Real Real.instLE
+        (@abs.{0} Real Real.lattice Real.instAddGroup
+          (@HSub.hSub.{0, 0, 0} Real Real Real (@instHSub.{0} Real Real.instSub)
+            (@HighamBench.P08IterativeRefinementRun.iterate n run
+              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) m
+                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+              i)
+            (@HighamBench.P08IterativeRefinementRun.exactSolution n run i)))
+        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+              (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne))
+              (@HighamBench.P08IterativeRefinementRun.u n run))
+            (@HighamBench.p08AbsAction n (@HighamBench.P08IterativeRefinementRun.Ainv n run)
+              (@HighamBench.p08ExactResidualAfterCorrection n run m) i))
+          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+            (@HighamBench.P08IterativeRefinementRun.u n run)
+            (@abs.{0} Real Real.lattice Real.instAddGroup
+              (@HighamBench.P08IterativeRefinementRun.exactSolution n run i))))),
+  @HighamBench.P08Lemma43PriorBounds n run norm constants
 ```
 
-### D022: `HighamBench.p08AbsMatrix`
+### D020: `HighamBench.p08AbsMatrix`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -1458,22 +1226,20 @@ Definition body (one-level semantic boundary):
 fun {n} A i j => abs (A i j)
 ```
 
-### D023: `HighamBench.p08Lemma43InitialVector`
+### D021: `HighamBench.p08Lemma43InitialVector`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `6f51903a6cd95edb972bc40fd17d2fcf52fd559ea050fae065f3832c41a69c78`
+- Semantic SHA-256: `9ec709d17d95d069fcc12a3102ce1ee312df3df528a79e9507ec604a2905bead`
 
 Type:
 
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Fin n → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → HighamBench.P08Lemma43Constants run norm → Fin n → Real
 ```
 
 Fully explicit type:
@@ -1482,35 +1248,32 @@ Fully explicit type:
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
     {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (constants : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → Fin n → Real
+      (constants : @HighamBench.P08Lemma43Constants n run norm) → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} {run} {norm} {dimensionBounds} constants =>
+fun {n} {run} {norm} constants =>
   HighamBench.p08VecScale run.u
     (HighamBench.p08MatVec (HighamBench.p08MatMul constants.C10 (HighamBench.p08AbsMatrix run.A))
       (HighamBench.p08AbsVec run.exactSolution))
 ```
 
-### D024: `HighamBench.p08Lemma43Propagation`
+### D022: `HighamBench.p08Lemma43Propagation`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `fc8538d8bc9f07d48d50e64d015175e1119275cd83e232fb005dcd46ace4b037`
+- Semantic SHA-256: `10367d516e13eb84ddf10ad3fd37995263de896d257fbf64bea1a690180219a2`
 
 Type:
 
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Fin n → Fin n → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → HighamBench.P08Lemma43Constants run norm → Fin n → Fin n → Real
 ```
 
 Fully explicit type:
@@ -1519,35 +1282,32 @@ Fully explicit type:
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
     {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (constants : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → Fin n → Fin n → Real
+      (constants : @HighamBench.P08Lemma43Constants n run norm) → Fin n → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} {run} {norm} {dimensionBounds} constants =>
+fun {n} {run} {norm} constants =>
   HighamBench.p08MatScale run.u
     (HighamBench.p08MatMul constants.C8
       (HighamBench.p08MatMul (HighamBench.p08AbsMatrix run.A) (HighamBench.p08AbsMatrix run.Ainv)))
 ```
 
-### D025: `HighamBench.p08Lemma43StationaryVector`
+### D023: `HighamBench.p08Lemma43StationaryVector`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `def`
 - Distance from target type: `2`
-- Semantic SHA-256: `1b5c03a53e3e7fcebe6bb0e4a313ad7a6b359634ffdb49d664ddd58f39f707c9`
+- Semantic SHA-256: `2ae95b9dcd4166e4c23eaf6b5e6b5d26f90f1682c3e0a70a82d4213e1a520ea1`
 
 Type:
 
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Fin n → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → HighamBench.P08Lemma43Constants run norm → Fin n → Real
 ```
 
 Fully explicit type:
@@ -1556,14 +1316,13 @@ Fully explicit type:
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
     {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (constants : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → Fin n → Real
+      (constants : @HighamBench.P08Lemma43Constants n run norm) → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} {run} {norm} {dimensionBounds} constants =>
+fun {n} {run} {norm} constants =>
   have absA := HighamBench.p08AbsMatrix run.A;
   have absAinv := HighamBench.p08AbsMatrix run.Ainv;
   have absx := HighamBench.p08AbsVec run.exactSolution;
@@ -1578,7 +1337,7 @@ fun {n} {run} {norm} {dimensionBounds} constants =>
           absx)))
 ```
 
-### D026: `HighamBench.p08MatMul`
+### D024: `HighamBench.p08MatMul`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -1604,7 +1363,7 @@ Definition body (one-level semantic boundary):
 fun {n} A B i j => Finset.univ.sum fun k => instHMul.hMul (A i k) (B k j)
 ```
 
-### D027: `HighamBench.p08MatPow`
+### D025: `HighamBench.p08MatPow`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -1634,7 +1393,7 @@ fun {n} B x =>
       (fun _ x => HighamBench.p08IdMatrix n) (fun k x => HighamBench.p08MatMul B x.1) f
 ```
 
-### D028: `HighamBench.p08MatVec`
+### D026: `HighamBench.p08MatVec`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -1660,7 +1419,7 @@ Definition body (one-level semantic boundary):
 fun {n} A x i => Finset.univ.sum fun j => instHMul.hMul (A i j) (x j)
 ```
 
-### D029: `HighamBench.p08VecAdd`
+### D027: `HighamBench.p08VecAdd`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -1686,7 +1445,7 @@ Definition body (one-level semantic boundary):
 fun {n} x y i => instHAdd.hAdd (x i) (y i)
 ```
 
-### D030: `HighamBench.p08VecSub`
+### D028: `HighamBench.p08VecSub`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -1712,154 +1471,60 @@ Definition body (one-level semantic boundary):
 fun {n} x y i => instHSub.hSub (x i) (y i)
 ```
 
-### D031: `HighamBench.P08ColumnPivotedSolveCertificate`
+### D029: `HighamBench.P08ColumnPivotedSolveCertificate`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `inductive`
 - Distance from target type: `3`
-- Semantic SHA-256: `4a742ed2a083d341d7389896497910c6584f007dcf88c3b7bfa64bc38080b51b`
+- Semantic SHA-256: `b694445b6edb36738cb9972cfec4a23fb96652d48e65d25a3e8d15c761a1e258`
 
 Type:
 
 ```lean
-{n : Nat} →
-  HighamBench.P08ScalarArithmeticModel → (Fin n → Fin n → Real) → (Fin n → Real) → (Fin n → Fin n → Real) → Real → Type
+{n : Nat} → (Fin n → Fin n → Real) → (Fin n → Real) → (Fin n → Fin n → Real) → Real → Type
 ```
 
 Fully explicit type:
 
 ```lean
-{n : Nat} →
-  (model : HighamBench.P08ScalarArithmeticModel) →
-    (A : Fin n → Fin n → Real) → (rhs : Fin n → Real) → (C1 : Fin n → Fin n → Real) → (u : Real) → Type
+{n : Nat} → (A : Fin n → Fin n → Real) → (rhs : Fin n → Real) → (C1 : Fin n → Fin n → Real) → (u : Real) → Type
 ```
 
-### D032: `HighamBench.P08ColumnPivotedSolveCertificate.backwardError`
+### D030: `HighamBench.P08ColumnPivotedSolveCertificate.output`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `7f2bf591bcaf3e103d5204bbda24f4ed2597fea06069bee014ae32c14d9ba5a6`
+- Semantic SHA-256: `26474c9523e744eabd7c64a71be338ecf1547a53130c1a6c3f05a19f89763bce`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {model : HighamBench.P08ScalarArithmeticModel} →
-    {A : Fin n → Fin n → Real} →
-      {rhs : Fin n → Real} →
-        {C1 : Fin n → Fin n → Real} →
-          {u : Real} → HighamBench.P08ColumnPivotedSolveCertificate model A rhs C1 u → Fin n → Real
+  {A : Fin n → Fin n → Real} →
+    {rhs : Fin n → Real} →
+      {C1 : Fin n → Fin n → Real} → {u : Real} → HighamBench.P08ColumnPivotedSolveCertificate A rhs C1 u → Fin n → Real
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {model : HighamBench.P08ScalarArithmeticModel} →
-    {A : Fin n → Fin n → Real} →
-      {rhs : Fin n → Real} →
-        {C1 : Fin n → Fin n → Real} →
-          {u : Real} → (self : @HighamBench.P08ColumnPivotedSolveCertificate n model A rhs C1 u) → Fin n → Real
+  {A : Fin n → Fin n → Real} →
+    {rhs : Fin n → Real} →
+      {C1 : Fin n → Fin n → Real} →
+        {u : Real} → (self : @HighamBench.P08ColumnPivotedSolveCertificate n A rhs C1 u) → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n model A rhs C1 u self => self.3
+fun n A rhs C1 u self => self.1
 ```
 
-### D033: `HighamBench.P08ColumnPivotedSolveCertificate.output`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `54cbe1342c9bdf08751602d675ad8f7beb46818f6a52638defa77739b6b0ac3c`
-
-Type:
-
-```lean
-{n : Nat} →
-  {model : HighamBench.P08ScalarArithmeticModel} →
-    {A : Fin n → Fin n → Real} →
-      {rhs : Fin n → Real} →
-        {C1 : Fin n → Fin n → Real} →
-          {u : Real} → HighamBench.P08ColumnPivotedSolveCertificate model A rhs C1 u → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  {model : HighamBench.P08ScalarArithmeticModel} →
-    {A : Fin n → Fin n → Real} →
-      {rhs : Fin n → Real} →
-        {C1 : Fin n → Fin n → Real} →
-          {u : Real} → (self : @HighamBench.P08ColumnPivotedSolveCertificate n model A rhs C1 u) → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n model A rhs C1 u self => self.1
-```
-
-### D034: `HighamBench.P08DimensionOnlyConstantBounds.matrixEntry`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `7807c5b0443354e41892839092dfb1798c40704ab6a59916d3426e87f4a0dc34`
-
-Type:
-
-```lean
-HighamBench.P08DimensionOnlyConstantBounds → Nat → Real
-```
-
-Fully explicit type:
-
-```lean
-(self : HighamBench.P08DimensionOnlyConstantBounds) → Nat → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun self => self.2
-```
-
-### D035: `HighamBench.P08DimensionOnlyConstantBounds.scalar`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `d6088e0225cfe0110055e45e4e97c0da46a8f6f891a1d079662801ffc7f89006`
-
-Type:
-
-```lean
-HighamBench.P08DimensionOnlyConstantBounds → Nat → Real
-```
-
-Fully explicit type:
-
-```lean
-(self : HighamBench.P08DimensionOnlyConstantBounds) → Nat → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun self => self.1
-```
-
-### D036: `HighamBench.P08IterativeRefinementRun.C1`
+### D031: `HighamBench.P08IterativeRefinementRun.C1`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -1885,68 +1550,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.19
 ```
 
-### D037: `HighamBench.P08IterativeRefinementRun.computedResidual`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `58270e7b7c127cccb8493ee87248f50d8b8227e2332d1c36b3359b50eacfbfa0`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P08IterativeRefinementRun n → Nat → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P08IterativeRefinementRun n) → Nat → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.23
-```
-
-### D038: `HighamBench.P08IterativeRefinementRun.correctionSolve`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `49c7a58fecc0b38fa47e1a7aee4d392460fab5da334be050109887a543bdff61`
-
-Type:
-
-```lean
-{n : Nat} →
-  (self : HighamBench.P08IterativeRefinementRun n) →
-    (m : Nat) →
-      HighamBench.P08ColumnPivotedSolveCertificate self.workingModel self.A (self.computedResidual m) self.C1 self.u
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  (self : HighamBench.P08IterativeRefinementRun n) →
-    (m : Nat) →
-      @HighamBench.P08ColumnPivotedSolveCertificate n (@HighamBench.P08IterativeRefinementRun.workingModel n self)
-        (@HighamBench.P08IterativeRefinementRun.A n self)
-        (@HighamBench.P08IterativeRefinementRun.computedResidual n self m)
-        (@HighamBench.P08IterativeRefinementRun.C1 n self) (@HighamBench.P08IterativeRefinementRun.u n self)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.31
-```
-
-### D039: `HighamBench.P08IterativeRefinementRun.exactSolution`
+### D032: `HighamBench.P08IterativeRefinementRun.exactSolution`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -1972,7 +1576,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.17
 ```
 
-### D040: `HighamBench.P08IterativeRefinementRun.precision`
+### D033: `HighamBench.P08IterativeRefinementRun.precision`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -1998,48 +1602,20 @@ Definition body (one-level semantic boundary):
 fun n self => self.2
 ```
 
-### D041: `HighamBench.P08IterativeRefinementRun.workingModel`
+### D034: `HighamBench.P08Lemma43Constants.C10`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `197f8cf0352d97d80831ac9a763d9dda5f4184951698067c96f49e3b7ab078ff`
-
-Type:
-
-```lean
-{n : Nat} → HighamBench.P08IterativeRefinementRun n → HighamBench.P08ScalarArithmeticModel
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : HighamBench.P08IterativeRefinementRun n) → HighamBench.P08ScalarArithmeticModel
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.6
-```
-
-### D042: `HighamBench.P08Lemma43Constants.C10`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `9ae892a2919f5ef5d7fe83095ff14f0a21e44885747984d04716d888e20ef5d5`
+- Semantic SHA-256: `3f89230489efa2acd4b87eef9416f6823b5ad4aaaa9833968c8ec9c226b61de4`
 
 Type:
 
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Fin n → Fin n → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → HighamBench.P08Lemma43Constants run norm → Fin n → Fin n → Real
 ```
 
 Fully explicit type:
@@ -2048,32 +1624,29 @@ Fully explicit type:
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
     {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (self : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → Fin n → Fin n → Real
+      (self : @HighamBench.P08Lemma43Constants n run norm) → Fin n → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n run norm dimensionBounds self => self.6
+fun n run norm self => self.6
 ```
 
-### D043: `HighamBench.P08Lemma43Constants.C11`
+### D035: `HighamBench.P08Lemma43Constants.C11`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `cb40f032154afa002ddf244eb17b91237ab04da771de5b8c16d652cb11007012`
+- Semantic SHA-256: `b488c8fc7a2055f6c645f84b731807126e6dcf8d76e9b4037de1c02fc5ce2fd7`
 
 Type:
 
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Fin n → Fin n → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → HighamBench.P08Lemma43Constants run norm → Fin n → Fin n → Real
 ```
 
 Fully explicit type:
@@ -2082,32 +1655,29 @@ Fully explicit type:
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
     {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (self : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → Fin n → Fin n → Real
+      (self : @HighamBench.P08Lemma43Constants n run norm) → Fin n → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n run norm dimensionBounds self => self.7
+fun n run norm self => self.7
 ```
 
-### D044: `HighamBench.P08Lemma43Constants.C12`
+### D036: `HighamBench.P08Lemma43Constants.C12`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `3bc8aadae3baed9f5b7f93e37032d0ba4fa9392b68373b08bf9b9cec3e567831`
+- Semantic SHA-256: `046bb31ccf0eec67c502aa1c75b21aa05264d263a7fde0c47f4f26dcdaa176a9`
 
 Type:
 
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Fin n → Fin n → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → HighamBench.P08Lemma43Constants run norm → Fin n → Fin n → Real
 ```
 
 Fully explicit type:
@@ -2116,32 +1686,29 @@ Fully explicit type:
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
     {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (self : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → Fin n → Fin n → Real
+      (self : @HighamBench.P08Lemma43Constants n run norm) → Fin n → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n run norm dimensionBounds self => self.8
+fun n run norm self => self.8
 ```
 
-### D045: `HighamBench.P08Lemma43Constants.C2`
+### D037: `HighamBench.P08Lemma43Constants.C6`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `e11b1c218c5e0cea9b24a56d21cbee0568cfb7345d668eab797fb33f0c0baba0`
+- Semantic SHA-256: `ca15d893794305e77e09c02277a8c451656dfb9e0446207dcbcf65183257d813`
 
 Type:
 
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Fin n → Fin n → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → HighamBench.P08Lemma43Constants run norm → Fin n → Fin n → Real
 ```
 
 Fully explicit type:
@@ -2150,32 +1717,29 @@ Fully explicit type:
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
     {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (self : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → Fin n → Fin n → Real
+      (self : @HighamBench.P08Lemma43Constants n run norm) → Fin n → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n run norm dimensionBounds self => self.1
+fun n run norm self => self.2
 ```
 
-### D046: `HighamBench.P08Lemma43Constants.C8`
+### D038: `HighamBench.P08Lemma43Constants.C7`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `94053baacd4d4d794b4cee0ddcaf96dbe87eb45844dc2cdb37a0fd8d0cf0d7b8`
+- Semantic SHA-256: `433d8137960836976369880de134edcb0fca599a99306d918ffb293ebcc53dbb`
 
 Type:
 
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Fin n → Fin n → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → HighamBench.P08Lemma43Constants run norm → Fin n → Fin n → Real
 ```
 
 Fully explicit type:
@@ -2184,32 +1748,29 @@ Fully explicit type:
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
     {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (self : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → Fin n → Fin n → Real
+      (self : @HighamBench.P08Lemma43Constants n run norm) → Fin n → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n run norm dimensionBounds self => self.4
+fun n run norm self => self.3
 ```
 
-### D047: `HighamBench.P08Lemma43Constants.c1`
+### D039: `HighamBench.P08Lemma43Constants.C8`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `e92ead70a36524d08e7dd1894512923400272f9edd8e09a1b7602a0b7c90daf8`
+- Semantic SHA-256: `74f9157d15d939e8df3b310c18b63c26faf46fb4389b85a593a3f0c8881fe268`
 
 Type:
 
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → HighamBench.P08Lemma43Constants run norm → Fin n → Fin n → Real
 ```
 
 Fully explicit type:
@@ -2218,32 +1779,29 @@ Fully explicit type:
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
     {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (self : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → Real
+      (self : @HighamBench.P08Lemma43Constants n run norm) → Fin n → Fin n → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n run norm dimensionBounds self => self.9
+fun n run norm self => self.4
 ```
 
-### D048: `HighamBench.P08Lemma43Constants.c5`
+### D040: `HighamBench.P08Lemma43Constants.c1`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `3`
-- Semantic SHA-256: `6e796277136197ddf99f6c60f55184168c4471f64b47901dc73a08b828484c15`
+- Semantic SHA-256: `21c9b73f75387b205c7c6fca385f7080561a919097ef680780383b275c19342b`
 
 Type:
 
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        HighamBench.P08Lemma43Constants run norm dimensionBounds → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → HighamBench.P08Lemma43Constants run norm → Real
 ```
 
 Fully explicit type:
@@ -2251,18 +1809,16 @@ Fully explicit type:
 ```lean
 {n : Nat} →
   {run : HighamBench.P08IterativeRefinementRun n} →
-    {norm : HighamBench.P08AbsoluteMonotoneNorm n} →
-      {dimensionBounds : HighamBench.P08DimensionOnlyConstantBounds} →
-        (self : @HighamBench.P08Lemma43Constants n run norm dimensionBounds) → Real
+    {norm : HighamBench.P08AbsoluteMonotoneNorm n} → (self : @HighamBench.P08Lemma43Constants n run norm) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun n run norm dimensionBounds self => self.10
+fun n run norm self => self.9
 ```
 
-### D049: `HighamBench.P08ResidualPrecision`
+### D041: `HighamBench.P08ResidualPrecision`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2282,7 +1838,7 @@ Fully explicit type:
 Type
 ```
 
-### D050: `HighamBench.P08ScalarArithmeticModel`
+### D042: `HighamBench.P08ScalarArithmeticModel`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2302,7 +1858,7 @@ Fully explicit type:
 Type
 ```
 
-### D051: `HighamBench.P08ScalarArithmeticModel.flSub`
+### D043: `HighamBench.P08ScalarArithmeticModel.flSub`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2328,7 +1884,7 @@ Definition body (one-level semantic boundary):
 fun self => self.4
 ```
 
-### D052: `HighamBench.P08ScalarArithmeticModel.unitRoundoff`
+### D044: `HighamBench.P08ScalarArithmeticModel.unitRoundoff`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2354,7 +1910,7 @@ Definition body (one-level semantic boundary):
 fun self => self.1
 ```
 
-### D053: `HighamBench.P08SubtractionLastResidualTrace`
+### D045: `HighamBench.P08SubtractionLastResidualTrace`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2380,7 +1936,7 @@ Fully explicit type:
       (convert : Real → Real) → (A : Fin n → Fin n → Real) → (b x : Fin n → Real) → Type
 ```
 
-### D054: `HighamBench.P08SubtractionLastResidualTrace.output`
+### D046: `HighamBench.P08SubtractionLastResidualTrace.output`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2418,7 +1974,33 @@ Definition body (one-level semantic boundary):
 fun n precision residualModel convert A b x self => self.3
 ```
 
-### D055: `HighamBench.p08AbsVec`
+### D047: `HighamBench.p08AbsAction`
+
+- Role: `local`
+- Owner module: `HighamBench.P08Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `2e411afdeeff87e69866a73e67fc559f4099fa28d728bac01a806d5050ad1e33`
+
+Type:
+
+```lean
+{n : Nat} → (Fin n → Fin n → Real) → (Fin n → Real) → Fin n → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (A : Fin n → Fin n → Real) → (x : Fin n → Real) → Fin n → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} A x i => Finset.univ.sum fun j => instHMul.hMul (abs (A i j)) (abs (x j))
+```
+
+### D048: `HighamBench.p08AbsVec`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2444,7 +2026,7 @@ Definition body (one-level semantic boundary):
 fun {n} x i => abs (x i)
 ```
 
-### D056: `HighamBench.p08BasisVector`
+### D049: `HighamBench.p08BasisVector`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2470,7 +2052,7 @@ Definition body (one-level semantic boundary):
 fun {n} j i => ite (Eq i j) 1 0
 ```
 
-### D057: `HighamBench.p08IdMatrix`
+### D050: `HighamBench.p08IdMatrix`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2496,7 +2078,7 @@ Definition body (one-level semantic boundary):
 fun n i j => ite (Eq i j) 1 0
 ```
 
-### D058: `HighamBench.p08Lemma43c3`
+### D051: `HighamBench.p08Lemma43c3`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2536,7 +2118,7 @@ fun {n} run =>
       n.cast
 ```
 
-### D059: `HighamBench.p08Lemma43c4`
+### D052: `HighamBench.p08Lemma43c4`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2563,7 +2145,7 @@ fun {n} run =>
   HighamBench.p08ResidualUnitRoundoff.match_1 (fun x => Real) run.precision (fun _ => 0) fun _ => instHAdd.hAdd 1 run.u
 ```
 
-### D060: `HighamBench.p08MatAdd`
+### D053: `HighamBench.p08MatAdd`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2589,7 +2171,7 @@ Definition body (one-level semantic boundary):
 fun {n} A B i j => instHAdd.hAdd (A i j) (B i j)
 ```
 
-### D061: `HighamBench.p08MatNonnegative`
+### D054: `HighamBench.p08MatNonnegative`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2615,7 +2197,7 @@ Definition body (one-level semantic boundary):
 fun {n} A => ∀ (i j : Fin n), Real.instLE.le 0 (A i j)
 ```
 
-### D062: `HighamBench.p08MatPow.match_1`
+### D055: `HighamBench.p08MatPow.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2644,7 +2226,7 @@ Definition body (one-level semantic boundary):
 fun motive x h_1 h_2 => Nat.casesOn x (h_1 Unit.unit) fun n => h_2 n
 ```
 
-### D063: `HighamBench.p08MatScale`
+### D056: `HighamBench.p08MatScale`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2670,7 +2252,7 @@ Definition body (one-level semantic boundary):
 fun {n} a A i j => instHMul.hMul a (A i j)
 ```
 
-### D064: `HighamBench.p08MatSub`
+### D057: `HighamBench.p08MatSub`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2696,7 +2278,7 @@ Definition body (one-level semantic boundary):
 fun {n} A B i j => instHSub.hSub (A i j) (B i j)
 ```
 
-### D065: `HighamBench.p08ResidualUnitRoundoff`
+### D058: `HighamBench.p08ResidualUnitRoundoff`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2723,7 +2305,7 @@ fun precision u =>
   HighamBench.p08ResidualUnitRoundoff.match_1 (fun precision => Real) precision (fun _ => u) fun _ => instHPow.hPow u 2
 ```
 
-### D066: `HighamBench.p08VecScale`
+### D059: `HighamBench.p08VecScale`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2749,57 +2331,51 @@ Definition body (one-level semantic boundary):
 fun {n} a x i => instHMul.hMul a (x i)
 ```
 
-### D067: `HighamBench.P08ColumnPivotedSolveCertificate.mk`
+### D060: `HighamBench.P08ColumnPivotedSolveCertificate.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `4`
-- Semantic SHA-256: `d44df443c4835549078a664241bff572d99a62f4d3e457329d0c4d8a5d2b0696`
+- Semantic SHA-256: `32cb8ef3635ca87399bad3910b77b3802f3d739e78e4457e871a6069935efa42`
 
 Type:
 
 ```lean
 {n : Nat} →
-  {model : HighamBench.P08ScalarArithmeticModel} →
-    {A : Fin n → Fin n → Real} →
-      {rhs : Fin n → Real} →
-        {C1 : Fin n → Fin n → Real} →
-          {u : Real} →
-            (output : Fin n → Real) →
-              HighamBench.P08ColumnPivotedGaussianEliminationTrace model A rhs output →
-                (backwardError : Fin n → Real) →
-                  Eq (HighamBench.p08MatVec A output) (HighamBench.p08VecAdd rhs backwardError) →
-                    (∀ (i : Fin n),
-                        Real.instLE.le (abs (backwardError i))
-                          (instHMul.hMul u (HighamBench.p08MatVec C1 (HighamBench.p08AbsAction A output) i))) →
-                      HighamBench.P08ColumnPivotedSolveCertificate model A rhs C1 u
+  {A : Fin n → Fin n → Real} →
+    {rhs : Fin n → Real} →
+      {C1 : Fin n → Fin n → Real} →
+        {u : Real} →
+          (output backwardError : Fin n → Real) →
+            Eq (HighamBench.p08MatVec A output) (HighamBench.p08VecAdd rhs backwardError) →
+              (∀ (i : Fin n),
+                  Real.instLE.le (abs (backwardError i))
+                    (instHMul.hMul u (HighamBench.p08MatVec C1 (HighamBench.p08AbsAction A output) i))) →
+                HighamBench.P08ColumnPivotedSolveCertificate A rhs C1 u
 ```
 
 Fully explicit type:
 
 ```lean
 {n : Nat} →
-  {model : HighamBench.P08ScalarArithmeticModel} →
-    {A : Fin n → Fin n → Real} →
-      {rhs : Fin n → Real} →
-        {C1 : Fin n → Fin n → Real} →
-          {u : Real} →
-            (output : Fin n → Real) →
-              (execution : @HighamBench.P08ColumnPivotedGaussianEliminationTrace model n A rhs output) →
-                (backwardError : Fin n → Real) →
-                  (equation :
-                      @Eq.{1} (Fin n → Real) (@HighamBench.p08MatVec n A output)
-                        (@HighamBench.p08VecAdd n rhs backwardError)) →
-                    (backward_error_bound :
-                        ∀ (i : Fin n),
-                          @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (backwardError i))
-                            (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) u
-                              (@HighamBench.p08MatVec n C1 (@HighamBench.p08AbsAction n A output) i))) →
-                      @HighamBench.P08ColumnPivotedSolveCertificate n model A rhs C1 u
+  {A : Fin n → Fin n → Real} →
+    {rhs : Fin n → Real} →
+      {C1 : Fin n → Fin n → Real} →
+        {u : Real} →
+          (output backwardError : Fin n → Real) →
+            (equation :
+                @Eq.{1} (Fin n → Real) (@HighamBench.p08MatVec n A output)
+                  (@HighamBench.p08VecAdd n rhs backwardError)) →
+              (backward_error_bound :
+                  ∀ (i : Fin n),
+                    @LE.le.{0} Real Real.instLE (@abs.{0} Real Real.lattice Real.instAddGroup (backwardError i))
+                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) u
+                        (@HighamBench.p08MatVec n C1 (@HighamBench.p08AbsAction n A output) i))) →
+                @HighamBench.P08ColumnPivotedSolveCertificate n A rhs C1 u
 ```
 
-### D068: `HighamBench.P08ResidualPrecision.double`
+### D061: `HighamBench.P08ResidualPrecision.double`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2819,7 +2395,7 @@ Fully explicit type:
 HighamBench.P08ResidualPrecision
 ```
 
-### D069: `HighamBench.P08ResidualPrecision.single`
+### D062: `HighamBench.P08ResidualPrecision.single`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2839,7 +2415,7 @@ Fully explicit type:
 HighamBench.P08ResidualPrecision
 ```
 
-### D070: `HighamBench.P08ScalarArithmeticModel.mk`
+### D063: `HighamBench.P08ScalarArithmeticModel.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2923,7 +2499,7 @@ Fully explicit type:
               HighamBench.P08ScalarArithmeticModel
 ```
 
-### D071: `HighamBench.P08SubtractionLastResidualTrace.mk`
+### D064: `HighamBench.P08SubtractionLastResidualTrace.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -2974,7 +2550,7 @@ Fully explicit type:
                     @HighamBench.P08SubtractionLastResidualTrace n precision residualModel convert A b x
 ```
 
-### D072: `HighamBench.p08ResidualUnitRoundoff.match_1`
+### D065: `HighamBench.p08ResidualUnitRoundoff.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -3006,28 +2582,7 @@ Definition body (one-level semantic boundary):
 fun motive precision h_1 h_2 => HighamBench.P08ResidualPrecision.casesOn precision (h_1 Unit.unit) (h_2 Unit.unit)
 ```
 
-### D073: `HighamBench.P08ColumnPivotedGaussianEliminationTrace`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `5`
-- Semantic SHA-256: `04ef73fc38e76e7aa817d01e5e91d746fd8a6d6d1369d6142456a8c1e7a9638e`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → {n : Nat} → (Fin n → Fin n → Real) → (Fin n → Real) → (Fin n → Real) → Type
-```
-
-Fully explicit type:
-
-```lean
-(model : HighamBench.P08ScalarArithmeticModel) →
-  {n : Nat} → (A : Fin n → Fin n → Real) → (rhs output : Fin n → Real) → Type
-```
-
-### D074: `HighamBench.P08ResidualPrecision.casesOn`
+### D066: `HighamBench.P08ResidualPrecision.casesOn`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -3058,33 +2613,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t single double => HighamBench.P08ResidualPrecision.rec single double t
 ```
 
-### D075: `HighamBench.p08AbsAction`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `5`
-- Semantic SHA-256: `2e411afdeeff87e69866a73e67fc559f4099fa28d728bac01a806d5050ad1e33`
-
-Type:
-
-```lean
-{n : Nat} → (Fin n → Fin n → Real) → (Fin n → Real) → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (A : Fin n → Fin n → Real) → (x : Fin n → Real) → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} A x i => Finset.univ.sum fun j => instHMul.hMul (abs (A i j)) (abs (x j))
-```
-
-### D076: `HighamBench.p08RoundedDot`
+### D067: `HighamBench.p08RoundedDot`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -3111,113 +2640,7 @@ Definition body (one-level semantic boundary):
 fun model {n} A x i => HighamBench.recursiveSum model.flAdd n fun j => model.flMul (A i j) (x j)
 ```
 
-### D077: `HighamBench.P08ColumnPivotedGaussianEliminationTrace.mk`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `6`
-- Semantic SHA-256: `5c979a9ca09c426bc2ed032a04c306277455a9accc6d7f0f552352ce087aeefa`
-
-Type:
-
-```lean
-{model : HighamBench.P08ScalarArithmeticModel} →
-  {n : Nat} →
-    {A : Fin n → Fin n → Real} →
-      {rhs output : Fin n → Real} →
-        (matrixState : Nat → Fin n → Fin n → Real) →
-          (rhsState : Nat → Fin n → Real) →
-            (pivotRow : Fin n → Fin n) →
-              Eq (matrixState 0) A →
-                Eq (rhsState 0) rhs →
-                  (∀ (k : Fin n), instLENat.le k.val (pivotRow k).val) →
-                    (∀ (k i : Fin n),
-                        instLENat.le k.val i.val →
-                          Real.instLE.le (abs (matrixState k.val i k)) (abs (matrixState k.val (pivotRow k) k))) →
-                      (∀ (k : Fin n), Ne (matrixState k.val (pivotRow k) k) 0) →
-                        (∀ (k : Fin n),
-                            Eq (matrixState (instHAdd.hAdd k.val 1))
-                              (HighamBench.p08ColumnPivotedMatrixStep model (matrixState k.val) k (pivotRow k))) →
-                          (∀ (k : Fin n),
-                              Eq (rhsState (instHAdd.hAdd k.val 1))
-                                (HighamBench.p08ColumnPivotedRhsStep model (matrixState k.val) (rhsState k.val) k
-                                  (pivotRow k))) →
-                            (∀ (i j : Fin n), instLTNat.lt j.val i.val → Eq (matrixState n i j) 0) →
-                              (∀ (i : Fin n), Ne (matrixState n i i) 0) →
-                                (∀ (i : Fin n),
-                                    Eq (output i)
-                                      (model.flDiv
-                                        (model.flSub (rhsState n i)
-                                          (HighamBench.p08RoundedUpperTailDot model (matrixState n) output i))
-                                        (matrixState n i i))) →
-                                  HighamBench.P08ColumnPivotedGaussianEliminationTrace model A rhs output
-```
-
-Fully explicit type:
-
-```lean
-{model : HighamBench.P08ScalarArithmeticModel} →
-  {n : Nat} →
-    {A : Fin n → Fin n → Real} →
-      {rhs output : Fin n → Real} →
-        (matrixState : Nat → Fin n → Fin n → Real) →
-          (rhsState : Nat → Fin n → Real) →
-            (pivotRow : Fin n → Fin n) →
-              (initial_matrix :
-                  @Eq.{1} (Fin n → Fin n → Real)
-                    (matrixState (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))) A) →
-                (initial_rhs :
-                    @Eq.{1} (Fin n → Real) (rhsState (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))
-                      rhs) →
-                  (pivot_active : ∀ (k : Fin n), @LE.le.{0} Nat instLENat (@Fin.val n k) (@Fin.val n (pivotRow k))) →
-                    (pivot_largest :
-                        ∀ (k i : Fin n),
-                          @LE.le.{0} Nat instLENat (@Fin.val n k) (@Fin.val n i) →
-                            @LE.le.{0} Real Real.instLE
-                              (@abs.{0} Real Real.lattice Real.instAddGroup (matrixState (@Fin.val n k) i k))
-                              (@abs.{0} Real Real.lattice Real.instAddGroup
-                                (matrixState (@Fin.val n k) (pivotRow k) k))) →
-                      (pivot_nonzero :
-                          ∀ (k : Fin n),
-                            @Ne.{1} Real (matrixState (@Fin.val n k) (pivotRow k) k)
-                              (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))) →
-                        (matrix_step :
-                            ∀ (k : Fin n),
-                              @Eq.{1} (Fin n → Fin n → Real)
-                                (matrixState
-                                  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@Fin.val n k)
-                                    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-                                (@HighamBench.p08ColumnPivotedMatrixStep model n (matrixState (@Fin.val n k)) k
-                                  (pivotRow k))) →
-                          (rhs_step :
-                              ∀ (k : Fin n),
-                                @Eq.{1} (Fin n → Real)
-                                  (rhsState
-                                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@Fin.val n k)
-                                      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-                                  (@HighamBench.p08ColumnPivotedRhsStep model n (matrixState (@Fin.val n k))
-                                    (rhsState (@Fin.val n k)) k (pivotRow k))) →
-                            (final_upper_triangular :
-                                ∀ (i j : Fin n),
-                                  @LT.lt.{0} Nat instLTNat (@Fin.val n j) (@Fin.val n i) →
-                                    @Eq.{1} Real (matrixState n i j)
-                                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))) →
-                              (final_diagonal_nonzero :
-                                  ∀ (i : Fin n),
-                                    @Ne.{1} Real (matrixState n i i)
-                                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))) →
-                                (back_substitution :
-                                    ∀ (i : Fin n),
-                                      @Eq.{1} Real (output i)
-                                        (HighamBench.P08ScalarArithmeticModel.flDiv model
-                                          (HighamBench.P08ScalarArithmeticModel.flSub model (rhsState n i)
-                                            (@HighamBench.p08RoundedUpperTailDot model n (matrixState n) output i))
-                                          (matrixState n i i))) →
-                                  @HighamBench.P08ColumnPivotedGaussianEliminationTrace model n A rhs output
-```
-
-### D078: `HighamBench.P08ResidualPrecision.rec`
+### D068: `HighamBench.P08ResidualPrecision.rec`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -3241,7 +2664,7 @@ Fully explicit type:
     (double : motive HighamBench.P08ResidualPrecision.double) → (t : HighamBench.P08ResidualPrecision) → motive t
 ```
 
-### D079: `HighamBench.P08ScalarArithmeticModel.flAdd`
+### D069: `HighamBench.P08ScalarArithmeticModel.flAdd`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -3267,7 +2690,7 @@ Definition body (one-level semantic boundary):
 fun self => self.3
 ```
 
-### D080: `HighamBench.P08ScalarArithmeticModel.flMul`
+### D070: `HighamBench.P08ScalarArithmeticModel.flMul`
 
 - Role: `local`
 - Owner module: `HighamBench.P08Definitions`
@@ -3293,7 +2716,7 @@ Definition body (one-level semantic boundary):
 fun self => self.5
 ```
 
-### D081: `HighamBench.recursiveSum`
+### D071: `HighamBench.recursiveSum`
 
 - Role: `local`
 - Owner module: `HighamBench.Core`
@@ -3325,128 +2748,7 @@ fun flAdd x x_1 =>
     x_1
 ```
 
-### D082: `HighamBench.P08ScalarArithmeticModel.flDiv`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `7`
-- Semantic SHA-256: `e89ab6cb2f2f523f7cb018bdfc5e5e280ac7b52c225d3490a0126ff08d339b2a`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → Real → Real → Real
-```
-
-Fully explicit type:
-
-```lean
-(self : HighamBench.P08ScalarArithmeticModel) → Real → Real → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun self => self.6
-```
-
-### D083: `HighamBench.p08ColumnPivotedMatrixStep`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `309cb8a5d5954c0c8eb38407c8d1f1223ca7491444f306ba2ccdce14b967ff64`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → {n : Nat} → (Fin n → Fin n → Real) → Fin n → Fin n → Fin n → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-(model : HighamBench.P08ScalarArithmeticModel) →
-  {n : Nat} → (A : Fin n → Fin n → Real) → (k pivot : Fin n) → Fin n → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun model {n} A k pivot =>
-  have swapped := HighamBench.p08SwapRowsMatrix A k pivot;
-  fun i j =>
-  ite (instLENat.le i.val k.val) (swapped i j)
-    (ite (instLTNat.lt j.val k.val) (swapped i j)
-      (ite (Eq j k) 0
-        (model.flSub (swapped i j) (model.flMul (model.flDiv (swapped i k) (swapped k k)) (swapped k j)))))
-```
-
-### D084: `HighamBench.p08ColumnPivotedRhsStep`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `73efa32de8540c40dd4faddb7e508fdd616fbd985fe9b2e9847cfc54d8baea37`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel →
-  {n : Nat} → (Fin n → Fin n → Real) → (Fin n → Real) → Fin n → Fin n → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-(model : HighamBench.P08ScalarArithmeticModel) →
-  {n : Nat} → (A : Fin n → Fin n → Real) → (b : Fin n → Real) → (k pivot : Fin n) → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun model {n} A b k pivot =>
-  have swappedA := HighamBench.p08SwapRowsMatrix A k pivot;
-  have swappedB := HighamBench.p08SwapRowsVector b k pivot;
-  fun i =>
-  ite (instLENat.le i.val k.val) (swappedB i)
-    (model.flSub (swappedB i) (model.flMul (model.flDiv (swappedA i k) (swappedA k k)) (swappedB k)))
-```
-
-### D085: `HighamBench.p08RoundedUpperTailDot`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `096124e2679f3fa41ab051e331b5aa95013b219c956664030878e8932f480f34`
-
-Type:
-
-```lean
-HighamBench.P08ScalarArithmeticModel → {n : Nat} → (Fin n → Fin n → Real) → (Fin n → Real) → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-(model : HighamBench.P08ScalarArithmeticModel) →
-  {n : Nat} → (U : Fin n → Fin n → Real) → (x : Fin n → Real) → (i : Fin n) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun model {n} U x i =>
-  HighamBench.recursiveSum model.flAdd (instHSub.hSub n (instHAdd.hAdd i.val 1)) fun j =>
-    model.flMul (U i (HighamBench.p08UpperTailIndex i j)) (x (HighamBench.p08UpperTailIndex i j))
-```
-
-### D086: `HighamBench.recursiveSum._proof_1`
+### D072: `HighamBench.recursiveSum._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.Core`
@@ -3469,7 +2771,7 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D087: `HighamBench.recursiveSum.match_1`
+### D073: `HighamBench.recursiveSum.match_1`
 
 - Role: `local`
 - Owner module: `HighamBench.Core`
@@ -3514,128 +2816,7 @@ fun motive x x_1 h_1 h_2 =>
   Nat.casesOn (motive := fun x => (x_2 : Fin x → Real) → motive x x_2) x (fun x => h_1 x) (fun n x => h_2 n x) x_1
 ```
 
-### D088: `HighamBench.p08SwapRowsMatrix`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `8`
-- Semantic SHA-256: `f22db28acb57c47540470b2443d37f59d2b41281d6e9f25ac2af5f6f7b8dc238`
-
-Type:
-
-```lean
-{n : Nat} → (Fin n → Fin n → Real) → Fin n → Fin n → Fin n → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (A : Fin n → Fin n → Real) → (r s : Fin n) → Fin n → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} A r s i j => ite (Eq i r) (A s j) (ite (Eq i s) (A r j) (A i j))
-```
-
-### D089: `HighamBench.p08SwapRowsVector`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `8`
-- Semantic SHA-256: `697d1103f6d5a8aef9aa5bcf7afe54af67419b72a4479ae1f1c04969c16a2aa4`
-
-Type:
-
-```lean
-{n : Nat} → (Fin n → Real) → Fin n → Fin n → Fin n → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (b : Fin n → Real) → (r s : Fin n) → Fin n → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} b r s i => ite (Eq i r) (b s) (ite (Eq i s) (b r) (b i))
-```
-
-### D090: `HighamBench.p08UpperTailIndex`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `def`
-- Distance from target type: `8`
-- Semantic SHA-256: `ba1de8e9f5ed31084b6b5adda945b1c8c9dca6e1153a406a978b4b09f15a55c7`
-
-Type:
-
-```lean
-{n : Nat} → (i : Fin n) → Fin (instHSub.hSub n (instHAdd.hAdd i.val 1)) → Fin n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  (i : Fin n) →
-    (j :
-        Fin
-          (@HSub.hSub.{0, 0, 0} Nat Nat Nat (@instHSub.{0} Nat instSubNat) n
-            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@Fin.val n i)
-              (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))) →
-      Fin n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} i j => ⟨instHAdd.hAdd (instHAdd.hAdd i.val 1) j.val, ⋯⟩
-```
-
-### D091: `HighamBench.p08UpperTailIndex._proof_2`
-
-- Role: `local`
-- Owner module: `HighamBench.P08Definitions`
-- Declaration kind: `theorem`
-- Distance from target type: `9`
-- Semantic SHA-256: `ee246c405abf2f153e4341862aad32b4ad86ebd9874969b6c70b1d7948e3dcf2`
-
-Type:
-
-```lean
-∀ {n : Nat} (i : Fin n) (j : Fin (instHSub.hSub n (instHAdd.hAdd i.val 1))),
-  instLTNat.lt (instHAdd.hAdd (instHAdd.hAdd i.val 1) j.val) n
-```
-
-Fully explicit type:
-
-```lean
-∀ {n : Nat} (i : Fin n)
-  (j :
-    Fin
-      (@HSub.hSub.{0, 0, 0} Nat Nat Nat (@instHSub.{0} Nat instSubNat) n
-        (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@Fin.val n i)
-          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))),
-  @LT.lt.{0} Nat instLTNat
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
-      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@Fin.val n i)
-        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-      (@Fin.val
-        (@HSub.hSub.{0, 0, 0} Nat Nat Nat (@instHSub.{0} Nat instSubNat) n
-          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@Fin.val n i)
-            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-        j))
-    n
-```
-
-### D092: `DivInvMonoid.toDiv`
+### D074: `DivInvMonoid.toDiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -3661,7 +2842,7 @@ Definition body (one-level semantic boundary):
 fun G [self : DivInvMonoid G] => self.3
 ```
 
-### D093: `Fin`
+### D075: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3681,7 +2862,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D094: `HDiv.hDiv`
+### D076: `HDiv.hDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3707,7 +2888,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HDiv α β γ] => self.1
 ```
 
-### D095: `HMul.hMul`
+### D077: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3733,7 +2914,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D096: `LE.le`
+### D078: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3759,7 +2940,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LE α] => self.1
 ```
 
-### D097: `Nat`
+### D079: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3779,7 +2960,7 @@ Fully explicit type:
 Type
 ```
 
-### D098: `Nat.instAtLeastTwoHAddOfNat`
+### D080: `Nat.instAtLeastTwoHAddOfNat`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Init`
@@ -3802,7 +2983,7 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D099: `Nat.instNeZeroSucc`
+### D081: `Nat.instNeZeroSucc`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Nat.Basic`
@@ -3825,7 +3006,7 @@ Fully explicit type:
       (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
-### D100: `OfNat.ofNat`
+### D082: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3851,7 +3032,7 @@ Definition body (one-level semantic boundary):
 fun α x [self : OfNat α x] => self.1
 ```
 
-### D101: `One.toOfNat1`
+### D083: `One.toOfNat1`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -3877,7 +3058,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : One α] => { ofNat := inst.one }
 ```
 
-### D102: `Real`
+### D084: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3897,7 +3078,7 @@ Fully explicit type:
 Type
 ```
 
-### D103: `Real.instAddGroup`
+### D085: `Real.instAddGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3923,7 +3104,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D104: `Real.instDivInvMonoid`
+### D086: `Real.instDivInvMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3951,7 +3132,7 @@ Definition body (one-level semantic boundary):
   zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
 ```
 
-### D105: `Real.instLE`
+### D087: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3977,7 +3158,7 @@ Definition body (one-level semantic boundary):
 { le := Real.le✝ }
 ```
 
-### D106: `Real.instMul`
+### D088: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4003,7 +3184,7 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D107: `Real.instNatCast`
+### D089: `Real.instNatCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4029,7 +3210,7 @@ Definition body (one-level semantic boundary):
 { natCast := fun n => { cauchy := n.cast } }
 ```
 
-### D108: `Real.instOne`
+### D090: `Real.instOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4055,7 +3236,7 @@ Definition body (one-level semantic boundary):
 { one := Real.one✝ }
 ```
 
-### D109: `Real.lattice`
+### D091: `Real.lattice`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4081,7 +3262,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D110: `abs`
+### D092: `abs`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
@@ -4108,7 +3289,7 @@ fun {α} [Lattice α] [AddGroup α] a =>
   SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
 ```
 
-### D111: `instHDiv`
+### D093: `instHDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4134,7 +3315,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
 ```
 
-### D112: `instHMul`
+### D094: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4160,7 +3341,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D113: `instOfNatAtLeastTwo`
+### D095: `instOfNatAtLeastTwo`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
@@ -4186,7 +3367,7 @@ Definition body (one-level semantic boundary):
 fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
 ```
 
-### D114: `instOfNatNat`
+### D096: `instOfNatNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4212,7 +3393,7 @@ Definition body (one-level semantic boundary):
 fun n => { ofNat := n }
 ```
 
-### D115: `And`
+### D097: `And`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4232,7 +3413,7 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D116: `Eq`
+### D098: `Eq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4252,7 +3433,7 @@ Fully explicit type:
 {α : Sort u_1} → α → α → Prop
 ```
 
-### D117: `Exists`
+### D099: `Exists`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -4272,7 +3453,7 @@ Fully explicit type:
 {α : Sort u} → (p : α → Prop) → Prop
 ```
 
-### D118: `Fin.fintype`
+### D100: `Fin.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
@@ -4298,7 +3479,7 @@ Definition body (one-level semantic boundary):
 fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
 ```
 
-### D119: `Finset.sum`
+### D101: `Finset.sum`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -4324,7 +3505,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
 ```
 
-### D120: `Finset.univ`
+### D102: `Finset.univ`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Defs`
@@ -4350,7 +3531,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Fintype α] => inst.elems
 ```
 
-### D121: `HAdd.hAdd`
+### D103: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4376,7 +3557,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D122: `HPow.hPow`
+### D104: `HPow.hPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4402,7 +3583,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HPow α β γ] => self.1
 ```
 
-### D123: `HSub.hSub`
+### D105: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4428,7 +3609,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D124: `Iff`
+### D106: `Iff`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -4448,7 +3629,7 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D125: `LT.lt`
+### D107: `LT.lt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4474,7 +3655,7 @@ Definition body (one-level semantic boundary):
 fun α [self : LT α] => self.1
 ```
 
-### D126: `Monoid.toNatPow`
+### D108: `Monoid.toNatPow`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -4500,7 +3681,7 @@ Definition body (one-level semantic boundary):
 fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
 ```
 
-### D127: `Nat.below`
+### D109: `Nat.below`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4526,7 +3707,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t => Nat.rec PUnit (fun n n_ih => PProd (motive n) n_ih) t
 ```
 
-### D128: `Nat.brecOn`
+### D110: `Nat.brecOn`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4552,7 +3733,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t F_1 => (Nat.brecOn.go t F_1).1
 ```
 
-### D129: `Nat.cast`
+### D111: `Nat.cast`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Cast`
@@ -4578,7 +3759,7 @@ Definition body (one-level semantic boundary):
 fun {R} [inst : NatCast R] => inst.natCast
 ```
 
-### D130: `Nat.succ`
+### D112: `Nat.succ`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4598,7 +3779,7 @@ Fully explicit type:
 (n : Nat) → Nat
 ```
 
-### D131: `Neg.neg`
+### D113: `Neg.neg`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4624,7 +3805,7 @@ Definition body (one-level semantic boundary):
 fun α [self : Neg α] => self.1
 ```
 
-### D132: `Pi.instZero`
+### D114: `Pi.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Notation.Pi.Defs`
@@ -4650,7 +3831,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [(i : ι) → Zero (M i)] => { zero := fun x => 0 }
 ```
 
-### D133: `Real.instAdd`
+### D115: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4676,7 +3857,7 @@ Definition body (one-level semantic boundary):
 { add := Real.add✝ }
 ```
 
-### D134: `Real.instAddCommMonoid`
+### D116: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4702,7 +3883,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D135: `Real.instLT`
+### D117: `Real.instLT`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4728,7 +3909,7 @@ Definition body (one-level semantic boundary):
 { lt := Real.lt✝ }
 ```
 
-### D136: `Real.instMonoid`
+### D118: `Real.instMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4754,7 +3935,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D137: `Real.instNeg`
+### D119: `Real.instNeg`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4780,7 +3961,7 @@ Definition body (one-level semantic boundary):
 { neg := Real.neg✝ }
 ```
 
-### D138: `Real.instSub`
+### D120: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4806,7 +3987,7 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D139: `Real.instZero`
+### D121: `Real.instZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -4832,7 +4013,7 @@ Definition body (one-level semantic boundary):
 { zero := Real.zero✝ }
 ```
 
-### D140: `Unit`
+### D122: `Unit`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4858,7 +4039,7 @@ Definition body (one-level semantic boundary):
 PUnit
 ```
 
-### D141: `Zero.toOfNat0`
+### D123: `Zero.toOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -4884,7 +4065,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Zero α] => { ofNat := inst.zero }
 ```
 
-### D142: `instAddNat`
+### D124: `instAddNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4910,7 +4091,7 @@ Definition body (one-level semantic boundary):
 { add := Nat.add }
 ```
 
-### D143: `instHAdd`
+### D125: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4936,7 +4117,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
 ```
 
-### D144: `instHPow`
+### D126: `instHPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4962,7 +4143,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
 ```
 
-### D145: `instHSub`
+### D127: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4988,7 +4169,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D146: `instLTNat`
+### D128: `instLTNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5014,7 +4195,7 @@ Definition body (one-level semantic boundary):
 { lt := Nat.lt }
 ```
 
-### D147: `Nat.casesOn`
+### D129: `Nat.casesOn`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5041,7 +4222,7 @@ Definition body (one-level semantic boundary):
 fun {motive} t zero succ => Nat.rec zero (fun n n_ih => succ n) t
 ```
 
-### D148: `Unit.unit`
+### D130: `Unit.unit`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5067,7 +4248,7 @@ Definition body (one-level semantic boundary):
 PUnit.unit
 ```
 
-### D149: `instDecidableEqFin`
+### D131: `instDecidableEqFin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5095,7 +4276,7 @@ fun n i j =>
     fun h => Decidable.isFalse ⋯
 ```
 
-### D150: `ite`
+### D132: `ite`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5121,7 +4302,7 @@ Definition body (one-level semantic boundary):
 fun {α} c [h : Decidable c] t e => Decidable.casesOn h (fun x => e) fun x => t
 ```
 
-### D151: `Ne`
+### D133: `Ne`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -5147,7 +4328,7 @@ Definition body (one-level semantic boundary):
 fun {α} a b => Not (Eq a b)
 ```
 
-### D152: `Fin.castSucc`
+### D134: `Fin.castSucc`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Basic`
@@ -5177,7 +4358,7 @@ Definition body (one-level semantic boundary):
 fun {n} => Fin.castAdd 1
 ```
 
-### D153: `Fin.last`
+### D135: `Fin.last`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Fin.Basic`
@@ -5206,7 +4387,7 @@ Definition body (one-level semantic boundary):
 fun n => ⟨n, ⋯⟩
 ```
 
-### D154: `Fin.mk`
+### D136: `Fin.mk`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5226,33 +4407,7 @@ Fully explicit type:
 {n : Nat} → (val : Nat) → (isLt : @LT.lt.{0} Nat instLTNat val n) → Fin n
 ```
 
-### D155: `Fin.val`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `7`
-- Semantic SHA-256: `74cc6296b3a13207507ec372ef420f5e52b6935895dd25bcc6331abde2a4b328`
-
-Type:
-
-```lean
-{n : Nat} → Fin n → Nat
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (self : Fin n) → Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n self => self.1
-```
-
-### D156: `Not`
+### D137: `Not`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5278,7 +4433,7 @@ Definition body (one-level semantic boundary):
 fun a => a → False
 ```
 
-### D157: `dite`
+### D138: `dite`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5304,7 +4459,7 @@ Definition body (one-level semantic boundary):
 fun {α} c [h : Decidable c] t e => Decidable.casesOn h e t
 ```
 
-### D158: `instDecidableEqNat`
+### D139: `instDecidableEqNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5330,85 +4485,7 @@ Definition body (one-level semantic boundary):
 Nat.decEq
 ```
 
-### D159: `instLENat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `7`
-- Semantic SHA-256: `002e628e28a06e89ab80e69408fa3be9fc3e200fafd33e0f71d9111a8944875e`
-
-Type:
-
-```lean
-LE Nat
-```
-
-Fully explicit type:
-
-```lean
-LE.{0} Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ le := Nat.le }
-```
-
-### D160: `Nat.decLe`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `8`
-- Semantic SHA-256: `931f48339aefbc000a30f94b69a993dd27e00f38323c7b45743dc5d6ffe51c35`
-
-Type:
-
-```lean
-(n m : Nat) → Decidable (instLENat.le n m)
-```
-
-Fully explicit type:
-
-```lean
-(n m : Nat) → Decidable (@LE.le.{0} Nat instLENat n m)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n m => if h : Eq (n.ble m) Bool.true then Decidable.isTrue ⋯ else Decidable.isFalse ⋯
-```
-
-### D161: `Nat.decLt`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `8`
-- Semantic SHA-256: `652ffb54717682f55eafca6c2b47fca31dfea599c9898709ba2f56fbc9113d99`
-
-Type:
-
-```lean
-(n m : Nat) → Decidable (instLTNat.lt n m)
-```
-
-Fully explicit type:
-
-```lean
-(n m : Nat) → Decidable (@LT.lt.{0} Nat instLTNat n m)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n m => n.succ.decLe m
-```
-
-### D162: `Nat.zero`
+### D140: `Nat.zero`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -5426,32 +4503,6 @@ Fully explicit type:
 
 ```lean
 Nat
-```
-
-### D163: `instSubNat`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `8`
-- Semantic SHA-256: `5b0e20a4d2b3e0a67bd35de1b5c84cc60d6dc867658112d84cad483055804868`
-
-Type:
-
-```lean
-Sub Nat
-```
-
-Fully explicit type:
-
-```lean
-Sub.{0} Nat
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ sub := Nat.sub }
 ```
 
 ## Complete local imported sources
@@ -5515,7 +4566,7 @@ end HighamBench
 ### `HighamBench.P08Definitions`
 
 Path: `paper_bencmark/highambench/shared/HighamBench/P08Definitions.lean`
-SHA-256: `a8ee8212c2fb281cac5afbbbea92cc09f4a07e22414a692fb103cb08b92a4845`
+SHA-256: `64149b9a6617083dd7dd78f55692760290ebb53614063091c7f017e2087cf837`
 
 ```lean
 import HighamBench.Core
@@ -5652,103 +4703,12 @@ structure P08SubtractionLastResidualTrace {n : ℕ}
     | .single => beforeConversion
     | .double => fun i ↦ convert (beforeConversion i)
 
-/-- Swap two rows of a square matrix. -/
-def p08SwapRowsMatrix {n : ℕ} (A : Fin n → Fin n → ℝ)
-    (r s : Fin n) : Fin n → Fin n → ℝ :=
-  fun i j ↦ if i = r then A s j else if i = s then A r j else A i j
-
-/-- Swap two entries of a vector. -/
-def p08SwapRowsVector {n : ℕ} (b : Fin n → ℝ)
-    (r s : Fin n) : Fin n → ℝ :=
-  fun i ↦ if i = r then b s else if i = s then b r else b i
-
-/-- One rounded elimination step after the largest active entry in column
-`k` has been moved into the pivot position. -/
-noncomputable def p08ColumnPivotedMatrixStep
-    (model : P08ScalarArithmeticModel) {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (k pivot : Fin n) :
-    Fin n → Fin n → ℝ :=
-  let swapped := p08SwapRowsMatrix A k pivot
-  fun i j ↦
-    if i.val ≤ k.val then
-      swapped i j
-    else if j.val < k.val then
-      swapped i j
-    else if j = k then
-      0
-    else
-      model.flSub (swapped i j)
-        (model.flMul (model.flDiv (swapped i k) (swapped k k))
-          (swapped k j))
-
-/-- The rounded right-hand-side update paired with one elimination step. -/
-noncomputable def p08ColumnPivotedRhsStep
-    (model : P08ScalarArithmeticModel) {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
-    (k pivot : Fin n) : Fin n → ℝ :=
-  let swappedA := p08SwapRowsMatrix A k pivot
-  let swappedB := p08SwapRowsVector b k pivot
-  fun i ↦
-    if i.val ≤ k.val then
-      swappedB i
-    else
-      model.flSub (swappedB i)
-        (model.flMul (model.flDiv (swappedA i k) (swappedA k k))
-          (swappedB k))
-
-/-- Embed an index in the strict tail following row `i`. -/
-def p08UpperTailIndex {n : ℕ} (i : Fin n)
-    (j : Fin (n - (i.val + 1))) : Fin n :=
-  ⟨i.val + 1 + j.val, by omega⟩
-
-/-- Rounded upper-triangular tail dot product used by back substitution. -/
-noncomputable def p08RoundedUpperTailDot
-    (model : P08ScalarArithmeticModel) {n : ℕ}
-    (U : Fin n → Fin n → ℝ) (x : Fin n → ℝ) (i : Fin n) : ℝ :=
-  recursiveSum model.flAdd (n - (i.val + 1)) fun j ↦
-    model.flMul (U i (p08UpperTailIndex i j))
-      (x (p08UpperTailIndex i j))
-
-/-- An operational Gaussian-elimination trace with column pivoting in the
-paper's terminology: at stage `k`, the largest active entry in column `k` is
-moved to the diagonal, the trailing system is updated in working arithmetic,
-and the final triangular system is solved by rounded back substitution. -/
-structure P08ColumnPivotedGaussianEliminationTrace
-    (model : P08ScalarArithmeticModel) {n : ℕ}
-    (A : Fin n → Fin n → ℝ) (rhs output : Fin n → ℝ) where
-  matrixState : ℕ → Fin n → Fin n → ℝ
-  rhsState : ℕ → Fin n → ℝ
-  pivotRow : Fin n → Fin n
-  initial_matrix : matrixState 0 = A
-  initial_rhs : rhsState 0 = rhs
-  pivot_active : ∀ k, k.val ≤ (pivotRow k).val
-  pivot_largest : ∀ k i, k.val ≤ i.val →
-    |matrixState k.val i k| ≤ |matrixState k.val (pivotRow k) k|
-  pivot_nonzero : ∀ k, matrixState k.val (pivotRow k) k ≠ 0
-  matrix_step : ∀ k,
-    matrixState (k.val + 1) =
-      p08ColumnPivotedMatrixStep model (matrixState k.val) k (pivotRow k)
-  rhs_step : ∀ k,
-    rhsState (k.val + 1) =
-      p08ColumnPivotedRhsStep model (matrixState k.val)
-        (rhsState k.val) k (pivotRow k)
-  final_upper_triangular : ∀ i j, j.val < i.val → matrixState n i j = 0
-  final_diagonal_nonzero : ∀ i, matrixState n i i ≠ 0
-  back_substitution : ∀ i,
-    output i = model.flDiv
-      (model.flSub (rhsState n i)
-        (p08RoundedUpperTailDot model (matrixState n) output i))
-      (matrixState n i i)
-
-/-- The componentwise backward-error certificate supplied by an operational
+/-- The componentwise backward-error certificate supplied by a
 column-pivoted Gaussian-elimination solve. -/
 structure P08ColumnPivotedSolveCertificate {n : ℕ}
-    (model : P08ScalarArithmeticModel)
     (A : Fin n → Fin n → ℝ) (rhs : Fin n → ℝ)
     (C1 : Fin n → Fin n → ℝ) (u : ℝ) where
   output : Fin n → ℝ
-  execution :
-    P08ColumnPivotedGaussianEliminationTrace model A rhs output
   backwardError : Fin n → ℝ
   equation : p08MatVec A output = p08VecAdd rhs backwardError
   backward_error_bound : ∀ i,
@@ -5781,7 +4741,7 @@ structure P08IterativeRefinementRun (n : ℕ) where
   exact_system : p08MatVec A exactSolution = b
   C1 : Fin n → Fin n → ℝ
   C1_nonnegative : p08MatNonnegative C1
-  initialSolve : P08ColumnPivotedSolveCertificate workingModel A b C1 u
+  initialSolve : P08ColumnPivotedSolveCertificate A b C1 u
   iterate : ℕ → Fin n → ℝ
   computedResidual : ℕ → Fin n → ℝ
   correction : ℕ → Fin n → ℝ
@@ -5795,7 +4755,7 @@ structure P08IterativeRefinementRun (n : ℕ) where
   residual_trace_output : ∀ m,
     computedResidual (m + 1) = (residualTrace m).output
   correctionSolve : ∀ m,
-    P08ColumnPivotedSolveCertificate workingModel A (computedResidual m) C1 u
+    P08ColumnPivotedSolveCertificate A (computedResidual m) C1 u
   correction_output : ∀ m, correction m = (correctionSolve m).output
   update_computation : ∀ m i,
     iterate (m + 1) i = workingModel.flSub (iterate m i) (correction m i)
@@ -5855,20 +4815,11 @@ def p08Lemma43c4 {n : ℕ} (run : P08IterativeRefinementRun n) : ℝ :=
   | .single => 0
   | .double => 1 + run.u
 
-/-- Uniform envelopes for the anonymous scalar and matrix quantities.  The
-functions are fixed across problem data and depend only on the dimension. -/
-structure P08DimensionOnlyConstantBounds where
-  scalar : ℕ → ℝ
-  matrixEntry : ℕ → ℝ
-  scalar_nonnegative : ∀ n, 0 ≤ scalar n
-  matrixEntry_nonnegative : ∀ n, 0 ≤ matrixEntry n
-
 /-- The source-defined matrices and resolvents used in Lemma 4.3. The exact
 equalities mirror the Notes on printed pages 823, 826, and 827. -/
 structure P08Lemma43Constants {n : ℕ}
     (run : P08IterativeRefinementRun n)
-    (norm : P08AbsoluteMonotoneNorm n)
-    (dimensionBounds : P08DimensionOnlyConstantBounds) where
+    (norm : P08AbsoluteMonotoneNorm n) where
   C2 : Fin n → Fin n → ℝ
   C6 : Fin n → Fin n → ℝ
   C7 : Fin n → Fin n → ℝ
@@ -5971,26 +4922,12 @@ structure P08Lemma43Constants {n : ℕ}
   c1_nonnegative : 0 ≤ c1
   c8_nonnegative : 0 ≤ c8
   c1_le_c8 : c1 ≤ c8
-  C1_dimension_bound : ∀ i j, run.C1 i j ≤ dimensionBounds.matrixEntry n
-  C2_dimension_bound : ∀ i j, C2 i j ≤ dimensionBounds.matrixEntry n
-  C6_dimension_bound : ∀ i j, C6 i j ≤ dimensionBounds.matrixEntry n
-  C7_dimension_bound : ∀ i j, C7 i j ≤ dimensionBounds.matrixEntry n
-  C8_dimension_bound : ∀ i j, C8 i j ≤ dimensionBounds.matrixEntry n
-  C9_dimension_bound : ∀ i j, C9 i j ≤ dimensionBounds.matrixEntry n
-  C10_dimension_bound : ∀ i j, C10 i j ≤ dimensionBounds.matrixEntry n
-  C11_dimension_bound : ∀ i j, C11 i j ≤ dimensionBounds.matrixEntry n
-  C12_dimension_bound : ∀ i j, C12 i j ≤ dimensionBounds.matrixEntry n
-  c1_dimension_bound : c1 ≤ dimensionBounds.scalar n
-  c5_dimension_bound : c5 ≤ dimensionBounds.scalar n
-  c8_dimension_bound : c8 ≤ dimensionBounds.scalar n
 
 /-- The propagation matrix `u C_8 |A| |A^{-1}|`. -/
 noncomputable def p08Lemma43Propagation {n : ℕ}
     {run : P08IterativeRefinementRun n}
     {norm : P08AbsoluteMonotoneNorm n}
-    {dimensionBounds : P08DimensionOnlyConstantBounds}
-    (constants : P08Lemma43Constants run norm dimensionBounds) :
-    Fin n → Fin n → ℝ :=
+    (constants : P08Lemma43Constants run norm) : Fin n → Fin n → ℝ :=
   p08MatScale run.u
     (p08MatMul constants.C8
       (p08MatMul (p08AbsMatrix run.A) (p08AbsMatrix run.Ainv)))
@@ -5999,8 +4936,7 @@ noncomputable def p08Lemma43Propagation {n : ℕ}
 noncomputable def p08Lemma43InitialVector {n : ℕ}
     {run : P08IterativeRefinementRun n}
     {norm : P08AbsoluteMonotoneNorm n}
-    {dimensionBounds : P08DimensionOnlyConstantBounds}
-    (constants : P08Lemma43Constants run norm dimensionBounds) : Fin n → ℝ :=
+    (constants : P08Lemma43Constants run norm) : Fin n → ℝ :=
   p08VecScale run.u
     (p08MatVec (p08MatMul constants.C10 (p08AbsMatrix run.A))
       (p08AbsVec run.exactSolution))
@@ -6010,8 +4946,7 @@ Lemma 4.3. -/
 noncomputable def p08Lemma43RecurrenceForcing {n : ℕ}
     {run : P08IterativeRefinementRun n}
     {norm : P08AbsoluteMonotoneNorm n}
-    {dimensionBounds : P08DimensionOnlyConstantBounds}
-    (constants : P08Lemma43Constants run norm dimensionBounds) : Fin n → ℝ :=
+    (constants : P08Lemma43Constants run norm) : Fin n → ℝ :=
   let absA := p08AbsMatrix run.A
   let absAinv := p08AbsMatrix run.Ainv
   let absx := p08AbsVec run.exactSolution
@@ -6032,8 +4967,7 @@ in `u` and the residual precision `ubar`. -/
 noncomputable def p08Lemma43StationaryVector {n : ℕ}
     {run : P08IterativeRefinementRun n}
     {norm : P08AbsoluteMonotoneNorm n}
-    {dimensionBounds : P08DimensionOnlyConstantBounds}
-    (constants : P08Lemma43Constants run norm dimensionBounds) : Fin n → ℝ :=
+    (constants : P08Lemma43Constants run norm) : Fin n → ℝ :=
   let absA := p08AbsMatrix run.A
   let absAinv := p08AbsMatrix run.Ainv
   let absx := p08AbsVec run.exactSolution
@@ -6053,53 +4987,41 @@ noncomputable def p08Lemma43StationaryVector {n : ℕ}
 noncomputable def p08Lemma43Bound {n : ℕ}
     {run : P08IterativeRefinementRun n}
     {norm : P08AbsoluteMonotoneNorm n}
-    {dimensionBounds : P08DimensionOnlyConstantBounds}
-    (constants : P08Lemma43Constants run norm dimensionBounds)
-    (m : ℕ) : Fin n → ℝ :=
+    (constants : P08Lemma43Constants run norm) (m : ℕ) : Fin n → ℝ :=
   p08VecAdd
     (p08MatVec (p08MatPow (p08Lemma43Propagation constants) m)
       (p08Lemma43InitialVector constants))
     (p08Lemma43StationaryVector constants)
 
-/-- Local residual-accumulation and correction-solve errors used in the proofs
-of Lemmas 4.1 and 4.2.  This records the two operation-level error relations;
-it does not contain either lemma, the Lemma 4.3 recurrence, or its conclusion. -/
-structure P08Lemma43RoundoffAnalysis {n : ℕ}
+/-- The exact Lemma 4.1 and forward-error half of Lemma 4.2 used in the
+paper's proof of Lemma 4.3. -/
+structure P08Lemma43PriorBounds {n : ℕ}
     (run : P08IterativeRefinementRun n)
     (norm : P08AbsoluteMonotoneNorm n)
-    (dimensionBounds : P08DimensionOnlyConstantBounds)
-    (constants : P08Lemma43Constants run norm dimensionBounds) where
-  residualError : ℕ → Fin n → ℝ
-  residual_equation : ∀ m,
-    run.computedResidual m =
-      p08VecAdd
-        (p08VecSub (p08MatVec run.A (run.iterate m)) run.b)
-        (residualError m)
-  residual_error_bound : ∀ m i,
-    |residualError m i| ≤
-      (n * p08ResidualUnitRoundoff run.precision run.u +
-          p08Lemma43c3 run * run.u ^ 2) *
-        p08MatVec (p08AbsMatrix run.A)
-          (p08AbsVec run.exactSolution) i +
-      constants.c5 * p08ResidualUnitRoundoff run.precision run.u *
-        p08MatVec (p08AbsMatrix run.A)
-          (p08AbsVec (p08VecSub (run.iterate m) run.exactSolution)) i +
-      run.u *
-        |p08MatVec run.A
-          (p08VecSub (run.iterate m) run.exactSolution) i|
-  correction_error_bound :
+    (constants : P08Lemma43Constants run norm) where
+  lemma41 :
     constants.c1 * run.u * p08KappaInverse run norm ≤ 1 / 2 →
       ∀ m i,
-        |(run.correctionSolve m).backwardError i| ≤
+        |p08ExactResidualAfterCorrection run m i| ≤
           run.u * p08MatVec
-            (p08MatMul constants.C2 (p08AbsMatrix run.A))
-            (p08AbsVec
-              (p08VecSub (run.iterate m) run.exactSolution)) i +
-          run.u * p08MatVec
-            (p08MatMul
-              (p08MatMul constants.C2 (p08AbsMatrix run.A))
-              (p08AbsMatrix run.Ainv))
-            (p08AbsVec (residualError m)) i
+            (p08MatMul constants.C6 (p08AbsMatrix run.A))
+            (p08AbsVec (p08VecSub (run.iterate m) run.exactSolution)) i +
+          (n * p08ResidualUnitRoundoff run.precision run.u +
+            p08Lemma43c3 run * run.u ^ 2) *
+            p08MatVec (p08AbsMatrix run.A)
+              (p08AbsVec run.exactSolution) i +
+          p08ResidualUnitRoundoff run.precision run.u * run.u *
+            p08MatVec
+              (p08MatMul
+                (p08MatMul constants.C7
+                  (p08MatMul (p08AbsMatrix run.A) (p08AbsMatrix run.Ainv)))
+                (p08AbsMatrix run.A))
+              (p08AbsVec run.exactSolution) i
+  lemma42_forward : ∀ m i,
+    |run.iterate (m + 1) i - run.exactSolution i| ≤
+      (1 + run.u) * p08AbsAction run.Ainv
+        (p08ExactResidualAfterCorrection run m) i +
+      run.u * |run.exactSolution i|
 
 end HighamBench
 ```
