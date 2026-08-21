@@ -27,10 +27,14 @@ d_m = computed(A^{-1}*r_m),
 x_(m+1) = computed(x_m-d_m).
 ```
 
-The subtraction by `b` is performed last when computing `r_m`. The run
-certificate records these links and the componentwise backward-error
-certificate for every column-pivoted solve. Its real-valued arithmetic models
-do not represent NaN, infinity, overflow results, or undefined operations.
+The subtraction by `b` is performed last when computing `r_m`. Each solve now
+contains an operational column-pivoted Gaussian-elimination trace: every pivot
+is selected as the largest active magnitude in the next column, rows are
+swapped, the trailing matrix and right-hand side are updated in working
+arithmetic, and the final triangular system is solved by rounded back
+substitution. The solve's backward-error relation is tied to that trace's
+output. The real-valued arithmetic models do not represent NaN, infinity,
+overflow results, or undefined operations.
 
 ## Exact residual and norm
 
@@ -68,11 +72,19 @@ C_12 = (I-u C_8 |A| |A^{-1}|)^{-1} (n C_8+C_7).
 ```
 
 The paper describes these nonnegative anonymous quantities as bounded above
-by functions of `n`; their exact displayed definitions, rather than arbitrary
-constants, are used here. `P08Lemma43PriorBounds` supplies the exact Lemma 4.1
-bound and the forward-error half of Lemma 4.2 as already established results.
-The formal proof derives the page-827 one-step recurrence from those two
-lemmas; it does not assume that recurrence or the final conclusion.
+by functions of `n`, independently of `A` and `b`. The target therefore fixes
+`P08DimensionOnlyConstantBounds` before the problem run, and every scalar and
+matrix constant carries the corresponding dimension-only bound in addition
+to its exact displayed definition.
+
+`P08Lemma43RoundoffAnalysis` does not assume Lemma 4.1 or Lemma 4.2. It records
+the lower-level quantities used in their proofs: the residual-accumulation
+error `f_m`, its equation and printed componentwise bound, and the correction
+solve error after applying equation (3.1). From these data, the proof derives
+Lemma 4.1 using the definitions of `C_6` and `C_7`. It separately derives the
+forward-error half of Lemma 4.2 from the exact identity
+`x_m-d_m-x=A^{-1}q_(m+1)` and the rounded subtraction model. Only then does it
+derive the page-827 recurrence and perform the Lemma 4.3 induction.
 
 ## Selected result
 

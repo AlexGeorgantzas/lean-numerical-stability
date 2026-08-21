@@ -132,12 +132,103 @@ structure P08SubtractionLastResidualTrace {n : ℕ}
     | .single => beforeConversion
     | .double => fun i ↦ convert (beforeConversion i)
 
-/-- The componentwise backward-error certificate supplied by a
+/-- Swap two rows of a square matrix. -/
+def p08SwapRowsMatrix {n : ℕ} (A : Fin n → Fin n → ℝ)
+    (r s : Fin n) : Fin n → Fin n → ℝ :=
+  fun i j ↦ if i = r then A s j else if i = s then A r j else A i j
+
+/-- Swap two entries of a vector. -/
+def p08SwapRowsVector {n : ℕ} (b : Fin n → ℝ)
+    (r s : Fin n) : Fin n → ℝ :=
+  fun i ↦ if i = r then b s else if i = s then b r else b i
+
+/-- One rounded elimination step after the largest active entry in column
+`k` has been moved into the pivot position. -/
+noncomputable def p08ColumnPivotedMatrixStep
+    (model : P08ScalarArithmeticModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (k pivot : Fin n) :
+    Fin n → Fin n → ℝ :=
+  let swapped := p08SwapRowsMatrix A k pivot
+  fun i j ↦
+    if i.val ≤ k.val then
+      swapped i j
+    else if j.val < k.val then
+      swapped i j
+    else if j = k then
+      0
+    else
+      model.flSub (swapped i j)
+        (model.flMul (model.flDiv (swapped i k) (swapped k k))
+          (swapped k j))
+
+/-- The rounded right-hand-side update paired with one elimination step. -/
+noncomputable def p08ColumnPivotedRhsStep
+    (model : P08ScalarArithmeticModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (b : Fin n → ℝ)
+    (k pivot : Fin n) : Fin n → ℝ :=
+  let swappedA := p08SwapRowsMatrix A k pivot
+  let swappedB := p08SwapRowsVector b k pivot
+  fun i ↦
+    if i.val ≤ k.val then
+      swappedB i
+    else
+      model.flSub (swappedB i)
+        (model.flMul (model.flDiv (swappedA i k) (swappedA k k))
+          (swappedB k))
+
+/-- Embed an index in the strict tail following row `i`. -/
+def p08UpperTailIndex {n : ℕ} (i : Fin n)
+    (j : Fin (n - (i.val + 1))) : Fin n :=
+  ⟨i.val + 1 + j.val, by omega⟩
+
+/-- Rounded upper-triangular tail dot product used by back substitution. -/
+noncomputable def p08RoundedUpperTailDot
+    (model : P08ScalarArithmeticModel) {n : ℕ}
+    (U : Fin n → Fin n → ℝ) (x : Fin n → ℝ) (i : Fin n) : ℝ :=
+  recursiveSum model.flAdd (n - (i.val + 1)) fun j ↦
+    model.flMul (U i (p08UpperTailIndex i j))
+      (x (p08UpperTailIndex i j))
+
+/-- An operational Gaussian-elimination trace with column pivoting in the
+paper's terminology: at stage `k`, the largest active entry in column `k` is
+moved to the diagonal, the trailing system is updated in working arithmetic,
+and the final triangular system is solved by rounded back substitution. -/
+structure P08ColumnPivotedGaussianEliminationTrace
+    (model : P08ScalarArithmeticModel) {n : ℕ}
+    (A : Fin n → Fin n → ℝ) (rhs output : Fin n → ℝ) where
+  matrixState : ℕ → Fin n → Fin n → ℝ
+  rhsState : ℕ → Fin n → ℝ
+  pivotRow : Fin n → Fin n
+  initial_matrix : matrixState 0 = A
+  initial_rhs : rhsState 0 = rhs
+  pivot_active : ∀ k, k.val ≤ (pivotRow k).val
+  pivot_largest : ∀ k i, k.val ≤ i.val →
+    |matrixState k.val i k| ≤ |matrixState k.val (pivotRow k) k|
+  pivot_nonzero : ∀ k, matrixState k.val (pivotRow k) k ≠ 0
+  matrix_step : ∀ k,
+    matrixState (k.val + 1) =
+      p08ColumnPivotedMatrixStep model (matrixState k.val) k (pivotRow k)
+  rhs_step : ∀ k,
+    rhsState (k.val + 1) =
+      p08ColumnPivotedRhsStep model (matrixState k.val)
+        (rhsState k.val) k (pivotRow k)
+  final_upper_triangular : ∀ i j, j.val < i.val → matrixState n i j = 0
+  final_diagonal_nonzero : ∀ i, matrixState n i i ≠ 0
+  back_substitution : ∀ i,
+    output i = model.flDiv
+      (model.flSub (rhsState n i)
+        (p08RoundedUpperTailDot model (matrixState n) output i))
+      (matrixState n i i)
+
+/-- The componentwise backward-error certificate supplied by an operational
 column-pivoted Gaussian-elimination solve. -/
 structure P08ColumnPivotedSolveCertificate {n : ℕ}
+    (model : P08ScalarArithmeticModel)
     (A : Fin n → Fin n → ℝ) (rhs : Fin n → ℝ)
     (C1 : Fin n → Fin n → ℝ) (u : ℝ) where
   output : Fin n → ℝ
+  execution :
+    P08ColumnPivotedGaussianEliminationTrace model A rhs output
   backwardError : Fin n → ℝ
   equation : p08MatVec A output = p08VecAdd rhs backwardError
   backward_error_bound : ∀ i,
@@ -170,7 +261,7 @@ structure P08IterativeRefinementRun (n : ℕ) where
   exact_system : p08MatVec A exactSolution = b
   C1 : Fin n → Fin n → ℝ
   C1_nonnegative : p08MatNonnegative C1
-  initialSolve : P08ColumnPivotedSolveCertificate A b C1 u
+  initialSolve : P08ColumnPivotedSolveCertificate workingModel A b C1 u
   iterate : ℕ → Fin n → ℝ
   computedResidual : ℕ → Fin n → ℝ
   correction : ℕ → Fin n → ℝ
@@ -184,7 +275,7 @@ structure P08IterativeRefinementRun (n : ℕ) where
   residual_trace_output : ∀ m,
     computedResidual (m + 1) = (residualTrace m).output
   correctionSolve : ∀ m,
-    P08ColumnPivotedSolveCertificate A (computedResidual m) C1 u
+    P08ColumnPivotedSolveCertificate workingModel A (computedResidual m) C1 u
   correction_output : ∀ m, correction m = (correctionSolve m).output
   update_computation : ∀ m i,
     iterate (m + 1) i = workingModel.flSub (iterate m i) (correction m i)
@@ -244,11 +335,20 @@ def p08Lemma43c4 {n : ℕ} (run : P08IterativeRefinementRun n) : ℝ :=
   | .single => 0
   | .double => 1 + run.u
 
+/-- Uniform envelopes for the anonymous scalar and matrix quantities.  The
+functions are fixed across problem data and depend only on the dimension. -/
+structure P08DimensionOnlyConstantBounds where
+  scalar : ℕ → ℝ
+  matrixEntry : ℕ → ℝ
+  scalar_nonnegative : ∀ n, 0 ≤ scalar n
+  matrixEntry_nonnegative : ∀ n, 0 ≤ matrixEntry n
+
 /-- The source-defined matrices and resolvents used in Lemma 4.3. The exact
 equalities mirror the Notes on printed pages 823, 826, and 827. -/
 structure P08Lemma43Constants {n : ℕ}
     (run : P08IterativeRefinementRun n)
-    (norm : P08AbsoluteMonotoneNorm n) where
+    (norm : P08AbsoluteMonotoneNorm n)
+    (dimensionBounds : P08DimensionOnlyConstantBounds) where
   C2 : Fin n → Fin n → ℝ
   C6 : Fin n → Fin n → ℝ
   C7 : Fin n → Fin n → ℝ
@@ -351,12 +451,26 @@ structure P08Lemma43Constants {n : ℕ}
   c1_nonnegative : 0 ≤ c1
   c8_nonnegative : 0 ≤ c8
   c1_le_c8 : c1 ≤ c8
+  C1_dimension_bound : ∀ i j, run.C1 i j ≤ dimensionBounds.matrixEntry n
+  C2_dimension_bound : ∀ i j, C2 i j ≤ dimensionBounds.matrixEntry n
+  C6_dimension_bound : ∀ i j, C6 i j ≤ dimensionBounds.matrixEntry n
+  C7_dimension_bound : ∀ i j, C7 i j ≤ dimensionBounds.matrixEntry n
+  C8_dimension_bound : ∀ i j, C8 i j ≤ dimensionBounds.matrixEntry n
+  C9_dimension_bound : ∀ i j, C9 i j ≤ dimensionBounds.matrixEntry n
+  C10_dimension_bound : ∀ i j, C10 i j ≤ dimensionBounds.matrixEntry n
+  C11_dimension_bound : ∀ i j, C11 i j ≤ dimensionBounds.matrixEntry n
+  C12_dimension_bound : ∀ i j, C12 i j ≤ dimensionBounds.matrixEntry n
+  c1_dimension_bound : c1 ≤ dimensionBounds.scalar n
+  c5_dimension_bound : c5 ≤ dimensionBounds.scalar n
+  c8_dimension_bound : c8 ≤ dimensionBounds.scalar n
 
 /-- The propagation matrix `u C_8 |A| |A^{-1}|`. -/
 noncomputable def p08Lemma43Propagation {n : ℕ}
     {run : P08IterativeRefinementRun n}
     {norm : P08AbsoluteMonotoneNorm n}
-    (constants : P08Lemma43Constants run norm) : Fin n → Fin n → ℝ :=
+    {dimensionBounds : P08DimensionOnlyConstantBounds}
+    (constants : P08Lemma43Constants run norm dimensionBounds) :
+    Fin n → Fin n → ℝ :=
   p08MatScale run.u
     (p08MatMul constants.C8
       (p08MatMul (p08AbsMatrix run.A) (p08AbsMatrix run.Ainv)))
@@ -365,7 +479,8 @@ noncomputable def p08Lemma43Propagation {n : ℕ}
 noncomputable def p08Lemma43InitialVector {n : ℕ}
     {run : P08IterativeRefinementRun n}
     {norm : P08AbsoluteMonotoneNorm n}
-    (constants : P08Lemma43Constants run norm) : Fin n → ℝ :=
+    {dimensionBounds : P08DimensionOnlyConstantBounds}
+    (constants : P08Lemma43Constants run norm dimensionBounds) : Fin n → ℝ :=
   p08VecScale run.u
     (p08MatVec (p08MatMul constants.C10 (p08AbsMatrix run.A))
       (p08AbsVec run.exactSolution))
@@ -375,7 +490,8 @@ Lemma 4.3. -/
 noncomputable def p08Lemma43RecurrenceForcing {n : ℕ}
     {run : P08IterativeRefinementRun n}
     {norm : P08AbsoluteMonotoneNorm n}
-    (constants : P08Lemma43Constants run norm) : Fin n → ℝ :=
+    {dimensionBounds : P08DimensionOnlyConstantBounds}
+    (constants : P08Lemma43Constants run norm dimensionBounds) : Fin n → ℝ :=
   let absA := p08AbsMatrix run.A
   let absAinv := p08AbsMatrix run.Ainv
   let absx := p08AbsVec run.exactSolution
@@ -396,7 +512,8 @@ in `u` and the residual precision `ubar`. -/
 noncomputable def p08Lemma43StationaryVector {n : ℕ}
     {run : P08IterativeRefinementRun n}
     {norm : P08AbsoluteMonotoneNorm n}
-    (constants : P08Lemma43Constants run norm) : Fin n → ℝ :=
+    {dimensionBounds : P08DimensionOnlyConstantBounds}
+    (constants : P08Lemma43Constants run norm dimensionBounds) : Fin n → ℝ :=
   let absA := p08AbsMatrix run.A
   let absAinv := p08AbsMatrix run.Ainv
   let absx := p08AbsVec run.exactSolution
@@ -416,40 +533,52 @@ noncomputable def p08Lemma43StationaryVector {n : ℕ}
 noncomputable def p08Lemma43Bound {n : ℕ}
     {run : P08IterativeRefinementRun n}
     {norm : P08AbsoluteMonotoneNorm n}
-    (constants : P08Lemma43Constants run norm) (m : ℕ) : Fin n → ℝ :=
+    {dimensionBounds : P08DimensionOnlyConstantBounds}
+    (constants : P08Lemma43Constants run norm dimensionBounds)
+    (m : ℕ) : Fin n → ℝ :=
   p08VecAdd
     (p08MatVec (p08MatPow (p08Lemma43Propagation constants) m)
       (p08Lemma43InitialVector constants))
     (p08Lemma43StationaryVector constants)
 
-/-- The exact Lemma 4.1 and forward-error half of Lemma 4.2 used in the
-paper's proof of Lemma 4.3. -/
-structure P08Lemma43PriorBounds {n : ℕ}
+/-- Local residual-accumulation and correction-solve errors used in the proofs
+of Lemmas 4.1 and 4.2.  This records the two operation-level error relations;
+it does not contain either lemma, the Lemma 4.3 recurrence, or its conclusion. -/
+structure P08Lemma43RoundoffAnalysis {n : ℕ}
     (run : P08IterativeRefinementRun n)
     (norm : P08AbsoluteMonotoneNorm n)
-    (constants : P08Lemma43Constants run norm) where
-  lemma41 :
+    (dimensionBounds : P08DimensionOnlyConstantBounds)
+    (constants : P08Lemma43Constants run norm dimensionBounds) where
+  residualError : ℕ → Fin n → ℝ
+  residual_equation : ∀ m,
+    run.computedResidual m =
+      p08VecAdd
+        (p08VecSub (p08MatVec run.A (run.iterate m)) run.b)
+        (residualError m)
+  residual_error_bound : ∀ m i,
+    |residualError m i| ≤
+      (n * p08ResidualUnitRoundoff run.precision run.u +
+          p08Lemma43c3 run * run.u ^ 2) *
+        p08MatVec (p08AbsMatrix run.A)
+          (p08AbsVec run.exactSolution) i +
+      constants.c5 * p08ResidualUnitRoundoff run.precision run.u *
+        p08MatVec (p08AbsMatrix run.A)
+          (p08AbsVec (p08VecSub (run.iterate m) run.exactSolution)) i +
+      run.u *
+        |p08MatVec run.A
+          (p08VecSub (run.iterate m) run.exactSolution) i|
+  correction_error_bound :
     constants.c1 * run.u * p08KappaInverse run norm ≤ 1 / 2 →
       ∀ m i,
-        |p08ExactResidualAfterCorrection run m i| ≤
+        |(run.correctionSolve m).backwardError i| ≤
           run.u * p08MatVec
-            (p08MatMul constants.C6 (p08AbsMatrix run.A))
-            (p08AbsVec (p08VecSub (run.iterate m) run.exactSolution)) i +
-          (n * p08ResidualUnitRoundoff run.precision run.u +
-            p08Lemma43c3 run * run.u ^ 2) *
-            p08MatVec (p08AbsMatrix run.A)
-              (p08AbsVec run.exactSolution) i +
-          p08ResidualUnitRoundoff run.precision run.u * run.u *
-            p08MatVec
-              (p08MatMul
-                (p08MatMul constants.C7
-                  (p08MatMul (p08AbsMatrix run.A) (p08AbsMatrix run.Ainv)))
-                (p08AbsMatrix run.A))
-              (p08AbsVec run.exactSolution) i
-  lemma42_forward : ∀ m i,
-    |run.iterate (m + 1) i - run.exactSolution i| ≤
-      (1 + run.u) * p08AbsAction run.Ainv
-        (p08ExactResidualAfterCorrection run m) i +
-      run.u * |run.exactSolution i|
+            (p08MatMul constants.C2 (p08AbsMatrix run.A))
+            (p08AbsVec
+              (p08VecSub (run.iterate m) run.exactSolution)) i +
+          run.u * p08MatVec
+            (p08MatMul
+              (p08MatMul constants.C2 (p08AbsMatrix run.A))
+              (p08AbsMatrix run.Ainv))
+            (p08AbsVec (residualError m)) i
 
 end HighamBench

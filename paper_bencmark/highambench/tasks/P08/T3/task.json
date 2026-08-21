@@ -1,7 +1,7 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, algorithm linkage, exact residual semantics, source constants, and full finite Lemma 4.3 reconstruction",
+    "kind": "source selection, tier label, operational algorithm linkage, dimension-only constants, local roundoff analysis, and full finite Lemma 4.3 reconstruction",
     "performed_by": "Codex"
   },
   "assumptions": [
@@ -9,10 +9,10 @@
     "The iterates, computed residuals, and corrections form the paper's column-pivoted iterative-refinement run, including x_0=0, r_0=-b, d_0=-x_1, and computed x_(m+1)=x_m-d_m.",
     "The residual subtraction is performed last; residual accumulation is single precision with ubar=u or double precision with ubar=u^2 followed by conversion to working precision.",
     "The positive working unit roundoff satisfies n*u<=0.01, every represented operation is a well-defined real result, and the operation and conversion traces satisfy the paper's relative-error model.",
-    "Every column-pivoted solve has the source componentwise backward-error certificate with the nonnegative matrix C_1.",
+    "Every initial and correction solve carries an operational Gaussian-elimination trace that selects the largest active entry in each next column, performs rounded elimination updates, and finishes with rounded back substitution; its output satisfies the source componentwise backward-error certificate with nonnegative C_1.",
     "The chosen vector norm is absolute, monotone, normalized on basis vectors, and extended to its induced matrix norm; kappa(Ainv)=||abs(A)*abs(Ainv)||.",
-    "C_2,C_6,...,C_12 and c_1,c_3,c_4,c_5,c_8 satisfy the exact definitions and nonnegativity properties printed in the Notes on pages 823, 826, and 827.",
-    "The exact Lemma 4.1 estimate and forward-error half of Lemma 4.2 are available as prior proved bounds; the page-827 recurrence and Lemma 4.3 conclusion are not assumed.",
+    "C_2,C_6,...,C_12 and c_1,c_3,c_4,c_5,c_8 satisfy the exact definitions and nonnegativity properties printed in the Notes on pages 823, 826, and 827, and explicit scalar and entrywise envelopes bound them by functions of n fixed before A and b.",
+    "The residual-accumulation error equation and its operation-level componentwise bound, together with the equation-(3.1) correction-error bound, are available; Lemma 4.1, Lemma 4.2, the page-827 recurrence, and the Lemma 4.3 conclusion are not assumed.",
     "The final smallness condition is c_8*u*kappa(Ainv)<=1/2; c_1<=c_8 supplies the earlier Lemma 4.1 condition."
   ],
   "author_label": "Lemma 4.3",
@@ -23,13 +23,13 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P08/T3/context.md",
   "formal_statement": {
-    "lean_header": "theorem p08_t3_lemma_4_3_exact_residual_bound {n : Nat} (run : P08IterativeRefinementRun n) (norm : P08AbsoluteMonotoneNorm n) (constants : P08Lemma43Constants run norm) (prior : P08Lemma43PriorBounds run norm constants) (hsmall : constants.c8 * run.u * p08KappaInverse run norm <= 1/2) : forall m i, abs (p08ExactResidualAfterCorrection run m i) <= p08Lemma43Bound constants m i",
+    "lean_header": "theorem p08_t3_lemma_4_3_exact_residual_bound {n : Nat} (dimensionBounds : P08DimensionOnlyConstantBounds) (run : P08IterativeRefinementRun n) (norm : P08AbsoluteMonotoneNorm n) (constants : P08Lemma43Constants run norm dimensionBounds) (roundoff : P08Lemma43RoundoffAnalysis run norm dimensionBounds constants) (hsmall : constants.c8 * run.u * p08KappaInverse run norm <= 1/2) : forall m i, abs (p08ExactResidualAfterCorrection run m i) <= p08Lemma43Bound constants m i",
     "namespace": "HighamBench",
     "plain_language": "For every iteration m, the exact residual q_(m+1) of the linked column-pivoted iterative-refinement run satisfies Lemma 4.3's complete four-term componentwise finite bound under the source c_8*u*kappa(A^{-1}) threshold.",
     "target_file": "paper_bencmark/highambench/tasks/P08/T3/Target.lean",
     "theorem_name": "p08_t3_lemma_4_3_exact_residual_bound"
   },
-  "informal_proof": "Use c_1<=c_8 to discharge Lemma 4.1's smallness condition. Its m=0 instance and x_0=0 give the q_1 base coefficient C_10. For the induction step, substitute Lemma 4.2's bound for |x_(m+1)-x| into Lemma 4.1 at m+1, obtaining the source recurrence with propagation u*C_8*|A|*|Ainv| and forcing terms containing C_9 and C_7. The resolvent identities for C_11 and C_12 make the three stationary terms a fixed supersolution. Componentwise monotonicity of the nonnegative propagation matrix and matrix-power induction then yield exactly the exponent-m four-term bound.",
+  "informal_proof": "Use c_1<=c_8 to obtain the equation-(3.1) smallness condition. Combine the residual-accumulation error and correction-solve error, then expand the printed definitions of C_6 and C_7, to derive Lemma 4.1. Derive Lemma 4.2's forward bound from x_m-d_m-x=Ainv*q_(m+1) and the rounded update. The m=0 Lemma 4.1 instance and x_0=0 give the q_1 coefficient C_10. Substitution at m+1 gives the source recurrence with propagation u*C_8*|A|*|Ainv| and forcing terms containing C_9 and C_7. The C_11 and C_12 resolvent identities make the stationary terms a fixed supersolution, and componentwise matrix-power induction yields the exact exponent-m four-term bound.",
   "informal_statement": "The full algorithm-linked, precision-sensitive, componentwise exact-residual bound of Lemma 4.3, with q_1 as the base case and no artificial q_0.",
   "limits": {
     "total_model_tokens": 5000000,
@@ -49,7 +49,7 @@
       "NumStability.matMulVec_matMul",
       "NumStability.matPow_nonneg"
     ],
-    "note": "The mounted MatrixAlgebra module supplies generic matrix-action associativity and matrix-power nonnegativity. It does not contain Skeel's iterative-refinement execution, exact q residual, precision-dependent ubar, source constants, Lemma 4.1/4.2 substitution, or four-term Lemma 4.3 induction."
+    "note": "The mounted MatrixAlgebra module supplies generic matrix-action associativity and matrix-power nonnegativity. It does not contain Skeel's column-pivoted execution, residual and correction error derivations, exact q residual, precision-dependent ubar, dimension-only source constants, Lemma 4.1/4.2 reconstruction, or four-term Lemma 4.3 induction."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
@@ -61,18 +61,20 @@
     "p08ResidualUnitRoundoff",
     "P08ScalarArithmeticModel",
     "P08SubtractionLastResidualTrace",
+    "P08ColumnPivotedGaussianEliminationTrace",
     "P08ColumnPivotedSolveCertificate",
     "P08IterativeRefinementRun",
     "p08ExactResidualAfterCorrection",
     "P08AbsoluteMonotoneNorm",
     "p08KappaInverse",
+    "P08DimensionOnlyConstantBounds",
     "P08Lemma43Constants",
     "p08Lemma43Propagation",
     "p08Lemma43InitialVector",
     "p08Lemma43RecurrenceForcing",
     "p08Lemma43StationaryVector",
     "p08Lemma43Bound",
-    "P08Lemma43PriorBounds"
+    "P08Lemma43RoundoffAnalysis"
   ],
   "source_locations": [
     {
@@ -138,7 +140,7 @@
   "task_id": "P08-T3",
   "tier": "T3",
   "tier_label": "extend",
-  "tier_rationale": "Condition L can reuse generic matrix-vector product associativity and matrix-power infrastructure from the mounted MatrixAlgebra module. It must still establish every P08-specific step: the Lemma 4.1/4.2 substitution, exact C_8/C_9/C_7 recurrence, q_1 base case, C_10 expansion, C_11/C_12 stationary identities, and complete exponent-m four-term induction.",
+  "tier_rationale": "Condition L materially combines generic matrix-vector product associativity and matrix-power nonnegativity from the mounted MatrixAlgebra module. It must still establish every P08-specific step: derive Lemmas 4.1 and 4.2 from local execution errors, expand C_6/C_7, derive the exact C_8/C_9/C_7 recurrence, prove the q_1 base and C_10 expansion, establish the C_11/C_12 stationary identities, and complete the exponent-m four-term induction.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P08/T3/Target.lean",
     "mode": "shared automatic validator",

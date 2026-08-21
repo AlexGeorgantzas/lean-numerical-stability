@@ -51,7 +51,7 @@
     },
     {
       "candidate": "Lemma 4.1",
-      "reason": "It is not selected as a separate target. Its complete componentwise estimate and source-defined constants are retained as the prior bound that supplies Lemma 4.3's q_1 base case and recurrence."
+      "reason": "It is not selected as a separate target. P08-T3 instead exposes its lower-level residual and correction errors and reconstructs the complete componentwise estimate needed for Lemma 4.3's q_1 base case and recurrence."
     },
     {
       "candidate": "Theorem 4.4",
