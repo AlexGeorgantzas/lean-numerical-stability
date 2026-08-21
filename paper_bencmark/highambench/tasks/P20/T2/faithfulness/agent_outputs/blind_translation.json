@@ -1,406 +1,754 @@
 {
   "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "c2388cd724de72255447efe8b79e9bbf7766b40b34b9df48f9edfcd003fff5ee",
+  "dossier_sha256": "8235e77cd8272793622baf6e14501b7b74fa8844435fbfdd578d80382e0fb397",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "Defines the real scalar 4·(n:Real)^2·(theta⁻¹)^2·Gmin·LocalDef003(A)·LocalDef003(B).",
-      "effect_on_target": "This is exactly the left-hand side of the concluding inequality.",
+      "meaning": "An indexed mixed-precision rounding model. By D011, it contains input and accumulation formats, compatible exponent and precision ranges, and input and accumulation rounding functions with relative-or-absolute error decompositions.",
+      "effect_on_target": "The proposition ranges over such models. Its input format, accumulation format, and input rounding function determine all model-dependent quantities in the conclusion.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "Defines the real scalar 4·(n:Real)^2·theta⁻¹·gmin·LocalDef003(A)·LocalDef003(B).",
-      "effect_on_target": "This is exactly the right-hand side of the concluding inequality.",
+      "meaning": "For v : Fin n → ℝ, this is the finite supremum of |v_i|, represented through nonnegative reals and converted back to ℝ. Thus it is the infinity norm max_i |v_i|; for n = 0 the fold returns 0.",
+      "effect_on_target": "It supplies both positivity assumptions, the vector magnitudes in the scaling conditions, and the two infinity-norm factors on the right-hand side.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "For an r-by-s real matrix X, defines the real value obtained by summing the nonnegative norms of the entries in each row, taking the finite supremum of those row sums in NNReal, and coercing the result to Real. Thus it is the maximum absolute row-sum norm, with value 0 when there are no rows.",
-      "effect_on_target": "It supplies the separate nonnegative matrix factors for A and B on both sides of the inequality.",
+      "meaning": "The error E equals the scaled rounded quantity from D018 minus the exact real dot product Σ_i x_i y_i.",
+      "effect_on_target": "Its absolute value is the left-hand side of the asserted error bound.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "Supplies a proof that the natural number expression 3+1 satisfies Nat.AtLeastTwo.",
-      "effect_on_target": "It discharges the typeclass condition needed to interpret the real numeral 4 through natural-number casting; it adds no hypothesis to the proposition.",
-      "status": "unclear"
+      "meaning": "For u, g, θ, x, and y, it is (2u + u²)Σ_i |x_i||y_i| + 4nθ⁻¹g(1 + u + θ⁻¹g)‖x‖∞‖y‖∞.",
+      "effect_on_target": "This is exactly the right-hand side of the conclusion, with u from D006, g from D005, and θ from D008.",
+      "status": "understood"
     },
     {
       "id": "D005",
-      "name": "Fin",
-      "meaning": "Fin k is the finite index type with k indices.",
-      "effect_on_target": "It gives A dimensions m by n and B dimensions n by q, and provides the row and column index sets used in their norms.",
+      "name": "LocalDef005",
+      "meaning": "The input format's absolute-error allowance g at index t, defined by D014.",
+      "effect_on_target": "It appears in the second error term, both linearly and inside 1 + u + g/θ.",
       "status": "understood"
     },
     {
       "id": "D006",
-      "name": "LE.le",
-      "meaning": "Projects the binary relation represented by an LE instance.",
-      "effect_on_target": "With the real LE instance, it expresses all three assumptions and the final non-strict inequality.",
+      "name": "LocalDef006",
+      "meaning": "The input format's relative-error allowance u at index t, equal to 2 raised to minus the input precision.",
+      "effect_on_target": "It supplies the coefficient 2u + u² and appears in the second error term.",
       "status": "understood"
     },
     {
       "id": "D007",
-      "name": "Nat",
-      "meaning": "The type of natural numbers.",
-      "effect_on_target": "It is the type of the dimensions m, n, q and the natural exponents and numeral indices used in the definitions.",
+      "name": "LocalDef007",
+      "meaning": "Admissible(θ,v,a) means that a = 2^k for some integer k, a > 0, and either v = 0 with a = 1, or v > 0 with θ/(2v) < a ≤ θ/v.",
+      "effect_on_target": "It restricts λ relative to ‖x‖∞ and μ relative to ‖y‖∞. Since both norms are assumed positive, only its second branch can hold.",
       "status": "understood"
     },
     {
       "id": "D008",
-      "name": "OfNat.ofNat",
-      "meaning": "Interprets a natural-number literal in a target type using an OfNat instance.",
-      "effect_on_target": "It interprets the literals 0, 1, 2, 3, and 4 occurring in assumptions, powers, and scalar expressions.",
+      "name": "LocalDef008",
+      "meaning": "The scaling threshold θ is min(M_in, sqrt(M_acc/n)), where M_in and M_acc are the D013 maximum-magnitude quantities for the input and accumulation formats at t.",
+      "effect_on_target": "It controls the admissible intervals for λ and μ and occurs through θ⁻¹ in the bound.",
       "status": "understood"
     },
     {
       "id": "D009",
-      "name": "One.toOfNat1",
-      "meaning": "Builds the interpretation of numeral 1 from a type's distinguished one.",
-      "effect_on_target": "It makes the lower-bound hypothesis 1 ≤ theta use the real number one.",
+      "name": "LocalDef009",
+      "meaning": "Projection of the model's second component, namely its accumulation format.",
+      "effect_on_target": "Its maximum-magnitude quantity contributes to θ.",
       "status": "understood"
     },
     {
       "id": "D010",
-      "name": "Real",
-      "meaning": "The type of real numbers.",
-      "effect_on_target": "It is the scalar type for theta, gmin, Gmin, all matrix entries, both defined quantities, and every inequality.",
+      "name": "LocalDef010",
+      "meaning": "Projection of the model's first component, namely its input format.",
+      "effect_on_target": "It determines u, g, the input maximum magnitude, and the rounding function used in the computed quantity.",
       "status": "understood"
     },
     {
       "id": "D011",
-      "name": "Real.instLE",
-      "meaning": "Provides the standard non-strict order relation on real numbers.",
-      "effect_on_target": "It interprets 1 ≤ theta, 0 ≤ Gmin, Gmin ≤ gmin, and the concluding comparison as real inequalities.",
+      "name": "LocalDef011",
+      "meaning": "Constructor for a model with input and accumulation formats satisfying p_in ≤ p_acc, e_min,acc ≤ e_min,in, and e_max,in ≤ e_max,acc. For each format, rounding has the form R(z) = z(1 + δ(z)) + η(z), with |δ(z)| ≤ u, |η(z)| ≤ g, and η(z)δ(z) = 0.",
+      "effect_on_target": "These are intrinsic assumptions on every quantified model, including the input-rounding error law relevant to D018. The accumulation-rounding law is present in the model but not applied in D018.",
       "status": "understood"
     },
     {
       "id": "D012",
-      "name": "Real.instOne",
-      "meaning": "Provides the real multiplicative identity 1.",
-      "effect_on_target": "It supplies the real constant 1 in the hypothesis 1 ≤ theta.",
+      "name": "LocalDef012",
+      "meaning": "The absolute componentwise product sum Σ_i |x_i||y_i|.",
+      "effect_on_target": "It multiplies the coefficient 2u + u² in the first error term.",
       "status": "understood"
     },
     {
       "id": "D013",
-      "name": "Real.instZero",
-      "meaning": "Provides the real additive identity 0.",
-      "effect_on_target": "It supplies the real constant 0 in the hypothesis 0 ≤ Gmin.",
+      "name": "LocalDef013",
+      "meaning": "For a format at t, the maximum-magnitude parameter M = 2^e_max(2 - 2u), where u = 2^(-p).",
+      "effect_on_target": "The input and accumulation instances determine the two arguments of the minimum defining θ.",
       "status": "understood"
     },
     {
       "id": "D014",
-      "name": "Zero.toOfNat0",
-      "meaning": "Builds the interpretation of numeral 0 from a type's distinguished zero.",
-      "effect_on_target": "It interprets the lower bound in 0 ≤ Gmin as real zero.",
+      "name": "LocalDef014",
+      "meaning": "For precision p, minimum exponent e_min, and subnormal flag s, g equals 2^e_min/2 when s is false and 2^(-p)2^e_min when s is true.",
+      "effect_on_target": "For the input format it defines the absolute-error allowance used in the rounding assumptions and final bound.",
       "status": "understood"
     },
     {
       "id": "D015",
-      "name": "HMul.hMul",
-      "meaning": "Projects heterogeneous multiplication from an HMul instance.",
-      "effect_on_target": "With homogeneous real multiplication, it forms every product in LocalDef001 and LocalDef002.",
+      "name": "LocalDef015",
+      "meaning": "For precision p, this is u = (1/2)^p = 2^(-p).",
+      "effect_on_target": "It is the relative-error allowance for each format and, for the input format, the u used explicitly in the conclusion.",
       "status": "understood"
     },
     {
       "id": "D016",
-      "name": "HPow.hPow",
-      "meaning": "Projects exponentiation from an HPow instance.",
-      "effect_on_target": "It forms the two squares (n:Real)^2 and (theta⁻¹)^2.",
+      "name": "LocalDef016",
+      "meaning": "The predicate that a real number is an integer power of two: there exists k ∈ ℤ such that a = 2^k. The integer exponent is fixed by the Real/Int power dependency D086.",
+      "effect_on_target": "It requires both scaling factors λ and μ to be powers of two.",
       "status": "understood"
     },
     {
       "id": "D017",
-      "name": "Inv.inv",
-      "meaning": "Projects inversion from an Inv instance.",
-      "effect_on_target": "It supplies theta⁻¹ in both scalar expressions.",
+      "name": "LocalDef017",
+      "meaning": "A proof object enabling the overloaded real numeral 2.",
+      "effect_on_target": "It supplies numeral infrastructure for coefficients and denominators; it adds no mathematical hypothesis.",
       "status": "understood"
     },
     {
       "id": "D018",
-      "name": "Monoid.toNatPow",
-      "meaning": "Defines natural-number powers in a monoid by repeated monoid multiplication.",
-      "effect_on_target": "It gives the real natural-power operation used for the exponent 2.",
+      "name": "LocalDef018",
+      "meaning": "A = λ⁻¹μ⁻¹ Σ_i R_in(t, λx_i)R_in(t, μy_i), where R_in is the model's input rounding function.",
+      "effect_on_target": "This is the computed quantity compared with the exact dot product. Multiplication, summation, and inverse rescaling in this definition are exact real operations.",
       "status": "understood"
     },
     {
       "id": "D019",
-      "name": "Nat.cast",
-      "meaning": "Casts a natural number into a type with a NatCast structure.",
-      "effect_on_target": "It converts n and the scalar numeral 4 to real numbers.",
+      "name": "LocalDef019",
+      "meaning": "For n and real bounds fmax and Fmax, it returns min(fmax, sqrt(Fmax/n)).",
+      "effect_on_target": "It combines the input and accumulation maximum-magnitude parameters into θ.",
       "status": "understood"
     },
     {
       "id": "D020",
-      "name": "Real.instInv",
-      "meaning": "Provides real-number inversion.",
-      "effect_on_target": "It interprets theta⁻¹ as the reciprocal of theta.",
+      "name": "LocalDef020",
+      "meaning": "A proof object enabling the overloaded real numeral 4.",
+      "effect_on_target": "It supplies the coefficient 4 in the second error term and adds no mathematical hypothesis.",
       "status": "understood"
     },
     {
       "id": "D021",
-      "name": "Real.instMonoid",
-      "meaning": "Provides the multiplicative monoid structure on the real numbers.",
-      "effect_on_target": "It supplies the repeated multiplication underlying the real squares.",
+      "name": "LocalDef021",
+      "meaning": "An indexed floating-point-format record with precision p : ι → ℕ, minimum and maximum exponents ι → ℤ, a Boolean subnormal flag, and intrinsic conditions p > 0 and e_min ≤ e_max.",
+      "effect_on_target": "Two such formats are stored in the model and determine u, g, maximum magnitudes, and θ.",
       "status": "understood"
     },
     {
       "id": "D022",
-      "name": "Real.instMul",
-      "meaning": "Provides ordinary multiplication of real numbers.",
-      "effect_on_target": "It interprets every multiplication in both sides of the conclusion.",
+      "name": "LocalDef022",
+      "meaning": "Projection of a format's Boolean has-subnormals field.",
+      "effect_on_target": "It chooses which branch defines the absolute-error allowance g.",
       "status": "understood"
     },
     {
       "id": "D023",
-      "name": "Real.instNatCast",
-      "meaning": "Provides the standard embedding of natural numbers into the real numbers.",
-      "effect_on_target": "It interprets (n:Real) and the real coefficient 4.",
+      "name": "LocalDef023",
+      "meaning": "Projection of a format's integer maximum exponent.",
+      "effect_on_target": "It determines the factor 2^e_max in the maximum-magnitude parameter.",
       "status": "understood"
     },
     {
       "id": "D024",
-      "name": "instHMul",
-      "meaning": "Turns homogeneous multiplication on a type into an HMul instance.",
-      "effect_on_target": "It connects HMul.hMul to ordinary real multiplication in the two local definitions.",
+      "name": "LocalDef024",
+      "meaning": "Projection of a format's integer minimum exponent.",
+      "effect_on_target": "It determines the factor 2^e_min in the absolute-error allowance.",
       "status": "understood"
     },
     {
       "id": "D025",
-      "name": "instHPow",
-      "meaning": "Turns a Pow operation into the corresponding HPow instance.",
-      "effect_on_target": "It connects HPow.hPow to real natural-number exponentiation.",
+      "name": "LocalDef025",
+      "meaning": "Projection of a format's natural-number precision.",
+      "effect_on_target": "It determines u = 2^(-p) and participates in the model's precision-ordering condition.",
       "status": "understood"
     },
     {
       "id": "D026",
-      "name": "instOfNatAtLeastTwo",
-      "meaning": "For a natural number k satisfying Nat.AtLeastTwo, interprets numeral k in any NatCast type as the cast of k.",
-      "effect_on_target": "Together with D004, it interprets the coefficient 4 as the real natural-number cast of 4.",
+      "name": "LocalDef026",
+      "meaning": "Projection of the model's input rounding function.",
+      "effect_on_target": "It is the rounding function applied independently to λx_i and μy_i in D018.",
       "status": "understood"
     },
     {
       "id": "D027",
-      "name": "instOfNatNat",
-      "meaning": "Interprets each natural-number literal k in Nat as k itself.",
-      "effect_on_target": "It supplies the natural literals used for exponent 2 and for the expression 3+1 underlying the coefficient 4.",
+      "name": "LocalDef027",
+      "meaning": "For precision p and maximum exponent e, it is 2^e(2 - 2·2^(-p)).",
+      "effect_on_target": "It defines each format's maximum-magnitude parameter used in θ.",
       "status": "understood"
     },
     {
       "id": "D028",
-      "name": "ConditionallyCompleteLinearOrderBot.toOrderBot",
-      "meaning": "Extracts an order with a least element from a conditionally complete linear order with a least element.",
-      "effect_on_target": "It provides the bottom value 0 used to initialize the finite supremum defining LocalDef003, including the empty-row case.",
+      "name": "LocalDef028",
+      "meaning": "It conditionally returns 2^e_min/2 without subnormals and 2^(-p)2^e_min with subnormals.",
+      "effect_on_target": "It defines the absolute-error allowance g, particularly the input g in the conclusion.",
       "status": "understood"
     },
     {
       "id": "D029",
-      "name": "Fin.fintype",
-      "meaning": "Provides a finite enumeration of all elements of Fin k.",
-      "effect_on_target": "It allows the row and column index sets to be represented by finite universal sets for sums and suprema.",
+      "name": "LocalDef029",
+      "meaning": "The function p ↦ (1/2)^p = 2^(-p) for natural p.",
+      "effect_on_target": "It supplies the unit-roundoff-like quantity u in format bounds and maximum-magnitude formulas.",
       "status": "understood"
     },
     {
       "id": "D030",
-      "name": "Finset.sum",
-      "meaning": "Sums a function over a finite set in an additive commutative monoid.",
-      "effect_on_target": "It computes each row sum of nonnegative entry norms in LocalDef003.",
+      "name": "LocalDef030",
+      "meaning": "Constructor for a format from precision, minimum exponent, maximum exponent, and subnormal flag functions, requiring positive precision and minimum exponent at most maximum exponent at every index.",
+      "effect_on_target": "It makes those validity conditions intrinsic assumptions on the input and accumulation formats.",
       "status": "understood"
     },
     {
       "id": "D031",
-      "name": "Finset.sup",
-      "meaning": "Folds finite values using supremum, equivalently maximum here, beginning at the order bottom.",
-      "effect_on_target": "It takes the maximum of all row sums and returns 0 when the row-index set is empty.",
+      "name": "LocalDef031",
+      "meaning": "The function e ↦ 2^e for integer e.",
+      "effect_on_target": "It supplies the minimum-exponent magnitude used in both branches defining g.",
       "status": "understood"
     },
     {
       "id": "D032",
-      "name": "Finset.univ",
-      "meaning": "The finite set containing every element of a finite type.",
-      "effect_on_target": "It makes the sums range over all columns and the supremum range over all rows.",
+      "name": "LocalDef032",
+      "meaning": "Boolean dependent case analysis: select the first branch for false and the second branch for true.",
+      "effect_on_target": "It implements the two cases of the subnormal-dependent absolute-error allowance.",
       "status": "understood"
     },
     {
       "id": "D033",
-      "name": "HAdd.hAdd",
-      "meaning": "Projects heterogeneous addition from an HAdd instance.",
-      "effect_on_target": "It evaluates the auxiliary natural expression 3+1 used in the evidence for interpreting numeral 4; it does not add an arithmetic term to the target inequality.",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type with elements 0, 1, ..., n - 1.",
+      "effect_on_target": "It fixes x and y as length-n real vectors and indexes all finite sums and maxima.",
       "status": "understood"
     },
     {
       "id": "D034",
-      "name": "NNNorm.nnnorm",
-      "meaning": "Returns an element's norm as a nonnegative real number.",
-      "effect_on_target": "It turns each real matrix entry into the nonnegative norm summed in its row.",
+      "name": "LE.le",
+      "meaning": "The less-than-or-equal relation supplied by an ordered type.",
+      "effect_on_target": "For real numbers it expresses the final bound, upper scale bounds, and rounding error bounds.",
       "status": "understood"
     },
     {
       "id": "D035",
-      "name": "NNReal",
-      "meaning": "The subtype of real numbers r satisfying 0 ≤ r.",
-      "effect_on_target": "Row entry norms, row sums, and their finite supremum are computed in this nonnegative type.",
+      "name": "LT.lt",
+      "meaning": "The strict less-than relation supplied by an ordered type.",
+      "effect_on_target": "It expresses n > 0, positive norms and scales, positive format precision, and strict lower scale bounds.",
       "status": "understood"
     },
     {
       "id": "D036",
-      "name": "NNReal.instConditionallyCompleteLinearOrderBot",
-      "meaning": "Provides NNReal with its conditionally complete linear order and least element 0.",
-      "effect_on_target": "It supplies the ordering and empty-supremum value used by LocalDef003.",
+      "name": "Nat",
+      "meaning": "The natural numbers.",
+      "effect_on_target": "They provide the dimension n, format precisions, finite indices, and natural exponents such as u².",
       "status": "understood"
     },
     {
       "id": "D037",
-      "name": "NNReal.toReal",
-      "meaning": "Maps a nonnegative real subtype value to its underlying real number.",
-      "effect_on_target": "It converts the NNReal maximum row sum into the real scalar multiplied in LocalDef001 and LocalDef002.",
+      "name": "OfNat.ofNat",
+      "meaning": "Interpretation of a natural-number literal in a type possessing the corresponding numeral instance.",
+      "effect_on_target": "It interprets literals such as 0, 1, 2, and 4 in the relevant natural or real type.",
       "status": "understood"
     },
     {
       "id": "D038",
-      "name": "Nat.AtLeastTwo",
-      "meaning": "An inductive predicate on natural numbers whose internal constructors are not included in the packet.",
-      "effect_on_target": "It is only an elaboration-side eligibility condition for casting numeral 4; D004 supplies the required evidence, so it creates no target hypothesis.",
-      "status": "unclear"
+      "name": "Real",
+      "meaning": "The real numbers.",
+      "effect_on_target": "All vector entries, scale factors, rounding quantities, errors, norms, and bounds are real.",
+      "status": "understood"
     },
     {
       "id": "D039",
-      "name": "NonAssocSemiring.toNonUnitalNonAssocSemiring",
-      "meaning": "Extracts the non-unital non-associative semiring structure from a non-associative semiring.",
-      "effect_on_target": "It participates in deriving the additive commutative monoid structure on NNReal needed for finite row sums.",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive-group structure on ℝ.",
+      "effect_on_target": "It supplies negation and subtraction needed for absolute values and the error E.",
       "status": "understood"
     },
     {
       "id": "D040",
-      "name": "NonUnitalNonAssocSemiring.toAddCommMonoid",
-      "meaning": "Extracts the additive commutative monoid structure from a non-unital non-associative semiring.",
-      "effect_on_target": "It supplies NNReal addition and zero to Finset.sum.",
+      "name": "Real.instLE",
+      "meaning": "The standard less-than-or-equal relation on ℝ.",
+      "effect_on_target": "It gives the ordinary real inequalities throughout the proposition.",
       "status": "understood"
     },
     {
       "id": "D041",
-      "name": "NonUnitalSeminormedCommRing.toNonUnitalSeminormedRing",
-      "meaning": "Forgets commutativity from a non-unital seminormed commutative ring.",
-      "effect_on_target": "It participates in the instance chain that supplies the norm of real matrix entries.",
+      "name": "Real.instLT",
+      "meaning": "The standard strict order on ℝ.",
+      "effect_on_target": "It gives the ordinary real positivity and strict scale inequalities.",
       "status": "understood"
     },
     {
       "id": "D042",
-      "name": "NonUnitalSeminormedRing.toSeminormedAddCommGroup",
-      "meaning": "Extracts a seminormed additive commutative group from a non-unital seminormed ring.",
-      "effect_on_target": "It participates in deriving the real NNNorm instance used on every matrix entry.",
+      "name": "Real.instZero",
+      "meaning": "The real number zero.",
+      "effect_on_target": "It appears in positivity, zero-vector branches, and rounding-product conditions.",
       "status": "understood"
     },
     {
       "id": "D043",
-      "name": "NormedCommRing.toSeminormedCommRing",
-      "meaning": "Forgets norm separation from a normed commutative ring to obtain a seminormed commutative ring.",
-      "effect_on_target": "It begins the structure-forgetting chain that exposes the standard real norm to LocalDef003.",
+      "name": "Real.lattice",
+      "meaning": "The lattice structure on ℝ using ordinary minimum and maximum.",
+      "effect_on_target": "Together with the additive group it defines real absolute value.",
       "status": "understood"
     },
     {
       "id": "D044",
-      "name": "Real.normedCommRing",
-      "meaning": "Provides the real numbers with their standard normed commutative ring structure.",
-      "effect_on_target": "It is the structural source of the real norm used in the matrix maximum row-sum quantities.",
+      "name": "Zero.toOfNat0",
+      "meaning": "It derives interpretation of the numeral 0 from a type's zero element.",
+      "effect_on_target": "It supplies every real zero literal in the target and expanded assumptions.",
       "status": "understood"
     },
     {
       "id": "D045",
-      "name": "SeminormedAddCommGroup.toSeminormedAddGroup",
-      "meaning": "Forgets additive commutativity from a seminormed additive commutative group.",
-      "effect_on_target": "It supplies the seminormed additive-group structure required to construct NNNorm on Real.",
+      "name": "abs",
+      "meaning": "For an ordered additive group, abs(a) = max(a, -a); on ℝ this is the ordinary absolute value.",
+      "effect_on_target": "It measures the total error, vector coordinates, and rounding errors.",
       "status": "understood"
     },
     {
       "id": "D046",
-      "name": "SeminormedAddGroup.toNNNorm",
-      "meaning": "Constructs a nonnegative-valued norm by pairing the ordinary norm with its nonnegativity proof.",
-      "effect_on_target": "It makes every real entry norm available as an NNReal for summation.",
+      "name": "instLTNat",
+      "meaning": "The standard strict order on natural numbers.",
+      "effect_on_target": "It interprets the dimension hypothesis 0 < n and positive format precisions.",
       "status": "understood"
     },
     {
       "id": "D047",
-      "name": "SeminormedCommRing.toNonUnitalSeminormedCommRing",
-      "meaning": "Forgets the multiplicative identity from a seminormed commutative ring.",
-      "effect_on_target": "It participates in the instance chain leading from the real normed ring to the NNNorm used in LocalDef003.",
+      "name": "instOfNatNat",
+      "meaning": "The canonical interpretation of each natural literal as itself.",
+      "effect_on_target": "It supplies natural constants used in the dimension and exponent formulas.",
       "status": "understood"
     },
     {
       "id": "D048",
-      "name": "Semiring.toNonAssocSemiring",
-      "meaning": "Forgets multiplicative associativity from a semiring while retaining its additive and numeral structure.",
-      "effect_on_target": "It participates in deriving the additive commutative monoid structure on NNReal used by finite sums.",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "It combines the conditions defining admissible scales and the model's paired exponent-range requirements.",
       "status": "understood"
     },
     {
       "id": "D049",
-      "name": "instAddNat",
-      "meaning": "Provides ordinary natural-number addition.",
-      "effect_on_target": "It evaluates 3+1 in the auxiliary proof used to interpret the real coefficient 4.",
+      "name": "ConditionallyCompleteLinearOrderBot.toOrderBot",
+      "meaning": "Extraction of an order-with-bottom structure from a conditionally complete linear order with bottom.",
+      "effect_on_target": "It provides the bottom element 0 used as the initial value of the finite supremum defining the infinity norm.",
       "status": "understood"
     },
     {
       "id": "D050",
-      "name": "instHAdd",
-      "meaning": "Turns homogeneous addition into an HAdd instance.",
-      "effect_on_target": "It connects HAdd.hAdd to natural addition in the auxiliary expression 3+1.",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "Extraction of division from a division-and-inverse monoid.",
+      "effect_on_target": "It supplies ordinary real division in θ, g, and the admissible-scale intervals.",
       "status": "understood"
     },
     {
       "id": "D051",
-      "name": "instSemilatticeSupNNReal",
-      "meaning": "Provides NNReal with binary supremum, which is maximum under its standard order.",
-      "effect_on_target": "It supplies the maximum operation used to combine row sums in LocalDef003.",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "It expresses the rounding decompositions, power-of-two condition, zero-norm branch, and λ = 1 branch.",
       "status": "understood"
     },
     {
       "id": "D052",
-      "name": "instSemiringNNReal",
-      "meaning": "Provides the standard semiring structure on nonnegative real numbers.",
-      "effect_on_target": "Through the structure projections, it supplies NNReal addition and zero for summing entry norms.",
+      "name": "Fin.fintype",
+      "meaning": "The finite enumeration structure for Fin n.",
+      "effect_on_target": "It permits sums, suprema, and the universal finite index set over all n coordinates.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "Finset.sum",
+      "meaning": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It forms the exact dot product, rounded product sum, and absolute componentwise product sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "Finset.sup",
+      "meaning": "Finite supremum obtained by folding maximum from the order bottom.",
+      "effect_on_target": "It forms the infinity norm of each vector.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "Finset.univ",
+      "meaning": "The finite set of every element of a finite type.",
+      "effect_on_target": "It makes every sum and supremum range over all indices in Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "HAdd.hAdd",
+      "meaning": "The addition operation selected by a heterogeneous-addition instance.",
+      "effect_on_target": "Here it reduces to ordinary real or natural addition in all displayed formulas.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "HDiv.hDiv",
+      "meaning": "The division operation selected by a heterogeneous-division instance.",
+      "effect_on_target": "Here it is ordinary real division in θ, g, and scale bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "HMul.hMul",
+      "meaning": "The multiplication operation selected by a heterogeneous-multiplication instance.",
+      "effect_on_target": "Here it is ordinary real multiplication throughout the rounded quantity and error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "HPow.hPow",
+      "meaning": "The exponentiation operation selected by a heterogeneous-power instance.",
+      "effect_on_target": "It expresses natural powers such as u² and (1/2)^p and integer powers such as 2^e.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "HSub.hSub",
+      "meaning": "The subtraction operation selected by a heterogeneous-subtraction instance.",
+      "effect_on_target": "Here it is ordinary real subtraction in E and in 2 - 2u.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "Inv.inv",
+      "meaning": "Multiplicative inversion.",
+      "effect_on_target": "It supplies λ⁻¹, μ⁻¹, θ⁻¹, and the base 1/2 used in u.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "Monoid.toNatPow",
+      "meaning": "Natural-number exponentiation in a monoid.",
+      "effect_on_target": "It interprets u² and (1/2)^p as ordinary natural powers of real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "NNReal",
+      "meaning": "The subtype of nonnegative real numbers.",
+      "effect_on_target": "It is the ordered codomain used while taking the finite supremum of coordinate absolute values.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "NNReal.instConditionallyCompleteLinearOrderBot",
+      "meaning": "The conditionally complete linear order on nonnegative reals with bottom 0.",
+      "effect_on_target": "It equips the norm's finite supremum with maximum and an empty-set value of 0.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "NNReal.toReal",
+      "meaning": "The inclusion of a nonnegative real into ℝ.",
+      "effect_on_target": "It converts the nonnegative supremum defining the infinity norm back to a real number.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Nat.cast",
+      "meaning": "Canonical casting of a natural number into a type with natural-number casts.",
+      "effect_on_target": "It converts n to a real in Fmax/n and in the coefficient 4n.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "One.toOfNat1",
+      "meaning": "It derives interpretation of the numeral 1 from a type's multiplicative identity.",
+      "effect_on_target": "It supplies real ones in rounding formulas, scale conditions, and coefficients.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Or",
+      "meaning": "Logical disjunction.",
+      "effect_on_target": "It separates the zero-norm and positive-norm branches of admissible scaling.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "Real.instAdd",
+      "meaning": "Ordinary addition on ℝ.",
+      "effect_on_target": "It interprets all real sums outside finite summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative monoid structure on ℝ.",
+      "effect_on_target": "It provides the algebraic structure required for all finite real sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The real multiplicative structure containing division, inverses, and integer powers.",
+      "effect_on_target": "It supports all divisions and inverse factors and underlies integer exponentiation by D086.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "Real.instInv",
+      "meaning": "Ordinary multiplicative inversion on ℝ.",
+      "effect_on_target": "It interprets λ⁻¹, μ⁻¹, θ⁻¹, and 2⁻¹.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure on ℝ.",
+      "effect_on_target": "It supports real multiplication and natural powers.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "Real.instMul",
+      "meaning": "Ordinary multiplication on ℝ.",
+      "effect_on_target": "It interprets products in the rounding model, dot products, scale factors, and bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "Real.instNatCast",
+      "meaning": "The canonical natural-number cast into ℝ.",
+      "effect_on_target": "It interprets n and real numerals through their usual real values.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "Real.instOne",
+      "meaning": "The real number one as multiplicative identity.",
+      "effect_on_target": "It occurs in 1 + δ, 1 + u + g/θ, and the zero-norm scale branch.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "Real.instSub",
+      "meaning": "Ordinary real subtraction, implemented as addition of the negative.",
+      "effect_on_target": "It forms E and the factor 2 - 2u.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "Real.toNNReal",
+      "meaning": "It maps r ∈ ℝ to max(r,0), regarded as a nonnegative real.",
+      "effect_on_target": "Applied to |x_i|, it leaves the value unchanged before the norm supremum.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "instHAdd",
+      "meaning": "It lifts homogeneous addition to the heterogeneous-addition interface.",
+      "effect_on_target": "It ensures every hAdd on reals or naturals denotes the ordinary addition operation.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "instHDiv",
+      "meaning": "It lifts homogeneous division to the heterogeneous-division interface.",
+      "effect_on_target": "It ensures every displayed real quotient denotes ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "instHMul",
+      "meaning": "It lifts homogeneous multiplication to the heterogeneous-multiplication interface.",
+      "effect_on_target": "It ensures every hMul in the formulas denotes ordinary multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "instHPow",
+      "meaning": "It lifts a power operation to the heterogeneous-power interface.",
+      "effect_on_target": "It connects the displayed powers to natural or integer exponentiation instances.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "instHSub",
+      "meaning": "It lifts homogeneous subtraction to the heterogeneous-subtraction interface.",
+      "effect_on_target": "It ensures the displayed differences denote ordinary real subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "It interprets a numeral n at least two by casting the natural number n into the target type.",
+      "effect_on_target": "It makes real literals 2 and 4 equal to their ordinary natural casts.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "instSemilatticeSupNNReal",
+      "meaning": "The maximum semilattice structure on nonnegative reals.",
+      "effect_on_target": "It makes the supremum in the infinity norm an ordinary finite maximum.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "DivInvMonoid.toZPow",
+      "meaning": "Integer exponentiation in a division-and-inverse monoid.",
+      "effect_on_target": "It interprets 2^k for integer scaling exponents and the integer format exponents e_min and e_max.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "It quantifies the integer exponent witnessing that each scale is a power of two.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "Int",
+      "meaning": "The integers.",
+      "effect_on_target": "They are the domain of format exponents and of the power-of-two scale witnesses.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "Int.instLEInt",
+      "meaning": "The standard less-than-or-equal relation on integers.",
+      "effect_on_target": "It expresses valid exponent ranges and containment of the input exponent range inside the accumulation range.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "Min.min",
+      "meaning": "The minimum operation supplied by a type.",
+      "effect_on_target": "For reals it selects the smaller of the input maximum and sqrt(M_acc/n) in θ.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "An indexed certificate used by Lean's numeral-casting mechanism for natural numerals of size at least two.",
+      "effect_on_target": "It only authorizes construction of the real literals 2 and 4; the supplied proofs discharge it and it adds no target hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "Real.instMin",
+      "meaning": "Ordinary minimum on ℝ.",
+      "effect_on_target": "It interprets θ as the smaller of its two real arguments.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "Real.sqrt",
+      "meaning": "The nonnegative real square root, defined after replacing a negative input by zero.",
+      "effect_on_target": "It forms sqrt(M_acc/n) in θ. The format conditions and n > 0 make this argument positive.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "instAddNat",
+      "meaning": "Ordinary addition on natural numbers.",
+      "effect_on_target": "It participates in the implementation of numeral certificates such as those for 2 and 4, without adding mathematical content.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "instLENat",
+      "meaning": "The standard less-than-or-equal relation on natural numbers.",
+      "effect_on_target": "It expresses that the input precision does not exceed the accumulation precision.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "Bool",
+      "meaning": "The Boolean type with false and true values.",
+      "effect_on_target": "It records whether each format has subnormals and selects the corresponding g formula.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "Unit",
+      "meaning": "A one-element type.",
+      "effect_on_target": "It supplies dummy arguments to the two delayed branches of the Boolean conditional defining g.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "Bool.casesOn",
+      "meaning": "Elimination by cases on a Boolean value.",
+      "effect_on_target": "It selects the no-subnormal formula when false and the subnormal formula when true.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "Bool.false",
+      "meaning": "The false Boolean value.",
+      "effect_on_target": "It denotes the format case with no subnormals in D028.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "Bool.true",
+      "meaning": "The true Boolean value.",
+      "effect_on_target": "It denotes the format case with subnormals in D028.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "Unit.unit",
+      "meaning": "The unique inhabitant of Unit.",
+      "effect_on_target": "It evaluates the selected delayed branch of the Boolean conditional and has no mathematical effect.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "m, n, and q are arbitrary natural numbers, with no positivity assumptions.",
-      "theta, gmin, and Gmin are arbitrary real numbers.",
-      "A is an arbitrary real matrix indexed by Fin m × Fin n, hence of dimensions m by n.",
-      "B is an arbitrary real matrix indexed by Fin n × Fin q, hence of dimensions n by q."
+      "Universally quantified are a natural dimension n, an arbitrary index type ι, a mixed-precision rounding model indexed by ι, and an index t ∈ ι.",
+      "Universally quantified are two real vectors x,y : Fin n → ℝ.",
+      "Universally quantified are two real scaling factors λ and μ."
     ],
     "hypotheses": [
-      "1 ≤ theta.",
-      "0 ≤ Gmin.",
-      "Gmin ≤ gmin."
+      "Each model format F has p_F(s) > 0 and e_min,F(s) ≤ e_max,F(s) for every s ∈ ι.",
+      "For every s ∈ ι, the model satisfies p_in(s) ≤ p_acc(s), e_min,acc(s) ≤ e_min,in(s), and e_max,in(s) ≤ e_max,acc(s).",
+      "For F equal to the input or accumulation format, the corresponding rounding data satisfy R_F(s,z) = z(1 + δ_F(s,z)) + η_F(s,z), |δ_F(s,z)| ≤ u_F(s), |η_F(s,z)| ≤ g_F(s), and η_F(s,z)δ_F(s,z) = 0 for every s ∈ ι and z ∈ ℝ.",
+      "The dimension is positive: n > 0.",
+      "Both vectors are nonzero in infinity norm: ‖x‖∞ > 0 and ‖y‖∞ > 0.",
+      "There exists k ∈ ℤ with λ = 2^k, λ > 0, and either ‖x‖∞ = 0 with λ = 1, or ‖x‖∞ > 0 with θ/(2‖x‖∞) < λ ≤ θ/‖x‖∞.",
+      "There exists l ∈ ℤ with μ = 2^l, μ > 0, and either ‖y‖∞ = 0 with μ = 1, or ‖y‖∞ > 0 with θ/(2‖y‖∞) < μ ≤ θ/‖y‖∞."
     ],
     "conclusions": [
-      "4·(n:Real)^2·(theta⁻¹)^2·Gmin·N(A)·N(B) ≤ 4·(n:Real)^2·theta⁻¹·gmin·N(A)·N(B), where N is the maximum row-sum norm defined below."
+      "|λ⁻¹μ⁻¹ Σ_i R_in(t,λx_i)R_in(t,μy_i) - Σ_i x_i y_i| ≤ (2u + u²)Σ_i |x_i||y_i| + 4nθ⁻¹g(1 + u + θ⁻¹g)‖x‖∞‖y‖∞."
     ],
     "mathematical_definitions": [
-      "For an r-by-s real matrix X, N(X) is the real coercion of sup_{i in Fin r} sum_{j in Fin s} nnnorm(X(i,j)), where the sum and supremum are first taken in the nonnegative reals.",
-      "Equivalently under the standard real norm, N(X) = max_{i in Fin r} sum_{j in Fin s} |X(i,j)|, with the maximum over an empty row-index set defined to be 0.",
-      "Thus N(A) uses rows Fin m and columns Fin n, while N(B) uses rows Fin n and columns Fin q.",
-      "(n:Real)^2 is the square of the natural dimension n after casting it to Real; theta⁻¹ is real inversion; the coefficient is exactly the real number 4."
+      "All sums and maxima range over i ∈ Fin n, equivalently i = 0,...,n-1.",
+      "For v : Fin n → ℝ, ‖v‖∞ = max_i |v_i|. The underlying finite-supremum definition returns 0 when n = 0.",
+      "For a format F at s, define u_F(s) = 2^(-p_F(s)) and M_F(s) = 2^e_max,F(s)(2 - 2u_F(s)).",
+      "For a format F at s, define g_F(s) = 2^e_min,F(s)/2 if its subnormal flag is false, and g_F(s) = u_F(s)2^e_min,F(s) if that flag is true.",
+      "In the conclusion, u = u_in(t), g = g_in(t), and θ = min(M_in(t), sqrt(M_acc(t)/n)).",
+      "The computed scaled quantity is A = λ⁻¹μ⁻¹ Σ_i R_in(t,λx_i)R_in(t,μy_i), and the exact comparison value is the real dot product x·y = Σ_i x_i y_i.",
+      "The error is E = A - x·y, and the componentwise absolute product sum is Σ_i |x_i||y_i|."
     ],
-    "proposition_plain_english": "For every choice of natural dimensions m, n, q, real parameters theta, gmin, Gmin, an m-by-n real matrix A, and an n-by-q real matrix B, if theta is at least 1 and 0 ≤ Gmin ≤ gmin, then 4 times n squared times the square of the reciprocal of theta times Gmin times the maximum absolute row-sum norms of A and B is at most 4 times n squared times the reciprocal of theta times gmin times those same two matrix norms."
+    "proposition_plain_english": "For every positive dimension, every valid indexed mixed-precision rounding model, two nonzero real vectors, and positive integer-power-of-two scales that place each scaled vector's infinity norm between one half of θ and θ, the exact real sum of products of the individually input-rounded scaled coordinates, rescaled by λ⁻¹μ⁻¹, differs from the exact dot product by at most (2u + u²) times the absolute componentwise product sum plus 4n(g/θ)(1 + u + g/θ) times the product of the two infinity norms."
   },
   "restrictions_and_vacuity_risks": [
-    "The dimensions m, n, and q may be zero; no nonempty-index assumption is present.",
-    "If m = 0, then N(A) = 0. If q = 0, then N(B) = 0. If n = 0, the explicit factor (n:Real)^2 is 0 and the relevant row sums are also degenerate. In all such cases the conclusion can collapse to a trivial inequality.",
-    "The conclusion is also trivial when either matrix norm is zero; no nonzero-matrix assumption is present.",
-    "The hypotheses imply theta > 0 and gmin ≥ 0, although only 1 ≤ theta, 0 ≤ Gmin, and Gmin ≤ gmin are explicitly encoded.",
-    "Gmin may equal 0, and neither scalar comparison is strict.",
-    "A and B are used only through their separate maximum row-sum norms. The proposition does not mention the matrix product A·B or any entrywise relationship between the matrices.",
-    "There are no existential witnesses, approximation quantities, error terms, algorithms, equality claims, or optimality claims encoded in the proposition."
+    "The proposition requires n > 0 and excludes both zero vectors. Consequently, the zero-norm, scale-equals-one branch in each admissibility hypothesis is unreachable here.",
+    "The theorem is conditional on supplied λ and μ satisfying the dyadic interval conditions; it does not assert or construct such scales.",
+    "Only the input rounding function is applied in the computed quantity. The coordinate products, finite sum, and inverse rescaling are exact real operations, and the accumulation rounding function is never applied.",
+    "The accumulation format affects the statement only through its maximum-magnitude parameter inside θ and through the intrinsic model-validity conditions.",
+    "The rounding model assumes a global decomposition for every real input with bounded relative or absolute error and ηδ = 0. It does not encode representability, a rounding mode, tie behavior, overflow or saturation semantics, operation-by-operation product rounding, or accumulation rounding in the stated computation.",
+    "No sign restrictions are imposed on vector coordinates or on the exact dot product.",
+    "The format invariants and n > 0 make u, g, both maximum-magnitude parameters, and θ positive, so the displayed inverses and scale intervals are mathematically meaningful.",
+    "Although Lean's real square root first truncates negative inputs to zero, its argument M_acc/n is positive under the encoded format and dimension conditions."
   ],
-  "ambiguities": [
-    "The packet gives Nat.AtLeastTwo only as an inductive predicate Nat → Prop and omits its constructors, so its exact internal logical characterization cannot be recovered from the supplied declaration alone. This does not make the coefficient ambiguous: D004 supplies the required witness for 3+1, and D026 interprets the resulting numeral as its natural cast, namely the real number 4."
-  ]
+  "ambiguities": []
 }

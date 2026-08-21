@@ -3,163 +3,156 @@
   "role": "roundtrip-judge",
   "task_id": "P20-T2",
   "paper_sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2",
-  "blind_translation_sha256": "08d68e8e62f82b8e4dfba0098caec6fb5d801c13099556e3c2ba5a71eaa3413b",
+  "blind_translation_sha256": "245a9a9a1cc13625d3148141cf9579950661072459d53875f4768f975da13599",
   "semantic_checklist": [
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "The inspected PDF has the required SHA-256 and is the 2025 SIAM J. Sci. Comput. article. Printed page B791 states, after equation (3.26), the conditional comparison theta^(-2) Gmin <= theta^(-1) gmin.",
-      "translation_evidence": "The translation compares the accumulation-underflow and input-underflow terms carrying theta^(-2) Gmin and theta^(-1) gmin, respectively.",
-      "reasoning": "The correct paper, passage, and selected conditional comparison were used; the target is not being mistaken for the complete forward-error bound (3.26)."
+      "paper_evidence": "PDF pages 2-6, printed B786-B790, contain Model 1, equations (2.3)-(2.4), the scaled inner product in (3.2)-(3.8), the input-conversion bound in (3.9)-(3.13), and the later distinct accumulation error epsilon_2.",
+      "translation_evidence": "The translation selects the bound for the rescaled product of input-rounded coordinates and excludes accumulation rounding.",
+      "reasoning": "The selected source and surrounding result are correct: the target is equation (3.13) for epsilon_1, not the later total MMA error."
     },
     {
       "id": "S02",
       "status": "fail",
-      "paper_evidence": "The surrounding theorem has A in R^(m x n), B in R^(n x q), theta fixed as min(fmax,sqrt(Fmax/n)), Model 1 format parameters, and implicitly n > 0 because Fmax/n occurs.",
-      "translation_evidence": "The matrix dimensions and shared index n match, but m, n, and q may be zero, while theta, gmin, and Gmin are arbitrary reals unrelated to floating-point formats or the prescribed scale.",
-      "reasoning": "The matrix types are represented correctly, but the binder domain is materially widened and the format and scaling binders that give the quantities their paper meanings are absent."
+      "paper_evidence": "The paper fixes A in R^(m x n), B in R^(n x q), and length-n vectors x and y. Its symbol t is the natural-number precision of the input format.",
+      "translation_evidence": "The translation directly binds x,y : Fin n -> R, but also introduces an arbitrary index type iota and t : iota; the actual input precision is p_in(t).",
+      "reasoning": "The length-n vector types correctly represent one row-column inner product, but the indexed-family binder changes the type and meaning of the paper's precision binder t. This is a harmless pointwise generalization, not an exact binder match."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The paper makes the comparison conditionally on theta >= 1 inside the already fixed Model 1 and scaled-MMA setting.",
-      "translation_evidence": "The translation universally quantifies arbitrary dimensions, matrices, and real parameters, then assumes theta >= 1, Gmin >= 0, and Gmin <= gmin.",
-      "reasoning": "The theta condition has the right scope, but the paper-context quantification is replaced by a context-free universal algebraic statement with an additional explicit antecedent."
+      "status": "pass",
+      "paper_evidence": "After fixing the formats and an inner product x^T y, the paper chooses dyadic lambda and mu depending on x, y, and theta and satisfying (3.4a)-(3.4b).",
+      "translation_evidence": "The model and selected index precede x and y, while lambda and mu are quantified with dyadic admissibility conditions depending on theta and the corresponding vector norm.",
+      "reasoning": "Conditional universal quantification over admissible scales preserves the paper's scope. For positive vector norms, the strict-lower and non-strict-upper dyadic interval identifies the maximal admissible power of two."
     },
     {
       "id": "S04",
       "status": "fail",
-      "paper_evidence": "Model 1 defines nonnegative gmin and Gmin from format ranges. The comparison paragraph cites U <= u and Fmin <= fmin as justification and treats theta >= 1 as conditional, not unconditional.",
-      "translation_evidence": "The translation correctly assumes theta >= 1 but explicitly assumes Gmin <= gmin and Gmin >= 0; it omits Model 1, theta's definition, n > 0, scaling, and overflow conditions.",
-      "reasoning": "Assuming Gmin <= gmin is not the same as deriving it from the paper's format relationships. This distinction is substantive because the derivation is not valid for every mixed choice of subnormal support."
+      "paper_evidence": "The paper assumes round-to-nearest input conversion, no overflow in (2.3), exact high-precision storage around scaling, positive denominators implicit in (3.4), and dyadic scaling.",
+      "translation_evidence": "The translation requires n > 0, positive infinity norms, dyadic admissible scales, exact real surrounding operations, and a global relative-or-absolute error decomposition, but it does not require nearest representability or state an overflow domain.",
+      "reasoning": "The real-vector formulation and positive-norm assumptions faithfully encode the meaningful local domain, but the operational rounding and overflow hypotheses are replaced by a broader abstract rounding-function axiom."
     },
     {
       "id": "S05",
-      "status": "fail",
-      "paper_evidence": "The paper first states the scalar inequality theta^(-2) Gmin <= theta^(-1) gmin and then concludes that the complete accumulation-underflow contribution is bounded by the input-underflow contribution.",
-      "translation_evidence": "Only the inequality after multiplication by 4 n^2 N(A) N(B) is concluded; the scalar inequality is not included.",
-      "reasoning": "The full-term conclusion follows from the scalar comparison because the common factor is nonnegative. The reverse cancellation is unavailable when n or either norm is zero, so the full-term conclusion alone is not equivalent to the paper's scalar statement."
+      "status": "pass",
+      "paper_evidence": "Equation (3.13) bounds |epsilon_1| by the sum of the exact (2u + u^2)|x|^T|y| term and the complete underflow term involving 4n, theta, g_min, and both infinity norms.",
+      "translation_evidence": "The sole conclusion is the same absolute bound for the rescaled rounded-input sum minus the exact dot product.",
+      "reasoning": "The selected final conclusion and all of its dependencies are present. Intermediate inequalities (3.9)-(3.12) are derivation steps rather than additional required conclusions."
     },
     {
       "id": "S06",
-      "status": "fail",
-      "paper_evidence": "Model 1 defines theta, gmin, and Gmin through fmax, Fmax, n, precision, exponent ranges, and branch-dependent underflow formulas.",
-      "translation_evidence": "The dependency ledger correctly unfolds real inversion, squares, multiplication, casts, and N as a maximum absolute row-sum norm, but treats theta, gmin, and Gmin as primitive arbitrary reals.",
-      "reasoning": "The local algebraic operators are understood, but the nontrivial paper definitions that supply the numerical meaning of the three scalar parameters are not represented."
+      "status": "pass",
+      "paper_evidence": "The paper defines u, g_min, f_max, F_max, theta, dyadic scales, componentwise input rounding, the absolute product sum, and infinity norms.",
+      "translation_evidence": "The dependency ledger unfolds the format projections, u, g, maximum magnitude, theta, dyadic admissibility, finite sums, finite maxima, rounded quantity, and error.",
+      "reasoning": "Every operator that affects the target has a concrete mathematical interpretation consistent with the paper."
     },
     {
       "id": "S07",
-      "status": "not-applicable",
-      "paper_evidence": "The surrounding bound distinguishes the computed matrix from the exact product, but the selected claim itself compares two underflow-envelope coefficients.",
-      "translation_evidence": "The translation contains no computed matrix, exact product, rounded operand, or perturbation quantity and claims only an ordering between envelope terms.",
-      "reasoning": "No exact or computed quantities are conflated within the selected algebraic comparison; their omission is assessed under algorithm linkage instead."
+      "status": "pass",
+      "paper_evidence": "Equations (3.3)-(3.8) define s from rounded inputs but exact rescaling and inner-product algebra; the actually accumulated result hat(s) and epsilon_2 appear only in (3.16)-(3.19).",
+      "translation_evidence": "Only individual input coordinates are rounded. Products, summation, inverse rescaling, and the comparison dot product are exact real operations.",
+      "reasoning": "The translation correctly represents the pre-accumulation input-conversion error epsilon_1 and does not conflate it with the computed MMA result."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "The contributions arise from the single-word algorithm that scales by power-of-two diagonal matrices, rounds inputs, accumulates length-n inner products in the accumulation format, and unscales.",
-      "translation_evidence": "The proposition mentions only arbitrary matrices through their norms and contains no scaling matrices, rounded operands, MMA operation, accumulation, or computed result.",
-      "reasoning": "The algebraic inequality is severed from the algorithm and execution model that identify its two sides as input- and accumulation-underflow contributions."
+      "status": "pass",
+      "paper_evidence": "Equation (3.1) scales rows and columns by powers of two, converts them to the input format, multiplies them, and removes the scaling; equation (3.3) is its row-column specialization.",
+      "translation_evidence": "The rounded quantity is lambda^-1 mu^-1 times the dot product of R_in(lambda x_i) and R_in(mu y_i), with theta-derived dyadic scales.",
+      "reasoning": "Although matrix binders are eliminated, the statement remains exactly linked to the input-conversion stage of the paper's scaled MMA algorithm."
     },
     {
       "id": "S09",
-      "status": "unclear",
-      "paper_evidence": "Equations (3.25)-(3.26) use matrix infinity-norm notation and call the result normwise, but the inspected paper does not explicitly define that matrix norm as a maximum absolute row sum.",
-      "translation_evidence": "N(X) is explicitly the maximum over rows of the sum of absolute entry values.",
-      "reasoning": "This is the standard induced matrix infinity norm and is consistent with the formulas, but the required isolation and missing explicit source definition prevent certifying the identification by inference alone."
+      "status": "pass",
+      "paper_evidence": "The first term uses |x|^T|y|, while the underflow term uses ||x||_infinity||y||_infinity; the paper explicitly states that the latter cannot be replaced by the former.",
+      "translation_evidence": "The first term is sum_i |x_i||y_i|, and the second contains the product of finite maximum absolute coordinate norms.",
+      "reasoning": "Componentwise absolute values, the absolute product sum, and unsquared infinity norms all match."
     },
     {
       "id": "S10",
       "status": "pass",
-      "paper_evidence": "The two terms in (3.26) are exactly 4 n^2 theta^(-2) Gmin and 4 n^2 theta^(-1) gmin, with n the shared inner dimension and the common operand-norm product.",
-      "translation_evidence": "The conclusion uses exactly 4, the square of the real cast of n, (theta^(-1))^2 on the Gmin side, theta^(-1) on the gmin side, and the same N(A)N(B) factors.",
-      "reasoning": "The coefficients, shared index, inverse powers, parameter placement, and common factors agree."
+      "paper_evidence": "Equation (3.13) has coefficients 2u + u^2 and 4n theta^-1 g_min(1 + u + theta^-1 g_min), with theta = min(f_max, sqrt(F_max/n)) and n coordinates.",
+      "translation_evidence": "The translated formula has exactly these coefficients and dependencies, with Fin n indexing and natural n cast into the real-valued expressions.",
+      "reasoning": "All constants, powers, index cardinalities, inequality endpoints, and the placement of n under the square root agree."
     },
     {
       "id": "S11",
       "status": "fail",
-      "paper_evidence": "Model 1 specifies t, T, u, U, exponent-range containment, overflow exclusion, round-to-nearest constants, directed-rounding replacements, and separate gradual-underflow or no-subnormal definitions of gmin and Gmin.",
-      "translation_evidence": "No floating-point precision, range, rounding mode, underflow branch, or overflow assumption is present; Gmin <= gmin is supplied directly.",
-      "reasoning": "The translation captures a sufficient real-order premise but not the paper's floating-point model or the disputed derivation of that premise."
+      "paper_evidence": "Equation (2.3) describes fl as rounding a real input to the nearest representable input-format number, conditional on no overflow. Underflow is represented by eta, and directed rounding requires doubled constants.",
+      "translation_evidence": "R_in is any real-to-real function admitting globally bounded delta and eta with eta*delta = 0. Representability, round-to-nearest, directed-mode substitution, overflow, saturation, infinity, and NaN behavior are absent.",
+      "reasoning": "Precision and underflow constants match, but the execution-level floating-point semantics are abstracted away. The abstract operation class strictly includes functions that are not floating-point rounding operators."
     },
     {
       "id": "S12",
       "status": "fail",
-      "paper_evidence": "The paper uses a non-strict scalar inequality and derives the ordering of the two complete contributions by multiplication with a nonnegative common factor.",
-      "translation_evidence": "The direction and strictness match, but the encoded conclusion is only the common-factor inequality and no positivity assumption makes that factor cancellable.",
-      "reasoning": "Scalar comparison implies full-term comparison. Full-term comparison does not imply scalar comparison when the common factor is zero. The translation's hypotheses independently suffice to prove the scalar inequality, but that scalar conclusion is not what the proposition encodes; zero cases are not therefore classified as making the translation stronger."
+      "paper_evidence": "The paper's final inequality direction and the strict-lower/non-strict-upper scale inequalities are as displayed in (3.4) and (3.13), within the concrete nearest-rounding model.",
+      "translation_evidence": "Those relation symbols match exactly, but the theorem ranges over every globally error-bounded R_in, including nonrepresentable and non-nearest outputs.",
+      "reasoning": "The scalar inequalities have the right strength, but the whole proposition is logically stronger in its rounding-operation domain and therefore is not equivalent to the paper statement."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "The selected quantities are the input- and accumulation-underflow contributions to the first-order absolute normwise forward-error envelope.",
-      "translation_evidence": "The translation compares exactly those normwise terms and introduces no relative, backward, residual, or componentwise error claim.",
-      "reasoning": "The selected underflow-envelope error notion is preserved."
+      "paper_evidence": "Epsilon_1 is the scalar forward error between the exact real inner product x^T y and the rescaled dot product of converted inputs.",
+      "translation_evidence": "The left-hand side is the absolute difference between that rescaled rounded-input quantity and the exact real dot product.",
+      "reasoning": "The translation preserves the scalar absolute forward-error notion and excludes accumulation error, backward error, relative error, and matrix-norm error."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Equation (3.26) drops second-order terms, but the subsequent comparison between its two retained underflow terms is an exact scalar inequality.",
-      "translation_evidence": "The translation states an exact inequality only between the two retained contributions and does not present (3.26) itself as an exact forward-error bound.",
-      "reasoning": "The exact term comparison is correctly separated from the approximate first-order forward bound; omitted second-order terms are outside the selected claim."
+      "paper_evidence": "Equations (3.10)-(3.13) retain u^2, the mixed u*g_min contribution, and the g_min^2/theta contribution without asymptotic truncation.",
+      "translation_evidence": "The bound retains 2u + u^2 and the full factor g/theta times (1 + u + g/theta).",
+      "reasoning": "Every second-order and mixed term is preserved exactly; no big-O or first-order approximation is introduced."
     },
     {
       "id": "S15",
-      "status": "unclear",
-      "paper_evidence": "The paper claim concerns format-derived positive parameters in a finite-dimensional real scaled-MMA computation.",
-      "translation_evidence": "The translation retains finite real matrices but generalizes to arbitrary real parameters satisfying three order hypotheses and permits zero dimensions.",
-      "reasoning": "This can be viewed as an algebraic generalization if Gmin <= gmin is an accepted extracted premise. Under a literal Model 1 reading, however, that premise is additional and may exclude an allowed mixed-subnormal regime, so the generalization cannot be classified definitively."
+      "status": "pass",
+      "paper_evidence": "The selected result is stated for one row x and one column y of real matrices, independently of the outer dimensions m and q.",
+      "translation_evidence": "The translation specializes directly to two finite real vectors and generalizes format selection to an indexed family and rounding to any operation satisfying the error law.",
+      "reasoning": "The matrix-to-vector specialization preserves the selected result, while the genuine rounding-model generalization is explicitly reflected in the faithful-stronger classification."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper's intended regime has positive format endpoints and positive inner dimension, so its comparison has nontrivial instances.",
-      "translation_evidence": "The hypotheses are satisfiable in nontrivial cases, for example n=m=q=1, theta=2, Gmin=gmin=1, and nonzero one-entry matrices. Zero dimensions and zero norms are also admitted.",
-      "reasoning": "The proposition is not globally vacuous. Its degenerate instances make the multiplied conclusion trivial, but those cases are not treated as evidence that the translation is stronger."
+      "paper_evidence": "For positive n and nonzero x and y, theta is positive and a dyadic scale exists in each interval from (3.4).",
+      "translation_evidence": "Format validity makes u, g, maximum magnitudes, and theta positive; n and both norms are positive, and admissible dyadic scales are satisfiable.",
+      "reasoning": "The assumptions admit concrete models, vectors, and scales. The conclusion is not obtained through an impossible antecedent or a zero-dimensional triviality."
     }
   ],
   "implications": {
     "translation_implies_paper": {
-      "verdict": "unclear",
-      "reasoning": "If the intended Model 1 regime guarantees Gmin <= gmin and the paper's matrix infinity norm is the translated maximum row-sum norm, the translation instantiates to the complete contribution ordering, while its scalar assumptions also yield the paper's scalar inequality. The printed Model 1 permits branch-dependent underflow envelopes, however, and U <= u with Fmin <= fmin does not establish Gmin <= gmin when the input has gradual underflow but the accumulator lacks subnormals. Whether that regime was implicitly excluded is unclear."
+      "verdict": "yes",
+      "reasoning": "On the paper's no-overflow input range, nearest rounding satisfies the translated delta/eta law. The operation may be extended outside that range by the identity without changing any admissibly scaled input, yielding a global translated model. Instantiation then gives exactly equation (3.13) for every nonzero row-column pair covered by (3.4)."
     },
     "paper_implies_translation": {
       "verdict": "no",
-      "reasoning": "The paper asserts the comparison only for parameters arising from its Model 1 scaled-MMA setting. It does not entail the translation's universal theorem for arbitrary real theta, gmin, and Gmin or arbitrary zero-dimensional matrices unrelated to any floating-point format, even though scalar comparison implies the multiplied inequality within the paper domain."
+      "reasoning": "The paper claims the result for the nearest-representable rounding operator under its no-overflow model. It does not quantify over arbitrary real-valued functions satisfying the same error envelope, whose outputs need not be representable or nearest. Consequently, it does not establish the translation's broader operation-level theorem."
     }
   },
-  "classification": "undetermined",
-  "accepted": false,
-  "requires_adjudication": true,
+  "classification": "faithful-stronger",
+  "accepted": true,
+  "requires_adjudication": false,
   "findings": [
     {
       "severity": "major",
-      "category": "underflow-envelope hypothesis provenance",
-      "paper_evidence": "The paper cites U <= u and Fmin <= fmin for theta^(-2) Gmin <= theta^(-1) gmin, while Model 1 defines Gmin and gmin using independently stated gradual-underflow or no-subnormal branches.",
-      "translation_evidence": "Gmin <= gmin is imposed as an explicit hypothesis.",
-      "impact": "The translation is valid under a sufficient assumption, but it is unclear whether it covers the paper's full stated Model 1 domain. The mixed regime with gradual input underflow and no accumulator subnormals can violate the claimed derivation."
-    },
-    {
-      "severity": "major",
-      "category": "algorithm and model scope",
-      "paper_evidence": "The two envelopes are contributions from the power-of-two-scaled, single-word mixed-precision MMA algorithm under Model 1.",
-      "translation_evidence": "The statement is a context-free real inequality with no format, scaling, rounding, accumulation, or computed-product object.",
-      "impact": "The numerical and algorithmic provenance of the terms is not encoded, and the paper cannot imply the translation's unrestricted algebraic generalization."
-    },
-    {
-      "severity": "major",
-      "category": "scalar versus multiplied comparison",
-      "paper_evidence": "The paper explicitly states the scalar comparison before interpreting it as an ordering of the complete underflow contributions.",
-      "translation_evidence": "Only the comparison after multiplication by 4 n^2 N(A)N(B) appears in the conclusion.",
-      "impact": "Multiplication preserves the scalar inequality, but cancellation is invalid when the common factor is zero. The complete-term conclusion is therefore not by itself equivalent to the paper's scalar comparison."
+      "category": "floating-point-model-generalization",
+      "paper_evidence": "Model 1 and equation (2.3) specify nearest-representable input rounding and condition the error decomposition on absence of overflow.",
+      "translation_evidence": "The translated model accepts any globally error-bounded real-to-real function and contains no representability, rounding-mode, or overflow semantics.",
+      "impact": "The numerical bound remains valid and covers the paper as an instance, but the reverse implication fails because the formal statement proves a proper analytic generalization of the paper's concrete floating-point result."
     },
     {
       "severity": "minor",
-      "category": "matrix infinity-norm identification",
-      "paper_evidence": "The paper uses matrix infinity-norm notation without an explicit definition in the inspected source.",
-      "translation_evidence": "The dependency ledger fixes the norm as the maximum absolute row-sum norm.",
-      "impact": "The choice is standard and plausible but cannot be certified from an explicit source definition under the required evidence policy."
+      "category": "binder-index-generalization",
+      "paper_evidence": "The paper's t is the natural-number input precision for one fixed pair of formats.",
+      "translation_evidence": "The translation uses t as an element of an arbitrary index type and obtains the precision from p_in(t).",
+      "impact": "At a selected index the parameters coincide with the paper's parameters, so the formula is unchanged, but the binder structure is not literally equivalent."
+    },
+    {
+      "severity": "note",
+      "category": "local-domain-specialization",
+      "paper_evidence": "The displayed scaling ratios divide by the infinity norms of one row and one column and provide no zero-vector convention.",
+      "translation_evidence": "The translation works directly with length-n vectors and explicitly requires both infinity norms to be positive.",
+      "impact": "This restricts the proposition to the domain where the paper's displayed scaling construction is defined and does not invent a zero-vector interpretation."
     }
   ],
-  "rationale": "The translation reproduces the exact constants, dimensions, inverse powers, inequality direction, and full common-factor underflow terms, and it correctly treats theta >= 1 as conditional. It also avoids misrepresenting the approximate forward bound (3.26) as exact. Nevertheless, it replaces the paper's Model 1 justification with an explicit Gmin <= gmin hypothesis, omits the scalar conclusion and algorithmic context, and generalizes to arbitrary real parameters. Because the paper is itself ambiguous about mixed subnormal regimes, translation-implies-paper cannot be decided without adjudicating the intended format assumptions; the appropriate classification is therefore undetermined."
+  "rationale": "The translated inequality preserves the paper's dimension, scaling threshold, dyadic scale bounds, exact-versus-rounded distinction, norms, constants, scalar forward-error meaning, and every higher-order term in equation (3.13). It also correctly excludes the later accumulation error epsilon_2. It is not equivalent because it replaces nearest-representable no-overflow floating-point conversion with an arbitrary globally error-bounded real function and packages formats in an indexed family. The paper's operation can be instantiated within this abstraction on the admissible range, so the translation implies the paper result, but the paper does not imply the broader abstract theorem. The appropriate classification is therefore faithful-stronger."
 }

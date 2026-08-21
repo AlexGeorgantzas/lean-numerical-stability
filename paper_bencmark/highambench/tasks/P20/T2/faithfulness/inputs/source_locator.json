@@ -5,11 +5,32 @@
   "paper_version": "SIAM Journal on Scientific Computing 47(4), B785-B800, published 2025-07-01",
   "source_locations": [
     {
-      "anchor": "equation (3.26) and following theta^{-2} Gmin <= theta^{-1} gmin comparison",
-      "pdf_page": 7,
-      "printed_page": "B791",
-      "role": "single-word input- versus accumulation-underflow envelope comparison",
-      "section": "3.2. Summary and discussion"
+      "anchor": "Model 1 and equations (2.1)-(2.3)",
+      "pdf_page": 2,
+      "printed_page": "B786",
+      "role": "binary formats, roundoff and underflow parameters, format nesting, and input rounding equation",
+      "section": "2.1. The model of matrix multiplication"
+    },
+    {
+      "anchor": "equation (2.4) and the following rounding-mode paragraph",
+      "pdf_page": 3,
+      "printed_page": "B787",
+      "role": "accumulation rounding equation, mutually exclusive relative and underflow errors, and exceptional-value scope",
+      "section": "2.1. The model of matrix multiplication"
+    },
+    {
+      "anchor": "equations (3.2)-(3.8)",
+      "pdf_page": 5,
+      "printed_page": "B789",
+      "role": "format-derived threshold, maximal power-of-two scales, componentwise input conversions, scaled inner product, and definition of epsilon_1",
+      "section": "3.1. Analysis"
+    },
+    {
+      "anchor": "equations (3.9)-(3.13)",
+      "pdf_page": 5,
+      "printed_page": "B789",
+      "role": "selected exact input-rounding and input-underflow error bound",
+      "section": "3.1. Analysis"
     }
   ],
   "task_id": "P20-T2"

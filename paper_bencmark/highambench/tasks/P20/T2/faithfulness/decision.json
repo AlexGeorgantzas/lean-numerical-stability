@@ -1,71 +1,62 @@
 {
-  "accepted": false,
-  "adjudicated": true,
-  "adjudication_reasons": [
-    "direct judge requested adjudication",
-    "round-trip judge requested adjudication",
-    "direct judge classification is undetermined",
-    "round-trip judge classification is undetermined",
-    "blind dependency D004 is unclear",
-    "blind dependency D038 is unclear",
-    "direct S04 is unclear",
-    "direct S11 is unclear",
-    "direct S15 is unclear",
-    "round-trip S09 is unclear",
-    "round-trip S15 is unclear"
-  ],
-  "classification": "not-faithful-weaker",
-  "completed_at_utc": "2026-08-21T05:18:01.220163+00:00",
+  "accepted": true,
+  "adjudicated": false,
+  "adjudication_reasons": [],
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-21T10:11:37.742980+00:00",
   "findings": [
     {
-      "category": "extra underflow-envelope restriction",
-      "evidence": "Equations (2.1)-(2.2) permit independent subnormal branches. The input-gradual/accumulator-no-subnormal branch can have Gmin = Fmin/2 > u fmin = gmin despite U <= u and Fmin <= fmin. Lean requires Gmin <= gmin.",
-      "impact": "The declaration excludes nondegenerate cases in the paper's literal Model 1 domain and therefore formalizes a weaker, repaired statement rather than the stated comparison.",
-      "severity": "major"
-    },
-    {
-      "category": "premise strength",
-      "evidence": "For theta > 0, theta^(-2) Gmin <= theta^(-1) gmin is equivalent to Gmin <= theta*gmin.",
-      "impact": "hGg is sufficient but not necessary when theta > 1, so it cannot be justified as merely exposing the exact necessary premise.",
+      "category": "abstract-rounding-generalization",
+      "impact": "The target proves the same bound for a broader class of conversion maps. This is genuine stronger scope, not a weakening or a different error result.",
+      "lean_evidence": "P20Model1 constrains inputRound only through a real error decomposition, bounds, and eta*delta=0; representability and a tie rule are not fields.",
+      "paper_evidence": "B787 describes fl as rounding to the nearest representable input-format number and states the round-to-nearest mode.",
       "severity": "note"
     },
     {
-      "category": "scalar and complete-term scope",
-      "evidence": "The formal hypotheses derive the scalar comparison independently, and D001-D003 multiply it by the exact nonnegative factor used by the two contributions in (3.26).",
-      "impact": "The absence of a syntactic scalar conclusion and the inability to cancel a zero common factor do not create an additional faithfulness failure.",
+      "category": "zero-vector-domain",
+      "impact": "This resolves the source passage's undefined zero-vector ratios and preserves the intended nonzero scaling construction.",
+      "lean_evidence": "The target explicitly assumes both infinity norms are positive, making the positive branch of p20MaximalPowerTwoScale mandatory.",
+      "paper_evidence": "Equations (3.4a)-(3.4b) divide by the infinity norms without specifying a zero-row or zero-column case.",
       "severity": "note"
     },
     {
-      "category": "matrix infinity norm",
-      "evidence": "D003 is the maximum absolute row-sum norm; equations (3.23)-(3.24) and the dimension-free implication from (3.27) to (3.28) support that induced infinity-norm interpretation.",
-      "impact": "The norm factors faithfully match the paper.",
-      "severity": "note"
+      "category": "floating-point-model-generalization",
+      "impact": "The numerical bound remains valid and covers the paper as an instance, but the reverse implication fails because the formal statement proves a proper analytic generalization of the paper's concrete floating-point result.",
+      "paper_evidence": "Model 1 and equation (2.3) specify nearest-representable input rounding and condition the error decomposition on absence of overflow.",
+      "severity": "major",
+      "translation_evidence": "The translated model accepts any globally error-bounded real-to-real function and contains no representability, rounding-mode, or overflow semantics."
     },
     {
-      "category": "degenerate dimensions",
-      "evidence": "Lean permits m, n, or q to be zero, while theta = min(fmax,sqrt(Fmax/n)) implicitly requires n > 0 in the paper.",
-      "impact": "These added cases collapse through a zero dimension or norm factor and are degenerate extensions, not genuine theorem strength.",
-      "severity": "note"
+      "category": "binder-index-generalization",
+      "impact": "At a selected index the parameters coincide with the paper's parameters, so the formula is unchanged, but the binder structure is not literally equivalent.",
+      "paper_evidence": "The paper's t is the natural-number input precision for one fixed pair of formats.",
+      "severity": "minor",
+      "translation_evidence": "The translation uses t as an element of an arbitrary index type and obtains the precision from p_in(t)."
+    },
+    {
+      "category": "local-domain-specialization",
+      "impact": "This restricts the proposition to the domain where the paper's displayed scaling construction is defined and does not invent a zero-vector interpretation.",
+      "paper_evidence": "The displayed scaling ratios divide by the infinity norms of one row and one column and provide no zero-vector convention.",
+      "severity": "note",
+      "translation_evidence": "The translation works directly with length-n vectors and explicitly requires both infinity norms to be positive."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "Literal Model 1 admits a gradual-underflow input format paired with an accumulation format lacking subnormals. In that branch, U <= u and Fmin <= fmin do not imply Gmin <= gmin or even Gmin <= theta*gmin. The explicit nondegenerate t = T = 3 example satisfies theta >= 1 but fails the paper comparison and does not satisfy hGg, so the Lean theorem cannot recover every source-stated case.",
-      "verdict": "no"
+      "reasoning": "For a paper input format and safe scaled arguments, instantiate inputRound by the paper's conversion and the model fields by its delta/eta decomposition. The unfolded Lean conclusion is exactly equation (3.13) for epsilon_1.",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "After aligning the paper quantities with the declaration and restricting to the declaration's added hypotheses, the paper explicitly asserts the scalar comparison and the resulting complete contribution ordering. Multiplication by 4 n^2 N(A)N(B) is valid because this factor is nonnegative, including when it is zero. Thus the paper's asserted broader-domain result specializes to the Lean statement.",
-      "verdict": "yes"
+      "reasoning": "The paper states the result for its actual nearest-representable conversion model. It does not itself quantify over arbitrary format-index families or arbitrary real-to-real conversion maps that merely satisfy the same error equations, whereas the Lean theorem does.",
+      "verdict": "no"
     }
   },
   "judge_classifications": {
-    "direct": "undetermined",
-    "roundtrip": "undetermined"
+    "direct": "faithful-stronger",
+    "roundtrip": "faithful-stronger"
   },
-  "rationale": "The verified PDF has the supplied SHA-256. The declaration exactly represents the two complete post-(3.26) underflow terms, their constants, inverse powers, shared dimension, inequality direction, and maximum-row-sum matrix infinity norms. Its hypotheses also suffice to derive the paper's scalar comparison without cancelling the common factor, so scalar-versus-complete scope is not a defect. D004 and D038 are numeral-elaboration infrastructure only. The decisive mismatch is hGg. Literal Model 1 defines the two subnormal regimes independently, and the input-gradual/accumulator-no-subnormal pairing can violate Gmin <= gmin and the claimed comparison even with theta >= 1. Moreover, Gmin <= gmin is stronger than the actual condition Gmin <= theta*gmin. It is therefore an extra restriction, not an implicit necessary premise or genuine strengthening. The paper's asserted result specializes to Lean, but Lean does not cover the paper's full literal domain, yielding not-faithful-weaker.",
-  "remaining_uncertainties": [
-    "The PDF does not state whether the authors intended to exclude the input-gradual/accumulator-no-subnormal pairing or intended an additional envelope-order premise. This unresolved authorial intent does not change the classification against literal Model 1."
-  ],
+  "rationale": "After unfolding all dependencies, the theorem states exactly the non-asymptotic equation (3.13) bound for the pre-accumulation input-conversion error: the same theta, dyadic scale inequalities, component count, absolute inner product, infinity norms, constants, underflow regimes, and higher-order terms are present. It is nonvacuous and remains directly linked to the scaled MMA inner-product stage. Its only consequential scope difference is that the formal conversion operation need only satisfy the paper's relative/additive error axioms rather than be operationally specified as nearest representable rounding. Consequently Lean covers the paper case and additional abstract conversion maps, while the paper statement does not assert that full generality.",
+  "remaining_uncertainties": [],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
   "task_id": "P20-T2"

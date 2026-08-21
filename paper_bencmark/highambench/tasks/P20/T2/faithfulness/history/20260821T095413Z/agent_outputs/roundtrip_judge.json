@@ -1,0 +1,165 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P20-T2",
+  "paper_sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2",
+  "blind_translation_sha256": "08d68e8e62f82b8e4dfba0098caec6fb5d801c13099556e3c2ba5a71eaa3413b",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The inspected PDF has the required SHA-256 and is the 2025 SIAM J. Sci. Comput. article. Printed page B791 states, after equation (3.26), the conditional comparison theta^(-2) Gmin <= theta^(-1) gmin.",
+      "translation_evidence": "The translation compares the accumulation-underflow and input-underflow terms carrying theta^(-2) Gmin and theta^(-1) gmin, respectively.",
+      "reasoning": "The correct paper, passage, and selected conditional comparison were used; the target is not being mistaken for the complete forward-error bound (3.26)."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The surrounding theorem has A in R^(m x n), B in R^(n x q), theta fixed as min(fmax,sqrt(Fmax/n)), Model 1 format parameters, and implicitly n > 0 because Fmax/n occurs.",
+      "translation_evidence": "The matrix dimensions and shared index n match, but m, n, and q may be zero, while theta, gmin, and Gmin are arbitrary reals unrelated to floating-point formats or the prescribed scale.",
+      "reasoning": "The matrix types are represented correctly, but the binder domain is materially widened and the format and scaling binders that give the quantities their paper meanings are absent."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "The paper makes the comparison conditionally on theta >= 1 inside the already fixed Model 1 and scaled-MMA setting.",
+      "translation_evidence": "The translation universally quantifies arbitrary dimensions, matrices, and real parameters, then assumes theta >= 1, Gmin >= 0, and Gmin <= gmin.",
+      "reasoning": "The theta condition has the right scope, but the paper-context quantification is replaced by a context-free universal algebraic statement with an additional explicit antecedent."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "Model 1 defines nonnegative gmin and Gmin from format ranges. The comparison paragraph cites U <= u and Fmin <= fmin as justification and treats theta >= 1 as conditional, not unconditional.",
+      "translation_evidence": "The translation correctly assumes theta >= 1 but explicitly assumes Gmin <= gmin and Gmin >= 0; it omits Model 1, theta's definition, n > 0, scaling, and overflow conditions.",
+      "reasoning": "Assuming Gmin <= gmin is not the same as deriving it from the paper's format relationships. This distinction is substantive because the derivation is not valid for every mixed choice of subnormal support."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "The paper first states the scalar inequality theta^(-2) Gmin <= theta^(-1) gmin and then concludes that the complete accumulation-underflow contribution is bounded by the input-underflow contribution.",
+      "translation_evidence": "Only the inequality after multiplication by 4 n^2 N(A) N(B) is concluded; the scalar inequality is not included.",
+      "reasoning": "The full-term conclusion follows from the scalar comparison because the common factor is nonnegative. The reverse cancellation is unavailable when n or either norm is zero, so the full-term conclusion alone is not equivalent to the paper's scalar statement."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "Model 1 defines theta, gmin, and Gmin through fmax, Fmax, n, precision, exponent ranges, and branch-dependent underflow formulas.",
+      "translation_evidence": "The dependency ledger correctly unfolds real inversion, squares, multiplication, casts, and N as a maximum absolute row-sum norm, but treats theta, gmin, and Gmin as primitive arbitrary reals.",
+      "reasoning": "The local algebraic operators are understood, but the nontrivial paper definitions that supply the numerical meaning of the three scalar parameters are not represented."
+    },
+    {
+      "id": "S07",
+      "status": "not-applicable",
+      "paper_evidence": "The surrounding bound distinguishes the computed matrix from the exact product, but the selected claim itself compares two underflow-envelope coefficients.",
+      "translation_evidence": "The translation contains no computed matrix, exact product, rounded operand, or perturbation quantity and claims only an ordering between envelope terms.",
+      "reasoning": "No exact or computed quantities are conflated within the selected algebraic comparison; their omission is assessed under algorithm linkage instead."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "The contributions arise from the single-word algorithm that scales by power-of-two diagonal matrices, rounds inputs, accumulates length-n inner products in the accumulation format, and unscales.",
+      "translation_evidence": "The proposition mentions only arbitrary matrices through their norms and contains no scaling matrices, rounded operands, MMA operation, accumulation, or computed result.",
+      "reasoning": "The algebraic inequality is severed from the algorithm and execution model that identify its two sides as input- and accumulation-underflow contributions."
+    },
+    {
+      "id": "S09",
+      "status": "unclear",
+      "paper_evidence": "Equations (3.25)-(3.26) use matrix infinity-norm notation and call the result normwise, but the inspected paper does not explicitly define that matrix norm as a maximum absolute row sum.",
+      "translation_evidence": "N(X) is explicitly the maximum over rows of the sum of absolute entry values.",
+      "reasoning": "This is the standard induced matrix infinity norm and is consistent with the formulas, but the required isolation and missing explicit source definition prevent certifying the identification by inference alone."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "The two terms in (3.26) are exactly 4 n^2 theta^(-2) Gmin and 4 n^2 theta^(-1) gmin, with n the shared inner dimension and the common operand-norm product.",
+      "translation_evidence": "The conclusion uses exactly 4, the square of the real cast of n, (theta^(-1))^2 on the Gmin side, theta^(-1) on the gmin side, and the same N(A)N(B) factors.",
+      "reasoning": "The coefficients, shared index, inverse powers, parameter placement, and common factors agree."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Model 1 specifies t, T, u, U, exponent-range containment, overflow exclusion, round-to-nearest constants, directed-rounding replacements, and separate gradual-underflow or no-subnormal definitions of gmin and Gmin.",
+      "translation_evidence": "No floating-point precision, range, rounding mode, underflow branch, or overflow assumption is present; Gmin <= gmin is supplied directly.",
+      "reasoning": "The translation captures a sufficient real-order premise but not the paper's floating-point model or the disputed derivation of that premise."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The paper uses a non-strict scalar inequality and derives the ordering of the two complete contributions by multiplication with a nonnegative common factor.",
+      "translation_evidence": "The direction and strictness match, but the encoded conclusion is only the common-factor inequality and no positivity assumption makes that factor cancellable.",
+      "reasoning": "Scalar comparison implies full-term comparison. Full-term comparison does not imply scalar comparison when the common factor is zero. The translation's hypotheses independently suffice to prove the scalar inequality, but that scalar conclusion is not what the proposition encodes; zero cases are not therefore classified as making the translation stronger."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The selected quantities are the input- and accumulation-underflow contributions to the first-order absolute normwise forward-error envelope.",
+      "translation_evidence": "The translation compares exactly those normwise terms and introduces no relative, backward, residual, or componentwise error claim.",
+      "reasoning": "The selected underflow-envelope error notion is preserved."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Equation (3.26) drops second-order terms, but the subsequent comparison between its two retained underflow terms is an exact scalar inequality.",
+      "translation_evidence": "The translation states an exact inequality only between the two retained contributions and does not present (3.26) itself as an exact forward-error bound.",
+      "reasoning": "The exact term comparison is correctly separated from the approximate first-order forward bound; omitted second-order terms are outside the selected claim."
+    },
+    {
+      "id": "S15",
+      "status": "unclear",
+      "paper_evidence": "The paper claim concerns format-derived positive parameters in a finite-dimensional real scaled-MMA computation.",
+      "translation_evidence": "The translation retains finite real matrices but generalizes to arbitrary real parameters satisfying three order hypotheses and permits zero dimensions.",
+      "reasoning": "This can be viewed as an algebraic generalization if Gmin <= gmin is an accepted extracted premise. Under a literal Model 1 reading, however, that premise is additional and may exclude an allowed mixed-subnormal regime, so the generalization cannot be classified definitively."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's intended regime has positive format endpoints and positive inner dimension, so its comparison has nontrivial instances.",
+      "translation_evidence": "The hypotheses are satisfiable in nontrivial cases, for example n=m=q=1, theta=2, Gmin=gmin=1, and nonzero one-entry matrices. Zero dimensions and zero norms are also admitted.",
+      "reasoning": "The proposition is not globally vacuous. Its degenerate instances make the multiplied conclusion trivial, but those cases are not treated as evidence that the translation is stronger."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "unclear",
+      "reasoning": "If the intended Model 1 regime guarantees Gmin <= gmin and the paper's matrix infinity norm is the translated maximum row-sum norm, the translation instantiates to the complete contribution ordering, while its scalar assumptions also yield the paper's scalar inequality. The printed Model 1 permits branch-dependent underflow envelopes, however, and U <= u with Fmin <= fmin does not establish Gmin <= gmin when the input has gradual underflow but the accumulator lacks subnormals. Whether that regime was implicitly excluded is unclear."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper asserts the comparison only for parameters arising from its Model 1 scaled-MMA setting. It does not entail the translation's universal theorem for arbitrary real theta, gmin, and Gmin or arbitrary zero-dimensional matrices unrelated to any floating-point format, even though scalar comparison implies the multiplied inequality within the paper domain."
+    }
+  },
+  "classification": "undetermined",
+  "accepted": false,
+  "requires_adjudication": true,
+  "findings": [
+    {
+      "severity": "major",
+      "category": "underflow-envelope hypothesis provenance",
+      "paper_evidence": "The paper cites U <= u and Fmin <= fmin for theta^(-2) Gmin <= theta^(-1) gmin, while Model 1 defines Gmin and gmin using independently stated gradual-underflow or no-subnormal branches.",
+      "translation_evidence": "Gmin <= gmin is imposed as an explicit hypothesis.",
+      "impact": "The translation is valid under a sufficient assumption, but it is unclear whether it covers the paper's full stated Model 1 domain. The mixed regime with gradual input underflow and no accumulator subnormals can violate the claimed derivation."
+    },
+    {
+      "severity": "major",
+      "category": "algorithm and model scope",
+      "paper_evidence": "The two envelopes are contributions from the power-of-two-scaled, single-word mixed-precision MMA algorithm under Model 1.",
+      "translation_evidence": "The statement is a context-free real inequality with no format, scaling, rounding, accumulation, or computed-product object.",
+      "impact": "The numerical and algorithmic provenance of the terms is not encoded, and the paper cannot imply the translation's unrestricted algebraic generalization."
+    },
+    {
+      "severity": "major",
+      "category": "scalar versus multiplied comparison",
+      "paper_evidence": "The paper explicitly states the scalar comparison before interpreting it as an ordering of the complete underflow contributions.",
+      "translation_evidence": "Only the comparison after multiplication by 4 n^2 N(A)N(B) appears in the conclusion.",
+      "impact": "Multiplication preserves the scalar inequality, but cancellation is invalid when the common factor is zero. The complete-term conclusion is therefore not by itself equivalent to the paper's scalar comparison."
+    },
+    {
+      "severity": "minor",
+      "category": "matrix infinity-norm identification",
+      "paper_evidence": "The paper uses matrix infinity-norm notation without an explicit definition in the inspected source.",
+      "translation_evidence": "The dependency ledger fixes the norm as the maximum absolute row-sum norm.",
+      "impact": "The choice is standard and plausible but cannot be certified from an explicit source definition under the required evidence policy."
+    }
+  ],
+  "rationale": "The translation reproduces the exact constants, dimensions, inverse powers, inequality direction, and full common-factor underflow terms, and it correctly treats theta >= 1 as conditional. It also avoids misrepresenting the approximate forward bound (3.26) as exact. Nevertheless, it replaces the paper's Model 1 justification with an explicit Gmin <= gmin hypothesis, omits the scalar conclusion and algorithmic context, and generalizes to arbitrary real parameters. Because the paper is itself ambiguous about mixed subnormal regimes, translation-implies-paper cannot be decided without adjudicating the intended format assumptions; the appropriate classification is therefore undetermined."
+}
