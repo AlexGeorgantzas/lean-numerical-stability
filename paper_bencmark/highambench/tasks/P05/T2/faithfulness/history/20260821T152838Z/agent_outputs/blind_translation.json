@@ -1,0 +1,958 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "1f736ce5e0ea214f9f06802949e3b1820d5b713f544cadc83bfd7b12690fc3bf",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "The type of valid computation runs for an m-by-n input and computed factors, with the data and invariants supplied by constructor D013.",
+      "effect_on_target": "The universally quantified run supplies the format, matrices A, LHat, and UHat, the dimensional restrictions n <= m and 0 < n, triangularity and representability facts, and computation evidence used by the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "Projection of the run's real m-by-n matrix A.",
+      "effect_on_target": "Provides every occurrence of A in the local residuals and in the equation LHat UHat = A + ΔA.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "Projection of the run's real m-by-n computed lower factor LHat.",
+      "effect_on_target": "Provides the left factor in all partial products, componentwise magnitude sums, and the full matrix product.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "Projection of the run's real n-by-n computed upper factor UHat.",
+      "effect_on_target": "Provides the right factor in all partial products, componentwise magnitude sums, and the full matrix product.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "LocalDef005",
+      "meaning": "Projection of the run's floating-point format object.",
+      "effect_on_target": "Selects the format whose unit roundoff is used in every error bound and whose properties constrain a valid run.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LocalDef006",
+      "meaning": "For every valid run, the number of columns n is at most the number of rows m.",
+      "effect_on_target": "Justifies treating each column index k in Fin n as the same-valued row index in Fin m.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "LocalDef007",
+      "meaning": "Projection of a format's real unit-roundoff value u.",
+      "effect_on_target": "Supplies the factor u in every local and componentwise backward-error bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "LocalDef008",
+      "meaning": "For L, U, i, j, and k, this is sum_{s=0}^{k-1} |L_{is}| |U_{sj}| + |L_{ik}| |U_{kj}|.",
+      "effect_on_target": "It is the nonnegative componentwise scale multiplying k u or (k+1) u in the two local residual bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "LocalDef009",
+      "meaning": "For L, U, i, j, and k, this is sum_{s=0}^{k-1} L_{is} U_{sj} + L_{ik} U_{kj}.",
+      "effect_on_target": "It is the exact real partial dot product, including term k, subtracted from A in both local residuals.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "LocalDef010",
+      "meaning": "For L and U, this is the m-by-n matrix with entry sum_{k=0}^{n-1} |L_{ik}| |U_{kj}|.",
+      "effect_on_target": "It supplies the componentwise magnitude-product scale in all bounds on ΔA.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "LocalDef011",
+      "meaning": "The exact real matrix product L U, with entry sum_{k=0}^{n-1} L_{ik} U_{kj}.",
+      "effect_on_target": "It is equated pointwise to A + ΔA.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "LocalDef012",
+      "meaning": "The value-preserving inclusion Fin n into Fin m induced by n <= m.",
+      "effect_on_target": "It interprets the upper-factor row index k as row k of A and LHat in the first local bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "LocalDef013",
+      "meaning": "Constructor for a run containing a format, n <= m, 0 < n, matrices A and LHat of size m-by-n, UHat of size n-by-n, representability of all entries, unit lower-trapezoidal and upper-triangular structure, and valid computation evidence for every prescribed UHat and LHat entry.",
+      "effect_on_target": "It determines the substantive assumptions hidden in the run binder, including LHat_{kk}=1, LHat_{ij}=0 for i<j, UHat_{ij}=0 for j<i, U-computation evidence for k<=j, and L-computation evidence for k<i.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "LocalDef014",
+      "meaning": "The type of floating-point format packages described by constructor D019.",
+      "effect_on_target": "A run carries one such format, principally exposing its unit roundoff while also imposing its representability, rounding, and safe-range axioms.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "LocalDef015",
+      "meaning": "The strict-prefix magnitude sum sum_{s=0}^{k-1} |L_{is}| |U_{sj}|.",
+      "effect_on_target": "It forms the prefix part of LocalDef008 and hence of the local residual scales.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "LocalDef016",
+      "meaning": "The strict-prefix dot product sum_{s=0}^{k-1} L_{is} U_{sj}.",
+      "effect_on_target": "It forms the prefix part of LocalDef009 and hence of the exact local residuals.",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "LocalDef017",
+      "meaning": "Evidence that a lower-factor entry LHat_{ik} was produced by a valid length-k scalar execution using A_{ik}, the earlier products LHat_{is} UHat_{sk}, and divisor UHat_{kk}.",
+      "effect_on_target": "For every k<i, the run contains this evidence; its general scalar residual bound yields the second local inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "LocalDef018",
+      "meaning": "Evidence that an upper-factor entry UHat_{kj} was produced by a valid length-k scalar execution using A_{kj}, earlier products LHat_{ks} UHat_{sj}, and divisor 1.",
+      "effect_on_target": "For every k<=j, the run contains this evidence; its divisor-one residual bound yields the first local inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "LocalDef019",
+      "meaning": "Constructor for a format with natural radix beta and precision p, integer exponent bounds, beta>=2, p>0, lower exponent below upper exponent, a finite representable set, a safe-range predicate, rounding map, and unit roundoff u>=0 satisfying u*(2*beta^(p-1))=1. It requires 0 and 1 to be representable, safe-range inputs to round to representable values, rounding to minimize absolute error among representable values, and representable values to be fixed by rounding.",
+      "effect_on_target": "It fixes the exact axioms available for the run's format and the value u occurring in the stated bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "LocalDef020",
+      "meaning": "Projection of a format's representability predicate on real numbers.",
+      "effect_on_target": "It is used indirectly to require all entries and scalar-execution inputs to be representable; it does not occur in the displayed conclusions.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "LocalDef021",
+      "meaning": "For k in Fin n, the value-preserving inclusion Fin(k.val) into Fin n.",
+      "effect_on_target": "It realizes strict-prefix indices s<k in the sums and scalar executions.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "LocalDef022",
+      "meaning": "Constructor turning a length-k scalar execution into lower-entry evidence when its format is fmt, its vectors are L_{i,s} and U_{s,k}, its divisor is U_{kk}, its constant is A_{ik}, and its output is L_{ik}.",
+      "effect_on_target": "It identifies the general scalar residual inequality with the local bound for A_{ik} when k<i.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "LocalDef023",
+      "meaning": "Constructor turning a length-k scalar execution into upper-entry evidence when its vectors are L_{k,s} and U_{s,j}, its divisor is 1, its constant is A_{kj}, and its output is U_{kj}.",
+      "effect_on_target": "It identifies the divisor-one scalar residual inequality with the local bound for A_{kj} when k<=j.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "LocalDef024",
+      "meaning": "Proof that an index s<k, embedded through LocalDef021, is also below n.",
+      "effect_on_target": "It supplies index well-formedness for strict-prefix matrix entries and has no independent numerical content.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "LocalDef025",
+      "meaning": "The type of valid scalar executions with m product terms, as constructed by D032.",
+      "effect_on_target": "Instances embedded in D017 and D018 carry the scalar residual bounds from which the two local target inequalities arise.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "LocalDef026",
+      "meaning": "Projection of a scalar execution's first input vector a.",
+      "effect_on_target": "Under D022 and D023 it is identified with the relevant strict-prefix row of LHat.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "LocalDef027",
+      "meaning": "Projection of a scalar execution's second input vector b.",
+      "effect_on_target": "Under D022 and D023 it is identified with the relevant strict-prefix column of UHat.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "LocalDef028",
+      "meaning": "Projection of a scalar execution's nonzero divisor or pivot bK.",
+      "effect_on_target": "It is UHat_{kk} for lower-entry computations and 1 for upper-entry computations.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "LocalDef029",
+      "meaning": "Projection of a scalar execution's constant input c.",
+      "effect_on_target": "It is identified with the corresponding entry of A.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "LocalDef030",
+      "meaning": "Projection of a scalar execution's floating-point format.",
+      "effect_on_target": "It ensures the scalar bounds use the same unit roundoff as the enclosing run.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "LocalDef031",
+      "meaning": "Projection of a scalar execution's computed output yHat.",
+      "effect_on_target": "It is identified with the computed LHat or UHat entry in D022 or D023.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "LocalDef032",
+      "meaning": "Constructor for a scalar execution. It assumes representable a_i, b_i, bK, and c; bK is nonzero; exact products a_i b_i are in safe range; a permutation and binary tree evaluate the values c and -round(a_i b_i) by safe rounded additions to a numerator; yHat equals that numerator if bK=1 and otherwise is the safe rounded quotient numerator/bK. It also carries |c-sum a_i b_i-bK*yHat| <= (m+1)u*(|bK*yHat|+sum |a_i b_i|), and, when bK=1, |c-sum a_i b_i-yHat| <= m*u*(|yHat|+sum |a_i b_i|).",
+      "effect_on_target": "With m=k and the identifications in D022 or D023, its two carried inequalities give respectively the (k+1)u lower-entry bound and the k u upper-entry bound.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "LocalDef033",
+      "meaning": "Projection of a format's rounding function Real -> Real.",
+      "effect_on_target": "It describes the rounded products, rounded tree additions, and possible rounded division inside scalar executions, but does not appear in the final inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "LocalDef034",
+      "meaning": "Projection of a format's safe-range predicate.",
+      "effect_on_target": "It constrains products, internal sums, and nontrivial divisions in scalar executions; the displayed conclusions contain no safe-range predicate.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "LocalDef035",
+      "meaning": "An indexed full binary summation tree whose index is its number of leaves: a leaf has one leaf and a node combines leaf counts by addition.",
+      "effect_on_target": "It records the association pattern used to compute each scalar numerator and has no direct occurrence in the target.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "LocalDef036",
+      "meaning": "The m+1 leaf values for a scalar numerator: leaf 0 is c and successor leaf i is -round(a_i b_i).",
+      "effect_on_target": "It specifies that the computed numerator represents c minus rounded products before rounded summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "LocalDef037",
+      "meaning": "Evaluation of a binary summation tree: leaves return their supplied values and every internal node returns the format-rounded sum of its two recursively evaluated children.",
+      "effect_on_target": "It defines the scalar execution's computed numerator, indirectly supporting the local residual bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "LocalDef038",
+      "meaning": "Validity of a rounded tree evaluation: every leaf value is representable, both subtrees are valid, and each exact sum of child results is in the format's safe range.",
+      "effect_on_target": "It ensures every internal rounded addition in a scalar execution satisfies the format assumptions.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "LocalDef039",
+      "meaning": "A recursively structured product collecting induction data for both children of a summation tree.",
+      "effect_on_target": "It is implementation support for tree folds defining evaluation and validity and contributes no separate mathematical condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "LocalDef040",
+      "meaning": "A dependent fold over a summation tree that gives the combining function access to recursively collected child data.",
+      "effect_on_target": "It implements LocalDef037 and LocalDef038 without changing their mathematical meaning.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "LocalDef041",
+      "meaning": "The one-leaf summation tree.",
+      "effect_on_target": "It is the base case for scalar summation trees.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "LocalDef042",
+      "meaning": "The constructor joining an m-leaf and n-leaf tree into an (m+n)-leaf tree.",
+      "effect_on_target": "It permits arbitrary binary association of scalar numerator terms.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "LocalDef043",
+      "meaning": "The rounded product round(a_i b_i).",
+      "effect_on_target": "Its negative supplies each nonconstant leaf of the scalar numerator.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "LocalDef044",
+      "meaning": "The proof of the natural-number fact 0<1.",
+      "effect_on_target": "It constructs the unique index of a one-element leaf vector and has no numerical effect.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "LocalDef045",
+      "meaning": "An indexed eliminator for summation trees together with a vector of leaf values, with separate leaf and node cases.",
+      "effect_on_target": "It implements the recursive definitions of rounded evaluation and validity.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "LocalDef046",
+      "meaning": "A paramorphism helper returning both the requested fold result and recursively collected child data.",
+      "effect_on_target": "It supports LocalDef040 and has no independent effect on the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "LocalDef047",
+      "meaning": "A wrapper around the summation-tree recursor with leaf and node cases.",
+      "effect_on_target": "It supports indexed tree elimination and contributes no separate mathematical assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "LocalDef048",
+      "meaning": "The primitive recursor for summation trees.",
+      "effect_on_target": "It implements the tree-processing definitions used only inside scalar execution evidence.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "And",
+      "meaning": "Logical conjunction.",
+      "effect_on_target": "The target simultaneously asserts both local bound families and the existential backward-error statement, including simultaneous square-case refinements.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "It expresses the matrix identity LHat UHat = A + ΔA and the conditional dimension equality m=n, as well as structural equalities inside run evidence.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "It introduces one m-by-n real perturbation ΔA satisfying the matrix identity and all applicable bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "Fin",
+      "meaning": "Fin n is the type of natural indices whose values are strictly less than n.",
+      "effect_on_target": "It fixes zero-based row, column, and summation-index ranges and makes matrix dimensions explicit.",
+      "status": "understood"
+    },
+    {
+      "id": "D053",
+      "name": "Fin.val",
+      "meaning": "The underlying natural value of a finite index.",
+      "effect_on_target": "It supplies the numerical indices k and i used in order conditions and coefficients.",
+      "status": "understood"
+    },
+    {
+      "id": "D054",
+      "name": "HAdd.hAdd",
+      "meaning": "Typeclass-selected addition.",
+      "effect_on_target": "It denotes natural addition, real addition, and pointwise matrix addition according to context.",
+      "status": "understood"
+    },
+    {
+      "id": "D055",
+      "name": "HMul.hMul",
+      "meaning": "Typeclass-selected multiplication.",
+      "effect_on_target": "It denotes ordinary real multiplication in products and error-bound scales.",
+      "status": "understood"
+    },
+    {
+      "id": "D056",
+      "name": "HSub.hSub",
+      "meaning": "Typeclass-selected subtraction.",
+      "effect_on_target": "It denotes real residual subtraction and natural truncated subtraction in n-1 and precision-1.",
+      "status": "understood"
+    },
+    {
+      "id": "D057",
+      "name": "LE.le",
+      "meaning": "Typeclass-selected non-strict order.",
+      "effect_on_target": "It expresses natural index conditions and ordinary real upper bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D058",
+      "name": "LT.lt",
+      "meaning": "Typeclass-selected strict order.",
+      "effect_on_target": "It expresses k<i and the strict triangular and positivity conditions carried by a run.",
+      "status": "understood"
+    },
+    {
+      "id": "D059",
+      "name": "Nat",
+      "meaning": "The natural numbers.",
+      "effect_on_target": "They parameterize dimensions, finite indices, and exact integer coefficients in the bounds.",
+      "status": "understood"
+    },
+    {
+      "id": "D060",
+      "name": "Nat.cast",
+      "meaning": "The canonical cast of a natural number into a target type, here the real numbers.",
+      "effect_on_target": "It interprets k, k+1, n, i, and n-1 as exact real coefficients.",
+      "status": "understood"
+    },
+    {
+      "id": "D061",
+      "name": "OfNat.ofNat",
+      "meaning": "Interpretation of a natural numeral in a type.",
+      "effect_on_target": "It supplies literal 1 and other numerals used in coefficients, dimensions, and format or execution conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D062",
+      "name": "Pi.instAdd",
+      "meaning": "Pointwise addition on dependent function spaces.",
+      "effect_on_target": "It makes A + ΔA mean the matrix whose (i,j) entry is A_{ij}+ΔA_{ij}.",
+      "status": "understood"
+    },
+    {
+      "id": "D063",
+      "name": "Real",
+      "meaning": "The real numbers.",
+      "effect_on_target": "All matrix entries, perturbations, products, residuals, scales, and unit roundoff are real.",
+      "status": "understood"
+    },
+    {
+      "id": "D064",
+      "name": "Real.instAdd",
+      "meaning": "Ordinary real addition.",
+      "effect_on_target": "It interprets sums, A+ΔA, and the addition of a prefix product to its kth term.",
+      "status": "understood"
+    },
+    {
+      "id": "D065",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive-group structure on the real numbers.",
+      "effect_on_target": "It supplies real negation and subtraction needed for residuals and absolute values.",
+      "status": "understood"
+    },
+    {
+      "id": "D066",
+      "name": "Real.instLE",
+      "meaning": "The ordinary non-strict order on real numbers.",
+      "effect_on_target": "Every displayed error estimate is an ordinary real inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D067",
+      "name": "Real.instMul",
+      "meaning": "Ordinary real multiplication.",
+      "effect_on_target": "It interprets matrix products and multiplication of coefficients, unit roundoff, and magnitude scales.",
+      "status": "understood"
+    },
+    {
+      "id": "D068",
+      "name": "Real.instNatCast",
+      "meaning": "The canonical embedding of natural numbers into the reals.",
+      "effect_on_target": "It makes all integer-valued error coefficients exact real numbers.",
+      "status": "understood"
+    },
+    {
+      "id": "D069",
+      "name": "Real.instSub",
+      "meaning": "Ordinary real subtraction a-b=a+(-b).",
+      "effect_on_target": "It forms local residuals and scalar-execution errors.",
+      "status": "understood"
+    },
+    {
+      "id": "D070",
+      "name": "Real.lattice",
+      "meaning": "The lattice order structure on the reals.",
+      "effect_on_target": "Together with the additive group, it supplies scalar absolute value.",
+      "status": "understood"
+    },
+    {
+      "id": "D071",
+      "name": "abs",
+      "meaning": "Absolute value, defined as max(a,-a) in the ordered additive group.",
+      "effect_on_target": "Every norm-like expression in the target is scalar absolute value; no vector or matrix norm occurs.",
+      "status": "understood"
+    },
+    {
+      "id": "D072",
+      "name": "instAddNat",
+      "meaning": "Ordinary natural-number addition.",
+      "effect_on_target": "It forms k+1, m+1, and tree leaf-count sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D073",
+      "name": "instHAdd",
+      "meaning": "The homogeneous-addition wrapper induced by an Add instance.",
+      "effect_on_target": "It dispatches the addition notation to natural, real, or pointwise function addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D074",
+      "name": "instHMul",
+      "meaning": "The homogeneous-multiplication wrapper induced by a Mul instance.",
+      "effect_on_target": "It dispatches multiplication notation to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D075",
+      "name": "instHSub",
+      "meaning": "The homogeneous-subtraction wrapper induced by a Sub instance.",
+      "effect_on_target": "It dispatches subtraction to real subtraction or natural truncated subtraction.",
+      "status": "understood"
+    },
+    {
+      "id": "D076",
+      "name": "instLENat",
+      "meaning": "The ordinary non-strict order on natural numbers.",
+      "effect_on_target": "It interprets n<=m and k<=j.",
+      "status": "understood"
+    },
+    {
+      "id": "D077",
+      "name": "instLTNat",
+      "meaning": "The ordinary strict order on natural numbers.",
+      "effect_on_target": "It interprets positivity, k<i, and triangular index restrictions.",
+      "status": "understood"
+    },
+    {
+      "id": "D078",
+      "name": "instOfNatNat",
+      "meaning": "The natural numeral n interpreted as the same natural number.",
+      "effect_on_target": "It supplies the literal natural 1 in k+1 and n-1.",
+      "status": "understood"
+    },
+    {
+      "id": "D079",
+      "name": "instSubNat",
+      "meaning": "Natural-number subtraction truncated at zero.",
+      "effect_on_target": "The coefficient n-1 is truncated natural subtraction, although valid runs already require n>0.",
+      "status": "understood"
+    },
+    {
+      "id": "D080",
+      "name": "Fin.castLE",
+      "meaning": "The value-preserving inclusion Fin n -> Fin m induced by n<=m.",
+      "effect_on_target": "It implements the row embedding used for A_{kj} and LHat_{ks} when k<n<=m.",
+      "status": "understood"
+    },
+    {
+      "id": "D081",
+      "name": "Fin.fintype",
+      "meaning": "The finite enumeration structure on Fin n.",
+      "effect_on_target": "It permits sums over all indices of a finite range.",
+      "status": "understood"
+    },
+    {
+      "id": "D082",
+      "name": "Finset.sum",
+      "meaning": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "It denotes all strict-prefix and full dot-product sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D083",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "For Fin n or Fin k, it makes the sums range over every index 0 through n-1 or k-1.",
+      "status": "understood"
+    },
+    {
+      "id": "D084",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative-monoid structure on the reals.",
+      "effect_on_target": "It gives the usual order-independent interpretation to the exact finite sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D085",
+      "name": "One.toOfNat1",
+      "meaning": "The numeral-one instance induced by a type's multiplicative identity.",
+      "effect_on_target": "It interprets real 1 in diagonal and divisor conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D086",
+      "name": "Real.instOne",
+      "meaning": "The real multiplicative identity 1.",
+      "effect_on_target": "It is the required diagonal value of LHat and the divisor in upper-entry executions.",
+      "status": "understood"
+    },
+    {
+      "id": "D087",
+      "name": "Real.instZero",
+      "meaning": "The real additive identity 0.",
+      "effect_on_target": "It is used in triangular zero conditions and format representability axioms.",
+      "status": "understood"
+    },
+    {
+      "id": "D088",
+      "name": "Zero.toOfNat0",
+      "meaning": "The numeral-zero instance induced by a type's zero.",
+      "effect_on_target": "It interprets real and natural literal 0 in run and format conditions.",
+      "status": "understood"
+    },
+    {
+      "id": "D089",
+      "name": "Fin.mk",
+      "meaning": "Construction of a finite index from a natural value and a proof that it is below the bound.",
+      "effect_on_target": "It implements value-preserving embeddings of strict-prefix indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D090",
+      "name": "HPow.hPow",
+      "meaning": "Typeclass-selected exponentiation.",
+      "effect_on_target": "It denotes the real power beta^(p-1) in the format's unit-roundoff equation.",
+      "status": "understood"
+    },
+    {
+      "id": "D091",
+      "name": "Int",
+      "meaning": "The integers.",
+      "effect_on_target": "They type the format's minimum and maximum exponent parameters, which do not occur in the displayed conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D092",
+      "name": "Int.instLTInt",
+      "meaning": "The ordinary strict order on integers.",
+      "effect_on_target": "It requires the format's minimum exponent to be below its maximum exponent.",
+      "status": "understood"
+    },
+    {
+      "id": "D093",
+      "name": "Monoid.toNatPow",
+      "meaning": "Natural-number exponentiation induced by a monoid.",
+      "effect_on_target": "It interprets the radix power in the unit-roundoff equation.",
+      "status": "understood"
+    },
+    {
+      "id": "D094",
+      "name": "Nat.instAtLeastTwoHAddOfNat",
+      "meaning": "For nonzero n, the natural number n+1 is at least two.",
+      "effect_on_target": "It supplies typeclass evidence needed for numeral and size elaboration in transitive definitions and adds no target-level assumption.",
+      "status": "understood"
+    },
+    {
+      "id": "D095",
+      "name": "Nat.instNeZeroSucc",
+      "meaning": "Every successor n+1 is nonzero.",
+      "effect_on_target": "It supports finite-size and numeral instances in transitive definitions without changing the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D096",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure on the reals.",
+      "effect_on_target": "It supplies natural powers of the real-cast radix.",
+      "status": "understood"
+    },
+    {
+      "id": "D097",
+      "name": "Set.Finite",
+      "meaning": "The assertion that a set has finitely many elements.",
+      "effect_on_target": "The format constructor requires the set of representable real numbers to be finite.",
+      "status": "understood"
+    },
+    {
+      "id": "D098",
+      "name": "instHPow",
+      "meaning": "The heterogeneous-power wrapper induced by a power operation.",
+      "effect_on_target": "It dispatches the radix power to ordinary real natural exponentiation.",
+      "status": "understood"
+    },
+    {
+      "id": "D099",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "Interpretation of a numeral n>=2 through a natural-number cast.",
+      "effect_on_target": "It interprets the real numeral 2 in the unit-roundoff equation.",
+      "status": "understood"
+    },
+    {
+      "id": "D100",
+      "name": "setOf",
+      "meaning": "Set comprehension from a predicate.",
+      "effect_on_target": "It forms the set of representable reals whose finiteness is required by a format.",
+      "status": "understood"
+    },
+    {
+      "id": "D101",
+      "name": "Nat.instPreorder",
+      "meaning": "The preorder structure on natural numbers.",
+      "effect_on_target": "It supports the strict-order proof used when embedding a prefix index into Fin n.",
+      "status": "understood"
+    },
+    {
+      "id": "D102",
+      "name": "Preorder.toLT",
+      "meaning": "The strict-order operation supplied by a preorder.",
+      "effect_on_target": "It interprets the transitive natural-order relation in D024.",
+      "status": "understood"
+    },
+    {
+      "id": "D103",
+      "name": "DFunLike.coe",
+      "meaning": "Coercion of a function-like object to its underlying function.",
+      "effect_on_target": "It permits the scalar execution's permutation to be applied to leaf indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D104",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "The division operation supplied by a division-inverse monoid.",
+      "effect_on_target": "It interprets the real quotient numerator/bK in non-unit scalar executions.",
+      "status": "understood"
+    },
+    {
+      "id": "D105",
+      "name": "Equiv.Perm",
+      "meaning": "A permutation of a type, namely an equivalence from the type to itself.",
+      "effect_on_target": "A scalar execution may reorder its m+1 numerator leaves before tree summation.",
+      "status": "understood"
+    },
+    {
+      "id": "D106",
+      "name": "Equiv.instEquivLike",
+      "meaning": "The function-like equivalence structure for equivalences.",
+      "effect_on_target": "It supports treating the execution's permutation as an index function.",
+      "status": "understood"
+    },
+    {
+      "id": "D107",
+      "name": "EquivLike.toFunLike",
+      "meaning": "Conversion of an equivalence-like structure to a function-like structure.",
+      "effect_on_target": "It supplies the actual application of the leaf permutation in scalar execution validity and evaluation.",
+      "status": "understood"
+    },
+    {
+      "id": "D108",
+      "name": "HDiv.hDiv",
+      "meaning": "Typeclass-selected division.",
+      "effect_on_target": "It denotes ordinary real division of the computed numerator by bK.",
+      "status": "understood"
+    },
+    {
+      "id": "D109",
+      "name": "Ne",
+      "meaning": "Inequality, defined as the negation of equality.",
+      "effect_on_target": "Scalar executions require bK nonzero and split their output rule according to whether bK equals 1.",
+      "status": "understood"
+    },
+    {
+      "id": "D110",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The real multiplicative and division structure.",
+      "effect_on_target": "It gives the usual real quotient used in lower-entry scalar executions.",
+      "status": "understood"
+    },
+    {
+      "id": "D111",
+      "name": "instHDiv",
+      "meaning": "The homogeneous-division wrapper induced by a Div instance.",
+      "effect_on_target": "It dispatches scalar-execution division to ordinary real division.",
+      "status": "understood"
+    },
+    {
+      "id": "D112",
+      "name": "Fin.cases",
+      "meaning": "Case analysis on Fin(n+1), separating index 0 from successor indices.",
+      "effect_on_target": "It defines the scalar numerator leaf vector with c at index 0 and negative rounded products afterward.",
+      "status": "understood"
+    },
+    {
+      "id": "D113",
+      "name": "Fin.castAdd",
+      "meaning": "The inclusion of Fin n as the first block of Fin(n+m).",
+      "effect_on_target": "It splits a node's leaf vector into the left subtree's indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D114",
+      "name": "Fin.natAdd",
+      "meaning": "The inclusion of Fin m as the second block of Fin(n+m), offset by n.",
+      "effect_on_target": "It splits a node's leaf vector into the right subtree's indices.",
+      "status": "understood"
+    },
+    {
+      "id": "D115",
+      "name": "Neg.neg",
+      "meaning": "Typeclass-selected negation.",
+      "effect_on_target": "It forms the negative rounded-product leaves in scalar numerators.",
+      "status": "understood"
+    },
+    {
+      "id": "D116",
+      "name": "Real.instNeg",
+      "meaning": "Ordinary real negation.",
+      "effect_on_target": "It interprets those negative rounded-product leaves.",
+      "status": "understood"
+    },
+    {
+      "id": "D117",
+      "name": "Eq.ndrec",
+      "meaning": "Transport of a value or proof along an equality.",
+      "effect_on_target": "It handles dependent tree indices inside eliminator implementations and has no independent mathematical effect.",
+      "status": "understood"
+    },
+    {
+      "id": "D118",
+      "name": "Eq.refl",
+      "meaning": "Reflexivity of equality.",
+      "effect_on_target": "It supplies routine equality proofs inside dependent tree recursion.",
+      "status": "understood"
+    },
+    {
+      "id": "D119",
+      "name": "Eq.symm",
+      "meaning": "Symmetry of equality.",
+      "effect_on_target": "It supports equality transport inside tree eliminators and does not alter the proposition.",
+      "status": "understood"
+    },
+    {
+      "id": "D120",
+      "name": "HEq",
+      "meaning": "Heterogeneous equality between potentially differently typed terms.",
+      "effect_on_target": "It is used only to implement dependent elimination for indexed summation trees.",
+      "status": "understood"
+    },
+    {
+      "id": "D121",
+      "name": "HEq.refl",
+      "meaning": "Reflexivity of heterogeneous equality.",
+      "effect_on_target": "It supplies routine dependent-recursion evidence and has no target-level numerical content.",
+      "status": "understood"
+    },
+    {
+      "id": "D122",
+      "name": "Nat.instPartialOrder",
+      "meaning": "The partial-order structure on natural numbers.",
+      "effect_on_target": "It supports the proof 0<1 and other order plumbing in indexed definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D123",
+      "name": "PProd",
+      "meaning": "A pair type whose components may live in arbitrary sorts.",
+      "effect_on_target": "It packages recursive results and child data in tree-fold implementations.",
+      "status": "understood"
+    },
+    {
+      "id": "D124",
+      "name": "PUnit",
+      "meaning": "A one-element type available in an arbitrary sort universe.",
+      "effect_on_target": "It is the trivial recursive-data payload at a tree leaf.",
+      "status": "understood"
+    },
+    {
+      "id": "D125",
+      "name": "PartialOrder.toPreorder",
+      "meaning": "The preorder underlying a partial order.",
+      "effect_on_target": "It supplies natural preorder operations used in transitive index proofs.",
+      "status": "understood"
+    },
+    {
+      "id": "D126",
+      "name": "eq_of_heq",
+      "meaning": "Conversion of heterogeneous equality to ordinary equality when both terms have the same type.",
+      "effect_on_target": "It supports dependent tree-eliminator transports and adds no mathematical condition.",
+      "status": "understood"
+    },
+    {
+      "id": "D127",
+      "name": "PProd.mk",
+      "meaning": "Constructor of a dependent-sort pair.",
+      "effect_on_target": "It packages fold results with recursive child data.",
+      "status": "understood"
+    },
+    {
+      "id": "D128",
+      "name": "PUnit.unit",
+      "meaning": "The unique inhabitant of PUnit.",
+      "effect_on_target": "It supplies the trivial auxiliary value at summation-tree leaves.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "m and n are natural numbers.",
+      "run is a valid computation run of type LocalDef001 m n.",
+      "The run contains a real matrix A indexed by Fin m x Fin n, a real matrix LHat indexed by Fin m x Fin n, a real matrix UHat indexed by Fin n x Fin n, and a floating-point format with unit roundoff u.",
+      "In the first local assertion, k and j range over Fin n.",
+      "In the second local assertion, i ranges over Fin m and k ranges over Fin n.",
+      "The existential witness ΔA is a real m-by-n matrix, namely a function Fin m -> Fin n -> Real."
+    ],
+    "hypotheses": [
+      "A valid run carries n <= m and 0 < n.",
+      "Every entry of A, LHat, and UHat is representable in the run's format.",
+      "LHat has unit diagonal on its first n rows: LHat_{kk}=1 for 0<=k<n, after embedding k as a row index.",
+      "LHat_{ij}=0 whenever i<j, and UHat_{ij}=0 whenever j<i.",
+      "For every 0<=k<=j<n, the run carries a valid length-k scalar execution computing UHat_{kj} from A_{kj}, the earlier terms LHat_{ks}UHat_{sj} for s<k, and divisor 1.",
+      "For every i<m and k<n with k<i, the run carries a valid length-k scalar execution computing LHat_{ik} from A_{ik}, the earlier terms LHat_{is}UHat_{sk} for s<k, and divisor UHat_{kk}.",
+      "The format has u>=0 and satisfies all representability, nearest-rounding, fixed-point, finite-representable-set, and safe-range conditions stated in D019.",
+      "The first local implication assumes k<=j; the second assumes k<i; the strengthened perturbation bounds assume m=n."
+    ],
+    "conclusions": [
+      "For every k,j with 0<=k<=j<n, |A_{kj} - (sum_{s=0}^{k-1} LHat_{ks} UHat_{sj} + LHat_{kk} UHat_{kj})| <= k*u*(sum_{s=0}^{k-1} |LHat_{ks}| |UHat_{sj}| + |LHat_{kk}| |UHat_{kj}|), where row k is embedded into Fin m using n<=m.",
+      "For every i<m and k<n with k<i, |A_{ik} - (sum_{s=0}^{k-1} LHat_{is} UHat_{sk} + LHat_{ik} UHat_{kk})| <= (k+1)*u*(sum_{s=0}^{k-1} |LHat_{is}| |UHat_{sk}| + |LHat_{ik}| |UHat_{kk}|).",
+      "There exists one real m-by-n matrix ΔA such that LHat UHat = A + ΔA pointwise and, for every i<m and j<n, |ΔA_{ij}| <= n*u*sum_{k=0}^{n-1} |LHat_{ik}| |UHat_{kj}|.",
+      "For that same ΔA, if m=n, then simultaneously for every i,j, |ΔA_{ij}| <= i*u*sum_{k=0}^{n-1} |LHat_{ik}| |UHat_{kj}| and |ΔA_{ij}| <= (n-1)*u*sum_{k=0}^{n-1} |LHat_{ik}| |UHat_{kj}|."
+    ],
+    "mathematical_definitions": [
+      "All indices are zero-based because Fin q consists of natural values 0,...,q-1.",
+      "For k<n, identify k with the same-valued row index in Fin m using n<=m.",
+      "Define P_{ijk}=sum_{s=0}^{k-1} LHat_{is}UHat_{sj}+LHat_{ik}UHat_{kj}.",
+      "Define M_{ijk}=sum_{s=0}^{k-1}|LHat_{is}||UHat_{sj}|+|LHat_{ik}||UHat_{kj}|.",
+      "Define (LHat UHat)_{ij}=sum_{k=0}^{n-1} LHat_{ik}UHat_{kj}.",
+      "Define (|LHat||UHat|)_{ij}=sum_{k=0}^{n-1}|LHat_{ik}||UHat_{kj}|; this is a componentwise magnitude product, not a matrix norm.",
+      "The equality LHat UHat=A+ΔA means equality of functions and hence equality at every entry: sum_k LHat_{ik}UHat_{kj}=A_{ij}+ΔA_{ij}.",
+      "A valid scalar execution with q product terms carries the residual estimate |c-sum_s a_s b_s-bK*yHat| <= (q+1)u*(|bK*yHat|+sum_s|a_s b_s|), and when bK=1 it also carries |c-sum_s a_s b_s-yHat| <= q*u*(|yHat|+sum_s|a_s b_s|)."
+    ],
+    "proposition_plain_english": "For every valid tall-or-square, nonempty floating-point factorization run, each computed upper-factor entry has a componentwise local residual bounded by k times unit roundoff, and each computed lower-factor entry has a componentwise local residual bounded by k+1 times unit roundoff. Moreover, the exact product of the computed factors is the original matrix plus a single componentwise perturbation ΔA bounded everywhere by n times unit roundoff times the corresponding entry of |LHat||UHat|. In the square case, that same perturbation also satisfies both a row-index-dependent bound with coefficient i and a uniform bound with coefficient n-1."
+  },
+  "restrictions_and_vacuity_risks": [
+    "A valid run requires 0<n and n<=m. Thus the outer universal statement has no substantive instance for n=0 or n>m unless LocalDef001 had another constructor, and the supplied inventory presents D013 as its constructor.",
+    "The first local bound is asserted only for k<=j; the second is asserted only for k<i. Their implication premises make the clauses vacuous outside those index regions.",
+    "The strengthened perturbation bounds are under the implication m=n and therefore impose no extra condition in the rectangular case.",
+    "The same existential witness ΔA must satisfy the product identity, the n-coefficient bound, and, when square, both strengthened bounds simultaneously.",
+    "Natural-number values are cast exactly to reals. The constants are precisely k, k+1, n, i, and n-1; no gamma-factor, denominator such as 1-nu, or omitted higher-order term occurs.",
+    "The expression n-1 is truncated natural subtraction. Since a valid run has n>0, it is the ordinary predecessor; for n=1 the square uniform bound has coefficient zero.",
+    "In the square case the coefficient i is the zero-based row index. At i=0 its bound has zero right-hand side and therefore forces ΔA_{0j}=0. The n=1 square case likewise forces every perturbation entry to be zero.",
+    "All estimates are componentwise scalar absolute-value inequalities. No vector norm, matrix norm, determinant, condition number, or aggregate relative-error statement is encoded.",
+    "The products and sums appearing in the conclusion are exact real operations on the stored computed factors. Rounding occurs only inside the computation evidence, not in the displayed matrix product or magnitude product.",
+    "No representability, triangularity, or computational-origin condition is imposed on ΔA itself.",
+    "The proposition includes no smallness hypothesis such as n*u<1.",
+    "The format parameters radix and exponent bounds are not axiomatically connected to the representable set or safe-range predicate beyond the explicit conditions in D019; those predicates may therefore be more abstract than a conventional floating-point system.",
+    "Safe-range assumptions are attached to the particular scalar executions and their internal products, additions, and non-unit divisions; the conclusion does not assert a global no-overflow or no-underflow condition.",
+    "Nonzero-pivot information is carried through each lower-entry scalar execution rather than stated as a separate assertion that every diagonal UHat_{kk} is nonzero.",
+    "If the componentwise magnitude scale at an entry is zero, the associated inequality forces the corresponding residual or perturbation entry to be exactly zero."
+  ],
+  "ambiguities": []
+}

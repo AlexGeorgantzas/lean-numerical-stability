@@ -1,56 +1,48 @@
 {
-  "accepted": false,
+  "accepted": true,
   "adjudicated": true,
   "adjudication_reasons": [
-    "judge classifications differ",
-    "round-trip judge requested adjudication",
-    "round-trip S08 is unclear"
+    "judge classifications differ"
   ],
-  "classification": "not-faithful-different",
-  "completed_at_utc": "2026-08-14T19:59:30.136975+00:00",
+  "classification": "faithful-stronger",
+  "completed_at_utc": "2026-08-21T16:20:09.984128+00:00",
   "findings": [
     {
-      "category": "assumption-leakage",
-      "evidence": "PDF page 11 derives (4.3a)-(4.3b) from Lemma 4.1. D032 instead accepts the corresponding general and unit residual bounds as constructor fields, which D022 and D023 attach to every entry required by D013.",
-      "impact": "The central floating-point analysis is a prerequisite of the formal run rather than a consequence of the paper's execution hypotheses.",
-      "severity": "critical"
-    },
-    {
-      "category": "abstract-numerical-domain",
-      "evidence": "PDF page 5 requires a symmetric base-beta floating-point set and defines underflow and overflow concretely. D019 requires neither symmetry nor a radix/exponent-generated representable set and leaves safeRange uninterpreted.",
-      "impact": "Lean makes a nonvacuous universal claim about certified runs outside the paper's domain, so the paper does not imply Lean.",
-      "severity": "major"
-    },
-    {
-      "category": "execution-model-linkage",
-      "evidence": "PDF page 11 authorizes Doolittle as a mathematically equivalent formulation, but D013 requires D017 and D018 entry records backed by D032 residual certificates.",
-      "impact": "Doolittle itself is an appropriate algorithmic representative, but the formal execution object is substantially stronger than a completing exception-free execution.",
-      "severity": "major"
-    },
-    {
-      "category": "surface-formulas",
-      "evidence": "The target correctly represents the dimensions, residual sign, exact matrix products, componentwise magnitude product, and zero-based coefficients corresponding to (4.2) and (4.3).",
-      "impact": "The rejection is caused by hidden premise and numerical-domain semantics, not by constants, indexing, matrix operators, or the backward-error conclusion.",
+      "category": "source-licensed-intermediate-certificate",
+      "evidence": "D041's sibling bound is equation (2.4), and D032 links the completed trace to the actual numerator and the required aggregate exact and absolute sums.",
+      "impact": "The trace does not preload (4.3) and does not narrow applicability to paper-valid executions.",
       "severity": "note"
+    },
+    {
+      "category": "algorithm-representation",
+      "evidence": "Printed page 694 explicitly identifies Doolittle as one mathematically equivalent formulation sufficient for the analysis.",
+      "impact": "DoolittleRun is a licensed representation of the selected result rather than an unsupported algorithm specialization.",
+      "severity": "note"
+    },
+    {
+      "category": "broader-format-domain",
+      "evidence": "D019 permits sparse finite representable sets and an abstract safeRange while retaining the local rounding laws and certificates needed by the theorem.",
+      "impact": "The formal declaration proves a nonvacuous extension beyond the paper's stated standard-format domain, making it faithful-stronger rather than equivalent.",
+      "severity": "minor"
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "reasoning": "Lean applies only to certificate-bearing P05DoolittleRun objects. Constructing such an object from the paper's hypotheses already requires the local residual estimates that the paper derives through Lemma 4.1. The proposition therefore does not establish the paper theorem from completion and absence of underflow and overflow.",
-      "verdict": "no"
+      "reasoning": "A paper-standard round-to-nearest format instantiates D019; every completed exception-free Doolittle evaluation supplies D032's tree data, and equation (2.4) constructs its protected trace. The PDF explicitly licenses Doolittle as a mathematically equivalent representative, so the Lean local and global conclusions specialize to Theorem 4.2 and equations (4.2)-(4.3).",
+      "verdict": "yes"
     },
     "paper_implies_lean": {
-      "reasoning": "Lean universally quantifies over abstract formats whose representable sets and safeRange predicates may fall outside the paper's symmetric base-beta floating-point model. The paper makes no claim over those nonpaper runs. Their stored residual certificates make the Lean conclusion assumption-driven but do not supply source-domain coverage.",
+      "reasoning": "The paper quantifies over its standard finite floating-point set F, whereas D019 admits additional inhabited sparse representable sets and abstract safe ranges. The certificate-bearing 2-by-2 example has nonzero error and rounding behavior unavailable in the corresponding full paper format, so the extra formal domain is genuine.",
       "verdict": "no"
     }
   },
   "judge_classifications": {
     "direct": "not-faithful-weaker",
-    "roundtrip": "not-faithful-different"
+    "roundtrip": "faithful-equivalent"
   },
-  "rationale": "The paper explicitly licenses Doolittle as sufficient for the intended Gaussian-elimination analysis, so the algorithm-name disagreement is resolvable. The formal run nevertheless assumes the local residual estimates that the paper derives, preventing Lean from recovering the paper theorem from its stated hypotheses. Conversely, the formal format admits nonpaper, non-symmetric representable systems with arbitrary safe-range semantics, so the paper does not cover every Lean run. Because the target combines reduced applicability with a nonvacuous source-external domain, neither implication holds and the correct classification is not-faithful-different.",
+  "rationale": "The direct judgment correctly noticed that the trace is not structurally indexed by the actual sum tree and that the format record has extra models, but it incorrectly treated both facts as reduced applicability. Equation (2.4) is an explicit prior source result used inside the proof of Theorem 3.1, and every paper-valid tree can furnish the required trace. The trace assumes only those sibling bounds, not Lemma 4.1 or (4.3). Likewise, the paper explicitly licenses Doolittle as a sufficient mathematically equivalent formulation. Consequently the Lean theorem covers the paper result. Its abstract format additionally supports inhabited, certificate-bearing sparse models with substantive nonzero residuals that are not instances of the paper's full F. That extra universal domain prevents the converse implication and yields the accepted classification faithful-stronger.",
   "remaining_uncertainties": [
-    "The PDF does not enumerate the exact outer boundary of \"any variant of Gaussian elimination,\" especially pivoted formulations with permutation matrices. This does not affect the classification because the PDF explicitly authorizes Doolittle for its intended unpermuted LU analysis, while the decisive mismatches are the residual certificates and abstract numerical model."
+    "The selected paper passage does not enumerate all Gaussian-elimination variants or specify pivoting. The equivalence determination is therefore limited to the unpermuted mathematically equivalent formulations expressly invoked on printed page 694; it does not extend the target to arbitrary pivoted algorithms."
   ],
   "role": "final-decision",
   "schema_version": "highambench-faithfulness-0.2",
