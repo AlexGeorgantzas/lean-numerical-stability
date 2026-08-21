@@ -1,154 +1,175 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "The paper introduces (3.26) as a version obtained by dropping second-order terms and changes <= in (3.25) to lesssim in (3.26) [PDF p. 7, printed B791, eqs. (3.25)-(3.26)].",
-      "impact": "Only (3.25) supports an exact inequality with displayed constants; (3.26) is an asymptotic or first-order summary.",
-      "issue": "The symbol lesssim has no explicit quantitative definition."
-    },
-    {
-      "evidence": "Theorem 3.1 says elements of Lambda A and BM are bounded by theta [PDF p. 7, printed B791], but the derivation uses theta/(2||x||_infinity)<lambda and its column analogue [PDF p. 5, printed B789, eqs. (3.4a)-(3.4b)].",
-      "impact": "The displayed error constants require the intended maximal power-of-two scaling from section 3, not an arbitrary much smaller power-of-two scaling satisfying only the theorem's printed upper bound.",
-      "issue": "The printed theorem states only an upper scaling bound, while its derivation uses a lower bound too."
-    },
-    {
-      "evidence": "g_min and G_min are separately piecewise-defined according to subnormal availability [PDF p. 2, printed B786, eqs. (2.1)-(2.2)], while the comparison paragraph invokes only U<=u and F_min<=f_min [PDF p. 7, printed B791].",
-      "impact": "The implication is immediate when both formats use the same underflow regime, but the paper does not explicitly address the mixed case of gradual input underflow with accumulation subnormals unavailable.",
-      "issue": "The claimed implication G_min<=g_min is sensitive to subnormal-mode combinations."
-    },
-    {
-      "evidence": "The discussion repeatedly says 'in most cases' and 'we can expect,' and separately notes theta<1 and large-n exceptions [PDF pp. 7-8, printed B791-B792].",
-      "impact": "The source does not claim an unconditional theorem that accumulation underflow is always smaller or that all underflow is always dominated by rounding.",
-      "issue": "The practical dominance language is qualitative."
-    }
-  ],
-  "contract_plain_english": "The exact theorem gives (3.25); its first-order summary (3.26) says the product-scaled infinity-norm error has rounding envelope 2u+nU, input-underflow envelope 4n^2 theta^{-1}g_min, and accumulation-underflow envelope 4n^2 theta^{-2}G_min. Only when theta>=1 does the paper assert the accumulation envelope is no larger than the input envelope, and the resulting insignificance claim is explicitly a most-cases expectation [PDF p. 7, printed B791, eqs. (3.25)-(3.26) and following discussion].",
-  "paper_batch_sha256": "a0c8bbaa2e261f7adc023b1698c08de77fd260aafddc9aa341073c2704530e40",
-  "paper_sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P20-T2",
+  "paper_sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2",
   "source_evidence": [
     {
-      "anchor": "Model 1 and equations (2.1)-(2.3)",
-      "observation": "Model 1 defines u,U, the input and accumulation exponent ranges, and the piecewise underflow envelopes g_min and G_min.",
       "pdf_page": 2,
-      "printed_page": "B786"
+      "printed_page": "B786",
+      "anchor": "Model 1 and equations (2.1)-(2.3)",
+      "observation": "The input format has precision t, unit roundoff u = 2^(-t), normalized range endpoints f_min and f_max, and underflow envelope g_min = f_min/2 without subnormals or u f_min with gradual underflow. Assuming no overflow, input conversion satisfies fl(x) = x(1+delta)+eta with |delta| <= u, |eta| <= g_min, and eta delta = 0."
     },
     {
-      "anchor": "equations (3.2)-(3.6)",
-      "observation": "The analysis uses theta=min(f_max,sqrt(F_max/n)), maximal row/column power-of-two scaling, and componentwise input conversion errors containing both relative-rounding and absolute-underflow contributions.",
+      "pdf_page": 3,
+      "printed_page": "B787",
+      "anchor": "equation (2.4) and the following rounding-mode paragraph",
+      "observation": "The accumulation format has T >= t, exponent range containing the input exponent range, U = 2^(-T), and G_min = F_min/2 without subnormals or U F_min with gradual underflow. Accumulation operations use the analogous U,G_min model. The displayed models assume round-to-nearest; directed rounding is covered only after replacing the corresponding bounds by twice their values."
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "B788",
+      "anchor": "section 3 and equation (3.1)",
+      "observation": "The analyzed algorithm scales A and B by nonsingular diagonal matrices Lambda and M, rounds the scaled operands to the input format, performs their matrix product, and unscales. Scaling factors are powers of two. The surrounding text assumes A, B, and C are stored exactly in sufficiently high precision before and after the scaling operations."
+    },
+    {
       "pdf_page": 5,
-      "printed_page": "B789"
+      "printed_page": "B789",
+      "anchor": "equations (3.2)-(3.6) and (3.12)-(3.14)",
+      "observation": "The recommended largest overflow-safe scale is theta = min(f_max, sqrt(F_max/n)). For a length-n inner product, scaled input conversions satisfy componentwise bounds |Delta x| <= u lambda |x| + g_min and |Delta y| <= u mu |y| + g_min. After unscaling, the input-underflow quantity is omega = theta^(-1) g_min."
     },
     {
-      "anchor": "equations (3.16)-(3.24)",
-      "observation": "Accumulation underflows contribute through G_min, their count satisfies r<=n for an inner product, and conversion to a matrix infinity-norm estimate yields the n-squared underflow coefficients in (3.24).",
       "pdf_page": 6,
-      "printed_page": "B790"
+      "printed_page": "B790",
+      "anchor": "equations (3.15)-(3.24)",
+      "observation": "Each accumulation underflow contributes at most 4 theta^(-2) G_min ||x||_infinity ||y||_infinity after unscaling, and the number r of such underflows in one inner product satisfies r <= n. The full normwise estimate (3.24) contains the input-underflow and accumulation-underflow envelopes later used in Theorem 3.1."
     },
     {
-      "anchor": "Theorem 3.1 and equation (3.25)",
-      "observation": "The theorem gives an exact <= infinity-norm bound containing rounding, input-underflow, accumulation-underflow, and cross terms.",
       "pdf_page": 7,
-      "printed_page": "B791"
+      "printed_page": "B791",
+      "anchor": "Theorem 3.1 and equations (3.25)-(3.26)",
+      "observation": "Theorem 3.1 gives an exact displayed normwise bound (3.25). Equation (3.26) is explicitly obtained by dropping second-order terms and retains 2u + nU, 4n^2 theta^(-1) g_min, and 4n^2 theta^(-2) G_min."
     },
     {
-      "anchor": "equations (3.26)-(3.28)",
-      "observation": "After dropping second-order terms, (3.26) retains 2u+nU, 4n^2 theta^{-1}g_min, and 4n^2 theta^{-2}G_min. Equations (3.27)-(3.28) give the comparison without range limitations.",
       "pdf_page": 7,
-      "printed_page": "B791"
+      "printed_page": "B791",
+      "anchor": "paragraph following equations (3.27)-(3.28), beginning 'Bound (3.26) thus recovers'",
+      "observation": "The paper identifies 2u+nU as rounding error, 4n^2 theta^(-1) g_min as input underflow error, and 4n^2 theta^(-2) G_min as accumulation underflow error."
     },
     {
+      "pdf_page": 7,
+      "printed_page": "B791",
       "anchor": "paragraph beginning 'Several comments are in order'",
-      "observation": "The paper conditionally compares the two underflow envelopes: when theta>=1, it asserts theta^{-2}G_min<=theta^{-1}g_min using U<=u and F_min<=f_min, and therefore expects accumulation underflow to be insignificant in most cases.",
-      "pdf_page": 7,
-      "printed_page": "B791"
+      "observation": "The paper conditionally states that when theta >= 1, theta^(-2) G_min <= theta^(-1) g_min, citing U <= u and F_min <= f_min, and concludes that the accumulation-underflow contribution is bounded by the input-underflow contribution. It separately presents theta >= 1 and the insignificance of accumulation underflows as expectations for most cases."
     },
     {
-      "anchor": "continuation of section 3.2 discussion",
-      "observation": "The paper warns that input underflow grows with n^2, states that only a normwise bound is available when underflow occurs, and presents underflow dominance as a practical expectation rather than a universal result.",
       "pdf_page": 8,
-      "printed_page": "B792"
-    },
-    {
-      "anchor": "discussion of the bottom-left subplot of Figure 5.1",
-      "observation": "The experiments show a small exceptional divergence for fp8-E4M3 input, binary16 accumulation, and subnormals off at large n; the paper attributes it to theta=sqrt(65504/n)<1 when n>65504.",
-      "pdf_page": 15,
-      "printed_page": "B799"
+      "printed_page": "B792",
+      "anchor": "opening discussion before section 4",
+      "observation": "When underflow is included, the paper says only a normwise bound is available, and its overall claim that underflows should usually remain dominated by rounding errors is qualified as a practical expectation requiring suitable scaling."
     }
   ],
   "statement": {
-    "algorithm_linkage": "C_hat comes from Lambda^{-1}(fl(Lambda A)fl(BM))M^{-1}, with input-format conversion followed by accumulation-format inner products and final unscaling [PDF p. 7, printed B791, Theorem 3.1].",
     "binders": [
-      "A in R^(m x n), B in R^(n x q), and the exact real product AB [PDF p. 7, printed B791, Theorem 3.1].",
-      "C_hat is the result computed by the scaled mixed-precision MMA algorithm [PDF p. 7, printed B791, Theorem 3.1 before eq. (3.25)].",
-      "u,g_min belong to the input format; U,G_min belong to the accumulation format; n is the inner dimension [PDF pp. 2 and 7, printed B786 and B791, Model 1 and eq. (3.26)].",
-      "theta=min(f_max,sqrt(F_max/n)) [PDF p. 7, printed B791, Theorem 3.1]."
-    ],
-    "conclusions": [
-      "The exact enclosing bound is ||C_hat-AB||_infinity<=((2u+u^2+4n^2 theta^{-1}g_min(1+u+theta^{-1}g_min))(1+nU)+nU+4n^2 theta^{-2}G_min)||A||_infinity||B||_infinity [PDF p. 7, printed B791, eq. (3.25)].",
-      "After dropping second-order terms, the paper states ||C_hat-AB||_infinity lesssim (2u+nU+4n^2 theta^{-1}g_min+4n^2 theta^{-2}G_min)||A||_infinity||B||_infinity [PDF p. 7, printed B791, eq. (3.26)].",
-      "Within (3.26), 2u+nU is classified as rounding error, 4n^2 theta^{-1}g_min as input underflow, and 4n^2 theta^{-2}G_min as accumulation underflow [PDF p. 7, printed B791, text following eqs. (3.26)-(3.28)].",
-      "Without range limitations, the cited comparison is ||C_hat-AB||_infinity lesssim (2u+nU)||A||_infinity||B||_infinity [PDF p. 7, printed B791, eq. (3.28)].",
-      "Conditionally on theta>=1, the paper asserts theta^{-2}G_min<=theta^{-1}g_min and hence that the accumulation-underflow envelope is bounded by the input-underflow envelope [PDF p. 7, printed B791, paragraph beginning 'Several comments are in order'].",
-      "The paper identifies n>F_max with a narrow accumulation format as a situation in which theta may fall below 1, so the preceding envelope comparison is not claimed universally [PDF p. 7, printed B791, same comparison paragraph].",
-      "The practical conclusion is probabilistic or heuristic: in most cases accumulation underflow is expected to be insignificant relative to input underflow, and underflow overall is expected to remain dominated by rounding when suitable scaling is used [PDF pp. 7-8, printed B791-B792, section 3.2 discussion]."
-    ],
-    "constants_and_indexing": [
-      "Both underflow terms in (3.26) have coefficient 4n^2 [PDF p. 7, printed B791, eq. (3.26)].",
-      "Input underflow carries theta^{-1}g_min, while accumulation underflow carries theta^{-2}G_min [PDF p. 7, printed B791, eq. (3.26)].",
-      "The comparison theta^{-2}G_min<=theta^{-1}g_min is explicitly conditional on theta>=1 [PDF p. 7, printed B791, comparison paragraph].",
-      "The exact bound includes the factors 1+u+theta^{-1}g_min and 1+nU that disappear from the simplified display [PDF p. 7, printed B791, eqs. (3.25)-(3.26)]."
-    ],
-    "definitions_and_conventions": [
-      "g_min=f_min/2 without input subnormals and g_min=u f_min with gradual input underflow [PDF p. 2, printed B786, eq. (2.1)].",
-      "G_min=F_min/2 without accumulation subnormals and G_min=U F_min with gradual accumulation underflow [PDF p. 2, printed B786, eq. (2.2)].",
-      "The symbol lesssim in (3.26) marks a simplified bound after second-order terms are dropped; the paper supplies no numerical hidden constant there [PDF p. 7, printed B791, sentence immediately before eq. (3.26)].",
-      "C_hat denotes the computed result, whereas AB in the theorem is the exact real product [PDF p. 7, printed B791, Theorem 3.1 and eq. (3.25)]."
-    ],
-    "error_notions": [
-      "Equations (3.25)-(3.26) are normwise forward-error bounds scaled by ||A||_infinity||B||_infinity, not componentwise relative-error bounds [PDF p. 7, printed B791, eqs. (3.25)-(3.26)].",
-      "A componentwise comparison exists only for the no-underflow model in (3.27); the paper says underflow forces the use of a normwise bound [PDF pp. 7-8, printed B791-B792, eq. (3.27) and final section-3.2 discussion].",
-      "The empirical metric later used is ||C_hat-C||_infinity/(||A||_infinity||B||_infinity), with C computed in binary64 [PDF p. 12, printed B796, eq. (5.1)]."
-    ],
-    "exceptional_values": [
-      "Underflow is explicitly allowed and bounded; overflow is assumed prevented by scaling and excluded from the rounding models [PDF pp. 2 and 5, printed B786 and B789, eq. (2.3) and discussion of theta].",
-      "The theorem concerns real matrices and does not model NaNs or infinities [PDF p. 7, printed B791, Theorem 3.1].",
-      "The row/column scaling formulas used in the derivation do not specify a convention for zero rows or columns [PDF p. 5, printed B789, eqs. (3.4a)-(3.4b)]."
-    ],
-    "higher_order_terms": [
-      "Equation (3.26) is obtained by dropping second-order terms from the exact inequality (3.25) [PDF p. 7, printed B791, sentence before eq. (3.26)].",
-      "Dropped contributions include u^2, products involving u and theta^{-1}g_min, (theta^{-1}g_min)^2, and multiplication of the first parenthesized group by nU [PDF p. 7, printed B791, comparison of eqs. (3.25) and (3.26)].",
-      "The paper does not define lesssim quantitatively, so (3.26) must not be promoted to the exact <= inequality supplied by (3.25) [PDF p. 7, printed B791, eqs. (3.25)-(3.26)]."
+      "[PDF p. 7, printed B791, anchor: Theorem 3.1] A is in R^(m x n), B is in R^(n x q), and C = AB; n is therefore the shared inner dimension and the length of each inner product.",
+      "[PDF p. 7, printed B791, anchor: Theorem 3.1] Lambda and M are diagonal matrices whose diagonal entries are powers of two, and every entry of Lambda A and B M is bounded in magnitude by theta.",
+      "[PDF p. 2, printed B786, anchor: Model 1] The input-format parameters are t, e_min, e_max, u, f_min, f_max, and g_min; the accumulation-format parameters are T, E_min, E_max, U, F_min, F_max, and G_min."
     ],
     "hypotheses": [
-      "A and B are processed by a mixed-precision MMA unit satisfying Model 1 [PDF p. 7, printed B791, Theorem 3.1].",
-      "Lambda and M are diagonal with power-of-two coefficients, and the theorem states that elements of Lambda A and BM are bounded by theta [PDF p. 7, printed B791, Theorem 3.1].",
-      "The inherited section-3 construction chooses nonzero row and column maxima in (theta/2,theta], which is stronger than merely being bounded above by theta [PDF p. 5, printed B789, paragraph before eq. (3.2) and eqs. (3.4a)-(3.4b)].",
-      "fl rounds scaled inputs to the input format, and each inner product is computed in the accumulation format [PDF p. 7, printed B791, Theorem 3.1].",
-      "The section assumes exact high-precision storage before scaling and after unscaling, and no overflow in those external operations [PDF pp. 4-5, printed B788-B789, text following eq. (3.1)]."
+      "[PDF p. 7, printed B791, anchor: Theorem 3.1] The computation uses a mixed-precision MMA unit satisfying Model 1.",
+      "[PDF p. 7, printed B791, anchor: Theorem 3.1] theta = min(f_max, sqrt(F_max/n)), and the scaled input entries are bounded by theta.",
+      "[PDF p. 2, printed B786, anchor: equation (2.3); PDF p. 3, printed B787, anchor: equation (2.4)] The floating-point models are applied under the assumption that overflow does not occur.",
+      "[PDF p. 4, printed B788, anchor: text following (3.1), continued on PDF p. 5, printed B789] The powers-of-two scalings introduce no rounding error, and A, B, and C are assumed exactly representable in sufficiently high precision outside the low-precision MMA computation.",
+      "[PDF p. 7, printed B791, anchor: paragraph beginning 'Several comments are in order'] The comparison theta^(-2) G_min <= theta^(-1) g_min is conditional on theta >= 1; theta >= 1 is not a hypothesis of the general bound (3.26).",
+      "[PDF p. 2, printed B786, anchor: Model 1] Positivity needed for inverse powers follows from positive floating-point range endpoints and, implicitly, n > 0 in theta = min(f_max, sqrt(F_max/n)); theta >= 1 in the comparison in particular implies theta > 0.",
+      "[PDF p. 2, printed B786, anchor: equations (2.1)-(2.2)] g_min and G_min are nonnegative. To derive the comparison algebraically from an envelope ordering, one needs G_min <= g_min in addition to theta >= 1."
+    ],
+    "conclusions": [
+      "[PDF p. 7, printed B791, anchor: equation (3.25)] The exact displayed result is ||C_hat-AB||_infinity <= ((2u + u^2 + 4n^2 theta^(-1) g_min (1+u+theta^(-1)g_min))(1+nU) + nU + 4n^2 theta^(-2)G_min) ||A||_infinity ||B||_infinity.",
+      "[PDF p. 7, printed B791, anchor: equation (3.26)] After dropping second-order terms, ||C_hat-AB||_infinity is bounded in the paper's less-than-or-approximately notation by (2u+nU+4n^2 theta^(-1)g_min+4n^2 theta^(-2)G_min)||A||_infinity||B||_infinity.",
+      "[PDF p. 7, printed B791, anchor: paragraph following (3.28)] In (3.26), 2u+nU is the rounding-error contribution, 4n^2 theta^(-1)g_min is the input-underflow contribution, and 4n^2 theta^(-2)G_min is the accumulation-underflow contribution.",
+      "[PDF p. 7, printed B791, anchor: paragraph beginning 'Several comments are in order'] Conditionally, when theta >= 1 and the format assumptions provide G_min <= g_min, theta^(-2)G_min <= theta^(-1)g_min. Because 4n^2 is nonnegative, the same ordering holds for the complete underflow terms in (3.26).",
+      "[PDF p. 7, printed B791, anchor: paragraph beginning 'Several comments are in order'] Multiplying the scalar comparison by theta^2 is valid only because theta > 0; it gives the equivalent inequality G_min <= theta g_min. This follows from G_min <= g_min, g_min >= 0, and theta >= 1.",
+      "[PDF p. 5, printed B789, anchor: discussion preceding equation (3.2); PDF p. 7, printed B791, anchor: paragraph beginning 'Several comments are in order'] Choosing the largest overflow-safe theta and expecting theta >= 1 in most cases are design guidance and practical expectations, not unconditional mathematical conclusions of Theorem 3.1."
+    ],
+    "definitions_and_conventions": [
+      "[PDF p. 2, printed B786, anchor: Model 1] u = 2^(-t), f_min = 2^(e_min), and f_max = 2^(e_max)(2-2u).",
+      "[PDF p. 2, printed B786, anchor: equation (2.1)] g_min is the maximum nearest-representable-value error in [-f_min,f_min]: g_min = f_min/2 without subnormals and g_min = u f_min with gradual underflow.",
+      "[PDF p. 2, printed B786, anchor: Model 1 and equation (2.2)] U = 2^(-T), F_min = 2^(E_min), F_max = 2^(E_max)(2-2U), and G_min = F_min/2 without subnormals or U F_min with gradual underflow.",
+      "[PDF p. 5, printed B789, anchor: equation (3.2)] theta = min(f_max, sqrt(F_max/n)); it is selected as the largest scale allowed simultaneously by input-range and accumulation-range overflow constraints.",
+      "[PDF p. 6, printed B790, anchor: equation (3.15)] omega = theta^(-1)g_min is the scaled input-underflow parameter.",
+      "[PDF p. 3, printed B787, anchor: equations (2.3)-(2.4)] fl denotes rounding to the input format and FL denotes rounding an arithmetic operation to the accumulation format."
     ],
     "implicit_context": [
-      "The n-squared factors arise after weakening the inner-product estimate to a matrix infinity-norm bound [PDF p. 6, printed B790, eqs. (3.23)-(3.24)].",
-      "The experimental reference called 'exact' is computed in binary64, unlike the exact real AB in the theorem [PDF p. 12, printed B796, eq. (5.1) and following sentence].",
-      "The observed large-n exception is empirical corroboration of the theta<1 caveat, not an additional theorem hypothesis [PDF p. 15, printed B799, Figure 5.1 discussion]."
+      "[PDF p. 2, printed B786, anchor: Model 1] T >= t and [E_min,E_max] contains [e_min,e_max], yielding U <= u and F_min <= f_min.",
+      "[PDF p. 5, printed B789, anchor: equation (3.2)] The matrix-dimension convention must supply n > 0 because F_max/n appears under a square root; this positivity is not separately quantified in the displayed theorem.",
+      "[PDF p. 5, printed B789, anchor: equations (3.4a)-(3.4b)] The derivation uses powers-of-two row and column scales satisfying theta/(2||x||_infinity) < lambda <= theta/||x||_infinity and the analogous inequalities for mu and y.",
+      "[PDF p. 7, printed B791, anchor: Theorem 3.1] The theorem states only the upper bound on entries of Lambda A and B M, while the preceding construction supplies the stronger row/column scaling context."
+    ],
+    "algorithm_linkage": "[PDF p. 7, printed B791, anchor: Theorem 3.1; PDF p. 8, printed B792, anchor: transition to section 4] This is the single-word scaled mixed-precision MMA algorithm: form fl(Lambda A) and fl(B M) in the input format, compute every length-n inner product in the accumulation format, then apply Lambda^(-1) and M^(-1). It is not the multiword algorithm introduced in section 4.",
+    "numerical_model": [
+      "[PDF p. 2, printed B786, anchor: equation (2.3)] Input conversion obeys fl(x)=x(1+delta)+eta with |delta|<=u, |eta|<=g_min, and eta delta=0.",
+      "[PDF p. 3, printed B787, anchor: equation (2.4)] Accumulation operations obey FL(x op y)=(x op y)(1+delta)+eta with |delta|<=U, |eta|<=G_min, eta delta=0, and op in {+,-,multiplication,division}.",
+      "[PDF p. 3, printed B787, anchor: paragraph following equation (2.4)] The primary constants assume round-to-nearest. For directed rounding, the paper instructs replacing u,g_min,U,G_min by 2u,2g_min,2U,2G_min respectively.",
+      "[PDF p. 5, printed B789, anchor: equations (3.5)-(3.6)] Scaled input errors are bounded componentwise by a relative rounding part and an additive underflow part.",
+      "[PDF p. 6, printed B790, anchor: equations (3.16)-(3.19)] Accumulation error includes precision-U rounding and at most r<=n additive underflow events, each bounded after unscaling by 4theta^(-2)G_min||x||_infinity||y||_infinity."
+    ],
+    "error_notions": [
+      "[PDF p. 7, printed B791, anchor: equations (3.25)-(3.26)] The selected result is an absolute normwise forward-error bound for the computed C_hat relative to the exact real product AB; it is not divided by ||AB||.",
+      "[PDF p. 7, printed B791, anchor: equations (3.27)-(3.28)] The no-underflow comparison includes a componentwise bound, but (3.26) is its normwise counterpart augmented with underflow terms.",
+      "[PDF p. 8, printed B792, anchor: opening paragraph] The paper explicitly says that when underflow occurs it can obtain only a normwise bound, because the derivation contains ||x||_infinity||y||_infinity rather than |x|^T|y|."
     ],
     "norms": [
-      "The result uses matrix infinity norms throughout [PDF p. 7, printed B791, eqs. (3.25)-(3.28)].",
-      "The paper does not restate a formal definition of the matrix infinity norm in the selected passage [PDF pp. 6-7, printed B790-B791, eqs. (3.24)-(3.28)]."
+      "[PDF p. 7, printed B791, anchor: equations (3.25)-(3.26)] The final error and operand magnitudes use the matrix infinity-norm notation ||.||_infinity.",
+      "[PDF p. 5, printed B789, anchor: equations (3.4)-(3.14)] The inner-product analysis uses vector infinity norms, componentwise absolute values, and |x|^T|y|.",
+      "[PDF p. 7, printed B791, anchor: equation (3.27)] Vertical bars around matrices in the comparison denote componentwise absolute values."
     ],
-    "numerical_model": [
-      "Input rounding satisfies fl(z)=z(1+delta)+eta with |delta|<=u, |eta|<=g_min, eta*delta=0, assuming no overflow [PDF p. 2, printed B786, eq. (2.3)].",
-      "Accumulation operations satisfy the analogous model with U and G_min [PDF p. 3, printed B787, eq. (2.4)].",
-      "The default model is round-to-nearest; directed rounding requires replacing each error parameter by twice its value [PDF p. 3, printed B787, paragraph following eq. (2.4)].",
-      "Model 1 has T>=t and an accumulation exponent range containing the input range, yielding U<=u and F_min<=f_min [PDF p. 2, printed B786, Model 1]."
+    "constants_and_indexing": [
+      "[PDF p. 7, printed B791, anchor: equation (3.26)] The retained constants are exactly 2, 1, 4, and 4 in 2u, nU, 4n^2 theta^(-1)g_min, and 4n^2 theta^(-2)G_min.",
+      "[PDF p. 4, printed B788, anchor: section 3 opening; PDF p. 7, printed B791, anchor: Theorem 3.1] n is the shared dimension of A and B, not either outer dimension m or q.",
+      "[PDF p. 6, printed B790, anchor: discussion following equation (3.19)] The per-inner-product accumulation-underflow count is r<=n, including multiplication and addition underflows.",
+      "[PDF p. 7, printed B791, anchor: equation (3.26)] The input and accumulation terms differ by one inverse power of theta: theta^(-1) for input underflow and theta^(-2) for accumulation underflow."
+    ],
+    "higher_order_terms": [
+      "[PDF p. 7, printed B791, anchor: text immediately preceding equation (3.26)] Equation (3.26) is explicitly a simplification obtained by dropping second-order terms and uses a less-than-or-approximately relation rather than the exact <= sign of (3.25).",
+      "[PDF p. 7, printed B791, anchor: equation (3.25)] Relative to (3.26), the exact bound retains u^2, the products inside 4n^2 theta^(-1)g_min(1+u+theta^(-1)g_min), and multiplication of that entire input-stage expression by 1+nU.",
+      "[PDF p. 7, printed B791, anchor: equations (3.25)-(3.26)] No explicit big-O remainder or numerical constant interpreting the less-than-or-approximately symbol is supplied in the selected passage; (3.25) is the authoritative exact inequality."
+    ],
+    "exceptional_values": [
+      "[PDF p. 2, printed B786, anchor: equation (2.3); PDF p. 3, printed B787, anchor: equation (2.4)] Overflow is excluded by the arithmetic model.",
+      "[PDF p. 5, printed B789, anchor: equation (3.2)] theta is chosen to prevent overflow both during input conversion and during accumulation.",
+      "[PDF p. 2, printed B786, anchor: equations (2.1)-(2.2)] Underflow is permitted, with separate definitions for flushing/no-subnormal behavior and gradual underflow.",
+      "[PDF p. 2, printed B786, anchor: Model 1; PDF p. 7, printed B791, anchor: Theorem 3.1] Inputs are real matrices; the theorem does not state behavior for NaNs or infinities.",
+      "[PDF p. 3, printed B787, anchor: explanation following equation (2.4)] eta delta=0 records that a single modeled operation is affected by either ordinary rounding or underflow, not both."
     ]
   },
-  "task_id": "P20-T2",
   "undebatable_constraints": [
-    "The simplified envelope must contain exactly 2u+nU+4n^2 theta^{-1}g_min+4n^2 theta^{-2}G_min [PDF p. 7, printed B791, eq. (3.26)].",
-    "Equation (3.26) is simplified and uses lesssim; equation (3.25), not (3.26), is the exact <= bound [PDF p. 7, printed B791, eqs. (3.25)-(3.26)].",
-    "The input-versus-accumulation comparison is conditional on theta>=1 and must not be stated unconditionally [PDF p. 7, printed B791, comparison paragraph].",
-    "The result is normwise in the matrix infinity norm [PDF p. 7, printed B791, eq. (3.26)].",
-    "The conclusion that accumulation underflows are insignificant is an expectation for most practical cases, not a universal inequality beyond the stated condition [PDF pp. 7-8, printed B791-B792, section 3.2 discussion]."
-  ]
+    "[PDF p. 7, printed B791, anchor: equation (3.26)] Any faithful target must preserve all four first-order contributions and their exact factors: 2u, nU, 4n^2 theta^(-1)g_min, and 4n^2 theta^(-2)G_min.",
+    "[PDF p. 7, printed B791, anchor: equation (3.26)] The result is multiplied by ||A||_infinity||B||_infinity and bounds ||C_hat-AB||_infinity.",
+    "[PDF p. 7, printed B791, anchor: text preceding equation (3.26)] Equation (3.26) must not be represented as the exact inequality (3.25); it drops second-order terms.",
+    "[PDF p. 5, printed B789, anchor: equation (3.2)] theta is fixed as min(f_max,sqrt(F_max/n)), not as either operand alone.",
+    "[PDF p. 7, printed B791, anchor: paragraph beginning 'Several comments are in order'] The envelope comparison is conditional on theta >= 1.",
+    "[PDF p. 2, printed B786, anchor: equations (2.1)-(2.2)] g_min and G_min are underflow-distance bounds with branch-dependent definitions, not merely f_min and F_min.",
+    "[PDF p. 7, printed B791, anchor: paragraph beginning 'Several comments are in order'] The scalar comparison is theta^(-2)G_min <= theta^(-1)g_min; after multiplication by the common nonnegative factor 4n^2, it compares exactly the two underflow terms in (3.26).",
+    "[PDF p. 2, printed B786, anchor: equations (2.1)-(2.2); PDF p. 7, printed B791, anchor: comparison paragraph] Algebraic cancellation or multiplication by theta requires theta>0, and the step from g_min to theta g_min requires g_min>=0.",
+    "[PDF p. 5, printed B789, anchor: discussion preceding equation (3.2); PDF p. 7, printed B791, anchor: comparison paragraph] The recommendation to maximize theta and the expectation that theta>=1 in most cases must remain distinguished from the conditional mathematical inequality."
+  ],
+  "ambiguities": [
+    {
+      "issue": "The less-than-or-approximately symbol in (3.26) has no locally quantified constant or remainder.",
+      "evidence": "[PDF p. 7, printed B791, anchor: sentence preceding equation (3.26)] The paper says only that (3.26) results from dropping second-order terms, while (3.25) uses an exact <= inequality.",
+      "impact": "A formal exact theorem should use (3.25), or explicitly define a truncation/asymptotic interpretation; silently reading (3.26) as an exact <= statement changes the source claim."
+    },
+    {
+      "issue": "U<=u and F_min<=f_min alone do not guarantee G_min<=g_min for every possible pairing of the piecewise underflow regimes.",
+      "evidence": "[PDF p. 2, printed B786, anchor: equations (2.1)-(2.2)] g_min and G_min each independently use either a no-subnormal branch or a gradual-underflow branch. [PDF p. 7, printed B791, anchor: comparison paragraph] The paper nevertheless cites only U<=u and F_min<=f_min.",
+      "impact": "The asserted comparison is directly justified when the branch choices are compatible, or whenever G_min<=g_min is separately known. If the input has gradual underflow but the accumulator lacks subnormals, an additional range condition is needed; a formalization must not infer G_min<=g_min from U<=u and F_min<=f_min alone."
+    },
+    {
+      "issue": "theta>=1 is an expected practical regime, not guaranteed by Theorem 3.1.",
+      "evidence": "[PDF p. 7, printed B791, anchor: paragraph beginning 'Several comments are in order'] The authors write that theta>=1 is expected 'in most cases' and note that theta<1 is possible when n>F_max.",
+      "impact": "The accumulation-versus-input comparison must be stated as a conditional implication. It cannot be added unconditionally to equation (3.26)."
+    },
+    {
+      "issue": "The matrix infinity norm is used but not explicitly defined in the cited passage.",
+      "evidence": "[PDF p. 6, printed B790, anchor: equations (3.23)-(3.24); PDF p. 7, printed B791, anchor: equations (3.25)-(3.26)] The paper calls the result normwise and writes ||.||_infinity without a local formula.",
+      "impact": "A formal target must identify the intended matrix infinity norm from the paper's broader conventions rather than substitute an entrywise maximum or another norm silently."
+    },
+    {
+      "issue": "The positivity of n and the zero-row/zero-column behavior of the scaling construction are implicit.",
+      "evidence": "[PDF p. 5, printed B789, anchor: equations (3.2) and (3.4a)-(3.4b)] theta contains F_max/n, and the displayed scale inequalities divide by ||x||_infinity and ||y||_infinity, but no separate convention for n=0 or zero vectors is stated.",
+      "impact": "A formal reconstruction needs n>0 and either nonzero vectors for the displayed scaling inequalities or explicit separate handling of zero rows and columns."
+    }
+  ],
+  "contract_plain_english": "[PDF p. 7, printed B791, anchor: Theorem 3.1 and equation (3.26)] For the single-word, powers-of-two-scaled mixed-precision MMA computation, the paper's first-order normwise forward-error estimate consists of rounding error 2u+nU, input-underflow error 4n^2 theta^(-1)g_min, and accumulation-underflow error 4n^2 theta^(-2)G_min, all multiplied by ||A||_infinity||B||_infinity. [PDF p. 7, printed B791, anchor: paragraph beginning 'Several comments are in order'] In the conditional regime theta>=1, and provided the format definitions give G_min<=g_min, positivity permits multiplication by theta^2 and yields theta^(-2)G_min<=theta^(-1)g_min, so the accumulation-underflow envelope is no larger than the input-underflow envelope. [PDF p. 5, printed B789, anchor: discussion preceding equation (3.2); PDF p. 7, printed B791, anchor: comparison paragraph] The choice of the largest overflow-safe theta and the expectation that this condition usually holds are practical recommendations, whereas the envelope inequality itself is a conditional mathematical implication."
 }

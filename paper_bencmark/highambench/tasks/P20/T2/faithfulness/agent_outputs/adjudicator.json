@@ -3,86 +3,136 @@
   "role": "adjudicator",
   "task_id": "P20-T2",
   "trigger": [
-    "judge classifications differ",
     "direct judge requested adjudication",
     "round-trip judge requested adjudication",
+    "direct judge classification is undetermined",
     "round-trip judge classification is undetermined",
-    "direct D028 is unclear"
+    "blind dependency D004 is unclear",
+    "blind dependency D038 is unclear",
+    "direct S04 is unclear",
+    "direct S11 is unclear",
+    "direct S15 is unclear",
+    "round-trip S09 is unclear",
+    "round-trip S15 is unclear"
   ],
   "resolved_items": [
     {
-      "item": "judge classifications differ",
-      "resolution": "The direct classification is sustained: the declaration is not-faithful-weaker. The selected source role is the local comparison of the two underflow envelopes, so omission of the complete forward-error bound is not decisive. The decisive mismatch is that Lean assumes Gmin <= gmin, whereas the paper asserts the comparison for Model 1 when theta >= 1 and presents that ordering as following from format properties.",
-      "primary_evidence": "PDF p. 7, printed B791, identifies 4n^2 theta^-1 gmin and 4n^2 theta^-2 Gmin as the input- and accumulation-underflow terms, then states that theta^-2 Gmin <= theta^-1 gmin when theta >= 1. The Lean declaration additionally requires hGg : Gmin <= gmin."
-    },
-    {
       "item": "direct judge requested adjudication",
-      "resolution": "The added hypothesis Gmin <= gmin is an explicit repair that reduces applicability, not a faithful derivation of the paper claim. It excludes Model 1 configurations for which the paper's stated justification is insufficient.",
-      "primary_evidence": "PDF p. 2, printed B786, equations (2.1)-(2.2), define gmin and Gmin independently by subnormal availability. If input subnormals are available but accumulation subnormals are unavailable, with Fmin = fmin and U = u < 1/2, then gmin = u fmin while Gmin = Fmin/2, so Gmin > gmin despite U <= u and Fmin <= fmin."
+      "resolution": "The declaration is not-faithful-weaker. Its formulas and selected complete-term conclusion match the paper, but hGg excludes nondegenerate cases admitted by literal Model 1.",
+      "primary_evidence": "PDF B786 equations (2.1)-(2.2) define input and accumulation subnormal branches independently. PDF B791 asserts the comparison under theta >= 1 using only U <= u and Fmin <= fmin. The declaration additionally assumes hGg : Gmin <= gmin."
     },
     {
       "item": "round-trip judge requested adjudication",
-      "resolution": "The missing computed product, rounding terms, and higher-order terms do not by themselves make this task unfaithful because the locator selects only the following envelope comparison, not all of equation (3.26) or Theorem 3.1. The local formulas, constants, norm factors, and exact inequality direction match. The hypothesis substitution remains a major mismatch.",
-      "primary_evidence": "PDF p. 7, printed B791, first labels the two displayed terms after equation (3.26) and then separately gives their exact conditional comparison. The declaration definitions reproduce both terms with coefficient 4n^2, theta exponents -2 and -1, and the two matrix infinity norms."
+      "resolution": "The absence of the complete MMA execution and forward-error theorem is not a separate defect because the selected result is only the post-(3.26) comparison. D001 and D002 reproduce the two complete underflow contributions exactly. The substantive defect is the extra hGg restriction.",
+      "primary_evidence": "PDF B791 first identifies 4 n^2 theta^(-1) gmin and 4 n^2 theta^(-2) Gmin as the two underflow contributions and then compares them. D001 and D002 include those exact coefficients and the common operand-norm factors."
+    },
+    {
+      "item": "direct judge classification is undetermined",
+      "resolution": "The classification is determined as not-faithful-weaker: Lean does not cover every literal Model 1 case claimed by the paper, while the paper's asserted comparison specializes to the Lean conclusion on the added-premise domain.",
+      "primary_evidence": "A nondegenerate literal Model 1 counterexample takes t = T = 3, equal exponent ranges [0,2], gradual underflow for the input, no subnormals for accumulation, and n = 1. Then u = U = 1/8, fmin = Fmin = 1, fmax = Fmax = 7, theta = sqrt(7) >= 1, gmin = 1/8, and Gmin = 1/2. The claimed scalar comparison fails because 1/14 > 1/(8 sqrt(7)), and hGg is false."
     },
     {
       "item": "round-trip judge classification is undetermined",
-      "resolution": "The classification is resolved as not-faithful-weaker. The PDF clearly states the intended comparison; uncertainty about whether its justification covers mixed subnormal modes is a defect or unstated restriction in the source argument, not uncertainty about what the source claims. Lean silently restricts that claim by requiring Gmin <= gmin.",
-      "primary_evidence": "PDF p. 7, printed B791, says that when theta >= 1 the accumulation term is bounded by the input term. PDF p. 2, printed B786, supplies piecewise definitions that do not establish Gmin <= gmin in every independently chosen subnormal-mode combination."
+      "resolution": "The declaration is weaker rather than different or stronger. The context-free algebraic abstraction is acceptable for this selected sub-result, but it cannot compensate for excluding literal source instances through hGg.",
+      "primary_evidence": "PDF B791 makes the selected claim an algebraic comparison of already identified contributions. The exact declaration adds Gmin <= gmin, which is not a Model 1 consequence in every branch pairing."
     },
     {
-      "item": "direct D028 is unclear",
-      "resolution": "D028 is semantically understood and does not create a material ambiguity. It supplies bottom zero for the NNReal finite supremum, so an empty row maximum is zero. For nonempty matrices the definition is exactly the maximum absolute row-sum norm used by the paper. The empty-matrix behavior is only an extra totalization outside the paper's stated convention.",
-      "primary_evidence": "The supplied declaration evidence shows D028 extracting OrderBot, Finset.sup folding from bottom, and NNReal bottom equal to zero. PDF p. 7, printed B791, uses the matrix infinity norm but states no empty-matrix convention."
+      "item": "blind dependency D004 is unclear",
+      "resolution": "D004 is a closed elaboration witness for the numeral 4. It adds no theorem hypothesis and has no paper-level semantic effect.",
+      "primary_evidence": "D004 has type (3 + 1).AtLeastTwo. D026 uses such evidence only to construct OfNat R n from NatCast R, so the coefficient in D001-D002 is the real natural-number cast of 4."
+    },
+    {
+      "item": "blind dependency D038 is unclear",
+      "resolution": "D038 is only the proposition used by the generic numeral instance for numerals at least two. Its constructors are immaterial because D004 supplies the closed witness; it neither restricts matrices nor changes the inequality.",
+      "primary_evidence": "D038 has type Nat -> Prop, D026 consumes an instance of n.AtLeastTwo solely to define OfNat R n as n.cast, and D004 supplies that instance for 3 + 1."
+    },
+    {
+      "item": "direct S04 is unclear",
+      "resolution": "hGg is an extra restriction relative to literal Model 1, not an acceptable statement of a necessary premise and not a theorem generalization. For theta > 0, the scalar comparison is equivalent to Gmin <= theta*gmin, so Gmin <= gmin is sufficient but stronger than necessary.",
+      "primary_evidence": "From B786: both-no-subnormal branches give Fmin/2 <= fmin/2; both-gradual branches give U Fmin <= u fmin; and gradual accumulation with no-subnormal input is also compatible with the ordering. The independent mixed branch with gradual input and no-subnormal accumulation instead compares Fmin/2 with u fmin, and U <= u plus Fmin <= fmin does not imply the required ordering."
+    },
+    {
+      "item": "direct S11 is unclear",
+      "resolution": "Omitting the floating-point operations and format structures is acceptable for the selected algebraic comparison once the two terms are fixed. It is not acceptable to claim that literal Model 1 derives hGg in all regimes.",
+      "primary_evidence": "PDF B791 states the selected comparison after the contribution formulas have already been derived. PDF B786 independently defines each underflow envelope's gradual and no-subnormal branches, with no condition coupling their subnormal support."
+    },
+    {
+      "item": "direct S15 is unclear",
+      "resolution": "The arbitrary-real formulation is an algebraic extension on the slice satisfying hGg, but the declaration has reduced applicability inside the source domain. It therefore cannot be classified as faithful-stronger. Zero-dimensional cases do not supply genuine strength.",
+      "primary_evidence": "The declaration quantifies arbitrary reals but requires Gmin <= gmin. The B786-B791 counterexample satisfies the paper's format and theta conditions while violating that premise. For n = 0 or an empty matrix direction, the declaration's common factor is zero and the conclusion degenerates to 0 <= 0."
+    },
+    {
+      "item": "round-trip S09 is unclear",
+      "resolution": "The matrix norm matches the paper's matrix infinity norm: D003 is the maximum absolute row-sum norm.",
+      "primary_evidence": "D003 sums the standard real entry norms across each row and takes their finite maximum. On B790, (3.23) is weakened to (3.24) using ||E||_infinity, ||A||_infinity, and ||B||_infinity. On B791, the componentwise bound (3.27) implies (3.28) with no extra dimension factor, confirming the standard induced maximum-row-sum infinity norm rather than an entrywise maximum."
+    },
+    {
+      "item": "round-trip S15 is unclear",
+      "resolution": "The specialization/generalization issue is resolved in favor of reduced applicability. The nonformat and zero-dimensional extensions are not grounds for a stronger classification because hGg removes nondegenerate source cases.",
+      "primary_evidence": "The explicit t = T = 3 mixed-subnormal example has n = m = q = 1 and may use A = B = [1], so both norm factors and 4 n^2 are positive. Its exclusion is therefore not caused by a degenerate common factor."
+    },
+    {
+      "item": "scalar-versus-complete-term scope",
+      "resolution": "There is no independent scalar-scope mismatch. The Lean hypotheses themselves imply theta^(-2) Gmin <= theta^(-1) gmin: theta >= 1 gives theta > 0, hGmin and hGg give 0 <= Gmin <= gmin, and hence Gmin <= gmin <= theta*gmin. The complete-term inequality then follows by multiplication with a nonnegative common factor.",
+      "primary_evidence": "PDF B791 states the scalar comparison and immediately concludes the complete contribution ordering. D001-D003 make the common factor 4 n^2 N(A)N(B), which is nonnegative because n^2 and both NNReal-derived maximum row-sum norms are nonnegative."
+    },
+    {
+      "item": "zero common factor and cancellation",
+      "resolution": "When 4 n^2 N(A)N(B) is zero, the complete-term conclusion cannot be cancelled back to the scalar inequality. This does not lose the scalar result here because it follows independently from the formal hypotheses. Such zero-factor instances are degenerate, not stronger.",
+      "primary_evidence": "D001 and D002 have the identical common matrix and dimension factor. The declaration separately assumes theta >= 1, 0 <= Gmin, and Gmin <= gmin, which suffice for the scalar comparison without using or cancelling the conclusion."
+    },
+    {
+      "item": "final implication directions",
+      "resolution": "Lean does not imply the paper's literal full-domain comparison, while the paper's asserted comparison implies its restriction to instances satisfying the Lean premises. These directions exactly yield not-faithful-weaker.",
+      "primary_evidence": "The independent branch definitions on B786 admit cases where hGg fails, whereas B791 asserts the result without hGg. On the restricted domain, B791's scalar inequality can always be multiplied by the nonnegative D001-D003 common factor to obtain the Lean conclusion."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "The paper claims the envelope comparison for Model 1 when theta >= 1. Lean cannot recover all such source cases because it additionally requires Gmin <= gmin, and the written Model 1 does not imply that condition for the mixed case of gradual input underflow with accumulation subnormals unavailable."
+      "reasoning": "Literal Model 1 admits a gradual-underflow input format paired with an accumulation format lacking subnormals. In that branch, U <= u and Fmin <= fmin do not imply Gmin <= gmin or even Gmin <= theta*gmin. The explicit nondegenerate t = T = 3 example satisfies theta >= 1 but fails the paper comparison and does not satisfy hGg, so the Lean theorem cannot recover every source-stated case."
     },
     "paper_implies_lean": {
       "verdict": "yes",
-      "reasoning": "Under the source-to-Lean parameter mapping, the paper asserts the same envelope ordering under weaker source conditions. Restricting to cases satisfying Lean's additional Gmin <= gmin premise and multiplying by the common nonnegative factor 4n^2||A||_infinity||B||_infinity yields the Lean conclusion."
+      "reasoning": "After aligning the paper quantities with the declaration and restricting to the declaration's added hypotheses, the paper explicitly asserts the scalar comparison and the resulting complete contribution ordering. Multiplication by 4 n^2 N(A)N(B) is valid because this factor is nonnegative, including when it is zero. Thus the paper's asserted broader-domain result specializes to the Lean statement."
     }
   },
   "classification": "not-faithful-weaker",
   "accepted": false,
   "remaining_uncertainties": [
-    "The PDF does not state whether input and accumulation subnormal availability must be coupled. An unstated coupling could exclude the mixed mode that invalidates the paper's stated derivation, but written Model 1 does not impose it.",
-    "The paper gives no convention for zero-dimensional matrices, while Lean permits them and defines an empty maximum as zero; this affects only additional degenerate Lean instances."
+    "The PDF does not state whether the authors intended to exclude the input-gradual/accumulator-no-subnormal pairing or intended an additional envelope-order premise. This unresolved authorial intent does not change the classification against literal Model 1."
   ],
   "findings": [
     {
       "severity": "major",
-      "category": "hypothesis-substitution",
-      "evidence": "The B791 comparison is asserted from Model 1 properties, but Lean directly assumes hGg : Gmin <= gmin.",
-      "impact": "The declaration proves only the residual monotonicity argument and does not cover every configuration addressed by the written paper claim."
-    },
-    {
-      "severity": "major",
-      "category": "mixed-subnormal-mode-gap",
-      "evidence": "Equations (2.1)-(2.2) independently choose gmin and Gmin according to subnormal availability. Gradual input underflow together with unavailable accumulation subnormals can give Gmin > gmin even when U <= u and Fmin <= fmin.",
-      "impact": "The added Lean premise repairs the source derivation by excluding a problematic case, thereby weakening rather than faithfully formalizing the stated result."
-    },
-    {
-      "severity": "minor",
-      "category": "degenerate-dimensions",
-      "evidence": "Lean quantifies all dimensions over Nat, including n = 0, while the paper defines theta using Fmax/n and therefore implicitly requires a positive inner dimension.",
-      "impact": "Lean includes trivial zero-coefficient cases outside the intended paper domain."
+      "category": "extra underflow-envelope restriction",
+      "evidence": "Equations (2.1)-(2.2) permit independent subnormal branches. The input-gradual/accumulator-no-subnormal branch can have Gmin = Fmin/2 > u fmin = gmin despite U <= u and Fmin <= fmin. Lean requires Gmin <= gmin.",
+      "impact": "The declaration excludes nondegenerate cases in the paper's literal Model 1 domain and therefore formalizes a weaker, repaired statement rather than the stated comparison."
     },
     {
       "severity": "note",
-      "category": "local-envelope-match",
-      "evidence": "Both declaration definitions contain exactly 4n^2 theta^-2 Gmin and 4n^2 theta^-1 gmin multiplied by maximum absolute row-sum norms of A and B.",
-      "impact": "Once the additional ordering premise is supplied, the selected local comparison has the correct constants, norms, strictness, and direction."
+      "category": "premise strength",
+      "evidence": "For theta > 0, theta^(-2) Gmin <= theta^(-1) gmin is equivalent to Gmin <= theta*gmin.",
+      "impact": "hGg is sufficient but not necessary when theta > 1, so it cannot be justified as merely exposing the exact necessary premise."
     },
     {
       "severity": "note",
-      "category": "nonvacuity",
-      "evidence": "For m = n = q = 1, theta = 2, Gmin = gmin = 1, and unit entries in A and B, the two nonzero envelopes are 1 and 2.",
-      "impact": "The theorem is not globally vacuous, but its added premise still reduces source applicability."
+      "category": "scalar and complete-term scope",
+      "evidence": "The formal hypotheses derive the scalar comparison independently, and D001-D003 multiply it by the exact nonnegative factor used by the two contributions in (3.26).",
+      "impact": "The absence of a syntactic scalar conclusion and the inability to cancel a zero common factor do not create an additional faithfulness failure."
+    },
+    {
+      "severity": "note",
+      "category": "matrix infinity norm",
+      "evidence": "D003 is the maximum absolute row-sum norm; equations (3.23)-(3.24) and the dimension-free implication from (3.27) to (3.28) support that induced infinity-norm interpretation.",
+      "impact": "The norm factors faithfully match the paper."
+    },
+    {
+      "severity": "note",
+      "category": "degenerate dimensions",
+      "evidence": "Lean permits m, n, or q to be zero, while theta = min(fmax,sqrt(Fmax/n)) implicitly requires n > 0 in the paper.",
+      "impact": "These added cases collapse through a zero dimension or norm factor and are degenerate extensions, not genuine theorem strength."
     }
   ],
-  "rationale": "The source locator selects the exact local comparison following equation (3.26), so the declaration need not reproduce the complete approximate forward-error bound. Its two envelope formulas and matrix infinity norms match that comparison exactly. However, the paper states the ordering for Model 1 when theta >= 1, while Lean requires Gmin <= gmin explicitly. The paper's piecewise underflow definitions do not derive that premise in every mixed subnormal-mode case. Lean therefore formalizes a restricted repair of the claimed comparison rather than the comparison under the paper's written hypotheses, making it not-faithful-weaker."
+  "rationale": "The verified PDF has the supplied SHA-256. The declaration exactly represents the two complete post-(3.26) underflow terms, their constants, inverse powers, shared dimension, inequality direction, and maximum-row-sum matrix infinity norms. Its hypotheses also suffice to derive the paper's scalar comparison without cancelling the common factor, so scalar-versus-complete scope is not a defect. D004 and D038 are numeral-elaboration infrastructure only. The decisive mismatch is hGg. Literal Model 1 defines the two subnormal regimes independently, and the input-gradual/accumulator-no-subnormal pairing can violate Gmin <= gmin and the claimed comparison even with theta >= 1. Moreover, Gmin <= gmin is stronger than the actual condition Gmin <= theta*gmin. It is therefore an extra restriction, not an implicit necessary premise or genuine strengthening. The paper's asserted result specializes to Lean, but Lean does not cover the paper's full literal domain, yielding not-faithful-weaker."
 }

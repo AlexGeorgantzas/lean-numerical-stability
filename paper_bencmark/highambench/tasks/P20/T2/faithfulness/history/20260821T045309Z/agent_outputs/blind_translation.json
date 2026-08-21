@@ -1,0 +1,407 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "blind-translation",
+  "dossier_sha256": "c2388cd724de72255447efe8b79e9bbf7766b40b34b9df48f9edfcd003fff5ee",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "LocalDef001",
+      "meaning": "For matrices A and B, this is the real number 4·(n:ℝ)²·(θ⁻¹)²·Gmin·LocalDef003(A)·LocalDef003(B), with the products associated from left to right.",
+      "effect_on_target": "It is exactly the left-hand side of the concluding inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D002",
+      "name": "LocalDef002",
+      "meaning": "For matrices A and B, this is the real number 4·(n:ℝ)²·θ⁻¹·gmin·LocalDef003(A)·LocalDef003(B), with the products associated from left to right.",
+      "effect_on_target": "It is exactly the right-hand side of the concluding inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D003",
+      "name": "LocalDef003",
+      "meaning": "For X : Fin r → Fin s → ℝ, it forms each nonnegative row sum Σ_j ‖X(i,j)‖, takes their finite maximum in NNReal with empty maximum equal to 0, and returns the underlying real number. Thus it is the maximum absolute row-sum norm, with value 0 when there are no rows.",
+      "effect_on_target": "It supplies the two nonnegative factors measuring A and B separately on both sides of the inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D004",
+      "name": "LocalDef004",
+      "meaning": "It supplies a proof of Nat.AtLeastTwo for 3+1, hence for the natural number 4.",
+      "effect_on_target": "It is type-class evidence permitting the real numeral 4 in LocalDef001 and LocalDef002; it contributes no additional hypothesis.",
+      "status": "understood"
+    },
+    {
+      "id": "D005",
+      "name": "Fin",
+      "meaning": "Fin n is the finite index type with indices corresponding to the n natural positions below n.",
+      "effect_on_target": "It determines the row and column index sets and hence the dimensions m×n and n×q of A and B.",
+      "status": "understood"
+    },
+    {
+      "id": "D006",
+      "name": "LE.le",
+      "meaning": "It projects the binary relation represented by an LE instance.",
+      "effect_on_target": "With the real LE instance, it interprets all three assumptions and the conclusion as real inequalities.",
+      "status": "understood"
+    },
+    {
+      "id": "D007",
+      "name": "Nat",
+      "meaning": "It is the type of natural numbers.",
+      "effect_on_target": "It is the domain of the dimensions m, n, q, the exponents, and the natural numerals used in the definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D008",
+      "name": "OfNat.ofNat",
+      "meaning": "It extracts the value assigned to a natural numeral by an OfNat instance.",
+      "effect_on_target": "It interprets the real numerals 0 and 1 in the assumptions and participates in interpreting other numerals used by the definitions.",
+      "status": "understood"
+    },
+    {
+      "id": "D009",
+      "name": "One.toOfNat1",
+      "meaning": "It converts a distinguished-one structure into an interpretation of the numeral 1.",
+      "effect_on_target": "It makes the hypothesis 1 ≤ θ use the standard real one.",
+      "status": "understood"
+    },
+    {
+      "id": "D010",
+      "name": "Real",
+      "meaning": "It is the scalar type of real numbers.",
+      "effect_on_target": "All matrix entries, scalar parameters, norm values after conversion, products, reciprocals, powers, and inequalities are real-valued.",
+      "status": "understood"
+    },
+    {
+      "id": "D011",
+      "name": "Real.instLE",
+      "meaning": "It equips Real with its real-order relation.",
+      "effect_on_target": "It gives the standard meanings of 1 ≤ θ, 0 ≤ Gmin, Gmin ≤ gmin, and the final ≤ relation.",
+      "status": "understood"
+    },
+    {
+      "id": "D012",
+      "name": "Real.instOne",
+      "meaning": "It equips Real with its distinguished multiplicative identity 1.",
+      "effect_on_target": "It supplies the real number 1 in the lower bound on θ.",
+      "status": "understood"
+    },
+    {
+      "id": "D013",
+      "name": "Real.instZero",
+      "meaning": "It equips Real with its distinguished zero.",
+      "effect_on_target": "It supplies the real number 0 in the nonnegativity assumption on Gmin.",
+      "status": "understood"
+    },
+    {
+      "id": "D014",
+      "name": "Zero.toOfNat0",
+      "meaning": "It converts a distinguished-zero structure into an interpretation of the numeral 0.",
+      "effect_on_target": "It makes the hypothesis 0 ≤ Gmin use the standard real zero.",
+      "status": "understood"
+    },
+    {
+      "id": "D015",
+      "name": "HMul.hMul",
+      "meaning": "It extracts the heterogeneous multiplication operation from an HMul instance.",
+      "effect_on_target": "Through homogeneous real multiplication, it combines all scalar factors in LocalDef001 and LocalDef002.",
+      "status": "understood"
+    },
+    {
+      "id": "D016",
+      "name": "HPow.hPow",
+      "meaning": "It extracts the exponentiation operation from an HPow instance.",
+      "effect_on_target": "It interprets (n:ℝ)² and (θ⁻¹)².",
+      "status": "understood"
+    },
+    {
+      "id": "D017",
+      "name": "Inv.inv",
+      "meaning": "It extracts the inverse operation from an Inv instance.",
+      "effect_on_target": "It produces the reciprocal θ⁻¹ used once on the right and squared on the left.",
+      "status": "understood"
+    },
+    {
+      "id": "D018",
+      "name": "Monoid.toNatPow",
+      "meaning": "It defines natural-number powers in a monoid by repeated monoid multiplication.",
+      "effect_on_target": "For Real, it gives the natural powers with exponent 2 occurring in both scalar expressions.",
+      "status": "understood"
+    },
+    {
+      "id": "D019",
+      "name": "Nat.cast",
+      "meaning": "It converts a natural number to a type equipped with a NatCast operation.",
+      "effect_on_target": "It converts the dimension n to the real scalar (n:ℝ) before squaring.",
+      "status": "understood"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instInv",
+      "meaning": "It equips Real with real inversion.",
+      "effect_on_target": "It makes θ⁻¹ the real reciprocal of θ.",
+      "status": "understood"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instMonoid",
+      "meaning": "It supplies the multiplicative monoid structure on Real.",
+      "effect_on_target": "It supports natural powers of real numbers, including the two squares in LocalDef001.",
+      "status": "understood"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instMul",
+      "meaning": "It equips Real with real multiplication.",
+      "effect_on_target": "It supplies the multiplication used to combine every factor in the two sides of the conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instNatCast",
+      "meaning": "It equips Real with the standard embedding of natural numbers into real numbers.",
+      "effect_on_target": "It interprets (n:ℝ) and the real numeral 4.",
+      "status": "understood"
+    },
+    {
+      "id": "D024",
+      "name": "instHMul",
+      "meaning": "It turns an ordinary homogeneous multiplication operation into an HMul operation with the same input and output type.",
+      "effect_on_target": "It routes every HMul call in LocalDef001 and LocalDef002 to ordinary real multiplication.",
+      "status": "understood"
+    },
+    {
+      "id": "D025",
+      "name": "instHPow",
+      "meaning": "It turns an ordinary power operation into a homogeneous HPow operation.",
+      "effect_on_target": "It routes the displayed powers to real natural-number exponentiation.",
+      "status": "understood"
+    },
+    {
+      "id": "D026",
+      "name": "instOfNatAtLeastTwo",
+      "meaning": "For a natural numeral known to satisfy Nat.AtLeastTwo, it interprets that numeral in any type with a natural-number cast.",
+      "effect_on_target": "Together with D004 and the real NatCast instance, it interprets the coefficient 4 as the real number 4.",
+      "status": "understood"
+    },
+    {
+      "id": "D027",
+      "name": "instOfNatNat",
+      "meaning": "It interprets each natural numeral n as that same element of Nat.",
+      "effect_on_target": "It supplies the natural numerals used for exponents and for the construction of the numeral 4.",
+      "status": "understood"
+    },
+    {
+      "id": "D028",
+      "name": "ConditionallyCompleteLinearOrderBot.toOrderBot",
+      "meaning": "It extracts the bottom element and associated order structure from a conditionally complete linear order with bottom.",
+      "effect_on_target": "For NNReal, it provides the bottom value 0 used as the initial value of the finite maximum in LocalDef003.",
+      "status": "understood"
+    },
+    {
+      "id": "D029",
+      "name": "Fin.fintype",
+      "meaning": "It equips Fin n with a finite enumeration containing every index exactly once.",
+      "effect_on_target": "It makes the row and column index sets available to Finset.univ for the finite sums and maxima.",
+      "status": "understood"
+    },
+    {
+      "id": "D030",
+      "name": "Finset.sum",
+      "meaning": "It sums the values of a function over a finite set in an additive commutative monoid.",
+      "effect_on_target": "It computes each row sum Σ_j ‖A(i,j)‖ or Σ_j ‖B(i,j)‖, with an empty sum equal to 0.",
+      "status": "understood"
+    },
+    {
+      "id": "D031",
+      "name": "Finset.sup",
+      "meaning": "It folds finite values using maximum, beginning at the order bottom.",
+      "effect_on_target": "It takes the maximum of all nonnegative row sums and returns 0 if the row index set is empty.",
+      "status": "understood"
+    },
+    {
+      "id": "D032",
+      "name": "Finset.univ",
+      "meaning": "It is the finite set containing every element of a finite type.",
+      "effect_on_target": "It makes LocalDef003 range over every row and every column of each matrix.",
+      "status": "understood"
+    },
+    {
+      "id": "D033",
+      "name": "HAdd.hAdd",
+      "meaning": "It extracts heterogeneous addition from an HAdd instance.",
+      "effect_on_target": "It is used in D004 to form the natural number 3+1; it has no independent scalar effect on the target inequality.",
+      "status": "understood"
+    },
+    {
+      "id": "D034",
+      "name": "NNNorm.nnnorm",
+      "meaning": "It extracts a nonnegative-real-valued norm from an NNNorm instance.",
+      "effect_on_target": "For each real matrix entry, it produces the nonnegative norm used in the row sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D035",
+      "name": "NNReal",
+      "meaning": "It is the subtype of real numbers r satisfying 0 ≤ r.",
+      "effect_on_target": "Row-entry norms, row sums, and their finite maximum are computed as intrinsically nonnegative values.",
+      "status": "understood"
+    },
+    {
+      "id": "D036",
+      "name": "NNReal.instConditionallyCompleteLinearOrderBot",
+      "meaning": "It equips NNReal with its conditionally complete linear order and bottom element 0.",
+      "effect_on_target": "It supplies the ordered structure and empty-maximum value used by Finset.sup in LocalDef003.",
+      "status": "understood"
+    },
+    {
+      "id": "D037",
+      "name": "NNReal.toReal",
+      "meaning": "It returns the underlying real value of a nonnegative real.",
+      "effect_on_target": "It converts the maximum row sum from NNReal to the real factor multiplied in LocalDef001 and LocalDef002.",
+      "status": "understood"
+    },
+    {
+      "id": "D038",
+      "name": "Nat.AtLeastTwo",
+      "meaning": "It is a proposition indexed by a natural number, used as evidence that the numeral is in the at-least-two class.",
+      "effect_on_target": "At the index 3+1, it enables construction of the real numeral 4 and otherwise adds no assumption or conclusion.",
+      "status": "understood"
+    },
+    {
+      "id": "D039",
+      "name": "NonAssocSemiring.toNonUnitalNonAssocSemiring",
+      "meaning": "It forgets the unit-related part of a nonassociative semiring while retaining its nonunital additive and multiplicative structure.",
+      "effect_on_target": "It is part of the structure path that gives NNReal the additive commutative monoid required for finite row sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D040",
+      "name": "NonUnitalNonAssocSemiring.toAddCommMonoid",
+      "meaning": "It extracts the additive commutative monoid structure from a nonunital nonassociative semiring.",
+      "effect_on_target": "It provides NNReal addition, zero, associativity, and commutativity to Finset.sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D041",
+      "name": "NonUnitalSeminormedCommRing.toNonUnitalSeminormedRing",
+      "meaning": "It forgets multiplication commutativity from a nonunital seminormed commutative ring.",
+      "effect_on_target": "It is part of the inherited structure chain that produces the nonnegative norm on real matrix entries.",
+      "status": "understood"
+    },
+    {
+      "id": "D042",
+      "name": "NonUnitalSeminormedRing.toSeminormedAddCommGroup",
+      "meaning": "It extracts the seminormed additive commutative group structure from a nonunital seminormed ring.",
+      "effect_on_target": "It carries the real norm into the additive structure used to construct NNNorm Real.",
+      "status": "understood"
+    },
+    {
+      "id": "D043",
+      "name": "NormedCommRing.toSeminormedCommRing",
+      "meaning": "It weakens a normed commutative ring to a seminormed commutative ring while retaining its ring operations and norm.",
+      "effect_on_target": "It begins the structure-coercion chain through which the standard real norm reaches each matrix entry.",
+      "status": "understood"
+    },
+    {
+      "id": "D044",
+      "name": "Real.normedCommRing",
+      "meaning": "It equips Real with its normed commutative ring structure.",
+      "effect_on_target": "It supplies the standard real norm and compatible real ring structure underlying the entry norms.",
+      "status": "understood"
+    },
+    {
+      "id": "D045",
+      "name": "SeminormedAddCommGroup.toSeminormedAddGroup",
+      "meaning": "It forgets additive commutativity while retaining the additive group, seminorm, and metric structure.",
+      "effect_on_target": "It supplies the SeminormedAddGroup instance required to construct NNNorm Real.",
+      "status": "understood"
+    },
+    {
+      "id": "D046",
+      "name": "SeminormedAddGroup.toNNNorm",
+      "meaning": "It packages the seminorm of each element as an NNReal together with its nonnegativity proof.",
+      "effect_on_target": "It turns the real norm of every matrix entry into the NNReal value summed by LocalDef003.",
+      "status": "understood"
+    },
+    {
+      "id": "D047",
+      "name": "SeminormedCommRing.toNonUnitalSeminormedCommRing",
+      "meaning": "It forgets the multiplicative unit from a seminormed commutative ring while retaining the seminormed nonunital commutative-ring structure.",
+      "effect_on_target": "It is an intermediate structure conversion used to obtain the NNNorm instance for Real.",
+      "status": "understood"
+    },
+    {
+      "id": "D048",
+      "name": "Semiring.toNonAssocSemiring",
+      "meaning": "It weakens a semiring to a nonassociative semiring while retaining its additive structure, unit, casts, and distributive operations.",
+      "effect_on_target": "For NNReal, it is part of the instance path providing the additive commutative monoid needed for finite sums.",
+      "status": "understood"
+    },
+    {
+      "id": "D049",
+      "name": "instAddNat",
+      "meaning": "It equips Nat with ordinary natural-number addition.",
+      "effect_on_target": "It makes the expression 3+1 in D004 equal to the natural number 4.",
+      "status": "understood"
+    },
+    {
+      "id": "D050",
+      "name": "instHAdd",
+      "meaning": "It converts ordinary homogeneous addition into an HAdd operation.",
+      "effect_on_target": "It routes the HAdd expression in D004 to ordinary natural-number addition.",
+      "status": "understood"
+    },
+    {
+      "id": "D051",
+      "name": "instSemilatticeSupNNReal",
+      "meaning": "It equips NNReal with binary supremum, which in its linear order is maximum.",
+      "effect_on_target": "It supplies the maximum operation used to select the largest row sum.",
+      "status": "understood"
+    },
+    {
+      "id": "D052",
+      "name": "instSemiringNNReal",
+      "meaning": "It equips NNReal with its nonnegative-real semiring structure.",
+      "effect_on_target": "Its inherited additive commutative monoid structure supports the finite sums of entry norms.",
+      "status": "understood"
+    }
+  ],
+  "translation": {
+    "binders": [
+      "m, n, and q are arbitrary natural numbers.",
+      "θ, gmin, and Gmin are arbitrary real numbers.",
+      "A is an arbitrary real m×n matrix, represented as A : Fin m → Fin n → ℝ.",
+      "B is an arbitrary real n×q matrix, represented as B : Fin n → Fin q → ℝ."
+    ],
+    "hypotheses": [
+      "1 ≤ θ.",
+      "0 ≤ Gmin.",
+      "Gmin ≤ gmin."
+    ],
+    "conclusions": [
+      "4·(n:ℝ)²·(θ⁻¹)²·Gmin·‖A‖row·‖B‖row ≤ 4·(n:ℝ)²·θ⁻¹·gmin·‖A‖row·‖B‖row."
+    ],
+    "mathematical_definitions": [
+      "For X : Fin r → Fin s → ℝ, define ‖X‖row = max_{i ∈ Fin r} Σ_{j ∈ Fin s} ‖X(i,j)‖, where the finite maximum over no rows is defined to be 0.",
+      "For real entries, the entry norm is the standard nonnegative real norm, equivalently absolute value.",
+      "The left scalar expression is 4·(n:ℝ)²·(θ⁻¹)²·Gmin·‖A‖row·‖B‖row.",
+      "The right scalar expression is 4·(n:ℝ)²·θ⁻¹·gmin·‖A‖row·‖B‖row."
+    ],
+    "proposition_plain_english": "For every choice of natural dimensions m, n, q, every pair of real matrices A of size m×n and B of size n×q, and all real parameters θ, Gmin, and gmin, if θ is at least 1 and 0 ≤ Gmin ≤ gmin, then four times n squared times Gmin divided by θ squared, multiplied by the maximum absolute row-sum norms of A and B, is at most four times n squared times gmin divided by θ, multiplied by the same two norms."
+  },
+  "restrictions_and_vacuity_risks": [
+    "The statement is an implication: whenever any of 1 ≤ θ, 0 ≤ Gmin, or Gmin ≤ gmin fails, it is true vacuously and asserts no scalar inequality for that choice of parameters.",
+    "The assumption θ ≥ 1 makes θ positive and nonzero, although Lean's real inverse is defined even at zero.",
+    "The assumptions imply gmin ≥ 0, but no strict positivity is required for either Gmin or gmin.",
+    "No dimension is required to be positive. In particular, n=0 makes the coefficient (n:ℝ)² zero and the conclusion reduces to 0 ≤ 0.",
+    "If m=0 then ‖A‖row=0; if q=0 then every row sum of B is zero and ‖B‖row=0. These cases also reduce the conclusion to 0 ≤ 0.",
+    "Zero matrices, or any matrix with zero maximum row-sum norm, likewise make both sides zero.",
+    "The matrix quantity is specifically the maximum absolute row-sum norm, not the spectral norm, Frobenius norm, or a norm of the matrix product AB.",
+    "No matrix product AB, approximation error, computed result, algorithm, rounding operation, or floating-point quantity is present in the proposition.",
+    "There are no existential quantifiers or witness dependencies.",
+    "The conclusion is non-strict and compares only two scalar products sharing the same nonnegative coefficient and matrix-norm factors."
+  ],
+  "ambiguities": []
+}

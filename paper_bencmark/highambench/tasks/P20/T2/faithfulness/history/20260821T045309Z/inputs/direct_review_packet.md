@@ -40,7 +40,7 @@ theorem p20_t2_accumulation_underflow_le_input {m n q : ℕ}
 
 - `AuditTarget` imports: `HighamBench.P20Definitions`
 - `HighamBench.Core` imports: `Mathlib.Algebra.BigOperators.Fin`, `Mathlib.Data.Real.Basic`, `Mathlib.Tactic`
-- `HighamBench.P20Definitions` imports: `HighamBench.Core`, `Mathlib.Algebra.Order.Archimedean.Basic`, `Mathlib.Analysis.Asymptotics.Lemmas`, `Mathlib.Analysis.Matrix.Normed`, `Mathlib.Data.Matrix.Mul`, `Mathlib.Data.Real.Sqrt`
+- `HighamBench.P20Definitions` imports: `HighamBench.Core`, `Mathlib.Analysis.Matrix.Normed`
 
 ## Semantic dependency inventory
 
@@ -165,92 +165,56 @@ Nat.AtLeastTwo
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `inductive`
-- Distance from target type: `1`
 - Semantic SHA-256: `59788903be5da78a88e4dc3844df38effdaabdfa82bb364602790d2271da7fda`
+- Reuse SHA-256: `dfbc66ed9c77e0e31efd5983dfe7784a41cdff29d83e54ad82e4ad486a2a1ecf`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-Nat → Type
-```
+Fin n is the finite index type with n elements.
 
-Fully explicit type:
-
-```lean
-(n : Nat) → Type
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D006: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `abbrev`
-- Distance from target type: `1`
 - Semantic SHA-256: `54a32f2661f788eb2b860006c4d1e8031e126febafe1c8d03ce50529b773dc48`
+- Reuse SHA-256: `7ba56fb09fc6a5ffad8ad7fbaba2c84fa430e3278d766b75bcdbb932bfbdeacb`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-{α : Type u} → [self : LE α] → α → α → Prop
-```
+The non-strict order relation supplied by the relevant ordered type.
 
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : LE.{u} α] → α → α → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : LE α] => self.1
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D007: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `inductive`
-- Distance from target type: `1`
 - Semantic SHA-256: `2e1c25ca42e1e377a41827f0d2f09ae02cfb28ab155c30e277f1000f5e79b32c`
+- Reuse SHA-256: `7c24a69216396b8cd1e879799d749da67b839a946fcf1c1bd1cfd9758e0b4626`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-Type
-```
+The natural-number type.
 
-Fully explicit type:
-
-```lean
-Type
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D008: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `abbrev`
-- Distance from target type: `1`
 - Semantic SHA-256: `6a6a0720d091cfeb582747fe67b977e948f09706c0beae1f2f21830aa5821ead`
+- Reuse SHA-256: `77f2a3cfa9b2702a7a7a574ead9f37cd24ccd8ca0d71d79d5dbaa318bd74550b`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-{α : Type u} → (x : Nat) → [self : OfNat α x] → α
-```
+Generic interpretation of natural-number literals in a target type.
 
-Fully explicit type:
-
-```lean
-{α : Type u} → (x : Nat) → [self : OfNat.{u} α x] → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α x [self : OfNat α x] => self.1
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D009: `One.toOfNat1`
 
@@ -283,46 +247,28 @@ fun {α} [inst : One α] => { ofNat := inst.one }
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `inductive`
-- Distance from target type: `1`
 - Semantic SHA-256: `38529f0578472feffc4c79d5d0755fa10fc3edafb232ab5e442336d13630ee90`
+- Reuse SHA-256: `a84189e6a5c5ea9b76eabba8f537c70956215fb00ed18a106012dbcfb7b793d8`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-Type
-```
+The mathematical real-number type.
 
-Fully explicit type:
-
-```lean
-Type
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D011: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
-- Distance from target type: `1`
 - Semantic SHA-256: `144d825fc543455e17044e843560e0415f8e4e9da60afb52f34edb809b7c34d3`
+- Reuse SHA-256: `85df6b3549e942d844b14243bf9fc7b1047534eff5e7a9e48643e8071cce7953`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-LE Real
-```
+The standard non-strict real order.
 
-Fully explicit type:
-
-```lean
-LE.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ le := Real.le✝ }
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D012: `Real.instOne`
 
@@ -355,78 +301,42 @@ Definition body (one-level semantic boundary):
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
-- Distance from target type: `1`
 - Semantic SHA-256: `860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882`
+- Reuse SHA-256: `e4e3b50df2913dea925be965515af8f9c46792acb2c44ccebeac445e76d2681a`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-Zero Real
-```
+The standard real zero.
 
-Fully explicit type:
-
-```lean
-Zero.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ zero := Real.zero✝ }
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D014: `Zero.toOfNat0`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
 - Declaration kind: `def`
-- Distance from target type: `1`
 - Semantic SHA-256: `f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a`
+- Reuse SHA-256: `772389464ac989ac4666f947d0bbf0909bffa7c9dc8e3782a4ae9cdc0f43ce3f`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-{α : Type u_1} → [Zero α] → OfNat α 0
-```
+It derives the numeral-zero interpretation from a Zero instance.
 
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Zero.{u_1} α] → OfNat.{u_1} α (nat_lit 0)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Zero α] => { ofNat := inst.zero }
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D015: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `abbrev`
-- Distance from target type: `2`
 - Semantic SHA-256: `4e00447a4a8ef4c2ce13e307c56a1fbcd7fa8c732fe039a452b42477a50df2c6`
+- Reuse SHA-256: `841487ee033d6cbf4ede76f3028b84251d31f55c0b8afe5ea323b0aa82f6006b`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HMul α β γ] → α → β → γ
-```
+Overloaded multiplication dispatching here to real multiplication.
 
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HMul.{u, v, w} α β γ] → α → β → γ
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α β {γ} [self : HMul α β γ] => self.1
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D016: `HPow.hPow`
 
@@ -589,78 +499,42 @@ inferInstance
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
-- Distance from target type: `2`
 - Semantic SHA-256: `459ccbe28a1d29ccd2b329ea29e1a84b329b8064b8a8ecc52764b69b23e229ed`
+- Reuse SHA-256: `b8169054213a5815487bab996809fcd90fd9d91ca110c4339da22e138a3304d2`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-Mul Real
-```
+The standard multiplication operation on real numbers.
 
-Fully explicit type:
-
-```lean
-Mul.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ mul := Real.mul✝ }
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D023: `Real.instNatCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
 - Declaration kind: `def`
-- Distance from target type: `2`
 - Semantic SHA-256: `5fc7a7becbc71d472fa1a28bd92d79b4c6ea4fdc643db7380031a2b890ca7e15`
+- Reuse SHA-256: `95004929311c9243422748a0e39cfd61f0263769a92c4b06cd265088b09a2227`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-NatCast Real
-```
+The standard embedding of natural numbers into the reals.
 
-Fully explicit type:
-
-```lean
-NatCast.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ natCast := fun n => { cauchy := n.cast } }
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D024: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `def`
-- Distance from target type: `2`
 - Semantic SHA-256: `1fd375514ac68e29e7941c94ba308ea936395db23d0fee63a5c69dcccd3b2bdc`
+- Reuse SHA-256: `a3268a975e72907d863492f1a56223912720da50c86845e79f4d506d52574844`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-{α : Type u_1} → [Mul α] → HMul α α α
-```
+The homogeneous-multiplication instance obtained from an ordinary multiplication operation.
 
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Mul.{u_1} α] → HMul.{u_1, u_1, u_1} α α α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D025: `instHPow`
 
@@ -693,52 +567,28 @@ fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
 - Declaration kind: `def`
-- Distance from target type: `2`
 - Semantic SHA-256: `37355febc51d6fa8ff12fc8e7b429771db340390d46411d7608c566bdffd358d`
+- Reuse SHA-256: `ee8dea13c20a6d655058fd29de3001c3303ba5f76a84a23be1c3e6f230892192`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-{R : Type u_1} → {n : Nat} → [NatCast R] → [n.AtLeastTwo] → OfNat R n
-```
+It constructs a numeral instance from a natural-number cast for numerals at least two.
 
-Fully explicit type:
-
-```lean
-{R : Type u_1} → {n : Nat} → [NatCast.{u_1} R] → [Nat.AtLeastTwo n] → OfNat.{u_1} R n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D027: `instOfNatNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `def`
-- Distance from target type: `2`
 - Semantic SHA-256: `7018dea92aae8c272f3a065f25e2bedb9732a0b602c3d54b166fa0cf2ce1ea92`
+- Reuse SHA-256: `c7e4054e68b949d6b33b4ee50c731801d820a152188c301be751e45433563b78`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-(n : Nat) → OfNat Nat n
-```
+The standard interpretation of each natural-number literal as itself.
 
-Fully explicit type:
-
-```lean
-(n : Nat) → OfNat.{0} Nat n
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n => { ofNat := n }
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D028: `ConditionallyCompleteLinearOrderBot.toOrderBot`
 
@@ -780,26 +630,14 @@ fun α [self : ConditionallyCompleteLinearOrderBot α] => self.2
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
 - Declaration kind: `def`
-- Distance from target type: `3`
 - Semantic SHA-256: `e7038d0981813ab904ddadd5c858e1d87d6d42413a72872c71b6e0413db6bb44`
+- Reuse SHA-256: `5d49fab3fb4a6bd331ea9d553f425a59971964ea39b80cc2b277b234f2a286a2`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-(n : Nat) → Fintype (Fin n)
-```
+The finite enumeration of all elements of Fin n.
 
-Fully explicit type:
-
-```lean
-(n : Nat) → Fintype.{0} (Fin n)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D030: `Finset.sum`
 
@@ -1175,39 +1013,14 @@ fun {α} [β : NormedCommRing α] =>
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Ring.Basic`
 - Declaration kind: `def`
-- Distance from target type: `3`
 - Semantic SHA-256: `69cccc1e864661e103785f4a2712b9ad164d845c03b7737801c37e5ac852bad7`
+- Reuse SHA-256: `171664b6b84de02850ecfe79832b7d7a357058e76697b51f3379babe2b23dc99`
 
-Type:
+Hash-verified prior interpretation:
 
-```lean
-NormedCommRing Real
-```
+The standard normed commutative-ring structure on the reals, whose scalar norm is absolute value.
 
-Fully explicit type:
-
-```lean
-NormedCommRing.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-let __src := Real.normedAddCommGroup;
-let __src_1 := Real.commRing;
-{ toNorm := __src.toNorm, toAddMonoid := __src.toAddMonoid, add_comm := Real.normedCommRing._proof_1,
-  toMul := __src_1.toMul, left_distrib := Real.normedCommRing._proof_2, right_distrib := Real.normedCommRing._proof_3,
-  zero_mul := Real.normedCommRing._proof_4, mul_zero := Real.normedCommRing._proof_5,
-  mul_assoc := Real.normedCommRing._proof_6, toOne := __src_1.toOne, one_mul := Real.normedCommRing._proof_7,
-  mul_one := Real.normedCommRing._proof_8, toNatCast := __src_1.toNatCast, natCast_zero := Real.normedCommRing._proof_9,
-  natCast_succ := Real.normedCommRing._proof_10, npow := __src_1.npow, npow_zero := Real.normedCommRing._proof_11,
-  npow_succ := Real.normedCommRing._proof_12, toNeg := __src.toNeg, toSub := __src.toSub,
-  sub_eq_add_neg := Real.normedCommRing._proof_13, zsmul := __src.zsmul, zsmul_zero' := Real.normedCommRing._proof_14,
-  zsmul_succ' := Real.normedCommRing._proof_15, zsmul_neg' := Real.normedCommRing._proof_16,
-  neg_add_cancel := Real.normedCommRing._proof_17, toIntCast := __src_1.toIntCast,
-  intCast_ofNat := Real.normedCommRing._proof_18, intCast_negSucc := Real.normedCommRing._proof_19,
-  toMetricSpace := __src.toMetricSpace, dist_eq := ⋯, norm_mul_le := Real.normedCommRing._proof_20, mul_comm := ⋯ }
-```
+Reuse covers declaration meaning only. Re-evaluate this dependency's effect on the current target and its match to the current paper result.
 
 ### D045: `SeminormedAddCommGroup.toSeminormedAddGroup`
 

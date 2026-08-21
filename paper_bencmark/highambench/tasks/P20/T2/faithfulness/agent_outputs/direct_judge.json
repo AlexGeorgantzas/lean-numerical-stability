@@ -3,422 +3,422 @@
   "role": "direct-judge",
   "task_id": "P20-T2",
   "paper_sha256": "ad830de20a73ff77b6e457921892b3250ba9ff70f487501979ee3f1c5f3f31e2",
-  "dossier_sha256": "2364b9a47ba52f22b5a2a294539ab9870a8a20ff2b927fc142f9336975e54d70",
+  "dossier_sha256": "0177cd6507f500b555c446a84dc299cbabb01caf40bc4d6920b03d30483c6176",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "HighamBench.p20SingleAccumUnderflowBound",
-      "interpretation": "The accumulation-underflow envelope 4*(n:Real)^2*theta^(-2)*Gmin*||A||_infinity*||B||_infinity.",
-      "effect_on_target": "It supplies the complete left-hand side of the target comparison.",
-      "paper_match": "This exactly matches the accumulation-underflow term identified after equation (3.26), including coefficient 4, n squared, theta exponent -2, Gmin, and both matrix infinity norms.",
+      "interpretation": "The real quantity 4*(n:Real)^2*(theta^-1)^2*Gmin*||A||_infinity*||B||_infinity.",
+      "effect_on_target": "It is the complete left-hand accumulation-underflow contribution being compared.",
+      "paper_match": "It matches the 4n^2 theta^-2 Gmin term from (3.26), including the common operand-norm factors.",
       "status": "pass"
     },
     {
       "id": "D002",
       "name": "HighamBench.p20SingleInputUnderflowBound",
-      "interpretation": "The input-underflow envelope 4*(n:Real)^2*theta^(-1)*gmin*||A||_infinity*||B||_infinity.",
-      "effect_on_target": "It supplies the complete right-hand side of the target comparison.",
-      "paper_match": "This exactly matches the input-underflow term identified after equation (3.26), including coefficient 4, n squared, theta exponent -1, gmin, and both matrix infinity norms.",
+      "interpretation": "The real quantity 4*(n:Real)^2*theta^-1*gmin*||A||_infinity*||B||_infinity.",
+      "effect_on_target": "It is the complete right-hand input-underflow contribution.",
+      "paper_match": "It matches the 4n^2 theta^-1 gmin term from (3.26), including the common operand-norm factors.",
       "status": "pass"
     },
     {
       "id": "D003",
       "name": "HighamBench.p20InfNormRect",
-      "interpretation": "For a rectangular real matrix, it takes the maximum over rows of the sum over columns of absolute values; an empty outer maximum is zero.",
-      "effect_on_target": "It gives the two nonnegative common norm factors multiplying both underflow envelopes.",
-      "paper_match": "For nonempty matrix dimensions it is the standard matrix infinity norm used in equations (3.25)-(3.28). The paper gives no empty-matrix convention.",
+      "interpretation": "For a rectangular real matrix, it takes each row's sum of absolute entry values and then the maximum row sum, returning zero for an empty row index set.",
+      "effect_on_target": "It supplies both nonnegative matrix infinity-norm factors.",
+      "paper_match": "This is the standard matrix infinity norm used in (3.25)-(3.26) and is consistent with the normwise derivation on B790.",
       "status": "pass"
     },
     {
       "id": "D004",
       "name": "HighamBench.p20SingleInputUnderflowBound._proof_1",
-      "interpretation": "A typeclass proof that the natural numeral computed as 3+1 is at least two, permitting its use as the numeral 4.",
-      "effect_on_target": "It only supports elaboration of the coefficient 4 and contributes no mathematical premise or conclusion.",
-      "paper_match": "It is implementation evidence for the already-correct coefficient 4, not an independently meaningful part of the paper result.",
+      "interpretation": "An elaboration proof that the natural numeral 3+1, namely 4, is at least two and can use the generic numeral instance.",
+      "effect_on_target": "It only supports elaboration of the coefficient 4.",
+      "paper_match": "It has no independent paper meaning and does not alter the paper's coefficient.",
       "status": "not-applicable"
     },
     {
       "id": "D005",
       "name": "Fin",
-      "reuse_sha256": "dfbc66ed9c77e0e31efd5983dfe7784a41cdff29d83e54ad82e4ad486a2a1ecf",
-      "effect_on_target": "Fin m, Fin n, and Fin q index the rows, inner dimension, and columns of A and B.",
-      "paper_match": "These index sets represent the paper's m-by-n and n-by-q matrices.",
+      "interpretation": "Fin k is the finite index type with values 0 through k-1 and is empty when k is zero.",
+      "effect_on_target": "It indexes the rows and columns of the m-by-n and n-by-q matrices.",
+      "paper_match": "It realizes the paper's finite matrix dimensions and shared inner dimension n; it additionally permits degenerate zero dimensions.",
       "status": "pass"
     },
     {
       "id": "D006",
       "name": "LE.le",
-      "reuse_sha256": "7ba56fb09fc6a5ffad8ad7fbaba2c84fa430e3278d766b75bcdbb932bfbdeacb",
-      "effect_on_target": "It forms the three hypotheses and the final non-strict envelope inequality.",
-      "paper_match": "The paper's conditional comparison is also non-strict.",
+      "interpretation": "The typeclass-selected non-strict order relation.",
+      "effect_on_target": "It interprets all three hypotheses and the final comparison as real <= relations.",
+      "paper_match": "The selected paper comparison also uses non-strict inequality.",
       "status": "pass"
     },
     {
       "id": "D007",
       "name": "Nat",
-      "reuse_sha256": "7c24a69216396b8cd1e879799d749da67b839a946fcf1c1bd1cfd9758e0b4626",
-      "effect_on_target": "The dimensions m, n, and q may be any natural numbers, including zero.",
-      "paper_match": "The paper's theta definition contains Fmax/n and therefore presupposes positive n; the Lean domain additionally admits n=0 and empty matrices.",
-      "status": "fail"
+      "interpretation": "The type of nonnegative natural numbers.",
+      "effect_on_target": "It types m, n, and q and permits n=0.",
+      "paper_match": "It matches finite matrix dimensions, although the paper implicitly requires n>0 when defining theta using Fmax/n.",
+      "status": "pass"
     },
     {
       "id": "D008",
       "name": "OfNat.ofNat",
-      "reuse_sha256": "77f2a3cfa9b2702a7a7a574ead9f37cd24ccd8ca0d71d79d5dbaa318bd74550b",
-      "effect_on_target": "It interprets constants such as 0, 1, 2, and 4 in their required natural or real types.",
-      "paper_match": "The resulting constants agree with the paper's positivity threshold, powers, and coefficient 4.",
+      "interpretation": "The typeclass projection interpreting a natural numeral in a target type.",
+      "effect_on_target": "It interprets 0, 1, and the coefficient 4 in their required real or natural types.",
+      "paper_match": "The interpreted constants are exactly those used by the paper and the target hypotheses.",
       "status": "pass"
     },
     {
       "id": "D009",
       "name": "One.toOfNat1",
-      "interpretation": "It interprets the numeral 1 using the relevant One instance.",
-      "effect_on_target": "It supplies the real constant one in the hypothesis 1 <= theta.",
-      "paper_match": "This is exactly the paper's condition theta >= 1.",
+      "interpretation": "It derives the numeral-one interpretation from a One instance.",
+      "effect_on_target": "It makes htheta state 1 <= theta over the reals.",
+      "paper_match": "This is exactly the paper's conditional threshold theta >= 1.",
       "status": "pass"
     },
     {
       "id": "D010",
       "name": "Real",
-      "reuse_sha256": "a84189e6a5c5ea9b76eabba8f537c70956215fb00ed18a106012dbcfb7b793d8",
-      "effect_on_target": "All scalar parameters and matrix entries are mathematical reals.",
-      "paper_match": "The paper states A and B as real matrices and treats the displayed envelopes as real quantities.",
+      "interpretation": "The exact mathematical real-number type.",
+      "effect_on_target": "It types theta, the two envelopes, all matrix entries, norms, and bound values.",
+      "paper_match": "The paper states A and B as real matrices and its parameters as real quantities.",
       "status": "pass"
     },
     {
       "id": "D011",
       "name": "Real.instLE",
-      "reuse_sha256": "85df6b3549e942d844b14243bf9fc7b1047534eff5e7a9e48643e8071cce7953",
-      "effect_on_target": "It makes every hypothesis and the conclusion use the ordinary real order.",
-      "paper_match": "This agrees with the paper's real inequalities.",
+      "interpretation": "The usual linear order on real numbers.",
+      "effect_on_target": "It gives the standard meanings of htheta, hGmin, hGg, and the conclusion.",
+      "paper_match": "It matches ordinary real inequalities in the paper.",
       "status": "pass"
     },
     {
       "id": "D012",
       "name": "Real.instOne",
-      "interpretation": "The standard multiplicative identity one in the real numbers.",
-      "effect_on_target": "It supplies the lower threshold in 1 <= theta.",
-      "paper_match": "It agrees with the paper's theta >= 1 condition.",
+      "interpretation": "The standard real multiplicative identity 1.",
+      "effect_on_target": "It supplies the lower bound in 1 <= theta.",
+      "paper_match": "It matches the paper's numeric threshold one.",
       "status": "pass"
     },
     {
       "id": "D013",
       "name": "Real.instZero",
-      "reuse_sha256": "e4e3b50df2913dea925be965515af8f9c46792acb2c44ccebeac445e76d2681a",
-      "effect_on_target": "It supplies the zero in the nonnegativity hypothesis for Gmin.",
-      "paper_match": "Gmin is an underflow-error magnitude and is nonnegative in the paper.",
+      "interpretation": "The standard real zero.",
+      "effect_on_target": "It supplies the lower bound in 0 <= Gmin.",
+      "paper_match": "Paper Model 1 makes Gmin nonnegative, in fact positive for its finite formats.",
       "status": "pass"
     },
     {
       "id": "D014",
       "name": "Zero.toOfNat0",
-      "reuse_sha256": "772389464ac989ac4666f947d0bbf0909bffa7c9dc8e3782a4ae9cdc0f43ce3f",
-      "effect_on_target": "It interprets the numeral zero in 0 <= Gmin.",
-      "paper_match": "It expresses the inherent nonnegativity of the paper's Gmin.",
+      "interpretation": "It derives the numeral-zero interpretation from a Zero instance.",
+      "effect_on_target": "It elaborates hGmin as a comparison with real zero.",
+      "paper_match": "It preserves the required nonnegativity condition.",
       "status": "pass"
     },
     {
       "id": "D015",
       "name": "HMul.hMul",
-      "reuse_sha256": "841487ee033d6cbf4ede76f3028b84251d31f55c0b8afe5ea323b0aa82f6006b",
-      "effect_on_target": "It combines all coefficients, parameters, and norms by real multiplication.",
-      "paper_match": "The multiplication structure reproduces the products in the two displayed underflow envelopes.",
+      "interpretation": "The typeclass-selected heterogeneous multiplication operation.",
+      "effect_on_target": "It composes the constants, powers, envelopes, and norm factors in both definitions.",
+      "paper_match": "Its instances resolve to ordinary real multiplication, matching the products in (3.26).",
       "status": "pass"
     },
     {
       "id": "D016",
       "name": "HPow.hPow",
-      "interpretation": "Overloaded exponentiation, instantiated here as natural-number powers on real numbers.",
-      "effect_on_target": "It forms (n:Real)^2 and (theta^(-1))^2.",
-      "paper_match": "These are the paper's n squared and theta to the power -2 factors.",
+      "interpretation": "The typeclass-selected exponentiation operation.",
+      "effect_on_target": "It forms (n:Real)^2 and (theta^-1)^2.",
+      "paper_match": "These are exactly n^2 and theta^-2 in the paper.",
       "status": "pass"
     },
     {
       "id": "D017",
       "name": "Inv.inv",
-      "interpretation": "Overloaded multiplicative inversion, instantiated here as real reciprocal.",
-      "effect_on_target": "It forms theta^(-1), which is used once in the input envelope and squared in the accumulation envelope.",
-      "paper_match": "This matches the theta inverse powers in equation (3.26); 1 <= theta ensures the reciprocal is well-defined in the intended nonzero sense.",
+      "interpretation": "The typeclass-selected reciprocal operation.",
+      "effect_on_target": "It interprets theta^-1 in both underflow terms.",
+      "paper_match": "It matches the inverse powers of theta; htheta ensures theta is positive and nonzero.",
       "status": "pass"
     },
     {
       "id": "D018",
       "name": "Monoid.toNatPow",
-      "interpretation": "It equips a monoid with exponentiation by natural numbers through repeated multiplication.",
-      "effect_on_target": "It gives the standard real square operation used for n and theta inverse.",
-      "paper_match": "The resulting squares are ordinary mathematical squares as required by the paper.",
+      "interpretation": "Natural-number exponentiation obtained from a monoid's repeated multiplication.",
+      "effect_on_target": "It gives the real squares used in n^2 and (theta^-1)^2.",
+      "paper_match": "Repeated real multiplication by exponent two has the intended paper meaning.",
       "status": "pass"
     },
     {
       "id": "D019",
       "name": "Nat.cast",
-      "interpretation": "The generic cast of a natural number into a type with a natural-number casting operation.",
-      "effect_on_target": "It converts the inner dimension n to a real before squaring and multiplication.",
-      "paper_match": "This represents the real-valued coefficient n squared in the paper's bound.",
+      "interpretation": "The canonical cast from a natural number into a type with NatCast.",
+      "effect_on_target": "It casts the shared dimension n to a real before squaring.",
+      "paper_match": "It correctly interprets the paper's numerical factor n^2.",
       "status": "pass"
     },
     {
       "id": "D020",
       "name": "Real.instInv",
-      "interpretation": "The standard reciprocal operation on real numbers.",
-      "effect_on_target": "It determines the meaning of theta inverse in both bounds.",
-      "paper_match": "It matches ordinary reciprocal; the Lean hypothesis theta >= 1 excludes the zero case relevant to Lean's totalized inverse.",
+      "interpretation": "The ordinary reciprocal operation on real numbers.",
+      "effect_on_target": "It gives theta^-1 and hence theta^-2.",
+      "paper_match": "It matches the paper's inverse powers under theta >= 1.",
       "status": "pass"
     },
     {
       "id": "D021",
       "name": "Real.instMonoid",
-      "interpretation": "The standard multiplicative monoid structure on the reals.",
-      "effect_on_target": "It supports natural powers of real quantities.",
-      "paper_match": "It gives the ordinary multiplication and powers used in the paper's formulas.",
+      "interpretation": "The standard multiplicative monoid structure on real numbers.",
+      "effect_on_target": "It supplies natural powers of real values.",
+      "paper_match": "It makes exponent two ordinary real squaring.",
       "status": "pass"
     },
     {
       "id": "D022",
       "name": "Real.instMul",
-      "reuse_sha256": "b8169054213a5815487bab996809fcd90fd9d91ca110c4339da22e138a3304d2",
-      "effect_on_target": "It supplies real multiplication throughout the two envelope definitions.",
-      "paper_match": "It matches the ordinary scalar products in equation (3.26).",
+      "interpretation": "The standard multiplication operation on real numbers.",
+      "effect_on_target": "It is the actual operation behind every product in the bound definitions.",
+      "paper_match": "It matches scalar multiplication of the paper's coefficients and norms.",
       "status": "pass"
     },
     {
       "id": "D023",
       "name": "Real.instNatCast",
-      "reuse_sha256": "95004929311c9243422748a0e39cfd61f0263769a92c4b06cd265088b09a2227",
-      "effect_on_target": "It embeds n and relevant numerical constants into the reals.",
-      "paper_match": "It gives the standard interpretation of the integer coefficient n in a real bound.",
+      "interpretation": "The canonical embedding of natural numbers into the reals.",
+      "effect_on_target": "It interprets n and the coefficient 4 as real numbers.",
+      "paper_match": "It preserves the exact constants and dimension dependence.",
       "status": "pass"
     },
     {
       "id": "D024",
       "name": "instHMul",
-      "reuse_sha256": "a3268a975e72907d863492f1a56223912720da50c86845e79f4d506d52574844",
-      "effect_on_target": "It routes homogeneous overloaded products to ordinary multiplication.",
-      "paper_match": "It introduces no nonstandard multiplication semantics.",
+      "interpretation": "It turns a homogeneous Mul operation into homogeneous HMul.",
+      "effect_on_target": "It resolves each displayed HMul application to real multiplication.",
+      "paper_match": "It introduces no operation beyond ordinary multiplication.",
       "status": "pass"
     },
     {
       "id": "D025",
       "name": "instHPow",
-      "interpretation": "It lifts an ordinary power operation to homogeneous overloaded exponentiation.",
-      "effect_on_target": "It routes the displayed square expressions to standard real natural powers.",
-      "paper_match": "It preserves the ordinary square semantics of the paper.",
+      "interpretation": "It turns a Pow operation into the corresponding HPow operation.",
+      "effect_on_target": "It resolves the two square expressions to natural powers on reals.",
+      "paper_match": "It preserves the intended exponent-two operations.",
       "status": "pass"
     },
     {
       "id": "D026",
       "name": "instOfNatAtLeastTwo",
-      "reuse_sha256": "ee8dea13c20a6d655058fd29de3001c3303ba5f76a84a23be1c3e6f230892192",
-      "effect_on_target": "It supplies real numeral instances for constants at least two, including 2 and 4.",
-      "paper_match": "Those constants match the square exponents and coefficient 4 in the paper.",
+      "interpretation": "It interprets a numeral at least two through the target type's natural-number cast.",
+      "effect_on_target": "It interprets the coefficient 4 as the real number four.",
+      "paper_match": "The resulting coefficient is exactly the factor 4 in both paper terms.",
       "status": "pass"
     },
     {
       "id": "D027",
       "name": "instOfNatNat",
-      "reuse_sha256": "c7e4054e68b949d6b33b4ee50c731801d820a152188c301be751e45433563b78",
-      "effect_on_target": "It gives their standard values to natural literals used during elaboration.",
-      "paper_match": "It introduces no numerical discrepancy.",
+      "interpretation": "It interprets each natural numeral as itself in Nat.",
+      "effect_on_target": "It supports the natural literals used to elaborate the coefficient-four instance.",
+      "paper_match": "It does not alter the resulting paper constant.",
       "status": "pass"
     },
     {
       "id": "D028",
       "name": "ConditionallyCompleteLinearOrderBot.toOrderBot",
-      "interpretation": "It extracts an ordered type with a bottom element from a conditionally complete linear order with bottom.",
-      "effect_on_target": "For NNReal it supplies bottom zero to the finite supremum used by the matrix norm, making an empty supremum zero.",
-      "paper_match": "It agrees with the usual finite maximum for nonempty rows, but the paper does not state an empty-matrix convention.",
-      "status": "unclear"
+      "interpretation": "It supplies the bottom element of a conditionally complete ordered type.",
+      "effect_on_target": "For NNReal it makes the empty finite supremum equal to zero in the matrix norm.",
+      "paper_match": "This is compatible with the standard zero norm for an empty or zero-dimensional matrix, a case not discussed by the paper.",
+      "status": "pass"
     },
     {
       "id": "D029",
       "name": "Fin.fintype",
-      "reuse_sha256": "5d49fab3fb4a6bd331ea9d553f425a59971964ea39b80cc2b277b234f2a286a2",
-      "effect_on_target": "It lets the norm enumerate every row and column index.",
-      "paper_match": "This is the expected finite indexing of the paper's matrices.",
+      "interpretation": "The finite enumeration of every value of Fin n.",
+      "effect_on_target": "It enables complete finite sums over columns and maxima over rows.",
+      "paper_match": "It covers exactly all entries in the finite paper matrices.",
       "status": "pass"
     },
     {
       "id": "D030",
       "name": "Finset.sum",
       "interpretation": "Finite summation in an additive commutative monoid.",
-      "effect_on_target": "It sums the absolute values across each matrix row.",
-      "paper_match": "Row sums of absolute values are exactly the inner operation in the matrix infinity norm.",
+      "effect_on_target": "It sums the nonnegative absolute values across each matrix row.",
+      "paper_match": "This is the row-sum part of the standard matrix infinity norm.",
       "status": "pass"
     },
     {
       "id": "D031",
       "name": "Finset.sup",
-      "interpretation": "Finite supremum implemented by folding the maximum operation from bottom.",
-      "effect_on_target": "It takes the maximum of the nonnegative row sums.",
-      "paper_match": "For ordinary nonempty finite matrices this is the maximum row sum required by the matrix infinity norm.",
+      "interpretation": "Finite supremum implemented as repeated maximum from the bottom element.",
+      "effect_on_target": "It takes the maximum of all row sums.",
+      "paper_match": "It completes the standard maximum-row-sum infinity norm.",
       "status": "pass"
     },
     {
       "id": "D032",
       "name": "Finset.univ",
       "interpretation": "The finite set containing every element of a finite type.",
-      "effect_on_target": "It makes the row maximum and column sums range over all relevant indices.",
-      "paper_match": "It reproduces unrestricted row and column indexing in the paper's norm.",
+      "effect_on_target": "It makes both the row and column traversals exhaustive.",
+      "paper_match": "It matches summing and maximizing over every matrix index.",
       "status": "pass"
     },
     {
       "id": "D033",
       "name": "HAdd.hAdd",
-      "interpretation": "Overloaded addition, used here on natural numbers.",
-      "effect_on_target": "It is used only in the elaboration proof that 3+1 supplies the numeral 4.",
-      "paper_match": "It has no independent semantic role beyond constructing the correct coefficient.",
+      "interpretation": "The typeclass-selected heterogeneous addition operation.",
+      "effect_on_target": "Here it is used only in the elaboration proof computing 3+1 for the numeral 4.",
+      "paper_match": "It has no independent paper-level effect.",
       "status": "not-applicable"
     },
     {
       "id": "D034",
       "name": "NNNorm.nnnorm",
-      "interpretation": "The nonnegative-valued norm operation.",
-      "effect_on_target": "On real entries it produces their absolute values as NNReal values before summation.",
-      "paper_match": "This is the absolute-value operation needed by the matrix infinity norm.",
+      "interpretation": "The nonnegative-valued norm supplied by an NNNorm instance.",
+      "effect_on_target": "For each real matrix entry it produces its absolute magnitude as an NNReal.",
+      "paper_match": "It matches the componentwise absolute values used in row sums.",
       "status": "pass"
     },
     {
       "id": "D035",
       "name": "NNReal",
-      "interpretation": "The subtype of real numbers that are greater than or equal to zero.",
-      "effect_on_target": "Row sums and their maximum are computed as nonnegative quantities before conversion back to Real.",
-      "paper_match": "Matrix norms are nonnegative, so this representation preserves their intended values.",
+      "interpretation": "The subtype of real numbers greater than or equal to zero.",
+      "effect_on_target": "It keeps entry norms, row sums, and their maximum nonnegative before conversion back to Real.",
+      "paper_match": "It faithfully enforces norm nonnegativity.",
       "status": "pass"
     },
     {
       "id": "D036",
       "name": "NNReal.instConditionallyCompleteLinearOrderBot",
-      "interpretation": "The standard conditionally complete linear order on nonnegative reals with zero as bottom.",
-      "effect_on_target": "It supplies the order and bottom needed to maximize row sums.",
-      "paper_match": "It implements the ordinary order used when taking a maximum of nonnegative row sums.",
+      "interpretation": "The conditionally complete linear order on nonnegative reals with zero as bottom.",
+      "effect_on_target": "It supplies the order and empty-case value used by Finset.sup.",
+      "paper_match": "It makes the finite maximum behave as the standard maximum of nonnegative row sums.",
       "status": "pass"
     },
     {
       "id": "D037",
       "name": "NNReal.toReal",
-      "interpretation": "The coercion taking a nonnegative real subtype to its underlying real value.",
-      "effect_on_target": "It returns the computed matrix infinity norm as a Real.",
-      "paper_match": "It preserves the numerical norm value used in the paper's real inequality.",
+      "interpretation": "The subtype-value map from a nonnegative real to its underlying real.",
+      "effect_on_target": "It returns the maximum row sum as the real-valued matrix norm.",
+      "paper_match": "It preserves the norm's numerical value.",
       "status": "pass"
     },
     {
       "id": "D038",
       "name": "Nat.AtLeastTwo",
-      "interpretation": "A proposition certifying that a natural number is at least two.",
-      "effect_on_target": "It participates only in constructing an instance for the numeral 4.",
+      "interpretation": "A proposition witnessing that a natural numeral is at least two.",
+      "effect_on_target": "It only enables generic elaboration of the numeral 4.",
       "paper_match": "It has no independent mathematical counterpart in the paper.",
       "status": "not-applicable"
     },
     {
       "id": "D039",
       "name": "NonAssocSemiring.toNonUnitalNonAssocSemiring",
-      "interpretation": "A projection retaining the nonunital additive and multiplicative structure of a nonassociative semiring.",
-      "effect_on_target": "It is part of the typeclass path supplying standard additive structure for NNReal row sums.",
-      "paper_match": "It does not alter the ordinary finite-sum semantics.",
+      "interpretation": "A structure projection retaining addition and multiplication without requiring a multiplicative identity or associativity layer.",
+      "effect_on_target": "It participates in obtaining the additive structure used for NNReal row sums.",
+      "paper_match": "It changes no numerical operation or norm meaning.",
       "status": "pass"
     },
     {
       "id": "D040",
       "name": "NonUnitalNonAssocSemiring.toAddCommMonoid",
-      "interpretation": "A projection extracting an additive commutative monoid.",
-      "effect_on_target": "It supplies zero and addition to Finset.sum on NNReal.",
-      "paper_match": "It yields ordinary addition of absolute values in each row.",
+      "interpretation": "A structure projection exposing commutative addition with zero.",
+      "effect_on_target": "It supplies finite summation of NNReal entry magnitudes.",
+      "paper_match": "It implements ordinary addition of nonnegative row entries.",
       "status": "pass"
     },
     {
       "id": "D041",
       "name": "NonUnitalSeminormedCommRing.toNonUnitalSeminormedRing",
-      "interpretation": "A structure projection forgetting commutativity while preserving seminormed-ring operations.",
-      "effect_on_target": "It is part of the instance chain producing the real-valued norm operation.",
-      "paper_match": "It preserves the standard real absolute-value norm.",
+      "interpretation": "A structure projection forgetting multiplication commutativity while preserving the normed-ring data.",
+      "effect_on_target": "It contributes to resolving the standard norm infrastructure for real entries.",
+      "paper_match": "It does not change the real norm or arithmetic.",
       "status": "pass"
     },
     {
       "id": "D042",
       "name": "NonUnitalSeminormedRing.toSeminormedAddCommGroup",
-      "interpretation": "It extracts the seminormed additive commutative group structure from a nonunital seminormed ring.",
-      "effect_on_target": "It supports construction of the nonnegative norm on real entries.",
-      "paper_match": "It introduces no change from ordinary real absolute value.",
+      "interpretation": "It extracts the seminormed additive commutative-group structure from a seminormed ring.",
+      "effect_on_target": "It supports construction of the real-valued nonnegative norm.",
+      "paper_match": "It preserves the standard real absolute-value norm.",
       "status": "pass"
     },
     {
       "id": "D043",
       "name": "NormedCommRing.toSeminormedCommRing",
-      "interpretation": "It weakens a normed commutative ring to a seminormed commutative ring while retaining its operations and norm.",
-      "effect_on_target": "It is part of the instance chain used to obtain the real entry norm.",
-      "paper_match": "The resulting norm remains ordinary absolute value.",
+      "interpretation": "It forgets norm definiteness while retaining the commutative ring and norm operations.",
+      "effect_on_target": "It is part of the instance path providing norms for real entries.",
+      "paper_match": "It does not weaken or alter the actual norm on Real.",
       "status": "pass"
     },
     {
       "id": "D044",
       "name": "Real.normedCommRing",
-      "reuse_sha256": "171664b6b84de02850ecfe79832b7d7a357058e76697b51f3379babe2b23dc99",
-      "effect_on_target": "It determines that the norm of each real matrix entry is its absolute value.",
-      "paper_match": "This is exactly the scalar norm underlying the paper's matrix infinity norm.",
+      "interpretation": "The standard normed commutative-ring structure on the real numbers.",
+      "effect_on_target": "It supplies ordinary real arithmetic and the real norm, equal to absolute value.",
+      "paper_match": "This is exactly the magnitude operation required for the paper's matrix infinity norm.",
       "status": "pass"
     },
     {
       "id": "D045",
       "name": "SeminormedAddCommGroup.toSeminormedAddGroup",
-      "interpretation": "It forgets commutativity while preserving the seminormed additive group structure.",
-      "effect_on_target": "It supports the typeclass path to the nonnegative norm of real entries.",
-      "paper_match": "It preserves ordinary real absolute-value semantics.",
+      "interpretation": "It forgets additive commutativity while retaining the same additive group and norm.",
+      "effect_on_target": "It provides the structure expected by the NNNorm construction.",
+      "paper_match": "It leaves the real norm unchanged.",
       "status": "pass"
     },
     {
       "id": "D046",
       "name": "SeminormedAddGroup.toNNNorm",
-      "interpretation": "It packages the nonnegative norm value together with its proof of nonnegativity.",
-      "effect_on_target": "It turns each real entry's norm into an NNReal for row summation.",
-      "paper_match": "The packaged value is exactly the entry's absolute value.",
+      "interpretation": "It packages a nonnegative norm value as an NNReal.",
+      "effect_on_target": "It turns each real entry's norm into the nonnegative value summed by p20InfNormRect.",
+      "paper_match": "For Real this yields the absolute entry value used by the paper's norm.",
       "status": "pass"
     },
     {
       "id": "D047",
       "name": "SeminormedCommRing.toNonUnitalSeminormedCommRing",
-      "interpretation": "It removes the unit requirement while preserving commutative ring operations and seminorm.",
-      "effect_on_target": "It participates in the instance chain used by NNNorm on real entries.",
-      "paper_match": "It does not alter the resulting absolute values or matrix norm.",
+      "interpretation": "It removes the multiplicative identity field while preserving addition, multiplication, and norm data.",
+      "effect_on_target": "It is another instance projection in the real norm-resolution path.",
+      "paper_match": "It changes no paper-relevant operation.",
       "status": "pass"
     },
     {
       "id": "D048",
       "name": "Semiring.toNonAssocSemiring",
-      "interpretation": "It projects a semiring to its nonassociative semiring structure.",
-      "effect_on_target": "It is part of the typeclass path providing standard NNReal addition for finite row sums.",
-      "paper_match": "It preserves ordinary addition of nonnegative real values.",
+      "interpretation": "It projects a semiring to its nonassociative semiring interface.",
+      "effect_on_target": "For NNReal it helps supply the additive structure needed by Finset.sum.",
+      "paper_match": "The resulting addition is ordinary addition of nonnegative values.",
       "status": "pass"
     },
     {
       "id": "D049",
       "name": "instAddNat",
       "interpretation": "The standard natural-number addition operation.",
-      "effect_on_target": "It is used only to compute 3+1 in the proof supporting the numeral 4.",
-      "paper_match": "It has no independent role in the paper statement.",
+      "effect_on_target": "It computes 3+1 while elaborating the numeral 4.",
+      "paper_match": "It has no independent paper-level role.",
       "status": "not-applicable"
     },
     {
       "id": "D050",
       "name": "instHAdd",
-      "interpretation": "It lifts ordinary homogeneous addition to the overloaded HAdd interface.",
-      "effect_on_target": "It only routes the auxiliary natural-number expression 3+1 to standard addition.",
-      "paper_match": "It contributes no paper-level semantics beyond elaborating the coefficient 4.",
+      "interpretation": "It turns homogeneous Add into homogeneous HAdd.",
+      "effect_on_target": "It delegates the compiler-side expression 3+1 to natural addition.",
+      "paper_match": "It has no independent effect on the theorem's mathematical statement.",
       "status": "not-applicable"
     },
     {
       "id": "D051",
       "name": "instSemilatticeSupNNReal",
-      "interpretation": "The standard maximum-based semilattice structure on nonnegative reals.",
-      "effect_on_target": "It makes Finset.sup compute the maximum row sum.",
-      "paper_match": "It matches the maximum used in the matrix infinity norm.",
+      "interpretation": "The maximum operation and associated semilattice order on nonnegative reals.",
+      "effect_on_target": "It makes Finset.sup select the largest row sum.",
+      "paper_match": "It matches the maximum in the matrix infinity norm.",
       "status": "pass"
     },
     {
       "id": "D052",
       "name": "instSemiringNNReal",
-      "interpretation": "The standard semiring structure on nonnegative reals.",
-      "effect_on_target": "It supplies ordinary zero and addition for summing absolute values within rows.",
-      "paper_match": "It gives the expected row-sum arithmetic.",
+      "interpretation": "The standard semiring structure on nonnegative real numbers.",
+      "effect_on_target": "Its addition and zero support row-sum computation.",
+      "paper_match": "It gives ordinary nonnegative arithmetic and preserves the intended norm value.",
       "status": "pass"
     }
   ],
@@ -426,165 +426,151 @@
     {
       "id": "S01",
       "status": "pass",
-      "paper_evidence": "PDF page 7, printed B791, equation (3.26) and the following comparison paragraph identify the input and accumulation envelopes and condition the comparison on theta >= 1.",
-      "lean_evidence": "The target compares p20SingleAccumUnderflowBound with p20SingleInputUnderflowBound under htheta : 1 <= theta.",
-      "reasoning": "The selected source passage and surrounding section 3.2 discussion are the correct source for this target."
+      "paper_evidence": "PDF p. 7, printed B791, immediately after (3.26), identifies the two underflow terms and conditionally compares theta^-2 Gmin with theta^-1 gmin.",
+      "lean_evidence": "The declaration compares p20SingleAccumUnderflowBound with p20SingleInputUnderflowBound and does not purport to formalize the full forward-error estimate.",
+      "reasoning": "The selected source passage and task granularity are correct."
     },
     {
       "id": "S02",
-      "status": "fail",
-      "paper_evidence": "Theorem 3.1 uses real m-by-n and n-by-q matrices, positive inner dimension in theta=min(fmax,sqrt(Fmax/n)), and format-derived theta, gmin, and Gmin.",
-      "lean_evidence": "A and B have the correct rectangular real-array types, but m, n, and q are unrestricted Nat values and theta, gmin, and Gmin are independent arbitrary reals.",
-      "reasoning": "Matrix types align, but zero dimensions and loss of the format-dependent parameter types and dependencies broaden and alter the binder semantics."
+      "status": "pass",
+      "paper_evidence": "Theorem 3.1 binds A in R^(m x n), B in R^(n x q), with n the shared inner dimension.",
+      "lean_evidence": "A has type Fin m -> Fin n -> Real and B has type Fin n -> Fin q -> Real; theta, gmin, and Gmin are real.",
+      "reasoning": "Types and dimension roles match. Lean additionally permits zero dimensions, addressed under nonvacuity and specialization."
     },
     {
       "id": "S03",
-      "status": "fail",
-      "paper_evidence": "The paper first fixes a Model 1 MMA unit and its format parameters, defines theta from fmax, Fmax, and n, and then discusses the case theta >= 1.",
-      "lean_evidence": "The target universally quantifies independent theta, gmin, and Gmin and introduces Gmin <= gmin as a premise.",
-      "reasoning": "The source dependence of theta and the underflow envelopes on the formats is not preserved; a claimed format consequence is Skolemized into an independent hypothesis."
+      "status": "pass",
+      "paper_evidence": "The comparison is conditional on theta >= 1 within the already fixed Model 1 formats and matrices.",
+      "lean_evidence": "All dimensions, parameters, and matrices are universally quantified, followed by hypotheses htheta, hGmin, and hGg and then the comparison.",
+      "reasoning": "There are no witnesses or dependent choices, and the conditional is represented by ordinary implication."
     },
     {
       "id": "S04",
-      "status": "fail",
-      "paper_evidence": "The source relies on Model 1, the piecewise definitions of gmin and Gmin, U <= u, Fmin <= fmin, suitable power-of-two scaling, and theta >= 1.",
-      "lean_evidence": "The only hypotheses are theta >= 1, Gmin >= 0, and Gmin <= gmin.",
-      "reasoning": "The target omits the numerical-model and scaling hypotheses and directly assumes Gmin <= gmin, which is the substantive relationship the paper claims from its format assumptions."
+      "status": "unclear",
+      "paper_evidence": "Model 1 independently defines gmin and Gmin by no-subnormal or gradual-underflow branches. B791 states the comparison for theta >= 1 and cites U <= u and Fmin <= fmin, but those relations alone do not imply Gmin <= gmin when the input has gradual underflow and the accumulator does not.",
+      "lean_evidence": "The target assumes hGg : Gmin <= gmin directly, plus hGmin : 0 <= Gmin; it does not derive hGg from Model 1, bind u, U, fmin, or Fmin, or require n > 0.",
+      "reasoning": "The target is sound under an explicit envelope-order premise, but whether that premise is an acceptable clarification of the paper or a narrower specialization of its literal scope requires adjudication."
     },
     {
       "id": "S05",
       "status": "pass",
-      "paper_evidence": "The formalizable conclusion selected at B791 is that the accumulation-underflow envelope is no larger than the input-underflow envelope when theta >= 1; the later insignificance statement is explicitly only an expectation for most cases.",
-      "lean_evidence": "The conclusion compares the two complete envelope terms and makes no universal claim about practical insignificance or total error.",
-      "reasoning": "The precise conditional envelope conclusion is present without improperly formalizing the paper's heuristic prose as a theorem."
+      "paper_evidence": "B791 states the scalar comparison and concludes that the accumulation-underflow contribution is bounded by the input-underflow contribution.",
+      "lean_evidence": "After unfolding D001-D003, the conclusion compares the complete terms 4n^2 theta^-2 Gmin ||A||_infinity ||B||_infinity and 4n^2 theta^-1 gmin ||A||_infinity ||B||_infinity.",
+      "reasoning": "The complete contribution comparison is present. For a fixed zero common factor it does not conversely expose the scalar inequality, but the formal hypotheses themselves imply that scalar inequality, and the universally quantified declaration has positive-factor instances."
     },
     {
       "id": "S06",
       "status": "pass",
-      "paper_evidence": "Equation (3.26) uses ordinary products, inverse powers of theta, n squared, and matrix infinity norms.",
-      "lean_evidence": "D001-D003 unfold the complete formulas, while D015-D052 resolve ordinary real arithmetic and maximum row sums of entrywise absolute values.",
-      "reasoning": "Every operator in the Lean conclusion has a clear interpretation matching the displayed envelope formulas."
+      "paper_evidence": "The selected terms use real multiplication, n^2, inverse powers of positive theta, and matrix infinity norms.",
+      "lean_evidence": "D001-D003 and D015-D052 resolve these operations to real multiplication, natural powers, real reciprocal, and the maximum absolute row-sum norm.",
+      "reasoning": "Every operator affecting the target has the intended mathematical meaning."
     },
     {
       "id": "S07",
       "status": "pass",
-      "paper_evidence": "The source distinguishes computed C-hat from exact AB, while the selected paragraph compares two analytic contributions within the error envelope.",
-      "lean_evidence": "The target mentions neither C-hat nor AB and compares only the named analytic envelope expressions.",
-      "reasoning": "No exact or computed quantity is conflated, although the target does not formalize the surrounding computed-error theorem."
+      "paper_evidence": "Equation (3.26) bounds the computed product's error, while the selected following statement only compares two constituent error envelopes.",
+      "lean_evidence": "The target compares the two envelope formulas and introduces no computed matrix or exact product.",
+      "reasoning": "No exact, rounded, or computed quantity is conflated; the target is correctly limited to the selected sub-result."
     },
     {
       "id": "S08",
-      "status": "fail",
-      "paper_evidence": "The comparison arises inside the error analysis of the scaled mixed-precision MMA computation Lambda^(-1)(fl(Lambda A)fl(BM))M^(-1).",
-      "lean_evidence": "The target contains arbitrary real matrices and scalar envelope parameters but no computed product, scaling matrices, rounding operations, or MMA execution model.",
-      "reasoning": "The algebraic comparison is detached from the algorithm and cannot itself establish that its parameters are the envelopes generated by the paper's computation."
+      "status": "pass",
+      "paper_evidence": "The compared terms arise from the single-word scaled mixed-precision MMA analysis of Theorem 3.1, not the multiword algorithm in section 4.",
+      "lean_evidence": "The two local definitions reproduce exactly the single-word input- and accumulation-underflow contributions from (3.26).",
+      "reasoning": "For this deliberately selected algebraic sub-result, linkage is preserved through the exact contribution formulas, although the target is not itself a theorem about execution of the MMA algorithm."
     },
     {
       "id": "S09",
       "status": "pass",
-      "paper_evidence": "Equations (3.25)-(3.28) are normwise bounds using matrix infinity norms.",
-      "lean_evidence": "p20InfNormRect is the maximum absolute row sum, and both envelope definitions multiply ||A||_infinity by ||B||_infinity.",
-      "reasoning": "The norm kind and normwise meaning match, with no componentwise or squared-norm substitution."
+      "paper_evidence": "Equations (3.25)-(3.26) use the normwise matrix infinity norm and multiply ||A||_infinity by ||B||_infinity.",
+      "lean_evidence": "p20InfNormRect is the maximum over rows of the sum of absolute entry values and appears once for each operand.",
+      "reasoning": "The norm kind and unsquared norm product match."
     },
     {
       "id": "S10",
       "status": "pass",
-      "paper_evidence": "The two terms are 4*n^2*theta^(-1)*gmin and 4*n^2*theta^(-2)*Gmin.",
-      "lean_evidence": "D001 and D002 contain exactly those coefficients and parameter powers, followed by identical norm factors.",
-      "reasoning": "Constants, the inner dimension, and theta exponents match exactly."
+      "paper_evidence": "The underflow terms in (3.26) are exactly 4n^2 theta^-1 gmin and 4n^2 theta^-2 Gmin.",
+      "lean_evidence": "D001 and D002 use coefficient 4, the real square of shared dimension n, and inverse powers two and one respectively.",
+      "reasoning": "Constants, indexing, and parameter dependence match exactly."
     },
     {
       "id": "S11",
-      "status": "fail",
-      "paper_evidence": "Model 1 specifies input and accumulation precisions, exponent ranges, round-to-nearest models, optional subnormals, underflow envelopes, and no overflow after suitable scaling.",
-      "lean_evidence": "The target treats theta, gmin, and Gmin as abstract reals and contains no u, U, fmin, Fmin, subnormal mode, rounding mode, or overflow assumptions.",
-      "reasoning": "The floating-point model is erased, and its disputed Gmin-versus-gmin consequence is supplied directly as hGg."
+      "status": "unclear",
+      "paper_evidence": "Model 1 specifies T >= t, exponent-range containment, piecewise underflow envelopes, no overflow, and round-to-nearest constants, with directed-rounding replacements. Its independent branch definitions leave a mixed-subnormal regime in which U <= u and Fmin <= fmin do not suffice for Gmin <= gmin.",
+      "lean_evidence": "The target contains no floating-point formats or rounding model and instead assumes the required envelope ordering hGg directly.",
+      "reasoning": "The abstraction is sufficient for the algebraic comparison but does not formalize or validate the paper's claimed derivation from Model 1 across every allowed regime."
     },
     {
       "id": "S12",
       "status": "pass",
-      "paper_evidence": "The paragraph after equation (3.26) states the exact non-strict comparison theta^(-2)Gmin <= theta^(-1)gmin when theta >= 1.",
-      "lean_evidence": "The conclusion is an exact non-strict inequality between the corresponding full terms.",
-      "reasoning": "Multiplication by the common nonnegative coefficient and norm factors preserves the paper's exact comparison; the target does not turn the whole lesssim bound (3.26) into an exact error inequality."
+      "paper_evidence": "The post-(3.26) scalar comparison is an exact non-strict inequality, even though (3.26) itself uses a first-order approximate-bound symbol.",
+      "lean_evidence": "The conclusion is an exact real <= comparison of complete terms.",
+      "reasoning": "Multiplying the scalar inequality by the common factor K=4n^2||A||_infinity||B||_infinity is valid because K >= 0. For fixed K=0 the converse cancellation is invalid, but this does not reverse the relation or make degenerate cases stronger."
     },
     {
       "id": "S13",
       "status": "pass",
-      "paper_evidence": "The source classifies these as input-underflow and accumulation-underflow contributions to a normwise forward-error envelope.",
-      "lean_evidence": "The two local definitions are precisely those envelope contributions and the target compares them, rather than asserting a backward or componentwise error result.",
-      "reasoning": "The error notion is preserved at the level selected by the target."
+      "paper_evidence": "The terms being compared are two absolute normwise forward-error contributions within (3.26).",
+      "lean_evidence": "The target compares those contributions and does not substitute a relative, backward, residual, or componentwise error notion.",
+      "reasoning": "The selected error-envelope notion is preserved."
     },
     {
       "id": "S14",
       "status": "pass",
-      "paper_evidence": "Equation (3.26) is a first-order simplification using lesssim after second-order terms are dropped, but the following comparison between the displayed underflow terms uses an exact <= relation.",
-      "lean_evidence": "The target formalizes only the exact relation between the two displayed terms and does not assert that equation (3.26) itself is an exact upper bound.",
-      "reasoning": "The formal statement does not improperly suppress higher-order terms in an exact total-error theorem."
+      "paper_evidence": "Equation (3.26) drops second-order terms, but the subsequent comparison between its two displayed first-order underflow envelopes is an exact algebraic inequality.",
+      "lean_evidence": "The target formalizes only that exact comparison and does not claim that (3.26) is an exact forward-error theorem.",
+      "reasoning": "No approximate bound or omitted remainder is silently converted into an exact full error estimate."
     },
     {
       "id": "S15",
-      "status": "fail",
-      "paper_evidence": "The source comparison concerns underflow parameters generated by a Model 1 input/accumulation format pair and the source-defined theta.",
-      "lean_evidence": "The target is an abstract real-algebra lemma over arbitrary theta, gmin, Gmin, and matrices, but only after directly assuming Gmin <= gmin.",
-      "reasoning": "This is a weaker conditional specialization of the substantive format claim, combined with a generalization to parameter tuples that need not represent any floating-point formats."
+      "status": "unclear",
+      "paper_evidence": "The paper's quantities arise from Model 1 and theta=min(fmax,sqrt(Fmax/n)); the text presents theta >= 1 as the condition and treats the envelope ordering as a consequence of format relations.",
+      "lean_evidence": "The theorem abstracts theta, gmin, and Gmin to arbitrary reals but specializes its premise by explicitly requiring Gmin <= gmin.",
+      "reasoning": "Under the corrected compatible-envelope reading this is a benchmark-preserving algebraic abstraction; under the literal all-Model-1 reading it is a narrower specialization."
     },
     {
       "id": "S16",
       "status": "pass",
-      "paper_evidence": "The paper applies the comparison to ordinary nonzero matrix problems and positive underflow envelopes.",
-      "lean_evidence": "A nontrivial instance exists with m=n=q=1, theta=2, Gmin=gmin=1, and A=B=[1], giving accumulation bound 1 and input bound 2. Degenerate zero-dimensional or zero-matrix instances also exist.",
-      "reasoning": "The theorem is satisfiable and not globally true only because of zero factors, although its unrestricted dimensions introduce additional trivial cases and hGg assumes the key scalar ordering."
+      "paper_evidence": "The paper considers ordinary positive-dimensional matrix products and positive format envelopes, where both underflow contributions can be nonzero.",
+      "lean_evidence": "For m=n=q=1, theta=2, Gmin=gmin=1, and one-entry matrices A=B=1, all hypotheses hold and the target gives a strict nonzero comparison.",
+      "reasoning": "The theorem is satisfiable and globally nonvacuous. Its n=0 or zero-norm instances reduce to 0 <= 0, but those cases do not make the theorem stronger."
     }
   ],
   "implications": {
     "lean_implies_paper": {
-      "verdict": "no",
-      "reasoning": "The Lean theorem cannot derive the paper's comparison from Model 1, U <= u, Fmin <= fmin, and the piecewise underflow definitions because it instead requires Gmin <= gmin as an explicit premise and contains no format or algorithm linkage."
+      "verdict": "unclear",
+      "reasoning": "If the paper result is read with Gmin <= gmin as its intended implicit envelope premise, unfolding the Lean definitions gives the exact complete-term comparison and htheta, hGmin, and hGg also entail the scalar comparison. If the PDF is read literally as asserting the result for every Model 1 format whenever theta >= 1, Lean does not cover the mixed regime where the input has gradual underflow, the accumulator lacks subnormals, and Gmin <= gmin need not follow. The PDF does not resolve that scope."
     },
     "paper_implies_lean": {
       "verdict": "yes",
-      "reasoning": "On intended paper instances, the paper's claimed conditional scalar comparison covers the stronger-premise case Gmin <= gmin; multiplying by the common nonnegative factor 4*n^2*||A||_infinity*||B||_infinity yields the Lean conclusion."
+      "reasoning": "For aligned source instances, the paper's asserted scalar inequality can be multiplied by the common nonnegative factor 4n^2||A||_infinity||B||_infinity to obtain exactly the Lean conclusion. This direction does not require cancellation or a positive common factor, and the Lean target additionally assumes the disputed envelope ordering."
     }
   },
-  "classification": "not-faithful-weaker",
+  "classification": "undetermined",
   "accepted": false,
   "requires_adjudication": true,
   "findings": [
     {
       "severity": "major",
-      "category": "key-premise-assumed",
-      "paper_evidence": "At B791 the paper presents the accumulation-versus-input comparison as following from the Model 1 relationships U <= u and Fmin <= fmin when theta >= 1.",
-      "lean_evidence": "The target directly assumes hGg : Gmin <= gmin.",
-      "impact": "The formal theorem does not prove the central format-dependent relationship and therefore measures only the residual monotonicity argument under a stronger premise."
-    },
-    {
-      "severity": "major",
-      "category": "floating-point-model-and-algorithm-linkage",
-      "paper_evidence": "The compared envelopes arise from the scaled mixed-precision MMA algorithm, format conversion, accumulation arithmetic, and the source-defined theta.",
-      "lean_evidence": "No format, rounding operation, scaling construction, computed result, or definition theta=min(fmax,sqrt(Fmax/n)) occurs in the target.",
-      "impact": "The theorem cannot establish that its abstract parameters describe the paper's algorithm or any valid input/accumulation format pair."
-    },
-    {
-      "severity": "major",
-      "category": "source-assumption-ambiguity",
-      "paper_evidence": "Equations (2.1)-(2.2) define gmin and Gmin differently depending on subnormal availability, while the B791 argument cites only U <= u and Fmin <= fmin.",
-      "lean_evidence": "The direct hypothesis Gmin <= gmin bypasses all subnormal-mode cases.",
-      "impact": "In the mixed case with gradual input underflow but no accumulation subnormals, the cited format inequalities alone need not imply Gmin <= gmin. Adjudication is needed to decide whether hGg is an acceptable repair or an unfaithful strengthening of the hypotheses."
-    },
-    {
-      "severity": "minor",
-      "category": "degenerate-dimensions",
-      "paper_evidence": "The paper defines theta using Fmax/n and analyzes ordinary matrix inner products, implying positive inner dimension.",
-      "lean_evidence": "The universally quantified Nat dimensions permit n=0 and empty matrices, where n squared or a norm can make both envelopes zero.",
-      "impact": "The Lean statement contains trivial instances outside the paper's intended dimensional domain."
+      "category": "underflow-envelope premise scope",
+      "paper_evidence": "Equations (2.1)-(2.2) independently choose gradual or no-subnormal definitions for gmin and Gmin. The B791 comparison cites only U <= u and Fmin <= fmin.",
+      "lean_evidence": "The target requires hGg : Gmin <= gmin explicitly rather than deriving it from format definitions.",
+      "impact": "When the input uses gradual underflow and the accumulator does not, Model 1 alone can permit Gmin > gmin. The target is therefore either a sound clarification of the intended result or a weaker specialization of the paper's literal stated scope; adjudication must choose the intended benchmark reading."
     },
     {
       "severity": "note",
-      "category": "envelope-formula-match",
-      "paper_evidence": "Equation (3.26) displays input and accumulation terms with coefficients 4*n^2, theta exponents -1 and -2, and matrix infinity-norm factors.",
-      "lean_evidence": "D001-D003 reproduce those two full terms exactly.",
-      "impact": "Once hGg and theta >= 1 are supplied, the mathematical envelope comparison itself is represented correctly."
+      "category": "scalar versus complete-term comparison",
+      "paper_evidence": "B791 first states theta^-2 Gmin <= theta^-1 gmin and then concludes that the accumulation-underflow contribution is bounded by the input-underflow contribution.",
+      "lean_evidence": "The target states only the complete-term inequality with common factor K=4n^2||A||_infinity||B||_infinity.",
+      "impact": "Scalar comparison implies the Lean conclusion because K >= 0. For a fixed K=0, the complete-term inequality is vacuous and cannot be cancelled back to the scalar inequality. Nevertheless, the Lean hypotheses independently imply the scalar comparison and nonzero one-dimensional instances show the declaration is not globally vacuous."
+    },
+    {
+      "severity": "note",
+      "category": "degenerate dimensions",
+      "paper_evidence": "The definition theta=min(fmax,sqrt(Fmax/n)) implicitly requires n>0, and the paper's scaling construction does not specify zero-dimensional behavior.",
+      "lean_evidence": "Natural dimensions permit n=0 and the implemented norms return zero on empty index sets.",
+      "impact": "These instances yield 0 <= 0 and are a harmless degenerate extension for the complete contribution comparison; they must not be characterized as a stronger result."
     }
   ],
-  "rationale": "The Lean conclusion faithfully reproduces the two underflow-envelope terms and their exact conditional ordering, including constants, theta powers, n squared, and matrix infinity norms. It is nevertheless a weaker formalization of the cited paper claim because it assumes Gmin <= gmin instead of deriving the needed relationship from the floating-point formats and Model 1, and it removes all algorithm and format linkage. The paper's own derivation is ambiguous for mixed subnormal modes, so adjudication is required to determine whether the added hGg premise is an acceptable explicit repair; absent such approval, the target is not accepted."
+  "rationale": "The PDF hash matches, and direct inspection of Model 1, equations (3.25)-(3.26), and the following discussion confirms that the Lean definitions reproduce the two complete underflow terms, their constants, inverse powers, shared dimension, and matrix infinity-norm factors. Theta >= 1 is correctly an explicit condition, and the theorem is nonvacuous. The unresolved issue is source scope: the PDF claims the scalar ordering from U <= u and Fmin <= fmin, but its independent subnormal branches do not guarantee Gmin <= gmin in every Model 1 regime, while Lean assumes that ordering directly. Under a corrected compatible-envelope interpretation the target is faithful-equivalent; under the literal all-Model-1 interpretation it is a not-faithful-weaker specialization. That choice requires adjudication."
 }

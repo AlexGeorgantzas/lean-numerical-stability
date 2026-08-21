@@ -2,7 +2,7 @@
   "audit_setup": [
     {
       "path": "paper_bencmark/faithfulness_audit/METHODOLOGY.md",
-      "sha256": "d9088bbf94db5b174ad4b2b109eab388bee0078cb35134c59a1bd7fe98d21cf8"
+      "sha256": "51e5d98ad450344d5eddb29600161236cc1bbfe61df0cf9f76c3ac63e0dbe4f8"
     },
     {
       "path": "paper_bencmark/faithfulness_audit/scripts/common.py",
@@ -121,7 +121,7 @@
     "module_count": 5159,
     "sorted_module_names_sha256": "4c3d31a47326d0740ce1629ccac57cebe22e482adebb608942c49624f08ca752"
   },
-  "completed_at_utc": "2026-08-21T05:18:01.220163+00:00",
+  "completed_at_utc": "2026-08-14T10:42:43.004325+00:00",
   "context": {
     "path": "paper_bencmark/highambench/tasks/P20/T2/context.md",
     "semantic_evidence": false,
@@ -1101,14 +1101,17 @@
       "parent": "HighamBench.p20_t2_accumulation_underflow_le_input"
     }
   ],
+  "dependency_reuse": {
+    "blind_count": 0,
+    "direct_count": 16,
+    "source_task_ids": [
+      "P20-T1"
+    ]
+  },
   "direct_external_imports": [
     "Mathlib.Algebra.BigOperators.Fin",
-    "Mathlib.Algebra.Order.Archimedean.Basic",
-    "Mathlib.Analysis.Asymptotics.Lemmas",
     "Mathlib.Analysis.Matrix.Normed",
-    "Mathlib.Data.Matrix.Mul",
     "Mathlib.Data.Real.Basic",
-    "Mathlib.Data.Real.Sqrt",
     "Mathlib.Tactic"
   ],
   "inputs": {
@@ -1126,15 +1129,23 @@
     },
     "declaration_dossier": {
       "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/inputs/declaration_dossier.md",
-      "sha256": "9562489ddc39ccdd86e00507acffae6dce62fa0e8550d3e362c04aab5d95a763"
+      "sha256": "dcb39a6b7008c87d70a78328f1ff0eb906b2bd886467a76b8ddb6acdcdb0afa1"
     },
     "dependency_inventory": {
       "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/inputs/dependency_inventory.json",
       "sha256": "98f119726a8bbffa424a3f5bcfce7f6afc8066774fc87eb446d7cc817eb5fbfc"
     },
+    "dependency_reuse_direct": {
+      "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/inputs/dependency_reuse_direct.json",
+      "sha256": "3ce0db4772d618791b5a41160581d16516737cd7d08639e74da477e016f726c8"
+    },
     "direct_review_packet": {
       "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/inputs/direct_review_packet.md",
-      "sha256": "0177cd6507f500b555c446a84dc299cbabb01caf40bc4d6920b03d30483c6176"
+      "sha256": "2364b9a47ba52f22b5a2a294539ab9870a8a20ff2b927fc142f9336975e54d70"
+    },
+    "paper_source_locator": {
+      "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/inputs/paper_source_locator.json",
+      "sha256": "413757004ac4d15ac7e55e926e2486e54bdac2db1523d83303ddb4cbffe644f4"
     },
     "source_locator": {
       "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/inputs/source_locator.json",
@@ -1166,45 +1177,45 @@
     {
       "direct_imports": [
         "HighamBench.Core",
-        "Mathlib.Algebra.Order.Archimedean.Basic",
-        "Mathlib.Analysis.Asymptotics.Lemmas",
-        "Mathlib.Analysis.Matrix.Normed",
-        "Mathlib.Data.Matrix.Mul",
-        "Mathlib.Data.Real.Sqrt"
+        "Mathlib.Analysis.Matrix.Normed"
       ],
       "module": "HighamBench.P20Definitions",
       "path": "paper_bencmark/highambench/shared/HighamBench/P20Definitions.lean",
-      "sha256": "33554be89414f9d3fa27232131e6817fcc7f2017087e8bae4f59ceb4e2cfa4ea"
+      "sha256": "5b94f6f4eac02fe552a60504a7d4c1efb1d8dbe27826e3c608c83a495fbb8c2b"
     }
   ],
   "outputs": {
     "adjudicator": {
       "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/agent_outputs/adjudicator.json",
-      "sha256": "ad41868e930305a968fb864a7bc8e269f16d0f3d57a5df04d408e2a3e517d035"
+      "sha256": "3f778c634d05a2451c8059cac8b7cf5f3d67080c1a87ecfeed971210640cbe18"
     },
     "blind_translation": {
       "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/agent_outputs/blind_translation.json",
-      "sha256": "08d68e8e62f82b8e4dfba0098caec6fb5d801c13099556e3c2ba5a71eaa3413b"
+      "sha256": "096f66df2a5c2c8874ccf6722fc12b9ae49a4f9fbb2f05368fbe1358a57d5cf2"
     },
     "decision": {
       "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/decision.json",
-      "sha256": "c57ad736ffb6bffbf73504fc6335b6ff745d6cf918d1be061dd5efd60ad4c0b4"
+      "sha256": "46621fcf09a5edd3d0df5cc74829ada9a5580817ba9045bc3d491f369f4effb2"
     },
     "direct_judge": {
       "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/agent_outputs/direct_judge.json",
-      "sha256": "ef4023e603a5bb3e6b30a789a7078ffd018aebf2fbecb90bdb9acb809b194c2c"
+      "sha256": "acacda49c8ccdd4f138001e07de79a4bfcdfb1c355a69f33eb09753a88c3f5eb"
+    },
+    "paper_source_contract": {
+      "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/agent_outputs/paper_source_contract.json",
+      "sha256": "a0c8bbaa2e261f7adc023b1698c08de77fd260aafddc9aa341073c2704530e40"
     },
     "report": {
       "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/report.md",
-      "sha256": "9b15024256702dbcea129e8846bb321606b1f52f51a4a3192bc24a4c6b249884"
+      "sha256": "01ac0294095f4d08a609318d244a55d56db2dc415b872fa3e07b877ecd06398a"
     },
     "roundtrip_judge": {
       "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/agent_outputs/roundtrip_judge.json",
-      "sha256": "2c38d4b593d56e19106760aef5f78919274df0f5b7a698fb7d4adf49edffc539"
+      "sha256": "6b8a6298e9450e37a021f41941901fe5ce8d4d56ed02020410352e60207e1c6d"
     },
     "source_contract": {
       "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/agent_outputs/source_contract.json",
-      "sha256": "0811d8294b0f4bebd6348a1ecf0027000bca86a7d4401c71e8d0b53d46bcedcc"
+      "sha256": "5baba912e023c835e1bfb52bdc2bf8d16e7db7a0c7aa20318b537211c2414b4d"
     }
   },
   "paper": {
@@ -1220,7 +1231,19 @@
       }
     ]
   },
-  "prepared_at_utc": "2026-08-21T04:53:09.029688+00:00",
+  "paper_batch": {
+    "paper_id": "P20",
+    "source_locator": {
+      "path": "paper_bencmark/highambench/tasks/P20/T2/faithfulness/inputs/paper_source_locator.json",
+      "sha256": "413757004ac4d15ac7e55e926e2486e54bdac2db1523d83303ddb4cbffe644f4"
+    },
+    "task_ids": [
+      "P20-T1",
+      "P20-T2",
+      "P20-T3"
+    ]
+  },
+  "prepared_at_utc": "2026-08-13T20:07:13.840217+00:00",
   "schema_version": "highambench-faithfulness-0.2",
   "semantic_checks": [
     {
@@ -1314,6 +1337,6 @@
   "task_metadata": {
     "path": "paper_bencmark/highambench/tasks/P20/T2/task.json",
     "semantic_evidence": false,
-    "sha256": "d009e151c5304f0fa490bef3a4bebbbe313ef0b1066497cb5d836de294394e9d"
+    "sha256": "4cb647f1db11d80d00f4c9aa52f24491e64192b9fc768545efb82a716bb5452f"
   }
 }

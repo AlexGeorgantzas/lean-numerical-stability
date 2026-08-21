@@ -1,18 +1,8 @@
-# Declaration dossier for P20-T2
+# Blind Lean declaration dossier
 
-This dossier describes the theorem statement only. Its proof is excluded.
-Judges must interpret every dependency entry and may not infer semantics from names.
-
-## Exact source declaration
-
-```lean
-theorem p20_t2_accumulation_underflow_le_input {m n q : ℕ}
-    (theta gmin Gmin : ℝ) (A : Fin m → Fin n → ℝ)
-    (B : Fin n → Fin q → ℝ)
-    (htheta : 1 ≤ theta) (hGmin : 0 ≤ Gmin) (hGg : Gmin ≤ gmin) :
-    p20SingleAccumUnderflowBound theta Gmin A B ≤
-      p20SingleInputUnderflowBound theta gmin A B
-```
+Translate only the mathematical proposition represented below. No paper identity,
+source prose, task metadata, theorem name, proof, or benchmark commentary is included.
+Do not use tools or inspect any filesystem content.
 
 ## Elaborated target type
 
@@ -21,8 +11,8 @@ theorem p20_t2_accumulation_underflow_le_input {m n q : ℕ}
   Real.instLE.le 1 theta →
     Real.instLE.le 0 Gmin →
       Real.instLE.le Gmin gmin →
-        Real.instLE.le (HighamBench.p20SingleAccumUnderflowBound theta Gmin A B)
-          (HighamBench.p20SingleInputUnderflowBound theta gmin A B)
+        Real.instLE.le (LocalDef001 theta Gmin A B)
+          (LocalDef002 theta gmin A B)
 ```
 
 ## Fully explicit elaborated target type
@@ -32,24 +22,19 @@ theorem p20_t2_accumulation_underflow_le_input {m n q : ℕ}
   (htheta : @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)) theta)
   (hGmin : @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) Gmin)
   (hGg : @LE.le.{0} Real Real.instLE Gmin gmin),
-  @LE.le.{0} Real Real.instLE (@HighamBench.p20SingleAccumUnderflowBound m n q theta Gmin A B)
-    (@HighamBench.p20SingleInputUnderflowBound m n q theta gmin A B)
+  @LE.le.{0} Real Real.instLE (@LocalDef001 m n q theta Gmin A B)
+    (@LocalDef002 m n q theta gmin A B)
 ```
 
-## Local import graph
+## Complete semantic dependency inventory
 
-- `AuditTarget` imports: `HighamBench.P20Definitions`
-- `HighamBench.Core` imports: `Mathlib.Algebra.BigOperators.Fin`, `Mathlib.Data.Real.Basic`, `Mathlib.Tactic`
-- `HighamBench.P20Definitions` imports: `HighamBench.Core`, `Mathlib.Algebra.Order.Archimedean.Basic`, `Mathlib.Analysis.Asymptotics.Lemmas`, `Mathlib.Analysis.Matrix.Normed`, `Mathlib.Data.Matrix.Mul`, `Mathlib.Data.Real.Sqrt`
+Account for every dependency ID in the translation output. Names are not definitions;
+use the supplied types and bodies to determine their exact meanings.
 
-## Semantic dependency inventory
-
-`local` entries are recursively followed through their types and bodies. `external-frontier` entries are the exact Lean/mathlib declarations where that recursive traversal stops; their types and one-level bodies are still shown.
-
-### D001: `HighamBench.p20SingleAccumUnderflowBound`
+### D001: `LocalDef001`
 
 - Role: `local`
-- Owner module: `HighamBench.P20Definitions`
+- Owner module: `LocalImport001`
 - Declaration kind: `def`
 - Distance from target type: `1`
 - Semantic SHA-256: `424faa44feb9fbd81521978e0b336914e4a087bca743a8d6e2f370a578cc4f5c`
@@ -60,12 +45,6 @@ Type:
 {m n q : Nat} → Real → Real → (Fin m → Fin n → Real) → (Fin n → Fin q → Real) → Real
 ```
 
-Fully explicit type:
-
-```lean
-{m n q : Nat} → (theta Gmin : Real) → (A : Fin m → Fin n → Real) → (B : Fin n → Fin q → Real) → Real
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -74,14 +53,14 @@ fun {m n q} theta Gmin A B =>
     (instHMul.hMul
       (instHMul.hMul
         (instHMul.hMul (instHMul.hMul 4 (instHPow.hPow n.cast 2)) (instHPow.hPow (Real.instInv.inv theta) 2)) Gmin)
-      (HighamBench.p20InfNormRect A))
-    (HighamBench.p20InfNormRect B)
+      (LocalDef003 A))
+    (LocalDef003 B)
 ```
 
-### D002: `HighamBench.p20SingleInputUnderflowBound`
+### D002: `LocalDef002`
 
 - Role: `local`
-- Owner module: `HighamBench.P20Definitions`
+- Owner module: `LocalImport001`
 - Declaration kind: `def`
 - Distance from target type: `1`
 - Semantic SHA-256: `cb465e8866dd7c5ba75fc60b9e5548482bc55d09221828ea20a8443b6a687402`
@@ -92,12 +71,6 @@ Type:
 {m n q : Nat} → Real → Real → (Fin m → Fin n → Real) → (Fin n → Fin q → Real) → Real
 ```
 
-Fully explicit type:
-
-```lean
-{m n q : Nat} → (theta gmin : Real) → (A : Fin m → Fin n → Real) → (B : Fin n → Fin q → Real) → Real
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -105,14 +78,14 @@ fun {m n q} theta gmin A B =>
   instHMul.hMul
     (instHMul.hMul
       (instHMul.hMul (instHMul.hMul (instHMul.hMul 4 (instHPow.hPow n.cast 2)) (Real.instInv.inv theta)) gmin)
-      (HighamBench.p20InfNormRect A))
-    (HighamBench.p20InfNormRect B)
+      (LocalDef003 A))
+    (LocalDef003 B)
 ```
 
-### D003: `HighamBench.p20InfNormRect`
+### D003: `LocalDef003`
 
 - Role: `local`
-- Owner module: `HighamBench.P20Definitions`
+- Owner module: `LocalImport001`
 - Declaration kind: `def`
 - Distance from target type: `2`
 - Semantic SHA-256: `85f0c53817ee468470f6b18e6390691148158e3a270bf87d2feb43e175ec9e0a`
@@ -123,12 +96,6 @@ Type:
 {m n : Nat} → (Fin m → Fin n → Real) → Real
 ```
 
-Fully explicit type:
-
-```lean
-{m n : Nat} → (A : Fin m → Fin n → Real) → Real
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -137,10 +104,10 @@ fun {m n} A =>
   (Finset.univ.sup rowSum).toReal
 ```
 
-### D004: `HighamBench.p20SingleInputUnderflowBound._proof_1`
+### D004: `LocalDef004`
 
 - Role: `local`
-- Owner module: `HighamBench.P20Definitions`
+- Owner module: `LocalImport001`
 - Declaration kind: `theorem`
 - Distance from target type: `2`
 - Semantic SHA-256: `8a85a65264d1eaf6bf92eb9238ef21e86787b07b20e078bcd23e3fd0e91d4fbb`
@@ -149,15 +116,6 @@ Type:
 
 ```lean
 (instHAdd.hAdd 3 1).AtLeastTwo
-```
-
-Fully explicit type:
-
-```lean
-Nat.AtLeastTwo
-  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
-    (@OfNat.ofNat.{0} Nat (nat_lit 3) (instOfNatNat (nat_lit 3)))
-    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
 ```
 
 ### D005: `Fin`
@@ -174,12 +132,6 @@ Type:
 Nat → Type
 ```
 
-Fully explicit type:
-
-```lean
-(n : Nat) → Type
-```
-
 ### D006: `LE.le`
 
 - Role: `external-frontier`
@@ -192,12 +144,6 @@ Type:
 
 ```lean
 {α : Type u} → [self : LE α] → α → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : LE.{u} α] → α → α → Prop
 ```
 
 Definition body (one-level semantic boundary):
@@ -220,12 +166,6 @@ Type:
 Type
 ```
 
-Fully explicit type:
-
-```lean
-Type
-```
-
 ### D008: `OfNat.ofNat`
 
 - Role: `external-frontier`
@@ -238,12 +178,6 @@ Type:
 
 ```lean
 {α : Type u} → (x : Nat) → [self : OfNat α x] → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → (x : Nat) → [self : OfNat.{u} α x] → α
 ```
 
 Definition body (one-level semantic boundary):
@@ -266,12 +200,6 @@ Type:
 {α : Type u_1} → [One α] → OfNat α 1
 ```
 
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [One.{u_1} α] → OfNat.{u_1} α (nat_lit 1)
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -292,12 +220,6 @@ Type:
 Type
 ```
 
-Fully explicit type:
-
-```lean
-Type
-```
-
 ### D011: `Real.instLE`
 
 - Role: `external-frontier`
@@ -310,12 +232,6 @@ Type:
 
 ```lean
 LE Real
-```
-
-Fully explicit type:
-
-```lean
-LE.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
@@ -338,12 +254,6 @@ Type:
 One Real
 ```
 
-Fully explicit type:
-
-```lean
-One.{0} Real
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -362,12 +272,6 @@ Type:
 
 ```lean
 Zero Real
-```
-
-Fully explicit type:
-
-```lean
-Zero.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
@@ -390,12 +294,6 @@ Type:
 {α : Type u_1} → [Zero α] → OfNat α 0
 ```
 
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Zero.{u_1} α] → OfNat.{u_1} α (nat_lit 0)
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -414,12 +312,6 @@ Type:
 
 ```lean
 {α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HMul α β γ] → α → β → γ
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HMul.{u, v, w} α β γ] → α → β → γ
 ```
 
 Definition body (one-level semantic boundary):
@@ -442,12 +334,6 @@ Type:
 {α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HPow α β γ] → α → β → γ
 ```
 
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HPow.{u, v, w} α β γ] → α → β → γ
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -466,12 +352,6 @@ Type:
 
 ```lean
 {α : Type u} → [self : Inv α] → α → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : Inv.{u} α] → α → α
 ```
 
 Definition body (one-level semantic boundary):
@@ -494,12 +374,6 @@ Type:
 {M : Type u_2} → [Monoid M] → Pow M Nat
 ```
 
-Fully explicit type:
-
-```lean
-{M : Type u_2} → [Monoid.{u_2} M] → Pow.{u_2, 0} M Nat
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -518,12 +392,6 @@ Type:
 
 ```lean
 {R : Type u} → [NatCast R] → Nat → R
-```
-
-Fully explicit type:
-
-```lean
-{R : Type u} → [NatCast.{u} R] → Nat → R
 ```
 
 Definition body (one-level semantic boundary):
@@ -546,12 +414,6 @@ Type:
 Inv Real
 ```
 
-Fully explicit type:
-
-```lean
-Inv.{0} Real
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -570,12 +432,6 @@ Type:
 
 ```lean
 Monoid Real
-```
-
-Fully explicit type:
-
-```lean
-Monoid.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
@@ -598,12 +454,6 @@ Type:
 Mul Real
 ```
 
-Fully explicit type:
-
-```lean
-Mul.{0} Real
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -622,12 +472,6 @@ Type:
 
 ```lean
 NatCast Real
-```
-
-Fully explicit type:
-
-```lean
-NatCast.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
@@ -650,12 +494,6 @@ Type:
 {α : Type u_1} → [Mul α] → HMul α α α
 ```
 
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Mul.{u_1} α] → HMul.{u_1, u_1, u_1} α α α
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -674,12 +512,6 @@ Type:
 
 ```lean
 {α : Type u_1} → {β : Type u_2} → [Pow α β] → HPow α β α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → {β : Type u_2} → [Pow.{u_1, u_2} α β] → HPow.{u_1, u_2, u_1} α β α
 ```
 
 Definition body (one-level semantic boundary):
@@ -702,12 +534,6 @@ Type:
 {R : Type u_1} → {n : Nat} → [NatCast R] → [n.AtLeastTwo] → OfNat R n
 ```
 
-Fully explicit type:
-
-```lean
-{R : Type u_1} → {n : Nat} → [NatCast.{u_1} R] → [Nat.AtLeastTwo n] → OfNat.{u_1} R n
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -726,12 +552,6 @@ Type:
 
 ```lean
 (n : Nat) → OfNat Nat n
-```
-
-Fully explicit type:
-
-```lean
-(n : Nat) → OfNat.{0} Nat n
 ```
 
 Definition body (one-level semantic boundary):
@@ -754,21 +574,6 @@ Type:
 {α : Type u_5} → [self : ConditionallyCompleteLinearOrderBot α] → OrderBot α
 ```
 
-Fully explicit type:
-
-```lean
-{α : Type u_5} →
-  [self : ConditionallyCompleteLinearOrderBot.{u_5} α] →
-    @OrderBot.{u_5} α
-      (@Preorder.toLE.{u_5} α
-        (@PartialOrder.toPreorder.{u_5} α
-          (@SemilatticeSup.toPartialOrder.{u_5} α
-            (@Lattice.toSemilatticeSup.{u_5} α
-              (@ConditionallyCompleteLattice.toLattice.{u_5} α
-                (@ConditionallyCompleteLinearOrder.toConditionallyCompleteLattice.{u_5} α
-                  (@ConditionallyCompleteLinearOrderBot.toConditionallyCompleteLinearOrder.{u_5} α self)))))))
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -787,12 +592,6 @@ Type:
 
 ```lean
 (n : Nat) → Fintype (Fin n)
-```
-
-Fully explicit type:
-
-```lean
-(n : Nat) → Fintype.{0} (Fin n)
 ```
 
 Definition body (one-level semantic boundary):
@@ -815,12 +614,6 @@ Type:
 {ι : Type u_1} → {M : Type u_3} → [AddCommMonoid M] → Finset ι → (ι → M) → M
 ```
 
-Fully explicit type:
-
-```lean
-{ι : Type u_1} → {M : Type u_3} → [AddCommMonoid.{u_3} M] → (s : Finset.{u_1} ι) → (f : ι → M) → M
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -839,17 +632,6 @@ Type:
 
 ```lean
 {α : Type u_2} → {β : Type u_3} → [inst : SemilatticeSup α] → [OrderBot α] → Finset β → (β → α) → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_2} →
-  {β : Type u_3} →
-    [inst : SemilatticeSup.{u_2} α] →
-      [@OrderBot.{u_2} α
-            (@Preorder.toLE.{u_2} α (@PartialOrder.toPreorder.{u_2} α (@SemilatticeSup.toPartialOrder.{u_2} α inst)))] →
-        (s : Finset.{u_3} β) → (f : β → α) → α
 ```
 
 Definition body (one-level semantic boundary):
@@ -873,12 +655,6 @@ Type:
 {α : Type u_1} → [Fintype α] → Finset α
 ```
 
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Fintype.{u_1} α] → Finset.{u_1} α
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -897,12 +673,6 @@ Type:
 
 ```lean
 {α : Type u} → {β : Type v} → {γ : outParam (Type w)} → [self : HAdd α β γ] → α → β → γ
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → {γ : outParam.{w + 2} (Type w)} → [self : HAdd.{u, v, w} α β γ] → α → β → γ
 ```
 
 Definition body (one-level semantic boundary):
@@ -925,12 +695,6 @@ Type:
 {E : Type u_8} → [self : NNNorm E] → E → NNReal
 ```
 
-Fully explicit type:
-
-```lean
-{E : Type u_8} → [self : NNNorm.{u_8} E] → E → NNReal
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -946,12 +710,6 @@ fun E [self : NNNorm E] => self.1
 - Semantic SHA-256: `490ebc1f72b3ced8506e1bcbd0016d4c351adf097644509fd1dd17a93c4e950f`
 
 Type:
-
-```lean
-Type
-```
-
-Fully explicit type:
 
 ```lean
 Type
@@ -977,12 +735,6 @@ Type:
 ConditionallyCompleteLinearOrderBot NNReal
 ```
 
-Fully explicit type:
-
-```lean
-ConditionallyCompleteLinearOrderBot.{0} NNReal
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -998,12 +750,6 @@ Nonneg.conditionallyCompleteLinearOrderBot 0
 - Semantic SHA-256: `b78a80825150cf81a49e8914dd12c5dfb7e284ed0e70b3449011ac3d3f49dc66`
 
 Type:
-
-```lean
-NNReal → Real
-```
-
-Fully explicit type:
 
 ```lean
 NNReal → Real
@@ -1029,12 +775,6 @@ Type:
 Nat → Prop
 ```
 
-Fully explicit type:
-
-```lean
-(n : Nat) → Prop
-```
-
 ### D039: `NonAssocSemiring.toNonUnitalNonAssocSemiring`
 
 - Role: `external-frontier`
@@ -1047,12 +787,6 @@ Type:
 
 ```lean
 {α : Type u} → [self : NonAssocSemiring α] → NonUnitalNonAssocSemiring α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : NonAssocSemiring.{u} α] → NonUnitalNonAssocSemiring.{u} α
 ```
 
 Definition body (one-level semantic boundary):
@@ -1075,12 +809,6 @@ Type:
 {α : Type u} → [self : NonUnitalNonAssocSemiring α] → AddCommMonoid α
 ```
 
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : NonUnitalNonAssocSemiring.{u} α] → AddCommMonoid.{u} α
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -1101,12 +829,6 @@ Type:
 {α : Type u_5} → [self : NonUnitalSeminormedCommRing α] → NonUnitalSeminormedRing α
 ```
 
-Fully explicit type:
-
-```lean
-{α : Type u_5} → [self : NonUnitalSeminormedCommRing.{u_5} α] → NonUnitalSeminormedRing.{u_5} α
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -1125,12 +847,6 @@ Type:
 
 ```lean
 {α : Type u_2} → [NonUnitalSeminormedRing α] → SeminormedAddCommGroup α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_2} → [NonUnitalSeminormedRing.{u_2} α] → SeminormedAddCommGroup.{u_2} α
 ```
 
 Definition body (one-level semantic boundary):
@@ -1156,12 +872,6 @@ Type:
 {α : Type u_2} → [β : NormedCommRing α] → SeminormedCommRing α
 ```
 
-Fully explicit type:
-
-```lean
-{α : Type u_2} → [β : NormedCommRing.{u_2} α] → SeminormedCommRing.{u_2} α
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -1182,12 +892,6 @@ Type:
 
 ```lean
 NormedCommRing Real
-```
-
-Fully explicit type:
-
-```lean
-NormedCommRing.{0} Real
 ```
 
 Definition body (one-level semantic boundary):
@@ -1223,12 +927,6 @@ Type:
 {E : Type u_5} → [SeminormedAddCommGroup E] → SeminormedAddGroup E
 ```
 
-Fully explicit type:
-
-```lean
-{E : Type u_5} → [SeminormedAddCommGroup.{u_5} E] → SeminormedAddGroup.{u_5} E
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -1252,12 +950,6 @@ Type:
 {E : Type u_5} → [SeminormedAddGroup E] → NNNorm E
 ```
 
-Fully explicit type:
-
-```lean
-{E : Type u_5} → [SeminormedAddGroup.{u_5} E] → NNNorm.{u_5} E
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -1276,12 +968,6 @@ Type:
 
 ```lean
 {α : Type u_2} → [β : SeminormedCommRing α] → NonUnitalSeminormedCommRing α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_2} → [β : SeminormedCommRing.{u_2} α] → NonUnitalSeminormedCommRing.{u_2} α
 ```
 
 Definition body (one-level semantic boundary):
@@ -1308,12 +994,6 @@ Type:
 {α : Type u} → [self : Semiring α] → NonAssocSemiring α
 ```
 
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : Semiring.{u} α] → NonAssocSemiring.{u} α
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -1336,12 +1016,6 @@ Type:
 Add Nat
 ```
 
-Fully explicit type:
-
-```lean
-Add.{0} Nat
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -1360,12 +1034,6 @@ Type:
 
 ```lean
 {α : Type u_1} → [Add α] → HAdd α α α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Add.{u_1} α] → HAdd.{u_1, u_1, u_1} α α α
 ```
 
 Definition body (one-level semantic boundary):
@@ -1388,12 +1056,6 @@ Type:
 SemilatticeSup NNReal
 ```
 
-Fully explicit type:
-
-```lean
-SemilatticeSup.{0} NNReal
-```
-
 Definition body (one-level semantic boundary):
 
 ```lean
@@ -1412,12 +1074,6 @@ Type:
 
 ```lean
 Semiring NNReal
-```
-
-Fully explicit type:
-
-```lean
-Semiring.{0} NNReal
 ```
 
 Definition body (one-level semantic boundary):
