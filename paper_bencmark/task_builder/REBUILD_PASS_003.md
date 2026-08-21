@@ -6,15 +6,16 @@
 - Baseline status: completed, with 59 fully validated eligible results
 - Pass-3 scope: the 25 fully validated Audit 2 results that were not accepted
 - Processing order: the order in the ledger below
-- Active task: `P10-T3`
-- Rebuilds started: 13/25
+- Active task: `P11-T1`
+- Rebuilds started: 14/25
 - Rebuilds committed and pushed: 11/25
 - Pass-3 audits accepted: 0/25
 
 `P04-T1`, `P04-T2`, `P05-T1`, `P05-T2`, `P05-T3`, and `P06-T1` have been
 rebuilt and pushed. `P07-T2` is blocked on source clarification; `P08-T3`,
 `P09-T2`, `P09-T3`, `P10-T1`, and `P10-T2` have also been rebuilt and pushed,
-and `P10-T3` is in progress.
+`P10-T3` is blocked by a contradiction in the printed first-order recurrence,
+and `P11-T1` is in progress.
 
 ## Operating rules
 
@@ -69,8 +70,8 @@ Audit 2 versions.
 | 10 | `P09-T3` | `not-faithful-different` | `no / no` | `6b8ca8416867` | [decision](../highambench/tasks/P09/T3/faithfulness/decision.json), [report](../highambench/tasks/P09/T3/faithfulness/report.md) | `rebuilt-pushed` | `85d54831c` | - |
 | 11 | `P10-T1` | `not-faithful-weaker` | `no / yes` | `624ef97f4f9f` | [decision](../highambench/tasks/P10/T1/faithfulness/decision.json), [report](../highambench/tasks/P10/T1/faithfulness/report.md) | `rebuilt-pushed` | `c49e920af` | - |
 | 12 | `P10-T2` | `not-faithful-different` | `no / no` | `ceb4251350f7` | [decision](../highambench/tasks/P10/T2/faithfulness/decision.json), [report](../highambench/tasks/P10/T2/faithfulness/report.md) | `rebuilt-pushed` | `3e42b5a31` | - |
-| 13 | `P10-T3` | `not-faithful-different` | `no / no` | `c985025981ec` | [decision](../highambench/tasks/P10/T3/faithfulness/decision.json), [report](../highambench/tasks/P10/T3/faithfulness/report.md) | `in-progress` | - | - |
-| 14 | `P11-T1` | `not-faithful-weaker` | `no / yes` | `fd63257e85de` | [decision](../highambench/tasks/P11/T1/faithfulness/decision.json), [report](../highambench/tasks/P11/T1/faithfulness/report.md) | `pending` | - | - |
+| 13 | `P10-T3` | `not-faithful-different` | `no / no` | `c985025981ec` | [decision](../highambench/tasks/P10/T3/faithfulness/decision.json), [report](../highambench/tasks/P10/T3/faithfulness/report.md) | `blocked` | - | source contradiction documented below |
+| 14 | `P11-T1` | `not-faithful-weaker` | `no / yes` | `fd63257e85de` | [decision](../highambench/tasks/P11/T1/faithfulness/decision.json), [report](../highambench/tasks/P11/T1/faithfulness/report.md) | `in-progress` | - | - |
 | 15 | `P11-T3` | `not-faithful-different` | `no / no` | `9e89faf58c92` | [decision](../highambench/tasks/P11/T3/faithfulness/decision.json), [report](../highambench/tasks/P11/T3/faithfulness/report.md) | `pending` | - | - |
 | 16 | `P12-T2` | `not-faithful-weaker` | `no / yes` | `b7d3d843d9a0` | [decision](../highambench/tasks/P12/T2/faithfulness/decision.json), [report](../highambench/tasks/P12/T2/faithfulness/report.md) | `pending` | - | - |
 | 17 | `P12-T3` | `not-faithful-weaker` | `no / yes` | `c3afb57814be` | [decision](../highambench/tasks/P12/T3/faithfulness/decision.json), [report](../highambench/tasks/P12/T3/faithfulness/report.md) | `pending` | - | - |
@@ -102,6 +103,33 @@ strictly weaker than both printed claims. Rebuilding either printed claim
 would require adding an unprinted range/rank hypothesis; retaining the valid
 factorization and norm estimate would require narrowing the selected source.
 Both choices require project-owner approval under operating rule 8. No P07-T2
+construction files were changed in pass 3.
+
+### P10-T3
+
+The selected result includes the four displayed SylR block-error estimates,
+their recurrence, equation (20), and the resulting logarithmic-stability claim
+on PDF page 28, printed page 86. The displayed simplification for `R12` replaces
+the already accumulated total errors in `R11` and `R22` by the unaugmented
+smaller-problem error. Substituting the paper's immediately preceding `R11`
+and `R22` inequalities does not justify that step.
+
+More concretely, write
+`alpha = ||A||/sep(A,B)` and `beta = ||B||/sep(A,B)`. The four inequalities
+before simplification yield an error coefficient containing
+`4 + 2*alpha + 2*beta + 2*alpha*beta`, together with propagated forcing terms
+from the `R11` and `R22` right-hand-side errors. The printed recurrence contains
+only `4 + 2*alpha + 2*beta`. The omitted terms are first order in the rounding
+error, so the paper's stated suppression of higher-order terms does not remove
+them. The published paper, the authors' final copy, and the arXiv version all
+print the same step; no correction was found.
+
+A sound operational rebuild can use the corrected recurrence and still derive
+a logarithmic-stability result, but it cannot retain the selected equation-(20)
+bound. Retaining equation (20) instead requires assuming the unsupported
+simplification and would reproduce Audit 2's critical assumed-local-analysis
+failure. Either changing the selected source claim or formalizing a corrected
+variant requires project-owner approval under operating rule 8. No P10-T3
 construction files were changed in pass 3.
 
 ## End-of-pass checkpoint
