@@ -2,28 +2,40 @@ import HighamBench.P16Definitions
 
 namespace HighamBench
 
-/-- P16-T3: Theorem 6.3 for the recorded mixed-precision restarted MGS-GMRES
-execution. At every restart, the actual normalized backward error and relative
-forward error obey the paper's `Lambda` contraction up to their respective
-high-precision first-order floors. -/
+/-- P16-T3: Theorem 6.3 for one fixed-precision, fully stored restarted
+MGS-GMRES execution. The per-restart contractions have the paper's common
+`Lambda`, and their iteration gives a geometric envelope down to the two
+high-precision floors, modulo uniform second-order terms. -/
 theorem p16_t3_mixed_precision_geometric_convergence
-    {n : ℕ} {ι : Type*} {l : Filter ι} [l.NeBot]
-    (run : P16MixedPrecisionGMRESRun (n := n) l)
-    (hLambda : p16MuchLessThanOneAt l (p16MixedContraction run)) :
-    (∀ i : ℕ,
-      p16FirstOrderLeAt l (p16MixedScale run)
-        (fun t ↦ p16BackwardError run.A run.b (run.xHat (i + 1) t))
-        (fun t ↦
-          p16MixedContraction run t *
-              p16BackwardError run.A run.b (run.xHat i t) +
-            p16BackwardFloor run t)) ∧
-      ∀ i : ℕ,
-        p16FirstOrderLeAt l (p16MixedScale run)
-          (fun t ↦ p16ForwardError run.xExact (run.xHat (i + 1) t))
-          (fun t ↦
-            p16MixedContraction run t *
-                p16ForwardError run.xExact (run.xHat i t) +
-              p16ForwardFloor run t) := by
+    {n : ℕ} (run : P16FixedMixedPrecisionGMRESRun n)
+    (hLambda :
+      0 ≤ p16FixedMixedContraction run ∧
+        p16FixedMixedContraction run < 1) :
+    ∃ backwardRemainder forwardRemainder : ℕ → ℝ,
+      backwardRemainder =
+          (fun i ↦ (run.restart i).theorem41.backwardRemainder) ∧
+      forwardRemainder =
+          (fun i ↦ (run.restart i).theorem41.forwardRemainder) ∧
+      p16UniformSecondOrder run.uHigh run.uLow backwardRemainder ∧
+      p16UniformSecondOrder run.uHigh run.uLow forwardRemainder ∧
+      (∀ i : ℕ,
+        p16BackwardError run.A run.b (run.xHat (i + 1)) ≤
+          p16FixedMixedContraction run *
+              p16BackwardError run.A run.b (run.xHat i) +
+            p16FixedBackwardFloor run + |backwardRemainder i|) ∧
+      (∀ i : ℕ,
+        p16ForwardError run.xExact (run.xHat (i + 1)) ≤
+          p16FixedMixedContraction run *
+              p16ForwardError run.xExact (run.xHat i) +
+            p16FixedForwardFloor run + |forwardRemainder i|) ∧
+      p16FixedGeometricEnvelope
+        (p16FixedMixedContraction run) (p16FixedBackwardFloor run)
+        run.uHigh run.uLow backwardRemainder
+        (fun i ↦ p16BackwardError run.A run.b (run.xHat i)) ∧
+      p16FixedGeometricEnvelope
+        (p16FixedMixedContraction run) (p16FixedForwardFloor run)
+        run.uHigh run.uLow forwardRemainder
+        (fun i ↦ p16ForwardError run.xExact (run.xHat i)) := by
   -- PROOF_START
   sorry
 
