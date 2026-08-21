@@ -7,55 +7,96 @@ Precision Applications*, Journal of Scientific Computing 92, article 6,
 2022. The local PDF SHA-256 is
 `b18628ffc348d7aeec2da02efb989b6e012f0b0fae09b27fbff735bb8a5877cd`.
 
-P18-T3 selects the coefficient-level claim for Method 4s3pC:
+P18-T3 selects the Method 4s3pC result in Section 4.3:
 
-- the third-order consistency conditions listed on PDF/article page 7;
-- the simplified smooth-perturbation conditions (3.5) on page 8;
-- the statement on page 17 that Method 4s3pC was devised for those simplified
-  conditions; and
-- the four-stage `A`, `A^epsilon`, `b`, and `b^epsilon` coefficients and the
-  smooth/nonsmooth distinction printed on page 18.
+```text
+well-behaved tau:      Error = O(Delta t^3) + O(epsilon Delta t^3)
+not well-behaved tau:  Error = O(Delta t^3) + O(epsilon Delta t^2).
+```
 
-The paper follows the coefficients with expected global errors
-`O(Delta t^3) + O(epsilon Delta t^3)` for a well-behaved perturbation and
-`O(Delta t^3) + O(epsilon Delta t^2)` otherwise. It does not provide the norm,
-hidden constants, asymptotic neighborhood, trajectory semantics, or stability
-theorem needed to turn those displays into a formal global bound. Page 19 and
-the conclusion instead say that rigorous stability analysis remains necessary.
-This task therefore certifies the coefficients responsible for the two
-regimes; it does not claim the unfinished global theorem.
+These displays appear after the coefficients on PDF/article page 18. Their
+source context includes the additive Runge--Kutta algorithm (3.1), the
+one-step/global correspondence after (3.3), the four consistency conditions
+through order three on page 7, every simplified smooth perturbation condition
+(3.5a)--(3.5f) on page 8, and the inherited stability qualification on pages
+2 and 5.
 
-## Printed coefficients
+## Exact tableau interpretation
 
-The controlled definitions transcribe the four-stage coefficients exactly as
-printed. The source gives decimal values to fifteen places rather than symbolic
-exact values. Lean treats those printed decimals as exact rational reals, so
-identities designed to be zero can have residuals around `10^-15`.
+The paper prints the Method 4s3pC coefficients to fifteen decimal places but
+states the order conditions as exact equalities. Literal rational arithmetic
+on those decimals leaves residuals around `10^-15`, and the paper does not say
+whether the decimals are exact or rounded or provide the unprinted values.
 
-`p18PrintedCoeffTolerance = 2 / 10^15` is a transparent certificate tolerance
-for that printed representation. It is larger than every residual asserted in
-the target; it is not an error constant for a Runge--Kutta execution.
+`P18Method4s3pCSourceModel` therefore represents the underlying exact tableau
+that the paper's claim presupposes. It requires:
 
-The node vectors are linked to the printed matrices by
-`c = A*e` and `c^epsilon = A^epsilon*e`. Tilde quantities are the pointwise sums
-of their full-precision and perturbation parts.
+- `b^epsilon = 0`;
+- all four exact consistency equations through order three; and
+- all sixteen exact conditions in (3.5a)--(3.5f), including those made
+  automatic by `b^epsilon = 0`.
+
+The existing decimal constants remain a literal transcription of page 18,
+but they are not silently equated with the unknown exact tableau and no
+project-selected residual tolerance is treated as a source theorem. This is
+an explicit interpretation premise forced by the source's rounded-data
+ambiguity, not an exactness claim about the printed rationals.
+
+## Algorithm-linked branches
+
+`P18StableMethod4s3pCBranch` records a family of actual executions of the
+original additive method (3.1). Every one-step run uses the same `F`,
+`F^epsilon`, `tau`, perturbation scale, and exact source tableau. Its initial,
+computed-next, and reference-next states are linked to consecutive states of
+the family. The local scheme and perturbation errors are norms of those actual
+one-step errors, not arbitrary scalar sequences.
+
+The state space and its norm are universally quantified. Thus the task does
+not claim that the paper selected a Euclidean norm or a particular dimension.
+The paper does not give a unique analytic definition of "well behaved", so a
+source-level `P18TauRegime` tag distinguishes the two cases without inventing
+derivative orders, domains, or uniformity conditions.
+
+For each branch, the local B-series consequences are explicit:
+
+- the scheme local error is bounded by `C_s * h^4`;
+- the well-behaved perturbation local error is bounded by
+  `C_p * |epsilon| * h^4`; and
+- the non-well-behaved perturbation local error is bounded by
+  `C_p * |epsilon| * h^3`.
+
+These bounds are the local forms inherited from the paper's page-5
+correspondence. They expose the analytic content that the source leaves inside
+its B-series and regularity discussion rather than replacing it with a
+coefficient-print tolerance.
+
+## Stability and big-O semantics
+
+The paper requires stability for a global interpretation but does not define
+it. The branch makes the needed finite-time property explicit: each global
+scheme or perturbation contribution is bounded by one stability constant times
+the sum of its local contributions. If `N` steps of size `h` cover at most the
+fixed horizon `T`, then `N*h <= T`.
+
+`p18UniformTwoTermGlobalOrder` interprets
+`O(h^p) + O(epsilon h^m)` by existential nonnegative constants and keeps the
+scheme and perturbation contributions separate. It is uniform over the
+supplied asymptotic family but does not choose a limiting path for `epsilon`
+and `h`, merge the two terms, or expose numerical constants as part of the
+paper claim.
 
 ## Fixed conclusion
 
-The theorem proves, without assumptions:
+The theorem retains `b^epsilon = 0`, the exact third-order consistency
+conditions, and all exact smooth perturbation conditions. It then derives the
+two page-18 global orders. The proof sums the local errors, applies stability,
+uses `N*h <= T`, and loses exactly one power of `h`:
 
-1. the printed perturbation output weights satisfy `b^epsilon = 0` exactly;
-2. the four consistency conditions through order three have residual at most
-   `2e-15`;
-3. every nontrivial simplified smooth-perturbation condition through order
-   three has residual at most `2e-15`; and
-4. the stricter nonsmooth condition `|b tilde| |c^epsilon| = 0` fails
-   decisively: its left side is greater than `1/100`.
+```text
+local h^4 + epsilon*h^4  ->  global h^3 + epsilon*h^3,
+local h^4 + epsilon*h^3  ->  global h^3 + epsilon*h^2.
+```
 
-Conditions containing `b^epsilon` vanish exactly by item 1. The remaining six
-smooth conditions are all stated explicitly. Item 4 records why the same
-coefficients do not satisfy the nonsmooth order-three requirements.
-
-No Euclidean state norm, arbitrary state dimension, exact big-O constant,
-stability premise, or comparison between unrelated hidden constants occurs in
-the target.
+Neither final global order is a field of the execution. No IEEE rounding mode,
+overflow, underflow, exceptional-value rule, stability theorem beyond the
+stated accumulation property, or comparison of hidden constants is claimed.

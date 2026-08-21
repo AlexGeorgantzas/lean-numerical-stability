@@ -2,42 +2,27 @@ import HighamBench.P18Definitions
 
 namespace HighamBench
 
-/-- P18-T3: the printed Method 4s3pC coefficients satisfy the third-order
-consistency and simplified smooth-perturbation conditions to their print
-precision, while failing the corresponding nonsmooth absolute condition. -/
-theorem p18_t3_method4s3pc_order_certificate :
-    p18Method4s3pCBPerturbation = (fun _ => 0) ∧
-      |p18CoeffDot p18Method4s3pCBTilde p18Method4s3pCE - 1| ≤
-        p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde p18Method4s3pCCTilde - 1 / 2| ≤
-        p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffHadamard p18Method4s3pCCTilde
-            p18Method4s3pCCTilde) - 1 / 3| ≤
-        p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffMatVec p18Method4s3pCATilde
-            p18Method4s3pCCTilde) - 1 / 6| ≤
-        p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          p18Method4s3pCCPerturbation| ≤ p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffMatVec p18Method4s3pCAPerturbation
-            p18Method4s3pCCTilde)| ≤ p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffMatVec p18Method4s3pCATilde
-            p18Method4s3pCCPerturbation)| ≤ p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffHadamard p18Method4s3pCCTilde
-            p18Method4s3pCCPerturbation)| ≤ p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffMatVec p18Method4s3pCAPerturbation
-            p18Method4s3pCCPerturbation)| ≤ p18PrintedCoeffTolerance ∧
-      |p18CoeffDot p18Method4s3pCBTilde
-          (p18CoeffHadamard p18Method4s3pCCPerturbation
-            p18Method4s3pCCPerturbation)| ≤ p18PrintedCoeffTolerance ∧
-      1 / 100 < p18CoeffAbsDot p18Method4s3pCBTilde
-        p18Method4s3pCCPerturbation := by
+/-- P18-T3: Method 4s3pC has third-order scheme error in both source
+regularity regimes. Under the source's exact-tableau interpretation and an
+explicit finite-time stability model, the perturbation error is third order
+for well-behaved `tau` and second order otherwise. -/
+theorem p18_t3_method4s3pc_global_error_regimes
+    {State : Type*} [NormedAddCommGroup State] [NormedSpace ℝ State]
+    {ι : Type*} (method : P18Method4s3pCSourceModel)
+    (smooth : P18StableMethod4s3pCBranch State ι method 4)
+    (nonsmooth : P18StableMethod4s3pCBranch State ι method 3)
+    (hsmooth : smooth.tauRegime = P18TauRegime.wellBehaved)
+    (hnonsmooth :
+      nonsmooth.tauRegime = P18TauRegime.notWellBehaved) :
+    method.tableau.bPerturbation = (fun _ ↦ 0) ∧
+      p18ThirdOrderConsistency method.tableau ∧
+      p18SmoothPerturbationOrderThree method.tableau ∧
+      p18UniformTwoTermGlobalOrder smooth.globalError
+        smooth.globalSchemeError smooth.globalPerturbationError
+        smooth.step smooth.epsilon 3 3 ∧
+      p18UniformTwoTermGlobalOrder nonsmooth.globalError
+        nonsmooth.globalSchemeError nonsmooth.globalPerturbationError
+        nonsmooth.step nonsmooth.epsilon 3 2 := by
   -- PROOF_START
   sorry
 

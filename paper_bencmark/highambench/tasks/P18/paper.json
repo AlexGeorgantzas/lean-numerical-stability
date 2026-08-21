@@ -78,9 +78,9 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use the printed Method 4s3pC coefficients to certify third-order consistency and the simplified smooth perturbation conditions at decimal print precision, and prove that the stricter nonsmooth absolute condition fails. Do not turn the following expected big-O regimes into exact global norm inequalities or compare their hidden constants.",
+      "decision": "Use Method 4s3pC's two stability-conditional global error regimes on page 18. Represent the unprinted exact tableau presupposed by the paper's exact order conditions without claiming that the rounded displayed decimals are exact, retain every third-order and smooth perturbation condition, link local errors to executions of algorithm (3.1), state the required finite-time stability property explicitly, and derive the smooth O(h^3)+O(epsilon*h^3) and nonsmooth O(h^3)+O(epsilon*h^2) bounds with existential hidden constants.",
       "task_id": "P18-T3",
-      "theorem_name": "p18_t3_method4s3pc_order_certificate"
+      "theorem_name": "p18_t3_method4s3pc_global_error_regimes"
     }
   },
   "schema_version": "highambench-paper-0.2",
