@@ -10,7 +10,7 @@ theorem p12_t3_three_product_exact
     (run : P12ThreeProductExecution fmt x1 x2 x3 tr) :
     (∃ ra2 : P12Representation fmt tr.a2,
         |tr.a3| ≤
-          (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale ra2.exponent) ∧
+          fmt.condition7Ceiling * fmt.scale ra2.exponent) ∧
       tr.t = tr.s2 - tr.a2 ∧
       tr.r = tr.a3 - tr.t ∧
       tr.s2 + tr.r = tr.a2 + tr.a3 ∧

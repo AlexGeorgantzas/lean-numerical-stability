@@ -51,11 +51,11 @@ noncomputable def scale (fmt : P12RadixFormat) (e : ℤ) : ℝ :=
 noncomputable def maxValue (fmt : P12RadixFormat) : ℝ :=
   fmt.maxMantissa * fmt.scale fmt.emax
 
-/-- Explicit range-validity for an exact real operation result.  The strict
-upper endpoint matches equation (1) and makes the paper's "absence of
-overflow" qualification in equation (8) visible. -/
+/-- An exact real operation result lies in the finite range of equation (1).
+This is the Section 4 meaning of "absence of overflow": the exact result does
+not lie beyond either finite endpoint. -/
 def noOverflow (fmt : P12RadixFormat) (z : ℝ) : Prop :=
-  |z| < fmt.mantissaBound * fmt.scale fmt.emax
+  |z| ≤ fmt.maxValue
 
 theorem betaR_pos (fmt : P12RadixFormat) : 0 < fmt.betaR := by
   change (0 : ℝ) < (fmt.beta : ℝ)
@@ -264,6 +264,41 @@ theorem p12IntegerMultiple_sub
   rw [hkx, hky, Int.cast_sub]
   ring
 
+/-- Products multiply their radix scales. -/
+theorem p12IntegerMultiple_mul
+    {fmt : P12RadixFormat} {x y : ℝ} {e f : ℤ}
+    (hx : p12IntegerMultiple fmt x e)
+    (hy : p12IntegerMultiple fmt y f) :
+    p12IntegerMultiple fmt (x * y) (e + f) := by
+  rcases hx with ⟨kx, hkx⟩
+  rcases hy with ⟨ky, hky⟩
+  refine ⟨kx * ky, ?_⟩
+  rw [hkx, hky, Int.cast_mul, fmt.scale_add]
+  ring
+
+/-- A multiple of a coarser radix scale is also a multiple of every finer
+radix scale. -/
+theorem p12IntegerMultiple_of_le
+    {fmt : P12RadixFormat} {x : ℝ} {e f : ℤ}
+    (hef : e ≤ f) (hx : p12IntegerMultiple fmt x f) :
+    p12IntegerMultiple fmt x e := by
+  rcases hx with ⟨k, hk⟩
+  let d : ℕ := (f - e).toNat
+  have hdiff_nonneg : 0 ≤ f - e := sub_nonneg.mpr hef
+  have hd : (d : ℤ) = f - e := Int.toNat_of_nonneg hdiff_nonneg
+  refine ⟨k * (fmt.beta : ℤ) ^ d, ?_⟩
+  calc
+    x = (k : ℝ) * fmt.scale f := hk
+    _ = (k : ℝ) * (fmt.scale e * fmt.betaR ^ d) := by
+      rw [P12RadixFormat.scale, P12RadixFormat.scale]
+      have hexp : f = e + (d : ℤ) := by omega
+      rw [hexp, zpow_add₀ (ne_of_gt fmt.betaR_pos), zpow_natCast]
+    _ = ((k * (fmt.beta : ℤ) ^ d : ℤ) : ℝ) * fmt.scale e := by
+      simp only [Int.cast_mul, Int.cast_pow, Int.cast_natCast]
+      change (k : ℝ) * (fmt.scale e * ((fmt.beta : ℝ) ^ d)) =
+        (k : ℝ) * ((fmt.beta : ℝ) ^ d) * fmt.scale e
+      ring
+
 namespace P12Representation
 
 theorem abs_lt_mantissaBound_mul_scale
@@ -418,6 +453,22 @@ theorem p12NearestInFormat_abs_le_of_symmetric_candidates
       abs_of_nonneg (by linarith : 0 ≤ exact - -bound)] at hnear
     linarith
   exact (abs_le).2 ⟨hroundLower, hroundUpper⟩
+
+/-- Nearest rounding is faithful, independently of tie breaking. -/
+theorem p12NearestInFormat_faithful
+    {fmt : P12RadixFormat} {exact rounded : ℝ}
+    (h : p12NearestInFormat fmt exact rounded) :
+    p12FaithfulInFormat fmt exact rounded := by
+  refine ⟨h.1, ?_⟩
+  intro candidate hcandidate hbetween
+  have hminimal := h.2 candidate hcandidate
+  rcases hbetween with hbetween | hbetween
+  · rw [abs_of_nonneg (by linarith : 0 ≤ exact - rounded),
+      abs_of_nonneg (by linarith : 0 ≤ exact - candidate)] at hminimal
+    linarith
+  · rw [abs_of_nonpos (by linarith : exact - rounded ≤ 0),
+      abs_of_nonpos (by linarith : exact - candidate ≤ 0)] at hminimal
+    linarith
 
 theorem p12FaithfulInFormat_mem
     {fmt : P12RadixFormat} {exact rounded : ℝ}
@@ -658,8 +709,9 @@ private theorem representation_of_integer_multiple_of_bound
     have heplus : e + 1 ≤ fmt.emax := by
       by_contra hnot
       have heeq : e = fmt.emax := by omega
-      rw [P12RadixFormat.noOverflow, ← heeq, habs] at hno
-      exact (lt_irrefl _ hno)
+      rw [P12RadixFormat.noOverflow, habs, heeq,
+        P12RadixFormat.maxValue] at hno
+      nlinarith [fmt.maxMantissa_add_one, fmt.scale_pos fmt.emax]
     have hendpoint_nonneg :
         0 ≤ fmt.mantissaBound * fmt.scale e :=
       (mul_pos fmt.mantissaBound_pos (fmt.scale_pos e)).le
@@ -725,6 +777,113 @@ theorem p12IntegerMultiple_of_representation_at
     {e : ℤ} (he : e ≤ r.exponent) :
     p12IntegerMultiple fmt x e := by
   exact representation_integer_multiple_at r he
+
+/-- Nearest rounding of an in-range value preserves every radix grid on which
+the exact value lies.  This is the reusable no-range-clipping fact needed by
+the Section 4 applications. -/
+theorem p12NearestInFormat_integerMultiple
+    {fmt : P12RadixFormat} {exact rounded : ℝ} {e : ℤ}
+    (hgrid : p12IntegerMultiple fmt exact e)
+    (hno : fmt.noOverflow exact)
+    (hround : p12NearestInFormat fmt exact rounded) :
+    p12IntegerMultiple fmt rounded e := by
+  rcases hround.1 with ⟨rr⟩
+  by_cases helow : e < fmt.emin
+  · exact p12IntegerMultiple_of_le
+      (le_trans helow.le rr.exponent_lower)
+      (p12IntegerMultiple_of_representation_at rr le_rfl)
+  · have hemin : fmt.emin ≤ e := le_of_not_gt helow
+    by_cases hehigh : e ≤ fmt.emax
+    · by_cases hsmall :
+          |exact| < fmt.mantissaBound * fmt.scale e
+      · rcases p12Representation_exists_of_integerMultiple_of_abs_lt
+            hemin hehigh hgrid hsmall with ⟨rexact, _⟩
+        have hrounded : rounded = exact :=
+          p12NearestInFormat_eq_of_representable ⟨rexact⟩ hround
+        rw [hrounded]
+        exact hgrid
+      · have hlarge :
+            fmt.mantissaBound * fmt.scale e ≤ |exact| :=
+          le_of_not_gt hsmall
+        have helt : e < fmt.emax := by
+          by_contra hnot
+          have heq : e = fmt.emax := le_antisymm hehigh (le_of_not_gt hnot)
+          rw [P12RadixFormat.noOverflow,
+            P12RadixFormat.maxValue] at hno
+          rw [heq] at hlarge
+          nlinarith [fmt.maxMantissa_add_one,
+            fmt.scale_pos fmt.emax]
+        have hre : e ≤ rr.exponent := by
+          by_contra hnot
+          have hrlt : rr.exponent < e := lt_of_not_ge hnot
+          have hsucc : rr.exponent + 1 ≤ e := by omega
+          have hscaleStep :
+              fmt.scale (rr.exponent + 1) ≤ fmt.scale e :=
+            fmt.scale_mono hsucc
+          have hbetaTwo : (2 : ℝ) ≤ fmt.betaR := by
+            change (2 : ℝ) ≤ (fmt.beta : ℝ)
+            exact_mod_cast fmt.beta_ge_two
+          have hscaleTwo :
+              2 * fmt.scale rr.exponent ≤ fmt.scale e := by
+            rw [fmt.scale_succ] at hscaleStep
+            nlinarith [fmt.scale_pos rr.exponent]
+          have hroundedSmall :
+              |rounded| <
+                fmt.mantissaBound / 2 * fmt.scale e := by
+            have hrr := rr.abs_lt_mantissaBound_mul_scale
+            have hboundPos := fmt.mantissaBound_pos
+            nlinarith
+          let endpoint := fmt.mantissaBound * fmt.scale e
+          have hendpointPos : 0 < endpoint :=
+            mul_pos fmt.mantissaBound_pos (fmt.scale_pos e)
+          have hhalfEndpoint :
+              fmt.mantissaBound / 2 * fmt.scale e = endpoint / 2 := by
+            dsimp [endpoint]
+            ring
+          have hroundedUpper : rounded < endpoint := by
+            have := le_abs_self rounded
+            rw [hhalfEndpoint] at hroundedSmall
+            nlinarith
+          have hroundedLower : -endpoint < rounded := by
+            have := neg_abs_le rounded
+            rw [hhalfEndpoint] at hroundedSmall
+            nlinarith
+          by_cases hexactNonneg : 0 ≤ exact
+          · have hpositive : endpoint ≤ exact := by
+              simpa [endpoint, abs_of_nonneg hexactNonneg] using hlarge
+            have hcandidate : p12Representable fmt endpoint :=
+              ⟨positive_boundary_representation fmt e hemin (by omega)⟩
+            have hminimal := hround.2 endpoint hcandidate
+            rw [abs_of_nonneg (by linarith : 0 ≤ exact - rounded),
+              abs_of_nonneg (by linarith : 0 ≤ exact - endpoint)] at hminimal
+            linarith
+          · have hexactNeg : exact < 0 := lt_of_not_ge hexactNonneg
+            have hnegative : exact ≤ -endpoint := by
+              rw [abs_of_neg hexactNeg] at hlarge
+              dsimp [endpoint]
+              linarith
+            have hcandidate : p12Representable fmt (-endpoint) :=
+              ⟨negative_boundary_representation fmt e hemin (by omega)⟩
+            have hminimal := hround.2 (-endpoint) hcandidate
+            rw [abs_of_nonpos (by linarith : exact - rounded ≤ 0),
+              abs_of_nonpos (by linarith : exact - -endpoint ≤ 0)] at hminimal
+            linarith
+        exact p12IntegerMultiple_of_representation_at rr hre
+    · have hemax : fmt.emax ≤ e := by omega
+      have hgridMax : p12IntegerMultiple fmt exact fmt.emax :=
+        p12IntegerMultiple_of_le hemax hgrid
+      have hstrict :
+          |exact| < fmt.mantissaBound * fmt.scale fmt.emax := by
+        rw [P12RadixFormat.noOverflow,
+          P12RadixFormat.maxValue] at hno
+        nlinarith [fmt.maxMantissa_add_one,
+          fmt.scale_pos fmt.emax]
+      rcases p12Representation_exists_of_integerMultiple_of_abs_lt
+          fmt.emin_le_emax le_rfl hgridMax hstrict with ⟨rexact, _⟩
+      have hrounded : rounded = exact :=
+        p12NearestInFormat_eq_of_representable ⟨rexact⟩ hround
+      rw [hrounded]
+      exact hgrid
 
 private theorem add_representation_of_bound
     {fmt : P12RadixFormat} {a b : ℝ}
@@ -1158,37 +1317,43 @@ structure P12ThreeProductTrace where
   r : ℝ
   s3 : ℝ
 
-/-- The semantic contract of the `TwoProduct` subroutine used in equation (17).
-The exact decomposition is delegated background in Lemma 4.  The remaining
-fields expose its nearest product, local half-ULP error, radix-grid, and range
-properties so that the ThreeProduct proof cannot replace an execution with an
-arbitrary decomposition.  Product-grid range obligations are conditional on a
-nonzero exact product, preserving Lemma 4's trivial zero case. -/
+/-- The observable meaning of "no underflow errors" for a delegated
+`TwoProduct` call in Lemma 4.  The transformation remains exact, a nonzero
+product is not rounded to zero, and the returned residual retains the product
+scale propagated by `FourSumThreeProduct`. -/
+def P12TwoProductNoUnderflowError
+    (fmt : P12RadixFormat) (left right high low : ℝ)
+    (productGrid : ℤ) : Prop :=
+  high + low = left * right ∧
+    (left * right ≠ 0 → high ≠ 0) ∧
+    |low| ≤ fmt.mantissaBound / 2 * fmt.scale productGrid
+
+/-- The concrete equation-(17) contract of one `TwoProduct` call.  `leftGrid`
+and `rightGrid` identify the residual scale propagated by the corresponding
+`FourSumThreeProduct` call; unlike the old contract, no operand or output grid
+is stored as an execution certificate. -/
 structure P12TwoProductExecution
     (fmt : P12RadixFormat) {left right : ℝ}
     (leftRep : P12LeastRepresentation fmt left)
     (rightRep : P12LeastRepresentation fmt right)
+    (leftGrid rightGrid : ℤ)
     (high low : ℝ) where
   highRep : P12LeastRepresentation fmt high
   lowRep : P12LeastRepresentation fmt low
   high_round : p12NearestInFormat fmt (left * right) high
-  exact : high + low = left * right
+  no_underflow_error : P12TwoProductNoUnderflowError fmt
+    left right high low (leftGrid + rightGrid)
   product_no_overflow : fmt.noOverflow (left * right)
-  product_grid_in_range : left * right ≠ 0 →
-    fmt.emin ≤ leftRep.exponent + rightRep.exponent ∧
-      leftRep.exponent + rightRep.exponent ≤ fmt.emax
-  high_nonzero : left * right ≠ 0 → high ≠ 0
   low_error : |low| ≤ (1 / 2) * fmt.scale highRep.exponent
-  high_envelope_candidates :
-    let bound :=
-      fmt.mantissaBound * fmt.scale leftRep.exponent * |right|
-    p12Representable fmt bound ∧ p12Representable fmt (-bound)
-  grid_preserving :
-    ∀ {leftExponent rightExponent : ℤ},
-      p12IntegerMultiple fmt left leftExponent →
-      p12IntegerMultiple fmt right rightExponent →
-      p12IntegerMultiple fmt high (leftExponent + rightExponent) ∧
-        p12IntegerMultiple fmt low (leftExponent + rightExponent)
+
+/-- The Section 4 instance of FastTwoSum: all three operations use nearest
+rounding.  The more general Theorem 2 execution remains available for the
+paper's faithful-subtraction result. -/
+structure P12NearestFastTwoSumExecution (fmt : P12RadixFormat)
+    (x y : ℝ) (tr : P12FastTwoSumTrace) : Prop where
+  add : p12NearestInFormat fmt (x + y) tr.s
+  first_sub : p12NearestInFormat fmt (tr.s - x) tr.t
+  second_sub : p12NearestInFormat fmt (y - tr.t) tr.e
 
 /-- The FastTwoSum trace formed by lines 1--2 of `ThreeProduct` after the three
 `TwoProduct` calls have produced the four-term expansion. -/
@@ -1198,36 +1363,29 @@ def P12ThreeProductTrace.mergeTrace
   t := tr.t
   e := tr.r
 
-/-- One execution of the paper's `ThreeProduct` procedure.  Its merge-specific
-range fields retain Section 4's standing absence-of-overflow convention without
-strengthening the generic FastTwoSum execution used by Theorem 2.  The product
-grid witness also rules out range clipping at the middle addition.  Neither the
-exact merge nor representability of the final exact sum is assumed. -/
+/-- One execution of the paper's `ThreeProduct` procedure.  The propagated
+scales are exactly those in the proof of Lemma 4: the first product uses the
+input scales, and both following products use their sum.  Every arithmetic
+operation is nearest-rounded, and the explicit range fields are precisely
+Section 4's standing absence-of-overflow convention.  No exact merge, final
+representability, or target equality is stored in the execution. -/
 structure P12ThreeProductExecution
     (fmt : P12RadixFormat) (x1 x2 x3 : ℝ)
     (tr : P12ThreeProductTrace) where
   x1Rep : P12LeastRepresentation fmt x1
   x2Rep : P12LeastRepresentation fmt x2
   x3Rep : P12LeastRepresentation fmt x3
-  first : P12TwoProductExecution fmt x2Rep x3Rep tr.th tr.tl
-  second : P12TwoProductExecution fmt x1Rep first.highRep tr.s1 tr.a2
-  third : P12TwoProductExecution fmt x1Rep first.lowRep tr.a3 tr.a4
-  merge : P12FastTwoSumExecution fmt tr.a2 tr.a3 tr.mergeTrace
+  first : P12TwoProductExecution fmt x2Rep x3Rep
+    x2Rep.exponent x3Rep.exponent tr.th tr.tl
+  second : P12TwoProductExecution fmt x1Rep first.highRep
+    x1Rep.exponent (x2Rep.exponent + x3Rep.exponent) tr.s1 tr.a2
+  third : P12TwoProductExecution fmt x1Rep first.lowRep
+    x1Rep.exponent (x2Rep.exponent + x3Rep.exponent) tr.a3 tr.a4
+  merge : P12NearestFastTwoSumExecution fmt tr.a2 tr.a3 tr.mergeTrace
   merge_add_no_overflow : fmt.noOverflow (tr.a2 + tr.a3)
   merge_first_sub_no_overflow : fmt.noOverflow (tr.s2 - tr.a2)
   merge_second_sub_no_overflow : fmt.noOverflow (tr.a3 - tr.t)
-  merge_high_grid :
-    p12IntegerMultiple fmt tr.s2
-      (x1Rep.exponent + x2Rep.exponent + x3Rep.exponent)
-  merge_no_range_error :
-    ∃ candidate : ℝ, p12Representable fmt candidate ∧
-      |(tr.a2 + tr.a3) - candidate| ≤
-        fmt.mantissaBound / 2 *
-          fmt.scale (x1Rep.exponent + x2Rep.exponent + x3Rep.exponent)
   final_add : p12NearestInFormat fmt (tr.r + tr.a4) tr.s3
   final_no_overflow : fmt.noOverflow (tr.r + tr.a4)
-  triple_grid_in_range : x1 * x2 * x3 ≠ 0 →
-    fmt.emin ≤ x1Rep.exponent + x2Rep.exponent + x3Rep.exponent ∧
-      x1Rep.exponent + x2Rep.exponent + x3Rep.exponent ≤ fmt.emax
 
 end HighamBench
