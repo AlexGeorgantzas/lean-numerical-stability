@@ -53,10 +53,16 @@ order. `p06MeanIndependent` uses the test-function form of Definition 1.3's
 conditional-expectation identity and does not restrict the sample space to be
 finite.
 
-`P06HouseholderQRRun` records `n>0`, `m>=n`, the Householder vectors, the local
-perturbations `DeltaP_j`, and the perturbed state recurrence from (4.1). Its
-last state is the computed `RHat`, every output entry is linked to the scalar
-rounding trace, and the output is upper trapezoidal.
+`P06HouseholderQRRun` records `n>0`, `m>=n`, the local perturbations
+`DeltaP_j`, and the perturbed state recurrence from (4.1). At every step its
+reflector is the output of a deterministic builder applied to the current
+active column; the padded vector has no support above the pivot, its exact
+reflector annihilates the active column below the pivot, and it has squared
+norm two. `p06HouseholderQRStep` explicitly assigns those intended
+subdiagonal entries to zero. The run also records the exact product of the
+same reflectors and its orthogonality. Its last state is the computed `RHat`,
+every output entry is linked to the scalar rounding trace, and the output is
+upper trapezoidal.
 
 `P06Lemma42Assumption` represents the paper's explicit strengthening: the
 event on which every `||DeltaP_j||_2 <= c5*gammaTilde_m(lambda)` holds has
@@ -64,19 +70,29 @@ probability one.
 
 ## Lean target
 
-`P06Theorem44ColumnwiseCertificate` is the simultaneous conclusion of
-Theorem 4.4. It retains the event, its probability lower bound, the exact
-orthogonal witness, the same `DeltaA` in the factorization and bounds, and one
-unspecified second-order remainder family per column. P06-T1 formalizes the
-paper's next sentence: from that certificate it derives (4.20) while carrying
-the event, `Q`, `RHat`, and exact backward relation unchanged.
+The target no longer assumes Theorem 4.4's simultaneous conclusion.
+`P06Lemma42ColumnCertificate` is the preceding Lemma 4.2 result specialized to
+one input column: it supplies one measurable event, its one-column failure
+bound, one column perturbation, the exact relation with the run's canonical
+orthogonal factor, and one column bound. P06-T1 must apply that interface to
+all columns, intersect the events, derive the factor `n` in `p4` by a finite
+union bound, assemble one `DeltaA`, retain every bound in (4.17), and derive
+(4.20) on that same event.
+
+The formal theorem is uniform in any positive natural `c5` and `c6` for which
+the local and one-column results hold. In particular it applies to the fixed
+integer constants of modest size asserted by the paper; it does not choose
+different constants after seeing an execution or event.
 
 The paper does not specify whether its additive `O(u^2)` is relative to
 `||A||_F`, nor whether its hidden constant is uniform in dimensions or
-`lambda`. Lean therefore represents each remainder only by
-`remainder = O(u^2)` as `u -> 0`. The derived normwise remainder is
-`sum_j |remainder_j(u)|`; finite summation preserves `O(u^2)` and chooses no
-unstated norm scale.
+`lambda`. `P06SecondOrderControl` therefore leaves the scale unspecified but
+requires both the asymptotic `O(u^2)` property and one nonnegative constant
+that controls the remainder for every unit roundoff between zero and the
+distinguished execution's value. This prevents an isolated value at the
+fixed unit roundoff from making the asserted inequality automatic. The
+derived normwise remainder is `sum_j |remainder_j(u)|`; finite summation
+preserves both forms of second-order control.
 
 The condition `sqrt(m)*n^(3/2)*u < 1` in (4.18) belongs to the paper's
 subsequent interpretation of when first-order growth dominates omitted terms.
@@ -87,4 +103,6 @@ as in the paper.
 
 The assumptions are satisfiable. A private construction check instantiates a
 one-point, zero-error Model 1.5 execution of a nonzero `1 x 1` Householder QR
-factorization, with probability-one local and good events.
+factorization, including the active-column reflector builder, explicit-zero
+step, exact orthogonal factor, probability-one local event, and the
+one-column Lemma 4.2 certificate.

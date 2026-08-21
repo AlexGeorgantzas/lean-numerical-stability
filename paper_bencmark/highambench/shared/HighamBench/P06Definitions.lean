@@ -1,6 +1,7 @@
 import HighamBench.Core
 import Mathlib.Analysis.Asymptotics.Lemmas
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Measure.Real
 
 namespace HighamBench
 
@@ -77,6 +78,15 @@ the dimensions, neither of which is specified by equation (4.20). -/
 def p06SecondOrderAtZero (remainder : ℝ → ℝ) : Prop :=
   remainder =O[nhds 0] fun u : ℝ ↦ u ^ 2
 
+/-- A second-order remainder whose asymptotic witness also controls every
+unit roundoff between zero and the distinguished execution's unit roundoff.
+This closes the gap between a limit statement at zero and evaluation at one
+fixed positive value of `u`. -/
+def P06SecondOrderControl (remainder : ℝ → ℝ) (u0 : ℝ) : Prop :=
+  ∃ constant : ℝ, 0 ≤ constant ∧
+    p06SecondOrderAtZero remainder ∧
+    ∀ u, |u| ≤ |u0| → |remainder u| ≤ constant * u ^ 2
+
 /-- Errors generated before operation `k`, in the computation order used by
 Model 1.5. -/
 def p06PriorErrors {Ω : Type*} {steps : ℕ}
@@ -124,29 +134,64 @@ structure P06Model15 (Ω : Type*) [MeasurableSpace Ω] where
   error_mean_zero : ∀ k, ∫ omega, error k omega ∂probability = 0
   error_mean_independent : p06MeanIndependent probability error
 
+/-- The entries below the active diagonal position that the source algorithm
+sets to exact zero after applying one perturbed Householder transformation. -/
+noncomputable def p06HouseholderQRStep {m n : ℕ}
+    (j : Fin n) (P : Fin m → Fin m → ℝ)
+    (B : Fin m → Fin n → ℝ) : Fin m → Fin n → ℝ :=
+  fun i k ↦ if k = j ∧ j.val < i.val then 0 else p06RectMatMul P B i k
+
+/-- A padded Householder vector is constructed for an active column when it
+has no support above the pivot and its exact reflector annihilates that
+column below the pivot. Normalization is recorded separately by the run. -/
+def p06HouseholderForActiveColumn {m n : ℕ}
+    (j : Fin n) (x v : Fin m → ℝ) : Prop :=
+  (∀ i, i.val < j.val → v i = 0) ∧
+    ∀ i, j.val < i.val →
+      p06MatVec (p06HouseholderMatrix v) x i = 0
+
 /-- A Householder QR execution represented in the perturbed-transformation
-form (4.1). Each final entry is linked to the Model 1.5 scalar trace, while the
-state recurrence records the local matrices `Delta P_j`. -/
+form (4.1). The reflector is a deterministic construction from the current
+active column, the intended subdiagonal entries are explicitly set to zero,
+and every final entry is linked to the Model 1.5 scalar trace. -/
 structure P06HouseholderQRRun
     (Ω : Type*) [MeasurableSpace Ω] (m n : ℕ)
     (A : Fin m → Fin n → ℝ) (model : P06Model15 Ω) where
   rows_ge_columns : n ≤ m
   columns_pos : 0 < n
+  reflectorBuilder : Fin n → (Fin m → ℝ) → Fin m → ℝ
   householderVector : Fin n → Ω → Fin m → ℝ
   localPerturbation : Fin n → Ω → Fin m → Fin m → ℝ
   state : Fin (n + 1) → Ω → Fin m → Fin n → ℝ
   RHat : Ω → Fin m → Fin n → ℝ
+  exactQTransposeState : Fin (n + 1) → Ω → Fin m → Fin m → ℝ
+  exactQ : Ω → Fin m → Fin m → ℝ
   outputIndex : Fin m → Fin n → Fin model.operationCount
+  householder_from_active_column : ∀ j omega,
+    householderVector j omega =
+      reflectorBuilder j (fun i ↦ state j.castSucc omega i j)
+  householder_active_column : ∀ j omega,
+    p06HouseholderForActiveColumn j
+      (fun i ↦ state j.castSucc omega i j) (householderVector j omega)
   householder_normalized : ∀ j omega,
     ∑ i : Fin m, householderVector j omega i ^ 2 = 2
   initial_state : ∀ omega, state 0 omega = A
   rounded_step : ∀ j omega,
     state j.succ omega =
-      p06RectMatMul
+      p06HouseholderQRStep j
         (fun i k ↦
           p06HouseholderMatrix (householderVector j omega) i k +
             localPerturbation j omega i k)
         (state j.castSucc omega)
+  exactQTranspose_initial : ∀ omega,
+    exactQTransposeState 0 omega = p06FiniteId
+  exactQTranspose_step : ∀ j omega,
+    exactQTransposeState j.succ omega =
+      p06RectMatMul (p06HouseholderMatrix (householderVector j omega))
+        (exactQTransposeState j.castSucc omega)
+  exactQ_from_steps : ∀ omega i k,
+    exactQ omega i k = exactQTransposeState (Fin.last n) omega k i
+  exactQ_orthogonal : ∀ omega, p06Orthogonal (exactQ omega)
   output_state : ∀ omega, RHat omega = state (Fin.last n) omega
   output_from_trace : ∀ omega i j,
     RHat omega i j = model.computedValue (outputIndex i j) omega
@@ -167,33 +212,34 @@ structure P06Lemma42Assumption
         ((c5 : ℝ) * p06GammaTilde m lambda model.unitRoundoff)
   probability_one : model.probability localEvent = 1
 
-/-- The simultaneous columnwise conclusion (4.16)--(4.17) supplied by
-Theorem 4.4. Keeping this certificate separate makes P06-T1 exactly the next
-sentence of the paper: aggregate this same event into equation (4.20). -/
-structure P06Theorem44ColumnwiseCertificate
+/-- The one-column conclusion of Lemma 4.2, specialized to a column of the QR
+execution. Theorem 4.4 still has to intersect these events, assemble one
+matrix perturbation, prove the simultaneous probability, and aggregate the
+column bounds. -/
+structure P06Lemma42ColumnCertificate
     {Ω : Type*} [MeasurableSpace Ω] {m n : ℕ}
     {A : Fin m → Fin n → ℝ} {model : P06Model15 Ω}
     (run : P06HouseholderQRRun Ω m n A model)
     (c5 c6 : ℕ) (lambda : ℝ)
-    (_local : P06Lemma42Assumption run c5 lambda) where
+    (hlocal : P06Lemma42Assumption run c5 lambda) (column : Fin n) where
   goodEvent : Set Ω
   goodEvent_measurable : MeasurableSet goodEvent
-  probability_bound :
-    p06P4 lambda m n ≤ ENNReal.toReal (model.probability goodEvent)
-  Q : Ω → Fin m → Fin m → ℝ
-  DeltaA : Ω → Fin m → Fin n → ℝ
-  columnRemainder : Fin n → ℝ → Ω → ℝ
-  columnRemainder_second_order : ∀ j omega,
-    p06SecondOrderAtZero (fun u ↦ columnRemainder j u omega)
-  orthogonal_on_good : ∀ omega, omega ∈ goodEvent →
-    p06Orthogonal (Q omega)
-  factorization_on_good : ∀ omega, omega ∈ goodEvent →
-    A + DeltaA omega = p06RectMatMul (Q omega) (run.RHat omega)
-  column_bound_on_good : ∀ omega, omega ∈ goodEvent → ∀ j,
-    p06VecNorm2 (fun i ↦ DeltaA omega i j) ≤
+  goodEvent_subset_local : goodEvent ⊆ hlocal.localEvent
+  failure_probability_bound :
+    model.probability.real goodEventᶜ ≤
+      2 * (m : ℝ) * Real.exp (-lambda ^ 2)
+  deltaColumn : Ω → Fin m → ℝ
+  remainder : ℝ → Ω → ℝ
+  remainder_control : ∀ omega,
+    P06SecondOrderControl (fun u ↦ remainder u omega) model.unitRoundoff
+  exact_column_relation : ∀ omega i,
+    A i column + deltaColumn omega i =
+      ∑ k : Fin m, run.exactQ omega i k * run.RHat omega k column
+  column_bound_on_good : ∀ omega, omega ∈ goodEvent →
+    p06VecNorm2 (deltaColumn omega) ≤
       p06QRLeadingCoefficient c6 lambda m n model.unitRoundoff *
-          p06VecNorm2 (fun i ↦ A i j) +
-        |columnRemainder j model.unitRoundoff omega|
+          p06VecNorm2 (fun i ↦ A i column) +
+        |remainder model.unitRoundoff omega|
 
 /-- Euclidean norm on an arbitrary finite index type, needed for a dilation. -/
 noncomputable def p06FiniteVecNorm2 {ι : Type*} [Fintype ι]

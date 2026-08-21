@@ -1,18 +1,18 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, Model 1.5 execution interface, Theorem 4.4 event certificate, and equation (4.20) aggregation",
+    "kind": "source selection, Model 1.5 Householder execution, Lemma 4.2 column interfaces, Theorem 4.4 event construction, and equation (4.20) aggregation",
     "performed_by": "Codex"
   },
   "assumptions": [
-    "The Householder QR run has positive column dimension n and m >= n, and its computed output RHat is upper trapezoidal.",
+    "The Householder QR run has positive column dimension n and m >= n; each normalized reflector is deterministically built from the current active column, annihilates that column below its pivot, and is applied with the intended subdiagonal entries explicitly set to zero.",
     "The scalar computation obeys Model 1.5: equation (1.4), |delta| <= u with 0 <= u < 1, computation-order mean independence, and zero mean under a probability measure.",
     "The local application bound (4.2) holds for every Householder step on an event of probability one, as explicitly assumed in Lemma 4.2 and Theorem 4.4.",
     "The paper constants c5 and c6 are positive natural numbers and lambda > 0.",
-    "The input to equation (4.20) is the simultaneous Theorem 4.4 certificate: on one measurable event, the exact orthogonal QR relation and every columnwise bound (4.17) hold, with probability at least p4(lambda,m,n).",
-    "Each additive column remainder is an otherwise unscaled O(u^2) function as u tends to zero; no dependence on ||A||, dimensions, or lambda is added beyond what the paper states."
+    "For each input column, the preceding Lemma 4.2 interface supplies its own measurable event, one-column failure probability, exact perturbation relation with the run's common orthogonal factor, and one-column error bound.",
+    "Each additive column remainder is an otherwise unscaled O(u^2) function with one nonnegative constant controlling all unit roundoffs between zero and the current execution value; no dependence on ||A||, dimensions, or lambda is added beyond what the paper states."
   ],
-  "author_label": null,
+  "author_label": "Theorem 4.4",
   "classification_frozen_before_runs": false,
   "conditions": {
     "L": "The identical fixed statement and P06 shared files are present; the frozen NumStability library is also present.",
@@ -20,13 +20,13 @@
   },
   "context_file": "paper_bencmark/highambench/tasks/P06/T1/context.md",
   "formal_statement": {
-    "lean_header": "theorem p06_t1_householder_qr_frobenius_backward_error {Omega} [MeasurableSpace Omega] {m n : Nat} (A) (model : P06Model15 Omega) (run : P06HouseholderQRRun Omega m n A model) (c5 c6 : Nat) (lambda : Real) ... : exists goodEvent Q DeltaA normwiseRemainder, goodEvent is measurable, normwiseRemainder = O(u^2), the event has probability >= p4 and carries upper-trapezoidal RHat, orthogonal Q, A+DeltaA=Q*RHat, and the Frobenius bound (4.20)",
+    "lean_header": "theorem p06_t1_householder_qr_frobenius_backward_error {Omega} [MeasurableSpace Omega] {m n : Nat} (A) (model : P06Model15 Omega) (run : P06HouseholderQRRun Omega m n A model) (c5 c6 : Nat) (lambda : Real) ... (perColumn : forall j, P06Lemma42ColumnCertificate ...) : exists goodEvent Q DeltaA columnRemainder normwiseRemainder, the event is measurable with probability >= p4, Q is orthogonal, A+DeltaA=Q*RHat, every bound (4.17) holds, and the Frobenius bound (4.20) holds with controlled O(u^2) remainders",
     "namespace": "HighamBench",
     "plain_language": "On the same event as Theorem 4.4, the computed Householder QR factor has an exact orthogonal backward-error certificate and the Frobenius error bound c6*lambda*sqrt(n)*gammaTilde_m(lambda)*||A||_F plus an unspecified second-order remainder.",
     "target_file": "paper_bencmark/highambench/tasks/P06/T1/Target.lean",
     "theorem_name": "p06_t1_householder_qr_frobenius_backward_error"
   },
-  "informal_proof": "Keep the Theorem 4.4 event, Q, DeltaA, RHat, exact factorization, and probability unchanged. Regard the column norms as a finite Euclidean vector. Pointwise (4.17), monotonicity of the Euclidean norm, and its triangle inequality bound this vector by the leading coefficient times the input-column norm vector plus the vector of absolute column remainders. Identify the two column-norm vectors with the Frobenius norms, bound the remainder vector's Euclidean norm by its l1 norm, and choose sum_j |remainder_j(u)| as the normwise remainder. A finite sum of O(u^2) functions remains O(u^2).",
+  "informal_proof": "Intersect the n one-column Lemma 4.2 events. De Morgan's law and the finite union bound show that the complement has probability at most n times 2*m*exp(-lambda^2), yielding p4. Assemble DeltaA from the column perturbations; their exact relations use the run's common orthogonal factor and therefore give A+DeltaA=Q*RHat. Retain every column bound (4.17). Regard the column norms as a finite Euclidean vector, use monotonicity and the triangle inequality, identify the column-norm vectors with Frobenius norms, and bound the remainder vector's Euclidean norm by its l1 norm. The sum of absolute column remainders preserves both the asymptotic and through-current-unit-roundoff second-order controls.",
   "informal_statement": "Equation (4.20), with all inherited Theorem 4.4 Householder-QR, Model 1.5, backward-error, probability, coefficient, dimension, and O(u^2) semantics retained.",
   "limits": {
     "total_model_tokens": 5000000,
@@ -62,11 +62,14 @@
     "p06QRLeadingCoefficient",
     "p06P4",
     "p06SecondOrderAtZero",
+    "P06SecondOrderControl",
     "p06MeanIndependent",
     "P06Model15",
+    "p06HouseholderQRStep",
+    "p06HouseholderForActiveColumn",
     "P06HouseholderQRRun",
     "P06Lemma42Assumption",
-    "P06Theorem44ColumnwiseCertificate"
+    "P06Lemma42ColumnCertificate"
   ],
   "source_locations": [
     {
@@ -113,12 +116,12 @@
     }
   ],
   "source_tags": [
-    "EQN"
+    "THM"
   ],
   "task_id": "P06-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "The L proof directly applies NumStability.vecNorm2_add_le to the finite vector of column budgets; the remaining steps are paper-scoped wrapper unfolding, pointwise monotonicity, l2-to-l1 remainder control, finite Big-O summation, and projection of the unchanged Theorem 4.4 event certificate.",
+  "tier_rationale": "The L proof directly applies NumStability.vecNorm2_add_le to the finite vector of column budgets. The remaining steps are the finite union bound over the one-column Lemma 4.2 events, assembly of the common exact QR relation, pointwise monotonicity, l2-to-l1 remainder control, and finite preservation of the strengthened O(u^2) control.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P06/T1/Target.lean",
     "mode": "shared automatic validator",

@@ -56,7 +56,7 @@
     },
     {
       "candidate": "full proofs of Lemmas 4.1-4.3",
-      "reason": "Their concentration arguments and detailed local-error constructions are supporting results for Theorem 4.4. P06-T1 exposes Model 1.5, the probability-one local assumption, and Theorem 4.4's simultaneous event certificate, then selects the paper's stated Frobenius consequence (4.20). P06-T3 separately retains the exact product-expansion core."
+      "reason": "Their concentration arguments and detailed local-error constructions are supporting results for Theorem 4.4. P06-T1 exposes Model 1.5, the probability-one local assumption, and the preceding one-column Lemma 4.2 interface, then constructs Theorem 4.4's simultaneous event and the stated Frobenius consequence (4.20). P06-T3 separately retains the exact product-expansion core."
     },
     {
       "candidate": "Theorem 4.5",
