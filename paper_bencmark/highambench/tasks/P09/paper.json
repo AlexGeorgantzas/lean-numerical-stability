@@ -85,7 +85,7 @@
     },
     "T3": {
       "available": true,
-      "decision": "Use Theorem 2(a)'s linked product-indexed complex multidimensional FFT bound, retaining its nested computation, exact telescoping identity, fixed per-axis K constants, input RMS condition, and explicit finite second-order remainder.",
+      "decision": "Use Theorem 2(a)'s product-indexed complex multidimensional FFT bound with operational nested coordinate traces, exactly represented fixed input, fixed per-axis K constants, derived telescoping and intermediate estimates, and uniform right-neighborhood O(epsilon squared) semantics.",
       "task_id": "P09-T3",
       "theorem_name": "p09_t3_multidimensional_rms_error_bound"
     }
