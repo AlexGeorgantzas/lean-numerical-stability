@@ -6,442 +6,442 @@
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "The indexed inductive type of admissible iteration-step data for a filter l, scale function, matrix A, vector b, and natural-number iteration index. Its constructor D020 packages ten parameter-dependent quantities together with their defining equations, bounds, signs, limits, and asymptotic norm relation.",
-      "effect_on_target": "The conclusion is universally quantified over every inhabitant step of this type, so all properties packaged by D020 are available as assumptions, but existence of such a step is not asserted.",
+      "meaning": "The dependent type of admissible step-data packages for fixed dimension, filter, scale, matrix, right-hand side, and iteration. By constructor D020 and projections D002-D011, it packages six vector-valued functions, four real-valued functions, and the stated residual, update, error-bound, nonnegativity, convergence, and asymptotic-comparison properties.",
+      "effect_on_target": "The conclusion is universally quantified over every inhabitant of this type, so all packaged step assumptions are available, but existence of such an inhabitant is not asserted.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "The second data projection of a step: correctionHat, a function from t in iota to R^n.",
-      "effect_on_target": "It appears as the correction vector in A correctionHat(t), both in the exact identity and in the packaged correction-residual bound.",
+      "meaning": "For a step package, this is its second vector-valued field, denoted correctionHat.",
+      "effect_on_target": "It supplies the correction vector c_t appearing as A c_t in the exact identity and in the admissible-step residual bound.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "The fifth data projection of a step: deltaR, a function from t in iota to R^n.",
-      "effect_on_target": "It is the perturbation in the stored residual equation and appears additively in the exact conclusion.",
+      "meaning": "For a step package, this is its fifth vector-valued field, denoted deltaR.",
+      "effect_on_target": "It is the residual perturbation δr_t in the exact identity and is constrained by the step's residual-perturbation bound.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "The sixth data projection of a step: deltaX, a function from t in iota to R^n.",
-      "effect_on_target": "It is the update perturbation and contributes the term A deltaX(t) to the exact conclusion.",
+      "meaning": "For a step package, this is its sixth vector-valued field, denoted deltaX.",
+      "effect_on_target": "It is the update perturbation δx_t and contributes A δx_t to the exact identity.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "The seventh data projection of a step: epsilonR, a real-valued function of t.",
-      "effect_on_target": "It bounds ||deltaR(t)||, is nonnegative and tends to zero along l, and occurs in the coefficient epsilonR(t)+epsilonU(t)+omega(t) in the asymptotic residual bound.",
+      "meaning": "For a step package, this is its seventh field, the real-valued function epsilonR.",
+      "effect_on_target": "Its value εr_t bounds the residual perturbation, is nonnegative, tends to zero along l, and appears in the coefficient εr_t+εu_t+ω_t in the final bound.",
       "status": "understood"
     },
     {
       "id": "D006",
       "name": "LocalDef006",
-      "meaning": "The eighth data projection of a step: epsilonU, a real-valued function of t.",
-      "effect_on_target": "It bounds ||deltaX(t)||, is nonnegative and tends to zero along l, and occurs in the coefficient epsilonR(t)+epsilonU(t)+omega(t).",
+      "meaning": "For a step package, this is its eighth field, the real-valued function epsilonU.",
+      "effect_on_target": "Its value εu_t bounds the update perturbation, is nonnegative, tends to zero along l, and appears in the coefficient εr_t+εu_t+ω_t in the final bound.",
       "status": "understood"
     },
     {
       "id": "D007",
       "name": "LocalDef007",
-      "meaning": "The tenth data projection of a step: omega, a real-valued function of t.",
-      "effect_on_target": "It is nonnegative, weights a size term in the correction-residual assumption, and is added to epsilonR and epsilonU in the conclusion.",
+      "meaning": "For a step package, this is its tenth field, the real-valued function omega.",
+      "effect_on_target": "Its nonnegative value ω_t appears in the admissible-step residual bound and in the final coefficient εr_t+εu_t+ω_t; no convergence of ω_t is required.",
       "status": "understood"
     },
     {
       "id": "D008",
       "name": "LocalDef008",
-      "meaning": "The fourth data projection of a step: residualHat, a function from t in iota to R^n.",
-      "effect_on_target": "It satisfies residualHat(t)=b-A xHat(t)+deltaR(t) and is subtracted in the exact vector identity.",
+      "meaning": "For a step package, this is its fourth vector-valued field, denoted residualHat.",
+      "effect_on_target": "The exact conclusion contains residualHat_t explicitly, while the step assumptions identify it with b-Ax_t+δr_t.",
       "status": "understood"
     },
     {
       "id": "D009",
       "name": "LocalDef009",
-      "meaning": "The ninth data projection of a step: w, a real-valued function of t.",
-      "effect_on_target": "It is nonnegative and multiplies the current residual norm ||b-A xHat(t)|| in both an assumption and the final bound.",
+      "meaning": "For a step package, this is its ninth field, the real-valued function w.",
+      "effect_on_target": "Its nonnegative value w_t multiplies the current residual norm in both the admissible-step residual bound and the final eventual bound; no convergence of w_t is required.",
       "status": "understood"
     },
     {
       "id": "D010",
       "name": "LocalDef010",
-      "meaning": "The first data projection of a step: xHat, a function from t in iota to R^n.",
-      "effect_on_target": "It is the current approximate vector, used in the residual, perturbation bounds, and the packaged asymptotic relation with xHatNext.",
+      "meaning": "For a step package, this is its first vector-valued field, denoted xHat.",
+      "effect_on_target": "It is the current approximate iterate x_t whose residual norm appears on the right side of the final estimate.",
       "status": "understood"
     },
     {
       "id": "D011",
       "name": "LocalDef011",
-      "meaning": "The third data projection of a step: xHatNext, a function from t in iota to R^n.",
-      "effect_on_target": "It is the next approximate vector whose exact residual identity and eventual residual-norm bound form the conclusion.",
+      "meaning": "For a step package, this is its third vector-valued field, denoted xHatNext.",
+      "effect_on_target": "It is the next approximate iterate x_t^+, appearing in the exact identity, the left side of the final residual estimate, and the size term involving its norm.",
       "status": "understood"
     },
     {
       "id": "D012",
       "name": "LocalDef012",
-      "meaning": "For n, this is Matrix (Fin n) (Fin n) Real, namely the type of real n-by-n matrices indexed from 0 to n-1.",
+      "meaning": "LocalDef012 n is the type of real n-by-n matrices, represented as functions Fin n → Fin n → Real.",
       "effect_on_target": "It fixes A as a square real matrix of dimension n.",
       "status": "understood"
     },
     {
       "id": "D013",
       "name": "LocalDef013",
-      "meaning": "For n, this is Fin n -> Real, namely the type of real n-vectors.",
-      "effect_on_target": "It fixes b and all step vector quantities as elements of R^n, with pointwise vector operations.",
+      "meaning": "LocalDef013 n is the type of real n-vectors, represented as functions Fin n → Real.",
+      "effect_on_target": "It fixes b and every vector-valued step component as elements of R^n, with pointwise vector operations.",
       "status": "understood"
     },
     {
       "id": "D014",
       "name": "LocalDef014",
-      "meaning": "For real functions lhs and rhs, it asserts that there exists a real function remainder such that remainder is O_l(scale^2) and, eventually along l, lhs(t) <= rhs(t)+|remainder(t)|.",
-      "effect_on_target": "It supplies an input asymptotic relation between ||xHat(t)|| and ||xHatNext(t)|| and expresses the output residual bound through a newly existentially quantified remainder.",
+      "meaning": "LocalDef014 l scale lhs rhs means that there exists a real-valued remainder r with r=O_l(scale²) such that eventually along l, lhs(t) ≤ rhs(t)+|r(t)|.",
+      "effect_on_target": "It expands the second conclusion into an existential quadratic-order remainder and an eventual residual-norm inequality. It also occurs among the admissible-step assumptions for comparing successive iterate norms.",
       "status": "understood"
     },
     {
       "id": "D015",
       "name": "LocalDef015",
-      "meaning": "The norm of A in the Frobenius normed-ring structure, i.e. the Frobenius matrix norm ||A||_F.",
-      "effect_on_target": "It scales vector-size terms in the step assumptions and in the final residual bound.",
+      "meaning": "This is the norm of A supplied by the Frobenius normed-ring structure, namely the Frobenius matrix norm.",
+      "effect_on_target": "It supplies the factor ||A||_F multiplying the norm of the current or next iterate in the step assumptions and final bound.",
       "status": "understood"
     },
     {
       "id": "D016",
       "name": "LocalDef016",
-      "meaning": "The assertion that the matrix-vector map x |-> A x is bijective on R^n.",
-      "effect_on_target": "It is an antecedent requiring A to define a one-to-one and onto map, equivalently an invertible square linear map in this finite-dimensional setting.",
+      "meaning": "LocalDef016 A states that the linear map x ↦ Ax on R^n is bijective.",
+      "effect_on_target": "It restricts the theorem to matrices whose matrix-vector action is injective and surjective.",
       "status": "understood"
     },
     {
       "id": "D017",
       "name": "LocalDef017",
-      "meaning": "Matrix-vector multiplication: (A x)(i)=sum over all j in Fin n of A(i,j)x(j).",
-      "effect_on_target": "It gives every occurrence of A applied to xHat, correctionHat, deltaX, or xHatNext.",
+      "meaning": "LocalDef017 A x is the matrix-vector product Ax, with component (Ax)_i = Σ_{j∈Fin n} A_{ij}x_j.",
+      "effect_on_target": "It defines every occurrence of A applied to an iterate, correction, or perturbation.",
       "status": "understood"
     },
     {
       "id": "D018",
       "name": "LocalDef018",
-      "meaning": "The residual map r_{A,b}(x)=b-Ax.",
-      "effect_on_target": "Its Euclidean norm is the current or next residual norm in the assumptions and final bound.",
+      "meaning": "LocalDef018 A b x is the residual b-Ax.",
+      "effect_on_target": "It defines the current and next residual vectors whose Euclidean norms occur in the step assumptions and final estimate.",
       "status": "understood"
     },
     {
       "id": "D019",
       "name": "LocalDef019",
-      "meaning": "The Euclidean norm of x in R^n, defined exactly as sqrt(sum over i in Fin n of x(i)^2).",
-      "effect_on_target": "It interprets every vector norm in the hypotheses and conclusion as the Euclidean 2-norm.",
+      "meaning": "For x∈R^n, LocalDef019 x is sqrt(Σ_{i∈Fin n} x_i²), the Euclidean 2-norm.",
+      "effect_on_target": "It turns residuals, perturbations, b, and iterates into the exact scalar norms used by all inequalities.",
       "status": "understood"
     },
     {
       "id": "D020",
       "name": "LocalDef020",
-      "meaning": "A constructor for LocalDef001. It packages xHat, correctionHat, xHatNext, residualHat, deltaR, deltaX: iota -> R^n and epsilonR, epsilonU, w, omega: iota -> R, subject for every t to residualHat=b-AxHat+deltaR; xHatNext=xHat+correctionHat+deltaX; ||residualHat-A correctionHat|| <= w||b-AxHat||+omega(||b||+||A||_F||xHatNext||); ||deltaR|| <= epsilonR(||b||+||A||_F||xHat||); ||deltaX|| <= epsilonU||xHatNext||; nonnegativity of all four scalar functions; epsilonR -> 0 and epsilonU -> 0 along l; and an O_l(scale^2) eventual inequality ||xHat|| <= ||xHatNext||+|remainder|.",
-      "effect_on_target": "It determines the complete mathematical assumptions carried by the universally quantified step and the correspondence between the ten projections used in the target.",
+      "meaning": "This constructor builds an admissible step from functions x_t, c_t, x_t^+, rHat_t, δr_t, δx_t, εr_t, εu_t, w_t, and ω_t satisfying: rHat_t=b-Ax_t+δr_t; x_t^+=x_t+c_t+δx_t; ||rHat_t-Ac_t||_2≤w_t||b-Ax_t||_2+ω_t(||b||_2+||A||_F||x_t^+||_2); ||δr_t||_2≤εr_t(||b||_2+||A||_F||x_t||_2); ||δx_t||_2≤εu_t||x_t^+||_2; all four scalar coefficients are nonnegative; εr and εu tend to zero along l; and, up to an O_l(scale²) remainder, eventually ||x_t||_2≤||x_t^+||_2.",
+      "effect_on_target": "It supplies the full set of assumptions carried by every quantified step package and determines the meanings of all projected fields.",
       "status": "understood"
     },
     {
       "id": "D021",
       "name": "LocalDef021",
-      "meaning": "The assertion remainder=O_l(scale^2), where the comparison function is t |-> scale(t)^2.",
-      "effect_on_target": "It controls both the existential input remainder attached to the norm relation and the existential output remainder in the residual bound.",
+      "meaning": "LocalDef021 l scale r states Asymptotics.IsBigO l r (t ↦ scale(t)²).",
+      "effect_on_target": "It requires each remainder in LocalDef014 to be of order scale² along l.",
       "status": "understood"
     },
     {
       "id": "D022",
       "name": "And",
       "meaning": "Logical conjunction.",
-      "effect_on_target": "The theorem concludes both the pointwise exact identity and the eventual asymptotic residual bound.",
+      "effect_on_target": "The theorem concludes both the pointwise exact identity and the eventual asymptotic residual estimate.",
       "status": "understood"
     },
     {
       "id": "D023",
       "name": "Eq",
       "meaning": "Propositional equality of two terms of the same type.",
-      "effect_on_target": "It expresses the exact vector identity and the exact defining equations packaged by a step.",
+      "effect_on_target": "It expresses the exact vector identity in the conclusion and the exact residual and update identities in the step assumptions.",
       "status": "understood"
     },
     {
       "id": "D024",
       "name": "Filter",
-      "meaning": "A filter on a type, representing a generalized limiting or eventual regime.",
-      "effect_on_target": "The arbitrary filter l determines all convergence, eventuality, and big-O statements.",
+      "meaning": "A filter on an index type, representing a limiting or eventual regime.",
+      "effect_on_target": "The arbitrary filter l determines convergence, eventual truth, and all big-O statements.",
       "status": "understood"
     },
     {
       "id": "D025",
       "name": "Filter.NeBot",
-      "meaning": "The assertion that a filter is not the bottom or improper filter.",
-      "effect_on_target": "It excludes the filter for which every predicate is eventually true and thereby prevents filter-based assumptions and conclusions from being trivially eventual.",
+      "meaning": "The proposition that a filter is not the bottom filter.",
+      "effect_on_target": "It excludes the degenerate filter under which every proposition would hold eventually.",
       "status": "understood"
     },
     {
       "id": "D026",
       "name": "Filter.Tendsto",
-      "meaning": "Filter convergence: f tends from l1 to l2 when map f l1 <= l2.",
-      "effect_on_target": "It expresses scale(t) -> 0, epsilonR(t) -> 0, and epsilonU(t) -> 0 along l.",
+      "meaning": "Tendsto f l₁ l₂ means map f l₁ ≤ l₂, i.e. f tends along l₁ to the regime represented by l₂.",
+      "effect_on_target": "It states that scale tends to 0 and, within an admissible step, that εr and εu tend to 0 along l.",
       "status": "understood"
     },
     {
       "id": "D027",
       "name": "Fin",
-      "meaning": "Fin n is the finite type of natural indices strictly less than n.",
-      "effect_on_target": "It indexes all n vector coordinates and both matrix dimensions.",
+      "meaning": "Fin n is the finite index type consisting of natural numbers strictly below n.",
+      "effect_on_target": "It indexes the n vector coordinates and both dimensions of the n-by-n matrix.",
       "status": "understood"
     },
     {
       "id": "D028",
       "name": "HAdd.hAdd",
-      "meaning": "The addition operation selected by an HAdd instance.",
-      "effect_on_target": "It realizes ordinary real addition and pointwise addition of vectors in all displayed formulas.",
+      "meaning": "The addition operation selected by the relevant HAdd instance.",
+      "effect_on_target": "It denotes ordinary real addition or pointwise vector addition in all displayed formulas.",
       "status": "understood"
     },
     {
       "id": "D029",
       "name": "HMul.hMul",
-      "meaning": "The multiplication operation selected by an HMul instance.",
-      "effect_on_target": "All target occurrences resolve to ordinary multiplication of real scalars, including coefficients times norms.",
+      "meaning": "The multiplication operation selected by the relevant HMul instance.",
+      "effect_on_target": "It denotes ordinary real multiplication in scalar bounds and entrywise real multiplication inside matrix-vector products.",
       "status": "understood"
     },
     {
       "id": "D030",
       "name": "HSub.hSub",
-      "meaning": "The subtraction operation selected by an HSub instance.",
-      "effect_on_target": "It realizes pointwise vector subtraction in residuals and the exact identity.",
+      "meaning": "The subtraction operation selected by the relevant HSub instance.",
+      "effect_on_target": "It denotes pointwise vector subtraction in residuals and the exact vector identity.",
       "status": "understood"
     },
     {
       "id": "D031",
       "name": "LT.lt",
       "meaning": "The strict-order relation selected by an LT instance.",
-      "effect_on_target": "With the natural-number instance, it makes the dimension hypothesis exactly 0<n.",
+      "effect_on_target": "With the natural-number instance, it expresses the hypothesis 0<n.",
       "status": "understood"
     },
     {
       "id": "D032",
       "name": "Nat",
-      "meaning": "The type of natural numbers.",
-      "effect_on_target": "It is the type of the dimension n and the otherwise formula-inert iteration index.",
+      "meaning": "The natural numbers.",
+      "effect_on_target": "They provide the dimension n and the otherwise unrestricted iteration parameter.",
       "status": "understood"
     },
     {
       "id": "D033",
       "name": "Ne",
-      "meaning": "Inequality defined as the negation of equality.",
-      "effect_on_target": "It makes hb the assertion that b is not the zero vector.",
+      "meaning": "Ne a b means not a=b.",
+      "effect_on_target": "It imposes the hypothesis that b is not the zero vector.",
       "status": "understood"
     },
     {
       "id": "D034",
       "name": "OfNat.ofNat",
-      "meaning": "Interpretation of a natural-number literal in a type having the corresponding OfNat instance.",
-      "effect_on_target": "It supplies the zero literals used for n, scale limits, and the zero vector.",
+      "meaning": "Interpretation of a natural-number literal in a type with the corresponding OfNat instance.",
+      "effect_on_target": "It interprets the literal 0 as natural zero, real zero, or the zero vector as required.",
       "status": "understood"
     },
     {
       "id": "D035",
       "name": "Pi.instAdd",
-      "meaning": "Pointwise addition of dependent functions: (f+g)(i)=f(i)+g(i).",
-      "effect_on_target": "It makes addition of R^n-valued functions ordinary coordinatewise vector addition.",
+      "meaning": "Addition of functions is defined pointwise.",
+      "effect_on_target": "Vector addition satisfies (x+y)_i=x_i+y_i throughout the identities and step assumptions.",
       "status": "understood"
     },
     {
       "id": "D036",
       "name": "Pi.instSub",
-      "meaning": "Pointwise subtraction of dependent functions: (f-g)(i)=f(i)-g(i).",
-      "effect_on_target": "It makes subtraction of vectors ordinary coordinatewise subtraction.",
+      "meaning": "Subtraction of functions is defined pointwise.",
+      "effect_on_target": "Vector subtraction satisfies (x-y)_i=x_i-y_i throughout the residual and identity formulas.",
       "status": "understood"
     },
     {
       "id": "D037",
       "name": "Pi.instZero",
-      "meaning": "The pointwise zero function.",
-      "effect_on_target": "It interprets 0 in b != 0 as the vector whose every coordinate is zero.",
+      "meaning": "The zero function has value zero at every input.",
+      "effect_on_target": "The hypothesis b≠0 means that b is not identically zero on Fin n.",
       "status": "understood"
     },
     {
       "id": "D038",
       "name": "PseudoMetricSpace.toUniformSpace",
-      "meaning": "The uniform-space structure induced by a pseudometric space.",
-      "effect_on_target": "It participates in constructing the standard real topology used by the neighborhood filter at zero.",
+      "meaning": "The uniform structure induced by a pseudometric-space structure.",
+      "effect_on_target": "It participates in constructing the usual topology used for real convergence to zero.",
       "status": "understood"
     },
     {
       "id": "D039",
       "name": "Real",
-      "meaning": "The type of real numbers.",
-      "effect_on_target": "Matrices, vectors, scalar error functions, norms, and scale values are all real-valued.",
+      "meaning": "The real numbers.",
+      "effect_on_target": "Matrix entries, vector coordinates, scale values, coefficients, norms, and remainders are all real.",
       "status": "understood"
     },
     {
       "id": "D040",
       "name": "Real.instAdd",
       "meaning": "Ordinary addition on the real numbers.",
-      "effect_on_target": "It supplies scalar addition and, through pointwise instances, vector addition.",
+      "effect_on_target": "It supplies all scalar sums in the error bounds and final estimate.",
       "status": "understood"
     },
     {
       "id": "D041",
       "name": "Real.instMul",
       "meaning": "Ordinary multiplication on the real numbers.",
-      "effect_on_target": "It supplies all scalar products in the norm bounds and matrix-vector coordinate products.",
+      "effect_on_target": "It supplies scalar coefficient products, matrix-vector entry products, and products involving norms.",
       "status": "understood"
     },
     {
       "id": "D042",
       "name": "Real.instSub",
       "meaning": "Ordinary real subtraction, defined as addition of the additive inverse.",
-      "effect_on_target": "It underlies pointwise subtraction in vectors and residuals.",
+      "effect_on_target": "It underlies coordinatewise vector subtraction and real metric differences.",
       "status": "understood"
     },
     {
       "id": "D043",
       "name": "Real.instZero",
-      "meaning": "The real number zero.",
-      "effect_on_target": "It supplies the target of all convergence-to-zero assumptions and the coordinates of the zero vector.",
+      "meaning": "The ordinary real number zero.",
+      "effect_on_target": "It is the limit of scale, εr, and εu and the coordinate value of the zero vector.",
       "status": "understood"
     },
     {
       "id": "D044",
       "name": "Real.pseudoMetricSpace",
-      "meaning": "The standard real pseudometric structure with distance dist(x,y)=|x-y|.",
-      "effect_on_target": "It determines the standard topology in which the scalar convergence statements are interpreted.",
+      "meaning": "The real pseudometric structure with distance dist(x,y)=|x-y|.",
+      "effect_on_target": "It induces the usual real topology used by all neighborhood-filter convergence statements.",
       "status": "understood"
     },
     {
       "id": "D045",
       "name": "UniformSpace.toTopologicalSpace",
-      "meaning": "The topology induced by a uniform-space structure.",
-      "effect_on_target": "Together with the real metric structure, it determines the neighborhood filter nhds 0.",
+      "meaning": "The topological structure induced by a uniform-space structure.",
+      "effect_on_target": "It completes the construction of the topology used in nhds 0.",
       "status": "understood"
     },
     {
       "id": "D046",
       "name": "Zero.toOfNat0",
-      "meaning": "Construction of the numeral-0 interpretation from a Zero instance.",
-      "effect_on_target": "It ensures every displayed 0 denotes the appropriate zero of its type.",
+      "meaning": "It interprets the numeral 0 using a type's distinguished zero.",
+      "effect_on_target": "It identifies each displayed zero with the corresponding natural, real, or vector zero.",
       "status": "understood"
     },
     {
       "id": "D047",
       "name": "instHAdd",
-      "meaning": "The homogeneous HAdd instance induced by an ordinary Add operation.",
-      "effect_on_target": "It resolves overloaded addition to real addition or pointwise vector addition.",
+      "meaning": "It converts an ordinary homogeneous Add operation into the corresponding HAdd operation.",
+      "effect_on_target": "It ensures HAdd in the target is ordinary real or pointwise-vector addition.",
       "status": "understood"
     },
     {
       "id": "D048",
       "name": "instHMul",
-      "meaning": "The homogeneous HMul instance induced by an ordinary Mul operation.",
-      "effect_on_target": "It resolves overloaded multiplication in the target to ordinary real multiplication.",
+      "meaning": "It converts an ordinary homogeneous Mul operation into the corresponding HMul operation.",
+      "effect_on_target": "It ensures HMul in the formulas is ordinary real multiplication.",
       "status": "understood"
     },
     {
       "id": "D049",
       "name": "instHSub",
-      "meaning": "The homogeneous HSub instance induced by an ordinary Sub operation.",
-      "effect_on_target": "It resolves overloaded subtraction to real or pointwise vector subtraction.",
+      "meaning": "It converts an ordinary homogeneous Sub operation into the corresponding HSub operation.",
+      "effect_on_target": "It ensures HSub in the formulas is ordinary real or pointwise-vector subtraction.",
       "status": "understood"
     },
     {
       "id": "D050",
       "name": "instLTNat",
-      "meaning": "The standard strict ordering on natural numbers.",
-      "effect_on_target": "It interprets the dimension assumption as the usual inequality 0<n.",
+      "meaning": "The standard strict order on natural numbers.",
+      "effect_on_target": "It makes the dimension hypothesis exactly 0<n.",
       "status": "understood"
     },
     {
       "id": "D051",
       "name": "instOfNatNat",
-      "meaning": "The canonical interpretation of each natural numeral as that natural number.",
-      "effect_on_target": "It interprets the 0 in 0<n as natural-number zero.",
+      "meaning": "The natural numeral n denotes the natural number n itself.",
+      "effect_on_target": "It gives the standard interpretation of the natural literal 0 in 0<n.",
       "status": "understood"
     },
     {
       "id": "D052",
       "name": "nhds",
       "meaning": "The neighborhood filter of a point in a topological space.",
-      "effect_on_target": "nhds 0 specifies ordinary topological convergence to real zero.",
+      "effect_on_target": "nhds 0 specifies ordinary convergence to the real number zero.",
       "status": "understood"
     },
     {
       "id": "D053",
       "name": "Exists",
       "meaning": "Existential quantification.",
-      "effect_on_target": "It quantifies the input and output remainder functions in LocalDef014; the two witnesses are separate existential choices.",
+      "effect_on_target": "It introduces the remainder functions used in both LocalDef014 relations.",
       "status": "understood"
     },
     {
       "id": "D054",
       "name": "Filter.Eventually",
-      "meaning": "A predicate holds eventually along a filter when its truth set belongs to that filter.",
-      "effect_on_target": "Both LocalDef014 inequalities are required only eventually along l, not for every t.",
+      "meaning": "Eventually p l means that the set of points satisfying p belongs to the filter l.",
+      "effect_on_target": "The final residual inequality and the step's iterate-norm comparison need hold only eventually along l.",
       "status": "understood"
     },
     {
       "id": "D055",
       "name": "Fin.fintype",
-      "meaning": "The finite enumeration of all elements of Fin n.",
-      "effect_on_target": "It makes coordinate sums and the Frobenius matrix norm finite.",
+      "meaning": "The finite-type structure enumerating all elements of Fin n.",
+      "effect_on_target": "It makes the coordinate sums defining matrix-vector multiplication and vector norms finite.",
       "status": "understood"
     },
     {
       "id": "D056",
       "name": "Finset.sum",
       "meaning": "Finite summation in an additive commutative monoid.",
-      "effect_on_target": "It defines matrix-vector products and the sum of squared vector coordinates.",
+      "effect_on_target": "It forms Σ_j A_{ij}x_j and Σ_i x_i².",
       "status": "understood"
     },
     {
       "id": "D057",
       "name": "Finset.univ",
       "meaning": "The finite set containing every element of a finite type.",
-      "effect_on_target": "It makes the sums range over every index in Fin n.",
+      "effect_on_target": "It makes each sum range over every coordinate in Fin n.",
       "status": "understood"
     },
     {
       "id": "D058",
       "name": "Function.Bijective",
-      "meaning": "The conjunction of injectivity and surjectivity of a function.",
-      "effect_on_target": "It gives the exact content of the assumption that x |-> Ax is bijective.",
+      "meaning": "A function is bijective when it is both injective and surjective.",
+      "effect_on_target": "It gives the exact content of the hypothesis that x↦Ax is bijective.",
       "status": "understood"
     },
     {
       "id": "D059",
       "name": "HPow.hPow",
       "meaning": "The exponentiation operation selected by an HPow instance.",
-      "effect_on_target": "It forms coordinate squares x(i)^2 and the comparison function scale(t)^2.",
+      "effect_on_target": "It supplies the squares x_i² in the Euclidean norm and scale(t)² in the big-O comparison.",
       "status": "understood"
     },
     {
       "id": "D060",
       "name": "LE.le",
       "meaning": "The non-strict order relation selected by an LE instance.",
-      "effect_on_target": "With the real instance, it expresses all nonnegativity and norm-bound inequalities.",
+      "effect_on_target": "With the real instance, it expresses every scalar nonnegativity condition and norm inequality.",
       "status": "understood"
     },
     {
       "id": "D061",
       "name": "Matrix",
-      "meaning": "Matrix m n alpha is the function type m -> n -> alpha.",
-      "effect_on_target": "It makes A concretely a two-index real-valued function on Fin n x Fin n.",
+      "meaning": "Matrix m n α is the function type m→n→α.",
+      "effect_on_target": "It represents A concretely as an n-by-n array of real entries.",
       "status": "understood"
     },
     {
       "id": "D062",
       "name": "Matrix.frobeniusNormedRing",
-      "meaning": "The normed-ring structure on square matrices whose norm is the Frobenius norm.",
-      "effect_on_target": "It fixes LocalDef015 A as the Frobenius norm rather than another matrix norm.",
+      "meaning": "The normed-ring structure on square matrices whose norm is inherited from the Frobenius seminormed additive-group structure.",
+      "effect_on_target": "It determines the matrix norm used by LocalDef015 as the Frobenius norm.",
       "status": "understood"
     },
     {
       "id": "D063",
       "name": "Monoid.toNatPow",
-      "meaning": "Natural-number exponentiation supplied by a monoid.",
-      "effect_on_target": "For real numbers it supplies ordinary squaring in x(i)^2 and scale(t)^2.",
+      "meaning": "Natural-number exponentiation in a monoid.",
+      "effect_on_target": "For real numbers and exponent 2, it gives ordinary squaring.",
       "status": "understood"
     },
     {
@@ -455,142 +455,143 @@
       "id": "D065",
       "name": "NormedRing.toNorm",
       "meaning": "The Norm structure contained in a NormedRing.",
-      "effect_on_target": "It connects the Frobenius normed-ring instance to the norm used for A.",
+      "effect_on_target": "It connects the Frobenius normed-ring instance to the norm applied to A.",
       "status": "understood"
     },
     {
       "id": "D066",
       "name": "Real.instAddCommMonoid",
       "meaning": "The additive commutative-monoid structure of the real numbers.",
-      "effect_on_target": "It supports finite sums in matrix-vector multiplication and Euclidean norm definitions.",
+      "effect_on_target": "It licenses finite sums of real matrix products and coordinate squares.",
       "status": "understood"
     },
     {
       "id": "D067",
       "name": "Real.instAddGroup",
       "meaning": "The additive-group structure of the real numbers.",
-      "effect_on_target": "It supports negation, subtraction, and the absolute-value construction.",
+      "effect_on_target": "It supplies real negation and subtraction used in absolute values and residual formulas.",
       "status": "understood"
     },
     {
       "id": "D068",
       "name": "Real.instLE",
-      "meaning": "The usual non-strict order on the real numbers.",
-      "effect_on_target": "It gives the standard meaning to every <= and nonnegativity condition.",
+      "meaning": "The ordinary ≤ relation on the real numbers.",
+      "effect_on_target": "It gives the standard ordering used in all bounds and nonnegativity assumptions.",
       "status": "understood"
     },
     {
       "id": "D069",
       "name": "Real.instMonoid",
       "meaning": "The multiplicative monoid structure of the real numbers.",
-      "effect_on_target": "It supplies natural powers, particularly real squares.",
+      "effect_on_target": "It supplies natural powers of real values, especially squaring.",
       "status": "understood"
     },
     {
       "id": "D070",
       "name": "Real.instRCLike",
       "meaning": "The RCLike structure on the real numbers.",
-      "effect_on_target": "It is an instance required to construct the Frobenius normed-ring structure for real matrices.",
+      "effect_on_target": "It provides the scalar structure required to construct the Frobenius normed-ring instance for real matrices.",
       "status": "understood"
     },
     {
       "id": "D071",
       "name": "Real.lattice",
-      "meaning": "The lattice structure associated with the usual order on the real numbers.",
-      "effect_on_target": "It supports the absolute value appearing on each remainder.",
+      "meaning": "The lattice structure of the real order.",
+      "effect_on_target": "Together with the additive-group structure, it defines ordinary real absolute value.",
       "status": "understood"
     },
     {
       "id": "D072",
       "name": "Real.sqrt",
       "meaning": "The nonnegative real square-root function.",
-      "effect_on_target": "It makes LocalDef019 exactly the square root of the sum of coordinate squares.",
+      "effect_on_target": "It turns the sum of squared coordinates into the Euclidean vector norm.",
       "status": "understood"
     },
     {
       "id": "D073",
       "name": "abs",
-      "meaning": "Absolute value, defined in the real ordered additive group as max(a,-a).",
-      "effect_on_target": "It makes the asymptotic slack term in each eventual inequality |remainder(t)|.",
+      "meaning": "In the real additive lattice group, abs(a)=max(a,-a), the ordinary absolute value.",
+      "effect_on_target": "It measures the LocalDef014 remainder, defines the real metric and real norm, and therefore participates in big-O.",
       "status": "understood"
     },
     {
       "id": "D074",
       "name": "instDecidableEqFin",
       "meaning": "Decidable equality on Fin n.",
-      "effect_on_target": "It is an instance required by the selected Frobenius normed-ring construction.",
+      "effect_on_target": "It supplies an implementation requirement for the Frobenius normed-ring structure on matrices indexed by Fin n.",
       "status": "understood"
     },
     {
       "id": "D075",
       "name": "instHPow",
-      "meaning": "The heterogeneous-power instance induced by an ordinary power operation.",
-      "effect_on_target": "It resolves the exponent notation with natural exponent 2 to ordinary real squaring.",
+      "meaning": "It converts a Pow operation into the corresponding homogeneous HPow operation.",
+      "effect_on_target": "It makes each displayed exponentiation by 2 ordinary real squaring.",
       "status": "understood"
     },
     {
       "id": "D076",
       "name": "Asymptotics.IsBigO",
-      "meaning": "The big-O relation along a filter: one function is bounded in norm by a constant multiple of the other eventually along that filter.",
-      "effect_on_target": "It states that each LocalDef014 remainder has magnitude O(scale(t)^2) along l.",
+      "meaning": "The norm-based big-O relation along a filter: the first function is eventually bounded in norm by a constant multiple of the second.",
+      "effect_on_target": "It requires the existential remainder r to satisfy r=O_l(scale²).",
       "status": "understood"
     },
     {
       "id": "D077",
       "name": "Real.norm",
-      "meaning": "The norm on Real, defined by ||r||=|r|.",
-      "effect_on_target": "It makes the real-valued big-O condition compare absolute magnitudes of the remainder and scale squared.",
+      "meaning": "The norm of a real number is its absolute value.",
+      "effect_on_target": "It gives the scalar norm used when interpreting r=O_l(scale²).",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "Let n be a natural number, let iota be an arbitrary type, and let l be a non-bottom filter on iota.",
-      "Let A be a real n-by-n matrix and b a real n-vector.",
-      "Let iteration be a natural number and scale:iota->R a real-valued scale function.",
-      "For each admissible step indexed by l, scale, A, b, and iteration, write its vector-valued components as xHat, correctionHat, xHatNext, residualHat, deltaR, and deltaX, and its real-valued components as epsilonR, epsilonU, w, and omega."
+      "For every natural number n.",
+      "For every type ι and every filter l on ι equipped with a proof that l is not the bottom filter.",
+      "For every real n-by-n matrix A, real n-vector b, natural-number parameter iteration, and function scale:ι→R.",
+      "For every admissible step package indexed by l, scale, A, b, and iteration, with fields x_t, c_t, x_t^+, rHat_t, δr_t, δx_t, εr_t, εu_t, w_t, and ω_t."
     ],
     "hypotheses": [
       "scale(t) tends to 0 along l.",
       "The dimension is positive: 0<n.",
-      "The map x |-> Ax from R^n to R^n is bijective.",
+      "The map x↦Ax from R^n to R^n is bijective.",
       "b is not the zero vector.",
-      "For every t, residualHat(t)=b-AxHat(t)+deltaR(t).",
-      "For every t, xHatNext(t)=xHat(t)+correctionHat(t)+deltaX(t).",
-      "For every t, ||residualHat(t)-A correctionHat(t)||_2 <= w(t)||b-AxHat(t)||_2 + omega(t)(||b||_2+||A||_F||xHatNext(t)||_2).",
-      "For every t, ||deltaR(t)||_2 <= epsilonR(t)(||b||_2+||A||_F||xHat(t)||_2).",
-      "For every t, ||deltaX(t)||_2 <= epsilonU(t)||xHatNext(t)||_2.",
-      "For every t, epsilonR(t), epsilonU(t), w(t), and omega(t) are all nonnegative.",
-      "epsilonR(t) and epsilonU(t) both tend to 0 along l.",
-      "There exists an input remainder q:iota->R with q=O_l(scale^2) such that, eventually along l, ||xHat(t)||_2 <= ||xHatNext(t)||_2+|q(t)|."
+      "For every t, rHat_t=b-Ax_t+δr_t.",
+      "For every t, x_t^+=x_t+c_t+δx_t.",
+      "For every t, ||rHat_t-Ac_t||_2≤w_t||b-Ax_t||_2+ω_t(||b||_2+||A||_F||x_t^+||_2).",
+      "For every t, ||δr_t||_2≤εr_t(||b||_2+||A||_F||x_t||_2).",
+      "For every t, ||δx_t||_2≤εu_t||x_t^+||_2.",
+      "For every t, εr_t≥0, εu_t≥0, w_t≥0, and ω_t≥0.",
+      "εr_t and εu_t tend to 0 along l.",
+      "There exists q:ι→R with q=O_l(scale²) such that eventually along l, ||x_t||_2≤||x_t^+||_2+|q_t|."
     ],
     "conclusions": [
-      "For every t, the exact vector identity A xHatNext(t)-b = ((deltaR(t)+A correctionHat(t))-residualHat(t))+A deltaX(t) holds.",
-      "There exists an output remainder rho:iota->R with rho=O_l(scale^2) such that, eventually along l, ||b-A xHatNext(t)||_2 <= w(t)||b-AxHat(t)||_2 + (epsilonR(t)+epsilonU(t)+omega(t))(||b||_2+||A||_F||xHatNext(t)||_2) + |rho(t)|."
+      "For every t∈ι, Ax_t^+-b=(δr_t+Ac_t-rHat_t)+Aδx_t.",
+      "There exists a function ρ:ι→R satisfying ρ=O_l(scale²) such that eventually along l, ||b-Ax_t^+||_2≤w_t||b-Ax_t||_2+(εr_t+εu_t+ω_t)(||b||_2+||A||_F||x_t^+||_2)+|ρ_t|."
     ],
     "mathematical_definitions": [
-      "R^n is represented as functions Fin n -> R, and all vector additions and subtractions are coordinatewise.",
-      "For x in R^n, (Ax)_i=sum_{j in Fin n} A_{ij}x_j.",
-      "The residual at x is r_{A,b}(x)=b-Ax.",
-      "For x in R^n, ||x||_2=sqrt(sum_{i in Fin n} x_i^2).",
-      "||A||_F is the Frobenius norm supplied by the matrix Frobenius normed-ring structure.",
-      "A statement f=O_l(scale^2) is a big-O statement along l, using the real norm |.| and comparison function t |-> scale(t)^2.",
-      "The input witness q and output witness rho are independently existentially quantified; the proposition does not identify them."
+      "R^n is represented by functions Fin n→R, and real n-by-n matrices by functions Fin n→Fin n→R.",
+      "(Ax)_i=Σ_{j∈Fin n}A_{ij}x_j.",
+      "The residual at x is res(x)=b-Ax.",
+      "For x∈R^n, ||x||_2=sqrt(Σ_{i∈Fin n}x_i²).",
+      "||A||_F is the matrix norm furnished by the Frobenius normed-ring structure, equivalently the standard Frobenius norm.",
+      "The step notation is x_t=xHat(t), c_t=correctionHat(t), x_t^+=xHatNext(t), rHat_t=residualHat(t), δr_t=deltaR(t), δx_t=deltaX(t), εr_t=epsilonR(t), εu_t=epsilonU(t), w_t=w(t), and ω_t=omega(t).",
+      "ρ=O_l(scale²) means Asymptotics.IsBigO l ρ (t↦scale(t)²).",
+      "The asymptotic inequality relation used in the conclusion means existence of one such remainder ρ followed by an inequality holding eventually along l."
     ],
-    "proposition_plain_english": "For every positive dimension, arbitrary non-bottom limiting filter, invertible real square matrix A, nonzero vector b, iteration index, and scale tending to zero, every admissible perturbed step satisfies two facts simultaneously. First, its next iterate obeys the displayed exact algebraic residual identity at every parameter value. Second, the Euclidean norm of the next residual is eventually bounded by w times the current residual norm plus epsilonR+epsilonU+omega times the scale ||b||_2+||A||_F||xHatNext||_2, with an additional absolute remainder that is O_l(scale^2)."
+    "proposition_plain_english": "For any positive dimension, any nonbottom limiting filter, any scale tending to zero along that filter, any real square matrix whose matrix-vector action is bijective, and any nonzero right-hand side, every admissible inexact step satisfies two claims simultaneously. First, its next-iterate equation gives the exact pointwise vector identity Ax_t^+-b=(δr_t+Ac_t-rHat_t)+Aδx_t. Second, the Euclidean norm of the next residual is eventually bounded by w_t times the current residual norm plus (εr_t+εu_t+ω_t) times ||b||_2+||A||_F||x_t^+||_2, up to the absolute value of an existential remainder of order scale(t)² along the filter."
   },
   "restrictions_and_vacuity_risks": [
-    "The assumptions scale->0, 0<n, bijectivity of A, and b!=0 occur as antecedents; for parameter choices where an antecedent is false, the corresponding implication is logically vacuous.",
-    "The theorem quantifies over every admissible step but does not assert that any admissible step exists. If LocalDef001 has no inhabitant for the chosen data, the universal conclusion over steps is vacuous.",
-    "The non-bottom assumption on l prevents filter eventuality itself from collapsing through the improper bottom filter, but l is otherwise arbitrary and need not represent an ordinary sequence limit.",
-    "The final norm inequality holds only eventually along l. Only the exact vector identity is asserted for every t.",
-    "No positivity or eventual nonzeroness of scale is assumed; scale may change sign or even vanish, while only scale^2 appears in the big-O comparison.",
-    "No rate relationship is imposed between scale, epsilonR, and epsilonU beyond their separate convergence to zero.",
-    "The functions w and omega are required to be nonnegative but are not required to converge to zero or remain bounded.",
-    "The natural-number iteration parameter only indexes the step type and does not occur in any equation, bound, or conclusion.",
-    "The output remainder rho may depend on all quantified data and on the chosen step, and it is not asserted to equal the input remainder q.",
-    "The proposition does not assert convergence of xHat or xHatNext, convergence to a solution of Ax=b, monotone residual decrease, or any bound on a condition number.",
-    "No floating-point model, rounding mode, algorithmic construction of the step, or probabilistic interpretation is encoded beyond the explicit perturbation equations and inequalities."
+    "The theorem requires n>0. For n=0 the implication is vacuous because that hypothesis is false.",
+    "The filter is arbitrary apart from being nonbottom; ι need not be the natural numbers and no sequential or temporal structure is assumed.",
+    "The scale may have either sign and may vanish; only convergence scale→0 and big-O relative to scale² are required.",
+    "The conclusion is universal over admissible step packages but does not assert that any such package exists. If the constructor assumptions are inconsistent for particular data, the universal statement over steps is vacuous.",
+    "The exact vector identity holds for every t, whereas the residual-norm estimate holds only eventually along l.",
+    "The remainder in the final estimate is existential, may depend on all quantified data and the step, and is constrained only by being O_l(scale²); no sign or explicit formula is imposed.",
+    "Although εr and εu tend to zero, no convergence-to-zero condition is imposed on w or ω.",
+    "The iterate-norm comparison is itself only an eventual inequality with a separate existential O_l(scale²) remainder.",
+    "The iteration parameter is unrestricted and has no explicit role in either conclusion beyond indexing the step type; no relation between different iterations is encoded.",
+    "No convergence of x_t or x_t^+, no existence or approximation of an exact solution, no contraction factor, no condition number, and no forward-error bound are asserted.",
+    "Bijectivity of A and nonzeroness of b are hypotheses, but the conclusion does not explicitly mention an inverse matrix, determinant, singular values, or a normalized residual."
   ],
   "ambiguities": []
 }

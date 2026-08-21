@@ -1,0 +1,139 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P16-T2",
+  "paper_sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a",
+  "source_evidence": [
+    {
+      "pdf_page": 1,
+      "printed_page": "1939",
+      "anchor": "equation (1.1)",
+      "observation": "The standing problem is the nonsingular square real system Ax = b with A in R^(n x n) and nonzero b in R^n."
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "1942",
+      "anchor": "Section 2 notation paragraphs and normwise backward-error definition",
+      "observation": "Hats denote computed quantities; vector errors use the 2-norm, matrix scaling uses the Frobenius norm, and the symbols lesssim and approximately equal denote bounds obtained after dropping negligible second-order terms. The normwise backward error is ||b-A hat{x}||_2/(||A||_F ||hat{x}||_2+||b||_2)."
+    },
+    {
+      "pdf_page": 16,
+      "printed_page": "1954",
+      "anchor": "Algorithm 2 and equation (4.1)",
+      "observation": "Iterative refinement computes a residual, solves the correction system A d_i = hat{r}_i, and updates the iterate. The computed residual satisfies hat{r}_j = b-A hat{x}_j+Delta r_j with ||Delta r_j||_2 <= epsilon_r (||b||_2+||A||_F ||hat{x}_j||_2) for every j >= 0."
+    },
+    {
+      "pdf_page": 17,
+      "printed_page": "1955",
+      "anchor": "equations (4.2) and (4.3)",
+      "observation": "The computed update satisfies hat{x}_{j+1} = hat{x}_j+hat{d}_j+Delta x_j with ||Delta x_j||_2 <= epsilon_u ||hat{x}_{j+1}||_2 for every j >= 0, and the parameters obey 0 <= epsilon_r, epsilon_u << 1."
+    },
+    {
+      "pdf_page": 18,
+      "printed_page": "1956",
+      "anchor": "paragraph immediately preceding Lemma 4.2",
+      "observation": "The paper explicitly says that Lemma 4.2 does not assume that MOD-GMRES computes the corrections; it applies to a generic linear solver."
+    },
+    {
+      "pdf_page": 19,
+      "printed_page": "1957",
+      "anchor": "Lemma 4.2, equations (4.14) and (4.15)",
+      "observation": "For a fixed i >= 0 and nonnegative w_i and omega_i, condition (4.14) bounds the correction residual. Independently of the lemma's forward-error clause, equation (4.15) gives the next true-residual recurrence with Lambda_2^(i) = w_i and lambda_2^(i) = (epsilon_r+epsilon_u+omega_i)(||b||_2+||A||_F ||hat{x}_{i+1}||_2)."
+    },
+    {
+      "pdf_page": 20,
+      "printed_page": "1958",
+      "anchor": "equation (4.18) and the following norm derivation",
+      "observation": "The proof starts from the exact identity A hat{x}_{i+1}-b = Delta r_i+A hat{d}_i-hat{r}_i+A Delta x_i. It derives an exact expanded norm bound and then invokes ||hat{x}_i||_2 lesssim ||hat{x}_{i+1}||_2 to obtain the first-order recurrence."
+    }
+  ],
+  "statement": {
+    "binders": [
+      "The system dimension is n, with A in R^(n x n), nonzero b in R^n, and exact solution x of Ax=b; A is nonsingular. [PDF p. 1, printed p. 1939, equation (1.1)]",
+      "The iterative-refinement quantities hat{x}_j, hat{r}_j, hat{d}_j, Delta r_j, and Delta x_j are vectors in R^n, with hats marking computed quantities. [PDF p. 4, printed p. 1942, notation paragraph; PDF p. 16, printed p. 1954, Algorithm 2 and equation (4.1); PDF p. 17, printed p. 1955, equation (4.2)]",
+      "epsilon_r and epsilon_u are given nonnegative residual- and update-error parameters satisfying epsilon_r, epsilon_u << 1. [PDF p. 17, printed p. 1955, equation (4.3)]",
+      "Fix an iteration i >= 0 and nonnegative scalars w_i and omega_i for which the correction-residual hypothesis holds. [PDF p. 19, printed p. 1957, Lemma 4.2 and equation (4.14)]"
+    ],
+    "hypotheses": [
+      "For every j >= 0, hat{r}_j = b-A hat{x}_j+Delta r_j and ||Delta r_j||_2 <= epsilon_r (||b||_2+||A||_F ||hat{x}_j||_2). [PDF p. 16, printed p. 1954, equation (4.1)]",
+      "For every j >= 0, hat{x}_{j+1} = hat{x}_j+hat{d}_j+Delta x_j and ||Delta x_j||_2 <= epsilon_u ||hat{x}_{j+1}||_2. [PDF p. 17, printed p. 1955, equation (4.2)]",
+      "The parameters satisfy 0 <= epsilon_r, epsilon_u << 1. [PDF p. 17, printed p. 1955, equation (4.3)]",
+      "At the selected iteration, ||hat{r}_i-A hat{d}_i||_2 <= w_i ||b-A hat{x}_i||_2 + omega_i (||b||_2+||A||_F ||hat{x}_{i+1}||_2). [PDF p. 19, printed p. 1957, equation (4.14)]"
+    ],
+    "conclusions": [
+      "The exact composition identity is A hat{x}_{i+1}-b = Delta r_i+A hat{d}_i-hat{r}_i+A Delta x_i. [PDF p. 20, printed p. 1958, equation (4.18)]",
+      "Before first-order simplification, ||b-A hat{x}_{i+1}||_2 <= epsilon_r (||b||_2+||A||_F ||hat{x}_i||_2) + w_i ||b-A hat{x}_i||_2 + omega_i (||b||_2+||A||_F ||hat{x}_{i+1}||_2) + epsilon_u ||A||_F ||hat{x}_{i+1}||_2. [PDF p. 20, printed p. 1958, norm derivation following equation (4.18)]",
+      "After the paper's first-order simplification, ||b-A hat{x}_{i+1}||_2 lesssim Lambda_2^(i) ||b-A hat{x}_i||_2 + lambda_2^(i), where Lambda_2^(i)=w_i and lambda_2^(i)=(epsilon_r+epsilon_u+omega_i)(||b||_2+||A||_F ||hat{x}_{i+1}||_2). [PDF p. 19, printed p. 1957, equation (4.15)]"
+    ],
+    "definitions_and_conventions": [
+      "A hat denotes a computed quantity; unhatted A and b are the data of the original system. [PDF p. 4, printed p. 1942, first notation paragraph; PDF p. 1, printed p. 1939, equation (1.1)]",
+      "The exact correction system is A d_i = hat{r}_i, while hat{d}_i is its computed solution and hat{r}_i-A hat{d}_i is the correction residual. [PDF p. 18, printed p. 1956, paragraph preceding Lemma 4.2; PDF p. 19, printed p. 1957, equation (4.14)]",
+      "The notation lesssim is not ordinary exact inequality: the paper uses it when negligible second-order terms have been dropped. [PDF p. 4, printed p. 1942, convention for lesssim and approximately equal]",
+      "The paper's normwise backward error of hat{x} is ||b-A hat{x}||_2/(||A||_F ||hat{x}||_2+||b||_2), using Frobenius-norm perturbations of A and 2-norm perturbations of b. [PDF p. 4, printed p. 1942, normwise backward-error definition]"
+    ],
+    "implicit_context": [
+      "The nonsingularity of A and nonzeroness of b are inherited through Lemma 4.2's reference to system (1.1), rather than repeated beside equations (4.14)-(4.15). [PDF p. 1, printed p. 1939, equation (1.1); PDF p. 19, printed p. 1957, opening sentence of Lemma 4.2]",
+      "The selected backward-residual clause begins with 'Independently'; the forward-error hypothesis (4.12) involving u_i and E_i is not a hypothesis of equations (4.14)-(4.15). [PDF p. 19, printed p. 1957, transition between equations (4.13) and (4.14)]",
+      "The proof additionally uses ||hat{x}_i||_2 lesssim ||hat{x}_{i+1}||_2 when passing from the expanded bound to equation (4.15), although this comparison is not listed in the statement of Lemma 4.2. [PDF p. 20, printed p. 1958, derivation following equation (4.18); PDF p. 19, printed p. 1957, Lemma 4.2 hypotheses]"
+    ],
+    "algorithm_linkage": "This is a one-step result for generic iterative refinement: compute hat{r}_i, approximately solve A d_i=hat{r}_i to obtain hat{d}_i, and update hat{x}_{i+1}. It is used for restarted MOD-GMRES, but Lemma 4.2 explicitly does not require MOD-GMRES or any particular correction solver. [PDF p. 16, printed p. 1954, Algorithm 2; PDF p. 18, printed p. 1956, paragraph preceding Lemma 4.2]",
+    "numerical_model": [
+      "The surrounding paper adopts the standard floating-point model and uses hats for computed values, but the selected lemma assumes abstract normwise bounds rather than a componentwise operation-by-operation model. [PDF p. 4, printed p. 1942, first notation paragraph; PDF p. 19, printed p. 1957, discussion following equations (4.16)-(4.17)]",
+      "epsilon_r bounds the aggregate error from computing the matrix-vector product and vector subtraction in the residual. [PDF p. 16, printed p. 1954, text following equation (4.1)]",
+      "epsilon_u bounds the vector-addition error relative to ||hat{x}_{j+1}||_2; the paper says epsilon_u is likely the unit roundoff u of the update arithmetic but deliberately does not require epsilon_u=u. [PDF p. 17, printed p. 1955, text following equation (4.2)]",
+      "The correction solver is modeled only through equation (4.14); w_i and omega_i may depend on the iteration and need not arise from the same solver at every step. [PDF p. 19, printed p. 1957, equation (4.14); PDF p. 20, printed p. 1958, opening paragraph]"
+    ],
+    "error_notions": [
+      "Equation (4.15) bounds the true residual ||b-A hat{x}_{i+1}||_2 of the computed iterate, not the subsequently computed residual hat{r}_{i+1}. [PDF p. 19, printed p. 1957, equation (4.15); PDF p. 16, printed p. 1954, equation (4.1)]",
+      "The paper calls this backward-error convergence because the normwise backward error has this true residual as numerator and ||b||_2+||A||_F ||hat{x}||_2 as denominator. [PDF p. 4, printed p. 1942, normwise backward-error definition; PDF p. 20, printed p. 1958, paragraph introducing recovery of equations (4.14)-(4.15)]",
+      "No forward-error conclusion belongs to the selected independent clause; the forward-error result is the separate part (4.12)-(4.13) of Lemma 4.2. [PDF p. 19, printed p. 1957, Lemma 4.2]"
+    ],
+    "norms": [
+      "All vector residuals, iterate magnitudes, and computation errors in the selected result use the Euclidean 2-norm. [PDF p. 16, printed p. 1954, equation (4.1); PDF p. 17, printed p. 1955, equation (4.2); PDF p. 19, printed p. 1957, equations (4.14)-(4.15)]",
+      "The matrix A is scaled by its Frobenius norm ||A||_F, including the bound on A Delta x_i used in the proof. [PDF p. 19, printed p. 1957, equations (4.14)-(4.15); PDF p. 20, printed p. 1958, derivation following equation (4.18)]"
+    ],
+    "constants_and_indexing": [
+      "The recurrence advances exactly one iteration, from index i to i+1, for a fixed i >= 0. [PDF p. 19, printed p. 1957, Lemma 4.2 and equation (4.15)]",
+      "Lambda_2^(i) is exactly w_i; lambda_2^(i) is exactly (epsilon_r+epsilon_u+omega_i)(||b||_2+||A||_F ||hat{x}_{i+1}||_2). [PDF p. 19, printed p. 1957, equation (4.15)]",
+      "The lemma requires only w_i >= 0 and omega_i >= 0; it does not require w_i<1. The later contraction discussion separately imposes w_i << 1. [PDF p. 19, printed p. 1957, text surrounding equation (4.14); PDF p. 20, printed p. 1958, equation (4.19)]",
+      "No dimension-dependent c(n,k) factor appears in equations (4.14) or (4.15). [PDF p. 19, printed p. 1957, equations (4.14)-(4.15)]"
+    ],
+    "higher_order_terms": [
+      "Equation (4.18) is an exact equality, and the first expanded residual estimate following it is written with an exact <= sign. [PDF p. 20, printed p. 1958, equation (4.18) and following display]",
+      "The final recurrence (4.15) uses lesssim and therefore retains only the paper's first-order bound after negligible second-order terms are dropped. [PDF p. 4, printed p. 1942, lesssim convention; PDF p. 19, printed p. 1957, equation (4.15)]",
+      "The paper does not specify an explicit remainder, coefficient, or threshold defining the terms omitted by lesssim. [PDF p. 4, printed p. 1942, lesssim convention; PDF p. 20, printed p. 1958, derivation following equation (4.18)]"
+    ],
+    "exceptional_values": [
+      "A is required to be nonsingular and b is required to be nonzero through system (1.1); hence the exact correction d_i exists uniquely and the stated backward-error denominator is nonzero. [PDF p. 1, printed p. 1939, equation (1.1); PDF p. 4, printed p. 1942, backward-error definition; PDF p. 18, printed p. 1956, correction system]",
+      "The selected passage gives no explicit clauses concerning NaNs, infinities, overflow, underflow, or subnormal values; it assumes the abstract error bounds (4.1)-(4.3). [PDF p. 16, printed p. 1954, equation (4.1); PDF p. 17, printed p. 1955, equations (4.2)-(4.3); PDF p. 19, printed p. 1957, Lemma 4.2]"
+    ]
+  },
+  "undebatable_constraints": [
+    "The correction-residual hypothesis must contain both the w_i-scaled true current residual and the omega_i-scaled quantity ||b||_2+||A||_F ||hat{x}_{i+1}||_2. [PDF p. 19, printed p. 1957, equation (4.14)]",
+    "The conclusion concerns ||b-A hat{x}_{i+1}||_2 and uses the current true residual ||b-A hat{x}_i||_2, not computed residuals on either side. [PDF p. 19, printed p. 1957, equation (4.15)]",
+    "The exact recurrence coefficients are Lambda_2^(i)=w_i and lambda_2^(i)=(epsilon_r+epsilon_u+omega_i)(||b||_2+||A||_F ||hat{x}_{i+1}||_2). [PDF p. 19, printed p. 1957, equation (4.15)]",
+    "The conclusion is a first-order lesssim statement, not an exact <= inequality with no omitted remainder. [PDF p. 4, printed p. 1942, lesssim convention; PDF p. 19, printed p. 1957, equation (4.15)]",
+    "The residual and update models (4.1)-(4.3) are hypotheses, including their quantification over all iterations and the relative update-error scale ||hat{x}_{j+1}||_2. [PDF p. 16, printed p. 1954, equation (4.1); PDF p. 17, printed p. 1955, equations (4.2)-(4.3)]",
+    "The selected clause is independent of the forward-error assumptions (4.12)-(4.13) and does not require u_i or E_i. [PDF p. 19, printed p. 1957, word 'Independently' before equation (4.14)]",
+    "No particular GMRES variant or correction solver is required by Lemma 4.2. [PDF p. 18, printed p. 1956, paragraph preceding Lemma 4.2]",
+    "A contraction claim requires an additional smallness condition such as w_i << 1; nonnegativity alone is all that equation (4.15) assumes. [PDF p. 19, printed p. 1957, equation (4.14); PDF p. 20, printed p. 1958, equation (4.19)]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The relation lesssim has only an informal first-order meaning, with no quantified remainder or universal multiplicative constant. [PDF p. 4, printed p. 1942, convention for lesssim and approximately equal]",
+      "evidence": "The paper says lesssim and approximately equal are used when dropping negligible second-order terms, and equation (4.15) uses lesssim. [PDF p. 4, printed p. 1942, notation paragraph; PDF p. 19, printed p. 1957, equation (4.15)]",
+      "impact": "An exact formal theorem cannot silently replace lesssim by <=; it must either retain the exact expanded bound from the proof or introduce an explicit interpretation of the omitted terms. [PDF p. 20, printed p. 1958, norm derivation following equation (4.18)]"
+    },
+    {
+      "issue": "The proof invokes ||hat{x}_i||_2 lesssim ||hat{x}_{i+1}||_2, but Lemma 4.2 does not state this comparison as a hypothesis. [PDF p. 20, printed p. 1958, derivation following equation (4.18); PDF p. 19, printed p. 1957, Lemma 4.2 statement]",
+      "evidence": "The exact expanded bound retains epsilon_r ||A||_F ||hat{x}_i||_2; the proof replaces its scale by the i+1 iterate only after 'considering' the iterate-norm comparison. [PDF p. 20, printed p. 1958, display following equation (4.18)]",
+      "impact": "Without adding that comparison, the directly justified exact bound must retain ||hat{x}_i||_2 rather than using only the lambda_2^(i) scale based on ||hat{x}_{i+1}||_2. [PDF p. 20, printed p. 1958, derivation following equation (4.18)]"
+    },
+    {
+      "issue": "The requirement epsilon_r, epsilon_u << 1 has no numerical threshold. [PDF p. 17, printed p. 1955, equation (4.3)]",
+      "evidence": "Section 2 defines 'much greater than' notation qualitatively but supplies no exact interpretation of 'much less than one' in equation (4.3). [PDF p. 4, printed p. 1942, comparison convention; PDF p. 17, printed p. 1955, equation (4.3)]",
+      "impact": "A formal contract can preserve the qualitative smallness assumption but cannot infer a specific bound such as epsilon_r<1 or epsilon_u<1 beyond what is explicitly written. [PDF p. 17, printed p. 1955, equation (4.3)]"
+    }
+  ],
+  "contract_plain_english": "For the nonsingular real system Ax=b with nonzero b, assume that every computed residual and update obey the normwise models (4.1)-(4.3). [PDF p. 1, printed p. 1939, equation (1.1); PDF p. 16, printed p. 1954, equation (4.1); PDF p. 17, printed p. 1955, equations (4.2)-(4.3)] At a fixed iteration i, if a generic correction solver returns hat{d}_i whose correction residual is bounded by w_i times the current true residual plus omega_i times the backward-error scale at the next iterate, then the next true residual is, to first order, at most w_i times the current true residual plus (epsilon_r+epsilon_u+omega_i) times that scale. [PDF p. 18, printed p. 1956, paragraph preceding Lemma 4.2; PDF p. 19, printed p. 1957, equations (4.14)-(4.15)] The exact proof-level bound retains epsilon_r ||A||_F ||hat{x}_i||_2; replacing it by the stated next-iterate scale uses the unstated comparison ||hat{x}_i||_2 lesssim ||hat{x}_{i+1}||_2 and the paper's convention of dropping negligible second-order terms. [PDF p. 4, printed p. 1942, lesssim convention; PDF p. 20, printed p. 1958, equation (4.18) and following derivation]"
+}
