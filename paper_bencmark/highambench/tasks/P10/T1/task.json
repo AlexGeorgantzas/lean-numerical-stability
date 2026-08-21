@@ -7,10 +7,10 @@
   "assumptions": [
     "The matrix dimension is positive and the exact and computed operands are real square n-by-n matrices, as in equation (1) and the recursive-inversion application of equation (8).",
     "One otherwise unspecified matrix norm is used throughout and satisfies nonnegativity, definiteness, homogeneity, subadditivity, and submultiplicativity.",
-    "The computed product is linked to exact operands, inherited left and right perturbations, local multiplication error, and explicit higher-order terms in the first-order product run.",
+    "The computed product is linked to exact operands, inherited left and right perturbations, local multiplication error, and a higher-order remainder; the first-order error removes the inherited cross product and that remainder.",
     "The actual right perturbation norm is bounded by the nonnegative absolute inherited error err(B,n).",
-    "Machine epsilon is positive and mu has the nonnegative polynomial-growth certificate used by the surrounding stable-multiplication model, although neither appears in the selected inherited-right term.",
-    "The selected result uses the finite real-valued first-order regime; exceptional values, the inherited-error cross product, and the local epsilon-squared remainder are outside this contribution."
+    "Machine epsilon is positive and mu is nonnegative, although neither appears in the selected inherited-right term; no per-run global polynomial-growth premise is added.",
+    "The selected result uses the finite real-valued first-order regime; exceptional values, the inherited-error cross product, and the unspecified local higher-order remainder are outside this contribution."
   ],
   "author_label": null,
   "classification_frozen_before_runs": false,
@@ -22,12 +22,12 @@
   "formal_statement": {
     "lean_header": "theorem p10_t1_inherited_right_product_error {n : Nat} (run : P10FirstOrderProductRun n) : P10InheritedRightEquation8Term run",
     "namespace": "HighamBench",
-    "plain_language": "For a linked first-order stable product, the actual inherited right perturbation propagates as A*dB, is bounded by ||A||*err(B,n), and this scalar is exactly equation (8)'s middle additive contribution.",
+    "plain_language": "For a linked first-order product, the realized first-order error decomposes into the local, inherited-right A*dB, and inherited-left dA*B matrices, and the selected right matrix is bounded by ||A||*err(B,n).",
     "target_file": "paper_bencmark/highambench/tasks/P10/T1/Target.lean",
     "theorem_name": "p10_t1_inherited_right_product_error"
   },
-  "informal_proof": "Apply the selected consistent norm's submultiplicativity to A*dB, then multiply the supplied bound ||dB|| <= err(B,n) by the nonnegative norm ||A||. The exact additive-position identity unfolds the three named equation-(8) contributions.",
-  "informal_statement": "Equation (8)'s inherited-right first-order contribution, linked to the right operand's actual prior-computation error and retained as the middle term of the complete product-error budget.",
+  "informal_proof": "Expand the linked computed-product equation and cancel the exact product, inherited perturbation cross product, and higher-order remainder to derive the three-matrix first-order decomposition. Then apply submultiplicativity to A*dB and multiply the supplied ||dB|| <= err(B,n) bound by the nonnegative norm ||A||.",
+  "informal_statement": "Equation (8)'s inherited-right first-order contribution, linked through a derived three-source decomposition to the realized first-order product error and bounded with the source's coefficient and operand orientation.",
   "limits": {
     "total_model_tokens": 5000000,
     "wall_clock_seconds": 1800
@@ -46,7 +46,7 @@
       "NumStability.matSeqProd_normwise_perturbation_bound",
       "NumStability.frobNorm_matMul_le"
     ],
-    "note": "The complete 24-module frozen baseline has no declaration linking an inherited right perturbation, its absolute error budget, and its additive role in equation (8) for an unspecified consistent norm. MatrixAlgebra contains a generic finite-product perturbation theorem and a concrete Frobenius submultiplicativity theorem, but neither can replace the source's linked absolute-error term without changing its semantics."
+    "note": "The complete 24-module frozen baseline has no declaration deriving the exact three-source first-order matrix decomposition from this linked product execution or identifying its inherited-right component under an unspecified consistent norm. MatrixAlgebra contains generic finite-product and concrete Frobenius bounds, but neither preserves this source-specific execution and error decomposition."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
@@ -54,11 +54,10 @@
     "p10MatMul",
     "P10ConsistentMatrixNorm",
     "P10FirstOrderProductRun",
-    "p10FirstOrderProductErrorBudget",
+    "p10FirstOrderProductError",
     "p10InheritedRightError",
-    "p10LocalProductErrorContribution",
+    "p10InheritedLeftError",
     "p10InheritedRightErrorContribution",
-    "p10InheritedLeftErrorContribution",
     "P10InheritedRightEquation8Term"
   ],
   "source_locations": [
@@ -83,7 +82,7 @@
   "task_id": "P10-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "After the source semantics are packaged in P10FirstOrderProductRun, the proof directly specializes one submultiplicativity certificate and the supplied right-inherited-error bound, then unfolds the additive budget identity. The frozen baseline has related generic and concrete product-norm results but no theorem preserving the selected unspecified-norm, linked-error semantics.",
+  "tier_rationale": "After the source execution is packaged in P10FirstOrderProductRun, the proof directly expands and cancels the linked product equation to expose the three first-order matrices, then specializes one submultiplicativity certificate and the supplied right-inherited-error bound. The frozen baseline has related generic and concrete product-norm results but no theorem preserving this linked decomposition and unspecified-norm component semantics.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P10/T1/Target.lean",
     "mode": "shared automatic validator",

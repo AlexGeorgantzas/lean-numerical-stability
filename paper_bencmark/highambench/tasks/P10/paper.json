@@ -71,7 +71,7 @@
   "result_survey": {
     "T1": {
       "available": true,
-      "decision": "Use equation (8)'s inherited-right first-order contribution with the prior-computation error linked to the right operand, an unspecified consistent norm, and its exact additive position in the three-term budget.",
+      "decision": "Use equation (8)'s inherited-right first-order contribution with the prior-computation error linked to the right operand, a derived three-source decomposition of the realized first-order product error, and the source's unspecified consistent norm.",
       "task_id": "P10-T1",
       "theorem_name": "p10_t1_inherited_right_product_error"
     },

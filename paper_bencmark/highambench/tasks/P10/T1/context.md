@@ -24,23 +24,28 @@ paper leaves the matrix norm unnamed and explains after equation (1) that one
 may change norms at the cost of dimension-dependent factors. The target must
 therefore not silently choose the Frobenius norm.
 
-The equality sign in equation (8) is interpreted as first-order error-budget
-accounting, consistently with equation (1)'s inequality and the surrounding
-prose. Products of inherited perturbations and the local `O(epsilon^2)`
-remainder are outside the selected first-order term. The cited passages give no
-semantics for overflow, underflow, NaNs, or infinities.
+The equality sign in equation (8) is interpreted as first-order error
+bookkeeping, consistently with equation (1)'s inequality and the surrounding
+prose. Products of inherited perturbations and the local higher-order remainder
+are removed when the realized first-order error is formed. Equation (8) does
+not supply a finite coefficient for either omitted part. The cited passages
+give no semantics for overflow, underflow, NaNs, or infinities.
 
 ## Lean statement
 
-`P10FirstOrderProductRun n` records one positive-dimensional stable product,
-an otherwise unspecified consistent matrix norm, exact operands, their
-inherited perturbations, a linked computed product, local multiplication error,
-and explicit higher-order terms. In this model:
+`P10FirstOrderProductRun n` records one positive-dimensional product, an
+otherwise unspecified consistent matrix norm, exact operands, their inherited
+perturbations, a linked computed product, local multiplication error, and a
+higher-order remainder. It does not assume a per-run global polynomial bound
+for `mu` or invent a finite coefficient for equation (8)'s omitted terms. In
+this model:
 
 - `run.rightPerturbation` is the actual error inherited by the right operand;
 - `run.rightInheritedError` is its nonnegative absolute normwise error bound;
 - `p10InheritedRightError run` is the propagated matrix
   `run.exactLeft * run.rightPerturbation`;
+- `p10InheritedLeftError run` is the symmetric propagated matrix
+  `run.leftPerturbation * run.exactRight`;
 - `p10InheritedRightErrorContribution run` is exactly
   `||run.exactLeft|| * run.rightInheritedError`.
 
@@ -48,9 +53,19 @@ Using the exact left operand in the norm factor makes explicit the standard
 first-order reading of the paper's un-hatted `A`; replacing it by the perturbed
 operand would differ only through a discarded higher-order interaction.
 
-`P10InheritedRightEquation8Term run` states both required facts. First, the
-norm of the actual propagated error matrix is bounded by the selected scalar
-contribution. Second, that scalar is exactly the middle additive term of
-`p10FirstOrderProductErrorBudget run`, between the local multiplication term
-and the inherited-left term. This preserves the source's operand orientation,
-coefficient, first-order role, and unspecified norm.
+`p10FirstOrderProductError run` is the computed product error after subtracting
+the inherited-error cross product and the supplied higher-order remainder.
+`P10InheritedRightEquation8Term run` first proves the substantive matrix
+decomposition
+
+```text
+firstOrderProductError
+  = localFirstOrderError + (exactLeft * rightPerturbation
+      + leftPerturbation * exactRight).
+```
+
+It then bounds the norm of the selected middle matrix by
+`||exactLeft|| * rightInheritedError`. Thus the selected scalar is linked to a
+realized first-order product error rather than merely placed in a scalar
+definition. Bounding the norm of the complete three-matrix sum by equation
+(8)'s full scalar budget remains the distinct P10-T2 task.

@@ -38,11 +38,6 @@ structure P10FirstOrderProductRun (n : ℕ) where
   epsilon_pos : 0 < epsilon
   mu : ℕ → ℝ
   mu_nonneg : ∀ k, 0 ≤ mu k
-  muDegree : ℕ
-  muGrowthConstant : ℝ
-  muGrowthConstant_nonneg : 0 ≤ muGrowthConstant
-  mu_polynomial_bound : ∀ k,
-    mu k ≤ muGrowthConstant * (k : ℝ) ^ muDegree
   exactLeft : P10Matrix n
   exactRight : P10Matrix n
   leftPerturbation : P10Matrix n
@@ -54,8 +49,6 @@ structure P10FirstOrderProductRun (n : ℕ) where
   rightInheritedError : ℝ
   leftInheritedError_nonneg : 0 ≤ leftInheritedError
   rightInheritedError_nonneg : 0 ≤ rightInheritedError
-  higherOrderCoeff : ℝ
-  higherOrderCoeff_nonneg : 0 ≤ higherOrderCoeff
   computed_product :
     computedProduct =
       p10MatMul n
@@ -69,8 +62,6 @@ structure P10FirstOrderProductRun (n : ℕ) where
     matrixNorm.value leftPerturbation ≤ leftInheritedError
   right_inherited_error_bound :
     matrixNorm.value rightPerturbation ≤ rightInheritedError
-  higher_order_bound :
-    matrixNorm.value higherOrderRemainder ≤ higherOrderCoeff * epsilon ^ 2
 
 /-- The realized product error with the inherited cross term and the local
 higher-order remainder removed, exactly as required by first-order analysis. -/
@@ -94,6 +85,12 @@ noncomputable def p10InheritedRightError {n : ℕ}
     (run : P10FirstOrderProductRun n) : P10Matrix n :=
   p10MatMul n run.exactLeft run.rightPerturbation
 
+/-- The inherited-left error matrix produced to first order by multiplying
+the left operand perturbation by the exact right operand. -/
+noncomputable def p10InheritedLeftError {n : ℕ}
+    (run : P10FirstOrderProductRun n) : P10Matrix n :=
+  p10MatMul n run.leftPerturbation run.exactRight
+
 /-- Equation (8)'s local stable-multiplication contribution. -/
 noncomputable def p10LocalProductErrorContribution {n : ℕ}
     (run : P10FirstOrderProductRun n) : ℝ :=
@@ -110,16 +107,16 @@ noncomputable def p10InheritedLeftErrorContribution {n : ℕ}
     (run : P10FirstOrderProductRun n) : ℝ :=
   run.leftInheritedError * run.matrixNorm.value run.exactRight
 
-/-- The selected inherited-right term, including both its propagated matrix
-bound and its exact additive position in equation (8)'s first-order budget. -/
+/-- The selected inherited-right term. The first conjunct links all three
+first-order matrices to the realized product error; the second gives equation
+`(8)`'s `||A||*err(B,n)` bound for the middle matrix. -/
 def P10InheritedRightEquation8Term {n : ℕ}
     (run : P10FirstOrderProductRun n) : Prop :=
-  run.matrixNorm.value (p10InheritedRightError run) ≤
-      p10InheritedRightErrorContribution run ∧
-    p10FirstOrderProductErrorBudget run =
-      p10LocalProductErrorContribution run +
-        (p10InheritedRightErrorContribution run +
-          p10InheritedLeftErrorContribution run)
+  p10FirstOrderProductError run =
+      run.localFirstOrderError +
+        (p10InheritedRightError run + p10InheritedLeftError run) ∧
+    run.matrixNorm.value (p10InheritedRightError run) ≤
+      p10InheritedRightErrorContribution run
 
 /-- The one-level amplification factor in the Sylvester recurrence on printed page 86. -/
 noncomputable def p10SylvesterGrowth {n : ℕ}
