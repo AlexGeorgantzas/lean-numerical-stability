@@ -1,898 +1,871 @@
 {
   "schema_version": "highambench-faithfulness-0.2",
   "role": "blind-translation",
-  "dossier_sha256": "6fe713ab7c72ecb9e9d96cfd28523943aac19a7dea1e011c6641c908ee9ed56e",
+  "dossier_sha256": "10a8d521f62b1160edfdd78281ecefa832872c0a7f393d0ce0455974807d8a6d",
   "dependency_coverage": [
     {
       "id": "D001",
       "name": "LocalDef001",
-      "meaning": "A dependent type of complete numerical-refinement runs. Its constructor D016 packages the matrices, vectors, iterates, precision functions, polynomial factor, exact-system assumptions, rounding-error models, inner-solver certificates, and auxiliary asymptotic bounds.",
-      "effect_on_target": "The target is universally quantified over one such run, so every condition packaged by its constructor is an implicit assumption of the proposition.",
+      "meaning": "For a one-step certificate, this projects its 63rd real-valued component, identified by the surrounding type as its modular-accuracy parameter.",
+      "effect_on_target": "For each restarted step, this value parameterizes the theorem-record from which the two scalar remainder witnesses are extracted.",
       "status": "understood"
     },
     {
       "id": "D002",
       "name": "LocalDef002",
-      "meaning": "The run's second field, the n by n real matrix A.",
-      "effect_on_target": "A defines the residual-based backward errors, the condition factor, and the packaged numerical model.",
+      "meaning": "For a one-step certificate, this projects its 66th component, a LocalDef027 record concerning the current and next iterates, with modular accuracy given by D001.",
+      "effect_on_target": "Applying this projection to every restarted step produces the records whose fifth and sixth real components define the required backward and forward remainder sequences.",
       "status": "understood"
     },
     {
       "id": "D003",
       "name": "LocalDef003",
-      "meaning": "The run's fourth field, the right-hand-side vector b in R^n.",
-      "effect_on_target": "b occurs in the normwise relative residual defining the first error recurrence.",
+      "meaning": "An indexed inductive type of complete runs in dimension n; its supplied constructor bundles matrices, vectors, infinite iterate and error sequences, arithmetic assumptions, one-step certificates, and remainder estimates.",
+      "effect_on_target": "The proposition is universally quantified over these bundled runs, so all constructor requirements restrict which data are covered.",
       "status": "understood"
     },
     {
       "id": "D004",
       "name": "LocalDef004",
-      "meaning": "The run's fifth field, the exact solution vector xExact in R^n.",
-      "effect_on_target": "It is the reference vector in the relative forward-error recurrence.",
+      "meaning": "Projects the run's n by n real matrix A.",
+      "effect_on_target": "A occurs in the normalized residual, the Frobenius condition factor, and every restarted one-step record.",
       "status": "understood"
     },
     {
       "id": "D005",
       "name": "LocalDef005",
-      "meaning": "The run's sixth field, the family xHat(i,t) of computed n-vectors indexed by iteration i and parameter t.",
-      "effect_on_target": "The target compares the errors of xHat(i+1,t) and xHat(i,t) for every natural-number iteration i.",
+      "meaning": "Projects the run's n by n real matrix Ainv.",
+      "effect_on_target": "Its Frobenius norm contributes to the condition factor used in lambda and the forward-error floor.",
       "status": "understood"
     },
     {
       "id": "D006",
       "name": "LocalDef006",
-      "meaning": "The normwise relative residual η(A,b,x) = ||b-Ax||₂/(||A||_F ||x||₂+||b||₂).",
-      "effect_on_target": "It is the error quantity on both sides of the first recurrence.",
+      "meaning": "Projects the run's right-hand-side vector b in R^n.",
+      "effect_on_target": "It is used in every normalized residual error eta_i and in the restarted records.",
       "status": "understood"
     },
     {
       "id": "D007",
       "name": "LocalDef007",
-      "meaning": "The function t ↦ P(n,n) uHigh(t), where P is the run's polynomial factor.",
-      "effect_on_target": "It is the additive first-order term in the backward-error recurrence.",
+      "meaning": "Projects the sequence of n-vectors called correctionHat, indexed by natural-number iteration.",
+      "effect_on_target": "The correction at i is part of the restarted one-step certificate that determines the selected scalar remainders.",
       "status": "understood"
     },
     {
       "id": "D008",
       "name": "LocalDef008",
-      "meaning": "For scale s and functions lhs,rhs, it asserts that there exists a remainder r with r = O_l(s²) such that eventually along l, lhs(t) ≤ rhs(t)+|r(t)|.",
-      "effect_on_target": "Each of the two conclusions is precisely such a second-order-relaxed eventual inequality, separately for every iteration.",
+      "meaning": "Projects the run's real dimension factor d.",
+      "effect_on_target": "It appears in lambda = d uLow kappa_F and in the additive floors d uHigh and d uHigh kappa_F.",
       "status": "understood"
     },
     {
       "id": "D009",
       "name": "LocalDef009",
-      "meaning": "The relative forward error E(x,xHat) = ||xHat-x||₂/||x||₂.",
-      "effect_on_target": "With x=xExact, it is the error quantity on both sides of the second recurrence.",
+      "meaning": "Projects the run's sequence of computed residual vectors.",
+      "effect_on_target": "The residual at i is part of the restarted one-step certificate from which the target remainders are selected.",
       "status": "understood"
     },
     {
       "id": "D010",
       "name": "LocalDef010",
-      "meaning": "The function t ↦ P(n,n) uHigh(t) κ_F(A), where κ_F(A)=||Ainv||_F ||A||_F.",
-      "effect_on_target": "It is the additive first-order term in the forward-error recurrence.",
+      "meaning": "Projects the run's restart function, which assigns to each i a one-step certificate for A, Ainv, b, xExact, xHat_i, xHat_(i+1), the computed residual, and the computed correction.",
+      "effect_on_target": "This is the direct source of the per-index theorem records and hence of both existential remainder sequences.",
       "status": "understood"
     },
     {
       "id": "D011",
       "name": "LocalDef011",
-      "meaning": "The function λ(t)=P(n,n) uLow(t) κ_F(A).",
-      "effect_on_target": "It is assumed to tend to zero and eventually lie in [0,1), and it multiplies the current error in both recurrences.",
+      "meaning": "Projects the run's real parameter uHigh.",
+      "effect_on_target": "It enters both additive floors and the second-order scale (uHigh + uLow)^2.",
       "status": "understood"
     },
     {
       "id": "D012",
       "name": "LocalDef012",
-      "meaning": "The total scale s(t)=uHigh(t)+uLow(t).",
-      "effect_on_target": "Both unspecified remainders are required to be O_l(s²).",
+      "meaning": "Projects the run's real parameter uLow.",
+      "effect_on_target": "It enters lambda and the second-order scale (uHigh + uLow)^2.",
       "status": "understood"
     },
     {
       "id": "D013",
       "name": "LocalDef013",
-      "meaning": "For λ, the conjunction λ→0 along l and, eventually along l, 0≤λ(t)<1.",
-      "effect_on_target": "This is the explicit contraction-factor hypothesis hLambda.",
+      "meaning": "Projects the run's exact solution vector xExact in R^n.",
+      "effect_on_target": "It defines every relative forward error and is included in each restarted record.",
       "status": "understood"
     },
     {
       "id": "D014",
       "name": "LocalDef014",
-      "meaning": "The type of n by n real matrices, represented as Matrix (Fin n) (Fin n) Real.",
-      "effect_on_target": "It fixes the dimensions and scalar field of A and Ainv.",
+      "meaning": "Projects the run's infinite sequence of approximate solution vectors xHat_i in R^n.",
+      "effect_on_target": "The target bounds normalized residual and relative forward errors at every natural-number iterate.",
       "status": "understood"
     },
     {
       "id": "D015",
       "name": "LocalDef015",
-      "meaning": "The run's third field, the n by n real matrix Ainv.",
-      "effect_on_target": "It enters κ_F(A), λ, the forward-error additive term, and the packaged inverse assumptions.",
+      "meaning": "Projects the fifth real component of a LocalDef027 record; according to its constructor ordering, this is the backward remainder.",
+      "effect_on_target": "The backwardRemainder witness is required to equal this component of the restarted theorem-record at every i.",
       "status": "understood"
     },
     {
       "id": "D016",
       "name": "LocalDef016",
-      "meaning": "The constructor for a run. It requires 0<n; matrices A,Ainv; vectors b,xExact; iterate, residual, correction, residual-error, and update-error families; nonnegative precision functions uHigh,uLow with uHigh≤uLow and both tending to zero; a nonnegative-coefficient polynomial P; b≠0; bijectivity of A; both inverse identities for A and Ainv; AxExact=b; n uHigh(t)<1; exact residual and update decompositions; componentwise residual- and update-rounding bounds; one inner-solver certificate per iteration; and four auxiliary O((uHigh+uLow)²)-relaxed inequalities controlling iterate norms, residual/update perturbations, and update error.",
-      "effect_on_target": "It specifies all data and hidden assumptions carried by the run binder, including the positivity of n and the exact-system and rounding models used to establish the two recurrences.",
+      "meaning": "Projects the sixth real component of a LocalDef027 record; according to its constructor ordering, this is the forward remainder.",
+      "effect_on_target": "The forwardRemainder witness is required to equal this component of the restarted theorem-record at every i.",
       "status": "understood"
     },
     {
       "id": "D017",
       "name": "LocalDef017",
-      "meaning": "The run's thirteenth field, its bivariate polynomial factor P.",
-      "effect_on_target": "Its value P(n,n) appears in λ and both additive error terms.",
+      "meaning": "Defines the normalized residual eta(A,b,x) as ||b-Ax||_2 divided by ||A||_F ||x||_2 + ||b||_2.",
+      "effect_on_target": "This is the backward-error quantity in the one-step recurrence and global geometric bound.",
       "status": "understood"
     },
     {
       "id": "D018",
       "name": "LocalDef018",
-      "meaning": "The run's eleventh field, the nonnegative high-precision unit-roundoff function uHigh(t).",
-      "effect_on_target": "It contributes to the scale and to both additive first-order error terms.",
+      "meaning": "Defines the backward additive floor as d uHigh.",
+      "effect_on_target": "It is added in each normalized-residual recurrence and in the backward global envelope.",
       "status": "understood"
     },
     {
       "id": "D019",
       "name": "LocalDef019",
-      "meaning": "The run's twelfth field, the nonnegative low-precision unit-roundoff function uLow(t).",
-      "effect_on_target": "It contributes to the scale and determines the contraction factor λ.",
+      "meaning": "Defines the forward additive floor as d uHigh times ||Ainv||_F ||A||_F.",
+      "effect_on_target": "It is added in each relative-forward-error recurrence and in the forward global envelope.",
       "status": "understood"
     },
     {
       "id": "D020",
       "name": "LocalDef020",
-      "meaning": "The type of real n-vectors, represented as functions Fin n → Real.",
-      "effect_on_target": "It fixes the type of b, xExact, all iterates, and all vector-valued errors.",
+      "meaning": "For lambda, a floor f, parameters uHigh and uLow, a scalar remainder q, and an error sequence E, it asserts that some C >= 0 satisfies |q_i| <= C(uHigh+uLow)^2 for all i and E_m <= lambda^m E_0 + (f + C(uHigh+uLow)^2)/(1-lambda) for all m.",
+      "effect_on_target": "It supplies separate global geometric-plus-floor bounds for the backward and forward error sequences, each with its own existential constant.",
       "status": "understood"
     },
     {
       "id": "D021",
       "name": "LocalDef021",
-      "meaning": "The Frobenius condition factor κ_F(A)=||Ainv||_F ||A||_F.",
-      "effect_on_target": "It occurs in λ and in the additive forward-error term.",
+      "meaning": "Defines lambda as d uLow times ||Ainv||_F ||A||_F.",
+      "effect_on_target": "The explicit premise is 0 <= lambda < 1, and lambda is the contraction coefficient in both recurrences and both global bounds.",
       "status": "understood"
     },
     {
       "id": "D022",
       "name": "LocalDef022",
-      "meaning": "The normwise relative residual ||b-AxHat||₂/(||A||_F ||xHat||₂+||b||₂).",
-      "effect_on_target": "LocalDef006 delegates to this quantity, so it gives the exact mathematical content of the first error measure.",
+      "meaning": "Defines the relative vector error between exact x and approximation xHat as ||xHat-x||_2 / ||x||_2.",
+      "effect_on_target": "This is the forward-error quantity bounded at each iteration and in the global envelope.",
       "status": "understood"
     },
     {
       "id": "D023",
       "name": "LocalDef023",
-      "meaning": "Evaluation of the finite bivariate polynomial P at natural numbers n,k: P(n,k)=Σ_i Σ_j c_ij n^i k^j, using real casts of n and k.",
-      "effect_on_target": "The target uses the computed constant P(n,n), not merely an unspecified asymptotic constant.",
+      "meaning": "For a scalar sequence q, it asserts the existence of C >= 0 such that |q_i| <= C(uHigh+uLow)^2 for every natural i.",
+      "effect_on_target": "It is required explicitly for each selected remainder sequence and is also repeated inside each D020 envelope.",
       "status": "understood"
     },
     {
       "id": "D024",
       "name": "LocalDef024",
-      "meaning": "The assertion that a remainder is Big-O along l of the square of the supplied scale.",
-      "effect_on_target": "It gives the exact second-order requirement on each existential remainder.",
-      "status": "understood"
+      "meaning": "An indexed inductive type of one-step computation certificates for fixed matrices, exact and consecutive approximate vectors, computed residual and correction, and precision parameters.",
+      "effect_on_target": "Each restart i has this type, and target-relevant components 63 and 66 are projected from it; its full mathematical content cannot be reconstructed because its constructor dossier is truncated.",
+      "status": "unclear"
     },
     {
       "id": "D025",
       "name": "LocalDef025",
-      "meaning": "The Euclidean norm ||x||₂=(Σ_i x_i²)^(1/2) on R^n.",
-      "effect_on_target": "It defines every vector norm in the backward and forward errors and in the run assumptions.",
+      "meaning": "The run constructor requires n>0; matrices A and Ainv; vectors b and xExact; iterate, residual, correction, residual-error, and update-error sequences; positive uHigh and uLow with uHigh <= uLow; nonnegative d; b nonzero; inverse and exact-solution identities; n uHigh<1 and n uLow<1; residual and update rounding models; restart certificates; norm-comparison remainders; and uniform second-order bounds for those and the restarted theorem remainders.",
+      "effect_on_target": "These are bundled restrictions on every quantified run. In particular, the target's chosen remainder sequences already have D023-style estimates in the run data, while the target additionally states recurrences and D020 envelopes.",
       "status": "understood"
     },
     {
       "id": "D026",
       "name": "LocalDef026",
-      "meaning": "The smallness condition n u<1.",
-      "effect_on_target": "The run requires n uHigh(t)<1 for every t, ensuring the packaged γ_n(uHigh) expression has a positive denominator.",
+      "meaning": "Defines LocalDef026 n as the type of real matrices indexed by Fin n rows and Fin n columns.",
+      "effect_on_target": "It fixes A and Ainv as n by n real matrices.",
       "status": "understood"
     },
     {
       "id": "D027",
       "name": "LocalDef027",
-      "meaning": "A type of per-iteration inner-solver certificates parameterized by the filter, scale, system, current and next iterates, residual, correction, low precision, and polynomial.",
-      "effect_on_target": "The run contains one such certificate for every iteration; its constructor is only partially displayed, so its complete hidden assumptions cannot be exhaustively translated.",
-      "status": "unclear"
+      "meaning": "An indexed theorem-record type for one transition from xCurrent to xNext, parameterized by A, Ainv, b, xExact, uHigh, modular accuracy, and d; its supplied constructor stores recurrence factors, coefficients, and scalar backward and forward remainders satisfying stated bounds.",
+      "effect_on_target": "The fifth and sixth real fields of these records are exactly the two target remainder sequences.",
+      "status": "understood"
     },
     {
       "id": "D028",
       "name": "LocalDef028",
-      "meaning": "A finite bivariate polynomial datum with natural degrees and real coefficients; constructor D038 requires every coefficient to be nonnegative.",
-      "effect_on_target": "It supplies the polynomial whose exact value P(n,n) scales all first-order bounds.",
+      "meaning": "Defines LocalDef028 n as Fin n -> Real, the type of real n-vectors.",
+      "effect_on_target": "All exact, approximate, residual, correction, and error vectors have dimension n.",
       "status": "understood"
     },
     {
       "id": "D029",
       "name": "LocalDef029",
-      "meaning": "The coefficient function c_ij of a polynomial datum, indexed through its two finite degree ranges.",
-      "effect_on_target": "These coefficients determine P(n,n).",
+      "meaning": "Defines kappa_F(A,Ainv) = ||Ainv||_F ||A||_F.",
+      "effect_on_target": "This exact Frobenius-norm product appears in lambda and in the forward additive floor; it is not a spectral-norm condition number.",
       "status": "understood"
     },
     {
       "id": "D030",
       "name": "LocalDef030",
-      "meaning": "The polynomial datum's second degree, degreeK.",
-      "effect_on_target": "It determines the range of the second finite sum in polynomial evaluation.",
+      "meaning": "Defines ||b-AxHat||_2 / (||A||_F ||xHat||_2 + ||b||_2).",
+      "effect_on_target": "D017 unfolds to this quantity, so the backward side controls normalized residuals.",
       "status": "understood"
     },
     {
       "id": "D031",
       "name": "LocalDef031",
-      "meaning": "The polynomial datum's first degree, degreeN.",
-      "effect_on_target": "It determines the range of the first finite sum in polynomial evaluation.",
+      "meaning": "Defines the Euclidean norm of an n-vector x as sqrt(sum over i in Fin n of x_i^2).",
+      "effect_on_target": "It supplies all vector norms in residuals, relative errors, run assumptions, and auxiliary certificates.",
       "status": "understood"
     },
     {
       "id": "D032",
       "name": "LocalDef032",
-      "meaning": "The standard factor γ_n(u)=n u/(1-n u).",
-      "effect_on_target": "It appears in the componentwise residual-rounding bound packaged in the run, but not explicitly in the final recurrences.",
+      "meaning": "Defines the precision-size condition n u < 1, with n cast to a real.",
+      "effect_on_target": "The bundled run requires this condition for both uHigh and uLow, restricting admissible runs and making the corresponding gamma denominators positive.",
       "status": "understood"
     },
     {
       "id": "D033",
       "name": "LocalDef033",
-      "meaning": "The Frobenius norm of a square real matrix.",
-      "effect_on_target": "It defines ||A||_F, ||Ainv||_F, κ_F(A), and the denominator of the backward error.",
-      "status": "understood"
+      "meaning": "A constructor for one-step certificates whose visible portion packages a positive Krylov dimension, basis and Hessenberg data, Arnoldi and modified Gram-Schmidt relations, rounding-error estimates, residual conversion, a least-squares minimizer, correction formation, coefficient bounds, and lower-gain assumptions; the supplied type ends with ellipses.",
+      "effect_on_target": "Restarted certificates are produced through this construction, but the omitted tail prevents an exact account of every assumption leading to the modular-accuracy and theorem-record fields used by the target.",
+      "status": "unclear"
     },
     {
       "id": "D034",
       "name": "LocalDef034",
-      "meaning": "The assertion that the linear map x↦Ax on R^n is bijective.",
-      "effect_on_target": "The run requires A to be nonsingular.",
+      "meaning": "Constructs a LocalDef027 record from nonnegative backward and forward factors, high-precision coefficients, and scalar remainders. The factors are at most modularAccuracy times kappa_F; the high coefficients are at most d and d kappa_F; and the next backward and forward errors satisfy the corresponding affine inequalities.",
+      "effect_on_target": "It identifies projected fields five and six as additive scalar remainder terms and supplies the local inequalities underlying the target's recurrences.",
       "status": "understood"
     },
     {
       "id": "D035",
       "name": "LocalDef035",
-      "meaning": "Square matrix-vector multiplication, (Ax)_i=Σ_j A_ij x_j.",
-      "effect_on_target": "It defines residuals, the exact equation, inverse identities, and several packaged error terms.",
+      "meaning": "Defines gamma_n(u) = n u / (1 - n u), with n cast to a real.",
+      "effect_on_target": "It appears in the bundled residual and one-step rounding assumptions, constraining admissible runs but not appearing explicitly in the final displayed bounds.",
       "status": "understood"
     },
     {
       "id": "D036",
       "name": "LocalDef036",
-      "meaning": "The residual vector b-Ax.",
-      "effect_on_target": "Its Euclidean norm is the numerator of the backward error.",
+      "meaning": "Defines the norm of a square real matrix using Mathlib's Frobenius normed-ring instance.",
+      "effect_on_target": "It gives ||A||_F and ||Ainv||_F in the normalized residual and kappa_F.",
       "status": "understood"
     },
     {
       "id": "D037",
       "name": "LocalDef037",
-      "meaning": "A constructor for an inner-solver certificate using a key dimension q with 0<q≤n, basis and Hessenberg matrices, an inexact Arnoldi relation, residual casting, perturbed products and least-squares data, correction formation, nonnegative vanishing error parameters, lower-gain bounds, a near-singularity condition for an augmented matrix when q<n, polynomial-factor bounds, and bounded backward/forward factors. The displayed type ends with omitted premises and conclusions.",
-      "effect_on_target": "It explains part of the per-iteration certificate hidden inside the run, but the ellipses prevent a complete account of that certificate's contribution.",
-      "status": "unclear"
+      "meaning": "Asserts that multiplication by A on R^n is a bijective function.",
+      "effect_on_target": "This is a bundled admissibility condition on runs; it is not a separately quantified hypothesis in the target.",
+      "status": "understood"
     },
     {
       "id": "D038",
       "name": "LocalDef038",
-      "meaning": "The constructor making a polynomial datum from two natural degrees, a rectangular coefficient table, and proofs that all coefficients are nonnegative.",
-      "effect_on_target": "It guarantees that the run's polynomial factor has finite degree and nonnegative coefficients.",
+      "meaning": "Defines square-matrix-vector multiplication: (Ax)_i = sum_j A_ij x_j.",
+      "effect_on_target": "It defines residuals, inverse identities, the exact equation AxExact=b, and several run assumptions.",
       "status": "understood"
     },
     {
       "id": "D039",
       "name": "LocalDef039",
-      "meaning": "The type of m by k real matrices.",
-      "effect_on_target": "It supplies the rectangular matrices occurring only in the inner-solver certificate.",
+      "meaning": "Defines the residual vector r(A,b,x) = b - Ax.",
+      "effect_on_target": "Its Euclidean norm is the numerator of the normalized residual eta_i.",
       "status": "understood"
     },
     {
       "id": "D040",
       "name": "LocalDef040",
-      "meaning": "The augmented matrix [φb, C], whose first column is φb and whose remaining columns are C.",
-      "effect_on_target": "It occurs in the inner-solver certificate's conditional near-singularity assumption.",
+      "meaning": "Defines LocalDef040 m k as the type of real m by k matrices.",
+      "effect_on_target": "It supplies dimensions for the one-step Arnoldi, basis, Hessenberg, and least-squares data bundled inside restart certificates.",
       "status": "understood"
     },
     {
       "id": "D041",
       "name": "LocalDef041",
-      "meaning": "The assertion that y is a Euclidean least-squares minimizer for Ay≈b: ||b-Ay||₂≤||b-Az||₂ for every z.",
-      "effect_on_target": "It constrains the least-squares solution inside each inner-solver certificate.",
+      "meaning": "Forms an m by (k+1) matrix whose first column is phi times b and whose remaining columns are those of C.",
+      "effect_on_target": "It participates only in the internal one-step certificate machinery and has no direct occurrence in the final proposition.",
       "status": "understood"
     },
     {
       "id": "D042",
       "name": "LocalDef042",
-      "meaning": "A lower-gain bound σ||x||₂≤||Ax||₂ holding for every x.",
-      "effect_on_target": "It supplies basis and image lower bounds in the inner-solver certificate.",
+      "meaning": "For a right-hand-side vector rhs and an m by k matrix C, it selects rhs when the Fin(k+1) index is zero and selects column q of C at successor index q+1.",
+      "effect_on_target": "It expresses columnwise least-squares perturbation bounds inside the restarted certificates.",
       "status": "understood"
     },
     {
       "id": "D043",
       "name": "LocalDef043",
-      "meaning": "The assertion that there exists a unit vector x with ||Ax||₂≤δ.",
-      "effect_on_target": "It expresses the inner-solver certificate's conditional near-singularity bound for an augmented matrix.",
+      "meaning": "Asserts that y is a Euclidean least-squares minimizer for Ay approximately equal to b: ||b-Ay||_2 <= ||b-Az||_2 for every z.",
+      "effect_on_target": "It constrains the least-squares result inside each one-step certificate but does not occur directly in the target conclusion.",
       "status": "understood"
     },
     {
       "id": "D044",
       "name": "LocalDef044",
-      "meaning": "The Frobenius norm of a rectangular real matrix.",
-      "effect_on_target": "It measures matrix perturbations and gains inside the inner-solver certificate.",
+      "meaning": "Asserts the lower-gain inequality sigma ||x||_2 <= ||Ax||_2 for every x.",
+      "effect_on_target": "It is an internal nondegeneracy assumption in the one-step certificate.",
       "status": "understood"
     },
     {
       "id": "D045",
       "name": "LocalDef045",
-      "meaning": "Rectangular matrix multiplication, (AB)_ij=Σ_r A_ir B_rj.",
-      "effect_on_target": "It forms the basis-times-Hessenberg product in the packaged Arnoldi relation.",
+      "meaning": "Asserts that some unit vector x satisfies ||Ax||_2 <= delta.",
+      "effect_on_target": "It can constrain internal one-step cases but has no direct occurrence in the displayed target.",
       "status": "understood"
     },
     {
       "id": "D046",
       "name": "LocalDef046",
-      "meaning": "Rectangular matrix-vector multiplication.",
-      "effect_on_target": "It defines least-squares residuals, correction formation, and gain conditions inside the inner-solver certificate.",
+      "meaning": "Defines the Frobenius norm of a rectangular real matrix using Mathlib's Frobenius normed additive-group instance.",
+      "effect_on_target": "It measures internal Arnoldi, basis, and perturbation matrices in restart certificates.",
       "status": "understood"
     },
     {
       "id": "D047",
       "name": "LocalDef047",
-      "meaning": "Left multiplication of an n by k matrix B by the square matrix A.",
-      "effect_on_target": "It represents A applied to a basis matrix in the Arnoldi and product-error assumptions.",
+      "meaning": "Defines rectangular matrix-vector multiplication: (Ax)_i = sum_j A_ij x_j.",
+      "effect_on_target": "It is used in least-squares, basis-image, and correction statements inside one-step certificates.",
       "status": "understood"
     },
     {
       "id": "D048",
-      "name": "And",
-      "meaning": "Logical conjunction.",
-      "effect_on_target": "The target requires both the backward-error and forward-error recurrence families.",
+      "name": "LocalDef048",
+      "meaning": "Defines multiplication of an n by n matrix A with an n by k matrix B by (AB)_ij = sum_q A_iq B_qj.",
+      "effect_on_target": "It expresses Arnoldi and image-basis relations inside restarted certificates.",
       "status": "understood"
     },
     {
       "id": "D049",
-      "name": "Filter",
-      "meaning": "A filter on the parameter type ι, encoding a notion of eventual behavior.",
-      "effect_on_target": "All convergence, eventual inequalities, and Big-O statements are interpreted along l.",
+      "name": "And",
+      "meaning": "Logical conjunction of two propositions.",
+      "effect_on_target": "It combines the lambda assumptions and all simultaneous witness equalities, remainder estimates, recurrences, and global bounds.",
       "status": "understood"
     },
     {
       "id": "D050",
-      "name": "Filter.NeBot",
-      "meaning": "The assertion that the filter is nontrivial, equivalently not the bottom filter.",
-      "effect_on_target": "It prevents every proposition from holding vacuously as an eventual statement.",
+      "name": "Eq",
+      "meaning": "Propositional equality.",
+      "effect_on_target": "It fixes each existential function extensionally to the corresponding restarted-record projection.",
       "status": "understood"
     },
     {
       "id": "D051",
-      "name": "HAdd.hAdd",
-      "meaning": "The overloaded binary addition operation supplied by an HAdd instance.",
-      "effect_on_target": "It realizes natural successor i+1, real sums, vector sums, and matrix sums throughout the dossier.",
+      "name": "Exists",
+      "meaning": "Existential quantification.",
+      "effect_on_target": "It introduces the two scalar remainder sequences and the constants occurring inside D020 and D023.",
       "status": "understood"
     },
     {
       "id": "D052",
-      "name": "HMul.hMul",
-      "meaning": "The overloaded binary multiplication operation supplied by an HMul instance.",
-      "effect_on_target": "It realizes all scalar products in λ, the additive terms, polynomial evaluation, and auxiliary bounds.",
+      "name": "HAdd.hAdd",
+      "meaning": "The heterogeneous addition operation supplied by an HAdd instance.",
+      "effect_on_target": "Its resolved instances give natural-number successor i+1 and ordinary real addition in all displayed formulas.",
       "status": "understood"
     },
     {
       "id": "D053",
-      "name": "Nat",
-      "meaning": "The natural numbers.",
-      "effect_on_target": "The dimension n and iteration index i are natural numbers.",
+      "name": "HMul.hMul",
+      "meaning": "The heterogeneous multiplication operation supplied by an HMul instance.",
+      "effect_on_target": "Its resolved real instance gives all scalar products in lambda, floors, recurrences, and bounds.",
       "status": "understood"
     },
     {
       "id": "D054",
-      "name": "OfNat.ofNat",
-      "meaning": "Interpretation of a natural-number literal in a type with the corresponding OfNat instance.",
-      "effect_on_target": "It supplies the literal 1 used in i+1 and numerical bounds.",
+      "name": "LE.le",
+      "meaning": "The less-than-or-equal relation supplied by an LE instance.",
+      "effect_on_target": "For reals it expresses nonnegativity and all upper bounds.",
       "status": "understood"
     },
     {
       "id": "D055",
-      "name": "Real",
-      "meaning": "The real numbers.",
-      "effect_on_target": "All matrix entries, vector entries, norms, precision parameters, errors, and remainders are real-valued.",
+      "name": "LT.lt",
+      "meaning": "The strict-order relation supplied by an LT instance.",
+      "effect_on_target": "For reals it expresses the strict contraction requirement lambda<1 and precision positivity inside runs.",
       "status": "understood"
     },
     {
       "id": "D056",
-      "name": "Real.instAdd",
-      "meaning": "The standard addition operation on real numbers.",
-      "effect_on_target": "It interprets real additions in the scales and recurrence right-hand sides.",
+      "name": "Nat",
+      "meaning": "The type of natural numbers.",
+      "effect_on_target": "It indexes dimensions and the unbounded iteration variables i and m.",
       "status": "understood"
     },
     {
       "id": "D057",
-      "name": "Real.instMul",
-      "meaning": "The standard multiplication operation on real numbers.",
-      "effect_on_target": "It interprets products such as P(n,n)uLowκ_F(A).",
+      "name": "OfNat.ofNat",
+      "meaning": "Interprets a natural-number literal in a type with the corresponding OfNat instance.",
+      "effect_on_target": "It supplies the real literals 0 and 1 and the natural increment 1.",
       "status": "understood"
     },
     {
       "id": "D058",
-      "name": "instAddNat",
-      "meaning": "The standard addition operation on natural numbers.",
-      "effect_on_target": "It interprets the next iteration as i+1 and degree bounds as degree+1.",
+      "name": "One.toOfNat1",
+      "meaning": "Builds interpretation of the numeral 1 from a type's One instance.",
+      "effect_on_target": "It makes the upper contraction threshold the real number 1.",
       "status": "understood"
     },
     {
       "id": "D059",
-      "name": "instHAdd",
-      "meaning": "The homogeneous HAdd instance induced by an ordinary Add instance.",
-      "effect_on_target": "It connects the elaborated HAdd calls to ordinary natural, real, vector, and matrix addition.",
+      "name": "Real",
+      "meaning": "The type of real numbers.",
+      "effect_on_target": "All scalar errors, parameters, norms, constants, and remainder values are real.",
       "status": "understood"
     },
     {
       "id": "D060",
-      "name": "instHMul",
-      "meaning": "The homogeneous HMul instance induced by an ordinary Mul instance.",
-      "effect_on_target": "It connects elaborated HMul calls to ordinary real multiplication.",
+      "name": "Real.instAdd",
+      "meaning": "The ordinary addition operation on real numbers.",
+      "effect_on_target": "It interprets sums in recurrence right-hand sides and second-order scales.",
       "status": "understood"
     },
     {
       "id": "D061",
-      "name": "instOfNatNat",
-      "meaning": "The instance interpreting each natural literal n as that same natural number.",
-      "effect_on_target": "It makes the literal 1 in i+1 exactly the natural number one.",
+      "name": "Real.instAddGroup",
+      "meaning": "The additive-group structure of the reals.",
+      "effect_on_target": "Together with the real lattice, it supports scalar absolute value.",
       "status": "understood"
     },
     {
       "id": "D062",
-      "name": "DivInvMonoid.toDiv",
-      "meaning": "The division operation inherited from a division-inverse monoid.",
-      "effect_on_target": "It supplies ordinary real division in relative-error and γ-factor formulas.",
+      "name": "Real.instLE",
+      "meaning": "The standard less-than-or-equal order on the reals.",
+      "effect_on_target": "It interprets every real nonnegativity and upper-bound assertion.",
       "status": "understood"
     },
     {
       "id": "D063",
-      "name": "Exists",
-      "meaning": "Existential quantification.",
-      "effect_on_target": "Each LocalDef008 conclusion introduces an existential remainder function.",
+      "name": "Real.instLT",
+      "meaning": "The standard strict order on the reals.",
+      "effect_on_target": "It interprets lambda<1 and positive real assumptions.",
       "status": "understood"
     },
     {
       "id": "D064",
-      "name": "Filter.Eventually",
-      "meaning": "The assertion that a predicate holds eventually along a filter.",
-      "effect_on_target": "The contraction bounds and both recurrence inequalities need hold only eventually along l.",
+      "name": "Real.instMul",
+      "meaning": "The ordinary multiplication operation on real numbers.",
+      "effect_on_target": "It interprets products defining lambda, floors, powers, and constant-scaled bounds.",
       "status": "understood"
     },
     {
       "id": "D065",
-      "name": "Filter.Tendsto",
-      "meaning": "Filter convergence: the image filter under a function is below the target filter.",
-      "effect_on_target": "It expresses convergence of λ, uHigh, uLow, and several packaged perturbation functions to zero.",
+      "name": "Real.instOne",
+      "meaning": "The multiplicative identity 1 in the reals.",
+      "effect_on_target": "It supplies the threshold and denominator term 1-lambda.",
       "status": "understood"
     },
     {
       "id": "D066",
-      "name": "Fin",
-      "meaning": "The finite index type {0,…,n-1}.",
-      "effect_on_target": "It indexes all vector coordinates and matrix rows and columns.",
+      "name": "Real.instZero",
+      "meaning": "The additive identity 0 in the reals.",
+      "effect_on_target": "It supplies all nonnegativity baselines.",
       "status": "understood"
     },
     {
       "id": "D067",
-      "name": "HDiv.hDiv",
-      "meaning": "The overloaded division operation supplied by an HDiv instance.",
-      "effect_on_target": "It forms relative residuals, relative forward errors, and auxiliary ratios.",
+      "name": "Real.lattice",
+      "meaning": "The lattice structure induced by the real order.",
+      "effect_on_target": "It participates in defining scalar absolute value as max(a,-a).",
       "status": "understood"
     },
     {
       "id": "D068",
-      "name": "HSub.hSub",
-      "meaning": "The overloaded subtraction operation supplied by an HSub instance.",
-      "effect_on_target": "It forms b-Ax, xHat-xExact, and other perturbation differences.",
+      "name": "Zero.toOfNat0",
+      "meaning": "Builds interpretation of the numeral 0 from a type's Zero instance.",
+      "effect_on_target": "It interprets the real zero in 0<=lambda and C>=0.",
       "status": "understood"
     },
     {
       "id": "D069",
-      "name": "LE.le",
-      "meaning": "The overloaded non-strict order relation ≤.",
-      "effect_on_target": "It interprets every non-strict real or natural inequality.",
+      "name": "abs",
+      "meaning": "Defines absolute value in a lattice-ordered additive group as max(a,-a); on reals this is the usual |a|.",
+      "effect_on_target": "Only the magnitudes of the scalar remainder values enter the recurrences and second-order bounds.",
       "status": "understood"
     },
     {
       "id": "D070",
-      "name": "LT.lt",
-      "meaning": "The overloaded strict order relation <.",
-      "effect_on_target": "It interprets positivity and strict contraction or smallness conditions.",
+      "name": "instAddNat",
+      "meaning": "The standard addition operation on natural numbers.",
+      "effect_on_target": "It interprets i+1 and other successor-index arithmetic.",
       "status": "understood"
     },
     {
       "id": "D071",
-      "name": "One.toOfNat1",
-      "meaning": "The interpretation of the numeral 1 from a type's multiplicative identity.",
-      "effect_on_target": "It supplies real or structural occurrences of one in bounds and denominators.",
+      "name": "instHAdd",
+      "meaning": "Converts a homogeneous Add operation into an HAdd operation with the same input and output type.",
+      "effect_on_target": "It routes natural addition and real addition to their standard operations.",
       "status": "understood"
     },
     {
       "id": "D072",
-      "name": "Pi.instSub",
-      "meaning": "Pointwise subtraction on dependent function spaces.",
-      "effect_on_target": "It makes vector subtraction coordinatewise in residual and forward-error expressions.",
+      "name": "instHMul",
+      "meaning": "Converts a homogeneous Mul operation into an HMul operation with the same input and output type.",
+      "effect_on_target": "It routes all real scalar multiplication to ordinary multiplication.",
       "status": "understood"
     },
     {
       "id": "D073",
-      "name": "PseudoMetricSpace.toUniformSpace",
-      "meaning": "The uniform-space structure induced by a pseudometric space.",
-      "effect_on_target": "It participates in constructing the standard topology used for real convergence.",
+      "name": "instOfNatNat",
+      "meaning": "Interprets each natural numeral n as the same natural number n.",
+      "effect_on_target": "It supplies the natural literal 1 used in iteration successors.",
       "status": "understood"
     },
     {
       "id": "D074",
-      "name": "Real.instAddGroup",
-      "meaning": "The standard additive-group structure on the reals.",
-      "effect_on_target": "It supports subtraction, negation, and absolute value.",
+      "name": "DivInvMonoid.toDiv",
+      "meaning": "Extracts division from a division-inverse monoid.",
+      "effect_on_target": "For real numbers it supports the quotients defining normalized residuals, relative errors, gamma_n, and global envelopes.",
       "status": "understood"
     },
     {
       "id": "D075",
-      "name": "Real.instDivInvMonoid",
-      "meaning": "The standard multiplication, inverse, and total division structure on the reals.",
-      "effect_on_target": "It interprets all divisions in the defined error quantities.",
+      "name": "Fin",
+      "meaning": "Fin n is the finite type of natural indices strictly below n.",
+      "effect_on_target": "It indexes vector coordinates and matrix rows and columns, fixing all finite dimensions.",
       "status": "understood"
     },
     {
       "id": "D076",
-      "name": "Real.instLE",
-      "meaning": "The standard ≤ relation on real numbers.",
-      "effect_on_target": "It gives the mathematical ordering in all eventual error inequalities.",
+      "name": "HDiv.hDiv",
+      "meaning": "The heterogeneous division operation supplied by an HDiv instance.",
+      "effect_on_target": "Its real instance gives ordinary real division in all error ratios and envelope denominators.",
       "status": "understood"
     },
     {
       "id": "D077",
-      "name": "Real.instLT",
-      "meaning": "The standard < relation on real numbers.",
-      "effect_on_target": "It gives the strict real ordering in contraction and positivity assumptions.",
+      "name": "HPow.hPow",
+      "meaning": "The heterogeneous exponentiation operation supplied by an HPow instance.",
+      "effect_on_target": "It interprets lambda^m and the square (uHigh+uLow)^2.",
       "status": "understood"
     },
     {
       "id": "D078",
-      "name": "Real.instOne",
-      "meaning": "The real number 1.",
-      "effect_on_target": "It is the upper bound in 0≤λ<1 and appears in denominators such as 1-nu.",
+      "name": "HSub.hSub",
+      "meaning": "The heterogeneous subtraction operation supplied by an HSub instance.",
+      "effect_on_target": "It gives vector differences, residuals, and the real denominator 1-lambda.",
       "status": "understood"
     },
     {
       "id": "D079",
-      "name": "Real.instSub",
-      "meaning": "Standard real subtraction a-b=a+(-b).",
-      "effect_on_target": "It interprets scalar differences in residual-related definitions and γ_n.",
+      "name": "Monoid.toNatPow",
+      "meaning": "Provides natural-number powers in a monoid.",
+      "effect_on_target": "For reals it interprets lambda^m and second powers.",
       "status": "understood"
     },
     {
       "id": "D080",
-      "name": "Real.instZero",
-      "meaning": "The real number 0.",
-      "effect_on_target": "It is the convergence limit and lower bound for nonnegative quantities.",
+      "name": "Pi.instSub",
+      "meaning": "Defines subtraction of functions pointwise.",
+      "effect_on_target": "It makes xHat-xExact and b-Ax vector differences coordinatewise.",
       "status": "understood"
     },
     {
       "id": "D081",
-      "name": "Real.lattice",
-      "meaning": "The standard lattice structure on the reals.",
-      "effect_on_target": "Together with the additive group, it defines real absolute value.",
+      "name": "Real.instDivInvMonoid",
+      "meaning": "The division and inverse monoid structure of the reals, with totalized division.",
+      "effect_on_target": "It provides every real quotient; in Lean, division remains defined even at a zero denominator.",
       "status": "understood"
     },
     {
       "id": "D082",
-      "name": "Real.pseudoMetricSpace",
-      "meaning": "The standard real metric structure with distance |x-y|.",
-      "effect_on_target": "It induces the topology in which λ and precision functions tend to zero.",
+      "name": "Real.instMonoid",
+      "meaning": "The multiplicative monoid structure of the reals.",
+      "effect_on_target": "It provides natural powers of real lambda and of uHigh+uLow.",
       "status": "understood"
     },
     {
       "id": "D083",
-      "name": "UniformSpace.toTopologicalSpace",
-      "meaning": "The topological-space structure induced by a uniform space.",
-      "effect_on_target": "It supplies the real neighborhood filters used in Tendsto statements.",
+      "name": "Real.instSub",
+      "meaning": "Defines real subtraction by a-b = a+(-b).",
+      "effect_on_target": "It interprets 1-lambda and scalar differences used in deeper definitions.",
       "status": "understood"
     },
     {
       "id": "D084",
-      "name": "Zero.toOfNat0",
-      "meaning": "The interpretation of the numeral 0 from a type's zero element.",
-      "effect_on_target": "It supplies real and vector zeros in convergence, positivity, and nonzero assumptions.",
+      "name": "instHDiv",
+      "meaning": "Converts a homogeneous Div operation into an HDiv operation.",
+      "effect_on_target": "It routes every real quotient to real division.",
       "status": "understood"
     },
     {
       "id": "D085",
-      "name": "abs",
-      "meaning": "Absolute value, defined as max(a,-a) in a lattice-ordered additive group.",
-      "effect_on_target": "The eventual inequalities permit an additive |remainder(t)|, and absolute values also occur in componentwise bounds.",
+      "name": "instHPow",
+      "meaning": "Converts a Pow operation into an HPow operation.",
+      "effect_on_target": "It routes real natural powers to the monoid power operation.",
       "status": "understood"
     },
     {
       "id": "D086",
-      "name": "instHDiv",
-      "meaning": "The homogeneous HDiv instance induced by an ordinary Div instance.",
-      "effect_on_target": "It connects elaborated division calls to standard real division.",
+      "name": "instHSub",
+      "meaning": "Converts a homogeneous Sub operation into an HSub operation.",
+      "effect_on_target": "It routes real and pointwise vector subtraction to their standard operations.",
       "status": "understood"
     },
     {
       "id": "D087",
-      "name": "instHSub",
-      "meaning": "The homogeneous HSub instance induced by an ordinary Sub instance.",
-      "effect_on_target": "It connects elaborated subtraction calls to pointwise vector or standard real subtraction.",
+      "name": "Fin.fintype",
+      "meaning": "Provides the finite enumeration of Fin n.",
+      "effect_on_target": "It makes all sums defining vector norms and matrix products finite sums over exactly n coordinates.",
       "status": "understood"
     },
     {
       "id": "D088",
-      "name": "nhds",
-      "meaning": "The neighborhood filter of a point in a topological space.",
-      "effect_on_target": "Convergence to nhds 0 means ordinary convergence to zero along l.",
+      "name": "Finset.sum",
+      "meaning": "Sums a function over a finite set in an additive commutative monoid.",
+      "effect_on_target": "It forms sums of squares, matrix-vector products, matrix products, and internal dot products.",
       "status": "understood"
     },
     {
       "id": "D089",
-      "name": "Asymptotics.IsBigO",
-      "meaning": "The standard filter-based Big-O relation between normed functions.",
-      "effect_on_target": "It requires each remainder to be bounded in magnitude by a constant multiple of |s(t)²| eventually along l.",
+      "name": "Finset.univ",
+      "meaning": "The finite set containing every element of a finite type.",
+      "effect_on_target": "It makes the relevant sums range over all finite coordinates.",
       "status": "understood"
     },
     {
       "id": "D090",
-      "name": "Eq",
-      "meaning": "Propositional equality.",
-      "effect_on_target": "It expresses the exact system, inverse identities, and exact decompositions packaged in a run.",
+      "name": "Matrix",
+      "meaning": "Defines a matrix over alpha as a function from row indices and column indices to alpha.",
+      "effect_on_target": "It underlies both square n by n matrices and rectangular internal matrices.",
       "status": "understood"
     },
     {
       "id": "D091",
-      "name": "Fin.fintype",
-      "meaning": "The finite enumeration of Fin n.",
-      "effect_on_target": "It enables sums over all coordinates in norms, matrix products, and polynomial evaluation.",
+      "name": "Ne",
+      "meaning": "Defines a != b as the negation of a=b.",
+      "effect_on_target": "The bundled run requires b != 0, which helps ensure the normalized-residual denominator is nonzero.",
       "status": "understood"
     },
     {
       "id": "D092",
-      "name": "Fin.val",
-      "meaning": "The underlying natural number of an element of Fin n.",
-      "effect_on_target": "Polynomial coefficient indices supply the natural exponents i.val and j.val.",
+      "name": "Pi.instAdd",
+      "meaning": "Defines addition of functions pointwise.",
+      "effect_on_target": "It interprets addition of vectors and, through matrix instances, matrices in the run and one-step equations.",
       "status": "understood"
     },
     {
       "id": "D093",
-      "name": "Finset.sum",
-      "meaning": "Finite summation in an additive commutative monoid.",
-      "effect_on_target": "It realizes coordinate sums, matrix products, squared Euclidean norms, and polynomial evaluation.",
+      "name": "Pi.instZero",
+      "meaning": "Defines the zero function pointwise.",
+      "effect_on_target": "It interprets the zero vector used in the condition b != 0 and related internal statements.",
       "status": "understood"
     },
     {
       "id": "D094",
-      "name": "Finset.univ",
-      "meaning": "The finite set containing every element of a finite type.",
-      "effect_on_target": "All coordinate and coefficient sums range over their complete finite index sets.",
+      "name": "Real.instAddCommMonoid",
+      "meaning": "The additive commutative monoid structure of the reals.",
+      "effect_on_target": "It supports finite real sums in norms and matrix operations.",
       "status": "understood"
     },
     {
       "id": "D095",
-      "name": "HPow.hPow",
-      "meaning": "The overloaded exponentiation operation supplied by an HPow instance.",
-      "effect_on_target": "It forms squares in norms and natural powers in polynomial evaluation.",
+      "name": "Real.sqrt",
+      "meaning": "The nonnegative real square-root function.",
+      "effect_on_target": "It turns each sum of coordinate squares into the Euclidean vector norm.",
       "status": "understood"
     },
     {
       "id": "D096",
-      "name": "Matrix",
-      "meaning": "A matrix with row type m, column type n, and entries in α, represented as a function m→n→α.",
-      "effect_on_target": "It gives the concrete representation of every square and rectangular matrix.",
+      "name": "instLTNat",
+      "meaning": "The standard strict order on natural numbers.",
+      "effect_on_target": "It expresses n>0 and positive internal Krylov dimensions in bundled certificates.",
       "status": "understood"
     },
     {
       "id": "D097",
-      "name": "Monoid.toNatPow",
-      "meaning": "Natural-number exponentiation in a monoid.",
-      "effect_on_target": "It interprets real squares and the powers n^i and k^j in P(n,k).",
+      "name": "Fin.castSucc",
+      "meaning": "Includes Fin n into Fin(n+1) without changing the underlying natural value.",
+      "effect_on_target": "It aligns basis columns with the corresponding initial columns of an enlarged basis inside one-step certificates.",
       "status": "understood"
     },
     {
       "id": "D098",
-      "name": "Nat.cast",
-      "meaning": "Casting a natural number into a type with a NatCast structure.",
-      "effect_on_target": "It casts dimensions and polynomial arguments to reals before multiplication or exponentiation.",
+      "name": "Fin.succ",
+      "meaning": "Maps an index j in Fin n to the index with value j+1 in Fin(n+1).",
+      "effect_on_target": "It addresses successor columns and subdiagonal Hessenberg entries inside one-step certificates.",
       "status": "understood"
     },
     {
       "id": "D099",
-      "name": "Ne",
-      "meaning": "Inequality a≠b, defined as the negation of equality.",
-      "effect_on_target": "The run requires b≠0.",
+      "name": "Fin.val",
+      "meaning": "Projects the underlying natural number from an element of Fin n.",
+      "effect_on_target": "It connects bounded Krylov indices with natural-number work-sequence indices.",
       "status": "understood"
     },
     {
       "id": "D100",
-      "name": "Pi.instAdd",
-      "meaning": "Pointwise addition on dependent function spaces.",
-      "effect_on_target": "It makes vector and matrix addition coordinatewise in the run's update and perturbation equations.",
+      "name": "Function.Bijective",
+      "meaning": "A function is bijective when it is both injective and surjective.",
+      "effect_on_target": "It defines the bundled requirement that multiplication by A is bijective.",
       "status": "understood"
     },
     {
       "id": "D101",
-      "name": "Pi.instZero",
-      "meaning": "The pointwise zero function.",
-      "effect_on_target": "It supplies zero vectors and matrices, including the zero excluded by b≠0.",
+      "name": "Matrix.add",
+      "meaning": "Defines matrix addition pointwise.",
+      "effect_on_target": "It interprets matrix perturbation and Arnoldi-product equations inside one-step certificates.",
       "status": "understood"
     },
     {
       "id": "D102",
-      "name": "Real.instAddCommMonoid",
-      "meaning": "The additive commutative monoid structure of the reals.",
-      "effect_on_target": "It permits finite real sums in all norm, product, and polynomial definitions.",
+      "name": "Matrix.frobeniusNormedRing",
+      "meaning": "Provides square matrices with a normed-ring structure whose norm is the Frobenius matrix norm.",
+      "effect_on_target": "It supplies the square-matrix norms used in eta and kappa_F.",
       "status": "understood"
     },
     {
       "id": "D103",
-      "name": "Real.instMonoid",
-      "meaning": "The multiplicative monoid structure of the reals.",
-      "effect_on_target": "It supplies natural powers of real numbers.",
+      "name": "Max.max",
+      "meaning": "The maximum operation supplied by a Max instance.",
+      "effect_on_target": "For reals it is used in the definition |a| = max(a,-a).",
       "status": "understood"
     },
     {
       "id": "D104",
-      "name": "Real.instNatCast",
-      "meaning": "The standard embedding of natural numbers into the reals.",
-      "effect_on_target": "It interprets n and k as real values in γ_n and polynomial evaluation.",
+      "name": "Nat.cast",
+      "meaning": "Casts a natural number into a type with a NatCast instance.",
+      "effect_on_target": "It interprets n as a real in n u and gamma_n(u).",
       "status": "understood"
     },
     {
       "id": "D105",
-      "name": "Real.norm",
-      "meaning": "The norm on the reals, equal to absolute value.",
-      "effect_on_target": "It determines the norm used by the real-valued Big-O relation.",
+      "name": "Norm.norm",
+      "meaning": "The norm operation supplied by a Norm instance.",
+      "effect_on_target": "It extracts the Euclidean and Frobenius norms used throughout the definitions.",
       "status": "understood"
     },
     {
       "id": "D106",
-      "name": "Real.sqrt",
-      "meaning": "The nonnegative real square root.",
-      "effect_on_target": "It converts sums of coordinate squares into Euclidean norms.",
+      "name": "NormedRing.toNorm",
+      "meaning": "Extracts the norm structure from a normed ring.",
+      "effect_on_target": "It exposes the Frobenius norm of square matrices.",
       "status": "understood"
     },
     {
       "id": "D107",
-      "name": "instHPow",
-      "meaning": "The homogeneous HPow instance induced by a Pow instance.",
-      "effect_on_target": "It connects elaborated power calls to ordinary real natural-number powers.",
+      "name": "Real.instMax",
+      "meaning": "The usual maximum operation on real numbers.",
+      "effect_on_target": "It gives the ordinary real absolute-value operation through max(a,-a).",
       "status": "understood"
     },
     {
       "id": "D108",
-      "name": "instLTNat",
-      "meaning": "The standard strict order on natural numbers.",
-      "effect_on_target": "It interprets conditions such as 0<n and 0<keyDimension.",
+      "name": "Real.instNatCast",
+      "meaning": "The standard embedding of natural numbers into the reals.",
+      "effect_on_target": "It gives the real value of n in precision-size conditions and gamma_n.",
       "status": "understood"
     },
     {
       "id": "D109",
-      "name": "Function.Bijective",
-      "meaning": "The conjunction that a function is injective and surjective.",
-      "effect_on_target": "It makes the packaged nonsingularity assumption on x↦Ax precise.",
+      "name": "Real.instRCLike",
+      "meaning": "The RCLike structure on the real numbers.",
+      "effect_on_target": "It supports Mathlib's Frobenius normed-ring construction for real matrices.",
       "status": "understood"
     },
     {
       "id": "D110",
-      "name": "Matrix.frobeniusNormedRing",
-      "meaning": "The normed-ring structure on square matrices whose norm is the Frobenius norm.",
-      "effect_on_target": "It supplies the square-matrix norms used in ||A||_F and ||Ainv||_F.",
+      "name": "instDecidableEqFin",
+      "meaning": "Provides decidable equality for Fin n indices.",
+      "effect_on_target": "It is an implementation requirement for the square-matrix Frobenius norm instance and does not change the mathematical statement.",
       "status": "understood"
     },
     {
       "id": "D111",
-      "name": "Norm.norm",
-      "meaning": "The norm operation selected from a Norm instance.",
-      "effect_on_target": "It extracts the Frobenius norms of matrices in LocalDef033.",
+      "name": "instLENat",
+      "meaning": "The standard less-than-or-equal order on natural numbers.",
+      "effect_on_target": "It expresses bounded internal dimensions and index-order assumptions in one-step certificates.",
       "status": "understood"
     },
     {
       "id": "D112",
-      "name": "NormedRing.toNorm",
-      "meaning": "The Norm structure inherited from a normed ring.",
-      "effect_on_target": "It exposes the Frobenius norm from the square-matrix normed-ring instance.",
+      "name": "Fin.cases",
+      "meaning": "Eliminates an index of Fin(n+1) by separating index zero from successor indices.",
+      "effect_on_target": "It defines augmented-column constructions used inside one-step least-squares data.",
       "status": "understood"
     },
     {
       "id": "D113",
-      "name": "Real.instRCLike",
-      "meaning": "The RCLike structure on the real numbers.",
-      "effect_on_target": "It supports the standard Frobenius normed-ring instance for real matrices.",
+      "name": "Matrix.frobeniusNormedAddCommGroup",
+      "meaning": "Provides rectangular real matrices with their Frobenius normed additive-group structure, constructed as an iterated l2 norm.",
+      "effect_on_target": "It supplies the rectangular Frobenius norms used in internal basis and perturbation estimates.",
       "status": "understood"
     },
     {
       "id": "D114",
-      "name": "instDecidableEqFin",
-      "meaning": "Decidable equality on the finite type Fin n.",
-      "effect_on_target": "It supports the square-matrix ring and Frobenius norm constructions.",
+      "name": "NormedAddCommGroup.toNorm",
+      "meaning": "Extracts the norm structure from a normed additive commutative group.",
+      "effect_on_target": "It exposes the rectangular-matrix Frobenius norm.",
       "status": "understood"
     },
     {
       "id": "D115",
-      "name": "Matrix.add",
-      "meaning": "Pointwise addition of matrices.",
-      "effect_on_target": "It interprets matrix perturbation and Arnoldi equations inside the inner-solver certificate.",
-      "status": "understood"
-    },
-    {
-      "id": "D116",
-      "name": "instLENat",
-      "meaning": "The standard non-strict order on natural numbers.",
-      "effect_on_target": "It interprets the key-dimension bound keyDimension≤n.",
-      "status": "understood"
-    },
-    {
-      "id": "D117",
-      "name": "Fin.cases",
-      "meaning": "Case analysis on Fin(k+1), separating the first index from successor indices.",
-      "effect_on_target": "It defines the first and remaining columns of the augmented matrix [φb,C].",
-      "status": "understood"
-    },
-    {
-      "id": "D118",
-      "name": "Matrix.frobeniusNormedAddCommGroup",
-      "meaning": "The normed additive-group structure on rectangular matrices whose norm is the Frobenius norm.",
-      "effect_on_target": "It supplies rectangular matrix norms in the inner-solver certificate.",
-      "status": "understood"
-    },
-    {
-      "id": "D119",
-      "name": "NormedAddCommGroup.toNorm",
-      "meaning": "The Norm structure inherited from a normed additive commutative group.",
-      "effect_on_target": "It exposes the rectangular Frobenius norm used by LocalDef044.",
-      "status": "understood"
-    },
-    {
-      "id": "D120",
       "name": "Real.normedAddCommGroup",
       "meaning": "The standard normed additive commutative group structure on the reals.",
-      "effect_on_target": "It supports the Frobenius norm construction for rectangular real matrices.",
+      "effect_on_target": "It is the scalar norm structure used to construct Euclidean and Frobenius norms.",
       "status": "understood"
     }
   ],
   "translation": {
     "binders": [
-      "A natural number n.",
-      "A parameter type ι.",
-      "A nonbottom filter l on ι.",
-      "A run containing an n-dimensional real linear system, exact and computed data, precision functions, rounding models, inner-solver certificates, and auxiliary asymptotic estimates as specified by LocalDef001 and constructor D016.",
-      "The natural iteration index i is universally quantified separately in each of the two conclusions."
+      "An implicit natural number n.",
+      "A bundled run in dimension n. Its data include n by n real matrices A and Ainv, vectors b and xExact in R^n, natural-number-indexed vectors xHat_i, residualHat_i, correctionHat_i, residualError_i, and updateError_i, real parameters uHigh, uLow, and d, and a restarted one-step certificate R_i for every natural i.",
+      "Two existential scalar sequences B,F : Nat -> Real, subsequently forced by equality to be the backward and forward remainder fields of the restarted records."
     ],
     "hypotheses": [
-      "The run packages 0<n, square real matrices A and Ainv, nonzero b∈R^n, an exact solution xExact∈R^n, and computed iterates xHat(i,t)∈R^n.",
-      "The map x↦Ax is bijective, Ainv is a two-sided inverse of A, and AxExact=b.",
-      "The functions uHigh,uLow:ι→R are everywhere nonnegative, satisfy uHigh(t)≤uLow(t), and both tend to zero along l; additionally n uHigh(t)<1 for every t.",
-      "The run packages exact residual and update decompositions together with their stated componentwise rounding-error bounds.",
-      "For every iteration, the run supplies an inner-solver certificate of type LocalDef027; the packet displays only part of that certificate's constructor.",
-      "For every iteration, the run assumes second-order-relaxed eventual bounds ||xHat_i||₂≼||xHat_(i+1)||₂ and ||xHat_(i+1)||₂≼||xExact||₂, where the relaxation scale is s=uHigh+uLow.",
-      "For every iteration, the run also assumes second-order-relaxed bounds on (||residualError_i||₂+||A updateError_i||₂)/(||b||₂+||A||_F||xHat_(i+1)||₂) by P(n,n)uHigh and on ||updateError_i||₂/||xExact||₂ by P(n,n)uHigh κ_F(A).",
-      "For λ(t)=P(n,n)uLow(t)κ_F(A), λ tends to zero along l and eventually satisfies 0≤λ(t)<1."
+      "The bundled run requires n>0, b != 0, multiplication by A to be bijective, Ainv(Az)=z and A(Ainv z)=z for every z in R^n, and A xExact=b.",
+      "The bundled run requires 0<uHigh, 0<uLow, uHigh<=uLow, and 0<=d.",
+      "The bundled run requires n uHigh<1, n uLow<1, and gamma_n(uHigh)<=d uHigh, where gamma_n(u)=n u/(1-n u).",
+      "For every i, residualHat_i=b-A xHat_i+residualError_i, and for every coordinate j, |residualError_i,j| <= gamma_n(uHigh)(|b_j| + sum_k |A_jk| |xHat_i,k|).",
+      "For every i, xHat_(i+1)=xHat_i+correctionHat_i+updateError_i, and for every coordinate j, |updateError_i,j|<=uHigh |xHat_(i+1),j|.",
+      "For every i, R_i is a one-step certificate indexed by A, Ainv, b, xExact, xHat_i, xHat_(i+1), residualHat_i, correctionHat_i, uHigh, uLow, and d.",
+      "The run contains scalar sequences q and p satisfying ||xHat_i||_2 <= ||xHat_(i+1)||_2+|q_i| and ||xHat_(i+1)||_2 <= ||xExact||_2+|p_i| for all i, with each sequence uniformly bounded by a nonnegative constant times (uHigh+uLow)^2.",
+      "The run also bundles uniform second-order bounds for the backward and forward remainder fields selected from the records R_i.",
+      "With kappa_F=||Ainv||_F ||A||_F and lambda=d uLow kappa_F, the target additionally assumes 0<=lambda<1."
     ],
     "conclusions": [
-      "For every i∈N, there exists a real-valued remainder r_i^η with r_i^η=O_l(s²) such that eventually along l, η(A,b,xHat(i+1,t))≤λ(t)η(A,b,xHat(i,t))+P(n,n)uHigh(t)+|r_i^η(t)|.",
-      "For every i∈N, there exists a real-valued remainder r_i^E with r_i^E=O_l(s²) such that eventually along l, E(xExact,xHat(i+1,t))≤λ(t)E(xExact,xHat(i,t))+P(n,n)uHigh(t)κ_F(A)+|r_i^E(t)|."
+      "There exist scalar sequences B and F such that, for every i, B_i is exactly the fifth real component of the LocalDef027 record projected from R_i, and F_i is exactly its sixth real component.",
+      "There exists C_B>=0 such that |B_i|<=C_B(uHigh+uLow)^2 for every i.",
+      "There exists C_F>=0 such that |F_i|<=C_F(uHigh+uLow)^2 for every i.",
+      "For every natural i, eta_(i+1) <= lambda eta_i + d uHigh + |B_i|, where eta_i=||b-A xHat_i||_2/(||A||_F ||xHat_i||_2+||b||_2).",
+      "For every natural i, e_(i+1) <= lambda e_i + d uHigh kappa_F + |F_i|, where e_i=||xHat_i-xExact||_2/||xExact||_2.",
+      "There exists C'_B>=0 such that |B_i|<=C'_B(uHigh+uLow)^2 for every i and eta_m <= lambda^m eta_0 + (d uHigh + C'_B(uHigh+uLow)^2)/(1-lambda) for every natural m.",
+      "There exists C'_F>=0 such that |F_i|<=C'_F(uHigh+uLow)^2 for every i and e_m <= lambda^m e_0 + (d uHigh kappa_F + C'_F(uHigh+uLow)^2)/(1-lambda) for every natural m.",
+      "The four constants C_B, C_F, C'_B, and C'_F are introduced by separate existential statements and need not be equal."
     ],
     "mathematical_definitions": [
-      "Vectors in R^n are functions Fin n→R, and square matrices are functions Fin n→Fin n→R.",
-      "For a vector x, ||x||₂=(Σ_j x_j²)^(1/2). Matrix norms ||A||_F and ||Ainv||_F are Frobenius norms.",
-      "The residual is r(A,b,x)=b-Ax.",
-      "The normwise relative residual is η(A,b,x)=||b-Ax||₂/(||A||_F||x||₂+||b||₂).",
-      "The relative forward error is E(xExact,xHat)=||xHat-xExact||₂/||xExact||₂.",
-      "The condition factor is κ_F(A)=||Ainv||_F||A||_F.",
-      "The polynomial factor is P(a,b)=Σ_i Σ_j c_ij a^i b^j over its finite degree ranges, with all c_ij≥0; the theorem uses the exact value P(n,n).",
-      "The asymptotic scale is s(t)=uHigh(t)+uLow(t).",
-      "The contraction factor is λ(t)=P(n,n)uLow(t)κ_F(A).",
-      "Writing f≼g at scale s means that some remainder r=O_l(s²) exists and eventually f(t)≤g(t)+|r(t)|."
+      "R^n means Fin n -> Real, and an n by n matrix means Fin n -> Fin n -> Real.",
+      "For x in R^n, ||x||_2 = sqrt(sum_j x_j^2).",
+      "For a real matrix M, ||M||_F is its Frobenius norm.",
+      "(Ax)_i = sum_j A_ij x_j and r(A,b,x)=b-Ax.",
+      "kappa_F = ||Ainv||_F ||A||_F.",
+      "eta_i = ||r(A,b,xHat_i)||_2/(||A||_F ||xHat_i||_2+||b||_2).",
+      "e_i = ||xHat_i-xExact||_2/||xExact||_2.",
+      "lambda = d uLow kappa_F, the backward floor is d uHigh, and the forward floor is d uHigh kappa_F.",
+      "SecondOrder(q) means that some C>=0 satisfies |q_i|<=C(uHigh+uLow)^2 for all natural i.",
+      "Envelope(lambda,f,q,E) means that some C>=0 simultaneously satisfies |q_i|<=C(uHigh+uLow)^2 for all i and E_m<=lambda^m E_0+(f+C(uHigh+uLow)^2)/(1-lambda) for all m."
     ],
-    "proposition_plain_english": "Given any packaged n-dimensional refinement run satisfying its exact-system, inverse, rounding-error, inner-solver, and auxiliary asymptotic assumptions, suppose λ(t)=P(n,n)uLow(t)||Ainv||_F||A||_F tends to zero and is eventually a number in [0,1). Then, at every natural-number iteration, both the normwise relative residual and the relative forward error at the next iterate obey a one-step contraction recurrence with multiplier λ. The backward-error recurrence has additive term P(n,n)uHigh, while the forward-error recurrence has additive term P(n,n)uHigh||Ainv||_F||A||_F. Each inequality holds eventually along the filter and has its own additive absolute remainder that is Big-O of (uHigh+uLow)²."
+    "proposition_plain_english": "For every bundled positive-dimensional run satisfying its exact linear-system, inverse, precision, residual-rounding, update-rounding, restart-certificate, and auxiliary remainder assumptions, suppose lambda=d uLow ||Ainv||_F ||A||_F lies in [0,1). Select at every iteration the backward and forward scalar remainder fields of the theorem-record stored in the corresponding restarted one-step certificate. These selected sequences are uniformly bounded by constants times (uHigh+uLow)^2. The normalized residual and relative forward error obey, at every natural-number iteration, affine recurrences with common coefficient lambda, respective floors d uHigh and d uHigh ||Ainv||_F ||A||_F, and the absolute selected remainder. Moreover, each error sequence has a geometric initial-error bound plus its floor and a second-order remainder allowance divided by 1-lambda, using a separately existential nonnegative constant for each error sequence."
   },
   "restrictions_and_vacuity_risks": [
-    "Although n is syntactically any natural number, constructing a run requires 0<n. With the displayed constructor as the only constructor, the theorem has no run instance at n=0 and is therefore vacuous there.",
-    "The filter l is arbitrary apart from being nonbottom; the result is not restricted to an ordinary sequential or real-parameter limit.",
-    "Both conclusions are eventual statements along l, not pointwise inequalities for every t.",
-    "The result quantifies over every i∈N with no finite upper bound, but it does not assert convergence as i→∞, uniformity in i, or a closed-form multi-step estimate.",
-    "The two conclusions may use different remainder functions, and each remainder may depend on i.",
-    "Big-O controls the remainder only asymptotically up to an unspecified constant; the inequality adds its absolute value and is one-sided.",
-    "Lean's real division is total. In the packaged run, b≠0 and AxExact=b with A linear imply the displayed backward- and forward-error denominators are nonzero under the standard norm facts, but this nonzeroness is not a separate surface hypothesis of the target.",
-    "The contraction condition 0≤λ<1 is required only eventually, although λ→0 is also explicitly assumed.",
-    "The proposition does not expose or conclude the lower-level Arnoldi, least-squares, or perturbation facts; they are hidden inside the run and its per-iteration certificates."
+    "The implication is vacuous for any run with lambda outside [0,1), because 0<=lambda<1 is an explicit premise.",
+    "The proposition does not assert that a run exists for every n or every linear system. Quantification is only over already constructed LocalDef003 values, whose constructor requires n>0 and many additional certificates.",
+    "All iteration quantifiers range over every natural number; there is no finite stopping index or restriction i<n.",
+    "The condition factor is exactly the product of Frobenius norms ||Ainv||_F ||A||_F, not a spectral-norm condition number.",
+    "The formal second-order statements are fixed-run existential constant bounds. They do not quantify over a limiting process uHigh,uLow -> 0 and therefore are not, by themselves, an asymptotic big-O statement uniform across runs or precisions.",
+    "The constants in the standalone D023 bounds and those in the D020 envelopes are independent existential witnesses; the proposition does not require a common constant.",
+    "The remainder witnesses are not freely chosen: their function equalities uniquely fix every value to a component of the corresponding restarted theorem-record.",
+    "Only absolute values of scalar remainders occur; no sign, cancellation, or componentwise vector remainder information is concluded.",
+    "The conclusion gives upper bounds only. It does not assert monotone decrease, convergence to zero, attainment of the floors, or lower bounds.",
+    "Lean real division is totalized. The run assumptions b!=0 and AxExact=b make the displayed normalized-residual and relative-forward denominators mathematically positive, but this positivity is inherited from bundled data rather than restated in the target.",
+    "The premise lambda<1 makes 1-lambda positive in the envelope denominators; D020 itself does not internally include this premise.",
+    "Detailed Arnoldi, modified Gram-Schmidt, least-squares, and correction assumptions affect admissibility through each restart certificate but do not appear explicitly in the final inequalities."
   ],
   "ambiguities": [
-    "The constructor type for LocalDef027 in D037 contains ellipses at its end. Therefore the complete list of inner-solver premises and conclusions packaged into each per-iteration certificate cannot be reconstructed from this packet.",
-    "This truncation prevents a fully exhaustive expansion of every assumption inside LocalDef001, but it does not obscure the exact two target recurrences once a run is supplied."
+    "The constructor type D033 for LocalDef024 ends with literal ellipses. Consequently, the full set of assumptions and fields in each restarted one-step certificate cannot be recovered from the supplied dossier.",
+    "D001 and D002 identify the target-relevant one-step components only by projection position and result type. Their use as modular accuracy and a theorem-record is structurally clear, but the omitted tail of D033 prevents a complete mathematical reconstruction of how those components are produced."
   ]
 }

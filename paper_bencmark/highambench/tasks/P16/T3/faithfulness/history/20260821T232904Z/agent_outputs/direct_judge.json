@@ -1,0 +1,1134 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P16-T3",
+  "paper_sha256": "8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a",
+  "dossier_sha256": "e3172064dd23626fc0f280a01ae29a21fc2f463c053dfcde702bf9cc29e57043",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.P16MixedPrecisionGMRESRun",
+      "interpretation": "A dependent record packaging a positive-dimensional real system, exact and computed trajectories, precision functions, operation-error models, per-restart certificates, and auxiliary first-order bounds over a filter.",
+      "effect_on_target": "The target ranges only over trajectories already carrying all these certificates.",
+      "paper_match": "The paper studies actual fixed-precision restarted MGS-GMRES executions; it does not quantify over asymptotic certificate records, and important MGS conclusions are included as record assumptions.",
+      "status": "fail"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.P16MixedPrecisionGMRESRun.A",
+      "interpretation": "Projection of the square real coefficient matrix from the run.",
+      "effect_on_target": "Supplies the matrix used in errors, condition numbers, and restart models.",
+      "paper_match": "Matches the paper's fixed nonsingular A.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "HighamBench.P16MixedPrecisionGMRESRun.b",
+      "interpretation": "Projection of the original real right-hand side.",
+      "effect_on_target": "Supplies b to residual and backward-error expressions.",
+      "paper_match": "Matches the paper's nonzero b.",
+      "status": "pass"
+    },
+    {
+      "id": "D004",
+      "name": "HighamBench.P16MixedPrecisionGMRESRun.xExact",
+      "interpretation": "Projection of a vector certified by the constructor to solve A xExact = b.",
+      "effect_on_target": "Provides the reference vector for relative forward error.",
+      "paper_match": "Matches the exact solution x of the nonsingular system.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "HighamBench.P16MixedPrecisionGMRESRun.xHat",
+      "interpretation": "Computed iterates indexed by outer restart i and an additional asymptotic parameter t.",
+      "effect_on_target": "Both recurrences compare xHat i t with xHat (i+1) t.",
+      "paper_match": "The restart index matches, but the paper has a fixed-precision trajectory rather than a filter-indexed family.",
+      "status": "fail"
+    },
+    {
+      "id": "D006",
+      "name": "HighamBench.p16BackwardError",
+      "interpretation": "Alias for the normalized residual defining normwise backward error.",
+      "effect_on_target": "Forms the error in the first recurrence.",
+      "paper_match": "Matches the backward-error notion defined on printed page 1942.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "HighamBench.p16BackwardFloor",
+      "interpretation": "The concrete quantity c(n,n) uHigh, using the run's polynomial factor.",
+      "effect_on_target": "Appears additively in every backward recurrence.",
+      "paper_match": "The paper's floor is order c(n,k) uHigh with a low-degree generic polynomial; replacing k by n and allowing an unrestricted concrete polynomial changes the constant model.",
+      "status": "fail"
+    },
+    {
+      "id": "D008",
+      "name": "HighamBench.p16FirstOrderLeAt",
+      "interpretation": "Existence of a remainder O(scale squared) such that lhs is eventually at most rhs plus its absolute value.",
+      "effect_on_target": "Makes each recurrence an eventual asymptotic statement with a separately chosen remainder.",
+      "paper_match": "It is a plausible encoding of dropped second-order terms, but its filter and quantifier semantics do not express the paper's fixed-precision, all-restarts guarantee.",
+      "status": "fail"
+    },
+    {
+      "id": "D009",
+      "name": "HighamBench.p16ForwardError",
+      "interpretation": "Euclidean norm of xHat-x divided by the Euclidean norm of x.",
+      "effect_on_target": "Forms the error in the second recurrence.",
+      "paper_match": "Exactly matches the relative 2-norm forward error on printed page 1942.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "HighamBench.p16ForwardFloor",
+      "interpretation": "The concrete quantity c(n,n) uHigh times the Frobenius condition number represented using Ainv.",
+      "effect_on_target": "Appears additively in every forward recurrence.",
+      "paper_match": "Its scale matches equation (6.18), but c(n,n) with unrestricted degree is not the paper's low-degree c(n,k).",
+      "status": "fail"
+    },
+    {
+      "id": "D011",
+      "name": "HighamBench.p16MixedContraction",
+      "interpretation": "The concrete function c(n,n) uLow kappa_F(A).",
+      "effect_on_target": "Multiplies the preceding backward and forward errors.",
+      "paper_match": "The factors and inequality direction match equation (6.17), but k is uniformly replaced by n and the constant class is enlarged.",
+      "status": "fail"
+    },
+    {
+      "id": "D012",
+      "name": "HighamBench.p16MixedScale",
+      "interpretation": "The joint small parameter uHigh+uLow.",
+      "effect_on_target": "Controls every second-order remainder.",
+      "paper_match": "A joint scale is a reasonable conservative formalization when both roundoffs become small.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "HighamBench.p16MuchLessThanOneAt",
+      "interpretation": "Lambda tends to zero and is eventually in the interval [0,1).",
+      "effect_on_target": "Restricts the theorem to asymptotic families whose contraction vanishes.",
+      "paper_match": "The paper assumes a fixed Lambda robustly much less than one; convergence to zero along a filter is a materially different and stronger hypothesis.",
+      "status": "fail"
+    },
+    {
+      "id": "D014",
+      "name": "HighamBench.P16Matrix",
+      "interpretation": "An n by n matrix over the reals, indexed by Fin n.",
+      "effect_on_target": "Provides the finite real matrix domain.",
+      "paper_match": "Matches R^(n by n).",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "HighamBench.P16MixedPrecisionGMRESRun.Ainv",
+      "interpretation": "Projection of a matrix certified to be a two-sided inverse of A on vectors.",
+      "effect_on_target": "Defines the represented Frobenius condition number.",
+      "paper_match": "Matches A inverse under the paper's nonsingularity assumption.",
+      "status": "pass"
+    },
+    {
+      "id": "D016",
+      "name": "HighamBench.P16MixedPrecisionGMRESRun.mk",
+      "interpretation": "Constructor requiring n>0, b nonzero, A nonsingular with an explicit inverse, an exact solution, nonnegative precision functions tending to zero with uHigh<=uLow, high-precision residual/update models, a low-precision restart certificate for every i, iterate-size bounds, and already-derived high-roundoff bounds.",
+      "effect_on_target": "Substantial parts of the hypotheses and estimates needed for the final recurrence are assumed when constructing run.",
+      "paper_match": "It encodes several paper assumptions correctly, but adds asymptotic and precision-order hypotheses, weakens the approximate iterate equality to one-sided bounds, and assumes aggregate bounds rather than deriving all of Theorem 6.3 from an MGS execution.",
+      "status": "fail"
+    },
+    {
+      "id": "D017",
+      "name": "HighamBench.P16MixedPrecisionGMRESRun.polynomialFactor",
+      "interpretation": "Projection of one concrete nonnegative-coefficient polynomial used uniformly throughout a run.",
+      "effect_on_target": "Determines contraction factors and both floors.",
+      "paper_match": "The paper uses unspecified low-degree c(n,k), not one unrestricted polynomial record evaluated uniformly at n.",
+      "status": "fail"
+    },
+    {
+      "id": "D018",
+      "name": "HighamBench.P16MixedPrecisionGMRESRun.uHigh",
+      "interpretation": "High-precision unit roundoff represented as a real-valued function of t.",
+      "effect_on_target": "Controls high-precision errors, scale, and floors.",
+      "paper_match": "The operation role matches, but the paper's uHigh is fixed rather than a function tending to zero.",
+      "status": "fail"
+    },
+    {
+      "id": "D019",
+      "name": "HighamBench.P16MixedPrecisionGMRESRun.uLow",
+      "interpretation": "Low-precision unit roundoff represented as a real-valued function of t.",
+      "effect_on_target": "Controls casting, contraction, and the asymptotic scale.",
+      "paper_match": "The operation role matches, but the paper's uLow is fixed rather than a function tending to zero.",
+      "status": "fail"
+    },
+    {
+      "id": "D020",
+      "name": "HighamBench.P16Vector",
+      "interpretation": "A real vector represented as Fin n to Real.",
+      "effect_on_target": "Provides all system, residual, correction, and iterate vectors.",
+      "paper_match": "Matches R^n.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "HighamBench.p16ConditionNumberF",
+      "interpretation": "The product of the Frobenius norms of Ainv and A.",
+      "effect_on_target": "Appears in Lambda and the forward floor.",
+      "paper_match": "Matches kappa_F(A)=||A inverse||_F ||A||_F.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "HighamBench.p16NormalizedResidual",
+      "interpretation": "||b-AxHat||_2 divided by ||A||_F||xHat||_2+||b||_2.",
+      "effect_on_target": "Unfolds the target's backward error.",
+      "paper_match": "Exactly matches the paper's normwise backward error.",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "HighamBench.p16PolynomialFactorValue",
+      "interpretation": "Evaluation of a finite bivariate real polynomial at natural arguments n and k.",
+      "effect_on_target": "The target invokes it at (n,n), while restart certificates also compare values at keyDimension and n.",
+      "paper_match": "Concrete evaluation is coherent, but arbitrary degree and the target's n,n specialization do not preserve the stated low-degree c(n,k) dependence.",
+      "status": "fail"
+    },
+    {
+      "id": "D024",
+      "name": "HighamBench.p16SecondOrderAt",
+      "interpretation": "The remainder is asymptotically O(scale squared).",
+      "effect_on_target": "Makes omitted terms explicitly second order in uHigh+uLow.",
+      "paper_match": "Faithfully reflects the paper's convention of discarding negligible second-order terms under an asymptotic reading.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "HighamBench.p16VecNorm",
+      "interpretation": "Square root of the sum of coordinate squares.",
+      "effect_on_target": "Defines all vector norms in errors and operation bounds.",
+      "paper_match": "This is the Euclidean 2-norm used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "HighamBench.GammaValid",
+      "interpretation": "The condition n*u<1.",
+      "effect_on_target": "Ensures the high-precision gamma denominator is positive.",
+      "paper_match": "This is an appropriate explicit form of an implicit requirement of the standard gamma model.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "HighamBench.P16LowPrecisionMGSRestart",
+      "interpretation": "A certificate type for one restart containing basis, product, cast, least-squares, correction, rank, factor, and correction-error data.",
+      "effect_on_target": "The run supplies one such certificate for every outer restart.",
+      "paper_match": "Despite its name, the type does not enforce MGS orthogonalization or tie epsilonC, epsilonLS, and epsilonX to low-precision floating-point operations; it also packages the correction contraction estimates that the paper derives.",
+      "status": "fail"
+    },
+    {
+      "id": "D028",
+      "name": "HighamBench.P16PolynomialFactor",
+      "interpretation": "A record of two natural degrees and nonnegative real coefficients.",
+      "effect_on_target": "Provides the sole representation of every generic c(n,k).",
+      "paper_match": "It has no low-degree bound and admits the zero polynomial and arbitrarily high degrees, unlike the paper's low-degree convention.",
+      "status": "fail"
+    },
+    {
+      "id": "D029",
+      "name": "HighamBench.P16PolynomialFactor.coefficient",
+      "interpretation": "Projection of a coefficient indexed by its n and k exponents.",
+      "effect_on_target": "Controls polynomial values and their monotonicity from k to n.",
+      "paper_match": "The paper does not specify coefficients or require coefficientwise nonnegativity.",
+      "status": "fail"
+    },
+    {
+      "id": "D030",
+      "name": "HighamBench.P16PolynomialFactor.degreeK",
+      "interpretation": "Projection of the polynomial degree in k.",
+      "effect_on_target": "Allows any finite k-degree.",
+      "paper_match": "No constraint enforces the paper's requirement that the degree be low.",
+      "status": "fail"
+    },
+    {
+      "id": "D031",
+      "name": "HighamBench.P16PolynomialFactor.degreeN",
+      "interpretation": "Projection of the polynomial degree in n.",
+      "effect_on_target": "Allows any finite n-degree.",
+      "paper_match": "No constraint enforces the paper's requirement that the degree be low.",
+      "status": "fail"
+    },
+    {
+      "id": "D032",
+      "name": "HighamBench.gamma",
+      "interpretation": "n*u divided by 1-n*u.",
+      "effect_on_target": "Defines the componentwise high-precision residual bound.",
+      "paper_match": "Matches the paper's gamma_n formula.",
+      "status": "pass"
+    },
+    {
+      "id": "D033",
+      "name": "HighamBench.p16FrobNorm",
+      "interpretation": "The mathlib Frobenius norm of a square real matrix.",
+      "effect_on_target": "Defines backward-error denominators and kappa_F.",
+      "paper_match": "Matches the Frobenius matrix norm used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D034",
+      "name": "HighamBench.p16IsNonsingular",
+      "interpretation": "Bijectivity of the linear map x maps to A*x.",
+      "effect_on_target": "Excludes singular A in the run constructor.",
+      "paper_match": "Equivalent to nonsingularity for finite square real matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D035",
+      "name": "HighamBench.p16MatVec",
+      "interpretation": "Standard finite matrix-vector multiplication.",
+      "effect_on_target": "Defines A actions, residuals, inverses, and exact-solution equations.",
+      "paper_match": "Matches ordinary real matrix-vector multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D036",
+      "name": "HighamBench.p16Residual",
+      "interpretation": "The vector b-A*x.",
+      "effect_on_target": "Defines exact residuals beneath computed residual equations.",
+      "paper_match": "Matches Algorithm 2 and the backward-error numerator.",
+      "status": "pass"
+    },
+    {
+      "id": "D037",
+      "name": "HighamBench.P16LowPrecisionMGSRestart.mk",
+      "interpretation": "Constructor selecting one positive keyDimension<=n and assuming Arnoldi/product/cast/least-squares/correction equations, error bounds, rank certificates, uniform polynomial bounds, bounded contraction factors, and first-order backward and forward correction estimates.",
+      "effect_on_target": "Its final correction estimates and factor bounds supply the hard low-precision contraction step before the target theorem combines update and residual errors.",
+      "paper_match": "The paper derives these facts from fully stored low-precision MGS-Arnoldi and Theorem 5.2. Lean assumes them, does not encode MGS generation or first-key minimality, and replaces the columnwise least-squares model (3.3) by separate RHS and Frobenius matrix bounds.",
+      "status": "fail"
+    },
+    {
+      "id": "D038",
+      "name": "HighamBench.P16PolynomialFactor.mk",
+      "interpretation": "Constructor permitting arbitrary natural degrees with all coefficients nonnegative.",
+      "effect_on_target": "Allows monotone evaluation c(n,k)<=c(n,n), including a zero factor.",
+      "paper_match": "This does not enforce a nonzero modest low-degree polynomial as intended by the paper's c(n,k) convention.",
+      "status": "fail"
+    },
+    {
+      "id": "D039",
+      "name": "HighamBench.P16RectMatrix",
+      "interpretation": "An m by k real matrix indexed by Fin m and Fin k.",
+      "effect_on_target": "Represents Arnoldi bases, Hessenberg-related arrays, and perturbations.",
+      "paper_match": "Matches the finite rectangular matrices in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D040",
+      "name": "HighamBench.p16Augment",
+      "interpretation": "Forms the matrix whose first column is phi*b and remaining columns are C.",
+      "effect_on_target": "Expresses the key-dimension near-rank-deficiency condition.",
+      "paper_match": "Matches [b phi, C_k] in condition (3.7).",
+      "status": "pass"
+    },
+    {
+      "id": "D041",
+      "name": "HighamBench.p16IsLeastSquaresSolution",
+      "interpretation": "States that y globally minimizes ||b-Ay||_2 over all candidate vectors.",
+      "effect_on_target": "Models the exact solution of the perturbed least-squares problem.",
+      "paper_match": "Matches the arg-min semantics in condition (3.3), apart from the separately mismatched perturbation bounds.",
+      "status": "pass"
+    },
+    {
+      "id": "D042",
+      "name": "HighamBench.p16MinGainAtLeast",
+      "interpretation": "Every x satisfies sigma*||x||_2<=||A*x||_2.",
+      "effect_on_target": "Supplies lower-gain witnesses for basis and image full-rank conditions.",
+      "paper_match": "Correctly represents a lower bound on the smallest singular value.",
+      "status": "pass"
+    },
+    {
+      "id": "D043",
+      "name": "HighamBench.p16NearRankDeficient",
+      "interpretation": "There exists a unit vector mapped to norm at most delta.",
+      "effect_on_target": "Expresses an upper bound on the smallest singular value of the augmented matrix.",
+      "paper_match": "Matches the near-rank-deficiency meaning of condition (3.7).",
+      "status": "pass"
+    },
+    {
+      "id": "D044",
+      "name": "HighamBench.p16RectFrobNorm",
+      "interpretation": "The Frobenius norm of a rectangular real matrix.",
+      "effect_on_target": "Measures product, basis, least-squares, and rank perturbations.",
+      "paper_match": "Matches the paper's matrix Frobenius norms.",
+      "status": "pass"
+    },
+    {
+      "id": "D045",
+      "name": "HighamBench.p16RectMatMul",
+      "interpretation": "Standard multiplication of compatible rectangular matrices.",
+      "effect_on_target": "Defines the Arnoldi basis-times-Hessenberg product.",
+      "paper_match": "Matches ordinary matrix multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D046",
+      "name": "HighamBench.p16RectMatVec",
+      "interpretation": "Standard rectangular matrix-vector multiplication.",
+      "effect_on_target": "Defines least-squares residuals, corrections, and gain conditions.",
+      "paper_match": "Matches ordinary matrix-vector multiplication.",
+      "status": "pass"
+    },
+    {
+      "id": "D047",
+      "name": "HighamBench.p16SquareRectMul",
+      "interpretation": "Standard multiplication of a square n by n matrix with an n by k matrix.",
+      "effect_on_target": "Represents A acting on an Arnoldi basis.",
+      "paper_match": "Matches A V_k.",
+      "status": "pass"
+    },
+    {
+      "id": "D048",
+      "name": "And",
+      "interpretation": "Logical conjunction.",
+      "effect_on_target": "Requires both backward and forward recurrence families.",
+      "paper_match": "Theorem 6.3 asserts both error results.",
+      "status": "pass"
+    },
+    {
+      "id": "D049",
+      "name": "Filter",
+      "interpretation": "A directed notion of eventual behavior on the parameter type.",
+      "effect_on_target": "Changes the theorem from a fixed-precision assertion into an asymptotic-family assertion.",
+      "paper_match": "No filter parameter occurs in the paper's theorem; this contributes directly to the semantic mismatch.",
+      "status": "fail"
+    },
+    {
+      "id": "D050",
+      "name": "Filter.NeBot",
+      "interpretation": "The filter is nontrivial, so eventual statements cannot hold merely because the filter is bottom.",
+      "effect_on_target": "Prevents one form of logical vacuity.",
+      "paper_match": "This is sound infrastructure for the chosen asymptotic model, though the paper itself has no filter.",
+      "status": "pass"
+    },
+    {
+      "id": "D051",
+      "name": "HAdd.hAdd",
+      "interpretation": "Typeclass-dispatched addition.",
+      "effect_on_target": "Implements Nat successor indexing and real sums in recurrence bounds.",
+      "paper_match": "The instantiated additions have their ordinary intended meanings.",
+      "status": "pass"
+    },
+    {
+      "id": "D052",
+      "name": "HMul.hMul",
+      "interpretation": "Typeclass-dispatched multiplication.",
+      "effect_on_target": "Forms contraction products, floors, norms, and matrix entries.",
+      "paper_match": "The instantiated real and matrix multiplications are standard.",
+      "status": "pass"
+    },
+    {
+      "id": "D053",
+      "name": "Nat",
+      "interpretation": "Natural numbers.",
+      "effect_on_target": "Indexes dimensions, outer restarts, key dimensions, and polynomial exponents.",
+      "paper_match": "Matches nonnegative integer dimensions and iteration indices.",
+      "status": "pass"
+    },
+    {
+      "id": "D054",
+      "name": "OfNat.ofNat",
+      "interpretation": "Interpretation of numeric literals in an inferred type.",
+      "effect_on_target": "Supplies literals such as 0 and 1.",
+      "paper_match": "No semantic distortion is introduced.",
+      "status": "pass"
+    },
+    {
+      "id": "D055",
+      "name": "Real",
+      "interpretation": "Lean's real numbers.",
+      "effect_on_target": "Provides all matrix entries, norms, roundoffs, and error quantities.",
+      "paper_match": "Matches the paper's real setting.",
+      "status": "pass"
+    },
+    {
+      "id": "D056",
+      "name": "Real.instAdd",
+      "interpretation": "Ordinary real addition.",
+      "effect_on_target": "Adds recurrence terms and scales.",
+      "paper_match": "Matches real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D057",
+      "name": "Real.instMul",
+      "interpretation": "Ordinary real multiplication.",
+      "effect_on_target": "Forms products in errors, contractions, and polynomial values.",
+      "paper_match": "Matches real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D058",
+      "name": "instAddNat",
+      "interpretation": "Ordinary natural-number addition.",
+      "effect_on_target": "Interprets i+1 and dimension increments.",
+      "paper_match": "The outer index offset and augmented-column counts are correct.",
+      "status": "pass"
+    },
+    {
+      "id": "D059",
+      "name": "instHAdd",
+      "interpretation": "Lifts homogeneous addition into HAdd.",
+      "effect_on_target": "Dispatches all same-type additions.",
+      "paper_match": "Infrastructure only; instantiated behavior is correct.",
+      "status": "pass"
+    },
+    {
+      "id": "D060",
+      "name": "instHMul",
+      "interpretation": "Lifts homogeneous multiplication into HMul.",
+      "effect_on_target": "Dispatches all same-type multiplications.",
+      "paper_match": "Infrastructure only; instantiated behavior is correct.",
+      "status": "pass"
+    },
+    {
+      "id": "D061",
+      "name": "instOfNatNat",
+      "interpretation": "Interprets each natural literal as itself.",
+      "effect_on_target": "Supplies natural constants in indices and bounds.",
+      "paper_match": "No semantic distortion is introduced.",
+      "status": "pass"
+    },
+    {
+      "id": "D062",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "Provides division from the real multiplicative inverse structure.",
+      "effect_on_target": "Supports normalized residual and forward-error quotients.",
+      "paper_match": "Matches ordinary real division; nonzero denominators follow from b nonzero and nonsingularity.",
+      "status": "pass"
+    },
+    {
+      "id": "D063",
+      "name": "Exists",
+      "interpretation": "Existential quantification.",
+      "effect_on_target": "Introduces second-order remainder witnesses and rank-deficiency witnesses.",
+      "paper_match": "Correctly represents those mathematical existentials.",
+      "status": "pass"
+    },
+    {
+      "id": "D064",
+      "name": "Filter.Eventually",
+      "interpretation": "A predicate holds on a set belonging to the filter.",
+      "effect_on_target": "For each fixed i, the recurrence receives its own eventual set because forall i is outside p16FirstOrderLeAt.",
+      "paper_match": "The paper requires contraction across restarts for one fixed execution; the nonuniform eventual-in-i formulation is insufficient for that claim.",
+      "status": "fail"
+    },
+    {
+      "id": "D065",
+      "name": "Filter.Tendsto",
+      "interpretation": "Filter convergence of a function to a target filter.",
+      "effect_on_target": "Requires uHigh, uLow, the modular epsilons, and Lambda to converge to zero.",
+      "paper_match": "The paper assumes fixed precisions and small fixed parameters, not convergence along a family.",
+      "status": "fail"
+    },
+    {
+      "id": "D066",
+      "name": "Fin",
+      "interpretation": "Finite indices 0 through n-1.",
+      "effect_on_target": "Provides finite coordinate, row, column, and coefficient index types.",
+      "paper_match": "Matches finite-dimensional real vectors and matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D067",
+      "name": "HDiv.hDiv",
+      "interpretation": "Typeclass-dispatched division.",
+      "effect_on_target": "Forms relative and normalized errors and gamma.",
+      "paper_match": "Its real instantiation has the intended quotient semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D068",
+      "name": "HSub.hSub",
+      "interpretation": "Typeclass-dispatched subtraction.",
+      "effect_on_target": "Forms residuals, differences, and denominators in gamma.",
+      "paper_match": "Its real and pointwise-vector instantiations match the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D069",
+      "name": "LE.le",
+      "interpretation": "Typeclass-dispatched non-strict order.",
+      "effect_on_target": "Expresses all error, gain, polynomial, and eventual upper bounds.",
+      "paper_match": "Inequality directions in the instantiated definitions are conventional and correct.",
+      "status": "pass"
+    },
+    {
+      "id": "D070",
+      "name": "LT.lt",
+      "interpretation": "Typeclass-dispatched strict order.",
+      "effect_on_target": "Expresses positive dimensions, positive phi, rank separation, gamma validity, and Lambda<1.",
+      "paper_match": "These strict comparisons have the intended directions.",
+      "status": "pass"
+    },
+    {
+      "id": "D071",
+      "name": "One.toOfNat1",
+      "interpretation": "Interprets literal one from a One instance.",
+      "effect_on_target": "Supplies the real contraction threshold and related constants.",
+      "paper_match": "Matches the numerical value one.",
+      "status": "pass"
+    },
+    {
+      "id": "D072",
+      "name": "Pi.instSub",
+      "interpretation": "Pointwise subtraction of functions.",
+      "effect_on_target": "Makes vector subtraction coordinatewise.",
+      "paper_match": "Matches subtraction in R^n.",
+      "status": "pass"
+    },
+    {
+      "id": "D073",
+      "name": "PseudoMetricSpace.toUniformSpace",
+      "interpretation": "Obtains the standard uniform structure from a pseudometric.",
+      "effect_on_target": "Supports real convergence and neighborhoods.",
+      "paper_match": "Correct infrastructure for real limits; it adds no separate paper-level claim.",
+      "status": "pass"
+    },
+    {
+      "id": "D074",
+      "name": "Real.instAddGroup",
+      "interpretation": "The additive-group structure of the reals.",
+      "effect_on_target": "Supports subtraction and absolute values.",
+      "paper_match": "Matches real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D075",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "The real division and inverse structure.",
+      "effect_on_target": "Supports all real quotients.",
+      "paper_match": "Matches real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D076",
+      "name": "Real.instLE",
+      "interpretation": "The usual non-strict order on reals.",
+      "effect_on_target": "Interprets every real <= relation.",
+      "paper_match": "Matches the paper's real inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D077",
+      "name": "Real.instLT",
+      "interpretation": "The usual strict order on reals.",
+      "effect_on_target": "Interprets every real < relation.",
+      "paper_match": "Matches the paper's strict inequalities and positivity conditions.",
+      "status": "pass"
+    },
+    {
+      "id": "D078",
+      "name": "Real.instOne",
+      "interpretation": "The real number one.",
+      "effect_on_target": "Defines the contraction threshold and gamma denominator.",
+      "paper_match": "Matches ordinary real one.",
+      "status": "pass"
+    },
+    {
+      "id": "D079",
+      "name": "Real.instSub",
+      "interpretation": "Ordinary real subtraction.",
+      "effect_on_target": "Forms scalar differences and pointwise vector differences.",
+      "paper_match": "Matches real arithmetic.",
+      "status": "pass"
+    },
+    {
+      "id": "D080",
+      "name": "Real.instZero",
+      "interpretation": "The real number zero.",
+      "effect_on_target": "Defines nonnegativity, convergence targets, and zero vectors.",
+      "paper_match": "Matches ordinary real zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D081",
+      "name": "Real.lattice",
+      "interpretation": "The lattice order on reals.",
+      "effect_on_target": "Supports absolute value.",
+      "paper_match": "Matches real absolute-value semantics.",
+      "status": "pass"
+    },
+    {
+      "id": "D082",
+      "name": "Real.pseudoMetricSpace",
+      "interpretation": "The standard metric structure on reals with distance |x-y|.",
+      "effect_on_target": "Supports neighborhoods and convergence to zero.",
+      "paper_match": "Correct for the asymptotic formalization, with no independent mismatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D083",
+      "name": "UniformSpace.toTopologicalSpace",
+      "interpretation": "Obtains the topology induced by a uniform space.",
+      "effect_on_target": "Supplies the topology used by nhds 0.",
+      "paper_match": "Standard infrastructure only.",
+      "status": "pass"
+    },
+    {
+      "id": "D084",
+      "name": "Zero.toOfNat0",
+      "interpretation": "Interprets literal zero from a Zero instance.",
+      "effect_on_target": "Supplies scalar and vector zeros.",
+      "paper_match": "Matches ordinary zero.",
+      "status": "pass"
+    },
+    {
+      "id": "D085",
+      "name": "abs",
+      "interpretation": "Ordered-group absolute value.",
+      "effect_on_target": "Measures componentwise errors and makes the asymptotic remainder contribution nonnegative.",
+      "paper_match": "Matches scalar absolute value; using |remainder| is a sound one-sided error allowance.",
+      "status": "pass"
+    },
+    {
+      "id": "D086",
+      "name": "instHDiv",
+      "interpretation": "Lifts homogeneous division into HDiv.",
+      "effect_on_target": "Dispatches real division.",
+      "paper_match": "Infrastructure only; behavior is correct.",
+      "status": "pass"
+    },
+    {
+      "id": "D087",
+      "name": "instHSub",
+      "interpretation": "Lifts homogeneous subtraction into HSub.",
+      "effect_on_target": "Dispatches real and vector subtraction.",
+      "paper_match": "Infrastructure only; behavior is correct.",
+      "status": "pass"
+    },
+    {
+      "id": "D088",
+      "name": "nhds",
+      "interpretation": "The neighborhood filter of a point.",
+      "effect_on_target": "Defines convergence to real zero.",
+      "paper_match": "Correct topology for the chosen asymptotic interpretation, though the paper itself is fixed precision.",
+      "status": "pass"
+    },
+    {
+      "id": "D089",
+      "name": "Asymptotics.IsBigO",
+      "interpretation": "The remainder is eventually norm-bounded by a constant multiple of scale squared.",
+      "effect_on_target": "Gives exact mathematical content to 'second-order terms'.",
+      "paper_match": "This is a defensible formalization of the paper's discarded second-order contributions.",
+      "status": "pass"
+    },
+    {
+      "id": "D090",
+      "name": "Eq",
+      "interpretation": "Propositional equality.",
+      "effect_on_target": "States exact model equations for residuals, updates, products, and inverses.",
+      "paper_match": "Correctly distinguishes model equalities from error inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D091",
+      "name": "Fin.fintype",
+      "interpretation": "The canonical finite enumeration of Fin n.",
+      "effect_on_target": "Enables finite coordinate sums.",
+      "paper_match": "Matches finite-dimensional summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D092",
+      "name": "Fin.val",
+      "interpretation": "The natural value underlying a finite index.",
+      "effect_on_target": "Uses coefficient indices as polynomial exponents.",
+      "paper_match": "Correct for polynomial evaluation.",
+      "status": "pass"
+    },
+    {
+      "id": "D093",
+      "name": "Finset.sum",
+      "interpretation": "Finite summation in an additive commutative monoid.",
+      "effect_on_target": "Defines norms, matrix products, and polynomial values.",
+      "paper_match": "Matches the corresponding finite sums.",
+      "status": "pass"
+    },
+    {
+      "id": "D094",
+      "name": "Finset.univ",
+      "interpretation": "The finite set of all elements of a finite type.",
+      "effect_on_target": "Ranges sums over every coordinate and polynomial coefficient.",
+      "paper_match": "Matches complete finite index ranges.",
+      "status": "pass"
+    },
+    {
+      "id": "D095",
+      "name": "HPow.hPow",
+      "interpretation": "Typeclass-dispatched exponentiation.",
+      "effect_on_target": "Squares norm coordinates and raises n and k to polynomial exponents.",
+      "paper_match": "The instantiated natural powers have the intended meaning.",
+      "status": "pass"
+    },
+    {
+      "id": "D096",
+      "name": "Matrix",
+      "interpretation": "A matrix is a doubly indexed function.",
+      "effect_on_target": "Underlies square and rectangular matrix representations.",
+      "paper_match": "Extensionally matches finite real matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D097",
+      "name": "Monoid.toNatPow",
+      "interpretation": "Natural-number exponentiation in a monoid.",
+      "effect_on_target": "Provides real powers for polynomial terms and squares.",
+      "paper_match": "Matches ordinary nonnegative integer powers.",
+      "status": "pass"
+    },
+    {
+      "id": "D098",
+      "name": "Nat.cast",
+      "interpretation": "Casts a natural number into a semiring such as the reals.",
+      "effect_on_target": "Interprets n and k as real polynomial arguments.",
+      "paper_match": "Matches ordinary embedding of dimensions into R.",
+      "status": "pass"
+    },
+    {
+      "id": "D099",
+      "name": "Ne",
+      "interpretation": "Negated equality.",
+      "effect_on_target": "Expresses b being nonzero.",
+      "paper_match": "Matches the standing assumption b != 0.",
+      "status": "pass"
+    },
+    {
+      "id": "D100",
+      "name": "Pi.instAdd",
+      "interpretation": "Pointwise addition of functions.",
+      "effect_on_target": "Makes vector and matrix addition coordinatewise.",
+      "paper_match": "Matches addition in finite real vector and matrix spaces.",
+      "status": "pass"
+    },
+    {
+      "id": "D101",
+      "name": "Pi.instZero",
+      "interpretation": "The pointwise zero function.",
+      "effect_on_target": "Defines zero vectors and matrices.",
+      "paper_match": "Matches zero vectors and matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D102",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "The additive commutative monoid structure of reals.",
+      "effect_on_target": "Supports finite sums.",
+      "paper_match": "Matches real summation.",
+      "status": "pass"
+    },
+    {
+      "id": "D103",
+      "name": "Real.instMonoid",
+      "interpretation": "The multiplicative monoid structure of reals.",
+      "effect_on_target": "Supports natural powers.",
+      "paper_match": "Matches real multiplication and powers.",
+      "status": "pass"
+    },
+    {
+      "id": "D104",
+      "name": "Real.instNatCast",
+      "interpretation": "The canonical cast from naturals to reals.",
+      "effect_on_target": "Converts dimensions into polynomial inputs.",
+      "paper_match": "Matches ordinary real-valued polynomial evaluation.",
+      "status": "pass"
+    },
+    {
+      "id": "D105",
+      "name": "Real.norm",
+      "interpretation": "The norm of a real is its absolute value.",
+      "effect_on_target": "Determines scalar Big-O semantics.",
+      "paper_match": "Matches the standard real norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D106",
+      "name": "Real.sqrt",
+      "interpretation": "The nonnegative square root on reals.",
+      "effect_on_target": "Completes the Euclidean vector norm definition.",
+      "paper_match": "Matches the 2-norm formula.",
+      "status": "pass"
+    },
+    {
+      "id": "D107",
+      "name": "instHPow",
+      "interpretation": "Lifts a Pow instance into homogeneous exponentiation.",
+      "effect_on_target": "Dispatches real natural powers.",
+      "paper_match": "Infrastructure only; behavior is correct.",
+      "status": "pass"
+    },
+    {
+      "id": "D108",
+      "name": "instLTNat",
+      "interpretation": "The ordinary strict order on naturals.",
+      "effect_on_target": "Expresses positive dimensions and keyDimension<n.",
+      "paper_match": "Matches the intended dimension inequalities.",
+      "status": "pass"
+    },
+    {
+      "id": "D109",
+      "name": "Function.Bijective",
+      "interpretation": "Conjunction of injectivity and surjectivity.",
+      "effect_on_target": "Defines nonsingularity of the finite linear action.",
+      "paper_match": "Equivalent to invertibility for the square finite-dimensional system.",
+      "status": "pass"
+    },
+    {
+      "id": "D110",
+      "name": "Matrix.frobeniusNormedRing",
+      "interpretation": "The Frobenius-normed ring structure on square finite matrices.",
+      "effect_on_target": "Supplies the square-matrix norm used by p16FrobNorm.",
+      "paper_match": "Its norm is the paper's Frobenius norm.",
+      "status": "pass"
+    },
+    {
+      "id": "D111",
+      "name": "Norm.norm",
+      "interpretation": "Projection of a norm function from a Norm instance.",
+      "effect_on_target": "Extracts matrix norms from the Frobenius structures.",
+      "paper_match": "No semantic distortion is introduced.",
+      "status": "pass"
+    },
+    {
+      "id": "D112",
+      "name": "NormedRing.toNorm",
+      "interpretation": "Projection of the norm from a normed ring.",
+      "effect_on_target": "Connects the square-matrix Frobenius structure to Norm.norm.",
+      "paper_match": "Infrastructure only; the resulting norm is correct.",
+      "status": "pass"
+    },
+    {
+      "id": "D113",
+      "name": "Real.instRCLike",
+      "interpretation": "The real numbers viewed as an RCLike scalar field.",
+      "effect_on_target": "Supports the square-matrix Frobenius norm instance.",
+      "paper_match": "Specializes correctly to real matrices.",
+      "status": "pass"
+    },
+    {
+      "id": "D114",
+      "name": "instDecidableEqFin",
+      "interpretation": "Decidable equality on finite indices.",
+      "effect_on_target": "Supports matrix norm and finite indexing implementations.",
+      "paper_match": "Computational infrastructure only.",
+      "status": "pass"
+    },
+    {
+      "id": "D115",
+      "name": "Matrix.add",
+      "interpretation": "Entrywise matrix addition.",
+      "effect_on_target": "Adds Arnoldi, product, and least-squares perturbation matrices.",
+      "paper_match": "Matches matrix addition in the paper's error equations.",
+      "status": "pass"
+    },
+    {
+      "id": "D116",
+      "name": "instLENat",
+      "interpretation": "The ordinary non-strict order on naturals.",
+      "effect_on_target": "Expresses keyDimension<=n.",
+      "paper_match": "Matches the paper's k_i<=n requirement.",
+      "status": "pass"
+    },
+    {
+      "id": "D117",
+      "name": "Fin.cases",
+      "interpretation": "Elimination on Fin(k+1) separating the first column from successor columns.",
+      "effect_on_target": "Implements augmentation by phi*b followed by C's columns.",
+      "paper_match": "Correctly realizes [b phi, C].",
+      "status": "pass"
+    },
+    {
+      "id": "D118",
+      "name": "Matrix.frobeniusNormedAddCommGroup",
+      "interpretation": "The Frobenius norm structure on finite rectangular matrices.",
+      "effect_on_target": "Supplies norms for bases, products, and perturbations.",
+      "paper_match": "Matches the rectangular Frobenius norms in conditions (3.1)-(3.8).",
+      "status": "pass"
+    },
+    {
+      "id": "D119",
+      "name": "NormedAddCommGroup.toNorm",
+      "interpretation": "Projection of the norm from a normed additive commutative group.",
+      "effect_on_target": "Connects the rectangular Frobenius structure to Norm.norm.",
+      "paper_match": "Infrastructure only; the resulting norm is correct.",
+      "status": "pass"
+    },
+    {
+      "id": "D120",
+      "name": "Real.normedAddCommGroup",
+      "interpretation": "The usual normed additive commutative group structure on reals.",
+      "effect_on_target": "Supports Euclidean and Frobenius norm constructions.",
+      "paper_match": "Matches ordinary real normed-space semantics.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The inspected PDF has SHA-256 8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a and is the published IMA Journal version. The relevant result is Theorem 6.3 on printed pages 1978-1979, with supporting definitions and Theorems 4.1 and 5.2.",
+      "lean_evidence": "The target is named p16_t3_mixed_precision_geometric_convergence and refers to mixed contraction, backward and forward errors, and their high-precision floors.",
+      "reasoning": "The intended paper and result have been selected correctly."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper uses fixed n, A, b, x, fixed roundoffs uHigh and uLow, outer restart i, and a possibly restart-dependent inner key dimension k_i.",
+      "lean_evidence": "Lean adds an arbitrary type ι, filter l, t-indexed precision and iterate families, and a single packaged key dimension per restart that is uniform over t.",
+      "reasoning": "The finite real matrix and outer-index types match, but the additional asymptotic binder and uniform-across-t witnesses alter the meanings of the principal quantities."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "Theorem 6.3 and its proof bound both factors at every restart of one fixed-precision execution.",
+      "lean_evidence": "The conclusion has forall i outside p16FirstOrderLeAt, whose body existentially chooses a remainder and an eventual set. Thus each i may have a different precision threshold, with no eventual statement uniform over all i.",
+      "reasoning": "The Lean quantifier order does not support the paper's repeated fixed-precision convergence claim."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper assumes actual unpreconditioned fully stored MGS-GMRES, high-precision residual/update operations, low-precision correction operations, Lambda much less than one, inherited modular/rank conditions, and the iterate-norm comparison.",
+      "lean_evidence": "The run adds uHigh<=uLow and convergence of both roundoffs to zero, assumes aggregate high-roundoff bounds and correction contraction certificates, does not encode MGS orthogonalization, and provides only one-sided first-order iterate norm bounds.",
+      "reasoning": "Several valid paper assumptions are present, but central derived properties are assumed and other hypotheses are added, weakened, or omitted."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Theorem 6.3 states per-restart contraction and attainable backward and forward floors after repeated restarts.",
+      "lean_evidence": "Lean states two pointwise-in-i eventual one-step recurrences but no uniform fixed-precision recurrence, geometric unrolling, convergence in i, or attained-floor result.",
+      "reasoning": "Both error notions and floor scales appear, but the complete fixed-execution convergence conclusion does not follow from the stated quantifiers."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "The paper defines backward error, forward error, kappa_F, c(n,k), much-less-than notation, modular models, and key dimensions explicitly.",
+      "lean_evidence": "Norm and error definitions unfold correctly, but p16MuchLessThanOneAt means filter convergence plus eventual [0,1), and polynomial factors are unrestricted concrete polynomials evaluated at (n,n).",
+      "reasoning": "Important imported operators have meanings different from the paper's conventions despite correct low-level arithmetic definitions."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "Hats denote computed quantities, while A, b, and x are exact; equations (6.19)-(6.21) introduce distinct residual, cast, and update errors.",
+      "lean_evidence": "The run separates xExact, xHat, residualHat, correctionHat, residualError, updateError, residualLow, and residualCastError and relates them by explicit equations.",
+      "reasoning": "Exact, computed, and perturbation quantities are not conflated."
+    },
+    {
+      "id": "S08",
+      "status": "fail",
+      "paper_evidence": "Printed page 1978 specifies unpreconditioned restarted GMRES with a fully formed and stored MGS-Arnoldi basis; printed page 1979 derives key dimensions and factors from the MGS analysis.",
+      "lean_evidence": "P16LowPrecisionMGSRestart records abstract basis and perturbation data but no MGS orthogonalization process, and it assumes backward_correction_bound and forward_correction_bound.",
+      "reasoning": "The formal statement is a certified modular composition theorem, not a theorem about the paper's actual MGS-GMRES execution."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Printed page 1942 uses vector 2-norms, matrix Frobenius norms, and the unsquared normalized residual.",
+      "lean_evidence": "p16VecNorm is sqrt(sum x_i^2), p16FrobNorm and p16RectFrobNorm are Frobenius norms, and both error quotients are unsquared.",
+      "reasoning": "The target's final error and condition-number norm semantics match the paper."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "The paper uses outer i and restart-dependent k_i<=n, with unspecified low-degree c(n,k), suppressing some restart dependence in Theorem 6.3.",
+      "lean_evidence": "The outer i to i+1 offset is correct, but the target uniformly uses c(n,n), permits arbitrary polynomial degrees and zero coefficients, and packages keyDimension uniformly over the asymptotic parameter.",
+      "reasoning": "Index succession is correct, but constant dependence and key-dimension treatment are not preserved exactly."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Equations (6.19)-(6.21) use the standard floating-point model: high-precision componentwise residual/update bounds, a low-precision cast, and all MGS correction operations in low precision.",
+      "lean_evidence": "The high-precision equations and cast bound are represented, but epsilonC, epsilonLS, and epsilonX are not tied to low-precision MGS operations or gamma bounds; low-precision correction factors are assumed. Exceptional values remain implicit.",
+      "reasoning": "The low-precision floating-point execution model central to Theorem 6.3 is not encoded."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "The proof establishes both multipliers are at most Lambda, with Lambda much less than one, and derives first-order contraction until floors.",
+      "lean_evidence": "The recurrence uses the correct upper-multiplier direction, but p16MuchLessThanOneAt replaces fixed robust smallness by convergence to zero, while central contraction inequalities are constructor assumptions.",
+      "reasoning": "Some inequality directions are right, but the overall logical strength and smallness relation differ."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The paper separately defines normwise backward error and relative forward error and gives distinct attainable floors in equation (6.18).",
+      "lean_evidence": "p16BackwardError is the normalized residual and p16ForwardError is relative solution error; each has the corresponding separate recurrence and floor.",
+      "reasoning": "No error notion is substituted for another."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Printed page 1942 says the displayed approximate inequalities discard negligible second-order terms.",
+      "lean_evidence": "p16FirstOrderLeAt permits an additive remainder O((uHigh+uLow)^2).",
+      "reasoning": "This is a reasonable explicit first-order treatment of the omitted terms, considered independently of the separate filter-quantifier defect."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The paper is already finite-dimensional and real, and concerns fixed unit roundoffs in an actual mixed-precision MGS-GMRES execution.",
+      "lean_evidence": "Lean retains the finite real setting but specializes to asymptotic families with uHigh<=uLow and to runs carrying abstract certificates, while generalizing c to arbitrary-degree nonnegative polynomials.",
+      "reasoning": "These changes are not a faithful finite or real specialization of the selected theorem."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The paper's assumptions describe realizable GMRES executions and its substantive work proves the key-dimension and low-precision contraction properties.",
+      "lean_evidence": "The record is satisfiable, for example by a positive-dimensional exact identity-system family, so it is not empty. However, D037 assumes the correction contraction estimates and permits a zero polynomial in exact cases.",
+      "reasoning": "Logical emptiness is avoided, but much of the intended theorem is true for the unintended reason that its hardest conclusion-level certificates are already hypotheses."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "The Lean statement yields only per-index eventual asymptotic recurrences for certificate-bearing families. It neither establishes the certificates from fully stored low-precision MGS nor gives one fixed precision at which all restart recurrences and attainable-floor conclusions hold."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper concerns actual fixed-precision MGS-GMRES executions. It does not quantify over arbitrary filter-indexed certificate records, does not supply uniform key dimensions across an asymptotic family, and cannot justify the Lean conclusion for records lacking semantic MGS linkage."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "algorithm-linkage-and-assumed-core-result",
+      "paper_evidence": "Printed pages 1978-1979 specify fully stored MGS-Arnoldi and derive, via Theorem 5.2, a key dimension and max(Lambda_1^(i),Lambda_2^(i))<=c(n,k)uLow kappa_F(A).",
+      "lean_evidence": "D027/D037 do not encode MGS orthogonalization and directly require bounded backwardFactor and forwardFactor together with backward_correction_bound and forward_correction_bound.",
+      "impact": "The central MGS-specific mathematical content of Theorem 6.3 is assumed rather than stated as a consequence, so the target instead expresses an abstract certificate-composition result."
+    },
+    {
+      "severity": "major",
+      "category": "precision-and-quantifier-model",
+      "paper_evidence": "Theorem 6.3 considers fixed uHigh and uLow and states reduction at every restart until the floors are reached.",
+      "lean_evidence": "uHigh, uLow, and xHat depend on t; both roundoffs tend to zero; and forall i precedes a separate eventual statement and remainder witness.",
+      "impact": "There need not be any single nonzero precision parameter for which all restart inequalities hold, so fixed-execution geometric convergence is not represented."
+    },
+    {
+      "severity": "major",
+      "category": "constant-dependence",
+      "paper_evidence": "Equations (6.17)-(6.18) use an unspecified low-degree polynomial c(n,k), with the proof allowing restart-dependent k_i.",
+      "lean_evidence": "The target evaluates one arbitrary-degree nonnegative-coefficient polynomial at (n,n), and the polynomial type admits the zero polynomial.",
+      "impact": "The dependence on inner dimension and the paper's low-degree worst-case constant convention are changed."
+    },
+    {
+      "severity": "major",
+      "category": "operation-model-mismatch",
+      "paper_evidence": "Condition (3.3) is a columnwise backward-error model for the augmented least-squares data, and Section 6.3 requires every correction-solve operation to be performed by low-precision MGS-GMRES.",
+      "lean_evidence": "D037 uses separate RHS 2-norm and aggregate matrix Frobenius bounds and does not tie epsilonC, epsilonLS, or epsilonX to uLow floating-point MGS operations.",
+      "impact": "The formal restart certificate neither preserves the exact modular least-squares hypothesis nor identifies the selected algorithm."
+    },
+    {
+      "severity": "major",
+      "category": "conclusion-completeness",
+      "paper_evidence": "Theorem 6.3 asserts repeated contraction to attainable backward and forward floors.",
+      "lean_evidence": "The target contains only one-step asymptotic recurrences with no uniform-in-i eventuality, geometric unrolling, or fixed-precision floor-attainment statement.",
+      "impact": "The benchmark proposition does not deliver the selected theorem's main operational conclusion."
+    }
+  ],
+  "rationale": "The target gets the finite real system, exact error notions, norm choices, high-precision residual/update models, contraction scale, and floor scales broadly right. Nevertheless, it replaces the fixed-precision theorem by a nonuniform filter-asymptotic statement and packages the hard low-precision MGS correction contractions as assumptions without encoding MGS. It also changes the c(n,k) convention and least-squares model. Because neither statement implies the other on its stated domain, the result is not-faithful-different."
+}

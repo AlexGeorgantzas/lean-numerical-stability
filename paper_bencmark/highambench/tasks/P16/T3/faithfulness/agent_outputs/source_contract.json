@@ -7,206 +7,240 @@
     {
       "pdf_page": 1,
       "printed_page": "1939",
-      "anchor": "equation (1.1)",
-      "observation": "The paper's standing problem is Ax = b with nonsingular A in R^(n x n) and nonzero b in R^n."
+      "anchor": "equation (1.1) and opening paragraph",
+      "observation": "The standing problem is the nonsingular square system Ax=b with A in R^(n x n) and nonzero b in R^n; x denotes its exact solution."
     },
     {
       "pdf_page": 4,
       "printed_page": "1942",
-      "anchor": "Section 2, floating-point and error definitions",
-      "observation": "Hats denote computed quantities; fl denotes floating-point evaluation; gamma_j = j u/(1-j u); c(n,k) denotes an unspecified low-degree polynomial; lesssim and approximately discard negligible second-order terms. Forward error is ||x_hat-x||_2/||x||_2, and normwise backward error is ||b-A x_hat||_2/(||b||_2+||A||_F||x_hat||_2)."
+      "anchor": "Section 2, floating-point and asymptotic notation",
+      "observation": "The paper invokes the standard floating-point model, uses fl for computed expressions and hats for computed quantities, defines gamma_k=k*u/(1-k*u), lets superscripts on gamma select the corresponding unit roundoff, and uses generic low-degree polynomials c(n,k). The symbols lesssim and approximately equal mean that negligible second-order terms have been dropped, while much-greater-than and much-less-than are qualitative scale separations."
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "1942",
+      "anchor": "Section 2, condition number and forward/backward error definitions",
+      "observation": "The Frobenius condition number is kappa_F(A)=||A^(-1)||_F ||A||_F. Forward error is ||x_hat-x||_2/||x||_2. Normwise backward error is ||b-A*x_hat||_2/(||A||_F||x_hat||_2+||b||_2), equivalently the minimum common relative bound on a Frobenius-norm perturbation of A and a 2-norm perturbation of b."
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "1943",
+      "anchor": "Algorithm 1, Modular GMRES",
+      "observation": "MOD-GMRES uses A in R^(n x n), b in R^n, a basis Z_k in R^(n x k), and a left preconditioner M_L. It forms A_tilde Z_k, forms M_L^(-1)b, solves a least-squares problem over k coefficients, and forms the approximation Z_k y_k."
     },
     {
       "pdf_page": 6,
       "printed_page": "1944",
       "anchor": "conditions (3.1)-(3.3)",
-      "observation": "The modular operation models bound the computed matrix-basis product in Frobenius norm, the computed right-hand side in 2-norm, and the least-squares perturbations columnwise."
+      "observation": "The inherited correction-solver contract models the computed product, right-hand side, and least-squares solve by normwise or columnwise perturbations bounded by epsilon_c, epsilon_b, and epsilon_ls, respectively. Condition (3.3) quantifies its columnwise bound for every j<=k+1."
     },
     {
       "pdf_page": 7,
       "printed_page": "1945",
       "anchor": "conditions (3.4)-(3.6)",
-      "observation": "The computed basis action has a 2-norm error bounded by epsilon_x ||Z_k||_F ||y_hat_k||_2; Z_k must not be numerically rank deficient at accuracy epsilon_x; and all four modular accuracy parameters must be substantially smaller than one."
+      "observation": "The computed basis action satisfies x_hat_k=fl(Z_k y_hat_k)=Z_k y_hat_k+Delta_x with ||Delta_x||_2<=epsilon_x||Z_k||_F||y_hat_k||_2. The basis must satisfy sigma_min(Z_k) much greater than epsilon_x||Z_k||_F, and all four accuracy parameters must be nonnegative and substantially less than one so second-order terms may be dropped."
     },
     {
       "pdf_page": 8,
       "printed_page": "1946",
-      "anchor": "conditions (3.7)-(3.8), key dimension",
-      "observation": "A key dimension is the first k <= n satisfying the near-rank-deficiency condition for [b_tilde phi, A_tilde Z_k] for every phi > 0 when k <= n-1, together with numerical full rank of A_tilde Z_k; at k = n only the latter condition is required."
+      "anchor": "key-dimension conditions (3.7)-(3.8)",
+      "observation": "The key dimension is the first k<=n for which, for every phi>0 and when k<=n-1, [b_tilde*phi,A_tilde Z_k] is nearly rank deficient at scale c(n,k)(epsilon_c+epsilon_b+epsilon_ls), while A_tilde Z_k remains numerically full rank at that scale. For k=n only the latter condition is required."
     },
     {
       "pdf_page": 16,
       "printed_page": "1954",
-      "anchor": "Algorithm 2 and equation (4.1)",
-      "observation": "Restarted MOD-GMRES computes a residual, solves a correction system by MOD-GMRES using a potentially restart-dependent basis and key dimension, and updates the iterate. Equation (4.1) gives the normwise residual-computation model."
+      "anchor": "Algorithm 2 and condition (4.1)",
+      "observation": "Restarted MOD-GMRES is an outer iterative-refinement process indexed by i>=0: compute r_i=b-Ax_i, solve the correction system A d_i=r_i by MOD-GMRES with a possibly iteration-dependent basis size k_i, and update x_(i+1)=x_i+d_i. Its computed residual must satisfy the normwise model (4.1)."
     },
     {
       "pdf_page": 17,
       "printed_page": "1955",
-      "anchor": "equations (4.2)-(4.7), Theorem 4.1",
-      "observation": "Theorem 4.1 assumes the residual and update models at every restart, conditions (3.1)-(3.8) for every correction solve, and ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2 approximately ||x||_2. It gives forward-error contraction until a floor of order c(n,k) epsilon_r kappa_F(A) + epsilon_u."
+      "anchor": "Theorem 4.1 and equations (4.2)-(4.7)",
+      "observation": "Theorem 4.1 additionally assumes the update model (4.2), small residual/update accuracy parameters (4.3), all correction conditions (3.1)-(3.8), and ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2 lesssim ||x||_2. It gives a forward contraction factor Lambda_1^(i) and the attainable forward level lesssim c(n,k)epsilon_r kappa_F(A)+epsilon_u."
     },
     {
       "pdf_page": 18,
       "printed_page": "1956",
-      "anchor": "equations (4.8)-(4.11), Theorem 4.1",
-      "observation": "The backward-error part additionally requires numerical full rank of the preconditioned matrix-basis product relative to epsilon_x and gives contraction until a floor of order c(n,k) epsilon_r + epsilon_u."
+      "anchor": "Theorem 4.1, equations (4.8)-(4.11)",
+      "observation": "The backward-error part of Theorem 4.1 separately requires sigma_min(A_tilde^(i) Z_(k_i)^(i)) much greater than epsilon_x^(i)||A_tilde^(i)||_F||Z_(k_i)^(i)||_F. It gives contraction factor Lambda_2^(i) and attainable backward level lesssim c(n,k)epsilon_r+epsilon_u."
     },
     {
       "pdf_page": 27,
       "printed_page": "1965",
       "anchor": "Theorem 5.2 and equation (5.13)",
-      "observation": "For fully stored MGS-GMRES, Theorem 5.2 establishes a key iteration under sigma_min(A) much greater than u ||A||_F. Its proof identifies the product, least-squares, and stored-basis-action accuracy parameters used later in the mixed-precision proof."
+      "observation": "For MGS-GMRES in unit roundoff u substantially less than one, sigma_min(A) much greater than u||A||_F guarantees a key k<=n. Its proof identifies low-precision product and basis-action parameters and a columnwise backward-stable MGS-Arnoldi least-squares solve with epsilon_ls equivalent to a gamma quantity of index n(k+1)."
     },
     {
       "pdf_page": 28,
       "printed_page": "1966",
-      "anchor": "equations (5.14)-(5.16)",
-      "observation": "The MGS key-iteration certificate is obtained either at k = n if the basis remains well-conditioned or at the first loss-of-orthogonality step; at the selected k, kappa_2(V_hat_k) <= 4/3 and the next basis becoming ill-conditioned certifies near rank deficiency of [b phi, C_hat_k] for every phi > 0."
+      "anchor": "equations (5.15)-(5.16)",
+      "observation": "At the MGS key iteration, the current basis satisfies kappa_2(V_hat_k)<=4/3, sigma_min(V_hat_k)^(-1)<=4/3, and sigma_max(V_hat_k)<=4/3. If orthogonality is lost, k is the first index for which kappa_2(V_hat_(k+1))>4/3 while the current V_hat_k still satisfies those bounds."
     },
     {
       "pdf_page": 29,
       "printed_page": "1967",
-      "anchor": "equations (5.17)-(5.18)",
-      "observation": "At the MGS key iteration, the near-rank-deficiency and numerical-full-rank conditions hold, all conditions (3.1)-(3.8) are met, and the modular aggregate error is bounded by c(n,k)u."
-    },
-    {
-      "pdf_page": 39,
-      "printed_page": "1977",
-      "anchor": "Section 6.3 heading",
-      "observation": "The selected application is mixed-precision restarted GMRES."
+      "anchor": "equations (5.17)-(5.18) and conclusion of Theorem 5.2 proof",
+      "observation": "The MGS proof derives the near-rank-deficiency condition and sigma_min(A V_hat_k)>=3 sigma_min(A)/4 at the key index, thereby discharging conditions (3.5)-(3.8). If orthogonality is never fully lost, k=n supplies the key dimension."
     },
     {
       "pdf_page": 40,
       "printed_page": "1978",
-      "anchor": "Theorem 6.3 and equations (6.17)-(6.20)",
-      "observation": "The method is unpreconditioned restarted MGS-GMRES with a fully formed and stored basis. Residuals and updates are computed in high precision, all correction-solve operations are computed in low precision, and an unbounded number of Arnoldi iterations is allowed at each restart. The theorem states the common contraction factor and both attainable error floors."
+      "anchor": "Section 6.3 specialization and Theorem 6.3, equations (6.17)-(6.20)",
+      "observation": "The mixed-precision specialization uses M_L^(i)=I and Z_(k_i)^(i)=V_hat_(k_i)^(i), with the MGS-Arnoldi basis fully formed and stored. Residuals and outer updates are computed in precision u_high; lines 4-7 are the MGS-GMRES correction computation in precision u_low. Theorem 6.3 assumes Lambda=c(n,k)u_low kappa_F(A) much less than one and states both error floors in (6.18). The proof gives the componentwise residual and update models (6.19)-(6.20)."
     },
     {
       "pdf_page": 41,
       "printed_page": "1979",
-      "anchor": "equation (6.21) and proof of Theorem 6.3",
-      "observation": "Casting each computed residual to low precision contributes epsilon_b^(i) = u_low. The MGS analysis supplies a key dimension k_i at every restart, equation (6.21) gives xi_1^(i) lesssim c(n,k)u_low, and the proof bounds both Theorem 4.1 contraction factors by Lambda = c(n,k)u_low kappa_F(A)."
+      "anchor": "low-precision residual cast, equation (6.21), and final contraction specialization",
+      "observation": "For every i>=0 the high-precision residual is cast as r_hat_i'=fl_low(r_hat_i)=r_hat_i+Delta_b^(i), with ||Delta_b^(i)||_2<=u_low||r_hat_i|| as printed, giving epsilon_b^(i)=u_low. The proof invokes Theorem 5.2 to obtain a key k_i, derives xi_1^(i) lesssim c(n,k)u_low in (6.21), and concludes max(Lambda_1^(i),Lambda_2^(i))<=Lambda."
     }
   ],
   "statement": {
     "binders": [
-      "The standing system has dimension n, nonsingular A in R^(n x n), nonzero b in R^n, and exact solution x; computed quantities carry hats. (PDF p. 1, printed p. 1939, eq. (1.1); PDF p. 4, printed p. 1942, Section 2.)",
-      "Restart indices satisfy i >= 0; x_hat_i, r_hat_i, and d_hat_i are respectively the computed iterate, residual, and correction at restart i. (PDF p. 16, printed p. 1954, Algorithm 2.)",
-      "At restart i, V_hat_(k_i)^(i) is the fully stored MGS-Arnoldi basis and k_i <= n is a key inner dimension whose existence is supplied by the MGS analysis. (PDF pp. 28-29, printed pp. 1966-1967, eqs. (5.15)-(5.18); PDF pp. 40-41, printed pp. 1978-1979, Section 6.3.)",
-      "u_high and u_low are the unit roundoffs used for the high- and low-precision operations. (PDF p. 40, printed p. 1978, Theorem 6.3.)"
+      "The standing system has dimension n, A in R^(n x n) nonsingular, and 0!=b in R^n. [PDF p. 1, equation (1.1)]",
+      "x is the exact solution of Ax=b; x_hat_i, r_hat_i, and d_hat_i denote computed outer iterates, residuals, and corrections. [PDF p. 1, equation (1.1); PDF p. 16, Algorithm 2; PDF p. 40, equations (6.19)-(6.20)]",
+      "u_high and u_low are the unit roundoffs used, respectively, for the residual/outer update and for all inner correction operations. [PDF p. 40, Theorem 6.3 and Section 6.3 opening specialization]",
+      "The outer restart or correction index is universally quantified as i>=0. [PDF p. 16, Algorithm 2 and condition (4.1); PDF p. 41, low-cast paragraph]",
+      "For each outer i there is an inner MGS key index k_i<=n; the theorem nevertheless writes the generic polynomial as c(n,k). [PDF p. 27, Theorem 5.2; PDF p. 41, invocation of Theorem 5.2]",
+      "Lambda is defined by Lambda=c(n,k)u_low kappa_F(A). [PDF p. 40, equation (6.17)]"
     ],
     "hypotheses": [
-      "Mixed-precision GMRES uses M_L^(i) = I and Z_(k_i)^(i) = V_hat_(k_i)^(i), with V_hat generated by MGS Arnoldi and fully formed and stored. (PDF p. 40, printed p. 1978, opening of Section 6.3.)",
-      "The residual and iterate update are computed in high precision; every operation in the MGS-GMRES correction solve is computed in low precision, including casting the residual to low precision. (PDF pp. 40-41, printed pp. 1978-1979, eqs. (6.19)-(6.21).)",
-      "The analysis allows an unbounded number of Arnoldi iterations at each restart, so the inner solve may continue until its key dimension k_i is reached. (PDF p. 40, printed p. 1978, paragraph immediately before Theorem 6.3.)",
-      "Lambda = c(n,k) u_low kappa_F(A) is much less than 1. (PDF p. 40, printed p. 1978, eq. (6.17), interpreted using the much-less-than convention on PDF p. 4, printed p. 1942.)",
-      "Inherited through Theorem 4.1, every restart correction solve must satisfy conditions (3.1)-(3.8), and the iterates must obey ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2 approximately ||x||_2. (PDF p. 17, printed p. 1955, Theorem 4.1; PDF p. 41, printed p. 1979, proof of Theorem 6.3.)",
-      "For backward-error contraction, Theorem 4.1 also requires sigma_min(A V_hat_(k_i)^(i)) much greater than epsilon_x^(i) ||A||_F ||V_hat_(k_i)^(i)||_F; the proof uses the MGS key-dimension bounds and (6.17) to discharge this inherited requirement. (PDF p. 18, printed p. 1956, eq. (4.8); PDF pp. 28-29, printed pp. 1966-1967, eqs. (5.15)-(5.18); PDF p. 41, printed p. 1979.)"
+      "Explicit in Theorem 6.3: mixed precision GMRES computes the residual and outer update with unit roundoff u_high and the rest of its operations with unit roundoff u_low. [PDF p. 40, Theorem 6.3]",
+      "Explicit in Theorem 6.3: Lambda=c(n,k)u_low kappa_F(A) is substantially less than one. [PDF p. 40, equation (6.17)]",
+      "Algorithm context immediately preceding the theorem allows no prescribed bound on the number of Arnoldi iterations at each restart, so each correction can run until its key k_i is reached. [PDF p. 40, paragraph immediately before Theorem 6.3]",
+      "Inherited through Theorem 4.1: for every outer i, the residual and update models (4.1)-(4.3) hold with nonnegative epsilon_r and epsilon_u substantially below one. In the specialization epsilon_r=gamma_n^high and epsilon_u=u_high. [PDF p. 17, equations (4.2)-(4.3) and Theorem 4.1; PDF p. 40, equations (6.19)-(6.20)]",
+      "Inherited through Theorem 4.1: for every i, the low-precision correction computation satisfies conditions (3.1)-(3.4), namely bounded product error, bounded low-cast right-hand-side error, a columnwise backward-stable least-squares solve for every j<=k_i+1, and bounded error in forming d_hat_i=Z_(k_i)^(i)y_hat_i. [PDF p. 6, equations (3.1)-(3.3); PDF p. 7, equation (3.4); PDF p. 17, Theorem 4.1]",
+      "Inherited through Theorem 4.1: each correction basis is numerically full rank at epsilon_x^(i), all correction accuracy parameters are substantially below one, and a key dimension satisfies (3.7)-(3.8), including the universal quantifier over every scalar phi>0 when k_i<=n-1. [PDF p. 7, equations (3.5)-(3.6); PDF p. 8, equations (3.7)-(3.8); PDF p. 17, Theorem 4.1]",
+      "Inherited but not restated in Theorem 6.3: ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2 lesssim ||x||_2 for every outer i. [PDF p. 17, Theorem 4.1 immediately before equation (4.4)]",
+      "Inherited for the backward-error contraction: sigma_min(A Z_(k_i)^(i)) is substantially greater than epsilon_x^(i)||A||_F||Z_(k_i)^(i)||_F. [PDF p. 18, additional hypothesis before equation (4.8); PDF pp. 28-29, equations (5.15) and (5.18)]",
+      "Proof-derived inner-solver certificate: sigma_min(A) is substantially greater than u_low||A||_F; the proof states that (6.17) guarantees this, and Theorem 5.2 then supplies a key k_i for every i>=0. [PDF p. 27, equation (5.11); PDF p. 41, paragraph before equation (6.21)]"
     ],
     "conclusions": [
-      "At each restart, both backward and forward errors are stated to reduce by a factor (at least) Lambda until their attainable floors are reached; the proof establishes max(Lambda_1^(i), Lambda_2^(i)) <= Lambda. (PDF pp. 40-41, printed pp. 1978-1979, Theorem 6.3 and proof.)",
-      "The attainable normwise backward error satisfies ||b-A x_hat||_2/(||b||_2+||A||_F||x_hat||_2) lesssim c(n,k) u_high. (PDF p. 40, printed p. 1978, eq. (6.18).)",
-      "The attainable relative forward error satisfies ||x_hat-x||_2/||x||_2 lesssim c(n,k) u_high kappa_F(A). (PDF p. 40, printed p. 1978, eq. (6.18).)"
+      "Literal theorem wording: at each iteration the backward and forward errors reduce by a factor stated as at least Lambda until their attainable levels are reached. In context this iteration is the outer restart/correction update i. [PDF p. 40, Theorem 6.3 after equation (6.17); PDF p. 16, Algorithm 2]",
+      "The attainable normwise backward error is ||b-A*x_hat||_2/(||b||_2+||A||_F||x_hat||_2) lesssim c(n,k)u_high. [PDF p. 40, equation (6.18)]",
+      "The attainable relative forward error is ||x_hat-x||_2/||x||_2 lesssim c(n,k)u_high kappa_F(A). [PDF p. 40, equation (6.18)]",
+      "The proof's precise comparison of contraction coefficients is max(Lambda_1^(i),Lambda_2^(i))<=Lambda for every outer iteration for which the inherited hypotheses hold. [PDF p. 41, final displayed inequality]",
+      "The result supplies attainable levels and per-outer-step contraction factors but no bound on the number of outer restarts required to reach those levels. [PDF p. 40, sentence preceding Theorem 6.3 and Theorem 6.3]"
     ],
     "definitions_and_conventions": [
-      "For a nonsingular square matrix, kappa_F(A) = ||A^(-1)||_F ||A||_F. (PDF p. 4, printed p. 1942, condition-number definition.)",
-      "gamma_j = j u/(1-j u); a superscript such as high selects the corresponding unit roundoff, and a decorated gamma hides a modest multiplicative constant. (PDF p. 4, printed p. 1942, floating-point notation.)",
-      "c(n,k) denotes an unspecified polynomial of low degree in n and k. (PDF p. 4, printed p. 1942, constants convention; PDF p. 40, printed p. 1978, Theorem 6.3.)",
-      "The symbols lesssim and approximately indicate that negligible second-order terms have been dropped; much less than and much greater than denote separation robust to multiplication by a low-degree c(n,k). (PDF p. 4, printed p. 1942, notation conventions.)",
-      "A key dimension is the first k_i <= n satisfying the near-rank-deficiency condition for [r_hat_i phi, A V_hat_(k_i)^(i)] for every phi > 0 when k_i <= n-1 and numerical full rank of A V_hat_(k_i)^(i); at k_i = n only the full-rank condition is required. (PDF p. 8, printed p. 1946, eqs. (3.7)-(3.8), specialized as in PDF p. 41, printed p. 1979.)"
+      "A hat marks a computed quantity and fl denotes a computed floating-point expression. [PDF p. 4, first paragraph of Section 2]",
+      "gamma_k=k*u/(1-k*u); a superscript on gamma selects the correspondingly subscripted unit roundoff, so gamma_n^high=n*u_high/(1-n*u_high). [PDF p. 4, gamma definition; PDF p. 40, equation (6.19)]",
+      "c(n,k) denotes an unspecified polynomial in n and k of low degree that absorbs dimension-dependent constants. [PDF p. 4, paragraph defining c(n,k); PDF p. 40, sentence after equation (6.18)]",
+      "lesssim and approximately equal indicate bounds after dropping negligible second-order terms; much-greater-than indicates qualitative scale separation, with low-degree polynomial factors regarded as absorbable. [PDF p. 4, notation paragraph]",
+      "kappa_F(A)=||A^(-1)||_F||A||_F for the nonsingular square matrix A. [PDF p. 4, condition-number paragraph]",
+      "The key dimension is the first k<=n satisfying (3.7)-(3.8); if k=n, only (3.8) is required. [PDF p. 8, equations (3.7)-(3.8) and following paragraph]"
     ],
     "implicit_context": [
-      "Theorem 6.3 inherits the nonsingularity of A and nonzero original right-hand side b from the standing system (1.1), rather than restating them. (PDF p. 1, printed p. 1939, eq. (1.1); PDF p. 40, printed p. 1978, Theorem 6.3.)",
-      "Theorem 6.3 is an application of restarted MOD-GMRES Theorem 4.1, so the latter's per-restart operation models, key-dimension requirements, small-parameter requirement, and iterate-norm comparison remain part of the proof context even though they are not repeated in the theorem statement. (PDF pp. 16-18, printed pp. 1954-1956, eqs. (4.1)-(4.11); PDF pp. 40-41, printed pp. 1978-1979.)",
-      "The proof reuses Theorem 5.2 restart by restart with u replaced by u_low and the correction right-hand side replacing b. (PDF pp. 27-29, printed pp. 1965-1967, Theorem 5.2 and proof; PDF p. 41, printed p. 1979, proof of Theorem 6.3.)",
-      "Condition (6.17) is used to imply sigma_min(A) much greater than u_low ||A||_F, which is the numerical-nonsingularity condition needed by the MGS key-dimension argument. (PDF p. 27, printed p. 1965, eq. (5.11); PDF p. 41, printed p. 1979.)"
+      "Theorem 6.3 is a specialization of restarted Algorithm 2, not a claim about a single unrestarted MGS-GMRES run. [PDF p. 16, Algorithm 2; PDF p. 40, Section 6.3 specialization]",
+      "There is no left preconditioner: M_L^(i)=I, and the correction basis is the fully formed and stored MGS-Arnoldi basis Z_(k_i)^(i)=V_hat_(k_i)^(i). [PDF p. 40, first paragraph of printed page 1978]",
+      "For each outer i, the inner low-precision problem is A d_i=r_hat_i, with r_hat_i first computed in high precision and then cast to low precision for the MGS-GMRES solve. [PDF p. 40, paragraph after equation (6.20); PDF p. 41, low-cast display]",
+      "The invoked MGS proof either chooses k_i=n if orthogonality is never fully lost or chooses the first k_i for which kappa_2(V_hat_(k_i+1))>4/3 while V_hat_(k_i) remains bounded as in (5.15). [PDF p. 28, equations (5.15)-(5.16); PDF p. 29, conclusion of the key-dimension argument]",
+      "Algorithm 2 merely says to initialize x_0; Theorem 6.3 gives no separate restriction on x_0, while the invoked Theorem 4.1 imposes the iterate-size comparison. [PDF p. 16, Algorithm 2 line 1; PDF p. 17, Theorem 4.1]",
+      "Equations (6.19)-(6.21), the low cast, and the bound on max(Lambda_1^(i),Lambda_2^(i)) are proof-derived details, not clauses printed in the statement of Theorem 6.3. [PDF pp. 40-41, proof of Theorem 6.3]"
     ],
-    "algorithm_linkage": "The contract concerns Algorithm 2 specialized to unpreconditioned, fully stored MGS-GMRES: restart i computes r_hat_i = b-A x_hat_i in high precision, casts that residual to low precision, performs the MGS-Arnoldi matrix products, least-squares solve, and correction formation in low precision through a key dimension k_i, and computes x_hat_(i+1) = x_hat_i+d_hat_i in high precision. The outer index i is the restart index, while k_i is the inner Arnoldi dimension. (PDF p. 16, printed p. 1954, Algorithm 2; PDF pp. 40-41, printed pp. 1978-1979, Section 6.3 and eqs. (6.19)-(6.21).)",
+    "algorithm_linkage": "At outer iteration i, restarted Algorithm 2 computes r_hat_i=fl_high(b-A*x_hat_i), casts this residual to low precision, runs an unpreconditioned fully stored MGS-GMRES correction solve for A d_i=r_hat_i until an inner key k_i is available, forms d_hat_i in low precision, and computes x_hat_(i+1)=fl_high(x_hat_i+d_hat_i). Thus each claimed contraction is tied to one completed outer correction/update, not to an individual Arnoldi step. [PDF p. 16, Algorithm 2; PDF p. 40, Section 6.3 specialization and equations (6.19)-(6.20); PDF p. 41, low-cast display]",
     "numerical_model": [
-      "The paper invokes the standard floating-point model, with fl denoting a computed operation and hats denoting computed values. (PDF p. 4, printed p. 1942, Section 2.)",
-      "High-precision residual computation satisfies r_hat_i = b-A x_hat_i+Delta_r_i and |Delta_r_i| <= gamma_n^high (|b|+|A||x_hat_i|), giving epsilon_r = gamma_n^high. (PDF p. 40, printed p. 1978, eq. (6.19).)",
-      "High-precision updating satisfies x_hat_(i+1) = x_hat_i+d_hat_i+Delta_x_i and |Delta_x_i| <= u_high |x_hat_(i+1)|, giving epsilon_u = u_high. (PDF p. 40, printed p. 1978, eq. (6.20).)",
-      "The low-precision cast satisfies fl_low(r_hat_i) = r_hat_i+Delta_b^(i), with ||Delta_b^(i)||_2 <= u_low ||r_hat_i||_2, hence epsilon_b^(i) = u_low. (PDF p. 41, printed p. 1979, paragraph preceding eq. (6.21).)",
-      "For the low-precision correction solve, condition (3.1) is C_hat = A Z+Delta_c with ||Delta_c||_F <= epsilon_c ||A Z||_F; condition (3.3) is a columnwise backward-error model for the least-squares solve; and condition (3.4) is d_hat = Z y_hat+Delta_x with ||Delta_x||_2 <= epsilon_x ||Z||_F ||y_hat||_2. (PDF pp. 6-7, printed pp. 1944-1945, eqs. (3.1), (3.3), and (3.4).)",
-      "The fully stored MGS analysis identifies epsilon_c from standard matrix-vector products, epsilon_ls from the MGS-Arnoldi least-squares solve, and epsilon_x = gamma_n in the working precision; after replacing u by u_low and adding the cast error, their aggregate satisfies xi_1^(i) lesssim c(n,k)u_low. (PDF p. 27, printed p. 1965, proof of Theorem 5.2; PDF p. 41, printed p. 1979, eq. (6.21).)"
+      "The overall analysis uses the paper's standard floating-point model and traditional worst-case bounds. [PDF p. 4, opening paragraphs of Section 2]",
+      "High-precision residual model: r_hat_i=b-A*x_hat_i+Delta_r_i with componentwise |Delta_r_i|<=gamma_n^high(|b|+|A||x_hat_i|). [PDF p. 40, equation (6.19)]",
+      "High-precision update model: x_hat_(i+1)=x_hat_i+d_hat_i+Delta_x_i with componentwise |Delta_x_i|<=u_high|x_hat_(i+1)|. [PDF p. 40, equation (6.20)]",
+      "The proof identifies epsilon_r=gamma_n^high and epsilon_u=u_high for Theorem 4.1. [PDF p. 40, sentence after equation (6.20)]",
+      "Low-precision residual cast: r_hat_i'=fl_low(r_hat_i)=r_hat_i+Delta_b^(i), with ||Delta_b^(i)||_2<=u_low||r_hat_i|| as printed, and epsilon_b^(i)=u_low. [PDF p. 41, low-cast display and following sentence]",
+      "The remaining low-precision parameters are those from the MGS-GMRES proof: epsilon_c^(i) is the product-error parameter, epsilon_ls^(i) is of gamma order with index n(k_i+1), and epsilon_x^(i) is of gamma_n order, all using u_low. [PDF p. 27, opening of Theorem 5.2 proof and equation (5.13); PDF p. 41, sentence before equation (6.21)]",
+      "At the key dimension, equation (6.21) gives xi_1^(i) lesssim c(n,k)u_low, and the no-preconditioner specialization yields max(Lambda_1^(i),Lambda_2^(i))<=c(n,k)u_low kappa_F(A). [PDF p. 41, equation (6.21) and final displayed inequality]"
     ],
     "error_notions": [
-      "Forward error is the relative 2-norm error ||x_hat-x||_2/||x||_2. (PDF p. 4, printed p. 1942, forward-error definition.)",
-      "Backward error means normwise backward error allowing simultaneous perturbations ||Delta_A||_F <= epsilon ||A||_F and ||Delta_b||_2 <= epsilon ||b||_2; it equals ||b-A x_hat||_2/(||A||_F||x_hat||_2+||b||_2). (PDF p. 4, printed p. 1942, backward-error definition.)",
-      "The bounds in (6.18) are attainable floors reached after repeated restart contractions, not one-step bounds asserted for every arbitrary input iterate. (PDF pp. 17-18, printed pp. 1955-1956, eqs. (4.7) and (4.11); PDF p. 40, printed p. 1978, Theorem 6.3.)"
+      "Forward error compares the computed iterate with the exact solution: ||x_hat-x||_2/||x||_2. [PDF p. 4, forward-error definition; PDF p. 40, equation (6.18)]",
+      "Backward error is the actual normwise backward error of the computed iterate, not merely a residual norm: it is the minimum epsilon for which (A+Delta_A)x_hat=b+Delta_b with ||Delta_A||_F<=epsilon||A||_F and ||Delta_b||_2<=epsilon||b||_2. [PDF p. 4, backward-error definition]",
+      "The equivalent backward-error quotient used in Theorem 6.3 is ||b-A*x_hat||_2/(||b||_2+||A||_F||x_hat||_2). [PDF p. 4, backward-error identity; PDF p. 40, equation (6.18)]",
+      "Both errors in (6.18) are evaluated using exact A, b, and x and a computed x_hat. [PDF p. 1, equation (1.1); PDF p. 4, error definitions; PDF p. 40, equation (6.18)]"
     ],
     "norms": [
-      "Vector residuals and forward errors use the Euclidean 2-norm. (PDF p. 4, printed p. 1942, norm and error definitions.)",
-      "Matrix perturbations and the denominator's matrix norm use the Frobenius norm. (PDF p. 4, printed p. 1942, backward-error definition.)",
-      "The contraction condition and forward floor use the Frobenius condition number kappa_F(A). (PDF p. 40, printed p. 1978, eqs. (6.17)-(6.18).)",
-      "The high-precision residual and update models are stated componentwise before being identified with the normwise parameters of Theorem 4.1. (PDF p. 40, printed p. 1978, eqs. (6.19)-(6.20); PDF pp. 16-17, printed pp. 1954-1955, eqs. (4.1)-(4.2).)"
+      "All vector errors and residuals in the theorem's error measures use the Euclidean 2-norm. [PDF p. 4, norm and error definitions; PDF p. 40, equation (6.18)]",
+      "Matrix magnitude in the backward-error denominator and perturbation definition uses the Frobenius norm. [PDF p. 4, backward-error definition; PDF p. 40, equation (6.18)]",
+      "The condition number in (6.17) and the forward floor is the Frobenius condition number kappa_F(A). [PDF p. 4, condition-number definition; PDF p. 40, equations (6.17)-(6.18)]",
+      "Equations (6.19)-(6.20) use componentwise absolute values before their conversion to the normwise hypotheses of Theorem 4.1. [PDF p. 40, equations (6.19)-(6.20)]"
     ],
     "constants_and_indexing": [
-      "i >= 0 indexes outer restart iterations, whereas k_i <= n is the key inner MGS-Arnoldi dimension at restart i. (PDF p. 16, printed p. 1954, Algorithm 2; PDF p. 41, printed p. 1979, proof of Theorem 6.3.)",
-      "The displayed theorem suppresses the restart dependence and writes c(n,k) and Lambda rather than c(n,k_i) and Lambda_i. (PDF p. 40, printed p. 1978, eq. (6.17); PDF p. 41, printed p. 1979, comparison with Lambda_1^(i) and Lambda_2^(i).)",
-      "The MGS certificate selects k_i = n if the basis stays well-conditioned, or the first k_i whose next basis has kappa_2(V_hat_(k_i+1)) > 4/3; the selected V_hat_(k_i) has kappa_2 <= 4/3. (PDF p. 28, printed p. 1966, eqs. (5.15)-(5.16).)",
-      "gamma_n^high = n u_high/(1-n u_high), and the high-precision floors absorb this dimension-dependent quantity into c(n,k)u_high. (PDF p. 4, printed p. 1942, gamma definition; PDF p. 40, printed p. 1978, eqs. (6.18)-(6.19).)"
+      "Outer iterations are indexed i>=0, and an update advances i to i+1. [PDF p. 16, Algorithm 2; PDF p. 40, equation (6.20)]",
+      "For every outer i, the MGS argument existentially supplies an inner key k_i<=n. [PDF p. 27, Theorem 5.2; PDF p. 41, invocation of Theorem 5.2]",
+      "The loss-of-orthogonality key uses the offset k_i+1: it is the first index with kappa_2(V_hat_(k_i+1))>4/3 while kappa_2(V_hat_(k_i))<=4/3; if no such loss occurs, k_i=n. [PDF p. 28, equation (5.15) and following paragraph; PDF p. 29, key-dimension conclusion]",
+      "The least-squares perturbation condition is columnwise for every j<=k_i+1. [PDF p. 6, equation (3.3)]",
+      "The high-precision residual constant is gamma_n^high=n*u_high/(1-n*u_high), while low-precision gamma terms and dimension factors are absorbed into c(n,k). [PDF p. 4, gamma and c(n,k) definitions; PDF p. 40, equation (6.19); PDF p. 41, equation (6.21)]",
+      "The theorem does not state a restart count or a fixed inner restart length. [PDF p. 40, paragraph immediately before Theorem 6.3 and Theorem 6.3]"
     ],
     "higher_order_terms": [
-      "The conclusions use lesssim rather than exact inequalities because negligible second-order terms are discarded. (PDF p. 4, printed p. 1942, notation convention; PDF p. 40, printed p. 1978, eq. (6.18).)",
-      "The theorem does not supply explicit coefficients for c(n,k); it guarantees only low-degree polynomial dependence on n and k. (PDF p. 4, printed p. 1942, constants convention; PDF p. 40, printed p. 1978, Theorem 6.3.)",
-      "The simplification gamma_n^high and the low-precision modular error parameters to c(n,k)u_high and c(n,k)u_low absorbs modest constants and dropped higher-order terms. (PDF p. 4, printed p. 1942; PDF pp. 40-41, printed pp. 1978-1979, eqs. (6.18)-(6.21).)"
+      "The bounds in (6.18) and (6.21) use lesssim, which the paper explicitly defines as dropping negligible second-order terms. [PDF p. 4, notation paragraph; PDF p. 40, equation (6.18); PDF p. 41, equation (6.21)]",
+      "The paper does not display an explicit remainder term or big-O expression for the discarded terms in Theorem 6.3. [PDF pp. 40-41, Theorem 6.3 and proof]",
+      "The high-precision floors from Theorem 4.1, c(n,k)epsilon_r kappa_F(A)+epsilon_u and c(n,k)epsilon_r+epsilon_u, are specialized using epsilon_r=gamma_n^high and epsilon_u=u_high and absorbed into the c(n,k)u_high levels in (6.18). [PDF p. 17, equation (4.7); PDF p. 18, equation (4.11); PDF p. 40, equations (6.18)-(6.20)]",
+      "The condition Lambda much less than one is qualitative rather than a stated numerical threshold. [PDF p. 4, much-greater-than convention; PDF p. 40, equation (6.17)]"
     ],
     "exceptional_values": [
-      "The standing problem excludes singular A and b = 0. (PDF p. 1, printed p. 1939, eq. (1.1).)",
-      "The selected pages do not explicitly discuss overflow, underflow, NaNs, or infinities; they only invoke the standard floating-point model. (PDF p. 4, printed p. 1942, Section 2.)",
-      "The gamma formula requires a nonzero denominator, while the inherited conditions require the relevant accuracy parameters to be substantially smaller than one; Theorem 6.3 does not separately state bounds such as n u_high < 1. (PDF p. 4, printed p. 1942, gamma definition; PDF p. 7, printed p. 1945, eq. (3.6); PDF p. 17, printed p. 1955, eq. (4.3).)",
-      "Theorem 6.3 does not separately specify behavior for a zero computed correction residual or an Arnoldi happy breakdown; Algorithm 2 instead stops when its convergence test is met. (PDF p. 16, printed p. 1954, Algorithm 2; PDF pp. 40-41, printed pp. 1978-1979, Theorem 6.3 and proof.)"
+      "The standing problem excludes singular A and zero b. [PDF p. 1, equation (1.1)]",
+      "The proof also requires numerical nonsingularity at low precision, sigma_min(A) much greater than u_low||A||_F, which it says follows from (6.17). [PDF p. 27, equation (5.11); PDF p. 41, paragraph before equation (6.21)]",
+      "No explicit treatment of NaNs, infinities, overflow, underflow, subnormal arithmetic, or division by zero appears in the selected passage; the paper only invokes the standard floating-point model. [PDF p. 4, opening of Section 2; PDF pp. 40-41, Theorem 6.3 and proof]",
+      "The formula gamma_n^high=n*u_high/(1-n*u_high) and inherited requirement gamma_n^high much less than one implicitly require a nonvanishing denominator and a sufficiently small high-precision rounding level, but Theorem 6.3 does not state a separate numerical inequality such as n*u_high<1. [PDF p. 4, gamma definition; PDF p. 17, condition (4.3); PDF p. 40, equation (6.19)]"
     ]
   },
   "undebatable_constraints": [
-    "The result is for unpreconditioned restarted MGS-GMRES with a fully formed and stored Arnoldi basis, not an arbitrary GMRES variant. (PDF p. 40, printed p. 1978, Section 6.3.)",
-    "Residual computation and iterate updating are high precision; the entire correction solve and residual cast are low precision. (PDF pp. 40-41, printed pp. 1978-1979, eqs. (6.19)-(6.21).)",
-    "The analysis permits enough inner Arnoldi iterations at every restart to reach a key dimension k_i; it is not a stated guarantee for an arbitrary fixed small restart length. (PDF p. 40, printed p. 1978, paragraph before Theorem 6.3; PDF p. 41, printed p. 1979.)",
-    "The contraction hypothesis is c(n,k)u_low kappa_F(A) much less than 1. (PDF p. 40, printed p. 1978, eq. (6.17).)",
-    "Both backward and forward errors share the low-precision contraction scale c(n,k)u_low kappa_F(A). (PDF pp. 40-41, printed pp. 1978-1979, Theorem 6.3 and proof.)",
-    "The backward floor is c(n,k)u_high in the normwise residual measure using ||A||_F and vector 2-norms. (PDF p. 40, printed p. 1978, eq. (6.18); PDF p. 4, printed p. 1942.)",
-    "The forward floor is c(n,k)u_high kappa_F(A) in relative 2-norm. (PDF p. 40, printed p. 1978, eq. (6.18).)",
-    "The bounds are approximate worst-case bounds with unspecified low-degree polynomial constants and omitted negligible second-order terms. (PDF p. 4, printed p. 1942, notation conventions.)",
-    "Application of Theorem 4.1 carries the iterate-norm comparison and per-restart modular conditions into the proof, even though Theorem 6.3 does not restate them. (PDF p. 17, printed p. 1955, Theorem 4.1; PDF p. 41, printed p. 1979.)"
+    "The selected result concerns restarted, unpreconditioned, fully stored MGS-GMRES with high-precision residuals and outer updates and low-precision inner corrections. [PDF p. 40, Section 6.3 specialization]",
+    "The explicit contraction condition is exactly Lambda=c(n,k)u_low kappa_F(A) much less than one. [PDF p. 40, equation (6.17)]",
+    "The result has two distinct conclusions and neither may be omitted: a normwise backward-error floor and a relative forward-error floor. [PDF p. 40, equation (6.18)]",
+    "The backward floor is proportional to u_high without kappa_F(A); the forward floor is proportional to u_high kappa_F(A). [PDF p. 40, equation (6.18)]",
+    "The backward error uses ||A||_F in its denominator and the forward error uses the exact solution's 2-norm. [PDF p. 4, error definitions; PDF p. 40, equation (6.18)]",
+    "The contraction is per completed outer restart/correction update i, with an inner existential key k_i for each i. [PDF p. 16, Algorithm 2; PDF p. 41, key-iteration paragraph]",
+    "The residual model uses gamma_n^high and the update model uses u_high, both componentwise as written in (6.19)-(6.20). [PDF p. 40, equations (6.19)-(6.20)]",
+    "The high residual is explicitly cast to low precision before the inner solve, contributing epsilon_b^(i)=u_low. [PDF p. 41, low-cast display]",
+    "The MGS key satisfies k_i<=n and uses the k_i+1 loss-of-orthogonality offset and the constant 4/3. [PDF pp. 28-29, equations (5.15)-(5.18)]",
+    "Applying the cited restarted theorem carries the iterate-size comparison and a separate backward-specific numerical-rank condition, even though Theorem 6.3 does not print them. [PDF p. 17, Theorem 4.1; PDF p. 18, hypothesis before equation (4.8)]",
+    "The proof establishes max(Lambda_1^(i),Lambda_2^(i))<=Lambda; a formal contraction statement must preserve this inequality. [PDF p. 41, final displayed inequality]",
+    "The lesssim conclusions are first-order bounds with unspecified discarded second-order terms and unspecified low-degree polynomial constants. [PDF p. 4, notation paragraph; PDF p. 40, equation (6.18)]"
   ],
   "ambiguities": [
     {
-      "issue": "Theorem 6.3 says the errors reduce at each iteration without explicitly distinguishing an outer restart from an inner Arnoldi iteration.",
-      "evidence": "Algorithm 2 uses i for restart iterations, and the proof of Theorem 6.3 invokes per-restart factors Lambda_1^(i) and Lambda_2^(i), while k_i denotes an inner key dimension. (PDF p. 16, printed p. 1954; PDF p. 41, printed p. 1979.)",
-      "impact": "The supported reading is contraction once per completed restart correction, not at every Arnoldi basis-extension step."
+      "issue": "The symbol k in c(n,k) is not bound in Theorem 6.3, while the restarted proof supplies a potentially different key k_i for each outer i.",
+      "evidence": "The theorem writes c(n,k) in (6.17)-(6.18), but the proof says that for every i>=0 there exists a key k_i. [PDF p. 40, equations (6.17)-(6.18); PDF p. 41, key-iteration paragraph]",
+      "impact": "A formal statement must decide whether c is evaluated at each k_i, at a uniform upper bound such as n, or at a separately fixed inner dimension; the paper does not bind this explicitly."
     },
     {
-      "issue": "The theorem writes one k and one c(n,k), although the proof obtains a potentially different key dimension k_i at every restart.",
-      "evidence": "Equation (6.17) uses c(n,k), but the proof states that for every i there exists a key iteration k_i. (PDF pp. 40-41, printed pp. 1978-1979.)",
-      "impact": "A formal statement must either quantify a uniform polynomial bound over all k_i <= n or retain restart-dependent factors; treating k as one fixed common inner dimension is not explicitly justified."
+      "issue": "The natural-language phrase reduced by a factor (at least) Lambda is directionally unclear for Lambda<1.",
+      "evidence": "Theorem 6.3 uses that wording, while its proof establishes max(Lambda_1^(i),Lambda_2^(i))<=Lambda. Theorem 4.1 uses similar wording for Lambda_1^(i) despite treating it as a contraction coefficient. [PDF p. 40, sentence after (6.17); PDF p. 41, final displayed inequality; PDF p. 17, text before (4.7)]",
+      "impact": "The proof supports an upper bound on the contraction coefficient, not a lower bound Lambda_1^(i)>=Lambda. A faithful formalization should record the literal wording and the proof inequality rather than silently reverse one."
     },
     {
-      "issue": "The iterate-size hypothesis from Theorem 4.1 is not repeated in Theorem 6.3.",
-      "evidence": "Theorem 4.1 assumes ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2 approximately ||x||_2, whereas Theorem 6.3 lists only the mixed-precision setup and condition (6.17). (PDF p. 17, printed p. 1955; PDF p. 40, printed p. 1978.)",
-      "impact": "Dropping this inherited hypothesis yields a stronger statement than the displayed proof directly supports."
+      "issue": "Theorem 6.3 does not restate or verify the iterate-size hypothesis required by Theorem 4.1.",
+      "evidence": "Theorem 4.1 assumes ||x_hat_i||_2 lesssim ||x_hat_(i+1)||_2 lesssim ||x||_2. Theorem 6.3's proof lists conditions (4.1)-(4.3) and (3.1)-(3.8) but does not mention this comparison. [PDF p. 17, Theorem 4.1; PDF p. 40, first sentence of Theorem 6.3 proof]",
+      "impact": "A standalone formal theorem needs this as an additional hypothesis or needs a separate derivation; the selected passage does neither explicitly."
     },
     {
-      "issue": "The phrase reduced by a factor (at least) Lambda is directionally awkward for a contraction factor smaller than one.",
-      "evidence": "The theorem uses that phrase, but its proof establishes max(Lambda_1^(i), Lambda_2^(i)) <= Lambda with Lambda much less than one. (PDF pp. 40-41, printed pp. 1978-1979.)",
-      "impact": "The recurrence multiplier should be represented as bounded above by Lambda; interpreting at least as a lower bound on the multiplier would reverse the useful guarantee."
+      "issue": "The backward-error part of Theorem 4.1 has an additional numerical-rank hypothesis that Theorem 6.3's proof does not explicitly name.",
+      "evidence": "The additional condition is printed before (4.8). The MGS facts (5.15), (5.18), and the low-precision nonsingularity condition appear intended to imply it, but the final proof only says that applying Theorem 4.1 ends the proof. [PDF p. 18, hypothesis before (4.8); PDF pp. 28-29, equations (5.15) and (5.18); PDF p. 41, final paragraph]",
+      "impact": "A formal reconstruction must either include this inherited condition or prove it from the MGS key certificate and (6.17)."
     },
     {
-      "issue": "No explicit ordering or separate smallness assumption for u_high and u_low is stated in Theorem 6.3.",
-      "evidence": "The precisions are called high and low, while the inherited models require gamma_n^high, u_high, and all modular accuracy parameters to be substantially below one. Condition (6.17) explicitly constrains only u_low through Lambda. (PDF p. 17, printed p. 1955, eq. (4.3); PDF p. 40, printed p. 1978, eqs. (6.17), (6.19), and (6.20).)",
-      "impact": "Relations such as u_high < u_low and n u_high < 1 are conventional but should not be added as explicit paper hypotheses without marking them as implicit numerical-model requirements."
+      "issue": "The paper does not explicitly state an ordering between u_high and u_low or a standalone smallness condition for gamma_n^high in Theorem 6.3.",
+      "evidence": "The precisions are called high and low, but the theorem gives only (6.17), which involves u_low. The invoked Theorem 4.1 separately requires epsilon_r=gamma_n^high and epsilon_u=u_high to be substantially below one. [PDF p. 40, Theorem 6.3 and equations (6.17), (6.19)-(6.20); PDF p. 17, condition (4.3)]",
+      "impact": "One should not silently add u_high<u_low, although practical interpretation suggests it; validity of the inherited high-precision model still requires gamma_n^high to be defined and small."
     },
     {
-      "issue": "The constants and discarded terms are not explicit.",
-      "evidence": "Section 2 defines c(n,k) only as a generic low-degree polynomial and defines lesssim and approximately by dropping negligible second-order terms. (PDF p. 4, printed p. 1942.)",
-      "impact": "The result is asymptotic and qualitative; it does not provide a fixed numerical contraction threshold or exact attainable-error constants."
+      "issue": "The right-hand norm in the low-precision cast bound is printed without a norm subscript.",
+      "evidence": "The display on printed page 1979 reads ||Delta_b^(i)||_2<=u_low||r_hat_i||, whereas condition (3.2), which the text says this satisfies, uses a 2-norm on both sides. [PDF p. 41, low-cast display; PDF p. 6, equation (3.2)]",
+      "impact": "Interpreting the right-hand side as a 2-norm is strongly suggested but is inherited or inferred rather than typographically explicit in that display."
     },
     {
-      "issue": "The phrase unbounded number of Arnoldi iterations is not reconciled explicitly with the finite-dimensional bound k_i <= n.",
-      "evidence": "Section 6.3 says an unbounded number is allowed at each restart, while the reused MGS key-dimension theorem supplies k_i <= n. (PDF p. 40, printed p. 1978; PDF pp. 27-29, printed pp. 1965-1967.)",
-      "impact": "The phrase is best read as no prescribed small restart cap, rather than literally more than n independent Arnoldi steps."
+      "issue": "The prose introducing condition (3.4) gives the coefficient vector y_hat_k the dimension R^n, which conflicts with the matrix product Z_k y_hat_k for Z_k in R^(n x k).",
+      "evidence": "Printed page 1945 says Z_k in R^(n x k) and y_hat_k in R^n immediately before (3.4), while Algorithm 1 solves a least-squares problem with k coefficients and then forms Z_k y_k. [PDF p. 7, text before equation (3.4); PDF p. 5, Algorithm 1]",
+      "impact": "Unless k=n, the displayed product requires y_hat_k in R^k. This appears to be a source typo and must not be silently treated as a genuine R^n binder."
+    },
+    {
+      "issue": "The symbols much less than and lesssim are deliberately nonquantitative.",
+      "evidence": "Section 2 defines the scale notation informally and says lesssim drops negligible second-order terms; neither (6.17) nor (6.18) supplies a numerical threshold or explicit remainder. [PDF p. 4, notation paragraph; PDF p. 40, equations (6.17)-(6.18)]",
+      "impact": "The paper passage is not by itself an exact epsilon-delta inequality with fixed constants; any exact formal bound requires an explicit interpretation or strengthening."
+    },
+    {
+      "issue": "The phrase unbounded number of Arnoldi iterations does not specify an executable stopping rule or fixed restart length.",
+      "evidence": "The paragraph before Theorem 6.3 says the analysis allows an unbounded number of Arnoldi iterations at each restart, while the proof relies on eventually reaching a key k_i<=n. [PDF p. 40, paragraph immediately before Theorem 6.3; PDF p. 41, key-iteration paragraph]",
+      "impact": "The theorem does not automatically cover a practical fixed-length restart that stops before k_i; nor does it provide a computable criterion for recognizing the key dimension."
     }
   ],
-  "contract_plain_english": "For a nonsingular real system Ax = b, run unpreconditioned restarted GMRES with a fully stored MGS-Arnoldi basis. At every restart, compute the residual and final iterate update in precision u_high, but cast the residual and perform the complete correction solve in precision u_low; allow the inner Arnoldi process to continue until the MGS key dimension is reached. (PDF pp. 40-41, printed pp. 1978-1979, Section 6.3.) If c(n,k)u_low kappa_F(A) is much less than one, the proof bounds both outer-restart contraction multipliers by that quantity. Repeated restarts therefore reduce the normwise backward error to order c(n,k)u_high and the relative 2-norm forward error to order c(n,k)u_high kappa_F(A). (PDF pp. 40-41, printed pp. 1978-1979, eqs. (6.17)-(6.21).) These are worst-case approximate bounds with low-degree polynomial constants and omitted negligible second-order terms, and the proof inherits the operation, key-dimension, numerical-rank, and iterate-size assumptions of Theorem 4.1. (PDF p. 4, printed p. 1942; PDF pp. 17-18, printed pp. 1955-1956.)"
+  "contract_plain_english": "For a nonsingular real square system Ax=b, run the restarted mixed-precision algorithm whose outer residual and iterate update are standard high-precision operations and whose unpreconditioned, fully stored MGS-GMRES correction solve is performed in low precision, including a cast of the high-precision residual to low precision. [PDF p. 1, equation (1.1); PDF p. 40, Section 6.3 specialization; PDF p. 41, low-cast display] If Lambda=c(n,k)u_low kappa_F(A) is much less than one, and the inherited hypotheses of Theorem 4.1 and the MGS key-dimension argument hold at every outer restart, then the proof bounds both outer contraction coefficients by Lambda. [PDF pp. 17-18, Theorem 4.1; PDF pp. 27-29, Theorem 5.2 proof; PDF pp. 40-41, equations (6.17) and (6.21) and final factor inequality] The eventual computed iterate has normwise backward error lesssim c(n,k)u_high and relative 2-norm forward error lesssim c(n,k)u_high kappa_F(A). [PDF p. 40, equation (6.18)] These are first-order attainable levels with unspecified low-degree polynomial constants and discarded second-order terms, not exact equalities or a bound on the number of restarts. [PDF p. 4, notation paragraph; PDF p. 40, Theorem 6.3]"
 }

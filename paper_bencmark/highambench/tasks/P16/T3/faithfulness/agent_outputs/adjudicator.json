@@ -3,134 +3,119 @@
   "role": "adjudicator",
   "task_id": "P16-T3",
   "trigger": [
-    "judge classifications differ",
     "round-trip judge requested adjudication",
-    "round-trip judge classification is undetermined",
-    "blind dependency D027 is unclear",
-    "blind dependency D037 is unclear",
-    "round-trip S02 is unclear",
-    "round-trip S04 is unclear",
+    "blind dependency D024 is unclear",
+    "blind dependency D033 is unclear",
     "round-trip S06 is unclear",
-    "round-trip S08 is unclear",
-    "round-trip S11 is unclear",
-    "round-trip S14 is unclear",
-    "round-trip S15 is unclear",
-    "round-trip S16 is unclear"
+    "round-trip S11 is unclear"
   ],
   "resolved_items": [
     {
-      "item": "judge classifications differ",
-      "resolution": "The disagreement resolves to not-faithful-different. The complete declaration confirms substantive domain, algorithm-linkage, and quantifier mismatches that the truncated blind packet could not settle.",
-      "primary_evidence": "Theorem 6.3 on PDF pages 40-41 concerns a fixed-precision, fully stored MGS-GMRES execution. D016 instead packages a filter-indexed family, and complete D037 assumes abstract correction contraction certificates without requiring MGS generation."
-    },
-    {
       "item": "round-trip judge requested adjudication",
-      "resolution": "Adjudication is complete from the hash-verified PDF and complete declaration evidence.",
-      "primary_evidence": "The inspected PDF has SHA-256 8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a; the complete D027/D037 constructor evidence removes the blind packet's principal information gap."
+      "resolution": "Resolved. The complete declaration evidence removes the dependency-ledger uncertainty but confirms material proposition-level mismatches. Both implication directions fail, so the final classification is not-faithful-different and the declaration is not accepted.",
+      "primary_evidence": "The PDF hash is 8010a50989428b09ea9f204875cd6cfde6c08c924beb40887a6921287605737a. Theorem 6.3 on PDF pages 40-41 derives its result from the mixed-precision execution, Theorems 5.2 and 4.1, and equations (6.19)-(6.21), whereas D025, D033, and D034 require certified local conclusions and exact remainder properties as run data."
     },
     {
-      "item": "round-trip judge classification is undetermined",
-      "resolution": "The classification is determinate: neither implication direction holds, so the declaration is not-faithful-different.",
-      "primary_evidence": "The paper's fixed nonzero roundoffs cannot be embedded as a constant Lean family because D016 requires both roundoffs to tend to zero. Conversely, the paper does not cover the arbitrary non-MGS certificate-bearing families admitted by D027/D037."
+      "item": "blind dependency D024 is unclear",
+      "resolution": "Resolved as understood, with a failed paper match. D024 is the per-restart structure whose single complete constructor is D033. It bundles the low residual cast, a fully stored basis, MGS projection/update/normalization equations, product and least-squares perturbation models, correction formation, key-rank certificates, coefficient bounds, and a supplied P16Theorem41RestartResult.",
+      "primary_evidence": "The complete P16FixedLowPrecisionMGSRestart source and D033 constructor enumerate these fields through the final theorem41 argument. PDF pages 27-29 and 40-41 instead derive the MGS key certificate and then apply Theorem 4.1."
     },
     {
-      "item": "blind dependency D027 is unclear",
-      "resolution": "D027 is an abstract per-restart certificate type. It packages a key dimension, basis and perturbation data, least-squares and rank conditions, bounded contraction factors, and correction-level error estimates; it is not an implementation predicate for fully stored MGS-Arnoldi.",
-      "primary_evidence": "The complete P16LowPrecisionMGSRestart declaration exposes all fields through constructor D037. PDF page 40 explicitly requires a Krylov basis computed by MGS Arnoldi and fully formed and stored."
-    },
-    {
-      "item": "blind dependency D037 is unclear",
-      "resolution": "D037 directly assumes backward_correction_bound and forward_correction_bound together with bounds on backwardFactor and forwardFactor. It does not enforce MGS orthogonalization, first-key minimality, or derivation of the modular accuracy parameters from low-precision operations.",
-      "primary_evidence": "D037's final fields contain the two correction inequalities and factor bounds. By contrast, PDF pages 27-29 derive the key iteration and modular bounds from MGS, and PDF page 41 invokes that derivation to obtain equation (6.21) and the contraction factors."
-    },
-    {
-      "item": "round-trip S02 is unclear",
-      "resolution": "S02 fails. Although the finite real system and outer index match, Lean adds an arbitrary filter parameter, t-dependent executions and roundoffs, and a key dimension fixed across t for each restart.",
-      "primary_evidence": "Theorem 6.3 uses fixed uhigh and ulow and obtains a possibly restart-dependent k_i. D016 has uHigh, uLow and xHat as functions of t, while each D027 certificate selects keyDimension outside its t-indexed fields."
-    },
-    {
-      "item": "round-trip S04 is unclear",
-      "resolution": "S04 fails. The record includes several paper assumptions but adds asymptotic precision hypotheses, weakens the approximate iterate equality to one-sided bounds, and assumes aggregate high-roundoff and correction estimates that the paper derives.",
-      "primary_evidence": "PDF page 17 assumes ||xHat_i|| lesssim ||xHat_(i+1)|| approximately ||x||. D016 records current-to-next and next-to-solution upper bounds only, plus backward_high_roundoff_bound and forward_high_roundoff_bound; D037 supplies the correction bounds."
+      "item": "blind dependency D033 is unclear",
+      "resolution": "Resolved as understood, with a failed paper match. D033 explicitly connects residualLow to the cast residual and uses residualLow in the perturbed least-squares problem and key condition. However, it never identifies the first Arnoldi basis vector with the normalized residualLow, and its final theorem41 field already contains the local convergence result.",
+      "primary_evidence": "D033 has residual_cast_equation, residual_cast_bound, basis_fully_stored, MGS recurrences, least_squares_solution, key_near_dependence, and theorem41, but no equation of the form residualLow = beta times the first basis column. The paper's equation (5.1) forms the Arnoldi factorization from [b, A V_k], and Section 6.3 applies that construction to the cast residual in each correction system."
     },
     {
       "item": "round-trip S06 is unclear",
-      "resolution": "S06 fails rather than remaining unclear. The complete dependencies are understood, but p16MuchLessThanOneAt and the polynomial representation do not preserve the paper's conventions exactly.",
-      "primary_evidence": "PDF page 4 defines generic unspecified low-degree c(n,k) and qualitative much-less-than notation. D013 requires convergence of lambda to zero, and D028/D038 permit arbitrary polynomial degrees, including the zero polynomial; the target uses one exact value P(n,n)."
-    },
-    {
-      "item": "round-trip S08 is unclear",
-      "resolution": "S08 fails. The declaration specifies an abstract certified correction solve, not execution by unpreconditioned fully stored MGS-GMRES.",
-      "primary_evidence": "PDF page 40 explicitly identifies VHat as the Krylov basis computed by MGS Arnoldi and states that operations on lines 4-7 use low-precision MGS-GMRES. D037 contains no MGS orthogonalization recurrence or basis-generation requirement."
+      "resolution": "Resolved as pass for dependency interpretability. The complete direct dossier supplies the full D024/D033 constructor semantics, D034 identifies the stored factors, coefficients, remainders, and step inequalities, and D017-D048 unfold every domain-specific operator. The ellipses in the blind abbreviated constructor are therefore a presentation truncation, not remaining semantic opacity.",
+      "primary_evidence": "The complete D033 fully explicit type continues through key_near_dependence, key_image_full_rank, coefficient equations, dimension_factor_bound, and theorem41. D034 gives the complete constructor of P16Theorem41RestartResult."
     },
     {
       "item": "round-trip S11 is unclear",
-      "resolution": "S11 fails. The visible high-precision residual, update, and residual-cast models are compatible with the paper, but the complete low-precision certificate does not tie epsilonC, epsilonLS, or epsilonX to low-precision MGS operations.",
-      "primary_evidence": "PDF pages 40-41 require every correction-solve operation to use low precision and reuse the explicit MGS bounds from Theorem 5.2. D037 merely requires its accuracy functions to be nonnegative and tend to zero, and replaces condition (3.3)'s columnwise perturbation bound with separate RHS and Frobenius matrix bounds."
+      "resolution": "Resolved as pass for the floating-point abstraction, subject to separately recorded extra restrictions. D025 gives the componentwise high-precision residual and update models; D033 gives the low-precision cast, gamma-based MGS projection model, low-precision updates and normalization, product and least-squares bounds, and correction formation. Real-valued modeling excludes exceptional values at the same abstraction level as the paper's standard model.",
+      "primary_evidence": "PDF page 4 invokes the standard floating-point model, and PDF pages 40-41 give equations (6.19)-(6.20), the low cast, and low-precision MGS specialization. D025 and D033 encode those models. The additional uHigh <= uLow and exact GammaValid requirements narrow applicability but do not leave the numerical model uninterpretable."
     },
     {
-      "item": "round-trip S14 is unclear",
-      "resolution": "S14 passes in isolation. An additive remainder that is Big-O of (uHigh+uLow)^2 is a defensible rigorous interpretation of inequalities that discard negligible second-order terms, although the paper does not uniquely prescribe this filter formulation.",
-      "primary_evidence": "PDF page 4 explicitly states that its comparison symbols drop negligible second-order terms. D008/D024 make that convention explicit through an O(scale^2) remainder."
+      "item": "Bundling P16Theorem41RestartResult",
+      "resolution": "This is a conclusion-bearing applicability restriction, not merely a legitimate invocation of an already-proved theorem. Invoking Theorem 4.1 in the proof would construct its consequence from operation hypotheses; here every admissible restart must already contain a record whose constructor requires the decisive backward_step and forward_step inequalities.",
+      "primary_evidence": "The target imports definitions rather than a theorem producing P16Theorem41RestartResult. D033 takes theorem41 as its final constructor argument, and D034 requires both local error recurrences as constructor premises. In the PDF, Theorem 6.3 verifies the models and key dimension before applying Theorem 4.1 to obtain the result."
     },
     {
-      "item": "round-trip S15 is unclear",
-      "resolution": "S15 fails. The finite-dimensional real setting is preserved, but replacing fixed-precision executions by arbitrary filter-indexed families is not merely a scalar-field or dimension specialization and materially restricts applicability.",
-      "primary_evidence": "Theorem 6.3 is stated for fixed unit roundoffs. D016 requires uHigh and uLow to converge to zero and requires one certificate whose key dimension works across every t."
+      "item": "Uniform dimensionFactor",
+      "resolution": "dimensionFactor is a genuine uniform numerical envelope for the encoded restart coefficients because one value is shared by all restarts and D033 bounds each local coefficient combination by it. It is nevertheless not a faithful representation of c(n,k_i): nothing constrains it to be a low-degree function of n and k_i or independent of numerical run data.",
+      "primary_evidence": "D033 requires dimension_factor_bound and every restart receives the same run.dimensionFactor. D025 otherwise constrains it only by nonnegativity and related numerical bounds. PDF page 4 defines c(n,k) as a dimension-only low-degree polynomial, while PDF page 41 supplies potentially varying key indices k_i."
     },
     {
-      "item": "round-trip S16 is unclear",
-      "resolution": "The declaration is not logically empty, but S16 fails the intended-reason check. Exact positive-dimensional identity-system families can satisfy the records, while the difficult MGS contraction properties are already constructor hypotheses.",
-      "primary_evidence": "D016 permits positive-dimensional exact systems, and D037 permits keyDimension=n, zero perturbations, zero factors, and exact correction inequalities. PDF pages 27-29 and 40-41 instead derive the key-dimension and contraction properties from MGS analysis."
+      "item": "Fixed-precision second-order semantics",
+      "resolution": "p16UniformSecondOrder has nonvacuous fixed-run content: with positive precisions it requires the remainder sequence to be uniformly bounded after rescaling. It does not establish second-order asymptotic behavior, because its constant is selected after uHigh and uLow are fixed and may depend arbitrarily on those precisions and the run.",
+      "primary_evidence": "D023 is Exists C >= 0, forall i, |remainder i| <= C*(uHigh+uLow)^2. PDF page 4 only says that lesssim drops negligible second-order terms and supplies no exact remainder sequence or cross-precision uniformity."
+    },
+    {
+      "item": "Affine and geometric attainable levels",
+      "resolution": "The Lean formulas retain both error notions and the algebraic numerators d*uHigh and d*uHigh*kappa_F. They do not retain the source attainable levels as conclusions: the exact envelope approaches (floor + quadratic allowance)/(1-lambda), and the target assumes only lambda < 1, so this can be arbitrarily larger than the printed floors.",
+      "primary_evidence": "D020 defines the denominator 1-lambda in both envelopes. Theorem 6.3, equation (6.18), gives backward and forward levels of order c(n,k)uHigh and c(n,k)uHigh*kappa_F under the stronger qualitative condition Lambda much less than one."
+    },
+    {
+      "item": "Contraction-factor direction",
+      "resolution": "The implication direction of the coefficient bound is preserved: Lean uses the common lambda as an upper coefficient in both step inequalities. This agrees with the proof-supported relation max(Lambda_1^(i), Lambda_2^(i)) <= Lambda, despite the source's directionally awkward phrase factor at least Lambda.",
+      "primary_evidence": "The final display on PDF page 41 states max(Lambda_1^(i), Lambda_2^(i)) <= Lambda. The Lean target places p16FixedMixedContraction multiplied by the current error on the upper-bound side of both recurrences."
     }
   ],
   "implications": {
     "lean_implies_paper": {
       "verdict": "no",
-      "reasoning": "Lean proves per-index eventual recurrences only for filter-indexed runs already carrying abstract correction certificates. It does not establish that a fixed nonzero-precision fully stored MGS-GMRES execution supplies such a run, nor does it give one fixed precision at which every restart recurrence and attainable-floor conclusion hold."
+      "reasoning": "The Lean proposition covers only runs already carrying exact local convergence certificates and uniform remainder bounds, and D033 admits basis processes not linked to the cast residual as the starting MGS-Arnoldi vector. Its unrestricted data-dependent dimensionFactor and lambda<1 envelope also do not yield Theorem 6.3 for every source execution with a dimension-polynomial c(n,k_i) and the printed attainable levels."
     },
     "paper_implies_lean": {
       "verdict": "no",
-      "reasoning": "The paper's fixed-precision theorem does not establish the declaration's arbitrary-filter family statement, a t-uniform key dimension, exact shared P(n,n), or explicit per-index Big-O witnesses. It also does not assert the result for abstract certificate-bearing runs unrelated to MGS generation."
+      "reasoning": "The paper's qualitative first-order theorem does not provide exact uniformly quadratic remainder sequences at fixed precisions, pre-existing P16Theorem41RestartResult records, one fixed run-level dimensionFactor, or the exact all-index geometric envelopes required by Lean."
     }
   },
   "classification": "not-faithful-different",
   "accepted": false,
   "remaining_uncertainties": [
-    "The paper does not uniquely formalize its discarded second-order terms, so the precise joint Big-O scale and filter semantics are not determined by the source.",
-    "Theorem 6.3 suppresses the restart dependence of c(n,k_i), so the exact intended uniformization over varying key dimensions is not explicit."
+    "The paper leaves k unbound in c(n,k) in Theorem 6.3 while supplying potentially varying k_i in the proof, so it does not determine a unique exact uniform polynomial envelope.",
+    "The source's lesssim and much-less-than notation does not determine explicit remainder functions, constants, or a numerical contraction threshold.",
+    "The low-cast display on printed page 1979 omits the norm subscript on its right-hand side; interpreting it as the 2-norm, as Lean does, is strongly supported by condition (3.2) but is not typographically explicit.",
+    "The paper calls the precisions high and low but does not print uHigh <= uLow as a separate hypothesis."
   ],
   "findings": [
     {
       "severity": "critical",
-      "category": "algorithm-linkage-and-assumed-core-result",
-      "evidence": "PDF pages 27-29 derive the MGS key iteration and modular bounds, and PDF pages 40-41 use them to bound both contraction factors. D037 neither requires MGS generation nor proves these properties; it assumes the bounded factors and both correction-level contraction inequalities.",
-      "impact": "The declaration states an abstract certificate-composition result rather than Theorem 6.3 for the specified algorithm."
+      "category": "conclusion-bearing applicability restriction",
+      "evidence": "D033 requires a theorem41 field, and D034 constructs that field only after receiving the backward and forward one-step inequalities, their factors, high-precision coefficients, and exact remainders. The PDF derives these consequences by applying Theorem 4.1 after verifying the mixed-precision models and MGS key dimension.",
+      "impact": "The target proves its central recurrence only for runs that already assume that recurrence in restart-specific form. This reduced applicability cannot be counted as a genuine stronger theorem."
     },
     {
       "severity": "major",
-      "category": "precision-and-quantifier-scope",
-      "evidence": "The paper applies at every restart of one execution with fixed uhigh and ulow. Lean uses t-dependent precisions tending to zero and has forall i outside a separately existential and eventual first-order inequality.",
-      "impact": "No single fixed nonzero precision parameter is guaranteed to satisfy all restart recurrences, so repeated geometric contraction to the stated floors cannot be recovered."
+      "category": "incomplete MGS-GMRES linkage",
+      "evidence": "D033 connects residualLow to the cast residual but contains no equation linking residualLow to the first basis vector. The source Arnoldi relation begins from [b, A V_k], and Section 6.3 applies MGS-GMRES to the cast correction right-hand side.",
+      "impact": "Admissible Lean restarts may be certified modular basis solves rather than executions of the selected restarted MGS-GMRES algorithm."
     },
     {
       "severity": "major",
-      "category": "low-precision-operation-model",
-      "evidence": "Paper condition (3.3) is columnwise, and Section 6.3 requires all correction operations to be low-precision MGS-GMRES. D037 uses separate RHS and aggregate Frobenius perturbation bounds and leaves its accuracy functions unconnected to uLow operation models.",
-      "impact": "The formal certificate does not preserve the selected algorithm's modular floating-point hypotheses."
+      "category": "dimension-factor semantics",
+      "evidence": "Every restart shares dimensionFactor and must satisfy a local bound by it, but the declarations impose no low-degree polynomial dependence on n and k_i and no independence from basis conditioning or other run data. The paper reserves c(n,k) for dimension-only low-degree polynomials.",
+      "impact": "The contraction and floors may contain arbitrary problem-dependent factors absent from the source claim."
     },
     {
       "severity": "major",
-      "category": "constant-and-key-dimension-model",
-      "evidence": "The paper uses unspecified low-degree c(n,k_i). Lean uses one nonnegative-coefficient polynomial evaluated at P(n,n), with no degree bound and with keyDimension fixed across t.",
-      "impact": "The inner-dimension dependence and low-degree worst-case constant convention are materially changed."
+      "category": "unsupported higher-order exactification",
+      "evidence": "p16UniformSecondOrder chooses its constant after fixed uHigh and uLow, whereas the PDF merely discards unspecified negligible second-order terms.",
+      "impact": "The predicate does not express the cross-precision quadratic asymptotics suggested by the source and is additionally assumed for the stored theorem remainders."
     },
     {
-      "severity": "note",
-      "category": "higher-order-terms",
-      "evidence": "The paper explicitly discards negligible second-order terms, while D008/D024 represent them by additive O((uHigh+uLow)^2) remainders.",
-      "impact": "This choice is reasonable in isolation and is not a basis for rejection, but its exact filter semantics are stronger and more specific than the paper states."
+      "severity": "major",
+      "category": "attainable-level mismatch",
+      "evidence": "The Lean envelopes contain division by 1-lambda under only 0 <= lambda < 1. Equation (6.18) gives the two printed levels under Lambda much less than one without such a displayed denominator.",
+      "impact": "For lambda near one, the formal stationary bounds can be arbitrarily larger than both source attainable levels."
+    },
+    {
+      "severity": "minor",
+      "category": "extra execution restrictions",
+      "evidence": "D025 requires uHigh <= uLow, exact GammaValid conditions, an infinite restart certificate sequence, and uniform fixed-run remainder bounds. These are not all printed hypotheses of Theorem 6.3.",
+      "impact": "The formal domain is narrower than the selected paper theorem independently of the conclusion-bearing theorem41 field."
     }
   ],
-  "rationale": "The declaration correctly represents the finite real system, exact and computed quantities, Euclidean and Frobenius norms, backward and forward error definitions, useful contraction inequality direction, and first-order floor scales. The complete dossier nevertheless shows that it replaces the fixed-precision fully stored MGS-GMRES theorem with a nonuniform asymptotic statement over abstract runs whose crucial correction contractions are already assumptions. Because actual paper executions are not supplied by the Lean proposition and the paper does not cover all Lean certificate families, neither implication holds."
+  "rationale": "The declaration correctly represents the finite real system, exact backward and forward error quotients, Frobenius condition number, high-precision residual/update models, low residual cast, both floor formulas, and the proof-supported upper direction for the contraction coefficient. The complete dossiers also resolve D024, D033, S06, and S11 without residual dependency opacity. Nevertheless, the theorem is propositionally different from Theorem 6.3: it assumes restart-local convergence records, omits the residual initialization that identifies the basis as the selected MGS-GMRES execution, permits a non-polynomial run-dependent dimension factor, replaces qualitative discarded terms with fixed-precision exact remainders, and concludes stationary envelopes that do not preserve the printed attainable levels under its weaker lambda<1 premise. Consequently neither statement implies the other."
 }
