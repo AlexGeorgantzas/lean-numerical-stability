@@ -1,0 +1,44 @@
+{
+  "evidence_policy": "Use the referenced PDF and surrounding paper context as evidence. Do not use context.md or task.json paraphrases as semantic evidence.",
+  "paper_path": "paper_bencmark/reference_papers/P09_Roundoff Error Analysis of the Fast Fourier Transform.pdf",
+  "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
+  "paper_version": "published journal version; volume 25, issue 116, October 1971, printed pages 757-768",
+  "source_locations": [
+    {
+      "anchor": "equation (1.1) and the complex RMS and maximum norm definitions",
+      "pdf_page": 1,
+      "printed_page": "757",
+      "role": "positive-sign complex Fourier convention and norm semantics",
+      "section": "1. Introduction"
+    },
+    {
+      "anchor": "equations (2.1)-(2.2) and the following variant discussion",
+      "pdf_page": 2,
+      "printed_page": "758",
+      "role": "unnormalized Fourier matrix and mixed-radix FFT factorization",
+      "section": "2. Matrix Factorization and the Fast Fourier Transform"
+    },
+    {
+      "anchor": "equations (3.1)-(3.2), absolute trigonometric model, Theorem 1, and K(N,gamma)",
+      "pdf_page": 3,
+      "printed_page": "759",
+      "role": "floating-point model and inherited forward-error constant",
+      "section": "3. Roundoff Errors in the Fast Fourier Transform"
+    },
+    {
+      "anchor": "assumption fl(x)=x before equation (3.6)",
+      "pdf_page": 5,
+      "printed_page": "761",
+      "role": "exact input representation for the inherited analysis",
+      "section": "3. Roundoff Errors in the Fast Fourier Transform"
+    },
+    {
+      "anchor": "prose assertion e = T delta and the two following unnumbered bounds",
+      "pdf_page": 12,
+      "printed_page": "768",
+      "role": "fictional input perturbation and its norm certificates",
+      "section": "6. Conclusion"
+    }
+  ],
+  "task_id": "P09-T2"
+}

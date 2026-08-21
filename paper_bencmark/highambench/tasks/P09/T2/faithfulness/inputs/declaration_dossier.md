@@ -8,94 +8,126 @@ Judges must interpret every dependency entry and may not infer semantics from na
 ```lean
 theorem p09_t2_fictional_input_backward_error
     {n : ℕ} [NeZero n]
-    (plan : P09MixedRadixFftPlan n) (model : P09WilkinsonModel)
-    (run : P09MixedRadixFftRun plan model)
-    (forward : P09TheoremOneRmsCertificate run) :
-    ∃ δ : ZMod n → ℂ,
-      p09FftRoundoffError run = p09FourierTransform δ ∧
-      p09ComplexRms δ =
-        p09ComplexRms (p09FftRoundoffError run) / Real.sqrt (n : ℝ) ∧
-      p09ComplexRms δ ≤
-        model.epsilon * p09K plan model.gamma * p09ComplexRms run.input +
-          (forward.secondOrderCoeff * model.epsilon ^ 2) /
-            Real.sqrt (n : ℝ) ∧
-      p09ComplexMax δ ≤
-        model.epsilon * Real.sqrt (n : ℝ) * p09K plan model.gamma *
-            p09ComplexRms run.input +
-          forward.secondOrderCoeff * model.epsilon ^ 2
+    (plan : P09MixedRadixFftPlan n) (γ : ℝ)
+    (family : P09AsymptoticFftFamily plan γ)
+    (forward : P09TheoremOneRmsAsymptotic family) :
+    ∃ δ : P09PositiveEpsilon → ZMod n → ℂ,
+      (∀ ε,
+        p09FamilyFftRoundoffError family ε = p09FourierTransform (δ ε) ∧
+        p09ComplexRms (δ ε) =
+          p09ComplexRms (p09FamilyFftRoundoffError family ε) /
+            Real.sqrt (n : ℝ)) ∧
+      ∀ ε, ε.1 ≤ forward.radius →
+        p09ComplexRms (δ ε) ≤
+            ε.1 * p09K plan γ * p09ComplexRms family.input +
+              (forward.secondOrderCoeff * ε.1 ^ 2) /
+                Real.sqrt (n : ℝ) ∧
+          p09ComplexMax (δ ε) ≤
+            ε.1 * Real.sqrt (n : ℝ) * p09K plan γ *
+                p09ComplexRms family.input +
+              forward.secondOrderCoeff * ε.1 ^ 2
 ```
 
 ## Elaborated target type
 
 ```lean
-∀ {n : Nat} [inst : NeZero n] (plan : HighamBench.P09MixedRadixFftPlan n) (model : HighamBench.P09WilkinsonModel)
-  (run : HighamBench.P09MixedRadixFftRun plan model) (forward : HighamBench.P09TheoremOneRmsCertificate run),
+∀ {n : Nat} [inst : NeZero n] (plan : HighamBench.P09MixedRadixFftPlan n) (γ : Real)
+  (family : HighamBench.P09AsymptoticFftFamily plan γ) (forward : HighamBench.P09TheoremOneRmsAsymptotic family),
   Exists fun δ =>
-    And (Eq (HighamBench.p09FftRoundoffError run) (HighamBench.p09FourierTransform δ))
-      (And
-        (Eq (HighamBench.p09ComplexRms δ)
-          (instHDiv.hDiv (HighamBench.p09ComplexRms (HighamBench.p09FftRoundoffError run)) n.cast.sqrt))
-        (And
-          (Real.instLE.le (HighamBench.p09ComplexRms δ)
-            (instHAdd.hAdd
-              (instHMul.hMul (instHMul.hMul model.epsilon (HighamBench.p09K plan model.gamma))
-                (HighamBench.p09ComplexRms run.input))
-              (instHDiv.hDiv (instHMul.hMul forward.secondOrderCoeff (instHPow.hPow model.epsilon 2)) n.cast.sqrt)))
-          (Real.instLE.le (HighamBench.p09ComplexMax δ)
-            (instHAdd.hAdd
-              (instHMul.hMul
-                (instHMul.hMul (instHMul.hMul model.epsilon n.cast.sqrt) (HighamBench.p09K plan model.gamma))
-                (HighamBench.p09ComplexRms run.input))
-              (instHMul.hMul forward.secondOrderCoeff (instHPow.hPow model.epsilon 2))))))
+    And
+      (∀ (ε : HighamBench.P09PositiveEpsilon),
+        And (Eq (HighamBench.p09FamilyFftRoundoffError family ε) (HighamBench.p09FourierTransform (δ ε)))
+          (Eq (HighamBench.p09ComplexRms (δ ε))
+            (instHDiv.hDiv (HighamBench.p09ComplexRms (HighamBench.p09FamilyFftRoundoffError family ε)) n.cast.sqrt)))
+      (∀ (ε : HighamBench.P09PositiveEpsilon),
+        Real.instLE.le ε.val forward.radius →
+          And
+            (Real.instLE.le (HighamBench.p09ComplexRms (δ ε))
+              (instHAdd.hAdd
+                (instHMul.hMul (instHMul.hMul ε.val (HighamBench.p09K plan γ)) (HighamBench.p09ComplexRms family.input))
+                (instHDiv.hDiv (instHMul.hMul forward.secondOrderCoeff (instHPow.hPow ε.val 2)) n.cast.sqrt)))
+            (Real.instLE.le (HighamBench.p09ComplexMax (δ ε))
+              (instHAdd.hAdd
+                (instHMul.hMul (instHMul.hMul (instHMul.hMul ε.val n.cast.sqrt) (HighamBench.p09K plan γ))
+                  (HighamBench.p09ComplexRms family.input))
+                (instHMul.hMul forward.secondOrderCoeff (instHPow.hPow ε.val 2)))))
 ```
 
 ## Fully explicit elaborated target type
 
 ```lean
 ∀ {n : Nat} [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n]
-  (plan : @HighamBench.P09MixedRadixFftPlan n inst) (model : HighamBench.P09WilkinsonModel)
-  (run : @HighamBench.P09MixedRadixFftRun n inst plan model)
-  (forward : @HighamBench.P09TheoremOneRmsCertificate n inst plan model run),
-  @Exists.{1} (ZMod n → Complex) fun (δ : ZMod n → Complex) =>
+  (plan : @HighamBench.P09MixedRadixFftPlan n inst) (γ : Real)
+  (family : @HighamBench.P09AsymptoticFftFamily n inst plan γ)
+  (forward : @HighamBench.P09TheoremOneRmsAsymptotic n inst plan γ family),
+  @Exists.{1} (HighamBench.P09PositiveEpsilon → ZMod n → Complex)
+    fun (δ : HighamBench.P09PositiveEpsilon → ZMod n → Complex) =>
     And
-      (@Eq.{1} (ZMod n → Complex) (@HighamBench.p09FftRoundoffError n inst plan model run)
-        (@HighamBench.p09FourierTransform n inst δ))
-      (And
-        (@Eq.{1} Real (@HighamBench.p09ComplexRms n inst δ)
-          (@HDiv.hDiv.{0, 0, 0} Real Real Real (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-            (@HighamBench.p09ComplexRms n inst (@HighamBench.p09FftRoundoffError n inst plan model run))
-            (Real.sqrt (@Nat.cast.{0} Real Real.instNatCast n))))
-        (And
-          (@LE.le.{0} Real Real.instLE (@HighamBench.p09ComplexRms n inst δ)
-            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                  (HighamBench.P09WilkinsonModel.epsilon model)
-                  (@HighamBench.p09K n inst plan (HighamBench.P09WilkinsonModel.gamma model)))
-                (@HighamBench.p09ComplexRms n inst (@HighamBench.P09MixedRadixFftRun.input n inst plan model run)))
-              (@HDiv.hDiv.{0, 0, 0} Real Real Real
-                (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
-                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                  (@HighamBench.P09TheoremOneRmsCertificate.secondOrderCoeff n inst plan model run forward)
-                  (@HPow.hPow.{0, 0, 0} Real Nat Real
-                    (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                    (HighamBench.P09WilkinsonModel.epsilon model)
-                    (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))
-                (Real.sqrt (@Nat.cast.{0} Real Real.instNatCast n)))))
-          (@LE.le.{0} Real Real.instLE (@HighamBench.p09ComplexMax n inst δ)
-            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+      (∀ (ε : HighamBench.P09PositiveEpsilon),
+        And
+          (@Eq.{1} (ZMod n → Complex) (@HighamBench.p09FamilyFftRoundoffError n inst plan γ family ε)
+            (@HighamBench.p09FourierTransform n inst (δ ε)))
+          (@Eq.{1} Real (@HighamBench.p09ComplexRms n inst (δ ε))
+            (@HDiv.hDiv.{0, 0, 0} Real Real Real
+              (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+              (@HighamBench.p09ComplexRms n inst (@HighamBench.p09FamilyFftRoundoffError n inst plan γ family ε))
+              (Real.sqrt (@Nat.cast.{0} Real Real.instNatCast n)))))
+      (∀ (ε : HighamBench.P09PositiveEpsilon),
+        @LE.le.{0} Real Real.instLE
+            (@Subtype.val.{1} Real
+              (fun (ε : Real) =>
+                @LT.lt.{0} Real Real.instLT (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                  ε)
+              ε)
+            (@HighamBench.P09TheoremOneRmsAsymptotic.radius n inst plan γ family forward) →
+          And
+            (@LE.le.{0} Real Real.instLE (@HighamBench.p09ComplexRms n inst (δ ε))
+              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
                 (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
                   (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                    (HighamBench.P09WilkinsonModel.epsilon model) (Real.sqrt (@Nat.cast.{0} Real Real.instNatCast n)))
-                  (@HighamBench.p09K n inst plan (HighamBench.P09WilkinsonModel.gamma model)))
-                (@HighamBench.p09ComplexRms n inst (@HighamBench.P09MixedRadixFftRun.input n inst plan model run)))
-              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                (@HighamBench.P09TheoremOneRmsCertificate.secondOrderCoeff n inst plan model run forward)
-                (@HPow.hPow.{0, 0, 0} Real Nat Real
-                  (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                  (HighamBench.P09WilkinsonModel.epsilon model)
-                  (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))))))
+                    (@Subtype.val.{1} Real
+                      (fun (ε : Real) =>
+                        @LT.lt.{0} Real Real.instLT
+                          (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) ε)
+                      ε)
+                    (@HighamBench.p09K n inst plan γ))
+                  (@HighamBench.p09ComplexRms n inst (@HighamBench.P09AsymptoticFftFamily.input n inst plan γ family)))
+                (@HDiv.hDiv.{0, 0, 0} Real Real Real
+                  (@instHDiv.{0} Real (@DivInvMonoid.toDiv.{0} Real Real.instDivInvMonoid))
+                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                    (@HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff n inst plan γ family forward)
+                    (@HPow.hPow.{0, 0, 0} Real Nat Real
+                      (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
+                      (@Subtype.val.{1} Real
+                        (fun (ε : Real) =>
+                          @LT.lt.{0} Real Real.instLT
+                            (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) ε)
+                        ε)
+                      (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))))
+                  (Real.sqrt (@Nat.cast.{0} Real Real.instNatCast n)))))
+            (@LE.le.{0} Real Real.instLE (@HighamBench.p09ComplexMax n inst (δ ε))
+              (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                      (@Subtype.val.{1} Real
+                        (fun (ε : Real) =>
+                          @LT.lt.{0} Real Real.instLT
+                            (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) ε)
+                        ε)
+                      (Real.sqrt (@Nat.cast.{0} Real Real.instNatCast n)))
+                    (@HighamBench.p09K n inst plan γ))
+                  (@HighamBench.p09ComplexRms n inst (@HighamBench.P09AsymptoticFftFamily.input n inst plan γ family)))
+                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                  (@HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff n inst plan γ family forward)
+                  (@HPow.hPow.{0, 0, 0} Real Nat Real
+                    (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
+                    (@Subtype.val.{1} Real
+                      (fun (ε : Real) =>
+                        @LT.lt.{0} Real Real.instLT
+                          (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) ε)
+                      ε)
+                    (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2))))))))
 ```
 
 ## Local import graph
@@ -108,7 +140,61 @@ theorem p09_t2_fictional_input_backward_error
 
 `local` entries are recursively followed through their types and bodies. `external-frontier` entries are the exact Lean/mathlib declarations where that recursive traversal stops; their types and one-level bodies are still shown.
 
-### D001: `HighamBench.P09MixedRadixFftPlan`
+### D001: `HighamBench.P09AsymptoticFftFamily`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `1`
+- Semantic SHA-256: `624309614608eab109d6860b1958ff224ec1d6744792aed9155427c844577e27`
+
+Type:
+
+```lean
+{n : Nat} → [inst : NeZero n] → HighamBench.P09MixedRadixFftPlan n → Real → Type
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    (plan : @HighamBench.P09MixedRadixFftPlan n inst) → (γ : Real) → Type
+```
+
+### D002: `HighamBench.P09AsymptoticFftFamily.input`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `a8ccec231ca4591b67776a2041e814c8595826d651be1068488fa94f7eb12766`
+
+Type:
+
+```lean
+{n : Nat} →
+  [inst : NeZero n] →
+    {plan : HighamBench.P09MixedRadixFftPlan n} →
+      {γ : Real} → HighamBench.P09AsymptoticFftFamily plan γ → ZMod n → Complex
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
+      {γ : Real} → (self : @HighamBench.P09AsymptoticFftFamily n inst plan γ) → ZMod n → Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n [NeZero n] plan γ self => self.2
+```
+
+### D003: `HighamBench.P09MixedRadixFftPlan`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
@@ -128,129 +214,13 @@ Fully explicit type:
 (n : Nat) → [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] → Type
 ```
 
-### D002: `HighamBench.P09MixedRadixFftRun`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
-- Semantic SHA-256: `7ae7362819755681e59b02d02ec4e3a4154cc95d5c14aed537d867f7065735fc`
-
-Type:
-
-```lean
-{n : Nat} → [inst : NeZero n] → HighamBench.P09MixedRadixFftPlan n → HighamBench.P09WilkinsonModel → Type
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
-    (plan : @HighamBench.P09MixedRadixFftPlan n inst) → (model : HighamBench.P09WilkinsonModel) → Type
-```
-
-### D003: `HighamBench.P09MixedRadixFftRun.input`
+### D004: `HighamBench.P09PositiveEpsilon`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `41825d1e7ca619b68168a447008455954af8aff1448bd885c5188ba22e07285b`
-
-Type:
-
-```lean
-{n : Nat} →
-  [inst : NeZero n] →
-    {plan : HighamBench.P09MixedRadixFftPlan n} →
-      {model : HighamBench.P09WilkinsonModel} → HighamBench.P09MixedRadixFftRun plan model → ZMod n → Complex
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
-    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
-      {model : HighamBench.P09WilkinsonModel} →
-        (self : @HighamBench.P09MixedRadixFftRun n inst plan model) → ZMod n → Complex
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n [NeZero n] plan model self => self.1
-```
-
-### D004: `HighamBench.P09TheoremOneRmsCertificate`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
-- Semantic SHA-256: `2a93d261b1e0835068048441e7fecaaadb0ddc2f50207fbb89416fe61cbafcf5`
-
-Type:
-
-```lean
-{n : Nat} →
-  [inst : NeZero n] →
-    {plan : HighamBench.P09MixedRadixFftPlan n} →
-      {model : HighamBench.P09WilkinsonModel} → HighamBench.P09MixedRadixFftRun plan model → Type
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
-    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
-      {model : HighamBench.P09WilkinsonModel} → (run : @HighamBench.P09MixedRadixFftRun n inst plan model) → Type
-```
-
-### D005: `HighamBench.P09TheoremOneRmsCertificate.secondOrderCoeff`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `1`
-- Semantic SHA-256: `c13823fd0a3bf254b95cf34aa35d3ac2b624980ca5a5985e929377f28e28238c`
-
-Type:
-
-```lean
-{n : Nat} →
-  [inst : NeZero n] →
-    {plan : HighamBench.P09MixedRadixFftPlan n} →
-      {model : HighamBench.P09WilkinsonModel} →
-        {run : HighamBench.P09MixedRadixFftRun plan model} → HighamBench.P09TheoremOneRmsCertificate run → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
-    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
-      {model : HighamBench.P09WilkinsonModel} →
-        {run : @HighamBench.P09MixedRadixFftRun n inst plan model} →
-          (self : @HighamBench.P09TheoremOneRmsCertificate n inst plan model run) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n [NeZero n] plan model run self => self.1
-```
-
-### D006: `HighamBench.P09WilkinsonModel`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `1`
-- Semantic SHA-256: `ae2ce171d4af084f887909ba7d091242f615341789671c72cf38636309bf3c6f`
+- Semantic SHA-256: `fab8ea92750f676b1739e313a11b4011e5965ac39ba29a651f9bba5f85f67c7b`
 
 Type:
 
@@ -264,59 +234,108 @@ Fully explicit type:
 Type
 ```
 
-### D007: `HighamBench.P09WilkinsonModel.epsilon`
+Definition body (one-level semantic boundary):
+
+```lean
+Subtype fun ε => Real.instLT.lt 0 ε
+```
+
+### D005: `HighamBench.P09TheoremOneRmsAsymptotic`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `abbrev`
+- Declaration kind: `inductive`
 - Distance from target type: `1`
-- Semantic SHA-256: `afcd2bd12fb818dddebe74e72bfdb4939ca7e7ec5eace06ba903d8bb16522de0`
+- Semantic SHA-256: `a7353e39e5125772dc845ed25ca7bb6e9a3b28e73762a2342a052a397aeda938`
 
 Type:
 
 ```lean
-HighamBench.P09WilkinsonModel → Real
+{n : Nat} →
+  [inst : NeZero n] →
+    {plan : HighamBench.P09MixedRadixFftPlan n} → {γ : Real} → HighamBench.P09AsymptoticFftFamily plan γ → Type
 ```
 
 Fully explicit type:
 
 ```lean
-(self : HighamBench.P09WilkinsonModel) → Real
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
+      {γ : Real} → (family : @HighamBench.P09AsymptoticFftFamily n inst plan γ) → Type
 ```
 
-Definition body (one-level semantic boundary):
-
-```lean
-fun self => self.1
-```
-
-### D008: `HighamBench.P09WilkinsonModel.gamma`
+### D006: `HighamBench.P09TheoremOneRmsAsymptotic.radius`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
 - Declaration kind: `abbrev`
 - Distance from target type: `1`
-- Semantic SHA-256: `3d920d708ae4d25f186c74885d8c6fa22ca6b3a16c98ff3446234ae6f769f2d7`
+- Semantic SHA-256: `2efbc7477360cecd48e9aa1f1e1b485888a92d048c08a01878f0d182933cf48f`
 
 Type:
 
 ```lean
-HighamBench.P09WilkinsonModel → Real
+{n : Nat} →
+  [inst : NeZero n] →
+    {plan : HighamBench.P09MixedRadixFftPlan n} →
+      {γ : Real} →
+        {family : HighamBench.P09AsymptoticFftFamily plan γ} → HighamBench.P09TheoremOneRmsAsymptotic family → Real
 ```
 
 Fully explicit type:
 
 ```lean
-(self : HighamBench.P09WilkinsonModel) → Real
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
+      {γ : Real} →
+        {family : @HighamBench.P09AsymptoticFftFamily n inst plan γ} →
+          (self : @HighamBench.P09TheoremOneRmsAsymptotic n inst plan γ family) → Real
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun self => self.3
+fun n [NeZero n] plan γ family self => self.3
 ```
 
-### D009: `HighamBench.p09ComplexMax`
+### D007: `HighamBench.P09TheoremOneRmsAsymptotic.secondOrderCoeff`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `eaf5677ffc67054a6bfdff3490b04a6547a1defc0e83b41e6da32b56fd148691`
+
+Type:
+
+```lean
+{n : Nat} →
+  [inst : NeZero n] →
+    {plan : HighamBench.P09MixedRadixFftPlan n} →
+      {γ : Real} →
+        {family : HighamBench.P09AsymptoticFftFamily plan γ} → HighamBench.P09TheoremOneRmsAsymptotic family → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
+      {γ : Real} →
+        {family : @HighamBench.P09AsymptoticFftFamily n inst plan γ} →
+          (self : @HighamBench.P09TheoremOneRmsAsymptotic n inst plan γ family) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n [NeZero n] plan γ family self => self.1
+```
+
+### D008: `HighamBench.p09ComplexMax`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
@@ -342,7 +361,7 @@ Definition body (one-level semantic boundary):
 fun {n} [NeZero n] x => Pi.normedRing.norm x
 ```
 
-### D010: `HighamBench.p09ComplexRms`
+### D009: `HighamBench.p09ComplexRms`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
@@ -368,13 +387,13 @@ Definition body (one-level semantic boundary):
 fun {n} [NeZero n] x => instHDiv.hDiv (HighamBench.p09ComplexNorm2 x) n.cast.sqrt
 ```
 
-### D011: `HighamBench.p09FftRoundoffError`
+### D010: `HighamBench.p09FamilyFftRoundoffError`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
 - Declaration kind: `def`
 - Distance from target type: `1`
-- Semantic SHA-256: `981fe135aa4ac07b6c125218729418f35843c34d89716954869c6e22702e0527`
+- Semantic SHA-256: `e7fd30b28907e7782859b6ab12e85ee50e87262018fe483c10d6d1cf03ff4e4c`
 
 Type:
 
@@ -382,7 +401,7 @@ Type:
 {n : Nat} →
   [inst : NeZero n] →
     {plan : HighamBench.P09MixedRadixFftPlan n} →
-      {model : HighamBench.P09WilkinsonModel} → HighamBench.P09MixedRadixFftRun plan model → ZMod n → Complex
+      {γ : Real} → HighamBench.P09AsymptoticFftFamily plan γ → HighamBench.P09PositiveEpsilon → ZMod n → Complex
 ```
 
 Fully explicit type:
@@ -391,18 +410,18 @@ Fully explicit type:
 {n : Nat} →
   [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
     {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
-      {model : HighamBench.P09WilkinsonModel} →
-        (run : @HighamBench.P09MixedRadixFftRun n inst plan model) → ZMod n → Complex
+      {γ : Real} →
+        (family : @HighamBench.P09AsymptoticFftFamily n inst plan γ) →
+          (ε : HighamBench.P09PositiveEpsilon) → ZMod n → Complex
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun {n} [NeZero n] {plan} {model} run =>
-  HighamBench.p09ComplexVecSub run.computedOutput (HighamBench.p09FourierTransform run.input)
+fun {n} [NeZero n] {plan} {γ} family ε => HighamBench.p09FftRoundoffError (family.run ε)
 ```
 
-### D012: `HighamBench.p09FourierTransform`
+### D011: `HighamBench.p09FourierTransform`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
@@ -430,7 +449,7 @@ fun {n} [NeZero n] x k =>
   Finset.univ.sum fun j => instHMul.hMul (AddChar.instFunLike.coe ZMod.stdAddChar (instHMul.hMul j k)) (x j)
 ```
 
-### D013: `HighamBench.p09K`
+### D012: `HighamBench.p09K`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
@@ -460,7 +479,136 @@ fun {n} [NeZero n] plan γ =>
     (instHMul.hMul (instHSub.hSub plan.stageCount.cast 1) (instHAdd.hAdd 3 (instHMul.hMul 2 γ)))
 ```
 
-### D014: `HighamBench.P09MixedRadixFftPlan.mk`
+### D013: `HighamBench.P09AsymptoticFftFamily.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `2`
+- Semantic SHA-256: `32371c3341e457a1487e33afe768edf86f3661444d5040ff553c448e9b3eaeda`
+
+Type:
+
+```lean
+{n : Nat} →
+  [inst : NeZero n] →
+    {plan : HighamBench.P09MixedRadixFftPlan n} →
+      {γ : Real} →
+        Real.instLE.le 0 γ →
+          (input : ZMod n → Complex) →
+            (model : HighamBench.P09PositiveEpsilon → HighamBench.P09WilkinsonModel) →
+              (∀ (ε : HighamBench.P09PositiveEpsilon), Eq (model ε).epsilon ε.val) →
+                (∀ (ε : HighamBench.P09PositiveEpsilon), Eq (model ε).gamma γ) →
+                  (run : (ε : HighamBench.P09PositiveEpsilon) → HighamBench.P09MixedRadixFftRun plan (model ε)) →
+                    (∀ (ε : HighamBench.P09PositiveEpsilon), Eq (run ε).input input) →
+                      HighamBench.P09AsymptoticFftFamily plan γ
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
+      {γ : Real} →
+        (gamma_nonneg :
+            @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) γ) →
+          (input : ZMod n → Complex) →
+            (model : HighamBench.P09PositiveEpsilon → HighamBench.P09WilkinsonModel) →
+              (model_epsilon :
+                  ∀ (ε : HighamBench.P09PositiveEpsilon),
+                    @Eq.{1} Real (HighamBench.P09WilkinsonModel.epsilon (model ε))
+                      (@Subtype.val.{1} Real
+                        (fun (ε : Real) =>
+                          @LT.lt.{0} Real Real.instLT
+                            (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) ε)
+                        ε)) →
+                (model_gamma :
+                    ∀ (ε : HighamBench.P09PositiveEpsilon),
+                      @Eq.{1} Real (HighamBench.P09WilkinsonModel.gamma (model ε)) γ) →
+                  (run :
+                      (ε : HighamBench.P09PositiveEpsilon) → @HighamBench.P09MixedRadixFftRun n inst plan (model ε)) →
+                    (run_input :
+                        ∀ (ε : HighamBench.P09PositiveEpsilon),
+                          @Eq.{1} (ZMod n → Complex)
+                            (@HighamBench.P09MixedRadixFftRun.input n inst plan (model ε) (run ε)) input) →
+                      @HighamBench.P09AsymptoticFftFamily n inst plan γ
+```
+
+### D014: `HighamBench.P09AsymptoticFftFamily.model`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `d248a5cebc573fb72a8499e1b19f93fd9eb29345f914e81b4334e5b0dc6185b7`
+
+Type:
+
+```lean
+{n : Nat} →
+  [inst : NeZero n] →
+    {plan : HighamBench.P09MixedRadixFftPlan n} →
+      {γ : Real} →
+        HighamBench.P09AsymptoticFftFamily plan γ → HighamBench.P09PositiveEpsilon → HighamBench.P09WilkinsonModel
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
+      {γ : Real} →
+        (self : @HighamBench.P09AsymptoticFftFamily n inst plan γ) →
+          HighamBench.P09PositiveEpsilon → HighamBench.P09WilkinsonModel
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n [NeZero n] plan γ self => self.3
+```
+
+### D015: `HighamBench.P09AsymptoticFftFamily.run`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `2`
+- Semantic SHA-256: `fc24d12bec69b1f519a38db40ede8e5e13817d12e2ee33ed12769122ac2fa7f8`
+
+Type:
+
+```lean
+{n : Nat} →
+  [inst : NeZero n] →
+    {plan : HighamBench.P09MixedRadixFftPlan n} →
+      {γ : Real} →
+        (self : HighamBench.P09AsymptoticFftFamily plan γ) →
+          (ε : HighamBench.P09PositiveEpsilon) → HighamBench.P09MixedRadixFftRun plan (self.model ε)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
+      {γ : Real} →
+        (self : @HighamBench.P09AsymptoticFftFamily n inst plan γ) →
+          (ε : HighamBench.P09PositiveEpsilon) →
+            @HighamBench.P09MixedRadixFftRun n inst plan
+              (@HighamBench.P09AsymptoticFftFamily.model n inst plan γ self ε)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n [NeZero n] plan γ self => self.6
+```
+
+### D016: `HighamBench.P09MixedRadixFftPlan.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
@@ -538,7 +686,7 @@ Fully explicit type:
                         @HighamBench.P09MixedRadixFftPlan n inst
 ```
 
-### D015: `HighamBench.P09MixedRadixFftPlan.stage`
+### D017: `HighamBench.P09MixedRadixFftPlan.stage`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
@@ -569,7 +717,7 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.3
 ```
 
-### D016: `HighamBench.P09MixedRadixFftPlan.stageCount`
+### D018: `HighamBench.P09MixedRadixFftPlan.stageCount`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
@@ -595,172 +743,6 @@ Definition body (one-level semantic boundary):
 
 ```lean
 fun n [NeZero n] self => self.1
-```
-
-### D017: `HighamBench.P09MixedRadixFftRun.computedOutput`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `2`
-- Semantic SHA-256: `8a6284773615ccf96b40105c5a8647e18595cfab6bdc478ec824720897d44104`
-
-Type:
-
-```lean
-{n : Nat} →
-  [inst : NeZero n] →
-    {plan : HighamBench.P09MixedRadixFftPlan n} →
-      {model : HighamBench.P09WilkinsonModel} → HighamBench.P09MixedRadixFftRun plan model → ZMod n → Complex
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
-    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
-      {model : HighamBench.P09WilkinsonModel} →
-        (self : @HighamBench.P09MixedRadixFftRun n inst plan model) → ZMod n → Complex
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n [NeZero n] plan model self => self.2
-```
-
-### D018: `HighamBench.P09MixedRadixFftRun.mk`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `2`
-- Semantic SHA-256: `3b190ded0477d5e81768b3d7c3e4a151c896a4ec1624c30281ec5d47382737dc`
-
-Type:
-
-```lean
-{n : Nat} →
-  [inst : NeZero n] →
-    {plan : HighamBench.P09MixedRadixFftPlan n} →
-      {model : HighamBench.P09WilkinsonModel} →
-        (input computedOutput : ZMod n → Complex) →
-          (stageState : Nat → ZMod n → Complex) →
-            (localError : Fin plan.stageCount → ZMod n → Complex) →
-              (localSecondOrderCoeff : Fin plan.stageCount → Real) →
-                (∀ (i : ZMod n), Eq (model.flInput (input i)) (input i)) →
-                  Eq (stageState 0) input →
-                    (∀ (i : Fin plan.stageCount),
-                        Eq (stageState (instHAdd.hAdd i.val 1))
-                          (HighamBench.p09ComplexVecAdd
-                            (HighamBench.p09MixedRadixStageApply (plan.stage i) (stageState i.val)) (localError i))) →
-                      Eq computedOutput (HighamBench.p09Permute plan.finalPermutation (stageState plan.stageCount)) →
-                        (∀ (i : Fin plan.stageCount), Real.instLE.le 0 (localSecondOrderCoeff i)) →
-                          (∀ (i : Fin plan.stageCount),
-                              Real.instLE.le (HighamBench.p09ComplexRms (localError i))
-                                (instHAdd.hAdd
-                                  (instHMul.hMul
-                                    (instHMul.hMul (instHMul.hMul model.epsilon (plan.stage i).radix.cast.sqrt)
-                                      (instHAdd.hAdd (HighamBench.p09Alpha (plan.stage i).radix model.gamma)
-                                        (ite (Eq (plan.stage i).useTwiddle Bool.true)
-                                          (instHAdd.hAdd 3 (instHMul.hMul 2 model.gamma)) 0)))
-                                    (HighamBench.p09ComplexRms (stageState i.val)))
-                                  (instHMul.hMul (localSecondOrderCoeff i) (instHPow.hPow model.epsilon 2)))) →
-                            HighamBench.P09MixedRadixFftRun plan model
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
-    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
-      {model : HighamBench.P09WilkinsonModel} →
-        (input computedOutput : ZMod n → Complex) →
-          (stageState : Nat → ZMod n → Complex) →
-            (localError : Fin (@HighamBench.P09MixedRadixFftPlan.stageCount n inst plan) → ZMod n → Complex) →
-              (localSecondOrderCoeff : Fin (@HighamBench.P09MixedRadixFftPlan.stageCount n inst plan) → Real) →
-                (input_exact :
-                    ∀ (i : ZMod n), @Eq.{1} Complex (HighamBench.P09WilkinsonModel.flInput model (input i)) (input i)) →
-                  (initial_state :
-                      @Eq.{1} (ZMod n → Complex)
-                        (stageState (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))) input) →
-                    (stage_step :
-                        ∀ (i : Fin (@HighamBench.P09MixedRadixFftPlan.stageCount n inst plan)),
-                          @Eq.{1} (ZMod n → Complex)
-                            (stageState
-                              (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
-                                (@Fin.val (@HighamBench.P09MixedRadixFftPlan.stageCount n inst plan) i)
-                                (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
-                            (@HighamBench.p09ComplexVecAdd n
-                              (@HighamBench.p09MixedRadixStageApply n inst
-                                (@HighamBench.P09MixedRadixFftPlan.stage n inst plan i)
-                                (stageState (@Fin.val (@HighamBench.P09MixedRadixFftPlan.stageCount n inst plan) i)))
-                              (localError i))) →
-                      (computed_output :
-                          @Eq.{1} (ZMod n → Complex) computedOutput
-                            (@HighamBench.p09Permute n (@HighamBench.P09MixedRadixFftPlan.finalPermutation n inst plan)
-                              (stageState (@HighamBench.P09MixedRadixFftPlan.stageCount n inst plan)))) →
-                        (local_second_order_nonneg :
-                            ∀ (i : Fin (@HighamBench.P09MixedRadixFftPlan.stageCount n inst plan)),
-                              @LE.le.{0} Real Real.instLE
-                                (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                                (localSecondOrderCoeff i)) →
-                          (local_error_bound :
-                              ∀ (i : Fin (@HighamBench.P09MixedRadixFftPlan.stageCount n inst plan)),
-                                @LE.le.{0} Real Real.instLE (@HighamBench.p09ComplexRms n inst (localError i))
-                                  (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                          (HighamBench.P09WilkinsonModel.epsilon model)
-                                          (Real.sqrt
-                                            (@Nat.cast.{0} Real Real.instNatCast
-                                              (@HighamBench.P09MixedRadixStage.radix n inst
-                                                (@HighamBench.P09MixedRadixFftPlan.stage n inst plan i)))))
-                                        (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                          (HighamBench.p09Alpha
-                                            (@HighamBench.P09MixedRadixStage.radix n inst
-                                              (@HighamBench.P09MixedRadixFftPlan.stage n inst plan i))
-                                            (HighamBench.P09WilkinsonModel.gamma model))
-                                          (@ite.{1} Real
-                                            (@Eq.{1} Bool
-                                              (@HighamBench.P09MixedRadixStage.useTwiddle n inst
-                                                (@HighamBench.P09MixedRadixFftPlan.stage n inst plan i))
-                                              Bool.true)
-                                            (instDecidableEqBool
-                                              (@HighamBench.P09MixedRadixStage.useTwiddle n inst
-                                                (@HighamBench.P09MixedRadixFftPlan.stage n inst plan i))
-                                              Bool.true)
-                                            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                                              (@OfNat.ofNat.{0} Real (nat_lit 3)
-                                                (@instOfNatAtLeastTwo.{0} Real (nat_lit 3) Real.instNatCast
-                                                  (@Nat.instAtLeastTwoHAddOfNat
-                                                    (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))
-                                                    (@Nat.instNeZeroSucc
-                                                      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))))
-                                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                                (@OfNat.ofNat.{0} Real (nat_lit 2)
-                                                  (@instOfNatAtLeastTwo.{0} Real (nat_lit 2) Real.instNatCast
-                                                    (@Nat.instAtLeastTwoHAddOfNat
-                                                      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
-                                                      (@Nat.instNeZeroSucc
-                                                        (@OfNat.ofNat.{0} Nat (nat_lit 0)
-                                                          (instOfNatNat (nat_lit 0)))))))
-                                                (HighamBench.P09WilkinsonModel.gamma model)))
-                                            (@OfNat.ofNat.{0} Real (nat_lit 0)
-                                              (@Zero.toOfNat0.{0} Real Real.instZero)))))
-                                      (@HighamBench.p09ComplexRms n inst
-                                        (stageState
-                                          (@Fin.val (@HighamBench.P09MixedRadixFftPlan.stageCount n inst plan) i))))
-                                    (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                                      (localSecondOrderCoeff i)
-                                      (@HPow.hPow.{0, 0, 0} Real Nat Real
-                                        (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                                        (HighamBench.P09WilkinsonModel.epsilon model)
-                                        (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2))))))) →
-                            @HighamBench.P09MixedRadixFftRun n inst plan model
 ```
 
 ### D019: `HighamBench.P09MixedRadixStage.radix`
@@ -791,13 +773,13 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.1
 ```
 
-### D020: `HighamBench.P09TheoremOneRmsCertificate.mk`
+### D020: `HighamBench.P09TheoremOneRmsAsymptotic.mk`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
 - Declaration kind: `constructor`
 - Distance from target type: `2`
-- Semantic SHA-256: `f03000405aac4ccef146b48e420ea4243a46ff9d8eebc8f3acbf1ad920e1f71f`
+- Semantic SHA-256: `e966a3b9525d03f0980df63458bfd20da75a01b080b781bf95e4037cbc431362`
 
 Type:
 
@@ -805,17 +787,166 @@ Type:
 {n : Nat} →
   [inst : NeZero n] →
     {plan : HighamBench.P09MixedRadixFftPlan n} →
-      {model : HighamBench.P09WilkinsonModel} →
-        {run : HighamBench.P09MixedRadixFftRun plan model} →
+      {γ : Real} →
+        {family : HighamBench.P09AsymptoticFftFamily plan γ} →
           (secondOrderCoeff : Real) →
             Real.instLE.le 0 secondOrderCoeff →
-              Real.instLE.le (HighamBench.p09ComplexRms (HighamBench.p09FftRoundoffError run))
-                  (instHAdd.hAdd
-                    (instHMul.hMul
-                      (instHMul.hMul (instHMul.hMul model.epsilon n.cast.sqrt) (HighamBench.p09K plan model.gamma))
-                      (HighamBench.p09ComplexRms run.input))
-                    (instHMul.hMul secondOrderCoeff (instHPow.hPow model.epsilon 2))) →
-                HighamBench.P09TheoremOneRmsCertificate run
+              (radius : Real) →
+                Real.instLT.lt 0 radius →
+                  (∀ (ε : HighamBench.P09PositiveEpsilon),
+                      Real.instLE.le ε.val radius →
+                        Real.instLE.le (HighamBench.p09ComplexRms (HighamBench.p09FamilyFftRoundoffError family ε))
+                          (instHAdd.hAdd
+                            (instHMul.hMul (instHMul.hMul (instHMul.hMul ε.val n.cast.sqrt) (HighamBench.p09K plan γ))
+                              (HighamBench.p09ComplexRms family.input))
+                            (instHMul.hMul secondOrderCoeff (instHPow.hPow ε.val 2)))) →
+                    HighamBench.P09TheoremOneRmsAsymptotic family
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
+      {γ : Real} →
+        {family : @HighamBench.P09AsymptoticFftFamily n inst plan γ} →
+          (secondOrderCoeff : Real) →
+            (secondOrderCoeff_nonneg :
+                @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                  secondOrderCoeff) →
+              (radius : Real) →
+                (radius_pos :
+                    @LT.lt.{0} Real Real.instLT
+                      (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) radius) →
+                  (error_bound :
+                      ∀ (ε : HighamBench.P09PositiveEpsilon),
+                        @LE.le.{0} Real Real.instLE
+                            (@Subtype.val.{1} Real
+                              (fun (ε : Real) =>
+                                @LT.lt.{0} Real Real.instLT
+                                  (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) ε)
+                              ε)
+                            radius →
+                          @LE.le.{0} Real Real.instLE
+                            (@HighamBench.p09ComplexRms n inst
+                              (@HighamBench.p09FamilyFftRoundoffError n inst plan γ family ε))
+                            (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
+                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                  (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
+                                    (@Subtype.val.{1} Real
+                                      (fun (ε : Real) =>
+                                        @LT.lt.{0} Real Real.instLT
+                                          (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) ε)
+                                      ε)
+                                    (Real.sqrt (@Nat.cast.{0} Real Real.instNatCast n)))
+                                  (@HighamBench.p09K n inst plan γ))
+                                (@HighamBench.p09ComplexRms n inst
+                                  (@HighamBench.P09AsymptoticFftFamily.input n inst plan γ family)))
+                              (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) secondOrderCoeff
+                                (@HPow.hPow.{0, 0, 0} Real Nat Real
+                                  (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
+                                  (@Subtype.val.{1} Real
+                                    (fun (ε : Real) =>
+                                      @LT.lt.{0} Real Real.instLT
+                                        (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) ε)
+                                    ε)
+                                  (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2))))))) →
+                    @HighamBench.P09TheoremOneRmsAsymptotic n inst plan γ family
+```
+
+### D021: `HighamBench.p09Alpha`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `5f3504ac34a66a2d03bdab5ce4c356652a582c0b0cc9df3782e7c688f5b1a7d4`
+
+Type:
+
+```lean
+Nat → Real → Real
+```
+
+Fully explicit type:
+
+```lean
+(q : Nat) → (γ : Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun q γ =>
+  ite (Eq q 2) (Real.sqrt 2) (ite (Eq q 4) 5 (instHMul.hMul (instHMul.hMul 2 q.cast.sqrt) (instHAdd.hAdd q.cast γ)))
+```
+
+### D022: `HighamBench.p09Alpha._proof_1`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `theorem`
+- Distance from target type: `2`
+- Semantic SHA-256: `f0d67c1f9aa937523ea334530fdcb9c54b0f8b36c58585f5368070a9577a9b30`
+
+Type:
+
+```lean
+(instHAdd.hAdd 1 1).AtLeastTwo
+```
+
+Fully explicit type:
+
+```lean
+Nat.AtLeastTwo
+  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
+    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D023: `HighamBench.p09ComplexNorm2`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `dac663255b034b5dbbdb343457939be9dbbc50d68a1544b39f5567d1393fd306`
+
+Type:
+
+```lean
+{n : Nat} → [NeZero n] → (ZMod n → Complex) → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] → (x : ZMod n → Complex) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} [NeZero n] x => (HighamBench.p09ComplexNorm2Sq x).sqrt
+```
+
+### D024: `HighamBench.p09FftRoundoffError`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `2`
+- Semantic SHA-256: `1a4cdce6a01953fcd085089e6e711e6976f798ce31ba838da7a106fd2933d718`
+
+Type:
+
+```lean
+{n : Nat} →
+  [inst : NeZero n] →
+    {plan : HighamBench.P09MixedRadixFftPlan n} →
+      {model : HighamBench.P09WilkinsonModel} → HighamBench.P09MixedRadixFftRun plan model → ZMod n → Complex
 ```
 
 Fully explicit type:
@@ -825,37 +956,594 @@ Fully explicit type:
   [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
     {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
       {model : HighamBench.P09WilkinsonModel} →
-        {run : @HighamBench.P09MixedRadixFftRun n inst plan model} →
-          (secondOrderCoeff : Real) →
-            (secondOrderCoeff_nonneg :
-                @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
-                  secondOrderCoeff) →
-              (error_bound :
-                  @LE.le.{0} Real Real.instLE
-                    (@HighamBench.p09ComplexRms n inst (@HighamBench.p09FftRoundoffError n inst plan model run))
-                    (@HAdd.hAdd.{0, 0, 0} Real Real Real (@instHAdd.{0} Real Real.instAdd)
-                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                        (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                          (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul)
-                            (HighamBench.P09WilkinsonModel.epsilon model)
-                            (Real.sqrt (@Nat.cast.{0} Real Real.instNatCast n)))
-                          (@HighamBench.p09K n inst plan (HighamBench.P09WilkinsonModel.gamma model)))
-                        (@HighamBench.p09ComplexRms n inst
-                          (@HighamBench.P09MixedRadixFftRun.input n inst plan model run)))
-                      (@HMul.hMul.{0, 0, 0} Real Real Real (@instHMul.{0} Real Real.instMul) secondOrderCoeff
-                        (@HPow.hPow.{0, 0, 0} Real Nat Real
-                          (@instHPow.{0, 0} Real Nat (@Monoid.toNatPow.{0} Real Real.instMonoid))
-                          (HighamBench.P09WilkinsonModel.epsilon model)
-                          (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2))))))) →
-                @HighamBench.P09TheoremOneRmsCertificate n inst plan model run
+        (run : @HighamBench.P09MixedRadixFftRun n inst plan model) → ZMod n → Complex
 ```
 
-### D021: `HighamBench.P09WilkinsonModel.mk`
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} [NeZero n] {plan} {model} run =>
+  HighamBench.p09ComplexVecSub (HighamBench.p09FftComputedOutput run) (HighamBench.p09FourierTransform run.input)
+```
+
+### D025: `HighamBench.p09K._proof_1`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `theorem`
+- Distance from target type: `2`
+- Semantic SHA-256: `424d4812dc24ce5eebc2180fb1e04ea19aa51b9e55f6e5fc7bb423449fbfa114`
+
+Type:
+
+```lean
+(instHAdd.hAdd 2 1).AtLeastTwo
+```
+
+Fully explicit type:
+
+```lean
+Nat.AtLeastTwo
+  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+    (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))
+    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D026: `HighamBench.P09FftVariant`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `544b103df55e1b98d9b887d3b2d7c2cc664d2c26c1091e7aca4c4a8033ff8871`
+
+Type:
+
+```lean
+Type
+```
+
+Fully explicit type:
+
+```lean
+Type
+```
+
+### D027: `HighamBench.P09MixedRadixFftRun`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `7ae7362819755681e59b02d02ec4e3a4154cc95d5c14aed537d867f7065735fc`
+
+Type:
+
+```lean
+{n : Nat} → [inst : NeZero n] → HighamBench.P09MixedRadixFftPlan n → HighamBench.P09WilkinsonModel → Type
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    (plan : @HighamBench.P09MixedRadixFftPlan n inst) → (model : HighamBench.P09WilkinsonModel) → Type
+```
+
+### D028: `HighamBench.P09MixedRadixFftRun.input`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `41825d1e7ca619b68168a447008455954af8aff1448bd885c5188ba22e07285b`
+
+Type:
+
+```lean
+{n : Nat} →
+  [inst : NeZero n] →
+    {plan : HighamBench.P09MixedRadixFftPlan n} →
+      {model : HighamBench.P09WilkinsonModel} → HighamBench.P09MixedRadixFftRun plan model → ZMod n → Complex
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
+      {model : HighamBench.P09WilkinsonModel} →
+        (self : @HighamBench.P09MixedRadixFftRun n inst plan model) → ZMod n → Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n [NeZero n] plan model self => self.1
+```
+
+### D029: `HighamBench.P09MixedRadixStage`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `97d9a0204d9304fae64c630fbd0563515344315fcdaec62c9e01341d19d5d52f`
+
+Type:
+
+```lean
+(n : Nat) → [NeZero n] → Type
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] → Type
+```
+
+### D030: `HighamBench.P09MixedRadixStage.useTwiddle`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `c9356ca2f52f0ec465420000f3867bc88b0192e7d791b2c028311a392d0ac69e`
+
+Type:
+
+```lean
+{n : Nat} → [inst : NeZero n] → HighamBench.P09MixedRadixStage n → Bool
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    (self : @HighamBench.P09MixedRadixStage n inst) → Bool
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n [NeZero n] self => self.8
+```
+
+### D031: `HighamBench.P09WilkinsonModel`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `inductive`
+- Distance from target type: `3`
+- Semantic SHA-256: `ae2ce171d4af084f887909ba7d091242f615341789671c72cf38636309bf3c6f`
+
+Type:
+
+```lean
+Type
+```
+
+Fully explicit type:
+
+```lean
+Type
+```
+
+### D032: `HighamBench.P09WilkinsonModel.epsilon`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `afcd2bd12fb818dddebe74e72bfdb4939ca7e7ec5eace06ba903d8bb16522de0`
+
+Type:
+
+```lean
+HighamBench.P09WilkinsonModel → Real
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P09WilkinsonModel) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.1
+```
+
+### D033: `HighamBench.P09WilkinsonModel.gamma`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `3`
+- Semantic SHA-256: `3d920d708ae4d25f186c74885d8c6fa22ca6b3a16c98ff3446234ae6f769f2d7`
+
+Type:
+
+```lean
+HighamBench.P09WilkinsonModel → Real
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P09WilkinsonModel) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.3
+```
+
+### D034: `HighamBench.p09Alpha._proof_2`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `theorem`
+- Distance from target type: `3`
+- Semantic SHA-256: `6fa74342f2d0b17a3ab9c3ded60e69ed185dc96f25e08cf01b0caca9b320f9a3`
+
+Type:
+
+```lean
+(instHAdd.hAdd 4 1).AtLeastTwo
+```
+
+Fully explicit type:
+
+```lean
+Nat.AtLeastTwo
+  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+    (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
+    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D035: `HighamBench.p09ApplyMixedRadixStages`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `6d1f89ec8780f8922da1b485245770d1366f3d55fbcea211c6be4de5132b638a`
+
+Type:
+
+```lean
+{m n : Nat} → [inst : NeZero n] → (Fin m → HighamBench.P09MixedRadixStage n) → (ZMod n → Complex) → ZMod n → Complex
+```
+
+Fully explicit type:
+
+```lean
+{m n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    (stages : Fin m → @HighamBench.P09MixedRadixStage n inst) → (x : ZMod n → Complex) → ZMod n → Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {m n} [NeZero n] stages x =>
+  List.foldl (fun state stage => HighamBench.p09MixedRadixStageApply stage state) x (List.ofFn stages)
+```
+
+### D036: `HighamBench.p09ComplexNorm2Sq`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `bd70ea90c5242fc190eff58133ee8b749d712c4305a4737bde63afb0370210a4`
+
+Type:
+
+```lean
+{n : Nat} → [NeZero n] → (ZMod n → Complex) → Real
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] → (x : ZMod n → Complex) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} [NeZero n] x => Finset.univ.sum fun i => instHPow.hPow (Complex.instNorm.norm (x i)) 2
+```
+
+### D037: `HighamBench.p09ComplexVecSub`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `e18378dc8b51a54c7ae368e4d70e31bada06d8b0eb437292dcaddeb75f3ce4ea`
+
+Type:
+
+```lean
+{n : Nat} → (ZMod n → Complex) → (ZMod n → Complex) → ZMod n → Complex
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (x y : ZMod n → Complex) → ZMod n → Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} x y i => instHSub.hSub (x i) (y i)
+```
+
+### D038: `HighamBench.p09FftComputedOutput`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `f20888fa918df54f4166fcc27d6e30545e2be8b24e8252a46ac089bf1ce201b5`
+
+Type:
+
+```lean
+{n : Nat} →
+  [inst : NeZero n] →
+    {plan : HighamBench.P09MixedRadixFftPlan n} →
+      {model : HighamBench.P09WilkinsonModel} → HighamBench.P09MixedRadixFftRun plan model → ZMod n → Complex
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
+      {model : HighamBench.P09WilkinsonModel} →
+        (run : @HighamBench.P09MixedRadixFftRun n inst plan model) → ZMod n → Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} [NeZero n] {plan} {model} run => HighamBench.p09Permute plan.finalPermutation (run.stageState plan.stageCount)
+```
+
+### D039: `HighamBench.p09Permute`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `3`
+- Semantic SHA-256: `5ed965dd03cc5016ab1b31e813a65f6c3565bf677ccb3b546de7e476adf28bc6`
+
+Type:
+
+```lean
+{n : Nat} → Equiv (ZMod n) (ZMod n) → (ZMod n → Complex) → ZMod n → Complex
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (permutation : Equiv.{1, 1} (ZMod n) (ZMod n)) → (x : ZMod n → Complex) → ZMod n → Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} permutation x i => x (EquivLike.toFunLike.coe permutation i)
+```
+
+### D040: `HighamBench.P09FftVariant.cooleyTukey`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
 - Declaration kind: `constructor`
-- Distance from target type: `2`
+- Distance from target type: `4`
+- Semantic SHA-256: `69e59fb4d683aea32786965a2fdadb98b19098f8c3bca20deaaf5f5edb125cf0`
+
+Type:
+
+```lean
+HighamBench.P09FftVariant
+```
+
+Fully explicit type:
+
+```lean
+HighamBench.P09FftVariant
+```
+
+### D041: `HighamBench.P09FftVariant.sandeTukey`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `4`
+- Semantic SHA-256: `16d2014d9a2e84da81906b156a4f366a69aece557a34545c32bfb249d7457f42`
+
+Type:
+
+```lean
+HighamBench.P09FftVariant
+```
+
+Fully explicit type:
+
+```lean
+HighamBench.P09FftVariant
+```
+
+### D042: `HighamBench.P09MixedRadixFftPlan.finalPermutation`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `4`
+- Semantic SHA-256: `92b4cfa4eebfaffbeab5079e976bf48a65798439a1dbdacf79930b5302737e91`
+
+Type:
+
+```lean
+{n : Nat} → [inst : NeZero n] → HighamBench.P09MixedRadixFftPlan n → Equiv (ZMod n) (ZMod n)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    (self : @HighamBench.P09MixedRadixFftPlan n inst) → Equiv.{1, 1} (ZMod n) (ZMod n)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n [NeZero n] self => self.6
+```
+
+### D043: `HighamBench.P09MixedRadixFftRun.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `4`
+- Semantic SHA-256: `8f3e063fbc7bbe55669511664b867eb88fcfb6dc8b9a0d9be36b1050eb3f025d`
+
+Type:
+
+```lean
+{n : Nat} →
+  [inst : NeZero n] →
+    {plan : HighamBench.P09MixedRadixFftPlan n} →
+      {model : HighamBench.P09WilkinsonModel} →
+        (input : ZMod n → Complex) →
+          (stageState : Nat → ZMod n → Complex) →
+            (∀ (i : ZMod n), Eq (model.flInput (input i)) (input i)) →
+              Eq (stageState 0) input →
+                (∀ (i : Fin plan.stageCount),
+                    Eq (stageState (instHAdd.hAdd i.val 1))
+                      (HighamBench.p09RoundedMixedRadixStageApply model (plan.stage i) (stageState i.val))) →
+                  HighamBench.P09MixedRadixFftRun plan model
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
+      {model : HighamBench.P09WilkinsonModel} →
+        (input : ZMod n → Complex) →
+          (stageState : Nat → ZMod n → Complex) →
+            (input_exact :
+                ∀ (i : ZMod n), @Eq.{1} Complex (HighamBench.P09WilkinsonModel.flInput model (input i)) (input i)) →
+              (initial_state :
+                  @Eq.{1} (ZMod n → Complex) (stageState (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))
+                    input) →
+                (stage_step :
+                    ∀ (i : Fin (@HighamBench.P09MixedRadixFftPlan.stageCount n inst plan)),
+                      @Eq.{1} (ZMod n → Complex)
+                        (stageState
+                          (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
+                            (@Fin.val (@HighamBench.P09MixedRadixFftPlan.stageCount n inst plan) i)
+                            (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))
+                        (@HighamBench.p09RoundedMixedRadixStageApply n inst model
+                          (@HighamBench.P09MixedRadixFftPlan.stage n inst plan i)
+                          (stageState (@Fin.val (@HighamBench.P09MixedRadixFftPlan.stageCount n inst plan) i)))) →
+                  @HighamBench.P09MixedRadixFftRun n inst plan model
+```
+
+### D044: `HighamBench.P09MixedRadixFftRun.stageState`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `4`
+- Semantic SHA-256: `c6859170a0eaeac91812a7e8ea37e5129d2f45f1b2effa100d84db58ef7109fb`
+
+Type:
+
+```lean
+{n : Nat} →
+  [inst : NeZero n] →
+    {plan : HighamBench.P09MixedRadixFftPlan n} →
+      {model : HighamBench.P09WilkinsonModel} → HighamBench.P09MixedRadixFftRun plan model → Nat → ZMod n → Complex
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    {plan : @HighamBench.P09MixedRadixFftPlan n inst} →
+      {model : HighamBench.P09WilkinsonModel} →
+        (self : @HighamBench.P09MixedRadixFftRun n inst plan model) → Nat → ZMod n → Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n [NeZero n] plan model self => self.2
+```
+
+### D045: `HighamBench.P09MixedRadixStage.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `4`
+- Semantic SHA-256: `dcbff9d3438eae3b7802ac75cebdf2d4e715b88a5a5cb20f2c1c776119da2c31`
+
+Type:
+
+```lean
+{n : Nat} →
+  [inst : NeZero n] →
+    (radix : Nat) →
+      Ne radix 0 →
+        (blockCount : Nat) →
+          Ne blockCount 0 →
+            Eq (instHMul.hMul blockCount radix) n →
+              Equiv (Prod (Fin blockCount) (ZMod radix)) (ZMod n) →
+                Equiv (ZMod n) (ZMod n) → Bool → (ZMod n → ZMod n) → HighamBench.P09MixedRadixStage n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    (radix : Nat) →
+      (radix_ne_zero : @Ne.{1} Nat radix (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))) →
+        (blockCount : Nat) →
+          (blockCount_ne_zero : @Ne.{1} Nat blockCount (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))) →
+            (order_eq :
+                @Eq.{1} Nat (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) blockCount radix) n) →
+              (reindex : Equiv.{1, 1} (Prod.{0, 0} (Fin blockCount) (ZMod radix)) (ZMod n)) →
+                (permutation : Equiv.{1, 1} (ZMod n) (ZMod n)) →
+                  (useTwiddle : Bool) → (twiddleExponent : ZMod n → ZMod n) → @HighamBench.P09MixedRadixStage n inst
+```
+
+### D046: `HighamBench.P09WilkinsonModel.mk`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `constructor`
+- Distance from target type: `4`
 - Semantic SHA-256: `a2fd03b83e990147bebc92f2f807ff55eb76eb4dfbad186b76177bf62a61b60c`
 
 Type:
@@ -964,363 +1652,12 @@ Fully explicit type:
                       HighamBench.P09WilkinsonModel
 ```
 
-### D022: `HighamBench.p09Alpha`
+### D047: `HighamBench.p09MixedRadixStageApply`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
 - Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `5f3504ac34a66a2d03bdab5ce4c356652a582c0b0cc9df3782e7c688f5b1a7d4`
-
-Type:
-
-```lean
-Nat → Real → Real
-```
-
-Fully explicit type:
-
-```lean
-(q : Nat) → (γ : Real) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun q γ =>
-  ite (Eq q 2) (Real.sqrt 2) (ite (Eq q 4) 5 (instHMul.hMul (instHMul.hMul 2 q.cast.sqrt) (instHAdd.hAdd q.cast γ)))
-```
-
-### D023: `HighamBench.p09Alpha._proof_1`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `theorem`
-- Distance from target type: `2`
-- Semantic SHA-256: `f0d67c1f9aa937523ea334530fdcb9c54b0f8b36c58585f5368070a9577a9b30`
-
-Type:
-
-```lean
-(instHAdd.hAdd 1 1).AtLeastTwo
-```
-
-Fully explicit type:
-
-```lean
-Nat.AtLeastTwo
-  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
-    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))
-    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-### D024: `HighamBench.p09ComplexNorm2`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `dac663255b034b5dbbdb343457939be9dbbc50d68a1544b39f5567d1393fd306`
-
-Type:
-
-```lean
-{n : Nat} → [NeZero n] → (ZMod n → Complex) → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] → (x : ZMod n → Complex) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} [NeZero n] x => (HighamBench.p09ComplexNorm2Sq x).sqrt
-```
-
-### D025: `HighamBench.p09ComplexVecSub`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `def`
-- Distance from target type: `2`
-- Semantic SHA-256: `e18378dc8b51a54c7ae368e4d70e31bada06d8b0eb437292dcaddeb75f3ce4ea`
-
-Type:
-
-```lean
-{n : Nat} → (ZMod n → Complex) → (ZMod n → Complex) → ZMod n → Complex
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (x y : ZMod n → Complex) → ZMod n → Complex
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} x y i => instHSub.hSub (x i) (y i)
-```
-
-### D026: `HighamBench.p09K._proof_1`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `theorem`
-- Distance from target type: `2`
-- Semantic SHA-256: `424d4812dc24ce5eebc2180fb1e04ea19aa51b9e55f6e5fc7bb423449fbfa114`
-
-Type:
-
-```lean
-(instHAdd.hAdd 2 1).AtLeastTwo
-```
-
-Fully explicit type:
-
-```lean
-Nat.AtLeastTwo
-  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
-    (@OfNat.ofNat.{0} Nat (nat_lit 2) (instOfNatNat (nat_lit 2)))
-    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-### D027: `HighamBench.P09FftVariant`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `3`
-- Semantic SHA-256: `544b103df55e1b98d9b887d3b2d7c2cc664d2c26c1091e7aca4c4a8033ff8871`
-
-Type:
-
-```lean
-Type
-```
-
-Fully explicit type:
-
-```lean
-Type
-```
-
-### D028: `HighamBench.P09MixedRadixFftPlan.finalPermutation`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `92b4cfa4eebfaffbeab5079e976bf48a65798439a1dbdacf79930b5302737e91`
-
-Type:
-
-```lean
-{n : Nat} → [inst : NeZero n] → HighamBench.P09MixedRadixFftPlan n → Equiv (ZMod n) (ZMod n)
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
-    (self : @HighamBench.P09MixedRadixFftPlan n inst) → Equiv.{1, 1} (ZMod n) (ZMod n)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n [NeZero n] self => self.6
-```
-
-### D029: `HighamBench.P09MixedRadixStage`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `inductive`
-- Distance from target type: `3`
-- Semantic SHA-256: `97d9a0204d9304fae64c630fbd0563515344315fcdaec62c9e01341d19d5d52f`
-
-Type:
-
-```lean
-(n : Nat) → [NeZero n] → Type
-```
-
-Fully explicit type:
-
-```lean
-(n : Nat) → [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] → Type
-```
-
-### D030: `HighamBench.P09MixedRadixStage.useTwiddle`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `c9356ca2f52f0ec465420000f3867bc88b0192e7d791b2c028311a392d0ac69e`
-
-Type:
-
-```lean
-{n : Nat} → [inst : NeZero n] → HighamBench.P09MixedRadixStage n → Bool
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
-    (self : @HighamBench.P09MixedRadixStage n inst) → Bool
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun n [NeZero n] self => self.8
-```
-
-### D031: `HighamBench.P09WilkinsonModel.flInput`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `88461bf36f5d05f146587259086005272493e2b2632ee79ecb87ed470d76ed00`
-
-Type:
-
-```lean
-HighamBench.P09WilkinsonModel → Complex → Complex
-```
-
-Fully explicit type:
-
-```lean
-(self : HighamBench.P09WilkinsonModel) → Complex → Complex
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun self => self.9
-```
-
-### D032: `HighamBench.p09Alpha._proof_2`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `theorem`
-- Distance from target type: `3`
-- Semantic SHA-256: `6fa74342f2d0b17a3ab9c3ded60e69ed185dc96f25e08cf01b0caca9b320f9a3`
-
-Type:
-
-```lean
-(instHAdd.hAdd 4 1).AtLeastTwo
-```
-
-Fully explicit type:
-
-```lean
-Nat.AtLeastTwo
-  (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat)
-    (@OfNat.ofNat.{0} Nat (nat_lit 4) (instOfNatNat (nat_lit 4)))
-    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-### D033: `HighamBench.p09ApplyMixedRadixStages`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `6d1f89ec8780f8922da1b485245770d1366f3d55fbcea211c6be4de5132b638a`
-
-Type:
-
-```lean
-{m n : Nat} → [inst : NeZero n] → (Fin m → HighamBench.P09MixedRadixStage n) → (ZMod n → Complex) → ZMod n → Complex
-```
-
-Fully explicit type:
-
-```lean
-{m n : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
-    (stages : Fin m → @HighamBench.P09MixedRadixStage n inst) → (x : ZMod n → Complex) → ZMod n → Complex
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {m n} [NeZero n] stages x =>
-  List.foldl (fun state stage => HighamBench.p09MixedRadixStageApply stage state) x (List.ofFn stages)
-```
-
-### D034: `HighamBench.p09ComplexNorm2Sq`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `bd70ea90c5242fc190eff58133ee8b749d712c4305a4737bde63afb0370210a4`
-
-Type:
-
-```lean
-{n : Nat} → [NeZero n] → (ZMod n → Complex) → Real
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] → (x : ZMod n → Complex) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} [NeZero n] x => Finset.univ.sum fun i => instHPow.hPow (Complex.instNorm.norm (x i)) 2
-```
-
-### D035: `HighamBench.p09ComplexVecAdd`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `56094c81be15e3932e37632d8482f5af17c014424addb1ddae5d3850646ef6b3`
-
-Type:
-
-```lean
-{n : Nat} → (ZMod n → Complex) → (ZMod n → Complex) → ZMod n → Complex
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (x y : ZMod n → Complex) → ZMod n → Complex
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} x y i => instHAdd.hAdd (x i) (y i)
-```
-
-### D036: `HighamBench.p09MixedRadixStageApply`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `def`
-- Distance from target type: `3`
+- Distance from target type: `4`
 - Semantic SHA-256: `52f9e50ce9db2fa11f7db33f9492e55308a51a9d3bed484c7c7e660e87604af7`
 
 Type:
@@ -1352,78 +1689,12 @@ fun {n} [NeZero n] stage x =>
     (instHMul.hMul (AddChar.instFunLike.coe ZMod.stdAddChar (stage.twiddleExponent i)) (blocked i)) (blocked i)
 ```
 
-### D037: `HighamBench.p09Permute`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `5ed965dd03cc5016ab1b31e813a65f6c3565bf677ccb3b546de7e476adf28bc6`
-
-Type:
-
-```lean
-{n : Nat} → Equiv (ZMod n) (ZMod n) → (ZMod n → Complex) → ZMod n → Complex
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} → (permutation : Equiv.{1, 1} (ZMod n) (ZMod n)) → (x : ZMod n → Complex) → ZMod n → Complex
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {n} permutation x i => x (EquivLike.toFunLike.coe permutation i)
-```
-
-### D038: `HighamBench.P09FftVariant.cooleyTukey`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `4`
-- Semantic SHA-256: `69e59fb4d683aea32786965a2fdadb98b19098f8c3bca20deaaf5f5edb125cf0`
-
-Type:
-
-```lean
-HighamBench.P09FftVariant
-```
-
-Fully explicit type:
-
-```lean
-HighamBench.P09FftVariant
-```
-
-### D039: `HighamBench.P09FftVariant.sandeTukey`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `4`
-- Semantic SHA-256: `16d2014d9a2e84da81906b156a4f366a69aece557a34545c32bfb249d7457f42`
-
-Type:
-
-```lean
-HighamBench.P09FftVariant
-```
-
-Fully explicit type:
-
-```lean
-HighamBench.P09FftVariant
-```
-
-### D040: `HighamBench.P09MixedRadixStage.blockCount`
+### D048: `HighamBench.P09MixedRadixStage.blockCount`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
 - Declaration kind: `abbrev`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `0937910c9974bbc2e70ae36f7e93eb0631c166e136798bd95b2ff09cc0f0999d`
 
 Type:
@@ -1446,50 +1717,12 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.3
 ```
 
-### D041: `HighamBench.P09MixedRadixStage.mk`
-
-- Role: `local`
-- Owner module: `HighamBench.P09Definitions`
-- Declaration kind: `constructor`
-- Distance from target type: `4`
-- Semantic SHA-256: `dcbff9d3438eae3b7802ac75cebdf2d4e715b88a5a5cb20f2c1c776119da2c31`
-
-Type:
-
-```lean
-{n : Nat} →
-  [inst : NeZero n] →
-    (radix : Nat) →
-      Ne radix 0 →
-        (blockCount : Nat) →
-          Ne blockCount 0 →
-            Eq (instHMul.hMul blockCount radix) n →
-              Equiv (Prod (Fin blockCount) (ZMod radix)) (ZMod n) →
-                Equiv (ZMod n) (ZMod n) → Bool → (ZMod n → ZMod n) → HighamBench.P09MixedRadixStage n
-```
-
-Fully explicit type:
-
-```lean
-{n : Nat} →
-  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
-    (radix : Nat) →
-      (radix_ne_zero : @Ne.{1} Nat radix (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))) →
-        (blockCount : Nat) →
-          (blockCount_ne_zero : @Ne.{1} Nat blockCount (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))) →
-            (order_eq :
-                @Eq.{1} Nat (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) blockCount radix) n) →
-              (reindex : Equiv.{1, 1} (Prod.{0, 0} (Fin blockCount) (ZMod radix)) (ZMod n)) →
-                (permutation : Equiv.{1, 1} (ZMod n) (ZMod n)) →
-                  (useTwiddle : Bool) → (twiddleExponent : ZMod n → ZMod n) → @HighamBench.P09MixedRadixStage n inst
-```
-
-### D042: `HighamBench.P09MixedRadixStage.permutation`
+### D049: `HighamBench.P09MixedRadixStage.permutation`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
 - Declaration kind: `abbrev`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `b9f504d3f725fed8dad757d214d7c4c47cf61c082cdb013b946e7a30aabf55a6`
 
 Type:
@@ -1512,12 +1745,12 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.7
 ```
 
-### D043: `HighamBench.P09MixedRadixStage.reindex`
+### D050: `HighamBench.P09MixedRadixStage.reindex`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
 - Declaration kind: `abbrev`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `374121ed62e4a39bd302ffbfa17a3d3e9359e4a3d9ac669a2dab912de210ebef`
 
 Type:
@@ -1546,12 +1779,12 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.6
 ```
 
-### D044: `HighamBench.P09MixedRadixStage.twiddleExponent`
+### D051: `HighamBench.P09MixedRadixStage.twiddleExponent`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
 - Declaration kind: `abbrev`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `db98c941769582a85cce2f46995205dcf3183f1c6e723f8e405bf03932644209`
 
 Type:
@@ -1574,12 +1807,38 @@ Definition body (one-level semantic boundary):
 fun n [NeZero n] self => self.9
 ```
 
-### D045: `HighamBench.p09MixedRadixStageApply._proof_1`
+### D052: `HighamBench.P09WilkinsonModel.flInput`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `88461bf36f5d05f146587259086005272493e2b2632ee79ecb87ed470d76ed00`
+
+Type:
+
+```lean
+HighamBench.P09WilkinsonModel → Complex → Complex
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P09WilkinsonModel) → Complex → Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.9
+```
+
+### D053: `HighamBench.p09MixedRadixStageApply._proof_1`
 
 - Role: `local`
 - Owner module: `HighamBench.P09Definitions`
 - Declaration kind: `theorem`
-- Distance from target type: `4`
+- Distance from target type: `5`
 - Semantic SHA-256: `f48b056ebd17901d63a6bf3cfa537dcc4dedf4bb58478a8045fbc9ad7cd6ed71`
 
 Type:
@@ -1597,7 +1856,366 @@ Fully explicit type:
     (@HighamBench.P09MixedRadixStage.radix n inst stage)
 ```
 
-### D046: `And`
+### D054: `HighamBench.p09RoundedMixedRadixStageApply`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `3d40db49b142e3dc7a16dc4f3aaa4a6352c9626979f9245e76dd61de12869378`
+
+Type:
+
+```lean
+{n : Nat} →
+  [inst : NeZero n] →
+    HighamBench.P09WilkinsonModel → HighamBench.P09MixedRadixStage n → (ZMod n → Complex) → ZMod n → Complex
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  [inst : @NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    (model : HighamBench.P09WilkinsonModel) →
+      (stage : @HighamBench.P09MixedRadixStage n inst) → (x : ZMod n → Complex) → ZMod n → Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} [NeZero n] model stage x =>
+  have permuted := fun i => x (EquivLike.toFunLike.coe stage.permutation i);
+  have blocked := fun i =>
+    have bi := EquivLike.toFunLike.coe stage.reindex.symm i;
+    HighamBench.p09RoundedComplexSum model fun j =>
+      HighamBench.p09RoundedComplexMul model (HighamBench.p09RoundedRoot model (instHMul.hMul j bi.snd))
+        (permuted (EquivLike.toFunLike.coe stage.reindex { fst := bi.fst, snd := j }));
+  fun i =>
+  ite (Eq stage.useTwiddle Bool.true)
+    (HighamBench.p09RoundedComplexMul model (HighamBench.p09RoundedRoot model (stage.twiddleExponent i)) (blocked i))
+    (blocked i)
+```
+
+### D055: `HighamBench.p09RoundedComplexMul`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `6`
+- Semantic SHA-256: `59512442ef796e982dcc6b938563fd1a7822791c70724a4ba10840384c283696`
+
+Type:
+
+```lean
+HighamBench.P09WilkinsonModel → Complex → Complex → Complex
+```
+
+Fully explicit type:
+
+```lean
+(model : HighamBench.P09WilkinsonModel) → (x y : Complex) → Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun model x y =>
+  { re := model.flAdd (model.flMul x.re y.re) (Real.instNeg.neg (model.flMul x.im y.im)),
+    im := model.flAdd (model.flMul x.re y.im) (model.flMul x.im y.re) }
+```
+
+### D056: `HighamBench.p09RoundedComplexSum`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `6`
+- Semantic SHA-256: `60d1148fd0f75669a9783f59120b2ca14643d9fa5e0f9b558fd75dd269a733e8`
+
+Type:
+
+```lean
+{q : Nat} → [NeZero q] → HighamBench.P09WilkinsonModel → (ZMod q → Complex) → Complex
+```
+
+Fully explicit type:
+
+```lean
+{q : Nat} →
+  [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) q] →
+    (model : HighamBench.P09WilkinsonModel) → (term : ZMod q → Complex) → Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {q} [NeZero q] model term =>
+  have index := (ZMod.finEquiv q).toEquiv;
+  { re := HighamBench.recursiveSum model.flAdd q fun i => (term (EquivLike.toFunLike.coe index i)).re,
+    im := HighamBench.recursiveSum model.flAdd q fun i => (term (EquivLike.toFunLike.coe index i)).im }
+```
+
+### D057: `HighamBench.p09RoundedRoot`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `6`
+- Semantic SHA-256: `9cbfc6d2a8e3f2857e4524c89e77e458df5524778eba3fdf763c6b4759deea37`
+
+Type:
+
+```lean
+{q : Nat} → [NeZero q] → HighamBench.P09WilkinsonModel → ZMod q → Complex
+```
+
+Fully explicit type:
+
+```lean
+{q : Nat} →
+  [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) q] →
+    (model : HighamBench.P09WilkinsonModel) → (j : ZMod q) → Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {q} [NeZero q] model j =>
+  { re := model.flCos (HighamBench.p09RootAngle j), im := model.flSin (HighamBench.p09RootAngle j) }
+```
+
+### D058: `HighamBench.P09WilkinsonModel.flAdd`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `7`
+- Semantic SHA-256: `cc28522466fac0d813d439269e2f928c936d68287934ef0a0c90b79a1be399d5`
+
+Type:
+
+```lean
+HighamBench.P09WilkinsonModel → Real → Real → Real
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P09WilkinsonModel) → Real → Real → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.5
+```
+
+### D059: `HighamBench.P09WilkinsonModel.flCos`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `7`
+- Semantic SHA-256: `7ce72510832649d0f92748c22a87870b1815b0d105e6f06f61d0d5a5c2392880`
+
+Type:
+
+```lean
+HighamBench.P09WilkinsonModel → Real → Real
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P09WilkinsonModel) → Real → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.8
+```
+
+### D060: `HighamBench.P09WilkinsonModel.flMul`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `7`
+- Semantic SHA-256: `ef8dec4b6ee6bd7778d604c9a442e49c12e7f519b63e15363380f949ca8141d5`
+
+Type:
+
+```lean
+HighamBench.P09WilkinsonModel → Real → Real → Real
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P09WilkinsonModel) → Real → Real → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.6
+```
+
+### D061: `HighamBench.P09WilkinsonModel.flSin`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `abbrev`
+- Distance from target type: `7`
+- Semantic SHA-256: `05b6756f200d9776e59c023a63a3609af6f1943ceb31320e2eb05fe8bb16a955`
+
+Type:
+
+```lean
+HighamBench.P09WilkinsonModel → Real → Real
+```
+
+Fully explicit type:
+
+```lean
+(self : HighamBench.P09WilkinsonModel) → Real → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.7
+```
+
+### D062: `HighamBench.p09RootAngle`
+
+- Role: `local`
+- Owner module: `HighamBench.P09Definitions`
+- Declaration kind: `def`
+- Distance from target type: `7`
+- Semantic SHA-256: `e7b2e7fd3bdf545ee0a976fc13331c988e862d8981dc9519d2625fb12c6f46ca`
+
+Type:
+
+```lean
+{q : Nat} → [NeZero q] → ZMod q → Real
+```
+
+Fully explicit type:
+
+```lean
+{q : Nat} → [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) q] → (j : ZMod q) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {q} [NeZero q] j => instHDiv.hDiv (instHMul.hMul (instHMul.hMul 2 Real.pi) j.val.cast) q.cast
+```
+
+### D063: `HighamBench.recursiveSum`
+
+- Role: `local`
+- Owner module: `HighamBench.Core`
+- Declaration kind: `def`
+- Distance from target type: `7`
+- Semantic SHA-256: `3a24e7a5c707c014d59b9d90d536db1f1c79ef135d2ba34adb6af8a4258efe41`
+
+Type:
+
+```lean
+(Real → Real → Real) → (n : Nat) → (Fin n → Real) → Real
+```
+
+Fully explicit type:
+
+```lean
+(flAdd : Real → Real → Real) → (n : Nat) → (Fin n → Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun flAdd x x_1 =>
+  Nat.brecOn (motive := fun x => (Fin x → Real) → Real) x
+    (fun x f x_2 =>
+      HighamBench.recursiveSum.match_1 (fun x x_3 => Nat.below (motive := fun x => (Fin x → Real) → Real) x → Real) x
+        x_2 (fun x x_3 => 0)
+        (fun n v x => if h : Eq n 0 then v ⟨0, ⋯⟩ else flAdd (x.1 fun i => v i.castSucc) (v (Fin.last n))) f)
+    x_1
+```
+
+### D064: `HighamBench.recursiveSum._proof_1`
+
+- Role: `local`
+- Owner module: `HighamBench.Core`
+- Declaration kind: `theorem`
+- Distance from target type: `8`
+- Semantic SHA-256: `7f01e5fdb761df0e050b0929b93312fc9084bc345726c816952ed0fd4844be27`
+
+Type:
+
+```lean
+∀ (n : Nat), Eq n 0 → instLTNat.lt 0 (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+∀ (n : Nat) (h : @Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))),
+  @LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))
+    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+### D065: `HighamBench.recursiveSum.match_1`
+
+- Role: `local`
+- Owner module: `HighamBench.Core`
+- Declaration kind: `abbrev`
+- Distance from target type: `8`
+- Semantic SHA-256: `56d4f4744c0103a83d3305dc49473baf5a72c1037bbec52ff87f6f4a5419f79e`
+
+Type:
+
+```lean
+(motive : (x : Nat) → (Fin x → Real) → Sort u_1) →
+  (x : Nat) →
+    (x_1 : Fin x → Real) →
+      ((x : Fin 0 → Real) → motive 0 x) →
+        ((n : Nat) → (v : Fin (instHAdd.hAdd n 1) → Real) → motive n.succ v) → motive x x_1
+```
+
+Fully explicit type:
+
+```lean
+(motive : (x : Nat) → (Fin x → Real) → Sort u_1) →
+  (x : Nat) →
+    (x_1 : Fin x → Real) →
+      (h_1 :
+          (x : Fin (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) → Real) →
+            motive (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) x) →
+        (h_2 :
+            (n : Nat) →
+              (v :
+                  Fin
+                      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+                        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) →
+                    Real) →
+                motive (Nat.succ n) v) →
+          motive x x_1
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun motive x x_1 h_1 h_2 =>
+  Nat.casesOn (motive := fun x => (x_2 : Fin x → Real) → motive x x_2) x (fun x => h_1 x) (fun n x => h_2 n x) x_1
+```
+
+### D066: `And`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1617,7 +2235,7 @@ Fully explicit type:
 (a b : Prop) → Prop
 ```
 
-### D047: `Complex`
+### D067: `Complex`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Complex.Basic`
@@ -1637,7 +2255,7 @@ Fully explicit type:
 Type
 ```
 
-### D048: `DivInvMonoid.toDiv`
+### D068: `DivInvMonoid.toDiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -1663,7 +2281,7 @@ Definition body (one-level semantic boundary):
 fun G [self : DivInvMonoid G] => self.3
 ```
 
-### D049: `Eq`
+### D069: `Eq`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1683,7 +2301,7 @@ Fully explicit type:
 {α : Sort u_1} → α → α → Prop
 ```
 
-### D050: `Exists`
+### D070: `Exists`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -1703,7 +2321,7 @@ Fully explicit type:
 {α : Sort u} → (p : α → Prop) → Prop
 ```
 
-### D051: `HAdd.hAdd`
+### D071: `HAdd.hAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1729,7 +2347,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HAdd α β γ] => self.1
 ```
 
-### D052: `HDiv.hDiv`
+### D072: `HDiv.hDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1755,7 +2373,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HDiv α β γ] => self.1
 ```
 
-### D053: `HMul.hMul`
+### D073: `HMul.hMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1781,7 +2399,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HMul α β γ] => self.1
 ```
 
-### D054: `HPow.hPow`
+### D074: `HPow.hPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1807,7 +2425,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HPow α β γ] => self.1
 ```
 
-### D055: `LE.le`
+### D075: `LE.le`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1833,7 +2451,33 @@ Definition body (one-level semantic boundary):
 fun α [self : LE α] => self.1
 ```
 
-### D056: `Monoid.toNatPow`
+### D076: `LT.lt`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009`
+
+Type:
+
+```lean
+{α : Type u} → [self : LT α] → α → α → Prop
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → [self : LT.{u} α] → α → α → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : LT α] => self.1
+```
+
+### D077: `Monoid.toNatPow`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Defs`
@@ -1859,7 +2503,7 @@ Definition body (one-level semantic boundary):
 fun {M} [inst : Monoid M] => { pow := fun x n => inst.npow n x }
 ```
 
-### D057: `MulZeroClass.toZero`
+### D078: `MulZeroClass.toZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.GroupWithZero.Defs`
@@ -1885,7 +2529,7 @@ Definition body (one-level semantic boundary):
 fun M₀ [self : MulZeroClass M₀] => self.2
 ```
 
-### D058: `Nat`
+### D079: `Nat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -1905,7 +2549,7 @@ Fully explicit type:
 Type
 ```
 
-### D059: `Nat.cast`
+### D080: `Nat.cast`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Cast`
@@ -1931,7 +2575,7 @@ Definition body (one-level semantic boundary):
 fun {R} [inst : NatCast R] => inst.natCast
 ```
 
-### D060: `Nat.instMulZeroClass`
+### D081: `Nat.instMulZeroClass`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.GroupWithZero.Nat`
@@ -1958,7 +2602,7 @@ Definition body (one-level semantic boundary):
   mul_zero := Nat.mul_zero }
 ```
 
-### D061: `NeZero`
+### D082: `NeZero`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.NeZero`
@@ -1978,7 +2622,7 @@ Fully explicit type:
 {R : Type u_1} → [Zero.{u_1} R] → (n : R) → Prop
 ```
 
-### D062: `OfNat.ofNat`
+### D083: `OfNat.ofNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2004,7 +2648,7 @@ Definition body (one-level semantic boundary):
 fun α x [self : OfNat α x] => self.1
 ```
 
-### D063: `Real`
+### D084: `Real`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2024,7 +2668,7 @@ Fully explicit type:
 Type
 ```
 
-### D064: `Real.instAdd`
+### D085: `Real.instAdd`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2050,7 +2694,7 @@ Definition body (one-level semantic boundary):
 { add := Real.add✝ }
 ```
 
-### D065: `Real.instDivInvMonoid`
+### D086: `Real.instDivInvMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2078,7 +2722,7 @@ Definition body (one-level semantic boundary):
   zpow_succ' := Real.instDivInvMonoid._proof_3, zpow_neg' := Real.instDivInvMonoid._proof_4 }
 ```
 
-### D066: `Real.instLE`
+### D087: `Real.instLE`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2104,7 +2748,33 @@ Definition body (one-level semantic boundary):
 { le := Real.le✝ }
 ```
 
-### D067: `Real.instMonoid`
+### D088: `Real.instLT`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a`
+
+Type:
+
+```lean
+LT Real
+```
+
+Fully explicit type:
+
+```lean
+LT.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ lt := Real.lt✝ }
+```
+
+### D089: `Real.instMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2130,7 +2800,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D068: `Real.instMul`
+### D090: `Real.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2156,7 +2826,7 @@ Definition body (one-level semantic boundary):
 { mul := Real.mul✝ }
 ```
 
-### D069: `Real.instNatCast`
+### D091: `Real.instNatCast`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -2182,7 +2852,33 @@ Definition body (one-level semantic boundary):
 { natCast := fun n => { cauchy := n.cast } }
 ```
 
-### D070: `Real.sqrt`
+### D092: `Real.instZero`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882`
+
+Type:
+
+```lean
+Zero Real
+```
+
+Fully explicit type:
+
+```lean
+Zero.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ zero := Real.zero✝ }
+```
+
+### D093: `Real.sqrt`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Sqrt`
@@ -2208,7 +2904,33 @@ Definition body (one-level semantic boundary):
 fun x => ((instFunLikeOrderIso NNReal NNReal).coe NNReal.sqrt x.toNNReal).toReal
 ```
 
-### D071: `ZMod`
+### D094: `Subtype.val`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `1`
+- Semantic SHA-256: `69c61ab82498e5563eaf5f0313ea7f2164c284c3dc742024a30332372a46663d`
+
+Type:
+
+```lean
+{α : Sort u} → {p : α → Prop} → Subtype p → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → {p : α → Prop} → (self : @Subtype.{u} α p) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α p self => self.1
+```
+
+### D095: `ZMod`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.ZMod.Defs`
@@ -2234,7 +2956,33 @@ Definition body (one-level semantic boundary):
 fun x => ZMod.match_1 (fun x => Type) x (fun _ => Int) fun n => Fin (instHAdd.hAdd n 1)
 ```
 
-### D072: `instHAdd`
+### D096: `Zero.toOfNat0`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Zero`
+- Declaration kind: `def`
+- Distance from target type: `1`
+- Semantic SHA-256: `f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a`
+
+Type:
+
+```lean
+{α : Type u_1} → [Zero α] → OfNat α 0
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Zero.{u_1} α] → OfNat.{u_1} α (nat_lit 0)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [inst : Zero α] => { ofNat := inst.zero }
+```
+
+### D097: `instHAdd`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2260,7 +3008,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Add α] => { hAdd := fun a b => inst.add a b }
 ```
 
-### D073: `instHDiv`
+### D098: `instHDiv`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2286,7 +3034,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Div α] => { hDiv := fun a b => inst.div a b }
 ```
 
-### D074: `instHMul`
+### D099: `instHMul`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2312,7 +3060,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Mul α] => { hMul := fun a b => inst.mul a b }
 ```
 
-### D075: `instHPow`
+### D100: `instHPow`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2338,7 +3086,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} [inst : Pow α β] => { hPow := fun a b => inst.pow a b }
 ```
 
-### D076: `instOfNatNat`
+### D101: `instOfNatNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2364,7 +3112,7 @@ Definition body (one-level semantic boundary):
 fun n => { ofNat := n }
 ```
 
-### D077: `AddChar`
+### D102: `AddChar`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.AddChar`
@@ -2384,7 +3132,7 @@ Fully explicit type:
 (A : Type u_1) → [AddMonoid.{u_1} A] → (M : Type u_2) → [Monoid.{u_2} M] → Type (max u_1 u_2)
 ```
 
-### D078: `AddChar.instFunLike`
+### D103: `AddChar.instFunLike`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.AddChar`
@@ -2414,7 +3162,7 @@ Definition body (one-level semantic boundary):
 fun {A} {M} [AddMonoid A] [Monoid M] => { coe := AddChar.toFun, coe_injective' := ⋯ }
 ```
 
-### D079: `AddGroupWithOne.toAddMonoidWithOne`
+### D104: `AddGroupWithOne.toAddMonoidWithOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Int.Cast.Defs`
@@ -2440,7 +3188,7 @@ Definition body (one-level semantic boundary):
 fun R [self : AddGroupWithOne R] => self.2
 ```
 
-### D080: `AddMonoidWithOne.toAddMonoid`
+### D105: `AddMonoidWithOne.toAddMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
@@ -2466,7 +3214,7 @@ Definition body (one-level semantic boundary):
 fun R [self : AddMonoidWithOne R] => self.2
 ```
 
-### D081: `CommRing.toNonUnitalCommRing`
+### D106: `CommRing.toNonUnitalCommRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -2495,7 +3243,7 @@ fun {α} [s : CommRing α] =>
     left_distrib := ⋯, right_distrib := ⋯, zero_mul := ⋯, mul_zero := ⋯, mul_assoc := ⋯, mul_comm := ⋯ }
 ```
 
-### D082: `CommRing.toRing`
+### D107: `CommRing.toRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -2521,7 +3269,7 @@ Definition body (one-level semantic boundary):
 fun α [self : CommRing α] => self.1
 ```
 
-### D083: `Complex.instMul`
+### D108: `Complex.instMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Complex.Basic`
@@ -2550,7 +3298,7 @@ Definition body (one-level semantic boundary):
       im := instHAdd.hAdd (instHMul.hMul z.re w.im) (instHMul.hMul z.im w.re) } }
 ```
 
-### D084: `Complex.instNormedAddCommGroup`
+### D109: `Complex.instNormedAddCommGroup`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Complex.Norm`
@@ -2578,7 +3326,7 @@ Definition body (one-level semantic boundary):
     eq_zero_of_map_eq_zero' := Complex.instNormedAddCommGroup._proof_1 }.toNormedAddCommGroup
 ```
 
-### D085: `Complex.instNormedField`
+### D110: `Complex.instNormedField`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Complex.Basic`
@@ -2606,7 +3354,7 @@ Definition body (one-level semantic boundary):
   norm_mul := Complex.norm_mul }
 ```
 
-### D086: `Complex.instSemiring`
+### D111: `Complex.instSemiring`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Complex.Basic`
@@ -2632,7 +3380,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D087: `DFunLike.coe`
+### D112: `DFunLike.coe`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.FunLike.Basic`
@@ -2660,7 +3408,7 @@ Definition body (one-level semantic boundary):
 fun F {α} {β} [self : DFunLike F α β] => self.1
 ```
 
-### D088: `Distrib.toMul`
+### D113: `Distrib.toMul`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -2686,7 +3434,7 @@ Definition body (one-level semantic boundary):
 fun R [self : Distrib R] => self.1
 ```
 
-### D089: `ENormedAddCommMonoid.toESeminormedAddCommMonoid`
+### D114: `ENormedAddCommMonoid.toESeminormedAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Defs`
@@ -2714,7 +3462,7 @@ Definition body (one-level semantic boundary):
 fun E {inst} [self : ENormedAddCommMonoid E] => self.1
 ```
 
-### D090: `ESeminormedAddCommMonoid.toAddCommMonoid`
+### D115: `ESeminormedAddCommMonoid.toAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Defs`
@@ -2741,7 +3489,7 @@ Definition body (one-level semantic boundary):
 fun E [TopologicalSpace E] self => { toAddMonoid := self.toAddMonoid, add_comm := ⋯ }
 ```
 
-### D091: `Fin`
+### D116: `Fin`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2761,7 +3509,7 @@ Fully explicit type:
 (n : Nat) → Type
 ```
 
-### D092: `Fin.fintype`
+### D117: `Fin.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Basic`
@@ -2787,7 +3535,7 @@ Definition body (one-level semantic boundary):
 fun n => { elems := { val := Multiset.ofList (List.finRange n), nodup := ⋯ }, complete := ⋯ }
 ```
 
-### D093: `Finset.sum`
+### D118: `Finset.sum`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -2813,7 +3561,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [AddCommMonoid M] s f => (Multiset.map f s.val).sum
 ```
 
-### D094: `Finset.univ`
+### D119: `Finset.univ`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Fintype.Defs`
@@ -2839,7 +3587,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Fintype α] => inst.elems
 ```
 
-### D095: `HSub.hSub`
+### D120: `HSub.hSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -2865,7 +3613,7 @@ Definition body (one-level semantic boundary):
 fun α β {γ} [self : HSub α β γ] => self.1
 ```
 
-### D096: `MonoidWithZero.toMonoid`
+### D121: `MonoidWithZero.toMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.GroupWithZero.Defs`
@@ -2891,7 +3639,7 @@ Definition body (one-level semantic boundary):
 fun M₀ [self : MonoidWithZero M₀] => self.1
 ```
 
-### D097: `NonUnitalCommRing.toNonUnitalNonAssocCommRing`
+### D122: `NonUnitalCommRing.toNonUnitalNonAssocCommRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -2917,7 +3665,7 @@ Definition body (one-level semantic boundary):
 fun α self => { toNonUnitalNonAssocRing := self.toNonUnitalNonAssocRing, mul_comm := ⋯ }
 ```
 
-### D098: `NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing`
+### D123: `NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -2943,7 +3691,7 @@ Definition body (one-level semantic boundary):
 fun α [self : NonUnitalNonAssocCommRing α] => self.1
 ```
 
-### D099: `NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring`
+### D124: `NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -2971,7 +3719,7 @@ fun α self =>
     zero_mul := ⋯, mul_zero := ⋯ }
 ```
 
-### D100: `NonUnitalNonAssocSemiring.toDistrib`
+### D125: `NonUnitalNonAssocSemiring.toDistrib`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -2997,7 +3745,7 @@ Definition body (one-level semantic boundary):
 fun α self => { toMul := self.toMul, toAdd := self.toAdd, left_distrib := ⋯, right_distrib := ⋯ }
 ```
 
-### D101: `Norm.norm`
+### D126: `Norm.norm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Defs`
@@ -3023,7 +3771,7 @@ Definition body (one-level semantic boundary):
 fun E [self : Norm E] => self.1
 ```
 
-### D102: `NormedAddCommGroup.toENormedAddCommMonoid`
+### D127: `NormedAddCommGroup.toENormedAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Group.Continuity`
@@ -3058,7 +3806,7 @@ fun {E} [inst : NormedAddCommGroup E] =>
   { toESeminormedAddMonoid := __spread.0.toESeminormedAddMonoid, add_comm := ⋯, enorm_eq_zero := ⋯ }
 ```
 
-### D103: `NormedCommRing.toNormedRing`
+### D128: `NormedCommRing.toNormedRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Ring.Basic`
@@ -3084,7 +3832,7 @@ Definition body (one-level semantic boundary):
 fun α [self : NormedCommRing α] => self.1
 ```
 
-### D104: `NormedCommRing.toSeminormedCommRing`
+### D129: `NormedCommRing.toSeminormedCommRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Ring.Basic`
@@ -3112,7 +3860,7 @@ fun {α} [β : NormedCommRing α] =>
     norm_mul_le := ⋯, mul_comm := ⋯ }
 ```
 
-### D105: `NormedField.toNormedCommRing`
+### D130: `NormedField.toNormedCommRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Field.Basic`
@@ -3141,7 +3889,7 @@ fun {α} [inst : NormedField α] =>
     norm_mul_le := ⋯, mul_comm := ⋯ }
 ```
 
-### D106: `NormedRing.toNorm`
+### D131: `NormedRing.toNorm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Ring.Basic`
@@ -3167,7 +3915,7 @@ Definition body (one-level semantic boundary):
 fun α [self : NormedRing α] => self.1
 ```
 
-### D107: `One.toOfNat1`
+### D132: `One.toOfNat1`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Zero`
@@ -3193,7 +3941,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : One α] => { ofNat := inst.one }
 ```
 
-### D108: `Pi.normedRing`
+### D133: `Pi.normedRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Ring.Lemmas`
@@ -3224,7 +3972,7 @@ fun {ι} {R} [Fintype ι] [(i : ι) → NormedRing (R i)] =>
     eq_of_dist_eq_zero := ⋯, dist_eq := ⋯, norm_mul_le := ⋯ }
 ```
 
-### D109: `PseudoMetricSpace.toUniformSpace`
+### D134: `PseudoMetricSpace.toUniformSpace`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Topology.MetricSpace.Pseudo.Defs`
@@ -3250,7 +3998,7 @@ Definition body (one-level semantic boundary):
 fun α [self : PseudoMetricSpace α] => self.7
 ```
 
-### D110: `Real.instAddCommMonoid`
+### D135: `Real.instAddCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3276,7 +4024,7 @@ Definition body (one-level semantic boundary):
 inferInstance
 ```
 
-### D111: `Real.instOne`
+### D136: `Real.instOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3302,7 +4050,7 @@ Definition body (one-level semantic boundary):
 { one := Real.one✝ }
 ```
 
-### D112: `Real.instSub`
+### D137: `Real.instSub`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Real.Basic`
@@ -3328,7 +4076,7 @@ Definition body (one-level semantic boundary):
 { sub := fun a b => instHAdd.hAdd a (Real.instNeg.neg b) }
 ```
 
-### D113: `Ring.toAddGroupWithOne`
+### D138: `Ring.toAddGroupWithOne`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -3358,7 +4106,7 @@ fun R self =>
     intCast_negSucc := ⋯ }
 ```
 
-### D114: `SeminormedCommRing.toSeminormedRing`
+### D139: `SeminormedCommRing.toSeminormedRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Ring.Basic`
@@ -3384,7 +4132,7 @@ Definition body (one-level semantic boundary):
 fun α [self : SeminormedCommRing α] => self.1
 ```
 
-### D115: `SeminormedRing.toPseudoMetricSpace`
+### D140: `SeminormedRing.toPseudoMetricSpace`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Normed.Ring.Basic`
@@ -3410,7 +4158,7 @@ Definition body (one-level semantic boundary):
 fun α [self : SeminormedRing α] => self.3
 ```
 
-### D116: `Semiring.toMonoidWithZero`
+### D141: `Semiring.toMonoidWithZero`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Ring.Defs`
@@ -3438,7 +4186,27 @@ fun α self =>
     npow_zero := ⋯, npow_succ := ⋯, toZero := self.toZero, zero_mul := ⋯, mul_zero := ⋯ }
 ```
 
-### D117: `UniformSpace.toTopologicalSpace`
+### D142: `Subtype`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `2`
+- Semantic SHA-256: `3b0bb8433bd0c981dbdb4d6256bf74c50e9883207dae8d309dcb705135cf932c`
+
+Type:
+
+```lean
+{α : Sort u} → (α → Prop) → Sort (max 1 u)
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → (p : α → Prop) → Sort (max 1 u)
+```
+
+### D143: `UniformSpace.toTopologicalSpace`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Topology.UniformSpace.Defs`
@@ -3464,7 +4232,7 @@ Definition body (one-level semantic boundary):
 fun α [self : UniformSpace α] => self.1
 ```
 
-### D118: `ZMod.commRing`
+### D144: `ZMod.commRing`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.ZMod.Defs`
@@ -3514,7 +4282,7 @@ fun n =>
     intCast_negSucc := ⋯, mul_comm := ⋯ }
 ```
 
-### D119: `ZMod.fintype`
+### D145: `ZMod.fintype`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.ZMod.Defs`
@@ -3542,7 +4310,7 @@ fun x x_1 =>
     Fin.fintype (instHAdd.hAdd n 1)
 ```
 
-### D120: `ZMod.stdAddChar`
+### D146: `ZMod.stdAddChar`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.SpecialFunctions.Complex.CircleAddChar`
@@ -3574,7 +4342,7 @@ Definition body (one-level semantic boundary):
 fun {N} [NeZero N] => Circle.coeHom.compAddChar ZMod.toCircle
 ```
 
-### D121: `instHSub`
+### D147: `instHSub`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3600,7 +4368,7 @@ Definition body (one-level semantic boundary):
 fun {α} [inst : Sub α] => { hSub := fun a b => inst.sub a b }
 ```
 
-### D122: `instOfNatAtLeastTwo`
+### D148: `instOfNatAtLeastTwo`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Cast.Defs`
@@ -3626,7 +4394,7 @@ Definition body (one-level semantic boundary):
 fun {R} {n} [NatCast R] [n.AtLeastTwo] => { ofNat := n.cast }
 ```
 
-### D123: `Bool`
+### D149: `Bool`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3646,53 +4414,7 @@ Fully explicit type:
 Type
 ```
 
-### D124: `Bool.true`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `constructor`
-- Distance from target type: `3`
-- Semantic SHA-256: `97e763ea95d8452117cf5762fd67acddd549677f08ccfa348c4bf23db7eaa9d8`
-
-Type:
-
-```lean
-Bool
-```
-
-Fully explicit type:
-
-```lean
-Bool
-```
-
-### D125: `Complex.instSub`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Complex.Basic`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `26cc7a92ad47bfd4a81e9b47e27ff96a00a409cbd8b04b21b458f7c67849aa8d`
-
-Type:
-
-```lean
-Sub Complex
-```
-
-Fully explicit type:
-
-```lean
-Sub.{0} Complex
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ sub := fun z w => { re := instHSub.hSub z.re w.re, im := instHSub.hSub z.im w.im } }
-```
-
-### D126: `Decidable.decide`
+### D150: `Decidable.decide`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3718,7 +4440,7 @@ Definition body (one-level semantic boundary):
 fun p [h : Decidable p] => Decidable.casesOn h (fun x => Bool.false) fun x => Bool.true
 ```
 
-### D127: `Equiv`
+### D151: `Equiv`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Logic.Equiv.Defs`
@@ -3738,7 +4460,7 @@ Fully explicit type:
 (α : Sort u_1) → (β : Sort u_2) → Sort (max (max 1 u_1) u_2)
 ```
 
-### D128: `Fin.val`
+### D152: `Fin.val`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3764,7 +4486,7 @@ Definition body (one-level semantic boundary):
 fun n self => self.1
 ```
 
-### D129: `Finset.prod`
+### D153: `Finset.prod`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.BigOperators.Group.Finset.Defs`
@@ -3790,7 +4512,7 @@ Definition body (one-level semantic boundary):
 fun {ι} {M} [CommMonoid M] s f => (Multiset.map f s.val).prod
 ```
 
-### D130: `Function.Surjective`
+### D154: `Function.Surjective`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.Function`
@@ -3816,33 +4538,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} f => ∀ (b : β), Exists fun a => Eq (f a) b
 ```
 
-### D131: `LT.lt`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `3`
-- Semantic SHA-256: `fd5699899f1a49c91982cb363d3a71557ab1b53ee772cd777c9ee7717abc2009`
-
-Type:
-
-```lean
-{α : Type u} → [self : LT α] → α → α → Prop
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → [self : LT.{u} α] → α → α → Prop
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α [self : LT α] => self.1
-```
-
-### D132: `Nat.AtLeastTwo`
+### D155: `Nat.AtLeastTwo`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.Nat.Init`
@@ -3862,7 +4558,7 @@ Fully explicit type:
 (n : Nat) → Prop
 ```
 
-### D133: `Nat.decLt`
+### D156: `Nat.decLt`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -3888,30 +4584,7 @@ Definition body (one-level semantic boundary):
 fun n m => n.succ.decLe m
 ```
 
-### D134: `Nat.instAtLeastTwoHAddOfNat`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Nat.Init`
-- Declaration kind: `theorem`
-- Distance from target type: `3`
-- Semantic SHA-256: `309ef94c4b7cfbe2e668952e6915279353921d5d48b6123a30f90dd932dac3e6`
-
-Type:
-
-```lean
-∀ (n : Nat) [NeZero n], (instHAdd.hAdd n 1).AtLeastTwo
-```
-
-Fully explicit type:
-
-```lean
-∀ (n : Nat) [@NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0))) n],
-  Nat.AtLeastTwo
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-### D135: `Nat.instCommMonoid`
+### D157: `Nat.instCommMonoid`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Algebra.Group.Nat.Defs`
@@ -3939,239 +4612,7 @@ Definition body (one-level semantic boundary):
   mul_comm := Nat.mul_comm }
 ```
 
-### D136: `Nat.instNeZeroSucc`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Nat.Basic`
-- Declaration kind: `theorem`
-- Distance from target type: `3`
-- Semantic SHA-256: `a0735a528184c05594c4c79312c1225bb4dcffcdf0df7eb1a50c5733047c85ad`
-
-Type:
-
-```lean
-∀ {n : Nat}, NeZero (instHAdd.hAdd n 1)
-```
-
-Fully explicit type:
-
-```lean
-∀ {n : Nat},
-  @NeZero.{0} Nat (@Zero.ofOfNat0.{0} Nat (instOfNatNat (nat_lit 0)))
-    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
-      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
-```
-
-### D137: `Real.cos`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Analysis.Complex.Trigonometric`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `1377d30c9decd42f763baf8cb45f365ee121aec3ccf9f371c298d2926eba5a53`
-
-Type:
-
-```lean
-Real → Real
-```
-
-Fully explicit type:
-
-```lean
-(x : Real) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun x => (Complex.cos (Complex.ofReal x)).re
-```
-
-### D138: `Real.instAddGroup`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0`
-
-Type:
-
-```lean
-AddGroup Real
-```
-
-Fully explicit type:
-
-```lean
-AddGroup.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D139: `Real.instLT`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `573bcfac2b62a55b90ee93bf35473d500cc64581698a699b2152c52f40d0e14a`
-
-Type:
-
-```lean
-LT Real
-```
-
-Fully explicit type:
-
-```lean
-LT.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ lt := Real.lt✝ }
-```
-
-### D140: `Real.instZero`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `860eaaa75b06ac6fccbf4f27e9e162807e8851d04bb42d2411332c6368b14882`
-
-Type:
-
-```lean
-Zero Real
-```
-
-Fully explicit type:
-
-```lean
-Zero.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ zero := Real.zero✝ }
-```
-
-### D141: `Real.lattice`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Real.Basic`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510`
-
-Type:
-
-```lean
-Lattice Real
-```
-
-Fully explicit type:
-
-```lean
-Lattice.{0} Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-inferInstance
-```
-
-### D142: `Real.sin`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Analysis.Complex.Trigonometric`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `7937a67d5952a981d1a70df574b1d79c6e87542f5d15a2b0fe35a8fe8d31811f`
-
-Type:
-
-```lean
-Real → Real
-```
-
-Fully explicit type:
-
-```lean
-(x : Real) → Real
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun x => (Complex.sin (Complex.ofReal x)).re
-```
-
-### D143: `Zero.toOfNat0`
-
-- Role: `external-frontier`
-- Owner module: `Init.Data.Zero`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `f7ebe8a983de002c1ee751fd3c144a7c1933b3bb95c87c5001a3cabf5709031a`
-
-Type:
-
-```lean
-{α : Type u_1} → [Zero α] → OfNat α 0
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Zero.{u_1} α] → OfNat.{u_1} α (nat_lit 0)
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [inst : Zero α] => { ofNat := inst.zero }
-```
-
-### D144: `abs`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b`
-
-Type:
-
-```lean
-{α : Type u_1} → [Lattice α] → [AddGroup α] → α → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u_1} → [Lattice.{u_1} α] → [AddGroup.{u_1} α] → (a : α) → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} [Lattice α] [AddGroup α] a =>
-  SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
-```
-
-### D145: `instAddNat`
+### D158: `instAddNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4197,33 +4638,7 @@ Definition body (one-level semantic boundary):
 { add := Nat.add }
 ```
 
-### D146: `instDecidableEqBool`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `def`
-- Distance from target type: `3`
-- Semantic SHA-256: `dedf43b35e221c78c811d0b7268b7be703d67b744ad16b23df01af14b2aa5899`
-
-Type:
-
-```lean
-DecidableEq Bool
-```
-
-Fully explicit type:
-
-```lean
-DecidableEq.{1} Bool
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-Bool.decEq
-```
-
-### D147: `instDecidableEqNat`
+### D159: `instDecidableEqNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4249,7 +4664,7 @@ Definition body (one-level semantic boundary):
 Nat.decEq
 ```
 
-### D148: `instLTNat`
+### D160: `instLTNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4275,7 +4690,7 @@ Definition body (one-level semantic boundary):
 { lt := Nat.lt }
 ```
 
-### D149: `ite`
+### D161: `ite`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4301,33 +4716,7 @@ Definition body (one-level semantic boundary):
 fun {α} c [h : Decidable c] t e => Decidable.casesOn h (fun x => e) fun x => t
 ```
 
-### D150: `Complex.instAdd`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Data.Complex.Basic`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `dd8fdb776f3b7e3d1d0374b238287ec761577d2b078497d976639abf335d4179`
-
-Type:
-
-```lean
-Add Complex
-```
-
-Fully explicit type:
-
-```lean
-Add.{0} Complex
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-{ add := fun z w => { re := instHAdd.hAdd z.re w.re, im := instHAdd.hAdd z.im w.im } }
-```
-
-### D151: `Complex.instNorm`
+### D162: `Complex.instNorm`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Analysis.Complex.Norm`
@@ -4353,7 +4742,33 @@ Definition body (one-level semantic boundary):
 { norm := fun z => (MonoidWithZeroHom.funLike.coe Complex.normSq z).sqrt }
 ```
 
-### D152: `Equiv.instEquivLike`
+### D163: `Complex.instSub`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Complex.Basic`
+- Declaration kind: `def`
+- Distance from target type: `4`
+- Semantic SHA-256: `26cc7a92ad47bfd4a81e9b47e27ff96a00a409cbd8b04b21b458f7c67849aa8d`
+
+Type:
+
+```lean
+Sub Complex
+```
+
+Fully explicit type:
+
+```lean
+Sub.{0} Complex
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ sub := fun z w => { re := instHSub.hSub z.re w.re, im := instHSub.hSub z.im w.im } }
+```
+
+### D164: `Equiv.instEquivLike`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Logic.Equiv.Defs`
@@ -4379,33 +4794,7 @@ Definition body (one-level semantic boundary):
 fun {α} {β} => { coe := Equiv.toFun, inv := Equiv.invFun, left_inv := ⋯, right_inv := ⋯, coe_injective' := ⋯ }
 ```
 
-### D153: `Equiv.symm`
-
-- Role: `external-frontier`
-- Owner module: `Mathlib.Logic.Equiv.Defs`
-- Declaration kind: `def`
-- Distance from target type: `4`
-- Semantic SHA-256: `57ee9c638939cfeecafbbd4c55de44dd6a442327ab164c9ed3cd729233289347`
-
-Type:
-
-```lean
-{α : Sort u} → {β : Sort v} → Equiv α β → Equiv β α
-```
-
-Fully explicit type:
-
-```lean
-{α : Sort u} → {β : Sort v} → (e : Equiv.{u, v} α β) → Equiv.{v, u} β α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun {α} {β} e => { toFun := e.invFun, invFun := e.toFun, left_inv := ⋯, right_inv := ⋯ }
-```
-
-### D154: `EquivLike.toFunLike`
+### D165: `EquivLike.toFunLike`
 
 - Role: `external-frontier`
 - Owner module: `Mathlib.Data.FunLike.Equiv`
@@ -4431,7 +4820,7 @@ Definition body (one-level semantic boundary):
 fun {E} {α} {β} [inst : EquivLike E α β] => { coe := inst.coe, coe_injective' := ⋯ }
 ```
 
-### D155: `List.foldl`
+### D166: `List.foldl`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4462,7 +4851,7 @@ fun {α} {β} f x x_1 =>
     x
 ```
 
-### D156: `List.ofFn`
+### D167: `List.ofFn`
 
 - Role: `external-frontier`
 - Owner module: `Init.Data.List.OfFn`
@@ -4488,99 +4877,53 @@ Definition body (one-level semantic boundary):
 fun {α} {n} f => Fin.foldr n (fun x1 x2 => List.cons (f x1) x2) List.nil
 ```
 
-### D157: `Prod`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `inductive`
-- Distance from target type: `4`
-- Semantic SHA-256: `3df3b0cff45fb04022db70edff8e5747def6cae602cd8c33e673abac1bb4e347`
-
-Type:
-
-```lean
-Type u → Type v → Type (max u v)
-```
-
-Fully explicit type:
-
-```lean
-(α : Type u) → (β : Type v) → Type (max u v)
-```
-
-### D158: `Prod.fst`
-
-- Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `4`
-- Semantic SHA-256: `31dfcc70f250d68311839281cfb552859ef6a5cdd31e725091d6a2a2f7fb2165`
-
-Type:
-
-```lean
-{α : Type u} → {β : Type v} → Prod α β → α
-```
-
-Fully explicit type:
-
-```lean
-{α : Type u} → {β : Type v} → (self : Prod.{u, v} α β) → α
-```
-
-Definition body (one-level semantic boundary):
-
-```lean
-fun α β self => self.1
-```
-
-### D159: `Prod.mk`
+### D168: `Bool.true`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
 - Declaration kind: `constructor`
-- Distance from target type: `4`
-- Semantic SHA-256: `e42ba07a23655c2aae0502df1e03897313eaf034a0e84cfef98e91f6b4920097`
+- Distance from target type: `5`
+- Semantic SHA-256: `97e763ea95d8452117cf5762fd67acddd549677f08ccfa348c4bf23db7eaa9d8`
 
 Type:
 
 ```lean
-{α : Type u} → {β : Type v} → α → β → Prod α β
+Bool
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Type u} → {β : Type v} → (fst : α) → (snd : β) → Prod.{u, v} α β
+Bool
 ```
 
-### D160: `Prod.snd`
+### D169: `Equiv.symm`
 
 - Role: `external-frontier`
-- Owner module: `Init.Prelude`
-- Declaration kind: `abbrev`
-- Distance from target type: `4`
-- Semantic SHA-256: `a70aebf9da319c4b02023421b33923182c4d5164c2087035016589b80ed1191a`
+- Owner module: `Mathlib.Logic.Equiv.Defs`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `57ee9c638939cfeecafbbd4c55de44dd6a442327ab164c9ed3cd729233289347`
 
 Type:
 
 ```lean
-{α : Type u} → {β : Type v} → Prod α β → β
+{α : Sort u} → {β : Sort v} → Equiv α β → Equiv β α
 ```
 
 Fully explicit type:
 
 ```lean
-{α : Type u} → {β : Type v} → (self : Prod.{u, v} α β) → β
+{α : Sort u} → {β : Sort v} → (e : Equiv.{u, v} α β) → Equiv.{v, u} β α
 ```
 
 Definition body (one-level semantic boundary):
 
 ```lean
-fun α β self => self.2
+fun {α} {β} e => { toFun := e.invFun, invFun := e.toFun, left_inv := ⋯, right_inv := ⋯ }
 ```
 
-### D161: `Ne`
+### D170: `Ne`
 
 - Role: `external-frontier`
 - Owner module: `Init.Core`
@@ -4606,7 +4949,256 @@ Definition body (one-level semantic boundary):
 fun {α} a b => Not (Eq a b)
 ```
 
-### D162: `instMulNat`
+### D171: `Prod`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `inductive`
+- Distance from target type: `5`
+- Semantic SHA-256: `3df3b0cff45fb04022db70edff8e5747def6cae602cd8c33e673abac1bb4e347`
+
+Type:
+
+```lean
+Type u → Type v → Type (max u v)
+```
+
+Fully explicit type:
+
+```lean
+(α : Type u) → (β : Type v) → Type (max u v)
+```
+
+### D172: `Prod.fst`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `31dfcc70f250d68311839281cfb552859ef6a5cdd31e725091d6a2a2f7fb2165`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → Prod α β → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → (self : Prod.{u, v} α β) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β self => self.1
+```
+
+### D173: `Prod.mk`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `constructor`
+- Distance from target type: `5`
+- Semantic SHA-256: `e42ba07a23655c2aae0502df1e03897313eaf034a0e84cfef98e91f6b4920097`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → α → β → Prod α β
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → (fst : α) → (snd : β) → Prod.{u, v} α β
+```
+
+### D174: `Prod.snd`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `5`
+- Semantic SHA-256: `a70aebf9da319c4b02023421b33923182c4d5164c2087035016589b80ed1191a`
+
+Type:
+
+```lean
+{α : Type u} → {β : Type v} → Prod α β → β
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → {β : Type v} → (self : Prod.{u, v} α β) → β
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α β self => self.2
+```
+
+### D175: `Real.cos`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Analysis.Complex.Trigonometric`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `1377d30c9decd42f763baf8cb45f365ee121aec3ccf9f371c298d2926eba5a53`
+
+Type:
+
+```lean
+Real → Real
+```
+
+Fully explicit type:
+
+```lean
+(x : Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun x => (Complex.cos (Complex.ofReal x)).re
+```
+
+### D176: `Real.instAddGroup`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `f0de8cbc2c873a19be749cd9b2d3cc9a6edb9ebc92020a1877714a50c23d9dc0`
+
+Type:
+
+```lean
+AddGroup Real
+```
+
+Fully explicit type:
+
+```lean
+AddGroup.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D177: `Real.lattice`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `5bccf78d647cf08233ff548c19523f80b1d1bf11b5a76aa50396199e2c0c7510`
+
+Type:
+
+```lean
+Lattice Real
+```
+
+Fully explicit type:
+
+```lean
+Lattice.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+inferInstance
+```
+
+### D178: `Real.sin`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Analysis.Complex.Trigonometric`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `7937a67d5952a981d1a70df574b1d79c6e87542f5d15a2b0fe35a8fe8d31811f`
+
+Type:
+
+```lean
+Real → Real
+```
+
+Fully explicit type:
+
+```lean
+(x : Real) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun x => (Complex.sin (Complex.ofReal x)).re
+```
+
+### D179: `abs`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Order.Group.Unbundled.Abs`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `8ec55bade8dee4d49822a9bdbd84db24c019b8d568452329d9766390229a9c1b`
+
+Type:
+
+```lean
+{α : Type u_1} → [Lattice α] → [AddGroup α] → α → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u_1} → [Lattice.{u_1} α] → [AddGroup.{u_1} α] → (a : α) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} [Lattice α] [AddGroup α] a =>
+  SemilatticeSup.toMax.max a (SubtractionMonoid.toSubNegZeroMonoid.toNegZeroClass.neg a)
+```
+
+### D180: `instDecidableEqBool`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `5`
+- Semantic SHA-256: `dedf43b35e221c78c811d0b7268b7be703d67b744ad16b23df01af14b2aa5899`
+
+Type:
+
+```lean
+DecidableEq Bool
+```
+
+Fully explicit type:
+
+```lean
+DecidableEq.{1} Bool
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+Bool.decEq
+```
+
+### D181: `instMulNat`
 
 - Role: `external-frontier`
 - Owner module: `Init.Prelude`
@@ -4630,6 +5222,586 @@ Definition body (one-level semantic boundary):
 
 ```lean
 { mul := Nat.mul }
+```
+
+### D182: `Complex.im`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Complex.Basic`
+- Declaration kind: `abbrev`
+- Distance from target type: `7`
+- Semantic SHA-256: `276278e52acc5a079152e9d98e5089746dc087e625b4583f0c8a78b06f4e42ef`
+
+Type:
+
+```lean
+Complex → Real
+```
+
+Fully explicit type:
+
+```lean
+(self : Complex) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.2
+```
+
+### D183: `Complex.mk`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Complex.Basic`
+- Declaration kind: `constructor`
+- Distance from target type: `7`
+- Semantic SHA-256: `eb086afc5605d698a41cc0dbd78c60aa93ea5b91b09555f0a3d4205e5c8c3d6d`
+
+Type:
+
+```lean
+Real → Real → Complex
+```
+
+Fully explicit type:
+
+```lean
+(re im : Real) → Complex
+```
+
+### D184: `Complex.re`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Complex.Basic`
+- Declaration kind: `abbrev`
+- Distance from target type: `7`
+- Semantic SHA-256: `d61ccb0f1eee778d5406d36759b34354009fc6e8d298adef3d9bfd8c57f16c75`
+
+Type:
+
+```lean
+Complex → Real
+```
+
+Fully explicit type:
+
+```lean
+(self : Complex) → Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun self => self.1
+```
+
+### D185: `Distrib.toAdd`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Ring.Defs`
+- Declaration kind: `abbrev`
+- Distance from target type: `7`
+- Semantic SHA-256: `cf0362fc4cebf4743d0430077ad4081a1de510a75cfe1b4e6adc97f21271a3ba`
+
+Type:
+
+```lean
+{R : Type u_1} → [self : Distrib R] → Add R
+```
+
+Fully explicit type:
+
+```lean
+{R : Type u_1} → [self : Distrib.{u_1} R] → Add.{u_1} R
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun R [self : Distrib R] => self.2
+```
+
+### D186: `Fin.instAdd`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `7`
+- Semantic SHA-256: `b3ee547a63794f701578ce9e2965118436a96f41dd67c398ae9c530ccaf94956`
+
+Type:
+
+```lean
+{n : Nat} → Add (Fin n)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → Add.{0} (Fin n)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} => { add := Fin.add }
+```
+
+### D187: `Fin.instMul`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `7`
+- Semantic SHA-256: `b2c82cb3bad8033084de1152c3311705f097fea4b09de861cfbc259aa58cae3d`
+
+Type:
+
+```lean
+{n : Nat} → Mul (Fin n)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → Mul.{0} (Fin n)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} => { mul := Fin.mul }
+```
+
+### D188: `Neg.neg`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `7`
+- Semantic SHA-256: `0c56662a5d917c211c3cb741ca747b4a6710082af615cf071342ef70dee3a2c7`
+
+Type:
+
+```lean
+{α : Type u} → [self : Neg α] → α → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Type u} → [self : Neg.{u} α] → α → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun α [self : Neg α] => self.1
+```
+
+### D189: `Real.instNeg`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.Real.Basic`
+- Declaration kind: `def`
+- Distance from target type: `7`
+- Semantic SHA-256: `000951397468b3d1f8a2a1cca1de3812bc024916ff842cfd5454811130093b41`
+
+Type:
+
+```lean
+Neg Real
+```
+
+Fully explicit type:
+
+```lean
+Neg.{0} Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+{ neg := Real.neg✝ }
+```
+
+### D190: `RingEquiv.toEquiv`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Algebra.Ring.Equiv`
+- Declaration kind: `abbrev`
+- Distance from target type: `7`
+- Semantic SHA-256: `ad2bbda4cee02ba76b521c1b90d73ae4e3d2edfd8e0e1471d3d872a8a791afb2`
+
+Type:
+
+```lean
+{R : Type u_7} →
+  {S : Type u_8} → [inst : Mul R] → [inst_1 : Mul S] → [inst_2 : Add R] → [inst_3 : Add S] → RingEquiv R S → Equiv R S
+```
+
+Fully explicit type:
+
+```lean
+{R : Type u_7} →
+  {S : Type u_8} →
+    [inst : Mul.{u_7} R] →
+      [inst_1 : Mul.{u_8} S] →
+        [inst_2 : Add.{u_7} R] →
+          [inst_3 : Add.{u_8} S] →
+            (self : @RingEquiv.{u_7, u_8} R S inst inst_1 inst_2 inst_3) → Equiv.{u_7 + 1, u_8 + 1} R S
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun R S [Mul R] [Mul S] [Add R] [Add S] self => self.1
+```
+
+### D191: `ZMod.finEquiv`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.ZMod.Basic`
+- Declaration kind: `def`
+- Distance from target type: `7`
+- Semantic SHA-256: `c7185762b5ca67875cfbfd2fcf9c9669ff6295dab781a48d1dfda8dee8181f04`
+
+Type:
+
+```lean
+(n : Nat) → [NeZero n] → RingEquiv (Fin n) (ZMod n)
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) →
+  [@NeZero.{0} Nat (@MulZeroClass.toZero.{0} Nat Nat.instMulZeroClass) n] →
+    @RingEquiv.{0, 0} (Fin n) (ZMod n) (@Fin.instMul n)
+      (@Distrib.toMul.{0} (ZMod n)
+        (@NonUnitalNonAssocSemiring.toDistrib.{0} (ZMod n)
+          (@NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring.{0} (ZMod n)
+            (@NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing.{0} (ZMod n)
+              (@NonUnitalCommRing.toNonUnitalNonAssocCommRing.{0} (ZMod n)
+                (@CommRing.toNonUnitalCommRing.{0} (ZMod n) (ZMod.commRing n)))))))
+      (@Fin.instAdd n)
+      (@Distrib.toAdd.{0} (ZMod n)
+        (@NonUnitalNonAssocSemiring.toDistrib.{0} (ZMod n)
+          (@NonUnitalNonAssocRing.toNonUnitalNonAssocSemiring.{0} (ZMod n)
+            (@NonUnitalNonAssocCommRing.toNonUnitalNonAssocRing.{0} (ZMod n)
+              (@NonUnitalCommRing.toNonUnitalNonAssocCommRing.{0} (ZMod n)
+                (@CommRing.toNonUnitalCommRing.{0} (ZMod n) (ZMod.commRing n)))))))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun x x_1 =>
+  ZMod.finEquiv.match_1 (fun x x_2 => RingEquiv (Fin x) (ZMod x)) x x_1 (fun h => ⋯.elim) fun n x =>
+    RingEquiv.refl (Fin (instHAdd.hAdd n 1))
+```
+
+### D192: `Fin.castSucc`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `8`
+- Semantic SHA-256: `1a33a8aafc4da9c57254d511b91e1e2a293b6b2e6a304786fbdb535a2fe20bc6`
+
+Type:
+
+```lean
+{n : Nat} → Fin n → Fin (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} →
+  Fin n →
+    Fin
+      (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {n} => Fin.castAdd 1
+```
+
+### D193: `Fin.last`
+
+- Role: `external-frontier`
+- Owner module: `Init.Data.Fin.Basic`
+- Declaration kind: `def`
+- Distance from target type: `8`
+- Semantic SHA-256: `b7cf2c761ad02a28a34dfdeee30ac4ec7bd4c3ff77700313e3ed2f37d473f5f2`
+
+Type:
+
+```lean
+(n : Nat) → Fin (instHAdd.hAdd n 1)
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) →
+  Fin
+    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n
+      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun n => ⟨n, ⋯⟩
+```
+
+### D194: `Fin.mk`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `constructor`
+- Distance from target type: `8`
+- Semantic SHA-256: `2fb605c17aa879bf453f735ede02a7306496f461d34549bf61cb6c85662ce182`
+
+Type:
+
+```lean
+{n : Nat} → (val : Nat) → instLTNat.lt val n → Fin n
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → (val : Nat) → (isLt : @LT.lt.{0} Nat instLTNat val n) → Fin n
+```
+
+### D195: `Nat.below`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `8`
+- Semantic SHA-256: `04a84157ffe59e0d301c0043561b314a7ab23e9ec7be060ff84461bda2e48a65`
+
+Type:
+
+```lean
+{motive : Nat → Sort u} → Nat → Sort (max 1 u)
+```
+
+Fully explicit type:
+
+```lean
+{motive : (t : Nat) → Sort u} → (t : Nat) → Sort (max 1 u)
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {motive} t => Nat.rec PUnit (fun n n_ih => PProd (motive n) n_ih) t
+```
+
+### D196: `Nat.brecOn`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `8`
+- Semantic SHA-256: `112a5e33ebc43ed10219858c8cc3892005a54c63ed7cb7590213f5a7791f9c14`
+
+Type:
+
+```lean
+{motive : Nat → Sort u} → (t : Nat) → ((t : Nat) → Nat.below t → motive t) → motive t
+```
+
+Fully explicit type:
+
+```lean
+{motive : (t : Nat) → Sort u} → (t : Nat) → (F_1 : (t : Nat) → (f : @Nat.below.{u} motive t) → motive t) → motive t
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {motive} t F_1 => (Nat.brecOn.go t F_1).1
+```
+
+### D197: `Nat.succ`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `constructor`
+- Distance from target type: `8`
+- Semantic SHA-256: `c069f332a974e3dbf1dc48acb0a49ab7d732c776b5cccdbe836db99ce812bdb2`
+
+Type:
+
+```lean
+Nat → Nat
+```
+
+Fully explicit type:
+
+```lean
+(n : Nat) → Nat
+```
+
+### D198: `Not`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `8`
+- Semantic SHA-256: `0bfdacbe07f6cbb8995b354e36299fd742f29398c188d7cc23dedcdc47f57a9a`
+
+Type:
+
+```lean
+Prop → Prop
+```
+
+Fully explicit type:
+
+```lean
+(a : Prop) → Prop
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun a => a → False
+```
+
+### D199: `Real.pi`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic`
+- Declaration kind: `def`
+- Distance from target type: `8`
+- Semantic SHA-256: `d75a7e5ab21b9e0fa41907d3afec6d87f8f264e448c96b4fd69b77195bdbebac`
+
+Type:
+
+```lean
+Real
+```
+
+Fully explicit type:
+
+```lean
+Real
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+instHMul.hMul 2 (Classical.choose Real.exists_cos_eq_zero)
+```
+
+### D200: `ZMod.val`
+
+- Role: `external-frontier`
+- Owner module: `Mathlib.Data.ZMod.Basic`
+- Declaration kind: `def`
+- Distance from target type: `8`
+- Semantic SHA-256: `09f4356e066f5ae3957dc3f413b65273a0bf2b1f5828e9b1cfc9e08f21266213`
+
+Type:
+
+```lean
+{n : Nat} → ZMod n → Nat
+```
+
+Fully explicit type:
+
+```lean
+{n : Nat} → ZMod n → Nat
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun x => ZMod.val.match_1 (fun x => ZMod x → Nat) x (fun _ => Int.natAbs) fun n => Fin.val
+```
+
+### D201: `dite`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `def`
+- Distance from target type: `8`
+- Semantic SHA-256: `a2551097d29bac847f3c59e8213b5882afd4a95e9247c2382e8bce33011974b5`
+
+Type:
+
+```lean
+{α : Sort u} → (c : Prop) → [h : Decidable c] → (c → α) → (Not c → α) → α
+```
+
+Fully explicit type:
+
+```lean
+{α : Sort u} → (c : Prop) → [h : Decidable c] → (t : c → α) → (e : Not c → α) → α
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {α} c [h : Decidable c] t e => Decidable.casesOn h e t
+```
+
+### D202: `Nat.casesOn`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `abbrev`
+- Distance from target type: `9`
+- Semantic SHA-256: `ef6de7a898de834052ce3878aa9641c2b9e400122a4e012169c25b12d9da029d`
+
+Type:
+
+```lean
+{motive : Nat → Sort u} → (t : Nat) → motive Nat.zero → ((n : Nat) → motive n.succ) → motive t
+```
+
+Fully explicit type:
+
+```lean
+{motive : (t : Nat) → Sort u} →
+  (t : Nat) → (zero : motive Nat.zero) → (succ : (n : Nat) → motive (Nat.succ n)) → motive t
+```
+
+Definition body (one-level semantic boundary):
+
+```lean
+fun {motive} t zero succ => Nat.rec zero (fun n n_ih => succ n) t
+```
+
+### D203: `Nat.zero`
+
+- Role: `external-frontier`
+- Owner module: `Init.Prelude`
+- Declaration kind: `constructor`
+- Distance from target type: `9`
+- Semantic SHA-256: `514797223f88553aabb4307fa99de406677fb8a482f74b8d4694356cbd803a51`
+
+Type:
+
+```lean
+Nat
+```
+
+Fully explicit type:
+
+```lean
+Nat
 ```
 
 ## Complete local imported sources
@@ -4693,7 +5865,7 @@ end HighamBench
 ### `HighamBench.P09Definitions`
 
 Path: `paper_bencmark/highambench/shared/HighamBench/P09Definitions.lean`
-SHA-256: `17346c26dd0150dbdb16b77fbbd7240745e9f95617f619267e13740105a92fa9`
+SHA-256: `f4bceddad456502243e482822ebd4c2179894c1d1aa4083349fa4a7ddc8e398e`
 
 ```lean
 import HighamBench.Core
@@ -4762,6 +5934,13 @@ noncomputable def p09VectorSum {m n : ℕ}
 noncomputable def p09FourierTransform {n : ℕ} [NeZero n]
     (x : ZMod n → ℂ) : ZMod n → ℂ :=
   fun k ↦ ∑ j : ZMod n, ZMod.stdAddChar (j * k) * x j
+
+/-- The kernel used above has Ramos's positive exponential sign. -/
+theorem p09StdAddChar_positive_exp {n : ℕ} [NeZero n] (j : ZMod n) :
+    ZMod.stdAddChar j =
+      Complex.exp (2 * Real.pi * Complex.I * (j.val : ℂ) / (n : ℂ)) := by
+  rw [← ZMod.natCast_zmod_val j]
+  simpa using (ZMod.stdAddChar_coe (N := n) (j.val : ℤ))
 
 /-- Coordinatewise addition of complex vectors. -/
 def p09ComplexVecAdd {n : ℕ} (x y : ZMod n → ℂ) : ZMod n → ℂ :=
@@ -4894,52 +6073,131 @@ structure P09WilkinsonModel where
   cos_model : ∀ a : ℝ, ∃ θ : ℝ,
     |θ| ≤ 1 ∧ flCos a = Real.cos a + gamma * θ * epsilon
 
-/-- A stage-level execution trace of the one-dimensional floating-point FFT.
-The exact stage action is fixed by the certified factorization; `localError`
-is the roundoff introduced while evaluating that stage under `model`. -/
+/-- The positive root angle represented by a cyclic index. -/
+noncomputable def p09RootAngle {q : ℕ} [NeZero q] (j : ZMod q) : ℝ :=
+  2 * Real.pi * (j.val : ℝ) / (q : ℝ)
+
+/-- A root of unity computed through the paper's sine and cosine operations. -/
+noncomputable def p09RoundedRoot {q : ℕ} [NeZero q]
+    (model : P09WilkinsonModel) (j : ZMod q) : ℂ :=
+  ⟨model.flCos (p09RootAngle j), model.flSin (p09RootAngle j)⟩
+
+/-- Complex multiplication evaluated as four rounded real products followed by
+two rounded real additions. Unary negation is exact in the real error model. -/
+noncomputable def p09RoundedComplexMul (model : P09WilkinsonModel)
+    (x y : ℂ) : ℂ :=
+  ⟨model.flAdd (model.flMul x.re y.re) (-model.flMul x.im y.im),
+    model.flAdd (model.flMul x.re y.im) (model.flMul x.im y.re)⟩
+
+/-- Sequential rounded summation of a complex vector. -/
+noncomputable def p09RoundedComplexSum {q : ℕ} [NeZero q]
+    (model : P09WilkinsonModel) (term : ZMod q → ℂ) : ℂ :=
+  let index : Fin q ≃ ZMod q := (ZMod.finEquiv q).toEquiv
+  ⟨recursiveSum model.flAdd q fun i ↦ (term (index i)).re,
+    recursiveSum model.flAdd q fun i ↦ (term (index i)).im⟩
+
+/-- One operational mixed-radix FFT stage. It performs the paper's exact
+permutation, evaluates each block Fourier sum with rounded trigonometric,
+multiplication, and addition operations, and then performs the optional rounded
+twiddle multiplication. -/
+noncomputable def p09RoundedMixedRadixStageApply {n : ℕ} [NeZero n]
+    (model : P09WilkinsonModel) (stage : P09MixedRadixStage n)
+    (x : ZMod n → ℂ) : ZMod n → ℂ := by
+  letI : NeZero stage.radix := ⟨stage.radix_ne_zero⟩
+  let permuted : ZMod n → ℂ := fun i ↦ x (stage.permutation i)
+  let blocked : ZMod n → ℂ := fun i ↦
+    let bi := stage.reindex.symm i
+    p09RoundedComplexSum model fun j ↦
+      p09RoundedComplexMul model (p09RoundedRoot model (j * bi.2))
+        (permuted (stage.reindex (bi.1, j)))
+  exact fun i ↦
+    if stage.useTwiddle then
+      p09RoundedComplexMul model
+        (p09RoundedRoot model (stage.twiddleExponent i)) (blocked i)
+    else blocked i
+
+/-- Sequential execution of all rounded mixed-radix stages. -/
+noncomputable def p09ApplyRoundedMixedRadixStages {r n : ℕ} [NeZero n]
+    (model : P09WilkinsonModel)
+    (stages : Fin r → P09MixedRadixStage n) (x : ZMod n → ℂ) :
+    ZMod n → ℂ :=
+  (List.ofFn stages).foldl
+    (fun state stage ↦ p09RoundedMixedRadixStageApply model stage state) x
+
+/-- The operational one-dimensional FFT followed by its exact output
+permutation. -/
+noncomputable def p09RoundedFftApply {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (model : P09WilkinsonModel)
+    (x : ZMod n → ℂ) : ZMod n → ℂ :=
+  p09Permute plan.finalPermutation
+    (p09ApplyRoundedMixedRadixStages model plan.stage x)
+
+/-- An operational trace of the one-dimensional floating-point FFT. Every
+stage state is generated by the rounded operations above; no freely supplied
+local error vector or per-instance remainder coefficient is admitted. -/
 structure P09MixedRadixFftRun {n : ℕ} [NeZero n]
     (plan : P09MixedRadixFftPlan n) (model : P09WilkinsonModel) where
   input : ZMod n → ℂ
-  computedOutput : ZMod n → ℂ
   stageState : ℕ → ZMod n → ℂ
-  localError : Fin plan.stageCount → ZMod n → ℂ
-  localSecondOrderCoeff : Fin plan.stageCount → ℝ
   input_exact : ∀ i : ZMod n, model.flInput (input i) = input i
   initial_state : stageState 0 = input
   stage_step : ∀ i : Fin plan.stageCount,
     stageState (i.val + 1) =
-      p09ComplexVecAdd
-        (p09MixedRadixStageApply (plan.stage i) (stageState i.val))
-        (localError i)
-  computed_output : computedOutput =
-    p09Permute plan.finalPermutation (stageState plan.stageCount)
-  local_second_order_nonneg : ∀ i, 0 ≤ localSecondOrderCoeff i
-  local_error_bound : ∀ i : Fin plan.stageCount,
-    p09ComplexRms (localError i) ≤
-      model.epsilon * Real.sqrt ((plan.stage i).radix : ℝ) *
-          (p09Alpha (plan.stage i).radix model.gamma +
-            if (plan.stage i).useTwiddle then 3 + 2 * model.gamma else 0) *
-          p09ComplexRms (stageState i.val) +
-        localSecondOrderCoeff i * model.epsilon ^ 2
+      p09RoundedMixedRadixStageApply model (plan.stage i) (stageState i.val)
+
+/-- The computed output obtained after all rounded stages and the exact final
+permutation. -/
+def p09FftComputedOutput {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
+    (run : P09MixedRadixFftRun plan model) : ZMod n → ℂ :=
+  p09Permute plan.finalPermutation (run.stageState plan.stageCount)
 
 /-- The exact output roundoff error of a linked FFT execution. -/
 noncomputable def p09FftRoundoffError {n : ℕ} [NeZero n]
     {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
     (run : P09MixedRadixFftRun plan model) : ZMod n → ℂ :=
-  p09ComplexVecSub run.computedOutput (p09FourierTransform run.input)
+  p09ComplexVecSub (p09FftComputedOutput run) (p09FourierTransform run.input)
 
-/-- Theorem 1(a), specialized to the exact-input run and written as an
-absolute finite certificate. `secondOrderCoeff * epsilon^2` exposes the
-otherwise unquantified `O(epsilon^2)` term. -/
-structure P09TheoremOneRmsCertificate {n : ℕ} [NeZero n]
-    {plan : P09MixedRadixFftPlan n} {model : P09WilkinsonModel}
-    (run : P09MixedRadixFftRun plan model) where
+/-- Positive roundoff parameters used to state right-sided asymptotics at
+zero. -/
+abbrev P09PositiveEpsilon := {ε : ℝ // 0 < ε}
+
+/-- A family of operational FFT executions as machine precision tends to
+zero. The plan, trigonometric constant, and exactly represented input are fixed
+before `epsilon`; only the arithmetic model and its resulting trace vary. -/
+structure P09AsymptoticFftFamily {n : ℕ} [NeZero n]
+    (plan : P09MixedRadixFftPlan n) (γ : ℝ) where
+  gamma_nonneg : 0 ≤ γ
+  input : ZMod n → ℂ
+  model : P09PositiveEpsilon → P09WilkinsonModel
+  model_epsilon : ∀ ε, (model ε).epsilon = ε.1
+  model_gamma : ∀ ε, (model ε).gamma = γ
+  run : ∀ ε, P09MixedRadixFftRun plan (model ε)
+  run_input : ∀ ε, (run ε).input = input
+
+/-- The output roundoff error at one positive precision in an asymptotic
+execution family. -/
+noncomputable def p09FamilyFftRoundoffError {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {γ : ℝ}
+    (family : P09AsymptoticFftFamily plan γ) (ε : P09PositiveEpsilon) :
+    ZMod n → ℂ :=
+  p09FftRoundoffError (family.run ε)
+
+/-- Theorem 1(a) with the source's `O(epsilon^2)` interpreted uniformly on a
+right neighborhood of zero. The coefficient and radius are chosen after the
+fixed execution family but before any particular positive `epsilon`. -/
+structure P09TheoremOneRmsAsymptotic {n : ℕ} [NeZero n]
+    {plan : P09MixedRadixFftPlan n} {γ : ℝ}
+    (family : P09AsymptoticFftFamily plan γ) where
   secondOrderCoeff : ℝ
   secondOrderCoeff_nonneg : 0 ≤ secondOrderCoeff
-  error_bound : p09ComplexRms (p09FftRoundoffError run) ≤
-    model.epsilon * Real.sqrt (n : ℝ) * p09K plan model.gamma *
-        p09ComplexRms run.input +
-      secondOrderCoeff * model.epsilon ^ 2
+  radius : ℝ
+  radius_pos : 0 < radius
+  error_bound : ∀ ε : P09PositiveEpsilon, ε.1 ≤ radius →
+    p09ComplexRms (p09FamilyFftRoundoffError family ε) ≤
+      ε.1 * Real.sqrt (n : ℝ) * p09K plan γ *
+          p09ComplexRms family.input +
+        secondOrderCoeff * ε.1 ^ 2
 
 /-! ## Ramos's multidimensional FFT setting -/
 
@@ -5007,6 +6265,18 @@ noncomputable def p09CoordinateTransform {m : ℕ}
   exact fun index ↦ ∑ j : ZMod (axis i).order,
     ZMod.stdAddChar (j * index i) * x (Function.update index i j)
 
+/-- Apply the operational one-dimensional FFT to every fiber in coordinate
+`i`. The rounded roots, products, and sums are those of
+`p09RoundedMixedRadixStageApply`. -/
+noncomputable def p09RoundedCoordinateTransform {m : ℕ}
+    (axis : Fin m → P09FftAxis) (i : Fin m)
+    (model : P09WilkinsonModel) (x : P09MultiArray axis) :
+    P09MultiArray axis := by
+  letI : NeZero (axis i).order := ⟨Nat.ne_of_gt (axis i).order_pos⟩
+  exact fun index ↦
+    p09RoundedFftApply (axis i).plan model
+      (fun j ↦ x (Function.update index i j)) (index i)
+
 /-- A total natural-number interface to the coordinate transform. Values at
 indices outside `0,…,m-1` are the identity and are never used by a valid run. -/
 noncomputable def p09CoordinateTransformNat {m : ℕ}
@@ -5035,32 +6305,28 @@ structure P09MultidimensionalFftPlan (m : ℕ) [NeZero m] where
     p09MultiRms (p09ApplyCoordinatePrefix axis k x) =
       Real.sqrt (p09PrefixOrderProduct axis k hk : ℝ) * p09MultiRms x
 
-/-- A nested multidimensional FFT execution. `computedState m` is `X`, and
-`computedState i` is the rounded result after evaluating coordinate `i` on
-`computedState (i+1)`. The final field is the exact telescoping identity from
-the proof of Theorem 2. -/
+/-- A nested multidimensional FFT execution. `computedState m` is the exactly
+represented input, and every preceding state is generated by the rounded
+mixed-radix operations for one coordinate. -/
 structure P09MultidimensionalFftRun {m : ℕ} [NeZero m]
     (plan : P09MultidimensionalFftPlan m) (model : P09WilkinsonModel) where
   input : P09MultiArray plan.axis
   computedState : Fin (m + 1) → P09MultiArray plan.axis
-  localError : Fin m → P09MultiArray plan.axis
+  input_exact : ∀ index, model.flInput (input index) = input index
   computed_input : computedState (Fin.last m) = input
   stage_step : ∀ i : Fin m,
     computedState i.castSucc =
-      p09MultiVecAdd
-        (p09CoordinateTransform plan.axis i (computedState i.succ))
-        (localError i)
-  input_rms_condition :
-    p09MultiRms (fun index ↦ model.flInput (input index)) = p09MultiRms input ∨
-      ∃ inputFirstOrderCoeff : ℝ,
-        0 ≤ inputFirstOrderCoeff ∧
-        |p09MultiRms (fun index ↦ model.flInput (input index)) -
-            p09MultiRms input| ≤ inputFirstOrderCoeff * model.epsilon
-  telescoping_error :
-    p09MultiVecSub (computedState 0)
-        (p09ApplyCoordinatePrefix plan.axis m input) =
-      p09MultiVectorSum fun i ↦
-        p09ApplyCoordinatePrefix plan.axis i.val (localError i)
+      p09RoundedCoordinateTransform plan.axis i model
+        (computedState i.succ)
+
+/-- The error introduced by the operational coordinate-`i` computation. It is
+derived from the execution trace rather than supplied as a certificate. -/
+noncomputable def p09AxisLocalError {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
+    (run : P09MultidimensionalFftRun plan model) (i : Fin m) :
+    P09MultiArray plan.axis :=
+  p09MultiVecSub (run.computedState i.castSucc)
+    (p09CoordinateTransform plan.axis i (run.computedState i.succ))
 
 /-- The exact output `Y=T₁⋯TₘX`. -/
 noncomputable def p09MultiExactOutput {m : ℕ} [NeZero m]
@@ -5085,50 +6351,73 @@ noncomputable def p09PropagatedAxisError {m : ℕ} [NeZero m]
     {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
     (run : P09MultidimensionalFftRun plan model) (i : Fin m) :
     P09MultiArray plan.axis :=
-  p09ApplyCoordinatePrefix plan.axis i.val (run.localError i)
+  p09ApplyCoordinatePrefix plan.axis i.val (p09AxisLocalError run i)
 
 /-- The scale multiplying `K(Nᵢ,γ)` after propagating coordinate `i`'s
 one-dimensional Theorem 1 estimate through the preceding exact transforms. -/
 noncomputable def p09PropagatedStageInputRms {m : ℕ} [NeZero m]
     {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
     (run : P09MultidimensionalFftRun plan model) (i : Fin m) : ℝ :=
-  Real.sqrt
-      (p09PrefixOrderProduct plan.axis i.val (Nat.le_of_lt i.isLt) : ℝ) *
-    Real.sqrt ((plan.axis i).order : ℝ) *
-    p09MultiRms (run.computedState i.succ)
+  p09MultiRms
+    (p09ApplyCoordinatePrefix plan.axis (i.val + 1)
+      (run.computedState i.succ))
 
-/-- Equations `(4.3)` and `(4.4)` with every hidden remainder exposed. The
-`intermediate_rms_approx` field includes the paper's exact-or-`O(ε)` input
-RMS condition at the last coordinate and the analogous intermediate facts. -/
-structure P09TheoremTwoRmsCertificate {m : ℕ} [NeZero m]
-    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
-    (run : P09MultidimensionalFftRun plan model) where
+/-- A family of operational multidimensional FFT executions as machine
+precision tends to zero. The plan, trigonometric constant, and exactly
+represented input are fixed before `epsilon`; only the arithmetic model and
+the resulting trace vary. -/
+structure P09AsymptoticMultidimensionalFftFamily {m : ℕ} [NeZero m]
+    (plan : P09MultidimensionalFftPlan m) (γ : ℝ) where
+  gamma_nonneg : 0 ≤ γ
+  input : P09MultiArray plan.axis
+  model : P09PositiveEpsilon → P09WilkinsonModel
+  model_epsilon : ∀ ε, (model ε).epsilon = ε.1
+  model_gamma : ∀ ε, (model ε).gamma = γ
+  run : ∀ ε, P09MultidimensionalFftRun plan (model ε)
+  run_input : ∀ ε, (run ε).input = input
+
+/-- The fixed exact multidimensional output of an asymptotic execution
+family. -/
+noncomputable def p09FamilyMultiExactOutput {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {γ : ℝ}
+    (family : P09AsymptoticMultidimensionalFftFamily plan γ) :
+    P09MultiArray plan.axis :=
+  p09ApplyCoordinatePrefix plan.axis m family.input
+
+/-- The output roundoff error at one positive precision in a multidimensional
+execution family. -/
+noncomputable def p09FamilyMultiFftRoundoffError {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {γ : ℝ}
+    (family : P09AsymptoticMultidimensionalFftFamily plan γ)
+    (ε : P09PositiveEpsilon) : P09MultiArray plan.axis :=
+  p09MultiVecSub (p09MultiComputedOutput (family.run ε))
+    (p09FamilyMultiExactOutput family)
+
+/-- Uniform applications of the one-dimensional Theorem 1 estimate to every
+coordinate in an operational multidimensional family. Equation `(4.4)` has
+already propagated each local estimate through the preceding exact coordinate
+transforms. No intermediate-state or final multidimensional estimate is a
+field of this structure. -/
+structure P09TheoremTwoLocalAsymptotic {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {γ : ℝ}
+    (family : P09AsymptoticMultidimensionalFftFamily plan γ) where
   localSecondOrderCoeff : Fin m → ℝ
-  intermediateFirstOrderCoeff : Fin m → ℝ
   local_second_order_nonneg : ∀ i, 0 ≤ localSecondOrderCoeff i
-  intermediate_first_order_nonneg : ∀ i, 0 ≤ intermediateFirstOrderCoeff i
-  local_error_bound : ∀ i : Fin m,
-    p09MultiRms (run.localError i) ≤
-      model.epsilon * Real.sqrt ((plan.axis i).order : ℝ) *
-          p09AxisK (plan.axis i) model.gamma *
-          p09MultiRms (run.computedState i.succ) +
-        localSecondOrderCoeff i * model.epsilon ^ 2
-  intermediate_rms_approx : ∀ i : Fin m,
-    |p09PropagatedStageInputRms run i - p09MultiRms (p09MultiExactOutput run)| ≤
-      intermediateFirstOrderCoeff i * model.epsilon
+  radius : ℝ
+  radius_pos : 0 < radius
+  local_error_bound : ∀ (ε : P09PositiveEpsilon), ε.1 ≤ radius →
+    ∀ i : Fin m,
+      p09MultiRms (p09PropagatedAxisError (family.run ε) i) ≤
+        ε.1 * p09AxisK (plan.axis i) γ *
+            p09PropagatedStageInputRms (family.run ε) i +
+          localSecondOrderCoeff i * ε.1 ^ 2
 
-/-- The explicit finite coefficient replacing Theorem 2(a)'s final
-`O(ε²)` term. -/
-noncomputable def p09TheoremTwoRemainderCoeff {m : ℕ} [NeZero m]
-    {plan : P09MultidimensionalFftPlan m} {model : P09WilkinsonModel}
-    {run : P09MultidimensionalFftRun plan model}
-    (certificate : P09TheoremTwoRmsCertificate run) : ℝ :=
-  ∑ i : Fin m, (
-    Real.sqrt
-          (p09PrefixOrderProduct plan.axis i.val (Nat.le_of_lt i.isLt) : ℝ) *
-        certificate.localSecondOrderCoeff i +
-      p09AxisK (plan.axis i) model.gamma *
-        certificate.intermediateFirstOrderCoeff i)
+/-- Sum of the uniform propagated local second-order coefficients. -/
+noncomputable def p09TheoremTwoLocalRemainderSum {m : ℕ} [NeZero m]
+    {plan : P09MultidimensionalFftPlan m} {γ : ℝ}
+    {family : P09AsymptoticMultidimensionalFftFamily plan γ}
+    (axisBounds : P09TheoremTwoLocalAsymptotic family) : ℝ :=
+  ∑ i : Fin m, axisBounds.localSecondOrderCoeff i
 
 end HighamBench
 ```

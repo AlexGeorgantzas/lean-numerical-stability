@@ -1,0 +1,172 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "roundtrip-judge",
+  "task_id": "P09-T2",
+  "paper_sha256": "9076fe377cc64878a4a10f8a47ff49245bc5acaf116ffbd8e2ccca57033da758",
+  "blind_translation_sha256": "1c753d37afb428894eaad95599c7cec61826074b14aa7c9274233a5507a47e59",
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The hash-verified PDF is George U. Ramos, \"Roundoff Error Analysis of the Fast Fourier Transform,\" Mathematics of Computation 25(116), October 1971, printed pages 757-768. The selected result is the backward interpretation on PDF page 12, printed page 768, following Theorem 1.",
+      "translation_evidence": "The reconstruction targets the one-dimensional FFT forward error and its representation as the Fourier transform of a fictional input perturbation, together with the two norm bounds.",
+      "reasoning": "The paper version, passage, and surrounding one-dimensional result are correctly selected."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper binds a transform order N with N=N_1...N_M, complex N-vectors x, y, e, and an existential fictional complex N-vector delta. Epsilon and gamma are parameters of the floating-point model.",
+      "translation_evidence": "The reconstruction uses n != 0 and vectors ZMod n -> Complex, but additionally quantifies proof-carrying plan, model, run, and forward-certificate objects. The certificate contains a real C >= 0 selected after the model and run.",
+      "reasoning": "The finite complex dimensions and index set are equivalent to the paper's, but the additional certificate coefficient is a consequential binder with dependence not present in the source's big-O statement."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "On printed page 768, e is fixed first and delta is then introduced existentially by e=T delta. The O(epsilon^2) notation is not presented as a coefficient chosen separately for each fixed epsilon and execution.",
+      "translation_evidence": "Delta has the correct dependence on the preceding context, but C belongs to a forward certificate quantified after epsilon, the plan, and the run, so C may depend on all of them, including epsilon.",
+      "reasoning": "The witness scope for delta is correct, but the quantifier order for C cannot express an epsilon-uniform second-order remainder and changes the higher-order claim."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "Theorem 1 derives its forward bounds for a floating-point factorized FFT under the arithmetic and trigonometric models, with fl(x)=x assumed before equation (3.6). Printed page 768 then uses those derived bounds in reverse.",
+      "translation_evidence": "Exact input representation and staged execution are packaged, but the plan additionally assumes Fourier surjectivity and norm scaling, while the forward certificate directly assumes the principal forward-error inequality.",
+      "reasoning": "The exact-input hypothesis is preserved, but central mathematical consequences of the paper's analysis are promoted to additional hypotheses."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Printed page 768 states e=T delta, the exact RMS scaling, both perturbation bounds with O(epsilon^2), and the qualitative least-significant-digit negligibility criterion.",
+      "translation_evidence": "The reconstruction includes the exact transform relation, RMS identity, and two finite-C inequalities, but contains no least-significant-digit conclusion and no genuine O(epsilon^2) conclusion.",
+      "reasoning": "The core algebraic certificates are present, but the stated passage is incomplete and its higher-order conclusions are replaced rather than preserved."
+    },
+    {
+      "id": "S06",
+      "status": "unclear",
+      "paper_evidence": "Equations (1.1) and (2.1) use the positive-sign unnormalized kernel exp(i 2 pi j k/N).",
+      "translation_evidence": "The Fourier transform is defined using the abstract character ZMod.stdAddChar. The dependency ledger expressly states that it does not determine whether this character is the positive- or negative-sign exponential convention.",
+      "reasoning": "The transform normalization and finite sum are clear, but the consequential Fourier sign cannot be verified from the permitted reconstruction evidence."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "The paper distinguishes exact y=Tx, computed fl(y), and exact forward error e=fl(y)-y; the delta on printed page 768 is explicitly fictional.",
+      "translation_evidence": "The reconstruction defines e=yhat-F_n(x), identifies yhat as the computed output, requires the run input to be fixed by flInput, and introduces delta separately through e=F_n(delta).",
+      "reasoning": "Exact output, computed output, forward error, exact input representation, and fictional backward perturbation are not conflated."
+    },
+    {
+      "id": "S08",
+      "status": "pass",
+      "paper_evidence": "Equation (2.2) factors the FFT into permutations, block Fourier matrices, and nonfinal diagonal twiddle matrices; Theorem 1 counts the separate twiddle multiplications and covers both Cooley-Tukey and Sande-Tukey variants.",
+      "translation_evidence": "The plan contains finite block-Fourier stages, permutations, twiddle factors exactly on nonfinal stages, radix product n, and exact agreement of their composition with F_n. The run contains staged states and local errors.",
+      "reasoning": "The abstract plan and run retain recognizable linkage to the paper's mixed-radix staged FFT and its twiddle-cost structure, notwithstanding the separately scored strengthening of the hypotheses."
+    },
+    {
+      "id": "S09",
+      "status": "pass",
+      "paper_evidence": "Printed page 757 defines RMS as sqrt(sum |z(k)|^2/N) and the maximum norm as max |z(k)|. Printed page 768 states ||delta||_RMS=||e||_RMS/sqrt(N) and uses ||x||_RMS on both right-hand sides.",
+      "translation_evidence": "The reconstruction defines the normalized Euclidean norm by sqrt(sum |v(k)|^2)/sqrt(n), the function norm as the finite supremum norm, and uses those norms in exactly these positions.",
+      "reasoning": "The normalized versus unnormalized norm distinction, normwise meaning, and exact RMS scaling agree."
+    },
+    {
+      "id": "S10",
+      "status": "pass",
+      "paper_evidence": "Theorem 1 defines K(N,gamma)=sum_l alpha(N_l)+(M-1)(3+2 gamma), with alpha(2)=sqrt(2), alpha(4)=5, and alpha(q)=2 sqrt(q)(q+gamma) otherwise. The maximum perturbation bound has one factor sqrt(N).",
+      "translation_evidence": "A(plan,gamma) has the same radix costs and exactly s-1 twiddle contributions. Its stage indices are zero-based, and the final bound has epsilon sqrt(n) A while the RMS bound has epsilon A.",
+      "reasoning": "The leading constants, radix cases, indexing shift, parameter dependence, and sqrt(n) factors match. The separate defect in C's higher-order semantics is assessed under S14."
+    },
+    {
+      "id": "S11",
+      "status": "fail",
+      "paper_evidence": "Printed pages 758-759 state models for floating-point operands, give epsilon in terms of radix, mantissa digits, rounded or chopped operations, and accumulator precision, and use fl(sin(fl(a))) and fl(cos(fl(a))). Exceptional range behavior is not discussed.",
+      "translation_evidence": "The model permits any epsilon > 0, axiomatizes total operations on every real a and b, and does not encode radix, mantissa length, rounded-versus-chopped mode, accumulator precision, or the explicit nested argument rounding.",
+      "reasoning": "The effective relative arithmetic and absolute trigonometric error shapes are retained, and both accounts omit exceptional values, but the source's precision and rounding-mode interpretation is not preserved."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "Printed page 768 gives an exact transform relation and RMS equality followed by asymptotic upper bounds inherited from Theorem 1.",
+      "translation_evidence": "The exact equalities and inequality directions match, but the inequalities are exact finite statements conditional on a supplied forward certificate with coefficient C.",
+      "reasoning": "Replacing an asymptotic consequence of the FFT analysis with a conditional finite inequality changes logical strength even though the displayed equality and inequality directions are correct."
+    },
+    {
+      "id": "S13",
+      "status": "pass",
+      "paper_evidence": "The paper first defines e as the forward output roundoff error and then interprets it as T delta for a fictional normwise backward input perturbation. Actual input-rounding error is discussed separately on printed page 765.",
+      "translation_evidence": "The reconstruction defines e as computed output minus exact Fourier output, requires exact representation of the actual run input, and uses a distinct existential delta only as a Fourier preimage of e.",
+      "reasoning": "Forward error and fictional backward perturbation are correctly distinguished, with no substitution of actual input-representation error."
+    },
+    {
+      "id": "S14",
+      "status": "fail",
+      "paper_evidence": "Printed page 760 says O(epsilon^2) includes all terms of order epsilon^2 but supplies no coefficient, dependence, threshold, or uniformity statement. Both bounds on printed page 768 retain O(epsilon^2).",
+      "translation_evidence": "A certificate supplies C >= 0 after epsilon and the run are fixed, and the conclusion uses C epsilon^2/sqrt(n) and C epsilon^2 as exact finite remainders. There is no epsilon family, epsilon threshold, or requirement that C be independent of epsilon.",
+      "reasoning": "This finite coefficient is not a faithful formalization of big-O. Because C may depend on epsilon, it cannot establish an epsilon-uniform O(epsilon^2) remainder; conversely, the paper's unspecified asymptotic remainder does not provide the reconstruction's exact finite bound for every positive epsilon."
+    },
+    {
+      "id": "S15",
+      "status": "pass",
+      "paper_evidence": "The selected passage concerns a finite, one-dimensional, complex transform of order N, not the multidimensional theorem.",
+      "translation_evidence": "The reconstruction uses finite complex vectors indexed by ZMod n and a one-dimensional unnormalized Fourier transform.",
+      "reasoning": "There is no scalar, real-only, multidimensional, or infinite-dimensional substitution. The proof-carrying abstraction changes hypotheses but not the selected dimensional specialization."
+    },
+    {
+      "id": "S16",
+      "status": "fail",
+      "paper_evidence": "The paper's leading error bound is obtained by analyzing the floating-point stages and is nontrivial as a first-order asymptotic statement before being converted into a backward interpretation.",
+      "translation_evidence": "The plan assumes Fourier surjectivity and norm scaling, and the certificate assumes the forward bound. Since epsilon > 0 and C is unrestricted above, a sufficiently large C can absorb any finite forward error after the run is fixed.",
+      "reasoning": "The structures have satisfiable instances, so the proposition is not globally empty, but its numerical content can hold for the unintended trivial reason that the needed preimage facts and an arbitrarily absorbent error coefficient are already supplied as hypotheses."
+    }
+  ],
+  "implications": {
+    "translation_implies_paper": {
+      "verdict": "no",
+      "reasoning": "Even if the abstract character has the paper's positive sign, per-execution coefficients C that may depend on epsilon do not imply an epsilon-uniform O(epsilon^2) result. The reconstruction also omits the qualitative negligibility conclusion and conditions the result on an assumed forward certificate."
+    },
+    "paper_implies_translation": {
+      "verdict": "no",
+      "reasoning": "The paper gives a first-order asymptotic result for its analyzed FFT and specified machine-error interpretation. It does not supply an exact finite coefficient for every epsilon > 0 and every abstract certified plan, model, run, and certificate quantified by the reconstruction."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": true,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "higher-order terms and quantifier scope",
+      "paper_evidence": "The source retains O(epsilon^2) in both perturbation bounds and only describes it as terms of second order, without an explicit coefficient or finite-epsilon range.",
+      "translation_evidence": "The reconstruction replaces O(epsilon^2) by a certificate coefficient C selected after epsilon and the execution, with no uniformity or small-epsilon condition.",
+      "impact": "The replacement is neither directionally equivalent to the source's asymptotic claim nor a faithful explicit remainder theorem."
+    },
+    {
+      "severity": "major",
+      "category": "assumed forward estimate and nonvacuity",
+      "paper_evidence": "Theorem 1 derives the forward estimate from the factorized floating-point FFT before printed page 768 uses that estimate in reverse.",
+      "translation_evidence": "The forward estimate is a field of the quantified certificate, while Fourier surjectivity and norm scaling are fields of the quantified plan.",
+      "impact": "The proposition becomes a conditional algebraic conversion of assumptions rather than the source's guarantee for analyzed FFT executions; unrestricted C can make the certificate numerically uninformative."
+    },
+    {
+      "severity": "major",
+      "category": "unresolved Fourier convention",
+      "paper_evidence": "The paper explicitly uses the positive-sign kernel exp(i 2 pi j k/N).",
+      "translation_evidence": "The dependency ledger leaves the sign of ZMod.stdAddChar undetermined.",
+      "impact": "It cannot be verified that the exact transform, forward error, and fictional perturbation equation refer to the paper's transform. Adjudication is required."
+    },
+    {
+      "severity": "major",
+      "category": "floating-point model",
+      "paper_evidence": "The paper relates epsilon to radix, mantissa length, rounding or chopping, and accumulator precision, and states a nested trigonometric evaluation model.",
+      "translation_evidence": "The reconstruction accepts arbitrary positive epsilon and total real operations satisfying abstract error equations, without the paper's precision and rounding-mode linkage.",
+      "impact": "The quantified execution models are not the same class as the paper's stated floating-point setting."
+    },
+    {
+      "severity": "minor",
+      "category": "conclusion completeness",
+      "paper_evidence": "After the two bounds, the source states a qualitative criterion comparing the leading maximum-perturbation quantity with the least significant digit of the input data.",
+      "translation_evidence": "No corresponding conditional qualitative conclusion appears.",
+      "impact": "The final engineering interpretation of the selected passage is omitted."
+    }
+  ],
+  "rationale": "The reconstruction correctly preserves the finite complex dimensions, forward-error sign, fictional backward-error notion, RMS and supremum norms, exact sqrt(n) scaling, and the leading mixed-radix constant. It is nevertheless not faithful in either implication direction because it replaces the source's asymptotic O(epsilon^2) terms with a per-instance, nonuniform finite coefficient and assumes the forward estimate it should inherit from the FFT analysis. The unrestricted coefficient also creates a substantive nonvacuity defect. The unresolved additive-character sign independently requires adjudication, although the confirmed higher-order and hypothesis defects already determine rejection."
+}
