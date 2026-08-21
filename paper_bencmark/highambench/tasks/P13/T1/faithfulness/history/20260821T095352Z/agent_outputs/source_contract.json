@@ -1,0 +1,102 @@
+{
+  "ambiguities": [
+    {
+      "evidence": "The paper uses scalar absolute values and the real-valued sign expression sign(ell_j(x)) in the maximizing perturbation, but does not state a formal real-scalar type. (PDF p. 2, printed p. 548, anchor: proof of Lemma 2.2.)",
+      "impact": "A formal contract should not silently generalize the stated maximizing perturbation to complex scalars; a complex version would require phases rather than the displayed sign choice.",
+      "issue": "The scalar field is not explicitly declared in the selected setup. (PDF p. 2, printed p. 548, anchor: Section 2 and proof of Lemma 2.2.)"
+    },
+    {
+      "evidence": "Epsilon multiplies nonnegative componentwise magnitudes and acts as a perturbation radius, making approach through positive values the natural reading, but that direction is not printed separately. (PDF p. 2, printed p. 548, anchor: Definition 2.1.)",
+      "impact": "A formalization must make the conventional positive-radius interpretation explicit.",
+      "issue": "Definition 2.1 writes epsilon -> 0 without explicitly stating a one-sided limit or epsilon >= 0. (PDF p. 2, printed p. 548, anchor: Definition 2.1.)"
+    }
+  ],
+  "contract_plain_english": "For fixed distinct nodes and a fixed evaluation point, the exact interpolant's componentwise relative condition number with respect to its n+1 data values is the sum of |ell_j(x)f_j| divided by |p_n(x)|, and this number is at least one; the result applies only when p_n(x) is nonzero. (PDF p. 2, printed p. 548, anchor: Section 2, Definition 2.1, and Lemma 2.2 equation (2.2).)",
+  "paper_batch_sha256": "0b665a5c91e976eec5d015b1b58ea8cec5aa3023d351689e493b8b019f9b8393",
+  "paper_sha256": "9ebf8adb699f96c82ccbb153dd6ca592c64475a8bc3e0703a50cb659b012c520",
+  "role": "source-contract",
+  "schema_version": "highambench-faithfulness-0.2",
+  "source_evidence": [
+    {
+      "anchor": "Section 2 opening paragraph and equation (2.1)",
+      "observation": "The paper fixes distinct interpolation points x_j indexed by j=0,...,n and an evaluation point x, varies the data vector f, writes the degree-at-most-n interpolant as p_f(x)=p_n(x), and defines p_n(x)=sum_{j=0}^n f_j ell_j(x) with the displayed Lagrange basis.",
+      "pdf_page": 2,
+      "printed_page": "548"
+    },
+    {
+      "anchor": "Definition 2.1",
+      "observation": "For p_n(x) != 0, the condition number is defined by a limit as epsilon tends to zero of the supremum of the relative output change divided by epsilon, subject to the componentwise relative perturbation condition |Delta f| <= epsilon |f|.",
+      "pdf_page": 2,
+      "printed_page": "548"
+    },
+    {
+      "anchor": "Lemma 2.2 and equation (2.2)",
+      "observation": "The lemma explicitly gives cond(x,n,f)=sum_{j=0}^n |ell_j(x)f_j|/|p_n(x)| and explicitly asserts that this quantity is at least 1.",
+      "pdf_page": 2,
+      "printed_page": "548"
+    },
+    {
+      "anchor": "Proof of Lemma 2.2",
+      "observation": "The proof derives the numerator from linear dependence on Delta f and states that equality in the maximizing bound is attained by choosing Delta f_j=epsilon sign(ell_j(x))|f_j|.",
+      "pdf_page": 2,
+      "printed_page": "548"
+    }
+  ],
+  "statement": {
+    "algorithm_linkage": "No evaluation algorithm or floating-point implementation is selected: Lemma 2.2 conditions the exact Lagrange interpolation value with respect to data perturbations at fixed nodes and fixed x. (PDF p. 2, printed p. 548, anchor: Section 2 and Lemma 2.2.)",
+    "binders": [
+      "An interpolation parameter n, n+1 scalar data values f_j, and n+1 distinct scalar interpolation points x_j indexed by j=0,...,n are in scope. (PDF p. 2, printed p. 548, anchor: Section 2 opening paragraph.)",
+      "The interpolation points x_j and evaluation point x are fixed, while the data vector f varies; p_f(x) is another name for p_n(x). (PDF p. 2, printed p. 548, anchor: Section 2 opening paragraph.)",
+      "Definition 2.1 binds componentwise perturbations Delta f and a perturbation radius epsilon in the limit epsilon -> 0. (PDF p. 2, printed p. 548, anchor: Definition 2.1.)"
+    ],
+    "conclusions": [
+      "cond(x,n,f) = [sum_{j=0}^n |ell_j(x) f_j|]/|p_n(x)|. (PDF p. 2, printed p. 548, anchor: Lemma 2.2, equation (2.2).)",
+      "cond(x,n,f) >= 1. (PDF p. 2, printed p. 548, anchor: Lemma 2.2, equation (2.2).)",
+      "The proof identifies a maximizing perturbation by Delta f_j=epsilon sign(ell_j(x))|f_j|, establishing equality with the closed-form upper bound. (PDF p. 2, printed p. 548, anchor: proof of Lemma 2.2.)"
+    ],
+    "constants_and_indexing": [
+      "Every sum in equation (2.2) runs from j=0 through j=n and therefore contains n+1 terms. (PDF p. 2, printed p. 548, anchor: Lemma 2.2, equation (2.2).)",
+      "The lower-bound constant is exactly 1. (PDF p. 2, printed p. 548, anchor: Lemma 2.2, equation (2.2).)"
+    ],
+    "definitions_and_conventions": [
+      "p_n(x)=sum_{j=0}^n f_j ell_j(x), where ell_j(x)=[product over k=0,...,n, k != j of (x-x_k)]/[product over k=0,...,n, k != j of (x_j-x_k)]. (PDF p. 2, printed p. 548, anchor: equation (2.1).)",
+      "cond(x,n,f)=lim_{epsilon->0} sup { |p_f(x)-p_{f+Delta f}(x)|/[epsilon |p_f(x)|] : |Delta f| <= epsilon |f| }. (PDF p. 2, printed p. 548, anchor: Definition 2.1.)",
+      "Inequalities and absolute values applied to vectors are interpreted componentwise. (PDF p. 2, printed p. 548, anchor: Section 2 opening paragraph.)",
+      "The argument n in cond(x,n,f) records dependence on the interpolation points x_j. (PDF p. 2, printed p. 548, anchor: paragraph following Definition 2.1.)"
+    ],
+    "error_notions": [
+      "The input error notion is componentwise relative perturbation: |Delta f_j| <= epsilon |f_j| for every j. (PDF p. 2, printed p. 548, anchor: Definition 2.1.)",
+      "The output error notion is the relative scalar change |p_f(x)-p_{f+Delta f}(x)|/|p_f(x)|. (PDF p. 2, printed p. 548, anchor: Definition 2.1.)"
+    ],
+    "exceptional_values": [
+      "Definition 2.1 explicitly excludes p_n(x)=0 because the relative output denominator would vanish. (PDF p. 2, printed p. 548, anchor: Definition 2.1.)",
+      "Distinctness of the x_j prevents zero denominators in the Lagrange basis products. (PDF p. 2, printed p. 548, anchor: Section 2 opening paragraph and equation (2.1).)"
+    ],
+    "higher_order_terms": [
+      "The closed form and lower bound are exact; there is no omitted or big-O term. (PDF p. 2, printed p. 548, anchor: Lemma 2.2, equation (2.2).)"
+    ],
+    "hypotheses": [
+      "The points x_j are pairwise distinct, and p_n is the polynomial of degree at most n interpolating f_j at x_j. (PDF p. 2, printed p. 548, anchor: Section 2 opening paragraph.)",
+      "The evaluated exact value satisfies p_n(x) != 0. (PDF p. 2, printed p. 548, anchor: Definition 2.1.)",
+      "Conditioning is with respect to variation of f only; x and all x_j remain fixed. (PDF p. 2, printed p. 548, anchor: Section 2 opening paragraph.)"
+    ],
+    "implicit_context": [
+      "This is an exact conditioning result for the interpolation map f -> p_f(x), inherited from the setup immediately preceding Definition 2.1. (PDF p. 2, printed p. 548, anchor: Section 2 opening paragraph through Definition 2.1.)",
+      "The result concerns one scalar output at one fixed x rather than the interpolating polynomial in a function norm. (PDF p. 2, printed p. 548, anchor: Definition 2.1 and Lemma 2.2.)"
+    ],
+    "norms": [
+      "Only scalar absolute values and componentwise vector inequalities are used; no vector norm is specified. (PDF p. 2, printed p. 548, anchor: Section 2 opening paragraph and Definition 2.1.)"
+    ],
+    "numerical_model": [
+      "No floating-point rounding model, precision parameter, or unit roundoff occurs in this result; epsilon is the relative input-perturbation radius. (PDF p. 2, printed p. 548, anchor: Definition 2.1.)"
+    ]
+  },
+  "task_id": "P13-T1",
+  "undebatable_constraints": [
+    "The numerator is a sum of termwise absolute values |ell_j(x)f_j|, not the absolute value of a different aggregate. (PDF p. 2, printed p. 548, anchor: equation (2.2).)",
+    "The denominator is the absolute value of the exact interpolant p_n(x), which must be nonzero. (PDF p. 2, printed p. 548, anchor: Definition 2.1 and equation (2.2).)",
+    "All n+1 indices j=0,...,n are included. (PDF p. 2, printed p. 548, anchor: equations (2.1) and (2.2).)",
+    "The claim includes both the closed-form equality and the lower bound cond(x,n,f) >= 1. (PDF p. 2, printed p. 548, anchor: Lemma 2.2, equation (2.2).)",
+    "Nodes and evaluation point are fixed; the conditioned input is f. (PDF p. 2, printed p. 548, anchor: Section 2 opening paragraph.)"
+  ]
+}

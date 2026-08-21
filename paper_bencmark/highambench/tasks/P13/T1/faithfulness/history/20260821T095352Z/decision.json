@@ -1,0 +1,57 @@
+{
+  "accepted": false,
+  "adjudicated": true,
+  "adjudication_reasons": [
+    "judge classifications differ"
+  ],
+  "classification": "not-faithful-weaker",
+  "completed_at_utc": "2026-08-13T16:53:55.970618+00:00",
+  "findings": [
+    {
+      "category": "omitted-condition-number-identity",
+      "evidence": "Definition 2.1 defines cond(x,n,f) through a limiting supremum over componentwise relative perturbations, and Lemma 2.2 identifies that quantity exactly with the displayed quotient. Lean defines p13Condition to be the quotient and proves only that it is at least one.",
+      "impact": "The principal conditioning theorem is absent; only its elementary triangle-inequality consequence remains.",
+      "severity": "critical"
+    },
+    {
+      "category": "implication-direction",
+      "evidence": "Because interpolation data are unrestricted, arbitrary Lean products can be absorbed into data values by dividing by nonzero Lagrange basis values at an evaluation point outside the chosen nodes.",
+      "impact": "The paper does imply every nonvacuous Lean instance, so the arbitrary ell binder does not create genuine stronger content or make the propositions incomparable.",
+      "severity": "major"
+    },
+    {
+      "category": "indexing",
+      "evidence": "The paper uses degree n and n+1 indices j=0,...,n, whereas Lean uses Fin n with n indices.",
+      "impact": "This changes the parameter's meaning but is an ordinary reparameterization for positive Lean dimensions, not an obstruction to paper_implies_lean.",
+      "severity": "minor"
+    },
+    {
+      "category": "nonvacuity",
+      "evidence": "Lean has satisfiable instances for every positive dimension, while its dimension-zero premise is impossible because both sums are empty.",
+      "impact": "The weaker classification reflects genuinely omitted theorem content, not merely vacuity or reduced applicability.",
+      "severity": "note"
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "reasoning": "Specializing Lean's arbitrary ell to Lagrange basis values yields the quotient lower bound, but the Lean proposition contains no perturbations, supremum, limit, or independently defined condition number. It therefore cannot establish the paper's central equality between the perturbation-defined cond(x,n,f) and the quotient.",
+      "verdict": "no"
+    },
+    "paper_implies_lean": {
+      "reasoning": "Let the Lean dimension be N>0 and write a_i=ell(i)f(i). Choose N distinct real interpolation nodes and an evaluation point different from every node, so each Lagrange value L_i(x) is nonzero. Set the paper data g_i=a_i/L_i(x). Then p_g(x)=sum_i a_i and sum_i |L_i(x)g_i|=sum_i |a_i|. The Lean nonzero hypothesis makes p_g(x) nonzero, and Lemma 2.2 yields the Lean inequality. For N=0, the Lean signed sum is the empty sum zero, so its hypothesis is impossible. The off-by-one parameter convention is handled by taking paper degree N-1, or by padding with zero data if a positive degree is required.",
+      "verdict": "yes"
+    }
+  },
+  "judge_classifications": {
+    "direct": "not-faithful-different",
+    "roundtrip": "not-faithful-weaker"
+  },
+  "rationale": "Primary evidence confirms that P13-T1 includes both an exact identification of a perturbation-defined componentwise relative condition number and its lower bound by one. Lean retains only the quotient inequality. Although Lean syntactically allows arbitrary coefficient tuples, that does not supply genuine additional strength: every such nonzero finite product family can be represented by suitable paper interpolation data, so the paper entails Lean after the explicit cardinality reparameterization. Lean cannot entail the omitted condition-number identity. The implication pattern is therefore paper_implies_lean=yes and lean_implies_paper=no, which requires classification as not-faithful-weaker.",
+  "remaining_uncertainties": [
+    "The selected paper passage does not explicitly declare the scalar field, although its real-valued sign maximizer supports the Lean choice of Real; this does not affect the classification.",
+    "Definition 2.1 prints epsilon tending to zero without separately specifying a one-sided limit; Lean omits the entire perturbation definition, so this ambiguity does not affect either implication verdict."
+  ],
+  "role": "final-decision",
+  "schema_version": "highambench-faithfulness-0.2",
+  "task_id": "P13-T1"
+}

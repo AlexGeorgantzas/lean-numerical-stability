@@ -1,0 +1,376 @@
+{
+  "schema_version": "highambench-faithfulness-0.2",
+  "role": "direct-judge",
+  "task_id": "P13-T1",
+  "paper_sha256": "9ebf8adb699f96c82ccbb153dd6ca592c64475a8bc3e0703a50cb659b012c520",
+  "dossier_sha256": "731f7b5c3b812eef504dd38891a9b7ef8059677d83bf48c5171022ab615aa70b",
+  "dependency_coverage": [
+    {
+      "id": "D001",
+      "name": "HighamBench.p13Condition",
+      "interpretation": "This is defined directly as the finite sum of abs(ell i * f i), divided by the absolute value of p13InterpolationValue ell f.",
+      "effect_on_target": "After unfolding, the conclusion is the algebraic inequality 1 <= (sum_i |ell_i f_i|)/|sum_i ell_i f_i|.",
+      "paper_match": "The expression matches the right-hand side of equation (2.2), but it is not the paper's condition number from Definition 2.1 because no perturbation supremum or limiting definition is present.",
+      "status": "fail"
+    },
+    {
+      "id": "D002",
+      "name": "HighamBench.p13InterpolationValue",
+      "interpretation": "This is the exact real finite sum of the products ell i * f i.",
+      "effect_on_target": "It supplies both the denominator and the nonzero hypothesis.",
+      "paper_match": "After identifying ell i with the evaluated Lagrange basis values and reindexing the cardinality, this is the paper's exact value p_n(x). The definition itself does not enforce that identification.",
+      "status": "pass"
+    },
+    {
+      "id": "D003",
+      "name": "Fin",
+      "interpretation": "Fin n is the finite index type containing n indices, conventionally 0 through n-1.",
+      "effect_on_target": "Both ell and f contain exactly n entries and both sums range over those n entries.",
+      "paper_match": "The paper uses indices j=0 through j=n, hence n+1 entries for its parameter n. Matching requires the unstated shift n_Lean = n_paper + 1.",
+      "status": "fail"
+    },
+    {
+      "id": "D004",
+      "name": "LE.le",
+      "interpretation": "This projects the binary non-strict order relation supplied by the relevant LE instance.",
+      "effect_on_target": "With Real.instLE, it makes the conclusion the ordinary real inequality 1 <= p13Condition ell f.",
+      "paper_match": "This is the same direction and non-strictness as cond(x,n,f) >= 1.",
+      "status": "pass"
+    },
+    {
+      "id": "D005",
+      "name": "Nat",
+      "interpretation": "Nat is the type of nonnegative natural numbers.",
+      "effect_on_target": "The target's n determines the cardinality of Fin n.",
+      "paper_match": "The paper's natural n is the polynomial-degree parameter and produces n+1 data values, whereas the Lean n directly counts data values.",
+      "status": "fail"
+    },
+    {
+      "id": "D006",
+      "name": "Ne",
+      "interpretation": "Ne a b means not (a = b).",
+      "effect_on_target": "The hypothesis requires the exact finite sum p13InterpolationValue ell f to be nonzero.",
+      "paper_match": "Under the intended identification with p_n(x), this exactly matches the paper's p_n(x) != 0 condition.",
+      "status": "pass"
+    },
+    {
+      "id": "D007",
+      "name": "OfNat.ofNat",
+      "interpretation": "This obtains a typed numeral from the corresponding OfNat instance.",
+      "effect_on_target": "It supplies the real numerals 0 and 1 used in the hypothesis and conclusion.",
+      "paper_match": "These are the ordinary scalar constants used in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D008",
+      "name": "One.toOfNat1",
+      "interpretation": "This constructs the numeral-one interpretation from a One instance.",
+      "effect_on_target": "It makes the lower-bound constant the real number 1.",
+      "paper_match": "The paper's lower-bound constant is exactly 1.",
+      "status": "pass"
+    },
+    {
+      "id": "D009",
+      "name": "Real",
+      "interpretation": "Real is Lean's type of real numbers.",
+      "effect_on_target": "The coefficients, data, sums, products, absolute values, quotient, and order are all real.",
+      "paper_match": "The paper's maximizing perturbation uses a real sign, so choosing real scalars is consistent with the displayed proof and avoids an unjustified complex generalization.",
+      "status": "pass"
+    },
+    {
+      "id": "D010",
+      "name": "Real.instLE",
+      "interpretation": "This is the standard non-strict order on real numbers.",
+      "effect_on_target": "It interprets 1 <= p13Condition as an ordinary real-order assertion.",
+      "paper_match": "It matches the real scalar inequality in equation (2.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D011",
+      "name": "Real.instOne",
+      "interpretation": "This supplies the multiplicative identity 1 in the real numbers.",
+      "effect_on_target": "It determines the constant on the left side of the conclusion.",
+      "paper_match": "It matches the exact constant 1 in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D012",
+      "name": "Real.instZero",
+      "interpretation": "This supplies the additive identity 0 in the real numbers.",
+      "effect_on_target": "It determines the value excluded by the nonzero hypothesis.",
+      "paper_match": "It matches the paper's exclusion of p_n(x)=0.",
+      "status": "pass"
+    },
+    {
+      "id": "D013",
+      "name": "Zero.toOfNat0",
+      "interpretation": "This constructs the numeral-zero interpretation from a Zero instance.",
+      "effect_on_target": "It makes hvalue assert inequality with the real zero.",
+      "paper_match": "It correctly represents the zero excluded in Definition 2.1.",
+      "status": "pass"
+    },
+    {
+      "id": "D014",
+      "name": "DivInvMonoid.toDiv",
+      "interpretation": "This extracts division from a division-and-inverse monoid structure.",
+      "effect_on_target": "For Real, it provides the quotient in p13Condition; the target's nonzero hypothesis excludes the relevant zero denominator.",
+      "paper_match": "It implements the scalar division by |p_n(x)| appearing in equation (2.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D015",
+      "name": "Fin.fintype",
+      "interpretation": "This provides the finite enumeration of every element of Fin n.",
+      "effect_on_target": "It permits Finset.univ to enumerate exactly n target indices.",
+      "paper_match": "The paper requires an enumeration of n+1 indices for its degree parameter n, so an unstated parameter shift is necessary.",
+      "status": "fail"
+    },
+    {
+      "id": "D016",
+      "name": "Finset.sum",
+      "interpretation": "This folds addition over a finite set after applying the supplied summand function.",
+      "effect_on_target": "It forms both sum_i ell_i f_i and sum_i |ell_i f_i|.",
+      "paper_match": "The finite-sum operator and summands match equations (2.1) and (2.2); the separate index-domain dependency determines the cardinality mismatch.",
+      "status": "pass"
+    },
+    {
+      "id": "D017",
+      "name": "Finset.univ",
+      "interpretation": "This is the finite set containing every element of a finite type.",
+      "effect_on_target": "Each target sum includes every member of Fin n, hence exactly n terms.",
+      "paper_match": "The paper includes every j from 0 through n, hence n+1 terms under its parameter convention.",
+      "status": "fail"
+    },
+    {
+      "id": "D018",
+      "name": "HDiv.hDiv",
+      "interpretation": "This dispatches heterogeneous division through the selected HDiv instance.",
+      "effect_on_target": "With the homogeneous real instance, it performs real division in p13Condition.",
+      "paper_match": "It matches the ordinary scalar quotient in equation (2.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D019",
+      "name": "HMul.hMul",
+      "interpretation": "This dispatches heterogeneous multiplication through the selected HMul instance.",
+      "effect_on_target": "With the homogeneous real instance, it forms ell i * f i.",
+      "paper_match": "It matches each product ell_j(x) f_j in equations (2.1) and (2.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D020",
+      "name": "Real.instAddCommMonoid",
+      "interpretation": "This supplies associative, commutative real addition with identity zero.",
+      "effect_on_target": "It gives Finset.sum its exact real summation operation and empty-sum value.",
+      "paper_match": "It implements the ordinary finite real sums used by the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D021",
+      "name": "Real.instAddGroup",
+      "interpretation": "This supplies real addition, zero, and additive inverses.",
+      "effect_on_target": "It supports the negation used in the definition of real absolute value.",
+      "paper_match": "It contributes the standard scalar absolute-value semantics used throughout the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D022",
+      "name": "Real.instDivInvMonoid",
+      "interpretation": "This supplies real multiplication, inversion, and division.",
+      "effect_on_target": "It determines the real quotient in the closed-form ratio.",
+      "paper_match": "For the nonzero denominator required by hvalue, this is the ordinary division used in equation (2.2).",
+      "status": "pass"
+    },
+    {
+      "id": "D023",
+      "name": "Real.instMul",
+      "interpretation": "This supplies ordinary multiplication on real numbers.",
+      "effect_on_target": "It determines every product ell i * f i.",
+      "paper_match": "It matches the scalar multiplication ell_j(x) f_j.",
+      "status": "pass"
+    },
+    {
+      "id": "D024",
+      "name": "Real.lattice",
+      "interpretation": "This supplies the standard lattice order, including maximum and minimum, on the real numbers.",
+      "effect_on_target": "It supports the max-based definition of absolute value.",
+      "paper_match": "It yields the standard ordered-real semantics required for scalar absolute values.",
+      "status": "pass"
+    },
+    {
+      "id": "D025",
+      "name": "abs",
+      "interpretation": "In this ordered additive group, abs a is max(a,-a), which for real a is the usual nonnegative absolute value.",
+      "effect_on_target": "It is applied termwise in the numerator and to the exact aggregate sum in the denominator.",
+      "paper_match": "This exactly matches the numerator sum of |ell_j(x)f_j| and denominator |p_n(x)|, rather than taking absolute value of the numerator aggregate.",
+      "status": "pass"
+    },
+    {
+      "id": "D026",
+      "name": "instHDiv",
+      "interpretation": "This converts a homogeneous Div operation into the corresponding homogeneous HDiv operation.",
+      "effect_on_target": "It ensures the displayed division in p13Condition is real division.",
+      "paper_match": "It introduces no semantic change from the scalar division in the paper.",
+      "status": "pass"
+    },
+    {
+      "id": "D027",
+      "name": "instHMul",
+      "interpretation": "This converts a homogeneous Mul operation into the corresponding homogeneous HMul operation.",
+      "effect_on_target": "It ensures the displayed products in both local definitions are real products.",
+      "paper_match": "It introduces no semantic change from the scalar products in the paper.",
+      "status": "pass"
+    }
+  ],
+  "semantic_checklist": [
+    {
+      "id": "S01",
+      "status": "pass",
+      "paper_evidence": "The supplied PDF is the IMA Journal of Numerical Analysis 24 (2004), pages 547-556 version. PDF page 2, printed page 548 contains Definition 2.1, Lemma 2.2, and equation (2.2).",
+      "lean_evidence": "The dossier identifies P13-T1 as p13_t1_condition_ge_one and supplies its exact and fully explicit target types.",
+      "reasoning": "The cited paper version and passage are the correct source for the selected condition-number formula and lower bound."
+    },
+    {
+      "id": "S02",
+      "status": "fail",
+      "paper_evidence": "The paper binds distinct nodes x_j for j=0,...,n, a fixed evaluation point x, n+1 data values f_j, and Lagrange basis values ell_j(x).",
+      "lean_evidence": "The target binds only n : Nat and arbitrary ell f : Fin n -> Real, so it has n entries and no nodes, evaluation point, or requirement that ell be a Lagrange basis evaluation.",
+      "reasoning": "The scalar type is appropriate, but the dimensions, index convention, and meanings of the principal binders are not preserved."
+    },
+    {
+      "id": "S03",
+      "status": "fail",
+      "paper_evidence": "Definition 2.1 fixes the nodes and x, varies f, and quantifies over componentwise perturbations inside a supremum and epsilon-to-zero limit; Lemma 2.2 identifies that resulting condition number.",
+      "lean_evidence": "The target universally quantifies arbitrary ell and f and contains no epsilon, perturbation, supremum, limit, or maximizing perturbation.",
+      "reasoning": "The quantifier structure that gives cond its operational meaning and establishes the closed-form equality is absent."
+    },
+    {
+      "id": "S04",
+      "status": "fail",
+      "paper_evidence": "The paper requires distinct interpolation nodes, fixed nodes and x, and p_n(x) != 0; epsilon is a componentwise relative perturbation radius approaching zero.",
+      "lean_evidence": "The hvalue hypothesis correctly excludes a zero aggregate sum, but there are no nodes, distinctness condition, fixed evaluation point, or perturbation-radius context.",
+      "reasoning": "The nonzero hypothesis matches after identification, but the remaining explicit and implicit interpolation hypotheses are not represented."
+    },
+    {
+      "id": "S05",
+      "status": "fail",
+      "paper_evidence": "Lemma 2.2 equation (2.2) asserts both cond(x,n,f) = sum_j |ell_j(x)f_j|/|p_n(x)| and cond(x,n,f) >= 1.",
+      "lean_evidence": "The target asserts only 1 <= p13Condition ell f, while p13Condition is defined to be the ratio rather than proved equal to the perturbation-defined condition number.",
+      "reasoning": "The lower-bound conclusion is present, but the central closed-form identification of the paper's condition number is missing."
+    },
+    {
+      "id": "S06",
+      "status": "fail",
+      "paper_evidence": "Definition 2.1 defines cond through a limiting supremum of relative output changes under componentwise relative data perturbations.",
+      "lean_evidence": "D001 directly defines p13Condition as a quotient of finite sums; no imported or local declaration defines the perturbation-based condition number.",
+      "reasoning": "The finite-sum, product, division, order, and absolute-value operators are clear, but the substantive condition-number definition has been replaced by its claimed formula."
+    },
+    {
+      "id": "S07",
+      "status": "pass",
+      "paper_evidence": "Section 2 concerns the exact interpolation map and contains no computed or rounded value in Lemma 2.2.",
+      "lean_evidence": "The target and local definitions use exact Real operations only.",
+      "reasoning": "Neither statement conflates exact and computed quantities."
+    },
+    {
+      "id": "S08",
+      "status": "not-applicable",
+      "paper_evidence": "The selected Section 2 result is an exact conditioning result and does not select an evaluation algorithm or execution model.",
+      "lean_evidence": "The Lean target likewise contains no algorithm or execution model.",
+      "reasoning": "Algorithm linkage is not applicable to P13-T1, although linkage to the interpolation problem itself is assessed under binders and definitions."
+    },
+    {
+      "id": "S09",
+      "status": "fail",
+      "paper_evidence": "Definition 2.1 uses componentwise inequalities |Delta f| <= epsilon|f| and scalar relative output error; no vector norm is substituted.",
+      "lean_evidence": "The target contains scalar absolute values in the closed-form ratio but no componentwise perturbation relation or relative-output expression.",
+      "reasoning": "The displayed absolute values match, but the componentwise semantics responsible for this condition number are absent."
+    },
+    {
+      "id": "S10",
+      "status": "fail",
+      "paper_evidence": "Every sum in equations (2.1) and (2.2) runs from j=0 through n and has n+1 terms; the lower-bound constant is 1.",
+      "lean_evidence": "The constant is correctly 1, but Fin n and Finset.univ produce n terms indexed from 0 through n-1.",
+      "reasoning": "An unstated shift n_Lean = n_paper + 1 is required, so indexing and parameter dependence do not match literally."
+    },
+    {
+      "id": "S11",
+      "status": "not-applicable",
+      "paper_evidence": "No floating-point model, precision, rounding mode, underflow, or overflow assumption occurs in Definition 2.1 or Lemma 2.2.",
+      "lean_evidence": "The target is stated over exact real arithmetic and includes no floating-point parameters.",
+      "reasoning": "Floating-point-model correspondence is not applicable to this exact conditioning result."
+    },
+    {
+      "id": "S12",
+      "status": "fail",
+      "paper_evidence": "Equation (2.2) contains an equality identifying cond and a non-strict lower bound by 1.",
+      "lean_evidence": "The target has the correct non-strict inequality direction but no equality connecting a perturbation-defined condition number to the ratio.",
+      "reasoning": "The lower-bound relation is correct, but the total relational content of the selected paper result is weaker in Lean."
+    },
+    {
+      "id": "S13",
+      "status": "fail",
+      "paper_evidence": "The paper's notion is a componentwise relative input condition number for the relative scalar output change of f -> p_f(x).",
+      "lean_evidence": "The target states an algebraic absolute-value ratio inequality and contains no input perturbations or output-error quotient.",
+      "reasoning": "Naming the ratio p13Condition does not supply the paper's error notion."
+    },
+    {
+      "id": "S14",
+      "status": "pass",
+      "paper_evidence": "Lemma 2.2 is exact and has no first-order approximation, remainder, or big-O term.",
+      "lean_evidence": "The target and definitions are exact real expressions without omitted terms.",
+      "reasoning": "There is no higher-order-term mismatch."
+    },
+    {
+      "id": "S15",
+      "status": "fail",
+      "paper_evidence": "The paper concerns real scalar interpolation coefficients ell_j(x) generated by distinct nodes, with n+1 entries indexed 0,...,n.",
+      "lean_evidence": "The target uses Real, but generalizes ell to an arbitrary Fin n vector and silently changes n from degree to cardinality.",
+      "reasoning": "The real specialization is appropriate, but the unrestricted coefficient generalization and cardinality reparameterization are not an explicitly classified faithful specialization of the paper result."
+    },
+    {
+      "id": "S16",
+      "status": "pass",
+      "paper_evidence": "The paper's hypotheses are satisfiable, for example for a constant nonzero interpolant.",
+      "lean_evidence": "For Lean n=1 with ell 0=1 and f 0=1, p13InterpolationValue is 1, hvalue holds, and p13Condition is 1.",
+      "reasoning": "The theorem has nonempty, nontrivial instances and is not globally vacuous, although its n=0 branch has an impossible hvalue premise."
+    }
+  ],
+  "implications": {
+    "lean_implies_paper": {
+      "verdict": "no",
+      "reasoning": "After unfolding, Lean proves the ratio lower bound and can recover that component for interpolatory instances after reindexing. It does not define the paper's perturbation condition number or prove its equality with the ratio, so it cannot imply the full selected paper result."
+    },
+    "paper_implies_lean": {
+      "verdict": "no",
+      "reasoning": "The paper establishes its result for coefficients ell_j(x) arising from Lagrange bases at distinct nodes. The Lean target quantifies over every arbitrary real coefficient vector ell : Fin n -> Real, so the paper's stated quantifiers do not imply the generalized Lean proposition."
+    }
+  },
+  "classification": "not-faithful-different",
+  "accepted": false,
+  "requires_adjudication": false,
+  "findings": [
+    {
+      "severity": "critical",
+      "category": "condition-number-definition-and-equality",
+      "paper_evidence": "Definition 2.1 defines cond using a limiting supremum over componentwise perturbations, and Lemma 2.2 proves that this cond equals the displayed ratio before asserting it is at least 1.",
+      "lean_evidence": "p13Condition is definitionally the displayed ratio, and the theorem proves only that this ratio is at least 1.",
+      "impact": "The formal target measures a triangle-inequality consequence rather than the paper's derivation of the componentwise relative condition number."
+    },
+    {
+      "severity": "major",
+      "category": "interpolation-linkage-and-domain",
+      "paper_evidence": "The coefficients are Lagrange basis values determined by fixed distinct nodes and a fixed evaluation point.",
+      "lean_evidence": "ell is an arbitrary real vector, with no nodes, distinctness, evaluation point, or Lagrange-basis definition.",
+      "impact": "The target is a broader algebraic claim not semantically tied to barycentric Lagrange interpolation, making the two propositions incomparable rather than merely weaker."
+    },
+    {
+      "severity": "minor",
+      "category": "indexing",
+      "paper_evidence": "The paper's parameter n gives indices j=0,...,n and therefore n+1 summands.",
+      "lean_evidence": "Fin n supplies n indices and therefore n summands.",
+      "impact": "All paper dimensions can be represented only after an unstated off-by-one reparameterization, so the paper's parameter meaning is not preserved exactly."
+    }
+  ],
+  "rationale": "The Lean statement correctly proves the nonvacuous real inequality 1 <= sum_i |ell_i f_i|/|sum_i ell_i f_i| under a nonzero-denominator hypothesis. However, the selected paper result identifies a perturbation-defined componentwise relative condition number with that ratio and then derives the lower bound. Lean replaces the condition number by the ratio, omits the equality and perturbation semantics, generalizes the coefficients away from Lagrange interpolation, and shifts the role of n. Consequently neither full proposition implies the other, so the result is not-faithful-different."
+}

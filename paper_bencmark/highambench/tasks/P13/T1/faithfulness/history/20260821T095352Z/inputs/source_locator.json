@@ -5,17 +5,10 @@
   "paper_version": "published journal version; IMA Journal of Numerical Analysis 24(4), October 2004, printed pages 547-556",
   "source_locations": [
     {
-      "anchor": "equation (2.1) and Definition 2.1",
-      "pdf_page": 2,
-      "printed_page": "548",
-      "role": "exact Lagrange representation and limiting supremum definition under componentwise data perturbations",
-      "section": "2. Condition number"
-    },
-    {
       "anchor": "Lemma 2.2 and equation (2.2)",
       "pdf_page": 2,
       "printed_page": "548",
-      "role": "exact closed-form condition-number identity, sign-aligned attainment, and lower bound",
+      "role": "closed-form condition number and lower bound",
       "section": "2. Condition number"
     }
   ],
