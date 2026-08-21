@@ -5,17 +5,24 @@
   "paper_version": "published journal version; Journal of Scientific Computing 92, article 6, 2022, pages 1-20",
   "source_locations": [
     {
-      "anchor": "Method 4s3pC coefficients and the two displayed smooth and nonsmooth error forms",
-      "pdf_page": 18,
-      "printed_page": "18",
-      "role": "third-order versus second-order perturbation regimes",
-      "section": "4.3 A Method that Satisfies the Simplified Order Conditions"
+      "anchor": "third-order consistency conditions preceding Section 3.1.1",
+      "pdf_page": 7,
+      "printed_page": "7",
+      "role": "consistency conditions through order three",
+      "section": "3.1 Perturbation Conditions"
     },
     {
-      "anchor": "Figure 6 interpretation of well-behaved and chopped perturbations",
-      "pdf_page": 19,
-      "printed_page": "19",
-      "role": "regime interpretation and observed order reduction",
+      "anchor": "simplified perturbation conditions (3.5a)-(3.5f)",
+      "pdf_page": 8,
+      "printed_page": "8",
+      "role": "smooth perturbation conditions through order three",
+      "section": "3.1.2 Perturbation Conditions when tau is Well Behaved"
+    },
+    {
+      "anchor": "Method 4s3pC coefficient displays and following smooth and nonsmooth error-form discussion",
+      "pdf_page": 18,
+      "printed_page": "18",
+      "role": "four-stage coefficient data and the intended regularity distinction",
       "section": "4.3 A Method that Satisfies the Simplified Order Conditions"
     }
   ],

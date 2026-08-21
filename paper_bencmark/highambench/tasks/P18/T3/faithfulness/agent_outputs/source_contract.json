@@ -1,143 +1,208 @@
 {
-  "ambiguities": [
-    {
-      "evidence": "The text says the method is given by the listed a_ij and a_ij^epsilon values, but it does not explicitly print zeros for every omitted matrix position. [PDF p. 18, anchor: Method 4s3pC coefficient list]",
-      "impact": "Reading unlisted entries as zero follows the standard sparse Butcher-coefficient convention, but that completion is implicit rather than literally displayed. [PDF p. 18, anchor: Method 4s3pC coefficient list]",
-      "issue": "Page 18 lists only selected tableau entries rather than full matrices. [PDF p. 18, anchor: Method 4s3pC coefficient list]"
-    },
-    {
-      "evidence": "The paper states O(epsilon Delta t^3) and calls the Fourier/centered-difference difference well behaved, but gives no epsilon value or mesh-dependent formula for that operator difference. [PDF p. 18, anchor: first error form and discretization setup; PDF p. 19, anchor: smooth-regime interpretation]",
-      "impact": "The source supports the Delta t order and smoothness regime, but not a specific relation between epsilon and spatial grid resolution for this experiment. [PDF pp. 18-19, anchors: smooth error form and Figure 6 interpretation]",
-      "issue": "The magnitude and asymptotic role of epsilon in the centered-difference smooth perturbation are not quantified. [PDF pp. 18-19, anchors: test setup and smooth-regime interpretation]"
-    },
-    {
-      "evidence": "The paper says all derivatives exist and are bounded in the standard scenario, but it gives no domain, norm, or precise regularity class. [PDF p. 6, anchor: smooth-case paragraph]",
-      "impact": "The contract must preserve the paper's smoothness description and cannot replace it with a particular C^k, Sobolev, or Lipschitz theorem. [PDF p. 6, anchor: smooth-case paragraph]",
-      "issue": "The term 'well-behaved' is descriptive rather than tied to a stated function space or derivative order. [PDF p. 6, anchor: smooth-case paragraph; PDF p. 8, anchor: Section 3.1.2]"
-    },
-    {
-      "evidence": "The paragraph first discusses chopped Method 4s3pC and then compares Method 4s3pA before stating that 'this mixed precision method' has the same convergence order as the low/high- and high-resolution methods but a larger error constant. [PDF p. 19, anchor: comparison with Method 4s3pA]",
-      "impact": "The larger-error-constant comparison should not be assigned uniquely to 4s3pC or 4s3pA without resolving the pronoun; the unambiguous observed orders can still be recorded separately. [PDF p. 19, anchor: final Figure 6 interpretation paragraph]",
-      "issue": "The final comparison sentence on page 19 has an unclear antecedent for 'this mixed precision method.' [PDF p. 19, anchor: final sentences of the Figure 6 interpretation]"
-    },
-    {
-      "evidence": "The paper gives asymptotic formulas and a Log10(Error) axis but no norm, normalization, or exact reference-solution definition. [PDF pp. 18-19, anchors: error displays and Figure 6 caption]",
-      "impact": "No particular spatial or relative-error norm may be built into the source contract. [PDF pp. 18-19, anchors: displayed error forms and Figure 6]",
-      "issue": "Neither the theoretical nor experimental error has a specified norm. [PDF pp. 18-19, anchors: displayed error forms and Figure 6]"
-    }
-  ],
-  "contract_plain_english": "Method 4s3pC is the four-stage additive method with the coefficients printed on page 18 and with no direct F^epsilon contribution in the output because b^epsilon is zero. [PDF p. 18, anchor: Method 4s3pC coefficient list] For well-behaved tau, it has the stated global envelope O(Delta t^3) + O(epsilon Delta t^3); for nonsmooth tau such as chopping, the perturbation term drops to O(epsilon Delta t^2) while the scheme term remains O(Delta t^3). [PDF pp. 6, 18, anchors: chopping discussion and two Method 4s3pC error forms] Figure 6 confirms the separate regimes in the paper's diffusion test: the centered-difference perturbation remains third order, while half-precision chopping starts third order and reduces to second order as Delta t decreases. [PDF pp. 18-19, anchors: Figure 6 caption and interpretation]",
-  "paper_batch_sha256": "6de2cebc98667558bfb276c01a2286c46a88edff824491fda40799511abf8891",
-  "paper_sha256": "b18628ffc348d7aeec2da02efb989b6e012f0b0fae09b27fbff735bb8a5877cd",
-  "role": "source-contract",
   "schema_version": "highambench-faithfulness-0.2",
+  "role": "source-contract",
+  "task_id": "P18-T3",
+  "paper_sha256": "b18628ffc348d7aeec2da02efb989b6e012f0b0fae09b27fbff735bb8a5877cd",
   "source_evidence": [
     {
-      "anchor": "smooth-versus-chopped perturbation discussion",
-      "observation": "The smooth analysis assumes bounded derivatives and permits cancellation; chopping produces a bounded but non-Lipschitz F^epsilon and a tau whose derivatives may not exist.",
+      "pdf_page": 2,
+      "printed_page": "2",
+      "anchor": "equation (1.1), general s-stage Runge-Kutta method",
+      "observation": "The paper defines an s-stage Runge-Kutta method with an s-by-s Butcher array A and a length-s weight vector b. [PDF p. 2, anchor: equation (1.1)]"
+    },
+    {
+      "pdf_page": 3,
+      "printed_page": "3",
+      "anchor": "equation (2.3), perturbation operator",
+      "observation": "The perturbation operator is explicitly defined by tau(u) = (F(u) - F_eps(u))/epsilon. [PDF p. 3, anchor: equation (2.3)]"
+    },
+    {
+      "pdf_page": 4,
+      "printed_page": "4",
+      "anchor": "equations (3.1a)-(3.1b) and paragraph immediately following",
+      "observation": "The additive method uses A,b with F and A_eps,b_eps with F_eps, and requires F_eps(y) - F(y) = O(epsilon) for any y. [PDF p. 4, anchor: equations (3.1a)-(3.1b)]"
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "5",
+      "anchor": "equations (3.2a)-(3.2b)",
+      "observation": "The paper defines tilde_A = A + A_eps and tilde_b = b + b_eps and prints the perturbed representation with positive epsilon A_eps tau and epsilon b_eps tau terms. [PDF p. 5, anchor: equations (3.2a)-(3.2b)]"
+    },
+    {
+      "pdf_page": 5,
+      "printed_page": "5",
+      "anchor": "paragraph following equation (3.3)",
+      "observation": "The one-step error is split as E = E_sch + E_per = O(Delta t^(p+1)) + O(epsilon Delta t^(m+1)); if the method is stable, the stated global form is Error = O(Delta t^p) + O(epsilon Delta t^m). [PDF p. 5, anchor: paragraph following equation (3.3)]"
+    },
+    {
       "pdf_page": 6,
-      "printed_page": "6"
+      "printed_page": "6",
+      "anchor": "perturbation expansion table and the two regularity scenarios",
+      "observation": "The expansion tracks powers through third order in both Delta t and epsilon. In the standard scenario F and F_eps have existing bounded derivatives, so tau and its derivatives are bounded and coefficient cancellations are used. For chopping, F_eps = Chop(F) is described as bounded but not Lipschitz, tau is not Lipschitz, and its derivatives may not exist. [PDF p. 6, anchor: perturbation expansion and regularity discussion]"
     },
     {
-      "anchor": "Section 3.1.2 and equation (3.5)",
-      "observation": "The simplified perturbation order conditions apply only when tau is well behaved.",
+      "pdf_page": 7,
+      "printed_page": "7",
+      "anchor": "third-order consistency conditions preceding Section 3.1.1",
+      "observation": "Consistency through order three requires tilde_b e = 1, tilde_b tilde_c = 1/2, tilde_b(tilde_c componentwise-times tilde_c) = 1/3, and tilde_b tilde_A tilde_c = 1/6. [PDF p. 7, anchor: consistency-order list]"
+    },
+    {
       "pdf_page": 8,
-      "printed_page": "8"
+      "printed_page": "8",
+      "anchor": "simplified perturbation conditions (3.5a)-(3.5f)",
+      "observation": "For well-behaved tau, equations (3.5a)-(3.5f) give all cancellation conditions through perturbation order m = 3, grouped by the labels n >= 1, n >= 2, and n >= 3. [PDF p. 8, anchor: equations (3.5a)-(3.5f)]"
     },
     {
-      "anchor": "opening of Section 4.3",
-      "observation": "Method 4s3pC is introduced specifically as a method satisfying the less restrictive conditions (3.5), unlike the preceding methods designed for nonsmooth tau.",
+      "pdf_page": 11,
+      "printed_page": "11",
+      "anchor": "Butcher arrays following equation (4.1c)",
+      "observation": "A worked Butcher-array display explicitly uses tilde_c = c + c_eps together with tilde_A = A + A_eps and tilde_b = b + b_eps. [PDF p. 11, anchor: arrays following equation (4.1c)]"
+    },
+    {
       "pdf_page": 17,
-      "printed_page": "17"
+      "printed_page": "17",
+      "anchor": "Section 4.3 opening paragraph",
+      "observation": "Section 4.3 says Method 4s3pC is devised to satisfy the less restrictive conditions (3.5), which apply only when tau is well-behaved, in contrast with the stricter conditions (3.4). [PDF p. 17, anchor: Section 4.3 opening paragraph]"
     },
     {
-      "anchor": "Method 4s3pC coefficient list and the two displayed error forms",
-      "observation": "The paper specifies the four-stage coefficients and states separate global error forms for well-behaved and non-well-behaved tau: O(Delta t^3) + O(epsilon Delta t^3) and O(Delta t^3) + O(epsilon Delta t^2), respectively.",
       "pdf_page": 18,
-      "printed_page": "18"
+      "printed_page": "18",
+      "anchor": "Method 4s3pC coefficient displays",
+      "observation": "The paper prints six A entries, ten A_eps entries, four b entries, and b_eps = (0,0,0,0) for Method 4s3pC. [PDF p. 18, anchor: Method 4s3pC coefficient displays]"
     },
     {
-      "anchor": "diffusion-equation test setup and Figure 6 caption",
-      "observation": "The test evolves u_t = u_xx on (0,2pi) with periodic boundaries and initial data sin(x), using a Fourier spectral F and either a centered-difference or chopped Fourier F^epsilon.",
       "pdf_page": 18,
-      "printed_page": "18"
+      "printed_page": "18",
+      "anchor": "two error-form statements following the Method 4s3pC coefficients",
+      "observation": "The paper explicitly states Error = O(Delta t^3) + O(epsilon Delta t^3) for well-behaved tau and Error = O(Delta t^3) + O(epsilon Delta t^2) when tau is not well-behaved. [PDF p. 18, anchor: error statements following the coefficients]"
     },
     {
-      "anchor": "Figure 6 interpretation",
-      "observation": "The centered-difference perturbation exhibits the expected third-order perturbation regime; half-precision chopping with epsilon = 10^-4 starts third order and reduces to second order as Delta t decreases.",
       "pdf_page": 19,
-      "printed_page": "19"
+      "printed_page": "19",
+      "anchor": "discussion of Figure 6",
+      "observation": "The centered-difference versus Fourier-spectral difference is identified as well-behaved, whereas chopping the Fourier-spectral evaluation is treated as not well-behaved; the paper also warns that using two different operators requires stability analysis. [PDF p. 19, anchor: discussion of Figure 6]"
+    },
+    {
+      "pdf_page": 20,
+      "printed_page": "20",
+      "anchor": "final paragraph of Conclusions",
+      "observation": "The paper says epsilon is treated as a single constant upper bound. [PDF p. 20, anchor: final paragraph of Conclusions]"
     }
   ],
   "statement": {
-    "algorithm_linkage": "The contract concerns Method 4s3pC with exactly the coefficient data printed on page 18 and the additive F/F^epsilon stage structure of Eq. (3.1); the smooth and chopped claims are two regimes of this same method, not two merged algorithms. [PDF p. 18, anchor: Method 4s3pC coefficient list and error forms; PDF p. 4, anchor: Eq. (3.1)]",
     "binders": [
-      "Method 4s3pC is a four-stage additive Runge-Kutta method with coefficient matrices A and A^epsilon and weights b and b^epsilon, acting on F and F^epsilon as in the general additive framework. [PDF p. 18, anchor: Method 4s3pC coefficient list; PDF p. 4, anchor: Eq. (3.1)]",
-      "The error regimes bind the step size Delta t, perturbation scale epsilon, and perturbation function tau, with separate cases according to whether tau is well behaved. [PDF p. 18, anchor: two displayed error forms]",
-      "The numerical test binds u(x,t) on x in (0,2pi), initial data u(x,0) = sin(x), periodic boundaries, and the diffusion equation u_t = u_xx. [PDF p. 18, anchor: diffusion-equation test setup]"
-    ],
-    "conclusions": [
-      "The paper lists A coefficients a21 = -0.050470366527530, a31 = 0.368613367355336, a32 = 0.273504374252976, a41 = 1.803794668975043, a42 = 0.097485042980759, and a43 = -1.895660952342050. [PDF p. 18, anchor: Method 4s3pC coefficient list]",
-      "It lists A^epsilon coefficients a11^epsilon = 0.511243008730995, a21^epsilon = -1.999347282862640, a22^epsilon = 1.957161067302390, a31^epsilon = 0.443312893511937, a32^epsilon = -0.573131033672219, a33^epsilon = 0.128283796414019, a41^epsilon = -2, a42^epsilon = -0.160330320741428, a43^epsilon = 0.579597314161362, and a44^epsilon = 1.484688928981990. [PDF p. 18, anchor: Method 4s3pC coefficient list]",
-      "The output weights are b = [0.002837446974069, 0.336264433650450, 0.806376720267787, -0.145478600892306] and b^epsilon = [0,0,0,0]. [PDF p. 18, anchor: Method 4s3pC coefficient list]",
-      "When tau is well behaved, Method 4s3pC gives Error = O(Delta t^3) + O(epsilon Delta t^3). [PDF p. 18, anchor: first displayed Method 4s3pC error form]",
-      "When tau is not well behaved, Method 4s3pC gives Error = O(Delta t^3) + O(epsilon Delta t^2). [PDF p. 18, anchor: second displayed Method 4s3pC error form]",
-      "With centered-difference F^epsilon, which the paper identifies as producing a well-behaved tau in this example, Figure 6 exhibits the expected O(Delta t^3) + O(epsilon Delta t^3) behavior. [PDF p. 19, anchor: first Figure 6 interpretation paragraph]",
-      "With half-precision chopped Fourier F^epsilon and epsilon = 10^-4, the Method 4s3pC error is initially third order and reduces to second order for smaller Delta t, matching O(Delta t^3) + O(epsilon Delta t^2). [PDF p. 19, anchor: second Figure 6 interpretation paragraph]",
-      "Method 4s3pA, included for comparison because it was designed for badly behaved tau, starts at higher than third order in the plotted range and settles to third-order behavior. [PDF p. 19, anchor: comparison with Method 4s3pA]"
-    ],
-    "constants_and_indexing": [
-      "Method 4s3pC has four stages and uses one-based coefficient indices a_ij and a_ij^epsilon with the decimal constants printed on page 18. [PDF p. 18, anchor: Method 4s3pC coefficient list]",
-      "The spatial interval is the open interval (0,2pi), with periodic boundary conditions and initial value sin(x). [PDF p. 18, anchor: diffusion-equation test setup]",
-      "The paper gives epsilon = 10^-4 for the chopped half-precision experiment but does not quantify epsilon for the Fourier-versus-centered-difference perturbation. [PDF pp. 18-19, anchors: test setup and Figure 6 interpretation]",
-      "The constants hidden by the O-terms and their dependence on the spatial discretization, final time, stability bounds, and epsilon are not stated. [PDF p. 18, anchor: two displayed error forms]"
-    ],
-    "definitions_and_conventions": [
-      "Method 4s3pC is designed to satisfy the simplified perturbation conditions (3.5), which the paper says apply only when tau is well behaved. [PDF p. 17, anchor: opening of Section 4.3; PDF p. 8, anchor: Section 3.1.2]",
-      "In the smooth scenario, the paper characterizes F and F^epsilon as well-behaved functions whose derivatives exist and are bounded, so tau and its derivatives are bounded and cancellation can be used. [PDF p. 6, anchor: smooth-case paragraph]",
-      "In the chopped scenario, F^epsilon = Chop(F) is bounded but not Lipschitz, tau is not Lipschitz, and derivatives of tau may not exist. [PDF p. 6, anchor: chopping paragraph]",
-      "The Fourier spectral approximation is the high-resolution operator F; the second-order centered-difference approximation is the low-resolution F^epsilon in the smooth comparison. [PDF p. 18, anchor: Figure 6 caption and discretization paragraph]",
-      "In the mixed-precision comparison, F is a double-precision Fourier spectral evaluation and F^epsilon is its half-precision chopped evaluation. [PDF p. 18, anchor: Figure 6 caption]"
-    ],
-    "error_notions": [
-      "Both displayed formulas are global Error envelopes: the first combines third-order scheme and perturbation terms, while the second combines a third-order scheme term with a second-order perturbation term. [PDF p. 18, anchor: two displayed error forms]",
-      "For fixed nonzero epsilon, the nonsmooth epsilon Delta t^2 term can dominate the Delta t^3 term as Delta t decreases; this transition is the interpretation given to the chopped Figure 6 curve. [PDF p. 19, anchor: chopped-regime interpretation]",
-      "The Figure 6 observations concern numerical error in the diffusion-equation test, but the text and caption do not define the exact reference subtraction or error norm. [PDF pp. 18-19, anchor: Figure 6 caption and interpretation]"
-    ],
-    "exceptional_values": [
-      "The Method 4s3pC claim states no assumptions about overflow, underflow, subnormals, NaN, infinity, Fourier aliasing exceptions, or failure of an implicit solve. [PDF pp. 18-19, anchors: coefficient/error passage and numerical interpretation]"
-    ],
-    "higher_order_terms": [
-      "The smooth result suppresses all omitted terms into O(Delta t^3) + O(epsilon Delta t^3), and the nonsmooth result suppresses them into O(Delta t^3) + O(epsilon Delta t^2); no further powers or leading coefficients are displayed. [PDF p. 18, anchor: two displayed error forms]",
-      "The Figure 6 transition from apparent third to second order is an asymptotic dominance interpretation, not an additional remainder formula. [PDF p. 19, anchor: chopped-regime interpretation]"
+      "The general framework binds a stage count s, coefficient arrays A,A_eps of size s by s, weight vectors b,b_eps of length s, a step size Delta t, operators F,F_eps, and perturbation scale epsilon. [PDF p. 2, anchor: equation (1.1); PDF p. 4, anchor: equations (3.1a)-(3.1b)]",
+      "Method 4s3pC is naturally read as s = 4 because its weights have four entries and its displayed matrix indices range from 1 through 4; that dimension is inferred from the display rather than separately declared in Section 4.3. [PDF p. 18, anchor: Method 4s3pC coefficient displays]",
+      "The order parameters are p for consistency order and m for perturbation order; the p = 3, m = 3 smooth case and p = 3, m = 2 nonsmooth case are obtained by matching the page-18 global errors to the general local/global correspondence. [PDF p. 5, anchor: paragraph following equation (3.3); PDF p. 18, anchor: two error-form statements]"
     ],
     "hypotheses": [
-      "For the higher perturbation-order regime, tau must be well behaved: the surrounding analysis assumes the relevant derivatives exist and are bounded so algebraic cancellation conditions (3.5) are valid. [PDF p. 6, anchor: smooth-case paragraph; PDF p. 8, anchor: Section 3.1.2 and Eq. (3.5)]",
-      "For a non-well-behaved tau, including the chopping model where tau need not be Lipschitz and its derivatives may not exist, Method 4s3pC does not meet the stricter perturbation regime and the lower perturbation order applies. [PDF p. 6, anchor: chopping paragraph; PDF p. 18, anchor: second displayed error form]",
-      "The global-error interpretation inherits the paper's standing stability assumption; for the experiment using different spatial operators, the paper specifically says a careful stability analysis is required. [PDF p. 2, anchor: standing stability qualification; PDF pp. 18-19, anchor: caution surrounding the centered-difference experiment]",
-      "The observed smooth-regime curve uses high-resolution Fourier spectral F and a low-resolution second-order centered-difference F^epsilon; the observed chopped regime uses Fourier spectral F and a half-precision chopped Fourier spectral F^epsilon. [PDF p. 18, anchor: Figure 6 caption and discretization paragraph; PDF p. 19, anchor: Figure 6 interpretation]"
+      "The method is interpreted within the additive Runge-Kutta scheme (3.1): A,b multiply F, while A_eps,b_eps multiply F_eps at the same stage values. [PDF p. 4, anchor: equations (3.1a)-(3.1b)]",
+      "The approximation satisfies F_eps(y) - F(y) = O(epsilon) for any y, and tau is defined from F and F_eps. [PDF p. 3, anchor: equation (2.3); PDF p. 4, anchor: paragraph following equations (3.1a)-(3.1b)]",
+      "For the smooth conclusion, tau is well-behaved; inherited context describes this via existing bounded derivatives of F and F_eps and bounded derivatives of tau, permitting cancellation of corresponding perturbation terms. [PDF p. 6, anchor: standard regularity scenario; PDF p. 8, anchor: opening paragraph of Section 3.1.2]",
+      "For the nonsmooth conclusion, tau is not well-behaved; chopping is the motivating case in which F_eps and tau are not Lipschitz and derivatives of tau may fail to exist. [PDF p. 6, anchor: chopping discussion; PDF p. 18, anchor: nonsmooth error statement]",
+      "Stability is an inherited assumption for interpreting the page-18 quantity Error as a global error estimate. [PDF p. 2, anchor: Introduction stability limitation; PDF p. 5, anchor: local-to-global error paragraph]"
+    ],
+    "conclusions": [
+      "Method 4s3pC is presented as satisfying the simplified well-behaved-tau perturbation conditions through order m = 3 together with third-order consistency. [PDF p. 17, anchor: Section 4.3 opening paragraph; PDF p. 18, anchor: smooth error statement]",
+      "Explicit smooth-case claim: Error = O(Delta t^3) + O(epsilon Delta t^3). [PDF p. 18, anchor: first error-form statement following the coefficients]",
+      "Explicit nonsmooth-case claim: Error = O(Delta t^3) + O(epsilon Delta t^2). [PDF p. 18, anchor: second error-form statement following the coefficients]",
+      "Inherited one-step forms are E = O(Delta t^4) + O(epsilon Delta t^4) in the smooth case and E = O(Delta t^4) + O(epsilon Delta t^3) in the nonsmooth case; these are inferred from the general one-step/global relation and are not restated beside Method 4s3pC. [PDF p. 5, anchor: paragraph following equation (3.3); PDF p. 18, anchor: Method 4s3pC error statements]"
+    ],
+    "definitions_and_conventions": [
+      "Displayed A coefficients are a_21=-0.050470366527530, a_31=0.368613367355336, a_32=0.273504374252976, a_41=1.803794668975043, a_42=0.097485042980759, and a_43=-1.895660952342050. [PDF p. 18, anchor: Method 4s3pC coefficient display]",
+      "Displayed A_eps coefficients are a_eps_11=0.511243008730995, a_eps_21=-1.999347282862640, a_eps_22=1.957161067302390, a_eps_31=0.443312893511937, a_eps_32=-0.573131033672219, a_eps_33=0.128283796414019, a_eps_41=-2, a_eps_42=-0.160330320741428, a_eps_43=0.579597314161362, and a_eps_44=1.484688928981990. [PDF p. 18, anchor: Method 4s3pC coefficient display]",
+      "The weights are b=(0.002837446974069, 0.336264433650450, 0.806376720267787, -0.145478600892306) and b_eps=(0,0,0,0). [PDF p. 18, anchor: Method 4s3pC weight-vector display]",
+      "Explicit combined-coefficient definitions are tilde_A=A+A_eps and tilde_b=b+b_eps; the paper also uses tilde_c=c+c_eps. [PDF p. 5, anchor: text following equations (3.2a)-(3.2b); PDF p. 11, anchor: arrays following equation (4.1c)]",
+      "The standard Butcher interpretation is e=(1,1,1,1)^T, c=Ae, c_eps=A_eps e, and tilde_c=tilde_A e=c+c_eps; c=Ae and the meaning of e are inherited conventions rather than explicit definitions in the selected passage. [PDF p. 2, anchor: equation (1.1); PDF p. 7, anchor: consistency-order list; PDF p. 11, anchor: arrays following equation (4.1c)]",
+      "The centered dot in expressions such as tilde_c dot tilde_c denotes componentwise vector multiplication under the standard B-series convention; the selected pages do not formally define that notation. [PDF p. 5, anchor: B-series coefficient table; PDF p. 7, anchor: third-order consistency conditions]"
     ],
     "implicit_context": [
-      "The listed A coefficients form the strictly lower-triangular high-precision part and the listed A^epsilon coefficients form a lower-triangular perturbed part under the standard convention that unlisted tableau entries are zero; the page lists coefficients rather than printing full matrices. [PDF p. 18, anchor: Method 4s3pC coefficient list]",
-      "Because b^epsilon is zero, F^epsilon affects internal stages but is not directly weighted in the final update. [PDF p. 18, anchor: b and b^epsilon coefficient list; PDF p. 4, anchor: Eq. (3.1b)]",
-      "The two error forms are global asymptotic envelopes inherited from the framework, not exact equalities and not claims that the error constants agree between the smooth and nonsmooth cases. [PDF p. 18, anchor: two displayed error forms; PDF p. 5, anchor: general global-error display]",
-      "The centered-difference experiment is illustrative rather than a general recommendation; the paper warns that coupling two spatial operators is sensitive and requires rigorous stability justification. [PDF pp. 18-19, anchor: caution spanning the page break]"
+      "The underlying problem is an ODE u_t=F(u), but the state-space dimension and domain/codomain of F are not specified in the selected result. [PDF p. 1, anchor: opening ODE in the Introduction]",
+      "The page-18 symbol Error inherits the paper's convention for accumulated/global error, while E denotes one-step error. [PDF p. 5, anchor: paragraph following equation (3.3); PDF p. 18, anchor: Method 4s3pC error statements]",
+      "The four-stage and zero-filled-tableau interpretations are conventional readings of the coefficient display, not fully spelled-out matrices on page 18. [PDF p. 18, anchor: Method 4s3pC coefficient displays]",
+      "Section 4.3 presents the method as applicable beyond literal mixed floating-point evaluation: Figure 6 also uses different spatial discretizations for F and F_eps when their difference is well-behaved. [PDF p. 18, anchor: Figure 6 caption; PDF p. 19, anchor: Figure 6 discussion]"
+    ],
+    "algorithm_linkage": "Method 4s3pC is the additive Runge-Kutta variant of equations (3.1a)-(3.1b) using the page-18 A,A_eps,b,b_eps data. Because b_eps is zero, the final update is weighted only through evaluations of F, while F_eps contributes through the stages via A_eps; this linkage is obtained by inserting the displayed coefficients into the general scheme. [PDF p. 4, anchor: equations (3.1a)-(3.1b); PDF p. 18, anchor: Method 4s3pC coefficient displays]",
+    "numerical_model": [
+      "The abstract perturbation model is F_eps(y)-F(y)=O(epsilon) for any y, with tau(u)=(F(u)-F_eps(u))/epsilon. [PDF p. 3, anchor: equation (2.3); PDF p. 4, anchor: paragraph following equations (3.1a)-(3.1b)]",
+      "For mixed precision emulation, the paper uses chopping and gives order-of-magnitude examples epsilon approximately 10^-8 for single precision and epsilon approximately 10^-4 for half precision. [PDF p. 4, anchor: first paragraph and numerical setup]",
+      "The analysis treats epsilon as a single constant upper bound rather than a stage-dependent or operation-dependent rounding parameter. [PDF p. 20, anchor: final paragraph of Conclusions]",
+      "No IEEE rounding mode, unit-roundoff formula, accumulation model, or per-operation relative-error model is specified. [PDF p. 4, anchor: truncation description; PDF p. 6, anchor: chopping discussion]"
+    ],
+    "error_notions": [
+      "E_sch is the one-step approximation error of the underlying scheme and E_per is the one-step perturbation error; E=E_sch+E_per. [PDF p. 5, anchor: paragraph following equation (3.3)]",
+      "Under stability, reducing a one-step term O(Delta t^(p+1))+O(epsilon Delta t^(m+1)) gives the global form O(Delta t^p)+O(epsilon Delta t^m). [PDF p. 5, anchor: local-to-global error paragraph]",
+      "The selected result states asymptotic forward/global error orders, not backward error, residual error, or a componentwise error guarantee. [PDF p. 18, anchor: Method 4s3pC error statements]"
     ],
     "norms": [
-      "No spatial norm, vector norm, absolute/relative convention, or time-aggregation norm is specified for either theoretical Error or the Figure 6 vertical axis. [PDF pp. 18-19, anchors: displayed error forms and Figure 6]"
+      "No norm is specified for E, Error, F_eps-F, or the constants hidden by O notation. [PDF p. 4, anchor: F_eps approximation paragraph; PDF p. 5, anchor: local/global error paragraph; PDF p. 18, anchor: Method 4s3pC error statements]",
+      "Products such as b c and b A c are algebraic row-vector/matrix/column-vector products; products inside parentheses such as c dot c are componentwise products under inherited Runge-Kutta B-series notation. [PDF p. 5, anchor: B-series tables; PDF p. 7, anchor: consistency conditions]"
     ],
-    "numerical_model": [
-      "The smooth numerical perturbation is a change of spatial discretization from Fourier spectral F to second-order centered-difference F^epsilon, not a floating-point rounding perturbation. [PDF p. 18, anchor: Figure 6 caption and test setup]",
-      "The nonsmooth numerical perturbation is a half-precision chopping of the Fourier spectral evaluation, with epsilon = 10^-4 in the reported experiment. [PDF pp. 18-19, anchors: Figure 6 caption and chopped-regime interpretation]",
-      "No IEEE operation-level model, rounding mode, underflow model, or relative-error formula is stated; chopping is modeled through loss of Lipschitz regularity and the abstract epsilon-scaled perturbation framework. [PDF p. 6, anchor: chopping paragraph; PDF p. 18, anchor: nonsmooth error form]"
+    "constants_and_indexing": [
+      "Third-order consistency preserves all lower-order requirements: tilde_b e=1; tilde_b tilde_c=1/2; tilde_b(tilde_c dot tilde_c)=1/3; and tilde_b tilde_A tilde_c=1/6. [PDF p. 7, anchor: consistency-order list]",
+      "For m>=1, equation (3.5a) requires, under its n>=1 label, b_eps e=0. [PDF p. 8, anchor: equation (3.5a)]",
+      "For m>=2, equations (3.5b)-(3.5c) additionally require: under n>=1, b_eps tilde_c=0 and tilde_b c_eps=0; under n>=2, b_eps c_eps=0. [PDF p. 8, anchor: equations (3.5b)-(3.5c)]",
+      "For m>=3 and n>=1, equation (3.5d) additionally requires b_eps tilde_A tilde_c=0, tilde_b A_eps tilde_c=0, tilde_b tilde_A c_eps=0, b_eps(tilde_c dot tilde_c)=0, and tilde_b(tilde_c dot c_eps)=0. [PDF p. 8, anchor: equation (3.5d)]",
+      "For m>=3 and n>=2, equation (3.5e) additionally requires b_eps A_eps tilde_c=0, b_eps tilde_A c_eps=0, tilde_b A_eps c_eps=0, b_eps(c_eps dot tilde_c)=0, and tilde_b(c_eps dot c_eps)=0. [PDF p. 8, anchor: equation (3.5e)]",
+      "For m>=3 and n>=3, equation (3.5f) additionally requires b_eps A_eps c_eps=0 and b_eps(c_eps dot c_eps)=0. [PDF p. 8, anchor: equation (3.5f)]",
+      "Coefficient subscripts are one-based stage indices. The displayed decimal coefficients carry fifteen digits after the decimal point, except the exact-looking entry a_eps_41=-2. [PDF p. 18, anchor: Method 4s3pC coefficient displays]"
+    ],
+    "higher_order_terms": [
+      "The claimed smooth global error retains two separate asymptotic contributions, O(Delta t^3) and O(epsilon Delta t^3); neither may be dropped or merged without an additional relation between epsilon and Delta t. [PDF p. 18, anchor: smooth error statement]",
+      "The claimed nonsmooth global error retains O(Delta t^3) and O(epsilon Delta t^2). [PDF p. 18, anchor: nonsmooth error statement]",
+      "The perturbation table is expanded only through third order in Delta t and third order in epsilon; terms beyond that truncation are not enumerated. [PDF p. 6, anchor: perturbation expansion table]",
+      "No big-O constants, uniformity range, limiting path for epsilon versus Delta t, or threshold at which one contribution dominates is specified in the Method 4s3pC statement. [PDF p. 18, anchor: two Method 4s3pC error statements]"
+    ],
+    "exceptional_values": [
+      "The source does not model NaNs, infinities, overflow, underflow, subnormals, or exceptional solver failure; chopping is represented only as a bounded, non-Lipschitz operator. [PDF p. 6, anchor: chopping discussion]",
+      "In the smooth case, derivative existence and boundedness exclude the derivative failures discussed for chopping, but the paper gives no precise domain or uniform boundedness quantifiers. [PDF p. 6, anchor: two regularity scenarios]"
     ]
   },
-  "task_id": "P18-T3",
   "undebatable_constraints": [
-    "The well-behaved and non-well-behaved tau regimes must remain separate: their perturbation orders are respectively three and two. [PDF p. 18, anchor: two displayed error forms]",
-    "Both regimes retain the third-order scheme term O(Delta t^3). [PDF p. 18, anchor: two displayed error forms]",
-    "The exact printed Method 4s3pC coefficients, including a41^epsilon = -2 and b^epsilon = [0,0,0,0], are part of the source claim. [PDF p. 18, anchor: Method 4s3pC coefficient list]",
-    "The smooth-regime Figure 6 evidence uses a centered-difference F^epsilon, whereas the nonsmooth order reduction uses half-precision chopping; these numerical variants must not be conflated. [PDF pp. 18-19, anchors: Figure 6 caption and interpretation]",
-    "The use of different spatial operators carries an explicit stability warning and is not recommended without rigorous justification. [PDF pp. 18-19, anchor: caution surrounding the centered-difference experiment]"
-  ]
+    "The source claim must retain all four consistency equalities through p=3, not merely the two third-order equalities. [PDF p. 7, anchor: consistency-order list]",
+    "The source claim must retain every condition in (3.5a)-(3.5f) when asserting smooth perturbation order m=3, including the conditions grouped under n>=1, n>=2, and n>=3. [PDF p. 8, anchor: equations (3.5a)-(3.5f)]",
+    "A and b belong to the F evaluations, while A_eps and b_eps belong to F_eps; swapping these roles changes the algorithm. [PDF p. 4, anchor: equations (3.1a)-(3.1b)]",
+    "The Method 4s3pC coefficient values and signs must be preserved exactly as printed, including a_eps_41=-2, a_43=-1.895660952342050, the negative fourth weight, and b_eps=(0,0,0,0). [PDF p. 18, anchor: Method 4s3pC coefficient displays]",
+    "Both regularity branches are part of the result: smooth tau gives O(Delta t^3)+O(epsilon Delta t^3), while non-well-behaved tau gives O(Delta t^3)+O(epsilon Delta t^2). [PDF p. 18, anchor: two error-form statements]",
+    "The global interpretation is conditional on stability inherited from the general framework. [PDF p. 2, anchor: stability limitation; PDF p. 5, anchor: local-to-global error paragraph]",
+    "The big-O statements must not be strengthened into explicit inequalities, exact equalities, norm-specific estimates, or bounds with specified constants. [PDF p. 5, anchor: local/global error paragraph; PDF p. 18, anchor: Method 4s3pC error statements]"
+  ],
+  "ambiguities": [
+    {
+      "issue": "The printed decimal coefficients are not identified as exact values or rounded approximations. [PDF p. 18, anchor: Method 4s3pC coefficient displays]",
+      "evidence": "The order conditions on pages 7-8 are exact zero and rational equalities, but page 18 supplies only finite decimal coefficients and no tolerance or generating exact values. Under the standard zero-fill and row-sum conventions, literal exact-decimal arithmetic does not satisfy every equality exactly; for example, 2(tilde_b tilde_c)-1 evaluates to -1511838180411276/10^30 from the printed numbers. [PDF p. 7, anchor: consistency conditions; PDF p. 18, anchor: coefficient displays]",
+      "impact": "A formal contract cannot silently treat both the printed decimals as exact rationals and all order conditions as exact facts. It must either retain unknown exact coefficients represented approximately by the display, introduce numerical tolerances, or record that the literal-decimal theorem is false. [PDF p. 7, anchor: exact consistency equalities; PDF p. 18, anchor: decimal coefficient display]"
+    },
+    {
+      "issue": "Page 18 does not print complete 4-by-4 matrices. [PDF p. 18, anchor: Method 4s3pC coefficient displays]",
+      "evidence": "Only lower-triangular entries are listed; all upper-triangular entries and the diagonal of A are omitted. Standard Butcher-tableau practice suggests they are zero, but the passage does not state that convention. [PDF p. 18, anchor: Method 4s3pC coefficient displays]",
+      "impact": "Reconstructing explicit matrices requires a zero-fill assumption that should be marked as inherited rather than quoted as an explicit source assertion. [PDF p. 18, anchor: Method 4s3pC coefficient displays]"
+    },
+    {
+      "issue": "The sign convention for tau is internally inconsistent. [PDF p. 3, anchor: equation (2.3); PDF p. 5, anchor: equations (3.2a)-(3.2b)]",
+      "evidence": "Equation (2.3) defines tau=(F-F_eps)/epsilon, while substituting that identity into equations (3.1a)-(3.1b) would produce negative epsilon A_eps tau and epsilon b_eps tau terms; equations (3.2a)-(3.2b) print those terms with positive signs. [PDF p. 3, anchor: equation (2.3); PDF p. 4, anchor: equations (3.1a)-(3.1b); PDF p. 5, anchor: equations (3.2a)-(3.2b)]",
+      "impact": "A formalized recurrence must choose a sign convention. The zero-valued cancellation conditions and asymptotic orders are sign-insensitive, but an exact equivalence between the two algorithm forms is not. [PDF p. 5, anchor: equations (3.2a)-(3.2b); PDF p. 8, anchor: zero-valued conditions (3.5)]"
+    },
+    {
+      "issue": "The notation e, c, c_eps, componentwise dot, and the labels n>=1, n>=2, n>=3 are not formally introduced in the selected condition list. [PDF p. 7, anchor: consistency conditions; PDF p. 8, anchor: equations (3.5a)-(3.5f)]",
+      "evidence": "A later worked tableau explicitly gives tilde_c=c+c_eps, and the perturbation table associates successive epsilon powers with the grouped conditions, but no nearby sentence declares e as the ones vector, c=Ae, c_eps=A_eps e, or n as the epsilon-power count. [PDF p. 6, anchor: perturbation expansion table; PDF p. 8, anchor: equations (3.5); PDF p. 11, anchor: arrays following equation (4.1c)]",
+      "impact": "Those standard Runge-Kutta conventions are necessary to evaluate the conditions, but they must be marked as inherited or inferred rather than explicit task-specific binders. [PDF p. 7, anchor: consistency conditions; PDF p. 8, anchor: simplified perturbation conditions]"
+    },
+    {
+      "issue": "Well-behaved is descriptive rather than a fully quantified analytic hypothesis. [PDF p. 6, anchor: regularity scenarios; PDF p. 8, anchor: opening of Section 3.1.2]",
+      "evidence": "The paper says that F and F_eps have existing bounded derivatives and that tau and its derivatives are bounded, but it does not specify derivative order, domain, norm, or uniformity in epsilon. [PDF p. 6, anchor: standard regularity scenario]",
+      "impact": "The smooth error claim cannot be translated into a unique formal analytic theorem without adding choices that the source does not settle. [PDF p. 18, anchor: smooth Method 4s3pC error statement]"
+    },
+    {
+      "issue": "The scope of the nonsmooth error statement is not fully specified. [PDF p. 17, anchor: Section 4.3 opening; PDF p. 18, anchor: nonsmooth error statement]",
+      "evidence": "Section 4.3 says the method is devised for conditions (3.5), which apply only to well-behaved tau, yet page 18 also states an error form when tau is not well-behaved without restating hypotheses or deriving which stricter conditions apply. The sentence is grammatically missing an explicit 'when' before 'tau is not well-behaved.' [PDF p. 17, anchor: Section 4.3 opening paragraph; PDF p. 18, anchor: second error-form statement]",
+      "impact": "The safest contract preserves the nonsmooth asymptotic form as an explicit paper claim but does not strengthen it into a theorem for every bounded non-Lipschitz perturbation. [PDF p. 18, anchor: nonsmooth error statement]"
+    },
+    {
+      "issue": "The error norm and asymptotic limiting regime are omitted. [PDF p. 18, anchor: Method 4s3pC error statements]",
+      "evidence": "The paper writes only Error and big-O expressions; it supplies no norm, constants, quantifier order, or rule for whether epsilon is fixed as Delta t tends to zero. [PDF p. 5, anchor: local/global error paragraph; PDF p. 18, anchor: two error-form statements]",
+      "impact": "A formal statement should retain abstract error predicates or add explicitly documented modeling assumptions rather than selecting a norm or epsilon-Delta t limit silently. [PDF p. 18, anchor: Method 4s3pC error statements]"
+    }
+  ],
+  "contract_plain_english": "Method 4s3pC is a four-stage reading of the additive Runge-Kutta framework in which the printed A,b coefficients multiply F, the printed A_eps,b_eps coefficients multiply F_eps, and b_eps is zero. [PDF p. 4, anchor: equations (3.1a)-(3.1b); PDF p. 18, anchor: Method 4s3pC coefficient displays] The paper presents it as third-order consistent and as satisfying every simplified smooth-perturbation condition through m=3. [PDF p. 7, anchor: consistency conditions; PDF p. 8, anchor: equations (3.5a)-(3.5f); PDF p. 17, anchor: Section 4.3 opening paragraph] Subject to the paper's inherited stability requirement, it claims global error O(Delta t^3)+O(epsilon Delta t^3) when tau is well-behaved and O(Delta t^3)+O(epsilon Delta t^2) when tau is not well-behaved. [PDF p. 5, anchor: local-to-global error paragraph; PDF p. 18, anchor: two error-form statements] The source does not settle whether the displayed decimals are exact, whether omitted tableau entries are zero by definition, the exact analytic meaning of well-behaved, the error norm, or the epsilon-versus-Delta t limiting regime; these omissions must not be resolved silently. [PDF p. 6, anchor: regularity discussion; PDF p. 18, anchor: coefficient and error displays]"
 }
