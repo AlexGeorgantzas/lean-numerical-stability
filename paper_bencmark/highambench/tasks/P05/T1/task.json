@@ -1,15 +1,15 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, paper execution certificate, index adapter, and exact coefficient formalization",
+    "kind": "source selection, protected arbitrary-tree execution trace, and exact coefficient formalization",
     "performed_by": "Codex"
   },
   "assumptions": [
     "Lean's m is the number of product terms, so the paper's positive index is k=m+1.",
-    "The inputs belong to a finite radix-beta, precision-p format with round-to-nearest, unit roundoff u=(1/2)*beta^(1-p), and a nonzero denominator.",
+    "The inputs belong to a finite, symmetric radix-beta, precision-p format with round-to-nearest, unit roundoff u=(1/2)*beta^(1-p) <= 1/2, and a nonzero denominator.",
     "The products, arbitrary permuted binary-tree subtraction sum, and final division are linked to the computed yHat, with explicit range certificates excluding underflow and overflow.",
-    "The run carries the scalar residual consequences of the paper's Theorem 3.1 and Corollary 3.2; c is excluded from the perturbable source family.",
-    "When bK=1, yHat is the computed numerator without division and the sharper m*u residual consequence is available."
+    "The protected-sum trace decomposes the arbitrary tree along c's root path; every sibling subtree carries only the earlier equation (2.4) estimate, while every path merge is an actual safe rounded addition satisfying equations (2.1b) and (2.2).",
+    "When bK=1, yHat is the computed numerator without division; otherwise yHat is the safe rounded quotient. No final residual bound or target coefficient is an input field."
   ],
   "author_label": "Lemma 4.1",
   "classification_frozen_before_runs": false,
@@ -25,7 +25,7 @@
     "target_file": "paper_bencmark/highambench/tasks/P05/T1/Target.lean",
     "theorem_name": "p05_t1_uniform_backward_coefficients"
   },
-  "informal_proof": "Apply the paper's inherited general or unit-denominator residual estimate to the source family consisting of bK*yHat (or yHat) and the exact products a_i*b_i. Distribute the residual in proportion to source magnitudes and signs. This yields exact coefficients with the stated common radius; expanding the residual identity gives Lemma 4.1 while leaving c unchanged.",
+  "informal_proof": "Prove Theorem 3.1 by induction over the protected path of the arbitrary summation tree. At each merge combine the outer induction estimate, equation (2.4) for the sibling subtree, and both branches of equation (2.2); the paper's cases following (3.5)-(3.6) remove the quadratic term without a dimension guard. For bK != 1, equation (2.1b) gives Corollary 3.2's one-step quotient residual; for bK=1 use the trace directly. Finally distribute each residual over bK*yHat (or yHat) and the exact products by magnitude and sign, leaving c unchanged.",
   "informal_statement": "Lemma 4.1's complete general and unit-denominator protected-c backward-error conclusions for a certified floating-point execution.",
   "limits": {
     "total_model_tokens": 5000000,
@@ -52,6 +52,7 @@
     "P05SumTree",
     "p05SumTreeEval",
     "p05SumTreeSafe",
+    "P05ProtectedSumTrace",
     "p05RoundedProducts",
     "p05Lemma41Summands",
     "p05BackwardSource",
@@ -72,7 +73,7 @@
   "task_id": "P05-T1",
   "tier": "T1",
   "tier_label": "direct use",
-  "tier_rationale": "NumStability.exists_summation_source_coefficients_of_abs_le_mul_sum_abs in NumStability/Analysis/Summation/ErrorBounds.lean directly constructs each coefficient family from the paper-derived residual bound; only the protected-source adapter and exact algebra remain.",
+  "tier_rationale": "NumStability.exists_summation_source_coefficients_of_abs_le_mul_sum_abs in NumStability/Analysis/Summation/ErrorBounds.lean directly constructs each coefficient family once the paper-specific protected-tree induction has produced the residual bound. The remaining adapter assigns those coefficients to bK*yHat and the exact products while leaving c fixed.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P05/T1/Target.lean",
     "mode": "shared automatic validator",

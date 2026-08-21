@@ -36,7 +36,7 @@
   "rejected_candidates": [
     {
       "candidate": "Theorem 3.1",
-      "reason": "It is the paper's general summation framework rather than the selected quotient application. P05-T1 records its scalar residual consequence inside an arbitrary-order, range-certified execution and targets Lemma 4.1's protected-input coefficient conclusion."
+      "reason": "It is the paper's general summation framework rather than the selected quotient application. P05-T1 reconstructs its needed protected-tree instance from rounded merge steps and equation (2.4), then targets Lemma 4.1's protected-input coefficient conclusion."
     },
     {
       "candidate": "Corollary 3.2",

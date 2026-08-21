@@ -20,9 +20,11 @@ noncomputable def p05AbsMatMul {n : ℕ}
     (A B : Fin n → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fun i j => ∑ k : Fin n, |A i k| * |B k j|
 
-/-- A finite radix format interface sufficient to state P05 Lemma 4.1's
-round-to-nearest execution. `safeRange` excludes underflow and overflow for an
-exact operation result. -/
+/-- A finite radix format interface for P05's round-to-nearest arithmetic.
+`safeRange` excludes underflow and overflow for an exact operation result. The
+last two error laws are equations (2.1b) and (2.2) of the paper; unlike an
+unconstrained rounding oracle, they connect the format metadata and unit
+roundoff to every recorded operation. -/
 structure P05FiniteRoundToNearestFormat where
   radix : ℕ
   precision : ℕ
@@ -37,13 +39,17 @@ structure P05FiniteRoundToNearestFormat where
   round : ℝ → ℝ
   unitRoundoff : ℝ
   unitRoundoff_nonneg : 0 ≤ unitRoundoff
+  unitRoundoff_le_half : unitRoundoff ≤ 1 / 2
   unitRoundoff_scale :
     unitRoundoff * (2 * (radix : ℝ) ^ (precision - 1)) = 1
   zero_representable : representable 0
   one_representable : representable 1
+  neg_representable : ∀ x, representable x → representable (-x)
   round_representable : ∀ x, safeRange x → representable (round x)
   round_nearest : ∀ x, safeRange x → ∀ z, representable z →
     |x - round x| ≤ |x - z|
+  round_error_to_output : ∀ x, safeRange x →
+    |round x - x| ≤ unitRoundoff * |round x|
   round_exact : ∀ x, representable x → round x = x
 
 /-- A binary tree encoding an arbitrary pairwise evaluation order for a
@@ -98,12 +104,38 @@ noncomputable def p05BackwardSource {m : ℕ}
   | none => computedProduct
   | some i => products i
 
+/-- The protected-leaf decomposition of an arbitrary summation tree used in
+the proof of Theorem 3.1. A `merge` is one sibling subtree on the path from the
+protected input to the root. Its error premise is the earlier arbitrary-order
+summation estimate (2.4), while the merge itself is linked to an actual rounded
+addition. The inductive record contains no global residual or backward
+coefficient conclusion. -/
+inductive P05ProtectedSumTrace (fmt : P05FiniteRoundToNearestFormat) :
+    (termCount : ℕ) → (pivotValue outsideExact outsideAbs computed : ℝ) → Prop
+  | leaf (pivotValue : ℝ) (pivot_representable : fmt.representable pivotValue) :
+      P05ProtectedSumTrace fmt 1 pivotValue 0 0 pivotValue
+  | merge {outerCount siblingCount : ℕ}
+      {pivotValue siblingExact siblingAbs siblingComputed outerExact outerAbs computed : ℝ}
+      (pivot_representable : fmt.representable pivotValue)
+      (sibling_count_pos : 0 < siblingCount)
+      (sibling_abs_nonneg : 0 ≤ siblingAbs)
+      (sibling_exact_abs_le : |siblingExact| ≤ siblingAbs)
+      (sibling_computed_representable : fmt.representable siblingComputed)
+      (sibling_error_bound :
+        |siblingComputed - siblingExact| ≤
+          (siblingCount : ℝ) * fmt.unitRoundoff * siblingAbs)
+      (merge_safe : fmt.safeRange (pivotValue + siblingComputed))
+      (outer : P05ProtectedSumTrace fmt outerCount
+        (fmt.round (pivotValue + siblingComputed)) outerExact outerAbs computed) :
+      P05ProtectedSumTrace fmt (outerCount + siblingCount) pivotValue
+        (siblingExact + outerExact) (siblingAbs + outerAbs) computed
+
 /-- A complete finite execution certificate for P05 Lemma 4.1. The tree and
 permutation encode every permitted summation order. Product, addition, and
-division range fields state the absence of underflow and overflow. The two
-residual fields are exactly the consequences of Theorem 3.1 and Corollary 3.2
-used by the paper to construct Lemma 4.1's coefficients; neither field contains
-those coefficients or the target conclusion. -/
+division range fields state the absence of underflow and overflow. The
+protected trace exposes the paper's decomposition of that same computation
+into rounded merges and equation (2.4) sibling bounds; it does not assume
+Theorem 3.1, Corollary 3.2, or Lemma 4.1. -/
 structure P05Lemma41Run (m : ℕ) where
   format : P05FiniteRoundToNearestFormat
   a : Fin m → ℝ
@@ -123,18 +155,13 @@ structure P05Lemma41Run (m : ℕ) where
   numerator : ℝ
   numerator_eq : numerator = p05SumTreeEval format tree
     (fun i => p05Lemma41Summands format a b c (order i))
+  protected_sum_trace : P05ProtectedSumTrace format (m + 1) c
+    (-(∑ i : Fin m, a i * b i))
+    (∑ i : Fin m, |a i * b i|) numerator
   yHat : ℝ
   no_division_when_unit : bK = 1 → yHat = numerator
   division_safe : bK ≠ 1 → format.safeRange (numerator / bK)
   rounded_division : bK ≠ 1 → yHat = format.round (numerator / bK)
-  general_residual_bound :
-    |(c - ∑ i : Fin m, a i * b i) - bK * yHat| ≤
-      ((m + 1 : ℕ) : ℝ) * format.unitRoundoff *
-        (|bK * yHat| + ∑ i : Fin m, |a i * b i|)
-  unit_residual_bound : bK = 1 →
-    |(c - ∑ i : Fin m, a i * b i) - yHat| ≤
-      (m : ℝ) * format.unitRoundoff *
-        (|yHat| + ∑ i : Fin m, |a i * b i|)
 
 /-- Exact rectangular matrix multiplication for P05 Theorem 4.2. -/
 noncomputable def p05RectMatMul {m n : ℕ}
