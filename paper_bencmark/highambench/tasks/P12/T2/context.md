@@ -31,11 +31,12 @@ witness exists; it does not select a preferred exponent.
 `p12RadixGeometry fmt` proves the general radix-grid consequences of equation
 (1) used in the paper's proof: rebasing a sufficiently small representable
 number, bounded exact addition and subtraction as in equation (8), the local
-nearest-rounding bound for equal exponents, and the exponent increase forced by
-the complementary large-sum case. These are derived for every admissible
-`P12RadixFormat`; they are not additional target hypotheses. In particular,
-neither subtraction performed by the selected execution is assumed exact or
-representable.
+nearest-rounding bound `floor(beta/2) * beta^e` for equal exponents, and the
+exponent increase forced by the complementary large-sum case. The finite-range
+endpoint lemmas also cover nearest-addition saturation at `emax`. These are
+derived for every admissible `P12RadixFormat`; they are not additional target
+hypotheses. In particular, neither subtraction performed by the selected
+execution is assumed exact or representable.
 
 ## Algorithm and rounding
 
@@ -53,12 +54,14 @@ allows no other representable value between the returned endpoint and the
 exact result. Every rounded output therefore belongs to the same `F`.
 
 Equation (8) is explicitly qualified by "in the absence of overflow," although
-Theorem 2 does not separately list that hypothesis. The execution therefore
-records range validity for the exact sum and both exact differences using the
-strict upper endpoint `beta^p * beta^emax`. This resolves the source ambiguity
-without assuming representability of either difference. Equation (1) contains
-finite real values and zero; there are no infinities, NaNs, exception flags, or
-signed-zero distinction. The theorem imposes no separate underflow exclusion.
+Theorem 2 does not separately list a range hypothesis. Accordingly, the
+execution record contains only the three rounded operations. The proof derives
+representability of both exact differences before using faithful-rounding
+exactness. It also handles a nearest addition that saturates at either finite
+endpoint, so no unsupported range premise is attached to `x + y`. Equation (1)
+contains finite real values and zero; there are no infinities, NaNs, exception
+flags, or signed-zero distinction. The theorem imposes no separate underflow
+exclusion.
 
 ## Condition and conclusion
 
@@ -67,8 +70,12 @@ Both ordered inputs `x` and `y` belong to `F`. The theorem retains condition
 must satisfy
 
 ```text
-|y| <= (beta^p - beta/2) * beta^e(x).
+|y| <= ceil(beta^p - beta/2) * beta^e(x).
 ```
+
+`P12RadixFormat.condition7Ceiling` evaluates this coefficient exactly as the
+equal natural number `beta^p - floor(beta/2)`; the imported declaration
+`condition7Ceiling_eq_intCeil` proves the ceiling identity.
 
 The proof obtains a representation of `y` with `e(y) <= e(x)` and follows the
 paper's three cases. It uses the equation-(8) grid criterion to establish, not
@@ -84,3 +91,7 @@ The fixed conclusion exposes both identities, the exact error-free transform
 `|s - (x + y)| <= |y|`. All operations on the right sides are exact real
 operations. No first-order approximation, hidden cross term, or big-O term is
 used.
+
+The private satisfiability check uses `beta=3`, `p=1`, exponent range `[0,1]`,
+`x=y=2`, and `(s,t,e)=(3,1,1)`. This is the odd-radix boundary admitted by the
+source ceiling and excluded by the previous unceiled target.

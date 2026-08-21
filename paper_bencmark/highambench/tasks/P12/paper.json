@@ -89,7 +89,7 @@
     },
     "T2": {
       "available": true,
-      "decision": "Use Theorem 2's exact FastTwoSum identity over equation (1), retaining existential condition (7) and deriving the radix geometry and both exact subtraction steps through the paper's arbitrary-base case analysis and implication (8).",
+      "decision": "Use Theorem 2's exact FastTwoSum identity over equation (1), retaining the exact existential ceiling in condition (7), adding no theorem-level overflow premise, and deriving the radix geometry and both exact subtraction steps through the paper's arbitrary-base case analysis and implication (8).",
       "task_id": "P12-T2",
       "theorem_name": "p12_t2_fast_two_sum_exact"
     },

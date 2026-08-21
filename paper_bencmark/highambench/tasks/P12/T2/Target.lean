@@ -7,8 +7,7 @@ theorem p12_t2_fast_two_sum_exact
     (fmt : P12RadixFormat) (x y : ℝ) (tr : P12FastTwoSumTrace)
     (hx : p12Representable fmt x) (hy : p12Representable fmt y)
     (hcondition7 : ∃ rx : P12Representation fmt x,
-      |y| ≤
-        (fmt.mantissaBound - fmt.betaR / 2) * fmt.scale rx.exponent)
+      |y| ≤ fmt.condition7Ceiling * fmt.scale rx.exponent)
     (run : P12FastTwoSumExecution fmt x y tr) :
     tr.t = tr.s - x ∧
       tr.e = y - tr.t ∧
