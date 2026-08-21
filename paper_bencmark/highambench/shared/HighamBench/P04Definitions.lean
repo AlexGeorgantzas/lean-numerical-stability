@@ -48,6 +48,16 @@ noncomputable def p04BlockedAbsDot {q b : ℕ}
     (x y : Fin q → Fin b → ℝ) : ℝ :=
   ∑ k : Fin q, ∑ j : Fin b, |x k j| * |y k j|
 
+/-- The row-major equivalence underlying a block partition `n = q*b`. -/
+def p04BlockIndexEquiv {n q b : ℕ} (h : n = q * b) :
+    Fin q × Fin b ≃ Fin n :=
+  finProdFinEquiv.trans (finCongr h.symm)
+
+/-- Flatten one block/local pair through `p04BlockIndexEquiv`. -/
+def p04BlockIndex {n q b : ℕ} (h : n = q * b)
+    (k : Fin q) (j : Fin b) : Fin n :=
+  p04BlockIndexEquiv h (k, j)
+
 /-- Extend a block-indexed error by zero outside its valid natural range. -/
 noncomputable def p04ErrorAt {q : ℕ} (error : Fin q → ℝ) (k : ℕ) : ℝ :=
   if h : k < q then error ⟨k, h⟩ else 0
@@ -148,15 +158,20 @@ noncomputable def p04AbsRectMatMul {m n t : ℕ}
     Fin m → Fin t → ℝ :=
   fun i j ↦ ∑ k : Fin n, |A i k| * |B k j|
 
-/-- An execution of P04 Algorithm 3.1 for inputs not necessarily stored in the
-low precision, represented by the standard-model certificates used to derive
-Theorem 3.2. The `deltaA` and `deltaB` fields record line 1's componentwise
-rounding errors. The indexed `alpha` and `beta` fields record the compact
-factorization of every output entry derived from the chained block FMAs.
+/-- A finite-real execution of P04 Algorithm 3.1 for inputs not necessarily
+stored in the low precision.
 
-All values are finite reals. Thus this certificate has exactly the paper's
-stated analysis scope: underflow, overflow, exceptional IEEE values, and the
-second output rounding omitted in section 3.2 are outside the model. -/
+`inputErrorA` and `inputErrorB` give line 1's standard relative-error model.
+Every output entry is then the final state of a `P04BlockFmaDotRun`, whose
+operands are explicitly linked to the converted row and column. Thus the
+structure contains neither the compact `alpha`/`beta` factors nor equation
+(3.6); both must be derived from the conversion errors and local block-FMA
+traces.
+
+The low/high format constraints express the block-FMA framework on printed
+pages C126--C127. All modeled values are finite reals, so the structure has the
+paper's stated no-underflow/no-overflow scope and its deliberate
+single-rounding simplification. -/
 structure P04MixedInputMatMulRun
     (m n t b1 b b2 p q r : ℕ) where
   row_dimension_pos : 0 < m
@@ -173,37 +188,62 @@ structure P04MixedInputMatMulRun
   column_partition : t = r * b2
   A : Fin m → Fin n → ℝ
   B : Fin n → Fin t → ℝ
-  convertedA : Fin m → Fin n → ℝ
-  convertedB : Fin n → Fin t → ℝ
-  deltaA : Fin m → Fin n → ℝ
-  deltaB : Fin n → Fin t → ℝ
-  computed : Fin m → Fin t → ℝ
+  inputErrorA : Fin m → Fin n → ℝ
+  inputErrorB : Fin n → Fin t → ℝ
   uLow : ℝ
+  uHigh : ℝ
   uBar : ℝ
   uFma : ℝ
   uOut : ℝ
   uLow_nonneg : 0 ≤ uLow
+  uHigh_nonneg : 0 ≤ uHigh
   uBar_nonneg : 0 ≤ uBar
   uFma_nonneg : 0 ≤ uFma
   uOut_nonneg : 0 ≤ uOut
+  uHigh_le_uLow : uHigh ≤ uLow
+  uFma_allowed : uFma = uLow ∨ uFma = uHigh
+  uOut_allowed : uOut = uLow ∨ uOut = uHigh
   uBar_le_uFma : uBar ≤ uFma
   effective_gamma_valid :
     GammaValid (p04EffectiveFmaRoundoff uBar uFma uOut) q
   internal_gamma_valid : GammaValid uBar n
-  convertedA_eq : ∀ i k, convertedA i k = A i k + deltaA i k
-  convertedB_eq : ∀ k j, convertedB k j = B k j + deltaB k j
-  deltaA_bound : ∀ i k, |deltaA i k| ≤ uLow * |A i k|
-  deltaB_bound : ∀ k j, |deltaB k j| ≤ uLow * |B k j|
-  alpha : Fin m → Fin t → Fin n → ℝ
-  beta : Fin m → Fin t → Fin n → ℝ
-  algorithm3_1_factorization : ∀ i j,
-    computed i j = ∑ k : Fin n,
-      convertedA i k * convertedB k j *
-        (1 + alpha i j k) * (1 + beta i j k)
-  alpha_bound : ∀ i j k,
-    |alpha i j k| ≤
-      gamma (p04EffectiveFmaRoundoff uBar uFma uOut) q
-  beta_bound : ∀ i j k, |beta i j k| ≤ gamma uBar n
+  input_error_A_bound : ∀ i k, |inputErrorA i k| ≤ uLow
+  input_error_B_bound : ∀ k j, |inputErrorB k j| ≤ uLow
+  entryRun : Fin m → Fin t → P04BlockFmaDotRun n b q
+  entry_run_uBar : ∀ i j, (entryRun i j).uBar = uBar
+  entry_run_uFma : ∀ i j, (entryRun i j).uFma = uFma
+  entry_run_uOut : ∀ i j, (entryRun i j).uOut = uOut
+  entry_run_x : ∀ i j k l,
+    (entryRun i j).x k l =
+      A i (p04BlockIndex inner_partition k l) *
+        (1 + inputErrorA i (p04BlockIndex inner_partition k l))
+  entry_run_y : ∀ i j k l,
+    (entryRun i j).y k l =
+      B (p04BlockIndex inner_partition k l) j *
+        (1 + inputErrorB (p04BlockIndex inner_partition k l) j)
+
+/-- The componentwise low-precision conversion performed on line 1 of P04
+Algorithm 3.1. -/
+noncomputable def P04MixedInputMatMulRun.convertedA
+    {m n t b1 b b2 p q r : ℕ}
+    (run : P04MixedInputMatMulRun m n t b1 b b2 p q r) :
+    Fin m → Fin n → ℝ :=
+  fun i k => run.A i k * (1 + run.inputErrorA i k)
+
+/-- The analogous line-1 conversion of the right input. -/
+noncomputable def P04MixedInputMatMulRun.convertedB
+    {m n t b1 b b2 p q r : ℕ}
+    (run : P04MixedInputMatMulRun m n t b1 b b2 p q r) :
+    Fin n → Fin t → ℝ :=
+  fun k j => run.B k j * (1 + run.inputErrorB k j)
+
+/-- The matrix returned by Algorithm 3.1, entrywise defined by the linked
+block-FMA traces. -/
+noncomputable def P04MixedInputMatMulRun.computed
+    {m n t b1 b b2 p q r : ℕ}
+    (run : P04MixedInputMatMulRun m n t b1 b b2 p q r) :
+    Fin m → Fin t → ℝ :=
+  fun i j => (run.entryRun i j).computed
 
 /-- The factorization-stage coefficient in P04 equations (4.4) and (4.7). -/
 noncomputable def p04FactorizationCoeff

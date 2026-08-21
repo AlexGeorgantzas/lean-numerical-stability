@@ -1,16 +1,16 @@
 {
   "annotation": {
     "added_mathematical_proof_not_in_paper": false,
-    "kind": "source selection, tier label, and exact finite-index restatement of Theorem 3.2",
+    "kind": "source selection, Algorithm 3.1 execution semantics, tier label, and exact finite-index restatement of Theorem 3.2",
     "performed_by": "Codex"
   },
   "assumptions": [
     "The matrix dimensions m, n, and t and block dimensions b1, b, and b2 are positive.",
     "The block counts p, q, and r are positive and satisfy m = p*b1, n = q*b, and t = r*b2.",
-    "Both inputs are converted componentwise to the low precision, with additive errors bounded by uLow times the corresponding entry magnitude.",
-    "Every computed output entry has the indexed Algorithm 3.1 compact factorization derived from the chained block FMAs.",
-    "The factor alpha is bounded by gamma_q at equation (3.3)'s prioritized effective FMA-output parameter, and beta is bounded by gamma_n at the internal precision.",
-    "The low, internal, FMA-output, and final-output unit roundoffs are nonnegative; the internal precision is at least as fine as the FMA output precision.",
+    "Both inputs are converted componentwise to the low precision through standard relative errors bounded by uLow.",
+    "The FMA-output and requested-output unit roundoffs are each one of the paper's low/high formats, with uHigh <= uLow; the internal unit roundoff satisfies uBar <= uFma.",
+    "Every computed output entry is the final state of a linked q-block P04BlockFmaDotRun over the corresponding converted row and column.",
+    "Each entry trace starts at zero and satisfies the local recurrence (3.2), including its primitive error bounds, evaluation-order semantics, and equation (3.3)'s prioritized effective roundoff.",
     "The two relevant gamma denominators are positive.",
     "The finite-real standard model excludes underflow, overflow, exceptional IEEE values, and the second output rounding omitted in the paper's analysis."
   ],
@@ -28,7 +28,7 @@
     "target_file": "paper_bencmark/highambench/tasks/P04/T2/Target.lean",
     "theorem_name": "p04_t2_mixed_input_product_bound"
   },
-  "informal_proof": "For each output entry, combine the indexed alpha and beta factors to obtain the block-FMA coefficient. Bound each converted input by (1+uLow) times its original magnitude, producing the squared factor. Separately expand the two input conversions to obtain 2*uLow+uLow^2, then add the two componentwise summation bounds.",
+  "informal_proof": "For each output entry, unroll the linked recurrence and apply the accumulated-product lemma to construct the alpha and beta factors, obtaining the exact block-FMA coefficient. Bound each converted input by (1+uLow) times its original magnitude, producing the squared factor. Separately expand the two relative input conversions to obtain 2*uLow+uLow^2, apply the finite-summation perturbation bound, and add the two componentwise errors.",
   "informal_statement": "The full finite-index componentwise form of Theorem 3.2 and equation (3.6) for Algorithm 3.1.",
   "limits": {
     "total_model_tokens": 5000000,
@@ -47,14 +47,18 @@
     "nearby_numstability_declarations": [
       "NumStability.SummationComponentwisePerturbation",
       "NumStability.summationComponentwisePerturbation_abs_error_le",
+      "NumStability.prod_error_bound",
       "NumStability.matMul_error_bound",
       "NumStability.matSeqProd_componentwise_perturbation_bound"
     ],
-    "note": "The library supplies generic finite-summation and matrix-product perturbation ingredients, but no block-FMA execution model or exact Theorem 3.2 coefficient."
+    "note": "The L proof combines NumStability.prod_error_bound for the primitive block-FMA paths with summationComponentwisePerturbation_abs_error_le for the conversion perturbation. The library has no Algorithm 3.1 execution model or exact Theorem 3.2 coefficient."
   },
   "schema_version": "highambench-task-0.3",
   "shared_symbols": [
     "P04MixedInputMatMulRun",
+    "P04BlockFmaDotRun",
+    "p04BlockIndexEquiv",
+    "p04BlockIndex",
     "p04EffectiveFmaRoundoff",
     "p04BlockFmaCoeff",
     "p04RectMatMul",
@@ -103,7 +107,7 @@
   "task_id": "P04-T2",
   "tier": "T2",
   "tier_label": "combine",
-  "tier_rationale": "The L proof applies NumStability.summationComponentwisePerturbation_abs_error_le separately to the Algorithm 3.1 arithmetic perturbations and to the input-conversion perturbations, then combines those bounds with source-specific matrix, precision, and exact-coefficient reasoning. No exact block-FMA theorem exists in the frozen library.",
+  "tier_rationale": "The L proof materially combines NumStability.prod_error_bound, used to derive compact factors from each linked block-FMA trace, with NumStability.summationComponentwisePerturbation_abs_error_le, used for the input-conversion sum. It then supplies source-specific matrix reindexing, precision linkage, and exact-coefficient reasoning. No exact Algorithm 3.1 or Theorem 3.2 result exists in the frozen library.",
   "validation": {
     "controlled_target_file": "paper_bencmark/highambench/tasks/P04/T2/Target.lean",
     "mode": "shared automatic validator",

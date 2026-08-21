@@ -8,53 +8,87 @@ Tensor Cores*. The local PDF SHA-256 is
 `7ad9ebb7eef9864c58e9a3760ee308be48060647286f8e16cdc740ed4be5b862`.
 
 The selected result is Theorem 3.2 and equation (3.6), PDF page 7, printed page
-C130. Its computation and notation are defined by Algorithm 3.1 and equations
-(3.1)--(3.5), PDF pages 5--7, printed pages C128--C130.
+C130. Its computation and notation are defined by the block-FMA framework,
+Algorithm 3.1, and equations (3.1)--(3.5), PDF pages 3--7, printed pages
+C126--C130.
 
-## Paper result
+## Algorithm 3.1 execution
 
-Let `A` be an `m` by `n` real matrix and `B` an `n` by `t` real matrix. In
-Algorithm 3.1 they are partitioned into `b1` by `b` and `b` by `b2` blocks,
-with integer block counts
+Let `A` be an `m` by `n` real matrix and `B` an `n` by `t` real matrix.
+Algorithm 3.1 partitions them into `b1` by `b` and `b` by `b2` blocks, with
+positive integer block counts satisfying
 
-`m = p*b1`, `n = q*b`, and `t = r*b2`.
+```text
+m = p*b1,  n = q*b,  t = r*b2.
+```
 
-The inputs need not already be stored in the low precision. Line 1 converts
-them componentwise, giving
+The theorem explicitly repeats `q = n/b` and inherits the row and column
+partitions from Algorithm 3.1.
 
-`convertedA = A + deltaA`, `|deltaA| <= uLow*|A|`,
+`P04MixedInputMatMulRun` models the algorithm rather than storing its error
+bound. It contains the original `A` and `B`, line 1's relative rounding errors,
+and one scalar block-FMA trace for every output entry.
 
-and the analogous relations for `B`. For every output entry, the chained
-block-FMA analysis supplies indexed factors `alpha` and `beta` such that the
-computed entry is
+The line-1 conversions are
 
-`sum_k convertedA[i,k]*convertedB[k,j]*(1+alpha[i,j,k])*(1+beta[i,j,k])`.
+```text
+convertedA_(i,k) = A_(i,k)*(1+inputErrorA_(i,k)),
+convertedB_(k,j) = B_(k,j)*(1+inputErrorB_(k,j)),
+|inputErrorA_(i,k)| <= uLow,
+|inputErrorB_(k,j)| <= uLow.
+```
 
-The `alpha` radius is `gamma q` at the effective output-rounding parameter from
-equation (3.3). That parameter uses the first applicable branch: output
-precision if it is coarser than the FMA output precision, zero when the
-internal precision is at least the FMA output precision, and otherwise the FMA
-output precision. The `beta` radius is `gamma n` at the internal precision.
-The paper assumes the relevant gamma denominators are positive.
+This is the paper's standard relative-error representation of
+`fl_low(A)` and `fl_low(B)`. It implies the additive conversion bounds printed
+immediately before Theorem 3.2, including at zero entries.
 
-The theorem concludes, componentwise,
+The block-FMA framework has low- and high-precision unit roundoffs `uLow` and
+`uHigh`, with `uHigh <= uLow`. The FMA output roundoff `uFma` and requested
+output roundoff `uOut` must each be one of those two formats. The internal
+evaluation roundoff `uBar` satisfies `uBar <= uFma`. All are nonnegative, and
+the gamma denominators used in (3.6) are positive.
 
-`|computed - A*B| <=`
+For each output entry `(i,j)`, `entryRun i j` is a
+`P04BlockFmaDotRun n b q`:
 
-`(2*uLow + uLow^2 + (gammaEff + gammaInternal +`
-` gammaEff*gammaInternal)*(1+uLow)^2) * (|A|*|B|)`.
+- its block operands are exactly the converted row `i` and column `j`, linked
+  through the row-major equivalence `Fin q x Fin b ~= Fin n`;
+- its precision parameters equal the matrix run's `uBar`, `uFma`, and `uOut`;
+- it starts from zero and satisfies the local recurrence (3.2) for all `q`
+  chained block FMAs; and
+- `run.computed i j` is definitionally the trace's final state.
 
-Here `|A|*|B|` is ordinary matrix multiplication after taking entrywise
-absolute values; it is not a matrix norm. Every displayed quadratic and mixed
-term is retained.
+The run contains no compact `alpha` or `beta`, no final perturbation
+factorization, and no instance of equation (3.6). Those are proof obligations.
+The traces admit every evaluation order covered by the paper's general bound;
+Theorem 3.2 itself retains `gamma_n(uBar)` rather than the optional
+right-to-left sharpening.
 
-## Lean model
+All modeled quantities are finite reals satisfying the standard relative-error
+relations. This is the paper's no-underflow/no-overflow scope. NaNs, infinities,
+and the second output rounding deliberately omitted in section 3.2 are outside
+the model.
 
-`P04MixedInputMatMulRun` records the compatible dimensions, both conversions,
-the shared precision parameters, and the indexed Algorithm 3.1 factorization
-for every matrix entry. It does not assume equation (3.6). The target derives
-that bound for all output indices.
+## Fixed conclusion
 
-As in the paper's analysis, all modeled values are finite reals. Underflow,
-overflow, exceptional IEEE values, and the second output rounding explicitly
-omitted by the paper are outside the statement's scope.
+The exact product is formed from the original inputs, not their converted
+values. For every output entry, the theorem proves the componentwise forward
+error bound
+
+```text
+|computed - A*B| <=
+  (2*uLow + uLow^2
+    + (gamma_q(effective) + gamma_n(uBar)
+       + gamma_q(effective)*gamma_n(uBar))*(1+uLow)^2)
+  * (|A|*|B|).
+```
+
+The effective roundoff is equation (3.3)'s prioritized value: use `uOut` first
+when `uFma < uOut`; otherwise use zero when `uFma <= uBar`; otherwise use
+`uFma`.
+
+`|A|*|B|` is ordinary matrix multiplication after componentwise absolute
+values. It is not a matrix norm or an entrywise matrix product. The quadratic
+input-conversion term, mixed gamma product, full gamma denominators, and
+`(1+uLow)^2` factor are all retained exactly; there is no first-order
+truncation or big-O remainder.
