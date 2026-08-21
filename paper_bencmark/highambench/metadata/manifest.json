@@ -206,8 +206,8 @@
         "P20"
       ],
       "path": "paper_bencmark/highambench/shared/HighamBench/P20Definitions.lean",
-      "role": "P20-only finite infinity norms, scaled vectors, and single- and multiword narrow-range error envelopes",
-      "sha256": "5b94f6f4eac02fe552a60504a7d4c1efb1d8dbe27826e3c608c83a495fbb8c2b",
+      "role": "P20-only finite infinity norms, binary Model-1 semantics, power-of-two scaling, scaled multiword execution and error decomposition, and narrow-range error envelopes",
+      "sha256": "e2129407ca9260c9544e2105f2ede46a5fdf2514d17b69d7f447573e555f4341",
       "status": "current construction snapshot; rebuilt and rehashed for its declared paper scope"
     }
   ],
@@ -3855,7 +3855,7 @@
         "title": "Error Analysis of Matrix Multiplication with Narrow Range Floating-Point Arithmetic"
       },
       "paper_id": "P20",
-      "paper_structure_note": "The paper models mixed-precision matrix multiply-accumulate hardware with narrow exponent ranges, develops overflow-preventing row and column scaling, derives single-word and multiword underflow-aware error bounds, and validates them experimentally. The selected targets progress from the exact scaling interval through the single-word underflow comparison to an exact strengthened comparison of the two final multiword envelopes.",
+      "paper_structure_note": "The paper models mixed-precision matrix multiply-accumulate hardware with narrow exponent ranges, develops overflow-preventing row and column scaling, derives single-word and multiword underflow-aware error bounds, and validates them experimentally. The selected targets progress from the exact scaling construction through the scaled input-conversion bound to the algorithm-linked first-order forward-error result in Theorem 4.1.",
       "paper_version": "SIAM Journal on Scientific Computing 47(4), B785-B800, published 2025-07-01",
       "source": {
         "journal_page_map": "Physical PDF pages 1-16 are journal pages B785-B800.",
@@ -3874,106 +3874,172 @@
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P20/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Bound every coordinate by the finite infinity norm, choose a coordinate attaining that norm, and apply the two scaling inequalities.",
-          "informal_statement_paraphrase": "The exact maximum-coefficient consequence of the row-scaling interval (3.4a).",
+          "informal_proof_paraphrase": "Select the adjacent lower integer power of two for each positive ratio theta/||A_i||_infinity, rearrange its defining interval to obtain (3.4a), then use the finite coordinate bound and a maximizing coordinate to prove the exact scaled-row range.",
+          "informal_statement_paraphrase": "The complete row-side scaling selection from equations (3.1)-(3.4a), including format-derived theta, positive power-of-two diagonal factors, and scaled-row maxima in (theta/2,theta].",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "1d58f9917ffc13cc95c701370253f1f644dc4559d1f93e37ea9081bfa2bba0a7",
-            "declaration": "p20_t1_scaled_row_range",
+            "controlled_file_sha256": "0a5acf0a1d8a55fcd041ea703d68d64c8c1f68aca5fe2b4b010c2d975523d0fd",
+            "declaration": "p20_t1_power_two_row_scaling",
             "file": "paper_bencmark/highambench/tasks/P20/T1/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P20Definitions.lean"
             ],
-            "statement_summary": "The scaled-row maximum lies in the exact interval (theta/2, theta]."
+            "statement_summary": "For every nonzero row, the format-derived diagonal factor is a positive power of two satisfying (3.4a), and the corresponding scaled-row maximum lies in (theta/2,theta]."
           },
           "source_locations": [
             {
-              "anchor": "equation (3.4a), row scaling interval",
+              "anchor": "equation (3.1) and preceding/following scaling assumptions",
+              "pdf_page": 4,
+              "printed_page": "B788",
+              "role": "diagonal row scaling, power-of-two factors, exact scaling, and range-exception scope",
+              "section": "3. Error analysis of matrix multiplication"
+            },
+            {
+              "anchor": "equations (3.2) and (3.4a) with the maximum-coefficient prose",
               "pdf_page": 5,
               "printed_page": "B789",
-              "role": "upper and lower bounds for the scaled row maximum",
+              "role": "format-derived theta, row-specific scaling-factor interval, and scaled-row maximum in (theta/2,theta]",
               "section": "3.1. Analysis"
             }
           ],
           "task_id": "P20-T1",
           "tier": "T1",
           "tier_name": "direct use",
-          "tier_reason": "The frozen MatrixAlgebra module supplies the exact coordinate bound and attainment theorem for the same finite infinity norm; only unfolding and the source scalar inequalities remain.",
-          "title": "Scaled-row coefficient range"
+          "tier_reason": "The L proof directly reuses NumStability.abs_le_infNormVec and NumStability.infNormVec_exists_abs_eq for the exact finite infinity-norm steps. The remaining work is the generic Archimedean selection of an adjacent power of two and scalar rearrangement of (3.4a); the frozen library contains no paper-specific scaling theorem. The task remains direct-use T1.",
+          "title": "Power-of-two row scaling construction"
         },
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.infNormRect_nonneg"
+            "NumStability.rectMatMul_entry_abs_sub_computed_le_of_component_sums",
+            "NumStability.abs_le_infNormVec"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P20/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Compare the theta-inverse scalar terms and multiply by the common nonnegative matrix-norm factor.",
-          "informal_statement_paraphrase": "The accumulation-underflow contribution in (3.26) is bounded by the input-underflow contribution in the paper's theta-at-least-one regime.",
+          "informal_proof_paraphrase": "Use the Model-1 conversion equation to bound each inverse-scaled component error, compose the left- and right-input perturbations, bound component sums by n times the infinity norms, and collect the exact coefficient in (3.13).",
+          "informal_statement_paraphrase": "Equation (3.13): the complete input-rounding and input-underflow bound for epsilon_1 in the scaled inner product (3.3), before accumulation-format rounding.",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "2a604cf4f4cd6b18f577e1a745ab2cd8d552d71ed6079b5b7b99bd36b6a37acc",
-            "declaration": "p20_t2_accumulation_underflow_le_input",
+            "controlled_file_sha256": "fb95ee7956f7e12ea8d77a263a09660b727555fa2b3d617185a4baba787e08b0",
+            "declaration": "p20_t2_scaled_input_error",
             "file": "paper_bencmark/highambench/tasks/P20/T2/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P20Definitions.lean"
             ],
-            "statement_summary": "The accumulation-underflow term is no larger than the input-underflow term under the paper's stated regime."
+            "statement_summary": "For the maximally power-of-two-scaled row and column, the two componentwise input conversions satisfy the exact rounding-plus-underflow error bound (3.13)."
           },
           "source_locations": [
             {
-              "anchor": "equation (3.26) and following underflow-term comparison",
-              "pdf_page": 7,
-              "printed_page": "B791",
-              "role": "input- versus accumulation-underflow comparison",
-              "section": "3.2. Summary and discussion"
+              "anchor": "Model 1 and equations (2.1)-(2.3)",
+              "pdf_page": 2,
+              "printed_page": "B786",
+              "role": "binary formats, roundoff and underflow parameters, format nesting, and input rounding equation",
+              "section": "2.1. The model of matrix multiplication"
+            },
+            {
+              "anchor": "equation (2.4) and the following rounding-mode paragraph",
+              "pdf_page": 3,
+              "printed_page": "B787",
+              "role": "accumulation rounding equation, mutually exclusive relative and underflow errors, and exceptional-value scope",
+              "section": "2.1. The model of matrix multiplication"
+            },
+            {
+              "anchor": "equations (3.2)-(3.8)",
+              "pdf_page": 5,
+              "printed_page": "B789",
+              "role": "format-derived threshold, maximal power-of-two scales, componentwise input conversions, scaled inner product, and definition of epsilon_1",
+              "section": "3.1. Analysis"
+            },
+            {
+              "anchor": "equations (3.9)-(3.13)",
+              "pdf_page": 5,
+              "printed_page": "B789",
+              "role": "selected exact input-rounding and input-underflow error bound",
+              "section": "3.1. Analysis"
             }
           ],
           "task_id": "P20-T2",
           "tier": "T2",
           "tier_name": "combine",
-          "tier_reason": "The frozen library supplies rectangular infinity-norm nonnegativity, while the proof must combine it with the paper-specific theta, Gmin, gmin, and n-squared coefficient comparison.",
-          "title": "Single-word underflow contribution comparison"
+          "tier_reason": "The L proof materially combines NumStability.rectMatMul_entry_abs_sub_computed_le_of_component_sums for the two converted inputs with NumStability.abs_le_infNormVec for the n-scaled normwise underflow terms. Condition N manually reconstructs both steps. Equation (3.16) fails this dependency check because it reduces to inverse-scale inequalities and scalar arithmetic, so equation (3.13) is the valid combine-level selection from the same derivation.",
+          "title": "Scaled input-conversion error bound"
         },
         {
           "availability": "available",
           "candidate_library_dependencies_for_audit": [
-            "NumStability.infNormRect_nonneg"
+            "NumStability.infNormRect_nonneg",
+            "NumStability.row_sum_le_infNormRect",
+            "NumStability.infNormRect_le_of_row_sum_le"
           ],
           "copyright_note": "This is a benchmark-author paraphrase and formal restatement, not a quotation from the paper.",
           "gold_proof_policy": "Private construction proofs and helper sources are kept under paper_bencmark/scratch_pad/private_gold/P20/ and are never mounted in an evaluation container.",
-          "informal_proof_paraphrase": "Expand (4.32) and (4.33), identify their exact two-term underflow gap, and use nonnegativity for weak, equality, and strict comparisons.",
-          "informal_statement_paraphrase": "An exact strengthened certificate for the comparison of the multiword narrow-range and range-free envelopes.",
+          "informal_proof_paraphrase": "Apply the matrix infinity-norm triangle inequality to the exact four-source error decomposition from (4.18)-(4.28), substitute the four certified component bounds, and absorb the remaining norm into the explicit second-order remainder; unfold the coefficients for the separate (4.33) comparison.",
+          "informal_statement_paraphrase": "Theorem 4.1: the actual computed result of the scaled p-word algorithm (4.29)-(4.31) satisfies the four-term first-order infinity-norm forward-error bound (4.32), whose range-free terms are those in (4.33).",
           "lean_target": {
             "binding_status": "current construction snapshot; editable and rehashed before measurement",
-            "controlled_file_sha256": "05bc9bca28d9ea01d058bdcce95013cf05f56f374563f3214ddfd12c71f042ad",
-            "declaration": "p20_t3_multiword_narrow_range_gap",
+            "controlled_file_sha256": "bed58eaf44970ecf9a18a1418f57786ae9f1f8abd20e7254aaf9ab0c7ad0749b",
+            "declaration": "p20_t3_multiword_forward_error",
             "file": "paper_bencmark/highambench/tasks/P20/T3/Target.lean",
             "must_compile_without_numstability": true,
             "shared_files": [
               "paper_bencmark/highambench/shared/HighamBench/Core.lean",
               "paper_bencmark/highambench/shared/HighamBench/P20Definitions.lean"
             ],
-            "statement_summary": "The narrow-range multiword envelope is the range-free envelope plus exactly two nonnegative underflow terms, with equality and strictness criteria."
+            "statement_summary": "Every proof-carrying Model-1 execution of (4.29)-(4.31) satisfies the four-term first-order normwise forward-error bound (4.32), and its coefficient is the range-free (4.33) coefficient plus the two underflow terms."
           },
           "source_locations": [
             {
-              "anchor": "equations (4.32)-(4.33) and surrounding comparison",
+              "anchor": "Model 1 and equations (2.1)-(2.3)",
+              "pdf_page": 2,
+              "printed_page": "B786",
+              "role": "input and accumulation binary formats, roundoff and underflow parameters, format nesting, and input rounding equation",
+              "section": "2.1. The model of matrix multiplication"
+            },
+            {
+              "anchor": "equation (2.4) and the following rounding-mode paragraph",
+              "pdf_page": 3,
+              "printed_page": "B787",
+              "role": "accumulation rounding equation, mutually exclusive relative and underflow errors, and the default round-to-nearest scope",
+              "section": "2.1. The model of matrix multiplication"
+            },
+            {
+              "anchor": "equations (3.2) and (3.4a)-(3.4b)",
+              "pdf_page": 5,
+              "printed_page": "B789",
+              "role": "format-derived theta and the maximal power-of-two scaling intervals used by the derivation",
+              "section": "3.1. Analysis"
+            },
+            {
+              "anchor": "equations (4.18)-(4.28)",
+              "pdf_page": 10,
+              "printed_page": "B794-B795",
+              "role": "decomposition and accumulation errors, omitted products, exact error decomposition, and the four source estimates",
+              "section": "4. Multiword arithmetic"
+            },
+            {
+              "anchor": "Theorem 4.1 and equations (4.29)-(4.32)",
               "pdf_page": 11,
               "printed_page": "B795",
-              "role": "narrow-range versus range-free multiword error envelopes",
+              "role": "selected scaled p-word algorithm and narrow-range infinity-norm forward-error bound",
+              "section": "4.2. Summary and discussion"
+            },
+            {
+              "anchor": "equation (4.33) and the following comparison",
+              "pdf_page": 11,
+              "printed_page": "B795-B796",
+              "role": "range-unrestricted coefficient and identification of the two additional underflow terms",
               "section": "4.2. Summary and discussion"
             }
           ],
           "task_id": "P20-T3",
           "tier": "T3",
           "tier_name": "extend",
-          "tier_reason": "No frozen module contains narrow-range matrix-multiplication or multiword envelopes. Beyond norm nonnegativity, the proof introduces the P20 coefficients and establishes a cross-envelope gap with new equality and strictness connections.",
-          "title": "Multiword narrow-range gap certificate"
+          "tier_reason": "The frozen library supplies only generic rectangular infinity-norm facts used by the L proof. It contains none of Model 1, the scaled p-word recurrences, the retained accumulation-format computation, the four linked error sources, or Theorem 4.1's first-order forward-error result.",
+          "title": "Multiword narrow-range forward error"
         }
       ],
       "topic": "narrow-range mixed-precision matrix multiplication and underflow-aware multiword error bounds"

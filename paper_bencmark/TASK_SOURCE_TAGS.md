@@ -93,9 +93,9 @@ the `theorem` command.
 | `P19-T1` | `EQN` | none | The selected upper perturbation-norm inequality is the right half of equation (C.8). |
 | `P19-T2` | `THM` | Theorem 3.1 | The selected result is Theorem 3.1, including equations (3.7)-(3.8) and the four-source definition of `xi`. |
 | `P19-T3` | `EQN`, `TXT` | none | Equations (3.17) and (3.20) give the two envelopes, and Remark 4 identifies the removed preconditioner-reapplication term. |
-| `P20-T1` | `EQN` | none | Equation (3.4a) gives the selected row-scaling interval and its exact maximum-coefficient consequence. |
-| `P20-T2` | `EQN`, `TXT` | none | Equation (3.26) isolates the two underflow terms and the following prose compares them in the theta-at-least-one regime. |
-| `P20-T3` | `EQN`, `TXT` | none | Equations (4.32) and (4.33) give the narrow-range and range-free multiword envelopes, and the surrounding prose directs their comparison. |
+| `P20-T1` | `EQN`, `TXT` | none | Equations (3.1), (3.2), and (3.4a) give the diagonal scaling, threshold, and interval; prose requires power-of-two factors and states the maximum-coefficient consequence. |
+| `P20-T2` | `EQN` | none | The selected complete scaled-input rounding and underflow bound is equation (3.13). |
+| `P20-T3` | `THM` | Theorem 4.1 | The selected result is Theorem 4.1: equations (4.29)-(4.31) define the scaled p-word computation and (4.32) gives its narrow-range normwise forward-error bound; (4.33) supplies the range-free comparison. |
 
 These assignments are ordinary task metadata. They follow the same rules and
 may be reviewed in the same way for every paper entry during construction.

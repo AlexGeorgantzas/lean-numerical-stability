@@ -11,19 +11,19 @@
       "sha256": "8c84e05c04f4245e067d3a971dafa45bcfe92f55bbc24f2305964a8e2b9bd55a"
     },
     {
-      "bytes": 2759,
+      "bytes": 27077,
       "path": "shared/HighamBench/P20Definitions.lean",
-      "sha256": "5b94f6f4eac02fe552a60504a7d4c1efb1d8dbe27826e3c608c83a495fbb8c2b"
+      "sha256": "e2129407ca9260c9544e2105f2ede46a5fdf2514d17b69d7f447573e555f4341"
     },
     {
-      "bytes": 631,
+      "bytes": 1121,
       "path": "tasks/P20/T1/Target.lean",
-      "sha256": "1d58f9917ffc13cc95c701370253f1f644dc4559d1f93e37ea9081bfa2bba0a7"
+      "sha256": "0a5acf0a1d8a55fcd041ea703d68d64c8c1f68aca5fe2b4b010c2d975523d0fd"
     },
     {
-      "bytes": 609,
+      "bytes": 2029,
       "path": "tasks/P20/T1/context.md",
-      "sha256": "75119322e9e3d76daf2942b65b12b74b8a75713fad5aa0399a2524298a2193f4"
+      "sha256": "dca7fc97cddf1a87345f67d5125bcb39333fcd8bafa998fa64844d8a084ce934"
     }
   ],
   "kind": "highambench-controlled-files",

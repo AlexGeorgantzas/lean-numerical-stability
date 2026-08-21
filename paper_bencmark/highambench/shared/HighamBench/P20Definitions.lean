@@ -245,6 +245,38 @@ def p20MaximalPowerTwoScale (theta vectorNorm lambda : ℝ) : Prop :=
       (0 < vectorNorm ∧ theta / (2 * vectorNorm) < lambda ∧
         lambda ≤ theta / vectorNorm))
 
+/-! ## Single-word scaled-input error from equations (3.3)--(3.13) -/
+
+/-- The exact absolute inner product `|x|^T |y|` in (3.9)--(3.14). -/
+noncomputable def p20AbsInnerProduct {n : ℕ}
+    (x y : Fin n → ℝ) : ℝ :=
+  ∑ i : Fin n, |x i| * |y i|
+
+/-- The scaled and componentwise input-rounded inner product `s` from (3.3),
+before any accumulation-format rounding is applied. -/
+noncomputable def p20ScaledInputInnerProduct {n : ℕ} {ι : Type*}
+    (model : P20Model1 ι) (t : ι) (lambda mu : ℝ)
+    (x y : Fin n → ℝ) : ℝ :=
+  lambda⁻¹ * mu⁻¹ *
+    ∑ i : Fin n,
+      model.inputRound t (lambda * x i) *
+        model.inputRound t (mu * y i)
+
+/-- The input-rounding and input-underflow error `epsilon_1` from (3.8). -/
+noncomputable def p20InputStageError {n : ℕ} {ι : Type*}
+    (model : P20Model1 ι) (t : ι) (lambda mu : ℝ)
+    (x y : Fin n → ℝ) : ℝ :=
+  p20ScaledInputInnerProduct model t lambda mu x y -
+    ∑ i : Fin n, x i * y i
+
+/-- The exact right-hand side of equation (3.13). -/
+noncomputable def p20InputStageErrorEnvelope {n : ℕ}
+    (u gmin theta : ℝ) (x y : Fin n → ℝ) : ℝ :=
+  (2 * u + u ^ 2) * p20AbsInnerProduct x y +
+    4 * (n : ℝ) * theta⁻¹ * gmin *
+      (1 + u + theta⁻¹ * gmin) *
+        p20InfNormVec x * p20InfNormVec y
+
 /-- An accumulation-format inner product. Each multiply-add result is rounded
 by the accumulation map from Model 1. -/
 noncomputable def p20AccumulatedInnerProduct {n : ℕ}
