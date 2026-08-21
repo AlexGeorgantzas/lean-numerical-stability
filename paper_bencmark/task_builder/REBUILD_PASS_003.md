@@ -7,12 +7,13 @@
 - Pass-3 scope: the 25 fully validated Audit 2 results that were not accepted
 - Processing order: the order in the ledger below
 - Active task: none
-- Rebuilds started: 6/25
+- Rebuilds started: 7/25
 - Rebuilds committed and pushed: 6/25
 - Pass-3 audits accepted: 0/25
 
 `P04-T1`, `P04-T2`, `P05-T1`, `P05-T2`, `P05-T3`, and `P06-T1` have been
-rebuilt and pushed. The next task is `P07-T2`.
+rebuilt and pushed. `P07-T2` is blocked on source clarification; the next
+reachable task is `P08-T3`.
 
 ## Operating rules
 
@@ -61,7 +62,7 @@ Audit 2 versions.
 | 4 | `P05-T2` | `not-faithful-different` | `no / no` | `eb1f4d90e3fd` | [decision](../highambench/tasks/P05/T2/faithfulness/decision.json), [report](../highambench/tasks/P05/T2/faithfulness/report.md) | `rebuilt-pushed` | `5eff63450` | - |
 | 5 | `P05-T3` | `not-faithful-weaker` | `no / yes` | `406fab50515a` | [decision](../highambench/tasks/P05/T3/faithfulness/decision.json), [report](../highambench/tasks/P05/T3/faithfulness/report.md) | `rebuilt-pushed` | `47d060c99` | - |
 | 6 | `P06-T1` | `not-faithful-weaker` | `no / yes` | `be015f6d50ce` | [decision](../highambench/tasks/P06/T1/faithfulness/decision.json), [report](../highambench/tasks/P06/T1/faithfulness/report.md) | `rebuilt-pushed` | `23ca8a94f` | - |
-| 7 | `P07-T2` | `not-faithful-weaker` | `no / yes` | `cef9fdfaa43e` | [decision](../highambench/tasks/P07/T2/faithfulness/decision.json), [report](../highambench/tasks/P07/T2/faithfulness/report.md) | `pending` | - | - |
+| 7 | `P07-T2` | `not-faithful-weaker` | `no / yes` | `cef9fdfaa43e` | [decision](../highambench/tasks/P07/T2/faithfulness/decision.json), [report](../highambench/tasks/P07/T2/faithfulness/report.md) | `blocked` | - | source contradiction documented below |
 | 8 | `P08-T3` | `not-faithful-different` | `no / no` | `b172c68f6218` | [decision](../highambench/tasks/P08/T3/faithfulness/decision.json), [report](../highambench/tasks/P08/T3/faithfulness/report.md) | `pending` | - | - |
 | 9 | `P09-T2` | `not-faithful-different` | `no / no` | `d184164e2187` | [decision](../highambench/tasks/P09/T2/faithfulness/decision.json), [report](../highambench/tasks/P09/T2/faithfulness/report.md) | `pending` | - | - |
 | 10 | `P09-T3` | `not-faithful-different` | `no / no` | `6b8ca8416867` | [decision](../highambench/tasks/P09/T3/faithfulness/decision.json), [report](../highambench/tasks/P09/T3/faithfulness/report.md) | `pending` | - | - |
@@ -80,6 +81,27 @@ Audit 2 versions.
 | 23 | `P19-T2` | `not-faithful-different` | `no / no` | `a88a277ace1e` | [decision](../highambench/tasks/P19/T2/faithfulness/decision.json), [report](../highambench/tasks/P19/T2/faithfulness/report.md) | `pending` | - | - |
 | 24 | `P19-T3` | `not-faithful-weaker` | `no / yes` | `01678017bf60` | [decision](../highambench/tasks/P19/T3/faithfulness/decision.json), [report](../highambench/tasks/P19/T3/faithfulness/report.md) | `pending` | - | - |
 | 25 | `P20-T3` | `not-faithful-different` | `no / no` | `d1ca8c6b6626` | [decision](../highambench/tasks/P20/T3/faithfulness/decision.json), [report](../highambench/tasks/P20/T3/faithfulness/report.md) | `pending` | - | - |
+
+## Blocked Task Evidence
+
+### P07-T2
+
+Theorem 3.5 on PDF page 16, printed page 920, contains two incompatible
+perturbed-solution claims. Its statement prints
+`(A + DeltaA) xHat = b + deltaB`, while its proof identifies
+`xHat = (A + DeltaA)^dagger (b + deltaB)`. For a tall least-squares problem,
+the latter does not imply the former unless the perturbed right-hand side is
+in the range of the perturbed matrix. The proof's product-pseudoinverse step
+also requires perturbed full column rank (or an equivalent product rule), but
+equation (3.9) places no bound on `DeltaYHat` and the paper states neither
+condition.
+
+Audit 2 consequently rejected the current normal-equation formalization as
+strictly weaker than both printed claims. Rebuilding either printed claim
+would require adding an unprinted range/rank hypothesis; retaining the valid
+factorization and norm estimate would require narrowing the selected source.
+Both choices require project-owner approval under operating rule 8. No P07-T2
+construction files were changed in pass 3.
 
 ## End-of-pass checkpoint
 
